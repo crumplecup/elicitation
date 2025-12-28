@@ -17,7 +17,7 @@ This file tracks all planning documents for the elicitation project.
 - MCP tool integration patterns
 - Derive macro strategies
 
-### Implementation Plan (.claude/plans/scalable-drifting-lobster.md)
+### implementation_plan.md
 **Status**: Active - Implementation guide
 **Created**: 2025-12-28
 **Purpose**: Phased implementation plan for v0.1.0 covering workspace setup, core traits, primitive implementations, container types, derive macros, documentation, and release preparation.
@@ -30,3 +30,10 @@ This file tracks all planning documents for the elicitation project.
 5. Derive Macros - Structs (Survey pattern)
 6. Documentation & Examples
 7. Release Prep
+
+**Key Decisions**:
+- Dual Apache-2.0 OR MIT license for crates.io
+- pmcp v1.4+ for MCP client integration
+- derive_more for error handling
+- Trait-based metadata (fully static)
+- Async-first API
