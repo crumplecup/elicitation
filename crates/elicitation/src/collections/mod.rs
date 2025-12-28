@@ -4,3 +4,5 @@ mod btreemap;
 mod btreeset;
 mod hashmap;
 mod hashset;
+mod linkedlist;
+mod vecdeque;

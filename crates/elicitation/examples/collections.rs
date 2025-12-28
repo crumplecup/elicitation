@@ -11,7 +11,7 @@
 
 use elicitation::{Elicit, ElicitResult, Elicitation, Prompt, Select};
 use pmcp::StdioTransport;
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, LinkedList, VecDeque};
 
 /// Configuration value that can be a string or number
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Elicit)]
@@ -56,6 +56,18 @@ async fn main() -> ElicitResult<()> {
     let priorities: BTreeSet<i32> = BTreeSet::elicit(&client).await?;
     tracing::info!(?priorities, "Elicited BTreeSet");
     println!("Priorities (ordered): {:?}", priorities);
+
+    // Elicit a VecDeque
+    tracing::info!("=== Eliciting VecDeque<String> ===");
+    let queue: VecDeque<String> = VecDeque::elicit(&client).await?;
+    tracing::info!(?queue, "Elicited VecDeque");
+    println!("Queue: {:?}", queue);
+
+    // Elicit a LinkedList
+    tracing::info!("=== Eliciting LinkedList<i32> ===");
+    let linked: LinkedList<i32> = LinkedList::elicit(&client).await?;
+    tracing::info!(?linked, "Elicited LinkedList");
+    println!("Linked list: {:?}", linked);
 
     tracing::info!("Example complete!");
     Ok(())

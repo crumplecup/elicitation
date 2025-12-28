@@ -13,7 +13,7 @@
 - **Derive Macros** - Automatic implementation for enums and structs
 - **Primitive Types** - Built-in support for integers, floats, booleans, strings
 - **Containers** - Generic implementations for `Option<T>` and `Vec<T>`
-- **Collections** - Support for `HashMap<K,V>`, `BTreeMap<K,V>`, `HashSet<T>`, `BTreeSet<T>`
+- **Collections** - Support for `HashMap<K,V>`, `BTreeMap<K,V>`, `HashSet<T>`, `BTreeSet<T>`, `VecDeque<T>`, `LinkedList<T>`
 - **Four Interaction Paradigms**:
   - **Select** - Choose from finite options (enum pattern)
   - **Affirm** - Yes/no confirmation (bool pattern)
@@ -213,6 +213,11 @@ let tags: HashSet<String> = HashSet::elicit(&client).await?;
 use std::collections::{BTreeMap, BTreeSet};
 let config: BTreeMap<String, String> = BTreeMap::elicit(&client).await?;
 let priorities: BTreeSet<i32> = BTreeSet::elicit(&client).await?;
+
+// VecDeque and LinkedList for sequential access patterns
+use std::collections::{VecDeque, LinkedList};
+let queue: VecDeque<String> = VecDeque::elicit(&client).await?;
+let linked: LinkedList<i32> = LinkedList::elicit(&client).await?;
 ```
 
 **Try it**: `claude "Run the collections example"`

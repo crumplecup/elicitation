@@ -44,37 +44,19 @@ This document outlines planned extensions to support more Rust standard library 
 
 ---
 
-#### VecDeque<T> & LinkedList<T>
+#### ✅ VecDeque<T> & LinkedList<T> - COMPLETED
+
+**Status**: Implemented
 
 **Pattern**: Identical to Vec<T> - loop-based sequential elicitation
 
-```rust
-impl<T: Elicitation + Send> Elicitation for VecDeque<T> {
-    async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
-        let mut deque = VecDeque::new();
+**Implementation**:
+- `src/collections/vecdeque.rs` - VecDeque<T> double-ended queue
+- `src/collections/linkedlist.rs` - LinkedList<T> doubly-linked list
+- `tests/collections_test.rs` - Test coverage
+- `examples/collections.rs` - Usage examples
 
-        loop {
-            let add_more = bool::elicit(client).await?;
-            if !add_more { break; }
-
-            let item = T::elicit(client).await?;
-            deque.push_back(item);
-        }
-
-        Ok(deque)
-    }
-}
-```
-
-**LinkedList**: Identical implementation
-
-**Files to create**:
-
-- `src/collections/vecdeque.rs`
-- `src/collections/linkedlist.rs`
-
-**Trait bounds required**:
-
+**Trait bounds**:
 - `T: Elicitation + Send`
 
 ---
