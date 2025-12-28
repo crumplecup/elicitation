@@ -85,40 +85,30 @@ This document outlines planned extensions to support more Rust standard library 
 
 ### Network Types
 
-#### IpAddr, Ipv4Addr, Ipv6Addr
+#### ✅ IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr - COMPLETED
+
+**Status**: Implemented
 
 **Pattern**: String elicitation with parsing validation
 
-```rust
-impl Elicit for IpAddr {
-    async fn elicit<T: Transport>(client: &Client<T>) -> ElicitResult<Self> {
-        loop {
-            let ip_str = String::elicit(client).await?;
+**Implementation**:
+- `src/primitives/network.rs` - All network type implementations
+- `tests/network_test.rs` - 15 tests covering all network types
+- `examples/network.rs` - Comprehensive usage example
 
-            match ip_str.parse::<IpAddr>() {
-                Ok(addr) => return Ok(addr),
-                Err(e) => {
-                    tracing::warn!(error = ?e, "Invalid IP address format");
-                    // Could prompt: "Invalid IP address. Try again?"
-                    continue;
-                }
-            }
-        }
-    }
-}
-```
+**Types implemented**:
+- `IpAddr` - Generic IP address (IPv4 or IPv6)
+- `Ipv4Addr` - Specific IPv4 address
+- `Ipv6Addr` - Specific IPv6 address
+- `SocketAddr` - Socket address (IP + port)
+- `SocketAddrV4` - IPv4 socket address
+- `SocketAddrV6` - IPv6 socket address
 
-**Related types**:
-
-- `IpAddr` (enum: V4 | V6)
-- `Ipv4Addr`
-- `Ipv6Addr`
-- `SocketAddr` (IpAddr + port)
-- `SocketAddrV4`, `SocketAddrV6`
-
-**Files to create**:
-
-- `src/primitives/network.rs`
+**Details**:
+- String-based elicitation with automatic parsing
+- Validation returns InvalidFormat error on parse failure
+- Full tracing of validation attempts
+- Helpful error messages with format examples
 
 ---
 

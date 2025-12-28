@@ -6,6 +6,7 @@
 //! - Boolean: bool
 //! - String: String
 //! - PathBuf: std::path::PathBuf
+//! - Network types: IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, etc.
 //!
 //! All primitive types implement:
 //! - [`Prompt`](crate::Prompt) - Provides default prompts
@@ -16,5 +17,6 @@
 mod boolean;
 mod floats;
 mod integers;
+mod network;
 mod pathbuf;
 mod string;

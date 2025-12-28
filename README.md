@@ -11,7 +11,7 @@
 
 - **Trait-Based Elicitation** - Simple `Elicitation` trait for all types
 - **Derive Macros** - Automatic implementation for enums and structs
-- **Primitive Types** - Built-in support for integers, floats, booleans, strings, paths
+- **Primitive Types** - Built-in support for integers, floats, booleans, strings, paths, network addresses
 - **Containers** - Generic implementations for `Option<T>` and `Vec<T>`
 - **Collections** - Support for `HashMap<K,V>`, `BTreeMap<K,V>`, `HashSet<T>`, `BTreeSet<T>`, `VecDeque<T>`, `LinkedList<T>`
 - **Four Interaction Paradigms**:
@@ -160,6 +160,22 @@ let config_path: Option<PathBuf> = Option::<PathBuf>::elicit(&client).await?;
 ```
 
 **Try it**: `claude "Run the pathbuf example"`
+
+### Network Addresses
+
+```rust
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
+
+// Elicit IP addresses with automatic validation
+let ip: IpAddr = IpAddr::elicit(&client).await?; // IPv4 or IPv6
+let ipv4: Ipv4Addr = Ipv4Addr::elicit(&client).await?; // IPv4 only
+let ipv6: Ipv6Addr = Ipv6Addr::elicit(&client).await?; // IPv6 only
+
+// Socket addresses (IP + port)
+let socket: SocketAddr = SocketAddr::elicit(&client).await?;
+```
+
+**Try it**: `claude "Run the network example"`
 
 ### Enums (Select Pattern)
 
