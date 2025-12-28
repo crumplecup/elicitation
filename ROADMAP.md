@@ -13,7 +13,7 @@ This document outlines planned extensions to support more Rust standard library 
 **Pattern**: Loop-based key-value elicitation
 
 ```rust
-impl<K: Elicit + Hash + Eq + Send, V: Elicit + Send> Elicit for HashMap<K, V> {
+impl<K: Elicitationation + Hash + Eq + Send, V: Elicitationation + Send> Elicitation for HashMap<K, V> {
     async fn elicit<T: Transport>(client: &Client<T>) -> ElicitResult<Self> {
         let mut map = HashMap::new();
 
@@ -66,8 +66,8 @@ impl<K: Elicit + Hash + Eq + Send, V: Elicit + Send> Elicit for HashMap<K, V> {
 
 **Trait bounds required**:
 
-- `HashMap`: `K: Elicit + Hash + Eq + Send`, `V: Elicit + Send`
-- `BTreeMap`: `K: Elicit + Ord + Send`, `V: Elicit + Send`
+- `HashMap`: `K: Elicitationation + Hash + Eq + Send`, `V: Elicitationation + Send`
+- `BTreeMap`: `K: Elicitationation + Ord + Send`, `V: Elicitationation + Send`
 
 ---
 
@@ -76,7 +76,7 @@ impl<K: Elicit + Hash + Eq + Send, V: Elicit + Send> Elicit for HashMap<K, V> {
 **Pattern**: Loop-based item elicitation with duplicate detection
 
 ```rust
-impl<T: Elicit + Hash + Eq + Send> Elicit for HashSet<T> {
+impl<T: Elicitationation + Hash + Eq + Send> Elicitation for HashSet<T> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         let mut set = HashSet::new();
 
@@ -113,8 +113,8 @@ impl<T: Elicit + Hash + Eq + Send> Elicit for HashSet<T> {
 
 **Trait bounds required**:
 
-- `HashSet`: `T: Elicit + Hash + Eq + Send`
-- `BTreeSet`: `T: Elicit + Ord + Send`
+- `HashSet`: `T: Elicitationation + Hash + Eq + Send`
+- `BTreeSet`: `T: Elicitationation + Ord + Send`
 
 ---
 
@@ -123,7 +123,7 @@ impl<T: Elicit + Hash + Eq + Send> Elicit for HashSet<T> {
 **Pattern**: Identical to Vec<T> - loop-based sequential elicitation
 
 ```rust
-impl<T: Elicit + Send> Elicit for VecDeque<T> {
+impl<T: Elicitationation + Send> Elicitation for VecDeque<T> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         let mut deque = VecDeque::new();
 
@@ -149,7 +149,7 @@ impl<T: Elicit + Send> Elicit for VecDeque<T> {
 
 **Trait bounds required**:
 
-- `T: Elicit + Send`
+- `T: Elicitationation + Send`
 
 ---
 
@@ -288,7 +288,7 @@ enum TimeUnit {
 Support elicitation of tuples up to arity 12 (matching Rust std):
 
 ```rust
-impl<T1: Elicit, T2: Elicit> Elicit for (T1, T2) {
+impl<T1: Elicit, T2: Elicit> Elicitation for (T1, T2) {
     async fn elicit<T: Transport>(client: &Client<T>) -> ElicitResult<Self> {
         let first = T1::elicit(client).await?;
         let second = T2::elicit(client).await?;
@@ -311,7 +311,7 @@ Fixed-size arrays `[T; N]`:
 
 ```rust
 // Use const generics
-impl<T: Elicit + Send, const N: usize> Elicit for [T; N] {
+impl<T: Elicitationation + Send, const N: usize> Elicitation for [T; N] {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         let mut items = Vec::with_capacity(N);
 
@@ -344,7 +344,7 @@ impl<T: Elicit + Send, const N: usize> Elicit for [T; N] {
 Elicit success/failure with value:
 
 ```rust
-impl<T: Elicit + Send, E: Elicit + Send> Elicit for Result<T, E> {
+impl<T: Elicitationation + Send, E: Elicitation + Send> Elicitation for Result<T, E> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         #[derive(Elicit)]
         enum ResultVariant {
@@ -381,19 +381,19 @@ impl<T: Elicit + Send, E: Elicit + Send> Elicit for Result<T, E> {
 Transparent wrappers around `T::elicit()`:
 
 ```rust
-impl<T: Elicit + Send> Elicit for Box<T> {
+impl<T: Elicitationation + Send> Elicitation for Box<T> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         T::elicit(client).await.map(Box::new)
     }
 }
 
-impl<T: Elicit + Send> Elicit for Rc<T> {
+impl<T: Elicitationation + Send> Elicitation for Rc<T> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         T::elicit(client).await.map(Rc::new)
     }
 }
 
-impl<T: Elicit + Send> Elicit for Arc<T> {
+impl<T: Elicitationation + Send> Elicitation for Arc<T> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         T::elicit(client).await.map(Arc::new)
     }
