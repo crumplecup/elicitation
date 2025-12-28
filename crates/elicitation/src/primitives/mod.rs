@@ -8,6 +8,7 @@
 //! - PathBuf: std::path::PathBuf
 //! - Network types: IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, etc.
 //! - Duration: std::time::Duration
+//! - Tuples: (T1, T2), (T1, T2, T3), up to arity 12
 //!
 //! All primitive types implement:
 //! - [`Prompt`](crate::Prompt) - Provides default prompts
@@ -22,3 +23,4 @@ mod integers;
 mod network;
 mod pathbuf;
 mod string;
+mod tuples;

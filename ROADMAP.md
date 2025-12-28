@@ -519,3 +519,68 @@ This roadmap is subject to community feedback. Please open issues or discussions
 - Optional results (Option<Result<T, E>>)
 
 ---
+
+## Version 0.3.0 - Advanced Patterns
+
+### Tuple Types
+
+#### ✅ Tuples (T1, T2) through (T1, ..., T12) - COMPLETED
+
+**Status**: Implemented
+
+**Pattern**: Sequential elicitation of each element
+
+**Implementation**:
+- `src/primitives/tuples.rs` - Macro-generated implementations for arity 1-12
+- `tests/tuples_test.rs` - 8 tests covering tuples
+- `examples/tuples.rs` - Usage examples with various arities
+
+**Details**:
+- Macro-generated to avoid code duplication
+- Supports tuples up to arity 12 (matching Rust std)
+- Sequential elicitation of each element
+- Works with any T that implements Elicitation
+
+---
+
+### Smart Pointers
+
+#### ✅ Box<T>, Rc<T>, Arc<T> - COMPLETED
+
+**Status**: Implemented
+
+**Pattern**: Transparent wrapper around inner type
+
+**Implementation**:
+- `src/containers/smart_pointers.rs` - All smart pointer implementations
+- `tests/smart_pointers_test.rs` - 10 tests
+- `examples/smart_pointers.rs` - Usage with shared ownership demos
+
+**Details**:
+- Transparent wrappers (elicit T, wrap in pointer)
+- Delegates prompt to inner type
+- Works with any T that implements Elicitation
+- Full support for complex nested types
+
+---
+
+### Array Types
+
+#### ✅ Fixed-size arrays [T; N] - COMPLETED
+
+**Status**: Implemented  
+
+**Pattern**: Sequential elicitation with const generics
+
+**Implementation**:
+- `src/containers/array.rs` - Const generic array implementation
+- `tests/array_test.rs` - 6 tests covering various sizes
+- `examples/arrays.rs` - Usage with different array sizes
+
+**Details**:
+- Uses const generics for any size N
+- Elicits exactly N elements sequentially
+- Converts Vec to array via try_into()
+- Works with any T that implements Elicitation
+
+---

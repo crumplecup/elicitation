@@ -12,7 +12,7 @@
 - **Trait-Based Elicitation** - Simple `Elicitation` trait for all types
 - **Derive Macros** - Automatic implementation for enums and structs
 - **Primitive Types** - Built-in support for integers, floats, booleans, strings, paths, network addresses, durations
-- **Containers** - Generic implementations for `Option<T>`, `Vec<T>`, and `Result<T, E>`
+- **Containers** - Generic implementations for `Option<T>`, `Vec<T>`, `Result<T, E>`, `Box<T>`, `Rc<T>`, `Arc<T>`, and `[T; N]`
 - **Collections** - Support for `HashMap<K,V>`, `BTreeMap<K,V>`, `HashSet<T>`, `BTreeSet<T>`, `VecDeque<T>`, `LinkedList<T>`
 - **Four Interaction Paradigms**:
   - **Select** - Choose from finite options (enum pattern)
