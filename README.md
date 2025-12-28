@@ -11,7 +11,7 @@
 
 - **Trait-Based Elicitation** - Simple `Elicitation` trait for all types
 - **Derive Macros** - Automatic implementation for enums and structs
-- **Primitive Types** - Built-in support for integers, floats, booleans, strings, paths, network addresses
+- **Primitive Types** - Built-in support for integers, floats, booleans, strings, paths, network addresses, durations
 - **Containers** - Generic implementations for `Option<T>` and `Vec<T>`
 - **Collections** - Support for `HashMap<K,V>`, `BTreeMap<K,V>`, `HashSet<T>`, `BTreeSet<T>`, `VecDeque<T>`, `LinkedList<T>`
 - **Four Interaction Paradigms**:
@@ -176,6 +176,23 @@ let socket: SocketAddr = SocketAddr::elicit(&client).await?;
 ```
 
 **Try it**: `claude "Run the network example"`
+
+### Time Durations
+
+```rust
+use std::time::Duration;
+
+// Elicit duration in seconds (supports decimals)
+let timeout: Duration = Duration::elicit(&client).await?;
+
+// Works with optional durations
+let cache_ttl: Option<Duration> = Option::<Duration>::elicit(&client).await?;
+
+// Collections of durations
+let intervals: Vec<Duration> = Vec::<Duration>::elicit(&client).await?;
+```
+
+**Try it**: `claude "Run the duration example"`
 
 ### Enums (Select Pattern)
 

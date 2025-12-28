@@ -7,6 +7,7 @@
 //! - String: String
 //! - PathBuf: std::path::PathBuf
 //! - Network types: IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, etc.
+//! - Duration: std::time::Duration
 //!
 //! All primitive types implement:
 //! - [`Prompt`](crate::Prompt) - Provides default prompts
@@ -15,6 +16,7 @@
 //! Integer and float types use generic macros to eliminate duplication.
 
 mod boolean;
+mod duration;
 mod floats;
 mod integers;
 mod network;

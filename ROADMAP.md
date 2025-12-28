@@ -114,52 +114,26 @@ This document outlines planned extensions to support more Rust standard library 
 
 ### Time & Duration Types
 
-#### Duration
+#### ✅ Duration - COMPLETED
 
-**Pattern**: Numeric elicitation with unit selection
+**Status**: Implemented
 
-```rust
-// Simple approach: elicit seconds as f64
-impl Elicit for Duration {
-    async fn elicit<T: Transport>(client: &Client<T>) -> ElicitResult<Self> {
-        // "Enter duration in seconds:"
-        let seconds = f64::elicit(client).await?;
+**Pattern**: Numeric elicitation (f64 seconds) with validation
 
-        if seconds < 0.0 {
-            return Err(ElicitError::new(ElicitErrorKind::OutOfRange {
-                min: "0".to_string(),
-                max: "positive".to_string(),
-            }));
-        }
+**Implementation**:
+- `src/primitives/duration.rs` - Duration implementation
+- `tests/duration_test.rs` - 4 tests covering Duration
+- `examples/duration.rs` - Usage example with timeouts and intervals
 
-        Ok(Duration::from_secs_f64(seconds))
-    }
-}
-```
+**Details**:
+- Elicits as f64 (supports decimal seconds)
+- Validates non-negative (returns OutOfRange error)
+- Converts using Duration::from_secs_f64()
+- Works with Option<Duration> and Vec<Duration>
 
-**Advanced approach** (v0.3.0): Elicit value + unit
-
-```rust
-#[derive(Elicit)]
-enum TimeUnit {
-    Seconds,
-    Minutes,
-    Hours,
-    Days,
-}
-
-// Then combine with numeric value
-```
-
-**Related types**:
-
-- `Duration`
-- `SystemTime` (Duration since UNIX_EPOCH)
-- `Instant` (not serializable - skip)
-
-**Files to create**:
-
-- `src/primitives/duration.rs`
+**Future enhancement (v0.3.0)**:
+- Unit selection (seconds, minutes, hours, days)
+- Human-readable format parsing
 
 ---
 
