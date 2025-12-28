@@ -321,9 +321,11 @@ dependencies = [
 name = "elicitation_derive"
 version = "0.1.0"
 dependencies = [
+ "elicitation",
  "proc-macro2",
  "quote",
  "syn",
+ "tracing",
 ]
 
 [[package]]

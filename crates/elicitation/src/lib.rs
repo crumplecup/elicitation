@@ -73,7 +73,7 @@
 
 mod containers;
 mod error;
-mod mcp;
+pub mod mcp;
 mod paradigm;
 mod primitives;
 mod traits;
@@ -90,5 +90,5 @@ pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
 // Re-export pmcp for user convenience
 pub use pmcp;
 
-// Re-export derive macro (will be implemented in Phase 4-5)
-// pub use elicitation_derive::Elicit as DeriveElicit;
+// Re-export derive macro
+pub use elicitation_derive::Elicit as DeriveElicit;
