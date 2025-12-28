@@ -7,11 +7,11 @@
 //! - Optional custom types
 //! - Composition of all paradigms
 
-use elicitation::{DeriveElicit, Elicit, ElicitResult, Prompt, Select, Survey};
+use elicitation::{Elicit, ElicitResult, Elicitation, Prompt, Select};
 use pmcp::StdioTransport;
 
 /// Priority level for tasks
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DeriveElicit)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
 #[prompt("Select the priority level:")]
 enum Priority {
     Low,
@@ -21,7 +21,7 @@ enum Priority {
 }
 
 /// Task status
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DeriveElicit)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
 #[prompt("What is the current status?")]
 enum Status {
     Todo,
@@ -31,7 +31,7 @@ enum Status {
 }
 
 /// Contact information
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 #[prompt("Let's add contact information:")]
 struct Contact {
     #[prompt("Primary email address:")]
@@ -42,7 +42,7 @@ struct Contact {
 }
 
 /// Project member
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 struct Member {
     #[prompt("Member's full name:")]
     name: String,
@@ -54,7 +54,7 @@ struct Member {
 }
 
 /// Individual task
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 #[prompt("Let's create a task:")]
 struct Task {
     #[prompt("Task title:")]
@@ -72,7 +72,7 @@ struct Task {
 }
 
 /// Complete project structure
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 #[prompt("Let's set up your project:")]
 struct Project {
     #[prompt("Project name:")]

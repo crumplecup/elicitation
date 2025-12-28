@@ -1,6 +1,6 @@
 //! Boolean type implementation using the Affirm pattern.
 
-use crate::{mcp, Affirm, Elicit, ElicitResult, Prompt};
+use crate::{mcp, Affirm, ElicitResult, Elicitation, Prompt};
 
 impl Prompt for bool {
     fn prompt() -> Option<&'static str> {
@@ -10,7 +10,7 @@ impl Prompt for bool {
 
 impl Affirm for bool {}
 
-impl Elicit for bool {
+impl Elicitation for bool {
     #[tracing::instrument(skip(client))]
     async fn elicit<T: pmcp::shared::transport::Transport>(
         client: &pmcp::Client<T>,

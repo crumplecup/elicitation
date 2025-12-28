@@ -1,6 +1,6 @@
 //! String type implementation.
 
-use crate::{mcp, Elicit, ElicitResult, Prompt};
+use crate::{mcp, ElicitResult, Elicitation, Prompt};
 
 impl Prompt for String {
     fn prompt() -> Option<&'static str> {
@@ -8,7 +8,7 @@ impl Prompt for String {
     }
 }
 
-impl Elicit for String {
+impl Elicitation for String {
     #[tracing::instrument(skip(client))]
     async fn elicit<T: pmcp::shared::transport::Transport>(
         client: &pmcp::Client<T>,

@@ -1,15 +1,15 @@
 //! Tests for enum derive macro.
 
-use elicitation::{DeriveElicit, Prompt, Select};
+use elicitation::{Elicit, Prompt, Select};
 
-#[derive(Debug, Clone, Copy, PartialEq, DeriveElicit)]
+#[derive(Debug, Clone, Copy, PartialEq, Elicit)]
 enum SimpleEnum {
     First,
     Second,
     Third,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, DeriveElicit)]
+#[derive(Debug, Clone, Copy, PartialEq, Elicit)]
 #[prompt("Choose your favorite color:")]
 enum ColorEnum {
     Red,

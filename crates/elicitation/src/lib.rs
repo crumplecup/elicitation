@@ -82,7 +82,7 @@ mod traits;
 pub use error::{ElicitError, ElicitErrorKind, ElicitResult, JsonError, PmcpError};
 
 // Core traits
-pub use traits::{Elicit, Prompt};
+pub use traits::{Elicitation, Prompt};
 
 // Interaction paradigm traits
 pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
@@ -90,5 +90,5 @@ pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
 // Re-export pmcp for user convenience
 pub use pmcp;
 
-// Re-export derive macro
-pub use elicitation_derive::Elicit as DeriveElicit;
+// Re-export derive macro with user-friendly name
+pub use elicitation_derive::Elicit;

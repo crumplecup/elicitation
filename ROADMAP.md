@@ -256,7 +256,7 @@ impl Elicit for Duration {
 **Advanced approach** (v0.3.0): Elicit value + unit
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 enum TimeUnit {
     Seconds,
     Minutes,
@@ -346,7 +346,7 @@ Elicit success/failure with value:
 ```rust
 impl<T: Elicit + Send, E: Elicit + Send> Elicit for Result<T, E> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
-        #[derive(DeriveElicit)]
+        #[derive(Elicit)]
         enum ResultVariant {
             Ok,
             Err,
@@ -411,7 +411,7 @@ impl<T: Elicit + Send> Elicit for Arc<T> {
 Add `#[validate]` attribute for field validation:
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 struct User {
     #[validate(email)]
     email: String,
@@ -479,7 +479,7 @@ pub trait Authorize: Sized {
 Allow selecting multiple enum variants:
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 #[multi_select] // New attribute
 enum Features {
     DarkMode,
@@ -496,7 +496,7 @@ enum Features {
 Order options by preference:
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 #[ranked_choice] // New attribute
 enum Priority {
     Feature1,
@@ -521,7 +521,7 @@ enum Priority {
 ### Conditional Fields
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 struct PaymentInfo {
     payment_method: PaymentMethod,
 

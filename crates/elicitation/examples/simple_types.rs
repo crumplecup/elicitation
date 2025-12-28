@@ -8,7 +8,7 @@
 //! - Optional values (Option<T>)
 //! - Collections (Vec<T>)
 
-use elicitation::{Elicit, ElicitResult};
+use elicitation::{ElicitResult, Elicitation};
 use pmcp::StdioTransport;
 
 #[tokio::main]

@@ -3,11 +3,11 @@
 //! This example shows how structs automatically use the Survey paradigm,
 //! eliciting each field sequentially to build the complete structure.
 
-use elicitation::{DeriveElicit, Elicit, ElicitResult, Prompt, Survey};
+use elicitation::{Elicit, ElicitResult, Elicitation};
 use pmcp::StdioTransport;
 
 /// Simple struct with default prompts
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 struct Person {
     name: String,
     age: u8,
@@ -15,7 +15,7 @@ struct Person {
 }
 
 /// Struct with custom field prompts
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 #[prompt("Let's configure your account:")]
 struct Account {
     #[prompt("What username would you like?")]
@@ -32,7 +32,7 @@ struct Account {
 }
 
 /// Struct with optional fields
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 struct Profile {
     #[prompt("What's your full name?")]
     name: String,
@@ -48,7 +48,7 @@ struct Profile {
 }
 
 /// Struct with skipped fields (use Default::default())
-#[derive(Debug, Default, DeriveElicit)]
+#[derive(Debug, Default, Elicit)]
 struct Task {
     #[prompt("What's the task title?")]
     title: String,

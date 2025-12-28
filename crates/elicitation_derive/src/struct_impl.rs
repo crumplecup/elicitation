@@ -212,7 +212,7 @@ fn generate_elicit_impl(
     };
 
     quote! {
-        impl elicitation::Elicit for #name {
+        impl elicitation::Elicitation for #name {
             #[tracing::instrument(skip(client), fields(struct_name = stringify!(#name)))]
             async fn elicit<T: elicitation::pmcp::shared::transport::Transport>(
                 client: &elicitation::pmcp::Client<T>,

@@ -37,11 +37,11 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ## Quick Start
 
 ```rust
-use elicitation::{Elicit, ElicitResult, DeriveElicit};
+use elicitation::{Elicit, Elicitation, ElicitResult};
 use pmcp::StdioTransport;
 
 // Derive for enums (Select pattern)
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 #[prompt("Choose your priority level:")]
 enum Priority {
     Low,
@@ -51,7 +51,7 @@ enum Priority {
 }
 
 // Derive for structs (Survey pattern)
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 struct Task {
     #[prompt("What's the task title?")]
     title: String,
@@ -100,7 +100,7 @@ Run with: `cargo run --example simple_types`
 ### Enums (Select Pattern)
 
 ```rust
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 enum Status {
     Pending,
     InProgress,
@@ -115,7 +115,7 @@ Run with: `cargo run --example enums`
 ### Structs (Survey Pattern)
 
 ```rust
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 struct Person {
     #[prompt("What's your name?")]
     name: String,
@@ -135,7 +135,7 @@ Run with: `cargo run --example structs`
 ### Complex Nested Types
 
 ```rust
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 struct Project {
     name: String,
     team: Vec<Member>,
@@ -155,7 +155,7 @@ Run with: `cargo run --example complex_survey`
 For choosing from a finite set of options (enums):
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 #[prompt("Choose your programming language:")]
 enum Language {
     Rust,
@@ -177,7 +177,7 @@ let confirmed: bool = bool::elicit(&client).await?;
 For multi-field data collection (structs):
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 #[prompt("Let's create your profile:")]
 struct Profile {
     name: String,
@@ -197,7 +197,7 @@ Permission-based elicitation (planned for v0.2.0).
 Customize prompts for types or fields:
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 #[prompt("Configure your account:")] // Struct-level prompt
 struct Account {
     #[prompt("Choose a username:")] // Field-level prompt
@@ -210,7 +210,7 @@ struct Account {
 Skip fields during elicitation (uses `Default::default()`):
 
 ```rust
-#[derive(Default, DeriveElicit)]
+#[derive(Default, Elicit)]
 struct Task {
     title: String,
 
@@ -261,13 +261,13 @@ All elicitation types compose freely:
 let data: Vec<Option<Task>> = Vec::elicit(&client).await?;
 
 // Complex hierarchies
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 struct Organization {
     name: String,
     departments: Vec<Department>,
 }
 
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 struct Department {
     name: String,
     members: Vec<Member>,

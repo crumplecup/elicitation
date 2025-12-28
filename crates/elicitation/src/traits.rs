@@ -26,14 +26,14 @@ pub trait Prompt {
 /// # Example
 ///
 /// ```rust,ignore
-/// use elicitation::{Elicit, ElicitResult};
+/// use elicitation::{Elicitation, ElicitResult};
 /// # async fn example<T: pmcp::shared::transport::Transport>(client: &pmcp::Client<T>) -> ElicitResult<()> {
 /// // Elicit an i32 from the user
 /// let value: i32 = i32::elicit(client).await?;
 /// # Ok(())
 /// # }
 /// ```
-pub trait Elicit: Sized + Prompt {
+pub trait Elicitation: Sized + Prompt {
     /// Elicit a value of this type from the user via MCP.
     ///
     /// # Arguments
