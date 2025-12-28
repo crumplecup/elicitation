@@ -9,20 +9,52 @@
 
 ## Features
 
-- **Trait-Based Elicitation** - Simple `Elicitation` trait for all types
-- **Derive Macros** - Automatic implementation for enums and structs
-- **Primitive Types** - Built-in support for integers, floats, booleans, strings, paths, network addresses, durations
-- **Containers** - Generic implementations for `Option<T>`, `Vec<T>`, `Result<T, E>`, `Box<T>`, `Rc<T>`, `Arc<T>`, and `[T; N]`
-- **Collections** - Support for `HashMap<K,V>`, `BTreeMap<K,V>`, `HashSet<T>`, `BTreeSet<T>`, `VecDeque<T>`, `LinkedList<T>`
+- **Comprehensive Type Coverage** - Elicit virtually any Rust standard library type
+- **Trait-Based Design** - Simple `Elicitation` trait for all types
+- **Derive Macros** - Zero-boilerplate implementation for custom types
+- **Type-Safe** - Compile-time guarantees with full type inference
+- **Composable** - Nest types arbitrarily deep without limitations
+- **Async-First** - Built on tokio with proper Send bounds
 - **Four Interaction Paradigms**:
   - **Select** - Choose from finite options (enum pattern)
   - **Affirm** - Yes/no confirmation (bool pattern)
   - **Survey** - Multi-field elicitation (struct pattern)
   - **Authorize** - Permission policies (planned for v0.2.0)
-- **Type-Safe** - Compile-time guarantees for all elicitation
-- **Composable** - Nest types arbitrarily deep
-- **Async-First** - Built on tokio with Send bounds
 - **MCP Integration** - Uses pmcp for high-performance communication
+
+## Supported Types
+
+### Primitives
+- **Numeric**: `i8`, `i16`, `i32`, `i64`, `i128`, `isize`, `u8`, `u16`, `u32`, `u64`, `u128`, `usize`, `f32`, `f64`
+- **Text**: `String`, `bool`
+- **Time**: `std::time::Duration`
+- **Filesystem**: `std::path::PathBuf`
+- **Network**: `IpAddr`, `Ipv4Addr`, `Ipv6Addr`, `SocketAddr`, `SocketAddrV4`, `SocketAddrV6`
+
+### Containers
+- **Option**: `Option<T>` - Optional values
+- **Result**: `Result<T, E>` - Success/failure outcomes
+- **Vec**: `Vec<T>` - Dynamic arrays
+- **Arrays**: `[T; N]` - Fixed-size arrays (any size N)
+- **Tuples**: `(T1, T2, ...)` - Heterogeneous tuples (up to arity 12)
+
+### Smart Pointers
+- **Box**: `Box<T>` - Heap allocation
+- **Rc**: `Rc<T>` - Reference counting
+- **Arc**: `Arc<T>` - Atomic reference counting
+
+### Collections
+- **HashMap**: `HashMap<K, V>` - Hash-based key-value map with duplicate key handling
+- **BTreeMap**: `BTreeMap<K, V>` - Ordered key-value map
+- **HashSet**: `HashSet<T>` - Hash-based unique set with automatic deduplication
+- **BTreeSet**: `BTreeSet<T>` - Ordered unique set
+- **VecDeque**: `VecDeque<T>` - Double-ended queue
+- **LinkedList**: `LinkedList<T>` - Doubly-linked list
+
+### Custom Types
+- **Enums**: Automatic `Select` paradigm via `#[derive(Elicit)]`
+- **Structs**: Automatic `Survey` paradigm via `#[derive(Elicit)]`
+- **Nested**: Unlimited nesting depth (e.g., `Vec<Option<Result<HashMap<String, Arc<T>>, E>>>`)
 
 ## Installation
 

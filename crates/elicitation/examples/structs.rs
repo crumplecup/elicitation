@@ -106,5 +106,24 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Profile: {:?}", profile);
     tracing::info!("Task: {:?}", task);
 
+    // Demonstrate field access
+    println!("\n=== Field Access Demo ===");
+    println!(
+        "Person's name: {}, age: {}, email: {}",
+        person.name, person.age, person.email
+    );
+    println!(
+        "Account username: {}, email: {}, age: {}, notifications: {}",
+        account.username, account.email, account.age, account.notifications_enabled
+    );
+    println!(
+        "Profile name: {}, nickname: {:?}, bio: {:?}, age: {}",
+        profile.name, profile.nickname, profile.bio, profile.age
+    );
+    println!(
+        "Task title: {}, description: {}, created_at: {}, id: {}",
+        task.title, task.description, task.created_at, task.id
+    );
+
     Ok(())
 }

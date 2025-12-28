@@ -48,7 +48,7 @@ fn test_tuple_construction() {
     let tuple3 = (String::from("world"), 100, true);
     assert_eq!(tuple3.0, "world");
     assert_eq!(tuple3.1, 100);
-    assert_eq!(tuple3.2, true);
+    assert!(tuple3.2);
 }
 
 #[test]

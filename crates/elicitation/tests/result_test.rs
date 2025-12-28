@@ -19,14 +19,18 @@ fn test_result_trait_bounds() {
 fn test_result_ok_variant() {
     let result: Result<i32, String> = Ok(42);
     assert!(result.is_ok());
-    assert_eq!(result.unwrap(), 42);
+    if let Ok(value) = result {
+        assert_eq!(value, 42);
+    }
 }
 
 #[test]
 fn test_result_err_variant() {
     let result: Result<i32, String> = Err("error".to_string());
     assert!(result.is_err());
-    assert_eq!(result.unwrap_err(), "error");
+    if let Err(err) = result {
+        assert_eq!(err, "error");
+    }
 }
 
 #[test]

@@ -29,11 +29,20 @@ struct FieldPromptStruct {
     age: u8,
 }
 
+// This struct demonstrates manual construction (not using Elicit derive)
 #[derive(Debug)]
 struct SkipFieldStruct {
     name: String,
-    #[allow(dead_code)]
     internal_id: u64,
+}
+
+impl SkipFieldStruct {
+    fn new(name: String) -> Self {
+        Self {
+            name,
+            internal_id: 0,
+        }
+    }
 }
 
 // Manual impl to test #[skip] behavior would work
@@ -143,4 +152,51 @@ fn test_field_info_construction() {
     assert_eq!(info.name, "test");
     assert_eq!(info.prompt, Some("Test prompt"));
     assert_eq!(info.type_name, "String");
+}
+
+#[test]
+fn test_struct_field_usage() {
+    // Construct instances to demonstrate field usage
+    let simple = SimpleStruct {
+        name: "Alice".to_string(),
+        age: 30,
+    };
+    assert_eq!(simple.name, "Alice");
+    assert_eq!(simple.age, 30);
+
+    let config = ConfigStruct {
+        timeout: 5000,
+        retries: 3,
+    };
+    assert_eq!(config.timeout, 5000);
+    assert_eq!(config.retries, 3);
+
+    let field_prompt = FieldPromptStruct {
+        username: "bob".to_string(),
+        age: 25,
+    };
+    assert_eq!(field_prompt.username, "bob");
+    assert_eq!(field_prompt.age, 25);
+
+    let partial = PartialSkipStruct {
+        name: "Carol".to_string(),
+        age: 28,
+        _internal: String::new(),
+    };
+    assert_eq!(partial.name, "Carol");
+    assert_eq!(partial.age, 28);
+
+    let nested = NestedStruct {
+        name: "Dave".to_string(),
+        status: Status::Active,
+        count: Some(42),
+    };
+    assert_eq!(nested.name, "Dave");
+    assert_eq!(nested.status, Status::Active);
+    assert_eq!(nested.count, Some(42));
+
+    // Test manual construction
+    let skip = SkipFieldStruct::new("Eve".to_string());
+    assert_eq!(skip.name, "Eve");
+    assert_eq!(skip.internal_id, 0);
 }
