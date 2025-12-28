@@ -1,0 +1,49 @@
+//! Example demonstrating filesystem path elicitation.
+//!
+//! **Note**: This example requires an MCP client (Claude Desktop or Claude CLI).
+//! Run with: `claude "Run the pathbuf example"`
+//!
+//! This example shows how to elicit:
+//! - PathBuf - Filesystem paths (files, directories, etc.)
+
+use elicitation::{ElicitResult, Elicitation};
+use pmcp::StdioTransport;
+use std::path::PathBuf;
+
+#[tokio::main]
+async fn main() -> ElicitResult<()> {
+    // Initialize tracing for observability
+    tracing_subscriber::fmt()
+        .with_env_filter("pathbuf=debug,elicitation=debug")
+        .init();
+
+    tracing::info!("Starting PathBuf elicitation example");
+
+    // Create MCP client
+    let transport = StdioTransport::new();
+    let client = pmcp::Client::new(transport);
+
+    // Elicit a file path
+    tracing::info!("=== Eliciting file path ===");
+    let file_path: PathBuf = PathBuf::elicit(&client).await?;
+    tracing::info!(?file_path, "Elicited file path");
+    println!("File path: {}", file_path.display());
+
+    // Elicit a directory path
+    tracing::info!("=== Eliciting directory path ===");
+    let dir_path: PathBuf = PathBuf::elicit(&client).await?;
+    tracing::info!(?dir_path, "Elicited directory path");
+    println!("Directory path: {}", dir_path.display());
+
+    // Elicit an optional path
+    tracing::info!("=== Eliciting optional config path ===");
+    let config_path: Option<PathBuf> = Option::<PathBuf>::elicit(&client).await?;
+    tracing::info!(?config_path, "Elicited optional path");
+    match config_path {
+        Some(path) => println!("Config path: {}", path.display()),
+        None => println!("No config path provided"),
+    }
+
+    tracing::info!("Example complete!");
+    Ok(())
+}

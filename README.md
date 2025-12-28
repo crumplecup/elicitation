@@ -11,7 +11,7 @@
 
 - **Trait-Based Elicitation** - Simple `Elicitation` trait for all types
 - **Derive Macros** - Automatic implementation for enums and structs
-- **Primitive Types** - Built-in support for integers, floats, booleans, strings
+- **Primitive Types** - Built-in support for integers, floats, booleans, strings, paths
 - **Containers** - Generic implementations for `Option<T>` and `Vec<T>`
 - **Collections** - Support for `HashMap<K,V>`, `BTreeMap<K,V>`, `HashSet<T>`, `BTreeSet<T>`, `VecDeque<T>`, `LinkedList<T>`
 - **Four Interaction Paradigms**:
@@ -146,6 +146,20 @@ let scores: Vec<i32> = Vec::<i32>::elicit(&client).await?;
 ```
 
 **Try it**: `claude "Run the simple_types example"`
+
+### Filesystem Paths
+
+```rust
+use std::path::PathBuf;
+
+// Elicit a filesystem path
+let file_path: PathBuf = PathBuf::elicit(&client).await?;
+
+// Optional paths work too
+let config_path: Option<PathBuf> = Option::<PathBuf>::elicit(&client).await?;
+```
+
+**Try it**: `claude "Run the pathbuf example"`
 
 ### Enums (Select Pattern)
 

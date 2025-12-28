@@ -63,37 +63,23 @@ This document outlines planned extensions to support more Rust standard library 
 
 ### Path & Filesystem Types
 
-#### PathBuf
 
-**Pattern**: String-based elicitation with validation
+#### ✅ PathBuf - COMPLETED
 
-```rust
-impl Elicit for PathBuf {
-    async fn elicit<T: Transport>(client: &Client<T>) -> ElicitResult<Self> {
-        tracing::debug!("Eliciting PathBuf");
+**Status**: Implemented
 
-        // Elicit as string, then parse
-        let path_str = String::elicit(client).await?;
+**Pattern**: String-based elicitation with automatic conversion
 
-        // Validate path
-        let path = PathBuf::from(path_str);
+**Implementation**:
+- `src/primitives/pathbuf.rs` - PathBuf implementation
+- `tests/pathbuf_test.rs` - Test coverage
+- `examples/pathbuf.rs` - Usage example
 
-        // Optional: Check if path exists, is valid, etc.
-        // For now, accept any string
-
-        Ok(path)
-    }
-}
-```
-
-**Related types**:
-
-- `PathBuf` - Main type
-- Consider: `Path` (via `&Path` reference types in v0.3.0)
-
-**Files to create**:
-
-- `src/primitives/pathbuf.rs`
+**Details**:
+- Elicits as String then converts to PathBuf
+- Accepts any valid UTF-8 path string
+- Works with Unix, Windows, and relative paths
+- Supports Option<PathBuf> for optional paths
 
 ---
 
