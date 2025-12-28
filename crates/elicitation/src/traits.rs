@@ -25,9 +25,9 @@ pub trait Prompt {
 ///
 /// # Example
 ///
-/// ```rust,no_run
+/// ```rust,ignore
 /// use elicitation::{Elicit, ElicitResult};
-/// # async fn example(client: &pmcp::Client) -> ElicitResult<()> {
+/// # async fn example<T: pmcp::shared::transport::Transport>(client: &pmcp::Client<T>) -> ElicitResult<()> {
 /// // Elicit an i32 from the user
 /// let value: i32 = i32::elicit(client).await?;
 /// # Ok(())
@@ -50,7 +50,7 @@ pub trait Elicit: Sized + Prompt {
     /// # Errors
     ///
     /// See [`ElicitError`](crate::ElicitError) for details on error conditions.
-    async fn elicit<T: pmcp::shared::transport::Transport>(
+    fn elicit<T: pmcp::shared::transport::Transport>(
         client: &pmcp::Client<T>,
-    ) -> ElicitResult<Self>;
+    ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send;
 }

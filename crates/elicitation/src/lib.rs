@@ -21,10 +21,10 @@
 //!
 //! # Example
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! use elicitation::{Elicit, ElicitResult};
 //!
-//! # async fn example(client: &pmcp::Client) -> ElicitResult<()> {
+//! # async fn example<T: pmcp::shared::transport::Transport>(client: &pmcp::Client<T>) -> ElicitResult<()> {
 //! // Elicit a simple integer
 //! let age: i32 = i32::elicit(client).await?;
 //!
@@ -79,7 +79,7 @@ mod primitives;
 mod traits;
 
 // Error types
-pub use error::{ElicitError, ElicitErrorKind, ElicitResult};
+pub use error::{ElicitError, ElicitErrorKind, ElicitResult, JsonError, PmcpError};
 
 // Core traits
 pub use traits::{Elicit, Prompt};

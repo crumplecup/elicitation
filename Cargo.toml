@@ -15,6 +15,7 @@ pmcp = "1.4"
 
 # Error handling
 derive_more = { version = "1", features = ["display", "error", "from"] }
+derive-getters = "0.5"
 
 # Tracing
 tracing = "0.1"
