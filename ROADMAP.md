@@ -58,12 +58,14 @@ impl<K: Elicit + Hash + Eq + Send, V: Elicit + Send> Elicit for HashMap<K, V> {
 **BTreeMap**: Identical implementation, but `K: Ord` instead of `K: Hash + Eq`
 
 **Files to create**:
+
 - `src/collections/hashmap.rs`
 - `src/collections/btreemap.rs`
 - `tests/collections_test.rs`
 - `examples/collections.rs`
 
 **Trait bounds required**:
+
 - `HashMap`: `K: Elicit + Hash + Eq + Send`, `V: Elicit + Send`
 - `BTreeMap`: `K: Elicit + Ord + Send`, `V: Elicit + Send`
 
@@ -105,10 +107,12 @@ impl<T: Elicit + Hash + Eq + Send> Elicit for HashSet<T> {
 **BTreeSet**: Identical, but `T: Ord` instead of `T: Hash + Eq`
 
 **Files to create**:
+
 - `src/collections/hashset.rs`
 - `src/collections/btreeset.rs`
 
 **Trait bounds required**:
+
 - `HashSet`: `T: Elicit + Hash + Eq + Send`
 - `BTreeSet`: `T: Elicit + Ord + Send`
 
@@ -139,10 +143,12 @@ impl<T: Elicit + Send> Elicit for VecDeque<T> {
 **LinkedList**: Identical implementation
 
 **Files to create**:
+
 - `src/collections/vecdeque.rs`
 - `src/collections/linkedlist.rs`
 
 **Trait bounds required**:
+
 - `T: Elicit + Send`
 
 ---
@@ -173,10 +179,12 @@ impl Elicit for PathBuf {
 ```
 
 **Related types**:
+
 - `PathBuf` - Main type
 - Consider: `Path` (via `&Path` reference types in v0.3.0)
 
 **Files to create**:
+
 - `src/primitives/pathbuf.rs`
 
 ---
@@ -207,6 +215,7 @@ impl Elicit for IpAddr {
 ```
 
 **Related types**:
+
 - `IpAddr` (enum: V4 | V6)
 - `Ipv4Addr`
 - `Ipv6Addr`
@@ -214,6 +223,7 @@ impl Elicit for IpAddr {
 - `SocketAddrV4`, `SocketAddrV6`
 
 **Files to create**:
+
 - `src/primitives/network.rs`
 
 ---
@@ -258,11 +268,13 @@ enum TimeUnit {
 ```
 
 **Related types**:
+
 - `Duration`
 - `SystemTime` (Duration since UNIX_EPOCH)
 - `Instant` (not serializable - skip)
 
 **Files to create**:
+
 - `src/primitives/duration.rs`
 
 ---
@@ -288,6 +300,7 @@ impl<T1: Elicit, T2: Elicit> Elicit for (T1, T2) {
 ```
 
 **Files to create**:
+
 - `src/primitives/tuples.rs` (macro-generated impls)
 
 ---
@@ -321,6 +334,7 @@ impl<T: Elicit + Send, const N: usize> Elicit for [T; N] {
 ```
 
 **Files to create**:
+
 - `src/containers/array.rs`
 
 ---
@@ -355,6 +369,7 @@ impl<T: Elicit + Send, E: Elicit + Send> Elicit for Result<T, E> {
 ```
 
 **Files to create**:
+
 - `src/containers/result.rs`
 
 ---
@@ -386,6 +401,7 @@ impl<T: Elicit + Send> Elicit for Arc<T> {
 ```
 
 **Files to create**:
+
 - `src/containers/smart_pointers.rs`
 
 ---
@@ -409,11 +425,13 @@ struct User {
 ```
 
 **Implementation**:
+
 - Proc macro generates validation calls after elicitation
 - Built-in validators: `email`, `range`, `min_length`, `max_length`, `regex`
 - Custom validator functions: `#[validate(function = "validate_username")]`
 
 **Files to create**:
+
 - `crates/elicitation_derive/src/validation.rs`
 - `src/validation.rs` (runtime validation support)
 
@@ -439,12 +457,14 @@ pub trait Authorize: Sized {
 ```
 
 **Use cases**:
+
 - Eliciting sensitive data (SSN, credit cards)
 - Admin-only configuration
 - Rate-limited operations
 - Conditional field elicitation
 
 **Files to create**:
+
 - `src/paradigm/authorize.rs`
 - `src/permissions.rs`
 
@@ -488,6 +508,7 @@ enum Priority {
 ```
 
 **Files to create**:
+
 - `crates/elicitation_derive/src/multi_select.rs`
 - `crates/elicitation_derive/src/ranked_choice.rs`
 
@@ -546,12 +567,14 @@ Generate web forms from Elicit types.
 ## Implementation Priorities
 
 ### High Priority (v0.2.0)
+
 1. HashMap<K, V> & BTreeMap<K, V>
 2. HashSet<T> & BTreeSet<T>
 3. PathBuf
 4. Duration
 
 ### Medium Priority (v0.3.0)
+
 1. Tuple types
 2. Array types
 3. Result<T, E>
@@ -559,6 +582,7 @@ Generate web forms from Elicit types.
 5. Network types (IpAddr, etc.)
 
 ### Low Priority (v0.4.0+)
+
 1. Authorize paradigm
 2. Custom validation
 3. Multi-select
@@ -569,6 +593,7 @@ Generate web forms from Elicit types.
 ## Testing Strategy
 
 For each new type:
+
 1. Unit tests in `tests/` directory
 2. Doctests in type documentation
 3. Integration example in `examples/`
@@ -579,6 +604,7 @@ For each new type:
 ## Documentation Updates
 
 For each version:
+
 1. Update README.md with new types
 2. Add examples for new patterns
 3. Update CHANGELOG.md
@@ -599,6 +625,7 @@ For each version:
 ## Community Input
 
 This roadmap is subject to community feedback. Please open issues or discussions for:
+
 - New type suggestions
 - Use case examples
 - Priority adjustments

@@ -1,6 +1,6 @@
 # Elicitation
 
-**Conversational elicitation of strongly-typed Rust values via MCP**
+> Conversational elicitation of strongly-typed Rust values via MCP
 
 [![License](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg)](LICENSE-APACHE)
 [![Rust](https://img.shields.io/badge/rust-2021-orange.svg)](https://www.rust-lang.org)
@@ -233,6 +233,7 @@ match Task::elicit(&client).await {
 ```
 
 Error types:
+
 - `InvalidFormat` - Parsing failed
 - `OutOfRange` - Value outside valid range
 - `InvalidOption` - Invalid enum selection
