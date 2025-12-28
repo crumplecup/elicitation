@@ -584,3 +584,231 @@ This roadmap is subject to community feedback. Please open issues or discussions
 - Works with any T that implements Elicitation
 
 ---
+
+---
+
+## Version 0.4.0 - Validation Integration
+
+**Focus**: Attribute-based validation using ecosystem tools
+
+**Status**: Planned
+
+### Strategy: Hybrid Approach
+
+**Leverage validator crate for validation logic**
+- Use `validator` crate functions (not `validator_derive`)
+- Proven validation rules from web ecosystem
+- Consistency across Rust projects
+
+**Build elicitation-specific workflow**
+- Custom proc macro attribute parsing
+- Validation during construction (not post)
+- Conversational error messages
+- Retry logic on validation failure
+
+### Core Validators (from validator crate)
+
+```rust
+#[derive(Elicit)]
+struct User {
+    #[validate(email)]
+    email: String,
+    
+    #[validate(url)]
+    website: String,
+    
+    #[validate(range(min = 18, max = 120))]
+    age: u8,
+    
+    #[validate(length(min = 8, max = 64))]
+    password: String,
+    
+    #[validate(regex(pattern = r"^[a-zA-Z0-9_]+$"))]
+    username: String,
+}
+```
+
+**Available validators from ecosystem:**
+- `email` - Email format validation
+- `url` - URL format validation
+- `phone` - Phone number validation
+- `range(min, max)` - Numeric range constraints
+- `length(min, max)` - String length constraints
+- `regex(pattern)` - Regex pattern matching
+- `contains(needle)` - String contains substring
+- `credit_card` - Credit card validation (optional feature)
+
+### Elicitation-Specific Validators
+
+```rust
+#[derive(Elicit)]
+struct Config {
+    #[validate(path_exists)]
+    input_file: PathBuf,
+    
+    #[validate(is_file)]
+    config_path: PathBuf,
+    
+    #[validate(is_directory)]
+    output_dir: PathBuf,
+    
+    #[validate(is_writable)]
+    log_file: PathBuf,
+}
+```
+
+**Custom validators:**
+- `path_exists` - Path exists on filesystem
+- `is_file` - Path is a file
+- `is_directory` - Path is a directory
+- `is_readable` - Path has read permissions
+- `is_writable` - Path has write permissions
+
+### Collection Validators
+
+```rust
+#[derive(Elicit)]
+struct Batch {
+    #[validate(length(min = 1, max = 100))]
+    items: Vec<String>,
+    
+    #[validate(each(email))]  // Apply to each element
+    recipients: Vec<String>,
+}
+```
+
+**Collection constraints:**
+- `length(min, max)` - Collection size
+- `each(validator)` - Apply validator to each element
+- Future: `unique` - No duplicate elements
+
+### Implementation Plan
+
+**Phase 1: Integration** (v0.4.0)
+1. Add `validator = "0.20"` dependency
+2. Extend proc macro to parse `#[validate(...)]` attributes
+3. Generate validation code in derived `elicit()` methods
+4. Integrate validator crate functions
+5. Add filesystem validators
+6. Error handling with retry logic
+
+**Phase 2: Extensions** (v0.4.1)
+1. Custom validator support
+2. Validation error messages customization
+3. Conditional validation
+4. Cross-field validation
+
+**Files to create:**
+- Update `elicitation_derive/src/lib.rs` - Attribute parsing
+- Create `elicitation_derive/src/validation.rs` - Validation code gen
+- Add `elicitation/src/validation.rs` - Filesystem validators
+- Tests: `elicitation_derive/tests/validation_test.rs`
+- Examples: `elicitation/examples/validation.rs`
+
+### Deferred Features
+
+**Not implementing in v0.4.0:**
+- ❌ Interactive filesystem browsing (needs MCP protocol support)
+- ❌ Network reachability checks (too slow/unreliable)
+- ❌ Autocomplete/suggestions (needs MCP client features)
+- ❌ Async validators (keep validation synchronous)
+- ❌ Builder-pattern validators (consider for v0.5.0)
+
+**Rationale:**
+- Security/privacy concerns
+- Platform-specific complexity
+- MCP protocol limitations
+- Out of scope for library layer
+
+### Design Decisions
+
+**Validation happens during elicitation:**
+```rust
+impl Elicitation for User {
+    async fn elicit(...) -> ElicitResult<Self> {
+        // Elicit email
+        let email = String::elicit(client).await?;
+        
+        // Validate immediately
+        if !validator::validate_email(&email) {
+            return Err(ElicitError::validation(
+                "email",
+                "Invalid email format. Please provide a valid email address."
+            ));
+        }
+        
+        // Continue with other fields...
+    }
+}
+```
+
+**Benefits:**
+- Never construct invalid instances
+- Type-safe: if elicitation succeeds, data is valid
+- Early feedback to user
+- Conversational retry flow
+
+**Alternative considered:** Post-elicitation validation like validator crate
+**Rejected because:** Goes against elicitation philosophy of guided construction
+
+### Testing Strategy
+
+**Unit tests:**
+- Each validator function
+- Attribute parsing
+- Code generation
+
+**Integration tests:**
+- End-to-end validation flow
+- Error message formatting
+- Retry behavior
+
+**Examples:**
+- Common validation patterns
+- Custom validators
+- Error handling
+
+---
+
+## Version 0.5.0 - Advanced Validation (Future)
+
+**Focus**: Builder pattern and custom validators
+
+**Status**: Deferred
+
+**Pending:**
+- v0.4.0 completion
+- User feedback on attribute-based approach
+- MCP protocol evolution
+
+**Potential features:**
+- Builder-pattern validators
+- Async validation support
+- Cross-field validation
+- Context-aware validation
+
+---
+
+## Version 0.6.0 - Interactive Features (Future)
+
+**Focus**: Context-aware elicitation and suggestions
+
+**Status**: Deferred
+
+**Depends on:**
+- MCP protocol rich UI support
+- Security/privacy model clarity
+- Platform-specific implementations
+
+**Potential features:**
+- Filesystem browsing
+- Path autocomplete
+- Recent values history
+- Environment-based suggestions
+
+**Rationale for deferral:**
+- Requires MCP protocol enhancements not yet available
+- Security/privacy considerations need broader ecosystem consensus
+- Platform-specific implementations add significant complexity
+- These features better suited for MCP client layer than library layer
+
