@@ -1,0 +1,37 @@
+[workspace]
+members = ["crates/elicitation", "crates/elicitation_derive"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/yourusername/elicitation"
+authors = ["Your Name <your.email@example.com>"]
+
+[workspace.dependencies]
+# MCP client
+pmcp = "1.4"
+
+# Error handling
+derive_more = { version = "1", features = ["display", "error", "from"] }
+
+# Tracing
+tracing = "0.1"
+
+# Async runtime
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Proc macros
+syn = { version = "2", features = ["full"] }
+quote = "1"
+proc-macro2 = "1"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

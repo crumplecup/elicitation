@@ -1,0 +1,30 @@
+[package]
+name = "elicitation"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+description = "Conversational elicitation of strongly-typed Rust values via MCP"
+keywords = ["mcp", "llm", "elicitation", "conversational", "types"]
+categories = ["development-tools", "text-processing"]
+
+[dependencies]
+pmcp = { workspace = true }
+derive_more = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
+serde_json = { workspace = true }
+
+# Re-export derive macro
+elicitation_derive = { path = "../elicitation_derive", version = "0.1.0" }
+
+[dev-dependencies]
+tokio-test = "0.4"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[features]
+default = []
+# Feature for tests that call real API (rate-limited)
+api = []
