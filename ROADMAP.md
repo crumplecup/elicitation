@@ -8,274 +8,132 @@ This document outlines planned extensions to support more Rust standard library 
 
 ### Collections
 
-#### HashMap<K, V> & BTreeMap<K, V>
+#### ✅ HashMap<K, V> & BTreeMap<K, V> - COMPLETED
+
+**Status**: Implemented in commit a5f3c6b
 
 **Pattern**: Loop-based key-value elicitation
 
-```rust
-impl<K: Elicit + Hash + Eq + Send, V: Elicit + Send> Elicit for HashMap<K, V> {
-    async fn elicit<T: Transport>(client: &Client<T>) -> ElicitResult<Self> {
-        let mut map = HashMap::new();
+**Implementation**:
+- `src/collections/hashmap.rs` - HashMap<K,V> with duplicate key handling
+- `src/collections/btreemap.rs` - BTreeMap<K,V> with ordered keys
+- `tests/collections_test.rs` - Test coverage
+- `examples/collections.rs` - Usage examples
 
-        loop {
-            let add_more = if map.is_empty() {
-                // "Add first entry to this map?"
-                bool::elicit(client).await?
-            } else {
-                // "Add another entry? (current count: N)"
-                bool::elicit(client).await?
-            };
-
-            if !add_more {
-                break;
-            }
-
-            // Elicit key
-            tracing::debug!("Eliciting key");
-            let key = K::elicit(client).await?;
-
-            // Check for duplicate keys
-            if map.contains_key(&key) {
-                // "Key already exists. Replace value?"
-                let replace = bool::elicit(client).await?;
-                if !replace {
-                    continue; // Skip this entry
-                }
-            }
-
-            // Elicit value
-            tracing::debug!("Eliciting value for key");
-            let value = V::elicit(client).await?;
-
-            map.insert(key, value);
-        }
-
-        Ok(map)
-    }
-}
-```
-
-**BTreeMap**: Identical implementation, but `K: Ord` instead of `K: Hash + Eq`
-
-**Files to create**:
-
-- `src/collections/hashmap.rs`
-- `src/collections/btreemap.rs`
-- `tests/collections_test.rs`
-- `examples/collections.rs`
-
-**Trait bounds required**:
-
-- `HashMap`: `K: Elicit + Hash + Eq + Send`, `V: Elicit + Send`
-- `BTreeMap`: `K: Elicit + Ord + Send`, `V: Elicit + Send`
+**Trait bounds**:
+- `HashMap`: `K: Elicitation + Hash + Eq + Send`, `V: Elicitation + Send`
+- `BTreeMap`: `K: Elicitation + Ord + Send`, `V: Elicitation + Send`
 
 ---
 
-#### HashSet<T> & BTreeSet<T>
+#### ✅ HashSet<T> & BTreeSet<T> - COMPLETED
 
-**Pattern**: Loop-based item elicitation with duplicate detection
+**Status**: Implemented in commit a5f3c6b
 
-```rust
-impl<T: Elicit + Hash + Eq + Send> Elicit for HashSet<T> {
-    async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
-        let mut set = HashSet::new();
+**Pattern**: Loop-based item elicitation with automatic duplicate handling
 
-        loop {
-            let add_more = if set.is_empty() {
-                bool::elicit(client).await?
-            } else {
-                bool::elicit(client).await?
-            };
+**Implementation**:
+- `src/collections/hashset.rs` - HashSet<T> with deduplication
+- `src/collections/btreeset.rs` - BTreeSet<T> with ordered items
+- `tests/collections_test.rs` - Test coverage
+- `examples/collections.rs` - Usage examples
 
-            if !add_more {
-                break;
-            }
-
-            let item = T::elicit(client).await?;
-
-            // Automatic duplicate handling (Sets ignore duplicates)
-            if !set.insert(item) {
-                tracing::debug!("Duplicate item ignored (already in set)");
-            }
-        }
-
-        Ok(set)
-    }
-}
-```
-
-**BTreeSet**: Identical, but `T: Ord` instead of `T: Hash + Eq`
-
-**Files to create**:
-
-- `src/collections/hashset.rs`
-- `src/collections/btreeset.rs`
-
-**Trait bounds required**:
-
-- `HashSet`: `T: Elicit + Hash + Eq + Send`
-- `BTreeSet`: `T: Elicit + Ord + Send`
+**Trait bounds**:
+- `HashSet`: `T: Elicitation + Hash + Eq + Send`
+- `BTreeSet`: `T: Elicitation + Ord + Send`
 
 ---
 
-#### VecDeque<T> & LinkedList<T>
+#### ✅ VecDeque<T> & LinkedList<T> - COMPLETED
+
+**Status**: Implemented
 
 **Pattern**: Identical to Vec<T> - loop-based sequential elicitation
 
-```rust
-impl<T: Elicit + Send> Elicit for VecDeque<T> {
-    async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
-        let mut deque = VecDeque::new();
+**Implementation**:
+- `src/collections/vecdeque.rs` - VecDeque<T> double-ended queue
+- `src/collections/linkedlist.rs` - LinkedList<T> doubly-linked list
+- `tests/collections_test.rs` - Test coverage
+- `examples/collections.rs` - Usage examples
 
-        loop {
-            let add_more = bool::elicit(client).await?;
-            if !add_more { break; }
-
-            let item = T::elicit(client).await?;
-            deque.push_back(item);
-        }
-
-        Ok(deque)
-    }
-}
-```
-
-**LinkedList**: Identical implementation
-
-**Files to create**:
-
-- `src/collections/vecdeque.rs`
-- `src/collections/linkedlist.rs`
-
-**Trait bounds required**:
-
-- `T: Elicit + Send`
+**Trait bounds**:
+- `T: Elicitation + Send`
 
 ---
 
 ### Path & Filesystem Types
 
-#### PathBuf
 
-**Pattern**: String-based elicitation with validation
+#### ✅ PathBuf - COMPLETED
 
-```rust
-impl Elicit for PathBuf {
-    async fn elicit<T: Transport>(client: &Client<T>) -> ElicitResult<Self> {
-        tracing::debug!("Eliciting PathBuf");
+**Status**: Implemented
 
-        // Elicit as string, then parse
-        let path_str = String::elicit(client).await?;
+**Pattern**: String-based elicitation with automatic conversion
 
-        // Validate path
-        let path = PathBuf::from(path_str);
+**Implementation**:
+- `src/primitives/pathbuf.rs` - PathBuf implementation
+- `tests/pathbuf_test.rs` - Test coverage
+- `examples/pathbuf.rs` - Usage example
 
-        // Optional: Check if path exists, is valid, etc.
-        // For now, accept any string
-
-        Ok(path)
-    }
-}
-```
-
-**Related types**:
-
-- `PathBuf` - Main type
-- Consider: `Path` (via `&Path` reference types in v0.3.0)
-
-**Files to create**:
-
-- `src/primitives/pathbuf.rs`
+**Details**:
+- Elicits as String then converts to PathBuf
+- Accepts any valid UTF-8 path string
+- Works with Unix, Windows, and relative paths
+- Supports Option<PathBuf> for optional paths
 
 ---
 
 ### Network Types
 
-#### IpAddr, Ipv4Addr, Ipv6Addr
+#### ✅ IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr - COMPLETED
+
+**Status**: Implemented
 
 **Pattern**: String elicitation with parsing validation
 
-```rust
-impl Elicit for IpAddr {
-    async fn elicit<T: Transport>(client: &Client<T>) -> ElicitResult<Self> {
-        loop {
-            let ip_str = String::elicit(client).await?;
+**Implementation**:
+- `src/primitives/network.rs` - All network type implementations
+- `tests/network_test.rs` - 15 tests covering all network types
+- `examples/network.rs` - Comprehensive usage example
 
-            match ip_str.parse::<IpAddr>() {
-                Ok(addr) => return Ok(addr),
-                Err(e) => {
-                    tracing::warn!(error = ?e, "Invalid IP address format");
-                    // Could prompt: "Invalid IP address. Try again?"
-                    continue;
-                }
-            }
-        }
-    }
-}
-```
+**Types implemented**:
+- `IpAddr` - Generic IP address (IPv4 or IPv6)
+- `Ipv4Addr` - Specific IPv4 address
+- `Ipv6Addr` - Specific IPv6 address
+- `SocketAddr` - Socket address (IP + port)
+- `SocketAddrV4` - IPv4 socket address
+- `SocketAddrV6` - IPv6 socket address
 
-**Related types**:
-
-- `IpAddr` (enum: V4 | V6)
-- `Ipv4Addr`
-- `Ipv6Addr`
-- `SocketAddr` (IpAddr + port)
-- `SocketAddrV4`, `SocketAddrV6`
-
-**Files to create**:
-
-- `src/primitives/network.rs`
+**Details**:
+- String-based elicitation with automatic parsing
+- Validation returns InvalidFormat error on parse failure
+- Full tracing of validation attempts
+- Helpful error messages with format examples
 
 ---
 
 ### Time & Duration Types
 
-#### Duration
+#### ✅ Duration - COMPLETED
 
-**Pattern**: Numeric elicitation with unit selection
+**Status**: Implemented
 
-```rust
-// Simple approach: elicit seconds as f64
-impl Elicit for Duration {
-    async fn elicit<T: Transport>(client: &Client<T>) -> ElicitResult<Self> {
-        // "Enter duration in seconds:"
-        let seconds = f64::elicit(client).await?;
+**Pattern**: Numeric elicitation (f64 seconds) with validation
 
-        if seconds < 0.0 {
-            return Err(ElicitError::new(ElicitErrorKind::OutOfRange {
-                min: "0".to_string(),
-                max: "positive".to_string(),
-            }));
-        }
+**Implementation**:
+- `src/primitives/duration.rs` - Duration implementation
+- `tests/duration_test.rs` - 4 tests covering Duration
+- `examples/duration.rs` - Usage example with timeouts and intervals
 
-        Ok(Duration::from_secs_f64(seconds))
-    }
-}
-```
+**Details**:
+- Elicits as f64 (supports decimal seconds)
+- Validates non-negative (returns OutOfRange error)
+- Converts using Duration::from_secs_f64()
+- Works with Option<Duration> and Vec<Duration>
 
-**Advanced approach** (v0.3.0): Elicit value + unit
-
-```rust
-#[derive(DeriveElicit)]
-enum TimeUnit {
-    Seconds,
-    Minutes,
-    Hours,
-    Days,
-}
-
-// Then combine with numeric value
-```
-
-**Related types**:
-
-- `Duration`
-- `SystemTime` (Duration since UNIX_EPOCH)
-- `Instant` (not serializable - skip)
-
-**Files to create**:
-
-- `src/primitives/duration.rs`
+**Future enhancement (v0.3.0)**:
+- Unit selection (seconds, minutes, hours, days)
+- Human-readable format parsing
 
 ---
 
@@ -288,7 +146,7 @@ enum TimeUnit {
 Support elicitation of tuples up to arity 12 (matching Rust std):
 
 ```rust
-impl<T1: Elicit, T2: Elicit> Elicit for (T1, T2) {
+impl<T1: Elicit, T2: Elicit> Elicitation for (T1, T2) {
     async fn elicit<T: Transport>(client: &Client<T>) -> ElicitResult<Self> {
         let first = T1::elicit(client).await?;
         let second = T2::elicit(client).await?;
@@ -311,7 +169,7 @@ Fixed-size arrays `[T; N]`:
 
 ```rust
 // Use const generics
-impl<T: Elicit + Send, const N: usize> Elicit for [T; N] {
+impl<T: Elicitation + Send, const N: usize> Elicitation for [T; N] {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         let mut items = Vec::with_capacity(N);
 
@@ -344,9 +202,9 @@ impl<T: Elicit + Send, const N: usize> Elicit for [T; N] {
 Elicit success/failure with value:
 
 ```rust
-impl<T: Elicit + Send, E: Elicit + Send> Elicit for Result<T, E> {
+impl<T: Elicitation + Send, E: Elicitation + Send> Elicitation for Result<T, E> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
-        #[derive(DeriveElicit)]
+        #[derive(Elicit)]
         enum ResultVariant {
             Ok,
             Err,
@@ -381,19 +239,19 @@ impl<T: Elicit + Send, E: Elicit + Send> Elicit for Result<T, E> {
 Transparent wrappers around `T::elicit()`:
 
 ```rust
-impl<T: Elicit + Send> Elicit for Box<T> {
+impl<T: Elicitation + Send> Elicitation for Box<T> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         T::elicit(client).await.map(Box::new)
     }
 }
 
-impl<T: Elicit + Send> Elicit for Rc<T> {
+impl<T: Elicitation + Send> Elicitation for Rc<T> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         T::elicit(client).await.map(Rc::new)
     }
 }
 
-impl<T: Elicit + Send> Elicit for Arc<T> {
+impl<T: Elicitation + Send> Elicitation for Arc<T> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         T::elicit(client).await.map(Arc::new)
     }
@@ -411,7 +269,7 @@ impl<T: Elicit + Send> Elicit for Arc<T> {
 Add `#[validate]` attribute for field validation:
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 struct User {
     #[validate(email)]
     email: String,
@@ -479,7 +337,7 @@ pub trait Authorize: Sized {
 Allow selecting multiple enum variants:
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 #[multi_select] // New attribute
 enum Features {
     DarkMode,
@@ -496,7 +354,7 @@ enum Features {
 Order options by preference:
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 #[ranked_choice] // New attribute
 enum Priority {
     Feature1,
@@ -521,7 +379,7 @@ enum Priority {
 ### Conditional Fields
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 struct PaymentInfo {
     payment_method: PaymentMethod,
 
@@ -630,3 +488,327 @@ This roadmap is subject to community feedback. Please open issues or discussions
 - Use case examples
 - Priority adjustments
 - Design feedback
+
+---
+
+## Version 0.2.0 Extensions - Result & Advanced Containers
+
+### Result<T, E>
+
+#### ✅ Result<T, E> - COMPLETED
+
+**Status**: Implemented (moved from v0.3.0 to v0.2.0)
+
+**Pattern**: Boolean choice for variant, then elicit value
+
+**Implementation**:
+- `src/containers/result.rs` - Result<T, E> implementation
+- `tests/result_test.rs` - 6 tests covering Result operations
+- `examples/result.rs` - Comprehensive usage with enums and complex types
+
+**Details**:
+- First elicits bool to choose Ok or Err variant
+- Then elicits appropriate inner type (T for Ok, E for Err)
+- Works with any T and E that implement Elicitation
+- Supports complex nesting: Option<Result<T, E>>, Vec<Result<T, E>>
+
+**Use cases demonstrated**:
+- API responses (Result<StatusCode, ApiError>)
+- Operation outcomes (Result<String, String>)
+- Batch operations (Vec<Result<T, E>>)
+- Optional results (Option<Result<T, E>>)
+
+---
+
+## Version 0.3.0 - Advanced Patterns
+
+### Tuple Types
+
+#### ✅ Tuples (T1, T2) through (T1, ..., T12) - COMPLETED
+
+**Status**: Implemented
+
+**Pattern**: Sequential elicitation of each element
+
+**Implementation**:
+- `src/primitives/tuples.rs` - Macro-generated implementations for arity 1-12
+- `tests/tuples_test.rs` - 8 tests covering tuples
+- `examples/tuples.rs` - Usage examples with various arities
+
+**Details**:
+- Macro-generated to avoid code duplication
+- Supports tuples up to arity 12 (matching Rust std)
+- Sequential elicitation of each element
+- Works with any T that implements Elicitation
+
+---
+
+### Smart Pointers
+
+#### ✅ Box<T>, Rc<T>, Arc<T> - COMPLETED
+
+**Status**: Implemented
+
+**Pattern**: Transparent wrapper around inner type
+
+**Implementation**:
+- `src/containers/smart_pointers.rs` - All smart pointer implementations
+- `tests/smart_pointers_test.rs` - 10 tests
+- `examples/smart_pointers.rs` - Usage with shared ownership demos
+
+**Details**:
+- Transparent wrappers (elicit T, wrap in pointer)
+- Delegates prompt to inner type
+- Works with any T that implements Elicitation
+- Full support for complex nested types
+
+---
+
+### Array Types
+
+#### ✅ Fixed-size arrays [T; N] - COMPLETED
+
+**Status**: Implemented  
+
+**Pattern**: Sequential elicitation with const generics
+
+**Implementation**:
+- `src/containers/array.rs` - Const generic array implementation
+- `tests/array_test.rs` - 6 tests covering various sizes
+- `examples/arrays.rs` - Usage with different array sizes
+
+**Details**:
+- Uses const generics for any size N
+- Elicits exactly N elements sequentially
+- Converts Vec to array via try_into()
+- Works with any T that implements Elicitation
+
+---
+
+---
+
+## Version 0.4.0 - Validation Integration
+
+**Focus**: Attribute-based validation using ecosystem tools
+
+**Status**: Planned
+
+### Strategy: Hybrid Approach
+
+**Leverage validator crate for validation logic**
+- Use `validator` crate functions (not `validator_derive`)
+- Proven validation rules from web ecosystem
+- Consistency across Rust projects
+
+**Build elicitation-specific workflow**
+- Custom proc macro attribute parsing
+- Validation during construction (not post)
+- Conversational error messages
+- Retry logic on validation failure
+
+### Core Validators (from validator crate)
+
+```rust
+#[derive(Elicit)]
+struct User {
+    #[validate(email)]
+    email: String,
+    
+    #[validate(url)]
+    website: String,
+    
+    #[validate(range(min = 18, max = 120))]
+    age: u8,
+    
+    #[validate(length(min = 8, max = 64))]
+    password: String,
+    
+    #[validate(regex(pattern = r"^[a-zA-Z0-9_]+$"))]
+    username: String,
+}
+```
+
+**Available validators from ecosystem:**
+- `email` - Email format validation
+- `url` - URL format validation
+- `phone` - Phone number validation
+- `range(min, max)` - Numeric range constraints
+- `length(min, max)` - String length constraints
+- `regex(pattern)` - Regex pattern matching
+- `contains(needle)` - String contains substring
+- `credit_card` - Credit card validation (optional feature)
+
+### Elicitation-Specific Validators
+
+```rust
+#[derive(Elicit)]
+struct Config {
+    #[validate(path_exists)]
+    input_file: PathBuf,
+    
+    #[validate(is_file)]
+    config_path: PathBuf,
+    
+    #[validate(is_directory)]
+    output_dir: PathBuf,
+    
+    #[validate(is_writable)]
+    log_file: PathBuf,
+}
+```
+
+**Custom validators:**
+- `path_exists` - Path exists on filesystem
+- `is_file` - Path is a file
+- `is_directory` - Path is a directory
+- `is_readable` - Path has read permissions
+- `is_writable` - Path has write permissions
+
+### Collection Validators
+
+```rust
+#[derive(Elicit)]
+struct Batch {
+    #[validate(length(min = 1, max = 100))]
+    items: Vec<String>,
+    
+    #[validate(each(email))]  // Apply to each element
+    recipients: Vec<String>,
+}
+```
+
+**Collection constraints:**
+- `length(min, max)` - Collection size
+- `each(validator)` - Apply validator to each element
+- Future: `unique` - No duplicate elements
+
+### Implementation Plan
+
+**Phase 1: Integration** (v0.4.0)
+1. Add `validator = "0.20"` dependency
+2. Extend proc macro to parse `#[validate(...)]` attributes
+3. Generate validation code in derived `elicit()` methods
+4. Integrate validator crate functions
+5. Add filesystem validators
+6. Error handling with retry logic
+
+**Phase 2: Extensions** (v0.4.1)
+1. Custom validator support
+2. Validation error messages customization
+3. Conditional validation
+4. Cross-field validation
+
+**Files to create:**
+- Update `elicitation_derive/src/lib.rs` - Attribute parsing
+- Create `elicitation_derive/src/validation.rs` - Validation code gen
+- Add `elicitation/src/validation.rs` - Filesystem validators
+- Tests: `elicitation_derive/tests/validation_test.rs`
+- Examples: `elicitation/examples/validation.rs`
+
+### Deferred Features
+
+**Not implementing in v0.4.0:**
+- ❌ Interactive filesystem browsing (needs MCP protocol support)
+- ❌ Network reachability checks (too slow/unreliable)
+- ❌ Autocomplete/suggestions (needs MCP client features)
+- ❌ Async validators (keep validation synchronous)
+- ❌ Builder-pattern validators (consider for v0.5.0)
+
+**Rationale:**
+- Security/privacy concerns
+- Platform-specific complexity
+- MCP protocol limitations
+- Out of scope for library layer
+
+### Design Decisions
+
+**Validation happens during elicitation:**
+```rust
+impl Elicitation for User {
+    async fn elicit(...) -> ElicitResult<Self> {
+        // Elicit email
+        let email = String::elicit(client).await?;
+        
+        // Validate immediately
+        if !validator::validate_email(&email) {
+            return Err(ElicitError::validation(
+                "email",
+                "Invalid email format. Please provide a valid email address."
+            ));
+        }
+        
+        // Continue with other fields...
+    }
+}
+```
+
+**Benefits:**
+- Never construct invalid instances
+- Type-safe: if elicitation succeeds, data is valid
+- Early feedback to user
+- Conversational retry flow
+
+**Alternative considered:** Post-elicitation validation like validator crate
+**Rejected because:** Goes against elicitation philosophy of guided construction
+
+### Testing Strategy
+
+**Unit tests:**
+- Each validator function
+- Attribute parsing
+- Code generation
+
+**Integration tests:**
+- End-to-end validation flow
+- Error message formatting
+- Retry behavior
+
+**Examples:**
+- Common validation patterns
+- Custom validators
+- Error handling
+
+---
+
+## Version 0.5.0 - Advanced Validation (Future)
+
+**Focus**: Builder pattern and custom validators
+
+**Status**: Deferred
+
+**Pending:**
+- v0.4.0 completion
+- User feedback on attribute-based approach
+- MCP protocol evolution
+
+**Potential features:**
+- Builder-pattern validators
+- Async validation support
+- Cross-field validation
+- Context-aware validation
+
+---
+
+## Version 0.6.0 - Interactive Features (Future)
+
+**Focus**: Context-aware elicitation and suggestions
+
+**Status**: Deferred
+
+**Depends on:**
+- MCP protocol rich UI support
+- Security/privacy model clarity
+- Platform-specific implementations
+
+**Potential features:**
+- Filesystem browsing
+- Path autocomplete
+- Recent values history
+- Environment-based suggestions
+
+**Rationale for deferral:**
+- Requires MCP protocol enhancements not yet available
+- Security/privacy considerations need broader ecosystem consensus
+- Platform-specific implementations add significant complexity
+- These features better suited for MCP client layer than library layer
+

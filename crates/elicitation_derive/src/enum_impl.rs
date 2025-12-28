@@ -117,12 +117,12 @@ fn extract_prompt_attr(attrs: &[syn::Attribute]) -> Option<String> {
     None
 }
 
-/// Generate the Elicit implementation for an enum.
+/// Generate the Elicitation implementation for an enum.
 fn generate_elicit_impl(name: &syn::Ident, variant_labels: &[String]) -> TokenStream2 {
     let options_display = variant_labels.join(", ");
 
     quote! {
-        impl elicitation::Elicit for #name {
+        impl elicitation::Elicitation for #name {
             #[tracing::instrument(skip(client), fields(enum_name = stringify!(#name)))]
             async fn elicit<T: elicitation::pmcp::shared::transport::Transport>(
                 client: &elicitation::pmcp::Client<T>,

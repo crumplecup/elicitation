@@ -1,27 +1,27 @@
 //! Tests for struct derive macro.
 
-use elicitation::{DeriveElicit, FieldInfo, Prompt, Select, Survey};
+use elicitation::{Elicit, FieldInfo, Prompt, Select, Survey};
 
-#[derive(Debug, Clone, Copy, PartialEq, DeriveElicit)]
+#[derive(Debug, Clone, Copy, PartialEq, Elicit)]
 enum Status {
     Active,
     Inactive,
 }
 
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 struct SimpleStruct {
     name: String,
     age: u8,
 }
 
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 #[prompt("Let's configure your settings:")]
 struct ConfigStruct {
     timeout: u32,
     retries: i32,
 }
 
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 struct FieldPromptStruct {
     #[prompt("What is your username?")]
     username: String,
@@ -38,7 +38,7 @@ struct SkipFieldStruct {
 
 // Manual impl to test #[skip] behavior would work
 // For now, we test it via the fields() check
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 struct PartialSkipStruct {
     name: String,
     age: u8,
@@ -46,7 +46,7 @@ struct PartialSkipStruct {
     _internal: String,
 }
 
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 struct NestedStruct {
     name: String,
     status: Status,

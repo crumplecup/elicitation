@@ -1,6 +1,6 @@
 //! Floating-point type implementations using generic macros.
 
-use crate::{mcp, Elicit, ElicitError, ElicitErrorKind, ElicitResult, Prompt};
+use crate::{mcp, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt};
 use serde_json::Value;
 
 /// Parse a floating-point number from MCP tool response.
@@ -56,9 +56,9 @@ where
     }
 }
 
-/// Macro to implement Elicit for floating-point types.
+/// Macro to implement Elicitation for floating-point types.
 ///
-/// This macro generates both Prompt and Elicit trait implementations for
+/// This macro generates both Prompt and Elicitation trait implementations for
 /// f32 and f64.
 macro_rules! impl_float_elicit {
     ($t:ty) => {
@@ -68,7 +68,7 @@ macro_rules! impl_float_elicit {
             }
         }
 
-        impl Elicit for $t {
+        impl Elicitation for $t {
             #[tracing::instrument(skip(client), fields(type_name = stringify!($t)))]
             async fn elicit<T: pmcp::shared::transport::Transport>(
                 client: &pmcp::Client<T>,

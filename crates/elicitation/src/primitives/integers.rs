@@ -1,10 +1,10 @@
 //! Integer type implementations using generic macros.
 
-use crate::{mcp, Elicit, ElicitResult, Prompt};
+use crate::{mcp, ElicitResult, Elicitation, Prompt};
 
-/// Macro to implement Elicit for all integer types.
+/// Macro to implement Elicitation for all integer types.
 ///
-/// This macro generates both Prompt and Elicit trait implementations for
+/// This macro generates both Prompt and Elicitation trait implementations for
 /// a given integer type. It uses the type's MIN and MAX constants for
 /// range validation.
 macro_rules! impl_integer_elicit {
@@ -23,7 +23,7 @@ macro_rules! impl_integer_elicit {
             }
         }
 
-        impl Elicit for $t {
+        impl Elicitation for $t {
             #[tracing::instrument(skip(client), fields(type_name = stringify!($t)))]
             async fn elicit<T: pmcp::shared::transport::Transport>(
                 client: &pmcp::Client<T>,

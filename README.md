@@ -9,10 +9,11 @@
 
 ## Features
 
-- **Trait-Based Elicitation** - Simple `Elicit` trait for all types
+- **Trait-Based Elicitation** - Simple `Elicitation` trait for all types
 - **Derive Macros** - Automatic implementation for enums and structs
-- **Primitive Types** - Built-in support for integers, floats, booleans, strings
-- **Containers** - Generic implementations for `Option<T>` and `Vec<T>`
+- **Primitive Types** - Built-in support for integers, floats, booleans, strings, paths, network addresses, durations
+- **Containers** - Generic implementations for `Option<T>`, `Vec<T>`, `Result<T, E>`, `Box<T>`, `Rc<T>`, `Arc<T>`, and `[T; N]`
+- **Collections** - Support for `HashMap<K,V>`, `BTreeMap<K,V>`, `HashSet<T>`, `BTreeSet<T>`, `VecDeque<T>`, `LinkedList<T>`
 - **Four Interaction Paradigms**:
   - **Select** - Choose from finite options (enum pattern)
   - **Affirm** - Yes/no confirmation (bool pattern)
@@ -34,14 +35,63 @@ pmcp = "1.4"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
+## MCP Setup
+
+This library requires an **MCP client** (like Claude Desktop or Claude CLI) to provide the elicitation tools. Your application runs as an **MCP server** that the client invokes.
+
+### Running with Claude CLI
+
+To run the examples or your own code:
+
+```bash
+# Install Claude CLI if you haven't already
+# (see https://docs.anthropic.com/en/docs/agents-and-tools)
+
+# Run an example through Claude CLI
+claude-cli mcp add elicitation-demo --command "cargo run --example structs"
+
+# Or ask Claude to run it
+claude "Run the structs example from the elicitation crate"
+```
+
+### Integration with Claude Desktop
+
+Add your MCP server to Claude Desktop's configuration:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+**Linux**: `~/.config/claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "elicitation-app": {
+      "command": "/path/to/your/binary",
+      "args": [],
+      "env": {}
+    }
+  }
+}
+```
+
+### How It Works
+
+1. Your application creates an MCP client with `StdioTransport::new()`
+2. Claude (the MCP client) provides elicitation tools via stdin/stdout
+3. When you call `.elicit()`, it sends tool requests to Claude
+4. Claude prompts the user and validates responses
+5. Your code receives strongly-typed Rust values
+
+**Note**: Examples won't work standalone - they must be invoked by an MCP client.
+
 ## Quick Start
 
 ```rust
-use elicitation::{Elicit, ElicitResult, DeriveElicit};
+use elicitation::{Elicit, Elicitation, ElicitResult};
 use pmcp::StdioTransport;
 
 // Derive for enums (Select pattern)
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 #[prompt("Choose your priority level:")]
 enum Priority {
     Low,
@@ -51,7 +101,7 @@ enum Priority {
 }
 
 // Derive for structs (Survey pattern)
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 struct Task {
     #[prompt("What's the task title?")]
     title: String,
@@ -82,7 +132,7 @@ async fn main() -> ElicitResult<()> {
 
 ## Examples
 
-The library includes several comprehensive examples:
+All examples require an MCP client (Claude Desktop or Claude CLI) to run. See [MCP Setup](#mcp-setup) above.
 
 ### Primitive Types
 
@@ -93,14 +143,64 @@ let name: String = String::elicit(&client).await?;
 let confirmed: bool = bool::elicit(&client).await?;
 let nickname: Option<String> = Option::<String>::elicit(&client).await?;
 let scores: Vec<i32> = Vec::<i32>::elicit(&client).await?;
+
+// Result types for success/failure outcomes
+let operation: Result<String, i32> = Result::elicit(&client).await?;
 ```
 
-Run with: `cargo run --example simple_types`
+**Try it**: `claude "Run the simple_types example"` or `claude "Run the result example"`
+
+### Filesystem Paths
+
+```rust
+use std::path::PathBuf;
+
+// Elicit a filesystem path
+let file_path: PathBuf = PathBuf::elicit(&client).await?;
+
+// Optional paths work too
+let config_path: Option<PathBuf> = Option::<PathBuf>::elicit(&client).await?;
+```
+
+**Try it**: `claude "Run the pathbuf example"`
+
+### Network Addresses
+
+```rust
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
+
+// Elicit IP addresses with automatic validation
+let ip: IpAddr = IpAddr::elicit(&client).await?; // IPv4 or IPv6
+let ipv4: Ipv4Addr = Ipv4Addr::elicit(&client).await?; // IPv4 only
+let ipv6: Ipv6Addr = Ipv6Addr::elicit(&client).await?; // IPv6 only
+
+// Socket addresses (IP + port)
+let socket: SocketAddr = SocketAddr::elicit(&client).await?;
+```
+
+**Try it**: `claude "Run the network example"`
+
+### Time Durations
+
+```rust
+use std::time::Duration;
+
+// Elicit duration in seconds (supports decimals)
+let timeout: Duration = Duration::elicit(&client).await?;
+
+// Works with optional durations
+let cache_ttl: Option<Duration> = Option::<Duration>::elicit(&client).await?;
+
+// Collections of durations
+let intervals: Vec<Duration> = Vec::<Duration>::elicit(&client).await?;
+```
+
+**Try it**: `claude "Run the duration example"`
 
 ### Enums (Select Pattern)
 
 ```rust
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 enum Status {
     Pending,
     InProgress,
@@ -110,12 +210,12 @@ enum Status {
 let status = Status::elicit(&client).await?;
 ```
 
-Run with: `cargo run --example enums`
+**Try it**: `claude "Run the enums example"`
 
 ### Structs (Survey Pattern)
 
 ```rust
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 struct Person {
     #[prompt("What's your name?")]
     name: String,
@@ -130,12 +230,12 @@ struct Person {
 let person = Person::elicit(&client).await?;
 ```
 
-Run with: `cargo run --example structs`
+**Try it**: `claude "Run the structs example"`
 
 ### Complex Nested Types
 
 ```rust
-#[derive(Debug, DeriveElicit)]
+#[derive(Debug, Elicit)]
 struct Project {
     name: String,
     team: Vec<Member>,
@@ -146,7 +246,31 @@ struct Project {
 let project = Project::elicit(&client).await?;
 ```
 
-Run with: `cargo run --example complex_survey`
+**Try it**: `claude "Run the complex_survey example"`
+
+### Collections
+
+```rust
+use std::collections::{HashMap, HashSet};
+
+// Elicit a HashMap with duplicate key handling
+let scores: HashMap<String, i32> = HashMap::elicit(&client).await?;
+
+// Elicit a HashSet with automatic deduplication
+let tags: HashSet<String> = HashSet::elicit(&client).await?;
+
+// BTreeMap and BTreeSet also supported for ordered collections
+use std::collections::{BTreeMap, BTreeSet};
+let config: BTreeMap<String, String> = BTreeMap::elicit(&client).await?;
+let priorities: BTreeSet<i32> = BTreeSet::elicit(&client).await?;
+
+// VecDeque and LinkedList for sequential access patterns
+use std::collections::{VecDeque, LinkedList};
+let queue: VecDeque<String> = VecDeque::elicit(&client).await?;
+let linked: LinkedList<i32> = LinkedList::elicit(&client).await?;
+```
+
+**Try it**: `claude "Run the collections example"`
 
 ## Interaction Paradigms
 
@@ -155,7 +279,7 @@ Run with: `cargo run --example complex_survey`
 For choosing from a finite set of options (enums):
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 #[prompt("Choose your programming language:")]
 enum Language {
     Rust,
@@ -177,7 +301,7 @@ let confirmed: bool = bool::elicit(&client).await?;
 For multi-field data collection (structs):
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 #[prompt("Let's create your profile:")]
 struct Profile {
     name: String,
@@ -197,7 +321,7 @@ Permission-based elicitation (planned for v0.2.0).
 Customize prompts for types or fields:
 
 ```rust
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 #[prompt("Configure your account:")] // Struct-level prompt
 struct Account {
     #[prompt("Choose a username:")] // Field-level prompt
@@ -210,7 +334,7 @@ struct Account {
 Skip fields during elicitation (uses `Default::default()`):
 
 ```rust
-#[derive(Default, DeriveElicit)]
+#[derive(Default, Elicit)]
 struct Task {
     title: String,
 
@@ -261,13 +385,13 @@ All elicitation types compose freely:
 let data: Vec<Option<Task>> = Vec::elicit(&client).await?;
 
 // Complex hierarchies
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 struct Organization {
     name: String,
     departments: Vec<Department>,
 }
 
-#[derive(DeriveElicit)]
+#[derive(Elicit)]
 struct Department {
     name: String,
     members: Vec<Member>,

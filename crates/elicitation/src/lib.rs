@@ -5,6 +5,14 @@
 //! the Model Context Protocol (MCP). It transforms LLM conversations into
 //! type-safe Rust values with compile-time guarantees.
 //!
+//! # MCP Setup Required
+//!
+//! This library runs as an **MCP server** and requires an **MCP client**
+//! (like Claude Desktop or Claude CLI) to provide the elicitation tools.
+//! Your application won't work standalone - it must be invoked by an MCP client.
+//!
+//! See the [README](https://github.com/crumplecup/elicitation) for setup instructions.
+//!
 //! # Core Concepts
 //!
 //! ## Traits
@@ -71,6 +79,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod collections;
 mod containers;
 mod error;
 pub mod mcp;
@@ -82,7 +91,7 @@ mod traits;
 pub use error::{ElicitError, ElicitErrorKind, ElicitResult, JsonError, PmcpError};
 
 // Core traits
-pub use traits::{Elicit, Prompt};
+pub use traits::{Elicitation, Prompt};
 
 // Interaction paradigm traits
 pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
@@ -90,5 +99,5 @@ pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
 // Re-export pmcp for user convenience
 pub use pmcp;
 
-// Re-export derive macro
-pub use elicitation_derive::Elicit as DeriveElicit;
+// Re-export derive macro with user-friendly name
+pub use elicitation_derive::Elicit;

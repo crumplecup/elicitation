@@ -1,14 +1,14 @@
 //! Option<T> implementation for optional value elicitation.
 
-use crate::{Elicit, ElicitResult, Prompt};
+use crate::{ElicitResult, Elicitation, Prompt};
 
-impl<T: Elicit + Send> Prompt for Option<T> {
+impl<T: Elicitation + Send> Prompt for Option<T> {
     fn prompt() -> Option<&'static str> {
         Some("Would you like to provide a value for this field?")
     }
 }
 
-impl<T: Elicit + Send> Elicit for Option<T> {
+impl<T: Elicitation + Send> Elicitation for Option<T> {
     #[tracing::instrument(skip(client), fields(inner_type = std::any::type_name::<T>()))]
     async fn elicit<U: pmcp::shared::transport::Transport>(
         client: &pmcp::Client<U>,

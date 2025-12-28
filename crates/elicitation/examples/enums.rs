@@ -1,13 +1,16 @@
 //! Example demonstrating enum elicitation with the Select pattern.
 //!
+//! **Note**: This example requires an MCP client (Claude Desktop or Claude CLI).
+//! Run with: `claude "Run the enums example"`
+//!
 //! This example shows how enums automatically use the Select paradigm,
 //! allowing users to choose from a finite set of options.
 
-use elicitation::{DeriveElicit, Elicit, ElicitResult, Prompt, Select};
+use elicitation::{Elicit, ElicitResult, Elicitation, Prompt, Select};
 use pmcp::StdioTransport;
 
 /// Simple enum with default prompt
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DeriveElicit)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
 enum Priority {
     Low,
     Medium,
@@ -16,7 +19,7 @@ enum Priority {
 }
 
 /// Enum with custom prompt
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DeriveElicit)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
 #[prompt("Choose your preferred programming language:")]
 enum Language {
     Rust,
@@ -27,7 +30,7 @@ enum Language {
 }
 
 /// Enum for status tracking
-#[derive(Debug, Clone, Copy, PartialEq, Eq, DeriveElicit)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
 #[prompt("What is the current status?")]
 enum Status {
     Pending,
