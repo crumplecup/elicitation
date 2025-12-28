@@ -5,6 +5,14 @@
 //! the Model Context Protocol (MCP). It transforms LLM conversations into
 //! type-safe Rust values with compile-time guarantees.
 //!
+//! # MCP Setup Required
+//!
+//! This library runs as an **MCP server** and requires an **MCP client**
+//! (like Claude Desktop or Claude CLI) to provide the elicitation tools.
+//! Your application won't work standalone - it must be invoked by an MCP client.
+//!
+//! See the [README](https://github.com/crumplecup/elicitation) for setup instructions.
+//!
 //! # Core Concepts
 //!
 //! ## Traits

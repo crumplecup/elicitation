@@ -1,5 +1,8 @@
 //! Example demonstrating enum elicitation with the Select pattern.
 //!
+//! **Note**: This example requires an MCP client (Claude Desktop or Claude CLI).
+//! Run with: `claude "Run the enums example"`
+//!
 //! This example shows how enums automatically use the Select paradigm,
 //! allowing users to choose from a finite set of options.
 

@@ -1,5 +1,8 @@
 //! Example demonstrating complex nested type elicitation.
 //!
+//! **Note**: This example requires an MCP client (Claude Desktop or Claude CLI).
+//! Run with: `claude "Run the complex_survey example"`
+//!
 //! This example showcases:
 //! - Nested structs
 //! - Enums within structs

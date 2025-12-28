@@ -1,5 +1,8 @@
 //! Example demonstrating elicitation of primitive types.
 //!
+//! **Note**: This example requires an MCP client (Claude Desktop or Claude CLI).
+//! Run with: `claude "Run the simple_types example"`
+//!
 //! This example shows how to elicit basic Rust types:
 //! - Integers (i32, u8, etc.)
 //! - Floats (f32, f64)

@@ -34,6 +34,55 @@ pmcp = "1.4"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
+## MCP Setup
+
+This library requires an **MCP client** (like Claude Desktop or Claude CLI) to provide the elicitation tools. Your application runs as an **MCP server** that the client invokes.
+
+### Running with Claude CLI
+
+To run the examples or your own code:
+
+```bash
+# Install Claude CLI if you haven't already
+# (see https://docs.anthropic.com/en/docs/agents-and-tools)
+
+# Run an example through Claude CLI
+claude-cli mcp add elicitation-demo --command "cargo run --example structs"
+
+# Or ask Claude to run it
+claude "Run the structs example from the elicitation crate"
+```
+
+### Integration with Claude Desktop
+
+Add your MCP server to Claude Desktop's configuration:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+**Linux**: `~/.config/claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "elicitation-app": {
+      "command": "/path/to/your/binary",
+      "args": [],
+      "env": {}
+    }
+  }
+}
+```
+
+### How It Works
+
+1. Your application creates an MCP client with `StdioTransport::new()`
+2. Claude (the MCP client) provides elicitation tools via stdin/stdout
+3. When you call `.elicit()`, it sends tool requests to Claude
+4. Claude prompts the user and validates responses
+5. Your code receives strongly-typed Rust values
+
+**Note**: Examples won't work standalone - they must be invoked by an MCP client.
+
 ## Quick Start
 
 ```rust
@@ -82,7 +131,7 @@ async fn main() -> ElicitResult<()> {
 
 ## Examples
 
-The library includes several comprehensive examples:
+All examples require an MCP client (Claude Desktop or Claude CLI) to run. See [MCP Setup](#mcp-setup) above.
 
 ### Primitive Types
 
@@ -95,7 +144,7 @@ let nickname: Option<String> = Option::<String>::elicit(&client).await?;
 let scores: Vec<i32> = Vec::<i32>::elicit(&client).await?;
 ```
 
-Run with: `cargo run --example simple_types`
+**Try it**: `claude "Run the simple_types example"`
 
 ### Enums (Select Pattern)
 
@@ -110,7 +159,7 @@ enum Status {
 let status = Status::elicit(&client).await?;
 ```
 
-Run with: `cargo run --example enums`
+**Try it**: `claude "Run the enums example"`
 
 ### Structs (Survey Pattern)
 
@@ -130,7 +179,7 @@ struct Person {
 let person = Person::elicit(&client).await?;
 ```
 
-Run with: `cargo run --example structs`
+**Try it**: `claude "Run the structs example"`
 
 ### Complex Nested Types
 
@@ -146,7 +195,7 @@ struct Project {
 let project = Project::elicit(&client).await?;
 ```
 
-Run with: `cargo run --example complex_survey`
+**Try it**: `claude "Run the complex_survey example"`
 
 ## Interaction Paradigms
 

@@ -1,5 +1,8 @@
 //! Example demonstrating struct elicitation with the Survey pattern.
 //!
+//! **Note**: This example requires an MCP client (Claude Desktop or Claude CLI).
+//! Run with: `claude "Run the structs example"`
+//!
 //! This example shows how structs automatically use the Survey paradigm,
 //! eliciting each field sequentially to build the complete structure.
 
