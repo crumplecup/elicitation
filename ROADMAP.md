@@ -488,3 +488,34 @@ This roadmap is subject to community feedback. Please open issues or discussions
 - Use case examples
 - Priority adjustments
 - Design feedback
+
+---
+
+## Version 0.2.0 Extensions - Result & Advanced Containers
+
+### Result<T, E>
+
+#### ✅ Result<T, E> - COMPLETED
+
+**Status**: Implemented (moved from v0.3.0 to v0.2.0)
+
+**Pattern**: Boolean choice for variant, then elicit value
+
+**Implementation**:
+- `src/containers/result.rs` - Result<T, E> implementation
+- `tests/result_test.rs` - 6 tests covering Result operations
+- `examples/result.rs` - Comprehensive usage with enums and complex types
+
+**Details**:
+- First elicits bool to choose Ok or Err variant
+- Then elicits appropriate inner type (T for Ok, E for Err)
+- Works with any T and E that implement Elicitation
+- Supports complex nesting: Option<Result<T, E>>, Vec<Result<T, E>>
+
+**Use cases demonstrated**:
+- API responses (Result<StatusCode, ApiError>)
+- Operation outcomes (Result<String, String>)
+- Batch operations (Vec<Result<T, E>>)
+- Optional results (Option<Result<T, E>>)
+
+---

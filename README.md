@@ -12,7 +12,7 @@
 - **Trait-Based Elicitation** - Simple `Elicitation` trait for all types
 - **Derive Macros** - Automatic implementation for enums and structs
 - **Primitive Types** - Built-in support for integers, floats, booleans, strings, paths, network addresses, durations
-- **Containers** - Generic implementations for `Option<T>` and `Vec<T>`
+- **Containers** - Generic implementations for `Option<T>`, `Vec<T>`, and `Result<T, E>`
 - **Collections** - Support for `HashMap<K,V>`, `BTreeMap<K,V>`, `HashSet<T>`, `BTreeSet<T>`, `VecDeque<T>`, `LinkedList<T>`
 - **Four Interaction Paradigms**:
   - **Select** - Choose from finite options (enum pattern)
@@ -143,9 +143,12 @@ let name: String = String::elicit(&client).await?;
 let confirmed: bool = bool::elicit(&client).await?;
 let nickname: Option<String> = Option::<String>::elicit(&client).await?;
 let scores: Vec<i32> = Vec::<i32>::elicit(&client).await?;
+
+// Result types for success/failure outcomes
+let operation: Result<String, i32> = Result::elicit(&client).await?;
 ```
 
-**Try it**: `claude "Run the simple_types example"`
+**Try it**: `claude "Run the simple_types example"` or `claude "Run the result example"`
 
 ### Filesystem Paths
 
