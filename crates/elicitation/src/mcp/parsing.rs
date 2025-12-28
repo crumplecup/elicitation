@@ -3,6 +3,41 @@
 use crate::{ElicitError, ElicitErrorKind, ElicitResult};
 use serde_json::Value;
 
+/// Extract a Value from a pmcp CallToolResult.
+///
+/// MCP tools return CallToolResult which contains content. This function
+/// extracts the first text content and attempts to parse it as JSON.
+///
+/// # Arguments
+///
+/// * `result` - The result from a pmcp call_tool invocation
+///
+/// # Returns
+///
+/// A `serde_json::Value` representing the tool's response.
+///
+/// # Errors
+///
+/// Returns `ElicitError` if the result is empty or cannot be parsed.
+pub fn extract_value(result: pmcp::types::protocol::CallToolResult) -> ElicitResult<Value> {
+    let text = result
+        .content
+        .into_iter()
+        .find_map(|c| match c {
+            pmcp::types::protocol::Content::Text { text } => Some(text),
+            _ => None,
+        })
+        .ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::InvalidFormat {
+                expected: "text content".to_string(),
+                received: "empty or non-text response".to_string(),
+            })
+        })?;
+
+    // Try to parse as JSON first, fallback to string
+    serde_json::from_str(&text).or_else(|_| Ok(Value::String(text)))
+}
+
 /// Parse an integer from MCP tool response.
 ///
 /// Handles both JSON numbers and string representations. Validates that

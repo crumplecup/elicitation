@@ -5,5 +5,14 @@
 //! - Floating-point types: f32, f64
 //! - Boolean: bool
 //! - String: String
+//!
+//! All primitive types implement:
+//! - [`Prompt`](crate::Prompt) - Provides default prompts
+//! - [`Elicit`](crate::Elicit) - Async elicitation via MCP
+//!
+//! Integer and float types use generic macros to eliminate duplication.
 
-// Modules will be added in Phase 2
+mod boolean;
+mod floats;
+mod integers;
+mod string;

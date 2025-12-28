@@ -5,15 +5,29 @@ use serde_json::json;
 /// MCP tool names used by elicitation.
 pub mod tool_names {
     /// Tool for eliciting numeric values with range constraints.
-    pub const ELICIT_NUMBER: &str = "elicit_number";
+    pub fn elicit_number() -> String {
+        "elicit_number".to_string()
+    }
+
     /// Tool for eliciting boolean values (yes/no).
-    pub const ELICIT_BOOL: &str = "elicit_bool";
+    pub fn elicit_bool() -> String {
+        "elicit_bool".to_string()
+    }
+
     /// Tool for eliciting free-form text.
-    pub const ELICIT_TEXT: &str = "elicit_text";
+    pub fn elicit_text() -> String {
+        "elicit_text".to_string()
+    }
+
     /// Tool for selecting from finite options.
-    pub const ELICIT_SELECT: &str = "elicit_select";
+    pub fn elicit_select() -> String {
+        "elicit_select".to_string()
+    }
+
     /// Tool for multi-field surveys.
-    pub const ELICIT_SURVEY: &str = "elicit_survey";
+    pub fn elicit_survey() -> String {
+        "elicit_survey".to_string()
+    }
 }
 
 /// Build parameters for elicit_number tool.
