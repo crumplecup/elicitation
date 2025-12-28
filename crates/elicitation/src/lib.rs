@@ -79,6 +79,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod collections;
 mod containers;
 mod error;
 pub mod mcp;

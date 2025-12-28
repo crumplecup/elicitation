@@ -9,10 +9,11 @@
 
 ## Features
 
-- **Trait-Based Elicitation** - Simple `Elicit` trait for all types
+- **Trait-Based Elicitation** - Simple `Elicitation` trait for all types
 - **Derive Macros** - Automatic implementation for enums and structs
 - **Primitive Types** - Built-in support for integers, floats, booleans, strings
 - **Containers** - Generic implementations for `Option<T>` and `Vec<T>`
+- **Collections** - Support for `HashMap<K,V>`, `BTreeMap<K,V>`, `HashSet<T>`, `BTreeSet<T>`
 - **Four Interaction Paradigms**:
   - **Select** - Choose from finite options (enum pattern)
   - **Affirm** - Yes/no confirmation (bool pattern)
@@ -196,6 +197,25 @@ let project = Project::elicit(&client).await?;
 ```
 
 **Try it**: `claude "Run the complex_survey example"`
+
+### Collections
+
+```rust
+use std::collections::{HashMap, HashSet};
+
+// Elicit a HashMap with duplicate key handling
+let scores: HashMap<String, i32> = HashMap::elicit(&client).await?;
+
+// Elicit a HashSet with automatic deduplication
+let tags: HashSet<String> = HashSet::elicit(&client).await?;
+
+// BTreeMap and BTreeSet also supported for ordered collections
+use std::collections::{BTreeMap, BTreeSet};
+let config: BTreeMap<String, String> = BTreeMap::elicit(&client).await?;
+let priorities: BTreeSet<i32> = BTreeSet::elicit(&client).await?;
+```
+
+**Try it**: `claude "Run the collections example"`
 
 ## Interaction Paradigms
 
