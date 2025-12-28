@@ -8,113 +8,39 @@ This document outlines planned extensions to support more Rust standard library 
 
 ### Collections
 
-#### HashMap<K, V> & BTreeMap<K, V>
+#### ✅ HashMap<K, V> & BTreeMap<K, V> - COMPLETED
+
+**Status**: Implemented in commit a5f3c6b
 
 **Pattern**: Loop-based key-value elicitation
 
-```rust
-impl<K: Elicitationation + Hash + Eq + Send, V: Elicitationation + Send> Elicitation for HashMap<K, V> {
-    async fn elicit<T: Transport>(client: &Client<T>) -> ElicitResult<Self> {
-        let mut map = HashMap::new();
+**Implementation**:
+- `src/collections/hashmap.rs` - HashMap<K,V> with duplicate key handling
+- `src/collections/btreemap.rs` - BTreeMap<K,V> with ordered keys
+- `tests/collections_test.rs` - Test coverage
+- `examples/collections.rs` - Usage examples
 
-        loop {
-            let add_more = if map.is_empty() {
-                // "Add first entry to this map?"
-                bool::elicit(client).await?
-            } else {
-                // "Add another entry? (current count: N)"
-                bool::elicit(client).await?
-            };
-
-            if !add_more {
-                break;
-            }
-
-            // Elicit key
-            tracing::debug!("Eliciting key");
-            let key = K::elicit(client).await?;
-
-            // Check for duplicate keys
-            if map.contains_key(&key) {
-                // "Key already exists. Replace value?"
-                let replace = bool::elicit(client).await?;
-                if !replace {
-                    continue; // Skip this entry
-                }
-            }
-
-            // Elicit value
-            tracing::debug!("Eliciting value for key");
-            let value = V::elicit(client).await?;
-
-            map.insert(key, value);
-        }
-
-        Ok(map)
-    }
-}
-```
-
-**BTreeMap**: Identical implementation, but `K: Ord` instead of `K: Hash + Eq`
-
-**Files to create**:
-
-- `src/collections/hashmap.rs`
-- `src/collections/btreemap.rs`
-- `tests/collections_test.rs`
-- `examples/collections.rs`
-
-**Trait bounds required**:
-
-- `HashMap`: `K: Elicitationation + Hash + Eq + Send`, `V: Elicitationation + Send`
-- `BTreeMap`: `K: Elicitationation + Ord + Send`, `V: Elicitationation + Send`
+**Trait bounds**:
+- `HashMap`: `K: Elicitation + Hash + Eq + Send`, `V: Elicitation + Send`
+- `BTreeMap`: `K: Elicitation + Ord + Send`, `V: Elicitation + Send`
 
 ---
 
-#### HashSet<T> & BTreeSet<T>
+#### ✅ HashSet<T> & BTreeSet<T> - COMPLETED
 
-**Pattern**: Loop-based item elicitation with duplicate detection
+**Status**: Implemented in commit a5f3c6b
 
-```rust
-impl<T: Elicitationation + Hash + Eq + Send> Elicitation for HashSet<T> {
-    async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
-        let mut set = HashSet::new();
+**Pattern**: Loop-based item elicitation with automatic duplicate handling
 
-        loop {
-            let add_more = if set.is_empty() {
-                bool::elicit(client).await?
-            } else {
-                bool::elicit(client).await?
-            };
+**Implementation**:
+- `src/collections/hashset.rs` - HashSet<T> with deduplication
+- `src/collections/btreeset.rs` - BTreeSet<T> with ordered items
+- `tests/collections_test.rs` - Test coverage
+- `examples/collections.rs` - Usage examples
 
-            if !add_more {
-                break;
-            }
-
-            let item = T::elicit(client).await?;
-
-            // Automatic duplicate handling (Sets ignore duplicates)
-            if !set.insert(item) {
-                tracing::debug!("Duplicate item ignored (already in set)");
-            }
-        }
-
-        Ok(set)
-    }
-}
-```
-
-**BTreeSet**: Identical, but `T: Ord` instead of `T: Hash + Eq`
-
-**Files to create**:
-
-- `src/collections/hashset.rs`
-- `src/collections/btreeset.rs`
-
-**Trait bounds required**:
-
-- `HashSet`: `T: Elicitationation + Hash + Eq + Send`
-- `BTreeSet`: `T: Elicitationation + Ord + Send`
+**Trait bounds**:
+- `HashSet`: `T: Elicitation + Hash + Eq + Send`
+- `BTreeSet`: `T: Elicitation + Ord + Send`
 
 ---
 
@@ -123,7 +49,7 @@ impl<T: Elicitationation + Hash + Eq + Send> Elicitation for HashSet<T> {
 **Pattern**: Identical to Vec<T> - loop-based sequential elicitation
 
 ```rust
-impl<T: Elicitationation + Send> Elicitation for VecDeque<T> {
+impl<T: Elicitation + Send> Elicitation for VecDeque<T> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         let mut deque = VecDeque::new();
 
@@ -149,7 +75,7 @@ impl<T: Elicitationation + Send> Elicitation for VecDeque<T> {
 
 **Trait bounds required**:
 
-- `T: Elicitationation + Send`
+- `T: Elicitation + Send`
 
 ---
 
@@ -311,7 +237,7 @@ Fixed-size arrays `[T; N]`:
 
 ```rust
 // Use const generics
-impl<T: Elicitationation + Send, const N: usize> Elicitation for [T; N] {
+impl<T: Elicitation + Send, const N: usize> Elicitation for [T; N] {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         let mut items = Vec::with_capacity(N);
 
@@ -344,7 +270,7 @@ impl<T: Elicitationation + Send, const N: usize> Elicitation for [T; N] {
 Elicit success/failure with value:
 
 ```rust
-impl<T: Elicitationation + Send, E: Elicitation + Send> Elicitation for Result<T, E> {
+impl<T: Elicitation + Send, E: Elicitation + Send> Elicitation for Result<T, E> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         #[derive(Elicit)]
         enum ResultVariant {
@@ -381,19 +307,19 @@ impl<T: Elicitationation + Send, E: Elicitation + Send> Elicitation for Result<T
 Transparent wrappers around `T::elicit()`:
 
 ```rust
-impl<T: Elicitationation + Send> Elicitation for Box<T> {
+impl<T: Elicitation + Send> Elicitation for Box<T> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         T::elicit(client).await.map(Box::new)
     }
 }
 
-impl<T: Elicitationation + Send> Elicitation for Rc<T> {
+impl<T: Elicitation + Send> Elicitation for Rc<T> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         T::elicit(client).await.map(Rc::new)
     }
 }
 
-impl<T: Elicitationation + Send> Elicitation for Arc<T> {
+impl<T: Elicitation + Send> Elicitation for Arc<T> {
     async fn elicit<U: Transport>(client: &Client<U>) -> ElicitResult<Self> {
         T::elicit(client).await.map(Arc::new)
     }
