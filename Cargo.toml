@@ -17,7 +17,7 @@ readme = "README.md"
 rmcp = { version = "0.12", features = ["client", "transport-io"] }
 
 # Error handling
-derive_more = { version = "1", features = ["display", "error", "from"] }
+derive_more = { version = "2", features = ["display", "error", "from"] }
 derive-getters = "0.5"
 
 # Tracing
