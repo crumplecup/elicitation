@@ -30,19 +30,20 @@
 //! # Example
 //!
 //! ```rust,ignore
-//! use elicitation::{Elicit, ElicitResult};
+//! use elicitation::{Elicitation, ElicitResult};
+//! use rmcp::service::{Peer, RoleClient};
 //!
-//! # async fn example<T: pmcp::shared::transport::Transport>(client: &pmcp::Client<T>) -> ElicitResult<()> {
-//! // Elicit a simple integer
-//! let age: i32 = i32::elicit(client).await?;
+//! async fn example(client: &Peer<RoleClient>) -> ElicitResult<()> {
+//!     // Elicit a simple integer
+//!     let age: i32 = i32::elicit(client).await?;
 //!
-//! // Elicit an optional value
-//! let nickname: Option<String> = Option::<String>::elicit(client).await?;
+//!     // Elicit an optional value
+//!     let nickname: Option<String> = Option::<String>::elicit(client).await?;
 //!
-//! // Elicit a collection
-//! let scores: Vec<i32> = Vec::<i32>::elicit(client).await?;
-//! # Ok(())
-//! # }
+//!     // Elicit a collection
+//!     let scores: Vec<i32> = Vec::<i32>::elicit(client).await?;
+//!     Ok(())
+//! }
 //! ```
 //!
 //! # Derive Macros
@@ -72,9 +73,9 @@
 //!
 //! # MCP Integration
 //!
-//! The library uses the [pmcp](https://crates.io/crates/pmcp) crate for
-//! high-performance MCP client integration. All elicitation happens through
-//! asynchronous MCP tool calls.
+//! The library uses the [rmcp](https://crates.io/crates/rmcp) crate - the
+//! official Rust MCP SDK - for MCP client integration. All elicitation
+//! happens through asynchronous MCP tool calls.
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]

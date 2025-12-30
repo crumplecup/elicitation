@@ -5,10 +5,12 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
 
 description = "Derive macros for elicitation library"
-keywords = ["mcp", "derive", "macro", "elicitation"]
-categories = ["development-tools"]
+keywords = ["mcp", "derive", "macro", "elicitation", "procedural"]
+categories = ["development-tools::procedural-macro-helpers"]
 
 [lib]
 proc-macro = true

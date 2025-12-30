@@ -5,6 +5,106 @@ All notable changes to the `elicitation` project will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-12-29
+
+### Changed
+
+**BREAKING CHANGES**: Migration from pmcp to rmcp (official Rust MCP SDK)
+
+#### Core API Changes
+- **Client Type**: Changed from `pmcp::Client<T>` to `rmcp::service::Peer<RoleClient>`
+  - Removed generic transport parameter (simpler API)
+  - All `Elicitation::elicit` methods now use `&Peer<RoleClient>` instead of `&Client<T>`
+- **Client Creation**: New pattern using `ServiceExt::serve()`
+  ```rust
+  // Old (pmcp):
+  let transport = StdioTransport::new();
+  let client = pmcp::Client::new(transport);
+
+  // New (rmcp):
+  let client = ()
+      .serve(rmcp::transport::stdio(
+          tokio::io::stdin(),
+          tokio::io::stdout(),
+      ))
+      .await?;
+  ```
+
+#### Error Types
+- Added `RmcpError` wrapper for `rmcp::ErrorData`
+- Added `ServiceError` wrapper for `rmcp::service::ServiceError`
+- Removed `PmcpError` (replaced by `RmcpError`)
+- Updated `ElicitErrorKind` enum:
+  - Changed: `Mcp(PmcpError)` → `Rmcp(RmcpError)`
+  - Added: `Service(ServiceError)`
+
+#### Internal Changes
+- MCP tool parameter builders now return `Map<String, Value>` instead of `Value`
+- Content extraction updated for `Annotated<RawContent>` structure
+- All implementations updated across primitives, containers, and collections
+
+#### Dependencies
+- **Removed**: `pmcp = "1.4"` and 100+ transitive dependencies
+- **Added**: `rmcp = "0.12"` (official Rust MCP SDK)
+- Reduced dependency tree significantly
+
+### Migration Guide
+
+To upgrade from 0.1.0 to 0.2.0:
+
+1. **Update Cargo.toml**:
+   ```toml
+   [dependencies]
+   elicitation = "0.2"
+   rmcp = "0.12"  # Changed from pmcp = "1.4"
+   ```
+
+2. **Update imports**:
+   ```rust
+   // Remove:
+   use pmcp::StdioTransport;
+
+   // Add:
+   use rmcp::ServiceExt;
+   ```
+
+3. **Update client creation**:
+   ```rust
+   // Old:
+   let transport = StdioTransport::new();
+   let client = pmcp::Client::new(transport);
+
+   // New:
+   let client = ()
+       .serve(rmcp::transport::stdio(
+           tokio::io::stdin(),
+           tokio::io::stdout(),
+       ))
+       .await?;
+   ```
+
+4. **Update function signatures** (if you implemented `Elicitation` manually):
+   ```rust
+   // Old:
+   async fn elicit<T: pmcp::shared::transport::Transport>(
+       client: &pmcp::Client<T>,
+   ) -> ElicitResult<Self> { ... }
+
+   // New:
+   async fn elicit(
+       client: &rmcp::service::Peer<rmcp::service::RoleClient>,
+   ) -> ElicitResult<Self> { ... }
+   ```
+
+### Benefits
+- Official SDK support and maintenance from the MCP team
+- Cleaner API without generic type parameters
+- Better type safety with `Peer<RoleClient>`
+- Significantly reduced dependency tree
+- Improved performance and reliability
+
+---
+
 ## [0.1.0] - 2025-01-XX
 
 ### Added
@@ -122,7 +222,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - derive_more for all `Display` and `Error` implementations
 
 ### Dependencies
-- `pmcp = "1.4"` - MCP client
+- `rmcp = "0.12"` - Official Rust MCP SDK (changed from pmcp)
 - `tracing = "0.1"` - Structured logging
 - `tokio = "1"` - Async runtime
 - `derive_more = "1"` - Derive utilities
@@ -132,7 +232,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Compatibility
 - **Rust Version**: 1.70+ (2021 edition)
 - **MCP Clients**: Claude Desktop, Claude CLI
-- **Platforms**: All platforms supported by Rust and pmcp
+- **Platforms**: All platforms supported by Rust and rmcp
 
 ---
 
@@ -155,5 +255,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cross-field validation
 - Interactive features (pending MCP protocol enhancements)
 
+[0.2.0]: https://github.com/crumplecup/elicitation/releases/tag/v0.2.0
 [0.1.0]: https://github.com/crumplecup/elicitation/releases/tag/v0.1.0
-[Unreleased]: https://github.com/crumplecup/elicitation/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/crumplecup/elicitation/compare/v0.2.0...HEAD

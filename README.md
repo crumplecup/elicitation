@@ -20,7 +20,7 @@
   - **Affirm** - Yes/no confirmation (bool pattern)
   - **Survey** - Multi-field elicitation (struct pattern)
   - **Authorize** - Permission policies (planned for v0.2.0)
-- **MCP Integration** - Uses pmcp for high-performance communication
+- **MCP Integration** - Uses official rmcp (Rust MCP SDK) for communication
 
 ## Supported Types
 
@@ -62,8 +62,8 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-elicitation = "0.1"
-pmcp = "1.4"
+elicitation = "0.2"
+rmcp = "0.12"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
@@ -108,7 +108,7 @@ Add your MCP server to Claude Desktop's configuration:
 
 ### How It Works
 
-1. Your application creates an MCP client with `StdioTransport::new()`
+1. Your application creates an MCP client with `rmcp::transport::stdio()`
 2. Claude (the MCP client) provides elicitation tools via stdin/stdout
 3. When you call `.elicit()`, it sends tool requests to Claude
 4. Claude prompts the user and validates responses
@@ -120,7 +120,7 @@ Add your MCP server to Claude Desktop's configuration:
 
 ```rust
 use elicitation::{Elicit, Elicitation, ElicitResult};
-use pmcp::StdioTransport;
+use rmcp::ServiceExt;
 
 // Derive for enums (Select pattern)
 #[derive(Debug, Elicit)]
@@ -149,9 +149,13 @@ struct Task {
 
 #[tokio::main]
 async fn main() -> ElicitResult<()> {
-    // Create MCP client
-    let transport = StdioTransport::new();
-    let client = pmcp::Client::new(transport);
+    // Create MCP client via stdio transport
+    let client = ()
+        .serve(rmcp::transport::stdio(
+            tokio::io::stdin(),
+            tokio::io::stdout(),
+        ))
+        .await?;
 
     // Elicit a complete task from the user
     let task = Task::elicit(&client).await?;
@@ -433,14 +437,18 @@ struct Department {
 
 ## MCP Integration
 
-The library uses [pmcp](https://crates.io/crates/pmcp) for MCP communication:
+The library uses the official [rmcp](https://crates.io/crates/rmcp) (Rust MCP SDK) for MCP communication:
 
 ```rust
-use pmcp::StdioTransport;
+use rmcp::ServiceExt;
 
-// Create transport (stdio for Claude Desktop)
-let transport = StdioTransport::new();
-let client = pmcp::Client::new(transport);
+// Create client via stdio transport (for Claude Desktop/CLI)
+let client = ()
+    .serve(rmcp::transport::stdio(
+        tokio::io::stdin(),
+        tokio::io::stdout(),
+    ))
+    .await?;
 
 // Use with elicitation
 let value = MyType::elicit(&client).await?;
@@ -451,7 +459,7 @@ let value = MyType::elicit(&client).await?;
 - [API Documentation](https://docs.rs/elicitation)
 - [Examples](./crates/elicitation/examples/)
 - [MCP Protocol](https://modelcontextprotocol.io)
-- [pmcp crate](https://docs.rs/pmcp)
+- [rmcp crate](https://docs.rs/rmcp)
 
 ## Contributing
 
@@ -483,7 +491,7 @@ cargo doc --open
 
 This project follows [Semantic Versioning](https://semver.org/).
 
-Current version: **0.1.0**
+Current version: **0.2.0**
 
 ## License
 
@@ -500,6 +508,6 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 ## Acknowledgments
 
-- Built with [pmcp](https://crates.io/crates/pmcp) for MCP integration
+- Built with [rmcp](https://crates.io/crates/rmcp) - the official Rust MCP SDK
 - Powered by [tokio](https://tokio.rs) for async runtime
 - Uses [tracing](https://github.com/tokio-rs/tracing) for observability

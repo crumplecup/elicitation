@@ -3,11 +3,14 @@ members = ["crates/elicitation", "crates/elicitation_derive"]
 resolver = "2"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/crumplecup/elicitation"
 authors = ["crumplecup"]
+homepage = "https://github.com/crumplecup/elicitation"
+documentation = "https://docs.rs/elicitation"
+readme = "README.md"
 
 [workspace.dependencies]
 # MCP client
