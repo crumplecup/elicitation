@@ -12,7 +12,7 @@
 //! - Collections (Vec<T>)
 
 use elicitation::{ElicitResult, Elicitation};
-use pmcp::StdioTransport;
+use rmcp::ServiceExt;
 
 #[tokio::main]
 async fn main() -> ElicitResult<()> {
@@ -24,8 +24,9 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Starting simple types example");
 
     // Create MCP client with stdio transport
-    let transport = StdioTransport::new();
-    let client = pmcp::Client::new(transport);
+    let client = ()
+        .serve(rmcp::transport::stdio())
+        .await.expect("Failed to create MCP client");
 
     // Elicit an integer
     tracing::info!("=== Eliciting integer ===");

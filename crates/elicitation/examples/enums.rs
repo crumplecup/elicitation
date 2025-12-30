@@ -7,7 +7,7 @@
 //! allowing users to choose from a finite set of options.
 
 use elicitation::{Elicit, ElicitResult, Elicitation, Prompt, Select};
-use pmcp::StdioTransport;
+use rmcp::ServiceExt;
 
 /// Simple enum with default prompt
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
@@ -50,8 +50,9 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Starting enum elicitation example");
 
     // Create MCP client with stdio transport
-    let transport = StdioTransport::new();
-    let client = pmcp::Client::new(transport);
+    let client = ()
+        .serve(rmcp::transport::stdio())
+        .await.expect("Failed to create MCP client");
 
     // Elicit priority level
     tracing::info!("=== Eliciting priority ===");

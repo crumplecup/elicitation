@@ -12,7 +12,7 @@
 //! - SocketAddrV6 - IPv6 socket addresses
 
 use elicitation::{ElicitResult, Elicitation};
-use pmcp::StdioTransport;
+use rmcp::ServiceExt;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 
 #[tokio::main]
@@ -24,9 +24,13 @@ async fn main() -> ElicitResult<()> {
 
     tracing::info!("Starting network type elicitation example");
 
-    // Create MCP client
-    let transport = StdioTransport::new();
-    let client = pmcp::Client::new(transport);
+    // Create MCP client with stdio transport
+
+    let client = ()
+
+        .serve(rmcp::transport::stdio())
+
+        .await.expect("Failed to create MCP client");
 
     // Elicit a generic IP address (can be v4 or v6)
     tracing::info!("=== Eliciting IpAddr ===");

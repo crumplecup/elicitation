@@ -7,7 +7,7 @@
 //! - [T; N] - Fixed-size arrays with const generics
 
 use elicitation::{ElicitResult, Elicitation};
-use pmcp::StdioTransport;
+use rmcp::ServiceExt;
 
 #[tokio::main]
 async fn main() -> ElicitResult<()> {
@@ -18,9 +18,13 @@ async fn main() -> ElicitResult<()> {
 
     tracing::info!("Starting fixed-size array elicitation example");
 
-    // Create MCP client
-    let transport = StdioTransport::new();
-    let client = pmcp::Client::new(transport);
+    // Create MCP client with stdio transport
+
+    let client = ()
+
+        .serve(rmcp::transport::stdio())
+
+        .await.expect("Failed to create MCP client");
 
     // Elicit a small array
     tracing::info!("=== Eliciting [i32; 3] ===");

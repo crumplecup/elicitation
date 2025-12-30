@@ -9,7 +9,7 @@
 //! - Tuples with complex nested types
 
 use elicitation::{ElicitResult, Elicitation};
-use pmcp::StdioTransport;
+use rmcp::ServiceExt;
 
 #[tokio::main]
 async fn main() -> ElicitResult<()> {
@@ -20,9 +20,13 @@ async fn main() -> ElicitResult<()> {
 
     tracing::info!("Starting tuple elicitation example");
 
-    // Create MCP client
-    let transport = StdioTransport::new();
-    let client = pmcp::Client::new(transport);
+    // Create MCP client with stdio transport
+
+    let client = ()
+
+        .serve(rmcp::transport::stdio())
+
+        .await.expect("Failed to create MCP client");
 
     // Elicit a simple 2-tuple (pair)
     tracing::info!("=== Eliciting (String, i32) ===");

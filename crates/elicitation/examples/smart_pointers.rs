@@ -9,7 +9,7 @@
 //! - Arc<T> - Thread-safe reference-counted values
 
 use elicitation::{ElicitResult, Elicitation};
-use pmcp::StdioTransport;
+use rmcp::ServiceExt;
 use std::rc::Rc;
 use std::sync::Arc;
 
@@ -22,9 +22,13 @@ async fn main() -> ElicitResult<()> {
 
     tracing::info!("Starting smart pointer elicitation example");
 
-    // Create MCP client
-    let transport = StdioTransport::new();
-    let client = pmcp::Client::new(transport);
+    // Create MCP client with stdio transport
+
+    let client = ()
+
+        .serve(rmcp::transport::stdio())
+
+        .await.expect("Failed to create MCP client");
 
     // Elicit a Box<String>
     tracing::info!("=== Eliciting Box<String> ===");

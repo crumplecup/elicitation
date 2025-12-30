@@ -7,7 +7,7 @@
 //! eliciting each field sequentially to build the complete structure.
 
 use elicitation::{Elicit, ElicitResult, Elicitation};
-use pmcp::StdioTransport;
+use rmcp::ServiceExt;
 
 /// Simple struct with default prompts
 #[derive(Debug, Elicit)]
@@ -77,8 +77,9 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Starting struct elicitation example");
 
     // Create MCP client with stdio transport
-    let transport = StdioTransport::new();
-    let client = pmcp::Client::new(transport);
+    let client = ()
+        .serve(rmcp::transport::stdio())
+        .await.expect("Failed to create MCP client");
 
     // Elicit a simple person
     tracing::info!("=== Eliciting Person ===");

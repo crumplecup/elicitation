@@ -2,7 +2,10 @@
 
 > Conversational elicitation of strongly-typed Rust values via MCP
 
+[![Crates.io](https://img.shields.io/crates/v/elicitation.svg)](https://crates.io/crates/elicitation)
+[![Documentation](https://docs.rs/elicitation/badge.svg)](https://docs.rs/elicitation)
 [![License](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg)](LICENSE-APACHE)
+[![Downloads](https://img.shields.io/crates/d/elicitation.svg)](https://crates.io/crates/elicitation)
 [![Rust](https://img.shields.io/badge/rust-2021-orange.svg)](https://www.rust-lang.org)
 
 `elicitation` is a Rust library that transforms conversational LLM interactions into strongly-typed Rust values through the Model Context Protocol (MCP). It provides a trait-based system for eliciting primitive types, enums, structs, and nested data structures through natural language interaction.
@@ -151,10 +154,7 @@ struct Task {
 async fn main() -> ElicitResult<()> {
     // Create MCP client via stdio transport
     let client = ()
-        .serve(rmcp::transport::stdio(
-            tokio::io::stdin(),
-            tokio::io::stdout(),
-        ))
+        .serve(rmcp::transport::stdio())
         .await?;
 
     // Elicit a complete task from the user
@@ -444,10 +444,7 @@ use rmcp::ServiceExt;
 
 // Create client via stdio transport (for Claude Desktop/CLI)
 let client = ()
-    .serve(rmcp::transport::stdio(
-        tokio::io::stdin(),
-        tokio::io::stdout(),
-    ))
+    .serve(rmcp::transport::stdio())
     .await?;
 
 // Use with elicitation

@@ -10,7 +10,7 @@
 //! - BTreeSet<T> - Ordered unique items
 
 use elicitation::{Elicit, ElicitResult, Elicitation, Prompt, Select};
-use pmcp::StdioTransport;
+use rmcp::ServiceExt;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, LinkedList, VecDeque};
 
 /// Configuration value that can be a string or number
@@ -29,9 +29,13 @@ async fn main() -> ElicitResult<()> {
 
     tracing::info!("Starting collections elicitation example");
 
-    // Create MCP client
-    let transport = StdioTransport::new();
-    let client = pmcp::Client::new(transport);
+    // Create MCP client with stdio transport
+
+    let client = ()
+
+        .serve(rmcp::transport::stdio())
+
+        .await.expect("Failed to create MCP client");
 
     // Elicit a HashMap
     tracing::info!("=== Eliciting HashMap<String, i32> ===");

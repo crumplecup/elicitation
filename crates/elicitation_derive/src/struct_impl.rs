@@ -214,8 +214,8 @@ fn generate_elicit_impl(
     quote! {
         impl elicitation::Elicitation for #name {
             #[tracing::instrument(skip(client), fields(struct_name = stringify!(#name)))]
-            async fn elicit<T: elicitation::pmcp::shared::transport::Transport>(
-                client: &elicitation::pmcp::Client<T>,
+            async fn elicit(
+                client: &elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>,
             ) -> elicitation::ElicitResult<Self> {
                 tracing::info!(struct_name = stringify!(#name), "Starting survey");
 

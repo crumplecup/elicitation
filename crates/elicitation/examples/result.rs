@@ -7,7 +7,7 @@
 //! - Result<T, E> - Success or failure outcomes with values
 
 use elicitation::{Elicit, ElicitResult, Elicitation, Prompt, Select};
-use pmcp::StdioTransport;
+use rmcp::ServiceExt;
 
 /// Simple error type for demonstration
 #[derive(Debug, Clone, Elicit)]
@@ -35,9 +35,13 @@ async fn main() -> ElicitResult<()> {
 
     tracing::info!("Starting Result elicitation example");
 
-    // Create MCP client
-    let transport = StdioTransport::new();
-    let client = pmcp::Client::new(transport);
+    // Create MCP client with stdio transport
+
+    let client = ()
+
+        .serve(rmcp::transport::stdio())
+
+        .await.expect("Failed to create MCP client");
 
     // Elicit a simple Result<String, String>
     tracing::info!("=== Eliciting Result<String, String> ===");

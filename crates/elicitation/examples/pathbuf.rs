@@ -7,7 +7,7 @@
 //! - PathBuf - Filesystem paths (files, directories, etc.)
 
 use elicitation::{ElicitResult, Elicitation};
-use pmcp::StdioTransport;
+use rmcp::ServiceExt;
 use std::path::PathBuf;
 
 #[tokio::main]
@@ -19,9 +19,10 @@ async fn main() -> ElicitResult<()> {
 
     tracing::info!("Starting PathBuf elicitation example");
 
-    // Create MCP client
-    let transport = StdioTransport::new();
-    let client = pmcp::Client::new(transport);
+    // Create MCP client with stdio transport
+    let client = ()
+        .serve(rmcp::transport::stdio())
+        .await.expect("Failed to create MCP client");
 
     // Elicit a file path
     tracing::info!("=== Eliciting file path ===");

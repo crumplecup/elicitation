@@ -11,7 +11,7 @@
 //! - Composition of all paradigms
 
 use elicitation::{Elicit, ElicitResult, Elicitation, Prompt, Select};
-use pmcp::StdioTransport;
+use rmcp::ServiceExt;
 
 /// Priority level for tasks
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
@@ -104,8 +104,9 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Starting complex survey example");
 
     // Create MCP client with stdio transport
-    let transport = StdioTransport::new();
-    let client = pmcp::Client::new(transport);
+    let client = ()
+        .serve(rmcp::transport::stdio())
+        .await.expect("Failed to create MCP client");
 
     // Elicit a complete project with all nested structures
     tracing::info!("=== Eliciting Project ===");
