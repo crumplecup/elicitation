@@ -1,4 +1,5 @@
 //! HashMap<K, V> implementation for key-value elicitation.
+use rmcp::service::{Peer, RoleClient};
 
 use crate::{ElicitResult, Elicitation, Prompt};
 use std::collections::HashMap;
@@ -23,8 +24,8 @@ where
         key_type = std::any::type_name::<K>(),
         value_type = std::any::type_name::<V>()
     ))]
-    async fn elicit<T: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<T>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         let mut map = HashMap::new();
         tracing::debug!("Eliciting HashMap");

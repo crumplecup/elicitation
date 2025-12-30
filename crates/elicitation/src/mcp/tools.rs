@@ -1,7 +1,5 @@
 //! MCP tool schemas and parameter builders.
 
-use serde_json::json;
-
 /// MCP tool names used by elicitation.
 pub mod tool_names {
     /// Tool for eliciting numeric values with range constraints.
@@ -41,12 +39,12 @@ pub mod tool_names {
 /// # Returns
 ///
 /// JSON object with prompt, min, and max fields.
-pub fn number_params(prompt: &str, min: i64, max: i64) -> serde_json::Value {
-    json!({
+pub fn number_params(prompt: &str, min: i64, max: i64) -> serde_json::Map<String, serde_json::Value> {
+    serde_json::json!({
         "prompt": prompt,
         "min": min,
         "max": max,
-    })
+    }).as_object().unwrap().clone()
 }
 
 /// Build parameters for elicit_bool tool.
@@ -58,8 +56,8 @@ pub fn number_params(prompt: &str, min: i64, max: i64) -> serde_json::Value {
 /// # Returns
 ///
 /// JSON object with prompt field.
-pub fn bool_params(prompt: &str) -> serde_json::Value {
-    json!({ "prompt": prompt })
+pub fn bool_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
+    serde_json::json!({ "prompt": prompt }).as_object().unwrap().clone()
 }
 
 /// Build parameters for elicit_text tool.
@@ -71,8 +69,8 @@ pub fn bool_params(prompt: &str) -> serde_json::Value {
 /// # Returns
 ///
 /// JSON object with prompt field.
-pub fn text_params(prompt: &str) -> serde_json::Value {
-    json!({ "prompt": prompt })
+pub fn text_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
+    serde_json::json!({ "prompt": prompt }).as_object().unwrap().clone()
 }
 
 /// Build parameters for elicit_select tool.
@@ -85,9 +83,9 @@ pub fn text_params(prompt: &str) -> serde_json::Value {
 /// # Returns
 ///
 /// JSON object with prompt and options fields.
-pub fn select_params(prompt: &str, options: &[&str]) -> serde_json::Value {
-    json!({
+pub fn select_params(prompt: &str, options: &[&str]) -> serde_json::Map<String, serde_json::Value> {
+    serde_json::json!({
         "prompt": prompt,
         "options": options,
-    })
+    }).as_object().unwrap().clone()
 }

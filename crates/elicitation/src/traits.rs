@@ -1,6 +1,7 @@
 //! Core traits for elicitation.
 
 use crate::ElicitResult;
+use rmcp::service::{Peer, RoleClient};
 
 /// Shared metadata for prompts across all elicitation patterns.
 ///
@@ -27,18 +28,19 @@ pub trait Prompt {
 ///
 /// ```rust,ignore
 /// use elicitation::{Elicitation, ElicitResult};
-/// # async fn example<T: pmcp::shared::transport::Transport>(client: &pmcp::Client<T>) -> ElicitResult<()> {
+/// use rmcp::service::{Peer, RoleClient};
+/// # async fn example(client: &Peer<RoleClient>) -> ElicitResult<()> {
 /// // Elicit an i32 from the user
 /// let value: i32 = i32::elicit(client).await?;
 /// # Ok(())
 /// # }
 /// ```
 pub trait Elicitation: Sized + Prompt {
-    /// Elicit a value of this type from the user via MCP.
+    /// Elicit a value of this type from the user via RMCP client.
     ///
     /// # Arguments
     ///
-    /// * `client` - The MCP client to use for interaction
+    /// * `client` - The RMCP peer (client interface) to use for interaction
     ///
     /// # Returns
     ///
@@ -50,7 +52,7 @@ pub trait Elicitation: Sized + Prompt {
     /// # Errors
     ///
     /// See [`ElicitError`](crate::ElicitError) for details on error conditions.
-    fn elicit<T: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<T>,
+    fn elicit(
+        client: &Peer<RoleClient>,
     ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send;
 }

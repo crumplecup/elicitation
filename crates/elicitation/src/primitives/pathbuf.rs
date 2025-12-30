@@ -1,6 +1,7 @@
 //! PathBuf implementation for filesystem path elicitation.
 
 use crate::{ElicitResult, Elicitation, Prompt};
+use rmcp::service::{Peer, RoleClient};
 use std::path::PathBuf;
 
 impl Prompt for PathBuf {
@@ -11,8 +12,8 @@ impl Prompt for PathBuf {
 
 impl Elicitation for PathBuf {
     #[tracing::instrument(skip(client))]
-    async fn elicit<T: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<T>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PathBuf");
 

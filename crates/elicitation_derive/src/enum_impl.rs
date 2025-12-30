@@ -124,8 +124,8 @@ fn generate_elicit_impl(name: &syn::Ident, variant_labels: &[String]) -> TokenSt
     quote! {
         impl elicitation::Elicitation for #name {
             #[tracing::instrument(skip(client), fields(enum_name = stringify!(#name)))]
-            async fn elicit<T: elicitation::pmcp::shared::transport::Transport>(
-                client: &elicitation::pmcp::Client<T>,
+            async fn elicit(
+                client: &elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>,
             ) -> elicitation::ElicitResult<Self> {
                 let prompt = Self::prompt().unwrap();
                 let labels = Self::labels();
@@ -134,10 +134,10 @@ fn generate_elicit_impl(name: &syn::Ident, variant_labels: &[String]) -> TokenSt
 
                 let params = elicitation::mcp::select_params(prompt, labels);
                 let result = client
-                    .call_tool(
-                        elicitation::mcp::tool_names::elicit_select(),
-                        params,
-                    )
+                    .call_tool(elicitation::rmcp::model::CallToolRequestParam {
+                        name: elicitation::mcp::tool_names::elicit_select().into(),
+                        arguments: Some(params),
+                    })
                     .await?;
 
                 let value = elicitation::mcp::extract_value(result)?;

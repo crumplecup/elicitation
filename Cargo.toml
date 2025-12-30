@@ -11,7 +11,7 @@ authors = ["crumplecup"]
 
 [workspace.dependencies]
 # MCP client
-pmcp = "1.4"
+rmcp = { version = "0.12", features = ["client"] }
 
 # Error handling
 derive_more = { version = "1", features = ["display", "error", "from"] }

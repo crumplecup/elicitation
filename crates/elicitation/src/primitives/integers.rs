@@ -1,6 +1,7 @@
 //! Integer type implementations using generic macros.
 
 use crate::{mcp, ElicitResult, Elicitation, Prompt};
+use rmcp::service::{Peer, RoleClient};
 
 /// Macro to implement Elicitation for all integer types.
 ///
@@ -25,8 +26,8 @@ macro_rules! impl_integer_elicit {
 
         impl Elicitation for $t {
             #[tracing::instrument(skip(client), fields(type_name = stringify!($t)))]
-            async fn elicit<T: pmcp::shared::transport::Transport>(
-                client: &pmcp::Client<T>,
+            async fn elicit(
+                client: &Peer<RoleClient>,
             ) -> ElicitResult<Self> {
                 let prompt = Self::prompt().unwrap();
                 tracing::debug!("Eliciting integer type");
@@ -34,7 +35,10 @@ macro_rules! impl_integer_elicit {
                 let params = mcp::number_params(prompt, <$t>::MIN as i64, <$t>::MAX as i64);
 
                 let result = client
-                    .call_tool(mcp::tool_names::elicit_number(), params)
+                    .call_tool(rmcp::model::CallToolRequestParam {
+                        name: mcp::tool_names::elicit_number().into(),
+                        arguments: Some(params),
+                    })
                     .await?;
 
                 let value = mcp::extract_value(result)?;

@@ -1,6 +1,7 @@
 //! Boolean type implementation using the Affirm pattern.
 
 use crate::{mcp, Affirm, ElicitResult, Elicitation, Prompt};
+use rmcp::service::{Peer, RoleClient};
 
 impl Prompt for bool {
     fn prompt() -> Option<&'static str> {
@@ -12,15 +13,18 @@ impl Affirm for bool {}
 
 impl Elicitation for bool {
     #[tracing::instrument(skip(client))]
-    async fn elicit<T: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<T>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting boolean");
 
         let params = mcp::bool_params(prompt);
         let result = client
-            .call_tool(mcp::tool_names::elicit_bool(), params)
+            .call_tool(rmcp::model::CallToolRequestParam {
+                name: mcp::tool_names::elicit_bool().into(),
+                arguments: Some(params),
+            })
             .await?;
 
         let value = mcp::extract_value(result)?;

@@ -1,4 +1,5 @@
 //! BTreeMap<K, V> implementation for ordered key-value elicitation.
+use rmcp::service::{Peer, RoleClient};
 
 use crate::{ElicitResult, Elicitation, Prompt};
 use std::collections::BTreeMap;
@@ -22,8 +23,8 @@ where
         key_type = std::any::type_name::<K>(),
         value_type = std::any::type_name::<V>()
     ))]
-    async fn elicit<T: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<T>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         let mut map = BTreeMap::new();
         tracing::debug!("Eliciting BTreeMap");

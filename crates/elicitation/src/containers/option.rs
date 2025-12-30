@@ -1,4 +1,5 @@
 //! Option<T> implementation for optional value elicitation.
+use rmcp::service::{Peer, RoleClient};
 
 use crate::{ElicitResult, Elicitation, Prompt};
 
@@ -10,8 +11,8 @@ impl<T: Elicitation + Send> Prompt for Option<T> {
 
 impl<T: Elicitation + Send> Elicitation for Option<T> {
     #[tracing::instrument(skip(client), fields(inner_type = std::any::type_name::<T>()))]
-    async fn elicit<U: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<U>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         tracing::debug!("Eliciting optional value");
 

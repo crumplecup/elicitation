@@ -3,6 +3,7 @@
 #![allow(non_snake_case)]
 
 use crate::{ElicitResult, Elicitation, Prompt};
+use rmcp::service::{Peer, RoleClient};
 
 /// Macro to implement Elicitation for tuples up to arity 12.
 macro_rules! impl_tuple_elicit {
@@ -27,8 +28,8 @@ macro_rules! impl_tuple_elicit {
                 tuple_size = count!($($T)+),
                 types = concat!($(stringify!($T), ", "),+)
             ))]
-            async fn elicit<U: pmcp::shared::transport::Transport>(
-                client: &pmcp::Client<U>,
+            async fn elicit(
+                client: &Peer<RoleClient>,
             ) -> ElicitResult<Self> {
                 tracing::debug!("Eliciting tuple");
 

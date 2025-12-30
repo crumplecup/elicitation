@@ -1,6 +1,7 @@
 //! String type implementation.
 
 use crate::{mcp, ElicitResult, Elicitation, Prompt};
+use rmcp::service::{Peer, RoleClient};
 
 impl Prompt for String {
     fn prompt() -> Option<&'static str> {
@@ -10,15 +11,18 @@ impl Prompt for String {
 
 impl Elicitation for String {
     #[tracing::instrument(skip(client))]
-    async fn elicit<T: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<T>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting string");
 
         let params = mcp::text_params(prompt);
         let result = client
-            .call_tool(mcp::tool_names::elicit_text(), params)
+            .call_tool(rmcp::model::CallToolRequestParam {
+                name: mcp::tool_names::elicit_text().into(),
+                arguments: Some(params),
+            })
             .await?;
 
         let value = mcp::extract_value(result)?;

@@ -2,11 +2,11 @@
 
 use derive_more::{Display, From};
 
-/// MCP error wrapper.
+/// RMCP error wrapper.
 #[derive(Debug, Clone, Display, derive_getters::Getters)]
-#[display("MCP error: {}", source)]
-pub struct PmcpError {
-    /// The underlying pmcp error.
+#[display("RMCP error: {}", source)]
+pub struct RmcpError {
+    /// The underlying rmcp error.
     source: String,
     /// Line number where the error occurred.
     line: u32,
@@ -14,12 +14,12 @@ pub struct PmcpError {
     file: &'static str,
 }
 
-impl std::error::Error for PmcpError {}
+impl std::error::Error for RmcpError {}
 
-impl PmcpError {
-    /// Creates a new MCP error with caller location.
+impl RmcpError {
+    /// Creates a new RMCP error with caller location.
     #[track_caller]
-    pub fn new(source: pmcp::Error) -> Self {
+    pub fn new(source: rmcp::ErrorData) -> Self {
         let loc = std::panic::Location::caller();
         Self {
             source: source.to_string(),
@@ -29,9 +29,9 @@ impl PmcpError {
     }
 }
 
-impl From<pmcp::Error> for PmcpError {
+impl From<rmcp::ErrorData> for RmcpError {
     #[track_caller]
-    fn from(source: pmcp::Error) -> Self {
+    fn from(source: rmcp::ErrorData) -> Self {
         Self::new(source)
     }
 }
@@ -73,10 +73,15 @@ impl From<serde_json::Error> for JsonError {
 /// Specific error conditions during elicitation.
 #[derive(Debug, Clone, Display, From)]
 pub enum ElicitErrorKind {
-    /// MCP error.
+    /// RMCP error.
     #[display("{}", _0)]
     #[from]
-    Mcp(PmcpError),
+    Rmcp(RmcpError),
+
+    /// Service error.
+    #[display("{}", _0)]
+    #[from]
+    Service(ServiceError),
 
     /// JSON parsing error.
     #[display("{}", _0)]
@@ -145,8 +150,43 @@ macro_rules! bridge_error {
     };
 }
 
+/// RMCP ServiceError wrapper for error conversion.
+#[derive(Debug, Clone, Display, derive_getters::Getters)]
+#[display("Service error: {}", source)]
+pub struct ServiceError {
+    /// The underlying service error message.
+    source: String,
+    /// Line number where the error occurred.
+    line: u32,
+    /// File where the error occurred.
+    file: &'static str,
+}
+
+impl std::error::Error for ServiceError {}
+
+impl ServiceError {
+    /// Creates a new service error with caller location.
+    #[track_caller]
+    pub fn new(source: rmcp::service::ServiceError) -> Self {
+        let loc = std::panic::Location::caller();
+        Self {
+            source: source.to_string(),
+            line: loc.line(),
+            file: loc.file(),
+        }
+    }
+}
+
+impl From<rmcp::service::ServiceError> for ServiceError {
+    #[track_caller]
+    fn from(source: rmcp::service::ServiceError) -> Self {
+        Self::new(source)
+    }
+}
+
 // Bridge From implementations to chain external errors through wrappers
-bridge_error!(pmcp::Error => PmcpError);
+bridge_error!(rmcp::ErrorData => RmcpError);
+bridge_error!(rmcp::service::ServiceError => ServiceError);
 bridge_error!(serde_json::Error => JsonError);
 
 /// Elicitation error with location tracking.
@@ -160,7 +200,8 @@ pub struct ElicitError(Box<ElicitErrorKind>);
 impl std::error::Error for ElicitError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match &*self.0 {
-            ElicitErrorKind::Mcp(e) => Some(e),
+            ElicitErrorKind::Rmcp(e) => Some(e),
+            ElicitErrorKind::Service(e) => Some(e),
             ElicitErrorKind::Json(e) => Some(e),
             _ => None,
         }
@@ -222,7 +263,8 @@ impl From<ElicitErrorKind> for ElicitError {
 }
 
 // Implement From for all external error types
-error_from!(pmcp::Error);
+error_from!(rmcp::ErrorData);
+error_from!(rmcp::service::ServiceError);
 error_from!(serde_json::Error);
 
 /// Convenience alias for elicitation results.

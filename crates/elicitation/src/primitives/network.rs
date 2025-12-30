@@ -1,6 +1,7 @@
 //! Network type implementations for IP addresses and socket addresses.
 
 use crate::{ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt};
+use rmcp::service::{Peer, RoleClient};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 
 // IpAddr (enum: V4 | V6)
@@ -12,8 +13,8 @@ impl Prompt for IpAddr {
 
 impl Elicitation for IpAddr {
     #[tracing::instrument(skip(client))]
-    async fn elicit<T: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<T>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IpAddr");
 
@@ -44,8 +45,8 @@ impl Prompt for Ipv4Addr {
 
 impl Elicitation for Ipv4Addr {
     #[tracing::instrument(skip(client))]
-    async fn elicit<T: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<T>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv4Addr");
 
@@ -76,8 +77,8 @@ impl Prompt for Ipv6Addr {
 
 impl Elicitation for Ipv6Addr {
     #[tracing::instrument(skip(client))]
-    async fn elicit<T: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<T>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv6Addr");
 
@@ -108,8 +109,8 @@ impl Prompt for SocketAddr {
 
 impl Elicitation for SocketAddr {
     #[tracing::instrument(skip(client))]
-    async fn elicit<T: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<T>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddr");
 
@@ -140,8 +141,8 @@ impl Prompt for SocketAddrV4 {
 
 impl Elicitation for SocketAddrV4 {
     #[tracing::instrument(skip(client))]
-    async fn elicit<T: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<T>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddrV4");
 
@@ -172,8 +173,8 @@ impl Prompt for SocketAddrV6 {
 
 impl Elicitation for SocketAddrV6 {
     #[tracing::instrument(skip(client))]
-    async fn elicit<T: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<T>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddrV6");
 

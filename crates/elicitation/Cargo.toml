@@ -11,7 +11,7 @@ keywords = ["mcp", "llm", "elicitation", "conversational", "types"]
 categories = ["development-tools", "text-processing"]
 
 [dependencies]
-pmcp = { workspace = true }
+rmcp = { workspace = true }
 derive_more = { workspace = true }
 derive-getters = { workspace = true }
 tracing = { workspace = true }

@@ -1,4 +1,5 @@
 //! VecDeque<T> implementation for double-ended queue elicitation.
+use rmcp::service::{Peer, RoleClient};
 
 use crate::{ElicitResult, Elicitation, Prompt};
 use std::collections::VecDeque;
@@ -17,8 +18,8 @@ where
     T: Elicitation + Send,
 {
     #[tracing::instrument(skip(client), fields(item_type = std::any::type_name::<T>()))]
-    async fn elicit<U: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<U>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         let mut deque = VecDeque::new();
         tracing::debug!("Eliciting VecDeque");

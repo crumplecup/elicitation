@@ -1,6 +1,7 @@
 //! Duration type implementation for time duration elicitation.
 
 use crate::{ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt};
+use rmcp::service::{Peer, RoleClient};
 use std::time::Duration;
 
 impl Prompt for Duration {
@@ -11,8 +12,8 @@ impl Prompt for Duration {
 
 impl Elicitation for Duration {
     #[tracing::instrument(skip(client))]
-    async fn elicit<T: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<T>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Duration");
 

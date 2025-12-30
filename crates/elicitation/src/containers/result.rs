@@ -1,4 +1,5 @@
 //! Result<T, E> implementation for success/error elicitation.
+use rmcp::service::{Peer, RoleClient};
 
 use crate::{ElicitResult, Elicitation, Prompt};
 
@@ -21,8 +22,8 @@ where
         ok_type = std::any::type_name::<T>(),
         err_type = std::any::type_name::<E>()
     ))]
-    async fn elicit<U: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<U>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Result");
 

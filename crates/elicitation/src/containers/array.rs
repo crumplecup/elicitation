@@ -1,4 +1,5 @@
 //! Fixed-size array [T; N] implementation using const generics.
+use rmcp::service::{Peer, RoleClient};
 
 use crate::{ElicitResult, Elicitation, Prompt};
 
@@ -19,8 +20,8 @@ where
         item_type = std::any::type_name::<T>(),
         size = N
     ))]
-    async fn elicit<U: pmcp::shared::transport::Transport>(
-        client: &pmcp::Client<U>,
+    async fn elicit(
+        client: &Peer<RoleClient>,
     ) -> ElicitResult<Self> {
         tracing::debug!(size = N, "Eliciting fixed-size array");
 
