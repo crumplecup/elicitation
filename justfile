@@ -10,24 +10,18 @@ default:
 # Development Setup
 # ================
 
-# Install required cargo plugins
-install-cargo-tools:
-    @echo "🔧 Installing cargo tools..."
+# Install all required development tools
+setup:
+    @echo "🔧 Installing development tools..."
+    cargo install just || true
     cargo install cargo-audit || true
     cargo install cargo-dist || true
+    cargo install cargo-release || true
+    cargo install git-cliff || true
     cargo install omnibor-cli || true
     cargo install cargo-hack || true
     cargo install cargo-nextest || true
-    @echo "✅ Cargo tools installed"
-
-# Update just itself
-update-just:
-    @echo "⚡ Updating just..."
-    cargo install just || true
-
-# Update all development tools
-update-tools: install-cargo-tools update-just
-    @echo "✅ All tools updated!"
+    @echo "✅ All development tools installed"
 
 # Building and Checking
 # ======================
@@ -240,7 +234,7 @@ fix-all: fmt lint-fix
 
 # Check for security vulnerabilities in dependencies
 audit:
-    @command -v cargo-audit >/dev/null 2>&1 || (echo "❌ cargo-audit not installed. Run: just install-cargo-tools" && exit 1)
+    @command -v cargo-audit >/dev/null 2>&1 || (echo "❌ cargo-audit not installed. Run: just setup" && exit 1)
     cargo audit
 
 # Update dependencies and check for vulnerabilities
@@ -250,7 +244,7 @@ audit-fix:
 
 # Generate OmniBOR artifact tree for supply chain transparency
 omnibor:
-    @command -v omnibor >/dev/null 2>&1 || (echo "❌ omnibor-cli not installed. Run: just install-cargo-tools" && exit 1)
+    @command -v omnibor >/dev/null 2>&1 || (echo "❌ omnibor-cli not installed. Run: just setup" && exit 1)
     omnibor --help > /dev/null && echo "✅ OmniBOR installed" || echo "❌ OmniBOR not found"
 
 # Run all security checks
@@ -272,37 +266,95 @@ pre-commit: fix-all check-features test-full
 pre-merge: pre-commit test-api
     @echo "✅ Ready to merge!"
 
-# Prepare for release (all checks + security + release build)
-pre-release: ci security build
+# Prepare for release (all checks + security + changelog update + release build)
+pre-release: ci security
+    @echo "📋 Generating changelog preview..."
+    git cliff --unreleased
+    @echo ""
+    @echo "📦 Testing release dry-run..."
+    cargo release --workspace --no-publish --no-push --no-tag --allow-branch '*' --execute
+    @echo ""
+    @echo "🏗️  Building release artifacts..."
+    just build
+    @echo ""
     @echo "✅ Ready for release!"
+    @echo ""
+    @echo "Next steps:"
+    @echo "  1. Review changelog above"
+    @echo "  2. Run: git cliff --unreleased --prepend CHANGELOG.md"
+    @echo "  3. Commit changelog updates"
+    @echo "  4. Run: cargo release [patch|minor|major] --workspace --execute"
 
 # Release Management (cargo-dist)
 # ==================
 
 # Build distribution artifacts for current platform
 dist-build:
-    @command -v dist >/dev/null 2>&1 || (echo "❌ cargo-dist not installed. Run: just install-cargo-tools" && exit 1)
+    @command -v dist >/dev/null 2>&1 || (echo "❌ cargo-dist not installed. Run: just setup" && exit 1)
     dist build
 
 # Build and check distribution artifacts (doesn't upload)
 dist-check:
-    @command -v dist >/dev/null 2>&1 || (echo "❌ cargo-dist not installed. Run: just install-cargo-tools" && exit 1)
+    @command -v dist >/dev/null 2>&1 || (echo "❌ cargo-dist not installed. Run: just setup" && exit 1)
     dist build --check
 
 # Generate release configuration
 dist-init:
-    @command -v dist >/dev/null 2>&1 || (echo "❌ cargo-dist not installed. Run: just install-cargo-tools" && exit 1)
+    @command -v dist >/dev/null 2>&1 || (echo "❌ cargo-dist not installed. Run: just setup" && exit 1)
     dist init
 
 # Plan a release (preview changes)
 dist-plan:
-    @command -v dist >/dev/null 2>&1 || (echo "❌ cargo-dist not installed. Run: just install-cargo-tools" && exit 1)
+    @command -v dist >/dev/null 2>&1 || (echo "❌ cargo-dist not installed. Run: just setup" && exit 1)
     dist plan
 
 # Generate CI workflow files
 dist-generate:
-    @command -v dist >/dev/null 2>&1 || (echo "❌ cargo-dist not installed. Run: just install-cargo-tools" && exit 1)
+    @command -v dist >/dev/null 2>&1 || (echo "❌ cargo-dist not installed. Run: just setup" && exit 1)
     dist generate
+
+# Changelog and Release
+# ====================
+
+# Generate changelog for unreleased changes
+changelog-preview:
+    @command -v git-cliff >/dev/null 2>&1 || (echo "❌ git-cliff not installed. Run: just setup" && exit 1)
+    git cliff --unreleased
+
+# Update CHANGELOG.md with unreleased changes
+changelog-update:
+    @command -v git-cliff >/dev/null 2>&1 || (echo "❌ git-cliff not installed. Run: just setup" && exit 1)
+    @echo "📋 Updating CHANGELOG.md..."
+    git cliff --unreleased --prepend CHANGELOG.md
+    @echo "✅ CHANGELOG.md updated"
+
+# Generate full changelog
+changelog-full:
+    @command -v git-cliff >/dev/null 2>&1 || (echo "❌ git-cliff not installed. Run: just setup" && exit 1)
+    git cliff --output CHANGELOG.md
+
+# Dry-run release (shows what would happen)
+release-dry-run level="patch":
+    @command -v cargo-release >/dev/null 2>&1 || (echo "❌ cargo-release not installed. Run: just setup" && exit 1)
+    @echo "🔍 Dry-run release {{level}}..."
+    cargo release {{level}} --workspace --no-publish --no-push --no-tag --allow-branch '*'
+
+# Execute release (bumps version, tags, pushes)
+release level="patch":
+    @command -v cargo-release >/dev/null 2>&1 || (echo "❌ cargo-release not installed. Run: just setup" && exit 1)
+    @echo "🚀 Releasing {{level}} version..."
+    @echo "⚠️  This will:"
+    @echo "   - Bump version in Cargo.toml files"
+    @echo "   - Create git tag"
+    @echo "   - Push to remote"
+    @echo ""
+    @read -p "Continue? (y/N) " -n 1 -r; echo; \
+    if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
+        cargo release {{level}} --workspace --execute; \
+    else \
+        echo "❌ Release cancelled"; \
+        exit 1; \
+    fi
 
 # Documentation
 # =============
