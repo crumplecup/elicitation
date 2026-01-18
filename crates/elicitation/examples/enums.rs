@@ -50,9 +50,7 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Starting enum elicitation example");
 
     // Create MCP client with stdio transport
-    let client = ()
-        .serve(rmcp::transport::stdio())
-        .await.expect("Failed to create MCP client");
+    let client = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
 
     // Elicit priority level
     tracing::info!("=== Eliciting priority ===");

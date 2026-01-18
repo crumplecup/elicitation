@@ -18,9 +18,7 @@ where
     T: Elicitation + Ord + Send,
 {
     #[tracing::instrument(skip(client), fields(item_type = std::any::type_name::<T>()))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         let mut set = BTreeSet::new();
         tracing::debug!("Eliciting BTreeSet");
 

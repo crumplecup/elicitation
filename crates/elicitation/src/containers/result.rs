@@ -22,9 +22,7 @@ where
         ok_type = std::any::type_name::<T>(),
         err_type = std::any::type_name::<E>()
     ))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Result");
 
         // First, ask if it's Ok or Err

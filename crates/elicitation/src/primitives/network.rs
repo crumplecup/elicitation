@@ -13,9 +13,7 @@ impl Prompt for IpAddr {
 
 impl Elicitation for IpAddr {
     #[tracing::instrument(skip(client))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IpAddr");
 
         let ip_str = String::elicit(client).await?;
@@ -45,9 +43,7 @@ impl Prompt for Ipv4Addr {
 
 impl Elicitation for Ipv4Addr {
     #[tracing::instrument(skip(client))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv4Addr");
 
         let ip_str = String::elicit(client).await?;
@@ -77,9 +73,7 @@ impl Prompt for Ipv6Addr {
 
 impl Elicitation for Ipv6Addr {
     #[tracing::instrument(skip(client))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv6Addr");
 
         let ip_str = String::elicit(client).await?;
@@ -109,9 +103,7 @@ impl Prompt for SocketAddr {
 
 impl Elicitation for SocketAddr {
     #[tracing::instrument(skip(client))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddr");
 
         let addr_str = String::elicit(client).await?;
@@ -141,9 +133,7 @@ impl Prompt for SocketAddrV4 {
 
 impl Elicitation for SocketAddrV4 {
     #[tracing::instrument(skip(client))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddrV4");
 
         let addr_str = String::elicit(client).await?;
@@ -173,9 +163,7 @@ impl Prompt for SocketAddrV6 {
 
 impl Elicitation for SocketAddrV6 {
     #[tracing::instrument(skip(client))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddrV6");
 
         let addr_str = String::elicit(client).await?;

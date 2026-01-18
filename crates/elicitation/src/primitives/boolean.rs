@@ -13,9 +13,7 @@ impl Affirm for bool {}
 
 impl Elicitation for bool {
     #[tracing::instrument(skip(client))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting boolean");
 
@@ -24,6 +22,7 @@ impl Elicitation for bool {
             .call_tool(rmcp::model::CallToolRequestParam {
                 name: mcp::tool_names::elicit_bool().into(),
                 arguments: Some(params),
+                task: None,
             })
             .await?;
 

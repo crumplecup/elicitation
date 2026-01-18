@@ -21,9 +21,7 @@ where
     T: Elicitation + Send,
 {
     #[tracing::instrument(skip(client), fields(inner_type = std::any::type_name::<T>()))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Box");
         T::elicit(client).await.map(Box::new)
     }
@@ -45,9 +43,7 @@ where
     T: Elicitation + Send,
 {
     #[tracing::instrument(skip(client), fields(inner_type = std::any::type_name::<T>()))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Rc");
         T::elicit(client).await.map(Rc::new)
     }
@@ -69,9 +65,7 @@ where
     T: Elicitation + Send,
 {
     #[tracing::instrument(skip(client), fields(inner_type = std::any::type_name::<T>()))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Arc");
         T::elicit(client).await.map(Arc::new)
     }

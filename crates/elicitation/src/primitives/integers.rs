@@ -26,9 +26,7 @@ macro_rules! impl_integer_elicit {
 
         impl Elicitation for $t {
             #[tracing::instrument(skip(client), fields(type_name = stringify!($t)))]
-            async fn elicit(
-                client: &Peer<RoleClient>,
-            ) -> ElicitResult<Self> {
+            async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
                 let prompt = Self::prompt().unwrap();
                 tracing::debug!("Eliciting integer type");
 
@@ -38,6 +36,7 @@ macro_rules! impl_integer_elicit {
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_number().into(),
                         arguments: Some(params),
+                        task: None,
                     })
                     .await?;
 

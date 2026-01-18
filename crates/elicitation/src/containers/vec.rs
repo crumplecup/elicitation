@@ -11,9 +11,7 @@ impl<T: Elicitation + Send> Prompt for Vec<T> {
 
 impl<T: Elicitation + Send> Elicitation for Vec<T> {
     #[tracing::instrument(skip(client), fields(item_type = std::any::type_name::<T>()))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         let mut items = Vec::new();
         tracing::debug!("Eliciting vector");
 

@@ -5,6 +5,34 @@ All notable changes to the `elicitation` project will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-01-18
+
+### Added
+
+- **Enum variants with fields** - `#[derive(Elicit)]` now supports:
+  - Tuple variants: `Variant(T1, T2, ...)`
+  - Struct variants: `Variant { field1: T1, field2: T2 }`
+  - Mixed enums with unit, tuple, and struct variants
+- Full tracing instrumentation for field elicitation
+- Support for nested enums (enum fields in variants)
+- Automatic recursive elicitation for complex field types
+
+### Changed
+
+- Enhanced `Elicitation` implementation for enums:
+  - Two-phase elicitation: variant selection → field elicitation
+  - Each field type must implement `Elicitation` trait
+  - Error context preserved for field elicitation failures
+- Updated documentation with variant type examples
+- Enhanced error messages for invalid variant selections
+
+### Technical Details
+
+- New internal structures: `VariantInfo`, `VariantFields`, `FieldInfo`
+- Generated code includes full tracing spans with variant context
+- Variant field elicitation is sequential (tuple fields by index, struct fields by name)
+- Each field type's `Elicitation` impl handles its own prompting
+
 ## [0.2.0] - 2025-12-29
 
 ### Changed
