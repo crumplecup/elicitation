@@ -1,6 +1,6 @@
 //! String type implementation.
 
-use crate::{mcp, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitResult, Elicitation, Prompt, mcp};
 use rmcp::service::{Peer, RoleClient};
 
 impl Prompt for String {

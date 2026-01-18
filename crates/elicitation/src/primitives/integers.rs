@@ -1,6 +1,6 @@
 //! Integer type implementations using generic macros.
 
-use crate::{mcp, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitResult, Elicitation, Prompt, mcp};
 use rmcp::service::{Peer, RoleClient};
 
 /// Macro to implement Elicitation for all integer types.

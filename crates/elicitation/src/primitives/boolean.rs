@@ -1,6 +1,6 @@
 //! Boolean type implementation using the Affirm pattern.
 
-use crate::{mcp, Affirm, ElicitResult, Elicitation, Prompt};
+use crate::{Affirm, ElicitResult, Elicitation, Prompt, mcp};
 use rmcp::service::{Peer, RoleClient};
 
 impl Prompt for bool {

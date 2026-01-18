@@ -1,6 +1,6 @@
 //! Floating-point type implementations using generic macros.
 
-use crate::{mcp, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, mcp};
 use rmcp::service::{Peer, RoleClient};
 use serde_json::Value;
 
