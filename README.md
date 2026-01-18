@@ -6,7 +6,7 @@
 [![Documentation](https://docs.rs/elicitation/badge.svg)](https://docs.rs/elicitation)
 [![License](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg)](LICENSE-APACHE)
 [![Downloads](https://img.shields.io/crates/d/elicitation.svg)](https://crates.io/crates/elicitation)
-[![Rust](https://img.shields.io/badge/rust-2021-orange.svg)](https://www.rust-lang.org)
+[![Rust](https://img.shields.io/badge/rust-2024-orange.svg)](https://www.rust-lang.org)
 
 `elicitation` is a Rust library that transforms conversational LLM interactions into strongly-typed Rust values through the Model Context Protocol (MCP). It provides a trait-based system for eliciting primitive types, enums, structs, and nested data structures through natural language interaction.
 
@@ -235,12 +235,63 @@ let intervals: Vec<Duration> = Vec::<Duration>::elicit(&client).await?;
 
 ### Enums (Select Pattern)
 
+#### Unit Variants (Simple Selection)
+
 ```rust
 #[derive(Debug, Elicit)]
 enum Status {
     Pending,
     InProgress,
     Completed,
+}
+
+let status = Status::elicit(&client).await?;
+```
+
+#### Tuple Variants (Select + Field Elicitation)
+
+```rust
+#[derive(Debug, Elicit)]
+enum MediaSource {
+    Url(String),
+    Base64(String),
+    Binary(Vec<u8>),
+}
+
+// User first selects variant (Url/Base64/Binary), then provides the field value
+let source = MediaSource::elicit(&client).await?;
+```
+
+#### Struct Variants (Select + Multi-Field Survey)
+
+```rust
+#[derive(Debug, Elicit)]
+enum Input {
+    Text(String),
+    Image {
+        mime: Option<String>,
+        source: MediaSource,
+    },
+    Document {
+        format: String,
+        content: String,
+    },
+}
+
+// User selects variant, then provides each field
+let input = Input::elicit(&client).await?;
+```
+
+#### Mixed Variants
+
+All three variant types can coexist in the same enum:
+
+```rust
+#[derive(Debug, Elicit)]
+enum Status {
+    Ok,                                     // Unit variant
+    Warning(String),                        // Tuple variant
+    Error { code: i32, msg: String },      // Struct variant
 }
 
 let status = Status::elicit(&client).await?;

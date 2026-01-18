@@ -12,9 +12,7 @@ impl Prompt for PathBuf {
 
 impl Elicitation for PathBuf {
     #[tracing::instrument(skip(client))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PathBuf");
 
         // Elicit as string

@@ -39,12 +39,19 @@ pub mod tool_names {
 /// # Returns
 ///
 /// JSON object with prompt, min, and max fields.
-pub fn number_params(prompt: &str, min: i64, max: i64) -> serde_json::Map<String, serde_json::Value> {
+pub fn number_params(
+    prompt: &str,
+    min: i64,
+    max: i64,
+) -> serde_json::Map<String, serde_json::Value> {
     serde_json::json!({
         "prompt": prompt,
         "min": min,
         "max": max,
-    }).as_object().unwrap().clone()
+    })
+    .as_object()
+    .unwrap()
+    .clone()
 }
 
 /// Build parameters for elicit_bool tool.
@@ -57,7 +64,10 @@ pub fn number_params(prompt: &str, min: i64, max: i64) -> serde_json::Map<String
 ///
 /// JSON object with prompt field.
 pub fn bool_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
-    serde_json::json!({ "prompt": prompt }).as_object().unwrap().clone()
+    serde_json::json!({ "prompt": prompt })
+        .as_object()
+        .unwrap()
+        .clone()
 }
 
 /// Build parameters for elicit_text tool.
@@ -70,7 +80,10 @@ pub fn bool_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
 ///
 /// JSON object with prompt field.
 pub fn text_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
-    serde_json::json!({ "prompt": prompt }).as_object().unwrap().clone()
+    serde_json::json!({ "prompt": prompt })
+        .as_object()
+        .unwrap()
+        .clone()
 }
 
 /// Build parameters for elicit_select tool.
@@ -87,5 +100,8 @@ pub fn select_params(prompt: &str, options: &[&str]) -> serde_json::Map<String, 
     serde_json::json!({
         "prompt": prompt,
         "options": options,
-    }).as_object().unwrap().clone()
+    })
+    .as_object()
+    .unwrap()
+    .clone()
 }

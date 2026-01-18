@@ -12,9 +12,7 @@ impl Prompt for Duration {
 
 impl Elicitation for Duration {
     #[tracing::instrument(skip(client))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Duration");
 
         // Elicit as f64 (supports decimal seconds)

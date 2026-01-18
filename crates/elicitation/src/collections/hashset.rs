@@ -19,9 +19,7 @@ where
     T: Elicitation + Hash + Eq + Send,
 {
     #[tracing::instrument(skip(client), fields(item_type = std::any::type_name::<T>()))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         let mut set = HashSet::new();
         tracing::debug!("Eliciting HashSet");
 

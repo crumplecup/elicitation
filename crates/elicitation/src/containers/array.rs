@@ -20,9 +20,7 @@ where
         item_type = std::any::type_name::<T>(),
         size = N
     ))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!(size = N, "Eliciting fixed-size array");
 
         // Collect items into a Vec first

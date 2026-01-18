@@ -20,11 +20,7 @@ async fn main() -> ElicitResult<()> {
 
     // Create MCP client with stdio transport
 
-    let client = ()
-
-        .serve(rmcp::transport::stdio())
-
-        .await.expect("Failed to create MCP client");
+    let client = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
 
     // Elicit a small array
     tracing::info!("=== Eliciting [i32; 3] ===");

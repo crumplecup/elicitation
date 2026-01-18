@@ -23,9 +23,7 @@ where
         key_type = std::any::type_name::<K>(),
         value_type = std::any::type_name::<V>()
     ))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         let mut map = BTreeMap::new();
         tracing::debug!("Eliciting BTreeMap");
 

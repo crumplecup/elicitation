@@ -1058,6 +1058,58 @@ Git safety:
 
 ## Release Management
 
+### Development Tools Setup
+
+Install all required tools:
+
+```bash
+just setup  # Installs just, cargo-audit, cargo-dist, cargo-release, git-cliff, etc.
+```
+
+### Changelog Management (git-cliff)
+
+Configuration: `cliff.toml`
+
+Commands:
+
+```bash
+just changelog-preview  # Preview unreleased changes
+just changelog-update   # Prepend unreleased to CHANGELOG.md
+just changelog-full     # Regenerate entire CHANGELOG.md
+```
+
+### Release Process (cargo-release)
+
+Configuration: `release.toml`
+
+Commands:
+
+```bash
+just release-dry-run [patch|minor|major]  # Preview without changes
+just release [patch|minor|major]          # Execute release
+```
+
+### Pre-Release Checklist
+
+Run the complete pre-release workflow:
+
+```bash
+just pre-release
+```
+
+This will:
+1. Run CI pipeline (fmt, lint, features, tests, audit)
+2. Run security checks (audit, omnibor)
+3. Generate changelog preview
+4. Test release dry-run
+5. Build release artifacts
+
+Then manually:
+1. Review changelog preview
+2. Update changelog: `just changelog-update`
+3. Commit changelog updates
+4. Execute release: `just release [patch|minor|major]`
+
 ### cargo-dist
 
 Files:
@@ -1076,11 +1128,11 @@ just dist-generate  # Update CI workflow
 
 Process:
 
-1. Update version in `Cargo.toml`
-2. `just dist-plan`
-3. `just pre-release`
-4. Create/push tag (e.g., `v0.1.0`)
-5. GitHub Actions publishes
+1. Run `just pre-release`
+2. Update changelog with `just changelog-update`
+3. Commit changelog
+4. Release: `just release [patch|minor|major]`
+5. GitHub Actions builds and publishes artifacts
 
 ### Supply Chain Security
 

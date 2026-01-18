@@ -1,7 +1,7 @@
 //! Main derive macro dispatcher.
 
 use proc_macro::TokenStream;
-use syn::{parse_macro_input, Data, DeriveInput};
+use syn::{Data, DeriveInput, parse_macro_input};
 
 /// Expand the #[derive(Elicit)] macro.
 ///

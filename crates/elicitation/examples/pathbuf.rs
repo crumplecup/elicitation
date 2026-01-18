@@ -20,9 +20,7 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Starting PathBuf elicitation example");
 
     // Create MCP client with stdio transport
-    let client = ()
-        .serve(rmcp::transport::stdio())
-        .await.expect("Failed to create MCP client");
+    let client = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
 
     // Elicit a file path
     tracing::info!("=== Eliciting file path ===");

@@ -3,8 +3,8 @@ members = ["crates/elicitation", "crates/elicitation_derive"]
 resolver = "2"
 
 [workspace.package]
-version = "0.2.0"
-edition = "2021"
+version = "0.2.1"
+edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/crumplecup/elicitation"
 authors = ["crumplecup"]
@@ -14,7 +14,7 @@ readme = "README.md"
 
 [workspace.dependencies]
 # MCP client
-rmcp = { version = "0.12", features = ["client", "transport-io"] }
+rmcp = { version = "0.13", features = ["client", "transport-io"] }
 
 # Error handling
 derive_more = { version = "2", features = ["display", "error", "from"] }

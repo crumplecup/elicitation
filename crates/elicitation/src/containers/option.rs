@@ -11,9 +11,7 @@ impl<T: Elicitation + Send> Prompt for Option<T> {
 
 impl<T: Elicitation + Send> Elicitation for Option<T> {
     #[tracing::instrument(skip(client), fields(inner_type = std::any::type_name::<T>()))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting optional value");
 
         // First ask if they want to provide a value

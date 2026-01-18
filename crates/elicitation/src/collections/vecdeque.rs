@@ -18,9 +18,7 @@ where
     T: Elicitation + Send,
 {
     #[tracing::instrument(skip(client), fields(item_type = std::any::type_name::<T>()))]
-    async fn elicit(
-        client: &Peer<RoleClient>,
-    ) -> ElicitResult<Self> {
+    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
         let mut deque = VecDeque::new();
         tracing::debug!("Eliciting VecDeque");
 
