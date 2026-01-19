@@ -2,8 +2,7 @@
 //!
 //! Available with the `serde_json` feature.
 
-use crate::{ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select, mcp};
-use rmcp::service::{Peer, RoleClient};
+use crate::{ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select, mcp};
 use serde_json::Value;
 
 /// Maximum depth for recursive JSON elicitation.
@@ -55,14 +54,21 @@ impl Select for JsonType {
     }
 }
 
+// Style enums
+crate::default_style!(JsonType => JsonTypeStyle);
+crate::default_style!(Value => ValueStyle);
+
 impl Elicitation for JsonType {
+    type Style = JsonTypeStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting JSON type selection");
 
         let params = mcp::select_params(prompt, Self::labels());
         let result = client
+            .peer()
             .call_tool(rmcp::model::CallToolRequestParam {
                 name: mcp::tool_names::elicit_select().into(),
                 arguments: Some(params),
@@ -85,18 +91,20 @@ impl Prompt for Value {
 }
 
 impl Elicitation for Value {
+    type Style = ValueStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         elicit_with_depth(client, 0).await
     }
 }
 
 /// Elicit a JSON Value with depth tracking.
 #[tracing::instrument(skip(client), fields(depth))]
-fn elicit_with_depth(
-    client: &Peer<RoleClient>,
+fn elicit_with_depth<'a>(
+    client: &'a ElicitClient<'_>,
     depth: usize,
-) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Value>> + Send + '_>> {
+) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Value>> + Send + 'a>> {
     Box::pin(async move {
         if depth > MAX_DEPTH {
             return Err(ElicitError::new(ElicitErrorKind::RecursionDepthExceeded(
@@ -144,12 +152,13 @@ fn elicit_with_depth(
 
 /// Elicit a JSON number.
 #[tracing::instrument(skip(client))]
-async fn elicit_number(client: &Peer<RoleClient>) -> ElicitResult<Value> {
+async fn elicit_number(client: &ElicitClient<'_>) -> ElicitResult<Value> {
     let prompt = "Enter number (integer or decimal):";
     tracing::debug!("Eliciting number");
 
     let params = mcp::text_params(prompt);
     let result = client
+        .peer()
         .call_tool(rmcp::model::CallToolRequestParam {
             name: mcp::tool_names::elicit_text().into(),
             arguments: Some(params),
@@ -173,10 +182,10 @@ async fn elicit_number(client: &Peer<RoleClient>) -> ElicitResult<Value> {
 
 /// Elicit a JSON array.
 #[tracing::instrument(skip(client), fields(depth))]
-fn elicit_array(
-    client: &Peer<RoleClient>,
+fn elicit_array<'a>(
+    client: &'a ElicitClient<'_>,
     depth: usize,
-) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Value>> + Send + '_>> {
+) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Value>> + Send + 'a>> {
     Box::pin(async move {
         let mut items = Vec::new();
 
@@ -192,6 +201,7 @@ fn elicit_array(
             // Ask if user wants to add an item
             let params = mcp::bool_params(prompt);
             let result = client
+                .peer()
                 .call_tool(rmcp::model::CallToolRequestParam {
                     name: mcp::tool_names::elicit_bool().into(),
                     arguments: Some(params),
@@ -219,10 +229,10 @@ fn elicit_array(
 
 /// Elicit a JSON object.
 #[tracing::instrument(skip(client), fields(depth))]
-fn elicit_object(
-    client: &Peer<RoleClient>,
+fn elicit_object<'a>(
+    client: &'a ElicitClient<'_>,
     depth: usize,
-) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Value>> + Send + '_>> {
+) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Value>> + Send + 'a>> {
     Box::pin(async move {
         let mut map = serde_json::Map::new();
 
@@ -238,6 +248,7 @@ fn elicit_object(
             // Ask if user wants to add a field
             let params = mcp::bool_params(prompt);
             let result = client
+                .peer()
                 .call_tool(rmcp::model::CallToolRequestParam {
                     name: mcp::tool_names::elicit_bool().into(),
                     arguments: Some(params),
@@ -257,6 +268,7 @@ fn elicit_object(
             let key_prompt = "Enter field name:";
             let key_params = mcp::text_params(key_prompt);
             let key_result = client
+                .peer()
                 .call_tool(rmcp::model::CallToolRequestParam {
                     name: mcp::tool_names::elicit_text().into(),
                     arguments: Some(key_params),
