@@ -316,7 +316,27 @@ Style enums derive `Elicit`, using Select pattern we already have.
 
 All 14 primitives: bool, String, integers, floats, Duration, PathBuf, network types
 
-### Phase 3: Derived Type Styles (NEXT)
+### Phase 3: Derived Type Styles ✅ COMPLETE
+- ✅ Update derive macro to generate multi-variant style enums
+- ✅ Collect styles from `#[prompt(..., style = "name")]` attributes
+- ✅ Generate match statements for prompt selection
+- ✅ Implement inline elicitation with styled prompts
+- ✅ Support all primitive types: String, integers, bools, floats
+
+**Status:** Phase 3 complete! The derive macro now:
+- Generates style enums from user-defined style attributes
+- Supports inline elicitation for all primitive types
+- Uses appropriate MCP tools (elicit_text, elicit_bool, elicit_number)
+- Falls back to standard elicit() for complex types
+- Only applies inline elicitation when fields have styled prompts
+
+Supported types with inline styled prompts:
+- `String` → elicit_text
+- `bool` → elicit_bool
+- Integers (u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, usize, isize) → elicit_number
+- Floats (f32, f64) → elicit_number
+
+### Phase 4: Auto-Selection (NEXT)
 - Update derive macro to generate multi-variant style enums
 - Collect styles from `#[prompt(..., style = "name")]` attributes
 - Generate match statements for prompt selection

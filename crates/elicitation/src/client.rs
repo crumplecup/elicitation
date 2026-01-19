@@ -81,6 +81,54 @@ impl<'a> ElicitClient<'a> {
         }
     }
 
+    /// Get the current style for a type, or use default if not set.
+    ///
+    /// This method checks if a custom style was set via `with_style()`.
+    /// If a style was set, it returns that style. Otherwise, it returns
+    /// the default style for the type.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// // Get style - uses custom if set, default otherwise
+    /// let style = client.style_or_default::<Config>();
+    /// ```
+    pub fn style_or_default<T: Elicitation + 'static>(&self) -> T::Style
+    where
+        T::Style: ElicitationStyle,
+    {
+        self.style_context
+            .get_style::<T, T::Style>()
+            .unwrap_or_default()
+    }
+
+    /// Get the current style for a type, eliciting if not set.
+    ///
+    /// This method checks if a custom style was set via `with_style()`.
+    /// If a style was set, it returns that style. Otherwise, it elicits
+    /// the style from the user.
+    ///
+    /// This enables "auto-selection": styles are only elicited when needed.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// // Get style - uses custom if set, otherwise asks user
+    /// let style = client.style_or_elicit::<Config>().await?;
+    /// ```
+    pub async fn style_or_elicit<T: Elicitation + 'static>(&self) -> ElicitResult<T::Style>
+    where
+        T::Style: ElicitationStyle,
+    {
+        if let Some(style) = self.style_context.get_style::<T, T::Style>() {
+            tracing::debug!(type_name = std::any::type_name::<T>(), "Using pre-set style");
+            Ok(style)
+        } else {
+            tracing::debug!(type_name = std::any::type_name::<T>(), "Eliciting style");
+            T::Style::elicit(self).await
+        }
+    }
+
     /// Get the current style for a type, or use the default.
     ///
     /// If a custom style has been set via `with_style()`, returns that.

@@ -599,8 +599,8 @@ fn generate_elicit_impl_styled(
             ) -> elicitation::ElicitResult<Self> {
                 tracing::debug!(struct_name = stringify!(#name), "Eliciting struct with style");
                 
-                // Step 1: Elicit style choice
-                let elicit_style = #style_enum_name::elicit(client).await?;
+                // Step 1: Get style (use pre-set or elicit)
+                let elicit_style = client.style_or_elicit::<#name>().await?;
                 tracing::debug!(?elicit_style, "Style selected");
                 
                 // Step 2: Elicit fields with chosen style
