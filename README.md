@@ -24,16 +24,19 @@
   - **Survey** - Multi-field elicitation (struct pattern)
   - **Authorize** - Permission policies (planned for v0.2.0)
 - **MCP Integration** - Uses official rmcp (Rust MCP SDK) for communication
-- **🆕 Style System** - Revolutionary field-level UX customization (v0.2.2)
-  - Multiple prompt styles per field (curt, verbose, wizard, custom)
-  - Runtime style selection by LLM or user
-  - Sensible fallback strategy for missing style prompts
-- **🆕 DateTime Support** - Three major datetime libraries (v0.2.2)
+- **🆕 Style System v2** - Revolutionary type-safe style system (v0.4.0)
+  - Every type has associated Style enum for compile-time registration
+  - Runtime style selection with full type safety
+  - Inline elicitation for all primitives with styled prompts
+  - Auto-selection with silent defaults (zero ceremony)
+  - Ergonomic builder pattern for one-off overrides
+  - Extensible: define custom styles for any type (including built-ins)
+- **🆕 DateTime Support** - Three major datetime libraries (v0.4.0)
   - `chrono` - DateTime<Utc>, DateTime<FixedOffset>, NaiveDateTime
   - `time` - OffsetDateTime, PrimitiveDateTime
   - `jiff` - Timestamp, Zoned, civil::DateTime
   - Dual input methods: ISO 8601 strings or manual components
-- **🆕 JSON Elicitation** - Dynamic JSON value construction (v0.2.2)
+- **🆕 JSON Elicitation** - Dynamic JSON value construction (v0.4.0)
   - `serde_json::Value` with all JSON types
   - Recursive elicitation for arrays and objects
   - Depth limits to prevent infinite recursion
