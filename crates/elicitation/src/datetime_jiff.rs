@@ -39,12 +39,16 @@
 //! 4. **Result** - Returns validated datetime or error
 
 use crate::{
-    ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt,
+    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
     mcp,
 };
 use jiff::{Timestamp, Zoned, civil::DateTime as CivilDateTime, tz::TimeZone};
-use rmcp::service::{Peer, RoleClient};
+
+// Style enums for jiff types
+crate::default_style!(Timestamp => TimestampStyle);
+crate::default_style!(Zoned => ZonedStyle);
+crate::default_style!(CivilDateTime => CivilDateTimeStyle);
 
 // Timestamp implementation
 impl Prompt for Timestamp {
@@ -54,8 +58,10 @@ impl Prompt for Timestamp {
 }
 
 impl Elicitation for Timestamp {
+    type Style = TimestampStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Timestamp");
 
         // Step 1: Choose input method
@@ -68,6 +74,7 @@ impl Elicitation for Timestamp {
                 let prompt = "Enter ISO 8601 timestamp (e.g., \"2024-07-11T15:30:00Z\"):";
                 let params = mcp::text_params(prompt);
                 let result = client
+                    .peer()
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),
@@ -129,8 +136,10 @@ impl Prompt for Zoned {
 }
 
 impl Elicitation for Zoned {
+    type Style = ZonedStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Zoned");
 
         // Step 1: Choose input method
@@ -143,6 +152,7 @@ impl Elicitation for Zoned {
                 let prompt = "Enter ISO 8601 datetime with timezone (e.g., \"2024-07-11T15:30:00-05[America/New_York]\"):";
                 let params = mcp::text_params(prompt);
                 let result = client
+                    .peer()
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),
@@ -169,6 +179,7 @@ impl Elicitation for Zoned {
                 let tz_prompt = "Enter IANA timezone (e.g., \"America/New_York\" or \"UTC\"):";
                 let tz_params = mcp::text_params(tz_prompt);
                 let tz_result = client
+                    .peer()
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(tz_params),
@@ -223,8 +234,10 @@ impl Prompt for CivilDateTime {
 }
 
 impl Elicitation for CivilDateTime {
+    type Style = CivilDateTimeStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting CivilDateTime");
 
         // Step 1: Choose input method
@@ -237,6 +250,7 @@ impl Elicitation for CivilDateTime {
                 let prompt = "Enter datetime (e.g., \"2024-07-11T15:30:00\"):";
                 let params = mcp::text_params(prompt);
                 let result = client
+                    .peer()
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),

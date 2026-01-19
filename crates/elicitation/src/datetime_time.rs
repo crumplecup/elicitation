@@ -38,12 +38,15 @@
 //! 4. **Result** - Returns validated datetime or error
 
 use crate::{
-    ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt,
+    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
     mcp,
 };
-use rmcp::service::{Peer, RoleClient};
 use time::{OffsetDateTime, PrimitiveDateTime, UtcOffset};
+
+// Style enums for time types
+crate::default_style!(OffsetDateTime => OffsetDateTimeStyle);
+crate::default_style!(PrimitiveDateTime => PrimitiveDateTimeStyle);
 
 // OffsetDateTime implementation
 impl Prompt for OffsetDateTime {
@@ -53,8 +56,10 @@ impl Prompt for OffsetDateTime {
 }
 
 impl Elicitation for OffsetDateTime {
+    type Style = OffsetDateTimeStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting OffsetDateTime");
 
         // Step 1: Choose input method
@@ -68,6 +73,7 @@ impl Elicitation for OffsetDateTime {
                     "Enter ISO 8601 datetime with offset (e.g., \"2024-07-11T15:30:00+05:00\"):";
                 let params = mcp::text_params(prompt);
                 let result = client
+                    .peer()
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),
@@ -95,6 +101,7 @@ impl Elicitation for OffsetDateTime {
                 let offset_prompt = "Enter timezone offset in hours (e.g., +5 or -8):";
                 let offset_params = mcp::number_params(offset_prompt, -12, 14);
                 let offset_result = client
+                    .peer()
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_number().into(),
                         arguments: Some(offset_params),
@@ -150,8 +157,10 @@ impl Prompt for PrimitiveDateTime {
 }
 
 impl Elicitation for PrimitiveDateTime {
+    type Style = PrimitiveDateTimeStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PrimitiveDateTime");
 
         // Step 1: Choose input method
@@ -164,6 +173,7 @@ impl Elicitation for PrimitiveDateTime {
                 let prompt = "Enter datetime (e.g., \"2024-07-11T15:30:00\"):";
                 let params = mcp::text_params(prompt);
                 let result = client
+                    .peer()
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),

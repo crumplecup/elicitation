@@ -39,12 +39,16 @@
 //! 4. **Result** - Returns validated `DateTime` or error
 
 use crate::{
-    ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt,
+    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
     mcp,
 };
 use chrono::{DateTime, FixedOffset, NaiveDateTime, TimeZone, Utc};
-use rmcp::service::{Peer, RoleClient};
+
+// Style enums for datetime types
+crate::default_style!(DateTime<Utc> => DateTimeUtcStyle);
+crate::default_style!(DateTime<FixedOffset> => DateTimeFixedOffsetStyle);
+crate::default_style!(NaiveDateTime => NaiveDateTimeStyle);
 
 // DateTime<Utc> implementation
 impl Prompt for DateTime<Utc> {
@@ -54,8 +58,10 @@ impl Prompt for DateTime<Utc> {
 }
 
 impl Elicitation for DateTime<Utc> {
+    type Style = DateTimeUtcStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting DateTime<Utc>");
 
         // Step 1: Choose input method
@@ -68,6 +74,7 @@ impl Elicitation for DateTime<Utc> {
                 let prompt = "Enter ISO 8601 datetime (e.g., \"2024-07-11T15:30:00Z\"):";
                 let params = mcp::text_params(prompt);
                 let result = client
+                    .peer()
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),
@@ -126,8 +133,10 @@ impl Prompt for DateTime<FixedOffset> {
 }
 
 impl Elicitation for DateTime<FixedOffset> {
+    type Style = DateTimeFixedOffsetStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting DateTime<FixedOffset>");
 
         // Step 1: Choose input method
@@ -141,6 +150,7 @@ impl Elicitation for DateTime<FixedOffset> {
                     "Enter ISO 8601 datetime with offset (e.g., \"2024-07-11T15:30:00+05:00\"):";
                 let params = mcp::text_params(prompt);
                 let result = client
+                    .peer()
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),
@@ -167,6 +177,7 @@ impl Elicitation for DateTime<FixedOffset> {
                 let offset_prompt = "Enter timezone offset in hours (e.g., +5 or -8):";
                 let offset_params = mcp::number_params(offset_prompt, -12, 14);
                 let offset_result = client
+                    .peer()
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_number().into(),
                         arguments: Some(offset_params),
@@ -219,8 +230,10 @@ impl Prompt for NaiveDateTime {
 }
 
 impl Elicitation for NaiveDateTime {
+    type Style = NaiveDateTimeStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting NaiveDateTime");
 
         // Step 1: Choose input method
@@ -233,6 +246,7 @@ impl Elicitation for NaiveDateTime {
                 let prompt = "Enter datetime (e.g., \"2024-07-11T15:30:00\"):";
                 let params = mcp::text_params(prompt);
                 let result = client
+                    .peer()
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),
