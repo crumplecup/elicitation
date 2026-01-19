@@ -106,6 +106,8 @@ mod datetime_time;
 #[cfg(feature = "jiff")]
 mod datetime_jiff;
 
+mod elicitation_style;
+
 // Error types
 pub use error::{ElicitError, ElicitErrorKind, ElicitResult, JsonError, RmcpError, ServiceError};
 
@@ -114,6 +116,7 @@ pub use client::ElicitClient;
 
 // Core traits
 pub use traits::{Elicitation, Prompt};
+pub use elicitation_style::ElicitationStyle;
 
 // Interaction paradigm traits
 pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};

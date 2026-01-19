@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use rmcp::service::{Peer, RoleClient};
 
-use crate::{ElicitResult, Elicitation};
+use crate::{ElicitResult, Elicitation, ElicitationStyle};
 
 /// Client wrapper that carries style context.
 ///
@@ -13,14 +13,28 @@ use crate::{ElicitResult, Elicitation};
 /// Each type can have its own style, allowing nested types to use different
 /// styles independently.
 ///
+/// Users can provide custom style types for any type by implementing
+/// [`ElicitationStyle`] and calling [`with_style`](Self::with_style).
+///
 /// # Example
 ///
 /// ```rust,ignore
-/// use elicitation::ElicitClient;
+/// use elicitation::{ElicitClient, ElicitationStyle, Elicitation};
 /// 
+/// // Define custom style for i32
+/// #[derive(Clone, Default)]
+/// enum MyI32Style { 
+///     #[default]
+///     Terse, 
+///     Verbose 
+/// }
+/// 
+/// impl ElicitationStyle for MyI32Style {}
+/// 
+/// // Use it
 /// let client = ElicitClient::new(&peer);
-/// let styled = client.with_style(ConfigStyle::Verbose);
-/// let config = Config::elicit(&styled).await?;
+/// let styled = client.with_style::<i32, _>(MyI32Style::Verbose);
+/// let age = i32::elicit(&styled).await?;
 /// ```
 pub struct ElicitClient<'a> {
     peer: &'a Peer<RoleClient>,
@@ -41,38 +55,50 @@ impl<'a> ElicitClient<'a> {
         self.peer
     }
 
-    /// Create a new client with a style set for a specific type.
+    /// Create a new client with a custom style for a specific type.
+    ///
+    /// Accepts any style type that implements [`ElicitationStyle`], allowing
+    /// users to define custom styles for built-in types.
     ///
     /// Returns a new `ElicitClient` with the style added to the context.
     /// The original client is unchanged.
-    pub fn with_style<T: Elicitation + 'static>(&self, style: T::Style) -> Self
-    where
-        T::Style: Clone + Send + Sync + 'static,
-    {
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// // Use default style
+    /// let client = client.with_style::<Config, _>(ConfigStyle::default());
+    ///
+    /// // Use custom style for i32
+    /// let client = client.with_style::<i32, _>(MyI32Style::Verbose);
+    /// ```
+    pub fn with_style<T: Elicitation + 'static, S: ElicitationStyle>(&self, style: S) -> Self {
         let mut ctx = self.style_context.clone();
-        ctx.set_style::<T>(style);
+        ctx.set_style::<T, S>(style);
         Self {
             peer: self.peer,
             style_context: ctx,
         }
     }
 
-    /// Get the current style for a type, or elicit it from the user.
+    /// Get the current style for a type, or use the default.
     ///
-    /// If a style has been set via `with_style()`, returns that.
-    /// Otherwise, elicits the style from the user (auto-selection).
+    /// If a custom style has been set via `with_style()`, returns that.
+    /// Otherwise, returns `T::Style::default()` as fallback.
     #[tracing::instrument(skip(self))]
     pub async fn current_style<T: Elicitation + 'static>(&self) -> ElicitResult<T::Style>
     where
         T::Style: Clone + Send + Sync + 'static,
     {
-        if let Some(style) = self.style_context.get_style::<T>() {
-            tracing::debug!(type_name = std::any::type_name::<T>(), "Using pre-set style");
+        // Try to get custom style first
+        if let Some(style) = self.style_context.get_style::<T, T::Style>() {
+            tracing::debug!(type_name = std::any::type_name::<T>(), "Using custom style");
             return Ok(style);
         }
 
-        tracing::debug!(type_name = std::any::type_name::<T>(), "Auto-selecting style");
-        T::Style::elicit(self).await
+        // Fall back to default
+        tracing::debug!(type_name = std::any::type_name::<T>(), "Using default style");
+        Ok(T::Style::default())
     }
 }
 
@@ -87,28 +113,25 @@ struct StyleContext {
 }
 
 impl StyleContext {
-    /// Set the style for a specific type.
-    fn set_style<T: 'static>(&mut self, style: T::Style)
-    where
-        T: Elicitation,
-        T::Style: Clone + Send + Sync + 'static,
-    {
+    /// Set a custom style for a specific type.
+    ///
+    /// Accepts any style type S that implements ElicitationStyle.
+    fn set_style<T: 'static, S: ElicitationStyle>(&mut self, style: S) {
         let type_id = TypeId::of::<T>();
         let mut styles = self.styles.write().expect("Lock poisoned");
         styles.insert(type_id, Box::new(style));
     }
 
-    /// Get the style for a specific type, if set.
-    fn get_style<T: 'static>(&self) -> Option<T::Style>
-    where
-        T: Elicitation,
-        T::Style: Clone + Send + Sync + 'static,
-    {
+    /// Get the custom style for a specific type, if one was set.
+    ///
+    /// Returns None if no custom style was provided, allowing
+    /// fallback to T::Style::default().
+    fn get_style<T: 'static, S: ElicitationStyle>(&self) -> Option<S> {
         let type_id = TypeId::of::<T>();
         let styles = self.styles.read().expect("Lock poisoned");
         styles
             .get(&type_id)
-            .and_then(|any| any.downcast_ref::<T::Style>())
+            .and_then(|any| any.downcast_ref::<S>())
             .cloned()
     }
 }
