@@ -91,6 +91,18 @@ mod traits;
 #[cfg(feature = "serde_json")]
 mod value_impl;
 
+#[cfg(any(feature = "chrono", feature = "time", feature = "jiff"))]
+mod datetime_common;
+
+#[cfg(feature = "chrono")]
+mod datetime_chrono;
+
+#[cfg(feature = "time")]
+mod datetime_time;
+
+#[cfg(feature = "jiff")]
+mod datetime_jiff;
+
 // Error types
 pub use error::{ElicitError, ElicitErrorKind, ElicitResult, JsonError, RmcpError, ServiceError};
 

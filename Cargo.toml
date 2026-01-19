@@ -35,6 +35,11 @@ syn = { version = "2", features = ["full"] }
 quote = "1"
 proc-macro2 = "1"
 
+# DateTime libraries
+chrono = "0.4"
+time = "0.3"
+jiff = "0.1"
+
 [profile.release]
 lto = true
 codegen-units = 1
