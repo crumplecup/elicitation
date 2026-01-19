@@ -122,6 +122,18 @@ pub enum ElicitErrorKind {
         /// Valid options as comma-separated string.
         options: String,
     },
+
+    /// Invalid selection label.
+    #[display("Invalid selection: {}", _0)]
+    InvalidSelection(String),
+
+    /// Parse error for text input.
+    #[display("Parse error: {}", _0)]
+    ParseError(String),
+
+    /// Recursion depth exceeded during elicitation.
+    #[display("Recursion depth exceeded: maximum depth is {}", _0)]
+    RecursionDepthExceeded(usize),
 }
 
 /// Macro to generate bridge From implementations for external errors.

@@ -88,6 +88,9 @@ mod paradigm;
 mod primitives;
 mod traits;
 
+#[cfg(feature = "serde_json")]
+mod value_impl;
+
 // Error types
 pub use error::{ElicitError, ElicitErrorKind, ElicitResult, JsonError, RmcpError, ServiceError};
 
