@@ -207,7 +207,7 @@ checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
 
 [[package]]
 name = "elicitation"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "chrono",
  "derive-getters",
@@ -227,7 +227,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_derive"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "elicitation",
  "proc-macro2",
