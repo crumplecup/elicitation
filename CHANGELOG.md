@@ -5,6 +5,59 @@ All notable changes to the `elicitation` project will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Add Value elicitation support
+- Add chrono datetime elicitation support
+- Add time datetime elicitation support
+- Add jiff datetime elicitation support
+- Add elicitation style system - REVOLUTIONARY
+- Add field-level style support with derive integration
+- Update derive macro for Style System v2
+- Add ElicitationStyle trait for extensible style system
+- Complete Phase 3 - Inline elicitation for all primitives
+- Complete Phase 4 - Auto-selection for styles
+- Complete Phase 5 - Builder pattern for ergonomic style overrides
+
+### Documentation
+
+- Add serde_json::Value elicitation implementation plan
+- Add comprehensive datetime elicitation implementation plan
+- Add datetime plan to index
+- Add comprehensive elicitation style system implementation plan
+- Document all 0.2.2 features and bump version
+- Plan Style System v2 with associated types
+- Add custom_style example demonstrating ElicitationStyle
+- Update STYLE_SYSTEM_V2_PLAN with Phase 1-2 completion status
+- Mark all phases complete - Style System v2 ready for v0.3.0
+
+### Fixed
+
+- Update all examples to use ElicitClient
+- Fix example imports and styled struct derive
+- Add allow(dead_code) to test structs
+- Update release.toml to remove deprecated [workspace] section
+
+### Styling
+
+- Run cargo fmt to fix formatting
+
+### Testing
+
+- Delete worthless style_derive_test.rs
+
+### Wip
+
+- Start Style System v2 - primitives done
+- Complete primitives including tuples
+- Add Option and Result style implementations
+- Complete all containers
+- Complete all collections with Style v2
+- Complete all datetime types with Style v2
+- Complete serde_json::Value with Style v2
+
 ## [0.2.2] - 2026-01-19
 
 ### Added - Revolutionary Style System 🎨
