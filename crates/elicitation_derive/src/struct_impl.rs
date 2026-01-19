@@ -364,33 +364,135 @@ fn generate_elicit_impl_styled(
                 _ => #default_prompt,
             });
             
-            // Check if this is a basic type we can inline-elicit with custom prompt
-            let is_string = matches!(field_ty, syn::Type::Path(p) if p.path.is_ident("String"));
+            // Check type and generate appropriate inline elicitation
+            let type_path = match field_ty {
+                syn::Type::Path(p) => Some(p),
+                _ => None,
+            };
             
-            if is_string {
-                // Inline elicitation for String with custom prompt
-                quote! {
-                    tracing::debug!(field = #field_name_str, "Eliciting string field with styled prompt");
-                    let prompt = match elicit_style {
-                        #(#match_arms)*
-                    };
-                    let params = elicitation::mcp::text_params(prompt);
-                    let result = client
-                        .peer()
-                        .call_tool(elicitation::rmcp::model::CallToolRequestParam {
-                            name: elicitation::mcp::tool_names::elicit_text().into(),
-                            arguments: Some(params),
-                            task: None,
-                        })
-                        .await?;
-                    let value = elicitation::mcp::extract_value(result)?;
-                    let #field_name = elicitation::mcp::parse_string(value)?;
+            let last_segment = type_path.and_then(|p| p.path.segments.last());
+            let type_ident = last_segment.map(|seg| &seg.ident);
+            
+            // Determine if this type supports inline elicitation
+            let supports_inline = if let Some(ident) = type_ident {
+                let ident_str = ident.to_string();
+                matches!(ident_str.as_str(), 
+                    "String" | "bool" |
+                    "u8" | "u16" | "u32" | "u64" | "u128" | "usize" |
+                    "i8" | "i16" | "i32" | "i64" | "i128" | "isize" |
+                    "f32" | "f64"
+                )
+            } else {
+                false
+            };
+            
+            if supports_inline && !field.styled_prompts.is_empty() {
+                let type_ident = type_ident.unwrap();
+                let type_str = type_ident.to_string();
+                
+                // Generate inline elicitation based on type
+                match type_str.as_str() {
+                    "String" => {
+                        // String: use elicit_text
+                        quote! {
+                            tracing::debug!(field = #field_name_str, "Eliciting string field with styled prompt");
+                            let prompt = match elicit_style {
+                                #(#match_arms)*
+                            };
+                            let params = elicitation::mcp::text_params(prompt);
+                            let result = client
+                                .peer()
+                                .call_tool(elicitation::rmcp::model::CallToolRequestParam {
+                                    name: elicitation::mcp::tool_names::elicit_text().into(),
+                                    arguments: Some(params),
+                                    task: None,
+                                })
+                                .await?;
+                            let value = elicitation::mcp::extract_value(result)?;
+                            let #field_name = elicitation::mcp::parse_string(value)?;
+                        }
+                    }
+                    "bool" => {
+                        // Boolean: use elicit_bool
+                        quote! {
+                            tracing::debug!(field = #field_name_str, "Eliciting bool field with styled prompt");
+                            let prompt = match elicit_style {
+                                #(#match_arms)*
+                            };
+                            let params = elicitation::mcp::bool_params(prompt);
+                            let result = client
+                                .peer()
+                                .call_tool(elicitation::rmcp::model::CallToolRequestParam {
+                                    name: elicitation::mcp::tool_names::elicit_bool().into(),
+                                    arguments: Some(params),
+                                    task: None,
+                                })
+                                .await?;
+                            let value = elicitation::mcp::extract_value(result)?;
+                            let #field_name = elicitation::mcp::parse_bool(value)?;
+                        }
+                    }
+                    "u8" | "u16" | "u32" | "u64" | "u128" | "usize" |
+                    "i8" | "i16" | "i32" | "i64" | "i128" | "isize" => {
+                        // Integer types: use elicit_number
+                        quote! {
+                            tracing::debug!(field = #field_name_str, "Eliciting integer field with styled prompt");
+                            let prompt = match elicit_style {
+                                #(#match_arms)*
+                            };
+                            let params = elicitation::mcp::number_params(
+                                prompt,
+                                #field_ty::MIN as i64,
+                                #field_ty::MAX as i64,
+                            );
+                            let result = client
+                                .peer()
+                                .call_tool(elicitation::rmcp::model::CallToolRequestParam {
+                                    name: elicitation::mcp::tool_names::elicit_number().into(),
+                                    arguments: Some(params),
+                                    task: None,
+                                })
+                                .await?;
+                            let value = elicitation::mcp::extract_value(result)?;
+                            let #field_name = elicitation::mcp::parse_integer::<#field_ty>(value)?;
+                        }
+                    }
+                    "f32" | "f64" => {
+                        // Float types: use elicit_number with f64 min/max
+                        quote! {
+                            tracing::debug!(field = #field_name_str, "Eliciting float field with styled prompt");
+                            let prompt = match elicit_style {
+                                #(#match_arms)*
+                            };
+                            let params = elicitation::mcp::number_params(
+                                prompt,
+                                i64::MIN,
+                                i64::MAX,
+                            );
+                            let result = client
+                                .peer()
+                                .call_tool(elicitation::rmcp::model::CallToolRequestParam {
+                                    name: elicitation::mcp::tool_names::elicit_number().into(),
+                                    arguments: Some(params),
+                                    task: None,
+                                })
+                                .await?;
+                            let value = elicitation::mcp::extract_value(result)?;
+                            let #field_name = elicitation::mcp::parse_integer::<i64>(value)? as #field_ty;
+                        }
+                    }
+                    _ => {
+                        // Fallback for unsupported types
+                        quote! {
+                            tracing::debug!(field = #field_name_str, "Eliciting field (no inline style support for this type)");
+                            let #field_name = <#field_ty>::elicit(client).await?;
+                        }
+                    }
                 }
             } else {
-                // For complex types, fall back to their own elicit() 
-                // TODO: Support more basic types (integers, bools, etc.)
+                // For complex types or fields without styled prompts, fall back to their own elicit()
                 quote! {
-                    tracing::debug!(field = #field_name_str, "Eliciting field (no style support for this type yet)");
+                    tracing::debug!(field = #field_name_str, "Eliciting field via standard elicit()");
                     let #field_name = <#field_ty>::elicit(client).await?;
                 }
             }
