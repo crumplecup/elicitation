@@ -1,20 +1,15 @@
 # cargo-release configuration
 # https://github.com/crate-ci/cargo-release/blob/master/docs/reference.md
 
-# Global settings for all crates in the workspace
-[workspace]
-# Allow releasing from any branch (we'll use feature branches)
-allow-branch = ["main", "feat/*"]
-# Consolidate commits for workspace release
-consolidate-commits = true
-# Consolidate pushes (push once after all version bumps)
-consolidate-pushes = true
+# Allow releasing from any branch
+allow-branch = ["main", "dev", "feat/*"]
 # Tag format for releases
 tag-name = "v{{version}}"
-# Sign tags
+# Don't sign tags or commits
 sign-tag = false
-# Sign commits
 sign-commit = false
+# Consolidate commits for workspace release
+consolidate-commits = true
 
 # Pre-release replacements
 [[pre-release-replacements]]
