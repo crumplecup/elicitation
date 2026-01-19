@@ -115,7 +115,7 @@ pub use error::{ElicitError, ElicitErrorKind, ElicitResult, JsonError, RmcpError
 pub use client::ElicitClient;
 
 // Core traits
-pub use traits::{Elicitation, Prompt};
+pub use traits::{Elicitation, ElicitBuilder, Prompt};
 pub use elicitation_style::ElicitationStyle;
 
 // Interaction paradigm traits

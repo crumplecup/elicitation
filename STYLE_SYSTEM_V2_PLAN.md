@@ -336,16 +336,21 @@ Supported types with inline styled prompts:
 - Integers (u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, usize, isize) → elicit_number
 - Floats (f32, f64) → elicit_number
 
-### Phase 4: Auto-Selection (NEXT)
-- Update derive macro to generate multi-variant style enums
-- Collect styles from `#[prompt(..., style = "name")]` attributes
-- Generate match statements for prompt selection
-- Implement inline elicitation with styled prompts
+### Phase 4: Auto-Selection ✅ COMPLETE
+- ✅ Implement `style_or_elicit()` logic in ElicitClient
+- ✅ Style enums automatically derive `Elicit` (Select pattern)
+- ✅ Seamless user experience when no style set
 
-### Phase 4: Auto-Selection
-- Implement `current_style_or_select()` logic
-- Style enums automatically derive `Elicit` (Select pattern)
-- Seamless user experience when no style set
+**Status:** Phase 4 complete! The system now:
+- Checks for pre-set styles via `with_style()`
+- Only elicits styles when not pre-set (auto-selection)
+- Uses `style_or_default()` for silent defaults
+- Uses `style_or_elicit()` for progressive enhancement
+
+Auto-selection behavior:
+- Pre-set style → used automatically, no user prompt
+- No pre-set style → style is elicited from user
+- Composable: each type has independent style context
 
 ### Phase 5: Builder Pattern
 - Add `with_style()` method for one-off overrides

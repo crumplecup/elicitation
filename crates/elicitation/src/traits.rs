@@ -1,6 +1,38 @@
 //! Core traits for elicitation.
 
 use crate::{ElicitClient, ElicitResult};
+use rmcp::service::{Peer, RoleClient};
+
+/// Builder for one-off style overrides.
+///
+/// Enables ergonomic syntax: `Config::with_style(ConfigStyle::Curt).elicit(&peer).await?`
+pub struct ElicitBuilder<T: Elicitation> {
+    style: T::Style,
+}
+
+impl<T: Elicitation + 'static> ElicitBuilder<T> {
+    /// Create a new builder with the given style.
+    fn new(style: T::Style) -> Self {
+        Self { style }
+    }
+
+    /// Elicit the value with the pre-set style.
+    ///
+    /// This is a convenience method that creates an ElicitClient, sets the style,
+    /// and elicits the value in one call.
+    ///
+    /// # Arguments
+    ///
+    /// * `peer` - The RMCP peer to use for interaction
+    ///
+    /// # Returns
+    ///
+    /// Returns the elicited value with the style applied.
+    pub async fn elicit(self, peer: &Peer<RoleClient>) -> ElicitResult<T> {
+        let client = ElicitClient::new(peer).with_style::<T, T::Style>(self.style);
+        T::elicit(&client).await
+    }
+}
 
 /// Shared metadata for prompts across all elicitation patterns.
 ///
@@ -39,7 +71,7 @@ pub trait Prompt {
 /// # Ok(())
 /// # }
 /// ```
-pub trait Elicitation: Sized + Prompt {
+pub trait Elicitation: Sized + Prompt + 'static {
     /// The style enum for this type.
     ///
     /// Controls how prompts are presented. For types with multiple styles,
@@ -69,4 +101,32 @@ pub trait Elicitation: Sized + Prompt {
     fn elicit(
         client: &ElicitClient<'_>,
     ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send;
+
+    /// Create a builder for one-off style override.
+    ///
+    /// This enables ergonomic syntax for eliciting a value with a specific style
+    /// without manually creating a styled client.
+    ///
+    /// # Arguments
+    ///
+    /// * `style` - The style to use for this elicitation
+    ///
+    /// # Returns
+    ///
+    /// Returns an `ElicitBuilder` that can be used to elicit the value.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use elicitation::Elicitation;
+    /// # async fn example(peer: &botticelli::Peer<botticelli_core::RoleClient>) {
+    /// // One-off style override - concise syntax
+    /// let config = Config::with_style(ConfigStyle::Curt)
+    ///     .elicit(&peer)
+    ///     .await?;
+    /// # }
+    /// ```
+    fn with_style(style: Self::Style) -> ElicitBuilder<Self> {
+        ElicitBuilder::new(style)
+    }
 }
