@@ -97,3 +97,57 @@ This file tracks all planning documents for the elicitation project.
 7. Release v0.2.2
 
 **Target**: 3-5 hours, same-day implementation and release
+
+### DATETIME_IMPLEMENTATION_PLAN.md
+**Status**: Active - v0.2.3 feature development
+**Created**: 2026-01-19
+**Purpose**: Implementation plan for adding `Elicitation` support for the top 3 Rust datetime libraries (chrono, time, jiff) behind feature flags, providing 95%+ ecosystem coverage.
+
+**Motivation**: Support the datetime libraries users already have, not force a specific choice. Feature-gated implementations allow zero-cost opt-in.
+
+**Core Strategy**:
+- Support top 3 libraries: chrono (50M downloads/month), time (40M downloads/month), jiff (100K/month growing)
+- Shared UX pattern across all: ISO 8601 string OR manual components
+- Mutually compatible features (users can enable multiple)
+- 95%+ ecosystem coverage with 3 implementations
+
+**Libraries & Types:**
+
+**chrono** (most popular, mature):
+- `DateTime<Utc>` - UTC timestamps
+- `DateTime<FixedOffset>` - Fixed timezone offset
+- `NaiveDateTime` - Timezone-agnostic
+
+**time** (modern, high performance):
+- `OffsetDateTime` - With timezone offset
+- `PrimitiveDateTime` - No timezone
+
+**jiff** (newest, best ergonomics):
+- `Timestamp` - Absolute moment
+- `Zoned` - Timestamp + timezone
+- `civil::DateTime` - Calendar date + time
+
+**Elicitation UX:**
+1. Choose input method: ISO 8601 string OR manual components
+2. For ISO: Parse RFC 3339 / ISO 8601 string
+3. For components: Elicit year, month, day, hour, minute, second (validated)
+4. Construct datetime using library-specific API
+
+**Shared Code Pattern:**
+- `datetime_common.rs` - Input method selection, component elicitation, error types
+- `datetime_chrono.rs` - chrono implementations
+- `datetime_time.rs` - time implementations
+- `datetime_jiff.rs` - jiff implementations
+
+**Impact:**
+- Unblocks: BotStats and any struct with datetime fields
+- Enables: 95%+ of Rust datetime users can derive Elicit
+- Maintains: Zero-cost when features not enabled
+
+**Phases:**
+1. chrono implementation (2-3 hours) - Priority 1
+2. time implementation (1-2 hours) - Priority 2
+3. jiff implementation (1-2 hours) - Priority 3
+4. Integration & polish (1 hour) - Documentation, CI
+
+**Target**: 5-8 hours, release as elicitation 0.2.3
