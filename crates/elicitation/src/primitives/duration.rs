@@ -1,8 +1,10 @@
 //! Duration type implementation for time duration elicitation.
 
-use crate::{ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt};
-use rmcp::service::{Peer, RoleClient};
+use crate::{ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt};
 use std::time::Duration;
+
+// Generate default-only style enum
+crate::default_style!(Duration => DurationStyle);
 
 impl Prompt for Duration {
     fn prompt() -> Option<&'static str> {
@@ -11,8 +13,10 @@ impl Prompt for Duration {
 }
 
 impl Elicitation for Duration {
+    type Style = DurationStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Duration");
 
         // Elicit as f64 (supports decimal seconds)

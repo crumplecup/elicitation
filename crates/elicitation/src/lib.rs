@@ -80,8 +80,10 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod client;
 mod collections;
 mod containers;
+mod default_style;
 mod error;
 pub mod mcp;
 mod paradigm;
@@ -106,6 +108,9 @@ mod datetime_jiff;
 
 // Error types
 pub use error::{ElicitError, ElicitErrorKind, ElicitResult, JsonError, RmcpError, ServiceError};
+
+// Core client
+pub use client::ElicitClient;
 
 // Core traits
 pub use traits::{Elicitation, Prompt};

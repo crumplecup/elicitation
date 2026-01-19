@@ -1,7 +1,6 @@
 //! Core traits for elicitation.
 
-use crate::ElicitResult;
-use rmcp::service::{Peer, RoleClient};
+use crate::{ElicitClient, ElicitResult};
 
 /// Shared metadata for prompts across all elicitation patterns.
 ///
@@ -24,23 +23,38 @@ pub trait Prompt {
 /// via MCP (Model Context Protocol). All types that can be elicited implement
 /// this trait.
 ///
+/// # Associated Types
+///
+/// * `Style` - The style enum for this type. Each type has its own style
+///   enum that controls how prompts are presented. The style enum itself
+///   implements `Elicitation`, allowing automatic style selection.
+///
 /// # Example
 ///
 /// ```rust,ignore
-/// use elicitation::{Elicitation, ElicitResult};
-/// use rmcp::service::{Peer, RoleClient};
-/// # async fn example(client: &Peer<RoleClient>) -> ElicitResult<()> {
+/// use elicitation::{Elicitation, ElicitClient, ElicitResult};
+/// # async fn example(client: &ElicitClient<'_>) -> ElicitResult<()> {
 /// // Elicit an i32 from the user
 /// let value: i32 = i32::elicit(client).await?;
 /// # Ok(())
 /// # }
 /// ```
 pub trait Elicitation: Sized + Prompt {
-    /// Elicit a value of this type from the user via RMCP client.
+    /// The style enum for this type.
+    ///
+    /// Controls how prompts are presented. For types with multiple styles,
+    /// this enum has variants for each style. For types with no custom styles,
+    /// this enum has only a `Default` variant.
+    ///
+    /// The style enum itself implements `Elicitation` (using the Select pattern),
+    /// enabling automatic style selection when no style is pre-set.
+    type Style: Elicitation + Default + Clone + Send + Sync + 'static;
+
+    /// Elicit a value of this type from the user via style-aware client.
     ///
     /// # Arguments
     ///
-    /// * `client` - The RMCP peer (client interface) to use for interaction
+    /// * `client` - The style-aware client wrapper to use for interaction
     ///
     /// # Returns
     ///
@@ -53,6 +67,6 @@ pub trait Elicitation: Sized + Prompt {
     ///
     /// See [`ElicitError`](crate::ElicitError) for details on error conditions.
     fn elicit(
-        client: &Peer<RoleClient>,
+        client: &ElicitClient<'_>,
     ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send;
 }

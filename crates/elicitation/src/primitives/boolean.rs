@@ -1,7 +1,9 @@
 //! Boolean type implementation using the Affirm pattern.
 
-use crate::{Affirm, ElicitResult, Elicitation, Prompt, mcp};
-use rmcp::service::{Peer, RoleClient};
+use crate::{Affirm, ElicitClient, ElicitResult, Elicitation, Prompt, mcp};
+
+// Generate default-only style enum
+crate::default_style!(bool => BoolStyle);
 
 impl Prompt for bool {
     fn prompt() -> Option<&'static str> {
@@ -12,13 +14,16 @@ impl Prompt for bool {
 impl Affirm for bool {}
 
 impl Elicitation for bool {
+    type Style = BoolStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting boolean");
 
         let params = mcp::bool_params(prompt);
         let result = client
+            .peer()
             .call_tool(rmcp::model::CallToolRequestParam {
                 name: mcp::tool_names::elicit_bool().into(),
                 arguments: Some(params),

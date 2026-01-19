@@ -1,7 +1,6 @@
 //! Floating-point type implementations using generic macros.
 
-use crate::{ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, mcp};
-use rmcp::service::{Peer, RoleClient};
+use crate::{ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, mcp};
 use serde_json::Value;
 
 /// Parse a floating-point number from MCP tool response.
@@ -59,10 +58,13 @@ where
 
 /// Macro to implement Elicitation for floating-point types.
 ///
-/// This macro generates both Prompt and Elicitation trait implementations for
-/// f32 and f64.
+/// This macro generates default style enum, Prompt, and Elicitation trait
+/// implementations for f32 and f64.
 macro_rules! impl_float_elicit {
-    ($t:ty) => {
+    ($t:ty, $style:ident) => {
+        // Generate default-only style enum
+        crate::default_style!($t => $style);
+
         impl Prompt for $t {
             fn prompt() -> Option<&'static str> {
                 Some(concat!("Please enter a ", stringify!($t), " number:"))
@@ -70,14 +72,17 @@ macro_rules! impl_float_elicit {
         }
 
         impl Elicitation for $t {
+            type Style = $style;
+
             #[tracing::instrument(skip(client), fields(type_name = stringify!($t)))]
-            async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+            async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
                 let prompt = Self::prompt().unwrap();
                 tracing::debug!("Eliciting float type");
 
                 let params = mcp::text_params(prompt);
 
                 let result = client
+                    .peer()
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),
@@ -93,5 +98,5 @@ macro_rules! impl_float_elicit {
 }
 
 // Apply macro to floating-point types
-impl_float_elicit!(f32);
-impl_float_elicit!(f64);
+impl_float_elicit!(f32, F32Style);
+impl_float_elicit!(f64, F64Style);

@@ -1,7 +1,9 @@
 //! String type implementation.
 
-use crate::{ElicitResult, Elicitation, Prompt, mcp};
-use rmcp::service::{Peer, RoleClient};
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt, mcp};
+
+// Generate default-only style enum
+crate::default_style!(String => StringStyle);
 
 impl Prompt for String {
     fn prompt() -> Option<&'static str> {
@@ -10,13 +12,16 @@ impl Prompt for String {
 }
 
 impl Elicitation for String {
+    type Style = StringStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting string");
 
         let params = mcp::text_params(prompt);
         let result = client
+            .peer()
             .call_tool(rmcp::model::CallToolRequestParam {
                 name: mcp::tool_names::elicit_text().into(),
                 arguments: Some(params),

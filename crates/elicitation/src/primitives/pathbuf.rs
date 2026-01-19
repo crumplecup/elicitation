@@ -1,8 +1,10 @@
 //! PathBuf implementation for filesystem path elicitation.
 
-use crate::{ElicitResult, Elicitation, Prompt};
-use rmcp::service::{Peer, RoleClient};
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use std::path::PathBuf;
+
+// Generate default-only style enum
+crate::default_style!(PathBuf => PathBufStyle);
 
 impl Prompt for PathBuf {
     fn prompt() -> Option<&'static str> {
@@ -11,8 +13,10 @@ impl Prompt for PathBuf {
 }
 
 impl Elicitation for PathBuf {
+    type Style = PathBufStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PathBuf");
 
         // Elicit as string

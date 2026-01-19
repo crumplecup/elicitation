@@ -1,15 +1,17 @@
 //! Integer type implementations using generic macros.
 
-use crate::{ElicitResult, Elicitation, Prompt, mcp};
-use rmcp::service::{Peer, RoleClient};
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt, mcp};
 
 /// Macro to implement Elicitation for all integer types.
 ///
-/// This macro generates both Prompt and Elicitation trait implementations for
-/// a given integer type. It uses the type's MIN and MAX constants for
-/// range validation.
+/// This macro generates default style enum, Prompt, and Elicitation trait
+/// implementations for a given integer type. It uses the type's MIN and MAX
+/// constants for range validation.
 macro_rules! impl_integer_elicit {
-    ($t:ty) => {
+    ($t:ty, $style:ident) => {
+        // Generate default-only style enum
+        crate::default_style!($t => $style);
+
         impl Prompt for $t {
             fn prompt() -> Option<&'static str> {
                 Some(concat!(
@@ -25,14 +27,17 @@ macro_rules! impl_integer_elicit {
         }
 
         impl Elicitation for $t {
+            type Style = $style;
+
             #[tracing::instrument(skip(client), fields(type_name = stringify!($t)))]
-            async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+            async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
                 let prompt = Self::prompt().unwrap();
                 tracing::debug!("Eliciting integer type");
 
                 let params = mcp::number_params(prompt, <$t>::MIN as i64, <$t>::MAX as i64);
 
                 let result = client
+                    .peer()
                     .call_tool(rmcp::model::CallToolRequestParam {
                         name: mcp::tool_names::elicit_number().into(),
                         arguments: Some(params),
@@ -48,13 +53,13 @@ macro_rules! impl_integer_elicit {
 }
 
 // Apply macro to all signed integer types
-impl_integer_elicit!(i8);
-impl_integer_elicit!(i16);
-impl_integer_elicit!(i32);
-impl_integer_elicit!(i64);
+impl_integer_elicit!(i8, I8Style);
+impl_integer_elicit!(i16, I16Style);
+impl_integer_elicit!(i32, I32Style);
+impl_integer_elicit!(i64, I64Style);
 
 // Apply macro to all unsigned integer types
-impl_integer_elicit!(u8);
-impl_integer_elicit!(u16);
-impl_integer_elicit!(u32);
-impl_integer_elicit!(u64);
+impl_integer_elicit!(u8, U8Style);
+impl_integer_elicit!(u16, U16Style);
+impl_integer_elicit!(u32, U32Style);
+impl_integer_elicit!(u64, U64Style);

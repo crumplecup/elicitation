@@ -1,8 +1,15 @@
 //! Network type implementations for IP addresses and socket addresses.
 
-use crate::{ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt};
-use rmcp::service::{Peer, RoleClient};
+use crate::{ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
+
+// Generate default-only style enums for all network types
+crate::default_style!(IpAddr => IpAddrStyle);
+crate::default_style!(Ipv4Addr => Ipv4AddrStyle);
+crate::default_style!(Ipv6Addr => Ipv6AddrStyle);
+crate::default_style!(SocketAddr => SocketAddrStyle);
+crate::default_style!(SocketAddrV4 => SocketAddrV4Style);
+crate::default_style!(SocketAddrV6 => SocketAddrV6Style);
 
 // IpAddr (enum: V4 | V6)
 impl Prompt for IpAddr {
@@ -12,8 +19,10 @@ impl Prompt for IpAddr {
 }
 
 impl Elicitation for IpAddr {
+    type Style = IpAddrStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IpAddr");
 
         let ip_str = String::elicit(client).await?;
@@ -42,8 +51,10 @@ impl Prompt for Ipv4Addr {
 }
 
 impl Elicitation for Ipv4Addr {
+    type Style = Ipv4AddrStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv4Addr");
 
         let ip_str = String::elicit(client).await?;
@@ -72,8 +83,10 @@ impl Prompt for Ipv6Addr {
 }
 
 impl Elicitation for Ipv6Addr {
+    type Style = Ipv6AddrStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv6Addr");
 
         let ip_str = String::elicit(client).await?;
@@ -102,8 +115,10 @@ impl Prompt for SocketAddr {
 }
 
 impl Elicitation for SocketAddr {
+    type Style = SocketAddrStyle;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddr");
 
         let addr_str = String::elicit(client).await?;
@@ -132,8 +147,10 @@ impl Prompt for SocketAddrV4 {
 }
 
 impl Elicitation for SocketAddrV4 {
+    type Style = SocketAddrV4Style;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddrV4");
 
         let addr_str = String::elicit(client).await?;
@@ -162,8 +179,10 @@ impl Prompt for SocketAddrV6 {
 }
 
 impl Elicitation for SocketAddrV6 {
+    type Style = SocketAddrV6Style;
+
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddrV6");
 
         let addr_str = String::elicit(client).await?;
