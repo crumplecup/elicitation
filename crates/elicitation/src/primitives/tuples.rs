@@ -2,8 +2,7 @@
 
 #![allow(non_snake_case)]
 
-use crate::{ElicitResult, Elicitation, Prompt};
-use rmcp::service::{Peer, RoleClient};
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 
 /// Macro to implement Elicitation for tuples up to arity 12.
 macro_rules! impl_tuple_elicit {
@@ -11,6 +10,29 @@ macro_rules! impl_tuple_elicit {
 
     // Single element and up
     ($($T:ident $idx:tt),+) => {
+        // Each tuple size gets its own default-only style enum
+        paste::paste! {
+            #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+            pub enum [<Tuple $( $idx )+ Style>] {
+                #[default]
+                Default,
+            }
+
+            impl Prompt for [<Tuple $( $idx )+ Style>] {
+                fn prompt() -> Option<&'static str> {
+                    None
+                }
+            }
+
+            impl Elicitation for [<Tuple $( $idx )+ Style>] {
+                type Style = [<Tuple $( $idx )+ Style>];
+
+                async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                    Ok(Self::Default)
+                }
+            }
+        }
+
         impl<$($T),+> Prompt for ($($T,)+)
         where
             $($T: Elicitation + Send,)+
@@ -24,12 +46,16 @@ macro_rules! impl_tuple_elicit {
         where
             $($T: Elicitation + Send,)+
         {
+            paste::paste! {
+                type Style = [<Tuple $( $idx )+ Style>];
+            }
+
             #[tracing::instrument(skip(client), fields(
                 tuple_size = count!($($T)+),
                 types = concat!($(stringify!($T), ", "),+)
             ))]
             async fn elicit(
-                client: &Peer<RoleClient>,
+                client: &ElicitClient<'_>,
             ) -> ElicitResult<Self> {
                 tracing::debug!("Eliciting tuple");
 

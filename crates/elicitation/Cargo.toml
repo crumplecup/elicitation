@@ -20,6 +20,7 @@ derive-getters = { workspace = true }
 tracing = { workspace = true }
 tokio = { workspace = true }
 serde_json = { workspace = true }
+paste = "1.0"
 
 # DateTime libraries (optional)
 chrono = { workspace = true, optional = true }
