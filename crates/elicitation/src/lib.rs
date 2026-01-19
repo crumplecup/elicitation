@@ -86,6 +86,7 @@ mod error;
 pub mod mcp;
 mod paradigm;
 mod primitives;
+pub mod style;
 mod traits;
 
 #[cfg(feature = "serde_json")]
