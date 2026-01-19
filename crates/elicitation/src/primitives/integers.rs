@@ -57,9 +57,13 @@ impl_integer_elicit!(i8, I8Style);
 impl_integer_elicit!(i16, I16Style);
 impl_integer_elicit!(i32, I32Style);
 impl_integer_elicit!(i64, I64Style);
+impl_integer_elicit!(i128, I128Style);
+impl_integer_elicit!(isize, IsizeStyle);
 
 // Apply macro to all unsigned integer types
 impl_integer_elicit!(u8, U8Style);
 impl_integer_elicit!(u16, U16Style);
 impl_integer_elicit!(u32, U32Style);
 impl_integer_elicit!(u64, U64Style);
+impl_integer_elicit!(u128, U128Style);
+impl_integer_elicit!(usize, UsizeStyle);

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-01-19
+
+### Fixed
+
+- Add missing integer type implementations: `i128`, `isize`, `u128`, `usize`
+- Fix documentation claiming support for types that weren't implemented
+
 ## [0.4.2] - 2026-01-19
 
 ### Added
