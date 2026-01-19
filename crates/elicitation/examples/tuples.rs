@@ -8,7 +8,7 @@
 //! - Tuples with mixed types
 //! - Tuples with complex nested types
 
-use elicitation::{ElicitResult, Elicitation};
+use elicitation::{ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
 
 #[tokio::main]
@@ -22,7 +22,8 @@ async fn main() -> ElicitResult<()> {
 
     // Create MCP client with stdio transport
 
-    let client = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let client = ElicitClient::new(&peer);
 
     // Elicit a simple 2-tuple (pair)
     tracing::info!("=== Eliciting (String, i32) ===");

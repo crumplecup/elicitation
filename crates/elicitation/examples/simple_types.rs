@@ -11,7 +11,7 @@
 //! - Optional values (Option<T>)
 //! - Collections (Vec<T>)
 
-use elicitation::{ElicitResult, Elicitation};
+use elicitation::{ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
 
 #[tokio::main]
@@ -24,7 +24,8 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Starting simple types example");
 
     // Create MCP client with stdio transport
-    let client = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let client = ElicitClient::new(&peer);
 
     // Elicit an integer
     tracing::info!("=== Eliciting integer ===");

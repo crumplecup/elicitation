@@ -8,7 +8,7 @@
 //! - Rc<T> - Reference-counted values
 //! - Arc<T> - Thread-safe reference-counted values
 
-use elicitation::{ElicitResult, Elicitation};
+use elicitation::{ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
 use std::rc::Rc;
 use std::sync::Arc;
@@ -24,7 +24,8 @@ async fn main() -> ElicitResult<()> {
 
     // Create MCP client with stdio transport
 
-    let client = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let client = ElicitClient::new(&peer);
 
     // Elicit a Box<String>
     tracing::info!("=== Eliciting Box<String> ===");

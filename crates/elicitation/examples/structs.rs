@@ -77,7 +77,8 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Starting struct elicitation example");
 
     // Create MCP client with stdio transport
-    let client = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let client = ElicitClient::new(&peer);
 
     // Elicit a simple person
     tracing::info!("=== Eliciting Person ===");

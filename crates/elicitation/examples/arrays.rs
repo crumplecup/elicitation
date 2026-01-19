@@ -6,7 +6,7 @@
 //! This example shows how to elicit:
 //! - [T; N] - Fixed-size arrays with const generics
 
-use elicitation::{ElicitResult, Elicitation};
+use elicitation::{ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
 
 #[tokio::main]
@@ -20,7 +20,8 @@ async fn main() -> ElicitResult<()> {
 
     // Create MCP client with stdio transport
 
-    let client = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let client = ElicitClient::new(&peer);
 
     // Elicit a small array
     tracing::info!("=== Eliciting [i32; 3] ===");

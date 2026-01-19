@@ -104,7 +104,8 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Starting complex survey example");
 
     // Create MCP client with stdio transport
-    let client = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let client = ElicitClient::new(&peer);
 
     // Elicit a complete project with all nested structures
     tracing::info!("=== Eliciting Project ===");
