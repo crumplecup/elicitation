@@ -84,7 +84,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-elicitation = "0.2"
+elicitation = "0.3"
 rmcp = "0.12"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```

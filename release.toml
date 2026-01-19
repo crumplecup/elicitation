@@ -11,19 +11,6 @@ sign-commit = false
 # Consolidate commits for workspace release
 consolidate-commits = true
 
-# Pre-release replacements
-[[pre-release-replacements]]
-file = "CHANGELOG.md"
-search = "## \\[Unreleased\\]"
-replace = "## [Unreleased]\n\n## [{{version}}] - {{date}}"
-exactly = 1
-
-[[pre-release-replacements]]
-file = "README.md"
-search = 'elicitation = "[0-9.]+"'
-replace = 'elicitation = "{{version}}"'
-exactly = 1
-
 # Per-crate settings (if needed)
 # [package.elicitation]
 # [package.elicitation_derive]
