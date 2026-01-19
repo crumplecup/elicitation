@@ -1,7 +1,27 @@
 //! Result<T, E> implementation for success/error elicitation.
-use rmcp::service::{Peer, RoleClient};
 
-use crate::{ElicitResult, Elicitation, Prompt};
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+
+// Default-only style for Result
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum ResultStyle {
+    #[default]
+    Default,
+}
+
+impl Prompt for ResultStyle {
+    fn prompt() -> Option<&'static str> {
+        None
+    }
+}
+
+impl Elicitation for ResultStyle {
+    type Style = ResultStyle;
+
+    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        Ok(Self::Default)
+    }
+}
 
 impl<T, E> Prompt for Result<T, E>
 where
@@ -18,11 +38,13 @@ where
     T: Elicitation + Send,
     E: Elicitation + Send,
 {
+    type Style = ResultStyle;
+
     #[tracing::instrument(skip(client), fields(
         ok_type = std::any::type_name::<T>(),
         err_type = std::any::type_name::<E>()
     ))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Result");
 
         // First, ask if it's Ok or Err

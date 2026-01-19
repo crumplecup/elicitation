@@ -1,7 +1,27 @@
 //! Option<T> implementation for optional value elicitation.
-use rmcp::service::{Peer, RoleClient};
 
-use crate::{ElicitResult, Elicitation, Prompt};
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+
+// For generic types, we create default-only style that ignores the type parameter
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum OptionStyle {
+    #[default]
+    Default,
+}
+
+impl Prompt for OptionStyle {
+    fn prompt() -> Option<&'static str> {
+        None
+    }
+}
+
+impl Elicitation for OptionStyle {
+    type Style = OptionStyle;
+
+    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        Ok(Self::Default)
+    }
+}
 
 impl<T: Elicitation + Send> Prompt for Option<T> {
     fn prompt() -> Option<&'static str> {
@@ -10,8 +30,10 @@ impl<T: Elicitation + Send> Prompt for Option<T> {
 }
 
 impl<T: Elicitation + Send> Elicitation for Option<T> {
+    type Style = OptionStyle;
+
     #[tracing::instrument(skip(client), fields(inner_type = std::any::type_name::<T>()))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting optional value");
 
         // First ask if they want to provide a value
