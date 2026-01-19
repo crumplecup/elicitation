@@ -66,11 +66,15 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
 
     // Generate Select impl (only for unit variants in options())
     let select_impl = generate_select_impl(name, &unit_variant_idents, &variant_labels);
+    
+    // Generate style enum
+    let style_enum = generate_style_enum(name);
 
     // Generate Elicit impl (handles all variant types)
     let elicit_impl = generate_elicit_impl(name, &variants);
 
     let expanded = quote! {
+        #style_enum
         #prompt_impl
         #select_impl
         #elicit_impl
@@ -267,6 +271,7 @@ fn generate_variant_match_arm(variant: &VariantInfo, enum_ident: &syn::Ident) ->
 
 /// Generate the Elicitation implementation for an enum.
 fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStream2 {
+    let style_name = quote::format_ident!("{}Style", name);
     let variant_labels: Vec<String> = variants.iter().map(|v| v.ident.to_string()).collect();
 
     // Phase 1: Variant selection
@@ -282,6 +287,7 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
 
         let params = elicitation::mcp::select_params(prompt, labels);
         let result = client
+            .peer()
             .call_tool(elicitation::rmcp::model::CallToolRequestParam {
                 name: elicitation::mcp::tool_names::elicit_select().into(),
                 arguments: Some(params),
@@ -308,6 +314,8 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
     quote! {
         #[automatically_derived]
         impl elicitation::Elicitation for #name {
+            type Style = #style_name;
+
             #[tracing::instrument(
                 skip(client),
                 fields(
@@ -316,7 +324,7 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
                 )
             )]
             async fn elicit(
-                client: &elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>,
+                client: &elicitation::ElicitClient<'_>,
             ) -> elicitation::ElicitResult<Self> {
                 #selection_code
 
@@ -341,6 +349,38 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
                         ))
                     }
                 }
+            }
+        }
+    }
+}
+
+/// Generate a default-only style enum for the type.
+///
+/// Creates a simple enum with a single Default variant, following the pattern
+/// used by built-in types.
+fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
+    let style_name = quote::format_ident!("{}Style", name);
+    
+    quote! {
+        /// Style enum for this type (default-only for now).
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        pub enum #style_name {
+            /// Default elicitation style.
+            #[default]
+            Default,
+        }
+
+        impl elicitation::Prompt for #style_name {
+            fn prompt() -> Option<&'static str> {
+                None
+            }
+        }
+
+        impl elicitation::Elicitation for #style_name {
+            type Style = #style_name;
+
+            async fn elicit(_client: &elicitation::ElicitClient<'_>) -> elicitation::ElicitResult<Self> {
+                Ok(Self::Default)
             }
         }
     }

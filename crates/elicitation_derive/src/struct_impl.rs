@@ -230,6 +230,7 @@ fn generate_elicit_impl_simple(
     elicited_fields: &[FieldInfo],
     skipped_fields: &[FieldInfo],
 ) -> TokenStream2 {
+    let style_name = quote::format_ident!("{}Style", name);
     let elicited_names: Vec<_> = elicited_fields.iter().map(|info| &info.ident).collect();
     let elicited_types: Vec<_> = elicited_fields.iter().map(|info| &info.ty).collect();
 
@@ -267,10 +268,34 @@ fn generate_elicit_impl_simple(
     };
 
     quote! {
+        /// Style enum for this type (default-only).
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        pub enum #style_name {
+            /// Default elicitation style.
+            #[default]
+            Default,
+        }
+
+        impl elicitation::Prompt for #style_name {
+            fn prompt() -> Option<&'static str> {
+                None
+            }
+        }
+
+        impl elicitation::Elicitation for #style_name {
+            type Style = #style_name;
+
+            async fn elicit(_client: &elicitation::ElicitClient<'_>) -> elicitation::ElicitResult<Self> {
+                Ok(Self::Default)
+            }
+        }
+
         impl elicitation::Elicitation for #name {
+            type Style = #style_name;
+
             #[tracing::instrument(skip(client))]
             async fn elicit(
-                client: &elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>,
+                client: &elicitation::ElicitClient<'_>,
             ) -> elicitation::ElicitResult<Self> {
                 tracing::debug!(struct_name = stringify!(#name), "Eliciting struct");
                 #(#elicit_statements)*
@@ -425,9 +450,11 @@ fn generate_elicit_impl_styled(
         }
         
         impl elicitation::Elicitation for #style_enum_name {
+            type Style = #style_enum_name;
+
             #[tracing::instrument(skip(client))]
             async fn elicit(
-                client: &elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>,
+                client: &elicitation::ElicitClient<'_>,
             ) -> elicitation::ElicitResult<Self> {
                 let prompt = <Self as elicitation::Prompt>::prompt().unwrap();
                 tracing::debug!("Eliciting style selection");
@@ -437,6 +464,7 @@ fn generate_elicit_impl_styled(
                     <Self as elicitation::Select>::labels()
                 );
                 let result = client
+                    .peer()
                     .call_tool(elicitation::rmcp::model::CallToolRequestParam {
                         name: elicitation::mcp::tool_names::elicit_select().into(),
                         arguments: Some(params),
@@ -454,9 +482,11 @@ fn generate_elicit_impl_styled(
         }
         
         impl elicitation::Elicitation for #name {
+            type Style = #style_enum_name;
+
             #[tracing::instrument(skip(client))]
             async fn elicit(
-                client: &elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>,
+                client: &elicitation::ElicitClient<'_>,
             ) -> elicitation::ElicitResult<Self> {
                 tracing::debug!(struct_name = stringify!(#name), "Eliciting struct with style");
                 
