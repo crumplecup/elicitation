@@ -10,7 +10,7 @@
 //! - Optional custom types
 //! - Composition of all paradigms
 
-use elicitation::{Elicit, ElicitResult, Elicitation, Prompt, Select};
+use elicitation::{ElicitClient, Elicit, ElicitResult, Elicitation, Prompt, Select};
 use rmcp::ServiceExt;
 
 /// Priority level for tasks

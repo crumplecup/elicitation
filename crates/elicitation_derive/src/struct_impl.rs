@@ -376,6 +376,7 @@ fn generate_elicit_impl_styled(
                     };
                     let params = elicitation::mcp::text_params(prompt);
                     let result = client
+                        .peer()
                         .call_tool(elicitation::rmcp::model::CallToolRequestParam {
                             name: elicitation::mcp::tool_names::elicit_text().into(),
                             arguments: Some(params),
@@ -419,11 +420,17 @@ fn generate_elicit_impl_styled(
         }
     };
 
+    // Generate enum with first variant as default
+    let default_variant = &style_variants[0];
+    let other_variants = &style_variants[1..];
+
     quote! {
         // Generate style selection enum
-        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
         enum #style_enum_name {
-            #(#style_variants),*
+            #[default]
+            #default_variant,
+            #(#other_variants),*
         }
         
         impl elicitation::Prompt for #style_enum_name {

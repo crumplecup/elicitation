@@ -6,7 +6,7 @@
 //! This example shows how to elicit:
 //! - Result<T, E> - Success or failure outcomes with values
 
-use elicitation::{Elicit, ElicitResult, Elicitation, Prompt, Select};
+use elicitation::{ElicitClient, Elicit, ElicitResult, Elicitation, Prompt, Select};
 use rmcp::ServiceExt;
 
 /// Simple error type for demonstration

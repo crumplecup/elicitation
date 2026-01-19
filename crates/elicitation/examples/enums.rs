@@ -6,7 +6,7 @@
 //! This example shows how enums automatically use the Select paradigm,
 //! allowing users to choose from a finite set of options.
 
-use elicitation::{Elicit, ElicitResult, Elicitation, Prompt, Select};
+use elicitation::{ElicitClient, Elicit, ElicitResult, Elicitation, Prompt, Select};
 use rmcp::ServiceExt;
 
 /// Simple enum with default prompt
