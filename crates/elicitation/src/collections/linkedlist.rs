@@ -1,8 +1,28 @@
 //! LinkedList<T> implementation for linked list elicitation.
-use rmcp::service::{Peer, RoleClient};
 
-use crate::{ElicitResult, Elicitation, Prompt};
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use std::collections::LinkedList;
+
+// Default-only style for LinkedList
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum LinkedListStyle {
+    #[default]
+    Default,
+}
+
+impl Prompt for LinkedListStyle {
+    fn prompt() -> Option<&'static str> {
+        None
+    }
+}
+
+impl Elicitation for LinkedListStyle {
+    type Style = LinkedListStyle;
+
+    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        Ok(Self::Default)
+    }
+}
 
 impl<T> Prompt for LinkedList<T>
 where
@@ -17,8 +37,10 @@ impl<T> Elicitation for LinkedList<T>
 where
     T: Elicitation + Send,
 {
+    type Style = LinkedListStyle;
+
     #[tracing::instrument(skip(client), fields(item_type = std::any::type_name::<T>()))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let mut list = LinkedList::new();
         tracing::debug!("Eliciting LinkedList");
 

@@ -1,9 +1,29 @@
 //! HashSet<T> implementation for unique item collection.
-use rmcp::service::{Peer, RoleClient};
 
-use crate::{ElicitResult, Elicitation, Prompt};
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use std::collections::HashSet;
 use std::hash::Hash;
+
+// Default-only style for HashSet
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum HashSetStyle {
+    #[default]
+    Default,
+}
+
+impl Prompt for HashSetStyle {
+    fn prompt() -> Option<&'static str> {
+        None
+    }
+}
+
+impl Elicitation for HashSetStyle {
+    type Style = HashSetStyle;
+
+    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        Ok(Self::Default)
+    }
+}
 
 impl<T> Prompt for HashSet<T>
 where
@@ -18,8 +38,10 @@ impl<T> Elicitation for HashSet<T>
 where
     T: Elicitation + Hash + Eq + Send,
 {
+    type Style = HashSetStyle;
+
     #[tracing::instrument(skip(client), fields(item_type = std::any::type_name::<T>()))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let mut set = HashSet::new();
         tracing::debug!("Eliciting HashSet");
 

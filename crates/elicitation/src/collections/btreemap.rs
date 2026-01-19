@@ -1,8 +1,28 @@
 //! BTreeMap<K, V> implementation for ordered key-value elicitation.
-use rmcp::service::{Peer, RoleClient};
 
-use crate::{ElicitResult, Elicitation, Prompt};
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use std::collections::BTreeMap;
+
+// Default-only style for BTreeMap
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum BTreeMapStyle {
+    #[default]
+    Default,
+}
+
+impl Prompt for BTreeMapStyle {
+    fn prompt() -> Option<&'static str> {
+        None
+    }
+}
+
+impl Elicitation for BTreeMapStyle {
+    type Style = BTreeMapStyle;
+
+    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        Ok(Self::Default)
+    }
+}
 
 impl<K, V> Prompt for BTreeMap<K, V>
 where
@@ -19,11 +39,13 @@ where
     K: Elicitation + Ord + Send,
     V: Elicitation + Send,
 {
+    type Style = BTreeMapStyle;
+
     #[tracing::instrument(skip(client), fields(
         key_type = std::any::type_name::<K>(),
         value_type = std::any::type_name::<V>()
     ))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let mut map = BTreeMap::new();
         tracing::debug!("Eliciting BTreeMap");
 

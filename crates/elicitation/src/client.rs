@@ -2,6 +2,7 @@
 
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
+use std::sync::{Arc, RwLock};
 use rmcp::service::{Peer, RoleClient};
 
 use crate::{ElicitResult, Elicitation};
@@ -44,9 +45,9 @@ impl<'a> ElicitClient<'a> {
     ///
     /// Returns a new `ElicitClient` with the style added to the context.
     /// The original client is unchanged.
-    pub fn with_style<T: Elicitation>(&self, style: T::Style) -> Self
+    pub fn with_style<T: Elicitation + 'static>(&self, style: T::Style) -> Self
     where
-        T::Style: Clone + 'static,
+        T::Style: Clone + Send + Sync + 'static,
     {
         let mut ctx = self.style_context.clone();
         ctx.set_style::<T>(style);
@@ -61,9 +62,9 @@ impl<'a> ElicitClient<'a> {
     /// If a style has been set via `with_style()`, returns that.
     /// Otherwise, elicits the style from the user (auto-selection).
     #[tracing::instrument(skip(self))]
-    pub async fn current_style<T: Elicitation>(&self) -> ElicitResult<T::Style>
+    pub async fn current_style<T: Elicitation + 'static>(&self) -> ElicitResult<T::Style>
     where
-        T::Style: Clone + 'static,
+        T::Style: Clone + Send + Sync + 'static,
     {
         if let Some(style) = self.style_context.get_style::<T>() {
             tracing::debug!(type_name = std::any::type_name::<T>(), "Using pre-set style");
@@ -79,9 +80,10 @@ impl<'a> ElicitClient<'a> {
 ///
 /// Uses `TypeId` to store different style enums for different types.
 /// This allows each type to have its own style selection without interference.
+/// Internally uses `Arc<RwLock<_>>` for efficient cloning.
 #[derive(Clone, Default)]
 struct StyleContext {
-    styles: HashMap<TypeId, Box<dyn Any + Send + Sync>>,
+    styles: Arc<RwLock<HashMap<TypeId, Box<dyn Any + Send + Sync>>>>,
 }
 
 impl StyleContext {
@@ -89,20 +91,22 @@ impl StyleContext {
     fn set_style<T: 'static>(&mut self, style: T::Style)
     where
         T: Elicitation,
-        T::Style: Clone + 'static,
+        T::Style: Clone + Send + Sync + 'static,
     {
         let type_id = TypeId::of::<T>();
-        self.styles.insert(type_id, Box::new(style));
+        let mut styles = self.styles.write().expect("Lock poisoned");
+        styles.insert(type_id, Box::new(style));
     }
 
     /// Get the style for a specific type, if set.
     fn get_style<T: 'static>(&self) -> Option<T::Style>
     where
         T: Elicitation,
-        T::Style: Clone + 'static,
+        T::Style: Clone + Send + Sync + 'static,
     {
         let type_id = TypeId::of::<T>();
-        self.styles
+        let styles = self.styles.read().expect("Lock poisoned");
+        styles
             .get(&type_id)
             .and_then(|any| any.downcast_ref::<T::Style>())
             .cloned()

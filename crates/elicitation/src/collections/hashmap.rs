@@ -1,9 +1,29 @@
 //! HashMap<K, V> implementation for key-value elicitation.
-use rmcp::service::{Peer, RoleClient};
 
-use crate::{ElicitResult, Elicitation, Prompt};
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use std::collections::HashMap;
 use std::hash::Hash;
+
+// Default-only style for HashMap
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum HashMapStyle {
+    #[default]
+    Default,
+}
+
+impl Prompt for HashMapStyle {
+    fn prompt() -> Option<&'static str> {
+        None
+    }
+}
+
+impl Elicitation for HashMapStyle {
+    type Style = HashMapStyle;
+
+    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        Ok(Self::Default)
+    }
+}
 
 impl<K, V> Prompt for HashMap<K, V>
 where
@@ -20,11 +40,13 @@ where
     K: Elicitation + Hash + Eq + Send,
     V: Elicitation + Send,
 {
+    type Style = HashMapStyle;
+
     #[tracing::instrument(skip(client), fields(
         key_type = std::any::type_name::<K>(),
         value_type = std::any::type_name::<V>()
     ))]
-    async fn elicit(client: &Peer<RoleClient>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let mut map = HashMap::new();
         tracing::debug!("Eliciting HashMap");
 
