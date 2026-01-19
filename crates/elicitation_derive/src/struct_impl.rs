@@ -105,7 +105,7 @@ struct FieldInfo {
 /// Parse field information from a Field.
 fn parse_field_info(field: &Field) -> FieldInfo {
     let (default_prompt, styled_prompts) = extract_prompts(&field.attrs);
-    
+
     FieldInfo {
         ident: field.ident.clone().expect("Named field has ident"),
         ty: field.ty.clone(),
@@ -116,24 +116,26 @@ fn parse_field_info(field: &Field) -> FieldInfo {
 
 /// Extract prompts from attributes.
 /// Returns (default_prompt, style_specific_prompts).
-fn extract_prompts(attrs: &[syn::Attribute]) -> (Option<String>, std::collections::HashMap<String, String>) {
+fn extract_prompts(
+    attrs: &[syn::Attribute],
+) -> (Option<String>, std::collections::HashMap<String, String>) {
     let mut default_prompt = None;
     let mut styled_prompts = std::collections::HashMap::new();
-    
+
     for attr in attrs {
         if !attr.path().is_ident("prompt") {
             continue;
         }
-        
+
         // Parse the attribute arguments
         let parsed = attr.parse_args_with(|input: syn::parse::ParseStream| {
             // First argument: prompt text (required)
             let prompt_text: syn::LitStr = input.parse()?;
-            
+
             // Check if there's a comma for additional arguments
             if input.peek(syn::Token![,]) {
                 input.parse::<syn::Token![,]>()?;
-                
+
                 // Parse: style = "name"
                 if input.peek(syn::Ident) {
                     let ident: syn::Ident = input.parse()?;
@@ -144,10 +146,10 @@ fn extract_prompts(attrs: &[syn::Attribute]) -> (Option<String>, std::collection
                     }
                 }
             }
-            
+
             Ok((prompt_text.value(), None))
         });
-        
+
         match parsed {
             Ok((prompt, Some(style))) => {
                 styled_prompts.insert(style, prompt);
@@ -161,7 +163,7 @@ fn extract_prompts(attrs: &[syn::Attribute]) -> (Option<String>, std::collection
             }
         }
     }
-    
+
     (default_prompt, styled_prompts)
 }
 
@@ -316,17 +318,17 @@ fn generate_elicit_impl_styled(
 ) -> TokenStream2 {
     // Generate style enum name
     let style_enum_name = syn::Ident::new(&format!("{}ElicitStyle", name), name.span());
-    
+
     // Generate style enum variants
     let style_variants: Vec<_> = std::iter::once("Default".to_string())
         .chain(all_styles.iter().map(|s| capitalize_first(s)))
         .map(|variant_name| syn::Ident::new(&variant_name, name.span()))
         .collect();
-    
+
     let style_labels: Vec<_> = std::iter::once("default".to_string())
         .chain(all_styles.iter().cloned())
         .collect();
-    
+
     // Generate from_label match arms
     let from_label_arms: Vec<_> = style_variants
         .iter()
@@ -337,7 +339,7 @@ fn generate_elicit_impl_styled(
             }
         })
         .collect();
-    
+
     // Generate field elicitation with style matching
     let field_elicit_statements: Vec<_> = elicited_fields
         .iter()
@@ -345,10 +347,10 @@ fn generate_elicit_impl_styled(
             let field_name = &field.ident;
             let field_ty = &field.ty;
             let field_name_str = field_name.to_string();
-            
+
             // Build match arms for each style
             let mut match_arms = Vec::new();
-            
+
             // Add styled prompts
             for (style_name, prompt_text) in &field.styled_prompts {
                 let style_variant = syn::Ident::new(&capitalize_first(style_name), name.span());
@@ -356,27 +358,27 @@ fn generate_elicit_impl_styled(
                     #style_enum_name::#style_variant => #prompt_text,
                 });
             }
-            
+
             // Add default fallback
             let default_prompt = field.default_prompt.as_deref()
                 .unwrap_or(field_name_str.as_str());
             match_arms.push(quote! {
                 _ => #default_prompt,
             });
-            
+
             // Check type and generate appropriate inline elicitation
             let type_path = match field_ty {
                 syn::Type::Path(p) => Some(p),
                 _ => None,
             };
-            
+
             let last_segment = type_path.and_then(|p| p.path.segments.last());
             let type_ident = last_segment.map(|seg| &seg.ident);
-            
+
             // Determine if this type supports inline elicitation
             let supports_inline = if let Some(ident) = type_ident {
                 let ident_str = ident.to_string();
-                matches!(ident_str.as_str(), 
+                matches!(ident_str.as_str(),
                     "String" | "bool" |
                     "u8" | "u16" | "u32" | "u64" | "u128" | "usize" |
                     "i8" | "i16" | "i32" | "i64" | "i128" | "isize" |
@@ -385,11 +387,11 @@ fn generate_elicit_impl_styled(
             } else {
                 false
             };
-            
+
             if supports_inline && !field.styled_prompts.is_empty() {
                 let type_ident = type_ident.unwrap();
                 let type_str = type_ident.to_string();
-                
+
                 // Generate inline elicitation based on type
                 match type_str.as_str() {
                     "String" => {
@@ -498,7 +500,7 @@ fn generate_elicit_impl_styled(
             }
         })
         .collect();
-    
+
     // For skipped fields, use Default::default()
     let skipped_names: Vec<_> = skipped_fields.iter().map(|info| &info.ident).collect();
     let skipped_defaults: Vec<_> = skipped_names
@@ -511,7 +513,7 @@ fn generate_elicit_impl_styled(
         .collect();
 
     let elicited_names: Vec<_> = elicited_fields.iter().map(|info| &info.ident).collect();
-    
+
     // Combine elicited and skipped field assignments
     let all_field_assignments = if skipped_fields.is_empty() {
         quote! { #(#elicited_names),* }
@@ -534,22 +536,22 @@ fn generate_elicit_impl_styled(
             #default_variant,
             #(#other_variants),*
         }
-        
+
         impl elicitation::Prompt for #style_enum_name {
             fn prompt() -> Option<&'static str> {
                 Some("Select elicitation style:")
             }
         }
-        
+
         impl elicitation::Select for #style_enum_name {
             fn options() -> &'static [Self] {
                 &[#(Self::#style_variants),*]
             }
-            
+
             fn labels() -> &'static [&'static str] {
                 &[#(#style_labels),*]
             }
-            
+
             fn from_label(label: &str) -> Option<Self> {
                 match label {
                     #(#from_label_arms)*
@@ -557,7 +559,7 @@ fn generate_elicit_impl_styled(
                 }
             }
         }
-        
+
         impl elicitation::Elicitation for #style_enum_name {
             type Style = #style_enum_name;
 
@@ -589,7 +591,7 @@ fn generate_elicit_impl_styled(
                 })
             }
         }
-        
+
         impl elicitation::Elicitation for #name {
             type Style = #style_enum_name;
 
@@ -598,14 +600,14 @@ fn generate_elicit_impl_styled(
                 client: &elicitation::ElicitClient<'_>,
             ) -> elicitation::ElicitResult<Self> {
                 tracing::debug!(struct_name = stringify!(#name), "Eliciting struct with style");
-                
+
                 // Step 1: Get style (use pre-set or elicit)
                 let elicit_style = client.style_or_elicit::<#name>().await?;
                 tracing::debug!(?elicit_style, "Style selected");
-                
+
                 // Step 2: Elicit fields with chosen style
                 #(#field_elicit_statements)*
-                
+
                 Ok(Self {
                     #all_field_assignments
                 })

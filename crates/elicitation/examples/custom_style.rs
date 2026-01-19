@@ -16,11 +16,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     #[derive(Clone, Default, Debug)]
     #[allow(dead_code)]
     struct CompactI32Style;
-    
+
     #[derive(Clone, Default, Debug)]
     #[allow(dead_code)]
     struct CurtStringStyle;
-    
+
     #[derive(Clone, Default, Debug)]
     #[allow(dead_code)]
     struct VerboseI32Style;
@@ -29,10 +29,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("  - CompactI32Style for i32");
     println!("  - CurtStringStyle for String");
     println!("  - VerboseI32Style for i32");
-    
+
     println!("\nUsage patterns:");
     println!("  1. Default: let age = i32::elicit(&client).await?;");
-    println!("  2. Custom:  let client = client.with_style::<i32, CompactI32Style>(CompactI32Style);");
+    println!(
+        "  2. Custom:  let client = client.with_style::<i32, CompactI32Style>(CompactI32Style);"
+    );
     println!("              let age = i32::elicit(&client).await?;");
     println!("  3. Chain:   let client = client");
     println!("                  .with_style::<i32, VerboseI32Style>(VerboseI32Style)");

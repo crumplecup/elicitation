@@ -2,7 +2,9 @@
 //!
 //! Available with the `serde_json` feature.
 
-use crate::{ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select, mcp};
+use crate::{
+    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select, mcp,
+};
 use serde_json::Value;
 
 /// Maximum depth for recursive JSON elicitation.

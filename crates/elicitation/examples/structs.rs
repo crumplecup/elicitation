@@ -6,7 +6,7 @@
 //! This example shows how structs automatically use the Survey paradigm,
 //! eliciting each field sequentially to build the complete structure.
 
-use elicitation::{ElicitClient, Elicit, ElicitResult, Elicitation};
+use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
 
 /// Simple struct with default prompts

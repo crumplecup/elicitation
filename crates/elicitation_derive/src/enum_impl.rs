@@ -66,7 +66,7 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
 
     // Generate Select impl (only for unit variants in options())
     let select_impl = generate_select_impl(name, &unit_variant_idents, &variant_labels);
-    
+
     // Generate style enum
     let style_enum = generate_style_enum(name);
 
@@ -360,7 +360,7 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
 /// used by built-in types.
 fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
     let style_name = quote::format_ident!("{}Style", name);
-    
+
     quote! {
         /// Style enum for this type (default-only for now).
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]

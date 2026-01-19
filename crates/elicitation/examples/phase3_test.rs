@@ -20,22 +20,22 @@ struct UserProfile {
     #[prompt("Username", style = "curt")]
     #[prompt("What's your username?", style = "verbose")]
     name: String,
-    
+
     // Integer field (u32)
     #[prompt("Age", style = "curt")]
     #[prompt("How old are you?", style = "verbose")]
     age: u32,
-    
+
     // Boolean field
     #[prompt("Premium user?", style = "curt")]
     #[prompt("Do you have a premium account?", style = "verbose")]
     is_premium: bool,
-    
+
     // Float field (f64)
     #[prompt("Height (m)", style = "curt")]
     #[prompt("What is your height in meters?", style = "verbose")]
     height: f64,
-    
+
     // Another integer (i32)
     #[prompt("Rank", style = "curt")]
     #[prompt("What is your ranking score?", style = "verbose")]
@@ -49,7 +49,7 @@ struct Config {
     #[prompt("Name", style = "short")]
     #[prompt("Please provide the configuration name", style = "detailed")]
     config_name: String,
-    
+
     // This field has no style - uses default elicitation
     timeout_seconds: u64,
 }

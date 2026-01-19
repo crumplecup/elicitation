@@ -9,7 +9,7 @@
 //! - HashSet<T> - Unique items with automatic deduplication
 //! - BTreeSet<T> - Ordered unique items
 
-use elicitation::{ElicitClient, Elicit, ElicitResult, Elicitation, Prompt, Select};
+use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation, Prompt, Select};
 use rmcp::ServiceExt;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, LinkedList, VecDeque};
 

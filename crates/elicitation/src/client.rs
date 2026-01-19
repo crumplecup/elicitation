@@ -1,9 +1,9 @@
 //! Client wrapper for style-aware elicitation.
 
+use rmcp::service::{Peer, RoleClient};
 use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
-use rmcp::service::{Peer, RoleClient};
 
 use crate::{ElicitResult, Elicitation, ElicitationStyle};
 
@@ -20,17 +20,17 @@ use crate::{ElicitResult, Elicitation, ElicitationStyle};
 ///
 /// ```rust,ignore
 /// use elicitation::{ElicitClient, ElicitationStyle, Elicitation};
-/// 
+///
 /// // Define custom style for i32
 /// #[derive(Clone, Default)]
-/// enum MyI32Style { 
+/// enum MyI32Style {
 ///     #[default]
-///     Terse, 
-///     Verbose 
+///     Terse,
+///     Verbose
 /// }
-/// 
+///
 /// impl ElicitationStyle for MyI32Style {}
-/// 
+///
 /// // Use it
 /// let client = ElicitClient::new(&peer);
 /// let styled = client.with_style::<i32, _>(MyI32Style::Verbose);
@@ -121,7 +121,10 @@ impl<'a> ElicitClient<'a> {
         T::Style: ElicitationStyle,
     {
         if let Some(style) = self.style_context.get_style::<T, T::Style>() {
-            tracing::debug!(type_name = std::any::type_name::<T>(), "Using pre-set style");
+            tracing::debug!(
+                type_name = std::any::type_name::<T>(),
+                "Using pre-set style"
+            );
             Ok(style)
         } else {
             tracing::debug!(type_name = std::any::type_name::<T>(), "Eliciting style");
@@ -145,7 +148,10 @@ impl<'a> ElicitClient<'a> {
         }
 
         // Fall back to default
-        tracing::debug!(type_name = std::any::type_name::<T>(), "Using default style");
+        tracing::debug!(
+            type_name = std::any::type_name::<T>(),
+            "Using default style"
+        );
         Ok(T::Style::default())
     }
 }

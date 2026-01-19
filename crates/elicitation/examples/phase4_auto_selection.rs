@@ -12,7 +12,7 @@ struct Config {
     #[prompt("Name", style = "short")]
     #[prompt("Configuration name", style = "detailed")]
     name: String,
-    
+
     #[prompt("Timeout (s)", style = "short")]
     #[prompt("Timeout in seconds", style = "detailed")]
     timeout: u32,
