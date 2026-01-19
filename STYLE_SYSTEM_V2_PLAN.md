@@ -352,9 +352,40 @@ Auto-selection behavior:
 - No pre-set style → style is elicited from user
 - Composable: each type has independent style context
 
-### Phase 5: Builder Pattern
-- Add `with_style()` method for one-off overrides
-- Implement `ElicitBuilder` for ergonomics
+### Phase 5: Builder Pattern ✅ COMPLETE
+- ✅ Add `with_style()` method to Elicitation trait
+- ✅ Implement `ElicitBuilder` for ergonomic one-off overrides
+- ✅ Add `'static` bound to Elicitation trait
+
+**Status:** Phase 5 complete! The builder pattern provides:
+- Ergonomic syntax: `Config::with_style(style).elicit(&peer).await?`
+- One-line style overrides (vs three lines manually)
+- Type-safe: compiler enforces correct style type
+- Self-documenting code
+
+Builder pattern syntax:
+```rust
+// Before: Manual styled client
+let client = ElicitClient::new(&peer);
+let client = client.with_style::<Config, _>(ConfigElicitStyle::Short);
+let config = Config::elicit(&client).await?;
+
+// After: Builder pattern
+let config = Config::with_style(ConfigElicitStyle::Short)
+    .elicit(&peer)
+    .await?;
+```
+
+## Implementation Complete! 🎉
+
+All 5 phases of Style System v2 are complete:
+- ✅ Phase 1: Foundation (ElicitClient, StyleContext, associated types)
+- ✅ Phase 2: Primitive Styles (all 65+ standard types)
+- ✅ Phase 3: Derived Type Styles (inline elicitation for all primitives)
+- ✅ Phase 4: Auto-Selection (style_or_elicit with silent defaults)
+- ✅ Phase 5: Builder Pattern (ergonomic one-off overrides)
+
+**Ready for v0.3.0 release!**
 
 ## Migration from v1 (0.2.2)
 
