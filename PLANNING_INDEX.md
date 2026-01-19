@@ -151,3 +151,128 @@ This file tracks all planning documents for the elicitation project.
 4. Integration & polish (1 hour) - Documentation, CI
 
 **Target**: 5-8 hours, release as elicitation 0.2.3
+
+---
+
+### ELICITATION_STYLE_SYSTEM_PLAN.md
+**Status**: Active - v0.2.4+ revolutionary feature development
+**Created**: 2026-01-19
+**Purpose**: Implementation plan for trait-based style system that separates elicitation behavior (what's asked) from elicitation style (how it's presented).
+
+**Vision**: Enable customizable elicitation UX through pluggable `ElicitationStyle` trait implementations. Users can choose from built-in styles (default, compact, verbose, wizard) or implement custom styles for specialized needs.
+
+**The Innovation**: Instead of hardcoding UX decisions, let styles control prompt formatting, help text, error messages, and selection rendering. Opens door to framework integration (egui, ratatui), domain-specific UX (config files, secrets, web forms), and ecosystem growth.
+
+**Core Architecture**:
+
+**ElicitationStyle Trait:**
+```rust
+pub trait ElicitationStyle: Send + Sync {
+    fn prompt_for_field(&self, field_name: &str, field_type: &str, context: &PromptContext) -> String;
+    fn help_text(&self, field_name: &str, field_type: &str) -> Option<String>;
+    fn validation_error(&self, field_name: &str, error: &str) -> String;
+    fn show_type_hints(&self) -> bool;
+    fn select_style(&self) -> SelectStyle;  // Menu vs inline vs search
+    fn use_decorations(&self) -> bool;
+    fn prompt_prefix(&self) -> &str;
+}
+```
+
+**Derive Syntax:**
+```rust
+// Built-in style (string lookup)
+#[derive(Elicit)]
+#[elicit(style = "compact")]
+struct Config { ... }
+
+// Custom style (type reference)
+#[derive(Elicit)]
+#[elicit(style = MyStyle)]
+struct Config { ... }
+
+// Field-level override
+#[derive(Elicit)]
+#[elicit(style = "default")]
+struct Config {
+    host: String,
+    #[elicit(style = "compact")]
+    port: u16,
+}
+```
+
+**Built-in Styles (0.2.4):**
+
+1. **DefaultStyle** - Balanced, current behavior
+   - "Enter host:"
+   - Type hints enabled
+   - Standard errors
+
+2. **CompactStyle** - Minimal, terse
+   - "host:"
+   - No type hints
+   - Concise errors
+
+3. **VerboseStyle** - Detailed, helpful
+   - "Enter host (text, field 1/2)"
+   - Extensive help text
+   - Friendly errors
+
+4. **WizardStyle** - Step-by-step
+   - "Step 1 of 2: Enter host"
+   - Progress indicators
+   - Decorative elements
+
+**Datetime Integration (0.2.6):**
+
+Apply style pattern to datetime elicitation:
+- **Iso8601Style** - ISO string only (fast)
+- **ComponentsStyle** - Manual input (guided)
+- **SmartDatetimeStyle** - User chooses method
+
+**Ecosystem Potential:**
+
+Third-party styles:
+- `elicitation-egui` - GUI widgets
+- `elicitation-ratatui` - TUI interface
+- `elicitation-web-styles` - HTML forms
+- `elicitation-secrets` - Masked input
+- `elicitation-config` - TOML/YAML-like
+
+**Implementation Phases:**
+
+**0.2.4** (10-14 hours):
+- Core trait + PromptContext
+- 4 built-in styles
+- StyleRegistry for dynamic lookup
+- Derive macro `#[elicit(style = ...)]` support
+- Backward compatible (no annotation = DefaultStyle)
+
+**0.2.5** (3-4 hours):
+- Field-level `#[elicit(style = ...)]` overrides
+- Per-field style selection
+- Mixed styles in one struct
+
+**0.2.6** (4-6 hours):
+- Datetime-specific styles
+- Refactor datetime impls to use styles
+- Documentation & examples
+
+**Key Benefits:**
+
+- **Separation of concerns**: UX decoupled from elicitation logic
+- **Extensibility**: New styles without touching core
+- **Zero-cost abstraction**: Derive generates monomorphized code (no trait objects)
+- **Backward compatible**: No annotation = unchanged behavior
+- **Ecosystem growth**: Third-party styles for specialized needs
+- **Framework integration**: GUI/TUI frameworks can provide styles
+- **Innovation**: Opens new paradigms (visual config, web forms, etc.)
+
+**Versioning**: All non-breaking additions = patch bumps (0.2.4, 0.2.5, 0.2.6)
+
+**Timeline**: 17-24 hours across 2-3 weeks
+
+**Impact**: Foundational feature enabling elicitation beyond terminal prompts. Makes library useful for GUI applications, web interfaces, config file generation, and domain-specific tooling.
+
+**Truly innovative** - no other Rust elicitation library has this pattern.
+
+---
