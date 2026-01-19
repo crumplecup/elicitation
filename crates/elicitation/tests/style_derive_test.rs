@@ -3,7 +3,6 @@
 use elicitation::Elicit;
 
 #[derive(Debug, Clone, Elicit)]
-#[allow(dead_code)]
 struct BasicConfig {
     #[prompt("Enter your name")]
     name: String,
@@ -13,7 +12,6 @@ struct BasicConfig {
 }
 
 #[derive(Debug, Clone, Elicit)]
-#[allow(dead_code)]
 struct StyledConfig {
     #[prompt("Enter your name", style = "curt")]
     #[prompt("Please provide your full name", style = "verbose")]
@@ -25,7 +23,6 @@ struct StyledConfig {
 }
 
 #[derive(Debug, Clone, Elicit)]
-#[allow(dead_code)]
 struct MixedStyleConfig {
     #[prompt("Name", style = "curt")]
     #[prompt("What is your name?", style = "verbose")]
