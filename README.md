@@ -24,6 +24,19 @@
   - **Survey** - Multi-field elicitation (struct pattern)
   - **Authorize** - Permission policies (planned for v0.2.0)
 - **MCP Integration** - Uses official rmcp (Rust MCP SDK) for communication
+- **🆕 Style System** - Revolutionary field-level UX customization (v0.2.2)
+  - Multiple prompt styles per field (curt, verbose, wizard, custom)
+  - Runtime style selection by LLM or user
+  - Sensible fallback strategy for missing style prompts
+- **🆕 DateTime Support** - Three major datetime libraries (v0.2.2)
+  - `chrono` - DateTime<Utc>, DateTime<FixedOffset>, NaiveDateTime
+  - `time` - OffsetDateTime, PrimitiveDateTime
+  - `jiff` - Timestamp, Zoned, civil::DateTime
+  - Dual input methods: ISO 8601 strings or manual components
+- **🆕 JSON Elicitation** - Dynamic JSON value construction (v0.2.2)
+  - `serde_json::Value` with all JSON types
+  - Recursive elicitation for arrays and objects
+  - Depth limits to prevent infinite recursion
 
 ## Supported Types
 
@@ -33,6 +46,12 @@
 - **Time**: `std::time::Duration`
 - **Filesystem**: `std::path::PathBuf`
 - **Network**: `IpAddr`, `Ipv4Addr`, `Ipv6Addr`, `SocketAddr`, `SocketAddrV4`, `SocketAddrV6`
+- **DateTime** (optional features):
+  - `chrono` feature: `DateTime<Utc>`, `DateTime<FixedOffset>`, `NaiveDateTime`
+  - `time` feature: `OffsetDateTime`, `PrimitiveDateTime`
+  - `jiff` feature: `Timestamp`, `Zoned`, `civil::DateTime`
+- **JSON** (optional feature):
+  - `serde_json` feature: `serde_json::Value` (all JSON types)
 
 ### Containers
 - **Option**: `Option<T>` - Optional values
@@ -69,6 +88,22 @@ elicitation = "0.2"
 rmcp = "0.12"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
+
+### Optional Features
+
+Enable additional functionality with feature flags:
+
+```toml
+[dependencies]
+elicitation = { version = "0.2", features = ["chrono", "time", "jiff", "serde_json"] }
+```
+
+Available features:
+- `chrono` - Enable chrono datetime types
+- `time` - Enable time datetime types  
+- `jiff` - Enable jiff datetime types
+- `serde_json` - Enable JSON Value elicitation
+- `api` - Empty marker for API integration tests
 
 ## MCP Setup
 
@@ -358,6 +393,118 @@ let linked: LinkedList<i32> = LinkedList::elicit(&client).await?;
 ```
 
 **Try it**: `claude "Run the collections example"`
+
+### DateTime Types (Feature Flags)
+
+Enable datetime support with feature flags: `chrono`, `time`, or `jiff`.
+
+#### Chrono
+
+```rust
+use chrono::{DateTime, Utc, FixedOffset, NaiveDateTime};
+
+// Elicit timezone-aware datetime (UTC)
+let timestamp: DateTime<Utc> = DateTime::<Utc>::elicit(&client).await?;
+
+// Elicit timezone-aware datetime (with offset)
+let event: DateTime<FixedOffset> = DateTime::<FixedOffset>::elicit(&client).await?;
+
+// Elicit naive datetime (no timezone)
+let meeting: NaiveDateTime = NaiveDateTime::elicit(&client).await?;
+```
+
+#### Time
+
+```rust
+use time::{OffsetDateTime, PrimitiveDateTime};
+
+// Elicit timezone-aware datetime
+let event: OffsetDateTime = OffsetDateTime::elicit(&client).await?;
+
+// Elicit datetime without timezone
+let schedule: PrimitiveDateTime = PrimitiveDateTime::elicit(&client).await?;
+```
+
+#### Jiff
+
+```rust
+use jiff::{Timestamp, Zoned, civil::DateTime};
+
+// Elicit Unix timestamp
+let ts: Timestamp = Timestamp::elicit(&client).await?;
+
+// Elicit timezone-aware datetime (DST-aware!)
+let event: Zoned = Zoned::elicit(&client).await?;
+
+// Elicit calendar datetime (no timezone)
+let meeting: DateTime = DateTime::elicit(&client).await?;
+```
+
+**Dual input methods**: All datetime types support both ISO 8601 strings OR manual component entry (year, month, day, etc.).
+
+### JSON Values (Feature Flag)
+
+Enable with `serde_json` feature flag to elicit dynamic JSON structures:
+
+```rust
+use serde_json::Value;
+
+// Elicit any JSON value (null, bool, number, string, array, object)
+let config: Value = Value::elicit(&client).await?;
+
+// Works with nesting
+let nested: Vec<Value> = Vec::<Value>::elicit(&client).await?;
+let optional: Option<Value> = Option::<Value>::elicit(&client).await?;
+```
+
+The elicitation process handles all JSON types recursively:
+- `null` - Explicit null value
+- `bool` - Boolean true/false
+- `number` - Any JSON number
+- `string` - Text value
+- `array` - List of JSON values (recursive)
+- `object` - Key-value map (recursive)
+
+Depth limit of 10 prevents infinite recursion.
+
+### Style System 🎨 (v0.2.2)
+
+**Revolutionary feature**: Customize prompts per field with multiple styles!
+
+```rust
+#[derive(Debug, Elicit)]
+struct Config {
+    // Multiple prompt styles for same field
+    #[prompt("Name", style = "curt")]
+    #[prompt("What is your full name?", style = "verbose")]
+    name: String,
+    
+    #[prompt("Age?", style = "curt")]
+    #[prompt("Please enter your age in years", style = "verbose")]
+    age: u32,
+    
+    // Mix styled and default prompts
+    #[prompt("Enter city")]  // Used when style doesn't have override
+    #[prompt("City", style = "curt")]
+    city: String,
+}
+```
+
+**How it works**:
+1. Collect unique style names from all `#[prompt(..., style = "name")]` attributes
+2. Generate `ConfigElicitStyle` enum with `Default` + collected styles
+3. At runtime, LLM or user selects style (just another Select elicitation!)
+4. Each field uses its style-specific prompt (or falls back to default)
+
+**Style selection is a state machine step** - irrelevant whether LLM or user chooses. The style system separates *what to ask* (behavior) from *how to ask* (presentation).
+
+**Built-in styles available** (for programmatic use):
+- `DefaultStyle` - Standard prompts
+- `CompactStyle` - Terse, minimal prompts
+- `VerboseStyle` - Detailed, explanatory prompts  
+- `WizardStyle` - Step-by-step with progress
+
+Currently, only `String` fields support styled prompts with inline elicitation. Other types fall back to default elicitation (support expanding in future versions).
 
 ## Interaction Paradigms
 
