@@ -292,19 +292,31 @@ Style enums derive `Elicit`, using Select pattern we already have.
 
 ## Implementation Phases
 
-### Phase 1: Foundation (Breaking Changes)
-- Add `ElicitClient` wrapper
-- Add `type Style` associated type to trait
-- Update all trait signatures: `elicit(client: &ElicitClient)`
-- Implement `StyleContext` for type-erased storage
-- Create macro to generate style enums
+### Phase 1: Foundation (Breaking Changes) ✅ COMPLETE
+- ✅ Add `ElicitClient` wrapper
+- ✅ Add `type Style` associated type to trait
+- ✅ Update all trait signatures: `elicit(client: &ElicitClient)`
+- ✅ Implement `StyleContext` for type-erased storage
+- ✅ Create macro to generate style enums
+- ✅ Create `ElicitationStyle` trait for extensibility
+- ✅ All 65+ standard types updated with Style enums
+- ✅ All derive macros updated to generate Style enums
+- ✅ All 12 examples updated to use ElicitClient
 
-### Phase 2: Primitive Styles
-- Generate single-variant style enums for all std types
-- Update all primitive impls to use `ElicitClient`
-- Primitives ignore style initially (can enhance later)
+**Status:** Phase 1 complete! The foundation is solid. Users can now:
+- Use default styles with zero ceremony
+- Define custom styles for any type (including built-ins like i32)
+- Chain multiple style overrides with `.with_style()`
+- Extend the system by implementing `ElicitationStyle` trait
 
-### Phase 3: Derived Type Styles
+### Phase 2: Primitive Styles ✅ COMPLETE
+- ✅ Generate single-variant style enums for all std types
+- ✅ Update all primitive impls to use `ElicitClient`
+- ✅ Primitives use default style (can enhance later)
+
+All 14 primitives: bool, String, integers, floats, Duration, PathBuf, network types
+
+### Phase 3: Derived Type Styles (NEXT)
 - Update derive macro to generate multi-variant style enums
 - Collect styles from `#[prompt(..., style = "name")]` attributes
 - Generate match statements for prompt selection
@@ -340,19 +352,36 @@ let age = u32::elicit(&client).await?;
 ## Open Questions
 
 1. **Style enum naming**: `ConfigStyle` vs `ConfigElicitStyle` vs `ConfigPromptStyle`?
+   - **RESOLVED**: `ConfigStyle` is concise and clear
 2. **Auto-select vs explicit**: Should missing style auto-ask, or return error?
+   - **RESOLVED**: Fallback to `T::Style::default()` - silent defaults!
 3. **Style inheritance**: Should child types inherit parent's style?
+   - **RESOLVED**: No inheritance initially - each type independent
 4. **Per-field overrides**: Can you override style for one field?
    ```rust
    let styled = client.with_style(ConfigStyle::Verbose);
    let name = String::with_style_override("curt").elicit(&styled).await?;
    ```
-5. **Async trait implications**: Need `async-trait` or wait for native async traits?
+   - **FUTURE WORK**: Focus on type-level styles first
+5. **Extensibility**: How can users define custom styles for built-in types?
+   - **RESOLVED**: `ElicitationStyle` trait with blanket impl
 
 ## Decisions
 
-### Auto-Select: YES
-If no style set, automatically elicit style from user. This maintains "silent default" while enabling progressive enhancement.
+### Auto-Select: NO (Fallback to Default Instead)
+If no style set, use `T::Style::default()`. This maintains "silent default" and zero ceremony while allowing explicit overrides.
+
+### ElicitationStyle Trait: YES
+Created trait to make system fully extensible:
+```rust
+pub trait ElicitationStyle: Clone + Send + Sync + Default + 'static {}
+impl<T> ElicitationStyle for T where T: Clone + Send + Sync + Default + 'static {}
+```
+
+This allows users to:
+- Define custom style types for built-in types (e.g., `MyI32Style`)
+- Use `.with_style::<i32, MyI32Style>(...)` to apply them
+- Fallback to default when no custom style provided
 
 ### Style Enum Suffix: `Style`
 `ConfigStyle` is concise and clear. Full name would be redundant.
@@ -372,14 +401,18 @@ Focus on type-level styles first. Field-level overrides can be added later.
 - ✅ Nested types have independent contexts
 - ✅ Migration path is clear
 - ✅ All existing tests pass with minimal changes
+- ✅ Users can extend system with custom styles
+- ✅ ElicitationStyle trait provides abstraction
 
 ## Timeline
 
-- **Design**: Complete (this document)
-- **Implementation**: 2-3 days
-- **Testing**: 1 day
-- **Documentation**: 1 day
-- **Release**: 0.3.0 (breaking changes)
+- **Design**: ✅ Complete
+- **Phase 1 (Foundation)**: ✅ Complete (2026-01-19)
+- **Phase 2 (Primitives)**: ✅ Complete (2026-01-19)
+- **Phase 3 (Derived Types)**: TODO - Next phase
+- **Testing**: Ongoing
+- **Documentation**: Ongoing
+- **Release**: 0.3.0 (breaking changes from Phases 1-2 complete)
 
 ## Notes
 
