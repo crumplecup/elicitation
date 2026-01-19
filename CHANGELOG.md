@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-01-19
+
+### Added
+
+- Add UUID elicitation support with `uuid` feature
+- Support parsing hyphenated UUID format
+- Support generating random UUIDs with 'generate' keyword
+
 ## [0.4.1] - 2026-01-19
 
 ### Documentation

@@ -27,12 +27,16 @@ chrono = { workspace = true, optional = true }
 time = { workspace = true, optional = true }
 jiff = { workspace = true, optional = true }
 
+# UUID library (optional)
+uuid = { version = "1.0", optional = true, features = ["v4", "serde"] }
+
 # Re-export derive macro
 elicitation_derive = { path = "../elicitation_derive", version = "0.4.1" }
 
 [dev-dependencies]
 tokio-test = "0.4"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
 
 [features]
 default = []
@@ -46,3 +50,5 @@ chrono = ["dep:chrono"]
 time = ["dep:time"]
 # Enable jiff datetime elicitation
 jiff = ["dep:jiff"]
+# Enable UUID elicitation
+uuid = ["dep:uuid"]

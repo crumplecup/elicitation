@@ -53,6 +53,8 @@
   - `chrono` feature: `DateTime<Utc>`, `DateTime<FixedOffset>`, `NaiveDateTime`
   - `time` feature: `OffsetDateTime`, `PrimitiveDateTime`
   - `jiff` feature: `Timestamp`, `Zoned`, `civil::DateTime`
+- **UUID** (optional feature):
+  - `uuid` feature: `Uuid` with parsing and random generation
 - **JSON** (optional feature):
   - `serde_json` feature: `serde_json::Value` (all JSON types)
 

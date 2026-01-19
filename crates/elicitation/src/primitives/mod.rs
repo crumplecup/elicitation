@@ -24,3 +24,6 @@ mod network;
 mod pathbuf;
 mod string;
 mod tuples;
+
+#[cfg(feature = "uuid")]
+mod uuid;
