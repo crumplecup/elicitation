@@ -60,3 +60,40 @@ This file tracks all planning documents for the elicitation project.
 - Enhanced `generate_elicit_impl()` with match-based field elicitation
 - Error context preservation for field failures
 - Automatic recursion for nested types
+
+### SERDE_JSON_IMPLEMENTATION_PLAN.md
+**Status**: Active - v0.2.2 feature development
+**Created**: 2026-01-19
+**Purpose**: Implementation plan for adding `Elicitation` support for `serde_json::Value` behind a feature flag, enabling conversational elicitation of arbitrary JSON data structures.
+
+**Motivation**: Unblock all Rust types containing `serde_json::Value` (tool arguments, API responses, dynamic config) from using `#[derive(Elicit)]`. Makes elicitation universally useful for the Rust ecosystem.
+
+**Core Design**:
+- Feature flag: `serde_json` (zero-cost when disabled)
+- State machine per JSON type: null, boolean, string, number, array, object
+- Recursive elicitation for nested structures (max depth: 10)
+- Delegates to existing primitive elicitation (String, bool, etc.)
+
+**Elicitation Flow**:
+1. Type selection: User picks JSON type
+2. Variant-specific elicitation:
+   - Scalars: Single prompt → terminal
+   - Array: Loop adding items (recursive `Value::elicit()`)
+   - Object: Loop adding key-value pairs (recursive for values)
+3. Terminal: Construct `serde_json::Value`
+
+**Impact**:
+- Enables: `ToolCall { arguments: Value }`, `Output::Json(Value)`
+- Ecosystem: Any crate with `Value` fields can derive `Elicit`
+- Zero overhead without feature flag
+
+**Phases**:
+1. Add feature flag and `#[cfg]` gates
+2. Implement `value_impl.rs` with depth tracking
+3. Integrate module into library
+4. Comprehensive test suite (scalars, collections, nesting, limits)
+5. Update documentation (README, CHANGELOG, feature guide)
+6. Manual testing with example
+7. Release v0.2.2
+
+**Target**: 3-5 hours, same-day implementation and release
