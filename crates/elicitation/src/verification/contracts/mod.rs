@@ -10,6 +10,14 @@
 //! - Users can replace with stricter contracts
 //! - Different verifiers can be used per type
 //!
+//! # Verifier-Specific Implementations
+//!
+//! Each verifier has its own submodule:
+//! - **Kani** (default): Model checking with bounded execution
+//! - **Creusot**: Deductive verification with Why3
+//! - **Prusti**: Separation logic with Viper
+//! - **Verus**: SMT-based verification with Z3
+//!
 //! # Example
 //!
 //! ```rust,ignore
@@ -22,6 +30,16 @@
 //! ```
 
 use super::Contract;
+
+// Verifier-specific contract implementations (feature-gated)
+#[cfg(feature = "verify-creusot")]
+pub mod creusot;
+
+#[cfg(feature = "verify-prusti")]
+pub mod prusti;
+
+#[cfg(feature = "verify-verus")]
+pub mod verus;
 
 // ============================================================================
 // String Contracts

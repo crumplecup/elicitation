@@ -130,8 +130,10 @@ pub mod kani;
 #[cfg(feature = "verify-creusot")]
 pub mod creusot;
 
-#[cfg(feature = "verify-prusti")]
-pub mod prusti;
+// TODO: Phase 2 - These will be top-level modules when we add Tool trait impls
+// For now, verifier-specific contracts are in contracts/ submodules
+// #[cfg(feature = "verify-prusti")]
+// pub mod prusti;
 
-#[cfg(feature = "verify-verus")]
-pub mod verus;
+// #[cfg(feature = "verify-verus")]
+// pub mod verus;
