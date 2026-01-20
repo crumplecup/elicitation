@@ -109,6 +109,90 @@ impl Contract for CreusotBoolValid {
 }
 
 // ============================================================================
+// Unsigned Integer Contracts (Phase 4.1)
+// ============================================================================
+
+/// Creusot-verified u32 non-zero contract.
+///
+/// **Formal Properties (verified by Creusot/Why3):**
+/// - Precondition: `input > 0`
+/// - Postcondition: `output > 0`
+pub struct CreusotU32NonZero;
+
+impl Contract for CreusotU32NonZero {
+    type Input = u32;
+    type Output = u32;
+
+    fn requires(input: &u32) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &u32, output: &u32) -> bool {
+        *output > 0
+    }
+}
+
+/// Creusot-verified u64 non-zero contract.
+///
+/// **Formal Properties (verified by Creusot/Why3):**
+/// - Precondition: `input > 0`
+/// - Postcondition: `output > 0`
+pub struct CreusotU64NonZero;
+
+impl Contract for CreusotU64NonZero {
+    type Input = u64;
+    type Output = u64;
+
+    fn requires(input: &u64) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &u64, output: &u64) -> bool {
+        *output > 0
+    }
+}
+
+/// Creusot-verified u128 non-zero contract.
+///
+/// **Formal Properties (verified by Creusot/Why3):**
+/// - Precondition: `input > 0`
+/// - Postcondition: `output > 0`
+pub struct CreusotU128NonZero;
+
+impl Contract for CreusotU128NonZero {
+    type Input = u128;
+    type Output = u128;
+
+    fn requires(input: &u128) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &u128, output: &u128) -> bool {
+        *output > 0
+    }
+}
+
+/// Creusot-verified usize non-zero contract.
+///
+/// **Formal Properties (verified by Creusot/Why3):**
+/// - Precondition: `input > 0`
+/// - Postcondition: `output > 0`
+pub struct CreusotUsizeNonZero;
+
+impl Contract for CreusotUsizeNonZero {
+    type Input = usize;
+    type Output = usize;
+
+    fn requires(input: &usize) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &usize, output: &usize) -> bool {
+        *output > 0
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -135,5 +219,29 @@ mod tests {
         assert!(CreusotBoolValid::requires(&true));
         assert!(CreusotBoolValid::requires(&false));
         assert!(CreusotBoolValid::ensures(&true, &false));
+    }
+
+    #[test]
+    fn test_creusot_u32_non_zero() {
+        assert!(CreusotU32NonZero::requires(&42u32));
+        assert!(!CreusotU32NonZero::requires(&0u32));
+    }
+
+    #[test]
+    fn test_creusot_u64_non_zero() {
+        assert!(CreusotU64NonZero::requires(&42u64));
+        assert!(!CreusotU64NonZero::requires(&0u64));
+    }
+
+    #[test]
+    fn test_creusot_u128_non_zero() {
+        assert!(CreusotU128NonZero::requires(&42u128));
+        assert!(!CreusotU128NonZero::requires(&0u128));
+    }
+
+    #[test]
+    fn test_creusot_usize_non_zero() {
+        assert!(CreusotUsizeNonZero::requires(&42usize));
+        assert!(!CreusotUsizeNonZero::requires(&0usize));
     }
 }

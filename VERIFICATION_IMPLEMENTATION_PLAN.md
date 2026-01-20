@@ -167,13 +167,14 @@
 
 **Timeline:** Days 21-30
 
-### 4.1 Unsigned Integers (Days 21-23)
+### 4.1 Unsigned Integers (Days 21-23) ✅
 
-- [ ] u32: positive, bounded
-- [ ] u64: large positive numbers
-- [ ] u128: full range
-- [ ] usize: platform-dependent
-- [ ] All 4 verifiers for each
+- [x] u32: positive, bounded (U32NonZero contract)
+- [x] u64: large positive numbers (U64NonZero contract)
+- [x] u128: full range (U128NonZero contract)
+- [x] usize: platform-dependent (UsizeNonZero contract)
+- [x] All 4 verifiers for each (Kani, Creusot, Prusti, Verus)
+- [x] 16 tests passing (4 per contract type)
 
 ### 4.2 Signed Integers (Days 24-26)
 

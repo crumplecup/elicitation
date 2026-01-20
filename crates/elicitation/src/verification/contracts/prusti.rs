@@ -110,6 +110,74 @@ impl Contract for PrustiBoolValid {
 }
 
 // ============================================================================
+// Unsigned Integer Contracts (Phase 4.1)
+// ============================================================================
+
+/// Prusti-verified u32 non-zero contract.
+pub struct PrustiU32NonZero;
+
+impl Contract for PrustiU32NonZero {
+    type Input = u32;
+    type Output = u32;
+
+    fn requires(input: &u32) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &u32, output: &u32) -> bool {
+        *output > 0
+    }
+}
+
+/// Prusti-verified u64 non-zero contract.
+pub struct PrustiU64NonZero;
+
+impl Contract for PrustiU64NonZero {
+    type Input = u64;
+    type Output = u64;
+
+    fn requires(input: &u64) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &u64, output: &u64) -> bool {
+        *output > 0
+    }
+}
+
+/// Prusti-verified u128 non-zero contract.
+pub struct PrustiU128NonZero;
+
+impl Contract for PrustiU128NonZero {
+    type Input = u128;
+    type Output = u128;
+
+    fn requires(input: &u128) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &u128, output: &u128) -> bool {
+        *output > 0
+    }
+}
+
+/// Prusti-verified usize non-zero contract.
+pub struct PrustiUsizeNonZero;
+
+impl Contract for PrustiUsizeNonZero {
+    type Input = usize;
+    type Output = usize;
+
+    fn requires(input: &usize) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &usize, output: &usize) -> bool {
+        *output > 0
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -136,5 +204,29 @@ mod tests {
         assert!(PrustiBoolValid::requires(&true));
         assert!(PrustiBoolValid::requires(&false));
         assert!(PrustiBoolValid::ensures(&true, &false));
+    }
+
+    #[test]
+    fn test_prusti_u32_non_zero() {
+        assert!(PrustiU32NonZero::requires(&42u32));
+        assert!(!PrustiU32NonZero::requires(&0u32));
+    }
+
+    #[test]
+    fn test_prusti_u64_non_zero() {
+        assert!(PrustiU64NonZero::requires(&42u64));
+        assert!(!PrustiU64NonZero::requires(&0u64));
+    }
+
+    #[test]
+    fn test_prusti_u128_non_zero() {
+        assert!(PrustiU128NonZero::requires(&42u128));
+        assert!(!PrustiU128NonZero::requires(&0u128));
+    }
+
+    #[test]
+    fn test_prusti_usize_non_zero() {
+        assert!(PrustiUsizeNonZero::requires(&42usize));
+        assert!(!PrustiUsizeNonZero::requires(&0usize));
     }
 }

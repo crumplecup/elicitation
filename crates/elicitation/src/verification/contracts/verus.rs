@@ -115,6 +115,74 @@ impl Contract for VerusBoolValid {
 }
 
 // ============================================================================
+// Unsigned Integer Contracts (Phase 4.1)
+// ============================================================================
+
+/// Verus-verified u32 non-zero contract.
+pub struct VerusU32NonZero;
+
+impl Contract for VerusU32NonZero {
+    type Input = u32;
+    type Output = u32;
+
+    fn requires(input: &u32) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &u32, output: &u32) -> bool {
+        *output > 0
+    }
+}
+
+/// Verus-verified u64 non-zero contract.
+pub struct VerusU64NonZero;
+
+impl Contract for VerusU64NonZero {
+    type Input = u64;
+    type Output = u64;
+
+    fn requires(input: &u64) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &u64, output: &u64) -> bool {
+        *output > 0
+    }
+}
+
+/// Verus-verified u128 non-zero contract.
+pub struct VerusU128NonZero;
+
+impl Contract for VerusU128NonZero {
+    type Input = u128;
+    type Output = u128;
+
+    fn requires(input: &u128) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &u128, output: &u128) -> bool {
+        *output > 0
+    }
+}
+
+/// Verus-verified usize non-zero contract.
+pub struct VerusUsizeNonZero;
+
+impl Contract for VerusUsizeNonZero {
+    type Input = usize;
+    type Output = usize;
+
+    fn requires(input: &usize) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &usize, output: &usize) -> bool {
+        *output > 0
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -141,5 +209,29 @@ mod tests {
         assert!(VerusBoolValid::requires(&true));
         assert!(VerusBoolValid::requires(&false));
         assert!(VerusBoolValid::ensures(&true, &false));
+    }
+
+    #[test]
+    fn test_verus_u32_non_zero() {
+        assert!(VerusU32NonZero::requires(&42u32));
+        assert!(!VerusU32NonZero::requires(&0u32));
+    }
+
+    #[test]
+    fn test_verus_u64_non_zero() {
+        assert!(VerusU64NonZero::requires(&42u64));
+        assert!(!VerusU64NonZero::requires(&0u64));
+    }
+
+    #[test]
+    fn test_verus_u128_non_zero() {
+        assert!(VerusU128NonZero::requires(&42u128));
+        assert!(!VerusU128NonZero::requires(&0u128));
+    }
+
+    #[test]
+    fn test_verus_usize_non_zero() {
+        assert!(VerusUsizeNonZero::requires(&42usize));
+        assert!(!VerusUsizeNonZero::requires(&0usize));
     }
 }

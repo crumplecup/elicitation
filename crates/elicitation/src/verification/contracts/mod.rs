@@ -222,6 +222,86 @@ impl<const MAX: usize> Contract for StringMaxLength<MAX> {
 }
 
 // ============================================================================
+// Unsigned Integer Contracts (Phase 4.1)
+// ============================================================================
+
+/// Contract for u32 values that are non-zero.
+///
+/// Verifies unsigned 32-bit integers are positive (> 0).
+#[derive(Debug, Clone, Copy)]
+pub struct U32NonZero;
+
+impl Contract for U32NonZero {
+    type Input = u32;
+    type Output = u32;
+
+    fn requires(input: &u32) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &u32, output: &u32) -> bool {
+        *output > 0
+    }
+}
+
+/// Contract for u64 values that are non-zero.
+///
+/// Verifies unsigned 64-bit integers are positive (> 0).
+#[derive(Debug, Clone, Copy)]
+pub struct U64NonZero;
+
+impl Contract for U64NonZero {
+    type Input = u64;
+    type Output = u64;
+
+    fn requires(input: &u64) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &u64, output: &u64) -> bool {
+        *output > 0
+    }
+}
+
+/// Contract for u128 values that are non-zero.
+///
+/// Verifies unsigned 128-bit integers are positive (> 0).
+#[derive(Debug, Clone, Copy)]
+pub struct U128NonZero;
+
+impl Contract for U128NonZero {
+    type Input = u128;
+    type Output = u128;
+
+    fn requires(input: &u128) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &u128, output: &u128) -> bool {
+        *output > 0
+    }
+}
+
+/// Contract for usize values that are non-zero.
+///
+/// Verifies platform-dependent unsigned integers are positive (> 0).
+#[derive(Debug, Clone, Copy)]
+pub struct UsizeNonZero;
+
+impl Contract for UsizeNonZero {
+    type Input = usize;
+    type Output = usize;
+
+    fn requires(input: &usize) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &usize, output: &usize) -> bool {
+        *output > 0
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -268,5 +348,34 @@ mod tests {
         assert!(BoolValid::ensures(&true, &true));
         assert!(BoolValid::ensures(&false, &false));
         assert!(BoolValid::ensures(&true, &false));
+    }
+
+    // Unsigned integer tests
+    #[test]
+    fn test_u32_non_zero() {
+        assert!(U32NonZero::requires(&42u32));
+        assert!(U32NonZero::ensures(&42u32, &42u32));
+        assert!(!U32NonZero::requires(&0u32));
+    }
+
+    #[test]
+    fn test_u64_non_zero() {
+        assert!(U64NonZero::requires(&42u64));
+        assert!(U64NonZero::ensures(&42u64, &42u64));
+        assert!(!U64NonZero::requires(&0u64));
+    }
+
+    #[test]
+    fn test_u128_non_zero() {
+        assert!(U128NonZero::requires(&42u128));
+        assert!(U128NonZero::ensures(&42u128, &42u128));
+        assert!(!U128NonZero::requires(&0u128));
+    }
+
+    #[test]
+    fn test_usize_non_zero() {
+        assert!(UsizeNonZero::requires(&42usize));
+        assert!(UsizeNonZero::ensures(&42usize, &42usize));
+        assert!(!UsizeNonZero::requires(&0usize));
     }
 }
