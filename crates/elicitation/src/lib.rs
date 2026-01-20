@@ -85,6 +85,10 @@ mod collections;
 mod containers;
 mod default_style;
 mod error;
+pub mod verification;
+
+#[cfg(kani)]
+mod kani_tests;
 pub mod mcp;
 mod paradigm;
 mod primitives;
