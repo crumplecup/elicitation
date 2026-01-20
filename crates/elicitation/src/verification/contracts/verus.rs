@@ -183,6 +183,58 @@ impl Contract for VerusUsizeNonZero {
 }
 
 // ============================================================================
+// Signed Integer Contracts (Phase 4.2)
+// ============================================================================
+
+/// Verus-verified i64 positive contract.
+pub struct VerusI64Positive;
+
+impl Contract for VerusI64Positive {
+    type Input = i64;
+    type Output = i64;
+
+    fn requires(input: &i64) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &i64, output: &i64) -> bool {
+        *output > 0
+    }
+}
+
+/// Verus-verified i128 positive contract.
+pub struct VerusI128Positive;
+
+impl Contract for VerusI128Positive {
+    type Input = i128;
+    type Output = i128;
+
+    fn requires(input: &i128) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &i128, output: &i128) -> bool {
+        *output > 0
+    }
+}
+
+/// Verus-verified isize positive contract.
+pub struct VerusIsizePositive;
+
+impl Contract for VerusIsizePositive {
+    type Input = isize;
+    type Output = isize;
+
+    fn requires(input: &isize) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &isize, output: &isize) -> bool {
+        *output > 0
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -233,5 +285,23 @@ mod tests {
     fn test_verus_usize_non_zero() {
         assert!(VerusUsizeNonZero::requires(&42usize));
         assert!(!VerusUsizeNonZero::requires(&0usize));
+    }
+
+    #[test]
+    fn test_verus_i64_positive() {
+        assert!(VerusI64Positive::requires(&42i64));
+        assert!(!VerusI64Positive::requires(&0i64));
+    }
+
+    #[test]
+    fn test_verus_i128_positive() {
+        assert!(VerusI128Positive::requires(&42i128));
+        assert!(!VerusI128Positive::requires(&0i128));
+    }
+
+    #[test]
+    fn test_verus_isize_positive() {
+        assert!(VerusIsizePositive::requires(&42isize));
+        assert!(!VerusIsizePositive::requires(&0isize));
     }
 }

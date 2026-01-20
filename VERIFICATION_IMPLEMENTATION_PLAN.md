@@ -176,12 +176,13 @@
 - [x] All 4 verifiers for each (Kani, Creusot, Prusti, Verus)
 - [x] 16 tests passing (4 per contract type)
 
-### 4.2 Signed Integers (Days 24-26)
+### 4.2 Signed Integers (Days 24-26) ✅
 
-- [ ] i64: large range checks
-- [ ] i128: full signed range
-- [ ] isize: platform-dependent signed
-- [ ] All 4 verifiers for each
+- [x] i64: large range checks (I64Positive contract)
+- [x] i128: full signed range (I128Positive contract)
+- [x] isize: platform-dependent signed (IsizePositive contract)
+- [x] All 4 verifiers for each (Kani, Creusot, Prusti, Verus)
+- [x] 12 tests passing (3 per contract type)
 
 ### 4.3 Floating Point (Days 27-28)
 

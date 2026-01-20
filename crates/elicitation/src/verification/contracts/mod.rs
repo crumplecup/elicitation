@@ -302,6 +302,67 @@ impl Contract for UsizeNonZero {
 }
 
 // ============================================================================
+// Signed Integer Contracts (Phase 4.2)
+// ============================================================================
+
+/// Contract for i64 values that are positive (> 0).
+///
+/// Verifies signed 64-bit integers are strictly positive.
+#[derive(Debug, Clone, Copy)]
+pub struct I64Positive;
+
+impl Contract for I64Positive {
+    type Input = i64;
+    type Output = i64;
+
+    fn requires(input: &i64) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &i64, output: &i64) -> bool {
+        *output > 0
+    }
+}
+
+/// Contract for i128 values that are positive (> 0).
+///
+/// Verifies signed 128-bit integers are strictly positive.
+#[derive(Debug, Clone, Copy)]
+pub struct I128Positive;
+
+impl Contract for I128Positive {
+    type Input = i128;
+    type Output = i128;
+
+    fn requires(input: &i128) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &i128, output: &i128) -> bool {
+        *output > 0
+    }
+}
+
+/// Contract for isize values that are positive (> 0).
+///
+/// Verifies platform-dependent signed integers are strictly positive.
+#[derive(Debug, Clone, Copy)]
+pub struct IsizePositive;
+
+impl Contract for IsizePositive {
+    type Input = isize;
+    type Output = isize;
+
+    fn requires(input: &isize) -> bool {
+        *input > 0
+    }
+
+    fn ensures(_input: &isize, output: &isize) -> bool {
+        *output > 0
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -377,5 +438,30 @@ mod tests {
         assert!(UsizeNonZero::requires(&42usize));
         assert!(UsizeNonZero::ensures(&42usize, &42usize));
         assert!(!UsizeNonZero::requires(&0usize));
+    }
+
+    // Signed integer tests
+    #[test]
+    fn test_i64_positive() {
+        assert!(I64Positive::requires(&42i64));
+        assert!(I64Positive::ensures(&42i64, &42i64));
+        assert!(!I64Positive::requires(&0i64));
+        assert!(!I64Positive::requires(&-1i64));
+    }
+
+    #[test]
+    fn test_i128_positive() {
+        assert!(I128Positive::requires(&42i128));
+        assert!(I128Positive::ensures(&42i128, &42i128));
+        assert!(!I128Positive::requires(&0i128));
+        assert!(!I128Positive::requires(&-1i128));
+    }
+
+    #[test]
+    fn test_isize_positive() {
+        assert!(IsizePositive::requires(&42isize));
+        assert!(IsizePositive::ensures(&42isize, &42isize));
+        assert!(!IsizePositive::requires(&0isize));
+        assert!(!IsizePositive::requires(&-1isize));
     }
 }
