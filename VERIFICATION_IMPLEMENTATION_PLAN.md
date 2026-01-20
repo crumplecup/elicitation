@@ -108,120 +108,154 @@
 
 ---
 
-## Phase 3: Rollout - Primitive Types
+## Phase 3: Infrastructure - Contract Swapping
 
-**Objective:** Implement contracts for all primitive types with Elicitation impls.
+**Objective:** Build infrastructure to swap contracts at compile-time and runtime.
 
-**Timeline:** Days 11-20
-
-### 3.1 String Type (Days 11-12)
-
-- [ ] Kani contract: non-empty, length bounds
-- [ ] Creusot contract: length invariants
-- [ ] Prusti contract: ownership checks
-- [ ] Verus contract: string properties
-- [ ] Test suite for all verifiers
-- [ ] Documentation: when to use which verifier
-
-### 3.2 Integer Types (Days 13-15)
-
-- [ ] i32: range checks, overflow protection
-- [ ] u32: positive bounds
-- [ ] i64, u64: large number properties
-- [ ] i128, u128: full range verification
-- [ ] isize, usize: platform-dependent bounds
-- [ ] Test all verifiers on each type
-
-### 3.3 Boolean Type (Day 16)
-
-- [ ] Trivial contracts (always valid)
-- [ ] Completes primitive coverage
-- [ ] Test as sanity check
-
-### 3.4 Floating Point Types (Days 17-18)
-
-- [ ] f32, f64: NaN/Infinity checks
-- [ ] Range validation
-- [ ] Precision bounds
-- [ ] Document limitations per verifier
-
-**Success Criteria:**
-- ✅ All primitives have 4 contract impls
-- ✅ Test suite passes for all verifiers
-- ✅ Documentation explains tradeoffs
-
----
-
-## Phase 4: Rollout - Complex Types
-
-**Objective:** Implement contracts for complex/composite types.
-
-**Timeline:** Days 21-30
-
-### 4.1 Vec\<T\> (Days 21-23)
-
-- [ ] Non-empty vectors
-- [ ] Length bounds (min/max)
-- [ ] Element contracts (recursive)
-- [ ] Bounded verification (Kani)
-- [ ] Inductive proofs (Creusot)
-
-### 4.2 Option\<T\> (Days 24-25)
-
-- [ ] Some variant checks
-- [ ] Inner type contracts
-- [ ] Composition with other contracts
-
-### 4.3 Result\<T, E\> (Days 26-27)
-
-- [ ] Ok/Err invariants
-- [ ] Error type contracts
-- [ ] Success type contracts
-
-### 4.4 Custom Enums (Days 28-30)
-
-- [ ] Unit variants (simple)
-- [ ] Tuple variants (with data)
-- [ ] Struct variants (complex)
-- [ ] Derive macro support (future)
-
-**Success Criteria:**
-- ✅ Complex types verified by all tools
-- ✅ Recursive contracts work
-- ✅ Composition patterns documented
-
----
-
-## Phase 5: Examples & Documentation
-
-**Objective:** Comprehensive examples and user guide for verification system.
-
-**Timeline:** Days 31-35
+**Timeline:** Days 16-20
 
 ### Tasks
 
-- [ ] 5.1 Create per-verifier examples
+- [ ] 3.1 Contract registry pattern (Day 16)
+  - File: `src/verification/mod.rs`
+  - `enum VerifierBackend { Kani, Creusot, Prusti, Verus }`
+  - Unified dispatch interface
+
+- [ ] 3.2 Implement `.with_contract()` method (Day 17)
+  - Trait extension for `Elicitation`
+  - Runtime contract swapping
+  - Example: `String::with_contract(CreusotStringContract)`
+
+- [ ] 3.3 Compile-time contract selection (Day 18)
+  - Feature-gated defaults
+  - `--features verify-creusot` uses Creusot
+  - Fallback to Kani
+
+- [ ] 3.4 Contract composition (Day 19)
+  - Combine multiple contracts
+  - AND/OR contract operators
+  - Contract refinement helpers
+
+- [ ] 3.5 Testing & documentation (Day 20)
+  - Test swapping works
+  - Document usage patterns
+  - Examples for each approach
+
+**Success Criteria:**
+- ✅ Can swap verifiers via features
+- ✅ Can swap contracts at runtime
+- ✅ Contract composition works
+- ✅ User guide completed
+
+---
+
+## Phase 4: Rollout - More Primitive Types
+
+**Objective:** Extend contracts to all integer types with all verifiers.
+
+**Timeline:** Days 21-30
+
+### 4.1 Unsigned Integers (Days 21-23)
+
+- [ ] u32: positive, bounded
+- [ ] u64: large positive numbers
+- [ ] u128: full range
+- [ ] usize: platform-dependent
+- [ ] All 4 verifiers for each
+
+### 4.2 Signed Integers (Days 24-26)
+
+- [ ] i64: large range checks
+- [ ] i128: full signed range
+- [ ] isize: platform-dependent signed
+- [ ] All 4 verifiers for each
+
+### 4.3 Floating Point (Days 27-28)
+
+- [ ] f32: NaN/Infinity checks
+- [ ] f64: precision bounds
+- [ ] Document limitations
+
+### 4.4 Integration testing (Days 29-30)
+
+- [ ] Test all primitives together
+- [ ] Performance benchmarks
+- [ ] Document which verifier for what
+
+**Success Criteria:**
+- ✅ All primitive types have contracts
+- ✅ All work with all 4 verifiers
+- ✅ Performance acceptable
+- ✅ Clear guidance on verifier choice
+
+---
+
+## Phase 5: Complex Types
+
+**Objective:** Implement contracts for composite types.
+
+**Timeline:** Days 31-38
+
+### Tasks
+
+- [ ] 5.1 Vec\<T\> (Days 31-33)
+  - Non-empty vectors
+  - Length bounds
+  - Element contracts (recursive)
+  - All 4 verifiers
+
+- [ ] 5.2 Option\<T\> (Days 34-35)
+  - Some variant checks
+  - Inner type contracts
+  - All 4 verifiers
+
+- [ ] 5.3 Result\<T, E\> (Days 36-37)
+  - Ok/Err invariants
+  - Error/success type contracts
+  - All 4 verifiers
+
+- [ ] 5.4 Email validation (Day 38)
+  - Complex parsing rules
+  - Format validation
+  - All 4 verifiers
+
+**Success Criteria:**
+- ✅ Complex types verified
+- ✅ Recursive contracts work
+- ✅ Email proves real-world usage
+
+---
+
+## Phase 6: Examples & Documentation
+
+**Objective:** Comprehensive examples and user guide for verification system.
+
+**Timeline:** Days 39-43
+
+### Tasks
+
+- [ ] 6.1 Create per-verifier examples
   - `examples/verification_kani_example.rs`
   - `examples/verification_creusot_example.rs`
   - `examples/verification_prusti_example.rs`
   - `examples/verification_verus_example.rs`
 
-- [ ] 5.2 Create multi-verifier example
+- [ ] 6.2 Create multi-verifier example
   - `examples/verification_multi_example.rs`
   - Shows swapping contracts
   - Demonstrates refinement workflow
 
-- [ ] 5.3 Write verification guide
+- [ ] 6.3 Write verification guide
   - Update `VERIFICATION_FRAMEWORK_DESIGN.md`
   - Add "Choosing a Verifier" section
   - Document refinement patterns
 
-- [ ] 5.4 Create migration guide
+- [ ] 6.4 Create migration guide
   - How to start with defaults
   - When to switch verifiers
   - How to write custom contracts
 
-- [ ] 5.5 Document limitations
+- [ ] 6.5 Document limitations
   - What each verifier can/can't do
   - Performance characteristics
   - Soundness vs completeness
@@ -233,35 +267,35 @@
 
 ---
 
-## Phase 6: Polish & Release
+## Phase 7: Polish & Release
 
 **Objective:** Integration testing, CI/CD, and crates.io release.
 
-**Timeline:** Days 36-40
+**Timeline:** Days 44-50
 
 ### Tasks
 
-- [ ] 6.1 Integration test suite
+- [ ] 7.1 Integration test suite
   - Test contract composition
   - Test verifier swapping
   - Test all type combinations
 
-- [ ] 6.2 CI/CD integration
+- [ ] 7.2 CI/CD integration
   - Add verification to GitHub Actions
   - Run Kani in CI (others optional)
   - Cache verification artifacts
 
-- [ ] 6.3 Performance benchmarks
+- [ ] 7.3 Performance benchmarks
   - Measure verification time per verifier
   - Document build time impact
   - Optimize hot paths
 
-- [ ] 6.4 Update CHANGELOG
+- [ ] 7.4 Update CHANGELOG
   - Document verification system
   - Breaking changes (if any)
   - Migration guide reference
 
-- [ ] 6.5 Release to crates.io
+- [ ] 7.5 Release to crates.io
   - Version bump (0.5.0?)
   - Publish with all features
   - Announce in community
@@ -287,26 +321,28 @@
 
 ### In Progress
 
-- 🔄 Phase 1: Email validation across all verifiers
+- 🔄 Phase 1: Primitives with Kani (String, i32, bool)
 
 ### Not Started
 
-- ⬜ Phase 2: Contract swapping infrastructure
-- ⬜ Phase 3: Primitive types rollout
-- ⬜ Phase 4: Complex types rollout
-- ⬜ Phase 5: Examples & documentation
-- ⬜ Phase 6: Polish & release
+- ⬜ Phase 2: Multi-verifier for primitives (Creusot, Prusti, Verus)
+- ⬜ Phase 3: Contract swapping infrastructure
+- ⬜ Phase 4: More primitive types (all integers, floats)
+- ⬜ Phase 5: Complex types (Vec, Option, Result, Email)
+- ⬜ Phase 6: Examples & documentation
+- ⬜ Phase 7: Polish & release
 
 ---
 
 ## Success Criteria (Overall)
 
-1. **Proof of Concept:** Email validated by all 4 verifiers
-2. **Infrastructure:** Users can swap contracts at compile-time and runtime
-3. **Coverage:** All Elicitation types have contracts
-4. **Multi-Verifier:** Each type works with all 4 verifiers
-5. **Documentation:** Users know when/how to use each verifier
-6. **Refinement:** Clear path from defaults to custom contracts
+1. **Proof of Concept:** String, i32, bool verified by Kani
+2. **Multi-Verifier:** Same 3 types work with all 4 verifiers
+3. **Infrastructure:** Users can swap contracts at compile-time and runtime
+4. **Coverage:** All primitive types have contracts
+5. **Complex Types:** Vec, Option, Result, Email verified
+6. **Documentation:** Users know when/how to use each verifier
+7. **Refinement:** Clear path from defaults to custom contracts
 
 ---
 

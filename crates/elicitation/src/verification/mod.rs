@@ -116,6 +116,13 @@ pub trait Contract {
     }
 }
 
+// ============================================================================
+// Submodules
+// ============================================================================
+
+// Default contract implementations for primitive types
+pub mod contracts;
+
 // Tool-specific adapters (feature-gated)
 #[cfg(feature = "verify-kani")]
 pub mod kani;
