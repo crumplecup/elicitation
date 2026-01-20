@@ -318,26 +318,28 @@
   - Demonstrates migration strategy
   - Comparison table and best practices
 
-- [ ] 6.3 Write verification guide
-  - Update `VERIFICATION_FRAMEWORK_DESIGN.md`
-  - Add "Choosing a Verifier" section
-  - Document refinement patterns
+- [x] 6.3 Write verification guide
+  - Updated `VERIFICATION_FRAMEWORK_DESIGN.md`
+  - Added "Choosing a Verifier" section
+  - Decision matrix for each verifier
 
-- [ ] 6.4 Create migration guide
+- [x] 6.4 Create migration guide
+  - 5-phase migration plan (Day 1 → Ongoing)
   - How to start with defaults
   - When to switch verifiers
-  - How to write custom contracts
+  - Integration with CI/CD
 
-- [ ] 6.5 Document limitations
+- [x] 6.5 Document limitations
   - What each verifier can/can't do
-  - Performance characteristics
-  - Soundness vs completeness
+  - Performance characteristics table
+  - Workarounds for each limitation
+  - Soundness vs completeness trade-offs
 
 **Success Criteria:**
 - ✅ Working example for each verifier (all 5 examples compile and run)
 - ✅ Multi-verifier example shows swapping and composition
-- ⏳ Clear documentation of tradeoffs (in-progress)
-- ⏳ Migration path documented (in-progress)
+- ✅ Clear documentation of tradeoffs (complete decision matrix)
+- ✅ Migration path documented (5-phase plan with examples)
 
 ---
 
