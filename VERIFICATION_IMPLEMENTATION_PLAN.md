@@ -6,94 +6,105 @@
 
 ---
 
-## Phase 1: Proof of Concept - Email Validation
+## Phase 1: Proof of Concept - Primitives with Kani
 
-**Objective:** Implement Email contracts in all 4 verifiers to prove the pattern works.
+**Objective:** Implement simple contracts for basic types using Kani to prove the pattern works.
+
+**Strategy:** Simple → Complex, Kani → Many verifiers
 
 **Timeline:** Days 1-5
 
 ### Tasks
 
-- [ ] 1.1 Extend Kani Email contract (already partially done)
+- [ ] 1.1 String contracts (Kani only)
   - File: `src/verification/kani.rs`
-  - Add verification harness for Email
-  - Test: `cargo kani --harness verify_email_kani`
+  - Contract: non-empty string (`output.len() > 0`)
+  - Add verification harness
+  - Test: `cargo kani --harness verify_string_contract`
 
-- [ ] 1.2 Create Creusot Email contract
-  - File: `src/verification/creusot.rs`
-  - Add `creusot-contracts` dependency
-  - Implement with `#[requires]`/`#[ensures]` attributes
-  - Test: `cargo creusot` in elicitation package
+- [ ] 1.2 i32 contracts (Kani only)
+  - File: `src/verification/kani.rs`
+  - Contract: positive number (`output > 0`)
+  - Add verification harness
+  - Test: `cargo kani --harness verify_i32_contract`
 
-- [ ] 1.3 Create Prusti Email contract
-  - File: `src/verification/prusti.rs` (new)
-  - Add `prusti-contracts` dependency
-  - Implement with `#[pure]`, `#[requires]`, `#[ensures]`
-  - Test: `cargo prusti --features verify-prusti`
+- [ ] 1.3 bool contracts (Kani only)
+  - File: `src/verification/kani.rs`
+  - Contract: always valid (trivial)
+  - Add verification harness
+  - Test: `cargo kani --harness verify_bool_contract`
 
-- [ ] 1.4 Create Verus Email contract
-  - File: `src/verification/verus.rs` (new)
-  - Implement with Verus syntax (`requires`, `ensures`)
-  - Test: `verus src/verification/verus.rs`
+- [ ] 1.4 Test all Kani contracts
+  - Verify all harnesses pass
+  - Document Contract trait usage
+  - Measure verification time
 
-- [ ] 1.5 Test all 4 implementations
-  - Verify each produces correct proofs
-  - Document differences in approach
-  - Confirm Contract trait works for all
+- [ ] 1.5 Document findings
+  - What works well with Kani
+  - Limitations discovered
+  - Patterns to reuse
 
 **Success Criteria:**
-- ✅ Email validated by all 4 verifiers
-- ✅ Each verifier produces successful proof
-- ✅ Contract trait interface works for all
+- ✅ String, i32, bool verified by Kani
+- ✅ All harnesses pass (0 failures)
+- ✅ Contract trait pattern proven
+- ✅ Foundation for other verifiers
 
 ---
 
-## Phase 2: Infrastructure - Contract Swapping
+## Phase 2: Multi-Verifier - Primitives
 
-**Objective:** Build the infrastructure to swap contracts at compile-time and runtime.
+**Objective:** Extend String, i32, bool to all 4 verifiers.
 
-**Timeline:** Days 6-10
+**Timeline:** Days 6-15
 
-### Tasks
+### 2.1 String with All Verifiers (Days 6-8)
 
-- [ ] 2.1 Add verifier dependencies
-  - Update `Cargo.toml` with optional dependencies
-  - `creusot-contracts = { version = "0.2", optional = true }`
-  - `prusti-contracts = { version = "0.2", optional = true }`
-  - Feature flags for each verifier
+- [ ] Add verifier dependencies to Cargo.toml
+- [ ] Creusot String contract
+  - File: `src/verification/creusot.rs`
+  - Property: `result.len() > 0`
+  - Test: `cargo creusot`
+- [ ] Prusti String contract
+  - File: `src/verification/prusti.rs` (new)
+  - Property: `result.len() > 0`
+  - Test: `cargo prusti`
+- [ ] Verus String contract
+  - File: `src/verification/verus.rs` (new)
+  - Property: `result.len() > 0`
+  - Test: `verus`
 
-- [ ] 2.2 Create contract registry pattern
-  - File: `src/verification/mod.rs`
-  - `enum VerifierBackend` with variants for each
-  - Unified interface for verification dispatch
+### 2.2 i32 with All Verifiers (Days 9-11)
 
-- [ ] 2.3 Implement `.with_contract()` method
-  - Trait extension for `Elicitation`
-  - Allow runtime contract swapping
-  - Example:
-    ```rust
-    Email::with_contract(CreusotEmailContract)
-        .elicit(client)
-        .await?
-    ```
+- [ ] Creusot i32 contract (positive)
+- [ ] Prusti i32 contract (positive)
+- [ ] Verus i32 contract (positive)
+- [ ] Compare approaches across verifiers
 
-- [ ] 2.4 Add compile-time contract selection
-  - Feature-gated default contracts
-  - Users choose via features: `--features verify-creusot`
-  - Fallback to Kani if no feature specified
+### 2.3 bool with All Verifiers (Days 12-13)
 
-- [ ] 2.5 Update justfile recipes
-  - `verify-email-kani`
-  - `verify-email-creusot`
-  - `verify-email-prusti`
-  - `verify-email-verus`
-  - `verify-email-all` (runs all)
+- [ ] Creusot bool contract (trivial)
+- [ ] Prusti bool contract (trivial)
+- [ ] Verus bool contract (trivial)
+
+### 2.4 Update justfile recipes (Day 14)
+
+- [ ] `verify-primitives-kani`
+- [ ] `verify-primitives-creusot`
+- [ ] `verify-primitives-prusti`
+- [ ] `verify-primitives-verus`
+- [ ] `verify-primitives-all`
+
+### 2.5 Document differences (Day 15)
+
+- [ ] Compare syntax across verifiers
+- [ ] Performance characteristics
+- [ ] Limitations per verifier
 
 **Success Criteria:**
-- ✅ Can swap verifiers via features
-- ✅ Can swap contracts at runtime
-- ✅ Justfile recipes work for all verifiers
-- ✅ Default contracts provided for all
+- ✅ String, i32, bool work with all 4 verifiers
+- ✅ Justfile recipes for each verifier
+- ✅ Documentation of tradeoffs
 
 ---
 
