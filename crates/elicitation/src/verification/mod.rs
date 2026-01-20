@@ -3,56 +3,200 @@
 //! Provides a generic `Contract` trait that can be implemented by multiple
 //! verification tools (Kani, Creusot, Prusti, Verus, etc).
 //!
+//! # Quick Start
+//!
+//! ```rust,ignore
+//! use elicitation::verification::{
+//!     contracts::StringNonEmpty,
+//!     WithContract,
+//! };
+//!
+//! // Use with_contract() to verify elicited values
+//! let value = String::with_contract(StringNonEmpty)
+//!     .elicit(peer)
+//!     .await?;
+//! // value is guaranteed to be non-empty
+//! ```
+//!
 //! # Architecture
 //!
 //! - **Core**: `Contract` trait - tool-agnostic interface
 //! - **Adapters**: Tool-specific implementations (feature-gated)
 //! - **Registry**: Unified interface for swapping verifiers at runtime
+//! - **Composition**: Combine contracts with AND/OR/NOT logic
 //! - **Examples**: Demonstration of verification with different tools
 //!
 //! # Feature Flags
 //!
-//! - `verification` - Core trait only
-//! - `verify-kani` - Kani model checker support
+//! - `verification` - Core trait only (Kani contracts by default)
+//! - `verify-kani` - Kani model checker support (default for verification)
 //! - `verify-creusot` - Creusot deductive verifier
 //! - `verify-prusti` - Prusti separation logic
 //! - `verify-verus` - Verus SMT-based verifier
 //!
 //! # Contract Swapping
 //!
-//! Users can swap verification backends at compile-time (via features) or
-//! runtime (via `VerifierBackend` enum):
+//! ## Compile-Time (via features)
+//!
+//! Choose your verifier backend at compile-time:
+//!
+//! ```bash
+//! # Use Kani (default)
+//! cargo build --features verification
+//!
+//! # Use Creusot
+//! cargo build --features verify-creusot
+//!
+//! # Use Prusti
+//! cargo build --features verify-prusti
+//!
+//! # Use Verus
+//! cargo build --features verify-verus
+//! ```
+//!
+//! Then use default contracts in your code:
+//!
+//! ```rust,ignore
+//! use elicitation::verification::DEFAULT_STRING_CONTRACT;
+//!
+//! let value = String::with_contract(DEFAULT_STRING_CONTRACT)
+//!     .elicit(peer)
+//!     .await?;
+//! ```
+//!
+//! ## Runtime (via VerifierBackend)
+//!
+//! Swap verifiers dynamically at runtime:
 //!
 //! ```rust,ignore
 //! use elicitation::verification::{VerifierBackend, contracts::*};
 //!
-//! // Compile-time: Choose via feature flag
-//! // cargo build --features verify-kani
-//!
-//! // Runtime: Choose via enum
+//! // Choose backend at runtime
 //! let verifier = VerifierBackend::Kani(Box::new(StringNonEmpty));
 //! assert!(verifier.check_precondition(&String::from("hello")));
+//!
+//! // Verify a transformation
+//! let result = verifier.verify(input, |x| x.to_uppercase())?;
 //! ```
 //!
-//! # Example
+//! # Contract Composition
+//!
+//! Combine contracts using boolean logic:
+//!
+//! ```rust,ignore
+//! use elicitation::verification::{compose, contracts::*};
+//!
+//! // Non-empty string with max 100 characters
+//! let contract = compose::and(
+//!     StringNonEmpty,
+//!     StringMaxLength::<100>
+//! );
+//!
+//! // Positive OR non-negative (basically >= 0)
+//! let contract = compose::or(I32Positive, I32NonNegative);
+//!
+//! // NOT positive (basically <= 0)
+//! let contract = compose::not(I32Positive);
+//!
+//! // Complex nested composition
+//! let contract = compose::or(
+//!     compose::and(I32Positive, I32NonNegative),
+//!     compose::not(I32Positive)
+//! );
+//! ```
+//!
+//! # Creating Custom Contracts
+//!
+//! Implement the `Contract` trait for your own types:
 //!
 //! ```rust,ignore
 //! use elicitation::verification::Contract;
 //!
-//! struct ValidateEmail;
+//! struct ValidEmail;
 //!
-//! impl Contract for ValidateEmail {
+//! impl Contract for ValidEmail {
 //!     type Input = String;
 //!     type Output = String;
 //!     
 //!     fn requires(input: &String) -> bool {
-//!         input.contains('@')
+//!         input.contains('@') && input.contains('.')
 //!     }
 //!     
 //!     fn ensures(_input: &String, output: &String) -> bool {
-//!         output.contains('@')
+//!         output.contains('@') && output.contains('.')
 //!     }
 //! }
+//!
+//! // Use with elicitation
+//! let email = String::with_contract(ValidEmail)
+//!     .elicit(peer)
+//!     .await?;
+//! ```
+//!
+//! # Formal Verification
+//!
+//! ## Kani (Model Checking)
+//!
+//! Kani contracts work out-of-the-box. Write harnesses in your tests:
+//!
+//! ```rust,ignore
+//! #[cfg(kani)]
+//! #[kani::proof]
+//! fn verify_string_non_empty() {
+//!     let inputs = ["hello", "world", "test"];
+//!     for input in inputs {
+//!         assert!(StringNonEmpty::requires(&input.to_string()));
+//!     }
+//! }
+//! ```
+//!
+//! Run with: `cargo kani`
+//!
+//! ## Creusot (Deductive Verification)
+//!
+//! Creusot requires annotated source code:
+//!
+//! ```rust,ignore
+//! #[requires(input.len() > 0)]
+//! #[ensures(result.len() > 0)]
+//! fn process(input: String) -> String {
+//!     input
+//! }
+//! ```
+//!
+//! Our runtime contracts provide fallback checking.
+//!
+//! ## Prusti (Separation Logic)
+//!
+//! Prusti uses `prusti-contracts`:
+//!
+//! ```rust,ignore
+//! #[requires(input > 0)]
+//! #[ensures(result > 0)]
+//! fn increment(input: i32) -> i32 {
+//!     input + 1
+//! }
+//! ```
+//!
+//! ## Verus (SMT-Based)
+//!
+//! Verus uses modes and proof blocks:
+//!
+//! ```rust,ignore
+//! fn process(input: i32) -> (result: i32)
+//!     requires input > 0,
+//!     ensures result > 0,
+//! {
+//!     input + 1
+//! }
+//! ```
+//!
+//! # Example
+//!
+//! See `examples/verification_demo.rs` for a complete demonstration:
+//!
+//! ```bash
+//! cargo run --example verification_demo --features verification
 //! ```
 
 use crate::traits::Elicitation;
