@@ -7,15 +7,32 @@
 //!
 //! - **Core**: `Contract` trait - tool-agnostic interface
 //! - **Adapters**: Tool-specific implementations (feature-gated)
+//! - **Registry**: Unified interface for swapping verifiers at runtime
 //! - **Examples**: Demonstration of verification with different tools
 //!
 //! # Feature Flags
 //!
 //! - `verification` - Core trait only
 //! - `verify-kani` - Kani model checker support
-//! - `verify-creusot` - Creusot deductive verifier (future)
-//! - `verify-prusti` - Prusti separation logic (future)
-//! - `verify-verus` - Verus SMT-based verifier (future)
+//! - `verify-creusot` - Creusot deductive verifier
+//! - `verify-prusti` - Prusti separation logic
+//! - `verify-verus` - Verus SMT-based verifier
+//!
+//! # Contract Swapping
+//!
+//! Users can swap verification backends at compile-time (via features) or
+//! runtime (via `VerifierBackend` enum):
+//!
+//! ```rust,ignore
+//! use elicitation::verification::{VerifierBackend, contracts::*};
+//!
+//! // Compile-time: Choose via feature flag
+//! // cargo build --features verify-kani
+//!
+//! // Runtime: Choose via enum
+//! let verifier = VerifierBackend::Kani(Box::new(StringNonEmpty));
+//! assert!(verifier.check_precondition(&String::from("hello")));
+//! ```
 //!
 //! # Example
 //!
@@ -39,6 +56,7 @@
 //! ```
 
 use crate::traits::Elicitation;
+use std::fmt::Debug;
 
 /// Generic contract for formal verification.
 ///
@@ -117,6 +135,180 @@ pub trait Contract {
 }
 
 // ============================================================================
+// Verifier Backend Registry
+// ============================================================================
+
+/// Runtime-friendly contract wrapper for dynamic dispatch.
+///
+/// Since `Contract` has static methods, we need a trait object compatible version.
+pub trait DynContract<I, O>: Send + Sync
+where
+    I: Elicitation + Clone + Debug + Send,
+    O: Elicitation + Clone + Debug + Send,
+{
+    /// Check precondition.
+    fn check_requires(&self, input: &I) -> bool;
+
+    /// Check postcondition.
+    fn check_ensures(&self, input: &I, output: &O) -> bool;
+
+    /// Check invariant.
+    fn check_invariant(&self) -> bool;
+}
+
+/// Blanket implementation to convert any Contract into DynContract.
+impl<T, I, O> DynContract<I, O> for T
+where
+    T: Contract<Input = I, Output = O> + Send + Sync,
+    I: Elicitation + Clone + Debug + Send,
+    O: Elicitation + Clone + Debug + Send,
+{
+    fn check_requires(&self, input: &I) -> bool {
+        Self::requires(input)
+    }
+
+    fn check_ensures(&self, input: &I, output: &O) -> bool {
+        Self::ensures(input, output)
+    }
+
+    fn check_invariant(&self) -> bool {
+        self.invariant()
+    }
+}
+
+/// Unified interface for swapping verification backends at runtime.
+///
+/// This enum allows users to choose different verifiers for different types
+/// or situations, supporting the refinement workflow.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation::verification::{VerifierBackend, contracts::*};
+///
+/// // Start with Kani for quick checks
+/// let verifier = VerifierBackend::Kani(Box::new(StringNonEmpty));
+///
+/// // Refine to Creusot for stronger guarantees
+/// let verifier = VerifierBackend::Creusot(Box::new(
+///     contracts::creusot::CreusotStringNonEmpty
+/// ));
+/// ```
+pub enum VerifierBackend<I, O>
+where
+    I: Elicitation + Clone + Debug + Send,
+    O: Elicitation + Clone + Debug + Send,
+{
+    /// Kani model checker (bounded verification)
+    Kani(Box<dyn DynContract<I, O>>),
+
+    /// Creusot deductive verifier (unbounded proofs)
+    #[cfg(feature = "verify-creusot")]
+    Creusot(Box<dyn DynContract<I, O>>),
+
+    /// Prusti separation logic verifier
+    #[cfg(feature = "verify-prusti")]
+    Prusti(Box<dyn DynContract<I, O>>),
+
+    /// Verus SMT-based verifier
+    #[cfg(feature = "verify-verus")]
+    Verus(Box<dyn DynContract<I, O>>),
+}
+
+impl<I, O> VerifierBackend<I, O>
+where
+    I: Elicitation + Clone + Debug + Send,
+    O: Elicitation + Clone + Debug + Send,
+{
+    /// Check if precondition holds for input.
+    pub fn check_precondition(&self, input: &I) -> bool {
+        match self {
+            Self::Kani(contract) => contract.check_requires(input),
+
+            #[cfg(feature = "verify-creusot")]
+            Self::Creusot(contract) => contract.check_requires(input),
+
+            #[cfg(feature = "verify-prusti")]
+            Self::Prusti(contract) => contract.check_requires(input),
+
+            #[cfg(feature = "verify-verus")]
+            Self::Verus(contract) => contract.check_requires(input),
+        }
+    }
+
+    /// Check if postcondition holds for input/output pair.
+    pub fn check_postcondition(&self, input: &I, output: &O) -> bool {
+        match self {
+            Self::Kani(contract) => contract.check_ensures(input, output),
+
+            #[cfg(feature = "verify-creusot")]
+            Self::Creusot(contract) => contract.check_ensures(input, output),
+
+            #[cfg(feature = "verify-prusti")]
+            Self::Prusti(contract) => contract.check_ensures(input, output),
+
+            #[cfg(feature = "verify-verus")]
+            Self::Verus(contract) => contract.check_ensures(input, output),
+        }
+    }
+
+    /// Check if invariant holds.
+    pub fn check_invariant(&self) -> bool {
+        match self {
+            Self::Kani(contract) => contract.check_invariant(),
+
+            #[cfg(feature = "verify-creusot")]
+            Self::Creusot(contract) => contract.check_invariant(),
+
+            #[cfg(feature = "verify-prusti")]
+            Self::Prusti(contract) => contract.check_invariant(),
+
+            #[cfg(feature = "verify-verus")]
+            Self::Verus(contract) => contract.check_invariant(),
+        }
+    }
+
+    /// Verify a transformation: check precondition, apply function, check postcondition.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// let verifier = VerifierBackend::Kani(Box::new(I32Positive));
+    /// let result = verifier.verify(42, |x| x)?;
+    /// assert_eq!(result, 42);
+    /// ```
+    pub fn verify<F>(&self, input: I, f: F) -> Result<O, String>
+    where
+        F: FnOnce(I) -> O,
+    {
+        // Check precondition
+        if !self.check_precondition(&input) {
+            return Err("Precondition failed".to_string());
+        }
+
+        // Check invariant before
+        if !self.check_invariant() {
+            return Err("Invariant failed before execution".to_string());
+        }
+
+        // Execute transformation
+        let output = f(input.clone());
+
+        // Check postcondition
+        if !self.check_postcondition(&input, &output) {
+            return Err("Postcondition failed".to_string());
+        }
+
+        // Check invariant after
+        if !self.check_invariant() {
+            return Err("Invariant failed after execution".to_string());
+        }
+
+        Ok(output)
+    }
+}
+
+// ============================================================================
 // Submodules
 // ============================================================================
 
@@ -137,3 +329,78 @@ pub mod creusot;
 
 // #[cfg(feature = "verify-verus")]
 // pub mod verus;
+
+// ============================================================================
+// Tests
+// ============================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::verification::contracts::{StringNonEmpty, I32Positive, BoolValid};
+
+    #[test]
+    fn test_verifier_backend_string_kani() {
+        let verifier = VerifierBackend::Kani(Box::new(StringNonEmpty));
+        let input = String::from("hello");
+
+        assert!(verifier.check_precondition(&input));
+        assert!(verifier.check_postcondition(&input, &input));
+        assert!(verifier.check_invariant());
+
+        let result = verifier.verify(input.clone(), |x| x);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "hello");
+    }
+
+    #[test]
+    fn test_verifier_backend_i32_kani() {
+        let verifier = VerifierBackend::Kani(Box::new(I32Positive));
+        let input = 42i32;
+
+        assert!(verifier.check_precondition(&input));
+        assert!(verifier.check_postcondition(&input, &input));
+        assert!(verifier.check_invariant());
+
+        let result = verifier.verify(input, |x| x);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 42);
+    }
+
+    #[test]
+    fn test_verifier_backend_bool_kani() {
+        let verifier = VerifierBackend::Kani(Box::new(BoolValid));
+        let input = true;
+
+        assert!(verifier.check_precondition(&input));
+        assert!(verifier.check_postcondition(&input, &input));
+        assert!(verifier.check_invariant());
+
+        let result = verifier.verify(input, |x| x);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), true);
+    }
+
+    #[test]
+    fn test_verifier_backend_precondition_failure() {
+        let verifier = VerifierBackend::Kani(Box::new(StringNonEmpty));
+        let input = String::new(); // Empty string violates precondition
+
+        assert!(!verifier.check_precondition(&input));
+
+        let result = verifier.verify(input, |x| x);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "Precondition failed");
+    }
+
+    #[test]
+    fn test_verifier_backend_postcondition_failure() {
+        let verifier = VerifierBackend::Kani(Box::new(I32Positive));
+        let input = 42i32;
+
+        // Transform that violates postcondition
+        let result = verifier.verify(input, |_x| -1); // Returns negative
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "Postcondition failed");
+    }
+}
