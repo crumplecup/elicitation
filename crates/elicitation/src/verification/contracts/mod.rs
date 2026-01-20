@@ -415,6 +415,329 @@ impl Contract for F64Finite {
 }
 
 // ============================================================================
+// Option<T> Contracts (Phase 5.1)
+// ============================================================================
+
+/// Contract for Option<T> that must be Some (not None).
+///
+/// Verifies that an Option contains a value. Does not verify the inner value.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation::verification::contracts::OptionIsSome;
+///
+/// let contract = OptionIsSome::<i32>;
+/// assert!(contract.requires(&Some(42)));
+/// assert!(!contract.requires(&None));
+/// ```
+#[derive(Debug, Clone, Copy)]
+pub struct OptionIsSome<T> {
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T> OptionIsSome<T> {
+    /// Create new OptionIsSome contract.
+    pub const fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T> Default for OptionIsSome<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T> Contract for OptionIsSome<T>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+{
+    type Input = Option<T>;
+    type Output = Option<T>;
+
+    fn requires(input: &Option<T>) -> bool {
+        input.is_some()
+    }
+
+    fn ensures(_input: &Option<T>, output: &Option<T>) -> bool {
+        output.is_some()
+    }
+}
+
+/// Contract for Option<T> with inner value contract.
+///
+/// Verifies both that Option is Some and that the inner value satisfies a contract.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation::verification::contracts::{OptionWithInner, I32Positive};
+///
+/// let contract = OptionWithInner::new(I32Positive);
+/// assert!(contract.requires(&Some(42)));
+/// assert!(!contract.requires(&Some(-1))); // Inner fails
+/// assert!(!contract.requires(&None));     // Is None
+/// ```
+#[derive(Debug, Clone, Copy)]
+pub struct OptionWithInner<T, C> {
+    inner_contract: C,
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T, C> OptionWithInner<T, C> {
+    /// Create new OptionWithInner contract with specified inner contract.
+    pub const fn new(inner_contract: C) -> Self {
+        Self {
+            inner_contract,
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T, C> Contract for OptionWithInner<T, C>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+    C: Contract<Input = T, Output = T>,
+{
+    type Input = Option<T>;
+    type Output = Option<T>;
+
+    fn requires(input: &Option<T>) -> bool {
+        match input {
+            Some(value) => C::requires(value),
+            None => false,
+        }
+    }
+
+    fn ensures(_input: &Option<T>, output: &Option<T>) -> bool {
+        match output {
+            Some(value) => C::ensures(value, value),
+            None => false,
+        }
+    }
+
+    fn invariant(&self) -> bool {
+        self.inner_contract.invariant()
+    }
+}
+
+// ============================================================================
+// Result<T, E> Contracts (Phase 5.2)
+// ============================================================================
+
+/// Contract for Result<T, E> that must be Ok (not Err).
+///
+/// Verifies that a Result is Ok. Does not verify the inner value.
+#[derive(Debug, Clone, Copy)]
+pub struct ResultIsOk<T, E> {
+    _phantom: std::marker::PhantomData<(T, E)>,
+}
+
+impl<T, E> ResultIsOk<T, E> {
+    /// Create new ResultIsOk contract.
+    pub const fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T, E> Default for ResultIsOk<T, E> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T, E> Contract for ResultIsOk<T, E>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+    E: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+{
+    type Input = Result<T, E>;
+    type Output = Result<T, E>;
+
+    fn requires(input: &Result<T, E>) -> bool {
+        input.is_ok()
+    }
+
+    fn ensures(_input: &Result<T, E>, output: &Result<T, E>) -> bool {
+        output.is_ok()
+    }
+}
+
+/// Contract for Result<T, E> with Ok value contract.
+///
+/// Verifies both that Result is Ok and that the inner value satisfies a contract.
+#[derive(Debug, Clone, Copy)]
+pub struct ResultWithOk<T, E, C> {
+    ok_contract: C,
+    _phantom: std::marker::PhantomData<(T, E)>,
+}
+
+impl<T, E, C> ResultWithOk<T, E, C> {
+    /// Create new ResultWithOk contract with specified Ok contract.
+    pub const fn new(ok_contract: C) -> Self {
+        Self {
+            ok_contract,
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T, E, C> Contract for ResultWithOk<T, E, C>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+    E: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+    C: Contract<Input = T, Output = T>,
+{
+    type Input = Result<T, E>;
+    type Output = Result<T, E>;
+
+    fn requires(input: &Result<T, E>) -> bool {
+        match input {
+            Ok(value) => C::requires(value),
+            Err(_) => false,
+        }
+    }
+
+    fn ensures(_input: &Result<T, E>, output: &Result<T, E>) -> bool {
+        match output {
+            Ok(value) => C::ensures(value, value),
+            Err(_) => false,
+        }
+    }
+
+    fn invariant(&self) -> bool {
+        self.ok_contract.invariant()
+    }
+}
+
+// ============================================================================
+// Vec<T> Contracts (Phase 5.3)
+// ============================================================================
+
+/// Contract for Vec<T> that must be non-empty.
+///
+/// Verifies that a vector contains at least one element.
+#[derive(Debug, Clone, Copy)]
+pub struct VecNonEmpty<T> {
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T> VecNonEmpty<T> {
+    /// Create new VecNonEmpty contract.
+    pub const fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T> Default for VecNonEmpty<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T> Contract for VecNonEmpty<T>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+{
+    type Input = Vec<T>;
+    type Output = Vec<T>;
+
+    fn requires(input: &Vec<T>) -> bool {
+        !input.is_empty()
+    }
+
+    fn ensures(_input: &Vec<T>, output: &Vec<T>) -> bool {
+        !output.is_empty()
+    }
+}
+
+/// Contract for Vec<T> with maximum length.
+///
+/// Verifies that a vector does not exceed a maximum length.
+#[derive(Debug, Clone, Copy)]
+pub struct VecMaxLength<T, const MAX: usize> {
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T, const MAX: usize> VecMaxLength<T, MAX> {
+    /// Create new VecMaxLength contract.
+    pub const fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T, const MAX: usize> Default for VecMaxLength<T, MAX> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T, const MAX: usize> Contract for VecMaxLength<T, MAX>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+{
+    type Input = Vec<T>;
+    type Output = Vec<T>;
+
+    fn requires(input: &Vec<T>) -> bool {
+        input.len() <= MAX
+    }
+
+    fn ensures(_input: &Vec<T>, output: &Vec<T>) -> bool {
+        output.len() <= MAX
+    }
+}
+
+/// Contract for Vec<T> with element contract.
+///
+/// Verifies that all elements in the vector satisfy a contract.
+#[derive(Debug, Clone, Copy)]
+pub struct VecAllElements<T, C> {
+    element_contract: C,
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T, C> VecAllElements<T, C> {
+    /// Create new VecAllElements contract with specified element contract.
+    pub const fn new(element_contract: C) -> Self {
+        Self {
+            element_contract,
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T, C> Contract for VecAllElements<T, C>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+    C: Contract<Input = T, Output = T>,
+{
+    type Input = Vec<T>;
+    type Output = Vec<T>;
+
+    fn requires(input: &Vec<T>) -> bool {
+        input.iter().all(|elem| C::requires(elem))
+    }
+
+    fn ensures(_input: &Vec<T>, output: &Vec<T>) -> bool {
+        output.iter().all(|elem| C::ensures(elem, elem))
+    }
+
+    fn invariant(&self) -> bool {
+        self.element_contract.invariant()
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -536,5 +859,101 @@ mod tests {
         assert!(!F64Finite::requires(&f64::NAN));
         assert!(!F64Finite::requires(&f64::INFINITY));
         assert!(!F64Finite::requires(&f64::NEG_INFINITY));
+    }
+
+    // Option<T> tests
+    #[test]
+    fn test_option_is_some() {
+        let some_value: Option<i32> = Some(42);
+        let none_value: Option<i32> = None;
+
+        assert!(OptionIsSome::<i32>::requires(&some_value));
+        assert!(OptionIsSome::<i32>::ensures(&some_value, &some_value));
+        assert!(!OptionIsSome::<i32>::requires(&none_value));
+    }
+
+    #[test]
+    fn test_option_with_inner_contract() {
+        let positive: Option<i32> = Some(42);
+        let negative: Option<i32> = Some(-1);
+        let zero: Option<i32> = Some(0);
+        let none: Option<i32> = None;
+
+        let contract = OptionWithInner::new(I32Positive);
+
+        assert!(OptionWithInner::<i32, I32Positive>::requires(&positive));
+        assert!(!OptionWithInner::<i32, I32Positive>::requires(&negative));
+        assert!(!OptionWithInner::<i32, I32Positive>::requires(&zero));
+        assert!(!OptionWithInner::<i32, I32Positive>::requires(&none));
+
+        assert!(OptionWithInner::<i32, I32Positive>::ensures(&positive, &positive));
+        assert!(contract.invariant());
+    }
+
+    // Result<T, E> tests
+    #[test]
+    fn test_result_is_ok() {
+        let ok_value: Result<i32, String> = Ok(42);
+        let err_value: Result<i32, String> = Err("error".to_string());
+
+        assert!(ResultIsOk::<i32, String>::requires(&ok_value));
+        assert!(ResultIsOk::<i32, String>::ensures(&ok_value, &ok_value));
+        assert!(!ResultIsOk::<i32, String>::requires(&err_value));
+    }
+
+    #[test]
+    fn test_result_with_ok_contract() {
+        let positive: Result<i32, String> = Ok(42);
+        let negative: Result<i32, String> = Ok(-1);
+        let error: Result<i32, String> = Err("error".to_string());
+
+        let contract: ResultWithOk<i32, String, I32Positive> = ResultWithOk::new(I32Positive);
+
+        assert!(ResultWithOk::<i32, String, I32Positive>::requires(&positive));
+        assert!(!ResultWithOk::<i32, String, I32Positive>::requires(&negative));
+        assert!(!ResultWithOk::<i32, String, I32Positive>::requires(&error));
+
+        assert!(ResultWithOk::<i32, String, I32Positive>::ensures(&positive, &positive));
+        assert!(contract.invariant());
+    }
+
+    // Vec<T> tests
+    #[test]
+    fn test_vec_non_empty() {
+        let non_empty: Vec<i32> = vec![1, 2, 3];
+        let empty: Vec<i32> = vec![];
+
+        assert!(VecNonEmpty::<i32>::requires(&non_empty));
+        assert!(VecNonEmpty::<i32>::ensures(&non_empty, &non_empty));
+        assert!(!VecNonEmpty::<i32>::requires(&empty));
+    }
+
+    #[test]
+    fn test_vec_max_length() {
+        let short: Vec<i32> = vec![1, 2, 3];
+        let exact: Vec<i32> = vec![1, 2, 3, 4, 5];
+        let long: Vec<i32> = vec![1, 2, 3, 4, 5, 6];
+
+        assert!(VecMaxLength::<i32, 5>::requires(&short));
+        assert!(VecMaxLength::<i32, 5>::requires(&exact));
+        assert!(!VecMaxLength::<i32, 5>::requires(&long));
+
+        assert!(VecMaxLength::<i32, 5>::ensures(&short, &short));
+    }
+
+    #[test]
+    fn test_vec_all_elements() {
+        let all_positive: Vec<i32> = vec![1, 2, 3];
+        let has_negative: Vec<i32> = vec![1, -2, 3];
+        let empty: Vec<i32> = vec![];
+
+        let contract = VecAllElements::new(I32Positive);
+
+        assert!(VecAllElements::<i32, I32Positive>::requires(&all_positive));
+        assert!(!VecAllElements::<i32, I32Positive>::requires(&has_negative));
+        assert!(VecAllElements::<i32, I32Positive>::requires(&empty)); // Vacuously true
+
+        assert!(VecAllElements::<i32, I32Positive>::ensures(&all_positive, &all_positive));
+        assert!(contract.invariant());
     }
 }

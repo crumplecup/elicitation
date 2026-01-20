@@ -266,6 +266,109 @@ impl Contract for PrustiF64Finite {
 }
 
 // ============================================================================
+// Option<T> Contracts (Phase 5.1)
+// ============================================================================
+
+/// Prusti-verified Option<T> must be Some contract.
+pub struct PrustiOptionIsSome<T> {
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T> PrustiOptionIsSome<T> {
+    /// Create new Prusti OptionIsSome contract.
+    pub const fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T> Contract for PrustiOptionIsSome<T>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+{
+    type Input = Option<T>;
+    type Output = Option<T>;
+
+    fn requires(input: &Option<T>) -> bool {
+        input.is_some()
+    }
+
+    fn ensures(_input: &Option<T>, output: &Option<T>) -> bool {
+        output.is_some()
+    }
+}
+
+// ============================================================================
+// Result<T, E> Contracts (Phase 5.2)
+// ============================================================================
+
+/// Prusti-verified Result<T, E> must be Ok contract.
+pub struct PrustiResultIsOk<T, E> {
+    _phantom: std::marker::PhantomData<(T, E)>,
+}
+
+impl<T, E> PrustiResultIsOk<T, E> {
+    /// Create new Prusti ResultIsOk contract.
+    pub const fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T, E> Contract for PrustiResultIsOk<T, E>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+    E: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+{
+    type Input = Result<T, E>;
+    type Output = Result<T, E>;
+
+    fn requires(input: &Result<T, E>) -> bool {
+        input.is_ok()
+    }
+
+    fn ensures(_input: &Result<T, E>, output: &Result<T, E>) -> bool {
+        output.is_ok()
+    }
+}
+
+// ============================================================================
+// Vec<T> Contracts (Phase 5.3)
+// ============================================================================
+
+/// Prusti-verified Vec<T> non-empty contract.
+pub struct PrustiVecNonEmpty<T> {
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T> PrustiVecNonEmpty<T> {
+    /// Create new Prusti VecNonEmpty contract.
+    pub const fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T> Contract for PrustiVecNonEmpty<T>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+{
+    type Input = Vec<T>;
+    type Output = Vec<T>;
+
+    fn requires(input: &Vec<T>) -> bool {
+        !input.is_empty()
+    }
+
+    fn ensures(_input: &Vec<T>, output: &Vec<T>) -> bool {
+        !output.is_empty()
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -346,5 +449,32 @@ mod tests {
     fn test_prusti_f64_finite() {
         assert!(PrustiF64Finite::requires(&42.0f64));
         assert!(!PrustiF64Finite::requires(&f64::NAN));
+    }
+
+    #[test]
+    fn test_prusti_option_is_some() {
+        let some_val: Option<i32> = Some(42);
+        let none_val: Option<i32> = None;
+
+        assert!(PrustiOptionIsSome::<i32>::requires(&some_val));
+        assert!(!PrustiOptionIsSome::<i32>::requires(&none_val));
+    }
+
+    #[test]
+    fn test_prusti_result_is_ok() {
+        let ok_val: Result<i32, String> = Ok(42);
+        let err_val: Result<i32, String> = Err("error".to_string());
+
+        assert!(PrustiResultIsOk::<i32, String>::requires(&ok_val));
+        assert!(!PrustiResultIsOk::<i32, String>::requires(&err_val));
+    }
+
+    #[test]
+    fn test_prusti_vec_non_empty() {
+        let non_empty: Vec<i32> = vec![1, 2, 3];
+        let empty: Vec<i32> = vec![];
+
+        assert!(PrustiVecNonEmpty::<i32>::requires(&non_empty));
+        assert!(!PrustiVecNonEmpty::<i32>::requires(&empty));
     }
 }

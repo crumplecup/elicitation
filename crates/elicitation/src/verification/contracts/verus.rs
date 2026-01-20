@@ -271,6 +271,109 @@ impl Contract for VerusF64Finite {
 }
 
 // ============================================================================
+// Option<T> Contracts (Phase 5.1)
+// ============================================================================
+
+/// Verus-verified Option<T> must be Some contract.
+pub struct VerusOptionIsSome<T> {
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T> VerusOptionIsSome<T> {
+    /// Create new Verus OptionIsSome contract.
+    pub const fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T> Contract for VerusOptionIsSome<T>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+{
+    type Input = Option<T>;
+    type Output = Option<T>;
+
+    fn requires(input: &Option<T>) -> bool {
+        input.is_some()
+    }
+
+    fn ensures(_input: &Option<T>, output: &Option<T>) -> bool {
+        output.is_some()
+    }
+}
+
+// ============================================================================
+// Result<T, E> Contracts (Phase 5.2)
+// ============================================================================
+
+/// Verus-verified Result<T, E> must be Ok contract.
+pub struct VerusResultIsOk<T, E> {
+    _phantom: std::marker::PhantomData<(T, E)>,
+}
+
+impl<T, E> VerusResultIsOk<T, E> {
+    /// Create new Verus ResultIsOk contract.
+    pub const fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T, E> Contract for VerusResultIsOk<T, E>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+    E: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+{
+    type Input = Result<T, E>;
+    type Output = Result<T, E>;
+
+    fn requires(input: &Result<T, E>) -> bool {
+        input.is_ok()
+    }
+
+    fn ensures(_input: &Result<T, E>, output: &Result<T, E>) -> bool {
+        output.is_ok()
+    }
+}
+
+// ============================================================================
+// Vec<T> Contracts (Phase 5.3)
+// ============================================================================
+
+/// Verus-verified Vec<T> non-empty contract.
+pub struct VerusVecNonEmpty<T> {
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T> VerusVecNonEmpty<T> {
+    /// Create new Verus VecNonEmpty contract.
+    pub const fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T> Contract for VerusVecNonEmpty<T>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+{
+    type Input = Vec<T>;
+    type Output = Vec<T>;
+
+    fn requires(input: &Vec<T>) -> bool {
+        !input.is_empty()
+    }
+
+    fn ensures(_input: &Vec<T>, output: &Vec<T>) -> bool {
+        !output.is_empty()
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -351,5 +454,32 @@ mod tests {
     fn test_verus_f64_finite() {
         assert!(VerusF64Finite::requires(&42.0f64));
         assert!(!VerusF64Finite::requires(&f64::NAN));
+    }
+
+    #[test]
+    fn test_verus_option_is_some() {
+        let some_val: Option<i32> = Some(42);
+        let none_val: Option<i32> = None;
+
+        assert!(VerusOptionIsSome::<i32>::requires(&some_val));
+        assert!(!VerusOptionIsSome::<i32>::requires(&none_val));
+    }
+
+    #[test]
+    fn test_verus_result_is_ok() {
+        let ok_val: Result<i32, String> = Ok(42);
+        let err_val: Result<i32, String> = Err("error".to_string());
+
+        assert!(VerusResultIsOk::<i32, String>::requires(&ok_val));
+        assert!(!VerusResultIsOk::<i32, String>::requires(&err_val));
+    }
+
+    #[test]
+    fn test_verus_vec_non_empty() {
+        let non_empty: Vec<i32> = vec![1, 2, 3];
+        let empty: Vec<i32> = vec![];
+
+        assert!(VerusVecNonEmpty::<i32>::requires(&non_empty));
+        assert!(!VerusVecNonEmpty::<i32>::requires(&empty));
     }
 }

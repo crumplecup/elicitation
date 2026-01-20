@@ -285,6 +285,109 @@ impl Contract for CreusotF64Finite {
 }
 
 // ============================================================================
+// Option<T> Contracts (Phase 5.1)
+// ============================================================================
+
+/// Creusot-verified Option<T> must be Some contract.
+pub struct CreusotOptionIsSome<T> {
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T> CreusotOptionIsSome<T> {
+    /// Create new Creusot OptionIsSome contract.
+    pub const fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T> Contract for CreusotOptionIsSome<T>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+{
+    type Input = Option<T>;
+    type Output = Option<T>;
+
+    fn requires(input: &Option<T>) -> bool {
+        input.is_some()
+    }
+
+    fn ensures(_input: &Option<T>, output: &Option<T>) -> bool {
+        output.is_some()
+    }
+}
+
+// ============================================================================
+// Result<T, E> Contracts (Phase 5.2)
+// ============================================================================
+
+/// Creusot-verified Result<T, E> must be Ok contract.
+pub struct CreusotResultIsOk<T, E> {
+    _phantom: std::marker::PhantomData<(T, E)>,
+}
+
+impl<T, E> CreusotResultIsOk<T, E> {
+    /// Create new Creusot ResultIsOk contract.
+    pub const fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T, E> Contract for CreusotResultIsOk<T, E>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+    E: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+{
+    type Input = Result<T, E>;
+    type Output = Result<T, E>;
+
+    fn requires(input: &Result<T, E>) -> bool {
+        input.is_ok()
+    }
+
+    fn ensures(_input: &Result<T, E>, output: &Result<T, E>) -> bool {
+        output.is_ok()
+    }
+}
+
+// ============================================================================
+// Vec<T> Contracts (Phase 5.3)
+// ============================================================================
+
+/// Creusot-verified Vec<T> non-empty contract.
+pub struct CreusotVecNonEmpty<T> {
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T> CreusotVecNonEmpty<T> {
+    /// Create new Creusot VecNonEmpty contract.
+    pub const fn new() -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T> Contract for CreusotVecNonEmpty<T>
+where
+    T: crate::traits::Elicitation + Clone + std::fmt::Debug + Send,
+{
+    type Input = Vec<T>;
+    type Output = Vec<T>;
+
+    fn requires(input: &Vec<T>) -> bool {
+        !input.is_empty()
+    }
+
+    fn ensures(_input: &Vec<T>, output: &Vec<T>) -> bool {
+        !output.is_empty()
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -365,5 +468,32 @@ mod tests {
     fn test_creusot_f64_finite() {
         assert!(CreusotF64Finite::requires(&42.0f64));
         assert!(!CreusotF64Finite::requires(&f64::NAN));
+    }
+
+    #[test]
+    fn test_creusot_option_is_some() {
+        let some_val: Option<i32> = Some(42);
+        let none_val: Option<i32> = None;
+
+        assert!(CreusotOptionIsSome::<i32>::requires(&some_val));
+        assert!(!CreusotOptionIsSome::<i32>::requires(&none_val));
+    }
+
+    #[test]
+    fn test_creusot_result_is_ok() {
+        let ok_val: Result<i32, String> = Ok(42);
+        let err_val: Result<i32, String> = Err("error".to_string());
+
+        assert!(CreusotResultIsOk::<i32, String>::requires(&ok_val));
+        assert!(!CreusotResultIsOk::<i32, String>::requires(&err_val));
+    }
+
+    #[test]
+    fn test_creusot_vec_non_empty() {
+        let non_empty: Vec<i32> = vec![1, 2, 3];
+        let empty: Vec<i32> = vec![];
+
+        assert!(CreusotVecNonEmpty::<i32>::requires(&non_empty));
+        assert!(!CreusotVecNonEmpty::<i32>::requires(&empty));
     }
 }
