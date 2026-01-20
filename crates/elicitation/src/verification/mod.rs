@@ -866,6 +866,9 @@ impl<T> WithContract for T where T: Elicitation + Clone + Debug + Send {}
 // Default contract implementations for primitive types
 pub mod contracts;
 
+// Mechanism-level contracts (Survey, Affirm, Text, etc)
+pub mod mechanisms;
+
 // Tool-specific adapters (feature-gated)
 #[cfg(feature = "verify-kani")]
 pub mod kani;
