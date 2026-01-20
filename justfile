@@ -10,7 +10,7 @@ default:
 # Development Setup
 # ================
 
-# Install all required development tools
+# Install all required development tools and verification tools
 setup:
     @echo "🔧 Installing development tools..."
     cargo install just || true
@@ -22,6 +22,77 @@ setup:
     cargo install cargo-hack || true
     cargo install cargo-nextest || true
     @echo "✅ All development tools installed"
+    @echo ""
+    @just setup-verifiers
+
+# Install formal verification tools
+setup-verifiers install_dir="~/repos":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🔬 Installing formal verification tools to {{install_dir}}..."
+    echo ""
+    
+    # Kani
+    if command -v kani &> /dev/null; then
+        echo "✅ Kani already installed"
+    else
+        echo "📦 Installing Kani..."
+        cargo install --locked kani-verifier
+        cargo kani setup
+    fi
+    echo ""
+    
+    # Creusot (requires opam)
+    if command -v cargo-creusot &> /dev/null; then
+        echo "✅ Creusot already installed"
+    else
+        echo "📦 Installing Creusot..."
+        # Check for opam
+        if ! command -v opam &> /dev/null; then
+            echo "  📦 Installing opam (OCaml package manager)..."
+            sudo apt-get update && sudo apt-get install -y opam
+        fi
+        mkdir -p {{install_dir}}
+        cd {{install_dir}} && git clone https://github.com/creusot-rs/creusot.git || true
+        cd {{install_dir}}/creusot && ./INSTALL
+    fi
+    echo ""
+    
+    # Prusti (requires Java)
+    if command -v cargo-prusti &> /dev/null; then
+        echo "✅ Prusti already installed"
+    else
+        echo "📦 Installing Prusti..."
+        # Check for Java
+        if ! command -v java &> /dev/null; then
+            echo "  ⚠️  Java not found. Install with:"
+            echo "      Arch/Manjaro: sudo pacman -S jdk-openjdk"
+            echo "      Ubuntu/Debian: sudo apt-get install default-jdk"
+            echo "      Then set JAVA_HOME and re-run"
+            exit 1
+        fi
+        # Set JAVA_HOME if not set
+        if [ -z "${JAVA_HOME:-}" ]; then
+            export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+        fi
+        mkdir -p {{install_dir}}
+        cd {{install_dir}} && git clone https://github.com/viperproject/prusti-dev.git || true
+        cd {{install_dir}}/prusti-dev && ./x.py setup && ./x.py build --release
+    fi
+    echo ""
+    
+    # Verus
+    if command -v verus &> /dev/null; then
+        echo "✅ Verus already installed"
+    else
+        echo "📦 Installing Verus..."
+        mkdir -p {{install_dir}}
+        cd {{install_dir}} && git clone https://github.com/verus-lang/verus.git || true
+        cd {{install_dir}}/verus && ./tools/get-z3.sh && source ./tools/activate && vargo build --release
+    fi
+    echo ""
+    
+    echo "✅ All verifiers ready"
 
 # Building and Checking
 # ======================
@@ -432,3 +503,89 @@ alias l := lint
 alias f := fmt
 alias c := check
 alias d := doc
+
+# Formal Verification
+# ====================
+
+# Check status of all verification tools
+verify-status:
+    @echo "📊 Formal Verification Tools Status"
+    @echo "===================================="
+    @just _status-kani
+    @just _status-creusot
+    @just _status-prusti
+    @just _status-verus
+    @echo ""
+
+# Show Kani status
+_status-kani:
+    #!/usr/bin/env bash
+    if command -v kani &> /dev/null; then
+        echo "✅ Kani: $(kani --version)"
+    else
+        echo "❌ Kani: Not installed (run: just setup-verifiers)"
+    fi
+
+# Show Creusot status
+_status-creusot:
+    #!/usr/bin/env bash
+    if command -v creusot &> /dev/null; then
+        echo "✅ Creusot: $(creusot --version)"
+    else
+        echo "❌ Creusot: Not installed"
+    fi
+
+# Show Prusti status
+_status-prusti:
+    #!/usr/bin/env bash
+    if command -v cargo-prusti &> /dev/null; then
+        echo "✅ Prusti: Installed"
+    else
+        echo "❌ Prusti: Not installed"
+    fi
+
+# Show Verus status
+_status-verus:
+    #!/usr/bin/env bash
+    if command -v verus &> /dev/null; then
+        echo "✅ Verus: Installed"
+    else
+        echo "❌ Verus: Not installed"
+    fi
+
+# Run Kani verification
+verify-kani harness="":
+    #!/usr/bin/env bash
+    if [ -z "{{harness}}" ]; then
+        echo "🔬 Running all Kani verifications..."
+        cargo kani --features verify-kani
+    else
+        echo "🔬 Running Kani harness: {{harness}}"
+        cargo kani --harness {{harness}} --features verify-kani
+    fi
+
+# Run Creusot verification
+verify-creusot file="":
+    #!/usr/bin/env bash
+    if ! command -v creusot &> /dev/null; then
+        echo "❌ Creusot not installed. Run: just setup-verifiers"
+        exit 1
+    fi
+    if [ -z "{{file}}" ]; then
+        echo "Usage: just verify-creusot <file.rs>"
+        exit 1
+    fi
+    echo "🔬 Running Creusot verification on {{file}}"
+    creusot verify {{file}}
+
+# Run all verification examples
+verify-examples:
+    @echo "🔬 Running verification examples..."
+    @echo ""
+    @echo "Kani example:"
+    cargo run --example kani_example --features verify-kani
+    @echo ""
+    @echo "Creusot example:"
+    cargo run --example creusot_example --features verify-creusot
+    @echo ""
+    @echo "✅ All examples passed"
