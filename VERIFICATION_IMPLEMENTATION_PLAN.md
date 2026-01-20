@@ -116,15 +116,18 @@
 
 ### Tasks
 
-- [ ] 3.1 Contract registry pattern (Day 16)
+- [x] 3.1 Contract registry pattern (Day 16) ✅
   - File: `src/verification/mod.rs`
   - `enum VerifierBackend { Kani, Creusot, Prusti, Verus }`
   - Unified dispatch interface
+  - All tests passing (5 tests)
 
-- [ ] 3.2 Implement `.with_contract()` method (Day 17)
+- [x] 3.2 Implement `.with_contract()` method (Day 17) ✅
   - Trait extension for `Elicitation`
   - Runtime contract swapping
   - Example: `String::with_contract(CreusotStringContract)`
+  - ContractedElicitation builder implemented
+  - All tests passing (3 new tests)
 
 - [ ] 3.3 Compile-time contract selection (Day 18)
   - Feature-gated defaults

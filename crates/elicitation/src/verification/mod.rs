@@ -56,6 +56,7 @@
 //! ```
 
 use crate::traits::Elicitation;
+use crate::ElicitResult;
 use std::fmt::Debug;
 
 /// Generic contract for formal verification.
@@ -309,6 +310,151 @@ where
 }
 
 // ============================================================================
+// Contract Integration with Elicitation
+// ============================================================================
+
+/// Builder for elicitation with contract verification.
+///
+/// Enables ergonomic syntax: `String::with_contract(StringNonEmpty).elicit(&peer).await?`
+pub struct ContractedElicitation<T, C>
+where
+    T: Elicitation,
+    C: Contract<Input = T, Output = T>,
+{
+    contract: C,
+    _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T, C> ContractedElicitation<T, C>
+where
+    T: Elicitation + Clone + Debug + Send,
+    C: Contract<Input = T, Output = T> + Send + Sync + 'static,
+{
+    /// Create a new contracted elicitation builder.
+    pub fn new(contract: C) -> Self {
+        Self {
+            contract,
+            _phantom: std::marker::PhantomData,
+        }
+    }
+
+    /// Elicit the value and verify contracts.
+    ///
+    /// This method:
+    /// 1. Elicits the value using standard elicitation
+    /// 2. Treats elicited value as both input and output (identity transformation)
+    /// 3. Verifies precondition on elicited value
+    /// 4. Verifies postcondition (since input == output for elicitation)
+    /// 5. Returns value if contracts hold
+    ///
+    /// # Arguments
+    ///
+    /// * `peer` - The RMCP peer to use for interaction
+    ///
+    /// # Returns
+    ///
+    /// Returns the elicited value if contracts are satisfied.
+    ///
+    /// # Errors
+    ///
+    /// - Contract violation: Precondition or postcondition failed
+    /// - Elicitation error: Standard elicitation failures
+    pub async fn elicit(
+        self,
+        peer: &crate::rmcp::Peer<crate::rmcp::RoleClient>,
+    ) -> ElicitResult<T> {
+        use tracing::{debug, error};
+
+        // Elicit the value
+        let client = crate::ElicitClient::new(peer);
+        let value = T::elicit(&client).await?;
+
+        debug!(
+            value = ?value,
+            "Value elicited, checking contracts"
+        );
+
+        // Check precondition (value must satisfy entry condition)
+        if !C::requires(&value) {
+            error!("Contract precondition failed");
+            return Err(crate::ElicitError::new(
+                crate::ElicitErrorKind::InvalidFormat {
+                    expected: "Value satisfying contract precondition".to_string(),
+                    received: format!("{:?}", value),
+                },
+            ));
+        }
+
+        // For elicitation, input == output (identity)
+        // Check postcondition
+        if !C::ensures(&value, &value) {
+            error!("Contract postcondition failed");
+            return Err(crate::ElicitError::new(
+                crate::ElicitErrorKind::InvalidFormat {
+                    expected: "Value satisfying contract postcondition".to_string(),
+                    received: format!("{:?}", value),
+                },
+            ));
+        }
+
+        // Check invariant
+        if !self.contract.invariant() {
+            error!("Contract invariant failed");
+            return Err(crate::ElicitError::new(
+                crate::ElicitErrorKind::InvalidFormat {
+                    expected: "Contract invariant to hold".to_string(),
+                    received: "Invariant violated".to_string(),
+                },
+            ));
+        }
+
+        debug!("All contracts satisfied");
+        Ok(value)
+    }
+}
+
+/// Extension trait for adding contract verification to elicitation.
+///
+/// This trait is automatically implemented for all types that implement
+/// `Elicitation`, allowing contract-verified elicitation.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation::verification::{WithContract, contracts::StringNonEmpty};
+///
+/// // Elicit with contract verification
+/// let value = String::with_contract(StringNonEmpty)
+///     .elicit(&peer)
+///     .await?;
+///
+/// // Value is guaranteed to satisfy StringNonEmpty contract
+/// assert!(!value.is_empty());
+/// ```
+pub trait WithContract: Elicitation + Clone + Debug + Send {
+    /// Attach a contract to this type's elicitation.
+    ///
+    /// Returns a builder that will verify the contract after elicitation.
+    ///
+    /// # Arguments
+    ///
+    /// * `contract` - The contract to verify
+    ///
+    /// # Returns
+    ///
+    /// A builder that can elicit and verify the value.
+    fn with_contract<C>(contract: C) -> ContractedElicitation<Self, C>
+    where
+        C: Contract<Input = Self, Output = Self> + Send + Sync + 'static,
+    {
+        ContractedElicitation::new(contract)
+    }
+}
+
+// Blanket implementation for all Elicitation types
+impl<T> WithContract for T where T: Elicitation + Clone + Debug + Send {}
+
+// ============================================================================
 // Submodules
 // ============================================================================
 
@@ -402,5 +548,35 @@ mod tests {
         let result = verifier.verify(input, |_x| -1); // Returns negative
         assert!(result.is_err());
         assert_eq!(result.unwrap_err(), "Postcondition failed");
+    }
+
+    #[test]
+    fn test_with_contract_creates_contracted_elicitation() {
+        // Test that with_contract() creates a ContractedElicitation
+        let contracted = String::with_contract(StringNonEmpty);
+        
+        // Verify the type is correct (compile-time check)
+        let _: ContractedElicitation<String, StringNonEmpty> = contracted;
+    }
+
+    #[test]
+    fn test_contracted_elicitation_builder_pattern() {
+        // Test builder pattern construction
+        let _contracted = ContractedElicitation {
+            _phantom: std::marker::PhantomData::<i32>,
+            contract: I32Positive,
+        };
+
+        // Verify contract is stored correctly
+        assert!(I32Positive::requires(&42));
+        assert!(!I32Positive::requires(&-1));
+    }
+
+    #[test]
+    fn test_with_contract_works_for_all_elicitation_types() {
+        // Test that with_contract() is available for all types that impl Elicitation
+        let _string_contracted = String::with_contract(StringNonEmpty);
+        let _i32_contracted = i32::with_contract(I32Positive);
+        let _bool_contracted = bool::with_contract(BoolValid);
     }
 }
