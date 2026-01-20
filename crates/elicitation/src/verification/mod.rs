@@ -225,6 +225,178 @@ pub trait Contract {
 }
 
 // ============================================================================
+// Contract Composition
+// ============================================================================
+
+/// Combines two contracts with AND logic (both must pass).
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation::verification::{contracts::*, AndContract};
+///
+/// // Both contracts must be satisfied
+/// let contract = AndContract::new(StringNonEmpty, StringMaxLength(100));
+/// assert!(contract.requires(&String::from("hello")));
+/// assert!(!contract.requires(&String::new())); // Fails StringNonEmpty
+/// ```
+#[derive(Debug, Clone)]
+pub struct AndContract<C1, C2> {
+    /// First contract.
+    pub first: C1,
+    /// Second contract.
+    pub second: C2,
+}
+
+impl<C1, C2> AndContract<C1, C2> {
+    /// Create new AND contract combining two contracts.
+    pub fn new(first: C1, second: C2) -> Self {
+        Self { first, second }
+    }
+}
+
+impl<C1, C2, I, O> Contract for AndContract<C1, C2>
+where
+    C1: Contract<Input = I, Output = O>,
+    C2: Contract<Input = I, Output = O>,
+    I: Elicitation + Clone + Debug + Send,
+    O: Elicitation + Clone + Debug + Send,
+{
+    type Input = I;
+    type Output = O;
+
+    fn requires(input: &Self::Input) -> bool {
+        C1::requires(input) && C2::requires(input)
+    }
+
+    fn ensures(input: &Self::Input, output: &Self::Output) -> bool {
+        C1::ensures(input, output) && C2::ensures(input, output)
+    }
+
+    fn invariant(&self) -> bool {
+        self.first.invariant() && self.second.invariant()
+    }
+}
+
+/// Combines two contracts with OR logic (either can pass).
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation::verification::{contracts::*, OrContract};
+///
+/// // Either contract can be satisfied
+/// let contract = OrContract::new(I32Positive, I32Zero);
+/// assert!(contract.requires(&42));   // Satisfies I32Positive
+/// assert!(contract.requires(&0));    // Satisfies I32Zero
+/// assert!(!contract.requires(&-1));  // Satisfies neither
+/// ```
+#[derive(Debug, Clone)]
+pub struct OrContract<C1, C2> {
+    /// First contract.
+    pub first: C1,
+    /// Second contract.
+    pub second: C2,
+}
+
+impl<C1, C2> OrContract<C1, C2> {
+    /// Create new OR contract combining two contracts.
+    pub fn new(first: C1, second: C2) -> Self {
+        Self { first, second }
+    }
+}
+
+impl<C1, C2, I, O> Contract for OrContract<C1, C2>
+where
+    C1: Contract<Input = I, Output = O>,
+    C2: Contract<Input = I, Output = O>,
+    I: Elicitation + Clone + Debug + Send,
+    O: Elicitation + Clone + Debug + Send,
+{
+    type Input = I;
+    type Output = O;
+
+    fn requires(input: &Self::Input) -> bool {
+        C1::requires(input) || C2::requires(input)
+    }
+
+    fn ensures(input: &Self::Input, output: &Self::Output) -> bool {
+        C1::ensures(input, output) || C2::ensures(input, output)
+    }
+
+    fn invariant(&self) -> bool {
+        self.first.invariant() || self.second.invariant()
+    }
+}
+
+/// Negates a contract (logical NOT).
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation::verification::{contracts::*, NotContract};
+///
+/// // Inverts the contract logic
+/// let contract = NotContract::new(StringNonEmpty);
+/// assert!(!contract.requires(&String::from("hello"))); // Was true, now false
+/// assert!(contract.requires(&String::new()));          // Was false, now true
+/// ```
+#[derive(Debug, Clone)]
+pub struct NotContract<C> {
+    /// Inner contract to negate.
+    pub inner: C,
+}
+
+impl<C> NotContract<C> {
+    /// Create new NOT contract negating inner contract.
+    pub fn new(inner: C) -> Self {
+        Self { inner }
+    }
+}
+
+impl<C, I, O> Contract for NotContract<C>
+where
+    C: Contract<Input = I, Output = O>,
+    I: Elicitation + Clone + Debug + Send,
+    O: Elicitation + Clone + Debug + Send,
+{
+    type Input = I;
+    type Output = O;
+
+    fn requires(input: &Self::Input) -> bool {
+        !C::requires(input)
+    }
+
+    fn ensures(input: &Self::Input, output: &Self::Output) -> bool {
+        !C::ensures(input, output)
+    }
+
+    fn invariant(&self) -> bool {
+        !self.inner.invariant()
+    }
+}
+
+/// Helper functions for contract composition.
+pub mod compose {
+    use super::*;
+
+    /// Create AND contract from two contracts.
+    pub fn and<C1, C2>(first: C1, second: C2) -> AndContract<C1, C2> {
+        AndContract::new(first, second)
+    }
+
+    /// Create OR contract from two contracts.
+    pub fn or<C1, C2>(first: C1, second: C2) -> OrContract<C1, C2> {
+        OrContract::new(first, second)
+    }
+
+    /// Create NOT contract from a contract.
+    pub fn not<C>(inner: C) -> NotContract<C> {
+        NotContract::new(inner)
+    }
+}
+
+// ============================================================================
 // Verifier Backend Registry
 // ============================================================================
 
@@ -695,5 +867,131 @@ mod tests {
         let _string_contracted = String::with_contract(DEFAULT_STRING_CONTRACT);
         let _i32_contracted = i32::with_contract(DEFAULT_I32_CONTRACT);
         let _bool_contracted = bool::with_contract(DEFAULT_BOOL_CONTRACT);
+    }
+
+    // ========================================================================
+    // Contract Composition Tests
+    // ========================================================================
+
+    #[test]
+    fn test_and_contract_both_pass() {
+        use super::contracts::{I32Positive, I32NonNegative};
+        use super::AndContract;
+        
+        // 42 is both positive and non-negative
+        let contract = AndContract::new(I32Positive, I32NonNegative);
+        assert!(AndContract::<I32Positive, I32NonNegative>::requires(&42));
+        assert!(AndContract::<I32Positive, I32NonNegative>::ensures(&42, &42));
+    }
+
+    #[test]
+    fn test_and_contract_one_fails() {
+        use super::contracts::{I32Positive, I32NonNegative};
+        use super::AndContract;
+        
+        // 0 is non-negative but not positive
+        assert!(!AndContract::<I32Positive, I32NonNegative>::requires(&0));
+        
+        // -1 fails both
+        assert!(!AndContract::<I32Positive, I32NonNegative>::requires(&-1));
+    }
+
+    #[test]
+    fn test_or_contract_either_passes() {
+        use super::contracts::{I32Positive, I32NonNegative};
+        use super::OrContract;
+        
+        // 42 satisfies both (either is enough)
+        assert!(OrContract::<I32Positive, I32NonNegative>::requires(&42));
+        
+        // 0 satisfies NonNegative only (still passes)
+        assert!(OrContract::<I32Positive, I32NonNegative>::requires(&0));
+        
+        // -1 satisfies neither (fails)
+        assert!(!OrContract::<I32Positive, I32NonNegative>::requires(&-1));
+    }
+
+    #[test]
+    fn test_not_contract_inverts_logic() {
+        use super::contracts::I32Positive;
+        use super::NotContract;
+        
+        // Original: 42 is positive
+        assert!(I32Positive::requires(&42));
+        
+        // Negated: 42 is NOT positive (false)
+        assert!(!NotContract::<I32Positive>::requires(&42));
+        
+        // Original: -1 is not positive (false)
+        assert!(!I32Positive::requires(&-1));
+        
+        // Negated: -1 is NOT positive (true)
+        assert!(NotContract::<I32Positive>::requires(&-1));
+    }
+
+    #[test]
+    fn test_string_composition_bounded_non_empty() {
+        use super::contracts::{StringNonEmpty, StringMaxLength};
+        use super::AndContract;
+        
+        // Create contract: non-empty AND max 10 chars
+        let contract = AndContract::new(StringNonEmpty, StringMaxLength::<10>);
+        
+        // "hello" passes (non-empty, 5 chars)
+        assert!(AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(&"hello".to_string()));
+        
+        // "" fails (empty)
+        assert!(!AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(&"".to_string()));
+        
+        // "12345678901" fails (too long)
+        assert!(!AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(&"12345678901".to_string()));
+    }
+
+    #[test]
+    fn test_compose_helpers() {
+        use super::contracts::{I32Positive, I32NonNegative};
+        use super::compose;
+        
+        // Test helper functions
+        let and_contract = compose::and(I32Positive, I32NonNegative);
+        assert!(AndContract::<I32Positive, I32NonNegative>::requires(&42));
+        
+        let or_contract = compose::or(I32Positive, I32NonNegative);
+        assert!(OrContract::<I32Positive, I32NonNegative>::requires(&0));
+        
+        let not_contract = compose::not(I32Positive);
+        assert!(NotContract::<I32Positive>::requires(&-1));
+        
+        // Verify contracts are constructed correctly
+        let _: AndContract<I32Positive, I32NonNegative> = and_contract;
+        let _: OrContract<I32Positive, I32NonNegative> = or_contract;
+        let _: NotContract<I32Positive> = not_contract;
+    }
+
+    #[test]
+    fn test_complex_composition() {
+        use super::contracts::{I32Positive, I32NonNegative};
+        use super::{AndContract, OrContract, NotContract};
+        
+        // (Positive AND NonNegative) OR (NOT Positive)
+        // This is basically: value >= 0 OR value < 0 (always true)
+        let _pos_and_nonneg = AndContract::new(I32Positive, I32NonNegative);
+        let _not_pos = NotContract::new(I32Positive);
+        
+        // Should accept any i32
+        assert!(OrContract::<AndContract<I32Positive, I32NonNegative>, NotContract<I32Positive>>::requires(&42));
+        assert!(OrContract::<AndContract<I32Positive, I32NonNegative>, NotContract<I32Positive>>::requires(&0));
+        assert!(OrContract::<AndContract<I32Positive, I32NonNegative>, NotContract<I32Positive>>::requires(&-1));
+    }
+
+    #[test]
+    fn test_string_max_length_invariant() {
+        use super::contracts::StringMaxLength;
+        
+        let contract = StringMaxLength::<100>;
+        assert!(contract.invariant()); // Max length is positive
+        
+        let invalid = StringMaxLength::<0>;
+        assert!(!invalid.invariant()); // Max length is 0 (invalid)
     }
 }

@@ -176,6 +176,52 @@ impl Contract for BoolValid {
 }
 
 // ============================================================================
+// Additional Contracts for Composition Testing
+// ============================================================================
+
+/// Contract for i32 values that are non-negative (>= 0).
+///
+/// Useful for composition with I32Positive to create ranges.
+#[derive(Debug, Clone, Copy)]
+pub struct I32NonNegative;
+
+impl Contract for I32NonNegative {
+    type Input = i32;
+    type Output = i32;
+
+    fn requires(input: &i32) -> bool {
+        *input >= 0
+    }
+
+    fn ensures(_input: &i32, output: &i32) -> bool {
+        *output >= 0
+    }
+}
+
+/// Contract for String values with maximum length.
+///
+/// Useful for composition with StringNonEmpty to create bounded strings.
+#[derive(Debug, Clone, Copy)]
+pub struct StringMaxLength<const MAX: usize>;
+
+impl<const MAX: usize> Contract for StringMaxLength<MAX> {
+    type Input = String;
+    type Output = String;
+
+    fn requires(input: &String) -> bool {
+        input.len() <= MAX
+    }
+
+    fn ensures(_input: &String, output: &String) -> bool {
+        output.len() <= MAX
+    }
+
+    fn invariant(&self) -> bool {
+        MAX > 0 // Max length must be positive
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
