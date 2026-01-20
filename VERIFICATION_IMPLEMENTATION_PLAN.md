@@ -129,10 +129,12 @@
   - ContractedElicitation builder implemented
   - All tests passing (3 new tests)
 
-- [ ] 3.3 Compile-time contract selection (Day 18)
-  - Feature-gated defaults
-  - `--features verify-creusot` uses Creusot
-  - Fallback to Kani
+- [x] 3.3 Compile-time contract selection (Day 18) ✅
+  - Feature-gated defaults (verification, verify-kani, verify-creusot, verify-prusti, verify-verus)
+  - Fallback to Kani when no specific verifier selected
+  - Constants DEFAULT_STRING_CONTRACT, DEFAULT_I32_CONTRACT, DEFAULT_BOOL_CONTRACT
+  - All verifier features compile successfully
+  - 2 new tests for default contract usage
 
 - [ ] 3.4 Contract composition (Day 19)
   - Combine multiple contracts

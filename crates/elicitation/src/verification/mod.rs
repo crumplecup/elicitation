@@ -59,6 +59,95 @@ use crate::traits::Elicitation;
 use crate::ElicitResult;
 use std::fmt::Debug;
 
+// ============================================================================
+// Default Contract Selection (Feature-gated)
+// ============================================================================
+
+/// Default contract instances for primitives, selected at compile-time based on features.
+///
+/// When verification features are enabled, these constants resolve to the appropriate
+/// verifier-specific contract:
+/// - `verify-kani` → Kani contracts (default)
+/// - `verify-creusot` → Creusot contracts
+/// - `verify-prusti` → Prusti contracts
+/// - `verify-verus` → Verus contracts
+///
+/// Usage:
+/// ```rust,ignore
+/// use elicitation::verification::DEFAULT_STRING_CONTRACT;
+///
+/// let value = String::with_contract(DEFAULT_STRING_CONTRACT)
+///     .elicit(peer)
+///     .await?;
+/// ```
+
+// String contracts
+/// Default String contract (Kani unless overridden by feature).
+#[cfg(all(feature = "verification", not(any(
+    feature = "verify-creusot",
+    feature = "verify-prusti",
+    feature = "verify-verus"
+))))]
+pub const DEFAULT_STRING_CONTRACT: contracts::StringNonEmpty = contracts::StringNonEmpty;
+
+/// Default String contract (Creusot).
+#[cfg(feature = "verify-creusot")]
+pub const DEFAULT_STRING_CONTRACT: contracts::creusot::CreusotStringNonEmpty = contracts::creusot::CreusotStringNonEmpty;
+
+/// Default String contract (Prusti).
+#[cfg(feature = "verify-prusti")]
+pub const DEFAULT_STRING_CONTRACT: contracts::prusti::PrustiStringNonEmpty = contracts::prusti::PrustiStringNonEmpty;
+
+/// Default String contract (Verus).
+#[cfg(feature = "verify-verus")]
+pub const DEFAULT_STRING_CONTRACT: contracts::verus::VerusStringNonEmpty = contracts::verus::VerusStringNonEmpty;
+
+// i32 contracts
+/// Default i32 contract (Kani unless overridden by feature).
+#[cfg(all(feature = "verification", not(any(
+    feature = "verify-creusot",
+    feature = "verify-prusti",
+    feature = "verify-verus"
+))))]
+pub const DEFAULT_I32_CONTRACT: contracts::I32Positive = contracts::I32Positive;
+
+/// Default i32 contract (Creusot).
+#[cfg(feature = "verify-creusot")]
+pub const DEFAULT_I32_CONTRACT: contracts::creusot::CreusotI32Positive = contracts::creusot::CreusotI32Positive;
+
+/// Default i32 contract (Prusti).
+#[cfg(feature = "verify-prusti")]
+pub const DEFAULT_I32_CONTRACT: contracts::prusti::PrustiI32Positive = contracts::prusti::PrustiI32Positive;
+
+/// Default i32 contract (Verus).
+#[cfg(feature = "verify-verus")]
+pub const DEFAULT_I32_CONTRACT: contracts::verus::VerusI32Positive = contracts::verus::VerusI32Positive;
+
+// bool contracts
+/// Default bool contract (Kani unless overridden by feature).
+#[cfg(all(feature = "verification", not(any(
+    feature = "verify-creusot",
+    feature = "verify-prusti",
+    feature = "verify-verus"
+))))]
+pub const DEFAULT_BOOL_CONTRACT: contracts::BoolValid = contracts::BoolValid;
+
+/// Default bool contract (Creusot).
+#[cfg(feature = "verify-creusot")]
+pub const DEFAULT_BOOL_CONTRACT: contracts::creusot::CreusotBoolValid = contracts::creusot::CreusotBoolValid;
+
+/// Default bool contract (Prusti).
+#[cfg(feature = "verify-prusti")]
+pub const DEFAULT_BOOL_CONTRACT: contracts::prusti::PrustiBoolValid = contracts::prusti::PrustiBoolValid;
+
+/// Default bool contract (Verus).
+#[cfg(feature = "verify-verus")]
+pub const DEFAULT_BOOL_CONTRACT: contracts::verus::VerusBoolValid = contracts::verus::VerusBoolValid;
+
+// ============================================================================
+// Contract Trait
+// ============================================================================
+
 /// Generic contract for formal verification.
 ///
 /// This trait defines the interface for specifying contracts that can be
@@ -578,5 +667,33 @@ mod tests {
         let _string_contracted = String::with_contract(StringNonEmpty);
         let _i32_contracted = i32::with_contract(I32Positive);
         let _bool_contracted = bool::with_contract(BoolValid);
+    }
+
+    #[test]
+    #[cfg(feature = "verification")]
+    fn test_default_contracts_available() {
+        // Test that default contract constants are available when verification feature enabled
+        use super::{DEFAULT_STRING_CONTRACT, DEFAULT_I32_CONTRACT, DEFAULT_BOOL_CONTRACT};
+        
+        // Compile-time check that these constants exist and are the expected types
+        fn check_string_contract<T: Contract<Input = String, Output = String>>(_: T) {}
+        fn check_i32_contract<T: Contract<Input = i32, Output = i32>>(_: T) {}
+        fn check_bool_contract<T: Contract<Input = bool, Output = bool>>(_: T) {}
+        
+        check_string_contract(DEFAULT_STRING_CONTRACT);
+        check_i32_contract(DEFAULT_I32_CONTRACT);
+        check_bool_contract(DEFAULT_BOOL_CONTRACT);
+    }
+
+    #[test]
+    #[cfg(feature = "verification")]
+    fn test_default_contracts_usable_with_with_contract() {
+        // Test that default contracts work with with_contract()
+        use super::{DEFAULT_STRING_CONTRACT, DEFAULT_I32_CONTRACT, DEFAULT_BOOL_CONTRACT};
+        
+        // These contracts are zero-sized unit structs
+        let _string_contracted = String::with_contract(DEFAULT_STRING_CONTRACT);
+        let _i32_contracted = i32::with_contract(DEFAULT_I32_CONTRACT);
+        let _bool_contracted = bool::with_contract(DEFAULT_BOOL_CONTRACT);
     }
 }
