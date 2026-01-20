@@ -869,6 +869,9 @@ pub mod contracts;
 // Mechanism-level contracts (Survey, Affirm, Text, etc)
 pub mod mechanisms;
 
+// Contract types for trenchcoat pattern (boundary validation)
+pub mod types;
+
 // Tool-specific adapters (feature-gated)
 #[cfg(feature = "verify-kani")]
 pub mod kani;
