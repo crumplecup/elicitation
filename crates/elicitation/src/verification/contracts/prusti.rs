@@ -230,6 +230,42 @@ impl Contract for PrustiIsizePositive {
 }
 
 // ============================================================================
+// Floating Point Contracts (Phase 4.3)
+// ============================================================================
+
+/// Prusti-verified f32 finite contract.
+pub struct PrustiF32Finite;
+
+impl Contract for PrustiF32Finite {
+    type Input = f32;
+    type Output = f32;
+
+    fn requires(input: &f32) -> bool {
+        input.is_finite()
+    }
+
+    fn ensures(_input: &f32, output: &f32) -> bool {
+        output.is_finite()
+    }
+}
+
+/// Prusti-verified f64 finite contract.
+pub struct PrustiF64Finite;
+
+impl Contract for PrustiF64Finite {
+    type Input = f64;
+    type Output = f64;
+
+    fn requires(input: &f64) -> bool {
+        input.is_finite()
+    }
+
+    fn ensures(_input: &f64, output: &f64) -> bool {
+        output.is_finite()
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -298,5 +334,17 @@ mod tests {
     fn test_prusti_isize_positive() {
         assert!(PrustiIsizePositive::requires(&42isize));
         assert!(!PrustiIsizePositive::requires(&0isize));
+    }
+
+    #[test]
+    fn test_prusti_f32_finite() {
+        assert!(PrustiF32Finite::requires(&42.0f32));
+        assert!(!PrustiF32Finite::requires(&f32::NAN));
+    }
+
+    #[test]
+    fn test_prusti_f64_finite() {
+        assert!(PrustiF64Finite::requires(&42.0f64));
+        assert!(!PrustiF64Finite::requires(&f64::NAN));
     }
 }

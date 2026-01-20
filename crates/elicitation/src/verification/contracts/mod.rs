@@ -363,6 +363,58 @@ impl Contract for IsizePositive {
 }
 
 // ============================================================================
+// Floating Point Contracts (Phase 4.3)
+// ============================================================================
+
+/// Contract for f32 values that are finite (not NaN or Infinity).
+///
+/// **Limitations:**
+/// - Does not verify precision or rounding
+/// - Does not distinguish +0.0 from -0.0
+/// - Formal verification of floating point is limited in most tools
+///
+/// Verifies 32-bit floats are finite and usable.
+#[derive(Debug, Clone, Copy)]
+pub struct F32Finite;
+
+impl Contract for F32Finite {
+    type Input = f32;
+    type Output = f32;
+
+    fn requires(input: &f32) -> bool {
+        input.is_finite()
+    }
+
+    fn ensures(_input: &f32, output: &f32) -> bool {
+        output.is_finite()
+    }
+}
+
+/// Contract for f64 values that are finite (not NaN or Infinity).
+///
+/// **Limitations:**
+/// - Does not verify precision or rounding
+/// - Does not distinguish +0.0 from -0.0
+/// - Formal verification of floating point is limited in most tools
+///
+/// Verifies 64-bit floats are finite and usable.
+#[derive(Debug, Clone, Copy)]
+pub struct F64Finite;
+
+impl Contract for F64Finite {
+    type Input = f64;
+    type Output = f64;
+
+    fn requires(input: &f64) -> bool {
+        input.is_finite()
+    }
+
+    fn ensures(_input: &f64, output: &f64) -> bool {
+        output.is_finite()
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -463,5 +515,26 @@ mod tests {
         assert!(IsizePositive::ensures(&42isize, &42isize));
         assert!(!IsizePositive::requires(&0isize));
         assert!(!IsizePositive::requires(&-1isize));
+    }
+
+    // Floating point tests
+    #[test]
+    fn test_f32_finite() {
+        assert!(F32Finite::requires(&42.0f32));
+        assert!(F32Finite::requires(&0.0f32));
+        assert!(F32Finite::requires(&-1.5f32));
+        assert!(!F32Finite::requires(&f32::NAN));
+        assert!(!F32Finite::requires(&f32::INFINITY));
+        assert!(!F32Finite::requires(&f32::NEG_INFINITY));
+    }
+
+    #[test]
+    fn test_f64_finite() {
+        assert!(F64Finite::requires(&42.0f64));
+        assert!(F64Finite::requires(&0.0f64));
+        assert!(F64Finite::requires(&-1.5f64));
+        assert!(!F64Finite::requires(&f64::NAN));
+        assert!(!F64Finite::requires(&f64::INFINITY));
+        assert!(!F64Finite::requires(&f64::NEG_INFINITY));
     }
 }

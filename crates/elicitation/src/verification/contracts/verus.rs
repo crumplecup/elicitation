@@ -235,6 +235,42 @@ impl Contract for VerusIsizePositive {
 }
 
 // ============================================================================
+// Floating Point Contracts (Phase 4.3)
+// ============================================================================
+
+/// Verus-verified f32 finite contract.
+pub struct VerusF32Finite;
+
+impl Contract for VerusF32Finite {
+    type Input = f32;
+    type Output = f32;
+
+    fn requires(input: &f32) -> bool {
+        input.is_finite()
+    }
+
+    fn ensures(_input: &f32, output: &f32) -> bool {
+        output.is_finite()
+    }
+}
+
+/// Verus-verified f64 finite contract.
+pub struct VerusF64Finite;
+
+impl Contract for VerusF64Finite {
+    type Input = f64;
+    type Output = f64;
+
+    fn requires(input: &f64) -> bool {
+        input.is_finite()
+    }
+
+    fn ensures(_input: &f64, output: &f64) -> bool {
+        output.is_finite()
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -303,5 +339,17 @@ mod tests {
     fn test_verus_isize_positive() {
         assert!(VerusIsizePositive::requires(&42isize));
         assert!(!VerusIsizePositive::requires(&0isize));
+    }
+
+    #[test]
+    fn test_verus_f32_finite() {
+        assert!(VerusF32Finite::requires(&42.0f32));
+        assert!(!VerusF32Finite::requires(&f32::NAN));
+    }
+
+    #[test]
+    fn test_verus_f64_finite() {
+        assert!(VerusF64Finite::requires(&42.0f64));
+        assert!(!VerusF64Finite::requires(&f64::NAN));
     }
 }

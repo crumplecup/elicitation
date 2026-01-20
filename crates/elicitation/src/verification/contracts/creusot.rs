@@ -245,6 +245,46 @@ impl Contract for CreusotIsizePositive {
 }
 
 // ============================================================================
+// Floating Point Contracts (Phase 4.3)
+// ============================================================================
+
+/// Creusot-verified f32 finite contract.
+///
+/// **Note:** Floating point verification is limited. Creusot provides runtime checking.
+pub struct CreusotF32Finite;
+
+impl Contract for CreusotF32Finite {
+    type Input = f32;
+    type Output = f32;
+
+    fn requires(input: &f32) -> bool {
+        input.is_finite()
+    }
+
+    fn ensures(_input: &f32, output: &f32) -> bool {
+        output.is_finite()
+    }
+}
+
+/// Creusot-verified f64 finite contract.
+///
+/// **Note:** Floating point verification is limited. Creusot provides runtime checking.
+pub struct CreusotF64Finite;
+
+impl Contract for CreusotF64Finite {
+    type Input = f64;
+    type Output = f64;
+
+    fn requires(input: &f64) -> bool {
+        input.is_finite()
+    }
+
+    fn ensures(_input: &f64, output: &f64) -> bool {
+        output.is_finite()
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 
@@ -313,5 +353,17 @@ mod tests {
     fn test_creusot_isize_positive() {
         assert!(CreusotIsizePositive::requires(&42isize));
         assert!(!CreusotIsizePositive::requires(&0isize));
+    }
+
+    #[test]
+    fn test_creusot_f32_finite() {
+        assert!(CreusotF32Finite::requires(&42.0f32));
+        assert!(!CreusotF32Finite::requires(&f32::NAN));
+    }
+
+    #[test]
+    fn test_creusot_f64_finite() {
+        assert!(CreusotF64Finite::requires(&42.0f64));
+        assert!(!CreusotF64Finite::requires(&f64::NAN));
     }
 }
