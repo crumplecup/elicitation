@@ -4,7 +4,7 @@
 
 **Core Principle:** When you `#[derive(Elicit)]`, you get formal verification for free.
 
-**Revolutionary Insight:** Contracts ARE types. Type = Contract = Verification (unified).
+**Revolutionary Insight:** The Trenchcoat Pattern - contract types validate at boundaries, users work with familiar stdlib types.
 
 ---
 
@@ -14,47 +14,98 @@
 
 A verification framework where:
 
-1. **Contracts are newtypes** - `StringNonEmpty` IS a type that's always non-empty
-2. **Invalid states are unrepresentable** - Can't construct `StringNonEmpty("")`
-3. **Elicitation validates on construction** - Loop until valid, return guaranteed-correct type
-4. **Derived types inherit verification** - Struct with `StringNonEmpty` field is proven non-empty
-5. **Zero-effort propagates through type system** - Compose contract types = compose proofs
+1. **Contracts are newtypes** - `StringNonEmpty` IS a type that validates on construction
+2. **Boundary validation** - Contract types exist only during elicitation (put on coat → validate → take off coat)
+3. **Familiar API** - Users write `String`, `i32` (stdlib types), validation happens transparently
+4. **Formal verification** - Kani proves contract types work correctly
+5. **Zero-effort propagates** - Derive macro handles contract types, returns stdlib types
 
-### The Fundamental Shift
+### The Trenchcoat Pattern
 
-**BEFORE (Separate Verification):**
-```
-Type          Contract         Verification
-String   +    StringNonEmpty   =   Manual check (forgettable)
-```
-
-**AFTER (Contract Newtypes):**
-```
-Type = Contract = Verification
-StringNonEmpty (all three unified in one type)
-```
-
-### The Proof Chain
+**The key insight:** Contract types are construction-time validators, not persistent wrappers.
 
 ```
-LLM Output → Mechanism → Type Construction → User Type → Composition
-    ↓            ↓              ↓                ↓            ↓
- "hello"    Text valid    StringNonEmpty::new   name field   Config
-                          validates & wraps     is non-empty proven valid
+INPUT BOUNDARY          VALIDATION           OUTPUT BOUNDARY
+───────────────         ──────────          ───────────────
+LLM: "hello"            StringNonEmpty      User gets: String
+     ↓                       ↓                     ↓
+  "hello"  ─────→  StringNonEmpty("hello")  ─────→  String("hello")
+                   ^^^^^^^^^^^^^^^^^^^^             ^^^^^^^^^^^^^^
+                   Put on trenchcoat                Take off coat
+                   (validate)                       (use)
 ```
 
-**Example:**
+**User writes:**
 ```rust
-// Current: Forgettable validation
-let s: String = String::elicit(client).await?;
-// Oops, forgot to validate! Bug in production.
-
-// Newtype: Impossible to forget
-let s: StringNonEmpty = StringNonEmpty::elicit(client).await?;
-// If we have StringNonEmpty, it IS non-empty (proven by construction)
+#[derive(Elicit)]
+struct User {
+    name: String,    // ← Familiar stdlib type
+    age: i32,        // ← Familiar stdlib type
+}
 ```
 
-**Result:** End-to-end formal verification from LLM to application logic, encoded in the type system.
+**Macro generates:**
+```rust
+impl Elicitation for User {
+    async fn elicit(client: &Client) -> Result<Self> {
+        // INPUT: Put on trenchcoat (wrap in contract type)
+        let name_validated = StringNonEmpty::elicit(client).await?;
+        let age_validated = I32Positive::elicit(client).await?;
+        
+        // OUTPUT: Take off trenchcoat (unwrap to stdlib type)
+        Ok(Self {
+            name: name_validated.into_inner(),  // String (was validated)
+            age: age_validated.into_inner(),    // i32 (was validated)
+        })
+    }
+}
+```
+
+**Result:** Users get familiar stdlib types, but data was formally verified at construction boundary.
+
+### The Complete Flow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ STEP 1: INPUT BOUNDARY (Put on trenchcoat)                 │
+└─────────────────────────────────────────────────────────────┘
+
+LLM outputs: "Alice", "25"
+    ↓
+StringNonEmpty::elicit(client) 
+    → Text mechanism gets "Alice"
+    → StringNonEmpty::new("Alice") validates
+    → Returns StringNonEmpty("Alice") ✅
+
+I32Positive::elicit(client)
+    → Numeric mechanism gets "25"  
+    → I32Positive::new(25) validates
+    → Returns I32Positive(25) ✅
+
+┌─────────────────────────────────────────────────────────────┐
+│ STEP 2: VALIDATION (Inside the trenchcoat)                 │
+└─────────────────────────────────────────────────────────────┘
+
+StringNonEmpty("Alice")  ← Proven non-empty by construction
+I32Positive(25)          ← Proven positive by construction
+
+Kani proves:
+  ∀s: StringNonEmpty ⇒ !s.0.is_empty()
+  ∀i: I32Positive ⇒ i.0 > 0
+
+┌─────────────────────────────────────────────────────────────┐
+│ STEP 3: OUTPUT BOUNDARY (Take off trenchcoat)              │
+└─────────────────────────────────────────────────────────────┘
+
+StringNonEmpty("Alice").into_inner() → String("Alice")
+I32Positive(25).into_inner()         → i32(25)
+
+User { name: String("Alice"), age: i32(25) }
+       ^^^^^^^^^^^^^^^^^^^^       ^^^^^^^^^^
+       Familiar stdlib type       Familiar stdlib type
+       BUT was validated          BUT was validated
+       (came from contract)       (came from contract)
+```
 
 ---
 
@@ -113,10 +164,11 @@ let s: StringNonEmpty = StringNonEmpty::elicit(client).await?;
 
 ### Phase 7: Complete Integer Family (Week 1)
 
-**Goal:** 100% integer coverage with contract newtypes
+**Goal:** 100% integer coverage with contract newtypes + boundary validation
 
-**The Newtype Pattern:**
+**The Trenchcoat Pattern for Integers:**
 ```rust
+// Contract type (validates on construction)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct I8Positive(i8);
 
@@ -127,6 +179,82 @@ impl I8Positive {
     }
     
     pub fn get(&self) -> i8 { self.0 }
+    
+    // Trenchcoat method: unwrap to stdlib type
+    pub fn into_inner(self) -> i8 { self.0 }
+}
+
+impl Elicitation for I8Positive {
+    async fn elicit(client: &Client) -> Result<Self> {
+        loop {
+            let value = i8::elicit(client).await?;
+            match Self::new(value) {
+                Ok(valid) => return Ok(valid),  // Guaranteed positive!
+                Err(_) => continue,  // Re-prompt
+            }
+        }
+    }
+}
+
+impl Contract for I8Positive {
+    fn invariant(value: &Self) -> bool {
+        value.0 > 0  // Always true by construction!
+    }
+}
+```
+
+**User-facing API (familiar stdlib types):**
+```rust
+#[derive(Elicit)]
+struct Config {
+    #[elicit(positive)]  // Attribute specifies contract
+    count: i8,           // User writes familiar i8
+}
+
+// Macro generates (uses I8Positive internally):
+impl Elicitation for Config {
+    async fn elicit(client: &Client) -> Result<Self> {
+        let count = I8Positive::elicit(client).await?.into_inner();  // i8
+        Ok(Self { count })
+    }
+}
+```
+
+**Tasks:**
+
+- [ ] 7.1: Implement contract newtypes (Days 1-2)
+  - i8: I8Positive(i8), I8NonNegative(i8), I8Range<MIN, MAX>(i8)
+  - i16: I16Positive(i16), I16NonNegative(i16), I16Range<MIN, MAX>(i16)
+  - u8: U8NonZero(u8), U8Range<MIN, MAX>(u8)
+  - u16: U16NonZero(u16), U16Range<MIN, MAX>(u16)
+  - Each with: new(), get(), into_inner(), Elicitation impl, Contract impl
+  - All 4 verifiers: Kani, Creusot, Prusti, Verus
+
+- [ ] 7.2: Mechanism integration (Days 3-4)
+  - NumericReturnsValid<I8Positive>, etc (mechanism contracts)
+  - Composition tests: Numeric + I8Positive (both must hold)
+  - Kani proofs: `∀v: I8Positive ⇒ v.get() > 0`
+
+- [ ] 7.3: Attribute-driven API (Day 4)
+  - Parse `#[elicit(positive)]` → use `I8Positive` internally
+  - Parse `#[elicit(range = "0..=100")]` → use `I8Range<0, 100>`
+  - Unwrap via `.into_inner()` to return stdlib type
+
+- [ ] 7.4: Integration testing (Day 5)
+  - 16 tests (4 types × 4 verifiers)
+  - Kani harnesses proving newtype invariants
+  - Performance benchmarks (newtype overhead should be zero)
+  - Test attribute-driven API generates correct code
+
+**Deliverable:** 16/44 types (36%), all integers covered, trenchcoat pattern established
+
+**Success Criteria:**
+- ✅ 12 integer contract newtypes implemented
+- ✅ Impossible to construct invalid values
+- ✅ Kani proves invariants hold by construction
+- ✅ Elicitation loops until valid, returns guaranteed-correct type
+- ✅ `.into_inner()` unwraps to stdlib type (zero overhead)
+- ✅ Attributes work: `#[elicit(positive)] count: i8`
 }
 
 impl Elicitation for I8Positive {
@@ -580,26 +708,31 @@ When you use contract newtypes in your struct:
   - Example: Config with 10 fields, all automatically verified
   - No manual Kani annotations needed (derive generates them)
 
-- [ ] 13.4: Alternative API: Attribute hints (Days 45-46)
-  - User can write: `#[elicit(non_empty)] name: String`
-  - Macro transforms to: `name: StringNonEmpty`
-  - Both styles work (direct type or attribute hint)
-  - Migration guide for existing code
+- [ ] 13.4: Trenchcoat pattern implementation (Days 45-46)
+  - Implement `.into_inner()` for all contract types
+  - Macro unwraps contract types to stdlib types at boundary
+  - User writes: `#[elicit(non_empty)] name: String`
+  - Macro uses: `StringNonEmpty` internally
+  - Returns: `String` (familiar API)
+  - Both styles work: Direct contract types OR attribute hints
 
 - [ ] 13.5: Documentation (Days 47-49)
+  - "Trenchcoat Pattern" guide: boundary validation explained
   - "Zero-effort verification" guide with examples
   - Case studies: API config, Database schema, Network protocol
-  - Performance analysis (newtype overhead = zero in release)
-  - Migration guide: Plain types → Contract types
+  - Performance analysis (newtype overhead = zero after .into_inner())
+  - Migration guide: Plain types → Attributed types → Contract types
 
-**Deliverable:** Automatic verification for all derived types
+**Deliverable:** Automatic verification for all derived types with familiar API
 
 **Success Criteria:**
 - ✅ `#[derive(Elicit)]` generates contracts automatically
-- ✅ Nested types inherit verification compositionally
-- ✅ End-to-end Kani proof: LLM → Mechanism → Type → Derived Type
-- ✅ Zero user effort for verification (just use contract types)
-- ✅ **REVOLUTION COMPLETE:** Make invalid states unrepresentable + formally proven
+- ✅ Users write familiar stdlib types (String, i32)
+- ✅ Contract types validate at boundaries (trenchcoat pattern)
+- ✅ `.into_inner()` unwraps to stdlib types (zero overhead)
+- ✅ End-to-end Kani proof: LLM → Mechanism → Contract → stdlib type
+- ✅ Zero user effort for verification (transparent validation)
+- ✅ **REVOLUTION COMPLETE:** Familiar API + Formal verification
 
 ---
 
@@ -675,7 +808,7 @@ When you use contract newtypes in your struct:
 
 ---
 
-## The Zero-Effort Vision (Contract Newtypes)
+## The Zero-Effort Vision (Trenchcoat Pattern)
 
 ### Before (Forgettable Validation)
 
@@ -692,79 +825,135 @@ struct Config {
 // - Easy to forget validation
 ```
 
-### After Phase 13 (Contract Newtypes - Unforgettable)
+### After Phase 13 (Trenchcoat Pattern - Familiar + Verified)
 
+**Option 1: Attribute-driven (Familiar API):**
 ```rust
 #[derive(Elicit)]
 struct Config {
-    port: U16Range<1024, 65535>,  // Contract type (newtype)
-    host: IpPrivate,              // Contract type (newtype)
+    #[elicit(range = "1024..=65535")]  // Attribute specifies contract
+    port: u16,                          // User writes familiar stdlib type
+    
+    #[elicit(private)]                 // Attribute specifies contract
+    host: IpAddr,                       // User writes familiar stdlib type
 }
 
-// Guarantees (enforced by type system):
-// - port is in range [1024, 65535] (IMPOSSIBLE to construct otherwise)
-// - host is private IP (IMPOSSIBLE to construct otherwise)
-// - Config is valid (composition of valid fields)
+// Macro generates (uses contract types internally):
+impl Elicitation for Config {
+    async fn elicit(client: &Client) -> Result<Self> {
+        // Put on trenchcoat (validate)
+        let port = U16Range::<1024, 65535>::elicit(client).await?;
+        let host = IpPrivate::elicit(client).await?;
+        
+        // Take off trenchcoat (unwrap to stdlib)
+        Ok(Self {
+            port: port.into_inner(),   // u16 (was validated)
+            host: host.into_inner(),   // IpAddr (was validated)
+        })
+    }
+}
 
-// Kani proves:
-// ∀config: Config ⇒ valid_port(config.port) ∧ valid_host(config.host)
-
-// User effort: ZERO (just use contract types, get proofs for free)
+// User gets: Familiar stdlib types (u16, IpAddr)
+// We get: Formal verification at boundary (contract types validated)
+// Kani proves: Data was valid at construction (trenchcoat worked)
 ```
 
-### The Key Insight: Contract AS Type
+**Option 2: Direct contract types (Strongest guarantees):**
+```rust
+#[derive(Elicit)]
+struct Config {
+    port: U16Range<1024, 65535>,  // Contract type (persistent guarantee)
+    host: IpPrivate,              // Contract type (persistent guarantee)
+}
 
-**Old way (separate verification):**
-```
-Type          Contract         Verification
-u16      +    U16InRange       =   Manual (forgettable)
+// No unwrapping - fields ARE contract types
+// Strongest guarantees (type-level enforcement)
 ```
 
-**New way (unified):**
+**Both options available - users choose based on needs!**
+
+### The Trenchcoat Pattern Explained
+
 ```
-Type = Contract = Verification
-U16Range<1024, 65535> (newtype wraps u16, validates on construction)
+INPUT BOUNDARY          VALIDATION           OUTPUT BOUNDARY
+───────────────         ──────────          ───────────────
+LLM: "8080"             U16Range<1024,      User gets: u16
+     ↓                  65535>(8080)              ↓
+  "8080"  ─────→  U16Range::new(8080)  ─────→  u16(8080)
+                  ^^^^^^^^^^^^^^^^^^^^         ^^^^^^^^^^
+                  Put on trenchcoat            Take off coat
+                  (validate)                   .into_inner()
 ```
+
+**Key insight:** Contract types exist only during elicitation (boundary crossing).
+- Put on coat → Validate → Take off coat
+- User gets familiar stdlib types
+- Data was proven valid at construction
+- Zero runtime overhead after boundary
 
 ### What Users Get
 
-| Feature | Before | After (Newtypes) |
-|---------|--------|------------------|
+| Feature | Before | After (Trenchcoat) |
+|---------|--------|-------------------|
 | Type safety | ✅ | ✅ |
-| Runtime validation | ❌ (manual) | ✅ (automatic) |
-| Compile-time guarantees | ❌ | ✅ (newtype = guarantee) |
-| Formal verification | ❌ | ✅ (Kani proves) |
-| Forgettable | ⚠️ Yes | ✅ No (type system enforces) |
-| Composable | ❌ | ✅ (automatic) |
-| User effort | 😰 High | 🎉 **ZERO** |
+| Familiar API | ✅ | ✅ (stdlib types) |
+| Validation | ❌ (manual) | ✅ (automatic at boundary) |
+| Formal verification | ❌ | ✅ (Kani proves contract types) |
+| Runtime overhead | N/A | ⚡ **ZERO** (unwrapped after validation) |
+| Ecosystem compat | ✅ | ✅ (stdlib types work everywhere) |
+| User effort | 😰 High | 🎉 **ZERO** (transparent) |
 
-### Real-World Example
+### Real-World Example (Attribute-Driven)
 
 ```rust
-// User defines API configuration
+// User writes familiar stdlib types with validation metadata
 #[derive(Elicit)]
 struct ApiConfig {
-    endpoint: UrlHttps,              // Only HTTPS URLs
-    api_key: StringNonEmpty,         // Never empty
-    timeout: DurationPositive,       // Positive duration
-    retry_count: U8Range<1, 10>,    // 1-10 retries
+    #[elicit(https_only)]
+    endpoint: String,                    // Familiar String
+    
+    #[elicit(non_empty)]
+    api_key: String,                     // Familiar String
+    
+    #[elicit(positive)]
+    timeout_secs: u32,                   // Familiar u32
+    
+    #[elicit(range = "1..=10")]
+    retry_count: u8,                     // Familiar u8
 }
 
 #[derive(Elicit)]
 struct DatabaseConfig {
-    host: IpPrivate,                 // Private IP only
-    port: U16Range<1024, 65535>,    // Valid port range
-    username: StringNonEmpty,        // Non-empty username
-    max_connections: U32Positive,    // Positive connections
+    #[elicit(private)]
+    host: IpAddr,                        // Familiar IpAddr
+    
+    #[elicit(range = "1024..=65535")]
+    port: u16,                           // Familiar u16
+    
+    #[elicit(non_empty)]
+    username: String,                    // Familiar String
+    
+    #[elicit(positive)]
+    max_connections: u32,                // Familiar u32
 }
 
 #[derive(Elicit)]
 struct Config {
-    api: ApiConfig,                  // Nested contracts compose!
-    database: DatabaseConfig,        // All guarantees propagate!
+    api: ApiConfig,                      // Nested validation composes!
+    database: DatabaseConfig,            // All fields validated!
 }
 
-// When you have Config, you KNOW (proven by Kani):
+// User perspective:
+// - Writes: Familiar stdlib types (String, u16, IpAddr)
+// - Gets: Validated data (contract types at boundary)
+// - Uses: Normal Rust code (no new API to learn)
+//
+// Our perspective:
+// - Implementation: Uses contract types (UrlHttps, StringNonEmpty, U16Range)
+// - Validation: Boundary crossing (put on coat, validate, take off coat)
+// - Verification: Kani proves contract types work
+//
+// When you have Config, you KNOW (proven by Kani at boundary):
 // - API endpoint is HTTPS (not HTTP)
 // - API key is non-empty
 // - Timeout is positive
@@ -773,42 +962,62 @@ struct Config {
 // - Database port is valid
 // - Username is non-empty
 // - Max connections is positive
-// ALL PROVEN. NO EFFORT. IMPOSSIBLE TO VIOLATE.
+// ALL PROVEN AT CONSTRUCTION BOUNDARY. NO EFFORT. FAMILIAR API.
 ```
 
-// Automatically generated contract:
-// ConfigValid = U16Valid ∧ IpAddrValid
-// 
-// Kani proof:
-// ∀config: Config::elicit(client) ⇒ ConfigValid(config)
-//
-// User effort: ZERO (automatic)
-```
-
-### The Proof Chain (Contract Newtypes)
+### The Proof Chain (Trenchcoat Pattern)
 
 ```
 LLM outputs "8080" and "192.168.1.1"
+    ↓
+INPUT BOUNDARY (Put on trenchcoat)
     ↓
 Mechanism: Numeric elicits u16           ✅ Proven: parses to u16
     ↓
 Type Construction: U16Range::new(8080)   ✅ Proven: 8080 ∈ [1024, 65535]
     ↓  (validation on construction)
-U16Range<1024, 65535>(8080)             ✅ Newtype = guarantee
+U16Range<1024, 65535>(8080)             ✅ Newtype validates
+    ↓
+OUTPUT BOUNDARY (Take off trenchcoat)
+    ↓
+U16Range(8080).into_inner()             ✅ Unwrap to u16
+    ↓
+User receives: u16(8080)                ✅ Familiar type, was validated
+    ↓
+───────────────────────────────────────────────────────────────
     ↓
 Mechanism: Network elicits IpAddr        ✅ Proven: valid IP format
     ↓
 Type Construction: IpPrivate::new(ip)    ✅ Proven: IP is private
     ↓  (validation on construction)
-IpPrivate(192.168.1.1)                  ✅ Newtype = guarantee
+IpPrivate(192.168.1.1)                  ✅ Newtype validates
     ↓
-Composition: Config::new(port, host)     ✅ Both fields are contract types
-    ↓  (both already validated!)
-Config { port, host }                    ✅ Composition = proven valid
+OUTPUT BOUNDARY (Take off trenchcoat)
     ↓
-User receives Config                     ✅ IMPOSSIBLE to be invalid
+IpPrivate(ip).into_inner()              ✅ Unwrap to IpAddr
+    ↓
+User receives: IpAddr(192.168.1.1)      ✅ Familiar type, was validated
+    ↓
+───────────────────────────────────────────────────────────────
+    ↓
+Composition: Config { port, host }       ✅ Both fields stdlib types
+    ↓  (both validated at boundary!)
+Config { port: u16, host: IpAddr }      ✅ Familiar API
+    ↓
+User receives Config                     ✅ Data proven valid at construction
 
-Mathematical proof (by construction):
+Mathematical proof (trenchcoat pattern):
+  ∀config: Config::elicit(client) ⇒ 
+    (port was validated via U16Range) ∧ 
+    (host was validated via IpPrivate) ∧
+    (data is stdlib types) ∧
+    valid_at_construction(config)
+  ∎
+
+Key insight: Validation happens AT BOUNDARY (in trenchcoat).
+Once validated, unwrap to familiar stdlib types.
+User gets: Familiar API + Proven correct at construction + Zero overhead.
+```
   ∀config: Config ⇒ 
     port ∈ U16Range<1024, 65535> ∧ 
     host ∈ IpPrivate ∧
@@ -931,49 +1140,94 @@ If you have the type, it MUST be valid (impossible to construct otherwise).
 
 ---
 
-## The Ultimate Goal (Contract Newtypes Vision)
+## The Ultimate Goal (Trenchcoat Pattern Vision)
 
-**Every AI content pipeline in Rust gets formal verification for free.**
+**Every AI content pipeline in Rust gets formal verification for free, with familiar stdlib types.**
 
-When you write:
+**Option 1: Attribute-driven (Beginner-friendly):**
 ```rust
 #[derive(Elicit)]
 struct UserInput {
-    name: StringNonEmpty,          // Contract type (newtype)
-    age: U8Range<0, 120>,         // Contract type (newtype)
-    email: EmailAddress,           // Contract type (newtype)
+    #[elicit(non_empty)]        // Metadata specifies validation
+    name: String,                // Familiar stdlib type
+    
+    #[elicit(range = "0..=120")] // Metadata specifies validation
+    age: u8,                     // Familiar stdlib type
+    
+    #[elicit(email)]             // Metadata specifies validation
+    email: String,               // Familiar stdlib type
 }
 ```
 
+**Option 2: Direct contract types (Expert-level):**
+```rust
+#[derive(Elicit)]
+struct UserInput {
+    name: StringNonEmpty,       // Contract type (persistent)
+    age: U8Range<0, 120>,      // Contract type (persistent)
+    email: EmailAddress,        // Contract type (persistent)
+}
+```
+
+**Both work! Users choose based on needs.**
+
 You get:
-- **Type safety** (Rust compiler) ✅
-- **Validation on construction** (impossible to construct invalid types) ✅
+- **Familiar API** (Option 1: stdlib types) ✅
+- **Or strongest guarantees** (Option 2: contract types) ✅
+- **Validation at boundary** (trenchcoat pattern) ✅
 - **Formal proofs** (Kani/Creusot/Prusti/Verus prove correctness) ✅
-- **Zero effort** (just use contract types, proofs automatic) ✅
+- **Zero runtime overhead** (unwrapped after validation) ✅
+- **Zero effort** (derive macro handles everything) ✅
 - **Mathematical guarantees** (∀input: UserInput ⇒ valid(input) proven) ✅
-- **Compositional verification** (struct valid ⟺ all fields valid) ✅
 
-**The Revolutionary Part:**
+**The Trenchcoat Pattern:**
 
-Contract newtypes make **invalid states unrepresentable**:
-- Can't have `StringNonEmpty("")` - constructor fails
-- Can't have `U8Range<0,120>(200)` - constructor fails
-- Can't have `EmailAddress("not-email")` - constructor fails
+```
+INPUT BOUNDARY → Put on coat → VALIDATE → Take off coat → OUTPUT
+LLM              (wrap)        (contract)  (unwrap)       stdlib
+```
 
-When you have `UserInput`, you KNOW it's valid (proven by construction + Kani).
+**Option 1 flow (attribute-driven):**
+```rust
+// User writes:    name: String
+// Macro uses:     StringNonEmpty (internal validation)
+// Returns:        String (unwrapped via .into_inner())
+// Result:         Familiar type, was proven valid at boundary
+```
 
-**Result:** LLM → Application pipelines with the same level of correctness guarantees as aerospace software, achieved through type-level guarantees + formal verification.
+**Option 2 flow (direct contract types):**
+```rust
+// User writes:    name: StringNonEmpty
+// Macro uses:     StringNonEmpty (no unwrapping)
+// Returns:        StringNonEmpty (persistent guarantee)
+// Result:         Type-level enforcement, always valid
+```
+
+**Result:** LLM → Application pipelines with aerospace-level correctness guarantees, achieved through:
+- Boundary validation (trenchcoat pattern)
+- Contract types (validation by construction)
+- Formal verification (Kani proves correctness)
+- Familiar API (stdlib types for Option 1) OR
+- Strongest guarantees (contract types for Option 2)
 
 ---
 
 ## Commitment
 
-This plan is **uncompromising** in its dedication to formal verification through contract newtypes. Every type, every mechanism, every composition proven correct by construction.
+This plan is **uncompromising** in its dedication to formal verification through the trenchcoat pattern. Every type, every mechanism, every boundary proven correct.
 
-**The insight:** Make invalid states unrepresentable (Rust philosophy) + Prove it (formal verification).
+**The insight:** 
+- Validate at boundaries (trenchcoat pattern)
+- Make invalid states unrepresentable (contract types)
+- Prove it mathematically (formal verification)
+- Give users familiar API (stdlib types)
 
 **The bar:** If Kani can't prove it, we don't ship it.
 
-**The promise:** When you use contract newtypes, your AI pipeline is formally verified. Period.
+**The promise:** When you use elicitation, your AI pipeline is formally verified. Period. With familiar stdlib types.
 
-**The impact:** We change the standard for what "correct AI integration" means - from "hope and test" to "proven impossible to be wrong".
+**The impact:** We change the standard for what "correct AI integration" means:
+- From "hope and test" → "proven at boundary"
+- From "new types to learn" → "familiar stdlib types"  
+- From "manual validation" → "transparent verification"
+- From "runtime overhead" → "zero-cost abstraction"
