@@ -20,8 +20,8 @@ derive-getters = { workspace = true }
 tracing = { workspace = true }
 tokio = { workspace = true }
 serde_json = { workspace = true }
-paste = "1.0"
-async-trait = "0.1"
+paste = { workspace = true }
+async-trait = { workspace = true }
 
 # DateTime libraries (optional)
 chrono = { workspace = true, optional = true }
@@ -29,26 +29,26 @@ time = { workspace = true, optional = true }
 jiff = { workspace = true, optional = true }
 
 # UUID library (optional)
-uuid = { version = "1.0", optional = true, features = ["v4", "serde"] }
+uuid = { workspace = true, optional = true }
 
 # URL library (optional)
-url = { version = "2.5", optional = true }
+url = { workspace = true, optional = true }
 
 # Regex library (optional)
-regex = { version = "1.12", optional = true }
+regex = { workspace = true, optional = true }
 
 # Verification libraries (optional)
-creusot-contracts = { version = "0.2", optional = true }
-prusti-contracts = { version = "0.2", optional = true }
+creusot-contracts = { workspace = true, optional = true }
+prusti-contracts = { workspace = true, optional = true }
 
 # Re-export derive macro
 elicitation_derive = { path = "../elicitation_derive", version = "0.4.3" }
 elicitation_macros = { path = "../elicitation_macros" }
 
 [dev-dependencies]
-tokio-test = "0.4"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-uuid = { version = "1.0", features = ["v4", "serde"] }
+tokio-test = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
 
 [features]
 default = []
