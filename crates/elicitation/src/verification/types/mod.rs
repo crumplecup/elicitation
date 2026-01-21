@@ -30,6 +30,7 @@ mod networks;
 mod pathbufs;
 mod datetimes;
 mod tuples;
+mod collections;
 
 pub use integers::*;
 pub use floats::*;
@@ -42,6 +43,7 @@ pub use networks::*;
 pub use pathbufs::*;
 pub use datetimes::*;
 pub use tuples::*;
+pub use collections::*;
 
 /// Error type for contract validation failures.
 #[derive(Debug, Clone, PartialEq, derive_more::Display)]
@@ -205,6 +207,18 @@ pub enum ValidationError {
         /// The threshold it must be before.
         threshold: String,
     },
+
+    /// Collection is empty (must be non-empty).
+    #[display("Collection must be non-empty")]
+    EmptyCollection,
+
+    /// Option is None (must be Some).
+    #[display("Option must be Some, not None")]
+    OptionIsNone,
+
+    /// Result is Err (must be Ok).
+    #[display("Result must be Ok, not Err")]
+    ResultIsErr,
 }
 
 impl std::error::Error for ValidationError {}
