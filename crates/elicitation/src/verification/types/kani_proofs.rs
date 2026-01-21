@@ -890,3 +890,128 @@ fn verify_offset_datetime_before() {
     kani::assert(result.is_err(), "After timestamp rejected");
 }
 
+
+// ============================================================================
+// EXPERIMENTAL: Const Generic Range Type Proofs
+// ============================================================================
+
+// Attempt 1: Concrete const generics (specific MIN/MAX values)
+#[kani::proof]
+fn verify_i8_range_concrete() {
+    // Prove for specific range: -10 to 10
+    const MIN: i8 = -10;
+    const MAX: i8 = 10;
+    
+    let value: i8 = kani::any();
+    
+    match I8Range::<MIN, MAX>::new(value) {
+        Ok(range) => {
+            // If construction succeeds, value must be in range
+            kani::assert(value >= MIN, "Value >= MIN");
+            kani::assert(value <= MAX, "Value <= MAX");
+            kani::assert(range.get() >= MIN, "Accessor preserves lower bound");
+            kani::assert(range.get() <= MAX, "Accessor preserves upper bound");
+        }
+        Err(_) => {
+            // If construction fails, value must be out of range
+            kani::assert(value < MIN || value > MAX, "Construction rejects out-of-range");
+        }
+    }
+}
+
+// Attempt 2: Multiple concrete ranges to test generality
+#[kani::proof]
+fn verify_i8_range_positive() {
+    // Prove for positive range: 1 to 100
+    const MIN: i8 = 1;
+    const MAX: i8 = 100;
+    
+    let value: i8 = kani::any();
+    
+    match I8Range::<MIN, MAX>::new(value) {
+        Ok(_range) => {
+            kani::assert(value >= MIN && value <= MAX, "I8Range[1,100] invariant");
+        }
+        Err(_) => {
+            kani::assert(value < MIN || value > MAX, "Out of range rejected");
+        }
+    }
+}
+
+// Attempt 3: U8Range (unsigned)
+#[kani::proof]
+fn verify_u8_range_concrete() {
+    const MIN: u8 = 10;
+    const MAX: u8 = 200;
+    
+    let value: u8 = kani::any();
+    
+    match U8Range::<MIN, MAX>::new(value) {
+        Ok(range) => {
+            kani::assert(value >= MIN, "Value >= MIN");
+            kani::assert(value <= MAX, "Value <= MAX");
+            kani::assert(range.get() >= MIN, "Accessor preserves bounds");
+            kani::assert(range.get() <= MAX, "Accessor preserves bounds");
+        }
+        Err(_) => {
+            kani::assert(value < MIN || value > MAX, "Out of range rejected");
+        }
+    }
+}
+
+// Attempt 4: Edge case - zero-width range
+#[kani::proof]
+fn verify_i8_range_singleton() {
+    // Range with single value: [42, 42]
+    const MIN: i8 = 42;
+    const MAX: i8 = 42;
+    
+    let value: i8 = kani::any();
+    
+    match I8Range::<MIN, MAX>::new(value) {
+        Ok(_range) => {
+            kani::assert(value == 42, "Singleton range accepts only exact value");
+        }
+        Err(_) => {
+            kani::assert(value != 42, "Singleton rejects all other values");
+        }
+    }
+}
+
+// Attempt 5: I16Range (test larger integer types)
+#[kani::proof]
+fn verify_i16_range_concrete() {
+    const MIN: i16 = -1000;
+    const MAX: i16 = 1000;
+    
+    let value: i16 = kani::any();
+    
+    match I16Range::<MIN, MAX>::new(value) {
+        Ok(range) => {
+            kani::assert(value >= MIN && value <= MAX, "I16Range invariant");
+            kani::assert(range.get() >= MIN && range.get() <= MAX, "Accessor preserves");
+        }
+        Err(_) => {
+            kani::assert(value < MIN || value > MAX, "Rejection correct");
+        }
+    }
+}
+
+// Attempt 6: U16Range
+#[kani::proof]
+fn verify_u16_range_concrete() {
+    const MIN: u16 = 100;
+    const MAX: u16 = 60000;
+    
+    let value: u16 = kani::any();
+    
+    match U16Range::<MIN, MAX>::new(value) {
+        Ok(_range) => {
+            kani::assert(value >= MIN && value <= MAX, "U16Range invariant");
+        }
+        Err(_) => {
+            kani::assert(value < MIN || value > MAX, "Rejection correct");
+        }
+    }
+}
+
