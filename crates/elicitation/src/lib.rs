@@ -130,3 +130,23 @@ pub use rmcp;
 
 // Re-export derive macro with user-friendly name
 pub use elicitation_derive::Elicit;
+
+// Re-export verification contract types at crate level (for kani_proofs imports)
+// Gate on kani OR verification feature (kani_proofs uses #[cfg(kani)])
+#[cfg(any(feature = "verification", kani))]
+pub use verification::{types::*, mechanisms::*};
+
+// Additional explicit re-exports for commonly used contract types in proofs
+#[cfg(any(feature = "verification", kani))]
+pub use verification::types::{
+    // Integers
+    I8NonNegative, I8Positive, U8NonZero, U16NonZero,
+    // Floats  
+    F32NonNegative, F32Positive, F64NonNegative,
+    // Bools
+    BoolFalse,
+    // Chars
+    CharNumeric,
+    // Collections
+    OptionSome, Tuple2,
+};
