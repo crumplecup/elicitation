@@ -22,6 +22,7 @@ use serde_json::Value;
 /// # Errors
 ///
 /// Returns `ElicitError` with `InvalidFormat` if the value is not a number.
+#[tracing::instrument(skip(raw), level = "debug", fields(type_name = std::any::type_name::<T>()))]
 fn parse_float<T>(raw: Value) -> ElicitResult<T>
 where
     T: std::str::FromStr,

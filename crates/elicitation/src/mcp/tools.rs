@@ -44,6 +44,7 @@ pub mod tool_names {
 /// # Returns
 ///
 /// JSON object with prompt, min, and max fields.
+#[tracing::instrument(level = "debug")]
 pub fn number_params(
     prompt: &str,
     min: i64,
@@ -68,6 +69,7 @@ pub fn number_params(
 /// # Returns
 ///
 /// JSON object with prompt field.
+#[tracing::instrument(level = "debug")]
 pub fn bool_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
     serde_json::json!({ "prompt": prompt })
         .as_object()
@@ -84,6 +86,7 @@ pub fn bool_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
 /// # Returns
 ///
 /// JSON object with prompt field.
+#[tracing::instrument(level = "debug")]
 pub fn text_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
     serde_json::json!({ "prompt": prompt })
         .as_object()
@@ -101,6 +104,7 @@ pub fn text_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
 /// # Returns
 ///
 /// JSON object with prompt and options fields.
+#[tracing::instrument(level = "debug")]
 pub fn select_params(prompt: &str, options: &[&str]) -> serde_json::Map<String, serde_json::Value> {
     serde_json::json!({
         "prompt": prompt,

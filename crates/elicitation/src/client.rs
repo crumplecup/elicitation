@@ -181,6 +181,7 @@ impl StyleContext {
     /// Set a custom style for a specific type.
     ///
     /// Accepts any style type S that implements ElicitationStyle.
+    #[tracing::instrument(skip(self, style), level = "debug", fields(type_id = ?TypeId::of::<T>()))]
     fn set_style<T: 'static, S: ElicitationStyle>(&mut self, style: S) {
         let type_id = TypeId::of::<T>();
         let mut styles = self.styles.write().expect("Lock poisoned");
@@ -191,6 +192,7 @@ impl StyleContext {
     ///
     /// Returns None if no custom style was provided, allowing
     /// fallback to T::Style::default().
+    #[tracing::instrument(skip(self), level = "debug", fields(type_id = ?TypeId::of::<T>()))]
     fn get_style<T: 'static, S: ElicitationStyle>(&self) -> Option<S> {
         let type_id = TypeId::of::<T>();
         let styles = self.styles.read().expect("Lock poisoned");
