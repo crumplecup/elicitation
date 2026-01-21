@@ -422,3 +422,538 @@ mod tests {
         assert_eq!(rc.get().get(), 10);
     }
 }
+
+// ============================================================================
+// Map Collection Contracts
+// ============================================================================
+
+use std::collections::{HashMap, HashSet, BTreeMap, BTreeSet, VecDeque, LinkedList};
+use std::hash::Hash;
+
+// HashMapNonEmpty - Non-empty HashMap
+/// A HashMap that is guaranteed to be non-empty (has at least one key-value pair).
+#[derive(Debug, Clone)]
+pub struct HashMapNonEmpty<K, V>(HashMap<K, V>);
+
+impl<K, V> HashMapNonEmpty<K, V> {
+    /// Create a new HashMapNonEmpty, validating the map is non-empty.
+    pub fn new(map: HashMap<K, V>) -> Result<Self, ValidationError> {
+        if map.is_empty() {
+            Err(ValidationError::EmptyCollection)
+        } else {
+            Ok(Self(map))
+        }
+    }
+
+    /// Get the inner HashMap.
+    pub fn get(&self) -> &HashMap<K, V> {
+        &self.0
+    }
+
+    /// Unwrap into the inner HashMap.
+    pub fn into_inner(self) -> HashMap<K, V> {
+        self.0
+    }
+
+    /// Get the length (always >= 1).
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
+impl<K, V> Prompt for HashMapNonEmpty<K, V>
+where
+    K: Elicitation + Send,
+    V: Elicitation + Send,
+{
+    fn prompt() -> Option<&'static str> {
+        Some("Please provide a non-empty map:")
+    }
+}
+
+impl<K, V> Elicitation for HashMapNonEmpty<K, V>
+where
+    K: Elicitation + Eq + Hash + Send,
+    V: Elicitation + Send,
+{
+    type Style = <HashMap<K, V> as Elicitation>::Style;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting HashMapNonEmpty");
+        loop {
+            let map = HashMap::<K, V>::elicit(client).await?;
+            match Self::new(map) {
+                Ok(valid) => {
+                    tracing::debug!(count = valid.len(), "Valid non-empty map");
+                    return Ok(valid);
+                }
+                Err(e) => {
+                    tracing::warn!(error = %e, "HashMap is empty, re-prompting");
+                    continue;
+                }
+            }
+        }
+    }
+}
+
+// BTreeMapNonEmpty - Non-empty BTreeMap
+/// A BTreeMap that is guaranteed to be non-empty.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BTreeMapNonEmpty<K, V>(BTreeMap<K, V>);
+
+impl<K, V> BTreeMapNonEmpty<K, V> {
+    /// Create a new BTreeMapNonEmpty, validating the map is non-empty.
+    pub fn new(map: BTreeMap<K, V>) -> Result<Self, ValidationError> {
+        if map.is_empty() {
+            Err(ValidationError::EmptyCollection)
+        } else {
+            Ok(Self(map))
+        }
+    }
+
+    /// Get the inner BTreeMap.
+    pub fn get(&self) -> &BTreeMap<K, V> {
+        &self.0
+    }
+
+    /// Unwrap into the inner BTreeMap.
+    pub fn into_inner(self) -> BTreeMap<K, V> {
+        self.0
+    }
+
+    /// Get the length (always >= 1).
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
+impl<K, V> Prompt for BTreeMapNonEmpty<K, V>
+where
+    K: Elicitation + Send,
+    V: Elicitation + Send,
+{
+    fn prompt() -> Option<&'static str> {
+        Some("Please provide a non-empty map:")
+    }
+}
+
+impl<K, V> Elicitation for BTreeMapNonEmpty<K, V>
+where
+    K: Elicitation + Ord + Send,
+    V: Elicitation + Send,
+{
+    type Style = <BTreeMap<K, V> as Elicitation>::Style;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting BTreeMapNonEmpty");
+        loop {
+            let map = BTreeMap::<K, V>::elicit(client).await?;
+            match Self::new(map) {
+                Ok(valid) => {
+                    tracing::debug!(count = valid.len(), "Valid non-empty btree map");
+                    return Ok(valid);
+                }
+                Err(e) => {
+                    tracing::warn!(error = %e, "BTreeMap is empty, re-prompting");
+                    continue;
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// Set Collection Contracts
+// ============================================================================
+
+// HashSetNonEmpty - Non-empty HashSet
+/// A HashSet that is guaranteed to be non-empty (has at least one element).
+#[derive(Debug, Clone)]
+pub struct HashSetNonEmpty<T>(HashSet<T>);
+
+impl<T> HashSetNonEmpty<T> {
+    /// Create a new HashSetNonEmpty, validating the set is non-empty.
+    pub fn new(set: HashSet<T>) -> Result<Self, ValidationError> {
+        if set.is_empty() {
+            Err(ValidationError::EmptyCollection)
+        } else {
+            Ok(Self(set))
+        }
+    }
+
+    /// Get the inner HashSet.
+    pub fn get(&self) -> &HashSet<T> {
+        &self.0
+    }
+
+    /// Unwrap into the inner HashSet.
+    pub fn into_inner(self) -> HashSet<T> {
+        self.0
+    }
+
+    /// Get the length (always >= 1).
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
+impl<T> Prompt for HashSetNonEmpty<T>
+where
+    T: Elicitation + Send,
+{
+    fn prompt() -> Option<&'static str> {
+        Some("Please provide a non-empty set:")
+    }
+}
+
+impl<T> Elicitation for HashSetNonEmpty<T>
+where
+    T: Elicitation + Eq + Hash + Send,
+{
+    type Style = <HashSet<T> as Elicitation>::Style;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting HashSetNonEmpty");
+        loop {
+            let set = HashSet::<T>::elicit(client).await?;
+            match Self::new(set) {
+                Ok(valid) => {
+                    tracing::debug!(count = valid.len(), "Valid non-empty set");
+                    return Ok(valid);
+                }
+                Err(e) => {
+                    tracing::warn!(error = %e, "HashSet is empty, re-prompting");
+                    continue;
+                }
+            }
+        }
+    }
+}
+
+// BTreeSetNonEmpty - Non-empty BTreeSet
+/// A BTreeSet that is guaranteed to be non-empty.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BTreeSetNonEmpty<T>(BTreeSet<T>);
+
+impl<T> BTreeSetNonEmpty<T> {
+    /// Create a new BTreeSetNonEmpty, validating the set is non-empty.
+    pub fn new(set: BTreeSet<T>) -> Result<Self, ValidationError> {
+        if set.is_empty() {
+            Err(ValidationError::EmptyCollection)
+        } else {
+            Ok(Self(set))
+        }
+    }
+
+    /// Get the inner BTreeSet.
+    pub fn get(&self) -> &BTreeSet<T> {
+        &self.0
+    }
+
+    /// Unwrap into the inner BTreeSet.
+    pub fn into_inner(self) -> BTreeSet<T> {
+        self.0
+    }
+
+    /// Get the length (always >= 1).
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
+impl<T> Prompt for BTreeSetNonEmpty<T>
+where
+    T: Elicitation + Send,
+{
+    fn prompt() -> Option<&'static str> {
+        Some("Please provide a non-empty set:")
+    }
+}
+
+impl<T> Elicitation for BTreeSetNonEmpty<T>
+where
+    T: Elicitation + Ord + Send,
+{
+    type Style = <BTreeSet<T> as Elicitation>::Style;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting BTreeSetNonEmpty");
+        loop {
+            let set = BTreeSet::<T>::elicit(client).await?;
+            match Self::new(set) {
+                Ok(valid) => {
+                    tracing::debug!(count = valid.len(), "Valid non-empty btree set");
+                    return Ok(valid);
+                }
+                Err(e) => {
+                    tracing::warn!(error = %e, "BTreeSet is empty, re-prompting");
+                    continue;
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// Deque Collection Contracts
+// ============================================================================
+
+// VecDequeNonEmpty - Non-empty VecDeque
+/// A VecDeque that is guaranteed to be non-empty.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VecDequeNonEmpty<T>(VecDeque<T>);
+
+impl<T> VecDequeNonEmpty<T> {
+    /// Create a new VecDequeNonEmpty, validating the deque is non-empty.
+    pub fn new(deque: VecDeque<T>) -> Result<Self, ValidationError> {
+        if deque.is_empty() {
+            Err(ValidationError::EmptyCollection)
+        } else {
+            Ok(Self(deque))
+        }
+    }
+
+    /// Get the inner VecDeque.
+    pub fn get(&self) -> &VecDeque<T> {
+        &self.0
+    }
+
+    /// Unwrap into the inner VecDeque.
+    pub fn into_inner(self) -> VecDeque<T> {
+        self.0
+    }
+
+    /// Get the length (always >= 1).
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
+impl<T> Prompt for VecDequeNonEmpty<T>
+where
+    T: Elicitation + Send,
+{
+    fn prompt() -> Option<&'static str> {
+        Some("Please provide a non-empty deque:")
+    }
+}
+
+impl<T> Elicitation for VecDequeNonEmpty<T>
+where
+    T: Elicitation + Send,
+{
+    type Style = <VecDeque<T> as Elicitation>::Style;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting VecDequeNonEmpty");
+        loop {
+            let deque = VecDeque::<T>::elicit(client).await?;
+            match Self::new(deque) {
+                Ok(valid) => {
+                    tracing::debug!(count = valid.len(), "Valid non-empty deque");
+                    return Ok(valid);
+                }
+                Err(e) => {
+                    tracing::warn!(error = %e, "VecDeque is empty, re-prompting");
+                    continue;
+                }
+            }
+        }
+    }
+}
+
+// LinkedListNonEmpty - Non-empty LinkedList
+/// A LinkedList that is guaranteed to be non-empty.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LinkedListNonEmpty<T>(LinkedList<T>);
+
+impl<T> LinkedListNonEmpty<T> {
+    /// Create a new LinkedListNonEmpty, validating the list is non-empty.
+    pub fn new(list: LinkedList<T>) -> Result<Self, ValidationError> {
+        if list.is_empty() {
+            Err(ValidationError::EmptyCollection)
+        } else {
+            Ok(Self(list))
+        }
+    }
+
+    /// Get the inner LinkedList.
+    pub fn get(&self) -> &LinkedList<T> {
+        &self.0
+    }
+
+    /// Unwrap into the inner LinkedList.
+    pub fn into_inner(self) -> LinkedList<T> {
+        self.0
+    }
+
+    /// Get the length (always >= 1).
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+}
+
+impl<T> Prompt for LinkedListNonEmpty<T>
+where
+    T: Elicitation + Send,
+{
+    fn prompt() -> Option<&'static str> {
+        Some("Please provide a non-empty list:")
+    }
+}
+
+impl<T> Elicitation for LinkedListNonEmpty<T>
+where
+    T: Elicitation + Send,
+{
+    type Style = <LinkedList<T> as Elicitation>::Style;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting LinkedListNonEmpty");
+        loop {
+            let list = LinkedList::<T>::elicit(client).await?;
+            match Self::new(list) {
+                Ok(valid) => {
+                    tracing::debug!(count = valid.len(), "Valid non-empty linked list");
+                    return Ok(valid);
+                }
+                Err(e) => {
+                    tracing::warn!(error = %e, "LinkedList is empty, re-prompting");
+                    continue;
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// Array Contract
+// ============================================================================
+
+// ArrayAllSatisfy - Array where all elements satisfy a contract
+/// An array where every element is a contract type C.
+///
+/// **Compositional verification:** If C is valid and all N elements are C,
+/// then ArrayAllSatisfy<C, N> is automatically valid.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ArrayAllSatisfy<C, const N: usize>([C; N]);
+
+impl<C, const N: usize> ArrayAllSatisfy<C, N> {
+    /// Create a new ArrayAllSatisfy. All elements are already validated contract types.
+    pub fn new(elements: [C; N]) -> Self {
+        Self(elements)
+    }
+
+    /// Get the inner array.
+    pub fn get(&self) -> &[C; N] {
+        &self.0
+    }
+
+    /// Unwrap into the inner array.
+    pub fn into_inner(self) -> [C; N] {
+        self.0
+    }
+}
+
+impl<C, const N: usize> Prompt for ArrayAllSatisfy<C, N>
+where
+    C: Elicitation + Send,
+{
+    fn prompt() -> Option<&'static str> {
+        Some("Please provide array elements:")
+    }
+}
+
+impl<C, const N: usize> Elicitation for ArrayAllSatisfy<C, N>
+where
+    C: Elicitation + Send,
+{
+    type Style = <[C; N] as Elicitation>::Style;
+
+    #[tracing::instrument(skip(client), fields(array_size = N))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting ArrayAllSatisfy");
+        // Each element is C (contract type), so all guaranteed valid!
+        let elements = <[C; N]>::elicit(client).await?;
+        tracing::debug!(size = N, "All array elements satisfy contract");
+        Ok(Self::new(elements))
+    }
+}
+
+#[cfg(test)]
+mod extended_tests {
+    use super::*;
+    use crate::verification::types::I8Positive;
+
+    #[test]
+    fn test_hashmap_non_empty_valid() {
+        let mut map = HashMap::new();
+        map.insert("key", 42);
+        let result = HashMapNonEmpty::new(map);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_hashmap_non_empty_empty() {
+        let map: HashMap<&str, i32> = HashMap::new();
+        let result = HashMapNonEmpty::new(map);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_hashset_non_empty_valid() {
+        let mut set = HashSet::new();
+        set.insert(1);
+        let result = HashSetNonEmpty::new(set);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_btreemap_non_empty_valid() {
+        let mut map = BTreeMap::new();
+        map.insert(1, "value");
+        let result = BTreeMapNonEmpty::new(map);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_btreeset_non_empty_valid() {
+        let mut set = BTreeSet::new();
+        set.insert(1);
+        let result = BTreeSetNonEmpty::new(set);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_vecdeque_non_empty_valid() {
+        let mut deque = VecDeque::new();
+        deque.push_back(1);
+        let result = VecDequeNonEmpty::new(deque);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_linkedlist_non_empty_valid() {
+        let mut list = LinkedList::new();
+        list.push_back(1);
+        let result = LinkedListNonEmpty::new(list);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_array_all_satisfy() {
+        let elements = [
+            I8Positive::new(1).unwrap(),
+            I8Positive::new(2).unwrap(),
+            I8Positive::new(3).unwrap(),
+        ];
+        let array = ArrayAllSatisfy::new(elements);
+        assert_eq!(array.get().len(), 3);
+    }
+}

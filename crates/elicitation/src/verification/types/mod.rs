@@ -31,6 +31,7 @@ mod pathbufs;
 mod datetimes;
 mod tuples;
 mod collections;
+mod values;
 
 pub use integers::*;
 pub use floats::*;
@@ -44,6 +45,7 @@ pub use pathbufs::*;
 pub use datetimes::*;
 pub use tuples::*;
 pub use collections::*;
+pub use values::*;
 
 /// Error type for contract validation failures.
 #[derive(Debug, Clone, PartialEq, derive_more::Display)]
@@ -219,6 +221,19 @@ pub enum ValidationError {
     /// Result is Err (must be Ok).
     #[display("Result must be Ok, not Err")]
     ResultIsErr,
+
+    /// JSON Value is wrong type.
+    #[display("JSON must be {}, got {}", expected, got)]
+    WrongJsonType {
+        /// Expected JSON type.
+        expected: String,
+        /// Actual JSON type.
+        got: String,
+    },
+
+    /// JSON Value is null.
+    #[display("JSON must be non-null")]
+    JsonIsNull,
 }
 
 impl std::error::Error for ValidationError {}
