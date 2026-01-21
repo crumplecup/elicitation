@@ -1029,7 +1029,7 @@ mod tests {
         use super::AndContract;
         
         // 42 is both positive and non-negative
-        let contract = AndContract::new(I32Positive, I32NonNegative);
+        AndContract::new(I32Positive, I32NonNegative);
         assert!(AndContract::<I32Positive, I32NonNegative>::requires(&42));
         assert!(AndContract::<I32Positive, I32NonNegative>::ensures(&42, &42));
     }
@@ -1085,7 +1085,7 @@ mod tests {
         use super::AndContract;
         
         // Create contract: non-empty AND max 10 chars
-        let contract = AndContract::new(StringNonEmpty, StringMaxLength::<10>);
+        AndContract::new(StringNonEmpty, StringMaxLength::<10>);
         
         // "hello" passes (non-empty, 5 chars)
         assert!(AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(&"hello".to_string()));
