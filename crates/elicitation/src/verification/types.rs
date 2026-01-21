@@ -189,7 +189,7 @@ impl I8NonNegative {
         if value >= 0 {
             Ok(Self(value))
         } else {
-            Err(ValidationError::Negative(value.into()))
+            Err(ValidationError::Negative(value as i128))
         }
     }
 
@@ -256,9 +256,9 @@ impl<const MIN: i8, const MAX: i8> I8Range<MIN, MAX> {
             Ok(Self(value))
         } else {
             Err(ValidationError::OutOfRange {
-                value: value.into(),
-                min: MIN.into(),
-                max: MAX.into(),
+                value: value as i128,
+                min: MIN as i128,
+                max: MAX as i128,
             })
         }
     }
@@ -424,7 +424,7 @@ impl I16Positive {
         if value > 0 {
             Ok(Self(value))
         } else {
-            Err(ValidationError::NotPositive(value.into()))
+            Err(ValidationError::NotPositive(value as i128))
         }
     }
 
@@ -490,7 +490,7 @@ impl I16NonNegative {
         if value >= 0 {
             Ok(Self(value))
         } else {
-            Err(ValidationError::Negative(value.into()))
+            Err(ValidationError::Negative(value as i128))
         }
     }
 
@@ -557,9 +557,9 @@ impl<const MIN: i16, const MAX: i16> I16Range<MIN, MAX> {
             Ok(Self(value))
         } else {
             Err(ValidationError::OutOfRange {
-                value: value.into(),
-                min: MIN.into(),
-                max: MAX.into(),
+                value: value as i128,
+                min: MIN as i128,
+                max: MAX as i128,
             })
         }
     }
@@ -821,9 +821,9 @@ impl<const MIN: u8, const MAX: u8> U8Range<MIN, MAX> {
             Ok(Self(value))
         } else {
             Err(ValidationError::OutOfRange {
-                value: value.into(),
-                min: MIN.into(),
-                max: MAX.into(),
+                value: value as i128,
+                min: MIN as i128,
+                max: MAX as i128,
             })
         }
     }
@@ -977,9 +977,9 @@ impl<const MIN: u16, const MAX: u16> U16Range<MIN, MAX> {
             Ok(Self(value))
         } else {
             Err(ValidationError::OutOfRange {
-                value: value.into(),
-                min: MIN.into(),
-                max: MAX.into(),
+                value: value as i128,
+                min: MIN as i128,
+                max: MAX as i128,
             })
         }
     }
@@ -1185,3 +1185,600 @@ mod u16_range_tests {
         assert_eq!(value, 1500);
     }
 }
+
+// ============================================================================
+// Macro to generate signed integer contract types (Positive, NonNegative, Range)
+// ============================================================================
+
+macro_rules! impl_signed_contracts {
+    ($base:ty, $positive:ident, $nonnegative:ident, $range:ident, $range_style:ident, $test_pos_value:expr, $test_nonneg_value:expr, $test_range_min:expr, $test_range_max:expr, $test_range_value:expr) => {
+        // Positive variant (value > 0)
+        #[doc = concat!("Contract type for positive ", stringify!($base), " values (> 0).")]
+        ///
+        /// Validates on construction, then can unwrap to stdlib type via `into_inner()`.
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+        pub struct $positive($base);
+
+        impl $positive {
+            /// Constructs a positive value.
+            ///
+            /// # Errors
+            ///
+            /// Returns `ValidationError::NotPositive` if value <= 0.
+            pub fn new(value: $base) -> Result<Self, ValidationError> {
+                if value > 0 {
+                    Ok(Self(value))
+                } else {
+                    Err(ValidationError::NotPositive(value as i128))
+                }
+            }
+
+            /// Gets the wrapped value.
+            pub fn get(&self) -> $base {
+                self.0
+            }
+
+            /// Unwraps to stdlib type (trenchcoat off).
+            pub fn into_inner(self) -> $base {
+                self.0
+            }
+        }
+
+        paste::paste! {
+            crate::default_style!($positive => [<$positive Style>]);
+
+            impl Prompt for $positive {
+                fn prompt() -> Option<&'static str> {
+                    Some("Please enter a positive number (> 0):")
+                }
+            }
+
+            impl Elicitation for $positive {
+                type Style = [<$positive Style>];
+
+                #[tracing::instrument(skip(client), fields(type_name = stringify!($positive)))]
+                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                    tracing::debug!(concat!("Eliciting ", stringify!($positive), " (positive ", stringify!($base), " value)"));
+
+                    loop {
+                        let value = <$base>::elicit(client).await?;
+                        
+                        match Self::new(value) {
+                            Ok(positive) => {
+                                tracing::debug!(value, concat!("Valid ", stringify!($positive), " constructed"));
+                                return Ok(positive);
+                            }
+                            Err(e) => {
+                                tracing::warn!(value, error = %e, concat!("Invalid ", stringify!($positive), ", re-prompting"));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // NonNegative variant (value >= 0)
+        #[doc = concat!("Contract type for non-negative ", stringify!($base), " values (>= 0).")]
+        ///
+        /// Validates on construction, then can unwrap to stdlib type via `into_inner()`.
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+        pub struct $nonnegative($base);
+
+        impl $nonnegative {
+            /// Constructs a non-negative value.
+            ///
+            /// # Errors
+            ///
+            /// Returns `ValidationError::Negative` if value < 0.
+            pub fn new(value: $base) -> Result<Self, ValidationError> {
+                if value >= 0 {
+                    Ok(Self(value))
+                } else {
+                    Err(ValidationError::Negative(value as i128))
+                }
+            }
+
+            /// Gets the wrapped value.
+            pub fn get(&self) -> $base {
+                self.0
+            }
+
+            /// Unwraps to stdlib type (trenchcoat off).
+            pub fn into_inner(self) -> $base {
+                self.0
+            }
+        }
+
+        paste::paste! {
+            crate::default_style!($nonnegative => [<$nonnegative Style>]);
+
+            impl Prompt for $nonnegative {
+                fn prompt() -> Option<&'static str> {
+                    Some("Please enter a non-negative number (>= 0):")
+                }
+            }
+
+            impl Elicitation for $nonnegative {
+                type Style = [<$nonnegative Style>];
+
+                #[tracing::instrument(skip(client), fields(type_name = stringify!($nonnegative)))]
+                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                    tracing::debug!(concat!("Eliciting ", stringify!($nonnegative), " (non-negative ", stringify!($base), " value)"));
+
+                    loop {
+                        let value = <$base>::elicit(client).await?;
+                        
+                        match Self::new(value) {
+                            Ok(non_negative) => {
+                                tracing::debug!(value, concat!("Valid ", stringify!($nonnegative), " constructed"));
+                                return Ok(non_negative);
+                            }
+                            Err(e) => {
+                                tracing::warn!(value, error = %e, concat!("Invalid ", stringify!($nonnegative), ", re-prompting"));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Range variant (MIN <= value <= MAX)
+        #[doc = concat!("Contract type for ", stringify!($base), " values within a specified range [MIN, MAX].")]
+        ///
+        /// Validates on construction, then can unwrap to stdlib type via `into_inner()`.
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+        pub struct $range<const MIN: $base, const MAX: $base>($base);
+
+        impl<const MIN: $base, const MAX: $base> $range<MIN, MAX> {
+            /// Constructs a value within the specified range.
+            ///
+            /// # Errors
+            ///
+            /// Returns `ValidationError::OutOfRange` if value not in [MIN, MAX].
+            pub fn new(value: $base) -> Result<Self, ValidationError> {
+                if value >= MIN && value <= MAX {
+                    Ok(Self(value))
+                } else {
+                    Err(ValidationError::OutOfRange {
+                        value: value as i128,
+                        min: MIN as i128,
+                        max: MAX as i128,
+                    })
+                }
+            }
+
+            /// Gets the wrapped value.
+            pub fn get(&self) -> $base {
+                self.0
+            }
+
+            /// Unwraps to stdlib type (trenchcoat off).
+            pub fn into_inner(self) -> $base {
+                self.0
+            }
+        }
+
+        #[doc = concat!("Default-only style enum for ", stringify!($range), ".")]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        pub enum $range_style {
+            /// Default presentation style.
+            #[default]
+            Default,
+        }
+
+        impl crate::Prompt for $range_style {
+            fn prompt() -> Option<&'static str> {
+                None
+            }
+        }
+
+        impl crate::Elicitation for $range_style {
+            type Style = $range_style;
+
+            async fn elicit(_client: &crate::ElicitClient<'_>) -> crate::ElicitResult<Self> {
+                Ok(Self::Default)
+            }
+        }
+
+        impl<const MIN: $base, const MAX: $base> Prompt for $range<MIN, MAX> {
+            fn prompt() -> Option<&'static str> {
+                Some("Please enter a number within the specified range:")
+            }
+        }
+
+        impl<const MIN: $base, const MAX: $base> Elicitation for $range<MIN, MAX> {
+            type Style = $range_style;
+
+            #[tracing::instrument(skip(client), fields(type_name = stringify!($range), min = MIN, max = MAX))]
+            async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                tracing::debug!(concat!("Eliciting ", stringify!($range), "<{}, {}> (", stringify!($base), " in range)"), MIN, MAX);
+
+                loop {
+                    let value = <$base>::elicit(client).await?;
+                    
+                    match Self::new(value) {
+                        Ok(ranged) => {
+                            tracing::debug!(value, min = MIN, max = MAX, concat!("Valid ", stringify!($range), " constructed"));
+                            return Ok(ranged);
+                        }
+                        Err(e) => {
+                            tracing::warn!(value, error = %e, min = MIN, max = MAX, concat!("Invalid ", stringify!($range), ", re-prompting"));
+                        }
+                    }
+                }
+            }
+        }
+
+        // Tests
+        paste::paste! {
+            #[cfg(test)]
+            mod [<$positive:snake _tests>] {
+                use super::*;
+
+                #[test]
+                fn [<$positive:snake _new_valid>]() {
+                    let result = $positive::new($test_pos_value);
+                    assert!(result.is_ok());
+                    assert_eq!(result.unwrap().get(), $test_pos_value);
+                }
+
+                #[test]
+                fn [<$positive:snake _new_zero_invalid>]() {
+                    let result = $positive::new(0);
+                    assert!(result.is_err());
+                }
+
+                #[test]
+                fn [<$positive:snake _new_negative_invalid>]() {
+                    let result = $positive::new(-1);
+                    assert!(result.is_err());
+                }
+
+                #[test]
+                fn [<$positive:snake _into_inner>]() {
+                    let positive = $positive::new($test_pos_value).unwrap();
+                    let value: $base = positive.into_inner();
+                    assert_eq!(value, $test_pos_value);
+                }
+            }
+
+            #[cfg(test)]
+            mod [<$nonnegative:snake _tests>] {
+                use super::*;
+
+                #[test]
+                fn [<$nonnegative:snake _new_valid_positive>]() {
+                    let result = $nonnegative::new($test_nonneg_value);
+                    assert!(result.is_ok());
+                    assert_eq!(result.unwrap().get(), $test_nonneg_value);
+                }
+
+                #[test]
+                fn [<$nonnegative:snake _new_valid_zero>]() {
+                    let result = $nonnegative::new(0);
+                    assert!(result.is_ok());
+                    assert_eq!(result.unwrap().get(), 0);
+                }
+
+                #[test]
+                fn [<$nonnegative:snake _new_negative_invalid>]() {
+                    let result = $nonnegative::new(-1);
+                    assert!(result.is_err());
+                }
+
+                #[test]
+                fn [<$nonnegative:snake _into_inner>]() {
+                    let non_neg = $nonnegative::new($test_nonneg_value).unwrap();
+                    let value: $base = non_neg.into_inner();
+                    assert_eq!(value, $test_nonneg_value);
+                }
+            }
+
+            #[cfg(test)]
+            mod [<$range:snake _tests>] {
+                use super::*;
+
+                #[test]
+                fn [<$range:snake _new_valid_within_range>]() {
+                    let result = $range::<$test_range_min, $test_range_max>::new($test_range_value);
+                    assert!(result.is_ok());
+                    assert_eq!(result.unwrap().get(), $test_range_value);
+                }
+
+                #[test]
+                fn [<$range:snake _new_valid_at_min>]() {
+                    let result = $range::<$test_range_min, $test_range_max>::new($test_range_min);
+                    assert!(result.is_ok());
+                    assert_eq!(result.unwrap().get(), $test_range_min);
+                }
+
+                #[test]
+                fn [<$range:snake _new_valid_at_max>]() {
+                    let result = $range::<$test_range_min, $test_range_max>::new($test_range_max);
+                    assert!(result.is_ok());
+                    assert_eq!(result.unwrap().get(), $test_range_max);
+                }
+
+                #[test]
+                fn [<$range:snake _new_below_min_invalid>]() {
+                    let result = $range::<$test_range_min, $test_range_max>::new($test_range_min - 1);
+                    assert!(result.is_err());
+                }
+
+                #[test]
+                fn [<$range:snake _new_above_max_invalid>]() {
+                    let result = $range::<$test_range_min, $test_range_max>::new($test_range_max + 1);
+                    assert!(result.is_err());
+                }
+
+                #[test]
+                fn [<$range:snake _into_inner>]() {
+                    let ranged = $range::<$test_range_min, $test_range_max>::new($test_range_value).unwrap();
+                    let value: $base = ranged.into_inner();
+                    assert_eq!(value, $test_range_value);
+                }
+            }
+        }
+    };
+}
+
+// ============================================================================
+// Macro to generate unsigned integer contract types (NonZero, Range)
+// ============================================================================
+
+macro_rules! impl_unsigned_contracts {
+    ($base:ty, $nonzero:ident, $range:ident, $range_style:ident, $test_nonzero_value:expr, $test_range_min:expr, $test_range_max:expr, $test_range_value:expr) => {
+        // NonZero variant (value != 0)
+        #[doc = concat!("Contract type for non-zero ", stringify!($base), " values (!= 0).")]
+        ///
+        /// Validates on construction, then can unwrap to stdlib type via `into_inner()`.
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+        pub struct $nonzero($base);
+
+        impl $nonzero {
+            /// Constructs a non-zero value.
+            ///
+            /// # Errors
+            ///
+            /// Returns `ValidationError::Zero` if value == 0.
+            pub fn new(value: $base) -> Result<Self, ValidationError> {
+                if value != 0 {
+                    Ok(Self(value))
+                } else {
+                    Err(ValidationError::Zero)
+                }
+            }
+
+            /// Gets the wrapped value.
+            pub fn get(&self) -> $base {
+                self.0
+            }
+
+            /// Unwraps to stdlib type (trenchcoat off).
+            pub fn into_inner(self) -> $base {
+                self.0
+            }
+        }
+
+        paste::paste! {
+            crate::default_style!($nonzero => [<$nonzero Style>]);
+
+            impl Prompt for $nonzero {
+                fn prompt() -> Option<&'static str> {
+                    Some("Please enter a non-zero number (!= 0):")
+                }
+            }
+
+            impl Elicitation for $nonzero {
+                type Style = [<$nonzero Style>];
+
+                #[tracing::instrument(skip(client), fields(type_name = stringify!($nonzero)))]
+                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                    tracing::debug!(concat!("Eliciting ", stringify!($nonzero), " (non-zero ", stringify!($base), " value)"));
+
+                    loop {
+                        let value = <$base>::elicit(client).await?;
+                        
+                        match Self::new(value) {
+                            Ok(non_zero) => {
+                                tracing::debug!(value, concat!("Valid ", stringify!($nonzero), " constructed"));
+                                return Ok(non_zero);
+                            }
+                            Err(e) => {
+                                tracing::warn!(value, error = %e, concat!("Invalid ", stringify!($nonzero), ", re-prompting"));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Range variant (MIN <= value <= MAX)
+        #[doc = concat!("Contract type for ", stringify!($base), " values within a specified range [MIN, MAX].")]
+        ///
+        /// Validates on construction, then can unwrap to stdlib type via `into_inner()`.
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+        pub struct $range<const MIN: $base, const MAX: $base>($base);
+
+        impl<const MIN: $base, const MAX: $base> $range<MIN, MAX> {
+            /// Constructs a value within the specified range.
+            ///
+            /// # Errors
+            ///
+            /// Returns `ValidationError::OutOfRange` if value not in [MIN, MAX].
+            pub fn new(value: $base) -> Result<Self, ValidationError> {
+                if value >= MIN && value <= MAX {
+                    Ok(Self(value))
+                } else {
+                    Err(ValidationError::OutOfRange {
+                        value: value as i128,
+                        min: MIN as i128,
+                        max: MAX as i128,
+                    })
+                }
+            }
+
+            /// Gets the wrapped value.
+            pub fn get(&self) -> $base {
+                self.0
+            }
+
+            /// Unwraps to stdlib type (trenchcoat off).
+            pub fn into_inner(self) -> $base {
+                self.0
+            }
+        }
+
+        #[doc = concat!("Default-only style enum for ", stringify!($range), ".")]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        pub enum $range_style {
+            /// Default presentation style.
+            #[default]
+            Default,
+        }
+
+        impl crate::Prompt for $range_style {
+            fn prompt() -> Option<&'static str> {
+                None
+            }
+        }
+
+        impl crate::Elicitation for $range_style {
+            type Style = $range_style;
+
+            async fn elicit(_client: &crate::ElicitClient<'_>) -> crate::ElicitResult<Self> {
+                Ok(Self::Default)
+            }
+        }
+
+        impl<const MIN: $base, const MAX: $base> Prompt for $range<MIN, MAX> {
+            fn prompt() -> Option<&'static str> {
+                Some("Please enter a number within the specified range:")
+            }
+        }
+
+        impl<const MIN: $base, const MAX: $base> Elicitation for $range<MIN, MAX> {
+            type Style = $range_style;
+
+            #[tracing::instrument(skip(client), fields(type_name = stringify!($range), min = MIN, max = MAX))]
+            async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                tracing::debug!(concat!("Eliciting ", stringify!($range), "<{}, {}> (", stringify!($base), " in range)"), MIN, MAX);
+
+                loop {
+                    let value = <$base>::elicit(client).await?;
+                    
+                    match Self::new(value) {
+                        Ok(ranged) => {
+                            tracing::debug!(value, min = MIN, max = MAX, concat!("Valid ", stringify!($range), " constructed"));
+                            return Ok(ranged);
+                        }
+                        Err(e) => {
+                            tracing::warn!(value, error = %e, min = MIN, max = MAX, concat!("Invalid ", stringify!($range), ", re-prompting"));
+                        }
+                    }
+                }
+            }
+        }
+
+        // Tests
+        paste::paste! {
+            #[cfg(test)]
+            mod [<$nonzero:snake _tests>] {
+                use super::*;
+
+                #[test]
+                fn [<$nonzero:snake _new_valid>]() {
+                    let result = $nonzero::new($test_nonzero_value);
+                    assert!(result.is_ok());
+                    assert_eq!(result.unwrap().get(), $test_nonzero_value);
+                }
+
+                #[test]
+                fn [<$nonzero:snake _new_zero_invalid>]() {
+                    let result = $nonzero::new(0);
+                    assert!(result.is_err());
+                }
+
+                #[test]
+                fn [<$nonzero:snake _into_inner>]() {
+                    let non_zero = $nonzero::new($test_nonzero_value).unwrap();
+                    let value: $base = non_zero.into_inner();
+                    assert_eq!(value, $test_nonzero_value);
+                }
+            }
+
+            #[cfg(test)]
+            mod [<$range:snake _tests>] {
+                use super::*;
+
+                #[test]
+                fn [<$range:snake _new_valid_within_range>]() {
+                    let result = $range::<$test_range_min, $test_range_max>::new($test_range_value);
+                    assert!(result.is_ok());
+                    assert_eq!(result.unwrap().get(), $test_range_value);
+                }
+
+                #[test]
+                fn [<$range:snake _new_valid_at_min>]() {
+                    let result = $range::<$test_range_min, $test_range_max>::new($test_range_min);
+                    assert!(result.is_ok());
+                    assert_eq!(result.unwrap().get(), $test_range_min);
+                }
+
+                #[test]
+                fn [<$range:snake _new_valid_at_max>]() {
+                    let result = $range::<$test_range_min, $test_range_max>::new($test_range_max);
+                    assert!(result.is_ok());
+                    assert_eq!(result.unwrap().get(), $test_range_max);
+                }
+
+                #[test]
+                fn [<$range:snake _new_below_min_invalid>]() {
+                    let result = $range::<$test_range_min, $test_range_max>::new($test_range_min - 1);
+                    assert!(result.is_err());
+                }
+
+                #[test]
+                fn [<$range:snake _new_above_max_invalid>]() {
+                    let result = $range::<$test_range_min, $test_range_max>::new($test_range_max + 1);
+                    assert!(result.is_err());
+                }
+
+                #[test]
+                fn [<$range:snake _into_inner>]() {
+                    let ranged = $range::<$test_range_min, $test_range_max>::new($test_range_value).unwrap();
+                    let value: $base = ranged.into_inner();
+                    assert_eq!(value, $test_range_value);
+                }
+            }
+        }
+    };
+}
+
+// ============================================================================
+// Generate remaining integer contract types using macros
+// ============================================================================
+
+// i32 family
+impl_signed_contracts!(i32, I32Positive, I32NonNegative, I32Range, I32RangeStyle, 42, 100, 10, 100, 50);
+
+// u32 family
+impl_unsigned_contracts!(u32, U32NonZero, U32Range, U32RangeStyle, 42, 10, 100, 50);
+
+// i64 family
+impl_signed_contracts!(i64, I64Positive, I64NonNegative, I64Range, I64RangeStyle, 42, 100, 10, 100, 50);
+
+// u64 family
+impl_unsigned_contracts!(u64, U64NonZero, U64Range, U64RangeStyle, 42, 10, 100, 50);
+
+// i128 family
+impl_signed_contracts!(i128, I128Positive, I128NonNegative, I128Range, I128RangeStyle, 42, 100, 10, 100, 50);
+
+// u128 family
+impl_unsigned_contracts!(u128, U128NonZero, U128Range, U128RangeStyle, 42, 10, 100, 50);
+
+// isize family
+impl_signed_contracts!(isize, IsizePositive, IsizeNonNegative, IsizeRange, IsizeRangeStyle, 42, 100, 10, 100, 50);
+
+// usize family
+impl_unsigned_contracts!(usize, UsizeNonZero, UsizeRange, UsizeRangeStyle, 42, 10, 100, 50);
