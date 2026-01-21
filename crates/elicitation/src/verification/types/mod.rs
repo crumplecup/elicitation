@@ -36,6 +36,9 @@ mod values;
 #[cfg(kani)]
 mod kani_proofs;
 
+#[cfg(feature = "verify-verus")]
+mod verus_proofs;
+
 pub use integers::*;
 pub use floats::*;
 pub use strings::*;
