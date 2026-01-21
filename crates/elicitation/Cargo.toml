@@ -76,6 +76,7 @@ verify-creusot = ["verification", "creusot-contracts"]  # Creusot deductive veri
 verify-prusti = ["verification", "prusti-contracts"]    # Prusti separation logic
 verify-verus = ["verification"]            # Verus SMT verifier (future)
 verify-all = ["verify-kani", "verify-creusot", "verify-prusti", "verify-verus"]
+kani-verifier = []
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }

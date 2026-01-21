@@ -20,22 +20,10 @@ struct User {
 #[test]
 fn test_user_struct_compiles() {
     // This test just verifies the derive macro compiles successfully
-    // The verification contracts are feature-gated
+    // The verification contracts are feature-gated and only visible to Kani
     assert!(true);
 }
 
-// Verification tests (only compiled with verify-kani feature)
-#[cfg(all(feature = "verify-kani", kani))]
-mod kani_tests {
-    use super::*;
-
-    // The derive macro should have generated these functions
-    // We can't call them directly in tests, but Kani will find them
-
-    #[test]
-    fn verification_functions_exist() {
-        // This is a compile-time check that the functions were generated
-        // If this compiles, the derive macro worked
-        assert!(true);
-    }
-}
+// Note: The generated verification functions are only compiled by Kani,
+// not by regular cargo test. To verify them:
+//   cargo kani --harness __verify_User --features verify-kani
