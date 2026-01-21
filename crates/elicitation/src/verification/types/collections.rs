@@ -958,3 +958,71 @@ mod extended_tests {
         assert_eq!(array.get().len(), 3);
     }
 }
+
+// ============================================================================
+// Smart Pointer NonNull Types (for Prusti proofs)
+// ============================================================================
+
+/// Contract type for non-null Box<T>.
+#[derive(Debug, Clone)]
+pub struct BoxNonNull<T>(Box<T>);
+
+impl<T> BoxNonNull<T> {
+    /// Creates a BoxNonNull (Box is always non-null by construction).
+    pub fn new(value: Box<T>) -> Result<Self, super::ValidationError> {
+        Ok(Self(value))
+    }
+
+    /// Gets a reference to the inner value.
+    pub fn get(&self) -> &T {
+        &self.0
+    }
+
+    /// Unwraps to inner Box.
+    pub fn into_inner(self) -> Box<T> {
+        self.0
+    }
+}
+
+/// Contract type for non-null Arc<T>.
+#[derive(Debug, Clone)]
+pub struct ArcNonNull<T>(std::sync::Arc<T>);
+
+impl<T> ArcNonNull<T> {
+    /// Creates an ArcNonNull (Arc is always non-null by construction).
+    pub fn new(value: std::sync::Arc<T>) -> Result<Self, super::ValidationError> {
+        Ok(Self(value))
+    }
+
+    /// Gets a reference to the inner value.
+    pub fn get(&self) -> &T {
+        &self.0
+    }
+
+    /// Unwraps to inner Arc.
+    pub fn into_inner(self) -> std::sync::Arc<T> {
+        self.0
+    }
+}
+
+/// Contract type for non-null Rc<T>.
+#[derive(Debug, Clone)]
+pub struct RcNonNull<T>(std::rc::Rc<T>);
+
+impl<T> RcNonNull<T> {
+    /// Creates an RcNonNull (Rc is always non-null by construction).
+    pub fn new(value: std::rc::Rc<T>) -> Result<Self, super::ValidationError> {
+        Ok(Self(value))
+    }
+
+    /// Gets a reference to the inner value.
+    pub fn get(&self) -> &T {
+        &self.0
+    }
+
+    /// Unwraps to inner Rc.
+    pub fn into_inner(self) -> std::rc::Rc<T> {
+        self.0
+    }
+}
+

@@ -19,6 +19,14 @@
 //! let value: i8 = validated.into_inner();
 //! ```
 
+/// Trait for types that validate other types.
+///
+/// Used in Prusti proofs to express that a contract validates a base type.
+pub trait ValidatesType<T> {
+    /// Validates that a value conforms to this contract.
+    fn validates(value: &T) -> bool;
+}
+
 mod integers;
 mod floats;
 mod strings;
@@ -55,18 +63,30 @@ mod prusti_proofs;
 
 // Integers
 pub use integers::{
-    I8Positive, I8NonNegative, I8Range, I8RangeStyle,
-    I16Positive, I16NonNegative, I16Range, I16RangeStyle,
-    I32Positive, I32NonNegative, I32Range, I32RangeStyle,
-    I64Positive, I64NonNegative, I64Range, I64RangeStyle,
-    I128Positive, I128NonNegative, I128Range, I128RangeStyle,
-    IsizePositive, IsizeNonNegative, IsizeRange, IsizeRangeStyle,
+    // i8 family
+    I8Positive, I8NonNegative, I8NonZero, I8Range, I8RangeStyle, I8NonZeroStyle,
+    // i16 family
+    I16Positive, I16NonNegative, I16NonZero, I16Range, I16RangeStyle, I16NonZeroStyle,
+    // i32 family
+    I32Positive, I32NonNegative, I32NonZero, I32Range, I32RangeStyle,
+    // i64 family
+    I64Positive, I64NonNegative, I64NonZero, I64Range, I64RangeStyle,
+    // i128 family
+    I128Positive, I128NonNegative, I128NonZero, I128Range, I128RangeStyle,
+    // isize family
+    IsizePositive, IsizeNonNegative, IsizeNonZero, IsizeRange, IsizeRangeStyle,
+    // u8 family
     U8Positive, U8NonZero, U8Range, U8RangeStyle,
+    // u16 family
     U16Positive, U16NonZero, U16Range, U16RangeStyle,
-    U32NonZero, U32Range, U32RangeStyle,
-    U64NonZero, U64Range, U64RangeStyle,
-    U128NonZero, U128Range, U128RangeStyle,
-    UsizeNonZero, UsizeRange, UsizeRangeStyle,
+    // u32 family
+    U32Positive, U32NonZero, U32Range, U32RangeStyle,
+    // u64 family
+    U64Positive, U64NonZero, U64Range, U64RangeStyle,
+    // u128 family
+    U128Positive, U128NonZero, U128Range, U128RangeStyle,
+    // usize family
+    UsizePositive, UsizeNonZero, UsizeRange, UsizeRangeStyle,
 };
 
 // Floats
@@ -89,6 +109,7 @@ pub use collections::{
     VecNonEmpty, VecAllSatisfy,
     OptionSome, ResultOk,
     BoxSatisfies, ArcSatisfies, RcSatisfies,
+    BoxNonNull, ArcNonNull, RcNonNull,
     HashMapNonEmpty, BTreeMapNonEmpty,
     HashSetNonEmpty, BTreeSetNonEmpty,
     VecDequeNonEmpty, LinkedListNonEmpty,

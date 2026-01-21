@@ -135,19 +135,30 @@ pub use elicitation_derive::Elicit;
 // EXPLICIT exports - no globs (helps compiler show what's missing)
 #[cfg(any(feature = "verification", kani))]
 pub use verification::types::{
-    // Integers
-    I8Positive, I8NonNegative, I8Range, I8RangeStyle,
-    I16Positive, I16NonNegative, I16Range, I16RangeStyle,
-    I32Positive, I32NonNegative, I32Range, I32RangeStyle,
-    I64Positive, I64NonNegative, I64Range, I64RangeStyle,
-    I128Positive, I128NonNegative, I128Range, I128RangeStyle,
-    IsizePositive, IsizeNonNegative, IsizeRange, IsizeRangeStyle,
+    // Integers - i8 family
+    I8Positive, I8NonNegative, I8NonZero, I8Range, I8RangeStyle, I8NonZeroStyle,
+    // i16 family
+    I16Positive, I16NonNegative, I16NonZero, I16Range, I16RangeStyle, I16NonZeroStyle,
+    // i32 family
+    I32Positive, I32NonNegative, I32NonZero, I32Range, I32RangeStyle,
+    // i64 family
+    I64Positive, I64NonNegative, I64NonZero, I64Range, I64RangeStyle,
+    // i128 family
+    I128Positive, I128NonNegative, I128NonZero, I128Range, I128RangeStyle,
+    // isize family
+    IsizePositive, IsizeNonNegative, IsizeNonZero, IsizeRange, IsizeRangeStyle,
+    // u8 family
     U8Positive, U8NonZero, U8Range, U8RangeStyle,
+    // u16 family
     U16Positive, U16NonZero, U16Range, U16RangeStyle,
-    U32NonZero, U32Range, U32RangeStyle,
-    U64NonZero, U64Range, U64RangeStyle,
-    U128NonZero, U128Range, U128RangeStyle,
-    UsizeNonZero, UsizeRange, UsizeRangeStyle,
+    // u32 family
+    U32Positive, U32NonZero, U32Range, U32RangeStyle,
+    // u64 family
+    U64Positive, U64NonZero, U64Range, U64RangeStyle,
+    // u128 family
+    U128Positive, U128NonZero, U128Range, U128RangeStyle,
+    // usize family
+    UsizePositive, UsizeNonZero, UsizeRange, UsizeRangeStyle,
     // Floats
     F32Positive, F32NonNegative, F32Finite,
     F64Positive, F64NonNegative, F64Finite,
@@ -161,6 +172,7 @@ pub use verification::types::{
     VecNonEmpty, VecAllSatisfy,
     OptionSome, ResultOk,
     BoxSatisfies, ArcSatisfies, RcSatisfies,
+    BoxNonNull, ArcNonNull, RcNonNull,
     HashMapNonEmpty, BTreeMapNonEmpty,
     HashSetNonEmpty, BTreeSetNonEmpty,
     VecDequeNonEmpty, LinkedListNonEmpty,

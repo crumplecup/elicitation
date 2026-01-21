@@ -205,6 +205,79 @@ impl Elicitation for I8NonNegative {
 }
 
 // ============================================================================
+// I8 NonZero Type
+// ============================================================================
+
+/// Contract type for non-zero i8 values (!= 0).
+///
+/// Validates on construction, unwraps to stdlib i8.
+#[contract_type(
+    requires = "value != 0",
+    ensures = "result.get() != 0"
+)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct I8NonZero(i8);
+
+#[instrumented_impl]
+impl I8NonZero {
+    /// Creates a new `I8NonZero` if value is non-zero.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::Zero` if value == 0.
+    pub fn new(value: i8) -> Result<Self, ValidationError> {
+        if value != 0 {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::Zero)
+        }
+    }
+
+    /// Gets the inner value.
+    pub fn get(&self) -> i8 {
+        self.0
+    }
+
+    /// Unwraps to inner i8.
+    pub fn into_inner(self) -> i8 {
+        self.0
+    }
+}
+
+crate::default_style!(I8NonZero => I8NonZeroStyle);
+
+#[instrumented_impl]
+impl Prompt for I8NonZero {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a non-zero number (!= 0):")
+    }
+}
+
+#[instrumented_impl]
+impl Elicitation for I8NonZero {
+    type Style = I8NonZeroStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "I8NonZero"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting I8NonZero");
+
+        loop {
+            let value = i8::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(non_zero) => {
+                    tracing::debug!(value, "Valid I8NonZero constructed");
+                    return Ok(non_zero);
+                }
+                Err(e) => {
+                    tracing::warn!(value, error = %e, "Invalid I8NonZero, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
 // I8Range (MIN <= i8 <= MAX)
 // ============================================================================
 
@@ -509,6 +582,77 @@ impl Elicitation for I16NonNegative {
                 }
                 Err(e) => {
                     tracing::warn!(value, error = %e, "Invalid I16NonNegative, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// I16 NonZero Type
+// ============================================================================
+
+/// Contract type for non-zero i16 values (!= 0).
+#[contract_type(
+    requires = "value != 0",
+    ensures = "result.get() != 0"
+)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct I16NonZero(i16);
+
+#[instrumented_impl]
+impl I16NonZero {
+    /// Creates a new `I16NonZero` if value is non-zero.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::Zero` if value == 0.
+    pub fn new(value: i16) -> Result<Self, ValidationError> {
+        if value != 0 {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::Zero)
+        }
+    }
+
+    /// Gets the inner value.
+    pub fn get(&self) -> i16 {
+        self.0
+    }
+
+    /// Unwraps to inner i16.
+    pub fn into_inner(self) -> i16 {
+        self.0
+    }
+}
+
+crate::default_style!(I16NonZero => I16NonZeroStyle);
+
+#[instrumented_impl]
+impl Prompt for I16NonZero {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a non-zero number (!= 0):")
+    }
+}
+
+#[instrumented_impl]
+impl Elicitation for I16NonZero {
+    type Style = I16NonZeroStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "I16NonZero"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting I16NonZero");
+
+        loop {
+            let value = i16::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(non_zero) => {
+                    tracing::debug!(value, "Valid I16NonZero constructed");
+                    return Ok(non_zero);
+                }
+                Err(e) => {
+                    tracing::warn!(value, error = %e, "Invalid I16NonZero, re-prompting");
                 }
             }
         }
@@ -1833,6 +1977,150 @@ impl_signed_contracts!(isize, IsizePositive, IsizeNonNegative, IsizeRange, Isize
 
 // usize family
 impl_unsigned_contracts!(usize, UsizeNonZero, UsizeRange, UsizeRangeStyle, 42, 10, 100, 50);
+
+// ============================================================================
+// Additional Signed NonZero Types (for Prusti proofs)
+// ============================================================================
+
+macro_rules! impl_signed_nonzero {
+    ($base:ty, $nonzero:ident, $test_value:expr) => {
+        #[doc = concat!("Contract type for non-zero ", stringify!($base), " values (!= 0).")]
+        #[contract_type(
+            requires = "value != 0",
+            ensures = "result.get() != 0"
+        )]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+        pub struct $nonzero($base);
+
+        impl $nonzero {
+            /// Creates a non-zero value.
+            ///
+            /// # Errors
+            ///
+            /// Returns `ValidationError::Zero` if value == 0.
+            pub fn new(value: $base) -> Result<Self, ValidationError> {
+                if value != 0 {
+                    Ok(Self(value))
+                } else {
+                    Err(ValidationError::Zero)
+                }
+            }
+
+            /// Gets the wrapped value.
+            pub fn get(&self) -> $base {
+                self.0
+            }
+
+            /// Unwraps to stdlib type.
+            pub fn into_inner(self) -> $base {
+                self.0
+            }
+        }
+
+        paste::paste! {
+            crate::default_style!($nonzero => [<$nonzero Style>]);
+
+            impl Prompt for $nonzero {
+                fn prompt() -> Option<&'static str> {
+                    Some("Please enter a non-zero number (!= 0):")
+                }
+            }
+
+            impl Elicitation for $nonzero {
+                type Style = [<$nonzero Style>];
+
+                #[tracing::instrument(skip(client), fields(type_name = stringify!($nonzero)))]
+                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                    loop {
+                        let value = <$base>::elicit(client).await?;
+                        match Self::new(value) {
+                            Ok(v) => return Ok(v),
+                            Err(e) => tracing::warn!(error = %e, "Invalid, re-prompting"),
+                        }
+                    }
+                }
+            }
+        }
+    };
+}
+
+// Generate missing signed NonZero types
+impl_signed_nonzero!(i32, I32NonZero, 42);
+impl_signed_nonzero!(i64, I64NonZero, 42);
+impl_signed_nonzero!(i128, I128NonZero, 42);
+impl_signed_nonzero!(isize, IsizeNonZero, 42);
+
+// ============================================================================
+// Additional Unsigned Positive Types (for Prusti proofs)
+// ============================================================================
+
+macro_rules! impl_unsigned_positive {
+    ($base:ty, $positive:ident, $test_value:expr) => {
+        #[doc = concat!("Contract type for positive ", stringify!($base), " values (> 0).")]
+        #[contract_type(
+            requires = "value > 0",
+            ensures = "result.get() > 0"
+        )]
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+        pub struct $positive($base);
+
+        impl $positive {
+            /// Creates a positive value.
+            ///
+            /// # Errors
+            ///
+            /// Returns `ValidationError::NotPositive` if value <= 0.
+            pub fn new(value: $base) -> Result<Self, ValidationError> {
+                if value > 0 {
+                    Ok(Self(value))
+                } else {
+                    Err(ValidationError::NotPositive(value as i128))
+                }
+            }
+
+            /// Gets the wrapped value.
+            pub fn get(&self) -> $base {
+                self.0
+            }
+
+            /// Unwraps to stdlib type.
+            pub fn into_inner(self) -> $base {
+                self.0
+            }
+        }
+
+        paste::paste! {
+            crate::default_style!($positive => [<$positive Style>]);
+
+            impl Prompt for $positive {
+                fn prompt() -> Option<&'static str> {
+                    Some("Please enter a positive number (> 0):")
+                }
+            }
+
+            impl Elicitation for $positive {
+                type Style = [<$positive Style>];
+
+                #[tracing::instrument(skip(client), fields(type_name = stringify!($positive)))]
+                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                    loop {
+                        let value = <$base>::elicit(client).await?;
+                        match Self::new(value) {
+                            Ok(v) => return Ok(v),
+                            Err(e) => tracing::warn!(error = %e, "Invalid, re-prompting"),
+                        }
+                    }
+                }
+            }
+        }
+    };
+}
+
+// Generate missing unsigned Positive types
+impl_unsigned_positive!(u32, U32Positive, 42);
+impl_unsigned_positive!(u64, U64Positive, 42);
+impl_unsigned_positive!(u128, U128Positive, 42);
+impl_unsigned_positive!(usize, UsizePositive, 42);
 
 // ============================================================================
 // Float Contract Types (f32, f64)
