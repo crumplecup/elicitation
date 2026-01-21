@@ -57,8 +57,16 @@ mod prusti_proofs;
 pub use integers::{
     I8Positive, I8NonNegative, I8Range, I8RangeStyle,
     I16Positive, I16NonNegative, I16Range, I16RangeStyle,
-    U8NonZero, U8Range, U8RangeStyle,
-    U16NonZero, U16Range, U16RangeStyle,
+    I32Positive, I32NonNegative, I32Range, I32RangeStyle,
+    I64Positive, I64NonNegative, I64Range, I64RangeStyle,
+    I128Positive, I128NonNegative, I128Range, I128RangeStyle,
+    IsizePositive, IsizeNonNegative, IsizeRange, IsizeRangeStyle,
+    U8Positive, U8NonZero, U8Range, U8RangeStyle,
+    U16Positive, U16NonZero, U16Range, U16RangeStyle,
+    U32NonZero, U32Range, U32RangeStyle,
+    U64NonZero, U64Range, U64RangeStyle,
+    U128NonZero, U128Range, U128RangeStyle,
+    UsizeNonZero, UsizeRange, UsizeRangeStyle,
 };
 
 // Floats
