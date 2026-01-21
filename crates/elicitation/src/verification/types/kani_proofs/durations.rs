@@ -59,7 +59,8 @@ fn verify_option_some() {
     
     match OptionSome::new(opt) {
         Ok(some) => {
-            kani::assert(*some.get() == value, "OptionSome unwraps correctly");
+            let val: &i32 = some.get();
+            kani::assert(*val == value, "OptionSome unwraps correctly");
         }
         Err(_) => {
             unreachable!("OptionSome::new(Some) should never fail");
@@ -177,8 +178,10 @@ fn verify_char_alphanumeric() {
     match CharAlphanumeric::new(value) {
         Ok(alphanumeric) => {
             kani::assert(value.is_alphanumeric(), "CharAlphanumeric invariant");
-            kani::assert(alphanumeric.get().is_alphanumeric(), "Accessor preserves");
-            kani::assert(alphanumeric.into_inner().is_alphanumeric(), "Unwrap preserves");
+            let val: char = alphanumeric.get();
+            kani::assert(val.is_alphanumeric(), "Accessor preserves");
+            let inner: char = alphanumeric.into_inner();
+            kani::assert(inner.is_alphanumeric(), "Unwrap preserves");
         }
         Err(_) => {
             kani::assert(!value.is_alphanumeric(), "Construction rejects non-alphanumeric");

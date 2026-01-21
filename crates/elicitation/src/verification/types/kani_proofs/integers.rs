@@ -31,7 +31,8 @@ fn verify_i8_non_negative() {
     match I8NonNegative::new(value) {
         Ok(non_neg) => {
             kani::assert(value >= 0, "I8NonNegative invariant: value >= 0");
-            kani::assert(non_neg.get() >= 0, "get() returns non-negative value");
+            let val: i8 = non_neg.get();
+            kani::assert(val >= 0, "get() returns non-negative value");
         }
         Err(_) => {
             kani::assert(value < 0, "Construction fails when value < 0");
@@ -46,7 +47,8 @@ fn verify_u8_non_zero() {
     match U8NonZero::new(value) {
         Ok(non_zero) => {
             kani::assert(value != 0, "U8NonZero invariant: value != 0");
-            kani::assert(non_zero.get() != 0, "get() returns non-zero value");
+            let val: u8 = non_zero.get();
+            kani::assert(val != 0, "get() returns non-zero value");
         }
         Err(_) => {
             kani::assert(value == 0, "Construction fails when value == 0");
@@ -76,7 +78,8 @@ fn verify_u16_non_zero() {
     match U16NonZero::new(value) {
         Ok(non_zero) => {
             kani::assert(value != 0, "U16NonZero invariant");
-            kani::assert(non_zero.get() != 0, "get() preserves invariant");
+            let val: u16 = non_zero.get();
+            kani::assert(val != 0, "get() preserves invariant");
         }
         Err(_) => {
             kani::assert(value == 0, "Construction rejects zero");

@@ -27,7 +27,8 @@ fn verify_char_numeric() {
     match CharNumeric::new(value) {
         Ok(numeric) => {
             kani::assert(value.is_numeric(), "CharNumeric invariant");
-            kani::assert(numeric.get().is_numeric(), "get() preserves invariant");
+            let val: char = numeric.get();
+            kani::assert(val.is_numeric(), "get() preserves invariant");
         }
         Err(_) => {
             kani::assert(!value.is_numeric(), "Construction rejects non-numeric");

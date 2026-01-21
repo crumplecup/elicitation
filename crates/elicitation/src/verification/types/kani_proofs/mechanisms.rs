@@ -98,14 +98,15 @@ fn verify_mechanism_type_composition() {
     // Part 1: Type contract (already proven in verify_i8_positive)
     let value: i8 = kani::any();
     if let Ok(positive) = I8Positive::new(value) {
-        kani::assert(positive.get() > 0, "Type contract holds");
+        let val: i8 = positive.get();
+        kani::assert(val > 0, "Type contract holds");
         
         // Part 2: If this was returned by Survey, Survey contract also holds
         // (Survey contract is trivially satisfied by type system)
         
         // Composition: Both contracts proven ⟹ Entire elicitation proven
         kani::assert(
-            positive.get() > 0,
+            val > 0,
             "Composed verification: type + mechanism both proven"
         );
     }

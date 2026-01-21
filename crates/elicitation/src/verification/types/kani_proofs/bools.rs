@@ -27,7 +27,8 @@ fn verify_bool_false() {
     match BoolFalse::new(value) {
         Ok(bool_false) => {
             kani::assert(value == false, "BoolFalse invariant: value is false");
-            kani::assert(bool_false.get() == false, "get() returns false");
+            let val: bool = bool_false.get();
+            kani::assert(val == false, "get() returns false");
         }
         Err(_) => {
             kani::assert(value == true, "Construction rejects true");
