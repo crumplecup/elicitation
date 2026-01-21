@@ -85,6 +85,7 @@ extern crate proc_macro;
 mod derive_elicit;
 mod enum_impl;
 mod struct_impl;
+mod verification;
 
 use proc_macro::TokenStream;
 
