@@ -16,6 +16,11 @@ use syn::{parse_macro_input, ImplItem, ItemImpl};
 /// - **Accessors** (`get`, `into_inner`, `as_*`, `to_*`): `#[instrument(level = "trace", ret)]`
 /// - **Other methods**: `#[instrument(skip(self))]`
 ///
+/// # Kani Compatibility
+///
+/// When compiling under Kani (formal verification), this macro becomes a no-op.
+/// Instrumentation is for runtime observability, not formal verification.
+///
 /// # Example
 ///
 /// ```rust,ignore
@@ -36,41 +41,53 @@ use syn::{parse_macro_input, ImplItem, ItemImpl};
 /// ```
 #[proc_macro_attribute]
 pub fn instrumented_impl(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    let mut impl_block = parse_macro_input!(item as ItemImpl);
+    let impl_block = parse_macro_input!(item as ItemImpl);
     
-    // Process each method in the impl block
-    for item in &mut impl_block.items {
-        if let ImplItem::Fn(method) = item {
-            // Only instrument public methods
-            if matches!(method.vis, syn::Visibility::Public(_)) {
-                let method_name = method.sig.ident.to_string();
-                
-                // Determine instrumentation strategy based on method name
-                let instrument_attr = if is_constructor(&method_name) {
-                    // Constructors: log args and return, with error tracking
-                    quote! {
-                        #[tracing::instrument(ret, err)]
-                    }
-                } else if is_accessor(&method_name) {
-                    // Accessors: trace level to avoid noise
-                    quote! {
-                        #[tracing::instrument(level = "trace", ret)]
-                    }
-                } else {
-                    // Other methods: standard debug
-                    quote! {
-                        #[tracing::instrument(skip(self))]
-                    }
-                };
-                
-                // Add instrumentation attribute at the beginning
-                let attr: syn::Attribute = syn::parse_quote! { #instrument_attr };
-                method.attrs.insert(0, attr);
-            }
-        }
+    // Under Kani, return impl block unchanged (no instrumentation needed)
+    #[cfg(kani)]
+    {
+        return TokenStream::from(quote! { #impl_block });
     }
     
-    TokenStream::from(quote! { #impl_block })
+    // Normal compilation: add instrumentation
+    #[cfg(not(kani))]
+    {
+        let mut impl_block = impl_block;
+        
+        // Process each method in the impl block
+        for item in &mut impl_block.items {
+            if let ImplItem::Fn(method) = item {
+                // Only instrument public methods
+                if matches!(method.vis, syn::Visibility::Public(_)) {
+                    let method_name = method.sig.ident.to_string();
+                    
+                    // Determine instrumentation strategy based on method name
+                    let instrument_attr = if is_constructor(&method_name) {
+                        // Constructors: log args and return, with error tracking
+                        quote! {
+                            #[tracing::instrument(ret, err)]
+                        }
+                    } else if is_accessor(&method_name) {
+                        // Accessors: trace level to avoid noise
+                        quote! {
+                            #[tracing::instrument(level = "trace", ret)]
+                        }
+                    } else {
+                        // Other methods: standard debug
+                        quote! {
+                            #[tracing::instrument(skip(self))]
+                        }
+                    };
+                    
+                    // Add instrumentation attribute at the beginning
+                    let attr: syn::Attribute = syn::parse_quote! { #instrument_attr };
+                    method.attrs.insert(0, attr);
+                }
+            }
+        }
+        
+        TokenStream::from(quote! { #impl_block })
+    }
 }
 
 /// Check if method name indicates a constructor.

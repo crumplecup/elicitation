@@ -3,7 +3,7 @@
 //! These proofs verify that elicitation methods (Survey, Affirm, etc.)
 //! work correctly, independent of the data types being elicited.
 
-use crate::{SurveyReturnsVariant, AffirmReturnsBoolean, InputNonEmpty};
+use crate::{SurveyReturnsValidVariant, AffirmReturnsBoolean, InputNonEmpty};
 
 // ============================================================================
 // Mechanism Contract Proofs

@@ -140,13 +140,25 @@ pub use verification::{types::*, mechanisms::*};
 #[cfg(any(feature = "verification", kani))]
 pub use verification::types::{
     // Integers
-    I8NonNegative, I8Positive, U8NonZero, U16NonZero,
+    I8NonNegative, I8Positive, U8Positive, U8NonZero, 
+    I16Positive, U16Positive, U16NonZero,
     // Floats  
-    F32NonNegative, F32Positive, F64NonNegative,
+    F32NonNegative, F32Positive, F64NonNegative, F64Positive,
     // Bools
-    BoolFalse,
+    BoolFalse, BoolTrue,
     // Chars
-    CharNumeric,
+    CharNumeric, CharAlphanumeric, CharAlphabetic, CharAscii,
+    // Strings
+    StringNonEmpty,
     // Collections
-    OptionSome, Tuple2,
+    OptionSome, Tuple2, VecNonEmpty,
+    // Networks
+    IpPrivate, IpPublic, Ipv4Loopback, Ipv6Loopback,
+    // Paths
+    PathBufExists, PathBufIsFile, PathBufIsDir, PathBufReadable,
+};
+
+#[cfg(any(feature = "verification", kani))]
+pub use verification::mechanisms::{
+    SurveyReturnsValidVariant, AffirmReturnsBoolean, InputNonEmpty,
 };
