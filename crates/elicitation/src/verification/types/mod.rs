@@ -36,6 +36,9 @@ mod values;
 #[cfg(feature = "url")]
 mod urls;
 
+#[cfg(feature = "regex")]
+mod regexes;
+
 #[cfg(kani)]
 mod kani_proofs;
 
@@ -64,6 +67,9 @@ pub use values::*;
 
 #[cfg(feature = "url")]
 pub use urls::*;
+
+#[cfg(feature = "regex")]
+pub use regexes::*;
 
 /// Error type for contract validation failures.
 #[derive(Debug, Clone, PartialEq, derive_more::Display)]
@@ -272,6 +278,10 @@ pub enum ValidationError {
     /// URL cannot be a base for relative URLs.
     #[display("URL cannot be used as a base")]
     UrlCannotBeBase,
+
+    /// Regex pattern is invalid or cannot be compiled.
+    #[display("Regex pattern is invalid or cannot be compiled")]
+    RegexInvalid,
 }
 
 impl std::error::Error for ValidationError {}

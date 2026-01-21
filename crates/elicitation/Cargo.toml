@@ -34,6 +34,9 @@ uuid = { version = "1.0", optional = true, features = ["v4", "serde"] }
 # URL library (optional)
 url = { version = "2.5", optional = true }
 
+# Regex library (optional)
+regex = { version = "1.12", optional = true }
+
 # Verification libraries (optional)
 creusot-contracts = { version = "0.2", optional = true }
 prusti-contracts = { version = "0.2", optional = true }
@@ -62,6 +65,8 @@ jiff = ["dep:jiff"]
 uuid = ["dep:uuid"]
 # Enable URL elicitation
 url = ["dep:url"]
+# Enable Regex elicitation
+regex = ["dep:regex"]
 
 # Formal verification support
 verification = []                           # Core Contract trait only
