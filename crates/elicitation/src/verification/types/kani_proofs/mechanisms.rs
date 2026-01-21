@@ -3,7 +3,7 @@
 //! These proofs verify that elicitation methods (Survey, Affirm, etc.)
 //! work correctly, independent of the data types being elicited.
 
-use crate::{SurveyReturnsValidVariant, AffirmReturnsBoolean, InputNonEmpty};
+use crate::{I8Positive, SurveyReturnsValidVariant, AffirmReturnsBoolean, InputNonEmpty};
 
 // ============================================================================
 // Mechanism Contract Proofs
@@ -98,7 +98,7 @@ fn verify_mechanism_type_composition() {
     // Part 1: Type contract (already proven in verify_i8_positive)
     let value: i8 = kani::any();
     if let Ok(positive) = I8Positive::new(value) {
-        let val = positive.get();
+        let val: i8 = positive.get();
         assert!(val > 0, "Type contract holds");
         
         // Part 2: If this was returned by Survey, Survey contract also holds
@@ -153,7 +153,7 @@ fn verify_mechanism_preserves_trenchcoat() {
     
     // Simulates: Survey elicits i8 → wraps in I8Positive → unwraps
     if let Ok(positive) = I8Positive::new(value) {
-        let unwrapped = positive.into_inner();
+        let unwrapped: i8 = positive.into_inner();
         
         // Mechanism contract: Survey returns valid variant (satisfied by type system)
         // Type contract: I8Positive invariant holds
