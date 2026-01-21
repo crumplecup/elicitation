@@ -32,6 +32,10 @@ pub enum ValidationError {
     #[display("Value must be non-negative (>= 0), got {}", _0)]
     Negative(i128),
 
+    /// Value is zero (must be non-zero).
+    #[display("Value must be non-zero")]
+    Zero,
+
     /// Value is out of range.
     #[display("Value {} is outside range [{}, {}]", value, min, max)]
     OutOfRange {
@@ -397,5 +401,787 @@ mod i8_range_tests {
         let ranged = I8Range::<10, 20>::new(15).unwrap();
         let value: i8 = ranged.into_inner();
         assert_eq!(value, 15);
+    }
+}
+
+// ============================================================================
+// I16Positive (i16 > 0)
+// ============================================================================
+
+/// Contract type for positive i16 values (> 0).
+///
+/// Validates on construction, then can unwrap to stdlib i16 via `into_inner()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct I16Positive(i16);
+
+impl I16Positive {
+    /// Constructs a positive i16 value.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::NotPositive` if value <= 0.
+    pub fn new(value: i16) -> Result<Self, ValidationError> {
+        if value > 0 {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::NotPositive(value.into()))
+        }
+    }
+
+    /// Gets the wrapped value.
+    pub fn get(&self) -> i16 {
+        self.0
+    }
+
+    /// Unwraps to stdlib i16 (trenchcoat off).
+    pub fn into_inner(self) -> i16 {
+        self.0
+    }
+}
+
+crate::default_style!(I16Positive => I16PositiveStyle);
+
+impl Prompt for I16Positive {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a positive number (> 0):")
+    }
+}
+
+impl Elicitation for I16Positive {
+    type Style = I16PositiveStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "I16Positive"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting I16Positive (positive i16 value)");
+
+        loop {
+            let value = i16::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(positive) => {
+                    tracing::debug!(value, "Valid I16Positive constructed");
+                    return Ok(positive);
+                }
+                Err(e) => {
+                    tracing::warn!(value, error = %e, "Invalid I16Positive, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// I16NonNegative (i16 >= 0)
+// ============================================================================
+
+/// Contract type for non-negative i16 values (>= 0).
+///
+/// Validates on construction, then can unwrap to stdlib i16 via `into_inner()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct I16NonNegative(i16);
+
+impl I16NonNegative {
+    /// Constructs a non-negative i16 value.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::Negative` if value < 0.
+    pub fn new(value: i16) -> Result<Self, ValidationError> {
+        if value >= 0 {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::Negative(value.into()))
+        }
+    }
+
+    /// Gets the wrapped value.
+    pub fn get(&self) -> i16 {
+        self.0
+    }
+
+    /// Unwraps to stdlib i16 (trenchcoat off).
+    pub fn into_inner(self) -> i16 {
+        self.0
+    }
+}
+
+crate::default_style!(I16NonNegative => I16NonNegativeStyle);
+
+impl Prompt for I16NonNegative {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a non-negative number (>= 0):")
+    }
+}
+
+impl Elicitation for I16NonNegative {
+    type Style = I16NonNegativeStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "I16NonNegative"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting I16NonNegative (non-negative i16 value)");
+
+        loop {
+            let value = i16::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(non_negative) => {
+                    tracing::debug!(value, "Valid I16NonNegative constructed");
+                    return Ok(non_negative);
+                }
+                Err(e) => {
+                    tracing::warn!(value, error = %e, "Invalid I16NonNegative, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// I16Range (MIN <= i16 <= MAX)
+// ============================================================================
+
+/// Contract type for i16 values within a specified range [MIN, MAX].
+///
+/// Validates on construction, then can unwrap to stdlib i16 via `into_inner()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct I16Range<const MIN: i16, const MAX: i16>(i16);
+
+impl<const MIN: i16, const MAX: i16> I16Range<MIN, MAX> {
+    /// Constructs an i16 value within the specified range.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::OutOfRange` if value not in [MIN, MAX].
+    pub fn new(value: i16) -> Result<Self, ValidationError> {
+        if value >= MIN && value <= MAX {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::OutOfRange {
+                value: value.into(),
+                min: MIN.into(),
+                max: MAX.into(),
+            })
+        }
+    }
+
+    /// Gets the wrapped value.
+    pub fn get(&self) -> i16 {
+        self.0
+    }
+
+    /// Unwraps to stdlib i16 (trenchcoat off).
+    pub fn into_inner(self) -> i16 {
+        self.0
+    }
+}
+
+/// Default-only style enum for I16Range.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum I16RangeStyle {
+    /// Default presentation style.
+    #[default]
+    Default,
+}
+
+impl crate::Prompt for I16RangeStyle {
+    fn prompt() -> Option<&'static str> {
+        None
+    }
+}
+
+impl crate::Elicitation for I16RangeStyle {
+    type Style = I16RangeStyle;
+
+    async fn elicit(_client: &crate::ElicitClient<'_>) -> crate::ElicitResult<Self> {
+        Ok(Self::Default)
+    }
+}
+
+impl<const MIN: i16, const MAX: i16> Prompt for I16Range<MIN, MAX> {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a number within the specified range:")
+    }
+}
+
+impl<const MIN: i16, const MAX: i16> Elicitation for I16Range<MIN, MAX> {
+    type Style = I16RangeStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "I16Range", min = MIN, max = MAX))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting I16Range<{}, {}> (i16 in range)", MIN, MAX);
+
+        loop {
+            let value = i16::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(ranged) => {
+                    tracing::debug!(value, min = MIN, max = MAX, "Valid I16Range constructed");
+                    return Ok(ranged);
+                }
+                Err(e) => {
+                    tracing::warn!(value, error = %e, min = MIN, max = MAX, "Invalid I16Range, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod i16_positive_tests {
+    use super::*;
+
+    #[test]
+    fn i16_positive_new_valid() {
+        let result = I16Positive::new(1);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 1);
+    }
+
+    #[test]
+    fn i16_positive_new_zero_invalid() {
+        let result = I16Positive::new(0);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn i16_positive_new_negative_invalid() {
+        let result = I16Positive::new(-1);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn i16_positive_into_inner() {
+        let positive = I16Positive::new(1000).unwrap();
+        let value: i16 = positive.into_inner();
+        assert_eq!(value, 1000);
+    }
+}
+
+#[cfg(test)]
+mod i16_nonnegative_tests {
+    use super::*;
+
+    #[test]
+    fn i16_nonnegative_new_valid_positive() {
+        let result = I16NonNegative::new(1000);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 1000);
+    }
+
+    #[test]
+    fn i16_nonnegative_new_valid_zero() {
+        let result = I16NonNegative::new(0);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 0);
+    }
+
+    #[test]
+    fn i16_nonnegative_new_negative_invalid() {
+        let result = I16NonNegative::new(-1);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn i16_nonnegative_into_inner() {
+        let non_neg = I16NonNegative::new(500).unwrap();
+        let value: i16 = non_neg.into_inner();
+        assert_eq!(value, 500);
+    }
+}
+
+#[cfg(test)]
+mod i16_range_tests {
+    use super::*;
+
+    #[test]
+    fn i16_range_new_valid_within_range() {
+        let result = I16Range::<100, 200>::new(150);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 150);
+    }
+
+    #[test]
+    fn i16_range_new_valid_at_min() {
+        let result = I16Range::<100, 200>::new(100);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 100);
+    }
+
+    #[test]
+    fn i16_range_new_valid_at_max() {
+        let result = I16Range::<100, 200>::new(200);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 200);
+    }
+
+    #[test]
+    fn i16_range_new_below_min_invalid() {
+        let result = I16Range::<100, 200>::new(99);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn i16_range_new_above_max_invalid() {
+        let result = I16Range::<100, 200>::new(201);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn i16_range_into_inner() {
+        let ranged = I16Range::<100, 200>::new(150).unwrap();
+        let value: i16 = ranged.into_inner();
+        assert_eq!(value, 150);
+    }
+}
+
+// ============================================================================
+// U8NonZero (u8 != 0)
+// ============================================================================
+
+/// Contract type for non-zero u8 values (!= 0).
+///
+/// Validates on construction, then can unwrap to stdlib u8 via `into_inner()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct U8NonZero(u8);
+
+impl U8NonZero {
+    /// Constructs a non-zero u8 value.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::Zero` if value == 0.
+    pub fn new(value: u8) -> Result<Self, ValidationError> {
+        if value != 0 {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::Zero)
+        }
+    }
+
+    /// Gets the wrapped value.
+    pub fn get(&self) -> u8 {
+        self.0
+    }
+
+    /// Unwraps to stdlib u8 (trenchcoat off).
+    pub fn into_inner(self) -> u8 {
+        self.0
+    }
+}
+
+crate::default_style!(U8NonZero => U8NonZeroStyle);
+
+impl Prompt for U8NonZero {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a non-zero number (!= 0):")
+    }
+}
+
+impl Elicitation for U8NonZero {
+    type Style = U8NonZeroStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "U8NonZero"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting U8NonZero (non-zero u8 value)");
+
+        loop {
+            let value = u8::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(non_zero) => {
+                    tracing::debug!(value, "Valid U8NonZero constructed");
+                    return Ok(non_zero);
+                }
+                Err(e) => {
+                    tracing::warn!(value, error = %e, "Invalid U8NonZero, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// U8Range (MIN <= u8 <= MAX)
+// ============================================================================
+
+/// Contract type for u8 values within a specified range [MIN, MAX].
+///
+/// Validates on construction, then can unwrap to stdlib u8 via `into_inner()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct U8Range<const MIN: u8, const MAX: u8>(u8);
+
+impl<const MIN: u8, const MAX: u8> U8Range<MIN, MAX> {
+    /// Constructs a u8 value within the specified range.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::OutOfRange` if value not in [MIN, MAX].
+    pub fn new(value: u8) -> Result<Self, ValidationError> {
+        if value >= MIN && value <= MAX {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::OutOfRange {
+                value: value.into(),
+                min: MIN.into(),
+                max: MAX.into(),
+            })
+        }
+    }
+
+    /// Gets the wrapped value.
+    pub fn get(&self) -> u8 {
+        self.0
+    }
+
+    /// Unwraps to stdlib u8 (trenchcoat off).
+    pub fn into_inner(self) -> u8 {
+        self.0
+    }
+}
+
+/// Default-only style enum for U8Range.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum U8RangeStyle {
+    /// Default presentation style.
+    #[default]
+    Default,
+}
+
+impl crate::Prompt for U8RangeStyle {
+    fn prompt() -> Option<&'static str> {
+        None
+    }
+}
+
+impl crate::Elicitation for U8RangeStyle {
+    type Style = U8RangeStyle;
+
+    async fn elicit(_client: &crate::ElicitClient<'_>) -> crate::ElicitResult<Self> {
+        Ok(Self::Default)
+    }
+}
+
+impl<const MIN: u8, const MAX: u8> Prompt for U8Range<MIN, MAX> {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a number within the specified range:")
+    }
+}
+
+impl<const MIN: u8, const MAX: u8> Elicitation for U8Range<MIN, MAX> {
+    type Style = U8RangeStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "U8Range", min = MIN, max = MAX))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting U8Range<{}, {}> (u8 in range)", MIN, MAX);
+
+        loop {
+            let value = u8::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(ranged) => {
+                    tracing::debug!(value, min = MIN, max = MAX, "Valid U8Range constructed");
+                    return Ok(ranged);
+                }
+                Err(e) => {
+                    tracing::warn!(value, error = %e, min = MIN, max = MAX, "Invalid U8Range, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// U16NonZero (u16 != 0)
+// ============================================================================
+
+/// Contract type for non-zero u16 values (!= 0).
+///
+/// Validates on construction, then can unwrap to stdlib u16 via `into_inner()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct U16NonZero(u16);
+
+impl U16NonZero {
+    /// Constructs a non-zero u16 value.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::Zero` if value == 0.
+    pub fn new(value: u16) -> Result<Self, ValidationError> {
+        if value != 0 {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::Zero)
+        }
+    }
+
+    /// Gets the wrapped value.
+    pub fn get(&self) -> u16 {
+        self.0
+    }
+
+    /// Unwraps to stdlib u16 (trenchcoat off).
+    pub fn into_inner(self) -> u16 {
+        self.0
+    }
+}
+
+crate::default_style!(U16NonZero => U16NonZeroStyle);
+
+impl Prompt for U16NonZero {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a non-zero number (!= 0):")
+    }
+}
+
+impl Elicitation for U16NonZero {
+    type Style = U16NonZeroStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "U16NonZero"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting U16NonZero (non-zero u16 value)");
+
+        loop {
+            let value = u16::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(non_zero) => {
+                    tracing::debug!(value, "Valid U16NonZero constructed");
+                    return Ok(non_zero);
+                }
+                Err(e) => {
+                    tracing::warn!(value, error = %e, "Invalid U16NonZero, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// U16Range (MIN <= u16 <= MAX)
+// ============================================================================
+
+/// Contract type for u16 values within a specified range [MIN, MAX].
+///
+/// Validates on construction, then can unwrap to stdlib u16 via `into_inner()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct U16Range<const MIN: u16, const MAX: u16>(u16);
+
+impl<const MIN: u16, const MAX: u16> U16Range<MIN, MAX> {
+    /// Constructs a u16 value within the specified range.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::OutOfRange` if value not in [MIN, MAX].
+    pub fn new(value: u16) -> Result<Self, ValidationError> {
+        if value >= MIN && value <= MAX {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::OutOfRange {
+                value: value.into(),
+                min: MIN.into(),
+                max: MAX.into(),
+            })
+        }
+    }
+
+    /// Gets the wrapped value.
+    pub fn get(&self) -> u16 {
+        self.0
+    }
+
+    /// Unwraps to stdlib u16 (trenchcoat off).
+    pub fn into_inner(self) -> u16 {
+        self.0
+    }
+}
+
+/// Default-only style enum for U16Range.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum U16RangeStyle {
+    /// Default presentation style.
+    #[default]
+    Default,
+}
+
+impl crate::Prompt for U16RangeStyle {
+    fn prompt() -> Option<&'static str> {
+        None
+    }
+}
+
+impl crate::Elicitation for U16RangeStyle {
+    type Style = U16RangeStyle;
+
+    async fn elicit(_client: &crate::ElicitClient<'_>) -> crate::ElicitResult<Self> {
+        Ok(Self::Default)
+    }
+}
+
+impl<const MIN: u16, const MAX: u16> Prompt for U16Range<MIN, MAX> {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a number within the specified range:")
+    }
+}
+
+impl<const MIN: u16, const MAX: u16> Elicitation for U16Range<MIN, MAX> {
+    type Style = U16RangeStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "U16Range", min = MIN, max = MAX))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting U16Range<{}, {}> (u16 in range)", MIN, MAX);
+
+        loop {
+            let value = u16::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(ranged) => {
+                    tracing::debug!(value, min = MIN, max = MAX, "Valid U16Range constructed");
+                    return Ok(ranged);
+                }
+                Err(e) => {
+                    tracing::warn!(value, error = %e, min = MIN, max = MAX, "Invalid U16Range, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod u8_nonzero_tests {
+    use super::*;
+
+    #[test]
+    fn u8_nonzero_new_valid() {
+        let result = U8NonZero::new(1);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 1);
+    }
+
+    #[test]
+    fn u8_nonzero_new_zero_invalid() {
+        let result = U8NonZero::new(0);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn u8_nonzero_into_inner() {
+        let non_zero = U8NonZero::new(255).unwrap();
+        let value: u8 = non_zero.into_inner();
+        assert_eq!(value, 255);
+    }
+}
+
+#[cfg(test)]
+mod u8_range_tests {
+    use super::*;
+
+    #[test]
+    fn u8_range_new_valid_within_range() {
+        let result = U8Range::<10, 20>::new(15);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 15);
+    }
+
+    #[test]
+    fn u8_range_new_valid_at_min() {
+        let result = U8Range::<10, 20>::new(10);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 10);
+    }
+
+    #[test]
+    fn u8_range_new_valid_at_max() {
+        let result = U8Range::<10, 20>::new(20);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 20);
+    }
+
+    #[test]
+    fn u8_range_new_below_min_invalid() {
+        let result = U8Range::<10, 20>::new(9);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn u8_range_new_above_max_invalid() {
+        let result = U8Range::<10, 20>::new(21);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn u8_range_into_inner() {
+        let ranged = U8Range::<10, 20>::new(15).unwrap();
+        let value: u8 = ranged.into_inner();
+        assert_eq!(value, 15);
+    }
+}
+
+#[cfg(test)]
+mod u16_nonzero_tests {
+    use super::*;
+
+    #[test]
+    fn u16_nonzero_new_valid() {
+        let result = U16NonZero::new(1000);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 1000);
+    }
+
+    #[test]
+    fn u16_nonzero_new_zero_invalid() {
+        let result = U16NonZero::new(0);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn u16_nonzero_into_inner() {
+        let non_zero = U16NonZero::new(65535).unwrap();
+        let value: u16 = non_zero.into_inner();
+        assert_eq!(value, 65535);
+    }
+}
+
+#[cfg(test)]
+mod u16_range_tests {
+    use super::*;
+
+    #[test]
+    fn u16_range_new_valid_within_range() {
+        let result = U16Range::<1000, 2000>::new(1500);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 1500);
+    }
+
+    #[test]
+    fn u16_range_new_valid_at_min() {
+        let result = U16Range::<1000, 2000>::new(1000);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 1000);
+    }
+
+    #[test]
+    fn u16_range_new_valid_at_max() {
+        let result = U16Range::<1000, 2000>::new(2000);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 2000);
+    }
+
+    #[test]
+    fn u16_range_new_below_min_invalid() {
+        let result = U16Range::<1000, 2000>::new(999);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn u16_range_new_above_max_invalid() {
+        let result = U16Range::<1000, 2000>::new(2001);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn u16_range_into_inner() {
+        let ranged = U16Range::<1000, 2000>::new(1500).unwrap();
+        let value: u16 = ranged.into_inner();
+        assert_eq!(value, 1500);
     }
 }
