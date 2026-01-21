@@ -6,6 +6,7 @@
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 #[cfg(feature = "serde_json")]
 use super::ValidationError;
+use elicitation_macros::instrumented_impl;
 #[cfg(feature = "serde_json")]
 use serde_json::Value;
 
@@ -18,6 +19,7 @@ use serde_json::Value;
 pub struct ValueObject(Value);
 
 #[cfg(feature = "serde_json")]
+#[instrumented_impl]
 impl ValueObject {
     /// Create a new ValueObject, validating it's an object.
     pub fn new(value: Value) -> Result<Self, ValidationError> {
@@ -43,6 +45,7 @@ impl ValueObject {
 }
 
 #[cfg(feature = "serde_json")]
+#[instrumented_impl]
 impl Prompt for ValueObject {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a JSON object:")
@@ -50,6 +53,7 @@ impl Prompt for ValueObject {
 }
 
 #[cfg(feature = "serde_json")]
+#[instrumented_impl]
 impl Elicitation for ValueObject {
     type Style = <Value as Elicitation>::Style;
 
@@ -81,6 +85,7 @@ impl Elicitation for ValueObject {
 pub struct ValueArray(Value);
 
 #[cfg(feature = "serde_json")]
+#[instrumented_impl]
 impl ValueArray {
     /// Create a new ValueArray, validating it's an array.
     pub fn new(value: Value) -> Result<Self, ValidationError> {
@@ -106,6 +111,7 @@ impl ValueArray {
 }
 
 #[cfg(feature = "serde_json")]
+#[instrumented_impl]
 impl Prompt for ValueArray {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a JSON array:")
@@ -113,6 +119,7 @@ impl Prompt for ValueArray {
 }
 
 #[cfg(feature = "serde_json")]
+#[instrumented_impl]
 impl Elicitation for ValueArray {
     type Style = <Value as Elicitation>::Style;
 
@@ -144,6 +151,7 @@ impl Elicitation for ValueArray {
 pub struct ValueNonNull(Value);
 
 #[cfg(feature = "serde_json")]
+#[instrumented_impl]
 impl ValueNonNull {
     /// Create a new ValueNonNull, validating it's not null.
     pub fn new(value: Value) -> Result<Self, ValidationError> {
@@ -166,6 +174,7 @@ impl ValueNonNull {
 }
 
 #[cfg(feature = "serde_json")]
+#[instrumented_impl]
 impl Prompt for ValueNonNull {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a non-null JSON value:")
@@ -173,6 +182,7 @@ impl Prompt for ValueNonNull {
 }
 
 #[cfg(feature = "serde_json")]
+#[instrumented_impl]
 impl Elicitation for ValueNonNull {
     type Style = <Value as Elicitation>::Style;
 

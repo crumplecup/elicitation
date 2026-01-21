@@ -2,6 +2,7 @@
 
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
+use elicitation_macros::instrumented_impl;
 use std::time::Duration;
 
 // DurationPositive - Positive durations (> zero)
@@ -9,6 +10,7 @@ use std::time::Duration;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DurationPositive(Duration);
 
+#[instrumented_impl]
 impl DurationPositive {
     /// Create a new DurationPositive, validating it's not zero.
     pub fn new(duration: Duration) -> Result<Self, ValidationError> {
@@ -30,12 +32,14 @@ impl DurationPositive {
     }
 }
 
+#[instrumented_impl]
 impl Prompt for DurationPositive {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a positive duration (greater than zero seconds):")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for DurationPositive {
     type Style = <Duration as Elicitation>::Style;
 

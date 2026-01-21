@@ -2,6 +2,7 @@
 
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
+use elicitation_macros::instrumented_impl;
 
 // F32Positive (f32 > 0.0 and finite)
 /// Contract type for positive f32 values (> 0.0).
@@ -10,6 +11,7 @@ use super::ValidationError;
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct F32Positive(f32);
 
+#[instrumented_impl]
 impl F32Positive {
     /// Constructs a positive f32 value.
     ///
@@ -76,6 +78,7 @@ impl Elicitation for F32Positive {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct F32NonNegative(f32);
 
+#[instrumented_impl]
 impl F32NonNegative {
     /// Constructs a non-negative f32 value.
     ///
@@ -142,6 +145,7 @@ impl Elicitation for F32NonNegative {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct F32Finite(f32);
 
+#[instrumented_impl]
 impl F32Finite {
     /// Constructs a finite f32 value.
     ///
@@ -205,6 +209,7 @@ impl Elicitation for F32Finite {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct F64Positive(f64);
 
+#[instrumented_impl]
 impl F64Positive {
     /// Constructs a positive f64 value.
     ///
@@ -271,6 +276,7 @@ impl Elicitation for F64Positive {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct F64NonNegative(f64);
 
+#[instrumented_impl]
 impl F64NonNegative {
     /// Constructs a non-negative f64 value.
     ///
@@ -337,6 +343,7 @@ impl Elicitation for F64NonNegative {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct F64Finite(f64);
 
+#[instrumented_impl]
 impl F64Finite {
     /// Constructs a finite f64 value.
     ///

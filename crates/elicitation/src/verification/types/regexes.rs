@@ -19,6 +19,7 @@ use regex::{Regex, RegexBuilder, RegexSet, RegexSetBuilder};
 #[derive(Debug, Clone)]
 pub struct RegexValid(Regex);
 
+#[instrumented_impl]
 impl RegexValid {
     /// Create a new RegexValid from a pattern string.
     ///
@@ -64,6 +65,7 @@ impl RegexValid {
 #[derive(Debug, Clone)]
 pub struct RegexSetValid(RegexSet);
 
+#[instrumented_impl]
 impl RegexSetValid {
     /// Create a new RegexSetValid from pattern strings.
     ///
@@ -117,6 +119,7 @@ impl RegexSetValid {
 #[derive(Debug, Clone)]
 pub struct RegexCaseInsensitive(Regex);
 
+#[instrumented_impl]
 impl RegexCaseInsensitive {
     /// Create a new case-insensitive regex from a pattern string.
     ///
@@ -159,6 +162,7 @@ impl RegexCaseInsensitive {
 #[derive(Debug, Clone)]
 pub struct RegexMultiline(Regex);
 
+#[instrumented_impl]
 impl RegexMultiline {
     /// Create a new multiline regex from a pattern string.
     ///
@@ -200,6 +204,7 @@ impl RegexMultiline {
 #[derive(Debug, Clone)]
 pub struct RegexSetNonEmpty(RegexSet);
 
+#[instrumented_impl]
 impl RegexSetNonEmpty {
     /// Create a new non-empty regex set from pattern strings.
     ///

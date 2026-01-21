@@ -6,6 +6,7 @@
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 #[cfg(feature = "chrono")]
 use super::ValidationError;
+use elicitation_macros::instrumented_impl;
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, FixedOffset, NaiveDateTime, Utc};
 
@@ -21,6 +22,7 @@ pub struct DateTimeUtcAfter {
 }
 
 #[cfg(feature = "chrono")]
+#[instrumented_impl]
 impl DateTimeUtcAfter {
     /// Create a new DateTimeUtcAfter, validating value > threshold.
     pub fn new(value: DateTime<Utc>, threshold: DateTime<Utc>) -> Result<Self, ValidationError> {
@@ -51,6 +53,7 @@ impl DateTimeUtcAfter {
 }
 
 #[cfg(feature = "chrono")]
+#[instrumented_impl]
 impl Prompt for DateTimeUtcAfter {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a datetime (UTC):")
@@ -58,6 +61,7 @@ impl Prompt for DateTimeUtcAfter {
 }
 
 #[cfg(feature = "chrono")]
+#[instrumented_impl]
 impl Elicitation for DateTimeUtcAfter {
     type Style = <DateTime<Utc> as Elicitation>::Style;
 
@@ -94,6 +98,7 @@ pub struct DateTimeUtcBefore {
 }
 
 #[cfg(feature = "chrono")]
+#[instrumented_impl]
 impl DateTimeUtcBefore {
     /// Create a new DateTimeUtcBefore, validating value < threshold.
     pub fn new(value: DateTime<Utc>, threshold: DateTime<Utc>) -> Result<Self, ValidationError> {
@@ -124,6 +129,7 @@ impl DateTimeUtcBefore {
 }
 
 #[cfg(feature = "chrono")]
+#[instrumented_impl]
 impl Prompt for DateTimeUtcBefore {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a datetime (UTC):")
@@ -131,6 +137,7 @@ impl Prompt for DateTimeUtcBefore {
 }
 
 #[cfg(feature = "chrono")]
+#[instrumented_impl]
 impl Elicitation for DateTimeUtcBefore {
     type Style = <DateTime<Utc> as Elicitation>::Style;
 
@@ -167,6 +174,7 @@ pub struct NaiveDateTimeAfter {
 }
 
 #[cfg(feature = "chrono")]
+#[instrumented_impl]
 impl NaiveDateTimeAfter {
     /// Create a new NaiveDateTimeAfter, validating value > threshold.
     pub fn new(
@@ -200,6 +208,7 @@ impl NaiveDateTimeAfter {
 }
 
 #[cfg(feature = "chrono")]
+#[instrumented_impl]
 impl Prompt for NaiveDateTimeAfter {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a datetime (no timezone):")
@@ -207,6 +216,7 @@ impl Prompt for NaiveDateTimeAfter {
 }
 
 #[cfg(feature = "chrono")]
+#[instrumented_impl]
 impl Elicitation for NaiveDateTimeAfter {
     type Style = <NaiveDateTime as Elicitation>::Style;
 
@@ -313,6 +323,7 @@ pub struct TimestampAfter {
 }
 
 #[cfg(feature = "jiff")]
+#[instrumented_impl]
 impl TimestampAfter {
     /// Create a new TimestampAfter, validating value > threshold.
     pub fn new(value: Timestamp, threshold: Timestamp) -> Result<Self, ValidationError> {
@@ -343,6 +354,7 @@ impl TimestampAfter {
 }
 
 #[cfg(feature = "jiff")]
+#[instrumented_impl]
 impl Prompt for TimestampAfter {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a timestamp:")
@@ -350,6 +362,7 @@ impl Prompt for TimestampAfter {
 }
 
 #[cfg(feature = "jiff")]
+#[instrumented_impl]
 impl Elicitation for TimestampAfter {
     type Style = <Timestamp as Elicitation>::Style;
 
@@ -386,6 +399,7 @@ pub struct TimestampBefore {
 }
 
 #[cfg(feature = "jiff")]
+#[instrumented_impl]
 impl TimestampBefore {
     /// Create a new TimestampBefore, validating value < threshold.
     pub fn new(value: Timestamp, threshold: Timestamp) -> Result<Self, ValidationError> {
@@ -416,6 +430,7 @@ impl TimestampBefore {
 }
 
 #[cfg(feature = "jiff")]
+#[instrumented_impl]
 impl Prompt for TimestampBefore {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a timestamp:")
@@ -423,6 +438,7 @@ impl Prompt for TimestampBefore {
 }
 
 #[cfg(feature = "jiff")]
+#[instrumented_impl]
 impl Elicitation for TimestampBefore {
     type Style = <Timestamp as Elicitation>::Style;
 
@@ -504,6 +520,7 @@ pub struct OffsetDateTimeAfter {
 }
 
 #[cfg(feature = "time")]
+#[instrumented_impl]
 impl OffsetDateTimeAfter {
     /// Create a new OffsetDateTimeAfter, validating value > threshold.
     pub fn new(
@@ -537,6 +554,7 @@ impl OffsetDateTimeAfter {
 }
 
 #[cfg(feature = "time")]
+#[instrumented_impl]
 impl Prompt for OffsetDateTimeAfter {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a datetime with timezone offset:")
@@ -544,6 +562,7 @@ impl Prompt for OffsetDateTimeAfter {
 }
 
 #[cfg(feature = "time")]
+#[instrumented_impl]
 impl Elicitation for OffsetDateTimeAfter {
     type Style = <OffsetDateTime as Elicitation>::Style;
 
@@ -583,6 +602,7 @@ pub struct OffsetDateTimeBefore {
 }
 
 #[cfg(feature = "time")]
+#[instrumented_impl]
 impl OffsetDateTimeBefore {
     /// Create a new OffsetDateTimeBefore, validating value < threshold.
     pub fn new(
@@ -616,6 +636,7 @@ impl OffsetDateTimeBefore {
 }
 
 #[cfg(feature = "time")]
+#[instrumented_impl]
 impl Prompt for OffsetDateTimeBefore {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a datetime with timezone offset:")
@@ -623,6 +644,7 @@ impl Prompt for OffsetDateTimeBefore {
 }
 
 #[cfg(feature = "time")]
+#[instrumented_impl]
 impl Elicitation for OffsetDateTimeBefore {
     type Style = <OffsetDateTime as Elicitation>::Style;
 

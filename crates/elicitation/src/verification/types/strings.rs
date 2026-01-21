@@ -40,12 +40,14 @@ impl StringNonEmpty {
 
 crate::default_style!(StringNonEmpty => StringNonEmptyStyle);
 
+#[instrumented_impl]
 impl Prompt for StringNonEmpty {
     fn prompt() -> Option<&'static str> {
         Some("Please enter a non-empty string:")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for StringNonEmpty {
     type Style = StringNonEmptyStyle;
 

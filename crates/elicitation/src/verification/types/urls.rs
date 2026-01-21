@@ -19,6 +19,7 @@ use url::Url;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UrlValid(Url);
 
+#[instrumented_impl]
 impl UrlValid {
     /// Create a new UrlValid from a string.
     ///
@@ -54,6 +55,7 @@ impl UrlValid {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UrlHttps(Url);
 
+#[instrumented_impl]
 impl UrlHttps {
     /// Create a new UrlHttps from a string.
     ///
@@ -100,6 +102,7 @@ impl UrlHttps {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UrlHttp(Url);
 
+#[instrumented_impl]
 impl UrlHttp {
     /// Create a new UrlHttp from a string.
     ///
@@ -146,6 +149,7 @@ impl UrlHttp {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UrlWithHost(Url);
 
+#[instrumented_impl]
 impl UrlWithHost {
     /// Create a new UrlWithHost from a string.
     ///
@@ -192,6 +196,7 @@ impl UrlWithHost {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UrlCanBeBase(Url);
 
+#[instrumented_impl]
 impl UrlCanBeBase {
     /// Create a new UrlCanBeBase from a string.
     ///

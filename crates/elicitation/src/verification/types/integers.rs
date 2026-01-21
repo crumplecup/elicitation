@@ -2,6 +2,7 @@
 
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
+use elicitation_macros::instrumented_impl;
 
 /// Contract type for positive i8 values (> 0).
 ///
@@ -29,6 +30,9 @@ use super::ValidationError;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct I8Positive(i8);
 
+#[instrumented_impl]
+#[instrumented_impl]
+#[instrumented_impl]
 impl I8Positive {
     /// Creates a new `I8Positive` if the value is positive (> 0).
     ///
@@ -59,12 +63,14 @@ impl I8Positive {
 // Generate default-only style enum for I8Positive
 crate::default_style!(I8Positive => I8PositiveStyle);
 
+#[instrumented_impl]
 impl Prompt for I8Positive {
     fn prompt() -> Option<&'static str> {
         Some("Please enter a positive number (> 0):")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for I8Positive {
     type Style = I8PositiveStyle;
 
@@ -132,6 +138,9 @@ mod tests {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct I8NonNegative(i8);
 
+#[instrumented_impl]
+#[instrumented_impl]
+#[instrumented_impl]
 impl I8NonNegative {
     /// Constructs a non-negative i8 value.
     ///
@@ -159,12 +168,14 @@ impl I8NonNegative {
 
 crate::default_style!(I8NonNegative => I8NonNegativeStyle);
 
+#[instrumented_impl]
 impl Prompt for I8NonNegative {
     fn prompt() -> Option<&'static str> {
         Some("Please enter a non-negative number (>= 0):")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for I8NonNegative {
     type Style = I8NonNegativeStyle;
 
@@ -236,12 +247,14 @@ pub enum I8RangeStyle {
     Default,
 }
 
+#[instrumented_impl]
 impl crate::Prompt for I8RangeStyle {
     fn prompt() -> Option<&'static str> {
         None // No style selection needed
     }
 }
 
+#[instrumented_impl]
 impl crate::Elicitation for I8RangeStyle {
     type Style = I8RangeStyle;
 
@@ -367,6 +380,8 @@ mod i8_range_tests {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct I16Positive(i16);
 
+#[instrumented_impl]
+#[instrumented_impl]
 impl I16Positive {
     /// Constructs a positive i16 value.
     ///
@@ -394,12 +409,14 @@ impl I16Positive {
 
 crate::default_style!(I16Positive => I16PositiveStyle);
 
+#[instrumented_impl]
 impl Prompt for I16Positive {
     fn prompt() -> Option<&'static str> {
         Some("Please enter a positive number (> 0):")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for I16Positive {
     type Style = I16PositiveStyle;
 
@@ -433,6 +450,8 @@ impl Elicitation for I16Positive {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct I16NonNegative(i16);
 
+#[instrumented_impl]
+#[instrumented_impl]
 impl I16NonNegative {
     /// Constructs a non-negative i16 value.
     ///
@@ -460,12 +479,14 @@ impl I16NonNegative {
 
 crate::default_style!(I16NonNegative => I16NonNegativeStyle);
 
+#[instrumented_impl]
 impl Prompt for I16NonNegative {
     fn prompt() -> Option<&'static str> {
         Some("Please enter a non-negative number (>= 0):")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for I16NonNegative {
     type Style = I16NonNegativeStyle;
 
@@ -536,12 +557,14 @@ pub enum I16RangeStyle {
     Default,
 }
 
+#[instrumented_impl]
 impl crate::Prompt for I16RangeStyle {
     fn prompt() -> Option<&'static str> {
         None
     }
 }
 
+#[instrumented_impl]
 impl crate::Elicitation for I16RangeStyle {
     type Style = I16RangeStyle;
 
@@ -697,6 +720,8 @@ mod i16_range_tests {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct U8NonZero(u8);
 
+#[instrumented_impl]
+#[instrumented_impl]
 impl U8NonZero {
     /// Constructs a non-zero u8 value.
     ///
@@ -724,12 +749,14 @@ impl U8NonZero {
 
 crate::default_style!(U8NonZero => U8NonZeroStyle);
 
+#[instrumented_impl]
 impl Prompt for U8NonZero {
     fn prompt() -> Option<&'static str> {
         Some("Please enter a non-zero number (!= 0):")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for U8NonZero {
     type Style = U8NonZeroStyle;
 
@@ -800,12 +827,14 @@ pub enum U8RangeStyle {
     Default,
 }
 
+#[instrumented_impl]
 impl crate::Prompt for U8RangeStyle {
     fn prompt() -> Option<&'static str> {
         None
     }
 }
 
+#[instrumented_impl]
 impl crate::Elicitation for U8RangeStyle {
     type Style = U8RangeStyle;
 
@@ -853,6 +882,8 @@ impl<const MIN: u8, const MAX: u8> Elicitation for U8Range<MIN, MAX> {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct U16NonZero(u16);
 
+#[instrumented_impl]
+#[instrumented_impl]
 impl U16NonZero {
     /// Constructs a non-zero u16 value.
     ///
@@ -880,12 +911,14 @@ impl U16NonZero {
 
 crate::default_style!(U16NonZero => U16NonZeroStyle);
 
+#[instrumented_impl]
 impl Prompt for U16NonZero {
     fn prompt() -> Option<&'static str> {
         Some("Please enter a non-zero number (!= 0):")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for U16NonZero {
     type Style = U16NonZeroStyle;
 
@@ -956,12 +989,14 @@ pub enum U16RangeStyle {
     Default,
 }
 
+#[instrumented_impl]
 impl crate::Prompt for U16RangeStyle {
     fn prompt() -> Option<&'static str> {
         None
     }
 }
 
+#[instrumented_impl]
 impl crate::Elicitation for U16RangeStyle {
     type Style = U16RangeStyle;
 

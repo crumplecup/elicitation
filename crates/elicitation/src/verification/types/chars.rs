@@ -2,6 +2,8 @@
 
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
+use elicitation_macros::instrumented_impl;
+
 // ============================================================================
 
 /// Contract type for alphabetic char values.
@@ -10,6 +12,7 @@ use super::ValidationError;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CharAlphabetic(char);
 
+#[instrumented_impl]
 impl CharAlphabetic {
     /// Constructs an alphabetic char.
     ///
@@ -134,6 +137,7 @@ impl Elicitation for CharNumeric {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CharAlphanumeric(char);
 
+#[instrumented_impl]
 impl CharAlphanumeric {
     /// Constructs an alphanumeric char.
     ///

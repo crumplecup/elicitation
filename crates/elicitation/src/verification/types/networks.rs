@@ -2,6 +2,7 @@
 
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
+use elicitation_macros::instrumented_impl;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 // IpPrivate - Private IP addresses
@@ -12,6 +13,7 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct IpPrivate(IpAddr);
 
+#[instrumented_impl]
 impl IpPrivate {
     /// Create a new IpPrivate, validating it's a private address.
     pub fn new(ip: IpAddr) -> Result<Self, ValidationError> {
@@ -43,12 +45,14 @@ impl IpPrivate {
     }
 }
 
+#[instrumented_impl]
 impl Prompt for IpPrivate {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a private IP address (RFC 1918 or RFC 4193):")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for IpPrivate {
     type Style = <IpAddr as Elicitation>::Style;
 
@@ -76,6 +80,7 @@ impl Elicitation for IpPrivate {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct IpPublic(IpAddr);
 
+#[instrumented_impl]
 impl IpPublic {
     /// Create a new IpPublic, validating it's not a private address.
     pub fn new(ip: IpAddr) -> Result<Self, ValidationError> {
@@ -97,12 +102,14 @@ impl IpPublic {
     }
 }
 
+#[instrumented_impl]
 impl Prompt for IpPublic {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a public IP address (not RFC 1918 or RFC 4193):")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for IpPublic {
     type Style = <IpAddr as Elicitation>::Style;
 
@@ -130,6 +137,7 @@ impl Elicitation for IpPublic {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct IpV4(Ipv4Addr);
 
+#[instrumented_impl]
 impl IpV4 {
     /// Create a new IpV4, validating it's an IPv4 address.
     pub fn new(ip: IpAddr) -> Result<Self, ValidationError> {
@@ -153,12 +161,14 @@ impl IpV4 {
     }
 }
 
+#[instrumented_impl]
 impl Prompt for IpV4 {
     fn prompt() -> Option<&'static str> {
         Some("Please provide an IPv4 address:")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for IpV4 {
     type Style = <IpAddr as Elicitation>::Style;
 
@@ -186,6 +196,7 @@ impl Elicitation for IpV4 {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct IpV6(Ipv6Addr);
 
+#[instrumented_impl]
 impl IpV6 {
     /// Create a new IpV6, validating it's an IPv6 address.
     pub fn new(ip: IpAddr) -> Result<Self, ValidationError> {
@@ -209,12 +220,14 @@ impl IpV6 {
     }
 }
 
+#[instrumented_impl]
 impl Prompt for IpV6 {
     fn prompt() -> Option<&'static str> {
         Some("Please provide an IPv6 address:")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for IpV6 {
     type Style = <IpAddr as Elicitation>::Style;
 
@@ -242,6 +255,7 @@ impl Elicitation for IpV6 {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Ipv4Loopback(Ipv4Addr);
 
+#[instrumented_impl]
 impl Ipv4Loopback {
     /// Create a new Ipv4Loopback, validating it's a loopback address.
     pub fn new(ip: Ipv4Addr) -> Result<Self, ValidationError> {
@@ -263,12 +277,14 @@ impl Ipv4Loopback {
     }
 }
 
+#[instrumented_impl]
 impl Prompt for Ipv4Loopback {
     fn prompt() -> Option<&'static str> {
         Some("Please provide an IPv4 loopback address (127.0.0.0/8):")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for Ipv4Loopback {
     type Style = <Ipv4Addr as Elicitation>::Style;
 
@@ -296,6 +312,7 @@ impl Elicitation for Ipv4Loopback {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Ipv6Loopback(Ipv6Addr);
 
+#[instrumented_impl]
 impl Ipv6Loopback {
     /// Create a new Ipv6Loopback, validating it's the loopback address.
     pub fn new(ip: Ipv6Addr) -> Result<Self, ValidationError> {
@@ -317,12 +334,14 @@ impl Ipv6Loopback {
     }
 }
 
+#[instrumented_impl]
 impl Prompt for Ipv6Loopback {
     fn prompt() -> Option<&'static str> {
         Some("Please provide an IPv6 loopback address (::1):")
     }
 }
 
+#[instrumented_impl]
 impl Elicitation for Ipv6Loopback {
     type Style = <Ipv6Addr as Elicitation>::Style;
 
