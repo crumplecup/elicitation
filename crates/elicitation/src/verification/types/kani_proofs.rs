@@ -116,7 +116,7 @@ fn verify_f32_finite() {
     let value: f32 = kani::any();
     
     match F32Finite::new(value) {
-        Ok(finite) => {
+        Ok(_finite) => {
             kani::assert(value.is_finite(), "F32Finite invariant: value is finite");
             kani::assert(!value.is_nan(), "Finite excludes NaN");
             kani::assert(!value.is_infinite(), "Finite excludes infinity");
@@ -135,7 +135,7 @@ fn verify_f64_positive() {
     kani::assume(value.is_finite());
     
     match F64Positive::new(value) {
-        Ok(positive) => {
+        Ok(_positive) => {
             kani::assert(value > 0.0, "F64Positive invariant: value > 0");
             kani::assert(value.is_finite(), "Positive implies finite");
         }
@@ -299,7 +299,7 @@ fn verify_option_some() {
             kani::assert(*some.get() == value, "OptionSome unwraps correctly");
         }
         Err(_) => {
-            kani::unreachable(); // Should never fail for Some
+            unreachable!("OptionSome::new(Some) should never fail");
         }
     }
 }
@@ -310,7 +310,7 @@ fn verify_option_some_rejects_none() {
     
     match OptionSome::new(opt) {
         Ok(_) => {
-            kani::unreachable(); // Should never succeed for None
+            unreachable!("OptionSome::new(None) should never succeed");
         }
         Err(_) => {
             // Expected: construction rejects None
