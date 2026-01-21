@@ -10,7 +10,6 @@ use creusot_contracts::*;
 // ============================================================================
 
 /// Prove that Affirm mechanism returns a boolean value.
-#[cfg(feature = "verification")]
 #[ensures(result == true || result == false)]
 pub fn verify_affirm_returns_boolean() -> bool {
     // Affirm mechanism contract: always returns boolean
@@ -18,7 +17,6 @@ pub fn verify_affirm_returns_boolean() -> bool {
 }
 
 /// Prove that Survey mechanism returns a valid enum variant.
-#[cfg(feature = "verification")]
 #[ensures(forall<variant: E> result == variant)]
 pub fn verify_survey_returns_valid_variant<E>() -> E
 where
@@ -29,7 +27,6 @@ where
 }
 
 /// Prove that Select mechanism returns one of the provided options.
-#[cfg(feature = "verification")]
 #[requires(!options.is_empty())]
 #[ensures(exists<i: usize> i < options.len() && options[i] == result)]
 pub fn verify_select_returns_from_options<T>(options: Vec<T>) -> T
@@ -41,7 +38,6 @@ where
 }
 
 /// Prove mechanism + type composition maintains contracts.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_mechanism_type_composition(value: i8) -> Result<I8Positive, ValidationError> {
@@ -50,7 +46,6 @@ pub fn verify_mechanism_type_composition(value: i8) -> Result<I8Positive, Valida
 }
 
 /// Prove mechanisms preserve trenchcoat pattern.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(match ^result {
     Ok(wrapped) => wrapped.into_inner() == value,
@@ -70,7 +65,6 @@ pub fn verify_mechanism_trenchcoat_preservation(value: i8) -> Result<I8Positive,
 ///
 /// This is the master theorem: wrapping and unwrapping preserves the value
 /// when validation succeeds. This property enables zero-cost abstraction.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(match ^result {
     Ok(wrapped) => wrapped.into_inner() == value,
@@ -82,14 +76,15 @@ pub fn verify_trenchcoat_identity_preservation(value: i8) -> Result<I8Positive, 
 }
 
 /// Prove compositional verification: tuple contracts compose element contracts.
-#[cfg(feature = "verification")]
 #[requires(a > 0 && b > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_compositional_correctness(
     a: i8,
     b: i8,
-) -> Result<Tuple2<i8, i8, I8Positive, I8Positive>, ValidationError> {
-    Tuple2::new((a, b))
+) -> Result<Tuple2<I8Positive, I8Positive>, ValidationError> {
+    let a_pos = I8Positive::new(a)?;
+    let b_pos = I8Positive::new(b)?;
+    Ok(Tuple2::new(a_pos, b_pos))
 }
 
 // ============================================================================

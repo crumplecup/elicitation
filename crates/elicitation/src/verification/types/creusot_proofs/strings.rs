@@ -10,7 +10,6 @@ use creusot_contracts::*;
 // ============================================================================
 
 /// Prove that StringNonEmpty construction succeeds for non-empty strings.
-#[cfg(feature = "verification")]
 #[requires(!value.is_empty())]
 #[ensures(result.is_ok())]
 pub fn verify_string_non_empty_valid(value: String) -> Result<StringNonEmpty, ValidationError> {
@@ -18,7 +17,6 @@ pub fn verify_string_non_empty_valid(value: String) -> Result<StringNonEmpty, Va
 }
 
 /// Prove that StringNonEmpty construction fails for empty strings.
-#[cfg(feature = "verification")]
 #[requires(value.is_empty())]
 #[ensures(result.is_err())]
 pub fn verify_string_non_empty_invalid(value: String) -> Result<StringNonEmpty, ValidationError> {
@@ -26,7 +24,6 @@ pub fn verify_string_non_empty_invalid(value: String) -> Result<StringNonEmpty, 
 }
 
 /// Prove that StringNonEmpty accessor returns the wrapped string.
-#[cfg(feature = "verification")]
 #[requires(!value.is_empty())]
 #[ensures(match ^result {
     Ok(s) => s.get() == value,

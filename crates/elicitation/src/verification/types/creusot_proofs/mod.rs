@@ -10,7 +10,8 @@ mod strings;
 mod bools;
 mod chars;
 mod durations;
-mod networks;
+// Note: Creusot does not support std::net
+// mod networks;
 mod collections;
 mod mechanisms;
 

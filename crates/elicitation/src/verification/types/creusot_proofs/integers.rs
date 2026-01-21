@@ -13,11 +13,7 @@ use creusot_contracts::*;
 // I8 Contracts
 // ----------------------------------------------------------------------------
 
-#[cfg(feature = "verification")]
-use creusot_contracts::*;
-
 /// Prove that I8Positive construction succeeds for positive values.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i8_positive_valid(value: i8) -> Result<I8Positive, ValidationError> {
@@ -25,7 +21,6 @@ pub fn verify_i8_positive_valid(value: i8) -> Result<I8Positive, ValidationError
 }
 
 /// Prove that I8Positive construction fails for non-positive values.
-#[cfg(feature = "verification")]
 #[requires(value <= 0)]
 #[ensures(result.is_err())]
 pub fn verify_i8_positive_invalid(value: i8) -> Result<I8Positive, ValidationError> {
@@ -33,7 +28,6 @@ pub fn verify_i8_positive_invalid(value: i8) -> Result<I8Positive, ValidationErr
 }
 
 /// Prove that I8Positive::get() returns the wrapped value.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures((^result).is_ok() ==> (^result).as_ref().unwrap().get() == value)]
 pub fn verify_i8_positive_accessor(value: i8) -> Result<I8Positive, ValidationError> {
@@ -41,7 +35,6 @@ pub fn verify_i8_positive_accessor(value: i8) -> Result<I8Positive, ValidationEr
 }
 
 /// Prove that I8NonNegative construction succeeds for non-negative values.
-#[cfg(feature = "verification")]
 #[requires(value >= 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i8_non_negative_valid(value: i8) -> Result<I8NonNegative, ValidationError> {
@@ -49,7 +42,6 @@ pub fn verify_i8_non_negative_valid(value: i8) -> Result<I8NonNegative, Validati
 }
 
 /// Prove that I8NonNegative construction fails for negative values.
-#[cfg(feature = "verification")]
 #[requires(value < 0)]
 #[ensures(result.is_err())]
 pub fn verify_i8_non_negative_invalid(value: i8) -> Result<I8NonNegative, ValidationError> {
@@ -57,7 +49,6 @@ pub fn verify_i8_non_negative_invalid(value: i8) -> Result<I8NonNegative, Valida
 }
 
 /// Prove that I8NonZero construction succeeds for non-zero values.
-#[cfg(feature = "verification")]
 #[requires(value != 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i8_non_zero_valid(value: i8) -> Result<I8NonZero, ValidationError> {
@@ -65,7 +56,6 @@ pub fn verify_i8_non_zero_valid(value: i8) -> Result<I8NonZero, ValidationError>
 }
 
 /// Prove that I8NonZero construction fails for zero.
-#[cfg(feature = "verification")]
 #[requires(value == 0)]
 #[ensures(result.is_err())]
 pub fn verify_i8_non_zero_invalid(value: i8) -> Result<I8NonZero, ValidationError> {
@@ -77,7 +67,6 @@ pub fn verify_i8_non_zero_invalid(value: i8) -> Result<I8NonZero, ValidationErro
 // ----------------------------------------------------------------------------
 
 /// Prove that U8Positive construction succeeds for positive values.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_u8_positive_valid(value: u8) -> Result<U8Positive, ValidationError> {
@@ -85,7 +74,6 @@ pub fn verify_u8_positive_valid(value: u8) -> Result<U8Positive, ValidationError
 }
 
 /// Prove that U8Positive construction fails for zero.
-#[cfg(feature = "verification")]
 #[requires(value == 0)]
 #[ensures(result.is_err())]
 pub fn verify_u8_positive_invalid(value: u8) -> Result<U8Positive, ValidationError> {
@@ -93,7 +81,6 @@ pub fn verify_u8_positive_invalid(value: u8) -> Result<U8Positive, ValidationErr
 }
 
 /// Prove that U8NonZero construction succeeds for non-zero values.
-#[cfg(feature = "verification")]
 #[requires(value != 0)]
 #[ensures(result.is_ok())]
 pub fn verify_u8_non_zero_valid(value: u8) -> Result<U8NonZero, ValidationError> {
@@ -101,7 +88,6 @@ pub fn verify_u8_non_zero_valid(value: u8) -> Result<U8NonZero, ValidationError>
 }
 
 /// Prove that U8NonZero construction fails for zero.
-#[cfg(feature = "verification")]
 #[requires(value == 0)]
 #[ensures(result.is_err())]
 pub fn verify_u8_non_zero_invalid(value: u8) -> Result<U8NonZero, ValidationError> {
@@ -113,7 +99,6 @@ pub fn verify_u8_non_zero_invalid(value: u8) -> Result<U8NonZero, ValidationErro
 // ----------------------------------------------------------------------------
 
 /// Prove that I16Positive construction succeeds for positive values.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i16_positive_valid(value: i16) -> Result<I16Positive, ValidationError> {
@@ -121,7 +106,6 @@ pub fn verify_i16_positive_valid(value: i16) -> Result<I16Positive, ValidationEr
 }
 
 /// Prove that I16NonNegative construction succeeds for non-negative values.
-#[cfg(feature = "verification")]
 #[requires(value >= 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i16_non_negative_valid(value: i16) -> Result<I16NonNegative, ValidationError> {
@@ -129,7 +113,6 @@ pub fn verify_i16_non_negative_valid(value: i16) -> Result<I16NonNegative, Valid
 }
 
 /// Prove that I16NonZero construction succeeds for non-zero values.
-#[cfg(feature = "verification")]
 #[requires(value != 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i16_non_zero_valid(value: i16) -> Result<I16NonZero, ValidationError> {
@@ -141,7 +124,6 @@ pub fn verify_i16_non_zero_valid(value: i16) -> Result<I16NonZero, ValidationErr
 // ----------------------------------------------------------------------------
 
 /// Prove that U16Positive construction succeeds for positive values.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_u16_positive_valid(value: u16) -> Result<U16Positive, ValidationError> {
@@ -149,7 +131,6 @@ pub fn verify_u16_positive_valid(value: u16) -> Result<U16Positive, ValidationEr
 }
 
 /// Prove that U16NonZero construction succeeds for non-zero values.
-#[cfg(feature = "verification")]
 #[requires(value != 0)]
 #[ensures(result.is_ok())]
 pub fn verify_u16_non_zero_valid(value: u16) -> Result<U16NonZero, ValidationError> {
@@ -161,7 +142,6 @@ pub fn verify_u16_non_zero_valid(value: u16) -> Result<U16NonZero, ValidationErr
 // ----------------------------------------------------------------------------
 
 /// Prove that I32Positive construction succeeds for positive values.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i32_positive_valid(value: i32) -> Result<I32Positive, ValidationError> {
@@ -169,7 +149,6 @@ pub fn verify_i32_positive_valid(value: i32) -> Result<I32Positive, ValidationEr
 }
 
 /// Prove that I32NonNegative construction succeeds for non-negative values.
-#[cfg(feature = "verification")]
 #[requires(value >= 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i32_non_negative_valid(value: i32) -> Result<I32NonNegative, ValidationError> {
@@ -177,7 +156,6 @@ pub fn verify_i32_non_negative_valid(value: i32) -> Result<I32NonNegative, Valid
 }
 
 /// Prove that I32NonZero construction succeeds for non-zero values.
-#[cfg(feature = "verification")]
 #[requires(value != 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i32_non_zero_valid(value: i32) -> Result<I32NonZero, ValidationError> {
@@ -189,7 +167,6 @@ pub fn verify_i32_non_zero_valid(value: i32) -> Result<I32NonZero, ValidationErr
 // ----------------------------------------------------------------------------
 
 /// Prove that U32Positive construction succeeds for positive values.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_u32_positive_valid(value: u32) -> Result<U32Positive, ValidationError> {
@@ -197,7 +174,6 @@ pub fn verify_u32_positive_valid(value: u32) -> Result<U32Positive, ValidationEr
 }
 
 /// Prove that U32NonZero construction succeeds for non-zero values.
-#[cfg(feature = "verification")]
 #[requires(value != 0)]
 #[ensures(result.is_ok())]
 pub fn verify_u32_non_zero_valid(value: u32) -> Result<U32NonZero, ValidationError> {
@@ -209,7 +185,6 @@ pub fn verify_u32_non_zero_valid(value: u32) -> Result<U32NonZero, ValidationErr
 // ----------------------------------------------------------------------------
 
 /// Prove that I64Positive construction succeeds for positive values.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i64_positive_valid(value: i64) -> Result<I64Positive, ValidationError> {
@@ -217,7 +192,6 @@ pub fn verify_i64_positive_valid(value: i64) -> Result<I64Positive, ValidationEr
 }
 
 /// Prove that I64NonNegative construction succeeds for non-negative values.
-#[cfg(feature = "verification")]
 #[requires(value >= 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i64_non_negative_valid(value: i64) -> Result<I64NonNegative, ValidationError> {
@@ -225,7 +199,6 @@ pub fn verify_i64_non_negative_valid(value: i64) -> Result<I64NonNegative, Valid
 }
 
 /// Prove that I64NonZero construction succeeds for non-zero values.
-#[cfg(feature = "verification")]
 #[requires(value != 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i64_non_zero_valid(value: i64) -> Result<I64NonZero, ValidationError> {
@@ -237,7 +210,6 @@ pub fn verify_i64_non_zero_valid(value: i64) -> Result<I64NonZero, ValidationErr
 // ----------------------------------------------------------------------------
 
 /// Prove that U64Positive construction succeeds for positive values.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_u64_positive_valid(value: u64) -> Result<U64Positive, ValidationError> {
@@ -245,7 +217,6 @@ pub fn verify_u64_positive_valid(value: u64) -> Result<U64Positive, ValidationEr
 }
 
 /// Prove that U64NonZero construction succeeds for non-zero values.
-#[cfg(feature = "verification")]
 #[requires(value != 0)]
 #[ensures(result.is_ok())]
 pub fn verify_u64_non_zero_valid(value: u64) -> Result<U64NonZero, ValidationError> {
@@ -257,7 +228,6 @@ pub fn verify_u64_non_zero_valid(value: u64) -> Result<U64NonZero, ValidationErr
 // ----------------------------------------------------------------------------
 
 /// Prove that I128Positive construction succeeds for positive values.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i128_positive_valid(value: i128) -> Result<I128Positive, ValidationError> {
@@ -265,7 +235,6 @@ pub fn verify_i128_positive_valid(value: i128) -> Result<I128Positive, Validatio
 }
 
 /// Prove that I128NonNegative construction succeeds for non-negative values.
-#[cfg(feature = "verification")]
 #[requires(value >= 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i128_non_negative_valid(value: i128) -> Result<I128NonNegative, ValidationError> {
@@ -273,7 +242,6 @@ pub fn verify_i128_non_negative_valid(value: i128) -> Result<I128NonNegative, Va
 }
 
 /// Prove that I128NonZero construction succeeds for non-zero values.
-#[cfg(feature = "verification")]
 #[requires(value != 0)]
 #[ensures(result.is_ok())]
 pub fn verify_i128_non_zero_valid(value: i128) -> Result<I128NonZero, ValidationError> {
@@ -285,7 +253,6 @@ pub fn verify_i128_non_zero_valid(value: i128) -> Result<I128NonZero, Validation
 // ----------------------------------------------------------------------------
 
 /// Prove that U128Positive construction succeeds for positive values.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_u128_positive_valid(value: u128) -> Result<U128Positive, ValidationError> {
@@ -293,7 +260,6 @@ pub fn verify_u128_positive_valid(value: u128) -> Result<U128Positive, Validatio
 }
 
 /// Prove that U128NonZero construction succeeds for non-zero values.
-#[cfg(feature = "verification")]
 #[requires(value != 0)]
 #[ensures(result.is_ok())]
 pub fn verify_u128_non_zero_valid(value: u128) -> Result<U128NonZero, ValidationError> {
@@ -305,7 +271,6 @@ pub fn verify_u128_non_zero_valid(value: u128) -> Result<U128NonZero, Validation
 // ----------------------------------------------------------------------------
 
 /// Prove that IsizePositive construction succeeds for positive values.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_isize_positive_valid(value: isize) -> Result<IsizePositive, ValidationError> {
@@ -313,7 +278,6 @@ pub fn verify_isize_positive_valid(value: isize) -> Result<IsizePositive, Valida
 }
 
 /// Prove that IsizeNonNegative construction succeeds for non-negative values.
-#[cfg(feature = "verification")]
 #[requires(value >= 0)]
 #[ensures(result.is_ok())]
 pub fn verify_isize_non_negative_valid(value: isize) -> Result<IsizeNonNegative, ValidationError> {
@@ -321,7 +285,6 @@ pub fn verify_isize_non_negative_valid(value: isize) -> Result<IsizeNonNegative,
 }
 
 /// Prove that IsizeNonZero construction succeeds for non-zero values.
-#[cfg(feature = "verification")]
 #[requires(value != 0)]
 #[ensures(result.is_ok())]
 pub fn verify_isize_non_zero_valid(value: isize) -> Result<IsizeNonZero, ValidationError> {
@@ -333,7 +296,6 @@ pub fn verify_isize_non_zero_valid(value: isize) -> Result<IsizeNonZero, Validat
 // ----------------------------------------------------------------------------
 
 /// Prove that UsizePositive construction succeeds for positive values.
-#[cfg(feature = "verification")]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_usize_positive_valid(value: usize) -> Result<UsizePositive, ValidationError> {
@@ -341,7 +303,6 @@ pub fn verify_usize_positive_valid(value: usize) -> Result<UsizePositive, Valida
 }
 
 /// Prove that UsizeNonZero construction succeeds for non-zero values.
-#[cfg(feature = "verification")]
 #[requires(value != 0)]
 #[ensures(result.is_ok())]
 pub fn verify_usize_non_zero_valid(value: usize) -> Result<UsizeNonZero, ValidationError> {
@@ -353,7 +314,6 @@ pub fn verify_usize_non_zero_valid(value: usize) -> Result<UsizeNonZero, Validat
 // ----------------------------------------------------------------------------
 
 /// Prove that I8Range construction succeeds for values in range.
-#[cfg(feature = "verification")]
 #[requires(-10 <= value && value <= 10)]
 #[ensures(result.is_ok())]
 pub fn verify_i8_range_valid(value: i8) -> Result<I8Range<-10, 10>, ValidationError> {
@@ -361,7 +321,6 @@ pub fn verify_i8_range_valid(value: i8) -> Result<I8Range<-10, 10>, ValidationEr
 }
 
 /// Prove that I8Range construction fails for values out of range.
-#[cfg(feature = "verification")]
 #[requires(value < -10 || value > 10)]
 #[ensures(result.is_err())]
 pub fn verify_i8_range_invalid(value: i8) -> Result<I8Range<-10, 10>, ValidationError> {
@@ -369,7 +328,6 @@ pub fn verify_i8_range_invalid(value: i8) -> Result<I8Range<-10, 10>, Validation
 }
 
 /// Prove that U8Range construction succeeds for values in range.
-#[cfg(feature = "verification")]
 #[requires(10 <= value && value <= 250)]
 #[ensures(result.is_ok())]
 pub fn verify_u8_range_valid(value: u8) -> Result<U8Range<10, 250>, ValidationError> {
@@ -377,7 +335,6 @@ pub fn verify_u8_range_valid(value: u8) -> Result<U8Range<10, 250>, ValidationEr
 }
 
 /// Prove that I16Range construction succeeds for values in range.
-#[cfg(feature = "verification")]
 #[requires(-1000 <= value && value <= 1000)]
 #[ensures(result.is_ok())]
 pub fn verify_i16_range_valid(value: i16) -> Result<I16Range<-1000, 1000>, ValidationError> {
@@ -385,7 +342,6 @@ pub fn verify_i16_range_valid(value: i16) -> Result<I16Range<-1000, 1000>, Valid
 }
 
 /// Prove that U16Range construction succeeds for values in range.
-#[cfg(feature = "verification")]
 #[requires(100 <= value && value <= 65000)]
 #[ensures(result.is_ok())]
 pub fn verify_u16_range_valid(value: u16) -> Result<U16Range<100, 65000>, ValidationError> {
@@ -393,7 +349,6 @@ pub fn verify_u16_range_valid(value: u16) -> Result<U16Range<100, 65000>, Valida
 }
 
 /// Prove that I32Range construction succeeds for values in range.
-#[cfg(feature = "verification")]
 #[requires(-100000 <= value && value <= 100000)]
 #[ensures(result.is_ok())]
 pub fn verify_i32_range_valid(value: i32) -> Result<I32Range<-100000, 100000>, ValidationError> {
@@ -401,7 +356,6 @@ pub fn verify_i32_range_valid(value: i32) -> Result<I32Range<-100000, 100000>, V
 }
 
 /// Prove that U32Range construction succeeds for values in range.
-#[cfg(feature = "verification")]
 #[requires(1000 <= value && value <= 4000000000)]
 #[ensures(result.is_ok())]
 pub fn verify_u32_range_valid(value: u32) -> Result<U32Range<1000, 4000000000>, ValidationError> {
@@ -409,7 +363,6 @@ pub fn verify_u32_range_valid(value: u32) -> Result<U32Range<1000, 4000000000>, 
 }
 
 /// Prove that I64Range construction succeeds for values in range.
-#[cfg(feature = "verification")]
 #[requires(-1000000000 <= value && value <= 1000000000)]
 #[ensures(result.is_ok())]
 pub fn verify_i64_range_valid(value: i64) -> Result<I64Range<-1000000000, 1000000000>, ValidationError> {
@@ -417,7 +370,6 @@ pub fn verify_i64_range_valid(value: i64) -> Result<I64Range<-1000000000, 100000
 }
 
 /// Prove that U64Range construction succeeds for values in range.
-#[cfg(feature = "verification")]
 #[requires(1000000 <= value && value <= 18000000000000000000)]
 #[ensures(result.is_ok())]
 pub fn verify_u64_range_valid(value: u64) -> Result<U64Range<1000000, 18000000000000000000>, ValidationError> {
@@ -425,7 +377,6 @@ pub fn verify_u64_range_valid(value: u64) -> Result<U64Range<1000000, 1800000000
 }
 
 /// Prove that IsizeRange construction succeeds for values in range.
-#[cfg(feature = "verification")]
 #[requires(-500 <= value && value <= 500)]
 #[ensures(result.is_ok())]
 pub fn verify_isize_range_valid(value: isize) -> Result<IsizeRange<-500, 500>, ValidationError> {
@@ -433,7 +384,6 @@ pub fn verify_isize_range_valid(value: isize) -> Result<IsizeRange<-500, 500>, V
 }
 
 /// Prove that UsizeRange construction succeeds for values in range.
-#[cfg(feature = "verification")]
 #[requires(100 <= value && value <= 10000)]
 #[ensures(result.is_ok())]
 pub fn verify_usize_range_valid(value: usize) -> Result<UsizeRange<100, 10000>, ValidationError> {

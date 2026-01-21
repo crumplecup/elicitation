@@ -84,13 +84,13 @@ pub fn verify_trenchcoat_identity_preservation(value: i8) -> Result<I8Positive, 
 
 /// Prove compositional verification: tuple contracts compose element contracts.
 #[cfg(feature = "verify-prusti")]
-#[requires(a > 0 && b > 0)]
+#[requires(true)]
 #[ensures(result.is_ok())]
 pub fn verify_compositional_correctness(
-    a: i8,
-    b: i8,
-) -> Result<Tuple2<i8, i8, I8Positive, I8Positive>, ValidationError> {
-    Tuple2::new((a, b))
+    a: I8Positive,
+    b: I8Positive,
+) -> Result<Tuple2<I8Positive, I8Positive>, ValidationError> {
+    Ok(Tuple2::new(a, b))
 }
 
 // ============================================================================

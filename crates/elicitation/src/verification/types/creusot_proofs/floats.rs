@@ -10,7 +10,6 @@ use creusot_contracts::*;
 // ============================================================================
 
 /// Prove that F32Finite construction succeeds for finite values.
-#[cfg(feature = "verification")]
 #[requires(value.is_finite())]
 #[ensures(result.is_ok())]
 pub fn verify_f32_finite_valid(value: f32) -> Result<F32Finite, ValidationError> {
@@ -18,7 +17,6 @@ pub fn verify_f32_finite_valid(value: f32) -> Result<F32Finite, ValidationError>
 }
 
 /// Prove that F32Finite construction fails for non-finite values.
-#[cfg(feature = "verification")]
 #[requires(!value.is_finite())]
 #[ensures(result.is_err())]
 pub fn verify_f32_finite_invalid(value: f32) -> Result<F32Finite, ValidationError> {
@@ -26,7 +24,6 @@ pub fn verify_f32_finite_invalid(value: f32) -> Result<F32Finite, ValidationErro
 }
 
 /// Prove that F32Positive construction succeeds for positive finite values.
-#[cfg(feature = "verification")]
 #[requires(value.is_finite() && value > 0.0)]
 #[ensures(result.is_ok())]
 pub fn verify_f32_positive_valid(value: f32) -> Result<F32Positive, ValidationError> {
@@ -34,7 +31,6 @@ pub fn verify_f32_positive_valid(value: f32) -> Result<F32Positive, ValidationEr
 }
 
 /// Prove that F32NonNegative construction succeeds for non-negative finite values.
-#[cfg(feature = "verification")]
 #[requires(value.is_finite() && value >= 0.0)]
 #[ensures(result.is_ok())]
 pub fn verify_f32_non_negative_valid(value: f32) -> Result<F32NonNegative, ValidationError> {
@@ -42,7 +38,6 @@ pub fn verify_f32_non_negative_valid(value: f32) -> Result<F32NonNegative, Valid
 }
 
 /// Prove that F64Finite construction succeeds for finite values.
-#[cfg(feature = "verification")]
 #[requires(value.is_finite())]
 #[ensures(result.is_ok())]
 pub fn verify_f64_finite_valid(value: f64) -> Result<F64Finite, ValidationError> {
@@ -50,7 +45,6 @@ pub fn verify_f64_finite_valid(value: f64) -> Result<F64Finite, ValidationError>
 }
 
 /// Prove that F64Positive construction succeeds for positive finite values.
-#[cfg(feature = "verification")]
 #[requires(value.is_finite() && value > 0.0)]
 #[ensures(result.is_ok())]
 pub fn verify_f64_positive_valid(value: f64) -> Result<F64Positive, ValidationError> {
@@ -58,7 +52,6 @@ pub fn verify_f64_positive_valid(value: f64) -> Result<F64Positive, ValidationEr
 }
 
 /// Prove that F64NonNegative construction succeeds for non-negative finite values.
-#[cfg(feature = "verification")]
 #[requires(value.is_finite() && value >= 0.0)]
 #[ensures(result.is_ok())]
 pub fn verify_f64_non_negative_valid(value: f64) -> Result<F64NonNegative, ValidationError> {
