@@ -16,6 +16,13 @@ categories = ["development-tools::procedural-macro-helpers"]
 [lib]
 proc-macro = true
 
+[features]
+# Verification feature flags (passed through from main crate)
+verify-kani = []
+verify-creusot = []
+verify-verus = []
+verify-prusti = []
+
 [dependencies]
 syn = { workspace = true }
 quote = { workspace = true }
