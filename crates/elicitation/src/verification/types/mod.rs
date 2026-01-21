@@ -39,6 +39,9 @@ mod kani_proofs;
 #[cfg(feature = "verify-verus")]
 mod verus_proofs;
 
+#[cfg(feature = "verify-creusot")]
+mod creusot_proofs;
+
 pub use integers::*;
 pub use floats::*;
 pub use strings::*;
