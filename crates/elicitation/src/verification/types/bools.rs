@@ -2,6 +2,8 @@
 
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
+use elicitation_macros::instrumented_impl;
+
 // ============================================================================
 
 /// Contract type for true bool values.
@@ -10,6 +12,7 @@ use super::ValidationError;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BoolTrue(bool);
 
+#[instrumented_impl]
 impl BoolTrue {
     /// Constructs a true bool value.
     ///

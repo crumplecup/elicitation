@@ -259,6 +259,7 @@ dependencies = [
  "derive-getters",
  "derive_more",
  "elicitation_derive",
+ "elicitation_macros",
  "jiff",
  "paste",
  "prusti-contracts",
@@ -283,6 +284,15 @@ dependencies = [
  "quote",
  "syn",
  "tracing",
+]
+
+[[package]]
+name = "elicitation_macros"
+version = "0.2.1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

@@ -43,6 +43,7 @@ prusti-contracts = { version = "0.2", optional = true }
 
 # Re-export derive macro
 elicitation_derive = { path = "../elicitation_derive", version = "0.4.3" }
+elicitation_macros = { path = "../elicitation_macros" }
 
 [dev-dependencies]
 tokio-test = "0.4"

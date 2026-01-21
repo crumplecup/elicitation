@@ -2,6 +2,8 @@
 
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
+use elicitation_macros::instrumented_impl;
+
 // ============================================================================
 
 /// Contract type for non-empty String values.
@@ -10,6 +12,7 @@ use super::ValidationError;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct StringNonEmpty(String);
 
+#[instrumented_impl]
 impl StringNonEmpty {
     /// Constructs a non-empty String.
     ///
