@@ -26,11 +26,19 @@ pub fn generate_kani_verification(
 /// Generate Kani verification for an enum.
 pub fn generate_kani_enum_verification(
     enum_name: &Ident,
-    _variants: &[&syn::Variant],
+    variants: &[&syn::Variant],
 ) -> TokenStream {
-    let _ = enum_name;
+    // Generate one proof harness per variant
+    let harnesses: Vec<_> = variants
+        .iter()
+        .map(|variant| generate_variant_harness(enum_name, variant))
+        .collect();
+    
     quote! {
-        // TODO: Enum verification
+        #[cfg(feature = "verify-kani")]
+        const _: () = {
+            #(#harnesses)*
+        };
     }
 }
 
@@ -137,6 +145,87 @@ fn generate_harness(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
             
             // Call constructor (Kani verifies composition, not leaves)
             let _result = #constructor_name(#(#field_names),*);
+        }
+    }
+}
+
+/// Generate a proof harness for a single enum variant.
+fn generate_variant_harness(enum_name: &Ident, variant: &syn::Variant) -> TokenStream {
+    let variant_name = &variant.ident;
+    let harness_name = format_ident!("__verify_{}_{}", enum_name, variant_name);
+    
+    match &variant.fields {
+        syn::Fields::Unit => {
+            // Unit variant - just construct it
+            quote! {
+                #[kani::proof]
+                fn #harness_name() {
+                    let _value = #enum_name::#variant_name;
+                    // Unit variants are always valid
+                }
+            }
+        }
+        
+        syn::Fields::Unnamed(fields) => {
+            // Tuple variant - generate symbolic fields
+            let field_types: Vec<_> = fields.unnamed.iter().map(|f| &f.ty).collect();
+            let field_names: Vec<_> = (0..field_types.len())
+                .map(|i| format_ident!("field_{}", i))
+                .collect();
+            
+            // Generate stub_verified for each field type
+            let stub_attributes: Vec<TokenStream> = field_types
+                .iter()
+                .filter_map(|ty| extract_type_path(ty))
+                .map(|type_path| {
+                    let type_segments = &type_path.path.segments;
+                    let type_name = quote! { #type_segments };
+                    quote! {
+                        #[kani::stub_verified(#type_name::new)]
+                    }
+                })
+                .collect();
+            
+            quote! {
+                #[kani::proof]
+                #(#stub_attributes)*
+                fn #harness_name() {
+                    #(let #field_names: #field_types = kani::any();)*
+                    let _value = #enum_name::#variant_name(#(#field_names),*);
+                }
+            }
+        }
+        
+        syn::Fields::Named(fields) => {
+            // Struct variant - generate symbolic fields
+            let field_names: Vec<_> = fields.named.iter()
+                .filter_map(|f| f.ident.as_ref())
+                .collect();
+            let field_types: Vec<_> = fields.named.iter()
+                .map(|f| &f.ty)
+                .collect();
+            
+            // Generate stub_verified for each field type
+            let stub_attributes: Vec<TokenStream> = field_types
+                .iter()
+                .filter_map(|ty| extract_type_path(ty))
+                .map(|type_path| {
+                    let type_segments = &type_path.path.segments;
+                    let type_name = quote! { #type_segments };
+                    quote! {
+                        #[kani::stub_verified(#type_name::new)]
+                    }
+                })
+                .collect();
+            
+            quote! {
+                #[kani::proof]
+                #(#stub_attributes)*
+                fn #harness_name() {
+                    #(let #field_names: #field_types = kani::any();)*
+                    let _value = #enum_name::#variant_name { #(#field_names),* };
+                }
+            }
         }
     }
 }
