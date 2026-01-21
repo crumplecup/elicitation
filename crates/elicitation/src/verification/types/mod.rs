@@ -24,12 +24,16 @@ mod floats;
 mod strings;
 mod bools;
 mod chars;
+mod uuids;
+mod durations;
 
 pub use integers::*;
 pub use floats::*;
 pub use strings::*;
 pub use bools::*;
 pub use chars::*;
+pub use uuids::*;
+pub use durations::*;
 
 /// Error type for contract validation failures.
 #[derive(Debug, Clone, PartialEq, derive_more::Display)]
@@ -121,6 +125,23 @@ pub enum ValidationError {
     /// Char is not alphanumeric.
     #[display("Character '{}' is not alphanumeric", _0)]
     NotAlphanumeric(char),
+
+    /// UUID is wrong version.
+    #[display("UUID must be version {}, got version {}", expected, got)]
+    WrongUuidVersion {
+        /// Expected version number.
+        expected: u8,
+        /// Actual version number.
+        got: u8,
+    },
+
+    /// UUID is nil.
+    #[display("UUID must be non-nil (not all zeros)")]
+    NilUuid,
+
+    /// Duration is not positive (must be > zero).
+    #[display("Duration must be positive (not zero)")]
+    DurationNotPositive,
 }
 
 impl std::error::Error for ValidationError {}
