@@ -337,6 +337,31 @@ where
 }
 
 // ============================================================================
+// Input Mechanism Contracts
+// ============================================================================
+
+/// Contract for Input mechanism: Returns non-empty input.
+#[derive(Debug, Clone, Copy)]
+pub struct InputNonEmpty;
+
+impl Contract for InputNonEmpty {
+    type Input = String;
+    type Output = String;
+
+    fn requires(_input: &String) -> bool {
+        true
+    }
+
+    fn ensures(_input: &String, output: &String) -> bool {
+        !output.is_empty()
+    }
+
+    fn invariant(&self) -> bool {
+        true
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 

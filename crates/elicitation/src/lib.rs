@@ -168,7 +168,7 @@ pub use verification::types::{
     // Tuples
     Tuple2, Tuple3, Tuple4,
     // Durations
-    DurationPositive,
+    DurationPositive, DurationNonZero,
     // Networks
     IpPrivate, IpPublic, IpV4, IpV6,
     Ipv4Loopback, Ipv6Loopback,
@@ -230,4 +230,5 @@ pub use verification::mechanisms::{
     TextReturnsNonEmpty,
     NumericReturnsValid,
     MechanismWithType,
+    InputNonEmpty,
 };

@@ -99,7 +99,7 @@ pub use collections::{
 pub use tuples::{Tuple2, Tuple3, Tuple4};
 
 // Durations
-pub use durations::DurationPositive;
+pub use durations::{DurationPositive, DurationNonZero};
 
 // Networks
 pub use networks::{
