@@ -43,7 +43,9 @@ pub struct ElicitClient<'a> {
 
 impl<'a> ElicitClient<'a> {
     /// Create a new client wrapper from an RMCP peer.
+    #[tracing::instrument(skip(peer))]
     pub fn new(peer: &'a Peer<RoleClient>) -> Self {
+        tracing::debug!("Creating new ElicitClient");
         Self {
             peer,
             style_context: StyleContext::default(),
@@ -51,6 +53,7 @@ impl<'a> ElicitClient<'a> {
     }
 
     /// Get the underlying RMCP peer for making tool calls.
+    #[tracing::instrument(skip(self), level = "trace")]
     pub fn peer(&self) -> &Peer<RoleClient> {
         self.peer
     }
@@ -72,7 +75,10 @@ impl<'a> ElicitClient<'a> {
     /// // Use custom style for i32
     /// let client = client.with_style::<i32, _>(MyI32Style::Verbose);
     /// ```
+    #[tracing::instrument(skip(self, style))]
     pub fn with_style<T: Elicitation + 'static, S: ElicitationStyle>(&self, style: S) -> Self {
+        let type_name = std::any::type_name::<T>();
+        tracing::debug!(type_name, "Setting custom style");
         let mut ctx = self.style_context.clone();
         ctx.set_style::<T, S>(style);
         Self {
@@ -93,10 +99,14 @@ impl<'a> ElicitClient<'a> {
     /// // Get style - uses custom if set, default otherwise
     /// let style = client.style_or_default::<Config>();
     /// ```
+    #[tracing::instrument(skip(self))]
     pub fn style_or_default<T: Elicitation + 'static>(&self) -> T::Style
     where
         T::Style: ElicitationStyle,
     {
+        let type_name = std::any::type_name::<T>();
+        let has_custom = self.style_context.get_style::<T, T::Style>().is_some();
+        tracing::debug!(type_name, has_custom, "Getting style or default");
         self.style_context
             .get_style::<T, T::Style>()
             .unwrap_or_default()
@@ -116,6 +126,7 @@ impl<'a> ElicitClient<'a> {
     /// // Get style - uses custom if set, otherwise asks user
     /// let style = client.style_or_elicit::<Config>().await?;
     /// ```
+    #[tracing::instrument(skip(self))]
     pub async fn style_or_elicit<T: Elicitation + 'static>(&self) -> ElicitResult<T::Style>
     where
         T::Style: ElicitationStyle,
