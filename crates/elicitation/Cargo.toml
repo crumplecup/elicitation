@@ -33,6 +33,7 @@ uuid = { version = "1.0", optional = true, features = ["v4", "serde"] }
 
 # Verification libraries (optional)
 creusot-contracts = { version = "0.2", optional = true }
+prusti-contracts = { version = "0.2", optional = true }
 
 # Re-export derive macro
 elicitation_derive = { path = "../elicitation_derive", version = "0.4.3" }
@@ -61,7 +62,7 @@ uuid = ["dep:uuid"]
 verification = []                           # Core Contract trait only
 verify-kani = ["verification"]             # Kani model checker
 verify-creusot = ["verification", "creusot-contracts"]  # Creusot deductive verifier
-verify-prusti = ["verification"]           # Prusti separation logic (future)
+verify-prusti = ["verification", "prusti-contracts"]    # Prusti separation logic
 verify-verus = ["verification"]            # Verus SMT verifier (future)
 verify-all = ["verify-kani", "verify-creusot", "verify-prusti", "verify-verus"]
 

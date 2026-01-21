@@ -42,6 +42,9 @@ mod verus_proofs;
 #[cfg(feature = "verify-creusot")]
 mod creusot_proofs;
 
+#[cfg(feature = "verify-prusti")]
+mod prusti_proofs;
+
 pub use integers::*;
 pub use floats::*;
 pub use strings::*;
