@@ -394,6 +394,7 @@ pub struct AndContract<C1, C2> {
 
 impl<C1, C2> AndContract<C1, C2> {
     /// Create new AND contract combining two contracts.
+    #[tracing::instrument(level = "trace", skip(first, second))]
     pub fn new(first: C1, second: C2) -> Self {
         Self { first, second }
     }
@@ -445,6 +446,7 @@ pub struct OrContract<C1, C2> {
 
 impl<C1, C2> OrContract<C1, C2> {
     /// Create new OR contract combining two contracts.
+    #[tracing::instrument(level = "trace", skip(first, second))]
     pub fn new(first: C1, second: C2) -> Self {
         Self { first, second }
     }
@@ -493,6 +495,7 @@ pub struct NotContract<C> {
 
 impl<C> NotContract<C> {
     /// Create new NOT contract negating inner contract.
+    #[tracing::instrument(level = "trace", skip(inner))]
     pub fn new(inner: C) -> Self {
         Self { inner }
     }
@@ -525,16 +528,19 @@ pub mod compose {
     use super::*;
 
     /// Create AND contract from two contracts.
+    #[tracing::instrument(level = "trace", skip(first, second))]
     pub fn and<C1, C2>(first: C1, second: C2) -> AndContract<C1, C2> {
         AndContract::new(first, second)
     }
 
     /// Create OR contract from two contracts.
+    #[tracing::instrument(level = "trace", skip(first, second))]
     pub fn or<C1, C2>(first: C1, second: C2) -> OrContract<C1, C2> {
         OrContract::new(first, second)
     }
 
     /// Create NOT contract from a contract.
+    #[tracing::instrument(level = "trace", skip(inner))]
     pub fn not<C>(inner: C) -> NotContract<C> {
         NotContract::new(inner)
     }

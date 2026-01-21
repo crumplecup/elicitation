@@ -27,6 +27,7 @@ macro_rules! impl_tuple_elicit {
             impl Elicitation for [<Tuple $( $idx )+ Style>] {
                 type Style = [<Tuple $( $idx )+ Style>];
 
+                #[tracing::instrument(skip(_client), level = "trace")]
                 async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
                     Ok(Self::Default)
                 }

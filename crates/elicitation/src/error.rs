@@ -222,12 +222,14 @@ impl std::error::Error for ElicitError {
 
 impl ElicitError {
     /// Returns a reference to the underlying error kind.
+    #[tracing::instrument(skip(self), level = "trace")]
     pub fn kind(&self) -> &ElicitErrorKind {
         &self.0
     }
 
     /// Create a new error with location tracking.
     #[track_caller]
+    #[tracing::instrument(skip(kind), level = "debug")]
     pub fn new(kind: ElicitErrorKind) -> Self {
         tracing::error!(error_kind = %kind, "Error created");
         Self(Box::new(kind))

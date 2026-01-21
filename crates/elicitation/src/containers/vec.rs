@@ -18,6 +18,7 @@ impl Prompt for VecStyle {
 impl Elicitation for VecStyle {
     type Style = VecStyle;
 
+    #[tracing::instrument(skip(_client), level = "trace")]
     async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
         Ok(Self::Default)
     }

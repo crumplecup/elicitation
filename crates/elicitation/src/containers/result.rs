@@ -18,6 +18,7 @@ impl Prompt for ResultStyle {
 impl Elicitation for ResultStyle {
     type Style = ResultStyle;
 
+    #[tracing::instrument(skip(_client), level = "trace")]
     async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
         Ok(Self::Default)
     }

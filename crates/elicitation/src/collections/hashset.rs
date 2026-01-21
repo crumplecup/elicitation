@@ -20,6 +20,7 @@ impl Prompt for HashSetStyle {
 impl Elicitation for HashSetStyle {
     type Style = HashSetStyle;
 
+    #[tracing::instrument(skip(_client), level = "trace")]
     async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
         Ok(Self::Default)
     }

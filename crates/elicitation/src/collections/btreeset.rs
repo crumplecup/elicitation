@@ -19,6 +19,7 @@ impl Prompt for BTreeSetStyle {
 impl Elicitation for BTreeSetStyle {
     type Style = BTreeSetStyle;
 
+    #[tracing::instrument(skip(_client), level = "trace")]
     async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
         Ok(Self::Default)
     }

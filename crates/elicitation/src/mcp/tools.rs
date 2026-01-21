@@ -3,26 +3,31 @@
 /// MCP tool names used by elicitation.
 pub mod tool_names {
     /// Tool for eliciting numeric values with range constraints.
+    #[tracing::instrument(level = "trace")]
     pub fn elicit_number() -> String {
         "elicit_number".to_string()
     }
 
     /// Tool for eliciting boolean values (yes/no).
+    #[tracing::instrument(level = "trace")]
     pub fn elicit_bool() -> String {
         "elicit_bool".to_string()
     }
 
     /// Tool for eliciting free-form text.
+    #[tracing::instrument(level = "trace")]
     pub fn elicit_text() -> String {
         "elicit_text".to_string()
     }
 
     /// Tool for selecting from finite options.
+    #[tracing::instrument(level = "trace")]
     pub fn elicit_select() -> String {
         "elicit_select".to_string()
     }
 
     /// Tool for multi-field surveys.
+    #[tracing::instrument(level = "trace")]
     pub fn elicit_survey() -> String {
         "elicit_survey".to_string()
     }
