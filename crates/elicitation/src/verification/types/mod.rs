@@ -51,25 +51,99 @@ mod creusot_proofs;
 #[cfg(feature = "verify-prusti")]
 mod prusti_proofs;
 
-pub use integers::*;
-pub use floats::*;
-pub use strings::*;
-pub use bools::*;
-pub use chars::*;
-pub use uuids::*;
-pub use durations::*;
-pub use networks::*;
-pub use pathbufs::*;
-pub use datetimes::*;
-pub use tuples::*;
-pub use collections::*;
-pub use values::*;
+// Explicit exports (no globs - helps compiler show what's missing)
 
+// Integers
+pub use integers::{
+    I8Positive, I8NonNegative, I8Range, I8RangeStyle,
+    I16Positive, I16NonNegative, I16Range, I16RangeStyle,
+    U8NonZero, U8Range, U8RangeStyle,
+    U16NonZero, U16Range, U16RangeStyle,
+};
+
+// Floats
+pub use floats::{
+    F32Positive, F32NonNegative, F32Finite,
+    F64Positive, F64NonNegative, F64Finite,
+};
+
+// Bools
+pub use bools::{BoolTrue, BoolFalse};
+
+// Chars
+pub use chars::{CharAlphabetic, CharNumeric, CharAlphanumeric};
+
+// Strings
+pub use strings::StringNonEmpty;
+
+// Collections
+pub use collections::{
+    VecNonEmpty, VecAllSatisfy,
+    OptionSome, ResultOk,
+    BoxSatisfies, ArcSatisfies, RcSatisfies,
+    HashMapNonEmpty, BTreeMapNonEmpty,
+    HashSetNonEmpty, BTreeSetNonEmpty,
+    VecDequeNonEmpty, LinkedListNonEmpty,
+    ArrayAllSatisfy,
+};
+
+// Tuples
+pub use tuples::{Tuple2, Tuple3, Tuple4};
+
+// Durations
+pub use durations::DurationPositive;
+
+// Networks
+pub use networks::{
+    IpPrivate, IpPublic, IpV4, IpV6,
+    Ipv4Loopback, Ipv6Loopback,
+};
+
+// Paths
+pub use pathbufs::{
+    PathBufExists, PathBufReadable,
+    PathBufIsDir, PathBufIsFile,
+};
+
+// UUIDs (feature-gated)
+#[cfg(feature = "uuid")]
+pub use uuids::{UuidV4, UuidNonNil};
+
+// DateTimes (feature-gated on chrono/time/jiff)
+#[cfg(feature = "chrono")]
+pub use datetimes::{
+    DateTimeUtcAfter, DateTimeUtcBefore,
+    NaiveDateTimeAfter,
+};
+
+#[cfg(feature = "time")]
+pub use datetimes::{
+    OffsetDateTimeAfter, OffsetDateTimeBefore,
+};
+
+#[cfg(feature = "jiff")]
+pub use datetimes::{
+    TimestampAfter, TimestampBefore,
+};
+
+// Values (JSON - feature gated on serde_json but it might be non-optional)
+#[cfg(feature = "serde_json")]
+pub use values::{ValueObject, ValueArray, ValueNonNull};
+
+// URLs (feature-gated)
 #[cfg(feature = "url")]
-pub use urls::*;
+pub use urls::{
+    UrlValid, UrlHttps, UrlHttp,
+    UrlWithHost, UrlCanBeBase,
+};
 
+// Regexes (feature-gated)
 #[cfg(feature = "regex")]
-pub use regexes::*;
+pub use regexes::{
+    RegexValid, RegexSetValid,
+    RegexCaseInsensitive, RegexMultiline,
+    RegexSetNonEmpty,
+};
 
 /// Error type for contract validation failures.
 #[derive(Debug, Clone, PartialEq, derive_more::Display)]

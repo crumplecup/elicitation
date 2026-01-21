@@ -132,33 +132,94 @@ pub use rmcp;
 pub use elicitation_derive::Elicit;
 
 // Re-export verification contract types at crate level (for kani_proofs imports)
-// Gate on kani OR verification feature (kani_proofs uses #[cfg(kani)])
-#[cfg(any(feature = "verification", kani))]
-pub use verification::{types::*, mechanisms::*};
-
-// Additional explicit re-exports for commonly used contract types in proofs
+// EXPLICIT exports - no globs (helps compiler show what's missing)
 #[cfg(any(feature = "verification", kani))]
 pub use verification::types::{
     // Integers
-    I8NonNegative, I8Positive, U8Positive, U8NonZero, 
-    I16Positive, U16Positive, U16NonZero,
-    // Floats  
-    F32NonNegative, F32Positive, F64NonNegative, F64Positive,
+    I8Positive, I8NonNegative, I8Range, I8RangeStyle,
+    I16Positive, I16NonNegative, I16Range, I16RangeStyle,
+    U8NonZero, U8Range, U8RangeStyle,
+    U16NonZero, U16Range, U16RangeStyle,
+    // Floats
+    F32Positive, F32NonNegative, F32Finite,
+    F64Positive, F64NonNegative, F64Finite,
     // Bools
-    BoolFalse, BoolTrue,
+    BoolTrue, BoolFalse,
     // Chars
-    CharNumeric, CharAlphanumeric, CharAlphabetic, CharAscii,
+    CharAlphabetic, CharNumeric, CharAlphanumeric,
     // Strings
     StringNonEmpty,
     // Collections
-    OptionSome, Tuple2, VecNonEmpty,
+    VecNonEmpty, VecAllSatisfy,
+    OptionSome, ResultOk,
+    BoxSatisfies, ArcSatisfies, RcSatisfies,
+    HashMapNonEmpty, BTreeMapNonEmpty,
+    HashSetNonEmpty, BTreeSetNonEmpty,
+    VecDequeNonEmpty, LinkedListNonEmpty,
+    ArrayAllSatisfy,
+    // Tuples
+    Tuple2, Tuple3, Tuple4,
+    // Durations
+    DurationPositive,
     // Networks
-    IpPrivate, IpPublic, Ipv4Loopback, Ipv6Loopback,
+    IpPrivate, IpPublic, IpV4, IpV6,
+    Ipv4Loopback, Ipv6Loopback,
     // Paths
-    PathBufExists, PathBufIsFile, PathBufIsDir, PathBufReadable,
+    PathBufExists, PathBufReadable,
+    PathBufIsDir, PathBufIsFile,
+    // ValidationError
+    ValidationError,
 };
 
+// UUIDs (feature-gated on uuid)
+#[cfg(all(any(feature = "verification", kani), feature = "uuid"))]
+pub use verification::types::{UuidV4, UuidNonNil};
+
+// DateTimes (feature-gated on chrono/time/jiff)
+#[cfg(all(any(feature = "verification", kani), feature = "chrono"))]
+pub use verification::types::{
+    DateTimeUtcAfter, DateTimeUtcBefore,
+    NaiveDateTimeAfter,
+};
+
+#[cfg(all(any(feature = "verification", kani), feature = "time"))]
+pub use verification::types::{
+    OffsetDateTimeAfter, OffsetDateTimeBefore,
+};
+
+#[cfg(all(any(feature = "verification", kani), feature = "jiff"))]
+pub use verification::types::{
+    TimestampAfter, TimestampBefore,
+};
+
+// Values (JSON - feature-gated)
+#[cfg(all(any(feature = "verification", kani), feature = "serde_json"))]
+pub use verification::types::{
+    ValueObject, ValueArray, ValueNonNull,
+};
+
+// URLs (feature-gated)
+#[cfg(all(any(feature = "verification", kani), feature = "url"))]
+pub use verification::types::{
+    UrlValid, UrlHttps, UrlHttp,
+    UrlWithHost, UrlCanBeBase,
+};
+
+// Regexes (feature-gated)
+#[cfg(all(any(feature = "verification", kani), feature = "regex"))]
+pub use verification::types::{
+    RegexValid, RegexSetValid,
+    RegexCaseInsensitive, RegexMultiline,
+    RegexSetNonEmpty,
+};
+
+// Mechanisms
 #[cfg(any(feature = "verification", kani))]
 pub use verification::mechanisms::{
-    SurveyReturnsValidVariant, AffirmReturnsBoolean, InputNonEmpty,
+    SurveyReturnsValidVariant,
+    AffirmReturnsBoolean,
+    TextReturnsString,
+    TextReturnsNonEmpty,
+    NumericReturnsValid,
+    MechanismWithType,
 };
