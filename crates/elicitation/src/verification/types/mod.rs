@@ -26,6 +26,7 @@ mod bools;
 mod chars;
 mod uuids;
 mod durations;
+mod networks;
 
 pub use integers::*;
 pub use floats::*;
@@ -34,6 +35,7 @@ pub use bools::*;
 pub use chars::*;
 pub use uuids::*;
 pub use durations::*;
+pub use networks::*;
 
 /// Error type for contract validation failures.
 #[derive(Debug, Clone, PartialEq, derive_more::Display)]
@@ -142,6 +144,27 @@ pub enum ValidationError {
     /// Duration is not positive (must be > zero).
     #[display("Duration must be positive (not zero)")]
     DurationNotPositive,
+
+    /// IP address is not private.
+    #[display("IP address must be private (RFC 1918/4193), got {}", _0)]
+    NotPrivateIp(String),
+
+    /// IP address is not public.
+    #[display("IP address must be public (not RFC 1918/4193), got {}", _0)]
+    NotPublicIp(String),
+
+    /// IP address is wrong version.
+    #[display("Expected {} address, got {}", expected, got)]
+    WrongIpVersion {
+        /// Expected IP version.
+        expected: String,
+        /// Actual IP version.
+        got: String,
+    },
+
+    /// IP address is not loopback.
+    #[display("IP address must be loopback, got {}", _0)]
+    NotLoopback(String),
 }
 
 impl std::error::Error for ValidationError {}
