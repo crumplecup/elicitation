@@ -24,26 +24,26 @@ fn verify_affirm_returns_boolean() {
     
     // Test with true
     let output_true = true;
-    kani::assert(
+    assert!(
         AffirmReturnsBoolean::requires(&output_true),
         "Affirm has no preconditions"
     );
-    kani::assert(
+    assert!(
         AffirmReturnsBoolean::ensures(&output_true, &output_true),
         "Affirm ensures true is valid"
     );
-    kani::assert(contract.invariant(), "Affirm invariant holds");
+    assert!(contract.invariant(), "Affirm invariant holds");
     
     // Test with false
     let output_false = false;
-    kani::assert(
+    assert!(
         AffirmReturnsBoolean::ensures(&output_false, &output_false),
         "Affirm ensures false is valid"
     );
     
     // Prove for all possible booleans
     let any_bool: bool = kani::any();
-    kani::assert(
+    assert!(
         AffirmReturnsBoolean::ensures(&any_bool, &any_bool),
         "Affirm ensures any boolean is valid"
     );
@@ -60,28 +60,28 @@ fn verify_survey_returns_valid_variant() {
     
     // Test with bool (simplest enum-like type that implements required traits)
     let contract = SurveyReturnsValidVariant::<bool>::new();
-    kani::assert(contract.invariant(), "Survey invariant holds");
+    assert!(contract.invariant(), "Survey invariant holds");
     
     // Test with both boolean values
     let value_true = true;
     let value_false = false;
     
-    kani::assert(
+    assert!(
         SurveyReturnsValidVariant::<bool>::requires(&value_true),
         "Survey has no preconditions for true"
     );
-    kani::assert(
+    assert!(
         SurveyReturnsValidVariant::<bool>::ensures(&value_true, &value_true),
         "Survey ensures true is valid variant"
     );
-    kani::assert(
+    assert!(
         SurveyReturnsValidVariant::<bool>::ensures(&value_false, &value_false),
         "Survey ensures false is valid variant"
     );
     
     // Prove for any boolean
     let any_bool: bool = kani::any();
-    kani::assert(
+    assert!(
         SurveyReturnsValidVariant::<bool>::ensures(&any_bool, &any_bool),
         "Survey ensures any bool variant is valid"
     );
@@ -99,13 +99,13 @@ fn verify_mechanism_type_composition() {
     let value: i8 = kani::any();
     if let Ok(positive) = I8Positive::new(value) {
         let val = positive.get();
-        kani::assert(val > 0, "Type contract holds");
+        assert!(val > 0, "Type contract holds");
         
         // Part 2: If this was returned by Survey, Survey contract also holds
         // (Survey contract is trivially satisfied by type system)
         
         // Composition: Both contracts proven ⟹ Entire elicitation proven
-        kani::assert(
+        assert!(
             val > 0,
             "Composed verification: type + mechanism both proven"
         );
@@ -140,7 +140,7 @@ fn verify_select_returns_valid_option() {
     let is_valid = any_color == Color::Red 
         || any_color == Color::Green 
         || any_color == Color::Blue;
-    kani::assert(is_valid, "Select returns valid option");
+    assert!(is_valid, "Select returns valid option");
 }
 
 /// Prove elicitation mechanisms preserve trenchcoat pattern.
@@ -158,7 +158,7 @@ fn verify_mechanism_preserves_trenchcoat() {
         // Mechanism contract: Survey returns valid variant (satisfied by type system)
         // Type contract: I8Positive invariant holds
         // Trenchcoat: wrap/unwrap preserves value
-        kani::assert(
+        assert!(
             unwrapped == value && unwrapped > 0,
             "Mechanism + trenchcoat composition proven"
         );

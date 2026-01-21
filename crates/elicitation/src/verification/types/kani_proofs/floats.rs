@@ -12,12 +12,12 @@ fn verify_f32_finite() {
     
     match F32Finite::new(value) {
         Ok(_finite) => {
-            kani::assert(value.is_finite(), "F32Finite invariant: value is finite");
-            kani::assert(!value.is_nan(), "Finite excludes NaN");
-            kani::assert(!value.is_infinite(), "Finite excludes infinity");
+            assert!(value.is_finite(), "F32Finite invariant: value is finite");
+            assert!(!value.is_nan(), "Finite excludes NaN");
+            assert!(!value.is_infinite(), "Finite excludes infinity");
         }
         Err(_) => {
-            kani::assert(!value.is_finite(), "Construction rejects non-finite");
+            assert!(!value.is_finite(), "Construction rejects non-finite");
         }
     }
 }
@@ -31,11 +31,11 @@ fn verify_f64_positive() {
     
     match F64Positive::new(value) {
         Ok(_positive) => {
-            kani::assert(value > 0.0, "F64Positive invariant: value > 0");
-            kani::assert(value.is_finite(), "Positive implies finite");
+            assert!(value > 0.0, "F64Positive invariant: value > 0");
+            assert!(value.is_finite(), "Positive implies finite");
         }
         Err(_) => {
-            kani::assert(value <= 0.0, "Construction rejects non-positive");
+            assert!(value <= 0.0, "Construction rejects non-positive");
         }
     }
 }

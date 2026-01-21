@@ -11,11 +11,11 @@ fn verify_bool_true() {
     
     match BoolTrue::new(value) {
         Ok(bool_true) => {
-            kani::assert(value == true, "BoolTrue invariant: value is true");
-            kani::assert(bool_true.get() == true, "get() returns true");
+            assert!(value == true, "BoolTrue invariant: value is true");
+            assert!(bool_true.get() == true, "get() returns true");
         }
         Err(_) => {
-            kani::assert(value == false, "Construction rejects false");
+            assert!(value == false, "Construction rejects false");
         }
     }
 }
@@ -26,12 +26,12 @@ fn verify_bool_false() {
     
     match BoolFalse::new(value) {
         Ok(bool_false) => {
-            kani::assert(value == false, "BoolFalse invariant: value is false");
+            assert!(value == false, "BoolFalse invariant: value is false");
             let val: bool = bool_false.get();
-            kani::assert(val == false, "get() returns false");
+            assert!(val == false, "get() returns false");
         }
         Err(_) => {
-            kani::assert(value == true, "Construction rejects true");
+            assert!(value == true, "Construction rejects true");
         }
     }
 }

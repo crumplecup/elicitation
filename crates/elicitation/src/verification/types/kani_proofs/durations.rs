@@ -26,11 +26,11 @@ fn verify_duration_positive() {
     
     match DurationPositive::new(duration) {
         Ok(positive) => {
-            kani::assert(duration.as_nanos() > 0, "DurationPositive invariant");
-            kani::assert(positive.get().as_nanos() > 0, "get() preserves invariant");
+            assert!(duration.as_nanos() > 0, "DurationPositive invariant");
+            assert!(positive.get().as_nanos() > 0, "get() preserves invariant");
         }
         Err(_) => {
-            kani::assert(duration.as_nanos() == 0, "Construction rejects zero duration");
+            assert!(duration.as_nanos() == 0, "Construction rejects zero duration");
         }
     }
 }
@@ -54,8 +54,8 @@ fn verify_tuple2_composition() {
     let tuple = Tuple2::new(first, second);
     
     // Both elements remain positive after tuple construction
-    kani::assert(tuple.first().get() > 0, "First element preserves contract");
-    kani::assert(tuple.second().get() > 0, "Second element preserves contract");
+    assert!(tuple.first().get() > 0, "First element preserves contract");
+    assert!(tuple.second().get() > 0, "Second element preserves contract");
 }
 
 // ============================================================================
@@ -70,7 +70,7 @@ fn verify_option_some() {
     match OptionSome::new(opt) {
         Ok(some) => {
             let val: &i32 = some.get();
-            kani::assert(*val == value, "OptionSome unwraps correctly");
+            assert!(*val == value, "OptionSome unwraps correctly");
         }
         Err(_) => {
             unreachable!("OptionSome::new(Some) should never fail");
@@ -111,14 +111,14 @@ fn verify_trenchcoat_pattern() {
     let wrapped = I8Positive::new(value).unwrap();
     
     // STEP 2: Contract guarantees hold
-    kani::assert(wrapped.get() > 0, "Contract guarantees positive");
+    assert!(wrapped.get() > 0, "Contract guarantees positive");
     
     // STEP 3: Take off the trenchcoat (unwrap)
     let unwrapped = wrapped.into_inner();
     
     // STEP 4: Unwrapped value still satisfies contract
-    kani::assert(unwrapped > 0, "Unwrapped value remains positive");
-    kani::assert(unwrapped == value, "Unwrap preserves value identity");
+    assert!(unwrapped > 0, "Unwrapped value remains positive");
+    assert!(unwrapped == value, "Unwrap preserves value identity");
 }
 
 // ============================================================================
@@ -136,11 +136,11 @@ fn verify_f32_non_negative() {
     
     match F32NonNegative::new(value) {
         Ok(_non_neg) => {
-            kani::assert(value >= 0.0, "F32NonNegative invariant: value >= 0");
-            kani::assert(value.is_finite(), "NonNegative implies finite");
+            assert!(value >= 0.0, "F32NonNegative invariant: value >= 0");
+            assert!(value.is_finite(), "NonNegative implies finite");
         }
         Err(_) => {
-            kani::assert(value < 0.0, "Construction rejects negative");
+            assert!(value < 0.0, "Construction rejects negative");
         }
     }
 }
@@ -152,11 +152,11 @@ fn verify_f64_non_negative() {
     
     match F64NonNegative::new(value) {
         Ok(_non_neg) => {
-            kani::assert(value >= 0.0, "F64NonNegative invariant: value >= 0");
-            kani::assert(value.is_finite(), "NonNegative implies finite");
+            assert!(value >= 0.0, "F64NonNegative invariant: value >= 0");
+            assert!(value.is_finite(), "NonNegative implies finite");
         }
         Err(_) => {
-            kani::assert(value < 0.0, "Construction rejects negative");
+            assert!(value < 0.0, "Construction rejects negative");
         }
     }
 }
@@ -168,11 +168,11 @@ fn verify_f32_positive() {
     
     match F32Positive::new(value) {
         Ok(_positive) => {
-            kani::assert(value > 0.0, "F32Positive invariant: value > 0");
-            kani::assert(value.is_finite(), "Positive implies finite");
+            assert!(value > 0.0, "F32Positive invariant: value > 0");
+            assert!(value.is_finite(), "Positive implies finite");
         }
         Err(_) => {
-            kani::assert(value <= 0.0, "Construction rejects non-positive");
+            assert!(value <= 0.0, "Construction rejects non-positive");
         }
     }
 }
@@ -187,14 +187,14 @@ fn verify_char_alphanumeric() {
     
     match CharAlphanumeric::new(value) {
         Ok(alphanumeric) => {
-            kani::assert(value.is_alphanumeric(), "CharAlphanumeric invariant");
+            assert!(value.is_alphanumeric(), "CharAlphanumeric invariant");
             let val: char = alphanumeric.get();
-            kani::assert(val.is_alphanumeric(), "Accessor preserves");
+            assert!(val.is_alphanumeric(), "Accessor preserves");
             let inner: char = alphanumeric.into_inner();
-            kani::assert(inner.is_alphanumeric(), "Unwrap preserves");
+            assert!(inner.is_alphanumeric(), "Unwrap preserves");
         }
         Err(_) => {
-            kani::assert(!value.is_alphanumeric(), "Construction rejects non-alphanumeric");
+            assert!(!value.is_alphanumeric(), "Construction rejects non-alphanumeric");
         }
     }
 }

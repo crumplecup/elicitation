@@ -19,11 +19,11 @@ fn verify_string_non_empty() {
     
     match StringNonEmpty::new(s.clone()) {
         Ok(non_empty) => {
-            kani::assert(!s.is_empty(), "StringNonEmpty invariant: not empty");
-            kani::assert(non_empty.get().len() > 0, "get() returns non-empty");
+            assert!(!s.is_empty(), "StringNonEmpty invariant: not empty");
+            assert!(non_empty.get().len() > 0, "get() returns non-empty");
         }
         Err(_) => {
-            kani::assert(s.is_empty(), "Construction rejects empty string");
+            assert!(s.is_empty(), "Construction rejects empty string");
         }
     }
 }

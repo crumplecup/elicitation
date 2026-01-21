@@ -12,17 +12,17 @@ use crate::{RegexValid, RegexSetValid, RegexCaseInsensitive, RegexMultiline, Reg
 #[kani::unwind(1)]
 fn verify_regex_valid() {
     // Test valid regex patterns
-    kani::assert(
+    assert!(
         RegexValid::new(r"\d+").is_ok(),
         "Valid digit pattern compiles"
     );
-    kani::assert(
+    assert!(
         RegexValid::new(r"[a-z]+").is_ok(),
         "Valid character class compiles"
     );
     
     // Test invalid patterns
-    kani::assert(
+    assert!(
         RegexValid::new(r"[unclosed").is_err(),
         "Unclosed bracket rejected"
     );
@@ -34,11 +34,11 @@ fn verify_regex_valid() {
 fn verify_regex_set_valid() {
     // Test valid regex set
     let set = RegexSetValid::new(&[r"\d+", r"[a-z]+"]);
-    kani::assert(set.is_ok(), "Valid patterns compile");
+    assert!(set.is_ok(), "Valid patterns compile");
     
     if let Ok(s) = set {
-        kani::assert(s.len() == 2, "Set contains 2 patterns");
-        kani::assert(!s.is_empty(), "Set is not empty");
+        assert!(s.len() == 2, "Set contains 2 patterns");
+        assert!(!s.is_empty(), "Set is not empty");
     }
 }
 
@@ -47,12 +47,12 @@ fn verify_regex_set_valid() {
 #[kani::unwind(1)]
 fn verify_regex_case_insensitive() {
     let re = RegexCaseInsensitive::new(r"hello");
-    kani::assert(re.is_ok(), "Case-insensitive pattern compiles");
+    assert!(re.is_ok(), "Case-insensitive pattern compiles");
     
     if let Ok(regex) = re {
-        kani::assert(regex.is_match("hello"), "Matches lowercase");
-        kani::assert(regex.is_match("HELLO"), "Matches uppercase");
-        kani::assert(regex.is_match("HeLLo"), "Matches mixed case");
+        assert!(regex.is_match("hello"), "Matches lowercase");
+        assert!(regex.is_match("HELLO"), "Matches uppercase");
+        assert!(regex.is_match("HeLLo"), "Matches mixed case");
     }
 }
 
@@ -61,10 +61,10 @@ fn verify_regex_case_insensitive() {
 #[kani::unwind(1)]
 fn verify_regex_multiline() {
     let re = RegexMultiline::new(r"^test$");
-    kani::assert(re.is_ok(), "Multiline pattern compiles");
+    assert!(re.is_ok(), "Multiline pattern compiles");
     
     if let Ok(regex) = re {
-        kani::assert(regex.is_match("test"), "Matches single line");
+        assert!(regex.is_match("test"), "Matches single line");
     }
 }
 
@@ -73,13 +73,13 @@ fn verify_regex_multiline() {
 #[kani::unwind(1)]
 fn verify_regex_set_non_empty() {
     // Test non-empty set
-    kani::assert(
+    assert!(
         RegexSetNonEmpty::new(&[r"\d+"]).is_ok(),
         "Single pattern accepted"
     );
     
     // Test empty set rejection
-    kani::assert(
+    assert!(
         RegexSetNonEmpty::new::<&[&str], _>(&[]).is_err(),
         "Empty set rejected"
     );
@@ -96,11 +96,11 @@ fn verify_regex_trenchcoat_pattern() {
         let unwrapped = wrapped.into_inner();
         
         // Trenchcoat: Pattern preserved through wrap/unwrap
-        kani::assert(
+        assert!(
             unwrapped.as_str() == pattern,
             "Pattern preserved through trenchcoat"
         );
-        kani::assert(
+        assert!(
             unwrapped.is_match("123-4567"),
             "Regex still functions after unwrap"
         );
@@ -114,11 +114,11 @@ fn verify_regex_accessor_correctness() {
     let pattern = r"\d+";
     if let Ok(wrapped) = RegexValid::new(pattern) {
         // Accessor preserves pattern
-        kani::assert(
+        assert!(
             wrapped.get().as_str() == pattern,
             "Accessor returns correct pattern"
         );
-        kani::assert(
+        assert!(
             wrapped.as_str() == pattern,
             "as_str() returns correct pattern"
         );

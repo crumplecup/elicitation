@@ -21,11 +21,11 @@ fn verify_ip_private() {
     // Test with concrete private IP (symbolic execution of IpAddr is complex)
     let private_v4 = IpAddr::from([192, 168, 1, 1]);
     let result = IpPrivate::new(private_v4);
-    kani::assert(result.is_ok(), "Private IPv4 accepted");
+    assert!(result.is_ok(), "Private IPv4 accepted");
     
     let public_v4 = IpAddr::from([8, 8, 8, 8]);
     let result = IpPrivate::new(public_v4);
-    kani::assert(result.is_err(), "Public IPv4 rejected");
+    assert!(result.is_err(), "Public IPv4 rejected");
 }
 
 #[kani::proof]
@@ -34,11 +34,11 @@ fn verify_ip_public() {
     
     let public_v4 = IpAddr::from([8, 8, 8, 8]);
     let result = IpPublic::new(public_v4);
-    kani::assert(result.is_ok(), "Public IPv4 accepted");
+    assert!(result.is_ok(), "Public IPv4 accepted");
     
     let private_v4 = IpAddr::from([192, 168, 1, 1]);
     let result = IpPublic::new(private_v4);
-    kani::assert(result.is_err(), "Private IPv4 rejected");
+    assert!(result.is_err(), "Private IPv4 rejected");
 }
 
 #[kani::proof]
@@ -47,11 +47,11 @@ fn verify_ipv4_loopback() {
     
     let loopback = Ipv4Addr::new(127, 0, 0, 1);
     let result = Ipv4Loopback::new(loopback);
-    kani::assert(result.is_ok(), "Loopback accepted");
+    assert!(result.is_ok(), "Loopback accepted");
     
     let not_loopback = Ipv4Addr::new(192, 168, 1, 1);
     let result = Ipv4Loopback::new(not_loopback);
-    kani::assert(result.is_err(), "Non-loopback rejected");
+    assert!(result.is_err(), "Non-loopback rejected");
 }
 
 #[kani::proof]
@@ -60,11 +60,11 @@ fn verify_ipv6_loopback() {
     
     let loopback = Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1);
     let result = Ipv6Loopback::new(loopback);
-    kani::assert(result.is_ok(), "IPv6 loopback accepted");
+    assert!(result.is_ok(), "IPv6 loopback accepted");
     
     let not_loopback = Ipv6Addr::new(0x2001, 0x0db8, 0, 0, 0, 0, 0, 1);
     let result = Ipv6Loopback::new(not_loopback);
-    kani::assert(result.is_err(), "Non-loopback rejected");
+    assert!(result.is_err(), "Non-loopback rejected");
 }
 
 // ----------------------------------------------------------------------------
@@ -90,11 +90,11 @@ fn verify_uuid_non_nil() {
     
     let nil_uuid = Uuid::nil();
     let result = UuidNonNil::new(nil_uuid);
-    kani::assert(result.is_err(), "Nil UUID rejected");
+    assert!(result.is_err(), "Nil UUID rejected");
     
     let non_nil = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
     let result = UuidNonNil::new(non_nil);
-    kani::assert(result.is_ok(), "Non-nil UUID accepted");
+    assert!(result.is_ok(), "Non-nil UUID accepted");
 }
 
 // ----------------------------------------------------------------------------

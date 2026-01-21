@@ -19,11 +19,11 @@ fn verify_vec_non_empty() {
     // Prove with concrete vectors (symbolic vectors complex)
     let empty: Vec<i32> = vec![];
     let result = VecNonEmpty::new(empty);
-    kani::assert(result.is_err(), "Empty vec rejected");
+    assert!(result.is_err(), "Empty vec rejected");
     
     let non_empty = vec![42];
     let result = VecNonEmpty::new(non_empty);
-    kani::assert(result.is_ok(), "Non-empty vec accepted");
+    assert!(result.is_ok(), "Non-empty vec accepted");
 }
 
 #[kani::proof]
@@ -33,7 +33,7 @@ fn verify_vec_all_satisfy() {
     
     // Each element must satisfy I8Positive
     for &elem in &vec_positive {
-        kani::assert(elem > 0, "All elements positive");
+        assert!(elem > 0, "All elements positive");
     }
     
     // Therefore VecAllSatisfy<I8Positive> should accept
@@ -46,12 +46,12 @@ fn verify_hashmap_non_empty() {
     
     let empty: HashMap<i32, String> = HashMap::new();
     let result = HashMapNonEmpty::new(empty);
-    kani::assert(result.is_err(), "Empty map rejected");
+    assert!(result.is_err(), "Empty map rejected");
     
     let mut non_empty = HashMap::new();
     non_empty.insert(1, "value".to_string());
     let result = HashMapNonEmpty::new(non_empty);
-    kani::assert(result.is_ok(), "Non-empty map accepted");
+    assert!(result.is_ok(), "Non-empty map accepted");
 }
 
 #[kani::proof]
@@ -60,12 +60,12 @@ fn verify_btreemap_non_empty() {
     
     let empty: BTreeMap<i32, String> = BTreeMap::new();
     let result = BTreeMapNonEmpty::new(empty);
-    kani::assert(result.is_err(), "Empty BTreeMap rejected");
+    assert!(result.is_err(), "Empty BTreeMap rejected");
     
     let mut non_empty = BTreeMap::new();
     non_empty.insert(1, "value".to_string());
     let result = BTreeMapNonEmpty::new(non_empty);
-    kani::assert(result.is_ok(), "Non-empty BTreeMap accepted");
+    assert!(result.is_ok(), "Non-empty BTreeMap accepted");
 }
 
 #[kani::proof]
@@ -74,12 +74,12 @@ fn verify_hashset_non_empty() {
     
     let empty: HashSet<i32> = HashSet::new();
     let result = HashSetNonEmpty::new(empty);
-    kani::assert(result.is_err(), "Empty set rejected");
+    assert!(result.is_err(), "Empty set rejected");
     
     let mut non_empty = HashSet::new();
     non_empty.insert(42);
     let result = HashSetNonEmpty::new(non_empty);
-    kani::assert(result.is_ok(), "Non-empty set accepted");
+    assert!(result.is_ok(), "Non-empty set accepted");
 }
 
 #[kani::proof]
@@ -88,12 +88,12 @@ fn verify_btreeset_non_empty() {
     
     let empty: BTreeSet<i32> = BTreeSet::new();
     let result = BTreeSetNonEmpty::new(empty);
-    kani::assert(result.is_err(), "Empty BTreeSet rejected");
+    assert!(result.is_err(), "Empty BTreeSet rejected");
     
     let mut non_empty = BTreeSet::new();
     non_empty.insert(42);
     let result = BTreeSetNonEmpty::new(non_empty);
-    kani::assert(result.is_ok(), "Non-empty BTreeSet accepted");
+    assert!(result.is_ok(), "Non-empty BTreeSet accepted");
 }
 
 #[kani::proof]
@@ -102,12 +102,12 @@ fn verify_vecdeque_non_empty() {
     
     let empty: VecDeque<i32> = VecDeque::new();
     let result = VecDequeNonEmpty::new(empty);
-    kani::assert(result.is_err(), "Empty VecDeque rejected");
+    assert!(result.is_err(), "Empty VecDeque rejected");
     
     let mut non_empty = VecDeque::new();
     non_empty.push_back(42);
     let result = VecDequeNonEmpty::new(non_empty);
-    kani::assert(result.is_ok(), "Non-empty VecDeque accepted");
+    assert!(result.is_ok(), "Non-empty VecDeque accepted");
 }
 
 #[kani::proof]
@@ -116,12 +116,12 @@ fn verify_linkedlist_non_empty() {
     
     let empty: LinkedList<i32> = LinkedList::new();
     let result = LinkedListNonEmpty::new(empty);
-    kani::assert(result.is_err(), "Empty LinkedList rejected");
+    assert!(result.is_err(), "Empty LinkedList rejected");
     
     let mut non_empty = LinkedList::new();
     non_empty.push_back(42);
     let result = LinkedListNonEmpty::new(non_empty);
-    kani::assert(result.is_ok(), "Non-empty LinkedList accepted");
+    assert!(result.is_ok(), "Non-empty LinkedList accepted");
 }
 
 // ----------------------------------------------------------------------------
@@ -161,11 +161,11 @@ fn verify_result_ok() {
     let ok_val = 42i32;
     let result: Result<i32, String> = Ok(ok_val);
     let wrapped = ResultOk::new(result);
-    kani::assert(wrapped.is_ok(), "Ok variant accepted");
+    assert!(wrapped.is_ok(), "Ok variant accepted");
     
     let err_val: Result<i32, String> = Err("error".to_string());
     let wrapped = ResultOk::new(err_val);
-    kani::assert(wrapped.is_err(), "Err variant rejected");
+    assert!(wrapped.is_err(), "Err variant rejected");
 }
 
 // ----------------------------------------------------------------------------
@@ -181,9 +181,9 @@ fn verify_tuple3_composition() {
     let tuple = Tuple3::new(a, b, c);
     
     // Composition: if all 3 elements satisfy contract, tuple satisfies
-    kani::assert(tuple.0.get() > 0, "First element positive");
-    kani::assert(tuple.1.get() > 0, "Second element positive");
-    kani::assert(tuple.2.get() > 0, "Third element positive");
+    assert!(tuple.0.get() > 0, "First element positive");
+    assert!(tuple.1.get() > 0, "Second element positive");
+    assert!(tuple.2.get() > 0, "Third element positive");
 }
 
 #[kani::proof]
@@ -195,10 +195,10 @@ fn verify_tuple4_composition() {
     
     let tuple = Tuple4::new(a, b, c, d);
     
-    kani::assert(tuple.0.get() > 0, "First element positive");
-    kani::assert(tuple.1.get() > 0, "Second element positive");
-    kani::assert(tuple.2.get() > 0, "Third element positive");
-    kani::assert(tuple.3.get() > 0, "Fourth element positive");
+    assert!(tuple.0.get() > 0, "First element positive");
+    assert!(tuple.1.get() > 0, "Second element positive");
+    assert!(tuple.2.get() > 0, "Third element positive");
+    assert!(tuple.3.get() > 0, "Fourth element positive");
 }
 
 
@@ -213,11 +213,11 @@ fn verify_value_object() {
     
     let obj = json!({"key": "value"});
     let result = ValueObject::new(obj);
-    kani::assert(result.is_ok(), "Object accepted");
+    assert!(result.is_ok(), "Object accepted");
     
     let not_obj = json!([1, 2, 3]);
     let result = ValueObject::new(not_obj);
-    kani::assert(result.is_err(), "Array rejected");
+    assert!(result.is_err(), "Array rejected");
 }
 
 #[cfg(feature = "serde_json")]
@@ -227,11 +227,11 @@ fn verify_value_array() {
     
     let arr = json!([1, 2, 3]);
     let result = ValueArray::new(arr);
-    kani::assert(result.is_ok(), "Array accepted");
+    assert!(result.is_ok(), "Array accepted");
     
     let not_arr = json!({"key": "value"});
     let result = ValueArray::new(not_arr);
-    kani::assert(result.is_err(), "Object rejected");
+    assert!(result.is_err(), "Object rejected");
 }
 
 #[cfg(feature = "serde_json")]
@@ -241,11 +241,11 @@ fn verify_value_non_null() {
     
     let null = Value::Null;
     let result = ValueNonNull::new(null);
-    kani::assert(result.is_err(), "Null rejected");
+    assert!(result.is_err(), "Null rejected");
     
     let non_null = json!(42);
     let result = ValueNonNull::new(non_null);
-    kani::assert(result.is_ok(), "Non-null accepted");
+    assert!(result.is_ok(), "Non-null accepted");
 }
 
 // ============================================================================
@@ -262,10 +262,10 @@ fn verify_datetime_utc_after() {
     let before = Utc.with_ymd_and_hms(2019, 1, 1, 0, 0, 0).unwrap();
     
     let result = DateTimeUtcAfter::new(after, threshold);
-    kani::assert(result.is_ok(), "After timestamp accepted");
+    assert!(result.is_ok(), "After timestamp accepted");
     
     let result = DateTimeUtcAfter::new(before, threshold);
-    kani::assert(result.is_err(), "Before timestamp rejected");
+    assert!(result.is_err(), "Before timestamp rejected");
 }
 
 #[cfg(feature = "chrono")]
@@ -278,10 +278,10 @@ fn verify_datetime_utc_before() {
     let after = Utc.with_ymd_and_hms(2021, 1, 1, 0, 0, 0).unwrap();
     
     let result = DateTimeUtcBefore::new(before, threshold);
-    kani::assert(result.is_ok(), "Before timestamp accepted");
+    assert!(result.is_ok(), "Before timestamp accepted");
     
     let result = DateTimeUtcBefore::new(after, threshold);
-    kani::assert(result.is_err(), "After timestamp rejected");
+    assert!(result.is_err(), "After timestamp rejected");
 }
 
 #[cfg(feature = "jiff")]
@@ -296,10 +296,10 @@ fn verify_timestamp_after() {
     let before = Timestamp::from_second(1546300800).unwrap(); // 2019-01-01
     
     let result = TimestampAfter::new(after, threshold);
-    kani::assert(result.is_ok(), "After timestamp accepted");
+    assert!(result.is_ok(), "After timestamp accepted");
     
     let result = TimestampAfter::new(before, threshold);
-    kani::assert(result.is_err(), "Before timestamp rejected");
+    assert!(result.is_err(), "Before timestamp rejected");
 }
 
 #[cfg(feature = "jiff")]
@@ -312,10 +312,10 @@ fn verify_timestamp_before() {
     let after = Timestamp::from_second(1609459200).unwrap(); // 2021-01-01
     
     let result = TimestampBefore::new(before, threshold);
-    kani::assert(result.is_ok(), "Before timestamp accepted");
+    assert!(result.is_ok(), "Before timestamp accepted");
     
     let result = TimestampBefore::new(after, threshold);
-    kani::assert(result.is_err(), "After timestamp rejected");
+    assert!(result.is_err(), "After timestamp rejected");
 }
 
 #[cfg(feature = "time")]
@@ -328,10 +328,10 @@ fn verify_offset_datetime_after() {
     let before = threshold - Duration::days(365);
     
     let result = OffsetDateTimeAfter::new(after, threshold);
-    kani::assert(result.is_ok(), "After timestamp accepted");
+    assert!(result.is_ok(), "After timestamp accepted");
     
     let result = OffsetDateTimeAfter::new(before, threshold);
-    kani::assert(result.is_err(), "Before timestamp rejected");
+    assert!(result.is_err(), "Before timestamp rejected");
 }
 
 #[cfg(feature = "time")]
@@ -344,10 +344,10 @@ fn verify_offset_datetime_before() {
     let after = threshold + Duration::days(365);
     
     let result = OffsetDateTimeBefore::new(before, threshold);
-    kani::assert(result.is_ok(), "Before timestamp accepted");
+    assert!(result.is_ok(), "Before timestamp accepted");
     
     let result = OffsetDateTimeBefore::new(after, threshold);
-    kani::assert(result.is_err(), "After timestamp rejected");
+    assert!(result.is_err(), "After timestamp rejected");
 }
 
 
@@ -367,14 +367,14 @@ fn verify_i8_range_concrete() {
     match I8Range::<MIN, MAX>::new(value) {
         Ok(range) => {
             // If construction succeeds, value must be in range
-            kani::assert(value >= MIN, "Value >= MIN");
-            kani::assert(value <= MAX, "Value <= MAX");
-            kani::assert(range.get() >= MIN, "Accessor preserves lower bound");
-            kani::assert(range.get() <= MAX, "Accessor preserves upper bound");
+            assert!(value >= MIN, "Value >= MIN");
+            assert!(value <= MAX, "Value <= MAX");
+            assert!(range.get() >= MIN, "Accessor preserves lower bound");
+            assert!(range.get() <= MAX, "Accessor preserves upper bound");
         }
         Err(_) => {
             // If construction fails, value must be out of range
-            kani::assert(value < MIN || value > MAX, "Construction rejects out-of-range");
+            assert!(value < MIN || value > MAX, "Construction rejects out-of-range");
         }
     }
 }
@@ -390,10 +390,10 @@ fn verify_i8_range_positive() {
     
     match I8Range::<MIN, MAX>::new(value) {
         Ok(_range) => {
-            kani::assert(value >= MIN && value <= MAX, "I8Range[1,100] invariant");
+            assert!(value >= MIN && value <= MAX, "I8Range[1,100] invariant");
         }
         Err(_) => {
-            kani::assert(value < MIN || value > MAX, "Out of range rejected");
+            assert!(value < MIN || value > MAX, "Out of range rejected");
         }
     }
 }
@@ -408,13 +408,13 @@ fn verify_u8_range_concrete() {
     
     match U8Range::<MIN, MAX>::new(value) {
         Ok(range) => {
-            kani::assert(value >= MIN, "Value >= MIN");
-            kani::assert(value <= MAX, "Value <= MAX");
-            kani::assert(range.get() >= MIN, "Accessor preserves bounds");
-            kani::assert(range.get() <= MAX, "Accessor preserves bounds");
+            assert!(value >= MIN, "Value >= MIN");
+            assert!(value <= MAX, "Value <= MAX");
+            assert!(range.get() >= MIN, "Accessor preserves bounds");
+            assert!(range.get() <= MAX, "Accessor preserves bounds");
         }
         Err(_) => {
-            kani::assert(value < MIN || value > MAX, "Out of range rejected");
+            assert!(value < MIN || value > MAX, "Out of range rejected");
         }
     }
 }
@@ -430,10 +430,10 @@ fn verify_i8_range_singleton() {
     
     match I8Range::<MIN, MAX>::new(value) {
         Ok(_range) => {
-            kani::assert(value == 42, "Singleton range accepts only exact value");
+            assert!(value == 42, "Singleton range accepts only exact value");
         }
         Err(_) => {
-            kani::assert(value != 42, "Singleton rejects all other values");
+            assert!(value != 42, "Singleton rejects all other values");
         }
     }
 }
@@ -448,11 +448,11 @@ fn verify_i16_range_concrete() {
     
     match I16Range::<MIN, MAX>::new(value) {
         Ok(range) => {
-            kani::assert(value >= MIN && value <= MAX, "I16Range invariant");
-            kani::assert(range.get() >= MIN && range.get() <= MAX, "Accessor preserves");
+            assert!(value >= MIN && value <= MAX, "I16Range invariant");
+            assert!(range.get() >= MIN && range.get() <= MAX, "Accessor preserves");
         }
         Err(_) => {
-            kani::assert(value < MIN || value > MAX, "Rejection correct");
+            assert!(value < MIN || value > MAX, "Rejection correct");
         }
     }
 }
@@ -467,10 +467,10 @@ fn verify_u16_range_concrete() {
     
     match U16Range::<MIN, MAX>::new(value) {
         Ok(_range) => {
-            kani::assert(value >= MIN && value <= MAX, "U16Range invariant");
+            assert!(value >= MIN && value <= MAX, "U16Range invariant");
         }
         Err(_) => {
-            kani::assert(value < MIN || value > MAX, "Rejection correct");
+            assert!(value < MIN || value > MAX, "Rejection correct");
         }
     }
 }
@@ -490,12 +490,12 @@ fn verify_i32_positive() {
     
     match I32Positive::new(value) {
         Ok(positive) => {
-            kani::assert(value > 0, "I32Positive invariant: value > 0");
-            kani::assert(positive.get() > 0, "Accessor preserves");
-            kani::assert(positive.into_inner() > 0, "Unwrap preserves");
+            assert!(value > 0, "I32Positive invariant: value > 0");
+            assert!(positive.get() > 0, "Accessor preserves");
+            assert!(positive.into_inner() > 0, "Unwrap preserves");
         }
         Err(_) => {
-            kani::assert(value <= 0, "Construction rejects non-positive");
+            assert!(value <= 0, "Construction rejects non-positive");
         }
     }
 }
@@ -506,12 +506,12 @@ fn verify_i32_non_negative() {
     
     match I32NonNegative::new(value) {
         Ok(non_neg) => {
-            kani::assert(value >= 0, "I32NonNegative invariant: value >= 0");
-            kani::assert(non_neg.get() >= 0, "Accessor preserves");
-            kani::assert(non_neg.into_inner() >= 0, "Unwrap preserves");
+            assert!(value >= 0, "I32NonNegative invariant: value >= 0");
+            assert!(non_neg.get() >= 0, "Accessor preserves");
+            assert!(non_neg.into_inner() >= 0, "Unwrap preserves");
         }
         Err(_) => {
-            kani::assert(value < 0, "Construction rejects negative");
+            assert!(value < 0, "Construction rejects negative");
         }
     }
 }
@@ -525,11 +525,11 @@ fn verify_i32_range() {
     
     match I32Range::<MIN, MAX>::new(value) {
         Ok(range) => {
-            kani::assert(value >= MIN && value <= MAX, "I32Range invariant");
-            kani::assert(range.get() >= MIN && range.get() <= MAX, "Accessor preserves");
+            assert!(value >= MIN && value <= MAX, "I32Range invariant");
+            assert!(range.get() >= MIN && range.get() <= MAX, "Accessor preserves");
         }
         Err(_) => {
-            kani::assert(value < MIN || value > MAX, "Out of range rejected");
+            assert!(value < MIN || value > MAX, "Out of range rejected");
         }
     }
 }
@@ -544,12 +544,12 @@ fn verify_i64_positive() {
     
     match I64Positive::new(value) {
         Ok(positive) => {
-            kani::assert(value > 0, "I64Positive invariant");
-            kani::assert(positive.get() > 0, "Accessor preserves");
-            kani::assert(positive.into_inner() > 0, "Unwrap preserves");
+            assert!(value > 0, "I64Positive invariant");
+            assert!(positive.get() > 0, "Accessor preserves");
+            assert!(positive.into_inner() > 0, "Unwrap preserves");
         }
         Err(_) => {
-            kani::assert(value <= 0, "Construction rejects non-positive");
+            assert!(value <= 0, "Construction rejects non-positive");
         }
     }
 }
@@ -560,10 +560,10 @@ fn verify_i64_non_negative() {
     
     match I64NonNegative::new(value) {
         Ok(_non_neg) => {
-            kani::assert(value >= 0, "I64NonNegative invariant");
+            assert!(value >= 0, "I64NonNegative invariant");
         }
         Err(_) => {
-            kani::assert(value < 0, "Construction rejects negative");
+            assert!(value < 0, "Construction rejects negative");
         }
     }
 }
@@ -577,10 +577,10 @@ fn verify_i64_range() {
     
     match I64Range::<MIN, MAX>::new(value) {
         Ok(_range) => {
-            kani::assert(value >= MIN && value <= MAX, "I64Range invariant");
+            assert!(value >= MIN && value <= MAX, "I64Range invariant");
         }
         Err(_) => {
-            kani::assert(value < MIN || value > MAX, "Rejection correct");
+            assert!(value < MIN || value > MAX, "Rejection correct");
         }
     }
 }
@@ -595,10 +595,10 @@ fn verify_i128_positive() {
     
     match I128Positive::new(value) {
         Ok(_positive) => {
-            kani::assert(value > 0, "I128Positive invariant");
+            assert!(value > 0, "I128Positive invariant");
         }
         Err(_) => {
-            kani::assert(value <= 0, "Construction rejects non-positive");
+            assert!(value <= 0, "Construction rejects non-positive");
         }
     }
 }
@@ -609,10 +609,10 @@ fn verify_i128_non_negative() {
     
     match I128NonNegative::new(value) {
         Ok(_non_neg) => {
-            kani::assert(value >= 0, "I128NonNegative invariant");
+            assert!(value >= 0, "I128NonNegative invariant");
         }
         Err(_) => {
-            kani::assert(value < 0, "Construction rejects negative");
+            assert!(value < 0, "Construction rejects negative");
         }
     }
 }
@@ -626,10 +626,10 @@ fn verify_i128_range() {
     
     match I128Range::<MIN, MAX>::new(value) {
         Ok(_range) => {
-            kani::assert(value >= MIN && value <= MAX, "I128Range invariant");
+            assert!(value >= MIN && value <= MAX, "I128Range invariant");
         }
         Err(_) => {
-            kani::assert(value < MIN || value > MAX, "Rejection correct");
+            assert!(value < MIN || value > MAX, "Rejection correct");
         }
     }
 }
@@ -644,12 +644,12 @@ fn verify_u32_non_zero() {
     
     match U32NonZero::new(value) {
         Ok(non_zero) => {
-            kani::assert(value != 0, "U32NonZero invariant: value != 0");
-            kani::assert(non_zero.get() != 0, "Accessor preserves");
-            kani::assert(non_zero.into_inner() != 0, "Unwrap preserves");
+            assert!(value != 0, "U32NonZero invariant: value != 0");
+            assert!(non_zero.get() != 0, "Accessor preserves");
+            assert!(non_zero.into_inner() != 0, "Unwrap preserves");
         }
         Err(_) => {
-            kani::assert(value == 0, "Construction rejects zero");
+            assert!(value == 0, "Construction rejects zero");
         }
     }
 }
@@ -663,10 +663,10 @@ fn verify_u32_range() {
     
     match U32Range::<MIN, MAX>::new(value) {
         Ok(_range) => {
-            kani::assert(value >= MIN && value <= MAX, "U32Range invariant");
+            assert!(value >= MIN && value <= MAX, "U32Range invariant");
         }
         Err(_) => {
-            kani::assert(value < MIN || value > MAX, "Out of range rejected");
+            assert!(value < MIN || value > MAX, "Out of range rejected");
         }
     }
 }
@@ -681,10 +681,10 @@ fn verify_u64_non_zero() {
     
     match U64NonZero::new(value) {
         Ok(_non_zero) => {
-            kani::assert(value != 0, "U64NonZero invariant");
+            assert!(value != 0, "U64NonZero invariant");
         }
         Err(_) => {
-            kani::assert(value == 0, "Construction rejects zero");
+            assert!(value == 0, "Construction rejects zero");
         }
     }
 }
@@ -698,10 +698,10 @@ fn verify_u64_range() {
     
     match U64Range::<MIN, MAX>::new(value) {
         Ok(_range) => {
-            kani::assert(value >= MIN && value <= MAX, "U64Range invariant");
+            assert!(value >= MIN && value <= MAX, "U64Range invariant");
         }
         Err(_) => {
-            kani::assert(value < MIN || value > MAX, "Rejection correct");
+            assert!(value < MIN || value > MAX, "Rejection correct");
         }
     }
 }
@@ -716,10 +716,10 @@ fn verify_u128_non_zero() {
     
     match U128NonZero::new(value) {
         Ok(_non_zero) => {
-            kani::assert(value != 0, "U128NonZero invariant");
+            assert!(value != 0, "U128NonZero invariant");
         }
         Err(_) => {
-            kani::assert(value == 0, "Construction rejects zero");
+            assert!(value == 0, "Construction rejects zero");
         }
     }
 }
@@ -733,10 +733,10 @@ fn verify_u128_range() {
     
     match U128Range::<MIN, MAX>::new(value) {
         Ok(_range) => {
-            kani::assert(value >= MIN && value <= MAX, "U128Range invariant");
+            assert!(value >= MIN && value <= MAX, "U128Range invariant");
         }
         Err(_) => {
-            kani::assert(value < MIN || value > MAX, "Rejection correct");
+            assert!(value < MIN || value > MAX, "Rejection correct");
         }
     }
 }
@@ -751,12 +751,12 @@ fn verify_isize_positive() {
     
     match IsizePositive::new(value) {
         Ok(positive) => {
-            kani::assert(value > 0, "IsizePositive invariant");
-            kani::assert(positive.get() > 0, "Accessor preserves");
-            kani::assert(positive.into_inner() > 0, "Unwrap preserves");
+            assert!(value > 0, "IsizePositive invariant");
+            assert!(positive.get() > 0, "Accessor preserves");
+            assert!(positive.into_inner() > 0, "Unwrap preserves");
         }
         Err(_) => {
-            kani::assert(value <= 0, "Construction rejects non-positive");
+            assert!(value <= 0, "Construction rejects non-positive");
         }
     }
 }
@@ -767,10 +767,10 @@ fn verify_isize_non_negative() {
     
     match IsizeNonNegative::new(value) {
         Ok(_non_neg) => {
-            kani::assert(value >= 0, "IsizeNonNegative invariant");
+            assert!(value >= 0, "IsizeNonNegative invariant");
         }
         Err(_) => {
-            kani::assert(value < 0, "Construction rejects negative");
+            assert!(value < 0, "Construction rejects negative");
         }
     }
 }
@@ -784,10 +784,10 @@ fn verify_isize_range() {
     
     match IsizeRange::<MIN, MAX>::new(value) {
         Ok(_range) => {
-            kani::assert(value >= MIN && value <= MAX, "IsizeRange invariant");
+            assert!(value >= MIN && value <= MAX, "IsizeRange invariant");
         }
         Err(_) => {
-            kani::assert(value < MIN || value > MAX, "Rejection correct");
+            assert!(value < MIN || value > MAX, "Rejection correct");
         }
     }
 }
@@ -802,12 +802,12 @@ fn verify_usize_non_zero() {
     
     match UsizeNonZero::new(value) {
         Ok(non_zero) => {
-            kani::assert(value != 0, "UsizeNonZero invariant");
-            kani::assert(non_zero.get() != 0, "Accessor preserves");
-            kani::assert(non_zero.into_inner() != 0, "Unwrap preserves");
+            assert!(value != 0, "UsizeNonZero invariant");
+            assert!(non_zero.get() != 0, "Accessor preserves");
+            assert!(non_zero.into_inner() != 0, "Unwrap preserves");
         }
         Err(_) => {
-            kani::assert(value == 0, "Construction rejects zero");
+            assert!(value == 0, "Construction rejects zero");
         }
     }
 }
@@ -821,10 +821,10 @@ fn verify_usize_range() {
     
     match UsizeRange::<MIN, MAX>::new(value) {
         Ok(_range) => {
-            kani::assert(value >= MIN && value <= MAX, "UsizeRange invariant");
+            assert!(value >= MIN && value <= MAX, "UsizeRange invariant");
         }
         Err(_) => {
-            kani::assert(value < MIN || value > MAX, "Rejection correct");
+            assert!(value < MIN || value > MAX, "Rejection correct");
         }
     }
 }
@@ -845,11 +845,11 @@ fn verify_ipv4() {
     // IpV4 validates that IpAddr is V4 variant
     let v4_addr = IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1));
     let result = IpV4::new(v4_addr);
-    kani::assert(result.is_ok(), "IpV4 accepts IPv4 addresses");
+    assert!(result.is_ok(), "IpV4 accepts IPv4 addresses");
     
     let v6_addr = IpAddr::V6(std::net::Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1));
     let result = IpV4::new(v6_addr);
-    kani::assert(result.is_err(), "IpV4 rejects IPv6 addresses");
+    assert!(result.is_err(), "IpV4 rejects IPv6 addresses");
 }
 
 #[kani::proof]
@@ -859,11 +859,11 @@ fn verify_ipv6() {
     // IpV6 validates that IpAddr is V6 variant
     let v6_addr = IpAddr::V6(Ipv6Addr::new(0x2001, 0x0db8, 0, 0, 0, 0, 0, 1));
     let result = IpV6::new(v6_addr);
-    kani::assert(result.is_ok(), "IpV6 accepts IPv6 addresses");
+    assert!(result.is_ok(), "IpV6 accepts IPv6 addresses");
     
     let v4_addr = IpAddr::V4(std::net::Ipv4Addr::new(192, 168, 1, 1));
     let result = IpV6::new(v4_addr);
-    kani::assert(result.is_err(), "IpV6 rejects IPv4 addresses");
+    assert!(result.is_err(), "IpV6 rejects IPv4 addresses");
 }
 
 // ----------------------------------------------------------------------------
@@ -889,10 +889,10 @@ fn verify_naive_datetime_after() {
         .unwrap();
     
     let result = NaiveDateTimeAfter::new(after, threshold);
-    kani::assert(result.is_ok(), "NaiveDateTimeAfter accepts future");
+    assert!(result.is_ok(), "NaiveDateTimeAfter accepts future");
     
     let result = NaiveDateTimeAfter::new(before, threshold);
-    kani::assert(result.is_err(), "NaiveDateTimeAfter rejects past");
+    assert!(result.is_err(), "NaiveDateTimeAfter rejects past");
 }
 
 // ----------------------------------------------------------------------------
@@ -913,7 +913,7 @@ fn verify_array_all_satisfy() {
     
     // Verify all elements satisfy contract
     for elem in arr_contract.get() {
-        kani::assert(elem.get() > 0, "All elements positive");
+        assert!(elem.get() > 0, "All elements positive");
     }
 }
 

@@ -13,11 +13,11 @@ use crate::{UrlValid, UrlHttps, UrlHttp, UrlWithHost, UrlCanBeBase};
 fn verify_url_https() {
     // Test known HTTPS URL
     let https_result = UrlHttps::new("https://example.com");
-    kani::assert(https_result.is_ok(), "Valid HTTPS URL accepted");
+    assert!(https_result.is_ok(), "Valid HTTPS URL accepted");
     
     // Test non-HTTPS URL
     let http_result = UrlHttps::new("http://example.com");
-    kani::assert(http_result.is_err(), "HTTP URL rejected");
+    assert!(http_result.is_err(), "HTTP URL rejected");
 }
 
 #[cfg(feature = "url")]
@@ -26,11 +26,11 @@ fn verify_url_https() {
 fn verify_url_http() {
     // Test known HTTP URL
     let http_result = UrlHttp::new("http://example.com");
-    kani::assert(http_result.is_ok(), "Valid HTTP URL accepted");
+    assert!(http_result.is_ok(), "Valid HTTP URL accepted");
     
     // Test non-HTTP URL
     let https_result = UrlHttp::new("https://example.com");
-    kani::assert(https_result.is_err(), "HTTPS URL rejected");
+    assert!(https_result.is_err(), "HTTPS URL rejected");
 }
 
 #[cfg(feature = "url")]
@@ -38,21 +38,21 @@ fn verify_url_http() {
 #[kani::unwind(1)]
 fn verify_url_valid() {
     // Test various valid URL schemes
-    kani::assert(
+    assert!(
         UrlValid::new("https://example.com").is_ok(),
         "HTTPS URL is valid"
     );
-    kani::assert(
+    assert!(
         UrlValid::new("http://localhost:8080").is_ok(),
         "HTTP with port is valid"
     );
-    kani::assert(
+    assert!(
         UrlValid::new("ftp://files.example.com").is_ok(),
         "FTP URL is valid"
     );
     
     // Test invalid URLs
-    kani::assert(
+    assert!(
         UrlValid::new("not a url").is_err(),
         "Invalid URL rejected"
     );
@@ -63,21 +63,21 @@ fn verify_url_valid() {
 #[kani::unwind(1)]
 fn verify_url_with_host() {
     // Test URLs with hosts
-    kani::assert(
+    assert!(
         UrlWithHost::new("https://example.com").is_ok(),
         "URL with domain host accepted"
     );
-    kani::assert(
+    assert!(
         UrlWithHost::new("http://192.168.1.1:8080").is_ok(),
         "URL with IP host accepted"
     );
     
     // Test URLs without hosts (like mailto, data)
-    kani::assert(
+    assert!(
         UrlWithHost::new("mailto:user@example.com").is_err(),
         "mailto URL has no host, rejected"
     );
-    kani::assert(
+    assert!(
         UrlWithHost::new("data:text/plain,hello").is_err(),
         "data URL has no host, rejected"
     );
@@ -88,21 +88,21 @@ fn verify_url_with_host() {
 #[kani::unwind(1)]
 fn verify_url_can_be_base() {
     // Test URLs that can be base
-    kani::assert(
+    assert!(
         UrlCanBeBase::new("https://example.com").is_ok(),
         "HTTP(S) URL can be base"
     );
-    kani::assert(
+    assert!(
         UrlCanBeBase::new("http://example.com/path/").is_ok(),
         "URL with path can be base"
     );
     
     // Test URLs that cannot be base
-    kani::assert(
+    assert!(
         UrlCanBeBase::new("mailto:user@example.com").is_err(),
         "mailto cannot be base"
     );
-    kani::assert(
+    assert!(
         UrlCanBeBase::new("data:text/plain,hello").is_err(),
         "data URL cannot be base"
     );
@@ -116,11 +116,11 @@ fn verify_url_https_accessor() {
     let https = UrlHttps::new("https://secure.example.com").unwrap();
     let url_ref = https.get();
     
-    kani::assert(url_ref.scheme() == "https", "Accessor returns HTTPS URL");
-    kani::assert(url_ref.host_str().is_some(), "HTTPS URL has host");
+    assert!(url_ref.scheme() == "https", "Accessor returns HTTPS URL");
+    assert!(url_ref.host_str().is_some(), "HTTPS URL has host");
     
     let url_inner = https.into_inner();
-    kani::assert(url_inner.scheme() == "https", "into_inner() returns HTTPS URL");
+    assert!(url_inner.scheme() == "https", "into_inner() returns HTTPS URL");
 }
 
 #[cfg(feature = "url")]
@@ -134,11 +134,11 @@ fn verify_url_trenchcoat_pattern() {
         let unwrapped = wrapped.into_inner();
         
         // Trenchcoat: The URL string is preserved through wrap/unwrap
-        kani::assert(
+        assert!(
             unwrapped.scheme() == "https",
             "Scheme preserved through trenchcoat"
         );
-        kani::assert(
+        assert!(
             unwrapped.as_str() == original,
             "Full URL preserved through trenchcoat"
         );

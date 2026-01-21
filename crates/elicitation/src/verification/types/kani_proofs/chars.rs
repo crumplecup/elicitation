@@ -11,11 +11,11 @@ fn verify_char_alphabetic() {
     
     match CharAlphabetic::new(value) {
         Ok(alphabetic) => {
-            kani::assert(value.is_alphabetic(), "CharAlphabetic invariant");
-            kani::assert(alphabetic.get().is_alphabetic(), "get() preserves invariant");
+            assert!(value.is_alphabetic(), "CharAlphabetic invariant");
+            assert!(alphabetic.get().is_alphabetic(), "get() preserves invariant");
         }
         Err(_) => {
-            kani::assert(!value.is_alphabetic(), "Construction rejects non-alphabetic");
+            assert!(!value.is_alphabetic(), "Construction rejects non-alphabetic");
         }
     }
 }
@@ -26,12 +26,12 @@ fn verify_char_numeric() {
     
     match CharNumeric::new(value) {
         Ok(numeric) => {
-            kani::assert(value.is_numeric(), "CharNumeric invariant");
+            assert!(value.is_numeric(), "CharNumeric invariant");
             let val: char = numeric.get();
-            kani::assert(val.is_numeric(), "get() preserves invariant");
+            assert!(val.is_numeric(), "get() preserves invariant");
         }
         Err(_) => {
-            kani::assert(!value.is_numeric(), "Construction rejects non-numeric");
+            assert!(!value.is_numeric(), "Construction rejects non-numeric");
         }
     }
 }
