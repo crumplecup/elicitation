@@ -1,6 +1,6 @@
 //! Kani proofs for bool contract types.
 
-use crate::BoolTrue;
+use crate::{BoolTrue, BoolFalse};
 
 // Bool Contract Proofs
 // ============================================================================

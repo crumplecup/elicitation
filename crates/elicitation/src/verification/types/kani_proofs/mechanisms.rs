@@ -98,7 +98,7 @@ fn verify_mechanism_type_composition() {
     // Part 1: Type contract (already proven in verify_i8_positive)
     let value: i8 = kani::any();
     if let Ok(positive) = I8Positive::new(value) {
-        let val: i8 = positive.get();
+        let val = positive.get();
         kani::assert(val > 0, "Type contract holds");
         
         // Part 2: If this was returned by Survey, Survey contract also holds

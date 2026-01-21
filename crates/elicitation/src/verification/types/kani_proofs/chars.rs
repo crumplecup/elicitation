@@ -1,6 +1,6 @@
 //! Kani proofs for char contract types.
 
-use crate::{CharAlphabetic, CharAlphanumeric};
+use crate::{CharAlphabetic, CharAlphanumeric, CharNumeric};
 
 // Char Contract Proofs
 // ============================================================================

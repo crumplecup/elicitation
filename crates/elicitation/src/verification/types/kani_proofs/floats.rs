@@ -1,6 +1,6 @@
 //! Kani proofs for float contract types.
 
-use crate::{F32Finite, F64Positive};
+use crate::{F32Finite, F64Positive, F32Positive, F32NonNegative, F64NonNegative};
 
 // ============================================================================
 // Float Contract Proofs

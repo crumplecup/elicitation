@@ -1,9 +1,9 @@
 //! Kani proofs for network and filesystem contract types.
 
-use crate::{IpPrivate, IpPublic, PathBufExists, PathBufIsDir, PathBufIsFile, PathBufReadable};
+use crate::{IpPrivate, IpPublic, Ipv4Loopback, Ipv6Loopback, PathBufExists, PathBufIsDir, PathBufIsFile, PathBufReadable};
 
 #[cfg(feature = "uuid")]
-use crate::UuidNonNil;
+use crate::{UuidNonNil, UuidV4};
 
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::path::PathBuf;
