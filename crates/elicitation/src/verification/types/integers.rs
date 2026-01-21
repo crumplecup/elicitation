@@ -1179,6 +1179,64 @@ mod u16_range_tests {
     }
 }
 
+// U8Positive - Positive u8 (> 0)
+/// Contract type for positive u8 values (> 0).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct U8Positive(u8);
+
+#[instrumented_impl]
+impl U8Positive {
+    pub fn new(value: u8) -> Result<Self, ValidationError> {
+        if value > 0 { Ok(Self(value)) } else { Err(ValidationError::Zero) }
+    }
+    pub fn get(&self) -> u8 { self.0 }
+    pub fn into_inner(self) -> u8 { self.0 }
+}
+
+crate::default_style!(U8Positive => U8PositiveStyle);
+
+#[instrumented_impl]
+impl Prompt for U8Positive {
+    fn prompt() -> Option<&'static str> { Some("Please enter a positive number (> 0):") }
+}
+
+#[instrumented_impl]
+impl Elicitation for U8Positive {
+    type Style = U8PositiveStyle;
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        loop { if let Ok(v) = Self::new(u8::elicit(client).await?) { return Ok(v); } }
+    }
+}
+
+// U16Positive - Positive u16 (> 0)
+/// Contract type for positive u16 values (> 0).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct U16Positive(u16);
+
+#[instrumented_impl]
+impl U16Positive {
+    pub fn new(value: u16) -> Result<Self, ValidationError> {
+        if value > 0 { Ok(Self(value)) } else { Err(ValidationError::Zero) }
+    }
+    pub fn get(&self) -> u16 { self.0 }
+    pub fn into_inner(self) -> u16 { self.0 }
+}
+
+crate::default_style!(U16Positive => U16PositiveStyle);
+
+#[instrumented_impl]
+impl Prompt for U16Positive {
+    fn prompt() -> Option<&'static str> { Some("Please enter a positive number (> 0):") }
+}
+
+#[instrumented_impl]
+impl Elicitation for U16Positive {
+    type Style = U16PositiveStyle;
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        loop { if let Ok(v) = Self::new(u16::elicit(client).await?) { return Ok(v); } }
+    }
+}
+
 // ============================================================================
 // Macro to generate signed integer contract types (Positive, NonNegative, Range)
 // ============================================================================
