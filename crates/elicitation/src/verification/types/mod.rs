@@ -27,6 +27,7 @@ mod chars;
 mod uuids;
 mod durations;
 mod networks;
+mod pathbufs;
 
 pub use integers::*;
 pub use floats::*;
@@ -36,6 +37,7 @@ pub use chars::*;
 pub use uuids::*;
 pub use durations::*;
 pub use networks::*;
+pub use pathbufs::*;
 
 /// Error type for contract validation failures.
 #[derive(Debug, Clone, PartialEq, derive_more::Display)]
@@ -165,6 +167,22 @@ pub enum ValidationError {
     /// IP address is not loopback.
     #[display("IP address must be loopback, got {}", _0)]
     NotLoopback(String),
+
+    /// Path does not exist on filesystem.
+    #[display("Path does not exist: {}", _0)]
+    PathDoesNotExist(String),
+
+    /// Path is not readable.
+    #[display("Path is not readable: {}", _0)]
+    PathNotReadable(String),
+
+    /// Path is not a directory.
+    #[display("Path is not a directory: {}", _0)]
+    PathNotDirectory(String),
+
+    /// Path is not a file.
+    #[display("Path is not a file: {}", _0)]
+    PathNotFile(String),
 }
 
 impl std::error::Error for ValidationError {}
