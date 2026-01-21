@@ -127,7 +127,7 @@ pub trait Tool: Contract + Sync {
 
         #[cfg(kani)]
         {
-            kani::assert(
+            assert!(
                 Self::ensures(&input, &output),
                 "Postcondition must hold after execution",
             );
