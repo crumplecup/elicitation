@@ -33,6 +33,9 @@ mod tuples;
 mod collections;
 mod values;
 
+#[cfg(feature = "url")]
+mod urls;
+
 #[cfg(kani)]
 mod kani_proofs;
 
@@ -58,6 +61,9 @@ pub use datetimes::*;
 pub use tuples::*;
 pub use collections::*;
 pub use values::*;
+
+#[cfg(feature = "url")]
+pub use urls::*;
 
 /// Error type for contract validation failures.
 #[derive(Debug, Clone, PartialEq, derive_more::Display)]
@@ -246,6 +252,26 @@ pub enum ValidationError {
     /// JSON Value is null.
     #[display("JSON must be non-null")]
     JsonIsNull,
+
+    /// URL is invalid or malformed.
+    #[display("URL is invalid or cannot be parsed")]
+    UrlInvalid,
+
+    /// URL scheme is not HTTPS.
+    #[display("URL must use HTTPS scheme")]
+    UrlNotHttps,
+
+    /// URL scheme is not HTTP.
+    #[display("URL must use HTTP scheme")]
+    UrlNotHttp,
+
+    /// URL has no host component.
+    #[display("URL must have a host")]
+    UrlNoHost,
+
+    /// URL cannot be a base for relative URLs.
+    #[display("URL cannot be used as a base")]
+    UrlCannotBeBase,
 }
 
 impl std::error::Error for ValidationError {}
