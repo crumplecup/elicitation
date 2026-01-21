@@ -33,6 +33,9 @@ mod tuples;
 mod collections;
 mod values;
 
+#[cfg(kani)]
+mod kani_proofs;
+
 pub use integers::*;
 pub use floats::*;
 pub use strings::*;
