@@ -3,6 +3,7 @@
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
 use elicitation_macros::instrumented_impl;
+use elicitation_derive::contract_type;
 
 /// Contract type for positive i8 values (> 0).
 ///
@@ -27,6 +28,10 @@ use elicitation_macros::instrumented_impl;
 /// let value: i8 = positive.into_inner();
 /// assert_eq!(value, 42);
 /// ```
+#[contract_type(
+    requires = "value > 0",
+    ensures = "result.get() > 0"
+)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct I8Positive(i8);
 

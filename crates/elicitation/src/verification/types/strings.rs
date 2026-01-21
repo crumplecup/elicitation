@@ -3,12 +3,17 @@
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
 use elicitation_macros::instrumented_impl;
+use elicitation_derive::contract_type;
 
 // ============================================================================
 
 /// Contract type for non-empty String values.
 ///
 /// Validates on construction, then can unwrap to stdlib String via `into_inner()`.
+#[contract_type(
+    requires = "!value.is_empty()",
+    ensures = "!result.get().is_empty()"
+)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct StringNonEmpty(String);
 
