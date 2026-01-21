@@ -28,6 +28,7 @@ mod uuids;
 mod durations;
 mod networks;
 mod pathbufs;
+mod datetimes;
 
 pub use integers::*;
 pub use floats::*;
@@ -38,6 +39,7 @@ pub use uuids::*;
 pub use durations::*;
 pub use networks::*;
 pub use pathbufs::*;
+pub use datetimes::*;
 
 /// Error type for contract validation failures.
 #[derive(Debug, Clone, PartialEq, derive_more::Display)]
@@ -183,6 +185,24 @@ pub enum ValidationError {
     /// Path is not a file.
     #[display("Path is not a file: {}", _0)]
     PathNotFile(String),
+
+    /// DateTime is too early (before threshold).
+    #[display("DateTime must be after {}, got {}", threshold, value)]
+    DateTimeTooEarly {
+        /// The value that was too early.
+        value: String,
+        /// The threshold it must be after.
+        threshold: String,
+    },
+
+    /// DateTime is too late (after threshold).
+    #[display("DateTime must be before {}, got {}", threshold, value)]
+    DateTimeTooLate {
+        /// The value that was too late.
+        value: String,
+        /// The threshold it must be before.
+        threshold: String,
+    },
 }
 
 impl std::error::Error for ValidationError {}
