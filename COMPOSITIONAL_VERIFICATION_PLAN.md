@@ -2,7 +2,11 @@
 
 ## Vision Statement
 
-Enable users to derive formal verification proofs for their structs and enums by composing the proofs we've already written for primitive and contract types. Users get "verification for free" when building from verified components.
+**All types that implement `Elicitation` are automatically formally verifiable.**
+
+Since we've already proven all stdlib types (i8-i128, String, Vec, etc.) and users compose their types from these, any type that derives `Elicit` gets formal verification proofs **for free**. Users choose their verification backend (Kani, Creusot, Verus, Prusti) via feature flags—no additional derives needed.
+
+**Core insight:** Elicitation guarantees "this type can be safely obtained from vague inputs." Formal verification proves "this composition preserves those guarantees." These are the same property, just expressed at compile-time vs. runtime.
 
 ---
 
@@ -77,98 +81,115 @@ pub struct UserProfile {
 
 ---
 
-## 2. Proposed Solution: `#[derive(Verifiable)]`
+## 2. Proposed Solution: Verification Built Into `#[derive(Elicit)]`
 
 ### 2.1 User-Facing API
 
 ```rust
-use elicitation::{Elicit, Verifiable};
-use elicitation::verification::types::{StringNonEmpty, U8, VecNonEmpty};
+use elicitation::Elicit;
 
-#[derive(Elicit, Verifiable)]
+// User writes ONLY this:
+#[derive(Elicit)]
 pub struct UserProfile {
-    name: StringNonEmpty,           // Verified: len > 0
-    age: U8,                         // Verified: always valid
-    tags: VecNonEmpty<StringNonEmpty>, // Verified: non-empty vec of non-empty strings
+    name: String,      // String impls Elicit → automatically has Kani/Creusot/Verus/Prusti proofs
+    age: u8,           // u8 impls Elicit → automatically has proofs
+    tags: Vec<String>, // Vec<T> where T: Elicit → automatically has proofs
 }
+
+// That's it! Verification contracts generated automatically.
+// Choose verifier via feature flag:
+//   cargo kani --features verify-kani
+//   cargo creusot --features verify-creusot
+// etc.
 ```
 
-**What gets generated:**
+**No separate `#[derive(Verifiable)]` needed.** If you can elicit it, you can verify it.
+
+**What gets generated (automatically by `#[derive(Elicit)]`):**
 
 ```rust
 // Generated constructor with composed contracts
+#[cfg(feature = "verify-kani")]
 #[cfg(kani)]
 #[kani::requires(
-    name.get().len() > 0 &&
-    tags.get().len() > 0 &&
-    tags.get().iter().all(|t| t.get().len() > 0)
+    // Compose requirements from all fields that impl Elicit
+    String::elicit_requires(&name) &&
+    u8::elicit_requires(&age) &&
+    Vec::<String>::elicit_requires(&tags)
 )]
 #[kani::ensures(|result: &UserProfile| 
-    result.name.get().len() > 0 &&
-    result.age.get() <= 255 &&
-    result.tags.get().len() > 0
+    // All fields satisfy their Elicit contracts
+    String::elicit_ensures(&result.name) &&
+    u8::elicit_ensures(&result.age) &&
+    Vec::<String>::elicit_ensures(&result.tags)
 )]
 fn __make_UserProfile(
-    name: StringNonEmpty,
-    age: U8,
-    tags: VecNonEmpty<StringNonEmpty>,
+    name: String,
+    age: u8,
+    tags: Vec<String>,
 ) -> UserProfile {
     UserProfile { name, age, tags }
 }
 
 // Generated harness with stubbed leaf proofs
+#[cfg(feature = "verify-kani")]
 #[cfg(kani)]
 #[kani::proof_for_contract(__make_UserProfile)]
-#[kani::stub_verified(StringNonEmpty::new)]
-#[kani::stub_verified(U8::new)]
-#[kani::stub_verified(VecNonEmpty::new)]
+#[kani::stub_verified(String::elicit_verify)]
+#[kani::stub_verified(u8::elicit_verify)]
+#[kani::stub_verified(Vec::<String>::elicit_verify)]
 fn __verify_UserProfile_composition() {
-    let name: StringNonEmpty = kani::any();
-    let age: U8 = kani::any();
-    let tags: VecNonEmpty<StringNonEmpty> = kani::any();
+    let name: String = kani::any();
+    let age: u8 = kani::any();
+    let tags: Vec<String> = kani::any();
     let profile = __make_UserProfile(name, age, tags);
     
     // Composed invariants automatically hold
-    kani::assume(profile.name.get().len() > 0);
-    kani::assume(profile.tags.get().len() > 0);
+    // because all leaf types already proven
 }
 ```
+
+**Key difference from earlier plan:** User types use **stdlib types directly** (String, u8, Vec), not contract types (StringNonEmpty, U8, VecNonEmpty). The contract validation happens at the **elicitation boundary**, not in the type system.
 
 ### 2.2 Optional Customization
 
 ```rust
-#[derive(Verifiable)]
-#[verifiable(
-    requires = "age.get() >= 18",  // Additional constraint
-    ensures = "result.is_adult()"   // Additional guarantee
+#[derive(Elicit)]
+#[elicit_verify(
+    requires = "age >= 18",      // Additional constraint
+    ensures = "result.is_adult()" // Additional guarantee
 )]
 pub struct AdultProfile {
-    name: StringNonEmpty,
-    age: U8,
+    name: String,
+    age: u8,
 }
 
 impl AdultProfile {
     fn is_adult(&self) -> bool {
-        self.age.get() >= 18
+        self.age >= 18
     }
 }
 ```
 
+**Note:** Verification is **not a separate derive**, it's built into `#[derive(Elicit)]`.
+
 ### 2.3 Enum Support
 
 ```rust
-#[derive(Verifiable)]
+#[derive(Elicit)]
 pub enum PaymentMethod {
     CreditCard {
-        number: StringNonEmpty,     // Verified
-        cvv: StringLength<3>,       // Verified: exactly 3 chars
+        number: String,     // Verified via Elicit proofs
+        cvv: String,        // Verified via Elicit proofs + field constraint
     },
     BankTransfer {
-        account: StringNonEmpty,    // Verified
-        routing: StringLength<9>,   // Verified: exactly 9 chars
+        account: String,    // Verified via Elicit proofs
+        routing: String,    // Verified via Elicit proofs + field constraint
     },
 }
 ```
+
+**Automatic verification for ALL variants** because all fields implement `Elicit`.
 
 **Generated:**
 ```rust
@@ -190,27 +211,28 @@ fn __verify_PaymentMethod_variants() {
 
 ## 3. Implementation Phases
 
-### Phase 1: Infrastructure (Week 1)
+### Phase 1: Extend Elicit Derive for Verification (Week 1)
 
-**Goal:** Set up derive macro infrastructure
+**Goal:** Add verification contract generation to existing `#[derive(Elicit)]` macro
 
 **Tasks:**
-1. Create `elicitation_verifiable` proc-macro crate
-2. Set up `syn`/`quote` for AST manipulation
-3. Implement basic struct parsing
-4. Generate stub constructors (no contracts yet)
+1. Extend `elicitation_derive` crate (don't create new crate)
+2. Add verification codegen behind feature flags
+3. Implement basic struct verification contract generation
+4. Generate stub constructors with contracts
 5. Add feature flags: `verify-kani`, `verify-creusot`, etc.
 
-**Files:**
-- `crates/elicitation_verifiable/Cargo.toml`
-- `crates/elicitation_verifiable/src/lib.rs`
-- `crates/elicitation_verifiable/src/struct_derive.rs`
-- `crates/elicitation_verifiable/src/enum_derive.rs`
+**Files (modify existing):**
+- `crates/elicitation_derive/Cargo.toml` - add feature flags
+- `crates/elicitation_derive/src/lib.rs` - add verification module
+- `crates/elicitation_derive/src/verification/mod.rs` - NEW
+- `crates/elicitation_derive/src/verification/kani.rs` - NEW
+- `crates/elicitation_derive/src/verification/contracts.rs` - NEW
 
 **Success criteria:**
-- Macro compiles
-- Basic struct expansion works
-- No contract generation yet (just constructor)
+- Macro compiles with new feature flags
+- Basic struct expansion includes verification contracts when enabled
+- No verification contracts when features disabled (zero cost)
 
 ### Phase 2: Contract Introspection (Week 2)
 
@@ -499,77 +521,92 @@ fn verify_profile() {
 
 ---
 
-## 5. Integration with Elicitation
+## 5. Why This Works: Elicitation IS Verification
 
-### 5.1 Current State
+### 5.1 The Connection
 
-**Elicitation trait:**
+**Elicitation says:** "I can obtain a valid T from vague inputs"
+**Verification says:** "I can prove T is valid"
+
+**These are the same property!**
+
 ```rust
 pub trait Elicitation {
     type Style: ElicitationStyle;
     
+    // Runtime: obtain valid value
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self>;
-}
-```
-
-**No connection to verification currently.**
-
-### 5.2 Proposed Bridge
-
-```rust
-// Phase 6 (future): Connect elicitation to verification
-
-#[derive(Elicit, Verifiable)]
-pub struct UserProfile {
-    name: StringNonEmpty,
-    age: U8,
-    tags: VecNonEmpty<StringNonEmpty>,
-}
-
-// Elicit derive knows about Verifiable
-// Can generate assertions that elicited values satisfy contracts
-
-impl Elicitation for UserProfile {
-    type Style = UserProfileStyle;
     
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
-        let name = StringNonEmpty::elicit(client).await?;
-        let age = U8::elicit(client).await?;
-        let tags = VecNonEmpty::<StringNonEmpty>::elicit(client).await?;
-        
-        // If Verifiable, check composition invariants
-        #[cfg(debug_assertions)]
-        Self::verify_composition(&name, &age, &tags)?;
-        
-        Ok(Self { name, age, tags })
-    }
-}
-
-// Generated by #[derive(Verifiable)]
-impl UserProfile {
-    #[cfg(debug_assertions)]
-    fn verify_composition(
-        name: &StringNonEmpty,
-        age: &U8,
-        tags: &VecNonEmpty<StringNonEmpty>,
-    ) -> Result<(), String> {
-        // Runtime check of compose contract
-        if name.get().len() == 0 {
-            return Err("name must be non-empty".into());
-        }
-        if tags.get().len() == 0 {
-            return Err("tags must be non-empty".into());
-        }
-        Ok(())
-    }
+    // Compile-time: prove value is valid (GENERATED AUTOMATICALLY)
+    #[cfg(feature = "verify-kani")]
+    fn elicit_requires(input: &Self) -> bool;
+    
+    #[cfg(feature = "verify-kani")]
+    fn elicit_ensures(output: &Self) -> bool;
 }
 ```
 
-**Benefits:**
-- Elicited values guaranteed to satisfy composed contracts
-- Debug builds get runtime checks
-- Release builds get compile-time proofs
-- Zero runtime cost in production
+### 5.2 How It Works In Practice
+
+**Step 1: We prove all stdlib types**
+```rust
+// We've already done this (404 proofs):
+impl Elicitation for String { /* ... */ }
+impl Elicitation for u8 { /* ... */ }
+impl<T: Elicitation> Elicitation for Vec<T> { /* ... */ }
+// etc. for all types
+```
+
+**Step 2: User composes types**
+```rust
+#[derive(Elicit)]
+pub struct UserProfile {
+    name: String,      // ✅ String::elicit_requires/ensures exist
+    age: u8,           // ✅ u8::elicit_requires/ensures exist
+    tags: Vec<String>, // ✅ Vec<String>::elicit_requires/ensures exist
+}
+```
+
+**Step 3: Derive automatically composes proofs**
+```rust
+// Generated by #[derive(Elicit)] when verify-kani feature enabled:
+#[cfg(feature = "verify-kani")]
+impl UserProfile {
+    fn elicit_requires(&self) -> bool {
+        String::elicit_requires(&self.name) &&
+        u8::elicit_requires(&self.age) &&
+        Vec::<String>::elicit_requires(&self.tags)
+    }
+    
+    fn elicit_ensures(&self) -> bool {
+        String::elicit_ensures(&self.name) &&
+        u8::elicit_ensures(&self.age) &&
+        Vec::<String>::elicit_ensures(&self.tags)
+    }
+}
+
+#[cfg(feature = "verify-kani")]
+#[cfg(kani)]
+#[kani::proof_for_contract(__make_UserProfile)]
+#[kani::stub_verified(String::elicit_verify)]
+#[kani::stub_verified(u8::elicit_verify)]
+#[kani::stub_verified(Vec::<String>::elicit_verify)]
+fn __verify_UserProfile() { /* ... */ }
+```
+
+**Step 4: User runs verification**
+```bash
+cargo kani --features verify-kani
+# VERIFICATION SUCCESSFUL: UserProfile composition proven
+```
+
+### 5.3 Benefits
+
+- **No separate derive needed:** One derive (`Elicit`) does both
+- **Choose your verifier:** Feature flags select backend
+- **Zero cost when disabled:** No verification code without features
+- **Automatic composition:** If fields are elicitable, struct is verifiable
+- **Same semantics:** Elicitation and verification express the same property
 
 ---
 
@@ -740,9 +777,9 @@ cargo kani --features verify-kani || {
 
 ## 9. Migration Path for Existing Code
 
-### 9.1 Step-by-Step Migration
+### 9.1 Zero Migration Required!
 
-**Before:**
+**Before (existing code):**
 ```rust
 #[derive(Elicit)]
 pub struct User {
@@ -751,35 +788,37 @@ pub struct User {
 }
 ```
 
-**After:**
-```rust
-use elicitation::verification::types::{StringNonEmpty, U8};
+**After (just enable feature):**
+```bash
+# Before: No verification
+cargo build
 
-#[derive(Elicit, Verifiable)]
-pub struct User {
-    name: StringNonEmpty,  // Changed from String
-    age: U8,               // Changed from u8
+# After: Automatic verification
+cargo kani --features verify-kani
+```
+
+**That's it!** No code changes needed. Verification is automatically available for all existing types that derive `Elicit`.
+### 9.2 Optional: Adding Field Constraints
+
+**If you want stricter validation:**
+```rust
+#[derive(Elicit)]
+#[elicit_verify(field_requires = "age >= 18")]
+pub struct AdultUser {
+    name: String,
+    age: u8,
 }
 ```
 
-**Compatibility layer (optional):**
-```rust
-impl From<User> for UserLegacy {
-    fn from(user: User) -> Self {
-        Self {
-            name: user.name.into_inner(),
-            age: user.age.into_inner(),
-        }
-    }
-}
+**But most users won't need this** - stdlib type guarantees are usually sufficient.
 ```
 
-### 9.2 Deprecation Timeline
+### 9.3 Rollout Timeline
 
-- v0.5.0: Introduce `#[derive(Verifiable)]` (opt-in)
-- v0.6.0: Deprecate unverified struct usage
-- v0.7.0: Require verification for all public types
-- v1.0.0: Full verification enforcement
+- **v0.5.0:** Add verification to `#[derive(Elicit)]` behind feature flags (opt-in)
+- **v0.6.0:** Encourage verification in CI (documentation, examples)
+- **v0.7.0:** Recommend verification for all public types
+- **v1.0.0:** Verification considered "standard practice" (still opt-in via features)
 
 ---
 
