@@ -6,6 +6,7 @@ use syn::{Field, Ident};
 
 mod kani;
 mod creusot;
+mod prusti;
 
 /// Generate verification code for a struct.
 pub fn generate_struct_verification(
@@ -14,10 +15,12 @@ pub fn generate_struct_verification(
 ) -> TokenStream {
     let kani_code = kani::generate_kani_verification(struct_name, fields);
     let creusot_code = creusot::generate_creusot_verification(struct_name, fields);
+    let prusti_code = prusti::generate_prusti_verification(struct_name, fields);
     
     quote! {
         #kani_code
         #creusot_code
+        #prusti_code
     }
 }
 
@@ -28,9 +31,11 @@ pub fn generate_enum_verification(
 ) -> TokenStream {
     let kani_code = kani::generate_kani_enum_verification(enum_name, variants);
     let creusot_code = creusot::generate_creusot_enum_verification(enum_name, variants);
+    let prusti_code = prusti::generate_prusti_enum_verification(enum_name, variants);
     
     quote! {
         #kani_code
         #creusot_code
+        #prusti_code
     }
 }
