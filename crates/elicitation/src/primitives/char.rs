@@ -36,6 +36,11 @@ impl Elicitation for char {
         string
             .chars()
             .next()
-            .ok_or_else(|| crate::ElicitError::ParseError("Empty string, expected character".into()))
+            .ok_or_else(|| {
+                crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
+                    expected: "non-empty string with at least one character".to_string(),
+                    received: "empty string".to_string(),
+                })
+            })
     }
 }

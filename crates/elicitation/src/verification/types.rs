@@ -69,6 +69,48 @@ pub enum ValidationError {
         /// Maximum allowed value.
         max: i128,
     },
+
+    /// String is empty (must be non-empty).
+    #[display("String must be non-empty")]
+    EmptyString,
+
+    /// String exceeds maximum length.
+    #[display("String length {} exceeds maximum {}", actual, max)]
+    StringTooLong {
+        /// Actual length.
+        actual: usize,
+        /// Maximum allowed length.
+        max: usize,
+    },
+
+    /// String is below minimum length.
+    #[display("String length {} is below minimum {}", actual, min)]
+    StringTooShort {
+        /// Actual length.
+        actual: usize,
+        /// Minimum allowed length.
+        min: usize,
+    },
+
+    /// Bool value is not true (must be true).
+    #[display("Value must be true, got false")]
+    NotTrue,
+
+    /// Bool value is not false (must be false).
+    #[display("Value must be false, got true")]
+    NotFalse,
+
+    /// Char is not alphabetic.
+    #[display("Character '{}' is not alphabetic", _0)]
+    NotAlphabetic(char),
+
+    /// Char is not numeric.
+    #[display("Character '{}' is not numeric", _0)]
+    NotNumeric(char),
+
+    /// Char is not alphanumeric.
+    #[display("Character '{}' is not alphanumeric", _0)]
+    NotAlphanumeric(char),
 }
 
 impl std::error::Error for ValidationError {}
@@ -2462,5 +2504,546 @@ mod f64_finite_tests {
         let finite = F64Finite::new(42.5).unwrap();
         let value: f64 = finite.into_inner();
         assert_eq!(value, 42.5);
+    }
+}
+
+// ============================================================================
+// String Contract Types
+// ============================================================================
+
+/// Contract type for non-empty String values.
+///
+/// Validates on construction, then can unwrap to stdlib String via `into_inner()`.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct StringNonEmpty(String);
+
+impl StringNonEmpty {
+    /// Constructs a non-empty String.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::EmptyString` if string is empty.
+    pub fn new(value: String) -> Result<Self, ValidationError> {
+        if !value.is_empty() {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::EmptyString)
+        }
+    }
+
+    /// Gets the wrapped value.
+    pub fn get(&self) -> &str {
+        &self.0
+    }
+
+    /// Unwraps to stdlib String (trenchcoat off).
+    pub fn into_inner(self) -> String {
+        self.0
+    }
+}
+
+crate::default_style!(StringNonEmpty => StringNonEmptyStyle);
+
+impl Prompt for StringNonEmpty {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a non-empty string:")
+    }
+}
+
+impl Elicitation for StringNonEmpty {
+    type Style = StringNonEmptyStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "StringNonEmpty"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting StringNonEmpty (non-empty string)");
+
+        loop {
+            let value = String::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(non_empty) => {
+                    tracing::debug!(value = %non_empty.get(), "Valid StringNonEmpty constructed");
+                    return Ok(non_empty);
+                }
+                Err(e) => {
+                    tracing::warn!(error = %e, "Invalid StringNonEmpty, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod string_nonempty_tests {
+    use super::*;
+
+    #[test]
+    fn string_nonempty_new_valid() {
+        let result = StringNonEmpty::new("hello".to_string());
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), "hello");
+    }
+
+    #[test]
+    fn string_nonempty_new_empty_invalid() {
+        let result = StringNonEmpty::new(String::new());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn string_nonempty_into_inner() {
+        let non_empty = StringNonEmpty::new("world".to_string()).unwrap();
+        let value: String = non_empty.into_inner();
+        assert_eq!(value, "world");
+    }
+}
+
+// ============================================================================
+// Bool Contract Types
+// ============================================================================
+
+/// Contract type for true bool values.
+///
+/// Validates on construction, then can unwrap to stdlib bool via `into_inner()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct BoolTrue(bool);
+
+impl BoolTrue {
+    /// Constructs a true bool value.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::NotTrue` if value is false.
+    pub fn new(value: bool) -> Result<Self, ValidationError> {
+        if value {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::NotTrue)
+        }
+    }
+
+    /// Gets the wrapped value (always true).
+    pub fn get(&self) -> bool {
+        self.0
+    }
+
+    /// Unwraps to stdlib bool (trenchcoat off).
+    pub fn into_inner(self) -> bool {
+        self.0
+    }
+}
+
+crate::default_style!(BoolTrue => BoolTrueStyle);
+
+impl Prompt for BoolTrue {
+    fn prompt() -> Option<&'static str> {
+        Some("Please confirm (must be true):")
+    }
+}
+
+impl Elicitation for BoolTrue {
+    type Style = BoolTrueStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "BoolTrue"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting BoolTrue (must be true)");
+
+        loop {
+            let value = bool::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(bool_true) => {
+                    tracing::debug!(value, "Valid BoolTrue constructed");
+                    return Ok(bool_true);
+                }
+                Err(e) => {
+                    tracing::warn!(value, error = %e, "Invalid BoolTrue, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+/// Contract type for false bool values.
+///
+/// Validates on construction, then can unwrap to stdlib bool via `into_inner()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct BoolFalse(bool);
+
+impl BoolFalse {
+    /// Constructs a false bool value.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::NotFalse` if value is true.
+    pub fn new(value: bool) -> Result<Self, ValidationError> {
+        if !value {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::NotFalse)
+        }
+    }
+
+    /// Gets the wrapped value (always false).
+    pub fn get(&self) -> bool {
+        self.0
+    }
+
+    /// Unwraps to stdlib bool (trenchcoat off).
+    pub fn into_inner(self) -> bool {
+        self.0
+    }
+}
+
+crate::default_style!(BoolFalse => BoolFalseStyle);
+
+impl Prompt for BoolFalse {
+    fn prompt() -> Option<&'static str> {
+        Some("Please deny (must be false):")
+    }
+}
+
+impl Elicitation for BoolFalse {
+    type Style = BoolFalseStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "BoolFalse"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting BoolFalse (must be false)");
+
+        loop {
+            let value = bool::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(bool_false) => {
+                    tracing::debug!(value, "Valid BoolFalse constructed");
+                    return Ok(bool_false);
+                }
+                Err(e) => {
+                    tracing::warn!(value, error = %e, "Invalid BoolFalse, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod bool_true_tests {
+    use super::*;
+
+    #[test]
+    fn bool_true_new_valid() {
+        let result = BoolTrue::new(true);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), true);
+    }
+
+    #[test]
+    fn bool_true_new_false_invalid() {
+        let result = BoolTrue::new(false);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn bool_true_into_inner() {
+        let bool_true = BoolTrue::new(true).unwrap();
+        let value: bool = bool_true.into_inner();
+        assert_eq!(value, true);
+    }
+}
+
+#[cfg(test)]
+mod bool_false_tests {
+    use super::*;
+
+    #[test]
+    fn bool_false_new_valid() {
+        let result = BoolFalse::new(false);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), false);
+    }
+
+    #[test]
+    fn bool_false_new_true_invalid() {
+        let result = BoolFalse::new(true);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn bool_false_into_inner() {
+        let bool_false = BoolFalse::new(false).unwrap();
+        let value: bool = bool_false.into_inner();
+        assert_eq!(value, false);
+    }
+}
+
+// ============================================================================
+// Char Contract Types
+// ============================================================================
+
+/// Contract type for alphabetic char values.
+///
+/// Validates on construction, then can unwrap to stdlib char via `into_inner()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct CharAlphabetic(char);
+
+impl CharAlphabetic {
+    /// Constructs an alphabetic char.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::NotAlphabetic` if char is not alphabetic.
+    pub fn new(value: char) -> Result<Self, ValidationError> {
+        if value.is_alphabetic() {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::NotAlphabetic(value))
+        }
+    }
+
+    /// Gets the wrapped value.
+    pub fn get(&self) -> char {
+        self.0
+    }
+
+    /// Unwraps to stdlib char (trenchcoat off).
+    pub fn into_inner(self) -> char {
+        self.0
+    }
+}
+
+crate::default_style!(CharAlphabetic => CharAlphabeticStyle);
+
+impl Prompt for CharAlphabetic {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter an alphabetic character:")
+    }
+}
+
+impl Elicitation for CharAlphabetic {
+    type Style = CharAlphabeticStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "CharAlphabetic"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting CharAlphabetic (alphabetic char)");
+
+        loop {
+            let value = char::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(alphabetic) => {
+                    tracing::debug!(value = %value, "Valid CharAlphabetic constructed");
+                    return Ok(alphabetic);
+                }
+                Err(e) => {
+                    tracing::warn!(value = %value, error = %e, "Invalid CharAlphabetic, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+/// Contract type for numeric char values.
+///
+/// Validates on construction, then can unwrap to stdlib char via `into_inner()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct CharNumeric(char);
+
+impl CharNumeric {
+    /// Constructs a numeric char.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::NotNumeric` if char is not numeric.
+    pub fn new(value: char) -> Result<Self, ValidationError> {
+        if value.is_numeric() {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::NotNumeric(value))
+        }
+    }
+
+    /// Gets the wrapped value.
+    pub fn get(&self) -> char {
+        self.0
+    }
+
+    /// Unwraps to stdlib char (trenchcoat off).
+    pub fn into_inner(self) -> char {
+        self.0
+    }
+}
+
+crate::default_style!(CharNumeric => CharNumericStyle);
+
+impl Prompt for CharNumeric {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a numeric character:")
+    }
+}
+
+impl Elicitation for CharNumeric {
+    type Style = CharNumericStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "CharNumeric"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting CharNumeric (numeric char)");
+
+        loop {
+            let value = char::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(numeric) => {
+                    tracing::debug!(value = %value, "Valid CharNumeric constructed");
+                    return Ok(numeric);
+                }
+                Err(e) => {
+                    tracing::warn!(value = %value, error = %e, "Invalid CharNumeric, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+/// Contract type for alphanumeric char values.
+///
+/// Validates on construction, then can unwrap to stdlib char via `into_inner()`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct CharAlphanumeric(char);
+
+impl CharAlphanumeric {
+    /// Constructs an alphanumeric char.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::NotAlphanumeric` if char is not alphanumeric.
+    pub fn new(value: char) -> Result<Self, ValidationError> {
+        if value.is_alphanumeric() {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::NotAlphanumeric(value))
+        }
+    }
+
+    /// Gets the wrapped value.
+    pub fn get(&self) -> char {
+        self.0
+    }
+
+    /// Unwraps to stdlib char (trenchcoat off).
+    pub fn into_inner(self) -> char {
+        self.0
+    }
+}
+
+crate::default_style!(CharAlphanumeric => CharAlphanumericStyle);
+
+impl Prompt for CharAlphanumeric {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter an alphanumeric character:")
+    }
+}
+
+impl Elicitation for CharAlphanumeric {
+    type Style = CharAlphanumericStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "CharAlphanumeric"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting CharAlphanumeric (alphanumeric char)");
+
+        loop {
+            let value = char::elicit(client).await?;
+            
+            match Self::new(value) {
+                Ok(alphanumeric) => {
+                    tracing::debug!(value = %value, "Valid CharAlphanumeric constructed");
+                    return Ok(alphanumeric);
+                }
+                Err(e) => {
+                    tracing::warn!(value = %value, error = %e, "Invalid CharAlphanumeric, re-prompting");
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod char_alphabetic_tests {
+    use super::*;
+
+    #[test]
+    fn char_alphabetic_new_valid() {
+        let result = CharAlphabetic::new('a');
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 'a');
+    }
+
+    #[test]
+    fn char_alphabetic_new_digit_invalid() {
+        let result = CharAlphabetic::new('5');
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn char_alphabetic_into_inner() {
+        let alphabetic = CharAlphabetic::new('z').unwrap();
+        let value: char = alphabetic.into_inner();
+        assert_eq!(value, 'z');
+    }
+}
+
+#[cfg(test)]
+mod char_numeric_tests {
+    use super::*;
+
+    #[test]
+    fn char_numeric_new_valid() {
+        let result = CharNumeric::new('5');
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), '5');
+    }
+
+    #[test]
+    fn char_numeric_new_letter_invalid() {
+        let result = CharNumeric::new('a');
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn char_numeric_into_inner() {
+        let numeric = CharNumeric::new('9').unwrap();
+        let value: char = numeric.into_inner();
+        assert_eq!(value, '9');
+    }
+}
+
+#[cfg(test)]
+mod char_alphanumeric_tests {
+    use super::*;
+
+    #[test]
+    fn char_alphanumeric_new_valid_letter() {
+        let result = CharAlphanumeric::new('a');
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), 'a');
+    }
+
+    #[test]
+    fn char_alphanumeric_new_valid_digit() {
+        let result = CharAlphanumeric::new('5');
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().get(), '5');
+    }
+
+    #[test]
+    fn char_alphanumeric_new_symbol_invalid() {
+        let result = CharAlphanumeric::new('!');
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn char_alphanumeric_into_inner() {
+        let alphanumeric = CharAlphanumeric::new('x').unwrap();
+        let value: char = alphanumeric.into_inner();
+        assert_eq!(value, 'x');
     }
 }
