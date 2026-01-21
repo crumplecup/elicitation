@@ -29,6 +29,7 @@ mod durations;
 mod networks;
 mod pathbufs;
 mod datetimes;
+mod tuples;
 
 pub use integers::*;
 pub use floats::*;
@@ -40,6 +41,7 @@ pub use durations::*;
 pub use networks::*;
 pub use pathbufs::*;
 pub use datetimes::*;
+pub use tuples::*;
 
 /// Error type for contract validation failures.
 #[derive(Debug, Clone, PartialEq, derive_more::Display)]
