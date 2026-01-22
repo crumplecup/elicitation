@@ -27,6 +27,7 @@ pub trait ValidatesType<T> {
     fn validates(value: &T) -> bool;
 }
 
+mod utf8;
 mod integers;
 mod floats;
 mod strings;
@@ -60,6 +61,9 @@ mod creusot_proofs;
 mod prusti_proofs;
 
 // Explicit exports (no globs - helps compiler show what's missing)
+
+// UTF-8 Foundation
+pub use utf8::{Utf8Bytes, is_valid_utf8};
 
 // Integers
 pub use integers::{
@@ -385,6 +389,19 @@ pub enum ValidationError {
     /// Regex pattern is invalid or cannot be compiled.
     #[display("Regex pattern is invalid or cannot be compiled")]
     RegexInvalid,
+
+    /// UTF-8 validation failed.
+    #[display("Invalid UTF-8 byte sequence")]
+    InvalidUtf8,
+
+    /// Value exceeds maximum length (generic).
+    #[display("Value too long: max {max}, got {actual}")]
+    TooLong {
+        /// Maximum allowed length.
+        max: usize,
+        /// Actual length.
+        actual: usize,
+    },
 }
 
 impl std::error::Error for ValidationError {}
