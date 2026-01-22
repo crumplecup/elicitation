@@ -163,14 +163,16 @@ mod tests {
 
     #[test]
     fn test_tuple2_new() {
-        let t = Tuple2::new(I8Positive::new(5).unwrap(), StringNonEmpty::new("test".to_string()).unwrap());
+        let s: StringNonEmpty = StringNonEmpty::new("test".to_string()).unwrap();
+        let t = Tuple2::new(I8Positive::new(5).unwrap(), s);
         assert_eq!(t.first().get(), 5);
         assert_eq!(t.second().get(), "test");
     }
 
     #[test]
     fn test_tuple2_into_inner() {
-        let t = Tuple2::new(I8Positive::new(5).unwrap(), StringNonEmpty::new("test".to_string()).unwrap());
+        let s: StringNonEmpty = StringNonEmpty::new("test".to_string()).unwrap();
+        let t = Tuple2::new(I8Positive::new(5).unwrap(), s);
         let (first, second) = t.into_inner();
         assert_eq!(first.get(), 5);
         assert_eq!(second.get(), "test");
@@ -178,9 +180,10 @@ mod tests {
 
     #[test]
     fn test_tuple3_new() {
+        let s: StringNonEmpty = StringNonEmpty::new("test".to_string()).unwrap();
         let t = Tuple3::new(
             I8Positive::new(5).unwrap(),
-            StringNonEmpty::new("test".to_string()).unwrap(),
+            s,
             BoolTrue::new(true).unwrap(),
         );
         let (first, second, third) = t.into_inner();

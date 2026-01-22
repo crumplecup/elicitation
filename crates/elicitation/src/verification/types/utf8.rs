@@ -3,8 +3,7 @@
 //! This module provides low-level UTF-8 validation that Kani can verify symbolically.
 //! All string contracts are built on top of this validated UTF-8 layer.
 
-#[cfg(any(feature = "verification", kani))]
-use crate::ValidationError;
+use super::ValidationError;
 
 /// Guaranteed valid UTF-8 byte sequence with bounded length.
 ///
@@ -33,7 +32,7 @@ use crate::ValidationError;
 /// assert_eq!(utf8.as_str(), "hi");
 /// # Ok::<(), elicitation::ValidationError>(())
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Utf8Bytes<const MAX_LEN: usize> {
     bytes: [u8; MAX_LEN],
     len: usize,

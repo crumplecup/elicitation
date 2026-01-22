@@ -82,8 +82,8 @@ proof fn verify_f64_finite_construction(value: f64)
 
 proof fn verify_string_non_empty_construction(s: String)
     ensures
-        s.len() > 0 ==> StringNonEmpty::new(s).is_ok(),
-        s.len() == 0 ==> StringNonEmpty::new(s).is_err(),
+        s.len() > 0 ==> StringNonEmpty::<4096>::new(s).is_ok(),
+        s.len() == 0 ==> StringNonEmpty::<4096>::new(s).is_err(),
 {
     // String length reasoning
 }

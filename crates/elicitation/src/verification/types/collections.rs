@@ -410,7 +410,7 @@ mod tests {
 
     #[test]
     fn test_arc_satisfies() {
-        let value = StringNonEmpty::new("test".to_string()).unwrap();
+        let value: StringNonEmpty = StringNonEmpty::new("test".to_string()).unwrap();
         let arc = ArcSatisfies::new(value);
         assert_eq!(arc.get().get(), "test");
     }
