@@ -46,6 +46,7 @@ mod utf8_benchmark;
 mod ipaddr_bytes;
 mod macaddr;
 mod socketaddr;
+mod urlbytes;
 
 #[cfg(unix)]
 mod pathbytes;

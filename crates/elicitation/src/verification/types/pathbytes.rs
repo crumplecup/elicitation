@@ -39,14 +39,14 @@ pub struct PathBytes<const MAX_LEN: usize = 4096> {
 
 #[cfg(unix)]
 impl<const MAX_LEN: usize> PathBytes<MAX_LEN> {
-    /// Create a new PathBytes, validating UTF-8 and no null bytes.
+    /// Create from byte slice (Kani-friendly, no Vec allocation).
     ///
     /// # Errors
     ///
     /// Returns `ValidationError::InvalidUtf8` if not valid UTF-8.
     /// Returns `ValidationError::TooLong` if exceeds MAX_LEN.
     /// Returns `ValidationError::PathContainsNull` if contains null bytes.
-    pub fn new(bytes: Vec<u8>) -> Result<Self, ValidationError> {
+    pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let len = bytes.len();
         
         if len > MAX_LEN {
@@ -56,9 +56,9 @@ impl<const MAX_LEN: usize> PathBytes<MAX_LEN> {
             });
         }
         
-        // Convert Vec to fixed array
+        // Copy to fixed array (Kani's native domain!)
         let mut fixed = [0u8; MAX_LEN];
-        fixed[..len].copy_from_slice(&bytes);
+        fixed[..len].copy_from_slice(bytes);
         
         // Validate UTF-8 (reuse existing foundation!)
         let utf8 = Utf8Bytes::new(fixed, len)?;
@@ -69,6 +69,17 @@ impl<const MAX_LEN: usize> PathBytes<MAX_LEN> {
         }
         
         Ok(Self { utf8 })
+    }
+    
+    /// Create from Vec (user-facing API, delegates to from_slice).
+    ///
+    /// # Errors
+    ///
+    /// Returns `ValidationError::InvalidUtf8` if not valid UTF-8.
+    /// Returns `ValidationError::TooLong` if exceeds MAX_LEN.
+    /// Returns `ValidationError::PathContainsNull` if contains null bytes.
+    pub fn new(bytes: Vec<u8>) -> Result<Self, ValidationError> {
+        Self::from_slice(&bytes)
     }
 
     /// Get the path as a string slice.
@@ -156,20 +167,30 @@ pub struct PathAbsolute<const MAX_LEN: usize = 4096>(PathBytes<MAX_LEN>);
 
 #[cfg(unix)]
 impl<const MAX_LEN: usize> PathAbsolute<MAX_LEN> {
-    /// Create a new PathAbsolute, validating it starts with /.
+    /// Create from byte slice (Kani-friendly).
     ///
     /// # Errors
     ///
     /// Returns validation errors from PathBytes, plus:
     /// Returns `ValidationError::PathNotAbsolute` if path doesn't start with /.
-    pub fn new(bytes: Vec<u8>) -> Result<Self, ValidationError> {
-        let path = PathBytes::new(bytes)?;
+    pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
+        let path = PathBytes::from_slice(bytes)?;
         
         if !path.is_absolute() {
             return Err(ValidationError::PathNotAbsolute(path.to_string()));
         }
         
         Ok(Self(path))
+    }
+    
+    /// Create from Vec (user-facing API).
+    ///
+    /// # Errors
+    ///
+    /// Returns validation errors from PathBytes, plus:
+    /// Returns `ValidationError::PathNotAbsolute` if path doesn't start with /.
+    pub fn new(bytes: Vec<u8>) -> Result<Self, ValidationError> {
+        Self::from_slice(&bytes)
     }
 
     /// Get the underlying PathBytes.
@@ -195,20 +216,30 @@ pub struct PathRelative<const MAX_LEN: usize = 4096>(PathBytes<MAX_LEN>);
 
 #[cfg(unix)]
 impl<const MAX_LEN: usize> PathRelative<MAX_LEN> {
-    /// Create a new PathRelative, validating it doesn't start with /.
+    /// Create from byte slice (Kani-friendly).
     ///
     /// # Errors
     ///
     /// Returns validation errors from PathBytes, plus:
     /// Returns `ValidationError::PathNotRelative` if path starts with /.
-    pub fn new(bytes: Vec<u8>) -> Result<Self, ValidationError> {
-        let path = PathBytes::new(bytes)?;
+    pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
+        let path = PathBytes::from_slice(bytes)?;
         
         if !path.is_relative() {
             return Err(ValidationError::PathNotRelative(path.to_string()));
         }
         
         Ok(Self(path))
+    }
+    
+    /// Create from Vec (user-facing API).
+    ///
+    /// # Errors
+    ///
+    /// Returns validation errors from PathBytes, plus:
+    /// Returns `ValidationError::PathNotRelative` if path starts with /.
+    pub fn new(bytes: Vec<u8>) -> Result<Self, ValidationError> {
+        Self::from_slice(&bytes)
     }
 
     /// Get the underlying PathBytes.
@@ -234,20 +265,30 @@ pub struct PathNonEmpty<const MAX_LEN: usize = 4096>(PathBytes<MAX_LEN>);
 
 #[cfg(unix)]
 impl<const MAX_LEN: usize> PathNonEmpty<MAX_LEN> {
-    /// Create a new PathNonEmpty, validating it's not empty.
+    /// Create from byte slice (Kani-friendly).
     ///
     /// # Errors
     ///
     /// Returns validation errors from PathBytes, plus:
     /// Returns `ValidationError::EmptyString` if path is empty.
-    pub fn new(bytes: Vec<u8>) -> Result<Self, ValidationError> {
-        let path = PathBytes::new(bytes)?;
+    pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
+        let path = PathBytes::from_slice(bytes)?;
         
         if path.is_empty() {
             return Err(ValidationError::EmptyString);
         }
         
         Ok(Self(path))
+    }
+    
+    /// Create from Vec (user-facing API).
+    ///
+    /// # Errors
+    ///
+    /// Returns validation errors from PathBytes, plus:
+    /// Returns `ValidationError::EmptyString` if path is empty.
+    pub fn new(bytes: Vec<u8>) -> Result<Self, ValidationError> {
+        Self::from_slice(&bytes)
     }
 
     /// Get the underlying PathBytes.

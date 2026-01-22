@@ -11,14 +11,6 @@ use crate::verification::types::{
 };
 
 // ============================================================================
-// Helper: Create path from byte slice
-// ============================================================================
-
-fn create_path<const MAX_LEN: usize>(bytes: &[u8]) -> Result<PathBytes<MAX_LEN>, crate::verification::types::ValidationError> {
-    PathBytes::new(bytes.to_vec())
-}
-
-// ============================================================================
 // UTF-8 + No Null Composition Proofs
 // ============================================================================
 
@@ -40,7 +32,7 @@ fn verify_valid_ascii_no_null_accepted() {
     }
     
     // Should construct successfully
-    let path_result = PathBytes::<MAX_LEN>::new(bytes[..len].to_vec());
+    let path_result = PathBytes::<MAX_LEN>::from_slice(&bytes[..len]);
     assert!(path_result.is_ok());
 }
 
@@ -52,7 +44,7 @@ fn verify_null_byte_rejected() {
     // Create path with null byte
     let bytes = [b'/', 0, b't'];
     
-    let path_result = PathBytes::<MAX_LEN>::new(bytes.to_vec());
+    let path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
     assert!(path_result.is_err());
 }
 
@@ -67,7 +59,7 @@ fn verify_absolute_path_starts_with_slash() {
     
     let bytes = [b'/', b'u', b's', b'r'];
     
-    let path_result = create_path::<MAX_LEN>(&bytes);
+    let path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
     assert!(path_result.is_ok());
     
     if let Ok(path) = path_result {
@@ -83,7 +75,7 @@ fn verify_relative_path_no_leading_slash() {
     
     let bytes = [b'u', b's', b'r'];
     
-    let path_result = create_path::<MAX_LEN>(&bytes);
+    let path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
     assert!(path_result.is_ok());
     
     if let Ok(path) = path_result {
@@ -101,9 +93,9 @@ fn verify_relative_path_no_leading_slash() {
 fn verify_path_absolute_accepts_leading_slash() {
     const MAX_LEN: usize = 16;
     
-    let bytes = vec![b'/', b'h', b'o', b'm', b'e'];
+    let bytes = [b'/', b'h', b'o', b'm', b'e'];
     
-    let abs_result = PathAbsolute::<MAX_LEN>::new(bytes);
+    let abs_result = PathAbsolute::<MAX_LEN>::from_slice(&bytes);
     assert!(abs_result.is_ok());
 }
 
@@ -112,9 +104,9 @@ fn verify_path_absolute_accepts_leading_slash() {
 fn verify_path_absolute_rejects_no_slash() {
     const MAX_LEN: usize = 16;
     
-    let bytes = vec![b'h', b'o', b'm', b'e'];
+    let bytes = [b'h', b'o', b'm', b'e'];
     
-    let abs_result = PathAbsolute::<MAX_LEN>::new(bytes);
+    let abs_result = PathAbsolute::<MAX_LEN>::from_slice(&bytes);
     assert!(abs_result.is_err());
 }
 
@@ -123,9 +115,9 @@ fn verify_path_absolute_rejects_no_slash() {
 fn verify_path_relative_accepts_no_slash() {
     const MAX_LEN: usize = 16;
     
-    let bytes = vec![b'h', b'o', b'm', b'e'];
+    let bytes = [b'h', b'o', b'm', b'e'];
     
-    let rel_result = PathRelative::<MAX_LEN>::new(bytes);
+    let rel_result = PathRelative::<MAX_LEN>::from_slice(&bytes);
     assert!(rel_result.is_ok());
 }
 
@@ -134,9 +126,9 @@ fn verify_path_relative_accepts_no_slash() {
 fn verify_path_relative_rejects_slash() {
     const MAX_LEN: usize = 16;
     
-    let bytes = vec![b'/', b'h', b'o', b'm', b'e'];
+    let bytes = [b'/', b'h', b'o', b'm', b'e'];
     
-    let rel_result = PathRelative::<MAX_LEN>::new(bytes);
+    let rel_result = PathRelative::<MAX_LEN>::from_slice(&bytes);
     assert!(rel_result.is_err());
 }
 
@@ -145,9 +137,9 @@ fn verify_path_relative_rejects_slash() {
 fn verify_path_nonempty_accepts_content() {
     const MAX_LEN: usize = 16;
     
-    let bytes = vec![b't', b'e', b's', b't'];
+    let bytes = [b't', b'e', b's', b't'];
     
-    let nonempty_result = PathNonEmpty::<MAX_LEN>::new(bytes);
+    let nonempty_result = PathNonEmpty::<MAX_LEN>::from_slice(&bytes);
     assert!(nonempty_result.is_ok());
 }
 
@@ -156,9 +148,9 @@ fn verify_path_nonempty_accepts_content() {
 fn verify_path_nonempty_rejects_empty() {
     const MAX_LEN: usize = 16;
     
-    let bytes = Vec::new(); // Empty
+    let bytes: [u8; 0] = [];
     
-    let nonempty_result = PathNonEmpty::<MAX_LEN>::new(bytes);
+    let nonempty_result = PathNonEmpty::<MAX_LEN>::from_slice(&bytes);
     assert!(nonempty_result.is_err());
 }
 
@@ -173,7 +165,7 @@ fn verify_root_path() {
     
     let bytes = [b'/'];
     
-    let path_result = create_path::<MAX_LEN>(&bytes);
+    let path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
     assert!(path_result.is_ok());
     
     if let Ok(path) = path_result {
@@ -190,7 +182,7 @@ fn verify_current_directory() {
     
     let bytes = [b'.'];
     
-    let path_result = create_path::<MAX_LEN>(&bytes);
+    let path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
     assert!(path_result.is_ok());
     
     if let Ok(path) = path_result {

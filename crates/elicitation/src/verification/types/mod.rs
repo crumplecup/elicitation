@@ -33,6 +33,7 @@ mod ipaddr_bytes;
 mod macaddr;
 mod socketaddr;
 mod pathbytes;
+mod urlbytes;
 mod integers;
 mod floats;
 mod strings;
@@ -105,6 +106,11 @@ pub use socketaddr::{
 pub use pathbytes::{
     PathBytes, PathAbsolute, PathRelative, PathNonEmpty,
     has_null_byte, is_absolute, is_relative,
+};
+
+// URL Foundation
+pub use urlbytes::{
+    UrlBytes, UrlComponents, UrlWithAuthority, UrlAbsolute, UrlHttp,
 };
 
 // Integers
@@ -411,13 +417,25 @@ pub enum ValidationError {
     /// URL is invalid or malformed.
     #[display("URL is invalid or cannot be parsed")]
     UrlInvalid,
+    
+    /// URL syntax is invalid (RFC 3986).
+    #[display("URL syntax is invalid")]
+    InvalidUrlSyntax,
+    
+    /// URL is missing authority component.
+    #[display("URL must have authority (//host)")]
+    UrlMissingAuthority,
+    
+    /// URL is not absolute (missing scheme + authority).
+    #[display("URL must be absolute (scheme://host)")]
+    UrlNotAbsolute,
 
     /// URL scheme is not HTTPS.
     #[display("URL must use HTTPS scheme")]
     UrlNotHttps,
 
     /// URL scheme is not HTTP.
-    #[display("URL must use HTTP scheme")]
+    #[display("URL must use HTTP or HTTPS scheme")]
     UrlNotHttp,
 
     /// URL has no host component.
