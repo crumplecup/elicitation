@@ -1328,12 +1328,15 @@ mod u16_range_tests {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct U8Positive(u8);
 
-#[instrumented_impl]
+#[elicitation_macros::instrumented_impl]
 impl U8Positive {
+    /// Create a new U8Positive, validating value is positive (> 0).
     pub fn new(value: u8) -> Result<Self, ValidationError> {
         if value > 0 { Ok(Self(value)) } else { Err(ValidationError::Zero) }
     }
+    /// Get the inner u8 value.
     pub fn get(&self) -> u8 { self.0 }
+    /// Consume self and return the inner u8 value.
     pub fn into_inner(self) -> u8 { self.0 }
 }
 
@@ -1357,12 +1360,15 @@ impl Elicitation for U8Positive {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct U16Positive(u16);
 
-#[instrumented_impl]
+#[elicitation_macros::instrumented_impl]
 impl U16Positive {
+    /// Create a new U16Positive, validating value is positive (> 0).
     pub fn new(value: u16) -> Result<Self, ValidationError> {
         if value > 0 { Ok(Self(value)) } else { Err(ValidationError::Zero) }
     }
+    /// Get the inner u16 value.
     pub fn get(&self) -> u16 { self.0 }
+    /// Consume self and return the inner u16 value.
     pub fn into_inner(self) -> u16 { self.0 }
 }
 
