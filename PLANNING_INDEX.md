@@ -304,4 +304,43 @@ Third-party styles:
 **Key Innovation**: Trait-based validation approach can be applied to other fixed-format types (IP addresses, MAC addresses, etc.)
 
 ---
+
+### KANI_VERIFICATION_PATTERNS.md
+**Status**: Complete - Constraint-based byte validation patterns ✅ **VALIDATED**
+**Created**: 2026-01-22
+**Purpose**: Comprehensive documentation of the constraint-based byte validation pattern that enables fast, tractable formal verification of complex types using Kani.
+
+**Discovery**: By expressing type constraints as byte-level predicates and building layered validation types, we achieved symbolic verification that completes in seconds (not hours) for complex types.
+
+**Pattern**: Constraint-Based Byte Validation
+- Layer 1: Fixed-size byte arrays (Kani's native domain)
+- Layer 2+: Incremental constraint validation
+- Result: Fast proofs (0.04s - 8s) for complex types
+
+**Types Successfully Verified** (74 proofs total, all tractable):
+- **UUID** (16 bytes): Bit patterns, 14 proofs, 1-2s each
+- **IPv4** (4 bytes): Range checks (RFC 1918), 12 proofs, 2-3s each
+- **IPv6** (16 bytes): Bit masks (RFC 4193), 9 proofs, 2-3s each
+- **MAC** (6 bytes): Bit flags (unicast/multicast), 18 proofs, 0.07-8s each
+- **SocketAddr** (18/22 bytes): Composition (IP + port), 19 proofs, ~2s each
+- **PathBuf (Unix)**: UTF-8 + null checks, 2 proofs, ~0.04s each
+
+**Key Discoveries**:
+1. Fixed-size types enable bounded exploration
+2. Simple predicates (bit masks, ranges, byte comparisons) map to SMT primitives
+3. Composition doesn't break tractability
+4. Proof time tracks constraint complexity, not type size
+5. Manual loops avoid memchr infinite unwinding
+
+**What Works**: Fixed arrays, bit operations, range checks, bounded loops, composition, contract types
+**What Struggles**: Vec/String APIs, complex parsing, unbounded iteration
+
+**Pattern Generality**: Works for ANY type expressible as byte-level constraints
+
+**Implementation**: ~2,120 lines of verified validation code across 5 files
+
+**Impact**: Eliminates unwind hacks for fixed-format types, enables contract-driven validation, foundation for formally verified LLM tool chains
+
+---
+
 TOTAL_VERIFICATION_PLAN.md
