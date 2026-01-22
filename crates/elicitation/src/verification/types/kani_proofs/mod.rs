@@ -47,6 +47,9 @@ mod ipaddr_bytes;
 mod macaddr;
 mod socketaddr;
 
+#[cfg(unix)]
+mod pathbytes;
+
 #[cfg(feature = "uuid")]
 mod uuid_bytes;
 

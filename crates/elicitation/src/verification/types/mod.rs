@@ -32,6 +32,7 @@ mod uuid_bytes;
 mod ipaddr_bytes;
 mod macaddr;
 mod socketaddr;
+mod pathbytes;
 mod integers;
 mod floats;
 mod strings;
@@ -97,6 +98,13 @@ pub use socketaddr::{
     SocketAddrV4Unprivileged, SocketAddrV6Unprivileged,
     is_well_known_port, is_registered_port, is_dynamic_port,
     is_privileged_port, is_nonzero_port,
+};
+
+// Path Foundation (Unix)
+#[cfg(unix)]
+pub use pathbytes::{
+    PathBytes, PathAbsolute, PathRelative, PathNonEmpty,
+    has_null_byte, is_absolute, is_relative,
 };
 
 // Integers
@@ -455,6 +463,18 @@ pub enum ValidationError {
     /// Port number is privileged (< 1024).
     #[display("Port must be unprivileged (>= 1024), got {}", _0)]
     PortIsPrivileged(u16),
+
+    /// Path contains null byte (invalid on Unix).
+    #[display("Path contains null byte")]
+    PathContainsNull,
+
+    /// Path is not absolute (does not start with /).
+    #[display("Path must be absolute (start with /), got: {}", _0)]
+    PathNotAbsolute(String),
+
+    /// Path is not relative (starts with /).
+    #[display("Path must be relative (not start with /), got: {}", _0)]
+    PathNotRelative(String),
 
     /// UTF-8 validation failed.
     #[display("Invalid UTF-8 byte sequence")]
