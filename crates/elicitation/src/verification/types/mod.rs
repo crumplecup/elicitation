@@ -30,6 +30,7 @@ pub trait ValidatesType<T> {
 mod utf8;
 mod uuid_bytes;
 mod ipaddr_bytes;
+mod macaddr;
 mod integers;
 mod floats;
 mod strings;
@@ -79,6 +80,12 @@ pub use ipaddr_bytes::{
     Ipv4Bytes, Ipv4Private, Ipv4Public,
     Ipv6Bytes, Ipv6Private, Ipv6Public,
     is_ipv4_private, is_ipv6_private,
+};
+
+// MAC Address Foundation
+pub use macaddr::{
+    MacAddr, MacUnicast, MacMulticast, MacUniversal, MacLocal,
+    is_unicast, is_multicast, is_universal, is_local,
 };
 
 // Integers
@@ -409,6 +416,22 @@ pub enum ValidationError {
     /// UUID variant bits are invalid (not RFC 4122 10xx pattern).
     #[display("Invalid UUID variant bits")]
     InvalidUuidVariant,
+
+    /// MAC address is not unicast (is multicast).
+    #[display("MAC address must be unicast, got {}", _0)]
+    NotUnicastMac(String),
+
+    /// MAC address is not multicast (is unicast).
+    #[display("MAC address must be multicast, got {}", _0)]
+    NotMulticastMac(String),
+
+    /// MAC address is not universal (is locally administered).
+    #[display("MAC address must be universal (IEEE assigned), got {}", _0)]
+    NotUniversalMac(String),
+
+    /// MAC address is not locally administered (is universal).
+    #[display("MAC address must be locally administered, got {}", _0)]
+    NotLocalMac(String),
 
     /// UTF-8 validation failed.
     #[display("Invalid UTF-8 byte sequence")]
