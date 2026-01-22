@@ -3,14 +3,23 @@
 //! This module contains formal verification proofs using the Kani model checker.
 //! Each proof harness verifies that contract invariants hold by construction.
 //!
+//! # Global Configuration
+//!
+//! Run with global unwind bound to prevent memchr infinite loops:
+//! ```bash
+//! cargo kani --package elicitation --features verify-kani -- --default-unwind 20
+//! ```
+//!
+//! Individual harnesses can override with `#[kani::unwind(N)]`.
+//!
 //! # Running Proofs
 //!
 //! ```bash
 //! # Run all Kani proofs
-//! cargo kani --package elicitation
+//! cargo kani --package elicitation --features verify-kani -- --default-unwind 20
 //!
 //! # Run specific proof
-//! cargo kani --package elicitation --harness verify_i8_positive
+//! cargo kani --package elicitation --features verify-kani --harness verify_i8_positive
 //! ```
 //!
 //! # Proof Strategy

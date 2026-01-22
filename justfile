@@ -557,11 +557,11 @@ _status-verus:
 verify-kani harness="":
     #!/usr/bin/env bash
     if [ -z "{{harness}}" ]; then
-        echo "🔬 Running all Kani verifications..."
-        cargo kani --features verify-kani
+        echo "🔬 Running all Kani verifications with default unwind bound..."
+        cargo kani --features verify-kani --default-unwind 20
     else
         echo "🔬 Running Kani harness: {{harness}}"
-        cargo kani --harness {{harness}} --features verify-kani
+        cargo kani --harness {{harness}} --features verify-kani --default-unwind 20
     fi
 
 # Run Prusti verification
