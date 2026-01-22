@@ -42,6 +42,7 @@ fn verify_vec_all_satisfy() {
 }
 
 #[kani::proof]
+#[kani::unwind(10)] // HashMap operations with strings
 fn verify_hashmap_non_empty() {
     use std::collections::HashMap;
     
@@ -50,12 +51,13 @@ fn verify_hashmap_non_empty() {
     assert!(result.is_err(), "Empty map rejected");
     
     let mut non_empty = HashMap::new();
-    non_empty.insert(1, "value".to_string());
+    non_empty.insert(1, String::from("a")); // Use String::from instead of to_string
     let result = HashMapNonEmpty::new(non_empty);
     assert!(result.is_ok(), "Non-empty map accepted");
 }
 
 #[kani::proof]
+#[kani::unwind(10)] // BTreeMap operations with strings
 fn verify_btreemap_non_empty() {
     use std::collections::BTreeMap;
     
@@ -64,7 +66,7 @@ fn verify_btreemap_non_empty() {
     assert!(result.is_err(), "Empty BTreeMap rejected");
     
     let mut non_empty = BTreeMap::new();
-    non_empty.insert(1, "value".to_string());
+    non_empty.insert(1, String::from("a"));
     let result = BTreeMapNonEmpty::new(non_empty);
     assert!(result.is_ok(), "Non-empty BTreeMap accepted");
 }
@@ -158,13 +160,14 @@ fn verify_rc_satisfies() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(10)] // Result with String error
 fn verify_result_ok() {
     let ok_val = 42i32;
     let result: Result<i32, String> = Ok(ok_val);
     let wrapped = ResultOk::new(result);
     assert!(wrapped.is_ok(), "Ok variant accepted");
     
-    let err_val: Result<i32, String> = Err("error".to_string());
+    let err_val: Result<i32, String> = Err(String::from("e")); // Simplified string
     let wrapped = ResultOk::new(err_val);
     assert!(wrapped.is_err(), "Err variant rejected");
 }
