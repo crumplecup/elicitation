@@ -1,71 +1,155 @@
 //! URL byte validation following RFC 3986.
 //!
-//! This module provides byte-level validation for URLs, demonstrating that
-//! complex parsing can be verified tractably by breaking it into simple
-//! constraint checks.
+//! This module provides byte-level validation for URLs using bounded components,
+//! demonstrating that complex parsing can be verified tractably by decomposing
+//! into constrained, bounded types.
 
 use crate::verification::types::{ValidationError, Utf8Bytes};
 
 // ============================================================================
-// Core Types
+// Bounded Component Types
 // ============================================================================
 
-/// Validated URL bytes (RFC 3986 syntax).
+/// URL scheme with bounded length (e.g., "http", "https", "ftp").
 ///
-/// Validates:
-/// - Valid UTF-8 (reuses Utf8Bytes foundation)
-/// - RFC 3986 URL syntax (scheme, authority, path, query, fragment)
-/// - Balanced delimiters and proper encoding
+/// RFC 3986: scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UrlBytes<const MAX_LEN: usize = 2048> {
+pub struct SchemeBytes<const MAX_LEN: usize = 32> {
     utf8: Utf8Bytes<MAX_LEN>,
-    components: UrlComponents,
 }
 
-/// Parsed URL components (byte offsets).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct UrlComponents {
-    /// Scheme end position (before ':')
-    scheme_end: usize,
-    /// Authority start (after '//')
-    authority_start: Option<usize>,
-    /// Authority end (before '/', '?', '#', or end)
-    authority_end: Option<usize>,
-    /// Path start
-    path_start: usize,
-    /// Query start (after '?')
-    query_start: Option<usize>,
-    /// Fragment start (after '#')
-    fragment_start: Option<usize>,
+impl<const MAX_LEN: usize> SchemeBytes<MAX_LEN> {
+    /// Create validated scheme from slice.
+    ///
+    /// RFC 3986 constraints:
+    /// - Must start with letter
+    /// - Contains only letters, digits, +, -, .
+    pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
+        let len = bytes.len();
+        
+        if len == 0 {
+            return Err(ValidationError::InvalidUrlSyntax);
+        }
+        
+        if len > MAX_LEN {
+            return Err(ValidationError::TooLong {
+                max: MAX_LEN,
+                actual: len,
+            });
+        }
+        
+        // For Kani: assert len is bounded to enable tractable verification
+        #[cfg(kani)]
+        kani::assume(len <= MAX_LEN);
+        
+        // First character must be letter
+        if !bytes[0].is_ascii_alphabetic() {
+            return Err(ValidationError::InvalidUrlSyntax);
+        }
+        
+        // Validate all characters (manual loop for Kani)
+        let mut i = 0;
+        while i < len {
+            if !is_valid_scheme_char(bytes[i]) {
+                return Err(ValidationError::InvalidUrlSyntax);
+            }
+            i += 1;
+        }
+        
+        // Copy to fixed array
+        let mut fixed = [0u8; MAX_LEN];
+        fixed[..len].copy_from_slice(bytes);
+        
+        let utf8 = Utf8Bytes::new(fixed, len)?;
+        Ok(Self { utf8 })
+    }
+    
+    /// Get scheme as string slice.
+    pub fn as_str(&self) -> &str {
+        self.utf8.as_str()
+    }
+    
+    /// Check if scheme is HTTP or HTTPS.
+    pub fn is_http(&self) -> bool {
+        let s = self.as_str();
+        s == "http" || s == "https"
+    }
 }
 
-// ============================================================================
-// Contract Types
-// ============================================================================
-
-/// URL with authority (has //).
+/// URL authority with bounded length (e.g., "example.com:8080").
+///
+/// RFC 3986: authority = [ userinfo "@" ] host [ ":" port ]
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UrlWithAuthority<const MAX_LEN: usize = 2048> {
-    url: UrlBytes<MAX_LEN>,
+pub struct AuthorityBytes<const MAX_LEN: usize = 256> {
+    utf8: Utf8Bytes<MAX_LEN>,
 }
 
-/// Absolute URL (has scheme + authority).
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UrlAbsolute<const MAX_LEN: usize = 2048> {
-    url: UrlBytes<MAX_LEN>,
-}
-
-/// URL with HTTP/HTTPS scheme.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UrlHttp<const MAX_LEN: usize = 2048> {
-    url: UrlBytes<MAX_LEN>,
+impl<const MAX_LEN: usize> AuthorityBytes<MAX_LEN> {
+    /// Create validated authority from slice.
+    pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
+        let len = bytes.len();
+        
+        if len > MAX_LEN {
+            return Err(ValidationError::TooLong {
+                max: MAX_LEN,
+                actual: len,
+            });
+        }
+        
+        // Copy to fixed array
+        let mut fixed = [0u8; MAX_LEN];
+        if len > 0 {
+            fixed[..len].copy_from_slice(bytes);
+        }
+        
+        let utf8 = Utf8Bytes::new(fixed, len)?;
+        Ok(Self { utf8 })
+    }
+    
+    /// Get authority as string slice.
+    pub fn as_str(&self) -> &str {
+        self.utf8.as_str()
+    }
+    
+    /// Check if authority is empty.
+    pub fn is_empty(&self) -> bool {
+        self.utf8.is_empty()
+    }
 }
 
 // ============================================================================
-// UrlBytes Implementation
+// Core URL Type (Bounded Components)
 // ============================================================================
 
-impl<const MAX_LEN: usize> UrlBytes<MAX_LEN> {
+/// Validated URL bytes with bounded components (RFC 3986 syntax).
+///
+/// Architecture:
+/// - Scheme: Bounded, validated per RFC 3986
+/// - Authority: Bounded, optional
+/// - Path/Query/Fragment: Stored as offsets into original buffer
+///
+/// This enables tractable Kani proofs by bounding component exploration.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UrlBytes<
+    const SCHEME_MAX: usize = 32,
+    const AUTHORITY_MAX: usize = 256,
+    const MAX_LEN: usize = 2048,
+> {
+    /// Full URL (UTF-8 validated)
+    utf8: Utf8Bytes<MAX_LEN>,
+    /// Validated scheme
+    scheme: SchemeBytes<SCHEME_MAX>,
+    /// Optional authority
+    authority: Option<AuthorityBytes<AUTHORITY_MAX>>,
+}
+
+// ============================================================================
+// URL Implementation
+// ============================================================================
+
+impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
+    UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+{
     /// Create from byte slice (Kani-friendly, no Vec allocation).
     ///
     /// Returns `ValidationError::InvalidUtf8` if not valid UTF-8.
@@ -81,24 +165,18 @@ impl<const MAX_LEN: usize> UrlBytes<MAX_LEN> {
             });
         }
         
-        // Copy to fixed array (Kani's native domain!)
+        // Copy to fixed array and validate UTF-8
         let mut fixed = [0u8; MAX_LEN];
         fixed[..len].copy_from_slice(bytes);
-        
-        // Validate UTF-8 (reuse foundation!)
         let utf8 = Utf8Bytes::new(fixed, len)?;
         
-        // Parse and validate URL syntax
-        let components = parse_url_components(utf8.as_str())?;
+        // Parse components (bounded)
+        let (scheme, authority) = parse_url_bounded::<SCHEME_MAX, AUTHORITY_MAX>(bytes)?;
         
-        Ok(Self { utf8, components })
+        Ok(Self { utf8, scheme, authority })
     }
     
     /// Create from Vec (user-facing API, delegates to from_slice).
-    ///
-    /// Returns `ValidationError::InvalidUtf8` if not valid UTF-8.
-    /// Returns `ValidationError::TooLong` if exceeds MAX_LEN.
-    /// Returns `ValidationError::InvalidUrlSyntax` if invalid RFC 3986 syntax.
     pub fn new(bytes: Vec<u8>) -> Result<Self, ValidationError> {
         Self::from_slice(&bytes)
     }
@@ -123,28 +201,24 @@ impl<const MAX_LEN: usize> UrlBytes<MAX_LEN> {
         self.utf8.is_empty()
     }
     
-    /// Get the scheme (e.g., "http", "https", "ftp").
+    /// Get the scheme.
     pub fn scheme(&self) -> &str {
-        &self.as_str()[..self.components.scheme_end]
+        self.scheme.as_str()
     }
     
-    /// Get the authority if present (e.g., "example.com:8080").
+    /// Get the authority if present.
     pub fn authority(&self) -> Option<&str> {
-        match (self.components.authority_start, self.components.authority_end) {
-            (Some(start), Some(end)) => Some(&self.as_str()[start..end]),
-            _ => None,
-        }
+        self.authority.as_ref().map(|a| a.as_str())
     }
     
     /// Check if URL has authority (starts with //).
     pub fn has_authority(&self) -> bool {
-        self.components.authority_start.is_some()
+        self.authority.is_some()
     }
     
     /// Check if URL has HTTP or HTTPS scheme.
     pub fn is_http(&self) -> bool {
-        let scheme = self.scheme();
-        scheme == "http" || scheme == "https"
+        self.scheme.is_http()
     }
     
     /// Convert to String.
@@ -154,10 +228,22 @@ impl<const MAX_LEN: usize> UrlBytes<MAX_LEN> {
 }
 
 // ============================================================================
-// Contract Type Implementations
+// Contract Types
 // ============================================================================
 
-impl<const MAX_LEN: usize> UrlWithAuthority<MAX_LEN> {
+/// URL with authority (has //).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UrlWithAuthority<
+    const SCHEME_MAX: usize = 32,
+    const AUTHORITY_MAX: usize = 256,
+    const MAX_LEN: usize = 2048,
+> {
+    url: UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>,
+}
+
+impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
+    UrlWithAuthority<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+{
     /// Create from byte slice (Kani-friendly).
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let url = UrlBytes::from_slice(bytes)?;
@@ -175,12 +261,24 @@ impl<const MAX_LEN: usize> UrlWithAuthority<MAX_LEN> {
     }
     
     /// Get the underlying URL.
-    pub fn url(&self) -> &UrlBytes<MAX_LEN> {
+    pub fn url(&self) -> &UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN> {
         &self.url
     }
 }
 
-impl<const MAX_LEN: usize> UrlAbsolute<MAX_LEN> {
+/// Absolute URL (has scheme + authority).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UrlAbsolute<
+    const SCHEME_MAX: usize = 32,
+    const AUTHORITY_MAX: usize = 256,
+    const MAX_LEN: usize = 2048,
+> {
+    url: UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>,
+}
+
+impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
+    UrlAbsolute<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+{
     /// Create from byte slice (Kani-friendly).
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let url = UrlBytes::from_slice(bytes)?;
@@ -198,12 +296,24 @@ impl<const MAX_LEN: usize> UrlAbsolute<MAX_LEN> {
     }
     
     /// Get the underlying URL.
-    pub fn url(&self) -> &UrlBytes<MAX_LEN> {
+    pub fn url(&self) -> &UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN> {
         &self.url
     }
 }
 
-impl<const MAX_LEN: usize> UrlHttp<MAX_LEN> {
+/// URL with HTTP/HTTPS scheme.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct UrlHttp<
+    const SCHEME_MAX: usize = 32,
+    const AUTHORITY_MAX: usize = 256,
+    const MAX_LEN: usize = 2048,
+> {
+    url: UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>,
+}
+
+impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
+    UrlHttp<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+{
     /// Create from byte slice (Kani-friendly).
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let url = UrlBytes::from_slice(bytes)?;
@@ -221,77 +331,57 @@ impl<const MAX_LEN: usize> UrlHttp<MAX_LEN> {
     }
     
     /// Get the underlying URL.
-    pub fn url(&self) -> &UrlBytes<MAX_LEN> {
+    pub fn url(&self) -> &UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN> {
         &self.url
     }
 }
 
 // ============================================================================
-// URL Parsing and Validation
+// Bounded URL Parsing
 // ============================================================================
 
-/// Parse URL components following RFC 3986.
-///
-/// RFC 3986 syntax:
-/// ```text
-/// URI = scheme ":" hier-part [ "?" query ] [ "#" fragment ]
-/// hier-part = "//" authority path-abempty
-///           / path-absolute
-///           / path-rootless
-///           / path-empty
-/// ```
-fn parse_url_components(url: &str) -> Result<UrlComponents, ValidationError> {
-    let bytes = url.as_bytes();
-    let len = bytes.len();
-    
-    if len == 0 {
-        return Err(ValidationError::InvalidUrlSyntax);
-    }
-    
-    // Parse scheme (before first ':')
-    let scheme_end = find_scheme_end(bytes)?;
-    
-    // Check for authority (//)
-    let (authority_start, authority_end, path_start) = if scheme_end + 2 < len
-        && bytes[scheme_end + 1] == b'/'
-        && bytes[scheme_end + 2] == b'/'
-    {
-        let auth_start = scheme_end + 3;
-        let (auth_end, path) = find_authority_end(bytes, auth_start);
-        (Some(auth_start), Some(auth_end), path)
-    } else {
-        // No authority, path starts after ':'
-        (None, None, scheme_end + 1)
-    };
-    
-    // Find query (after '?')
-    let query_start = find_char(bytes, b'?', path_start);
-    
-    // Find fragment (after '#')
-    let fragment_start = find_char(bytes, b'#', path_start);
-    
-    Ok(UrlComponents {
-        scheme_end,
-        authority_start,
-        authority_end,
-        path_start,
-        query_start,
-        fragment_start,
-    })
-}
-
-/// Find the end of the scheme (position of first ':').
-fn find_scheme_end(bytes: &[u8]) -> Result<usize, ValidationError> {
+/// Parse URL into bounded components.
+/// Parse URL into bounded components.
+fn parse_url_bounded<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize>(
+    bytes: &[u8],
+) -> Result<(SchemeBytes<SCHEME_MAX>, Option<AuthorityBytes<AUTHORITY_MAX>>), ValidationError> {
     if bytes.is_empty() {
         return Err(ValidationError::InvalidUrlSyntax);
     }
     
-    // Scheme must start with letter
-    if !bytes[0].is_ascii_alphabetic() {
+    // Find scheme end (before ':')
+    let scheme_end = find_scheme_end(bytes)?;
+    
+    // Extract scheme into bounded buffer
+    let scheme = SchemeBytes::from_slice(&bytes[..scheme_end])?;
+    
+    // Check for authority (//)
+    let authority = if scheme_end + 2 < bytes.len()
+        && bytes[scheme_end + 1] == b'/'
+        && bytes[scheme_end + 2] == b'/'
+    {
+        let auth_start = scheme_end + 3;
+        let auth_end = find_authority_end(bytes, auth_start);
+        
+        if auth_end > auth_start {
+            Some(AuthorityBytes::from_slice(&bytes[auth_start..auth_end])?)
+        } else {
+            // Empty authority is valid (e.g., file:///)
+            Some(AuthorityBytes::from_slice(&[])?)
+        }
+    } else {
+        None
+    };
+    
+    Ok((scheme, authority))
+}
+
+/// Find the end of the scheme (position of first ':').
+fn find_scheme_end(bytes: &[u8]) -> Result<usize, ValidationError> {
+    if bytes.is_empty() || !bytes[0].is_ascii_alphabetic() {
         return Err(ValidationError::InvalidUrlSyntax);
     }
     
-    // Find ':'
     let mut i = 1;
     while i < bytes.len() {
         let ch = bytes[i];
@@ -300,8 +390,7 @@ fn find_scheme_end(bytes: &[u8]) -> Result<usize, ValidationError> {
             return Ok(i);
         }
         
-        // Scheme chars: letter, digit, '+', '-', '.'
-        if !ch.is_ascii_alphanumeric() && ch != b'+' && ch != b'-' && ch != b'.' {
+        if !is_valid_scheme_char(ch) {
             return Err(ValidationError::InvalidUrlSyntax);
         }
         
@@ -312,7 +401,7 @@ fn find_scheme_end(bytes: &[u8]) -> Result<usize, ValidationError> {
 }
 
 /// Find the end of authority and start of path.
-fn find_authority_end(bytes: &[u8], start: usize) -> (usize, usize) {
+fn find_authority_end(bytes: &[u8], start: usize) -> usize {
     let mut i = start;
     
     while i < bytes.len() {
@@ -320,28 +409,19 @@ fn find_authority_end(bytes: &[u8], start: usize) -> (usize, usize) {
         
         // Authority ends at '/', '?', '#'
         if ch == b'/' || ch == b'?' || ch == b'#' {
-            return (i, i);
+            return i;
         }
         
         i += 1;
     }
     
     // Authority extends to end
-    (bytes.len(), bytes.len())
+    bytes.len()
 }
 
-/// Find first occurrence of char after start position.
-fn find_char(bytes: &[u8], target: u8, start: usize) -> Option<usize> {
-    let mut i = start;
-    
-    while i < bytes.len() {
-        if bytes[i] == target {
-            return Some(i);
-        }
-        i += 1;
-    }
-    
-    None
+/// Check if character is valid in scheme.
+fn is_valid_scheme_char(b: u8) -> bool {
+    b.is_ascii_alphanumeric() || b == b'+' || b == b'-' || b == b'.'
 }
 
 // ============================================================================
@@ -354,7 +434,7 @@ mod tests {
 
     #[test]
     fn test_valid_http_url() {
-        let url = UrlBytes::<2048>::new(b"http://example.com".to_vec()).unwrap();
+        let url = UrlBytes::<32, 256, 2048>::from_slice(b"http://example.com").unwrap();
         assert_eq!(url.scheme(), "http");
         assert_eq!(url.authority(), Some("example.com"));
         assert!(url.has_authority());
@@ -363,7 +443,7 @@ mod tests {
 
     #[test]
     fn test_valid_https_url_with_path() {
-        let url = UrlBytes::<2048>::new(b"https://example.com/path".to_vec()).unwrap();
+        let url = UrlBytes::<32, 256, 2048>::from_slice(b"https://example.com/path").unwrap();
         assert_eq!(url.scheme(), "https");
         assert_eq!(url.authority(), Some("example.com"));
         assert!(url.is_http());
@@ -371,71 +451,71 @@ mod tests {
 
     #[test]
     fn test_url_with_port() {
-        let url = UrlBytes::<2048>::new(b"http://example.com:8080/".to_vec()).unwrap();
+        let url = UrlBytes::<32, 256, 2048>::from_slice(b"http://example.com:8080/").unwrap();
         assert_eq!(url.scheme(), "http");
         assert_eq!(url.authority(), Some("example.com:8080"));
     }
 
     #[test]
     fn test_url_with_query() {
-        let url = UrlBytes::<2048>::new(b"http://example.com?key=value".to_vec()).unwrap();
+        let url = UrlBytes::<32, 256, 2048>::from_slice(b"http://example.com?key=value").unwrap();
         assert_eq!(url.scheme(), "http");
         assert!(url.has_authority());
     }
 
     #[test]
     fn test_url_with_fragment() {
-        let url = UrlBytes::<2048>::new(b"http://example.com#section".to_vec()).unwrap();
+        let url = UrlBytes::<32, 256, 2048>::from_slice(b"http://example.com#section").unwrap();
         assert_eq!(url.scheme(), "http");
     }
 
     #[test]
     fn test_ftp_url() {
-        let url = UrlBytes::<2048>::new(b"ftp://ftp.example.com/file.txt".to_vec()).unwrap();
+        let url = UrlBytes::<32, 256, 2048>::from_slice(b"ftp://ftp.example.com/file.txt").unwrap();
         assert_eq!(url.scheme(), "ftp");
         assert!(!url.is_http());
     }
 
     #[test]
     fn test_file_url() {
-        let url = UrlBytes::<2048>::new(b"file:///path/to/file".to_vec()).unwrap();
+        let url = UrlBytes::<32, 256, 2048>::from_slice(b"file:///path/to/file").unwrap();
         assert_eq!(url.scheme(), "file");
         assert!(url.has_authority());
     }
 
     #[test]
     fn test_invalid_scheme_start() {
-        let result = UrlBytes::<2048>::new(b"1http://example.com".to_vec());
+        let result = UrlBytes::<32, 256, 2048>::from_slice(b"1http://example.com");
         assert!(result.is_err());
     }
 
     #[test]
     fn test_missing_scheme() {
-        let result = UrlBytes::<2048>::new(b"//example.com".to_vec());
+        let result = UrlBytes::<32, 256, 2048>::from_slice(b"//example.com");
         assert!(result.is_err());
     }
 
     #[test]
     fn test_url_with_authority_contract() {
-        let url = UrlWithAuthority::<2048>::new(b"http://example.com".to_vec()).unwrap();
+        let url = UrlWithAuthority::<32, 256, 2048>::from_slice(b"http://example.com").unwrap();
         assert!(url.url().has_authority());
     }
 
     #[test]
     fn test_url_without_authority_rejected() {
-        let result = UrlWithAuthority::<2048>::new(b"mailto:test@example.com".to_vec());
+        let result = UrlWithAuthority::<32, 256, 2048>::from_slice(b"mailto:test@example.com");
         assert!(result.is_err());
     }
 
     #[test]
     fn test_url_http_contract() {
-        let url = UrlHttp::<2048>::new(b"https://example.com".to_vec()).unwrap();
+        let url = UrlHttp::<32, 256, 2048>::from_slice(b"https://example.com").unwrap();
         assert!(url.url().is_http());
     }
 
     #[test]
     fn test_non_http_rejected() {
-        let result = UrlHttp::<2048>::new(b"ftp://example.com".to_vec());
+        let result = UrlHttp::<32, 256, 2048>::from_slice(b"ftp://example.com");
         assert!(result.is_err());
     }
 }

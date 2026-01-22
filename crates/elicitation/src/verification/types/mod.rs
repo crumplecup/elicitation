@@ -34,6 +34,7 @@ mod macaddr;
 mod socketaddr;
 mod pathbytes;
 mod urlbytes;
+mod regexbytes;
 mod integers;
 mod floats;
 mod strings;
@@ -110,7 +111,13 @@ pub use pathbytes::{
 
 // URL Foundation
 pub use urlbytes::{
-    UrlBytes, UrlComponents, UrlWithAuthority, UrlAbsolute, UrlHttp,
+    UrlBytes, UrlWithAuthority, UrlAbsolute, UrlHttp,
+    SchemeBytes, AuthorityBytes,
+};
+
+// Regex Foundation
+pub use regexbytes::{
+    RegexBytes, BalancedDelimiters, ValidEscapes, ValidQuantifiers, ValidCharClass,
 };
 
 // Integers
@@ -437,6 +444,10 @@ pub enum ValidationError {
     /// URL scheme is not HTTP.
     #[display("URL must use HTTP or HTTPS scheme")]
     UrlNotHttp,
+    
+    /// Regex syntax is invalid.
+    #[display("Regex syntax is invalid")]
+    InvalidRegexSyntax,
 
     /// URL has no host component.
     #[display("URL must have a host")]

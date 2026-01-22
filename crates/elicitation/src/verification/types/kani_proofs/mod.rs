@@ -47,6 +47,7 @@ mod ipaddr_bytes;
 mod macaddr;
 mod socketaddr;
 mod urlbytes;
+mod regexbytes;
 
 #[cfg(unix)]
 mod pathbytes;
