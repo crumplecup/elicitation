@@ -1,5 +1,7 @@
 //! Creusot verification example - demonstrates deductive verification with prophecy variables.
 
+#![cfg(feature = "verify-creusot")]
+
 use elicitation::verification::{Contract, creusot::Tool};
 use elicitation::ElicitResult;
 

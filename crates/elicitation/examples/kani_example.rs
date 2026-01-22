@@ -7,13 +7,15 @@
 //!
 //! Run with:
 //! ```bash
-//! cargo run --example kani_example
+//! cargo run --example kani_example --features verify-kani
 //! ```
 //!
 //! Verify with Kani:
 //! ```bash
 //! cargo kani --example kani_example
 //! ```
+
+#![cfg(feature = "verify-kani")]
 
 use elicitation::verification::{Contract, kani::Tool};
 use elicitation::{Elicit, ElicitResult, Elicitation};
