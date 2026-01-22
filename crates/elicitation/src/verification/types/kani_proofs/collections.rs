@@ -27,6 +27,7 @@ fn verify_vec_non_empty() {
 }
 
 #[kani::proof]
+#[kani::unwind(5)] // Small vector bound
 fn verify_vec_all_satisfy() {
     // Prove compositional property
     let vec_positive = vec![1i8, 2, 3];
@@ -900,6 +901,7 @@ fn verify_naive_datetime_after() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(5)] // Array size 3 + bounds checking
 fn verify_array_all_satisfy() {
     // Prove for small fixed-size array
     let arr = [
