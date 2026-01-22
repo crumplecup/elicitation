@@ -106,6 +106,7 @@ impl<const MAX_LEN: usize> Utf8Bytes<MAX_LEN> {
 /// # Kani Verification
 ///
 /// This function is designed to be verified symbolically by Kani for bounded inputs.
+/// Proofs should use small bounds (e.g., 10 bytes) to keep verification tractable.
 #[inline]
 pub fn is_valid_utf8(bytes: &[u8]) -> bool {
     let mut i = 0;

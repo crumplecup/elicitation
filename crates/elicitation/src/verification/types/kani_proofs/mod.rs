@@ -41,6 +41,8 @@ mod durations;
 mod networks;
 mod collections;
 mod mechanisms;
+mod utf8;
+mod utf8_benchmark;
 
 #[cfg(feature = "url")]
 mod urls;

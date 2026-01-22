@@ -49,6 +49,7 @@ elicitation_macros = { path = "../elicitation_macros" }
 tokio-test = { workspace = true }
 tracing-subscriber = { workspace = true }
 uuid = { workspace = true }
+criterion = { workspace = true }
 
 [features]
 default = []
@@ -80,3 +81,7 @@ kani-verifier = []
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
+
+[[bench]]
+name = "kani_scaling"
+harness = false
