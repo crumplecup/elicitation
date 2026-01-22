@@ -73,18 +73,25 @@ fn verify_ipv6_loopback() {
 
 #[cfg(feature = "uuid")]
 #[kani::proof]
+#[kani::unwind(500)] // UUID operations have deep loops
 fn verify_uuid_v4() {
     use uuid::Uuid;
     
-    // UUIDs require complex byte patterns, test with concrete examples
-    let v4_uuid = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
-    let result = UuidV4::new(v4_uuid);
-    // Note: This particular UUID is actually v1 format, so should reject
-    // A real v4 UUID has specific version bits
+    // Use from_bytes to avoid parse_str string parsing loops
+    let v4_bytes = [
+        0x55, 0x0e, 0x84, 0x00,
+        0xe2, 0x9b, 0x41, 0xd4,
+        0xa7, 0x16, 0x44, 0x66,
+        0x55, 0x44, 0x00, 0x00,
+    ];
+    let v4_uuid = Uuid::from_bytes(v4_bytes);
+    let _result = UuidV4::new(v4_uuid);
+    // Note: from_bytes doesn't validate version bits
 }
 
 #[cfg(feature = "uuid")]
 #[kani::proof]
+#[kani::unwind(500)] // UUID operations have deep loops
 fn verify_uuid_non_nil() {
     use uuid::Uuid;
     
@@ -92,7 +99,14 @@ fn verify_uuid_non_nil() {
     let result = UuidNonNil::new(nil_uuid);
     assert!(result.is_err(), "Nil UUID rejected");
     
-    let non_nil = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
+    // Use from_bytes to avoid parse_str
+    let non_nil_bytes = [
+        0x55, 0x0e, 0x84, 0x00,
+        0xe2, 0x9b, 0x41, 0xd4,
+        0xa7, 0x16, 0x44, 0x66,
+        0x55, 0x44, 0x00, 0x01,
+    ];
+    let non_nil = Uuid::from_bytes(non_nil_bytes);
     let result = UuidNonNil::new(non_nil);
     assert!(result.is_ok(), "Non-nil UUID accepted");
 }
