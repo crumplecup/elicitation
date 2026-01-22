@@ -635,6 +635,146 @@ kani-benchmark:
     fi
     ./scripts/kani_marginal_cost.sh
 
+# Benchmark all verification types (component proofs)
+# Fast proofs: UUID, IP, MAC, SocketAddr, PathBuf, URL components, Regex layers
+benchmark-verification:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    
+    echo "🔬 Verification Benchmark Suite"
+    echo "================================="
+    echo ""
+    echo "Benchmarks tractable Kani proofs across all validation types."
+    echo "Each proof completes in seconds (0.04s - 8s)."
+    echo ""
+    echo "Expected total time: 2-5 minutes"
+    echo "Output: verification_benchmark.csv"
+    echo ""
+    
+    OUTPUT="verification_benchmark.csv"
+    
+    # CSV header
+    echo "Type,Harness,Time_Seconds,Status" > "$OUTPUT"
+    
+    # UUID proofs (14 proofs, ~2s each)
+    echo "📦 UUID proofs..."
+    for harness in verify_valid_variant_accepted verify_v4_valid_construction verify_v4_roundtrip; do
+        echo -n "  $harness... "
+        START=$(date +%s.%N)
+        if cargo kani --harness "$harness" --features verify-kani --default-unwind 20 &>/dev/null; then
+            END=$(date +%s.%N)
+            TIME=$(echo "$END - $START" | bc)
+            echo "✅ ${TIME}s"
+            echo "UUID,$harness,$TIME,SUCCESS" >> "$OUTPUT"
+        else
+            echo "❌ FAILED"
+            echo "UUID,$harness,0,FAILED" >> "$OUTPUT"
+        fi
+    done
+    
+    # IP address proofs (21 proofs, ~2-3s each)
+    echo "📦 IP address proofs..."
+    for harness in verify_ipv4_10_network_is_private verify_ipv4_public_valid verify_ipv6_fc00_is_private; do
+        echo -n "  $harness... "
+        START=$(date +%s.%N)
+        if cargo kani --harness "$harness" --features verify-kani --default-unwind 20 &>/dev/null; then
+            END=$(date +%s.%N)
+            TIME=$(echo "$END - $START" | bc)
+            echo "✅ ${TIME}s"
+            echo "IP,$harness,$TIME,SUCCESS" >> "$OUTPUT"
+        else
+            echo "❌ FAILED"
+            echo "IP,$harness,0,FAILED" >> "$OUTPUT"
+        fi
+    done
+    
+    # MAC address proofs (18 proofs, 0.07s - 8s)
+    echo "📦 MAC address proofs..."
+    for harness in verify_unicast_detection verify_multicast_detection verify_universal_detection; do
+        echo -n "  $harness... "
+        START=$(date +%s.%N)
+        if cargo kani --harness "$harness" --features verify-kani --default-unwind 20 &>/dev/null; then
+            END=$(date +%s.%N)
+            TIME=$(echo "$END - $START" | bc)
+            echo "✅ ${TIME}s"
+            echo "MAC,$harness,$TIME,SUCCESS" >> "$OUTPUT"
+        else
+            echo "❌ FAILED"
+            echo "MAC,$harness,0,FAILED" >> "$OUTPUT"
+        fi
+    done
+    
+    # SocketAddr proofs (19 proofs, ~2s each)
+    echo "📦 SocketAddr proofs..."
+    for harness in verify_well_known_port_range verify_socketaddrv4_nonzero_valid; do
+        echo -n "  $harness... "
+        START=$(date +%s.%N)
+        if cargo kani --harness "$harness" --features verify-kani --default-unwind 20 &>/dev/null; then
+            END=$(date +%s.%N)
+            TIME=$(echo "$END - $START" | bc)
+            echo "✅ ${TIME}s"
+            echo "SocketAddr,$harness,$TIME,SUCCESS" >> "$OUTPUT"
+        else
+            echo "❌ FAILED"
+            echo "SocketAddr,$harness,0,FAILED" >> "$OUTPUT"
+        fi
+    done
+    
+    # PathBuf proofs (2 proofs, ~0.04s each)
+    echo "📦 PathBuf proofs..."
+    for harness in verify_valid_ascii_no_null_accepted verify_absolute_path_starts_with_slash; do
+        echo -n "  $harness... "
+        START=$(date +%s.%N)
+        if cargo kani --harness "$harness" --features verify-kani --default-unwind 20 &>/dev/null; then
+            END=$(date +%s.%N)
+            TIME=$(echo "$END - $START" | bc)
+            echo "✅ ${TIME}s"
+            echo "PathBuf,$harness,$TIME,SUCCESS" >> "$OUTPUT"
+        else
+            echo "❌ FAILED"
+            echo "PathBuf,$harness,0,FAILED" >> "$OUTPUT"
+        fi
+    done
+    
+    # URL component proofs (5 proofs, ~6s each)
+    echo "📦 URL component proofs..."
+    for harness in verify_scheme_http verify_scheme_https verify_authority_simple; do
+        echo -n "  $harness... "
+        START=$(date +%s.%N)
+        if cargo kani --harness "$harness" --features verify-kani --default-unwind 20 &>/dev/null; then
+            END=$(date +%s.%N)
+            TIME=$(echo "$END - $START" | bc)
+            echo "✅ ${TIME}s"
+            echo "URL,$harness,$TIME,SUCCESS" >> "$OUTPUT"
+        else
+            echo "❌ FAILED"
+            echo "URL,$harness,0,FAILED" >> "$OUTPUT"
+        fi
+    done
+    
+    # Regex layer proofs (23 proofs, 1.6s - 8s)
+    echo "📦 Regex layer proofs..."
+    for harness in verify_balanced_simple verify_escape_digit verify_quantifier_range verify_charclass_range verify_regex_literal; do
+        echo -n "  $harness... "
+        START=$(date +%s.%N)
+        if cargo kani --harness "$harness" --features verify-kani --default-unwind 20 &>/dev/null; then
+            END=$(date +%s.%N)
+            TIME=$(echo "$END - $START" | bc)
+            echo "✅ ${TIME}s"
+            echo "Regex,$harness,$TIME,SUCCESS" >> "$OUTPUT"
+        else
+            echo "❌ FAILED"
+            echo "Regex,$harness,0,FAILED" >> "$OUTPUT"
+        fi
+    done
+    
+    echo ""
+    echo "✅ Benchmark complete!"
+    echo "Results: $OUTPUT"
+    echo ""
+    echo "Summary:"
+    awk -F, 'NR>1 {sum[$1]+=$3; count[$1]++} END {for (type in sum) printf "  %s: %.2fs avg (%d proofs)\n", type, sum[type]/count[type], count[type]}' "$OUTPUT" | sort
+
 # Run expensive Kani UTF-8 symbolic proofs (days to weeks)
 # WARNING: These proofs explore 3,968 to 786,432 symbolic combinations
 kani-long-proofs proof="2byte":
