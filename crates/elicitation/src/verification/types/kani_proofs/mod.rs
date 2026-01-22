@@ -43,6 +43,7 @@ mod collections;
 mod mechanisms;
 mod utf8;
 mod utf8_benchmark;
+mod ipaddr_bytes;
 
 #[cfg(feature = "uuid")]
 mod uuid_bytes;

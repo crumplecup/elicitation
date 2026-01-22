@@ -29,6 +29,7 @@ pub trait ValidatesType<T> {
 
 mod utf8;
 mod uuid_bytes;
+mod ipaddr_bytes;
 mod integers;
 mod floats;
 mod strings;
@@ -71,6 +72,13 @@ pub use utf8::{Utf8Bytes, is_valid_utf8};
 pub use uuid_bytes::{
     UuidBytes, UuidV4Bytes, UuidV7Bytes,
     has_valid_variant, has_version, is_valid_v4, is_valid_v7,
+};
+
+// IP Address Foundation
+pub use ipaddr_bytes::{
+    Ipv4Bytes, Ipv4Private, Ipv4Public,
+    Ipv6Bytes, Ipv6Private, Ipv6Public,
+    is_ipv4_private, is_ipv6_private,
 };
 
 // Integers
