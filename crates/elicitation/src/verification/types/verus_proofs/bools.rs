@@ -14,13 +14,13 @@ verus! {
 ///
 /// **Verified Properties:**
 /// - Construction succeeds ⟺ value == true
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_bool_true() {
     // Proof structure for Verus
 }
 
 /// Verify BoolFalse contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_bool_false() {
     // Proof structure for Verus
 }

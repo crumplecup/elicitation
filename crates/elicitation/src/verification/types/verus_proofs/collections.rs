@@ -32,7 +32,7 @@ verus! {
 ///     }
 /// }
 /// ```
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_vec_non_empty() {
     // Proof structure for Verus
 }
@@ -42,61 +42,61 @@ pub fn verify_vec_non_empty() {
 /// **Verified Properties:**
 /// - If all elements satisfy contract C, vec satisfies VecAllSatisfy<C>
 /// - Compositional verification
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_vec_all_satisfy() {
     // Proof structure for Verus
 }
 
 /// Verify OptionSome contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_option_some() {
     // Proof structure for Verus
 }
 
 /// Verify OptionSome rejects None.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_option_some_rejects_none() {
     // Proof structure for Verus
 }
 
 /// Verify ResultOk contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_result_ok() {
     // Proof structure for Verus
 }
 
 /// Verify HashMapNonEmpty contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_hashmap_non_empty() {
     // Proof structure for Verus
 }
 
 /// Verify BTreeMapNonEmpty contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_btreemap_non_empty() {
     // Proof structure for Verus
 }
 
 /// Verify HashSetNonEmpty contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_hashset_non_empty() {
     // Proof structure for Verus
 }
 
 /// Verify BTreeSetNonEmpty contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_btreeset_non_empty() {
     // Proof structure for Verus
 }
 
 /// Verify VecDequeNonEmpty contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_vecdeque_non_empty() {
     // Proof structure for Verus
 }
 
 /// Verify LinkedListNonEmpty contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_linkedlist_non_empty() {
     // Proof structure for Verus
 }

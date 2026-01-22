@@ -33,7 +33,7 @@ verus! {
 ///     }
 /// }
 /// ```
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_f32_finite() {
     // Proof structure for Verus
 }
@@ -43,13 +43,13 @@ pub fn verify_f32_finite() {
 /// **Verified Properties:**
 /// - Construction succeeds ⟺ (value > 0.0 && value.is_finite())
 /// - Positive implies finite
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_f32_positive() {
     // Proof structure for Verus
 }
 
 /// Verify F32NonNegative contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_f32_non_negative() {
     // Proof structure for Verus
 }

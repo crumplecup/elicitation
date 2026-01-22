@@ -19,7 +19,7 @@ verus! {
 ///
 /// **Verified Properties:**
 /// - Construction succeeds ⟺ duration > Duration::ZERO
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_duration_positive() {
     // Proof structure for Verus
 }
@@ -29,37 +29,37 @@ pub fn verify_duration_positive() {
 /// **Verified Properties:**
 /// - Construction succeeds ⟺ IP is in private range
 /// - RFC 1918 compliance
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_ip_private() {
     // Proof structure for Verus
 }
 
 /// Verify IpPublic contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_ip_public() {
     // Proof structure for Verus
 }
 
 /// Verify Ipv4Loopback contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_ipv4_loopback() {
     // Proof structure for Verus
 }
 
 /// Verify Ipv6Loopback contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_ipv6_loopback() {
     // Proof structure for Verus
 }
 
 /// Verify IpV4 contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_ipv4() {
     // Proof structure for Verus
 }
 
 /// Verify IpV6 contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_ipv6() {
     // Proof structure for Verus
 }
@@ -76,7 +76,7 @@ pub fn verify_uuid_non_nil() {
 }
 
 // PathBuf proofs (runtime validation)
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_pathbuf_contracts() {
     // Limited verification for filesystem-dependent contracts
 }

@@ -31,7 +31,7 @@ verus! {
 ///     }
 /// }
 /// ```
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_affirm_returns_boolean() {
     // Proof structure for Verus
 }
@@ -41,13 +41,13 @@ pub fn verify_affirm_returns_boolean() {
 /// **Verified Properties:**
 /// - Survey returns one of declared enum variants
 /// - Type system guarantees this
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_survey_returns_valid_variant() {
     // Proof structure for Verus
 }
 
 /// Verify SelectReturnsValidOption mechanism contract.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_select_returns_valid_option() {
     // Proof structure for Verus
 }

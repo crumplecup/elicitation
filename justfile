@@ -564,6 +564,12 @@ verify-kani harness="":
         cargo kani --harness {{harness}} --features verify-kani
     fi
 
+# Run Prusti verification
+verify-prusti:
+    @command -v cargo-prusti >/dev/null 2>&1 || (echo "❌ Prusti not installed. Run: just setup-verifiers" && exit 1)
+    @echo "🔬 Running Prusti verification..."
+    cargo-prusti --package elicitation --features verify-prusti
+
 # Run Creusot verification
 verify-creusot file="":
     #!/usr/bin/env bash
@@ -572,11 +578,37 @@ verify-creusot file="":
         exit 1
     fi
     if [ -z "{{file}}" ]; then
-        echo "Usage: just verify-creusot <file.rs>"
+        echo "❌ Usage: just verify-creusot <file.rs>"
         exit 1
     fi
     echo "🔬 Running Creusot verification on {{file}}"
     creusot verify {{file}}
+
+# Run Verus verification
+verify-verus:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    
+    # Load VERUS_PATH from .env if it exists
+    if [ -f .env ]; then
+        export $(grep -v '^#' .env | grep VERUS_PATH | xargs)
+    fi
+    
+    # Expand ~ in path
+    VERUS_BIN="${VERUS_PATH/#\~/$HOME}"
+    
+    if [ ! -f "$VERUS_BIN" ]; then
+        echo "❌ Verus not found at: $VERUS_BIN"
+        echo "   Set VERUS_PATH in .env (see .env.example)"
+        exit 1
+    fi
+    
+    echo "🔬 Running Verus verification..."
+    "$VERUS_BIN" --crate-type=lib crates/elicitation/src/lib.rs
+
+# Run all formal verification tools
+verify-all: verify-kani verify-prusti verify-creusot verify-verus
+    @echo "✅ All verification completed!"
 
 # Run all verification examples
 verify-examples:

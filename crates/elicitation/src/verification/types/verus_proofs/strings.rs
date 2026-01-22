@@ -33,7 +33,7 @@ verus! {
 ///     }
 /// }
 /// ```
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_string_non_empty() {
     // Proof structure for Verus
 }
@@ -42,13 +42,13 @@ pub fn verify_string_non_empty() {
 ///
 /// **Verified Properties:**
 /// - Construction succeeds ⟺ value == true
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_bool_true() {
     // Proof structure for Verus
 }
 
 /// Verify BoolFalse contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_bool_false() {
     // Proof structure for Verus
 }
@@ -57,19 +57,19 @@ pub fn verify_bool_false() {
 ///
 /// **Verified Properties:**
 /// - Construction succeeds ⟺ char.is_alphabetic()
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_char_alphabetic() {
     // Proof structure for Verus
 }
 
 /// Verify CharNumeric contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_char_numeric() {
     // Proof structure for Verus
 }
 
 /// Verify CharAlphanumeric contract correctness.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_char_alphanumeric() {
     // Proof structure for Verus
 }

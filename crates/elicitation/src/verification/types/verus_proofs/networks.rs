@@ -20,19 +20,19 @@ verus! {
 /// **Verified Properties:**
 /// - Box<C> satisfies same contract as C
 /// - No overhead, no validation
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_box_satisfies() {
     // Proof structure for Verus
 }
 
 /// Verify ArcSatisfies transparent wrapper.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_arc_satisfies() {
     // Proof structure for Verus
 }
 
 /// Verify RcSatisfies transparent wrapper.
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 pub fn verify_rc_satisfies() {
     // Proof structure for Verus
 }
