@@ -610,6 +610,128 @@ verify-verus:
 verify-all: verify-kani verify-prusti verify-creusot verify-verus
     @echo "✅ All verification completed!"
 
+# Kani UTF-8 Long-Running Proofs
+# ===============================
+
+# Benchmark Kani verification scaling (measure marginal costs)
+# Runs micro-benchmarks to calculate cost per symbolic combination
+kani-benchmark:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "🔬 Kani Marginal Cost Benchmark"
+    echo "================================"
+    echo ""
+    echo "This measures verification cost scaling by running"
+    echo "progressively larger symbolic proofs (4-16 combinations)."
+    echo ""
+    echo "Expected time: 1-2 hours"
+    echo "Output: kani_marginal_benchmark.log"
+    echo ""
+    read -p "Continue? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Cancelled."
+        exit 1
+    fi
+    ./scripts/kani_marginal_cost.sh
+
+# Run expensive Kani UTF-8 symbolic proofs (days to weeks)
+# WARNING: These proofs explore 3,968 to 786,432 symbolic combinations
+kani-long-proofs proof="2byte":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    
+    case "{{proof}}" in
+        2byte)
+            echo "🔬 Kani UTF-8 2-Byte Symbolic Proof"
+            echo "===================================="
+            echo ""
+            echo "Problem space: 3,968 combinations (62 × 64)"
+            echo "Expected time: Hours to days (hardware dependent)"
+            echo ""
+            read -p "Run proof? (y/N) " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                echo "Cancelled."
+                exit 1
+            fi
+            echo ""
+            echo "Starting 2-byte proof (output: utf8_2byte_proof.log)..."
+            cargo kani --features verify-kani --harness verify_valid_two_byte_accepted 2>&1 | tee utf8_2byte_proof.log
+            ;;
+        3byte)
+            echo "🔬 Kani UTF-8 3-Byte Symbolic Proof"
+            echo "===================================="
+            echo ""
+            echo "Problem space: 49,152 combinations (12 × 64 × 64)"
+            echo "Expected time: Days (hardware dependent)"
+            echo ""
+            read -p "Run proof? (y/N) " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                echo "Cancelled."
+                exit 1
+            fi
+            echo ""
+            echo "Starting 3-byte proof (output: utf8_3byte_proof.log)..."
+            cargo kani --features verify-kani --harness verify_valid_three_byte_accepted 2>&1 | tee utf8_3byte_proof.log
+            ;;
+        4byte)
+            echo "🔬 Kani UTF-8 4-Byte Symbolic Proof"
+            echo "===================================="
+            echo ""
+            echo "Problem space: 786,432 combinations (3 × 64³)"
+            echo "Expected time: Days to weeks (hardware dependent)"
+            echo ""
+            read -p "Run proof? (y/N) " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                echo "Cancelled."
+                exit 1
+            fi
+            echo ""
+            echo "Starting 4-byte proof (output: utf8_4byte_proof.log)..."
+            cargo kani --features verify-kani --harness verify_valid_four_byte_accepted 2>&1 | tee utf8_4byte_proof.log
+            ;;
+        all)
+            echo "🔬 All Kani UTF-8 Symbolic Proofs"
+            echo "=================================="
+            echo ""
+            echo "This will run ALL symbolic UTF-8 proofs sequentially:"
+            echo "  - 2-byte: 3,968 combinations (hours-days)"
+            echo "  - 3-byte: 49,152 combinations (days)"
+            echo "  - 4-byte: 786,432 combinations (days-weeks)"
+            echo ""
+            echo "Total expected time: Weeks to months"
+            echo ""
+            read -p "Run all proofs? (y/N) " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                echo "Cancelled."
+                exit 1
+            fi
+            echo ""
+            just kani-long-proofs 2byte
+            just kani-long-proofs 3byte
+            just kani-long-proofs 4byte
+            ;;
+        *)
+            echo "❌ Invalid proof: {{proof}}"
+            echo ""
+            echo "Usage: just kani-long-proofs <proof>"
+            echo ""
+            echo "Available proofs:"
+            echo "  2byte  - 2-byte UTF-8 sequences (3,968 combos, hours-days)"
+            echo "  3byte  - 3-byte UTF-8 sequences (49K combos, days)"
+            echo "  4byte  - 4-byte UTF-8 sequences (786K combos, days-weeks)"
+            echo "  all    - All symbolic proofs (weeks-months)"
+            echo ""
+            echo "Tip: Run in screen/tmux or use nohup for background:"
+            echo "  nohup just kani-long-proofs 2byte &"
+            exit 1
+            ;;
+    esac
+
 # Run all verification examples
 verify-examples:
     @echo "🔬 Running verification examples..."

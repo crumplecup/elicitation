@@ -127,3 +127,57 @@ cost_per_combination = Δtime / Δcombinations
 ```
 
 This lets us predict completion times on different hardware.
+
+## Just Recipes
+
+The justfile provides convenient commands for running benchmarks and long proofs:
+
+### Marginal Cost Benchmark
+
+Measure Kani's verification cost scaling:
+
+```bash
+just kani-benchmark
+```
+
+This runs micro-benchmarks (4-16 combinations) multiple times to calculate the marginal cost per symbolic combination. Results saved to `kani_marginal_benchmark.log`.
+
+**Expected time:** 1-2 hours
+
+### Long-Running Proofs
+
+Run expensive symbolic UTF-8 proofs:
+
+```bash
+# 2-byte proof (3,968 combinations, hours-days)
+just kani-long-proofs 2byte
+
+# 3-byte proof (49,152 combinations, days)
+just kani-long-proofs 3byte
+
+# 4-byte proof (786,432 combinations, days-weeks)
+just kani-long-proofs 4byte
+
+# All proofs sequentially (weeks-months)
+just kani-long-proofs all
+```
+
+Each proof:
+- Prompts for confirmation (interactive)
+- Logs output to `utf8_Nbyte_proof.log`
+- Shows unwinding iterations and verification progress
+- Reports final VERIFICATION:- SUCCESSFUL or FAILED
+
+**Tip:** Run in background with screen/tmux:
+```bash
+screen -S kani_utf8
+just kani-long-proofs 2byte
+# Detach: Ctrl+A, D
+# Reattach: screen -r kani_utf8
+```
+
+Or with nohup:
+```bash
+nohup just kani-long-proofs 2byte > 2byte.out 2>&1 &
+tail -f 2byte.out
+```
