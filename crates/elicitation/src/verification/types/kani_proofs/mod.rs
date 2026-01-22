@@ -44,6 +44,9 @@ mod mechanisms;
 mod utf8;
 mod utf8_benchmark;
 
+#[cfg(feature = "uuid")]
+mod uuid_bytes;
+
 #[cfg(feature = "url")]
 mod urls;
 

@@ -28,6 +28,7 @@ pub trait ValidatesType<T> {
 }
 
 mod utf8;
+mod uuid_bytes;
 mod integers;
 mod floats;
 mod strings;
@@ -64,6 +65,13 @@ mod prusti_proofs;
 
 // UTF-8 Foundation
 pub use utf8::{Utf8Bytes, is_valid_utf8};
+
+// UUID Foundation (behind feature)
+#[cfg(feature = "uuid")]
+pub use uuid_bytes::{
+    UuidBytes, UuidV4Bytes, UuidV7Bytes,
+    has_valid_variant, has_version, is_valid_v4, is_valid_v7,
+};
 
 // Integers
 pub use integers::{
@@ -389,6 +397,10 @@ pub enum ValidationError {
     /// Regex pattern is invalid or cannot be compiled.
     #[display("Regex pattern is invalid or cannot be compiled")]
     RegexInvalid,
+
+    /// UUID variant bits are invalid (not RFC 4122 10xx pattern).
+    #[display("Invalid UUID variant bits")]
+    InvalidUuidVariant,
 
     /// UTF-8 validation failed.
     #[display("Invalid UTF-8 byte sequence")]
