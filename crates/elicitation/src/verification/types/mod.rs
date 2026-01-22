@@ -31,6 +31,7 @@ mod utf8;
 mod uuid_bytes;
 mod ipaddr_bytes;
 mod macaddr;
+mod socketaddr;
 mod integers;
 mod floats;
 mod strings;
@@ -86,6 +87,16 @@ pub use ipaddr_bytes::{
 pub use macaddr::{
     MacAddr, MacUnicast, MacMulticast, MacUniversal, MacLocal,
     is_unicast, is_multicast, is_universal, is_local,
+};
+
+// Socket Address Foundation
+pub use socketaddr::{
+    SocketAddrV4Bytes, SocketAddrV6Bytes,
+    SocketAddrV4NonZero, SocketAddrV6NonZero,
+    SocketAddrV4Privileged, SocketAddrV6Privileged,
+    SocketAddrV4Unprivileged, SocketAddrV6Unprivileged,
+    is_well_known_port, is_registered_port, is_dynamic_port,
+    is_privileged_port, is_nonzero_port,
 };
 
 // Integers
@@ -432,6 +443,18 @@ pub enum ValidationError {
     /// MAC address is not locally administered (is universal).
     #[display("MAC address must be locally administered, got {}", _0)]
     NotLocalMac(String),
+
+    /// Port number is zero (invalid for binding).
+    #[display("Port must be non-zero")]
+    PortIsZero,
+
+    /// Port number is not privileged (>= 1024).
+    #[display("Port must be privileged (< 1024), got {}", _0)]
+    PortNotPrivileged(u16),
+
+    /// Port number is privileged (< 1024).
+    #[display("Port must be unprivileged (>= 1024), got {}", _0)]
+    PortIsPrivileged(u16),
 
     /// UTF-8 validation failed.
     #[display("Invalid UTF-8 byte sequence")]
