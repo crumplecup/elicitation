@@ -6,6 +6,7 @@
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 #[cfg(feature = "chrono")]
 use super::ValidationError;
+#[cfg(feature = "chrono")]
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, FixedOffset, NaiveDateTime, Utc};

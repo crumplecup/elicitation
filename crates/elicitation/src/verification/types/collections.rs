@@ -5,7 +5,6 @@
 
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
-use elicitation_macros::instrumented_impl;
 use std::sync::Arc;
 use std::rc::Rc;
 

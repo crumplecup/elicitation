@@ -6,6 +6,7 @@
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 #[cfg(feature = "serde_json")]
 use super::ValidationError;
+#[cfg(feature = "serde_json")]
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "serde_json")]
 use serde_json::Value;

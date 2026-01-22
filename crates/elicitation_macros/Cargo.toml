@@ -16,3 +16,6 @@ proc-macro = true
 syn = { workspace = true }
 quote = { workspace = true }
 proc-macro2 = { workspace = true }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }

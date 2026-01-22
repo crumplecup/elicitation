@@ -5,8 +5,8 @@
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::parse::{Parse, ParseStream, Parser};
-use syn::{parse_macro_input, Expr, ExprLit, Item, Lit, Meta, Result};
+use syn::parse::{ParseStream, Parser};
+use syn::{parse_macro_input, Expr, ExprLit, Item, Lit, Meta};
 
 /// Annotates a type with contract metadata.
 ///

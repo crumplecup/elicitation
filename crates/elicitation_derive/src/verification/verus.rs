@@ -2,7 +2,7 @@
 
 use proc_macro2::TokenStream;
 use quote::{quote, format_ident};
-use syn::{Field, Ident, Type, TypePath};
+use syn::{Field, Ident};
 
 /// Generate Verus verification for a struct.
 pub fn generate_verus_verification(
@@ -43,12 +43,6 @@ pub fn generate_verus_enum_verification(
 }
 
 /// Extract the type path from a field type (best effort).
-fn extract_type_path(ty: &Type) -> Option<&TypePath> {
-    match ty {
-        Type::Path(type_path) => Some(type_path),
-        _ => None,
-    }
-}
 
 fn generate_constructor(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
     let constructor_name = format_ident!("__make_{}", struct_name);
