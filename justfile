@@ -737,11 +737,12 @@ benchmark-verification:
     done
     
     # URL component proofs (5 proofs, ~6s each)
+    # Note: URL components use small buffers (8-16 bytes) but need higher unwind
     echo "📦 URL component proofs..."
     for harness in verify_scheme_http verify_scheme_https verify_authority_simple; do
         echo -n "  $harness... "
         START=$(date +%s.%N)
-        if cargo kani --harness "$harness" --features verify-kani --default-unwind 20 &>/dev/null; then
+        if cargo kani --harness "$harness" --features verify-kani --default-unwind 128 &>/dev/null; then
             END=$(date +%s.%N)
             TIME=$(echo "$END - $START" | bc)
             echo "✅ ${TIME}s"
@@ -753,11 +754,12 @@ benchmark-verification:
     done
     
     # Regex layer proofs (23 proofs, 1.6s - 8s)
+    # Note: Regex uses 16-byte buffers, needs unwind=16
     echo "📦 Regex layer proofs..."
     for harness in verify_balanced_simple verify_escape_digit verify_quantifier_range verify_charclass_range verify_regex_literal; do
         echo -n "  $harness... "
         START=$(date +%s.%N)
-        if cargo kani --harness "$harness" --features verify-kani --default-unwind 20 &>/dev/null; then
+        if cargo kani --harness "$harness" --features verify-kani --default-unwind 128 &>/dev/null; then
             END=$(date +%s.%N)
             TIME=$(echo "$END - $START" | bc)
             echo "✅ ${TIME}s"
