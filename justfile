@@ -777,6 +777,271 @@ benchmark-verification:
     echo "Summary:"
     awk -F, 'NR>1 {sum[$1]+=$3; count[$1]++} END {for (type in sum) printf "  %s: %.2fs avg (%d proofs)\n", type, sum[type]/count[type], count[type]}' "$OUTPUT" | sort
 
+# Benchmark Kani marginal cost with increasing buffer sizes
+benchmark-kani-marginal count="1":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    
+    OUTPUT="kani_marginal_benchmark.csv"
+    COUNT={{count}}
+    
+    echo "Benchmarking Kani verification marginal cost..."
+    echo "This measures verification time vs buffer size for curve fitting."
+    echo "Iterations per proof: $COUNT"
+    echo "Results append to: $OUTPUT"
+    echo ""
+    
+    # Create header if file doesn't exist
+    if [ ! -f "$OUTPUT" ]; then
+        echo "Timestamp,Type,Size,Iteration,Time_Seconds,Status" > "$OUTPUT"
+    fi
+    
+    TIMESTAMP=$(date -Iseconds)
+    
+    # UTF-8 validation: 2, 4, 8, 16, 32 bytes (fast)
+    echo "📊 UTF-8 Validation Marginal Cost (Fast: < 5 min)"
+    for size in 2 4 8 16 32; do
+        harness="bench_utf8_${size}byte"
+        echo "  ${size} bytes (${COUNT} iterations):"
+        
+        for ((iter=1; iter<=COUNT; iter++)); do
+            echo -n "    Run $iter/$COUNT... "
+            START=$(date +%s.%N)
+            if cargo kani --harness "$harness" --features verify-kani &>/dev/null; then
+                END=$(date +%s.%N)
+                TIME=$(echo "$END - $START" | bc)
+                echo "✅ ${TIME}s"
+                echo "$TIMESTAMP,UTF8,$size,$iter,$TIME,SUCCESS" >> "$OUTPUT"
+            else
+                echo "❌ FAILED"
+                echo "$TIMESTAMP,UTF8,$size,$iter,0,FAILED" >> "$OUTPUT"
+            fi
+        done
+    done
+    
+    # 64-256 bytes - moderate (minutes)
+    echo ""
+    echo "📊 UTF-8 Validation (Moderate: 5-30 min)"
+    for size in 64 128 256; do
+        harness="bench_utf8_${size}byte"
+        echo "  ${size} bytes (${COUNT} iterations):"
+        
+        for ((iter=1; iter<=COUNT; iter++)); do
+            echo -n "    Run $iter/$COUNT... "
+            START=$(date +%s.%N)
+            if cargo kani --harness "$harness" --features verify-kani &>/dev/null; then
+                END=$(date +%s.%N)
+                TIME=$(echo "$END - $START" | bc)
+                MINS=$(echo "$TIME / 60" | bc)
+                echo "✅ ${TIME}s (${MINS}m)"
+                echo "$TIMESTAMP,UTF8,$size,$iter,$TIME,SUCCESS" >> "$OUTPUT"
+            else
+                echo "❌ FAILED"
+                echo "$TIMESTAMP,UTF8,$size,$iter,0,FAILED" >> "$OUTPUT"
+            fi
+        done
+    done
+    
+    # 512+ bytes - long running (hours to days)
+    echo ""
+    echo "⚠️  Large buffer proofs (expected: 1-24 hours)"
+    echo "   Run with: just benchmark-kani-long [count]"
+    for size in 512 1024 2048 4096; do
+        echo "$TIMESTAMP,UTF8,$size,0,TBD,SKIPPED" >> "$OUTPUT"
+    done
+    
+    echo ""
+    echo "📊 UUID Format Marginal Cost"
+    for harness in bench_uuid_variant_2byte bench_uuid_variant_4byte bench_uuid_full_16byte; do
+        size=${harness##*_}
+        size=${size%byte}
+        echo "  $size (${COUNT} iterations):"
+        
+        for ((iter=1; iter<=COUNT; iter++)); do
+            echo -n "    Run $iter/$COUNT... "
+            START=$(date +%s.%N)
+            if cargo kani --harness "$harness" --features verify-kani &>/dev/null; then
+                END=$(date +%s.%N)
+                TIME=$(echo "$END - $START" | bc)
+                echo "✅ ${TIME}s"
+                echo "$TIMESTAMP,UUID,$size,$iter,$TIME,SUCCESS" >> "$OUTPUT"
+            else
+                echo "❌ FAILED"
+                echo "$TIMESTAMP,UUID,$size,$iter,0,FAILED" >> "$OUTPUT"
+            fi
+        done
+    done
+    
+    echo ""
+    echo "📊 MAC Address Marginal Cost"
+    for harness in bench_mac_multicast_1byte bench_mac_local_1byte bench_mac_full_6byte; do
+        size=${harness##*_}
+        size=${size%byte}
+        echo "  $size (${COUNT} iterations):"
+        
+        for ((iter=1; iter<=COUNT; iter++)); do
+            echo -n "    Run $iter/$COUNT... "
+            START=$(date +%s.%N)
+            if cargo kani --harness "$harness" --features verify-kani &>/dev/null; then
+                END=$(date +%s.%N)
+                TIME=$(echo "$END - $START" | bc)
+                echo "✅ ${TIME}s"
+                echo "$TIMESTAMP,MAC,$size,$iter,$TIME,SUCCESS" >> "$OUTPUT"
+            else
+                echo "❌ FAILED"
+                echo "$TIMESTAMP,MAC,$size,$iter,0,FAILED" >> "$OUTPUT"
+            fi
+        done
+    done
+    
+    echo ""
+    echo "✅ Marginal cost benchmark complete!"
+    echo "Results appended to: $OUTPUT"
+    echo ""
+    echo "Curve Fitting Analysis (latest run):"
+    python3 << 'PYTHON'
+    import csv
+    import sys
+    from collections import defaultdict
+    
+    # Get latest timestamp
+    latest_ts = None
+    with open('kani_marginal_benchmark.csv', 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row['Timestamp']:
+                latest_ts = row['Timestamp']
+    
+    # Load data from latest run and calculate averages per size
+    raw_data = defaultdict(lambda: defaultdict(list))
+    
+    try:
+        with open('kani_marginal_benchmark.csv', 'r') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if row['Status'] == 'SUCCESS' and row['Timestamp'] == latest_ts:
+                    typ = row['Type']
+                    size = int(row['Size'])
+                    time = float(row['Time_Seconds'])
+                    raw_data[typ][size].append(time)
+    except FileNotFoundError:
+        print("No data file found")
+        sys.exit(0)
+    
+    # Calculate averages
+    data = defaultdict(list)
+    for typ, size_dict in raw_data.items():
+        for size, times in sorted(size_dict.items()):
+            avg_time = sum(times) / len(times)
+            stddev = (sum((t - avg_time)**2 for t in times) / len(times))**0.5 if len(times) > 1 else 0
+            data[typ].append((size, avg_time, stddev, len(times)))
+    
+    for typ, points in sorted(data.items()):
+        if len(points) < 2:
+            continue
+            
+        print(f"\n{typ}:")
+        print("  Size → Avg Time (±StdDev) [n]")
+        for size, avg_time, stddev, count in sorted(points):
+            if count > 1:
+                print(f"  {size:3d}  → {avg_time:7.2f}s (±{stddev:5.2f}s) [n={count}]")
+            else:
+                print(f"  {size:3d}  → {avg_time:7.2f}s")
+        
+        # Simple growth rate analysis
+        if len(points) >= 2:
+            points_simple = [(size, avg) for size, avg, _, _ in sorted(points)]
+            ratios = []
+            for i in range(1, len(points_simple)):
+                size_ratio = points_simple[i][0] / points_simple[i-1][0]
+                time_ratio = points_simple[i][1] / points_simple[i-1][1]
+                ratios.append(time_ratio / size_ratio)
+            
+            avg_ratio = sum(ratios) / len(ratios)
+            print(f"\n  Growth rate: ~{avg_ratio:.2f}x per doubling")
+            if avg_ratio < 1.5:
+                print("  → Approximately LINEAR")
+            elif avg_ratio < 3:
+                print("  → Approximately QUADRATIC")
+            elif avg_ratio < 10:
+                print("  → Approximately CUBIC")
+            else:
+                print("  → EXPONENTIAL (verification intractable)")
+                
+            # Extrapolate
+            if points_simple[-1][1] < 100:  # Only extrapolate if last point is reasonable
+                last_size, last_time = points_simple[-1]
+                next_size = last_size * 2
+                est_time = last_time * (avg_ratio ** 1)  # One doubling
+                
+                if est_time < 60:
+                    print(f"  Estimated {next_size}-byte: {est_time:.1f}s")
+                elif est_time < 3600:
+                    print(f"  Estimated {next_size}-byte: {est_time/60:.1f}m")
+                elif est_time < 86400:
+                    print(f"  Estimated {next_size}-byte: {est_time/3600:.1f}h")
+                else:
+                    print(f"  Estimated {next_size}-byte: {est_time/86400:.1f}d")
+    PYTHON
+
+# Benchmark long-running Kani proofs (512-4096 bytes, hours to days)
+benchmark-kani-long count="1":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    
+    OUTPUT="kani_marginal_benchmark.csv"
+    COUNT={{count}}
+    
+    # Create header if file doesn't exist
+    if [ ! -f "$OUTPUT" ]; then
+        echo "Timestamp,Type,Size,Iteration,Time_Seconds,Status" > "$OUTPUT"
+    fi
+    
+    TIMESTAMP=$(date -Iseconds)
+    
+    echo "🐢 Long-Running Kani Proofs (512-4096 bytes)"
+    echo "=============================================="
+    echo "Expected times: 512b=1h, 1024b=3h, 2048b=8h, 4096b=24h"
+    echo "Iterations per proof: $COUNT"
+    echo ""
+    read -p "This will run for HOURS/DAYS. Continue? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Cancelled."
+        exit 0
+    fi
+    
+    for size in 512 1024 2048 4096; do
+        harness="bench_utf8_${size}byte"
+        echo ""
+        echo "📊 ${size}-byte proof (${COUNT} iterations)"
+        
+        for ((iter=1; iter<=COUNT; iter++)); do
+            echo ""
+            echo "  Run $iter/$COUNT started at $(date)"
+            
+            START=$(date +%s.%N)
+            if cargo kani --harness "$harness" --features verify-kani 2>&1 | tee "/tmp/kani_${size}_iter${iter}.log"; then
+                END=$(date +%s.%N)
+                TIME=$(echo "$END - $START" | bc)
+                HOURS=$(echo "$TIME / 3600" | bc)
+                echo "  ✅ VERIFIED in ${TIME}s (${HOURS}h)"
+                echo "$TIMESTAMP,UTF8,$size,$iter,$TIME,SUCCESS" >> "$OUTPUT"
+            else
+                END=$(date +%s.%N)
+                TIME=$(echo "$END - $START" | bc)
+                echo "  ❌ FAILED after ${TIME}s"
+                echo "$TIMESTAMP,UTF8,$size,$iter,$TIME,FAILED" >> "$OUTPUT"
+            fi
+            
+            echo "  Completed iteration $iter at $(date)"
+        done
+    done
+    
+    echo ""
+    echo "✅ All long proofs complete!"
+    echo "Results in: $OUTPUT"
+
 # Run expensive Kani UTF-8 symbolic proofs (days to weeks)
 # WARNING: These proofs explore 3,968 to 786,432 symbolic combinations
 kani-long-proofs proof="2byte":

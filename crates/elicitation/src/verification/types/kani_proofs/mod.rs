@@ -48,6 +48,7 @@ mod macaddr;
 mod socketaddr;
 mod urlbytes;
 mod regexbytes;
+mod benchmark_marginal;
 
 #[cfg(unix)]
 mod pathbytes;

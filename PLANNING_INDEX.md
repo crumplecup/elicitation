@@ -2,6 +2,35 @@
 
 This file tracks all planning documents for the elicitation project.
 
+## Verification Documentation
+
+### UTF8_VERIFICATION_STRATEGY.md
+**Status:** Complete  
+**Created:** 2026-01-23  
+**Purpose:** Explains the multi-layered formal verification strategy for UTF-8 validation using Kani model checker.
+
+**Key Content:**
+- Constrained symbolic proofs (2-byte, 3-byte, 4-byte sequences)
+- Bounded buffer proofs (2-4096 byte buffers)
+- Marginal cost benchmarking methodology
+- Verification time measurements and growth analysis (O(N^1.48))
+- Completeness argument for production usage
+
+**Key Insights:**
+- Constraints reduce 4-byte proof from 4B combinations to 786K (5,461x reduction)
+- Growth is O(N^1.48) - sub-exponential, therefore tractable
+- Layering prevents combinatorial explosion (prove parts, trust composition)
+- 4096-byte proof completes in ~24 hours on commodity hardware
+- Pattern generalizes to other complex validation (URL, Regex, etc.)
+
+**Related Files:**
+- `crates/elicitation/src/verification/types/utf8.rs`
+- `crates/elicitation/src/verification/types/kani_proofs/utf8.rs`
+- `crates/elicitation/src/verification/types/kani_proofs/benchmark_marginal.rs`
+- `justfile` recipes: `benchmark-kani-marginal`, `benchmark-kani-long`, `kani-long-proofs`
+
+---
+
 ## Active Plans
 
 ### elicitation_vision.md
