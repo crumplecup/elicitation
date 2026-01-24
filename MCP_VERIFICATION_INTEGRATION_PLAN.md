@@ -25,19 +25,46 @@ Return to user
 
 ## Implementation Steps
 
-### Phase 1: Add Derives to Verification Types ✅
+### Phase 1: Add Derives to Verification Types ✅ (In Progress)
 - [x] Add `Serialize`, `Deserialize`, `JsonSchema` to all verification types
 - [x] Add `#[schemars]` attributes for validation constraints
 - [x] Add `rmcp::elicit_safe!()` macro calls
 
-Status: Started with `I8Positive` as proof of concept.
+Status: **Proof of concept complete** - Added derives to:
+- `I8Positive` 
+- `I8NonNegative`
+- `I8NonZero`
+- `I8Range`
 
-### Phase 2: Update Primitive Elicit Implementations
-- [ ] Create `ElicitContext` wrapper around `rmcp::Peer<RoleServer>`
-- [ ] Implement `Elicit` for `i64` using `I64Default` wrapper
-- [ ] Implement `Elicit` for `String` using `StringNonEmpty` wrapper  
-- [ ] Implement `Elicit` for `bool` using `BoolValue` wrapper
-- [ ] Add other primitives (f64, char, etc.)
+These types now work with `rmcp::elicit<T>()`.
+
+**Remaining work**: Add derives to all other verification types systematically
+(floats, strings, bools, chars, datetimes, etc.). Can be done incrementally.
+
+### Phase 2: Update Primitive Elicit Implementations (Next)
+- [ ] Add `I64Default` wrapper type to verification/types/integers.rs
+- [ ] Update `i64` primitive to use `I64Default` + `rmcp::elicit<T>()`
+- [ ] Test proof of concept end-to-end
+- [ ] Add wrapper types for other primitives (String, bool, etc.)
+- [ ] Update their Elicitation impls to use wrappers
+
+**Pattern**:
+```rust
+// In verification/types/integers.rs
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema)]
+#[schemars(description = "Integer value")]
+pub struct I64Default(#[schemars(range(min = i64::MIN, max = i64::MAX))] i64);
+rmcp::elicit_safe!(I64Default);
+
+// In primitives/integers.rs
+impl Elicitation for i64 {
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        let wrapper: I64Default = client.peer().elicit(prompt).await?
+            .ok_or(ElicitError::NoInput)?;
+        Ok(wrapper.into_inner())
+    }
+}
+```
 
 ### Phase 3: Style System Integration
 - [ ] Update `ElicitationStyle` trait to work with verification types
