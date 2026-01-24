@@ -4,6 +4,8 @@ use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
 use elicitation_macros::instrumented_impl;
 use elicitation_derive::contract_type;
+use serde::{Deserialize, Serialize};
+use schemars::JsonSchema;
 
 /// Contract type for positive i8 values (> 0).
 ///
@@ -32,8 +34,15 @@ use elicitation_derive::contract_type;
     requires = "value > 0",
     ensures = "result.get() > 0"
 )]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct I8Positive(i8);
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+#[schemars(description = "Positive integer value (> 0)")]
+pub struct I8Positive(
+    #[schemars(range(min = 1))]
+    i8
+);
+
+// Mark as safe for MCP elicitation
+rmcp::elicit_safe!(I8Positive);
 
 #[instrumented_impl]
 #[instrumented_impl]
@@ -140,8 +149,14 @@ mod tests {
 /// Contract type for non-negative i8 values (>= 0).
 ///
 /// Validates on construction, then can unwrap to stdlib i8 via `into_inner()`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct I8NonNegative(i8);
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+#[schemars(description = "Non-negative integer value (>= 0)")]
+pub struct I8NonNegative(
+    #[schemars(range(min = 0))]
+    i8
+);
+
+rmcp::elicit_safe!(I8NonNegative);
 
 #[instrumented_impl]
 #[instrumented_impl]
@@ -215,8 +230,11 @@ impl Elicitation for I8NonNegative {
     requires = "value != 0",
     ensures = "result.get() != 0"
 )]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+#[schemars(description = "Non-zero integer value (!= 0)")]
 pub struct I8NonZero(i8);
+
+rmcp::elicit_safe!(I8NonZero);
 
 #[instrumented_impl]
 impl I8NonZero {

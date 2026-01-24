@@ -375,6 +375,8 @@ dependencies = [
  "prusti-contracts",
  "regex",
  "rmcp",
+ "schemars",
+ "serde",
  "serde_json",
  "time",
  "tokio",
