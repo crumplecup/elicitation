@@ -100,4 +100,30 @@ macro_rules! impl_float_elicit {
 
 // Apply macro to floating-point types
 impl_float_elicit!(f32, F32Style);
-impl_float_elicit!(f64, F64Style);
+// f64 uses verification wrapper - see below
+
+// f64 implementation using F64Default verification wrapper
+crate::default_style!(f64 => F64Style);
+
+impl Prompt for f64 {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a number:")
+    }
+}
+
+impl Elicitation for f64 {
+    type Style = F64Style;
+
+    #[tracing::instrument(skip(client), fields(type_name = "f64"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        use crate::verification::types::F64Default;
+        
+        tracing::debug!("Eliciting f64 via F64Default wrapper");
+        
+        // Use verification wrapper internally
+        let wrapper = F64Default::elicit(client).await?;
+        
+        // Unwrap to primitive
+        Ok(wrapper.into_inner())
+    }
+}

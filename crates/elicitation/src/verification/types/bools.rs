@@ -223,7 +223,20 @@ impl Elicitation for BoolDefault {
 
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
-        let value = bool::elicit(client).await?;
-        Ok(Self(value))
+        let prompt = Self::prompt().unwrap();
+        let params = crate::mcp::bool_params(prompt);
+        
+        let result = client
+            .peer()
+            .call_tool(rmcp::model::CallToolRequestParam {
+                name: crate::mcp::tool_names::elicit_bool().into(),
+                arguments: Some(params),
+                task: None,
+            })
+            .await?;
+
+        let value = crate::mcp::extract_value(result)?;
+        let bool_val = crate::mcp::parse_bool(value)?;
+        Ok(Self(bool_val))
     }
 }

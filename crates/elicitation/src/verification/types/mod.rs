@@ -130,6 +130,7 @@ pub use integers::{
     I32Positive, I32NonNegative, I32NonZero, I32Range, I32RangeStyle,
     // i64 family
     I64Positive, I64NonNegative, I64NonZero, I64Range, I64RangeStyle,
+    I64Default, // MCP wrapper
     // i128 family
     I128Positive, I128NonNegative, I128NonZero, I128Range, I128RangeStyle,
     // isize family
@@ -152,16 +153,17 @@ pub use integers::{
 pub use floats::{
     F32Positive, F32NonNegative, F32Finite,
     F64Positive, F64NonNegative, F64Finite,
+    F64Default, // MCP wrapper
 };
 
 // Bools
-pub use bools::{BoolTrue, BoolFalse};
+pub use bools::{BoolTrue, BoolFalse, BoolDefault};
 
 // Chars
 pub use chars::{CharAlphabetic, CharNumeric, CharAlphanumeric};
 
 // Strings
-pub use strings::StringNonEmpty;
+pub use strings::{StringNonEmpty, StringDefault};
 
 // Collections
 pub use collections::{

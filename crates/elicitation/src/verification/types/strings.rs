@@ -231,7 +231,20 @@ impl Elicitation for StringDefault {
 
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
-        let value = String::elicit(client).await?;
-        Ok(Self(value))
+        let prompt = Self::prompt().unwrap();
+        let params = crate::mcp::text_params(prompt);
+        
+        let result = client
+            .peer()
+            .call_tool(rmcp::model::CallToolRequestParam {
+                name: crate::mcp::tool_names::elicit_text().into(),
+                arguments: Some(params),
+                task: None,
+            })
+            .await?;
+
+        let value = crate::mcp::extract_value(result)?;
+        let string_val = crate::mcp::parse_string(value)?;
+        Ok(Self(string_val))
     }
 }

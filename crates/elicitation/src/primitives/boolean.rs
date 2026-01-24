@@ -1,6 +1,6 @@
 //! Boolean type implementation using the Affirm pattern.
 
-use crate::{Affirm, ElicitClient, ElicitResult, Elicitation, Prompt, mcp};
+use crate::{Affirm, ElicitClient, ElicitResult, Elicitation, Prompt};
 
 // Generate default-only style enum
 crate::default_style!(bool => BoolStyle);
@@ -18,20 +18,14 @@ impl Elicitation for bool {
 
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
-        let prompt = Self::prompt().unwrap();
-        tracing::debug!("Eliciting boolean");
-
-        let params = mcp::bool_params(prompt);
-        let result = client
-            .peer()
-            .call_tool(rmcp::model::CallToolRequestParam {
-                name: mcp::tool_names::elicit_bool().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await?;
-
-        let value = mcp::extract_value(result)?;
-        mcp::parse_bool(value)
+        use crate::verification::types::BoolDefault;
+        
+        tracing::debug!("Eliciting bool via BoolDefault wrapper");
+        
+        // Use verification wrapper internally
+        let wrapper = BoolDefault::elicit(client).await?;
+        
+        // Unwrap to primitive
+        Ok(wrapper.into_inner())
     }
 }
