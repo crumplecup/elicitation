@@ -1152,14 +1152,11 @@ verify-examples:
     @echo "✅ All examples passed"
 
 # Run chunked Kani proofs with checkpoint/resume (uses existing harnesses in library)
-kani-chunked proof_type config:
+kani-chunked proof_type num_chunks:
     #!/usr/bin/env bash
     set -euo pipefail
     
-    CSV="kani_proof_record_{{proof_type}}_{{config}}.csv"
-    
-    # Parse number of chunks from config (e.g., "2chunks" -> 2)
-    NUM_CHUNKS=$(echo "{{config}}" | sed 's/chunks$//')
+    CSV="kani_proof_record_{{proof_type}}_{{num_chunks}}.csv"
     
     # Create CSV header if doesn't exist
     if [ ! -f "$CSV" ]; then
@@ -1167,34 +1164,34 @@ kani-chunked proof_type config:
         echo "📝 Created checkpoint file: $CSV"
     fi
     
-    echo "🔬 Kani Chunked Proof: {{proof_type}} / {{config}}"
+    echo "🔬 Kani Chunked Proof: {{proof_type}} / {{num_chunks}} chunks"
     echo "=========================================="
     echo ""
     
     # Run each chunk
-    for i in $(seq 0 $((NUM_CHUNKS - 1))); do
-        HARNESS="verify_{{proof_type}}_{{config}}_${i}"
+    for i in $(seq 0 $(({{num_chunks}} - 1))); do
+        HARNESS="verify_{{proof_type}}_{{num_chunks}}chunks_${i}"
         
         # Skip if already completed
         if grep -q "${HARNESS}.*SUCCESS" "$CSV" 2>/dev/null; then
-            echo "✅ Chunk $i/$((NUM_CHUNKS-1)): $HARNESS (cached)"
+            echo "✅ Chunk $i/$(({{num_chunks}}-1)): $HARNESS (cached)"
             continue
         fi
         
-        echo "🔬 Chunk $i/$((NUM_CHUNKS-1)): $HARNESS"
+        echo "🔬 Chunk $i/$(({{num_chunks}}-1)): $HARNESS"
         START=$(date +%s)
         
         if cargo kani --features verify-kani --harness "$HARNESS" 2>&1 | tee "kani_${HARNESS}.log"; then
             END=$(date +%s)
             ELAPSED=$((END - START))
             TIMESTAMP=$(date -Iseconds)
-            echo "$TIMESTAMP,{{proof_type}},$HARNESS,$i,$NUM_CHUNKS,SUCCESS,$ELAPSED" >> "$CSV"
+            echo "$TIMESTAMP,{{proof_type}},$HARNESS,$i,{{num_chunks}},SUCCESS,$ELAPSED" >> "$CSV"
             echo "✅ Chunk $i completed in ${ELAPSED}s"
         else
             END=$(date +%s)
             ELAPSED=$((END - START))
             TIMESTAMP=$(date -Iseconds)
-            echo "$TIMESTAMP,{{proof_type}},$HARNESS,$i,$NUM_CHUNKS,FAILED,$ELAPSED" >> "$CSV"
+            echo "$TIMESTAMP,{{proof_type}},$HARNESS,$i,{{num_chunks}},FAILED,$ELAPSED" >> "$CSV"
             echo "❌ Chunk $i failed after ${ELAPSED}s"
             echo "See: kani_${HARNESS}.log"
             exit 1
@@ -1202,27 +1199,27 @@ kani-chunked proof_type config:
         echo ""
     done
     
-    echo "✅ All chunks completed for {{proof_type}} / {{config}}"
+    echo "✅ All chunks completed for {{proof_type}} / {{num_chunks}} chunks"
     echo "📊 Results: $CSV"
 
 # Show status of chunked proof progress
-kani-chunked-status proof_type config:
+kani-chunked-status proof_type num_chunks:
     #!/usr/bin/env bash
-    CSV="kani_proof_record_{{proof_type}}_{{config}}.csv"
+    CSV="kani_proof_record_{{proof_type}}_{{num_chunks}}.csv"
     
     if [ ! -f "$CSV" ]; then
         echo "❌ No record found: $CSV"
         echo ""
         echo "Available configurations:"
-        echo "  just kani-chunked 2byte 2chunks"
-        echo "  just kani-chunked 2byte 4chunks"
-        echo "  just kani-chunked 3byte 4chunks"
-        echo "  just kani-chunked 3byte 12chunks"
-        echo "  just kani-chunked 4byte 3chunks"
+        echo "  just kani-chunked 2byte 2"
+        echo "  just kani-chunked 2byte 4"
+        echo "  just kani-chunked 3byte 4"
+        echo "  just kani-chunked 3byte 12"
+        echo "  just kani-chunked 4byte 3"
         exit 0
     fi
     
-    echo "📊 Chunked Proof Status: {{proof_type}} / {{config}}"
+    echo "📊 Chunked Proof Status: {{proof_type}} / {{num_chunks}} chunks"
     echo "========================================"
     echo ""
     
