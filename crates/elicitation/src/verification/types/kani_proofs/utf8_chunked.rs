@@ -214,7 +214,7 @@ mod tests {
             (0xE1u8, 0xE3u8),
             (0xE4u8, 0xE6u8),
             (0xE7u8, 0xE9u8),
-            (0xEA u8, 0xECu8),
+            (0xEAu8, 0xECu8),
         ];
         
         // Check no overlap

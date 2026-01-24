@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/elicitation", "crates/elicitation_derive", "crates/elicitation_macros", "scripts/kani_chunked"]
+members = ["crates/elicitation", "crates/elicitation_derive", "crates/elicitation_macros"]
 resolver = "2"
 
 [workspace.package]
