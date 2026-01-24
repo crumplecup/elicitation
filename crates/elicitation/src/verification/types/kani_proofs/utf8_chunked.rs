@@ -59,6 +59,29 @@ verify_2byte_chunks!(
 );
 
 // ============================================================================
+// 16-Chunk Configuration (~248 combinations each)
+// ============================================================================
+
+verify_2byte_chunks!(
+    (verify_2byte_16chunks_0,  0xC2, 0xC3, 0),   // 2 × 64 = 128
+    (verify_2byte_16chunks_1,  0xC4, 0xC5, 1),   // 2 × 64 = 128
+    (verify_2byte_16chunks_2,  0xC6, 0xC7, 2),   // 2 × 64 = 128
+    (verify_2byte_16chunks_3,  0xC8, 0xC9, 3),   // 2 × 64 = 128
+    (verify_2byte_16chunks_4,  0xCA, 0xCB, 4),   // 2 × 64 = 128
+    (verify_2byte_16chunks_5,  0xCC, 0xCD, 5),   // 2 × 64 = 128
+    (verify_2byte_16chunks_6,  0xCE, 0xCF, 6),   // 2 × 64 = 128
+    (verify_2byte_16chunks_7,  0xD0, 0xD1, 7),   // 2 × 64 = 128
+    (verify_2byte_16chunks_8,  0xD2, 0xD3, 8),   // 2 × 64 = 128
+    (verify_2byte_16chunks_9,  0xD4, 0xD5, 9),   // 2 × 64 = 128
+    (verify_2byte_16chunks_10, 0xD6, 0xD7, 10),  // 2 × 64 = 128
+    (verify_2byte_16chunks_11, 0xD8, 0xD9, 11),  // 2 × 64 = 128
+    (verify_2byte_16chunks_12, 0xDA, 0xDB, 12),  // 2 × 64 = 128
+    (verify_2byte_16chunks_13, 0xDC, 0xDD, 13),  // 2 × 64 = 128
+    (verify_2byte_16chunks_14, 0xDE, 0xDE, 14),  // 1 × 64 = 64
+    (verify_2byte_16chunks_15, 0xDF, 0xDF, 15),  // 1 × 64 = 64
+);
+
+// ============================================================================
 // 3-Byte Chunked Proofs (49,152 combinations → N chunks)
 // ============================================================================
 
