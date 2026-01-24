@@ -43,6 +43,7 @@ mod collections;
 mod mechanisms;
 mod utf8;
 mod utf8_benchmark;
+mod utf8_chunked;
 mod ipaddr_bytes;
 mod macaddr;
 mod socketaddr;

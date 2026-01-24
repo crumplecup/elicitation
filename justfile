@@ -1150,3 +1150,49 @@ verify-examples:
     cargo run --example creusot_example --features verify-creusot
     @echo ""
     @echo "✅ All examples passed"
+
+# Run chunked proofs with checkpoint/resume support
+kani-chunked proof_type num_chunks:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    ./scripts/kani_chunked_runner.py {{proof_type}} {{num_chunks}}
+
+# Quick status check of chunked proof progress
+kani-chunked-status num_chunks:
+    #!/usr/bin/env bash
+    CSV="kani_proof_record_{{num_chunks}}.csv"
+    
+    if [ ! -f "$CSV" ]; then
+        echo "❌ No record found: $CSV"
+        echo ""
+        echo "Start a chunked proof with:"
+        echo "  just kani-chunked 3byte {{num_chunks}}"
+        exit 0
+    fi
+    
+    echo "📊 Chunked Proof Status: $CSV"
+    echo "========================================"
+    echo ""
+    
+    # Count completed chunks
+    TOTAL=$(tail -n +2 "$CSV" | wc -l)
+    SUCCESS=$(tail -n +2 "$CSV" | grep SUCCESS | wc -l)
+    FAILED=$(tail -n +2 "$CSV" | grep -E "FAILED|TIMEOUT|ERROR" | wc -l)
+    
+    echo "Total runs: $TOTAL"
+    echo "Successful: $SUCCESS"
+    echo "Failed: $FAILED"
+    echo ""
+    
+    if [ $SUCCESS -gt 0 ]; then
+        echo "Recent completions:"
+        tail -n +2 "$CSV" | grep SUCCESS | tail -5 | \
+            awk -F, '{printf "  ✅ Chunk %s (%s combos) in %ss\n", $4, $7, $8}'
+    fi
+    
+    if [ $FAILED -gt 0 ]; then
+        echo ""
+        echo "Failed chunks:"
+        tail -n +2 "$CSV" | grep -E "FAILED|TIMEOUT|ERROR" | \
+            awk -F, '{printf "  ❌ Chunk %s: %s\n", $4, $9}'
+    fi
