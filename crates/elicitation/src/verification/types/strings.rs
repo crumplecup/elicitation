@@ -189,3 +189,49 @@ mod string_nonempty_tests {
 }
 
 // ============================================================================
+
+/// Default string wrapper for MCP elicitation.
+///
+/// Provides JSON Schema validation and serialization for strings.
+/// No constraints - accepts any valid string.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[schemars(description = "A string value")]
+pub struct StringDefault(#[schemars(description = "String content")] String);
+
+impl StringDefault {
+    /// Creates a new string wrapper.
+    pub fn new(s: String) -> Self {
+        Self(s)
+    }
+
+    /// Returns the inner string.
+    pub fn get(&self) -> &str {
+        &self.0
+    }
+
+    /// Converts to inner string.
+    pub fn into_inner(self) -> String {
+        self.0
+    }
+}
+
+// Mark as elicit-safe for rmcp
+rmcp::elicit_safe!(StringDefault);
+
+crate::default_style!(StringDefault => StringDefaultStyle);
+
+impl Prompt for StringDefault {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a string:")
+    }
+}
+
+impl Elicitation for StringDefault {
+    type Style = StringDefaultStyle;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        let value = String::elicit(client).await?;
+        Ok(Self(value))
+    }
+}

@@ -182,3 +182,48 @@ mod bool_false_tests {
 }
 
 // ============================================================================
+
+/// Default bool wrapper for MCP elicitation.
+///
+/// Provides JSON Schema validation and serialization for booleans.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[schemars(description = "A boolean value")]
+pub struct BoolDefault(#[schemars(description = "True or false")] bool);
+
+impl BoolDefault {
+    /// Creates a new bool wrapper.
+    pub fn new(b: bool) -> Self {
+        Self(b)
+    }
+
+    /// Returns the inner bool.
+    pub fn get(&self) -> bool {
+        self.0
+    }
+
+    /// Converts to inner bool.
+    pub fn into_inner(self) -> bool {
+        self.0
+    }
+}
+
+// Mark as elicit-safe for rmcp
+rmcp::elicit_safe!(BoolDefault);
+
+crate::default_style!(BoolDefault => BoolDefaultStyle);
+
+impl Prompt for BoolDefault {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter true or false:")
+    }
+}
+
+impl Elicitation for BoolDefault {
+    type Style = BoolDefaultStyle;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        let value = bool::elicit(client).await?;
+        Ok(Self(value))
+    }
+}

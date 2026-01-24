@@ -666,3 +666,48 @@ mod f64_finite_tests {
 }
 
 // ============================================================================
+
+/// Default f64 wrapper for MCP elicitation.
+///
+/// Provides JSON Schema validation and serialization for 64-bit floats.
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[schemars(description = "A 64-bit floating point number")]
+pub struct F64Default(#[schemars(description = "Float value")] f64);
+
+impl F64Default {
+    /// Creates a new f64 wrapper.
+    pub fn new(f: f64) -> Self {
+        Self(f)
+    }
+
+    /// Returns the inner f64.
+    pub fn get(&self) -> f64 {
+        self.0
+    }
+
+    /// Converts to inner f64.
+    pub fn into_inner(self) -> f64 {
+        self.0
+    }
+}
+
+// Mark as elicit-safe for rmcp
+rmcp::elicit_safe!(F64Default);
+
+crate::default_style!(F64Default => F64DefaultStyle);
+
+impl Prompt for F64Default {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a number:")
+    }
+}
+
+impl Elicitation for F64Default {
+    type Style = F64DefaultStyle;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        let value = f64::elicit(client).await?;
+        Ok(Self(value))
+    }
+}
