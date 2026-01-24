@@ -4,7 +4,7 @@
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, ImplItem, ItemImpl};
+use syn::{ImplItem, ItemImpl, parse_macro_input};
 
 /// Attribute macro to add tracing instrumentation to impl blocks.
 ///
@@ -42,25 +42,25 @@ use syn::{parse_macro_input, ImplItem, ItemImpl};
 #[proc_macro_attribute]
 pub fn instrumented_impl(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let impl_block = parse_macro_input!(item as ItemImpl);
-    
+
     // Under Kani, return impl block unchanged (no instrumentation needed)
     #[cfg(kani)]
     {
         return TokenStream::from(quote! { #impl_block });
     }
-    
+
     // Normal compilation: add instrumentation
     #[cfg(not(kani))]
     {
         let mut impl_block = impl_block;
-        
+
         // Process each method in the impl block
         for item in &mut impl_block.items {
             if let ImplItem::Fn(method) = item {
                 // Only instrument public methods
                 if matches!(method.vis, syn::Visibility::Public(_)) {
                     let method_name = method.sig.ident.to_string();
-                    
+
                     // Determine instrumentation strategy based on method name
                     let instrument_attr = if is_constructor(&method_name) {
                         // Constructors: log args and return, with error tracking
@@ -78,29 +78,26 @@ pub fn instrumented_impl(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             #[tracing::instrument(skip(self))]
                         }
                     };
-                    
+
                     // Add instrumentation attribute at the beginning
                     let attr: syn::Attribute = syn::parse_quote! { #instrument_attr };
                     method.attrs.insert(0, attr);
                 }
             }
         }
-        
+
         TokenStream::from(quote! { #impl_block })
     }
 }
 
 /// Check if method name indicates a constructor.
 fn is_constructor(name: &str) -> bool {
-    name == "new" 
-        || name.starts_with("from_") 
-        || name.starts_with("try_")
-        || name == "default"
+    name == "new" || name.starts_with("from_") || name.starts_with("try_") || name == "default"
 }
 
 /// Check if method name indicates an accessor.
 fn is_accessor(name: &str) -> bool {
-    name == "get" 
+    name == "get"
         || name == "into_inner"
         || name.starts_with("as_")
         || name.starts_with("to_")

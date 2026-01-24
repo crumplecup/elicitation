@@ -20,7 +20,7 @@
 use elicitation::verification::contracts::{
     I32Positive, OptionIsSome, ResultIsOk, StringNonEmpty, VecNonEmpty,
 };
-use elicitation::verification::{compose, Contract, DynContract};
+use elicitation::verification::{Contract, DynContract, compose};
 
 fn main() {
     println!("=== Kani Verification Example ===\n");
@@ -59,7 +59,10 @@ fn main() {
     println!("3. Option<T> Contracts");
     let some_value: Option<i32> = Some(42);
     let none_value: Option<i32> = None;
-    println!("   Some(42): {}", OptionIsSome::<i32>::requires(&some_value));
+    println!(
+        "   Some(42): {}",
+        OptionIsSome::<i32>::requires(&some_value)
+    );
     println!("   None: {}", OptionIsSome::<i32>::requires(&none_value));
     println!();
 
@@ -85,32 +88,20 @@ fn main() {
         "   vec![1, 2, 3]: {}",
         VecNonEmpty::<i32>::requires(&non_empty_vec)
     );
-    println!(
-        "   vec![]: {}",
-        VecNonEmpty::<i32>::requires(&empty_vec)
-    );
+    println!("   vec![]: {}", VecNonEmpty::<i32>::requires(&empty_vec));
     println!();
 
     // Example 6: Contract composition
     println!("6. Contract Composition");
     let value = 42i32;
     let and_contract = compose::and(I32Positive, I32Positive);
-    println!(
-        "   Composed (AND): {}",
-        and_contract.check_requires(&value)
-    );
+    println!("   Composed (AND): {}", and_contract.check_requires(&value));
 
     let or_contract = compose::or(I32Positive, I32Positive);
-    println!(
-        "   Composed (OR): {}",
-        or_contract.check_requires(&value)
-    );
+    println!("   Composed (OR): {}", or_contract.check_requires(&value));
 
     let not_contract = compose::not(I32Positive);
-    println!(
-        "   Composed (NOT): {}",
-        not_contract.check_requires(&value)
-    );
+    println!("   Composed (NOT): {}", not_contract.check_requires(&value));
     println!();
 
     println!("=== Why Choose Kani? ===\n");
@@ -135,13 +126,7 @@ mod verification_harnesses {
     /// Kani harness for StringNonEmpty contract.
     #[kani::proof]
     fn verify_string_non_empty_comprehensive() {
-        let test_strings = [
-            "",
-            "a",
-            "hello",
-            "world",
-            "a very long string for testing",
-        ];
+        let test_strings = ["", "a", "hello", "world", "a very long string for testing"];
 
         for s in test_strings.iter() {
             let input = String::from(*s);
@@ -172,11 +157,7 @@ mod verification_harnesses {
     /// Kani harness for OptionIsSome contract.
     #[kani::proof]
     fn verify_option_is_some_comprehensive() {
-        let value: Option<i32> = if kani::any() {
-            Some(kani::any())
-        } else {
-            None
-        };
+        let value: Option<i32> = if kani::any() { Some(kani::any()) } else { None };
 
         let pre = OptionIsSome::<i32>::requires(&value);
         let post = OptionIsSome::<i32>::ensures(&value, &value);

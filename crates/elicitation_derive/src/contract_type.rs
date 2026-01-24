@@ -6,7 +6,7 @@
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::parse::{ParseStream, Parser};
-use syn::{parse_macro_input, Expr, ExprLit, Item, Lit, Meta};
+use syn::{Expr, ExprLit, Item, Lit, Meta, parse_macro_input};
 
 /// Annotates a type with contract metadata.
 ///
@@ -28,12 +28,12 @@ use syn::{parse_macro_input, Expr, ExprLit, Item, Lit, Meta};
 /// The metadata is stored via const fns that can be queried at compile time.
 pub fn contract_type_impl(args: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as Item);
-    
+
     // Parse comma-separated name=value pairs
     let parser = |input: ParseStream| {
         syn::punctuated::Punctuated::<Meta, syn::Token![,]>::parse_terminated(input)
     };
-    
+
     let metas = match parser.parse(args) {
         Ok(metas) => metas,
         Err(e) => return e.to_compile_error().into(),
@@ -46,9 +46,13 @@ pub fn contract_type_impl(args: TokenStream, input: TokenStream) -> TokenStream 
     for meta in metas {
         if let Meta::NameValue(nv) = meta {
             let name = nv.path.get_ident().map(|i| i.to_string());
-            
+
             if let Some(name) = name {
-                if let Expr::Lit(ExprLit { lit: Lit::Str(lit_str), .. }) = nv.value {
+                if let Expr::Lit(ExprLit {
+                    lit: Lit::Str(lit_str),
+                    ..
+                }) = nv.value
+                {
                     match name.as_str() {
                         "requires" => requires_expr = Some(lit_str.value()),
                         "ensures" => ensures_expr = Some(lit_str.value()),
@@ -69,7 +73,7 @@ pub fn contract_type_impl(args: TokenStream, input: TokenStream) -> TokenStream 
         _ => {
             return syn::Error::new_spanned(
                 &input,
-                "#[contract_type] only supports structs and enums"
+                "#[contract_type] only supports structs and enums",
             )
             .to_compile_error()
             .into();

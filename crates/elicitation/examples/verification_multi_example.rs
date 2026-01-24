@@ -12,7 +12,7 @@
 #![cfg(feature = "verification")]
 
 use elicitation::verification::contracts::{I32Positive, StringNonEmpty, VecNonEmpty};
-use elicitation::verification::{compose, Contract, DynContract, VerifierBackend};
+use elicitation::verification::{Contract, DynContract, VerifierBackend, compose};
 
 fn main() {
     println!("=== Multi-Verifier Contract Example ===\n");
@@ -21,13 +21,19 @@ fn main() {
     println!("1. Runtime Verifier Selection");
     let value = 42i32;
 
-    let kani_backend = VerifierBackend::Kani(Box::new(I32Positive) as Box<dyn DynContract<i32, i32>>);
-    println!("   Kani backend precondition: {}", kani_backend.check_precondition(&value));
+    let kani_backend =
+        VerifierBackend::Kani(Box::new(I32Positive) as Box<dyn DynContract<i32, i32>>);
+    println!(
+        "   Kani backend precondition: {}",
+        kani_backend.check_precondition(&value)
+    );
 
     #[cfg(feature = "verify-creusot")]
     {
         use elicitation::verification::contracts::creusot::CreusotI32Positive;
-        let creusot_backend = VerifierBackend::Creusot(Box::new(CreusotI32Positive) as Box<dyn DynContract<i32, i32>>);
+        let creusot_backend = VerifierBackend::Creusot(
+            Box::new(CreusotI32Positive) as Box<dyn DynContract<i32, i32>>
+        );
         println!(
             "   Creusot backend precondition: {}",
             creusot_backend.check_precondition(&value)
@@ -37,7 +43,8 @@ fn main() {
     #[cfg(feature = "verify-prusti")]
     {
         use elicitation::verification::contracts::prusti::PrustiI32Positive;
-        let prusti_backend = VerifierBackend::Prusti(Box::new(PrustiI32Positive) as Box<dyn DynContract<i32, i32>>);
+        let prusti_backend =
+            VerifierBackend::Prusti(Box::new(PrustiI32Positive) as Box<dyn DynContract<i32, i32>>);
         println!(
             "   Prusti backend precondition: {}",
             prusti_backend.check_precondition(&value)
@@ -47,7 +54,8 @@ fn main() {
     #[cfg(feature = "verify-verus")]
     {
         use elicitation::verification::contracts::verus::VerusI32Positive;
-        let verus_backend = VerifierBackend::Verus(Box::new(VerusI32Positive) as Box<dyn DynContract<i32, i32>>);
+        let verus_backend =
+            VerifierBackend::Verus(Box::new(VerusI32Positive) as Box<dyn DynContract<i32, i32>>);
         println!(
             "   Verus backend precondition: {}",
             verus_backend.check_precondition(&value)

@@ -12,32 +12,32 @@ struct ComprehensiveTest {
     ratio: F32Positive,
     flag: BoolTrue,
     initial: CharAlphanumeric,
-    
+
     // Strings
     name: StringNonEmpty,
-    
+
     // Collections
     tags: VecNonEmpty<StringNonEmpty>,
     metadata: OptionSome<I32Positive>,
     pair: Tuple2<StringNonEmpty, I8Positive>,
-    
+
     // Durations
     timeout: DurationPositive,
-    
+
     // Network types
     #[cfg(feature = "uuid")]
     id: UuidNonNil,
-    
+
     #[cfg(feature = "url")]
     endpoint: UrlHttps,
-    
+
     // Filesystem
     config_path: PathBufExists,
-    
+
     // DateTime (pick one)
     #[cfg(feature = "chrono")]
     created: DateTimeNonEmpty,
-    
+
     // Value
     #[cfg(feature = "serde_json")]
     data: ValueObject,

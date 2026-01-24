@@ -1,7 +1,7 @@
 //! Test enum verification contract generation.
 
-use elicitation::{Elicit, Select, Prompt};
 use elicitation::verification::types::{I8Positive, StringNonEmpty};
+use elicitation::{Elicit, Prompt, Select};
 
 /// Test enum with all variant types.
 #[derive(Elicit)]
@@ -19,5 +19,5 @@ fn test_enum_compiles() {
 
 // Note: Generated verification harnesses are only compiled by Kani:
 //   cargo kani --harness __verify_Status_Active --features verify-kani
-//   cargo kani --harness __verify_Status_Pending --features verify-kani  
+//   cargo kani --harness __verify_Status_Pending --features verify-kani
 //   cargo kani --harness __verify_Status_Inactive --features verify-kani

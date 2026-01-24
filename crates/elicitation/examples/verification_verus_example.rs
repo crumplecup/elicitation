@@ -18,10 +18,10 @@
 
 #![cfg(all(feature = "verification", feature = "verify-verus"))]
 
+use elicitation::verification::Contract;
 use elicitation::verification::contracts::verus::{
     VerusI32Positive, VerusOptionIsSome, VerusResultIsOk, VerusStringNonEmpty, VerusVecNonEmpty,
 };
-use elicitation::verification::Contract;
 
 fn main() {
     println!("=== Verus Verification Example ===\n");

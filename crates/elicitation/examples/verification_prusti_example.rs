@@ -18,11 +18,11 @@
 
 #![cfg(all(feature = "verification", feature = "verify-prusti"))]
 
+use elicitation::verification::Contract;
 use elicitation::verification::contracts::prusti::{
     PrustiI32Positive, PrustiOptionIsSome, PrustiResultIsOk, PrustiStringNonEmpty,
     PrustiVecNonEmpty,
 };
-use elicitation::verification::Contract;
 
 fn main() {
     println!("=== Prusti Verification Example ===\n");

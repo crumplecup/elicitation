@@ -14,11 +14,11 @@
 #![cfg(feature = "verification")]
 
 use elicitation::verification::{
+    Contract,
     contracts::{I32Positive, StringNonEmpty},
     mechanisms::{
         AffirmReturnsBoolean, MechanismWithType, NumericReturnsValid, TextReturnsNonEmpty,
     },
-    Contract,
 };
 
 fn main() {
@@ -26,14 +26,17 @@ fn main() {
 
     // Layer 1: Mechanism Contracts
     println!("## Layer 1: Mechanism Contracts\n");
-    
+
     println!("These verify the elicitation PROCESS works correctly:\n");
 
     println!("1. Affirm Mechanism");
     println!("   Contract: Returns boolean");
     let affirm_result = true;
     println!("   Input: {}", affirm_result);
-    println!("   Verified: {}", AffirmReturnsBoolean::ensures(&affirm_result, &true));
+    println!(
+        "   Verified: {}",
+        AffirmReturnsBoolean::ensures(&affirm_result, &true)
+    );
     println!();
 
     println!("2. Text Mechanism");
@@ -42,7 +45,10 @@ fn main() {
     let text_result = String::from("hello");
     println!("   Input: {:?}", text_input);
     println!("   Output: {:?}", text_result);
-    println!("   Verified: {}", TextReturnsNonEmpty::ensures(&text_input, &text_result));
+    println!(
+        "   Verified: {}",
+        TextReturnsNonEmpty::ensures(&text_input, &text_result)
+    );
     println!();
 
     println!("3. Numeric Mechanism");
@@ -51,12 +57,15 @@ fn main() {
     let num_result = 42i32;
     println!("   Input: {}", num_input);
     println!("   Output: {}", num_result);
-    println!("   Verified: {}", NumericReturnsValid::<i32>::ensures(&num_input, &num_result));
+    println!(
+        "   Verified: {}",
+        NumericReturnsValid::<i32>::ensures(&num_input, &num_result)
+    );
     println!();
 
     // Layer 2: Type Contracts
     println!("## Layer 2: Type Contracts\n");
-    
+
     println!("These verify the VALUES satisfy constraints:\n");
 
     println!("1. Positive Integer");
@@ -77,7 +86,7 @@ fn main() {
 
     // Layer 3: Composition
     println!("## Layer 3: Composed Verification\n");
-    
+
     println!("Mechanism + Type = End-to-End Proof\n");
 
     println!("Example: Numeric mechanism returns positive i32\n");
@@ -93,8 +102,14 @@ fn main() {
         &positive_input,
         &positive_output,
     );
-    println!("   Mechanism verified: {}", NumericReturnsValid::<i32>::ensures(&positive_input, &positive_output));
-    println!("   Type verified: {}", I32Positive::ensures(&positive_input, &positive_output));
+    println!(
+        "   Mechanism verified: {}",
+        NumericReturnsValid::<i32>::ensures(&positive_input, &positive_output)
+    );
+    println!(
+        "   Type verified: {}",
+        I32Positive::ensures(&positive_input, &positive_output)
+    );
     println!("   BOTH verified: {} ✓", both_hold);
     println!();
 

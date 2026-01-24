@@ -14,9 +14,8 @@
 //! ```
 
 use elicitation::verification::{
-    compose,
+    AndContract, Contract, NotContract, OrContract, VerifierBackend, compose,
     contracts::{BoolValid, I32NonNegative, I32Positive, StringMaxLength, StringNonEmpty},
-    AndContract, Contract, NotContract, OrContract, VerifierBackend,
 };
 
 fn main() {
@@ -31,15 +30,30 @@ fn main() {
     let hello = String::from("hello");
     let empty = String::new();
 
-    println!("StringNonEmpty::requires(\"hello\"): {}", StringNonEmpty::requires(&hello));
-    println!("StringNonEmpty::requires(\"\"):      {}", StringNonEmpty::requires(&empty));
+    println!(
+        "StringNonEmpty::requires(\"hello\"): {}",
+        StringNonEmpty::requires(&hello)
+    );
+    println!(
+        "StringNonEmpty::requires(\"\"):      {}",
+        StringNonEmpty::requires(&empty)
+    );
 
-    println!("\nI32Positive::requires(42):  {}", I32Positive::requires(&42));
+    println!(
+        "\nI32Positive::requires(42):  {}",
+        I32Positive::requires(&42)
+    );
     println!("I32Positive::requires(0):   {}", I32Positive::requires(&0));
     println!("I32Positive::requires(-1):  {}", I32Positive::requires(&-1));
 
-    println!("\nBoolValid::requires(true):  {}", BoolValid::requires(&true));
-    println!("BoolValid::requires(false): {}", BoolValid::requires(&false));
+    println!(
+        "\nBoolValid::requires(true):  {}",
+        BoolValid::requires(&true)
+    );
+    println!(
+        "BoolValid::requires(false): {}",
+        BoolValid::requires(&false)
+    );
 
     // ========================================================================
     // 2. Contract Composition
@@ -49,15 +63,33 @@ fn main() {
 
     // AND: Both must pass
     println!("\nAND Combinator (I32Positive AND I32NonNegative):");
-    println!("  42: {}", AndContract::<I32Positive, I32NonNegative>::requires(&42));
-    println!("   0: {}", AndContract::<I32Positive, I32NonNegative>::requires(&0));
-    println!("  -1: {}", AndContract::<I32Positive, I32NonNegative>::requires(&-1));
+    println!(
+        "  42: {}",
+        AndContract::<I32Positive, I32NonNegative>::requires(&42)
+    );
+    println!(
+        "   0: {}",
+        AndContract::<I32Positive, I32NonNegative>::requires(&0)
+    );
+    println!(
+        "  -1: {}",
+        AndContract::<I32Positive, I32NonNegative>::requires(&-1)
+    );
 
     // OR: Either can pass
     println!("\nOR Combinator (I32Positive OR I32NonNegative):");
-    println!("  42: {}", OrContract::<I32Positive, I32NonNegative>::requires(&42));
-    println!("   0: {}", OrContract::<I32Positive, I32NonNegative>::requires(&0));
-    println!("  -1: {}", OrContract::<I32Positive, I32NonNegative>::requires(&-1));
+    println!(
+        "  42: {}",
+        OrContract::<I32Positive, I32NonNegative>::requires(&42)
+    );
+    println!(
+        "   0: {}",
+        OrContract::<I32Positive, I32NonNegative>::requires(&0)
+    );
+    println!(
+        "  -1: {}",
+        OrContract::<I32Positive, I32NonNegative>::requires(&-1)
+    );
 
     // NOT: Inverts logic
     println!("\nNOT Combinator (NOT I32Positive):");
@@ -69,9 +101,18 @@ fn main() {
     println!("\nComplex: (StringNonEmpty AND StringMaxLength<10>):");
     let short = String::from("hello");
     let long = String::from("this is too long");
-    println!("  \"hello\":              {}", AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(&short));
-    println!("  \"this is too long\":  {}", AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(&long));
-    println!("  \"\":                  {}", AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(&empty));
+    println!(
+        "  \"hello\":              {}",
+        AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(&short)
+    );
+    println!(
+        "  \"this is too long\":  {}",
+        AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(&long)
+    );
+    println!(
+        "  \"\":                  {}",
+        AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(&empty)
+    );
 
     // ========================================================================
     // 3. Compose Helpers
@@ -84,10 +125,16 @@ fn main() {
     let not_contract = compose::not(I32Positive);
 
     println!("\nUsing compose::and(I32Positive, I32NonNegative):");
-    println!("  42: {}", AndContract::<I32Positive, I32NonNegative>::requires(&42));
+    println!(
+        "  42: {}",
+        AndContract::<I32Positive, I32NonNegative>::requires(&42)
+    );
 
     println!("\nUsing compose::or(I32Positive, I32NonNegative):");
-    println!("   0: {}", OrContract::<I32Positive, I32NonNegative>::requires(&0));
+    println!(
+        "   0: {}",
+        OrContract::<I32Positive, I32NonNegative>::requires(&0)
+    );
 
     println!("\nUsing compose::not(I32Positive):");
     println!("  -1: {}", NotContract::<I32Positive>::requires(&-1));
@@ -106,9 +153,18 @@ fn main() {
     // Kani backend
     let kani_verifier = VerifierBackend::Kani(Box::new(StringNonEmpty));
     println!("\nKani Verifier (StringNonEmpty):");
-    println!("  Precondition(\"hello\"):  {}", kani_verifier.check_precondition(&hello));
-    println!("  Precondition(\"\"):       {}", kani_verifier.check_precondition(&empty));
-    println!("  Invariant:               {}", kani_verifier.check_invariant());
+    println!(
+        "  Precondition(\"hello\"):  {}",
+        kani_verifier.check_precondition(&hello)
+    );
+    println!(
+        "  Precondition(\"\"):       {}",
+        kani_verifier.check_precondition(&empty)
+    );
+    println!(
+        "  Invariant:               {}",
+        kani_verifier.check_invariant()
+    );
 
     // Verify with identity transformation
     match kani_verifier.verify(hello.clone(), |x| x) {
@@ -127,8 +183,14 @@ fn main() {
         use elicitation::verification::contracts::creusot::CreusotStringNonEmpty;
         let creusot_verifier = VerifierBackend::Creusot(Box::new(CreusotStringNonEmpty));
         println!("\nCreusot Verifier (StringNonEmpty):");
-        println!("  Precondition(\"hello\"):  {}", creusot_verifier.check_precondition(&hello));
-        println!("  Precondition(\"\"):       {}", creusot_verifier.check_precondition(&empty));
+        println!(
+            "  Precondition(\"hello\"):  {}",
+            creusot_verifier.check_precondition(&hello)
+        );
+        println!(
+            "  Precondition(\"\"):       {}",
+            creusot_verifier.check_precondition(&empty)
+        );
     }
 
     // Prusti backend
@@ -137,7 +199,10 @@ fn main() {
         use elicitation::verification::contracts::prusti::PrustiStringNonEmpty;
         let prusti_verifier = VerifierBackend::Prusti(Box::new(PrustiStringNonEmpty));
         println!("\nPrusti Verifier (StringNonEmpty):");
-        println!("  Precondition(\"hello\"):  {}", prusti_verifier.check_precondition(&hello));
+        println!(
+            "  Precondition(\"hello\"):  {}",
+            prusti_verifier.check_precondition(&hello)
+        );
     }
 
     // Verus backend
@@ -146,7 +211,10 @@ fn main() {
         use elicitation::verification::contracts::verus::VerusStringNonEmpty;
         let verus_verifier = VerifierBackend::Verus(Box::new(VerusStringNonEmpty));
         println!("\nVerus Verifier (StringNonEmpty):");
-        println!("  Precondition(\"hello\"):  {}", verus_verifier.check_precondition(&hello));
+        println!(
+            "  Precondition(\"hello\"):  {}",
+            verus_verifier.check_precondition(&hello)
+        );
     }
 
     #[cfg(not(any(
@@ -156,7 +224,9 @@ fn main() {
     )))]
     {
         println!("\nNote: Creusot, Prusti, and Verus verifiers are feature-gated.");
-        println!("      Run with --features verify-creusot|verify-prusti|verify-verus to test them.");
+        println!(
+            "      Run with --features verify-creusot|verify-prusti|verify-verus to test them."
+        );
     }
 
     // ========================================================================
@@ -185,9 +255,18 @@ fn main() {
         #[cfg(feature = "verify-verus")]
         println!("  Active verifier: Verus");
 
-        println!("\nDEFAULT_STRING_CONTRACT::requires(\"hello\"): {}", StringNonEmpty::requires(&hello));
-        println!("DEFAULT_I32_CONTRACT::requires(42):          {}", I32Positive::requires(&42));
-        println!("DEFAULT_BOOL_CONTRACT::requires(true):       {}", BoolValid::requires(&true));
+        println!(
+            "\nDEFAULT_STRING_CONTRACT::requires(\"hello\"): {}",
+            StringNonEmpty::requires(&hello)
+        );
+        println!(
+            "DEFAULT_I32_CONTRACT::requires(42):          {}",
+            I32Positive::requires(&42)
+        );
+        println!(
+            "DEFAULT_BOOL_CONTRACT::requires(true):       {}",
+            BoolValid::requires(&true)
+        );
 
         // with_contract() usage would look like:
         println!("\nUsage with with_contract():");

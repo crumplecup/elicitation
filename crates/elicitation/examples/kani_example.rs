@@ -57,18 +57,16 @@ impl Contract for QueryUsers {
 
     fn requires(input: &SqlQuery) -> bool {
         // Precondition: No SQL injection attempts
-        !input.query.to_lowercase().contains("drop") &&
-        !input.query.contains("--") &&
-        !input.query.contains(";")
+        !input.query.to_lowercase().contains("drop")
+            && !input.query.contains("--")
+            && !input.query.contains(";")
     }
 
     fn ensures(_input: &SqlQuery, output: &Vec<User>) -> bool {
         // Postcondition: All returned users have valid emails
-        output.iter().all(|u| {
-            u.email.contains('@') &&
-            u.email.len() > 3 &&
-            u.id > 0
-        })
+        output
+            .iter()
+            .all(|u| u.email.contains('@') && u.email.len() > 3 && u.id > 0)
     }
 }
 
@@ -111,8 +109,7 @@ impl Contract for FilterActive {
 
     fn ensures(input: &Vec<User>, output: &Vec<User>) -> bool {
         // Postcondition: Output is subset of input with valid emails
-        output.len() <= input.len() &&
-        output.iter().all(|u| u.email.contains('@'))
+        output.len() <= input.len() && output.iter().all(|u| u.email.contains('@'))
     }
 }
 
@@ -144,11 +141,10 @@ impl Contract for SendEmails {
 
     fn requires(input: &Vec<User>) -> bool {
         // Precondition: All users must have valid emails
-        !input.is_empty() &&
-        input.iter().all(|u| {
-            u.email.contains('@') &&
-            u.email.len() > 3
-        })
+        !input.is_empty()
+            && input
+                .iter()
+                .all(|u| u.email.contains('@') && u.email.len() > 3)
     }
 
     fn ensures(input: &Vec<User>, output: &EmailReceipt) -> bool {
@@ -266,9 +262,7 @@ mod kani_verification {
     #[kani::proof]
     fn verify_tool_chain_compatibility() {
         // Create symbolic SQL query
-        let query = SqlQuery {
-            query: kani::any(),
-        };
+        let query = SqlQuery { query: kani::any() };
 
         // Assume QueryUsers precondition
         kani::assume(QueryUsers::requires(&query));

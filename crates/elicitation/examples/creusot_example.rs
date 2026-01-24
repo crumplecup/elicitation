@@ -2,8 +2,8 @@
 
 #![cfg(feature = "verify-creusot")]
 
-use elicitation::verification::{Contract, creusot::Tool};
 use elicitation::ElicitResult;
+use elicitation::verification::{Contract, creusot::Tool};
 
 // Example 1: Email Validation
 struct ValidateEmail;

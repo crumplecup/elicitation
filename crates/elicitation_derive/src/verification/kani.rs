@@ -1,23 +1,20 @@
 //! Kani verifier backend.
 
 use proc_macro2::TokenStream;
-use quote::{quote, format_ident};
+use quote::{format_ident, quote};
 use syn::{Field, Ident, Type, TypePath};
 
 /// Generate Kani verification for a struct.
-pub fn generate_kani_verification(
-    struct_name: &Ident,
-    fields: &[&Field],
-) -> TokenStream {
+pub fn generate_kani_verification(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
     let constructor = generate_constructor(struct_name, fields);
     let harness = generate_harness(struct_name, fields);
-    
+
     // Note: We only gate on the feature flag, not #[cfg(kani)]
     // This allows cargo expand to show the code, and Kani will find it when running
     quote! {
         #[cfg(feature = "verify-kani")]
         #constructor
-        
+
         #[cfg(feature = "verify-kani")]
         #harness
     }
@@ -33,7 +30,7 @@ pub fn generate_kani_enum_verification(
         .iter()
         .map(|variant| generate_variant_harness(enum_name, variant))
         .collect();
-    
+
     quote! {
         #[cfg(feature = "verify-kani")]
         const _: () = {
@@ -70,14 +67,12 @@ fn generate_constructor(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
     let constructor_name = format_ident!("__make_{}", struct_name);
     let field_names: Vec<_> = fields.iter().filter_map(|f| f.ident.as_ref()).collect();
     let field_types: Vec<_> = fields.iter().map(|f| &f.ty).collect();
-    
+
     // Generate requires predicates for each field
     let requires_predicates: Vec<TokenStream> = field_names
         .iter()
         .zip(&field_types)
-        .map(|(field_name, field_type)| {
-            generate_field_predicate(field_name, field_type, true)
-        })
+        .map(|(field_name, field_type)| generate_field_predicate(field_name, field_type, true))
         .collect();
 
     // Combine all requires with AND
@@ -91,9 +86,7 @@ fn generate_constructor(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
     let ensures_predicates: Vec<TokenStream> = field_names
         .iter()
         .zip(&field_types)
-        .map(|(field_name, field_type)| {
-            generate_field_predicate(field_name, field_type, false)
-        })
+        .map(|(field_name, field_type)| generate_field_predicate(field_name, field_type, false))
         .collect();
 
     let combined_ensures = if ensures_predicates.is_empty() {
@@ -101,7 +94,7 @@ fn generate_constructor(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
     } else {
         quote! { #(#ensures_predicates)&&* }
     };
-    
+
     quote! {
         #[kani::requires(#combined_requires)]
         #[kani::ensures(|_result: &#struct_name| #combined_ensures)]
@@ -116,12 +109,16 @@ fn generate_harness(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
     let harness_name = format_ident!("__verify_{}", struct_name);
     let field_names: Vec<_> = fields.iter().filter_map(|f| f.ident.as_ref()).collect();
     let field_types: Vec<_> = fields.iter().map(|f| &f.ty).collect();
-    
+
     // Generate field initializations with kani::any()
-    let field_inits: Vec<_> = field_names.iter().zip(field_types.iter()).map(|(name, ty)| {
-        quote! { let #name: #ty = kani::any(); }
-    }).collect();
-    
+    let field_inits: Vec<_> = field_names
+        .iter()
+        .zip(field_types.iter())
+        .map(|(name, ty)| {
+            quote! { let #name: #ty = kani::any(); }
+        })
+        .collect();
+
     // Generate stub_verified attributes for field type constructors
     // This assumes leaf types are already verified, so we only verify composition
     let stub_attributes: Vec<TokenStream> = field_types
@@ -134,7 +131,7 @@ fn generate_harness(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
             }
         })
         .collect();
-    
+
     quote! {
         #[kani::proof_for_contract(#constructor_name)]
         #(#stub_attributes)*
@@ -142,7 +139,7 @@ fn generate_harness(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
             // Create arbitrary instances of each field type
             // With stub_verified, Kani assumes these are valid without re-proving
             #(#field_inits)*
-            
+
             // Call constructor (Kani verifies composition, not leaves)
             let _result = #constructor_name(#(#field_names),*);
         }
@@ -153,7 +150,7 @@ fn generate_harness(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
 fn generate_variant_harness(enum_name: &Ident, variant: &syn::Variant) -> TokenStream {
     let variant_name = &variant.ident;
     let harness_name = format_ident!("__verify_{}_{}", enum_name, variant_name);
-    
+
     match &variant.fields {
         syn::Fields::Unit => {
             // Unit variant - just construct it
@@ -165,14 +162,14 @@ fn generate_variant_harness(enum_name: &Ident, variant: &syn::Variant) -> TokenS
                 }
             }
         }
-        
+
         syn::Fields::Unnamed(fields) => {
             // Tuple variant - generate symbolic fields
             let field_types: Vec<_> = fields.unnamed.iter().map(|f| &f.ty).collect();
             let field_names: Vec<_> = (0..field_types.len())
                 .map(|i| format_ident!("field_{}", i))
                 .collect();
-            
+
             // Generate stub_verified for each field type
             let stub_attributes: Vec<TokenStream> = field_types
                 .iter()
@@ -185,7 +182,7 @@ fn generate_variant_harness(enum_name: &Ident, variant: &syn::Variant) -> TokenS
                     }
                 })
                 .collect();
-            
+
             quote! {
                 #[kani::proof]
                 #(#stub_attributes)*
@@ -195,16 +192,16 @@ fn generate_variant_harness(enum_name: &Ident, variant: &syn::Variant) -> TokenS
                 }
             }
         }
-        
+
         syn::Fields::Named(fields) => {
             // Struct variant - generate symbolic fields
-            let field_names: Vec<_> = fields.named.iter()
+            let field_names: Vec<_> = fields
+                .named
+                .iter()
                 .filter_map(|f| f.ident.as_ref())
                 .collect();
-            let field_types: Vec<_> = fields.named.iter()
-                .map(|f| &f.ty)
-                .collect();
-            
+            let field_types: Vec<_> = fields.named.iter().map(|f| &f.ty).collect();
+
             // Generate stub_verified for each field type
             let stub_attributes: Vec<TokenStream> = field_types
                 .iter()
@@ -217,7 +214,7 @@ fn generate_variant_harness(enum_name: &Ident, variant: &syn::Variant) -> TokenS
                     }
                 })
                 .collect();
-            
+
             quote! {
                 #[kani::proof]
                 #(#stub_attributes)*

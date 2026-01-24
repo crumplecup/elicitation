@@ -18,11 +18,11 @@
 
 #![cfg(all(feature = "verification", feature = "verify-creusot"))]
 
+use elicitation::verification::Contract;
 use elicitation::verification::contracts::creusot::{
     CreusotI32Positive, CreusotOptionIsSome, CreusotResultIsOk, CreusotStringNonEmpty,
     CreusotVecNonEmpty,
 };
-use elicitation::verification::Contract;
 
 fn main() {
     println!("=== Creusot Verification Example ===\n");

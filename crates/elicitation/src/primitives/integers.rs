@@ -65,7 +65,7 @@ crate::default_style!(i64 => I64Style);
 
 impl Prompt for i64 {
     fn prompt() -> Option<&'static str> {
-        Some("Please enter an integer:")
+        Some("Please enter a i64 (between -9223372036854775808 and 9223372036854775807):")
     }
 }
 
