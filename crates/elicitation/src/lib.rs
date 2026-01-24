@@ -85,6 +85,10 @@ mod collections;
 mod containers;
 mod default_style;
 mod error;
+pub mod verification;
+
+#[cfg(kani)]
+mod kani_tests;
 pub mod mcp;
 mod paradigm;
 mod primitives;
@@ -126,3 +130,117 @@ pub use rmcp;
 
 // Re-export derive macro with user-friendly name
 pub use elicitation_derive::Elicit;
+
+// Re-export verification contract types at crate level (for kani_proofs imports)
+// EXPLICIT exports - no globs (helps compiler show what's missing)
+#[cfg(any(feature = "verification", kani))]
+pub use verification::types::{
+    // Integers - i8 family
+    I8Positive, I8NonNegative, I8NonZero, I8Range, I8RangeStyle, I8NonZeroStyle,
+    // i16 family
+    I16Positive, I16NonNegative, I16NonZero, I16Range, I16RangeStyle, I16NonZeroStyle,
+    // i32 family
+    I32Positive, I32NonNegative, I32NonZero, I32Range, I32RangeStyle,
+    // i64 family
+    I64Positive, I64NonNegative, I64NonZero, I64Range, I64RangeStyle,
+    // i128 family
+    I128Positive, I128NonNegative, I128NonZero, I128Range, I128RangeStyle,
+    // isize family
+    IsizePositive, IsizeNonNegative, IsizeNonZero, IsizeRange, IsizeRangeStyle,
+    // u8 family
+    U8Positive, U8NonZero, U8Range, U8RangeStyle,
+    // u16 family
+    U16Positive, U16NonZero, U16Range, U16RangeStyle,
+    // u32 family
+    U32Positive, U32NonZero, U32Range, U32RangeStyle,
+    // u64 family
+    U64Positive, U64NonZero, U64Range, U64RangeStyle,
+    // u128 family
+    U128Positive, U128NonZero, U128Range, U128RangeStyle,
+    // usize family
+    UsizePositive, UsizeNonZero, UsizeRange, UsizeRangeStyle,
+    // Floats
+    F32Positive, F32NonNegative, F32Finite,
+    F64Positive, F64NonNegative, F64Finite,
+    // Bools
+    BoolTrue, BoolFalse,
+    // Chars
+    CharAlphabetic, CharNumeric, CharAlphanumeric,
+    // Strings
+    StringNonEmpty,
+    // Collections
+    VecNonEmpty, VecAllSatisfy,
+    OptionSome, ResultOk,
+    BoxSatisfies, ArcSatisfies, RcSatisfies,
+    BoxNonNull, ArcNonNull, RcNonNull,
+    HashMapNonEmpty, BTreeMapNonEmpty,
+    HashSetNonEmpty, BTreeSetNonEmpty,
+    VecDequeNonEmpty, LinkedListNonEmpty,
+    ArrayAllSatisfy,
+    // Tuples
+    Tuple2, Tuple3, Tuple4,
+    // Durations
+    DurationPositive, DurationNonZero,
+    // Networks
+    IpPrivate, IpPublic, IpV4, IpV6,
+    Ipv4Loopback, Ipv6Loopback,
+    // Paths
+    PathBufExists, PathBufReadable,
+    PathBufIsDir, PathBufIsFile,
+    // ValidationError
+    ValidationError,
+};
+
+// UUIDs (feature-gated on uuid)
+#[cfg(all(any(feature = "verification", kani), feature = "uuid"))]
+pub use verification::types::{UuidV4, UuidNonNil};
+
+// DateTimes (feature-gated on chrono/time/jiff)
+#[cfg(all(any(feature = "verification", kani), feature = "chrono"))]
+pub use verification::types::{
+    DateTimeUtcAfter, DateTimeUtcBefore,
+    NaiveDateTimeAfter,
+};
+
+#[cfg(all(any(feature = "verification", kani), feature = "time"))]
+pub use verification::types::{
+    OffsetDateTimeAfter, OffsetDateTimeBefore,
+};
+
+#[cfg(all(any(feature = "verification", kani), feature = "jiff"))]
+pub use verification::types::{
+    TimestampAfter, TimestampBefore,
+};
+
+// Values (JSON - feature-gated)
+#[cfg(all(any(feature = "verification", kani), feature = "serde_json"))]
+pub use verification::types::{
+    ValueObject, ValueArray, ValueNonNull,
+};
+
+// URLs (feature-gated)
+#[cfg(all(any(feature = "verification", kani), feature = "url"))]
+pub use verification::types::{
+    UrlValid, UrlHttps, UrlHttp,
+    UrlWithHost, UrlCanBeBase,
+};
+
+// Regexes (feature-gated)
+#[cfg(all(any(feature = "verification", kani), feature = "regex"))]
+pub use verification::types::{
+    RegexValid, RegexSetValid,
+    RegexCaseInsensitive, RegexMultiline,
+    RegexSetNonEmpty,
+};
+
+// Mechanisms
+#[cfg(any(feature = "verification", kani))]
+pub use verification::mechanisms::{
+    SurveyReturnsValidVariant,
+    AffirmReturnsBoolean,
+    TextReturnsString,
+    TextReturnsNonEmpty,
+    NumericReturnsValid,
+    MechanismWithType,
+    InputNonEmpty,
+};

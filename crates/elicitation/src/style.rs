@@ -57,6 +57,7 @@ pub struct PromptContext {
 
 impl PromptContext {
     /// Create a new prompt context.
+    #[tracing::instrument(level = "trace")]
     pub fn new(field_index: usize, total_fields: usize) -> Self {
         Self {
             field_index,
@@ -67,6 +68,7 @@ impl PromptContext {
     }
 
     /// Create context with parent information.
+    #[tracing::instrument(level = "trace")]
     pub fn with_parent(
         field_index: usize,
         total_fields: usize,

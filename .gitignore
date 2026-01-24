@@ -1,1 +1,5 @@
 /target
+
+# Verification artifacts
+*.log
+*.csv

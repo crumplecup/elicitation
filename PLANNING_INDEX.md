@@ -2,6 +2,35 @@
 
 This file tracks all planning documents for the elicitation project.
 
+## Verification Documentation
+
+### UTF8_VERIFICATION_STRATEGY.md
+**Status:** Complete  
+**Created:** 2026-01-23  
+**Purpose:** Explains the multi-layered formal verification strategy for UTF-8 validation using Kani model checker.
+
+**Key Content:**
+- Constrained symbolic proofs (2-byte, 3-byte, 4-byte sequences)
+- Bounded buffer proofs (2-4096 byte buffers)
+- Marginal cost benchmarking methodology
+- Verification time measurements and growth analysis (O(N^1.48))
+- Completeness argument for production usage
+
+**Key Insights:**
+- Constraints reduce 4-byte proof from 4B combinations to 786K (5,461x reduction)
+- Growth is O(N^1.48) - sub-exponential, therefore tractable
+- Layering prevents combinatorial explosion (prove parts, trust composition)
+- 4096-byte proof completes in ~24 hours on commodity hardware
+- Pattern generalizes to other complex validation (URL, Regex, etc.)
+
+**Related Files:**
+- `crates/elicitation/src/verification/types/utf8.rs`
+- `crates/elicitation/src/verification/types/kani_proofs/utf8.rs`
+- `crates/elicitation/src/verification/types/kani_proofs/benchmark_marginal.rs`
+- `justfile` recipes: `benchmark-kani-marginal`, `benchmark-kani-long`, `kani-long-proofs`
+
+---
+
 ## Active Plans
 
 ### elicitation_vision.md
@@ -276,3 +305,136 @@ Third-party styles:
 **Truly innovative** - no other Rust elicitation library has this pattern.
 
 ---
+
+### UUID_VERIFICATION.md
+**Status**: Complete - UUID byte-level validation
+**Created**: 2026-01-22
+**Purpose**: Formal verification foundation for UUID types using byte-level validation following RFC 4122.
+
+**Architecture**: Layered validation pattern (same as UTF-8):
+- Layer 1: `[u8; 16]` - Raw bytes
+- Layer 2: `UuidBytes` - RFC 4122 variant validation (10xx pattern)
+- Layer 3: `UuidV4Bytes`/`UuidV7Bytes` - Version-specific constraints
+- Layer 4: `UuidV4`/`UuidV7` - High-level contract types (wrap uuid::Uuid)
+
+**What We Prove** (14 Kani proofs, all complete in ~2s each):
+1. Variant validation (4 proofs) - RFC 4122 vs NCS/Microsoft/Reserved
+2. Version detection (1 proof) - All 16 versions correctly extracted
+3. UUID V4 validation (3 proofs) - Construction, wrong version, invalid variant
+4. UUID V7 validation (3 proofs) - Construction, wrong version, timestamp extraction
+5. Round-trip properties (3 proofs) - Byte preservation
+
+**Why UUID Proofs Are Fast**:
+- Fixed 16 bytes (no variable length like UTF-8)
+- Bit-level operations only (no loops/memchr)
+- Small state space: 64 combinations vs UTF-8's 786K
+- Complete symbolic verification in seconds, not days
+
+**Key Innovation**: Trait-based validation approach can be applied to other fixed-format types (IP addresses, MAC addresses, etc.)
+
+---
+
+### KANI_VERIFICATION_PATTERNS.md
+**Status**: Complete - Constraint-based byte validation patterns ✅ **VALIDATED**
+**Created**: 2026-01-22
+**Purpose**: Comprehensive documentation of the constraint-based byte validation pattern that enables fast, tractable formal verification of complex types using Kani.
+
+**Discovery**: By expressing type constraints as byte-level predicates and building layered validation types, we achieved symbolic verification that completes in seconds (not hours) for complex types.
+
+**Pattern**: Constraint-Based Byte Validation
+- Layer 1: Fixed-size byte arrays (Kani's native domain)
+- Layer 2+: Incremental constraint validation
+- Result: Fast proofs (0.04s - 8s) for complex types
+
+**Types Successfully Verified** (74 proofs total, all tractable):
+- **UUID** (16 bytes): Bit patterns, 14 proofs, 1-2s each
+- **IPv4** (4 bytes): Range checks (RFC 1918), 12 proofs, 2-3s each
+- **IPv6** (16 bytes): Bit masks (RFC 4193), 9 proofs, 2-3s each
+- **MAC** (6 bytes): Bit flags (unicast/multicast), 18 proofs, 0.07-8s each
+- **SocketAddr** (18/22 bytes): Composition (IP + port), 19 proofs, ~2s each
+- **PathBuf (Unix)**: UTF-8 + null checks, 2 proofs, ~0.04s each
+
+**Key Discoveries**:
+1. Fixed-size types enable bounded exploration
+2. Simple predicates (bit masks, ranges, byte comparisons) map to SMT primitives
+3. Composition doesn't break tractability
+4. Proof time tracks constraint complexity, not type size
+5. Manual loops avoid memchr infinite unwinding
+
+**What Works**: Fixed arrays, bit operations, range checks, bounded loops, composition, contract types
+**What Struggles**: Vec/String APIs, complex parsing, unbounded iteration
+
+**Pattern Generality**: Works for ANY type expressible as byte-level constraints
+
+**Implementation**: ~2,120 lines of verified validation code across 5 files
+
+### URL_BOUNDED_COMPONENTS.md
+**Status**: Complete - URL validation with bounded components ✅ **PARTIALLY VERIFIED**
+**Created**: 2026-01-22
+**Purpose**: Documents URL validation using bounded component architecture (SchemeBytes, AuthorityBytes, UrlBytes).
+
+**Key Insight**: Unwind bounds must match **actual data size**, not buffer size.
+- ❌ Wrong: `MAX_LEN = 32`, `unwind(32)` explores 32 iterations for 4-byte "http"
+- ✅ Right: `MAX_LEN = 8`, `unwind(5)` just enough for "http" (4 bytes + validation)
+
+**Architecture**:
+```
+UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+├── SchemeBytes<SCHEME_MAX>       // http, https, ftp (proven: 6s)
+├── AuthorityBytes<AUTHORITY_MAX>  // example.com:8080 (proven: 6s)
+└── Full URL parsing              // Composition (long: 3+ min)
+```
+
+**Proof Results**:
+- Component proofs: ~6 seconds ✅
+- Composition proofs: 3+ minutes (nested validation complexity)
+
+**Lesson**: Component-level proofs are tractable. Full composition hits nested loop complexity but will complete with patience.
+
+### REGEX_VERIFICATION.md
+**Status**: Complete - Recursive trait bounds for regex ✅ **FULLY VERIFIED**
+**Created**: 2026-01-22
+**Purpose**: Documents **recursive trait bound pattern** that makes regex validation tractable through layer-by-layer constraint proving (1.6s - 8.2s per proof).
+
+**Architecture** (Compositional Constraint Validation):
+```
+Layer 1: Utf8Bytes           → Valid UTF-8 (proven)
+Layer 2: BalancedDelimiters  → ( == ), [ == ], { == } (1.6s)
+Layer 3: ValidEscapes        → \n, \t, \d, \w valid (2.2s)
+Layer 4: ValidQuantifiers    → *, +, ?, {n,m} follow atoms (4.4s)
+Layer 5: ValidCharClass      → [...] ranges valid (3.3s)
+Layer 6: RegexBytes          → Complete regex (8.2s)
+```
+
+**Key Insight**: Narrow the bit space layer-by-layer
+- Each layer proves **one constraint** independently
+- Composition is linear, not combinatorial
+- Type system enforces: Layer N contains Layer N-1
+
+**Proof Results** (23 proofs, all verified):
+- Balanced delimiters: 1.6s ✅
+- Escape validation: 2.2s ✅
+- Quantifier validation: 4.4s ✅
+- Character class validation: 3.3s ✅
+- Complete regex: 8.2s ✅
+
+**Before vs After**:
+- Before: Monolithic validation (3+ minutes, possibly hours)
+- After: Layered validation (1.6s - 8.2s per layer)
+- Impact: Intractable → tractable through systematic decomposition
+
+**Pattern Generality**: Apply to ANY complex validation with independent constraints
+- Identify constraints that don't depend on each other
+- Create validation layer per constraint
+- Prove each layer independently (seconds)
+- Compose via type wrapping (free)
+
+**Files**: 557 lines implementation, 23 Kani proofs, 14 unit tests
+
+**Achievement**: This is the **proof factory** pattern - the recursive application of trait bounds that makes arbitrarily complex validation tractable.
+
+**Impact**: Eliminates unwind hacks for fixed-format types, enables contract-driven validation, foundation for formally verified LLM tool chains
+
+---
+
+TOTAL_VERIFICATION_PLAN.md

@@ -1,6 +1,6 @@
 //! String type implementation.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt, mcp};
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 
 // Generate default-only style enum
 crate::default_style!(String => StringStyle);
@@ -16,20 +16,14 @@ impl Elicitation for String {
 
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
-        let prompt = Self::prompt().unwrap();
-        tracing::debug!("Eliciting string");
-
-        let params = mcp::text_params(prompt);
-        let result = client
-            .peer()
-            .call_tool(rmcp::model::CallToolRequestParam {
-                name: mcp::tool_names::elicit_text().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await?;
-
-        let value = mcp::extract_value(result)?;
-        mcp::parse_string(value)
+        use crate::verification::types::StringDefault;
+        
+        tracing::debug!("Eliciting String via StringDefault wrapper");
+        
+        // Use verification wrapper internally
+        let wrapper = StringDefault::elicit(client).await?;
+        
+        // Unwrap to primitive
+        Ok(wrapper.into_inner())
     }
 }

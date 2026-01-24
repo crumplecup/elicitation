@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/elicitation", "crates/elicitation_derive"]
+members = ["crates/elicitation", "crates/elicitation_derive", "crates/elicitation_macros"]
 resolver = "2"
 
 [workspace.package]
@@ -14,7 +14,14 @@ readme = "README.md"
 
 [workspace.dependencies]
 # MCP client
-rmcp = { version = "0.13", features = ["client", "transport-io"] }
+rmcp = { version = "0.13", features = ["client", "transport-io", "schemars", "elicitation"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# JSON Schema generation for MCP
+schemars = { version = "1", features = ["derive"] }
 
 # Error handling
 derive_more = { version = "2", features = ["display", "error", "from"] }
@@ -26,19 +33,37 @@ tracing = "0.1"
 # Async runtime
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std"] }
 
-# Serialization
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-
 # Proc macros
-syn = { version = "2", features = ["full"] }
+syn = { version = "2", features = ["full", "extra-traits"] }
 quote = "1"
 proc-macro2 = "1"
+
+# Utility
+paste = "1.0"
+async-trait = "0.1"
 
 # DateTime libraries
 chrono = "0.4"
 time = { version = "0.3", features = ["parsing", "formatting", "macros"] }
 jiff = "0.1"
+
+# UUID library
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# URL library
+url = "2.5"
+
+# Regex library
+regex = "1.12"
+
+# Verification libraries
+creusot-contracts = "0.8"
+prusti-contracts = "0.2"
+
+# Dev dependencies
+tokio-test = "0.4"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+criterion = { version = "0.5", features = ["html_reports"] }
 
 [profile.release]
 lto = true

@@ -56,9 +56,35 @@ macro_rules! impl_integer_elicit {
 impl_integer_elicit!(i8, I8Style);
 impl_integer_elicit!(i16, I16Style);
 impl_integer_elicit!(i32, I32Style);
-impl_integer_elicit!(i64, I64Style);
+// i64 uses verification wrapper - see below
 impl_integer_elicit!(i128, I128Style);
 impl_integer_elicit!(isize, IsizeStyle);
+
+// i64 implementation using I64Default verification wrapper
+crate::default_style!(i64 => I64Style);
+
+impl Prompt for i64 {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a i64 (between -9223372036854775808 and 9223372036854775807):")
+    }
+}
+
+impl Elicitation for i64 {
+    type Style = I64Style;
+
+    #[tracing::instrument(skip(client), fields(type_name = "i64"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        use crate::verification::types::I64Default;
+        
+        tracing::debug!("Eliciting i64 via I64Default wrapper");
+        
+        // Use verification wrapper internally
+        let wrapper = I64Default::elicit(client).await?;
+        
+        // Unwrap to primitive
+        Ok(wrapper.into_inner())
+    }
+}
 
 // Apply macro to all unsigned integer types
 impl_integer_elicit!(u8, U8Style);

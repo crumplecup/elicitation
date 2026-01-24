@@ -19,6 +19,7 @@ use serde_json::Value;
 /// # Errors
 ///
 /// Returns `ElicitError` if the result is empty or cannot be parsed.
+#[tracing::instrument(skip(result), level = "debug")]
 pub fn extract_value(result: rmcp::model::CallToolResult) -> ElicitResult<Value> {
     let text = result
         .content
@@ -61,6 +62,7 @@ pub fn extract_value(result: rmcp::model::CallToolResult) -> ElicitResult<Value>
 /// Returns `ElicitError` with:
 /// - `InvalidFormat` if the value is not a number or numeric string
 /// - `OutOfRange` if the value doesn't fit in the target type
+#[tracing::instrument(skip(raw), level = "debug", fields(type_name = std::any::type_name::<T>()))]
 pub fn parse_integer<T>(raw: Value) -> ElicitResult<T>
 where
     T: TryFrom<i64> + std::fmt::Display + Copy,
@@ -123,6 +125,7 @@ where
 /// - JSON `true` or `false`
 /// - Strings: "yes", "y", "true", "t", "1" (case-insensitive) → true
 /// - Strings: "no", "n", "false", "f", "0" (case-insensitive) → false
+#[tracing::instrument(skip(raw), level = "debug")]
 pub fn parse_bool(raw: Value) -> ElicitResult<bool> {
     match raw {
         Value::Bool(b) => Ok(b),
@@ -157,6 +160,7 @@ pub fn parse_bool(raw: Value) -> ElicitResult<bool> {
 /// # Errors
 ///
 /// Returns `ElicitError` with `InvalidFormat` if the value is not a string.
+#[tracing::instrument(skip(raw), level = "debug")]
 pub fn parse_string(raw: Value) -> ElicitResult<String> {
     match raw {
         Value::String(s) => Ok(s),

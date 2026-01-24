@@ -222,12 +222,14 @@ impl std::error::Error for ElicitError {
 
 impl ElicitError {
     /// Returns a reference to the underlying error kind.
+    #[tracing::instrument(skip(self), level = "trace")]
     pub fn kind(&self) -> &ElicitErrorKind {
         &self.0
     }
 
     /// Create a new error with location tracking.
     #[track_caller]
+    #[tracing::instrument(skip(kind), level = "debug")]
     pub fn new(kind: ElicitErrorKind) -> Self {
         tracing::error!(error_kind = %kind, "Error created");
         Self(Box::new(kind))
@@ -278,6 +280,29 @@ impl From<ElicitErrorKind> for ElicitError {
 error_from!(rmcp::ErrorData);
 error_from!(rmcp::service::ServiceError);
 error_from!(serde_json::Error);
+
+// Add conversion for rmcp::service::ElicitationError (when elicitation feature enabled)
+#[cfg(feature = "elicitation")]
+impl From<rmcp::service::ElicitationError> for ElicitError {
+    #[track_caller]
+    fn from(err: rmcp::service::ElicitationError) -> Self {
+        use rmcp::service::ElicitationError as EE;
+        let kind = match err {
+            EE::Service(se) => ElicitErrorKind::Service(ServiceError::from(se)),
+            EE::UserDeclined | EE::UserCancelled => ElicitErrorKind::InvalidFormat {
+                expected: "user response".to_string(),
+                received: "cancelled".to_string(),
+            },
+            EE::ParseError { error, .. } => ElicitErrorKind::Json(JsonError::from(error)),
+            EE::CapabilityNotSupported => ElicitErrorKind::InvalidFormat {
+                expected: "elicitation capability".to_string(),
+                received: "unsupported".to_string(),
+            },
+        };
+        tracing::error!(error_kind = %kind, "Error from ElicitationError");
+        Self(Box::new(kind))
+    }
+}
 
 /// Convenience alias for elicitation results.
 pub type ElicitResult<T> = Result<T, ElicitError>;

@@ -15,12 +15,15 @@ categories = ["development-tools", "asynchronous"]
 
 [dependencies]
 rmcp = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+schemars = { workspace = true }
 derive_more = { workspace = true }
 derive-getters = { workspace = true }
 tracing = { workspace = true }
 tokio = { workspace = true }
-serde_json = { workspace = true }
-paste = "1.0"
+paste = { workspace = true }
+async-trait = { workspace = true }
 
 # DateTime libraries (optional)
 chrono = { workspace = true, optional = true }
@@ -28,15 +31,27 @@ time = { workspace = true, optional = true }
 jiff = { workspace = true, optional = true }
 
 # UUID library (optional)
-uuid = { version = "1.0", optional = true, features = ["v4", "serde"] }
+uuid = { workspace = true, optional = true }
+
+# URL library (optional)
+url = { workspace = true, optional = true }
+
+# Regex library (optional)
+regex = { workspace = true, optional = true }
+
+# Verification libraries (optional)
+creusot-contracts = { workspace = true, optional = true }
+prusti-contracts = { workspace = true, optional = true }
 
 # Re-export derive macro
 elicitation_derive = { path = "../elicitation_derive", version = "0.4.3" }
+elicitation_macros = { path = "../elicitation_macros" }
 
 [dev-dependencies]
-tokio-test = "0.4"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-uuid = { version = "1.0", features = ["v4", "serde"] }
+tokio-test = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
+criterion = { workspace = true }
 
 [features]
 default = []
@@ -52,3 +67,23 @@ time = ["dep:time"]
 jiff = ["dep:jiff"]
 # Enable UUID elicitation
 uuid = ["dep:uuid"]
+# Enable URL elicitation
+url = ["dep:url"]
+# Enable Regex elicitation
+regex = ["dep:regex"]
+
+# Formal verification support
+verification = []                           # Core Contract trait only
+verify-kani = ["verification"]             # Kani model checker
+verify-creusot = ["verification", "creusot-contracts"]  # Creusot deductive verifier
+verify-prusti = ["verification", "prusti-contracts"]    # Prusti separation logic
+verify-verus = ["verification"]            # Verus SMT verifier (future)
+verify-all = ["verify-kani", "verify-creusot", "verify-prusti", "verify-verus"]
+kani-verifier = []
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
+
+[[bench]]
+name = "kani_scaling"
+harness = false

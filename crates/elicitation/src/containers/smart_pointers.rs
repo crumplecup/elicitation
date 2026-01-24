@@ -20,6 +20,7 @@ impl Prompt for BoxStyle {
 impl Elicitation for BoxStyle {
     type Style = BoxStyle;
 
+    #[tracing::instrument(skip(_client), level = "trace")]
     async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
         Ok(Self::Default)
     }

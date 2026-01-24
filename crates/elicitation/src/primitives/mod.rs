@@ -4,6 +4,7 @@
 //! - Integer types: i8, i16, i32, i64, u8, u16, u32, u64
 //! - Floating-point types: f32, f64
 //! - Boolean: bool
+//! - Character: char
 //! - String: String
 //! - PathBuf: std::path::PathBuf
 //! - Network types: IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, etc.
@@ -17,6 +18,7 @@
 //! Integer and float types use generic macros to eliminate duplication.
 
 mod boolean;
+mod char;
 mod duration;
 mod floats;
 mod integers;

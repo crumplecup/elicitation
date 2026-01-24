@@ -19,6 +19,7 @@ impl Prompt for VecDequeStyle {
 impl Elicitation for VecDequeStyle {
     type Style = VecDequeStyle;
 
+    #[tracing::instrument(skip(_client), level = "trace")]
     async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
         Ok(Self::Default)
     }

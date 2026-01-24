@@ -43,7 +43,9 @@ pub struct ElicitClient<'a> {
 
 impl<'a> ElicitClient<'a> {
     /// Create a new client wrapper from an RMCP peer.
+    #[tracing::instrument(skip(peer))]
     pub fn new(peer: &'a Peer<RoleClient>) -> Self {
+        tracing::debug!("Creating new ElicitClient");
         Self {
             peer,
             style_context: StyleContext::default(),
@@ -51,6 +53,7 @@ impl<'a> ElicitClient<'a> {
     }
 
     /// Get the underlying RMCP peer for making tool calls.
+    #[tracing::instrument(skip(self), level = "trace")]
     pub fn peer(&self) -> &Peer<RoleClient> {
         self.peer
     }
@@ -72,7 +75,10 @@ impl<'a> ElicitClient<'a> {
     /// // Use custom style for i32
     /// let client = client.with_style::<i32, _>(MyI32Style::Verbose);
     /// ```
+    #[tracing::instrument(skip(self, style))]
     pub fn with_style<T: Elicitation + 'static, S: ElicitationStyle>(&self, style: S) -> Self {
+        let type_name = std::any::type_name::<T>();
+        tracing::debug!(type_name, "Setting custom style");
         let mut ctx = self.style_context.clone();
         ctx.set_style::<T, S>(style);
         Self {
@@ -93,10 +99,14 @@ impl<'a> ElicitClient<'a> {
     /// // Get style - uses custom if set, default otherwise
     /// let style = client.style_or_default::<Config>();
     /// ```
+    #[tracing::instrument(skip(self))]
     pub fn style_or_default<T: Elicitation + 'static>(&self) -> T::Style
     where
         T::Style: ElicitationStyle,
     {
+        let type_name = std::any::type_name::<T>();
+        let has_custom = self.style_context.get_style::<T, T::Style>().is_some();
+        tracing::debug!(type_name, has_custom, "Getting style or default");
         self.style_context
             .get_style::<T, T::Style>()
             .unwrap_or_default()
@@ -116,6 +126,7 @@ impl<'a> ElicitClient<'a> {
     /// // Get style - uses custom if set, otherwise asks user
     /// let style = client.style_or_elicit::<Config>().await?;
     /// ```
+    #[tracing::instrument(skip(self))]
     pub async fn style_or_elicit<T: Elicitation + 'static>(&self) -> ElicitResult<T::Style>
     where
         T::Style: ElicitationStyle,
@@ -170,6 +181,7 @@ impl StyleContext {
     /// Set a custom style for a specific type.
     ///
     /// Accepts any style type S that implements ElicitationStyle.
+    #[tracing::instrument(skip(self, style), level = "debug", fields(type_id = ?TypeId::of::<T>()))]
     fn set_style<T: 'static, S: ElicitationStyle>(&mut self, style: S) {
         let type_id = TypeId::of::<T>();
         let mut styles = self.styles.write().expect("Lock poisoned");
@@ -180,6 +192,7 @@ impl StyleContext {
     ///
     /// Returns None if no custom style was provided, allowing
     /// fallback to T::Style::default().
+    #[tracing::instrument(skip(self), level = "debug", fields(type_id = ?TypeId::of::<T>()))]
     fn get_style<T: 'static, S: ElicitationStyle>(&self) -> Option<S> {
         let type_id = TypeId::of::<T>();
         let styles = self.styles.read().expect("Lock poisoned");
