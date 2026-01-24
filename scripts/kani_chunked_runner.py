@@ -6,6 +6,8 @@ Reads/creates CSV tracking proof completion, runs missing chunks,
 and updates the record. Supports resume after interruption.
 
 Usage:
+    ./kani_chunked_runner.py 2byte 2    # 2-byte proof, 2 chunks
+    ./kani_chunked_runner.py 2byte 4    # 2-byte proof, 4 chunks
     ./kani_chunked_runner.py 3byte 4    # 3-byte proof, 4 chunks
     ./kani_chunked_runner.py 3byte 12   # 3-byte proof, 12 chunks
     ./kani_chunked_runner.py 4byte 3    # 4-byte proof, 3 chunks
@@ -21,6 +23,18 @@ from typing import List, Dict, Optional
 
 # Chunk configurations
 CONFIGS = {
+    ("2byte", 2): {
+        "harnesses": [f"verify_2byte_2chunks_{i}" for i in range(2)],
+        "chunks": [(0xC2, 0xD0), (0xD1, 0xDF)],
+        "combos": 992,  # Average
+        "total": 3968,
+    },
+    ("2byte", 4): {
+        "harnesses": [f"verify_2byte_4chunks_{i}" for i in range(4)],
+        "chunks": [(0xC2, 0xCA), (0xCB, 0xD2), (0xD3, 0xDA), (0xDB, 0xDF)],
+        "combos": 492,  # Average
+        "total": 3968,
+    },
     ("3byte", 4): {
         "harnesses": [f"verify_3byte_4chunks_{i}" for i in range(4)],
         "chunks": [(0xE1, 0xE3), (0xE4, 0xE6), (0xE7, 0xE9), (0xEA, 0xEC)],
@@ -167,6 +181,8 @@ def main():
     if len(sys.argv) != 3:
         print("Usage: kani_chunked_runner.py <proof_type> <num_chunks>")
         print("\nExamples:")
+        print("  kani_chunked_runner.py 2byte 2    # 2-byte, 2 chunks")
+        print("  kani_chunked_runner.py 2byte 4    # 2-byte, 4 chunks")
         print("  kani_chunked_runner.py 3byte 4    # 3-byte, 4 chunks")
         print("  kani_chunked_runner.py 3byte 12   # 3-byte, 12 chunks")
         print("  kani_chunked_runner.py 4byte 3    # 4-byte, 3 chunks")

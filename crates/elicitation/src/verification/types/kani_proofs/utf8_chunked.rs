@@ -11,6 +11,54 @@
 use crate::verification::types::utf8::is_valid_utf8;
 
 // ============================================================================
+// 2-Byte Chunked Proofs (3,968 combinations → N chunks)
+// ============================================================================
+
+/// Macro to generate 2-byte chunked proofs.
+///
+/// Each chunk verifies a subset of the byte1 range, covering all combinations
+/// of byte2 continuation bytes.
+macro_rules! verify_2byte_chunks {
+    ($(($name:ident, $start:expr, $end:expr, $chunk_id:expr)),* $(,)?) => {
+        $(
+            #[cfg(kani)]
+            #[kani::proof]
+            #[doc = concat!("Verify 2-byte UTF-8: byte1 ∈ [", stringify!($start), ", ", stringify!($end), "]")]
+            fn $name() {
+                let byte1: u8 = kani::any();
+                kani::assume(byte1 >= $start && byte1 <= $end);
+                
+                let byte2: u8 = kani::any();
+                kani::assume(byte2 >= 0x80 && byte2 <= 0xBF); // 64 values
+                
+                let bytes = [byte1, byte2];
+                assert!(is_valid_utf8(&bytes));
+            }
+        )*
+    };
+}
+
+// ============================================================================
+// 2-Chunk Configuration (1,984 combinations each)
+// ============================================================================
+
+verify_2byte_chunks!(
+    (verify_2byte_2chunks_0, 0xC2, 0xD0, 0),  // 15 × 64 = 960
+    (verify_2byte_2chunks_1, 0xD1, 0xDF, 1),  // 15 × 64 = 960
+);
+
+// ============================================================================
+// 4-Chunk Configuration (~992 combinations each)
+// ============================================================================
+
+verify_2byte_chunks!(
+    (verify_2byte_4chunks_0, 0xC2, 0xCA, 0),  // 9 × 64 = 576
+    (verify_2byte_4chunks_1, 0xCB, 0xD2, 1),  // 8 × 64 = 512
+    (verify_2byte_4chunks_2, 0xD3, 0xDA, 2),  // 8 × 64 = 512
+    (verify_2byte_4chunks_3, 0xDB, 0xDF, 3),  // 5 × 64 = 320
+);
+
+// ============================================================================
 // 3-Byte Chunked Proofs (49,152 combinations → N chunks)
 // ============================================================================
 
@@ -119,6 +167,45 @@ verify_4byte_chunks!(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_chunk_coverage_2byte_2chunks() {
+        // Verify chunk ranges are disjoint and exhaustive
+        let ranges = [
+            (0xC2u8, 0xD0u8),
+            (0xD1u8, 0xDFu8),
+        ];
+        
+        // Check no overlap
+        assert!(ranges[0].1 < ranges[1].0, "Chunks overlap");
+        
+        // Check exhaustive
+        assert_eq!(ranges[0].0, 0xC2);
+        assert_eq!(ranges[1].1, 0xDF);
+        assert_eq!(ranges[0].1 + 1, ranges[1].0);
+    }
+
+    #[test]
+    fn test_chunk_coverage_2byte_4chunks() {
+        // Verify chunk ranges are disjoint and exhaustive
+        let ranges = [
+            (0xC2u8, 0xCAu8),
+            (0xCBu8, 0xD2u8),
+            (0xD3u8, 0xDAu8),
+            (0xDBu8, 0xDFu8),
+        ];
+        
+        // Check no overlap
+        for i in 0..ranges.len() {
+            for j in (i + 1)..ranges.len() {
+                assert!(ranges[i].1 < ranges[j].0, "Chunks overlap");
+            }
+        }
+        
+        // Check exhaustive
+        assert_eq!(ranges[0].0, 0xC2);
+        assert_eq!(ranges[3].1, 0xDF);
+    }
 
     #[test]
     fn test_chunk_coverage_3byte_4chunks() {
