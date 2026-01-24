@@ -2,15 +2,19 @@
 """
 Checkpointed Kani proof runner for chunked verification.
 
+Dynamically partitions proof space into N chunks based on user input.
 Reads/creates CSV tracking proof completion, runs missing chunks,
 and updates the record. Supports resume after interruption.
 
 Usage:
-    ./kani_chunked_runner.py 2byte 2    # 2-byte proof, 2 chunks
-    ./kani_chunked_runner.py 2byte 4    # 2-byte proof, 4 chunks
-    ./kani_chunked_runner.py 3byte 4    # 3-byte proof, 4 chunks
-    ./kani_chunked_runner.py 3byte 12   # 3-byte proof, 12 chunks
-    ./kani_chunked_runner.py 4byte 3    # 4-byte proof, 3 chunks
+    ./kani_chunked_runner.py 2byte N    # 2-byte proof, N chunks
+    ./kani_chunked_runner.py 3byte N    # 3-byte proof, N chunks
+    ./kani_chunked_runner.py 4byte N    # 4-byte proof, N chunks
+    
+Examples:
+    ./kani_chunked_runner.py 2byte 8    # 2-byte, 8 chunks (~496 combos each)
+    ./kani_chunked_runner.py 3byte 16   # 3-byte, 16 chunks (~3,072 combos each)
+    ./kani_chunked_runner.py 4byte 12   # 4-byte, 12 chunks (~65,536 combos each)
 """
 
 import csv
@@ -19,41 +23,92 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Tuple
 
-# Chunk configurations
-CONFIGS = {
-    ("2byte", 2): {
-        "harnesses": [f"verify_2byte_2chunks_{i}" for i in range(2)],
-        "chunks": [(0xC2, 0xD0), (0xD1, 0xDF)],
-        "combos": 992,  # Average
-        "total": 3968,
+# Proof space definitions
+PROOF_SPACES = {
+    "2byte": {
+        "byte1_range": (0xC2, 0xDF),  # 62 values (avoids overlong)
+        "byte2_range": (0x80, 0xBF),  # 64 values (continuation)
+        "total_combos": 3968,  # 62 × 64
     },
-    ("2byte", 4): {
-        "harnesses": [f"verify_2byte_4chunks_{i}" for i in range(4)],
-        "chunks": [(0xC2, 0xCA), (0xCB, 0xD2), (0xD3, 0xDA), (0xDB, 0xDF)],
-        "combos": 492,  # Average
-        "total": 3968,
+    "3byte": {
+        "byte1_range": (0xE1, 0xEC),  # 12 values (avoids overlong/surrogate)
+        "byte2_range": (0x80, 0xBF),  # 64 values
+        "byte3_range": (0x80, 0xBF),  # 64 values
+        "total_combos": 49152,  # 12 × 64 × 64
     },
-    ("3byte", 4): {
-        "harnesses": [f"verify_3byte_4chunks_{i}" for i in range(4)],
-        "chunks": [(0xE1, 0xE3), (0xE4, 0xE6), (0xE7, 0xE9), (0xEA, 0xEC)],
-        "combos": 12288,
-        "total": 49152,
-    },
-    ("3byte", 12): {
-        "harnesses": [f"verify_3byte_12chunks_{i}" for i in range(12)],
-        "chunks": [(b, b) for b in range(0xE1, 0xED)],
-        "combos": 4096,
-        "total": 49152,
-    },
-    ("4byte", 3): {
-        "harnesses": [f"verify_4byte_3chunks_{i}" for i in range(3)],
-        "chunks": [(0xF1, 0xF1), (0xF2, 0xF2), (0xF3, 0xF3)],
-        "combos": 262144,
-        "total": 786432,
+    "4byte": {
+        "byte1_range": (0xF1, 0xF3),  # 3 values (avoids overlong/overflow)
+        "byte2_range": (0x80, 0xBF),  # 64 values
+        "byte3_range": (0x80, 0xBF),  # 64 values
+        "byte4_range": (0x80, 0xBF),  # 64 values
+        "total_combos": 786432,  # 3 × 64³
     },
 }
+
+
+def partition_range(start: int, end: int, num_chunks: int) -> List[Tuple[int, int]]:
+    """Partition byte range into N chunks."""
+    total_values = end - start + 1
+    chunk_size = total_values // num_chunks
+    remainder = total_values % num_chunks
+    
+    chunks = []
+    current = start
+    
+    for i in range(num_chunks):
+        # Distribute remainder across first chunks
+        size = chunk_size + (1 if i < remainder else 0)
+        chunk_end = current + size - 1
+        chunks.append((current, min(chunk_end, end)))
+        current = chunk_end + 1
+    
+    return chunks
+
+
+def calculate_chunk_config(proof_type: str, num_chunks: int) -> dict:
+    """Calculate chunk configuration dynamically."""
+    if proof_type not in PROOF_SPACES:
+        raise ValueError(f"Unknown proof type: {proof_type}")
+    
+    space = PROOF_SPACES[proof_type]
+    byte1_start, byte1_end = space["byte1_range"]
+    
+    # Partition byte1 range into N chunks
+    byte1_chunks = partition_range(byte1_start, byte1_end, num_chunks)
+    
+    # Calculate combos per chunk
+    if proof_type == "2byte":
+        byte2_count = space["byte2_range"][1] - space["byte2_range"][0] + 1
+        combos_per_byte1 = byte2_count
+    elif proof_type == "3byte":
+        byte2_count = space["byte2_range"][1] - space["byte2_range"][0] + 1
+        byte3_count = space["byte3_range"][1] - space["byte3_range"][0] + 1
+        combos_per_byte1 = byte2_count * byte3_count
+    elif proof_type == "4byte":
+        byte2_count = space["byte2_range"][1] - space["byte2_range"][0] + 1
+        byte3_count = space["byte3_range"][1] - space["byte3_range"][0] + 1
+        byte4_count = space["byte4_range"][1] - space["byte4_range"][0] + 1
+        combos_per_byte1 = byte2_count * byte3_count * byte4_count
+    
+    # Build chunk list with harness names and combo counts
+    chunks_info = []
+    for i, (chunk_start, chunk_end) in enumerate(byte1_chunks):
+        byte1_count = chunk_end - chunk_start + 1
+        combos = byte1_count * combos_per_byte1
+        
+        chunks_info.append({
+            "chunk_num": i,
+            "harness": f"verify_{proof_type}_{num_chunks}chunks_{i}",
+            "byte_range": (chunk_start, chunk_end),
+            "combos": combos,
+        })
+    
+    return {
+        "chunks": chunks_info,
+        "total": space["total_combos"],
+    }
 
 
 class ProofRecord:
@@ -181,31 +236,41 @@ def main():
     if len(sys.argv) != 3:
         print("Usage: kani_chunked_runner.py <proof_type> <num_chunks>")
         print("\nExamples:")
-        print("  kani_chunked_runner.py 2byte 2    # 2-byte, 2 chunks")
-        print("  kani_chunked_runner.py 2byte 4    # 2-byte, 4 chunks")
-        print("  kani_chunked_runner.py 3byte 4    # 3-byte, 4 chunks")
-        print("  kani_chunked_runner.py 3byte 12   # 3-byte, 12 chunks")
-        print("  kani_chunked_runner.py 4byte 3    # 4-byte, 3 chunks")
+        print("  kani_chunked_runner.py 2byte 8    # 2-byte, 8 chunks (~496 combos each)")
+        print("  kani_chunked_runner.py 3byte 16   # 3-byte, 16 chunks (~3,072 combos each)")
+        print("  kani_chunked_runner.py 4byte 12   # 4-byte, 12 chunks (~65,536 combos each)")
+        print("\nSupported proof types: 2byte, 3byte, 4byte")
+        print("Chunks: Any positive integer (system calculates partitions dynamically)")
         sys.exit(1)
     
     proof_type = sys.argv[1]
-    num_chunks = int(sys.argv[2])
     
-    # Validate configuration
-    config_key = (proof_type, num_chunks)
-    if config_key not in CONFIGS:
-        print(f"❌ Invalid configuration: {proof_type} with {num_chunks} chunks")
-        print(f"\nAvailable configurations:")
-        for (pt, nc) in CONFIGS.keys():
-            print(f"  {pt} {nc}")
+    try:
+        num_chunks = int(sys.argv[2])
+        if num_chunks < 1:
+            print(f"❌ num_chunks must be positive, got: {num_chunks}")
+            sys.exit(1)
+    except ValueError:
+        print(f"❌ num_chunks must be an integer, got: {sys.argv[2]}")
         sys.exit(1)
     
-    config = CONFIGS[config_key]
+    # Validate proof type
+    if proof_type not in PROOF_SPACES:
+        print(f"❌ Invalid proof type: {proof_type}")
+        print(f"\nSupported types: {', '.join(PROOF_SPACES.keys())}")
+        sys.exit(1)
+    
+    # Calculate dynamic configuration
+    try:
+        config = calculate_chunk_config(proof_type, num_chunks)
+    except Exception as e:
+        print(f"❌ Failed to calculate chunks: {e}")
+        sys.exit(1)
     record = ProofRecord(proof_type, num_chunks)
     
     # Determine what needs to run
     completed = record.get_completed_chunks()
-    total_chunks = len(config["harnesses"])
+    total_chunks = len(config["chunks"])
     remaining_chunks = [i for i in range(total_chunks) if i not in completed]
     
     # Print initial status
@@ -215,10 +280,18 @@ def main():
         print("\n✅ All chunks already verified!")
         return
     
+    # Show chunk breakdown
+    print(f"\n📊 Chunk Breakdown:")
+    for chunk in config["chunks"][:5]:  # Show first 5
+        print(f"  Chunk {chunk['chunk_num']}: "
+              f"{chunk['byte_range'][0]:#04x}-{chunk['byte_range'][1]:#04x} "
+              f"({chunk['combos']:,} combos)")
+    if len(config["chunks"]) > 5:
+        print(f"  ... ({len(config['chunks']) - 5} more chunks)")
+    
     # Ask for confirmation
     print(f"\n🔬 Ready to verify {len(remaining_chunks)} remaining chunks")
-    print(f"   Combinations per chunk: {config['combos']:,}")
-    print(f"   Total coverage: {config['total']:,}")
+    print(f"   Total coverage: {config['total']:,} combinations")
     print()
     
     response = input("Continue? (y/N) ")
@@ -232,19 +305,21 @@ def main():
     print(f"{'='*60}\n")
     
     for chunk_num in remaining_chunks:
-        harness = config["harnesses"][chunk_num]
-        chunk_range = config["chunks"][chunk_num]
+        chunk_info = config["chunks"][chunk_num]
+        harness = chunk_info["harness"]
+        chunk_range = chunk_info["byte_range"]
+        combos = chunk_info["combos"]
         
         print(f"\n📦 Chunk {chunk_num + 1}/{total_chunks}: {harness}")
         print(f"   Range: {chunk_range[0]:#04x}-{chunk_range[1]:#04x}")
-        print(f"   Combinations: {config['combos']:,}")
+        print(f"   Combinations: {combos:,}")
         print(f"   Started: {datetime.now().strftime('%H:%M:%S')}")
         
         elapsed, status = run_chunk(harness)
         
         # Log result
         record.append_result(
-            chunk_num, chunk_range, config['combos'], elapsed, status
+            chunk_num, chunk_range, combos, elapsed, status
         )
         
         # Print result
