@@ -410,7 +410,8 @@ fn generate_elicit_impl_styled(
                             let params = elicitation::mcp::text_params(prompt);
                             let result = client
                                 .peer()
-                                .call_tool(elicitation::rmcp::model::CallToolRequestParam {
+                                .call_tool(elicitation::rmcp::model::CallToolRequestParams {
+                            meta: None,
                                     name: elicitation::mcp::tool_names::elicit_text().into(),
                                     arguments: Some(params),
                                     task: None,
@@ -430,7 +431,8 @@ fn generate_elicit_impl_styled(
                             let params = elicitation::mcp::bool_params(prompt);
                             let result = client
                                 .peer()
-                                .call_tool(elicitation::rmcp::model::CallToolRequestParam {
+                                .call_tool(elicitation::rmcp::model::CallToolRequestParams {
+                            meta: None,
                                     name: elicitation::mcp::tool_names::elicit_bool().into(),
                                     arguments: Some(params),
                                     task: None,
@@ -455,7 +457,8 @@ fn generate_elicit_impl_styled(
                             );
                             let result = client
                                 .peer()
-                                .call_tool(elicitation::rmcp::model::CallToolRequestParam {
+                                .call_tool(elicitation::rmcp::model::CallToolRequestParams {
+                            meta: None,
                                     name: elicitation::mcp::tool_names::elicit_number().into(),
                                     arguments: Some(params),
                                     task: None,
@@ -479,7 +482,8 @@ fn generate_elicit_impl_styled(
                             );
                             let result = client
                                 .peer()
-                                .call_tool(elicitation::rmcp::model::CallToolRequestParam {
+                                .call_tool(elicitation::rmcp::model::CallToolRequestParams {
+                            meta: None,
                                     name: elicitation::mcp::tool_names::elicit_number().into(),
                                     arguments: Some(params),
                                     task: None,
@@ -582,7 +586,8 @@ fn generate_elicit_impl_styled(
                 );
                 let result = client
                     .peer()
-                    .call_tool(elicitation::rmcp::model::CallToolRequestParam {
+                    .call_tool(elicitation::rmcp::model::CallToolRequestParams {
+                            meta: None,
                         name: elicitation::mcp::tool_names::elicit_select().into(),
                         arguments: Some(params),
                         task: None,

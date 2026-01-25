@@ -74,7 +74,8 @@ impl Elicitation for OffsetDateTime {
                 let params = mcp::text_params(prompt);
                 let result = client
                     .peer()
-                    .call_tool(rmcp::model::CallToolRequestParam {
+                    .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),
                         task: None,
@@ -102,7 +103,8 @@ impl Elicitation for OffsetDateTime {
                 let offset_params = mcp::number_params(offset_prompt, -12, 14);
                 let offset_result = client
                     .peer()
-                    .call_tool(rmcp::model::CallToolRequestParam {
+                    .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                         name: mcp::tool_names::elicit_number().into(),
                         arguments: Some(offset_params),
                         task: None,
@@ -174,7 +176,8 @@ impl Elicitation for PrimitiveDateTime {
                 let params = mcp::text_params(prompt);
                 let result = client
                     .peer()
-                    .call_tool(rmcp::model::CallToolRequestParam {
+                    .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),
                         task: None,

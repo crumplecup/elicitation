@@ -230,7 +230,8 @@ impl Elicitation for BoolDefault {
 
         let result = client
             .peer()
-            .call_tool(rmcp::model::CallToolRequestParam {
+            .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                 name: crate::mcp::tool_names::elicit_bool().into(),
                 arguments: Some(params),
                 task: None,

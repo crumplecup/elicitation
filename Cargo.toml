@@ -1,9 +1,13 @@
 [workspace]
-members = ["crates/elicitation", "crates/elicitation_derive", "crates/elicitation_macros"]
+members = [
+  "crates/elicitation",
+  "crates/elicitation_derive",
+  "crates/elicitation_macros",
+]
 resolver = "2"
 
 [workspace.package]
-version = "0.2.1"
+version = "0.4.4"
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/crumplecup/elicitation"
@@ -13,8 +17,18 @@ documentation = "https://docs.rs/elicitation"
 readme = "README.md"
 
 [workspace.dependencies]
+elicitation = { path = "crates/elicitation", version = "0.4.4" }
+elicitation_derive = { path = "crates/elicitation_derive", version = "0.4.4" }
+elicitation_macros = { path = "crates/elicitation_macros", version = "0.4.4" }
+
+
 # MCP client
-rmcp = { version = "0.13", features = ["client", "transport-io", "schemars", "elicitation"] }
+rmcp = { version = "0.14", features = [
+  "client",
+  "transport-io",
+  "schemars",
+  "elicitation",
+] }
 
 # Serialization
 serde = { version = "1", features = ["derive"] }
@@ -45,7 +59,7 @@ async-trait = "0.1"
 # DateTime libraries
 chrono = "0.4"
 time = { version = "0.3", features = ["parsing", "formatting", "macros"] }
-jiff = "0.1"
+jiff = "0.2"
 
 # UUID library
 uuid = { version = "1.0", features = ["v4", "serde"] }
@@ -63,7 +77,7 @@ prusti-contracts = "0.2"
 # Dev dependencies
 tokio-test = "0.4"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-criterion = { version = "0.5", features = ["html_reports"] }
+criterion = { version = "0.8", features = ["html_reports"] }
 
 [profile.release]
 lto = true

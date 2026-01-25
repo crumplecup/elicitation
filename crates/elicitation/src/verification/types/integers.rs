@@ -72,7 +72,8 @@ macro_rules! impl_integer_default_wrapper {
 
                     let result = client
                         .peer()
-                        .call_tool(rmcp::model::CallToolRequestParam {
+                        .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                             name: crate::mcp::tool_names::elicit_number().into(),
                             arguments: Some(params),
                             task: None,

@@ -71,7 +71,8 @@ impl Elicitation for JsonType {
         let params = mcp::select_params(prompt, Self::labels());
         let result = client
             .peer()
-            .call_tool(rmcp::model::CallToolRequestParam {
+            .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                 name: mcp::tool_names::elicit_select().into(),
                 arguments: Some(params),
                 task: None,
@@ -161,7 +162,8 @@ async fn elicit_number(client: &ElicitClient<'_>) -> ElicitResult<Value> {
     let params = mcp::text_params(prompt);
     let result = client
         .peer()
-        .call_tool(rmcp::model::CallToolRequestParam {
+        .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
             name: mcp::tool_names::elicit_text().into(),
             arguments: Some(params),
             task: None,
@@ -204,7 +206,8 @@ fn elicit_array<'a>(
             let params = mcp::bool_params(prompt);
             let result = client
                 .peer()
-                .call_tool(rmcp::model::CallToolRequestParam {
+                .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                     name: mcp::tool_names::elicit_bool().into(),
                     arguments: Some(params),
                     task: None,
@@ -251,7 +254,8 @@ fn elicit_object<'a>(
             let params = mcp::bool_params(prompt);
             let result = client
                 .peer()
-                .call_tool(rmcp::model::CallToolRequestParam {
+                .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                     name: mcp::tool_names::elicit_bool().into(),
                     arguments: Some(params),
                     task: None,
@@ -271,7 +275,8 @@ fn elicit_object<'a>(
             let key_params = mcp::text_params(key_prompt);
             let key_result = client
                 .peer()
-                .call_tool(rmcp::model::CallToolRequestParam {
+                .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                     name: mcp::tool_names::elicit_text().into(),
                     arguments: Some(key_params),
                     task: None,

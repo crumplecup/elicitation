@@ -1,6 +1,6 @@
 [package]
 name = "elicitation"
-version = "0.4.3"
+version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
@@ -44,8 +44,8 @@ creusot-contracts = { workspace = true, optional = true }
 prusti-contracts = { workspace = true, optional = true }
 
 # Re-export derive macro
-elicitation_derive = { path = "../elicitation_derive", version = "0.4.3" }
-elicitation_macros = { path = "../elicitation_macros" }
+elicitation_derive = { workspace = true }
+elicitation_macros = { workspace = true }
 
 [dev-dependencies]
 tokio-test = { workspace = true }
@@ -73,17 +73,16 @@ url = ["dep:url"]
 regex = ["dep:regex"]
 
 # Formal verification support
-verification = []                           # Core Contract trait only
-verify-kani = ["verification"]             # Kani model checker
-verify-creusot = ["verification", "creusot-contracts"]  # Creusot deductive verifier
-verify-prusti = ["verification", "prusti-contracts"]    # Prusti separation logic
-verify-verus = ["verification"]            # Verus SMT verifier (future)
+verification = [] # Core Contract trait only
+verify-kani = ["verification"] # Kani model checker
+verify-creusot = [
+  "verification",
+  "creusot-contracts",
+] # Creusot deductive verifier
+verify-prusti = ["verification", "prusti-contracts"] # Prusti separation logic
+verify-verus = ["verification"] # Verus SMT verifier (future)
 verify-all = ["verify-kani", "verify-creusot", "verify-prusti", "verify-verus"]
 kani-verifier = []
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
-
-[[bench]]
-name = "kani_scaling"
-harness = false

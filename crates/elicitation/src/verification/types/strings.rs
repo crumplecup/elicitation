@@ -238,7 +238,8 @@ impl Elicitation for StringDefault {
 
         let result = client
             .peer()
-            .call_tool(rmcp::model::CallToolRequestParam {
+            .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                 name: crate::mcp::tool_names::elicit_text().into(),
                 arguments: Some(params),
                 task: None,

@@ -75,7 +75,8 @@ impl Elicitation for Timestamp {
                 let params = mcp::text_params(prompt);
                 let result = client
                     .peer()
-                    .call_tool(rmcp::model::CallToolRequestParam {
+                    .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),
                         task: None,
@@ -153,7 +154,8 @@ impl Elicitation for Zoned {
                 let params = mcp::text_params(prompt);
                 let result = client
                     .peer()
-                    .call_tool(rmcp::model::CallToolRequestParam {
+                    .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),
                         task: None,
@@ -180,7 +182,8 @@ impl Elicitation for Zoned {
                 let tz_params = mcp::text_params(tz_prompt);
                 let tz_result = client
                     .peer()
-                    .call_tool(rmcp::model::CallToolRequestParam {
+                    .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(tz_params),
                         task: None,
@@ -251,7 +254,8 @@ impl Elicitation for CivilDateTime {
                 let params = mcp::text_params(prompt);
                 let result = client
                     .peer()
-                    .call_tool(rmcp::model::CallToolRequestParam {
+                    .call_tool(rmcp::model::CallToolRequestParams {
+                            meta: None,
                         name: mcp::tool_names::elicit_text().into(),
                         arguments: Some(params),
                         task: None,
