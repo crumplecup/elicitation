@@ -3,6 +3,99 @@
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
 use elicitation_macros::instrumented_impl;
+use serde::{Deserialize, Serialize};
+use schemars::JsonSchema;
+
+// ============================================================================
+// Macro: Default Wrapper Generation for Float Types
+// ============================================================================
+
+/// Generate a Default wrapper for a float primitive type.
+///
+/// This macro creates an unconstrained wrapper type that:
+/// - Has Serialize, Deserialize, and JsonSchema derives
+/// - Is marked as elicit-safe for rmcp
+/// - Uses serde deserialization instead of manual parsing
+/// - Provides new/get/into_inner methods
+/// - Implements Prompt and Elicitation traits
+macro_rules! impl_float_default_wrapper {
+    ($primitive:ty, $wrapper:ident) => {
+        #[doc = concat!("Default wrapper for ", stringify!($primitive), " (unconstrained).")]
+        ///
+        /// Used internally for MCP elicitation of primitive float values.
+        /// Provides JsonSchema for client-side validation.
+        #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
+        #[schemars(description = concat!(stringify!($primitive), " value"))]
+        pub struct $wrapper(
+            #[schemars(description = "Float value")]
+            $primitive
+        );
+
+        rmcp::elicit_safe!($wrapper);
+
+        impl $wrapper {
+            /// Creates a new wrapper.
+            pub fn new(value: $primitive) -> Self {
+                Self(value)
+            }
+
+            /// Gets the inner value.
+            pub fn get(&self) -> $primitive {
+                self.0
+            }
+
+            /// Unwraps to the inner value.
+            pub fn into_inner(self) -> $primitive {
+                self.0
+            }
+        }
+
+        paste::paste! {
+            crate::default_style!($wrapper => [<$wrapper Style>]);
+
+            impl Prompt for $wrapper {
+                fn prompt() -> Option<&'static str> {
+                    Some("Please enter a number:")
+                }
+            }
+
+            impl Elicitation for $wrapper {
+                type Style = [<$wrapper Style>];
+
+                #[tracing::instrument(skip(client))]
+                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                    let prompt = Self::prompt().unwrap();
+                    tracing::debug!(concat!("Eliciting ", stringify!($wrapper), " with serde deserialization"));
+
+                    let params = crate::mcp::text_params(prompt);
+
+                    let result = client
+                        .peer()
+                        .call_tool(rmcp::model::CallToolRequestParam {
+                            name: crate::mcp::tool_names::elicit_text().into(),
+                            arguments: Some(params),
+                            task: None,
+                        })
+                        .await?;
+
+                    let value = crate::mcp::extract_value(result)?;
+
+                    // Use serde to deserialize directly into wrapper type
+                    serde_json::from_value(value).map_err(|e| {
+                        crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
+                            expected: stringify!($primitive).to_string(),
+                            received: e.to_string(),
+                        })
+                    })
+                }
+            }
+        }
+    };
+}
+
+// ============================================================================
+// Verification Types (Constrained)
+// ============================================================================
 
 // F32Positive (f32 > 0.0 and finite)
 /// Contract type for positive f32 values (> 0.0).
@@ -666,69 +759,9 @@ mod f64_finite_tests {
 }
 
 // ============================================================================
+// Default Wrappers (for MCP elicitation of primitives)
+// ============================================================================
 
-/// Default f64 wrapper for MCP elicitation.
-///
-/// Provides JSON Schema validation and serialization for 64-bit floats.
-#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
-#[schemars(description = "A 64-bit floating point number")]
-pub struct F64Default(#[schemars(description = "Float value")] f64);
-
-impl F64Default {
-    /// Creates a new f64 wrapper.
-    pub fn new(f: f64) -> Self {
-        Self(f)
-    }
-
-    /// Returns the inner f64.
-    pub fn get(&self) -> f64 {
-        self.0
-    }
-
-    /// Converts to inner f64.
-    pub fn into_inner(self) -> f64 {
-        self.0
-    }
-}
-
-// Mark as elicit-safe for rmcp
-rmcp::elicit_safe!(F64Default);
-
-crate::default_style!(F64Default => F64DefaultStyle);
-
-impl Prompt for F64Default {
-    fn prompt() -> Option<&'static str> {
-        Some("Please enter a number:")
-    }
-}
-
-impl Elicitation for F64Default {
-    type Style = F64DefaultStyle;
-
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
-        let prompt = Self::prompt().unwrap();
-        tracing::debug!("Eliciting F64Default with serde deserialization");
-
-        let params = crate::mcp::text_params(prompt);
-
-        let result = client
-            .peer()
-            .call_tool(rmcp::model::CallToolRequestParam {
-                name: crate::mcp::tool_names::elicit_text().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await?;
-
-        let value = crate::mcp::extract_value(result)?;
-
-        // Use serde to deserialize directly into wrapper type
-        serde_json::from_value(value).map_err(|e| {
-            crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
-                expected: "f64".to_string(),
-                received: e.to_string(),
-            })
-        })
-    }
-}
+// Generate Default wrappers for all float types
+impl_float_default_wrapper!(f32, F32Default);
+impl_float_default_wrapper!(f64, F64Default);

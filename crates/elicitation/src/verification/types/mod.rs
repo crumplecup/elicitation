@@ -124,34 +124,46 @@ pub use regexbytes::{
 pub use integers::{
     // i8 family
     I8Positive, I8NonNegative, I8NonZero, I8Range, I8RangeStyle, I8NonZeroStyle,
+    I8Default, // MCP wrapper
     // i16 family
     I16Positive, I16NonNegative, I16NonZero, I16Range, I16RangeStyle, I16NonZeroStyle,
+    I16Default, // MCP wrapper
     // i32 family
     I32Positive, I32NonNegative, I32NonZero, I32Range, I32RangeStyle,
+    I32Default, // MCP wrapper
     // i64 family
     I64Positive, I64NonNegative, I64NonZero, I64Range, I64RangeStyle,
     I64Default, // MCP wrapper
     // i128 family
     I128Positive, I128NonNegative, I128NonZero, I128Range, I128RangeStyle,
+    I128Default, // MCP wrapper
     // isize family
     IsizePositive, IsizeNonNegative, IsizeNonZero, IsizeRange, IsizeRangeStyle,
+    IsizeDefault, // MCP wrapper
     // u8 family
     U8Positive, U8NonZero, U8Range, U8RangeStyle,
+    U8Default, // MCP wrapper
     // u16 family
     U16Positive, U16NonZero, U16Range, U16RangeStyle,
+    U16Default, // MCP wrapper
     // u32 family
     U32Positive, U32NonZero, U32Range, U32RangeStyle,
+    U32Default, // MCP wrapper
     // u64 family
     U64Positive, U64NonZero, U64Range, U64RangeStyle,
+    U64Default, // MCP wrapper
     // u128 family
     U128Positive, U128NonZero, U128Range, U128RangeStyle,
+    U128Default, // MCP wrapper
     // usize family
     UsizePositive, UsizeNonZero, UsizeRange, UsizeRangeStyle,
+    UsizeDefault, // MCP wrapper
 };
 
 // Floats
 pub use floats::{
     F32Positive, F32NonNegative, F32Finite,
+    F32Default, // MCP wrapper
     F64Positive, F64NonNegative, F64Finite,
     F64Default, // MCP wrapper
 };

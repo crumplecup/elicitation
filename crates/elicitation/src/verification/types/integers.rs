@@ -7,6 +7,97 @@ use elicitation_derive::contract_type;
 use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
 
+// ============================================================================
+// Macro: Default Wrapper Generation for Integer Types
+// ============================================================================
+
+/// Generate a Default wrapper for an integer primitive type.
+///
+/// This macro creates an unconstrained wrapper type that:
+/// - Has Serialize, Deserialize, and JsonSchema derives
+/// - Is marked as elicit-safe for rmcp
+/// - Uses serde deserialization instead of manual parsing
+/// - Provides new/get/into_inner methods
+/// - Implements Prompt and Elicitation traits
+macro_rules! impl_integer_default_wrapper {
+    ($primitive:ty, $wrapper:ident, $min:expr, $max:expr) => {
+        #[doc = concat!("Default wrapper for ", stringify!($primitive), " (unconstrained).")]
+        ///
+        /// Used internally for MCP elicitation of primitive values.
+        /// Provides JsonSchema for client-side validation.
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+        #[schemars(description = concat!(stringify!($primitive), " value"))]
+        pub struct $wrapper(
+            #[schemars(range(min = $min, max = $max))]
+            $primitive
+        );
+
+        rmcp::elicit_safe!($wrapper);
+
+        impl $wrapper {
+            /// Creates a new wrapper.
+            pub fn new(value: $primitive) -> Self {
+                Self(value)
+            }
+
+            /// Gets the inner value.
+            pub fn get(&self) -> $primitive {
+                self.0
+            }
+
+            /// Unwraps to the inner value.
+            pub fn into_inner(self) -> $primitive {
+                self.0
+            }
+        }
+
+        paste::paste! {
+            crate::default_style!($wrapper => [<$wrapper Style>]);
+
+            impl Prompt for $wrapper {
+                fn prompt() -> Option<&'static str> {
+                    Some(concat!("Please enter a ", stringify!($primitive), ":"))
+                }
+            }
+
+            impl Elicitation for $wrapper {
+                type Style = [<$wrapper Style>];
+
+                #[tracing::instrument(skip(client))]
+                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                    let prompt = Self::prompt().unwrap();
+                    tracing::debug!(concat!("Eliciting ", stringify!($wrapper), " with serde deserialization"));
+
+                    let params = crate::mcp::number_params(prompt, $min, $max);
+
+                    let result = client
+                        .peer()
+                        .call_tool(rmcp::model::CallToolRequestParam {
+                            name: crate::mcp::tool_names::elicit_number().into(),
+                            arguments: Some(params),
+                            task: None,
+                        })
+                        .await?;
+
+                    let value = crate::mcp::extract_value(result)?;
+
+                    // Use serde to deserialize directly into wrapper type
+                    serde_json::from_value(value).map_err(|e| {
+                        crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
+                            expected: stringify!($primitive).to_string(),
+                            received: e.to_string(),
+                        })
+                    })
+                }
+            }
+        }
+    };
+}
+
+// ============================================================================
+// Verification Types (Constrained)
+// ============================================================================
+
 /// Contract type for positive i8 values (> 0).
 ///
 /// This type validates on construction and can be unwrapped to `i8`.
@@ -1986,75 +2077,21 @@ impl_unsigned_contracts!(u32, U32NonZero, U32Range, U32RangeStyle, 42, 10, 100, 
 // Default Wrappers (for MCP elicitation of primitives)
 // ============================================================================
 
-/// Default wrapper for i64 (unconstrained).
-///
-/// Used internally for MCP elicitation of primitive i64 values.
-/// Provides JsonSchema for client-side validation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
-#[schemars(description = "Integer value")]
-pub struct I64Default(
-    #[schemars(range(min = i64::MIN, max = i64::MAX))]
-    i64
-);
+// Generate Default wrappers for all signed integer types
+impl_integer_default_wrapper!(i8, I8Default, i8::MIN as i64, i8::MAX as i64);
+impl_integer_default_wrapper!(i16, I16Default, i16::MIN as i64, i16::MAX as i64);
+impl_integer_default_wrapper!(i32, I32Default, i32::MIN as i64, i32::MAX as i64);
+impl_integer_default_wrapper!(i64, I64Default, i64::MIN, i64::MAX);
+impl_integer_default_wrapper!(i128, I128Default, i64::MIN, i64::MAX); // Clamped to i64 range for MCP
+impl_integer_default_wrapper!(isize, IsizeDefault, isize::MIN as i64, isize::MAX as i64);
 
-rmcp::elicit_safe!(I64Default);
-
-impl I64Default {
-    /// Creates a new I64Default wrapper.
-    pub fn new(value: i64) -> Self {
-        Self(value)
-    }
-
-    /// Gets the inner value.
-    pub fn get(&self) -> i64 {
-        self.0
-    }
-
-    /// Unwraps to the inner i64.
-    pub fn into_inner(self) -> i64 {
-        self.0
-    }
-}
-
-// Generate default-only style enum for I64Default
-crate::default_style!(I64Default => I64DefaultStyle);
-
-impl Prompt for I64Default {
-    fn prompt() -> Option<&'static str> {
-        Some("Please enter an integer:")
-    }
-}
-
-impl Elicitation for I64Default {
-    type Style = I64DefaultStyle;
-
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
-        let prompt = Self::prompt().unwrap();
-        tracing::debug!("Eliciting I64Default with serde deserialization");
-
-        let params = crate::mcp::number_params(prompt, i64::MIN, i64::MAX);
-
-        let result = client
-            .peer()
-            .call_tool(rmcp::model::CallToolRequestParam {
-                name: crate::mcp::tool_names::elicit_number().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await?;
-
-        let value = crate::mcp::extract_value(result)?;
-
-        // Use serde to deserialize directly into wrapper type
-        serde_json::from_value(value).map_err(|e| {
-            crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
-                expected: "i64".to_string(),
-                received: e.to_string(),
-            })
-        })
-    }
-}
+// Generate Default wrappers for all unsigned integer types
+impl_integer_default_wrapper!(u8, U8Default, 0, u8::MAX as i64);
+impl_integer_default_wrapper!(u16, U16Default, 0, u16::MAX as i64);
+impl_integer_default_wrapper!(u32, U32Default, 0, u32::MAX as i64);
+impl_integer_default_wrapper!(u64, U64Default, 0, i64::MAX); // Clamped to i64::MAX for MCP
+impl_integer_default_wrapper!(u128, U128Default, 0, i64::MAX); // Clamped to i64::MAX for MCP
+impl_integer_default_wrapper!(usize, UsizeDefault, 0, isize::MAX as i64);
 
 // ============================================================================
 // Type Families Generated by Macros

@@ -1,106 +1,43 @@
 //! Floating-point type implementations using generic macros.
 
-use crate::{ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, mcp};
-use serde_json::Value;
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 
-/// Parse a floating-point number from MCP tool response.
+/// Macro to implement Elicitation for floating-point types using Default wrappers.
 ///
-/// Handles both JSON numbers and string representations.
-///
-/// # Type Parameters
-///
-/// * `T` - Target float type (f32 or f64)
-///
-/// # Arguments
-///
-/// * `raw` - The raw value from the MCP tool
-///
-/// # Returns
-///
-/// The parsed float value, or an error if parsing fails.
-///
-/// # Errors
-///
-/// Returns `ElicitError` with `InvalidFormat` if the value is not a number.
-#[tracing::instrument(skip(raw), level = "debug", fields(type_name = std::any::type_name::<T>()))]
-fn parse_float<T>(raw: Value) -> ElicitResult<T>
-where
-    T: std::str::FromStr,
-    <T as std::str::FromStr>::Err: std::fmt::Display,
-{
-    match raw {
-        Value::Number(n) => {
-            let f64_val = n.as_f64().ok_or_else(|| {
-                ElicitError::new(ElicitErrorKind::InvalidFormat {
-                    expected: "float".to_string(),
-                    received: n.to_string(),
-                })
-            })?;
-            // Convert f64 to target type via string to handle precision
-            f64_val.to_string().parse::<T>().map_err(|e| {
-                ElicitError::new(ElicitErrorKind::InvalidFormat {
-                    expected: "float".to_string(),
-                    received: e.to_string(),
-                })
-            })
-        }
-        Value::String(s) => s.trim().parse::<T>().map_err(|e| {
-            ElicitError::new(ElicitErrorKind::InvalidFormat {
-                expected: "float".to_string(),
-                received: format!("{}: {}", s, e),
-            })
-        }),
-        _ => Err(ElicitError::new(ElicitErrorKind::InvalidFormat {
-            expected: "number or string".to_string(),
-            received: format!("{:?}", raw),
-        })),
-    }
-}
+/// This macro generates Elicitation implementations that delegate to
+/// the corresponding Default wrapper type (e.g., f32 -> F32Default).
+macro_rules! impl_float_elicit_via_wrapper {
+    ($primitive:ty, $wrapper:ident, $style:ident) => {
+        crate::default_style!($primitive => $style);
 
-/// Macro to implement Elicitation for floating-point types.
-///
-/// This macro generates default style enum, Prompt, and Elicitation trait
-/// implementations for f32 and f64.
-macro_rules! impl_float_elicit {
-    ($t:ty, $style:ident) => {
-        // Generate default-only style enum
-        crate::default_style!($t => $style);
-
-        impl Prompt for $t {
+        impl Prompt for $primitive {
             fn prompt() -> Option<&'static str> {
-                Some(concat!("Please enter a ", stringify!($t), " number:"))
+                Some(concat!("Please enter a ", stringify!($primitive), " number:"))
             }
         }
 
-        impl Elicitation for $t {
+        impl Elicitation for $primitive {
             type Style = $style;
 
-            #[tracing::instrument(skip(client), fields(type_name = stringify!($t)))]
+            #[tracing::instrument(skip(client), fields(type_name = stringify!($primitive)))]
             async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
-                let prompt = Self::prompt().unwrap();
-                tracing::debug!("Eliciting float type");
+                use crate::verification::types::$wrapper;
 
-                let params = mcp::text_params(prompt);
+                tracing::debug!(concat!("Eliciting ", stringify!($primitive), " via ", stringify!($wrapper), " wrapper"));
 
-                let result = client
-                    .peer()
-                    .call_tool(rmcp::model::CallToolRequestParam {
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
-                    .await?;
+                // Use verification wrapper internally
+                let wrapper = $wrapper::elicit(client).await?;
 
-                let value = mcp::extract_value(result)?;
-                parse_float::<$t>(value)
+                // Unwrap to primitive
+                Ok(wrapper.into_inner())
             }
         }
     };
 }
 
 // Apply macro to floating-point types
-impl_float_elicit!(f32, F32Style);
-// f64 uses verification wrapper - see below
+impl_float_elicit_via_wrapper!(f32, F32Default, F32Style);
+// f64 implementation below (already uses F64Default)
 
 // f64 implementation using F64Default verification wrapper
 crate::default_style!(f64 => F64Style);
