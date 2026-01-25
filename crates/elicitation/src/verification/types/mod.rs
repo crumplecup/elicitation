@@ -72,8 +72,8 @@ mod prusti_proofs;
 // UTF-8 Foundation
 pub use utf8::{Utf8Bytes, is_valid_utf8};
 
-// UUID Foundation (behind feature)
-#[cfg(feature = "uuid")]
+// UUID Foundation (Kani proofs only)
+#[cfg(kani)]
 pub use uuid_bytes::{
     UuidBytes, UuidV4Bytes, UuidV7Bytes,
     has_valid_variant, has_version, is_valid_v4, is_valid_v7,
