@@ -23,14 +23,15 @@ macro_rules! verify_2byte_chunks {
         $(
             #[cfg(kani)]
             #[kani::proof]
+            #[kani::unwind(2)]  // Provable bound: ceil(2 / 1) = 2 iterations max
             #[doc = concat!("Verify 2-byte UTF-8: byte1 ∈ [", stringify!($start), ", ", stringify!($end), "]")]
             fn $name() {
                 let byte1: u8 = kani::any();
                 kani::assume(byte1 >= $start && byte1 <= $end);
-                
+
                 let byte2: u8 = kani::any();
                 kani::assume(byte2 >= 0x80 && byte2 <= 0xBF); // 64 values
-                
+
                 let bytes = [byte1, byte2];
                 assert!(is_valid_utf8(&bytes));
             }
@@ -94,17 +95,18 @@ macro_rules! verify_3byte_chunks {
         $(
             #[cfg(kani)]
             #[kani::proof]
+            #[kani::unwind(3)]  // Provable bound: ceil(3 / 1) = 3 iterations max
             #[doc = concat!("Verify 3-byte UTF-8: byte1 ∈ [", stringify!($start), ", ", stringify!($end), "]")]
             fn $name() {
                 let byte1: u8 = kani::any();
                 kani::assume(byte1 >= $start && byte1 <= $end);
-                
+
                 let byte2: u8 = kani::any();
                 kani::assume(byte2 >= 0x80 && byte2 <= 0xBF); // 64 values
-                
+
                 let byte3: u8 = kani::any();
                 kani::assume(byte3 >= 0x80 && byte3 <= 0xBF); // 64 values
-                
+
                 let bytes = [byte1, byte2, byte3];
                 assert!(is_valid_utf8(&bytes));
             }
@@ -152,20 +154,21 @@ macro_rules! verify_4byte_chunks {
         $(
             #[cfg(kani)]
             #[kani::proof]
+            #[kani::unwind(4)]  // Provable bound: ceil(4 / 1) = 4 iterations max
             #[doc = concat!("Verify 4-byte UTF-8: byte1 ∈ [", stringify!($start), ", ", stringify!($end), "]")]
             fn $name() {
                 let byte1: u8 = kani::any();
                 kani::assume(byte1 >= $start && byte1 <= $end);
-                
+
                 let byte2: u8 = kani::any();
                 kani::assume(byte2 >= 0x80 && byte2 <= 0xBF); // 64 values
-                
+
                 let byte3: u8 = kani::any();
                 kani::assume(byte3 >= 0x80 && byte3 <= 0xBF); // 64 values
-                
+
                 let byte4: u8 = kani::any();
                 kani::assume(byte4 >= 0x80 && byte4 <= 0xBF); // 64 values
-                
+
                 let bytes = [byte1, byte2, byte3, byte4];
                 assert!(is_valid_utf8(&bytes));
             }
