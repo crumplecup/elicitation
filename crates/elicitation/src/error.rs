@@ -281,8 +281,7 @@ error_from!(rmcp::ErrorData);
 error_from!(rmcp::service::ServiceError);
 error_from!(serde_json::Error);
 
-// Add conversion for rmcp::service::ElicitationError (when elicitation feature enabled)
-#[cfg(feature = "elicitation")]
+// Add conversion for rmcp::service::ElicitationError
 impl From<rmcp::service::ElicitationError> for ElicitError {
     #[track_caller]
     fn from(err: rmcp::service::ElicitationError) -> Self {

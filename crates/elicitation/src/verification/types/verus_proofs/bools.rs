@@ -1,8 +1,5 @@
 //! Verus proofs for bool contract types.
 
-
-use crate::*;
-
 #[allow(unused_imports)]
 use builtin::*;
 #[allow(unused_imports)]

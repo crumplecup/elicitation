@@ -6,7 +6,7 @@
 
 use crate::verification::types::ValidationError;
 #[cfg(feature = "regex")]
-use regex::{Regex, RegexBuilder, RegexSet, RegexSetBuilder};
+use regex::{Regex, RegexBuilder, RegexSet};
 
 // ============================================================================
 // Regex Contract Types

@@ -9,7 +9,7 @@ use super::ValidationError;
 #[cfg(feature = "chrono")]
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "chrono")]
-use chrono::{DateTime, FixedOffset, NaiveDateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc};
 
 // DateTimeUtcAfter - DateTime<Utc> after a threshold
 /// A DateTime<Utc> that is guaranteed to be after a threshold time.
@@ -310,7 +310,7 @@ mod tests {
 // ============================================================================
 
 #[cfg(feature = "jiff")]
-use jiff::{civil::DateTime as CivilDateTime, Timestamp, Zoned};
+use jiff::Timestamp;
 
 // TimestampAfter - Timestamp after a threshold
 /// A Timestamp that is guaranteed to be after a threshold time.
@@ -507,7 +507,7 @@ mod jiff_tests {
 // ============================================================================
 
 #[cfg(feature = "time")]
-use time::{OffsetDateTime, PrimitiveDateTime};
+use time::OffsetDateTime;
 
 // OffsetDateTimeAfter - OffsetDateTime after a threshold
 /// An OffsetDateTime that is guaranteed to be after a threshold time.

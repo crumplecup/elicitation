@@ -235,7 +235,7 @@ pub use values::{ValueObject, ValueArray, ValueNonNull};
 // URLs (feature-gated)
 #[cfg(feature = "url")]
 pub use urls::{
-    UrlValid, UrlHttps, UrlHttp,
+    UrlValid, UrlHttps,
     UrlWithHost, UrlCanBeBase,
 };
 
