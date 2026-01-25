@@ -10,6 +10,7 @@ use crate::{
 // ============================================================================
 
 #[kani::proof]
+#[kani::unwind(1)] // No loops, integer checks
 fn verify_i8_positive() {
     let value: i8 = kani::any();
     
@@ -28,6 +29,7 @@ fn verify_i8_positive() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)] // No loops, integer checks
 fn verify_i8_non_negative() {
     let value: i8 = kani::any();
     
@@ -44,6 +46,7 @@ fn verify_i8_non_negative() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)] // No loops, integer checks
 fn verify_u8_non_zero() {
     let value: u8 = kani::any();
     
@@ -60,6 +63,7 @@ fn verify_u8_non_zero() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)] // No loops, integer checks
 fn verify_i16_positive() {
     let value: i16 = kani::any();
     
@@ -75,6 +79,7 @@ fn verify_i16_positive() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)] // No loops, integer checks
 fn verify_u16_non_zero() {
     let value: u16 = kani::any();
     

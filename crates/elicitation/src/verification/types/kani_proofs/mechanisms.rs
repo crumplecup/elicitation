@@ -16,6 +16,7 @@ use crate::I8Positive;
 ///
 /// Affirm mechanism always returns a valid boolean (true or false).
 #[kani::proof]
+#[kani::unwind(1)] // No loops, contract checks
 fn verify_affirm_returns_boolean() {
     use crate::verification::mechanisms::AffirmReturnsBoolean;
     use crate::verification::Contract;
@@ -54,6 +55,7 @@ fn verify_affirm_returns_boolean() {
 /// Survey mechanism returns one of the declared enum variants.
 /// The type system guarantees this, but we prove the contract explicitly.
 #[kani::proof]
+#[kani::unwind(1)] // No loops, contract checks
 fn verify_survey_returns_valid_variant() {
     use crate::verification::mechanisms::SurveyReturnsValidVariant;
     use crate::verification::Contract;
@@ -92,6 +94,7 @@ fn verify_survey_returns_valid_variant() {
 /// If Survey mechanism returns valid variant AND I8Positive contract holds,
 /// then the entire elicitation is proven correct.
 #[kani::proof]
+#[kani::unwind(1)] // No loops, contract checks
 fn verify_mechanism_type_composition() {
     // Prove: Survey(enum) + I8Positive(value) = Fully verified elicitation
     
@@ -116,6 +119,7 @@ fn verify_mechanism_type_composition() {
 ///
 /// Select (formerly Choice) ensures returned value is from valid option set.
 #[kani::proof]
+#[kani::unwind(1)] // No loops, contract checks
 fn verify_select_returns_valid_option() {
     // Define simple enum implementing Select pattern
     #[derive(Debug, Clone, Copy, PartialEq)]
@@ -148,6 +152,7 @@ fn verify_select_returns_valid_option() {
 /// Even when eliciting through mechanisms (Survey/Affirm/Select),
 /// the trenchcoat pattern holds: wrap → validate → unwrap.
 #[kani::proof]
+#[kani::unwind(1)] // No loops, contract checks
 fn verify_mechanism_preserves_trenchcoat() {
     let value: i8 = kani::any();
     

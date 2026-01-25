@@ -16,6 +16,7 @@ use std::time::Duration;
 // ============================================================================
 
 #[kani::proof]
+#[kani::unwind(1)] // No loops, duration checks
 fn verify_duration_positive() {
     let secs: u64 = kani::any();
     let nanos: u32 = kani::any();
@@ -39,6 +40,7 @@ fn verify_duration_positive() {
 // ============================================================================
 
 #[kani::proof]
+#[kani::unwind(1)] // No loops, duration checks
 fn verify_tuple2_composition() {
     // If both elements are valid contracts, tuple is valid
     let v1: i8 = kani::any();
@@ -62,6 +64,7 @@ fn verify_tuple2_composition() {
 // ============================================================================
 
 #[kani::proof]
+#[kani::unwind(1)] // No loops, duration checks
 fn verify_option_some() {
     let value: i32 = kani::any();
     let opt = Some(value);
@@ -78,6 +81,7 @@ fn verify_option_some() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)] // No loops, duration checks
 fn verify_option_some_rejects_none() {
     let opt: Option<i32> = None;
     
@@ -100,6 +104,7 @@ fn verify_option_some_rejects_none() {
 /// Proves that wrapping a value in a contract type and then unwrapping
 /// it yields a validated value.
 #[kani::proof]
+#[kani::unwind(1)] // No loops, duration checks
 fn verify_trenchcoat_pattern() {
     let value: i8 = kani::any();
     
@@ -129,6 +134,7 @@ fn verify_trenchcoat_pattern() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)] // No loops, duration checks
 fn verify_f32_non_negative() {
     let value: f32 = kani::any();
     kani::assume(value.is_finite());
@@ -145,6 +151,7 @@ fn verify_f32_non_negative() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)] // No loops, duration checks
 fn verify_f64_non_negative() {
     let value: f64 = kani::any();
     kani::assume(value.is_finite());
@@ -161,6 +168,7 @@ fn verify_f64_non_negative() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)] // No loops, duration checks
 fn verify_f32_positive() {
     let value: f32 = kani::any();
     kani::assume(value.is_finite());
@@ -181,6 +189,7 @@ fn verify_f32_positive() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)] // No loops, duration checks
 fn verify_char_alphanumeric() {
     let value: char = kani::any();
     
