@@ -708,8 +708,10 @@ impl Elicitation for F64Default {
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
+        tracing::debug!("Eliciting F64Default with serde deserialization");
+
         let params = crate::mcp::text_params(prompt);
-        
+
         let result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParam {
@@ -720,12 +722,13 @@ impl Elicitation for F64Default {
             .await?;
 
         let value = crate::mcp::extract_value(result)?;
-        // Parse as f64 directly from text
-        let f64_val: f64 = match value {
-            serde_json::Value::Number(n) => n.as_f64().unwrap_or(0.0),
-            serde_json::Value::String(s) => s.trim().parse().unwrap_or(0.0),
-            _ => 0.0,
-        };
-        Ok(Self(f64_val))
+
+        // Use serde to deserialize directly into wrapper type
+        serde_json::from_value(value).map_err(|e| {
+            crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
+                expected: "f64".to_string(),
+                received: e.to_string(),
+            })
+        })
     }
 }

@@ -224,8 +224,10 @@ impl Elicitation for BoolDefault {
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
+        tracing::debug!("Eliciting BoolDefault with serde deserialization");
+
         let params = crate::mcp::bool_params(prompt);
-        
+
         let result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParam {
@@ -236,7 +238,13 @@ impl Elicitation for BoolDefault {
             .await?;
 
         let value = crate::mcp::extract_value(result)?;
-        let bool_val = crate::mcp::parse_bool(value)?;
-        Ok(Self(bool_val))
+
+        // Use serde to deserialize directly into wrapper type
+        serde_json::from_value(value).map_err(|e| {
+            crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
+                expected: "bool".to_string(),
+                received: e.to_string(),
+            })
+        })
     }
 }

@@ -232,8 +232,10 @@ impl Elicitation for StringDefault {
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
+        tracing::debug!("Eliciting StringDefault with serde deserialization");
+
         let params = crate::mcp::text_params(prompt);
-        
+
         let result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParam {
@@ -244,7 +246,13 @@ impl Elicitation for StringDefault {
             .await?;
 
         let value = crate::mcp::extract_value(result)?;
-        let string_val = crate::mcp::parse_string(value)?;
-        Ok(Self(string_val))
+
+        // Use serde to deserialize directly into wrapper type
+        serde_json::from_value(value).map_err(|e| {
+            crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
+                expected: "String".to_string(),
+                received: e.to_string(),
+            })
+        })
     }
 }

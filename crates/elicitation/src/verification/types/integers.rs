@@ -45,8 +45,6 @@ pub struct I8Positive(
 rmcp::elicit_safe!(I8Positive);
 
 #[instrumented_impl]
-#[instrumented_impl]
-#[instrumented_impl]
 impl I8Positive {
     /// Creates a new `I8Positive` if the value is positive (> 0).
     ///
@@ -2032,10 +2030,11 @@ impl Elicitation for I64Default {
 
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
-        // For now, fall back to old implementation until we have Peer<RoleServer>
         let prompt = Self::prompt().unwrap();
+        tracing::debug!("Eliciting I64Default with serde deserialization");
+
         let params = crate::mcp::number_params(prompt, i64::MIN, i64::MAX);
-        
+
         let result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParam {
@@ -2046,8 +2045,14 @@ impl Elicitation for I64Default {
             .await?;
 
         let value = crate::mcp::extract_value(result)?;
-        let i64_val = crate::mcp::parse_integer::<i64>(value)?;
-        Ok(Self(i64_val))
+
+        // Use serde to deserialize directly into wrapper type
+        serde_json::from_value(value).map_err(|e| {
+            crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
+                expected: "i64".to_string(),
+                received: e.to_string(),
+            })
+        })
     }
 }
 

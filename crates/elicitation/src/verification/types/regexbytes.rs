@@ -1,7 +1,7 @@
 //! Regex validation with recursive trait bounds for tractable verification.
 //!
 //! Architecture:
-//! ```
+//! ```text
 //! Layer 1: Utf8Bytes           → Valid UTF-8 encoding
 //! Layer 2: BalancedDelimiters  → Parentheses/brackets/braces balanced
 //! Layer 3: ValidEscapes        → \n, \t, \d, \w, etc. valid

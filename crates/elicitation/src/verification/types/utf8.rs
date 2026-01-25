@@ -22,7 +22,7 @@ use super::ValidationError;
 /// # Examples
 ///
 /// ```
-/// use elicitation::Utf8Bytes;
+/// use elicitation::verification::types::{Utf8Bytes, ValidationError};
 ///
 /// let mut bytes = [0u8; 20];
 /// bytes[0] = b'h';
@@ -30,7 +30,7 @@ use super::ValidationError;
 ///
 /// let utf8 = Utf8Bytes::<20>::new(bytes, 2)?;
 /// assert_eq!(utf8.as_str(), "hi");
-/// # Ok::<(), elicitation::ValidationError>(())
+/// # Ok::<(), ValidationError>(())
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Utf8Bytes<const MAX_LEN: usize> {
