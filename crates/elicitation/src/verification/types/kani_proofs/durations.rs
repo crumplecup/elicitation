@@ -10,8 +10,6 @@ use crate::{
     OptionSome,
     Tuple2,
 };
-#[cfg(kani)]
-use std::time::Duration;
 
 // Duration Contract Proofs
 // ============================================================================
