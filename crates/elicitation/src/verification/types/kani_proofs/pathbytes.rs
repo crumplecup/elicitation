@@ -7,7 +7,6 @@
 
 use crate::verification::types::{
     PathBytes, PathAbsolute, PathRelative, PathNonEmpty,
-    has_null_byte, is_absolute, is_relative,
 };
 
 // ============================================================================

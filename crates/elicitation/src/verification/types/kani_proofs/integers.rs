@@ -1,7 +1,7 @@
 //! Kani proofs for integer contract types.
 
 use crate::{
-    I8Positive, U8Positive, I16Positive, U16Positive,
+    I8Positive, I16Positive,
     I8NonNegative, U8NonZero, U16NonZero,
 };
 

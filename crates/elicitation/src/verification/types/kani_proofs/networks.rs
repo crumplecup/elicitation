@@ -5,9 +5,6 @@ use crate::{IpPrivate, IpPublic, Ipv4Loopback, Ipv6Loopback, PathBufExists, Path
 #[cfg(feature = "uuid")]
 use crate::{UuidNonNil, UuidV4};
 
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
-use std::path::PathBuf;
-
 // ============================================================================
 // Network Proofs
 // ----------------------------------------------------------------------------

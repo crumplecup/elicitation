@@ -12,7 +12,7 @@ use crate::verification::types::{
     SocketAddrV4Privileged, SocketAddrV6Privileged,
     SocketAddrV4Unprivileged, SocketAddrV6Unprivileged,
     is_well_known_port, is_registered_port, is_dynamic_port,
-    is_privileged_port, is_nonzero_port,
+    is_privileged_port,
 };
 
 // ============================================================================

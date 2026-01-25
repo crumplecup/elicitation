@@ -1,14 +1,15 @@
 //! Kani proofs for char contract types.
 
-use crate::{CharAlphabetic, CharAlphanumeric, CharNumeric};
+use crate::{CharAlphabetic, CharNumeric};
 
 // Char Contract Proofs
 // ============================================================================
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, char property checks
 fn verify_char_alphabetic() {
     let value: char = kani::any();
-    
+
     match CharAlphabetic::new(value) {
         Ok(alphabetic) => {
             assert!(value.is_alphabetic(), "CharAlphabetic invariant");
@@ -21,9 +22,10 @@ fn verify_char_alphabetic() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, char property checks
 fn verify_char_numeric() {
     let value: char = kani::any();
-    
+
     match CharNumeric::new(value) {
         Ok(numeric) => {
             assert!(value.is_numeric(), "CharNumeric invariant");

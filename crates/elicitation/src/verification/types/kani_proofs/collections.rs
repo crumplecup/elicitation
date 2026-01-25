@@ -3,8 +3,6 @@
 //! Includes Vec, HashMap, HashSet, BTreeMap, BTreeSet, LinkedList, Arc, Box, Array.
 
 use crate::*;
-use std::collections::{HashMap, HashSet, BTreeMap, BTreeSet, LinkedList};
-use std::sync::Arc;
 
 // ============================================================================
 // Phase 4: Collection Type Proofs
@@ -15,12 +13,13 @@ use std::sync::Arc;
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, concrete checks
 fn verify_vec_non_empty() {
     // Prove with concrete vectors (symbolic vectors complex)
     let empty: Vec<i32> = vec![];
     let result = VecNonEmpty::new(empty);
     assert!(result.is_err(), "Empty vec rejected");
-    
+
     let non_empty = vec![42];
     let result = VecNonEmpty::new(non_empty);
     assert!(result.is_ok(), "Non-empty vec accepted");
@@ -72,13 +71,14 @@ fn verify_btreemap_non_empty() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, concrete checks
 fn verify_hashset_non_empty() {
     use std::collections::HashSet;
-    
+
     let empty: HashSet<i32> = HashSet::new();
     let result = HashSetNonEmpty::new(empty);
     assert!(result.is_err(), "Empty set rejected");
-    
+
     let mut non_empty = HashSet::new();
     non_empty.insert(42);
     let result = HashSetNonEmpty::new(non_empty);
@@ -86,13 +86,14 @@ fn verify_hashset_non_empty() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, concrete checks
 fn verify_btreeset_non_empty() {
     use std::collections::BTreeSet;
-    
+
     let empty: BTreeSet<i32> = BTreeSet::new();
     let result = BTreeSetNonEmpty::new(empty);
     assert!(result.is_err(), "Empty BTreeSet rejected");
-    
+
     let mut non_empty = BTreeSet::new();
     non_empty.insert(42);
     let result = BTreeSetNonEmpty::new(non_empty);
@@ -100,13 +101,14 @@ fn verify_btreeset_non_empty() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, concrete checks
 fn verify_vecdeque_non_empty() {
     use std::collections::VecDeque;
-    
+
     let empty: VecDeque<i32> = VecDeque::new();
     let result = VecDequeNonEmpty::new(empty);
     assert!(result.is_err(), "Empty VecDeque rejected");
-    
+
     let mut non_empty = VecDeque::new();
     non_empty.push_back(42);
     let result = VecDequeNonEmpty::new(non_empty);
@@ -114,13 +116,14 @@ fn verify_vecdeque_non_empty() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, concrete checks
 fn verify_linkedlist_non_empty() {
     use std::collections::LinkedList;
-    
+
     let empty: LinkedList<i32> = LinkedList::new();
     let result = LinkedListNonEmpty::new(empty);
     assert!(result.is_err(), "Empty LinkedList rejected");
-    
+
     let mut non_empty = LinkedList::new();
     non_empty.push_back(42);
     let result = LinkedListNonEmpty::new(non_empty);
@@ -132,6 +135,7 @@ fn verify_linkedlist_non_empty() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, transparent wrapper
 fn verify_box_satisfies() {
     // Box is transparent wrapper - new() doesn't return Result
     let positive = I8Positive::new(42).unwrap();
@@ -140,6 +144,7 @@ fn verify_box_satisfies() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, transparent wrapper
 fn verify_arc_satisfies() {
     // Arc is transparent wrapper - new() doesn't return Result
     let positive = I8Positive::new(42).unwrap();
@@ -148,6 +153,7 @@ fn verify_arc_satisfies() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, transparent wrapper
 fn verify_rc_satisfies() {
     // Rc is transparent wrapper - new() doesn't return Result
     let positive = I8Positive::new(42).unwrap();
@@ -177,13 +183,14 @@ fn verify_result_ok() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, composition checks
 fn verify_tuple3_composition() {
     let a = I8Positive::new(1).unwrap();
     let b = I8Positive::new(2).unwrap();
     let c = I8Positive::new(3).unwrap();
-    
+
     let tuple = Tuple3::new(a, b, c);
-    
+
     // Composition: if all 3 elements satisfy contract, tuple satisfies
     assert!(tuple.0.get() > 0, "First element positive");
     assert!(tuple.1.get() > 0, "Second element positive");
@@ -191,14 +198,15 @@ fn verify_tuple3_composition() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, composition checks
 fn verify_tuple4_composition() {
     let a = I8Positive::new(1).unwrap();
     let b = I8Positive::new(2).unwrap();
     let c = I8Positive::new(3).unwrap();
     let d = I8Positive::new(4).unwrap();
-    
+
     let tuple = Tuple4::new(a, b, c, d);
-    
+
     assert!(tuple.0.get() > 0, "First element positive");
     assert!(tuple.1.get() > 0, "Second element positive");
     assert!(tuple.2.get() > 0, "Third element positive");
@@ -212,13 +220,14 @@ fn verify_tuple4_composition() {
 
 #[cfg(feature = "serde_json")]
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, type checks
 fn verify_value_object() {
     use serde_json::{json, Value};
-    
+
     let obj = json!({"key": "value"});
     let result = ValueObject::new(obj);
     assert!(result.is_ok(), "Object accepted");
-    
+
     let not_obj = json!([1, 2, 3]);
     let result = ValueObject::new(not_obj);
     assert!(result.is_err(), "Array rejected");
@@ -226,13 +235,14 @@ fn verify_value_object() {
 
 #[cfg(feature = "serde_json")]
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, type checks
 fn verify_value_array() {
     use serde_json::{json, Value};
-    
+
     let arr = json!([1, 2, 3]);
     let result = ValueArray::new(arr);
     assert!(result.is_ok(), "Array accepted");
-    
+
     let not_arr = json!({"key": "value"});
     let result = ValueArray::new(not_arr);
     assert!(result.is_err(), "Object rejected");
@@ -240,13 +250,14 @@ fn verify_value_array() {
 
 #[cfg(feature = "serde_json")]
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, null check
 fn verify_value_non_null() {
     use serde_json::{json, Value};
-    
+
     let null = Value::Null;
     let result = ValueNonNull::new(null);
     assert!(result.is_err(), "Null rejected");
-    
+
     let non_null = json!(42);
     let result = ValueNonNull::new(non_null);
     assert!(result.is_ok(), "Non-null accepted");
@@ -258,98 +269,104 @@ fn verify_value_non_null() {
 
 #[cfg(feature = "chrono")]
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, timestamp comparison
 fn verify_datetime_utc_after() {
     use chrono::{DateTime, Utc, TimeZone};
-    
+
     let threshold = Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap();
     let after = Utc.with_ymd_and_hms(2021, 1, 1, 0, 0, 0).unwrap();
     let before = Utc.with_ymd_and_hms(2019, 1, 1, 0, 0, 0).unwrap();
-    
+
     let result = DateTimeUtcAfter::new(after, threshold);
     assert!(result.is_ok(), "After timestamp accepted");
-    
+
     let result = DateTimeUtcAfter::new(before, threshold);
     assert!(result.is_err(), "Before timestamp rejected");
 }
 
 #[cfg(feature = "chrono")]
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, timestamp comparison
 fn verify_datetime_utc_before() {
     use chrono::{DateTime, Utc, TimeZone};
-    
+
     let threshold = Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap();
     let before = Utc.with_ymd_and_hms(2019, 1, 1, 0, 0, 0).unwrap();
     let after = Utc.with_ymd_and_hms(2021, 1, 1, 0, 0, 0).unwrap();
-    
+
     let result = DateTimeUtcBefore::new(before, threshold);
     assert!(result.is_ok(), "Before timestamp accepted");
-    
+
     let result = DateTimeUtcBefore::new(after, threshold);
     assert!(result.is_err(), "After timestamp rejected");
 }
 
 #[cfg(feature = "jiff")]
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, timestamp comparison
 fn verify_timestamp_after() {
     use jiff::Timestamp;
-    
+
     // Jiff timestamps use nanosecond precision
     // Prove with concrete examples
     let threshold = Timestamp::from_second(1577836800).unwrap(); // 2020-01-01
     let after = Timestamp::from_second(1609459200).unwrap(); // 2021-01-01
     let before = Timestamp::from_second(1546300800).unwrap(); // 2019-01-01
-    
+
     let result = TimestampAfter::new(after, threshold);
     assert!(result.is_ok(), "After timestamp accepted");
-    
+
     let result = TimestampAfter::new(before, threshold);
     assert!(result.is_err(), "Before timestamp rejected");
 }
 
 #[cfg(feature = "jiff")]
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, timestamp comparison
 fn verify_timestamp_before() {
     use jiff::Timestamp;
-    
+
     let threshold = Timestamp::from_second(1577836800).unwrap(); // 2020-01-01
     let before = Timestamp::from_second(1546300800).unwrap(); // 2019-01-01
     let after = Timestamp::from_second(1609459200).unwrap(); // 2021-01-01
-    
+
     let result = TimestampBefore::new(before, threshold);
     assert!(result.is_ok(), "Before timestamp accepted");
-    
+
     let result = TimestampBefore::new(after, threshold);
     assert!(result.is_err(), "After timestamp rejected");
 }
 
 #[cfg(feature = "time")]
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, timestamp comparison
 fn verify_offset_datetime_after() {
     use time::{OffsetDateTime, Duration};
-    
+
     let threshold = OffsetDateTime::UNIX_EPOCH;
     let after = threshold + Duration::days(365);
     let before = threshold - Duration::days(365);
-    
+
     let result = OffsetDateTimeAfter::new(after, threshold);
     assert!(result.is_ok(), "After timestamp accepted");
-    
+
     let result = OffsetDateTimeAfter::new(before, threshold);
     assert!(result.is_err(), "Before timestamp rejected");
 }
 
 #[cfg(feature = "time")]
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, timestamp comparison
 fn verify_offset_datetime_before() {
     use time::{OffsetDateTime, Duration};
-    
+
     let threshold = OffsetDateTime::UNIX_EPOCH;
     let before = threshold - Duration::days(365);
     let after = threshold + Duration::days(365);
-    
+
     let result = OffsetDateTimeBefore::new(before, threshold);
     assert!(result.is_ok(), "Before timestamp accepted");
-    
+
     let result = OffsetDateTimeBefore::new(after, threshold);
     assert!(result.is_err(), "After timestamp rejected");
 }
@@ -361,13 +378,14 @@ fn verify_offset_datetime_before() {
 
 // Attempt 1: Concrete const generics (specific MIN/MAX values)
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, range checks
 fn verify_i8_range_concrete() {
     // Prove for specific range: -10 to 10
     const MIN: i8 = -10;
     const MAX: i8 = 10;
-    
+
     let value: i8 = kani::any();
-    
+
     match I8Range::<MIN, MAX>::new(value) {
         Ok(range) => {
             // If construction succeeds, value must be in range
@@ -385,13 +403,14 @@ fn verify_i8_range_concrete() {
 
 // Attempt 2: Multiple concrete ranges to test generality
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, range checks
 fn verify_i8_range_positive() {
     // Prove for positive range: 1 to 100
     const MIN: i8 = 1;
     const MAX: i8 = 100;
-    
+
     let value: i8 = kani::any();
-    
+
     match I8Range::<MIN, MAX>::new(value) {
         Ok(_range) => {
             assert!(value >= MIN && value <= MAX, "I8Range[1,100] invariant");
@@ -404,12 +423,13 @@ fn verify_i8_range_positive() {
 
 // Attempt 3: U8Range (unsigned)
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, range checks
 fn verify_u8_range_concrete() {
     const MIN: u8 = 10;
     const MAX: u8 = 200;
-    
+
     let value: u8 = kani::any();
-    
+
     match U8Range::<MIN, MAX>::new(value) {
         Ok(range) => {
             assert!(value >= MIN, "Value >= MIN");
@@ -425,13 +445,14 @@ fn verify_u8_range_concrete() {
 
 // Attempt 4: Edge case - zero-width range
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, singleton check
 fn verify_i8_range_singleton() {
     // Range with single value: [42, 42]
     const MIN: i8 = 42;
     const MAX: i8 = 42;
-    
+
     let value: i8 = kani::any();
-    
+
     match I8Range::<MIN, MAX>::new(value) {
         Ok(_range) => {
             assert!(value == 42, "Singleton range accepts only exact value");
@@ -444,6 +465,7 @@ fn verify_i8_range_singleton() {
 
 // Attempt 5: I16Range (test larger integer types)
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, range checks
 fn verify_i16_range_concrete() {
     const MIN: i16 = -1000;
     const MAX: i16 = 1000;
@@ -463,6 +485,7 @@ fn verify_i16_range_concrete() {
 
 // Attempt 6: U16Range
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, range checks
 fn verify_u16_range_concrete() {
     const MIN: u16 = 100;
     const MAX: u16 = 60000;
@@ -489,6 +512,7 @@ fn verify_u16_range_concrete() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, sign checks
 fn verify_i32_positive() {
     let value: i32 = kani::any();
     
@@ -505,6 +529,7 @@ fn verify_i32_positive() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, sign checks
 fn verify_i32_non_negative() {
     let value: i32 = kani::any();
     
@@ -521,6 +546,7 @@ fn verify_i32_non_negative() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, range checks
 fn verify_i32_range() {
     const MIN: i32 = -1000;
     const MAX: i32 = 1000;
@@ -543,6 +569,7 @@ fn verify_i32_range() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, sign checks
 fn verify_i64_positive() {
     let value: i64 = kani::any();
     
@@ -559,6 +586,7 @@ fn verify_i64_positive() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, sign checks
 fn verify_i64_non_negative() {
     let value: i64 = kani::any();
     
@@ -573,6 +601,7 @@ fn verify_i64_non_negative() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, range checks
 fn verify_i64_range() {
     const MIN: i64 = -100000;
     const MAX: i64 = 100000;
@@ -594,6 +623,7 @@ fn verify_i64_range() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, sign checks
 fn verify_i128_positive() {
     let value: i128 = kani::any();
     
@@ -608,6 +638,7 @@ fn verify_i128_positive() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, sign checks
 fn verify_i128_non_negative() {
     let value: i128 = kani::any();
     
@@ -622,6 +653,7 @@ fn verify_i128_non_negative() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, range checks
 fn verify_i128_range() {
     const MIN: i128 = -1000000;
     const MAX: i128 = 1000000;
@@ -643,6 +675,7 @@ fn verify_i128_range() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, zero checks
 fn verify_u32_non_zero() {
     let value: u32 = kani::any();
     
@@ -659,6 +692,7 @@ fn verify_u32_non_zero() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, range checks
 fn verify_u32_range() {
     const MIN: u32 = 100;
     const MAX: u32 = 1000000;
@@ -680,6 +714,7 @@ fn verify_u32_range() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, zero checks
 fn verify_u64_non_zero() {
     let value: u64 = kani::any();
     
@@ -694,6 +729,7 @@ fn verify_u64_non_zero() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, range checks
 fn verify_u64_range() {
     const MIN: u64 = 1000;
     const MAX: u64 = 1000000000;
@@ -715,6 +751,7 @@ fn verify_u64_range() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, zero checks
 fn verify_u128_non_zero() {
     let value: u128 = kani::any();
     
@@ -729,6 +766,7 @@ fn verify_u128_non_zero() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, range checks
 fn verify_u128_range() {
     const MIN: u128 = 1000;
     const MAX: u128 = 1000000000000;
@@ -750,6 +788,7 @@ fn verify_u128_range() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, sign checks
 fn verify_isize_positive() {
     let value: isize = kani::any();
     
@@ -766,6 +805,7 @@ fn verify_isize_positive() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, sign checks
 fn verify_isize_non_negative() {
     let value: isize = kani::any();
     
@@ -780,6 +820,7 @@ fn verify_isize_non_negative() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, range checks
 fn verify_isize_range() {
     const MIN: isize = -10000;
     const MAX: isize = 10000;
@@ -801,6 +842,7 @@ fn verify_isize_range() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, zero checks
 fn verify_usize_non_zero() {
     let value: usize = kani::any();
     
@@ -817,6 +859,7 @@ fn verify_usize_non_zero() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, range checks
 fn verify_usize_range() {
     const MIN: usize = 10;
     const MAX: usize = 100000;
@@ -843,6 +886,7 @@ fn verify_usize_range() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, variant checks
 fn verify_ipv4() {
     use std::net::{IpAddr, Ipv4Addr};
     
@@ -857,6 +901,7 @@ fn verify_ipv4() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, variant checks
 fn verify_ipv6() {
     use std::net::{IpAddr, Ipv6Addr};
     
@@ -876,6 +921,7 @@ fn verify_ipv6() {
 
 #[cfg(feature = "chrono")]
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, timestamp comparison
 fn verify_naive_datetime_after() {
     use chrono::NaiveDate;
     

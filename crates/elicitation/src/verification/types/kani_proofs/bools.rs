@@ -6,9 +6,10 @@ use crate::{BoolTrue, BoolFalse};
 // ============================================================================
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, deterministic bool checks
 fn verify_bool_true() {
     let value: bool = kani::any();
-    
+
     match BoolTrue::new(value) {
         Ok(bool_true) => {
             assert!(value == true, "BoolTrue invariant: value is true");
@@ -21,9 +22,10 @@ fn verify_bool_true() {
 }
 
 #[kani::proof]
+#[kani::unwind(1)]  // No loops, deterministic bool checks
 fn verify_bool_false() {
     let value: bool = kani::any();
-    
+
     match BoolFalse::new(value) {
         Ok(bool_false) => {
             assert!(value == false, "BoolFalse invariant: value is false");
