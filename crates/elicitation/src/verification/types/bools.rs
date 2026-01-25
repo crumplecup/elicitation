@@ -240,11 +240,7 @@ impl Elicitation for BoolDefault {
         let value = crate::mcp::extract_value(result)?;
 
         // Use serde to deserialize directly into wrapper type
-        serde_json::from_value(value).map_err(|e| {
-            crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
-                expected: "bool".to_string(),
-                received: e.to_string(),
-            })
-        })
+        // Preserves error source via From<serde_json::Error> chain
+        Ok(serde_json::from_value(value)?)
     }
 }
