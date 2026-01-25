@@ -297,6 +297,10 @@ impl From<rmcp::service::ElicitationError> for ElicitError {
                 expected: "elicitation capability".to_string(),
                 received: "unsupported".to_string(),
             },
+            EE::NoContent => ElicitErrorKind::InvalidFormat {
+                expected: "elicitation response".to_string(),
+                received: "no content".to_string(),
+            },
         };
         tracing::error!(error_kind = %kind, "Error from ElicitationError");
         Self(Box::new(kind))
