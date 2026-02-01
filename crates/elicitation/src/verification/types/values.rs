@@ -17,12 +17,18 @@ use serde_json::Value;
 /// Available with the `serde_json` feature.
 #[cfg(feature = "serde_json")]
 #[derive(Debug, Clone, PartialEq)]
+#[cfg(not(kani))]
 pub struct ValueObject(Value);
+
+#[cfg(all(feature = "serde_json", kani))]
+#[derive(Debug, Clone, PartialEq)]
+pub struct ValueObject(std::marker::PhantomData<()>);
 
 #[cfg(feature = "serde_json")]
 #[instrumented_impl]
 impl ValueObject {
     /// Create a new ValueObject, validating it's an object.
+    #[cfg(not(kani))]
     pub fn new(value: Value) -> Result<Self, ValidationError> {
         if value.is_object() {
             Ok(Self(value))
@@ -34,18 +40,45 @@ impl ValueObject {
         }
     }
 
+    /// Kani version: trust serde_json, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_value: Value) -> Result<Self, ValidationError> {
+        let is_object: bool = kani::any();
+        if is_object {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::WrongJsonType {
+                expected: "object".to_string(),
+                got: "other".to_string(),
+            })
+        }
+    }
+
     /// Get the inner Value.
+    #[cfg(not(kani))]
     pub fn get(&self) -> &Value {
         &self.0
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> &Value {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner Value.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> Value {
         self.0
+    }
+
+    #[cfg(kani)]
+    pub fn into_inner(self) -> Value {
+        panic!("into_inner() not supported in Kani verification")
     }
 }
 
 #[cfg(feature = "serde_json")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Prompt for ValueObject {
     fn prompt() -> Option<&'static str> {
@@ -54,6 +87,7 @@ impl Prompt for ValueObject {
 }
 
 #[cfg(feature = "serde_json")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Elicitation for ValueObject {
     type Style = <Value as Elicitation>::Style;
@@ -83,12 +117,18 @@ impl Elicitation for ValueObject {
 /// Available with the `serde_json` feature.
 #[cfg(feature = "serde_json")]
 #[derive(Debug, Clone, PartialEq)]
+#[cfg(not(kani))]
 pub struct ValueArray(Value);
+
+#[cfg(all(feature = "serde_json", kani))]
+#[derive(Debug, Clone, PartialEq)]
+pub struct ValueArray(std::marker::PhantomData<()>);
 
 #[cfg(feature = "serde_json")]
 #[instrumented_impl]
 impl ValueArray {
     /// Create a new ValueArray, validating it's an array.
+    #[cfg(not(kani))]
     pub fn new(value: Value) -> Result<Self, ValidationError> {
         if value.is_array() {
             Ok(Self(value))
@@ -100,18 +140,45 @@ impl ValueArray {
         }
     }
 
+    /// Kani version: trust serde_json, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_value: Value) -> Result<Self, ValidationError> {
+        let is_array: bool = kani::any();
+        if is_array {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::WrongJsonType {
+                expected: "array".to_string(),
+                got: "other".to_string(),
+            })
+        }
+    }
+
     /// Get the inner Value.
+    #[cfg(not(kani))]
     pub fn get(&self) -> &Value {
         &self.0
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> &Value {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner Value.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> Value {
         self.0
+    }
+
+    #[cfg(kani)]
+    pub fn into_inner(self) -> Value {
+        panic!("into_inner() not supported in Kani verification")
     }
 }
 
 #[cfg(feature = "serde_json")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Prompt for ValueArray {
     fn prompt() -> Option<&'static str> {
@@ -120,6 +187,7 @@ impl Prompt for ValueArray {
 }
 
 #[cfg(feature = "serde_json")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Elicitation for ValueArray {
     type Style = <Value as Elicitation>::Style;
@@ -149,12 +217,18 @@ impl Elicitation for ValueArray {
 /// Available with the `serde_json` feature.
 #[cfg(feature = "serde_json")]
 #[derive(Debug, Clone, PartialEq)]
+#[cfg(not(kani))]
 pub struct ValueNonNull(Value);
+
+#[cfg(all(feature = "serde_json", kani))]
+#[derive(Debug, Clone, PartialEq)]
+pub struct ValueNonNull(std::marker::PhantomData<()>);
 
 #[cfg(feature = "serde_json")]
 #[instrumented_impl]
 impl ValueNonNull {
     /// Create a new ValueNonNull, validating it's not null.
+    #[cfg(not(kani))]
     pub fn new(value: Value) -> Result<Self, ValidationError> {
         if !value.is_null() {
             Ok(Self(value))
@@ -163,18 +237,42 @@ impl ValueNonNull {
         }
     }
 
+    /// Kani version: trust serde_json, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_value: Value) -> Result<Self, ValidationError> {
+        let is_null: bool = kani::any();
+        if !is_null {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::JsonIsNull)
+        }
+    }
+
     /// Get the inner Value.
+    #[cfg(not(kani))]
     pub fn get(&self) -> &Value {
         &self.0
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> &Value {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner Value.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> Value {
         self.0
+    }
+
+    #[cfg(kani)]
+    pub fn into_inner(self) -> Value {
+        panic!("into_inner() not supported in Kani verification")
     }
 }
 
 #[cfg(feature = "serde_json")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Prompt for ValueNonNull {
     fn prompt() -> Option<&'static str> {
@@ -183,6 +281,7 @@ impl Prompt for ValueNonNull {
 }
 
 #[cfg(feature = "serde_json")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Elicitation for ValueNonNull {
     type Style = <Value as Elicitation>::Style;

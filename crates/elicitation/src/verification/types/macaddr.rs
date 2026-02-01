@@ -124,7 +124,7 @@ impl MacUnicast {
         if mac.is_unicast() {
             Ok(Self(mac))
         } else {
-            Err(ValidationError::NotUnicastMac(format_mac(&octets)))
+            Err(ValidationError::NotUnicastMac)
         }
     }
 
@@ -161,7 +161,7 @@ impl MacMulticast {
         if mac.is_multicast() {
             Ok(Self(mac))
         } else {
-            Err(ValidationError::NotMulticastMac(format_mac(&octets)))
+            Err(ValidationError::NotMulticastMac)
         }
     }
 
@@ -198,7 +198,7 @@ impl MacUniversal {
         if mac.is_universal() {
             Ok(Self(mac))
         } else {
-            Err(ValidationError::NotUniversalMac(format_mac(&octets)))
+            Err(ValidationError::NotUniversalMac)
         }
     }
 
@@ -235,7 +235,7 @@ impl MacLocal {
         if mac.is_local() {
             Ok(Self(mac))
         } else {
-            Err(ValidationError::NotLocalMac(format_mac(&octets)))
+            Err(ValidationError::NotLocalMac)
         }
     }
 
@@ -260,12 +260,6 @@ impl MacLocal {
 // ============================================================================
 
 /// Format MAC address as XX:XX:XX:XX:XX:XX.
-fn format_mac(octets: &[u8; 6]) -> String {
-    format!(
-        "{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}",
-        octets[0], octets[1], octets[2], octets[3], octets[4], octets[5]
-    )
-}
 
 // ============================================================================
 // Tests

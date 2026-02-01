@@ -9,7 +9,6 @@ use crate::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost};
 
 #[cfg(feature = "url")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_url_https() {
     // Test known HTTPS URL
     let https_result = UrlHttps::new("https://example.com");
@@ -22,7 +21,6 @@ fn verify_url_https() {
 
 #[cfg(feature = "url")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_url_http() {
     // Test known HTTP URL
     let http_result = UrlHttp::new("http://example.com");
@@ -35,7 +33,6 @@ fn verify_url_http() {
 
 #[cfg(feature = "url")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_url_valid() {
     // Test various valid URL schemes
     assert!(
@@ -57,7 +54,6 @@ fn verify_url_valid() {
 
 #[cfg(feature = "url")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_url_with_host() {
     // Test URLs with hosts
     assert!(
@@ -82,7 +78,6 @@ fn verify_url_with_host() {
 
 #[cfg(feature = "url")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_url_can_be_base() {
     // Test URLs that can be base
     assert!(
@@ -107,7 +102,6 @@ fn verify_url_can_be_base() {
 
 #[cfg(feature = "url")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_url_https_accessor() {
     // Test accessor methods preserve invariants
     let https = UrlHttps::new("https://secure.example.com").unwrap();
@@ -125,7 +119,6 @@ fn verify_url_https_accessor() {
 
 #[cfg(feature = "url")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_url_trenchcoat_pattern() {
     // Prove trenchcoat pattern: parse → wrap → validate → unwrap → use
     let original = "https://api.example.com/v1/endpoint";

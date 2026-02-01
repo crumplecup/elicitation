@@ -2,14 +2,17 @@
 //!
 //! Available with the `chrono`, `time`, or `jiff` features.
 
-#[cfg(feature = "chrono")]
+#[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
 use super::ValidationError;
-#[cfg(feature = "chrono")]
+
+#[cfg(all(not(kani), any(feature = "chrono", feature = "jiff", feature = "time")))]
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+
+#[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
+use elicitation_macros::instrumented_impl;
+
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, NaiveDateTime, Utc};
-#[cfg(feature = "chrono")]
-use elicitation_macros::instrumented_impl;
 
 // DateTimeUtcAfter - DateTime<Utc> after a threshold
 /// A DateTime<Utc> that is guaranteed to be after a threshold time.
@@ -17,15 +20,21 @@ use elicitation_macros::instrumented_impl;
 /// Available with the `chrono` feature.
 #[cfg(feature = "chrono")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg(not(kani))]
 pub struct DateTimeUtcAfter {
     value: DateTime<Utc>,
     threshold: DateTime<Utc>,
 }
 
+#[cfg(all(feature = "chrono", kani))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DateTimeUtcAfter(std::marker::PhantomData<()>);
+
 #[cfg(feature = "chrono")]
 #[instrumented_impl]
 impl DateTimeUtcAfter {
     /// Create a new DateTimeUtcAfter, validating value > threshold.
+    #[cfg(not(kani))]
     pub fn new(value: DateTime<Utc>, threshold: DateTime<Utc>) -> Result<Self, ValidationError> {
         if value > threshold {
             Ok(Self { value, threshold })
@@ -37,23 +46,56 @@ impl DateTimeUtcAfter {
         }
     }
 
+    /// Kani version: trust chrono, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_value: DateTime<Utc>, _threshold: DateTime<Utc>) -> Result<Self, ValidationError> {
+        let is_after: bool = kani::any();
+        if is_after {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::DateTimeTooEarly {
+                value: "value".to_string(),
+                threshold: "threshold".to_string(),
+            })
+        }
+    }
+
     /// Get the datetime value.
+    #[cfg(not(kani))]
     pub fn get(&self) -> DateTime<Utc> {
         self.value
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> DateTime<Utc> {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Get the threshold.
+    #[cfg(not(kani))]
     pub fn threshold(&self) -> DateTime<Utc> {
         self.threshold
     }
 
+    #[cfg(kani)]
+    pub fn threshold(&self) -> DateTime<Utc> {
+        panic!("threshold() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner DateTime<Utc>.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> DateTime<Utc> {
         self.value
+    }
+
+    #[cfg(kani)]
+    pub fn into_inner(self) -> DateTime<Utc> {
+        panic!("into_inner() not supported in Kani verification")
     }
 }
 
 #[cfg(feature = "chrono")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Prompt for DateTimeUtcAfter {
     fn prompt() -> Option<&'static str> {
@@ -62,6 +104,7 @@ impl Prompt for DateTimeUtcAfter {
 }
 
 #[cfg(feature = "chrono")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Elicitation for DateTimeUtcAfter {
     type Style = <DateTime<Utc> as Elicitation>::Style;
@@ -93,15 +136,21 @@ impl Elicitation for DateTimeUtcAfter {
 /// Available with the `chrono` feature.
 #[cfg(feature = "chrono")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg(not(kani))]
 pub struct DateTimeUtcBefore {
     value: DateTime<Utc>,
     threshold: DateTime<Utc>,
 }
 
+#[cfg(all(feature = "chrono", kani))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DateTimeUtcBefore(std::marker::PhantomData<()>);
+
 #[cfg(feature = "chrono")]
 #[instrumented_impl]
 impl DateTimeUtcBefore {
     /// Create a new DateTimeUtcBefore, validating value < threshold.
+    #[cfg(not(kani))]
     pub fn new(value: DateTime<Utc>, threshold: DateTime<Utc>) -> Result<Self, ValidationError> {
         if value < threshold {
             Ok(Self { value, threshold })
@@ -113,23 +162,56 @@ impl DateTimeUtcBefore {
         }
     }
 
+    /// Kani version: trust chrono, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_value: DateTime<Utc>, _threshold: DateTime<Utc>) -> Result<Self, ValidationError> {
+        let is_before: bool = kani::any();
+        if is_before {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::DateTimeTooLate {
+                value: "value".to_string(),
+                threshold: "threshold".to_string(),
+            })
+        }
+    }
+
     /// Get the datetime value.
+    #[cfg(not(kani))]
     pub fn get(&self) -> DateTime<Utc> {
         self.value
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> DateTime<Utc> {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Get the threshold.
+    #[cfg(not(kani))]
     pub fn threshold(&self) -> DateTime<Utc> {
         self.threshold
     }
 
+    #[cfg(kani)]
+    pub fn threshold(&self) -> DateTime<Utc> {
+        panic!("threshold() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner DateTime<Utc>.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> DateTime<Utc> {
         self.value
+    }
+
+    #[cfg(kani)]
+    pub fn into_inner(self) -> DateTime<Utc> {
+        panic!("into_inner() not supported in Kani verification")
     }
 }
 
 #[cfg(feature = "chrono")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Prompt for DateTimeUtcBefore {
     fn prompt() -> Option<&'static str> {
@@ -138,6 +220,7 @@ impl Prompt for DateTimeUtcBefore {
 }
 
 #[cfg(feature = "chrono")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Elicitation for DateTimeUtcBefore {
     type Style = <DateTime<Utc> as Elicitation>::Style;
@@ -169,15 +252,21 @@ impl Elicitation for DateTimeUtcBefore {
 /// Available with the `chrono` feature.
 #[cfg(feature = "chrono")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg(not(kani))]
 pub struct NaiveDateTimeAfter {
     value: NaiveDateTime,
     threshold: NaiveDateTime,
 }
 
+#[cfg(all(feature = "chrono", kani))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct NaiveDateTimeAfter(std::marker::PhantomData<()>);
+
 #[cfg(feature = "chrono")]
 #[instrumented_impl]
 impl NaiveDateTimeAfter {
     /// Create a new NaiveDateTimeAfter, validating value > threshold.
+    #[cfg(not(kani))]
     pub fn new(value: NaiveDateTime, threshold: NaiveDateTime) -> Result<Self, ValidationError> {
         if value > threshold {
             Ok(Self { value, threshold })
@@ -189,23 +278,56 @@ impl NaiveDateTimeAfter {
         }
     }
 
+    /// Kani version: trust chrono, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_value: NaiveDateTime, _threshold: NaiveDateTime) -> Result<Self, ValidationError> {
+        let is_after: bool = kani::any();
+        if is_after {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::DateTimeTooEarly {
+                value: "value".to_string(),
+                threshold: "threshold".to_string(),
+            })
+        }
+    }
+
     /// Get the datetime value.
+    #[cfg(not(kani))]
     pub fn get(&self) -> NaiveDateTime {
         self.value
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> NaiveDateTime {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Get the threshold.
+    #[cfg(not(kani))]
     pub fn threshold(&self) -> NaiveDateTime {
         self.threshold
     }
 
+    #[cfg(kani)]
+    pub fn threshold(&self) -> NaiveDateTime {
+        panic!("threshold() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner NaiveDateTime.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> NaiveDateTime {
         self.value
+    }
+
+    #[cfg(kani)]
+    pub fn into_inner(self) -> NaiveDateTime {
+        panic!("into_inner() not supported in Kani verification")
     }
 }
 
 #[cfg(feature = "chrono")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Prompt for NaiveDateTimeAfter {
     fn prompt() -> Option<&'static str> {
@@ -214,6 +336,7 @@ impl Prompt for NaiveDateTimeAfter {
 }
 
 #[cfg(feature = "chrono")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Elicitation for NaiveDateTimeAfter {
     type Style = <NaiveDateTime as Elicitation>::Style;
@@ -315,15 +438,21 @@ use jiff::Timestamp;
 /// Available with the `jiff` feature.
 #[cfg(feature = "jiff")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg(not(kani))]
 pub struct TimestampAfter {
     value: Timestamp,
     threshold: Timestamp,
 }
 
+#[cfg(all(feature = "jiff", kani))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TimestampAfter(std::marker::PhantomData<()>);
+
 #[cfg(feature = "jiff")]
 #[instrumented_impl]
 impl TimestampAfter {
     /// Create a new TimestampAfter, validating value > threshold.
+    #[cfg(not(kani))]
     pub fn new(value: Timestamp, threshold: Timestamp) -> Result<Self, ValidationError> {
         if value > threshold {
             Ok(Self { value, threshold })
@@ -335,23 +464,56 @@ impl TimestampAfter {
         }
     }
 
+    /// Kani version: trust jiff, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_value: Timestamp, _threshold: Timestamp) -> Result<Self, ValidationError> {
+        let is_after: bool = kani::any();
+        if is_after {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::DateTimeTooEarly {
+                value: "value".to_string(),
+                threshold: "threshold".to_string(),
+            })
+        }
+    }
+
     /// Get the timestamp value.
+    #[cfg(not(kani))]
     pub fn get(&self) -> Timestamp {
         self.value
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> Timestamp {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Get the threshold.
+    #[cfg(not(kani))]
     pub fn threshold(&self) -> Timestamp {
         self.threshold
     }
 
+    #[cfg(kani)]
+    pub fn threshold(&self) -> Timestamp {
+        panic!("threshold() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner Timestamp.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> Timestamp {
         self.value
+    }
+
+    #[cfg(kani)]
+    pub fn into_inner(self) -> Timestamp {
+        panic!("into_inner() not supported in Kani verification")
     }
 }
 
 #[cfg(feature = "jiff")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Prompt for TimestampAfter {
     fn prompt() -> Option<&'static str> {
@@ -360,6 +522,7 @@ impl Prompt for TimestampAfter {
 }
 
 #[cfg(feature = "jiff")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Elicitation for TimestampAfter {
     type Style = <Timestamp as Elicitation>::Style;
@@ -391,15 +554,21 @@ impl Elicitation for TimestampAfter {
 /// Available with the `jiff` feature.
 #[cfg(feature = "jiff")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg(not(kani))]
 pub struct TimestampBefore {
     value: Timestamp,
     threshold: Timestamp,
 }
 
+#[cfg(all(feature = "jiff", kani))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TimestampBefore(std::marker::PhantomData<()>);
+
 #[cfg(feature = "jiff")]
 #[instrumented_impl]
 impl TimestampBefore {
     /// Create a new TimestampBefore, validating value < threshold.
+    #[cfg(not(kani))]
     pub fn new(value: Timestamp, threshold: Timestamp) -> Result<Self, ValidationError> {
         if value < threshold {
             Ok(Self { value, threshold })
@@ -411,23 +580,56 @@ impl TimestampBefore {
         }
     }
 
+    /// Kani version: trust jiff, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_value: Timestamp, _threshold: Timestamp) -> Result<Self, ValidationError> {
+        let is_before: bool = kani::any();
+        if is_before {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::DateTimeTooLate {
+                value: "value".to_string(),
+                threshold: "threshold".to_string(),
+            })
+        }
+    }
+
     /// Get the timestamp value.
+    #[cfg(not(kani))]
     pub fn get(&self) -> Timestamp {
         self.value
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> Timestamp {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Get the threshold.
+    #[cfg(not(kani))]
     pub fn threshold(&self) -> Timestamp {
         self.threshold
     }
 
+    #[cfg(kani)]
+    pub fn threshold(&self) -> Timestamp {
+        panic!("threshold() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner Timestamp.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> Timestamp {
         self.value
+    }
+
+    #[cfg(kani)]
+    pub fn into_inner(self) -> Timestamp {
+        panic!("into_inner() not supported in Kani verification")
     }
 }
 
 #[cfg(feature = "jiff")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Prompt for TimestampBefore {
     fn prompt() -> Option<&'static str> {
@@ -436,6 +638,7 @@ impl Prompt for TimestampBefore {
 }
 
 #[cfg(feature = "jiff")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Elicitation for TimestampBefore {
     type Style = <Timestamp as Elicitation>::Style;
@@ -512,15 +715,21 @@ use time::OffsetDateTime;
 /// Available with the `time` feature.
 #[cfg(feature = "time")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg(not(kani))]
 pub struct OffsetDateTimeAfter {
     value: OffsetDateTime,
     threshold: OffsetDateTime,
 }
 
+#[cfg(all(feature = "time", kani))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct OffsetDateTimeAfter(std::marker::PhantomData<()>);
+
 #[cfg(feature = "time")]
 #[instrumented_impl]
 impl OffsetDateTimeAfter {
     /// Create a new OffsetDateTimeAfter, validating value > threshold.
+    #[cfg(not(kani))]
     pub fn new(value: OffsetDateTime, threshold: OffsetDateTime) -> Result<Self, ValidationError> {
         if value > threshold {
             Ok(Self { value, threshold })
@@ -532,23 +741,56 @@ impl OffsetDateTimeAfter {
         }
     }
 
+    /// Kani version: trust time crate, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_value: OffsetDateTime, _threshold: OffsetDateTime) -> Result<Self, ValidationError> {
+        let is_after: bool = kani::any();
+        if is_after {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::DateTimeTooEarly {
+                value: "value".to_string(),
+                threshold: "threshold".to_string(),
+            })
+        }
+    }
+
     /// Get the datetime value.
+    #[cfg(not(kani))]
     pub fn get(&self) -> OffsetDateTime {
         self.value
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> OffsetDateTime {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Get the threshold.
+    #[cfg(not(kani))]
     pub fn threshold(&self) -> OffsetDateTime {
         self.threshold
     }
 
+    #[cfg(kani)]
+    pub fn threshold(&self) -> OffsetDateTime {
+        panic!("threshold() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner OffsetDateTime.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> OffsetDateTime {
         self.value
+    }
+
+    #[cfg(kani)]
+    pub fn into_inner(self) -> OffsetDateTime {
+        panic!("into_inner() not supported in Kani verification")
     }
 }
 
 #[cfg(feature = "time")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Prompt for OffsetDateTimeAfter {
     fn prompt() -> Option<&'static str> {
@@ -557,6 +799,7 @@ impl Prompt for OffsetDateTimeAfter {
 }
 
 #[cfg(feature = "time")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Elicitation for OffsetDateTimeAfter {
     type Style = <OffsetDateTime as Elicitation>::Style;
@@ -591,15 +834,21 @@ impl Elicitation for OffsetDateTimeAfter {
 /// Available with the `time` feature.
 #[cfg(feature = "time")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg(not(kani))]
 pub struct OffsetDateTimeBefore {
     value: OffsetDateTime,
     threshold: OffsetDateTime,
 }
 
+#[cfg(all(feature = "time", kani))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct OffsetDateTimeBefore(std::marker::PhantomData<()>);
+
 #[cfg(feature = "time")]
 #[instrumented_impl]
 impl OffsetDateTimeBefore {
     /// Create a new OffsetDateTimeBefore, validating value < threshold.
+    #[cfg(not(kani))]
     pub fn new(value: OffsetDateTime, threshold: OffsetDateTime) -> Result<Self, ValidationError> {
         if value < threshold {
             Ok(Self { value, threshold })
@@ -611,23 +860,56 @@ impl OffsetDateTimeBefore {
         }
     }
 
+    /// Kani version: trust time crate, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_value: OffsetDateTime, _threshold: OffsetDateTime) -> Result<Self, ValidationError> {
+        let is_before: bool = kani::any();
+        if is_before {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::DateTimeTooLate {
+                value: "value".to_string(),
+                threshold: "threshold".to_string(),
+            })
+        }
+    }
+
     /// Get the datetime value.
+    #[cfg(not(kani))]
     pub fn get(&self) -> OffsetDateTime {
         self.value
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> OffsetDateTime {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Get the threshold.
+    #[cfg(not(kani))]
     pub fn threshold(&self) -> OffsetDateTime {
         self.threshold
     }
 
+    #[cfg(kani)]
+    pub fn threshold(&self) -> OffsetDateTime {
+        panic!("threshold() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner OffsetDateTime.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> OffsetDateTime {
         self.value
+    }
+
+    #[cfg(kani)]
+    pub fn into_inner(self) -> OffsetDateTime {
+        panic!("into_inner() not supported in Kani verification")
     }
 }
 
 #[cfg(feature = "time")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Prompt for OffsetDateTimeBefore {
     fn prompt() -> Option<&'static str> {
@@ -636,6 +918,7 @@ impl Prompt for OffsetDateTimeBefore {
 }
 
 #[cfg(feature = "time")]
+#[cfg(not(kani))]
 #[instrumented_impl]
 impl Elicitation for OffsetDateTimeBefore {
     type Style = <OffsetDateTime as Elicitation>::Style;

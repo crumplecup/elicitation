@@ -116,10 +116,11 @@ impl<const MAX_LEN: usize> PathBytes<MAX_LEN> {
     pub fn is_root(&self) -> bool {
         self.as_str() == "/"
     }
+}
 
-    /// Convert to String.
-    pub fn to_string(&self) -> String {
-        self.utf8.to_string()
+impl<const MAX_LEN: usize> std::fmt::Display for PathBytes<MAX_LEN> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.utf8)
     }
 }
 

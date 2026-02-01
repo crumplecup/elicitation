@@ -13,7 +13,6 @@ use crate::verification::types::{
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(6)] // "(abc)" = 5 bytes + 1
 fn verify_balanced_simple() {
     const MAX_LEN: usize = 16;
 
@@ -23,7 +22,6 @@ fn verify_balanced_simple() {
 }
 
 #[kani::proof]
-#[kani::unwind(9)] // "((a|b)c)" = 8 bytes + 1
 fn verify_balanced_nested() {
     const MAX_LEN: usize = 16;
 
@@ -33,7 +31,6 @@ fn verify_balanced_nested() {
 }
 
 #[kani::proof]
-#[kani::unwind(5)] // "(abc" = 4 bytes + 1
 fn verify_unbalanced_rejected() {
     const MAX_LEN: usize = 16;
 
@@ -43,7 +40,6 @@ fn verify_unbalanced_rejected() {
 }
 
 #[kani::proof]
-#[kani::unwind(8)] // "[a-z]+" = 7 bytes + 1
 fn verify_balanced_brackets() {
     const MAX_LEN: usize = 16;
 
@@ -57,7 +53,6 @@ fn verify_balanced_brackets() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(4)] // "\d+" = 3 bytes + 1
 fn verify_escape_digit() {
     const MAX_LEN: usize = 16;
 
@@ -67,7 +62,6 @@ fn verify_escape_digit() {
 }
 
 #[kani::proof]
-#[kani::unwind(4)] // "\w*" = 3 bytes + 1
 fn verify_escape_word() {
     const MAX_LEN: usize = 16;
 
@@ -77,7 +71,6 @@ fn verify_escape_word() {
 }
 
 #[kani::proof]
-#[kani::unwind(5)] // "\." = 2 bytes + margin
 fn verify_escape_dot() {
     const MAX_LEN: usize = 16;
 
@@ -87,7 +80,6 @@ fn verify_escape_dot() {
 }
 
 #[kani::proof]
-#[kani::unwind(3)] // "\x" = 2 bytes + 1
 fn verify_invalid_escape() {
     const MAX_LEN: usize = 16;
 
@@ -101,7 +93,6 @@ fn verify_invalid_escape() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(3)] // "a*" = 2 bytes + 1
 fn verify_quantifier_star() {
     const MAX_LEN: usize = 16;
 
@@ -111,7 +102,6 @@ fn verify_quantifier_star() {
 }
 
 #[kani::proof]
-#[kani::unwind(3)] // "b+" = 2 bytes + 1
 fn verify_quantifier_plus() {
     const MAX_LEN: usize = 16;
 
@@ -121,7 +111,6 @@ fn verify_quantifier_plus() {
 }
 
 #[kani::proof]
-#[kani::unwind(8)] // "a{3,5}" = 7 bytes + 1
 fn verify_quantifier_range() {
     const MAX_LEN: usize = 16;
 
@@ -131,7 +120,6 @@ fn verify_quantifier_range() {
 }
 
 #[kani::proof]
-#[kani::unwind(2)] // "*" = 1 byte + 1
 fn verify_quantifier_without_atom() {
     const MAX_LEN: usize = 16;
 
@@ -141,7 +129,6 @@ fn verify_quantifier_without_atom() {
 }
 
 #[kani::proof]
-#[kani::unwind(8)] // "a{5,3}" = 7 bytes + 1
 fn verify_quantifier_invalid_range() {
     const MAX_LEN: usize = 16;
 
@@ -155,7 +142,6 @@ fn verify_quantifier_invalid_range() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(6)] // "[abc]" = 5 bytes + 1
 fn verify_charclass_simple() {
     const MAX_LEN: usize = 16;
 
@@ -165,7 +151,6 @@ fn verify_charclass_simple() {
 }
 
 #[kani::proof]
-#[kani::unwind(6)] // "[a-z]" = 5 bytes + 1
 fn verify_charclass_range() {
     const MAX_LEN: usize = 16;
 
@@ -175,7 +160,6 @@ fn verify_charclass_range() {
 }
 
 #[kani::proof]
-#[kani::unwind(7)] // "[^0-9]" = 6 bytes + 1
 fn verify_charclass_negated() {
     const MAX_LEN: usize = 16;
 
@@ -185,7 +169,6 @@ fn verify_charclass_negated() {
 }
 
 #[kani::proof]
-#[kani::unwind(6)] // "[z-a]" = 5 bytes + 1
 fn verify_charclass_invalid_range() {
     const MAX_LEN: usize = 16;
 
@@ -199,7 +182,6 @@ fn verify_charclass_invalid_range() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(6)] // "hello" = 5 bytes + 1
 fn verify_regex_literal() {
     const MAX_LEN: usize = 16;
 
@@ -213,7 +195,6 @@ fn verify_regex_literal() {
 }
 
 #[kani::proof]
-#[kani::unwind(10)] // "\\d{2,4}" = 9 bytes + 1
 fn verify_regex_digit_range() {
     const MAX_LEN: usize = 16;
 
@@ -223,7 +204,6 @@ fn verify_regex_digit_range() {
 }
 
 #[kani::proof]
-#[kani::unwind(12)] // "^[a-z]+$" = 8 bytes + margin
 fn verify_regex_anchored() {
     const MAX_LEN: usize = 16;
 
@@ -233,7 +213,6 @@ fn verify_regex_anchored() {
 }
 
 #[kani::proof]
-#[kani::unwind(11)] // "(\\d+|\\w+)" = 10 bytes + 1
 fn verify_regex_alternation() {
     const MAX_LEN: usize = 16;
 

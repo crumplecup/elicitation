@@ -566,27 +566,23 @@ verify-kani harness="":
 
 # Run Kani verification with CSV tracking (recommended)
 verify-kani-tracked csv="kani_verification_results.csv" timeout="300":
-    #!/usr/bin/env bash
-    echo "🔬 Running tracked Kani verification..."
-    CSV_FILE={{csv}} TIMEOUT={{timeout}} ./scripts/verification/run_tracked_verification.sh
+    cargo run --quiet --features cli --release -- verify run --output {{csv}} --timeout {{timeout}}
 
 # Resume Kani verification (skips already-passed tests)
 verify-kani-resume csv="kani_verification_results.csv":
-    #!/usr/bin/env bash
-    echo "🔬 Resuming Kani verification..."
-    CSV_FILE={{csv}} ./scripts/verification/run_tracked_verification.sh --resume
+    cargo run --quiet --features cli --release -- verify run --output {{csv}} --resume
 
 # Show verification summary statistics
 verify-kani-summary csv="kani_verification_results.csv":
-    @./scripts/verification/show_summary.sh {{csv}}
+    cargo run --quiet --features cli --release -- verify summary --output {{csv}}
 
 # Show failed verification tests
 verify-kani-failed csv="kani_verification_results.csv":
-    @./scripts/verification/show_failures.sh {{csv}}
+    cargo run --quiet --features cli --release -- verify failed --output {{csv}}
 
 # List all Kani proof harnesses
 verify-kani-list:
-    @./scripts/verification/discover_harnesses.sh || true
+    @cargo run --quiet --features cli --release -- verify list
 
 # Run Prusti verification
 verify-prusti:

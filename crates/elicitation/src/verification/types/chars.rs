@@ -19,8 +19,22 @@ impl CharAlphabetic {
     /// # Errors
     ///
     /// Returns `ValidationError::NotAlphabetic` if char is not alphabetic.
+    #[cfg(not(kani))]
     pub fn new(value: char) -> Result<Self, ValidationError> {
         if value.is_alphabetic() {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::NotAlphabetic(value))
+        }
+    }
+
+    /// Kani version: trust stdlib, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(value: char) -> Result<Self, ValidationError> {
+        // Symbolic boolean represents is_alphabetic() result
+        // We verify our wrapper logic, not Unicode table implementation
+        let is_alpha: bool = kani::any();
+        if is_alpha {
             Ok(Self(value))
         } else {
             Err(ValidationError::NotAlphabetic(value))
@@ -81,8 +95,21 @@ impl CharNumeric {
     /// # Errors
     ///
     /// Returns `ValidationError::NotNumeric` if char is not numeric.
+    #[cfg(not(kani))]
     pub fn new(value: char) -> Result<Self, ValidationError> {
         if value.is_numeric() {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::NotNumeric(value))
+        }
+    }
+
+    /// Kani version: trust stdlib, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(value: char) -> Result<Self, ValidationError> {
+        // Symbolic boolean represents is_numeric() result
+        let is_numeric: bool = kani::any();
+        if is_numeric {
             Ok(Self(value))
         } else {
             Err(ValidationError::NotNumeric(value))

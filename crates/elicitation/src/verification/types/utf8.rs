@@ -84,10 +84,11 @@ impl<const MAX_LEN: usize> Utf8Bytes<MAX_LEN> {
     pub fn as_bytes(&self) -> &[u8] {
         &self.bytes[..self.len]
     }
+}
 
-    /// Convert to owned String.
-    pub fn to_string(&self) -> String {
-        self.as_str().to_string()
+impl<const MAX_LEN: usize> std::fmt::Display for Utf8Bytes<MAX_LEN> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
     }
 }
 

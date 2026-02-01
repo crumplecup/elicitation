@@ -9,7 +9,6 @@ use crate::{RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetVali
 
 #[cfg(feature = "regex")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_regex_valid() {
     // Test valid regex patterns
     assert!(
@@ -30,7 +29,6 @@ fn verify_regex_valid() {
 
 #[cfg(feature = "regex")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_regex_set_valid() {
     // Test valid regex set
     let set = RegexSetValid::new(&[r"\d+", r"[a-z]+"]);
@@ -44,7 +42,6 @@ fn verify_regex_set_valid() {
 
 #[cfg(feature = "regex")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_regex_case_insensitive() {
     let re = RegexCaseInsensitive::new(r"hello");
     assert!(re.is_ok(), "Case-insensitive pattern compiles");
@@ -58,7 +55,6 @@ fn verify_regex_case_insensitive() {
 
 #[cfg(feature = "regex")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_regex_multiline() {
     let re = RegexMultiline::new(r"^test$");
     assert!(re.is_ok(), "Multiline pattern compiles");
@@ -70,7 +66,6 @@ fn verify_regex_multiline() {
 
 #[cfg(feature = "regex")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_regex_set_non_empty() {
     // Test non-empty set
     assert!(
@@ -87,7 +82,6 @@ fn verify_regex_set_non_empty() {
 
 #[cfg(feature = "regex")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_regex_trenchcoat_pattern() {
     // Prove trenchcoat pattern: pattern → compile → use
     let pattern = r"\d{3}-\d{4}";
@@ -109,7 +103,6 @@ fn verify_regex_trenchcoat_pattern() {
 
 #[cfg(feature = "regex")]
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_regex_accessor_correctness() {
     let pattern = r"\d+";
     if let Ok(wrapped) = RegexValid::new(pattern) {

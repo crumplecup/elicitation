@@ -7,7 +7,6 @@ use crate::StringNonEmpty;
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)] // No loops, string checks
 fn verify_string_non_empty() {
     // Test with concrete strings only (no symbolic construction)
     // Empty string case

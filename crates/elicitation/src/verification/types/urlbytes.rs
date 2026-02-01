@@ -224,10 +224,13 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
     pub fn is_http(&self) -> bool {
         self.scheme.is_http()
     }
+}
 
-    /// Convert to String.
-    pub fn to_string(&self) -> String {
-        self.utf8.to_string()
+impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize> std::fmt::Display
+    for UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.utf8)
     }
 }
 

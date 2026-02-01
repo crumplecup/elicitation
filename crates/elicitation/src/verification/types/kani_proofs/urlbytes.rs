@@ -14,7 +14,6 @@ use crate::verification::types::{
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(5)] // "http" = 4 bytes + 1 for validation loop
 fn verify_scheme_http() {
     const MAX_LEN: usize = 8; // Small buffer for schemes
 
@@ -29,7 +28,6 @@ fn verify_scheme_http() {
 }
 
 #[kani::proof]
-#[kani::unwind(6)] // "https" = 5 bytes + 1
 fn verify_scheme_https() {
     const MAX_LEN: usize = 8;
 
@@ -44,7 +42,6 @@ fn verify_scheme_https() {
 }
 
 #[kani::proof]
-#[kani::unwind(4)] // "ftp" = 3 bytes + 1
 fn verify_scheme_ftp() {
     const MAX_LEN: usize = 8;
 
@@ -59,7 +56,6 @@ fn verify_scheme_ftp() {
 }
 
 #[kani::proof]
-#[kani::unwind(6)] // "1http" = 5 bytes + 1
 fn verify_scheme_invalid_start() {
     const MAX_LEN: usize = 8;
 
@@ -69,7 +65,6 @@ fn verify_scheme_invalid_start() {
 }
 
 #[kani::proof]
-#[kani::unwind(14)] // "custom+scheme" = 13 bytes + 1
 fn verify_scheme_with_plus() {
     const MAX_LEN: usize = 16;
 
@@ -79,7 +74,6 @@ fn verify_scheme_with_plus() {
 }
 
 #[kani::proof]
-#[kani::unwind(12)] // "example.com" = 11 bytes + 1
 fn verify_authority_simple() {
     const MAX_LEN: usize = 64; // Reasonable authority size
 
@@ -94,7 +88,6 @@ fn verify_authority_simple() {
 }
 
 #[kani::proof]
-#[kani::unwind(17)] // "example.com:8080" = 16 bytes + 1
 fn verify_authority_with_port() {
     const MAX_LEN: usize = 64;
 
@@ -108,7 +101,6 @@ fn verify_authority_with_port() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_authority_empty() {
     const MAX_LEN: usize = 64;
 
@@ -126,7 +118,6 @@ fn verify_authority_empty() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(20)] // "http://example.com" = 18 bytes + margin
 fn verify_http_url_composition() {
     const SCHEME_MAX: usize = 8;
     const AUTHORITY_MAX: usize = 64;
@@ -145,7 +136,6 @@ fn verify_http_url_composition() {
 }
 
 #[kani::proof]
-#[kani::unwind(21)] // "https://example.com" = 19 bytes + margin
 fn verify_https_url_composition() {
     const SCHEME_MAX: usize = 8;
     const AUTHORITY_MAX: usize = 64;
@@ -162,7 +152,6 @@ fn verify_https_url_composition() {
 }
 
 #[kani::proof]
-#[kani::unwind(23)] // "ftp://ftp.example.com" = 21 bytes + margin
 fn verify_ftp_url_composition() {
     const SCHEME_MAX: usize = 8;
     const AUTHORITY_MAX: usize = 64;
@@ -179,7 +168,6 @@ fn verify_ftp_url_composition() {
 }
 
 #[kani::proof]
-#[kani::unwind(25)] // "mailto:test@example.com" = 23 bytes + margin
 fn verify_url_no_authority() {
     const SCHEME_MAX: usize = 8;
     const AUTHORITY_MAX: usize = 64;
@@ -201,7 +189,6 @@ fn verify_url_no_authority() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(20)]
 fn verify_url_with_authority_contract() {
     const SCHEME_MAX: usize = 8;
     const AUTHORITY_MAX: usize = 64;
@@ -217,7 +204,6 @@ fn verify_url_with_authority_contract() {
 }
 
 #[kani::proof]
-#[kani::unwind(25)]
 fn verify_url_without_authority_rejected() {
     const SCHEME_MAX: usize = 8;
     const AUTHORITY_MAX: usize = 64;
@@ -229,7 +215,6 @@ fn verify_url_without_authority_rejected() {
 }
 
 #[kani::proof]
-#[kani::unwind(25)]
 fn verify_url_absolute_contract() {
     const SCHEME_MAX: usize = 8;
     const AUTHORITY_MAX: usize = 64;
@@ -241,7 +226,6 @@ fn verify_url_absolute_contract() {
 }
 
 #[kani::proof]
-#[kani::unwind(20)]
 fn verify_url_http_contract_http() {
     const SCHEME_MAX: usize = 8;
     const AUTHORITY_MAX: usize = 64;
@@ -253,7 +237,6 @@ fn verify_url_http_contract_http() {
 }
 
 #[kani::proof]
-#[kani::unwind(21)]
 fn verify_url_http_contract_https() {
     const SCHEME_MAX: usize = 8;
     const AUTHORITY_MAX: usize = 64;
@@ -265,7 +248,6 @@ fn verify_url_http_contract_https() {
 }
 
 #[kani::proof]
-#[kani::unwind(23)]
 fn verify_url_http_contract_rejects_ftp() {
     const SCHEME_MAX: usize = 8;
     const AUTHORITY_MAX: usize = 64;
@@ -277,7 +259,6 @@ fn verify_url_http_contract_rejects_ftp() {
 }
 
 #[kani::proof]
-#[kani::unwind(25)]
 fn verify_url_with_port() {
     const SCHEME_MAX: usize = 8;
     const AUTHORITY_MAX: usize = 64;
@@ -294,7 +275,6 @@ fn verify_url_with_port() {
 }
 
 #[kani::proof]
-#[kani::unwind(22)]
 fn verify_file_url_empty_authority() {
     const SCHEME_MAX: usize = 8;
     const AUTHORITY_MAX: usize = 64;

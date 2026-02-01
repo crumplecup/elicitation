@@ -66,7 +66,11 @@ impl Ipv4Bytes {
 
     /// Check if this is a public address (not private, not special).
     pub fn is_public(&self) -> bool {
-        !self.is_private() && !self.is_loopback() && !self.is_unspecified() && !self.is_broadcast()
+        !self.is_private() 
+            && !self.is_loopback() 
+            && !self.is_unspecified() 
+            && !self.is_broadcast()
+            && !self.is_multicast()
     }
 
     /// Check if this is a loopback address (127.0.0.0/8).
@@ -119,10 +123,7 @@ impl Ipv4Private {
         if ipv4.is_private() {
             Ok(Self(ipv4))
         } else {
-            Err(ValidationError::NotPrivateIp(format!(
-                "{}.{}.{}.{}",
-                octets[0], octets[1], octets[2], octets[3]
-            )))
+            Err(ValidationError::NotPrivateIp)
         }
     }
 
@@ -157,10 +158,7 @@ impl Ipv4Public {
         if ipv4.is_public() {
             Ok(Self(ipv4))
         } else {
-            Err(ValidationError::NotPublicIp(format!(
-                "{}.{}.{}.{}",
-                octets[0], octets[1], octets[2], octets[3]
-            )))
+            Err(ValidationError::NotPublicIp)
         }
     }
 
@@ -206,8 +204,8 @@ impl Ipv6Bytes {
     /// Get the segments (8 × u16 big-endian).
     pub fn segments(&self) -> [u16; 8] {
         let mut segments = [0u16; 8];
-        for i in 0..8 {
-            segments[i] = u16::from_be_bytes([self.octets[i * 2], self.octets[i * 2 + 1]]);
+        for (i, segment) in segments.iter_mut().enumerate() {
+            *segment = u16::from_be_bytes([self.octets[i * 2], self.octets[i * 2 + 1]]);
         }
         segments
     }
@@ -219,7 +217,10 @@ impl Ipv6Bytes {
 
     /// Check if this is a public address (not private, not special).
     pub fn is_public(&self) -> bool {
-        !self.is_private() && !self.is_loopback() && !self.is_unspecified() && !self.is_multicast()
+        !self.is_private() 
+            && !self.is_loopback() 
+            && !self.is_unspecified() 
+            && !self.is_multicast()
     }
 
     /// Check if this is the loopback address (::1).
@@ -264,9 +265,7 @@ impl Ipv6Private {
         if ipv6.is_private() {
             Ok(Self(ipv6))
         } else {
-            Err(ValidationError::NotPrivateIp(
-                "IPv6 address not in fc00::/7".to_string(),
-            ))
+            Err(ValidationError::NotPrivateIp)
         }
     }
 
@@ -301,9 +300,7 @@ impl Ipv6Public {
         if ipv6.is_public() {
             Ok(Self(ipv6))
         } else {
-            Err(ValidationError::NotPublicIp(
-                "IPv6 address is not public".to_string(),
-            ))
+            Err(ValidationError::NotPublicIp)
         }
     }
 

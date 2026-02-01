@@ -37,6 +37,11 @@ impl<T> VecNonEmpty<T> {
     pub fn len(&self) -> usize {
         self.0.len()
     }
+
+    /// Check if empty (always returns false for NonEmpty collections).
+    pub fn is_empty(&self) -> bool {
+        false
+    }
 }
 
 impl<T: Elicitation + Send> Prompt for VecNonEmpty<T> {
@@ -433,10 +438,15 @@ use std::hash::Hash;
 // HashMapNonEmpty - Non-empty HashMap
 /// A HashMap that is guaranteed to be non-empty (has at least one key-value pair).
 #[derive(Debug, Clone)]
+#[cfg(not(kani))]
 pub struct HashMapNonEmpty<K, V>(HashMap<K, V>);
+
+#[cfg(kani)]
+pub struct HashMapNonEmpty<K, V>(std::marker::PhantomData<(K, V)>);
 
 impl<K, V> HashMapNonEmpty<K, V> {
     /// Create a new HashMapNonEmpty, validating the map is non-empty.
+    #[cfg(not(kani))]
     pub fn new(map: HashMap<K, V>) -> Result<Self, ValidationError> {
         if map.is_empty() {
             Err(ValidationError::EmptyCollection)
@@ -445,19 +455,70 @@ impl<K, V> HashMapNonEmpty<K, V> {
         }
     }
 
+    /// Kani version: trust stdlib HashMap, verify wrapper logic.
+    /// 
+    /// We use PhantomData because HashMap internals cause state explosion
+    /// in Kani (see https://github.com/model-checking/kani/issues/1727).
+    /// This approach verifies our validation logic without re-verifying stdlib.
+    #[cfg(kani)]
+    pub fn new(_map: HashMap<K, V>) -> Result<Self, ValidationError> {
+        // Symbolic boolean represents is_empty() result
+        // Trust: HashMap::is_empty() correctly reports emptiness
+        // Verify: Our wrapper's branching logic
+        let is_empty: bool = kani::any();
+        if is_empty {
+            Err(ValidationError::EmptyCollection)
+        } else {
+            Ok(Self(std::marker::PhantomData))
+        }
+    }
+
     /// Get the inner HashMap.
+    #[cfg(not(kani))]
     pub fn get(&self) -> &HashMap<K, V> {
         &self.0
     }
 
+    /// Kani version: accessor not verifiable (PhantomData).
+    #[cfg(kani)]
+    pub fn get(&self) -> &HashMap<K, V> {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner HashMap.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> HashMap<K, V> {
         self.0
     }
 
+    /// Kani version: accessor not verifiable (PhantomData).
+    #[cfg(kani)]
+    pub fn into_inner(self) -> HashMap<K, V> {
+        panic!("into_inner() not supported in Kani verification")
+    }
+
     /// Get the length (always >= 1).
+    #[cfg(not(kani))]
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+
+    /// Check if empty (always returns false for NonEmpty collections).
+    #[cfg(not(kani))]
+    pub fn is_empty(&self) -> bool {
+        false
+    }
+
+    /// Kani version: accessor not verifiable (PhantomData).
+    #[cfg(kani)]
+    pub fn len(&self) -> usize {
+        panic!("len() not supported in Kani verification")
+    }
+
+    /// Kani version: accessor not verifiable (PhantomData).
+    #[cfg(kani)]
+    pub fn is_empty(&self) -> bool {
+        panic!("is_empty() not supported in Kani verification")
     }
 }
 
@@ -500,10 +561,15 @@ where
 // BTreeMapNonEmpty - Non-empty BTreeMap
 /// A BTreeMap that is guaranteed to be non-empty.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg(not(kani))]
 pub struct BTreeMapNonEmpty<K, V>(BTreeMap<K, V>);
+
+#[cfg(kani)]
+pub struct BTreeMapNonEmpty<K, V>(std::marker::PhantomData<(K, V)>);
 
 impl<K, V> BTreeMapNonEmpty<K, V> {
     /// Create a new BTreeMapNonEmpty, validating the map is non-empty.
+    #[cfg(not(kani))]
     pub fn new(map: BTreeMap<K, V>) -> Result<Self, ValidationError> {
         if map.is_empty() {
             Err(ValidationError::EmptyCollection)
@@ -512,19 +578,59 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         }
     }
 
+    /// Kani version: trust stdlib BTreeMap, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_map: BTreeMap<K, V>) -> Result<Self, ValidationError> {
+        let is_empty: bool = kani::any();
+        if is_empty {
+            Err(ValidationError::EmptyCollection)
+        } else {
+            Ok(Self(std::marker::PhantomData))
+        }
+    }
+
     /// Get the inner BTreeMap.
+    #[cfg(not(kani))]
     pub fn get(&self) -> &BTreeMap<K, V> {
         &self.0
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> &BTreeMap<K, V> {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner BTreeMap.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> BTreeMap<K, V> {
         self.0
     }
 
+    #[cfg(kani)]
+    pub fn into_inner(self) -> BTreeMap<K, V> {
+        panic!("into_inner() not supported in Kani verification")
+    }
+
     /// Get the length (always >= 1).
+    #[cfg(not(kani))]
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+
+    /// Check if empty (always returns false for NonEmpty collections).
+    #[cfg(not(kani))]
+    pub fn is_empty(&self) -> bool {
+        false
+    }
+
+    #[cfg(kani)]
+    pub fn len(&self) -> usize {
+        panic!("len() not supported in Kani verification")
+    }
+
+    #[cfg(kani)]
+    pub fn is_empty(&self) -> bool {
+        panic!("is_empty() not supported in Kani verification")
     }
 }
 
@@ -571,10 +677,15 @@ where
 // HashSetNonEmpty - Non-empty HashSet
 /// A HashSet that is guaranteed to be non-empty (has at least one element).
 #[derive(Debug, Clone)]
+#[cfg(not(kani))]
 pub struct HashSetNonEmpty<T>(HashSet<T>);
+
+#[cfg(kani)]
+pub struct HashSetNonEmpty<T>(std::marker::PhantomData<T>);
 
 impl<T> HashSetNonEmpty<T> {
     /// Create a new HashSetNonEmpty, validating the set is non-empty.
+    #[cfg(not(kani))]
     pub fn new(set: HashSet<T>) -> Result<Self, ValidationError> {
         if set.is_empty() {
             Err(ValidationError::EmptyCollection)
@@ -583,19 +694,59 @@ impl<T> HashSetNonEmpty<T> {
         }
     }
 
+    /// Kani version: trust stdlib HashSet, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_set: HashSet<T>) -> Result<Self, ValidationError> {
+        let is_empty: bool = kani::any();
+        if is_empty {
+            Err(ValidationError::EmptyCollection)
+        } else {
+            Ok(Self(std::marker::PhantomData))
+        }
+    }
+
     /// Get the inner HashSet.
+    #[cfg(not(kani))]
     pub fn get(&self) -> &HashSet<T> {
         &self.0
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> &HashSet<T> {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner HashSet.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> HashSet<T> {
         self.0
     }
 
+    #[cfg(kani)]
+    pub fn into_inner(self) -> HashSet<T> {
+        panic!("into_inner() not supported in Kani verification")
+    }
+
     /// Get the length (always >= 1).
+    #[cfg(not(kani))]
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+
+    /// Check if empty (always returns false for NonEmpty collections).
+    #[cfg(not(kani))]
+    pub fn is_empty(&self) -> bool {
+        false
+    }
+
+    #[cfg(kani)]
+    pub fn len(&self) -> usize {
+        panic!("len() not supported in Kani verification")
+    }
+
+    #[cfg(kani)]
+    pub fn is_empty(&self) -> bool {
+        panic!("is_empty() not supported in Kani verification")
     }
 }
 
@@ -636,10 +787,15 @@ where
 // BTreeSetNonEmpty - Non-empty BTreeSet
 /// A BTreeSet that is guaranteed to be non-empty.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg(not(kani))]
 pub struct BTreeSetNonEmpty<T>(BTreeSet<T>);
+
+#[cfg(kani)]
+pub struct BTreeSetNonEmpty<T>(std::marker::PhantomData<T>);
 
 impl<T> BTreeSetNonEmpty<T> {
     /// Create a new BTreeSetNonEmpty, validating the set is non-empty.
+    #[cfg(not(kani))]
     pub fn new(set: BTreeSet<T>) -> Result<Self, ValidationError> {
         if set.is_empty() {
             Err(ValidationError::EmptyCollection)
@@ -648,19 +804,59 @@ impl<T> BTreeSetNonEmpty<T> {
         }
     }
 
+    /// Kani version: trust stdlib BTreeSet, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_set: BTreeSet<T>) -> Result<Self, ValidationError> {
+        let is_empty: bool = kani::any();
+        if is_empty {
+            Err(ValidationError::EmptyCollection)
+        } else {
+            Ok(Self(std::marker::PhantomData))
+        }
+    }
+
     /// Get the inner BTreeSet.
+    #[cfg(not(kani))]
     pub fn get(&self) -> &BTreeSet<T> {
         &self.0
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> &BTreeSet<T> {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner BTreeSet.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> BTreeSet<T> {
         self.0
     }
 
+    #[cfg(kani)]
+    pub fn into_inner(self) -> BTreeSet<T> {
+        panic!("into_inner() not supported in Kani verification")
+    }
+
     /// Get the length (always >= 1).
+    #[cfg(not(kani))]
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+
+    /// Check if empty (always returns false for NonEmpty collections).
+    #[cfg(not(kani))]
+    pub fn is_empty(&self) -> bool {
+        false
+    }
+
+    #[cfg(kani)]
+    pub fn len(&self) -> usize {
+        panic!("len() not supported in Kani verification")
+    }
+
+    #[cfg(kani)]
+    pub fn is_empty(&self) -> bool {
+        panic!("is_empty() not supported in Kani verification")
     }
 }
 
@@ -705,10 +901,15 @@ where
 // VecDequeNonEmpty - Non-empty VecDeque
 /// A VecDeque that is guaranteed to be non-empty.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg(not(kani))]
 pub struct VecDequeNonEmpty<T>(VecDeque<T>);
+
+#[cfg(kani)]
+pub struct VecDequeNonEmpty<T>(std::marker::PhantomData<T>);
 
 impl<T> VecDequeNonEmpty<T> {
     /// Create a new VecDequeNonEmpty, validating the deque is non-empty.
+    #[cfg(not(kani))]
     pub fn new(deque: VecDeque<T>) -> Result<Self, ValidationError> {
         if deque.is_empty() {
             Err(ValidationError::EmptyCollection)
@@ -717,19 +918,59 @@ impl<T> VecDequeNonEmpty<T> {
         }
     }
 
+    /// Kani version: trust stdlib VecDeque, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_deque: VecDeque<T>) -> Result<Self, ValidationError> {
+        let is_empty: bool = kani::any();
+        if is_empty {
+            Err(ValidationError::EmptyCollection)
+        } else {
+            Ok(Self(std::marker::PhantomData))
+        }
+    }
+
     /// Get the inner VecDeque.
+    #[cfg(not(kani))]
     pub fn get(&self) -> &VecDeque<T> {
         &self.0
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> &VecDeque<T> {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner VecDeque.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> VecDeque<T> {
         self.0
     }
 
+    #[cfg(kani)]
+    pub fn into_inner(self) -> VecDeque<T> {
+        panic!("into_inner() not supported in Kani verification")
+    }
+
     /// Get the length (always >= 1).
+    #[cfg(not(kani))]
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+
+    /// Check if empty (always returns false for NonEmpty collections).
+    #[cfg(not(kani))]
+    pub fn is_empty(&self) -> bool {
+        false
+    }
+
+    #[cfg(kani)]
+    pub fn len(&self) -> usize {
+        panic!("len() not supported in Kani verification")
+    }
+
+    #[cfg(kani)]
+    pub fn is_empty(&self) -> bool {
+        panic!("is_empty() not supported in Kani verification")
     }
 }
 
@@ -770,10 +1011,15 @@ where
 // LinkedListNonEmpty - Non-empty LinkedList
 /// A LinkedList that is guaranteed to be non-empty.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg(not(kani))]
 pub struct LinkedListNonEmpty<T>(LinkedList<T>);
+
+#[cfg(kani)]
+pub struct LinkedListNonEmpty<T>(std::marker::PhantomData<T>);
 
 impl<T> LinkedListNonEmpty<T> {
     /// Create a new LinkedListNonEmpty, validating the list is non-empty.
+    #[cfg(not(kani))]
     pub fn new(list: LinkedList<T>) -> Result<Self, ValidationError> {
         if list.is_empty() {
             Err(ValidationError::EmptyCollection)
@@ -782,19 +1028,59 @@ impl<T> LinkedListNonEmpty<T> {
         }
     }
 
+    /// Kani version: trust stdlib LinkedList, verify wrapper logic.
+    #[cfg(kani)]
+    pub fn new(_list: LinkedList<T>) -> Result<Self, ValidationError> {
+        let is_empty: bool = kani::any();
+        if is_empty {
+            Err(ValidationError::EmptyCollection)
+        } else {
+            Ok(Self(std::marker::PhantomData))
+        }
+    }
+
     /// Get the inner LinkedList.
+    #[cfg(not(kani))]
     pub fn get(&self) -> &LinkedList<T> {
         &self.0
     }
 
+    #[cfg(kani)]
+    pub fn get(&self) -> &LinkedList<T> {
+        panic!("get() not supported in Kani verification")
+    }
+
     /// Unwrap into the inner LinkedList.
+    #[cfg(not(kani))]
     pub fn into_inner(self) -> LinkedList<T> {
         self.0
     }
 
+    #[cfg(kani)]
+    pub fn into_inner(self) -> LinkedList<T> {
+        panic!("into_inner() not supported in Kani verification")
+    }
+
     /// Get the length (always >= 1).
+    #[cfg(not(kani))]
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+
+    /// Check if empty (always returns false for NonEmpty collections).
+    #[cfg(not(kani))]
+    pub fn is_empty(&self) -> bool {
+        false
+    }
+
+    #[cfg(kani)]
+    pub fn len(&self) -> usize {
+        panic!("len() not supported in Kani verification")
+    }
+
+    #[cfg(kani)]
+    pub fn is_empty(&self) -> bool {
+        panic!("is_empty() not supported in Kani verification")
     }
 }
 

@@ -371,13 +371,13 @@ pub enum ValidationError {
     #[display("Duration must be positive (not zero)")]
     DurationNotPositive,
 
-    /// IP address is not private.
-    #[display("IP address must be private (RFC 1918/4193), got {}", _0)]
-    NotPrivateIp(String),
+    /// IP address is not private (not in RFC 1918 or RFC 4193 ranges).
+    #[display("IP address must be private (RFC 1918/4193)")]
+    NotPrivateIp,
 
     /// IP address is not public.
-    #[display("IP address must be public (not RFC 1918/4193), got {}", _0)]
-    NotPublicIp(String),
+    #[display("IP address must be public (not RFC 1918/4193)")]
+    NotPublicIp,
 
     /// IP address is wrong version.
     #[display("Expected {} address, got {}", expected, got)]
@@ -496,20 +496,20 @@ pub enum ValidationError {
     InvalidUuidVariant,
 
     /// MAC address is not unicast (is multicast).
-    #[display("MAC address must be unicast, got {}", _0)]
-    NotUnicastMac(String),
+    #[display("MAC address must be unicast")]
+    NotUnicastMac,
 
     /// MAC address is not multicast (is unicast).
-    #[display("MAC address must be multicast, got {}", _0)]
-    NotMulticastMac(String),
+    #[display("MAC address must be multicast")]
+    NotMulticastMac,
 
     /// MAC address is not universal (is locally administered).
-    #[display("MAC address must be universal (IEEE assigned), got {}", _0)]
-    NotUniversalMac(String),
+    #[display("MAC address must be universal (IEEE assigned)")]
+    NotUniversalMac,
 
     /// MAC address is not locally administered (is universal).
-    #[display("MAC address must be locally administered, got {}", _0)]
-    NotLocalMac(String),
+    #[display("MAC address must be locally administered")]
+    NotLocalMac,
 
     /// Port number is zero (invalid for binding).
     #[display("Port must be non-zero")]

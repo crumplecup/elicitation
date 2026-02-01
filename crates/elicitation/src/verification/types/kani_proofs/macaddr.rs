@@ -15,7 +15,6 @@ use crate::verification::types::{
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_unicast_detection() {
     let mut octets: [u8; 6] = kani::any();
 
@@ -35,7 +34,6 @@ fn verify_unicast_detection() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_multicast_detection() {
     let mut octets: [u8; 6] = kani::any();
 
@@ -55,7 +53,6 @@ fn verify_multicast_detection() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_unicast_rejects_multicast() {
     let mut octets: [u8; 6] = kani::any();
 
@@ -68,7 +65,6 @@ fn verify_unicast_rejects_multicast() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_multicast_rejects_unicast() {
     let mut octets: [u8; 6] = kani::any();
 
@@ -85,7 +81,6 @@ fn verify_multicast_rejects_unicast() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_universal_detection() {
     let mut octets: [u8; 6] = kani::any();
 
@@ -105,7 +100,6 @@ fn verify_universal_detection() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_local_detection() {
     let mut octets: [u8; 6] = kani::any();
 
@@ -125,7 +119,6 @@ fn verify_local_detection() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_universal_rejects_local() {
     let mut octets: [u8; 6] = kani::any();
 
@@ -138,7 +131,6 @@ fn verify_universal_rejects_local() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_local_rejects_universal() {
     let mut octets: [u8; 6] = kani::any();
 
@@ -155,7 +147,6 @@ fn verify_local_rejects_universal() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_broadcast_is_multicast() {
     let octets = [0xFF; 6];
 
@@ -166,7 +157,6 @@ fn verify_broadcast_is_multicast() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_null_is_unicast() {
     let octets = [0x00; 6];
 
@@ -181,7 +171,6 @@ fn verify_null_is_unicast() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_unicast_universal() {
     let mut octets: [u8; 6] = kani::any();
 
@@ -194,7 +183,6 @@ fn verify_unicast_universal() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_unicast_local() {
     let mut octets: [u8; 6] = kani::any();
 
@@ -207,7 +195,6 @@ fn verify_unicast_local() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_multicast_universal() {
     let mut octets: [u8; 6] = kani::any();
 
@@ -220,7 +207,6 @@ fn verify_multicast_universal() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_multicast_local() {
     let mut octets: [u8; 6] = kani::any();
 
@@ -237,7 +223,6 @@ fn verify_multicast_local() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_macaddr_roundtrip() {
     let octets: [u8; 6] = kani::any();
 
@@ -248,7 +233,6 @@ fn verify_macaddr_roundtrip() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_unicast_roundtrip() {
     let mut octets: [u8; 6] = kani::any();
     octets[0] = octets[0] & 0xFE; // Force unicast
@@ -260,7 +244,6 @@ fn verify_unicast_roundtrip() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_multicast_roundtrip() {
     let mut octets: [u8; 6] = kani::any();
     octets[0] = octets[0] | 0x01; // Force multicast

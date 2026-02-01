@@ -122,9 +122,9 @@ impl Contract for AffirmReturnsBoolean {
         true
     }
 
-    fn ensures(_input: &bool, output: &bool) -> bool {
-        // Postcondition: output is true or false (always satisfied)
-        *output || !*output
+    fn ensures(_input: &bool, _output: &bool) -> bool {
+        // Postcondition: always satisfied (bool is always valid)
+        true
     }
 
     fn invariant(&self) -> bool {

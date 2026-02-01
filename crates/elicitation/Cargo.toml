@@ -25,6 +25,11 @@ tokio = { workspace = true }
 paste = { workspace = true }
 async-trait = { workspace = true }
 
+# CLI dependencies (optional)
+anyhow = { workspace = true }
+clap = { version = "4", features = ["derive"], optional = true }
+csv = { version = "1.3", optional = true }
+
 # DateTime libraries (optional)
 chrono = { workspace = true, optional = true }
 time = { workspace = true, optional = true }
@@ -84,5 +89,16 @@ verify-verus = ["verification"] # Verus SMT verifier (future)
 verify-all = ["verify-kani", "verify-creusot", "verify-prusti", "verify-verus"]
 kani-verifier = []
 
+# CLI and verification runner
+cli = ["clap", "csv", "chrono"]
+
+# Development (all optional features)
+dev = ["chrono", "time", "jiff", "uuid", "url", "regex", "cli"]
+
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
+
+[[bin]]
+name = "elicitation"
+path = "src/main.rs"
+required-features = ["cli"]

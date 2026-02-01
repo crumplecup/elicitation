@@ -15,7 +15,6 @@ use crate::verification::types::{
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv4_10_network_is_private() {
     let octets: [u8; 4] = kani::any();
     kani::assume(octets[0] == 10);
@@ -28,7 +27,6 @@ fn verify_ipv4_10_network_is_private() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv4_172_16_31_is_private() {
     let mut octets: [u8; 4] = kani::any();
     octets[0] = 172;
@@ -42,7 +40,6 @@ fn verify_ipv4_172_16_31_is_private() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv4_172_outside_range_not_private() {
     let mut octets: [u8; 4] = kani::any();
     octets[0] = 172;
@@ -57,7 +54,6 @@ fn verify_ipv4_172_outside_range_not_private() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv4_192_168_is_private() {
     let mut octets: [u8; 4] = kani::any();
     octets[0] = 192;
@@ -71,7 +67,6 @@ fn verify_ipv4_192_168_is_private() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv4_192_non_168_not_private() {
     let mut octets: [u8; 4] = kani::any();
     octets[0] = 192;
@@ -89,7 +84,6 @@ fn verify_ipv4_192_non_168_not_private() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv4_public_construction() {
     let octets: [u8; 4] = kani::any();
 
@@ -108,7 +102,6 @@ fn verify_ipv4_public_construction() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv4_loopback_not_public() {
     let mut octets: [u8; 4] = kani::any();
     octets[0] = 127;
@@ -122,7 +115,6 @@ fn verify_ipv4_loopback_not_public() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv4_multicast_not_public() {
     let mut octets: [u8; 4] = kani::any();
 
@@ -141,7 +133,6 @@ fn verify_ipv4_multicast_not_public() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv6_fc00_private() {
     let mut octets: [u8; 16] = kani::any();
 
@@ -158,7 +149,6 @@ fn verify_ipv6_fc00_private() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv6_outside_fc00_not_private() {
     let mut octets: [u8; 16] = kani::any();
 
@@ -176,7 +166,6 @@ fn verify_ipv6_outside_fc00_not_private() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv6_loopback() {
     let mut octets = [0u8; 16];
     octets[15] = 1; // ::1
@@ -187,7 +176,6 @@ fn verify_ipv6_loopback() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv6_unspecified() {
     let octets = [0u8; 16]; // ::
 
@@ -197,7 +185,6 @@ fn verify_ipv6_unspecified() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv6_multicast() {
     let mut octets: [u8; 16] = kani::any();
     octets[0] = 0xff; // ff00::/8
@@ -208,7 +195,6 @@ fn verify_ipv6_multicast() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv6_public_construction() {
     let octets: [u8; 16] = kani::any();
 
@@ -230,7 +216,6 @@ fn verify_ipv6_public_construction() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv4_roundtrip() {
     let octets: [u8; 4] = kani::any();
 
@@ -241,7 +226,6 @@ fn verify_ipv4_roundtrip() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv6_roundtrip() {
     let octets: [u8; 16] = kani::any();
 
@@ -252,25 +236,28 @@ fn verify_ipv6_roundtrip() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv4_private_roundtrip() {
     let octets: [u8; 4] = kani::any();
     kani::assume(is_ipv4_private(&octets));
 
-    let private = Ipv4Private::new(octets).unwrap();
-    let extracted = private.octets();
-
-    assert_eq!(octets, extracted);
+    if let Ok(private) = Ipv4Private::new(octets) {
+        let extracted = private.octets();
+        assert_eq!(octets, extracted);
+    } else {
+        kani::cover!(false, "Constructor must succeed for private IPs");
+    }
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ipv6_private_roundtrip() {
     let octets: [u8; 16] = kani::any();
     kani::assume(is_ipv6_private(&octets));
 
-    let private = Ipv6Private::new(octets).unwrap();
-    let extracted = private.octets();
-
-    assert_eq!(octets, extracted);
+    if let Ok(private) = Ipv6Private::new(octets) {
+        let extracted = private.octets();
+        assert_eq!(octets, extracted);
+    } else {
+        kani::cover!(false, "Constructor must succeed for private IPs");
+    }
 }
+

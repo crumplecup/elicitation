@@ -23,7 +23,6 @@ macro_rules! verify_2byte_chunks {
         $(
             #[cfg(kani)]
             #[kani::proof]
-            #[kani::unwind(2)]  // Provable bound: ceil(2 / 1) = 2 iterations max
             #[doc = concat!("Verify 2-byte UTF-8: byte1 ∈ [", stringify!($start), ", ", stringify!($end), "]")]
             fn $name() {
                 let byte1: u8 = kani::any();
@@ -95,7 +94,6 @@ macro_rules! verify_3byte_chunks {
         $(
             #[cfg(kani)]
             #[kani::proof]
-            #[kani::unwind(3)]  // Provable bound: ceil(3 / 1) = 3 iterations max
             #[doc = concat!("Verify 3-byte UTF-8: byte1 ∈ [", stringify!($start), ", ", stringify!($end), "]")]
             fn $name() {
                 let byte1: u8 = kani::any();
@@ -154,7 +152,6 @@ macro_rules! verify_4byte_chunks {
         $(
             #[cfg(kani)]
             #[kani::proof]
-            #[kani::unwind(4)]  // Provable bound: ceil(4 / 1) = 4 iterations max
             #[doc = concat!("Verify 4-byte UTF-8: byte1 ∈ [", stringify!($start), ", ", stringify!($end), "]")]
             fn $name() {
                 let byte1: u8 = kani::any();

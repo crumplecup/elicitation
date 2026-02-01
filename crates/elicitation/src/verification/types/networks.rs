@@ -30,7 +30,7 @@ impl IpPrivate {
         if is_private {
             Ok(Self(ip))
         } else {
-            Err(ValidationError::NotPrivateIp(ip.to_string()))
+            Err(ValidationError::NotPrivateIp)
         }
     }
 
@@ -86,8 +86,8 @@ impl IpPublic {
     pub fn new(ip: IpAddr) -> Result<Self, ValidationError> {
         // Use IpPrivate validation logic, but invert
         match IpPrivate::new(ip) {
-            Err(_) => Ok(Self(ip)), // Not private = public
-            Ok(_) => Err(ValidationError::NotPublicIp(ip.to_string())),
+            Err(_) => Ok(Self(ip)),
+            Ok(_) => Err(ValidationError::NotPublicIp),
         }
     }
 

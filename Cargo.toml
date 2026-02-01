@@ -40,6 +40,7 @@ schemars = { version = "1", features = ["derive"] }
 # Error handling
 derive_more = { version = "2", features = ["display", "error", "from"] }
 derive-getters = "0.5"
+anyhow = "1.0"
 
 # Tracing
 tracing = "0.1"

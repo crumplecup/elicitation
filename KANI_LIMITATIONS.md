@@ -114,3 +114,9 @@ For string-heavy verification, consider:
 - [ ] Consider stub implementations for string parsing
 - [ ] Explore Kani's `kani::assume_init()` for bounded strings
 - [ ] Add proptest harnesses as complement to Kani proofs
+
+
+**Note:** char tests (verify_char_alphabetic, verify_char_numeric) are currently too expensive for Kani due to Unicode property table lookups requiring ~51 loop iterations. These need either:
+1. Kani stub support for is_alphabetic()/is_numeric()  
+2. Higher timeout limits (>5 minutes per test)
+3. Alternative verification strategy

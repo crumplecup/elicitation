@@ -17,7 +17,6 @@ use crate::verification::types::{
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_well_known_port_range() {
     let port: u16 = kani::any();
     kani::assume(port <= 1023);
@@ -27,7 +26,6 @@ fn verify_well_known_port_range() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_registered_port_range() {
     let port: u16 = kani::any();
     kani::assume(port >= 1024 && port <= 49151);
@@ -39,7 +37,6 @@ fn verify_registered_port_range() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_dynamic_port_range() {
     let port: u16 = kani::any();
     kani::assume(port >= 49152);
@@ -55,7 +52,6 @@ fn verify_dynamic_port_range() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv4_construction() {
     let ip_octets: [u8; 4] = kani::any();
     let port: u16 = kani::any();
@@ -68,7 +64,6 @@ fn verify_socketaddrv4_construction() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv4_nonzero_accepts_nonzero() {
     let ip_octets: [u8; 4] = kani::any();
     let port: u16 = kani::any();
@@ -82,7 +77,6 @@ fn verify_socketaddrv4_nonzero_accepts_nonzero() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv4_nonzero_rejects_zero() {
     let ip_octets: [u8; 4] = kani::any();
     let ip = Ipv4Bytes::new(ip_octets);
@@ -92,7 +86,6 @@ fn verify_socketaddrv4_nonzero_rejects_zero() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv4_privileged_accepts_lt1024() {
     let ip_octets: [u8; 4] = kani::any();
     let port: u16 = kani::any();
@@ -106,7 +99,6 @@ fn verify_socketaddrv4_privileged_accepts_lt1024() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv4_privileged_rejects_ge1024() {
     let ip_octets: [u8; 4] = kani::any();
     let port: u16 = kani::any();
@@ -119,7 +111,6 @@ fn verify_socketaddrv4_privileged_rejects_ge1024() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv4_unprivileged_accepts_ge1024() {
     let ip_octets: [u8; 4] = kani::any();
     let port: u16 = kani::any();
@@ -133,7 +124,6 @@ fn verify_socketaddrv4_unprivileged_accepts_ge1024() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv4_unprivileged_rejects_lt1024() {
     let ip_octets: [u8; 4] = kani::any();
     let port: u16 = kani::any();
@@ -150,7 +140,6 @@ fn verify_socketaddrv4_unprivileged_rejects_lt1024() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv6_construction() {
     let ip_octets: [u8; 16] = kani::any();
     let port: u16 = kani::any();
@@ -163,7 +152,6 @@ fn verify_socketaddrv6_construction() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv6_nonzero_accepts_nonzero() {
     let ip_octets: [u8; 16] = kani::any();
     let port: u16 = kani::any();
@@ -177,7 +165,6 @@ fn verify_socketaddrv6_nonzero_accepts_nonzero() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv6_nonzero_rejects_zero() {
     let ip_octets: [u8; 16] = kani::any();
     let ip = Ipv6Bytes::new(ip_octets);
@@ -187,7 +174,6 @@ fn verify_socketaddrv6_nonzero_rejects_zero() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv6_privileged_accepts_lt1024() {
     let ip_octets: [u8; 16] = kani::any();
     let port: u16 = kani::any();
@@ -201,7 +187,6 @@ fn verify_socketaddrv6_privileged_accepts_lt1024() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv6_privileged_rejects_ge1024() {
     let ip_octets: [u8; 16] = kani::any();
     let port: u16 = kani::any();
@@ -214,7 +199,6 @@ fn verify_socketaddrv6_privileged_rejects_ge1024() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv6_unprivileged_accepts_ge1024() {
     let ip_octets: [u8; 16] = kani::any();
     let port: u16 = kani::any();
@@ -228,7 +212,6 @@ fn verify_socketaddrv6_unprivileged_accepts_ge1024() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv6_unprivileged_rejects_lt1024() {
     let ip_octets: [u8; 16] = kani::any();
     let port: u16 = kani::any();
@@ -245,7 +228,6 @@ fn verify_socketaddrv6_unprivileged_rejects_lt1024() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv4_roundtrip() {
     let ip_octets: [u8; 4] = kani::any();
     let port: u16 = kani::any();
@@ -259,7 +241,6 @@ fn verify_socketaddrv4_roundtrip() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_socketaddrv6_roundtrip() {
     let ip_octets: [u8; 16] = kani::any();
     let port: u16 = kani::any();

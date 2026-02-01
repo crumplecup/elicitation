@@ -6,7 +6,6 @@ mod kani_proofs {
 
     /// Verify: All ASCII bytes (0x00-0x7F) are valid UTF-8
     #[kani::proof]
-    #[kani::unwind(15)] // 10 byte array + nested UTF-8 validator loop
     fn verify_ascii_always_valid() {
         let len: usize = kani::any();
         kani::assume(len > 0 && len <= 10);
@@ -24,7 +23,6 @@ mod kani_proofs {
 
     /// Verify: Invalid continuation bytes are rejected
     #[kani::proof]
-    #[kani::unwind(1)] // 1-byte array: ceil(1/1) = 1 iteration max
     fn verify_invalid_continuation_rejected() {
         // Continuation byte without leader
         let byte: u8 = kani::any();
@@ -36,7 +34,6 @@ mod kani_proofs {
 
     /// Verify: Overlong 2-byte sequences are rejected
     #[kani::proof]
-    #[kani::unwind(2)] // 2-byte array: ceil(2/1) = 2 iterations max
     fn verify_overlong_two_byte_rejected() {
         // 2-byte encoding for code point < 0x80 (should be 1 byte)
         let byte1: u8 = kani::any();
@@ -52,7 +49,6 @@ mod kani_proofs {
 
     /// Verify: Surrogate code points (0xD800-0xDFFF) are rejected
     #[kani::proof]
-    #[kani::unwind(3)] // 3-byte array: ceil(3/1) = 3 iterations max
     fn verify_surrogate_rejected() {
         // 3-byte encoding for surrogate range (0xED 0xA0-0xBF 0x80-0xBF)
         let byte2: u8 = kani::any();
@@ -67,7 +63,6 @@ mod kani_proofs {
 
     /// Verify: Valid 2-byte sequences are accepted
     #[kani::proof]
-    #[kani::unwind(2)] // 2-byte array: ceil(2/1) = 2 iterations max
     fn verify_valid_two_byte_accepted() {
         let byte1: u8 = kani::any();
         kani::assume(byte1 >= 0xC2 && byte1 <= 0xDF); // Valid 2-byte leader (not overlong)
@@ -84,7 +79,6 @@ mod kani_proofs {
     /// **Expensive:** This proof explores ~49K symbolic combinations (12 × 64 × 64).
     /// Expected runtime: Hours to days depending on hardware.
     #[kani::proof]
-    #[kani::unwind(3)] // 3-byte array: ceil(3/1) = 3 iterations max
     fn verify_valid_three_byte_accepted() {
         // Test 0xE1-0xEC range (avoids 0xE0 overlong and 0xED surrogate checks)
         let byte1: u8 = kani::any();
@@ -105,7 +99,6 @@ mod kani_proofs {
     /// **Very Expensive:** This proof explores ~786K symbolic combinations (3 × 64³).
     /// Expected runtime: Days to weeks depending on hardware.
     #[kani::proof]
-    #[kani::unwind(4)] // 4-byte array: ceil(4/1) = 4 iterations max
     fn verify_valid_four_byte_accepted() {
         // Test 0xF1-0xF3 range (avoids 0xF0 overlong and 0xF4 overflow)
         let byte1: u8 = kani::any();
@@ -126,7 +119,6 @@ mod kani_proofs {
 
     /// Verify: Incomplete multi-byte sequences are rejected
     #[kani::proof]
-    #[kani::unwind(1)] // 1-byte array: ceil(1/1) = 1 iteration max
     fn verify_incomplete_sequence_rejected() {
         // 2-byte sequence with only leader
         let byte1: u8 = kani::any();
@@ -138,7 +130,6 @@ mod kani_proofs {
 
     /// Verify: Utf8Bytes construction rejects invalid UTF-8
     #[kani::proof]
-    #[kani::unwind(1)] // 1-byte array: ceil(1/1) = 1 iteration max
     fn verify_utf8bytes_rejects_invalid() {
         // Invalid continuation byte
         let bytes = [0b1000_0000]; // 10xxxxxx without leader
@@ -149,7 +140,6 @@ mod kani_proofs {
 
     /// Verify: Utf8Bytes construction accepts valid ASCII
     #[kani::proof]
-    #[kani::unwind(1)] // 1-byte array: ceil(1/1) = 1 iteration max
     fn verify_utf8bytes_accepts_ascii() {
         let byte: u8 = kani::any();
         kani::assume(byte < 0x80);
@@ -161,7 +151,6 @@ mod kani_proofs {
 
     /// Verify: Utf8Bytes respects MAX_LEN bound
     #[kani::proof]
-    #[kani::unwind(5)] // 5-byte array: ceil(5/1) = 5 iterations max
     fn verify_utf8bytes_respects_bound() {
         let bytes = [b'a', b'b', b'c', b'd', b'e']; // 5 bytes
 
@@ -176,7 +165,6 @@ mod kani_proofs {
 
     /// Verify: Round-trip ASCII through Utf8Bytes preserves content
     #[kani::proof]
-    #[kani::unwind(5)]
     fn verify_utf8bytes_roundtrip_ascii() {
         let len: usize = kani::any();
         kani::assume(len > 0 && len <= 5);

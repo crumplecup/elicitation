@@ -12,7 +12,6 @@ use crate::verification::types::{PathAbsolute, PathBytes, PathNonEmpty, PathRela
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(20)]
 fn verify_valid_ascii_no_null_accepted() {
     // Use small MAX_LEN for tractable proof
     const MAX_LEN: usize = 8;
@@ -34,7 +33,6 @@ fn verify_valid_ascii_no_null_accepted() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_null_byte_rejected() {
     const MAX_LEN: usize = 8;
 
@@ -50,7 +48,6 @@ fn verify_null_byte_rejected() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_absolute_path_starts_with_slash() {
     const MAX_LEN: usize = 16;
 
@@ -66,7 +63,6 @@ fn verify_absolute_path_starts_with_slash() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_relative_path_no_leading_slash() {
     const MAX_LEN: usize = 16;
 
@@ -86,7 +82,6 @@ fn verify_relative_path_no_leading_slash() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_path_absolute_accepts_leading_slash() {
     const MAX_LEN: usize = 16;
 
@@ -97,7 +92,6 @@ fn verify_path_absolute_accepts_leading_slash() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_path_absolute_rejects_no_slash() {
     const MAX_LEN: usize = 16;
 
@@ -108,7 +102,6 @@ fn verify_path_absolute_rejects_no_slash() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_path_relative_accepts_no_slash() {
     const MAX_LEN: usize = 16;
 
@@ -119,7 +112,6 @@ fn verify_path_relative_accepts_no_slash() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_path_relative_rejects_slash() {
     const MAX_LEN: usize = 16;
 
@@ -130,7 +122,6 @@ fn verify_path_relative_rejects_slash() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_path_nonempty_accepts_content() {
     const MAX_LEN: usize = 16;
 
@@ -141,7 +132,6 @@ fn verify_path_nonempty_accepts_content() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_path_nonempty_rejects_empty() {
     const MAX_LEN: usize = 16;
 
@@ -156,7 +146,6 @@ fn verify_path_nonempty_rejects_empty() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_root_path() {
     const MAX_LEN: usize = 16;
 
@@ -173,7 +162,6 @@ fn verify_root_path() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_current_directory() {
     const MAX_LEN: usize = 16;
 
@@ -194,7 +182,6 @@ fn verify_current_directory() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(8)]
 fn verify_has_null_byte_detection() {
     const MAX_LEN: usize = 4;
 
@@ -231,7 +218,6 @@ fn verify_has_null_byte_detection() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_absolute_path_byte_check() {
     // Test byte-level logic without string conversion
     let abs1 = [b'/', b'u', b's', b'r'];

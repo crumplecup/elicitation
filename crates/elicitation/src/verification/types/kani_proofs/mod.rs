@@ -10,7 +10,6 @@
 //! cargo kani --package elicitation --features verify-kani -- --default-unwind 20
 //! ```
 //!
-//! Individual harnesses can override with `#[kani::unwind(N)]`.
 //!
 //! # Running Proofs
 //!

@@ -6,7 +6,6 @@ use crate::{BoolFalse, BoolTrue};
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)] // No loops, deterministic bool checks
 fn verify_bool_true() {
     let value: bool = kani::any();
 
@@ -22,7 +21,6 @@ fn verify_bool_true() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)] // No loops, deterministic bool checks
 fn verify_bool_false() {
     let value: bool = kani::any();
 

@@ -14,7 +14,6 @@ use crate::verification::types::{
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_valid_variant_accepted() {
     let mut bytes: [u8; 16] = kani::any();
 
@@ -30,7 +29,6 @@ fn verify_valid_variant_accepted() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_ncs_variant_rejected() {
     let mut bytes: [u8; 16] = kani::any();
 
@@ -46,7 +44,6 @@ fn verify_ncs_variant_rejected() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_microsoft_variant_rejected() {
     let mut bytes: [u8; 16] = kani::any();
 
@@ -62,7 +59,6 @@ fn verify_microsoft_variant_rejected() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_reserved_variant_rejected() {
     let mut bytes: [u8; 16] = kani::any();
 
@@ -82,7 +78,6 @@ fn verify_reserved_variant_rejected() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_version_extraction() {
     let mut bytes: [u8; 16] = kani::any();
     bytes[8] = (bytes[8] & 0x3F) | 0x80; // Valid variant
@@ -107,7 +102,6 @@ fn verify_version_extraction() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_v4_valid_construction() {
     let mut bytes: [u8; 16] = kani::any();
 
@@ -128,7 +122,6 @@ fn verify_v4_valid_construction() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_v4_wrong_version_rejected() {
     let mut bytes: [u8; 16] = kani::any();
 
@@ -148,7 +141,6 @@ fn verify_v4_wrong_version_rejected() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_v4_invalid_variant_rejected() {
     let mut bytes: [u8; 16] = kani::any();
 
@@ -174,7 +166,6 @@ fn verify_v4_invalid_variant_rejected() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_v7_valid_construction() {
     let mut bytes: [u8; 16] = kani::any();
 
@@ -195,7 +186,6 @@ fn verify_v7_valid_construction() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_v7_wrong_version_rejected() {
     let mut bytes: [u8; 16] = kani::any();
 
@@ -215,7 +205,6 @@ fn verify_v7_wrong_version_rejected() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_v7_timestamp_extraction() {
     let mut bytes: [u8; 16] = kani::any();
 
@@ -245,7 +234,6 @@ fn verify_v7_timestamp_extraction() {
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_uuid_bytes_roundtrip() {
     let mut bytes: [u8; 16] = kani::any();
     bytes[8] = (bytes[8] & 0x3F) | 0x80; // Valid variant
@@ -261,7 +249,6 @@ fn verify_uuid_bytes_roundtrip() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_v4_bytes_roundtrip() {
     let mut bytes: [u8; 16] = kani::any();
     bytes[6] = (bytes[6] & 0x0F) | 0x40; // Version 4
@@ -278,7 +265,6 @@ fn verify_v4_bytes_roundtrip() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]
 fn verify_v7_bytes_roundtrip() {
     let mut bytes: [u8; 16] = kani::any();
     bytes[6] = (bytes[6] & 0x0F) | 0x70; // Version 7

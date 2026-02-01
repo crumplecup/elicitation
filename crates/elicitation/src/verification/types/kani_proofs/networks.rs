@@ -13,7 +13,6 @@ use crate::{UuidNonNil, UuidV4};
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
-#[kani::unwind(1)] // No loops, network checks
 fn verify_ip_private() {
     // Note: Kani struggles with complex IpAddr construction
     // We prove the logic, assuming valid IpAddr input
@@ -30,7 +29,6 @@ fn verify_ip_private() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)] // No loops, network checks
 fn verify_ip_public() {
     use std::net::IpAddr;
 
@@ -44,7 +42,6 @@ fn verify_ip_public() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)] // No loops, network checks
 fn verify_ipv4_loopback() {
     use std::net::Ipv4Addr;
 
@@ -58,7 +55,6 @@ fn verify_ipv4_loopback() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)] // No loops, network checks
 fn verify_ipv6_loopback() {
     use std::net::Ipv6Addr;
 
@@ -77,7 +73,6 @@ fn verify_ipv6_loopback() {
 
 #[cfg(feature = "uuid")]
 #[kani::proof]
-#[kani::unwind(500)] // UUID operations have deep loops
 fn verify_uuid_v4() {
     use uuid::Uuid;
 
@@ -93,7 +88,6 @@ fn verify_uuid_v4() {
 
 #[cfg(feature = "uuid")]
 #[kani::proof]
-#[kani::unwind(500)] // UUID operations have deep loops
 fn verify_uuid_non_nil() {
     use uuid::Uuid;
 
@@ -116,7 +110,6 @@ fn verify_uuid_non_nil() {
 // ----------------------------------------------------------------------------
 
 #[kani::proof]
-#[kani::unwind(1)] // No loops, network checks
 fn verify_pathbuf_contracts() {
     // PathBuf validation requires filesystem access
     // Prove that validation logic is sound, not filesystem state

@@ -896,6 +896,10 @@ pub mod mechanisms;
 // Contract types for trenchcoat pattern (boundary validation)
 pub mod types;
 
+// CLI runner for proof orchestration
+#[cfg(feature = "cli")]
+pub mod runner;
+
 // Tool-specific adapters (feature-gated)
 #[cfg(feature = "verify-kani")]
 pub mod kani;
