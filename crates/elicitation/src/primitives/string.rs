@@ -17,12 +17,12 @@ impl Elicitation for String {
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         use crate::verification::types::StringDefault;
-        
+
         tracing::debug!("Eliciting String via StringDefault wrapper");
-        
+
         // Use verification wrapper internally
         let wrapper = StringDefault::elicit(client).await?;
-        
+
         // Unwrap to primitive
         Ok(wrapper.into_inner())
     }

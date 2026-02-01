@@ -19,12 +19,12 @@ impl Elicitation for bool {
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         use crate::verification::types::BoolDefault;
-        
+
         tracing::debug!("Eliciting bool via BoolDefault wrapper");
-        
+
         // Use verification wrapper internally
         let wrapper = BoolDefault::elicit(client).await?;
-        
+
         // Unwrap to primitive
         Ok(wrapper.into_inner())
     }

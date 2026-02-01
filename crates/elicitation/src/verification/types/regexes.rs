@@ -218,7 +218,7 @@ impl RegexSetNonEmpty {
         S: AsRef<str>,
     {
         let patterns: Vec<_> = patterns.into_iter().collect();
-        
+
         if patterns.is_empty() {
             return Err(ValidationError::EmptyCollection);
         }
@@ -272,7 +272,7 @@ mod tests {
     #[test]
     fn test_regex_valid_matching() {
         let re = RegexValid::new(r"\d{3}-\d{3}-\d{4}").unwrap();
-        
+
         assert!(re.is_match("555-123-4567"));
         assert!(!re.is_match("not a phone"));
         assert_eq!(re.as_str(), r"\d{3}-\d{3}-\d{4}");
@@ -281,7 +281,7 @@ mod tests {
     #[test]
     fn test_regex_set_valid() {
         let set = RegexSetValid::new(&[r"\d+", r"[a-z]+", r"[A-Z]+"]).unwrap();
-        
+
         assert_eq!(set.len(), 3);
         assert!(!set.is_empty());
         assert!(set.is_match("123"));
@@ -300,7 +300,7 @@ mod tests {
     #[test]
     fn test_regex_case_insensitive() {
         let re = RegexCaseInsensitive::new(r"hello").unwrap();
-        
+
         assert!(re.is_match("hello"));
         assert!(re.is_match("HELLO"));
         assert!(re.is_match("HeLLo"));
@@ -310,7 +310,7 @@ mod tests {
     #[test]
     fn test_regex_multiline() {
         let re = RegexMultiline::new(r"^test$").unwrap();
-        
+
         // Multiline mode: ^ and $ match line boundaries
         assert!(re.is_match("test"));
         assert!(re.is_match("test\nmore"));
@@ -321,7 +321,7 @@ mod tests {
     fn test_regex_set_non_empty() {
         assert!(RegexSetNonEmpty::new(&[r"\d+"]).is_ok());
         assert!(RegexSetNonEmpty::new(&[r"\d+", r"[a-z]+"]).is_ok());
-        
+
         // Empty set rejected
         assert!(RegexSetNonEmpty::new::<&[&str], _>(&[]).is_err());
     }
@@ -331,7 +331,7 @@ mod tests {
         let pattern = r"\d{3}-\d{4}";
         let wrapped = RegexValid::new(pattern).unwrap();
         let unwrapped = wrapped.into_inner();
-        
+
         assert_eq!(unwrapped.as_str(), pattern);
         assert!(unwrapped.is_match("123-4567"));
     }

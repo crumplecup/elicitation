@@ -1,9 +1,9 @@
 //! String contract types.
 
+use super::{Utf8Bytes, ValidationError};
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
-use super::{ValidationError, Utf8Bytes};
-use elicitation_macros::instrumented_impl;
 use elicitation_derive::contract_type;
+use elicitation_macros::instrumented_impl;
 
 // ============================================================================
 
@@ -22,10 +22,7 @@ use elicitation_derive::contract_type;
 /// 3. Length <= MAX_LEN (bounded)
 ///
 /// Validates on construction, then can unwrap to stdlib String via `into_inner()`.
-#[contract_type(
-    requires = "!value.is_empty()",
-    ensures = "!result.get().is_empty()"
-)]
+#[contract_type(requires = "!value.is_empty()", ensures = "!result.get().is_empty()")]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct StringNonEmpty<const MAX_LEN: usize = 4096> {
     utf8: Utf8Bytes<MAX_LEN>,
@@ -59,7 +56,7 @@ impl<const MAX_LEN: usize> StringNonEmpty<MAX_LEN> {
         array[..bytes.len()].copy_from_slice(bytes);
 
         let utf8 = Utf8Bytes::new(array, bytes.len())?;
-        
+
         Ok(Self { utf8 })
     }
 
@@ -99,11 +96,14 @@ impl<const MAX_LEN: usize> Elicitation for StringNonEmpty<MAX_LEN> {
 
     #[tracing::instrument(skip(client), fields(type_name = "StringNonEmpty", max_len = MAX_LEN))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
-        tracing::debug!(max_len = MAX_LEN, "Eliciting StringNonEmpty (non-empty, bounded string)");
+        tracing::debug!(
+            max_len = MAX_LEN,
+            "Eliciting StringNonEmpty (non-empty, bounded string)"
+        );
 
         loop {
             let value = String::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(non_empty) => {
                     tracing::debug!(
@@ -163,7 +163,10 @@ mod string_nonempty_tests {
         assert!(result.is_err());
         assert!(matches!(
             result.unwrap_err(),
-            ValidationError::TooLong { max: 100, actual: 101 }
+            ValidationError::TooLong {
+                max: 100,
+                actual: 101
+            }
         ));
     }
 
@@ -194,7 +197,9 @@ mod string_nonempty_tests {
 ///
 /// Provides JSON Schema validation and serialization for strings.
 /// No constraints - accepts any valid string.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
 #[schemars(description = "A string value")]
 pub struct StringDefault(#[schemars(description = "String content")] String);
 
@@ -239,7 +244,7 @@ impl Elicitation for StringDefault {
         let result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                meta: None,
                 name: crate::mcp::tool_names::elicit_text().into(),
                 arguments: Some(params),
                 task: None,

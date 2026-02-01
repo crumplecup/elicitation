@@ -1,7 +1,7 @@
 //! Network contract types.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 

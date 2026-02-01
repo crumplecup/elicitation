@@ -14,7 +14,7 @@ fn verify_string_non_empty() {
     let empty = String::new();
     let result: Result<StringNonEmpty, _> = StringNonEmpty::new(empty);
     assert!(result.is_err(), "Construction rejects empty string");
-    
+
     // Non-empty string case
     let non_empty = String::from("a");
     match StringNonEmpty::<4096>::new(non_empty.clone()) {

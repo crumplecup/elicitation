@@ -553,7 +553,7 @@ _status-verus:
         echo "❌ Verus: Not installed"
     fi
 
-# Run Kani verification
+# Run Kani verification (batch mode - original behavior)
 verify-kani harness="":
     #!/usr/bin/env bash
     if [ -z "{{harness}}" ]; then
@@ -563,6 +563,30 @@ verify-kani harness="":
         echo "🔬 Running Kani harness: {{harness}}"
         cargo kani --harness {{harness}} --features verify-kani --default-unwind 20
     fi
+
+# Run Kani verification with CSV tracking (recommended)
+verify-kani-tracked csv="kani_verification_results.csv" timeout="300":
+    #!/usr/bin/env bash
+    echo "🔬 Running tracked Kani verification..."
+    CSV_FILE={{csv}} TIMEOUT={{timeout}} ./scripts/verification/run_tracked_verification.sh
+
+# Resume Kani verification (skips already-passed tests)
+verify-kani-resume csv="kani_verification_results.csv":
+    #!/usr/bin/env bash
+    echo "🔬 Resuming Kani verification..."
+    CSV_FILE={{csv}} ./scripts/verification/run_tracked_verification.sh --resume
+
+# Show verification summary statistics
+verify-kani-summary csv="kani_verification_results.csv":
+    @./scripts/verification/show_summary.sh {{csv}}
+
+# Show failed verification tests
+verify-kani-failed csv="kani_verification_results.csv":
+    @./scripts/verification/show_failures.sh {{csv}}
+
+# List all Kani proof harnesses
+verify-kani-list:
+    @./scripts/verification/discover_harnesses.sh || true
 
 # Run Prusti verification
 verify-prusti:

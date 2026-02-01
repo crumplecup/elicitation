@@ -281,11 +281,11 @@ mod tests {
         let unicast = [0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E];
         assert!(is_unicast(&unicast));
         assert!(!is_multicast(&unicast));
-        
+
         let mac = MacAddr::new(unicast);
         assert!(mac.is_unicast());
         assert!(!mac.is_multicast());
-        
+
         let unicast_type = MacUnicast::new(unicast);
         assert!(unicast_type.is_ok());
     }
@@ -296,11 +296,11 @@ mod tests {
         let multicast = [0x01, 0x00, 0x5E, 0x00, 0x00, 0x01];
         assert!(is_multicast(&multicast));
         assert!(!is_unicast(&multicast));
-        
+
         let mac = MacAddr::new(multicast);
         assert!(mac.is_multicast());
         assert!(!mac.is_unicast());
-        
+
         let multicast_type = MacMulticast::new(multicast);
         assert!(multicast_type.is_ok());
     }
@@ -327,11 +327,11 @@ mod tests {
         let universal = [0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E];
         assert!(is_universal(&universal));
         assert!(!is_local(&universal));
-        
+
         let mac = MacAddr::new(universal);
         assert!(mac.is_universal());
         assert!(!mac.is_local());
-        
+
         let universal_type = MacUniversal::new(universal);
         assert!(universal_type.is_ok());
     }
@@ -342,11 +342,11 @@ mod tests {
         let local = [0x02, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E];
         assert!(is_local(&local));
         assert!(!is_universal(&local));
-        
+
         let mac = MacAddr::new(local);
         assert!(mac.is_local());
         assert!(!mac.is_universal());
-        
+
         let local_type = MacLocal::new(local);
         assert!(local_type.is_ok());
     }
@@ -372,13 +372,13 @@ mod tests {
         let mac = MacAddr::new(local_multicast);
         assert!(mac.is_multicast());
         assert!(mac.is_local());
-        
+
         // Only bit 1 set: local unicast (0x02)
         let local_unicast = [0x02, 0x00, 0x00, 0x00, 0x00, 0x01];
         let mac = MacAddr::new(local_unicast);
         assert!(mac.is_unicast());
         assert!(mac.is_local());
-        
+
         // Only bit 0 set: universal multicast (0x01)
         let universal_multicast = [0x01, 0x00, 0x5E, 0x00, 0x00, 0x01];
         let mac = MacAddr::new(universal_multicast);

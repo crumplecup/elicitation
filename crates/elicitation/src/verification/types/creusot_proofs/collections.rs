@@ -59,20 +59,26 @@ pub fn verify_box_non_null_valid<T>(value: Box<T>) -> Result<BoxNonNull<T>, Vali
 
 /// Prove that ArcNonNull construction succeeds for non-null Arcs.
 #[ensures(result.is_ok())]
-pub fn verify_arc_non_null_valid<T>(value: ::std::sync::Arc<T>) -> Result<ArcNonNull<T>, ValidationError> {
+pub fn verify_arc_non_null_valid<T>(
+    value: ::std::sync::Arc<T>,
+) -> Result<ArcNonNull<T>, ValidationError> {
     ArcNonNull::new(value)
 }
 
 /// Prove that RcNonNull construction succeeds for non-null Rcs.
 #[ensures(result.is_ok())]
-pub fn verify_rc_non_null_valid<T>(value: ::std::rc::Rc<T>) -> Result<RcNonNull<T>, ValidationError> {
+pub fn verify_rc_non_null_valid<T>(
+    value: ::std::rc::Rc<T>,
+) -> Result<RcNonNull<T>, ValidationError> {
     RcNonNull::new(value)
 }
 
 /// Prove that HashMapNonEmpty construction succeeds for non-empty maps.
 #[requires(!value.is_empty())]
 #[ensures(result.is_ok())]
-pub fn verify_hashmap_non_empty_valid<K, V>(value: ::std::collections::HashMap<K, V>) -> Result<HashMapNonEmpty<K, V>, ValidationError> {
+pub fn verify_hashmap_non_empty_valid<K, V>(
+    value: ::std::collections::HashMap<K, V>,
+) -> Result<HashMapNonEmpty<K, V>, ValidationError> {
     HashMapNonEmpty::new(value)
 }
 
@@ -86,7 +92,9 @@ pub fn verify_hashmap_non_empty_valid<K, V>(value: ::std::collections::HashMap<K
 /// Prove that HashSetNonEmpty construction succeeds for non-empty sets.
 #[requires(!value.is_empty())]
 #[ensures(result.is_ok())]
-pub fn verify_hashset_non_empty_valid<T>(value: ::std::collections::HashSet<T>) -> Result<HashSetNonEmpty<T>, ValidationError> {
+pub fn verify_hashset_non_empty_valid<T>(
+    value: ::std::collections::HashSet<T>,
+) -> Result<HashSetNonEmpty<T>, ValidationError> {
     HashSetNonEmpty::new(value)
 }
 
@@ -114,20 +122,14 @@ pub fn verify_hashset_non_empty_valid<T>(value: ::std::collections::HashSet<T>) 
 /// Prove that ArrayAllSatisfy construction succeeds when all elements satisfy contract.
 #[requires(true)]
 #[ensures(true)]
-pub fn verify_array_all_satisfy_valid<C, const N: usize>(
-    value: [C; N]
-) -> ArrayAllSatisfy<C, N>
-{
+pub fn verify_array_all_satisfy_valid<C, const N: usize>(value: [C; N]) -> ArrayAllSatisfy<C, N> {
     ArrayAllSatisfy::new(value)
 }
 
 /// Prove that VecAllSatisfy construction succeeds when all elements satisfy contract.
 #[requires(true)]
 #[ensures(true)]
-pub fn verify_vec_all_satisfy_valid<C>(
-    value: Vec<C>
-) -> VecAllSatisfy<C>
-{
+pub fn verify_vec_all_satisfy_valid<C>(value: Vec<C>) -> VecAllSatisfy<C> {
     VecAllSatisfy::new(value)
 }
 
@@ -140,9 +142,8 @@ pub fn verify_vec_all_satisfy_valid<C>(
 #[ensures(result.is_ok())]
 pub fn verify_tuple2_valid<C1, C2>(
     first: C1,
-    second: C2
-) -> Result<Tuple2<C1, C2>, ValidationError>
-{
+    second: C2,
+) -> Result<Tuple2<C1, C2>, ValidationError> {
     Ok(Tuple2::new(first, second))
 }
 
@@ -152,9 +153,8 @@ pub fn verify_tuple2_valid<C1, C2>(
 pub fn verify_tuple3_valid<C1, C2, C3>(
     first: C1,
     second: C2,
-    third: C3
-) -> Result<Tuple3<C1, C2, C3>, ValidationError>
-{
+    third: C3,
+) -> Result<Tuple3<C1, C2, C3>, ValidationError> {
     Ok(Tuple3::new(first, second, third))
 }
 
@@ -165,9 +165,8 @@ pub fn verify_tuple4_valid<C1, C2, C3, C4>(
     first: C1,
     second: C2,
     third: C3,
-    fourth: C4
-) -> Result<Tuple4<C1, C2, C3, C4>, ValidationError>
-{
+    fourth: C4,
+) -> Result<Tuple4<C1, C2, C3, C4>, ValidationError> {
     Ok(Tuple4::new(first, second, third, fourth))
 }
 

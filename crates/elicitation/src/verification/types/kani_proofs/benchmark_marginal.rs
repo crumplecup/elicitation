@@ -123,7 +123,7 @@ fn bench_utf8_4096byte() {
 
 #[cfg(kani)]
 #[kani::proof]
-#[kani::unwind(1)]  // No loops, deterministic bit checks
+#[kani::unwind(1)] // No loops, deterministic bit checks
 fn bench_uuid_variant_2byte() {
     let bytes: [u8; 2] = kani::any();
     // Check variant bits (simplified)
@@ -133,7 +133,7 @@ fn bench_uuid_variant_2byte() {
 
 #[cfg(kani)]
 #[kani::proof]
-#[kani::unwind(1)]  // No loops, deterministic bit checks
+#[kani::unwind(1)] // No loops, deterministic bit checks
 fn bench_uuid_variant_4byte() {
     let bytes: [u8; 4] = kani::any();
     let variant_byte = bytes[0];
@@ -143,7 +143,7 @@ fn bench_uuid_variant_4byte() {
 
 #[cfg(kani)]
 #[kani::proof]
-#[kani::unwind(1)]  // No loops, deterministic bit checks
+#[kani::unwind(1)] // No loops, deterministic bit checks
 fn bench_uuid_full_16byte() {
     let bytes: [u8; 16] = kani::any();
     // Full UUID validation (variant + version)
@@ -153,12 +153,12 @@ fn bench_uuid_full_16byte() {
 }
 
 // ============================================================================
-// MAC Address Format Marginal Cost  
+// MAC Address Format Marginal Cost
 // ============================================================================
 
 #[cfg(kani)]
 #[kani::proof]
-#[kani::unwind(1)]  // No loops, deterministic bit checks
+#[kani::unwind(1)] // No loops, deterministic bit checks
 fn bench_mac_multicast_1byte() {
     let byte: u8 = kani::any();
     let _ = (byte & 0x01) != 0;
@@ -166,7 +166,7 @@ fn bench_mac_multicast_1byte() {
 
 #[cfg(kani)]
 #[kani::proof]
-#[kani::unwind(1)]  // No loops, deterministic bit checks
+#[kani::unwind(1)] // No loops, deterministic bit checks
 fn bench_mac_local_1byte() {
     let byte: u8 = kani::any();
     let _ = (byte & 0x02) != 0;
@@ -174,7 +174,7 @@ fn bench_mac_local_1byte() {
 
 #[cfg(kani)]
 #[kani::proof]
-#[kani::unwind(1)]  // No loops, deterministic bit checks
+#[kani::unwind(1)] // No loops, deterministic bit checks
 fn bench_mac_full_6byte() {
     let bytes: [u8; 6] = kani::any();
     let is_multicast = (bytes[0] & 0x01) != 0;

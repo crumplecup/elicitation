@@ -1,7 +1,7 @@
 //! PathBuf contract types with runtime filesystem validation.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
 use std::path::PathBuf;
 
@@ -80,9 +80,7 @@ impl PathBufReadable {
         // Try to read metadata as a proxy for readability
         match path.metadata() {
             Ok(_) => Ok(Self(path)),
-            Err(_) => Err(ValidationError::PathNotReadable(
-                path.display().to_string(),
-            )),
+            Err(_) => Err(ValidationError::PathNotReadable(path.display().to_string())),
         }
     }
 
@@ -258,8 +256,8 @@ impl Elicitation for PathBufIsFile {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs;
     use std::env;
+    
 
     #[test]
     fn test_path_exists_valid() {

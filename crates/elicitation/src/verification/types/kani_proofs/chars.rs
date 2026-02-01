@@ -6,23 +6,29 @@ use crate::{CharAlphabetic, CharNumeric};
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]  // No loops, char property checks
+#[kani::unwind(1)] // No loops, char property checks
 fn verify_char_alphabetic() {
     let value: char = kani::any();
 
     match CharAlphabetic::new(value) {
         Ok(alphabetic) => {
             assert!(value.is_alphabetic(), "CharAlphabetic invariant");
-            assert!(alphabetic.get().is_alphabetic(), "get() preserves invariant");
+            assert!(
+                alphabetic.get().is_alphabetic(),
+                "get() preserves invariant"
+            );
         }
         Err(_) => {
-            assert!(!value.is_alphabetic(), "Construction rejects non-alphabetic");
+            assert!(
+                !value.is_alphabetic(),
+                "Construction rejects non-alphabetic"
+            );
         }
     }
 }
 
 #[kani::proof]
-#[kani::unwind(1)]  // No loops, char property checks
+#[kani::unwind(1)] // No loops, char property checks
 fn verify_char_numeric() {
     let value: char = kani::any();
 

@@ -1,9 +1,6 @@
 //! Kani proofs for integer contract types.
 
-use crate::{
-    I8Positive, I16Positive,
-    I8NonNegative, U8NonZero, U16NonZero,
-};
+use crate::{I8NonNegative, I8Positive, I16Positive, U8NonZero, U16NonZero};
 
 // ============================================================================
 // Integer Contract Proofs
@@ -13,13 +10,16 @@ use crate::{
 #[kani::unwind(1)] // No loops, integer checks
 fn verify_i8_positive() {
     let value: i8 = kani::any();
-    
+
     match I8Positive::new(value) {
         Ok(positive) => {
             // If construction succeeds, value must be positive
             assert!(value > 0, "I8Positive invariant: value > 0");
             assert!(positive.get() > 0, "get() returns positive value");
-            assert!(positive.into_inner() > 0, "into_inner() returns positive value");
+            assert!(
+                positive.into_inner() > 0,
+                "into_inner() returns positive value"
+            );
         }
         Err(_) => {
             // If construction fails, value must be <= 0
@@ -32,7 +32,7 @@ fn verify_i8_positive() {
 #[kani::unwind(1)] // No loops, integer checks
 fn verify_i8_non_negative() {
     let value: i8 = kani::any();
-    
+
     match I8NonNegative::new(value) {
         Ok(non_neg) => {
             assert!(value >= 0, "I8NonNegative invariant: value >= 0");
@@ -49,7 +49,7 @@ fn verify_i8_non_negative() {
 #[kani::unwind(1)] // No loops, integer checks
 fn verify_u8_non_zero() {
     let value: u8 = kani::any();
-    
+
     match U8NonZero::new(value) {
         Ok(non_zero) => {
             assert!(value != 0, "U8NonZero invariant: value != 0");
@@ -66,7 +66,7 @@ fn verify_u8_non_zero() {
 #[kani::unwind(1)] // No loops, integer checks
 fn verify_i16_positive() {
     let value: i16 = kani::any();
-    
+
     match I16Positive::new(value) {
         Ok(positive) => {
             assert!(value > 0, "I16Positive invariant: value > 0");
@@ -82,7 +82,7 @@ fn verify_i16_positive() {
 #[kani::unwind(1)] // No loops, integer checks
 fn verify_u16_non_zero() {
     let value: u16 = kani::any();
-    
+
     match U16NonZero::new(value) {
         Ok(non_zero) => {
             assert!(value != 0, "U16NonZero invariant");

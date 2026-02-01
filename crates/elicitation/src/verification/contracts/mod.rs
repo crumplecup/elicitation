@@ -886,7 +886,9 @@ mod tests {
         assert!(!OptionWithInner::<i32, I32Positive>::requires(&zero));
         assert!(!OptionWithInner::<i32, I32Positive>::requires(&none));
 
-        assert!(OptionWithInner::<i32, I32Positive>::ensures(&positive, &positive));
+        assert!(OptionWithInner::<i32, I32Positive>::ensures(
+            &positive, &positive
+        ));
         assert!(contract.invariant());
     }
 
@@ -909,11 +911,17 @@ mod tests {
 
         let contract: ResultWithOk<i32, String, I32Positive> = ResultWithOk::new(I32Positive);
 
-        assert!(ResultWithOk::<i32, String, I32Positive>::requires(&positive));
-        assert!(!ResultWithOk::<i32, String, I32Positive>::requires(&negative));
+        assert!(ResultWithOk::<i32, String, I32Positive>::requires(
+            &positive
+        ));
+        assert!(!ResultWithOk::<i32, String, I32Positive>::requires(
+            &negative
+        ));
         assert!(!ResultWithOk::<i32, String, I32Positive>::requires(&error));
 
-        assert!(ResultWithOk::<i32, String, I32Positive>::ensures(&positive, &positive));
+        assert!(ResultWithOk::<i32, String, I32Positive>::ensures(
+            &positive, &positive
+        ));
         assert!(contract.invariant());
     }
 
@@ -953,7 +961,10 @@ mod tests {
         assert!(!VecAllElements::<i32, I32Positive>::requires(&has_negative));
         assert!(VecAllElements::<i32, I32Positive>::requires(&empty)); // Vacuously true
 
-        assert!(VecAllElements::<i32, I32Positive>::ensures(&all_positive, &all_positive));
+        assert!(VecAllElements::<i32, I32Positive>::ensures(
+            &all_positive,
+            &all_positive
+        ));
         assert!(contract.invariant());
     }
 }

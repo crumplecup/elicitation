@@ -21,7 +21,6 @@ struct User {
 fn test_user_struct_compiles() {
     // This test just verifies the derive macro compiles successfully
     // The verification contracts are feature-gated and only visible to Kani
-    assert!(true);
 }
 
 // Note: The generated verification functions are only compiled by Kani,

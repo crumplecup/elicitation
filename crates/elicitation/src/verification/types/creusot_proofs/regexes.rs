@@ -20,21 +20,27 @@ pub fn verify_regex_valid_construction(pattern: &str) -> Result<RegexValid, Vali
 #[cfg(all(feature = "verification", feature = "regex"))]
 /// Prove that RegexSetValid construction works for multiple patterns.
 #[ensures(result.is_ok() || result.is_err())]
-pub fn verify_regex_set_valid_construction(patterns: &[&str]) -> Result<RegexSetValid, ValidationError> {
+pub fn verify_regex_set_valid_construction(
+    patterns: &[&str],
+) -> Result<RegexSetValid, ValidationError> {
     RegexSetValid::new(patterns)
 }
 
 #[cfg(all(feature = "verification", feature = "regex"))]
 /// Prove that RegexCaseInsensitive compiles with case-insensitive flag.
 #[ensures(result.is_ok() || result.is_err())]
-pub fn verify_regex_case_insensitive_construction(pattern: &str) -> Result<RegexCaseInsensitive, ValidationError> {
+pub fn verify_regex_case_insensitive_construction(
+    pattern: &str,
+) -> Result<RegexCaseInsensitive, ValidationError> {
     RegexCaseInsensitive::new(pattern)
 }
 
 #[cfg(all(feature = "verification", feature = "regex"))]
 /// Prove that RegexMultiline compiles with multiline flag.
 #[ensures(result.is_ok() || result.is_err())]
-pub fn verify_regex_multiline_construction(pattern: &str) -> Result<RegexMultiline, ValidationError> {
+pub fn verify_regex_multiline_construction(
+    pattern: &str,
+) -> Result<RegexMultiline, ValidationError> {
     RegexMultiline::new(pattern)
 }
 
@@ -44,7 +50,9 @@ pub fn verify_regex_multiline_construction(pattern: &str) -> Result<RegexMultili
     Ok(set) => set.len() > 0,
     Err(_) => true,
 })]
-pub fn verify_regex_set_non_empty_requirement(patterns: &[&str]) -> Result<RegexSetNonEmpty, ValidationError> {
+pub fn verify_regex_set_non_empty_requirement(
+    patterns: &[&str],
+) -> Result<RegexSetNonEmpty, ValidationError> {
     RegexSetNonEmpty::new(patterns)
 }
 
@@ -73,3 +81,8 @@ pub fn verify_regex_accessor(pattern: &str) -> Result<RegexValid, ValidationErro
 // ============================================================================
 
 /// Total number of Creusot proofs implemented.
+#[must_use]
+pub const fn total() -> usize {
+    // Placeholder: Creusot regex proofs not yet implemented
+    0
+}

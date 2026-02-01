@@ -1,7 +1,7 @@
 //! Kani proofs for Regex contract types.
 
 #[cfg(feature = "regex")]
-use crate::{RegexValid, RegexSetValid, RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty};
+use crate::{RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetValid, RegexValid};
 
 // ============================================================================
 // Regex Contract Proofs
@@ -20,7 +20,7 @@ fn verify_regex_valid() {
         RegexValid::new(r"[a-z]+").is_ok(),
         "Valid character class compiles"
     );
-    
+
     // Test invalid patterns
     assert!(
         RegexValid::new(r"[unclosed").is_err(),
@@ -35,7 +35,7 @@ fn verify_regex_set_valid() {
     // Test valid regex set
     let set = RegexSetValid::new(&[r"\d+", r"[a-z]+"]);
     assert!(set.is_ok(), "Valid patterns compile");
-    
+
     if let Ok(s) = set {
         assert!(s.len() == 2, "Set contains 2 patterns");
         assert!(!s.is_empty(), "Set is not empty");
@@ -48,7 +48,7 @@ fn verify_regex_set_valid() {
 fn verify_regex_case_insensitive() {
     let re = RegexCaseInsensitive::new(r"hello");
     assert!(re.is_ok(), "Case-insensitive pattern compiles");
-    
+
     if let Ok(regex) = re {
         assert!(regex.is_match("hello"), "Matches lowercase");
         assert!(regex.is_match("HELLO"), "Matches uppercase");
@@ -62,7 +62,7 @@ fn verify_regex_case_insensitive() {
 fn verify_regex_multiline() {
     let re = RegexMultiline::new(r"^test$");
     assert!(re.is_ok(), "Multiline pattern compiles");
-    
+
     if let Ok(regex) = re {
         assert!(regex.is_match("test"), "Matches single line");
     }
@@ -77,7 +77,7 @@ fn verify_regex_set_non_empty() {
         RegexSetNonEmpty::new(&[r"\d+"]).is_ok(),
         "Single pattern accepted"
     );
-    
+
     // Test empty set rejection
     assert!(
         RegexSetNonEmpty::new::<&[&str], _>(&[]).is_err(),
@@ -91,10 +91,10 @@ fn verify_regex_set_non_empty() {
 fn verify_regex_trenchcoat_pattern() {
     // Prove trenchcoat pattern: pattern → compile → use
     let pattern = r"\d{3}-\d{4}";
-    
+
     if let Ok(wrapped) = RegexValid::new(pattern) {
         let unwrapped = wrapped.into_inner();
-        
+
         // Trenchcoat: Pattern preserved through wrap/unwrap
         assert!(
             unwrapped.as_str() == pattern,
@@ -124,4 +124,3 @@ fn verify_regex_accessor_correctness() {
         );
     }
 }
-

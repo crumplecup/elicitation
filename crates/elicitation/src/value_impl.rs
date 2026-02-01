@@ -72,7 +72,7 @@ impl Elicitation for JsonType {
         let result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                meta: None,
                 name: mcp::tool_names::elicit_select().into(),
                 arguments: Some(params),
                 task: None,
@@ -163,7 +163,7 @@ async fn elicit_number(client: &ElicitClient<'_>) -> ElicitResult<Value> {
     let result = client
         .peer()
         .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+            meta: None,
             name: mcp::tool_names::elicit_text().into(),
             arguments: Some(params),
             task: None,
@@ -207,7 +207,7 @@ fn elicit_array<'a>(
             let result = client
                 .peer()
                 .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                    meta: None,
                     name: mcp::tool_names::elicit_bool().into(),
                     arguments: Some(params),
                     task: None,
@@ -255,7 +255,7 @@ fn elicit_object<'a>(
             let result = client
                 .peer()
                 .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                    meta: None,
                     name: mcp::tool_names::elicit_bool().into(),
                     arguments: Some(params),
                     task: None,
@@ -276,7 +276,7 @@ fn elicit_object<'a>(
             let key_result = client
                 .peer()
                 .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                    meta: None,
                     name: mcp::tool_names::elicit_text().into(),
                     arguments: Some(key_params),
                     task: None,

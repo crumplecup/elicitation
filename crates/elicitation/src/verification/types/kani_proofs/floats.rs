@@ -10,7 +10,7 @@ use crate::{F32Finite, F64Positive};
 #[kani::unwind(1)] // No loops, float checks
 fn verify_f32_finite() {
     let value: f32 = kani::any();
-    
+
     match F32Finite::new(value) {
         Ok(_finite) => {
             assert!(value.is_finite(), "F32Finite invariant: value is finite");
@@ -27,10 +27,10 @@ fn verify_f32_finite() {
 #[kani::unwind(1)] // No loops, float checks
 fn verify_f64_positive() {
     let value: f64 = kani::any();
-    
+
     // Only test finite values (NaN/infinity rejected separately)
     kani::assume(value.is_finite());
-    
+
     match F64Positive::new(value) {
         Ok(_positive) => {
             assert!(value > 0.0, "F64Positive invariant: value > 0");

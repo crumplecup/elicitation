@@ -1,7 +1,7 @@
 //! Bool contract types.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
 
 // ============================================================================
@@ -55,7 +55,7 @@ impl Elicitation for BoolTrue {
 
         loop {
             let value = bool::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(bool_true) => {
                     tracing::debug!(value, "Valid BoolTrue constructed");
@@ -117,7 +117,7 @@ impl Elicitation for BoolFalse {
 
         loop {
             let value = bool::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(bool_false) => {
                     tracing::debug!(value, "Valid BoolFalse constructed");
@@ -139,7 +139,7 @@ mod bool_true_tests {
     fn bool_true_new_valid() {
         let result = BoolTrue::new(true);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap().get(), true);
+        assert!(result.unwrap().get());
     }
 
     #[test]
@@ -152,7 +152,7 @@ mod bool_true_tests {
     fn bool_true_into_inner() {
         let bool_true = BoolTrue::new(true).unwrap();
         let value: bool = bool_true.into_inner();
-        assert_eq!(value, true);
+        assert!(value);
     }
 }
 
@@ -164,7 +164,7 @@ mod bool_false_tests {
     fn bool_false_new_valid() {
         let result = BoolFalse::new(false);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap().get(), false);
+        assert!(!result.unwrap().get());
     }
 
     #[test]
@@ -177,7 +177,7 @@ mod bool_false_tests {
     fn bool_false_into_inner() {
         let bool_false = BoolFalse::new(false).unwrap();
         let value: bool = bool_false.into_inner();
-        assert_eq!(value, false);
+        assert!(!value);
     }
 }
 
@@ -186,7 +186,17 @@ mod bool_false_tests {
 /// Default bool wrapper for MCP elicitation.
 ///
 /// Provides JSON Schema validation and serialization for booleans.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
 #[schemars(description = "A boolean value")]
 pub struct BoolDefault(#[schemars(description = "True or false")] bool);
 
@@ -223,7 +233,12 @@ impl Elicitation for BoolDefault {
 
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
-        let prompt = Self::prompt().unwrap();
+        let prompt = Self::prompt().ok_or_else(|| {
+            crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
+                expected: "valid prompt".to_string(),
+                received: "None".to_string(),
+            })
+        })?;
         tracing::debug!("Eliciting BoolDefault with serde deserialization");
 
         let params = crate::mcp::bool_params(prompt);
@@ -231,7 +246,7 @@ impl Elicitation for BoolDefault {
         let result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                meta: None,
                 name: crate::mcp::tool_names::elicit_bool().into(),
                 arguments: Some(params),
                 task: None,

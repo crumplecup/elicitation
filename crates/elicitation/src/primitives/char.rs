@@ -23,7 +23,7 @@ impl Elicitation for char {
         let result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                meta: None,
                 name: mcp::tool_names::elicit_text().into(),
                 arguments: Some(params),
                 task: None,
@@ -32,16 +32,13 @@ impl Elicitation for char {
 
         let value = mcp::extract_value(result)?;
         let string = mcp::parse_string(value)?;
-        
+
         // Get first character from string
-        string
-            .chars()
-            .next()
-            .ok_or_else(|| {
-                crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
-                    expected: "non-empty string with at least one character".to_string(),
-                    received: "empty string".to_string(),
-                })
+        string.chars().next().ok_or_else(|| {
+            crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
+                expected: "non-empty string with at least one character".to_string(),
+                received: "empty string".to_string(),
             })
+        })
     }
 }

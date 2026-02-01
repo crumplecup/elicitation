@@ -67,8 +67,7 @@ impl<const MAX_LEN: usize> Utf8Bytes<MAX_LEN> {
     /// We re-validate here to maintain the unsafe-free guarantee.
     pub fn as_str(&self) -> &str {
         // SAFE: We validated UTF-8 in constructor, but we can't use unsafe due to forbid
-        std::str::from_utf8(&self.bytes[..self.len])
-            .expect("UTF-8 validated in constructor")
+        std::str::from_utf8(&self.bytes[..self.len]).expect("UTF-8 validated in constructor")
     }
 
     /// Get the byte length of the UTF-8 content.
@@ -109,16 +108,16 @@ impl<const MAX_LEN: usize> Utf8Bytes<MAX_LEN> {
 #[inline]
 pub fn is_valid_utf8(bytes: &[u8]) -> bool {
     let mut i = 0;
-    
+
     while i < bytes.len() {
         let byte = bytes[i];
-        
+
         // Single byte (ASCII): 0xxxxxxx
         if byte & 0b1000_0000 == 0 {
             i += 1;
             continue;
         }
-        
+
         // Two bytes: 110xxxxx 10xxxxxx
         if byte & 0b1110_0000 == 0b1100_0000 {
             if i + 1 >= bytes.len() {
@@ -134,7 +133,7 @@ pub fn is_valid_utf8(bytes: &[u8]) -> bool {
             i += 2;
             continue;
         }
-        
+
         // Three bytes: 1110xxxx 10xxxxxx 10xxxxxx
         if byte & 0b1111_0000 == 0b1110_0000 {
             if i + 2 >= bytes.len() {
@@ -146,24 +145,24 @@ pub fn is_valid_utf8(bytes: &[u8]) -> bool {
             if bytes[i + 2] & 0b1100_0000 != 0b1000_0000 {
                 return false;
             }
-            
+
             // Check no overlong encoding (must be >= 0x800)
             if byte == 0b1110_0000 && bytes[i + 1] & 0b0010_0000 == 0 {
                 return false;
             }
-            
+
             // Check not surrogate (0xD800-0xDFFF)
             let code_point = ((byte & 0x0F) as u32) << 12
-                           | ((bytes[i + 1] & 0x3F) as u32) << 6
-                           | (bytes[i + 2] & 0x3F) as u32;
+                | ((bytes[i + 1] & 0x3F) as u32) << 6
+                | (bytes[i + 2] & 0x3F) as u32;
             if (0xD800..=0xDFFF).contains(&code_point) {
                 return false;
             }
-            
+
             i += 3;
             continue;
         }
-        
+
         // Four bytes: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
         if byte & 0b1111_1000 == 0b1111_0000 {
             if i + 3 >= bytes.len() {
@@ -178,29 +177,29 @@ pub fn is_valid_utf8(bytes: &[u8]) -> bool {
             if bytes[i + 3] & 0b1100_0000 != 0b1000_0000 {
                 return false;
             }
-            
+
             // Check no overlong encoding (must be >= 0x10000)
             if byte == 0b1111_0000 && bytes[i + 1] & 0b0011_0000 == 0 {
                 return false;
             }
-            
+
             // Check code point <= 0x10FFFF
             let code_point = ((byte & 0x07) as u32) << 18
-                           | ((bytes[i + 1] & 0x3F) as u32) << 12
-                           | ((bytes[i + 2] & 0x3F) as u32) << 6
-                           | (bytes[i + 3] & 0x3F) as u32;
+                | ((bytes[i + 1] & 0x3F) as u32) << 12
+                | ((bytes[i + 2] & 0x3F) as u32) << 6
+                | (bytes[i + 3] & 0x3F) as u32;
             if code_point > 0x10FFFF {
                 return false;
             }
-            
+
             i += 4;
             continue;
         }
-        
+
         // Invalid start byte
         return false;
     }
-    
+
     true
 }
 
@@ -216,7 +215,7 @@ mod tests {
         bytes[2] = b'l';
         bytes[3] = b'l';
         bytes[4] = b'o';
-        
+
         let utf8 = Utf8Bytes::<10>::new(bytes, 5).unwrap();
         assert_eq!(utf8.as_str(), "hello");
     }
@@ -234,7 +233,7 @@ mod tests {
         let mut bytes = [0u8; 10];
         bytes[0] = 0xC2; // Start of 2-byte sequence
         bytes[1] = 0xA9; // © symbol
-        
+
         let utf8 = Utf8Bytes::<10>::new(bytes, 2).unwrap();
         assert_eq!(utf8.as_str(), "©");
     }
@@ -243,9 +242,9 @@ mod tests {
     fn test_three_byte_utf8() {
         let mut bytes = [0u8; 10];
         bytes[0] = 0xE2; // Start of 3-byte sequence
-        bytes[1] = 0x82; 
+        bytes[1] = 0x82;
         bytes[2] = 0xAC; // € symbol
-        
+
         let utf8 = Utf8Bytes::<10>::new(bytes, 3).unwrap();
         assert_eq!(utf8.as_str(), "€");
     }
@@ -255,7 +254,7 @@ mod tests {
         let mut bytes = [0u8; 10];
         bytes[0] = 0xC2;
         bytes[1] = 0xFF; // Invalid continuation byte
-        
+
         assert!(Utf8Bytes::<10>::new(bytes, 2).is_err());
     }
 
@@ -264,7 +263,7 @@ mod tests {
         let mut bytes = [0u8; 10];
         bytes[0] = 0xC0; // Overlong encoding
         bytes[1] = 0x80; // of NULL
-        
+
         assert!(Utf8Bytes::<10>::new(bytes, 2).is_err());
     }
 
@@ -274,7 +273,7 @@ mod tests {
         bytes[0] = 0xED; // Surrogate
         bytes[1] = 0xA0;
         bytes[2] = 0x80; // U+D800
-        
+
         assert!(Utf8Bytes::<10>::new(bytes, 3).is_err());
     }
 

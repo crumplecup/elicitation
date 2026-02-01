@@ -365,14 +365,18 @@ pub fn verify_u32_range_valid(value: u32) -> Result<U32Range<1000, 4000000000>, 
 /// Prove that I64Range construction succeeds for values in range.
 #[requires(-1000000000 <= value && value <= 1000000000)]
 #[ensures(result.is_ok())]
-pub fn verify_i64_range_valid(value: i64) -> Result<I64Range<-1000000000, 1000000000>, ValidationError> {
+pub fn verify_i64_range_valid(
+    value: i64,
+) -> Result<I64Range<-1000000000, 1000000000>, ValidationError> {
     I64Range::<-1000000000, 1000000000>::new(value)
 }
 
 /// Prove that U64Range construction succeeds for values in range.
 #[requires(1000000 <= value && value <= 18000000000000000000)]
 #[ensures(result.is_ok())]
-pub fn verify_u64_range_valid(value: u64) -> Result<U64Range<1000000, 18000000000000000000>, ValidationError> {
+pub fn verify_u64_range_valid(
+    value: u64,
+) -> Result<U64Range<1000000, 18000000000000000000>, ValidationError> {
     U64Range::<1000000, 18000000000000000000>::new(value)
 }
 

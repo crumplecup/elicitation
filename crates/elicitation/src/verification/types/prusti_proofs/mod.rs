@@ -4,15 +4,15 @@
 
 #![cfg(feature = "verify-prusti")]
 
-mod integers;
-mod floats;
-mod strings;
 mod bools;
 mod chars;
-mod durations;
-mod networks;
 mod collections;
+mod durations;
+mod floats;
+mod integers;
 mod mechanisms;
+mod networks;
+mod strings;
 
 #[cfg(feature = "url")]
 mod urls;

@@ -4,12 +4,12 @@
 
 #![cfg(feature = "verify-creusot")]
 
-mod integers;
-mod floats;
-mod strings;
 mod bools;
 mod chars;
 mod durations;
+mod floats;
+mod integers;
+mod strings;
 // Note: Creusot does not support std::net
 // mod networks;
 mod collections;

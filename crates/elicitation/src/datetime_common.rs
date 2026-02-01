@@ -69,7 +69,7 @@ impl Elicitation for DateTimeInputMethod {
         let result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                meta: None,
                 name: mcp::tool_names::elicit_select().into(),
                 arguments: Some(params),
                 task: None,
@@ -112,7 +112,7 @@ impl DateTimeComponents {
         let year_result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                meta: None,
                 name: mcp::tool_names::elicit_number().into(),
                 arguments: Some(year_params),
                 task: None,
@@ -126,7 +126,7 @@ impl DateTimeComponents {
         let month_result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                meta: None,
                 name: mcp::tool_names::elicit_number().into(),
                 arguments: Some(month_params),
                 task: None,
@@ -140,7 +140,7 @@ impl DateTimeComponents {
         let day_result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                meta: None,
                 name: mcp::tool_names::elicit_number().into(),
                 arguments: Some(day_params),
                 task: None,
@@ -154,7 +154,7 @@ impl DateTimeComponents {
         let hour_result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                meta: None,
                 name: mcp::tool_names::elicit_number().into(),
                 arguments: Some(hour_params),
                 task: None,
@@ -168,7 +168,7 @@ impl DateTimeComponents {
         let minute_result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                meta: None,
                 name: mcp::tool_names::elicit_number().into(),
                 arguments: Some(minute_params),
                 task: None,
@@ -182,7 +182,7 @@ impl DateTimeComponents {
         let second_result = client
             .peer()
             .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
+                meta: None,
                 name: mcp::tool_names::elicit_number().into(),
                 arguments: Some(second_params),
                 task: None,

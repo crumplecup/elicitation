@@ -3,10 +3,10 @@
 //! Collections wrap contract types - if all elements are valid contracts,
 //! the collection is guaranteed valid by composition.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
-use std::sync::Arc;
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use std::rc::Rc;
+use std::sync::Arc;
 
 // VecNonEmpty - Non-empty Vec
 /// A Vec that is guaranteed to be non-empty (has at least one element).
@@ -427,7 +427,7 @@ mod tests {
 // Map Collection Contracts
 // ============================================================================
 
-use std::collections::{HashMap, HashSet, BTreeMap, BTreeSet, VecDeque, LinkedList};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, LinkedList, VecDeque};
 use std::hash::Hash;
 
 // HashMapNonEmpty - Non-empty HashMap
@@ -1024,4 +1024,3 @@ impl<T> RcNonNull<T> {
         self.0
     }
 }
-

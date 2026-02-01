@@ -1,10 +1,10 @@
 //! Float contract types.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
-use serde::{Deserialize, Serialize};
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 // ============================================================================
 // Macro: Default Wrapper Generation for Float Types
@@ -147,7 +147,7 @@ impl Elicitation for F32Positive {
 
         loop {
             let value = f32::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(positive) => {
                     tracing::debug!(value, "Valid F32Positive constructed");
@@ -214,7 +214,7 @@ impl Elicitation for F32NonNegative {
 
         loop {
             let value = f32::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(non_negative) => {
                     tracing::debug!(value, "Valid F32NonNegative constructed");
@@ -278,7 +278,7 @@ impl Elicitation for F32Finite {
 
         loop {
             let value = f32::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(finite) => {
                     tracing::debug!(value, "Valid F32Finite constructed");
@@ -345,7 +345,7 @@ impl Elicitation for F64Positive {
 
         loop {
             let value = f64::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(positive) => {
                     tracing::debug!(value, "Valid F64Positive constructed");
@@ -412,7 +412,7 @@ impl Elicitation for F64NonNegative {
 
         loop {
             let value = f64::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(non_negative) => {
                     tracing::debug!(value, "Valid F64NonNegative constructed");
@@ -476,7 +476,7 @@ impl Elicitation for F64Finite {
 
         loop {
             let value = f64::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(finite) => {
                     tracing::debug!(value, "Valid F64Finite constructed");

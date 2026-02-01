@@ -66,12 +66,12 @@ impl Elicitation for i64 {
     #[tracing::instrument(skip(client), fields(type_name = "i64"))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         use crate::verification::types::I64Default;
-        
+
         tracing::debug!("Eliciting i64 via I64Default wrapper");
-        
+
         // Use verification wrapper internally
         let wrapper = I64Default::elicit(client).await?;
-        
+
         // Unwrap to primitive
         Ok(wrapper.into_inner())
     }

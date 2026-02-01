@@ -27,26 +27,26 @@ pub trait ValidatesType<T> {
     fn validates(value: &T) -> bool;
 }
 
-mod utf8;
-mod uuid_bytes;
-mod ipaddr_bytes;
-mod macaddr;
-mod socketaddr;
-mod pathbytes;
-mod urlbytes;
-mod regexbytes;
-mod integers;
-mod floats;
-mod strings;
 mod bools;
 mod chars;
-mod uuids;
+mod collections;
+mod datetimes;
 mod durations;
+mod floats;
+mod integers;
+mod ipaddr_bytes;
+mod macaddr;
 mod networks;
 mod pathbufs;
-mod datetimes;
+mod pathbytes;
+mod regexbytes;
+mod socketaddr;
+mod strings;
 mod tuples;
-mod collections;
+mod urlbytes;
+mod utf8;
+mod uuid_bytes;
+mod uuids;
 mod values;
 
 #[cfg(feature = "url")]
@@ -75,176 +75,192 @@ pub use utf8::{Utf8Bytes, is_valid_utf8};
 // UUID Foundation (Kani proofs only)
 #[cfg(kani)]
 pub use uuid_bytes::{
-    UuidBytes, UuidV4Bytes, UuidV7Bytes,
-    has_valid_variant, has_version, is_valid_v4, is_valid_v7,
+    UuidBytes, UuidV4Bytes, UuidV7Bytes, has_valid_variant, has_version, is_valid_v4, is_valid_v7,
 };
 
 // IP Address Foundation
 pub use ipaddr_bytes::{
-    Ipv4Bytes, Ipv4Private, Ipv4Public,
-    Ipv6Bytes, Ipv6Private, Ipv6Public,
-    is_ipv4_private, is_ipv6_private,
+    Ipv4Bytes, Ipv4Private, Ipv4Public, Ipv6Bytes, Ipv6Private, Ipv6Public, is_ipv4_private,
+    is_ipv6_private,
 };
 
 // MAC Address Foundation
 pub use macaddr::{
-    MacAddr, MacUnicast, MacMulticast, MacUniversal, MacLocal,
-    is_unicast, is_multicast, is_universal, is_local,
+    MacAddr, MacLocal, MacMulticast, MacUnicast, MacUniversal, is_local, is_multicast, is_unicast,
+    is_universal,
 };
 
 // Socket Address Foundation
 pub use socketaddr::{
-    SocketAddrV4Bytes, SocketAddrV6Bytes,
-    SocketAddrV4NonZero, SocketAddrV6NonZero,
-    SocketAddrV4Privileged, SocketAddrV6Privileged,
-    SocketAddrV4Unprivileged, SocketAddrV6Unprivileged,
-    is_well_known_port, is_registered_port, is_dynamic_port,
-    is_privileged_port, is_nonzero_port,
+    SocketAddrV4Bytes, SocketAddrV4NonZero, SocketAddrV4Privileged, SocketAddrV4Unprivileged,
+    SocketAddrV6Bytes, SocketAddrV6NonZero, SocketAddrV6Privileged, SocketAddrV6Unprivileged,
+    is_dynamic_port, is_nonzero_port, is_privileged_port, is_registered_port, is_well_known_port,
 };
 
 // Path Foundation (Unix)
 #[cfg(unix)]
 pub use pathbytes::{
-    PathBytes, PathAbsolute, PathRelative, PathNonEmpty,
-    has_null_byte, is_absolute, is_relative,
+    PathAbsolute, PathBytes, PathNonEmpty, PathRelative, has_null_byte, is_absolute, is_relative,
 };
 
 // URL Foundation
-pub use urlbytes::{
-    UrlBytes, UrlWithAuthority, UrlAbsolute, UrlHttp,
-    SchemeBytes, AuthorityBytes,
-};
+pub use urlbytes::{AuthorityBytes, SchemeBytes, UrlAbsolute, UrlBytes, UrlHttp, UrlWithAuthority};
 
 // Regex Foundation
 pub use regexbytes::{
-    RegexBytes, BalancedDelimiters, ValidEscapes, ValidQuantifiers, ValidCharClass,
+    BalancedDelimiters, RegexBytes, ValidCharClass, ValidEscapes, ValidQuantifiers,
 };
 
 // Integers
 pub use integers::{
-    // i8 family
-    I8Positive, I8NonNegative, I8NonZero, I8Range, I8RangeStyle, I8NonZeroStyle,
     I8Default, // MCP wrapper
-    // i16 family
-    I16Positive, I16NonNegative, I16NonZero, I16Range, I16RangeStyle, I16NonZeroStyle,
+    I8NonNegative,
+    I8NonZero,
+    I8NonZeroStyle,
+    // i8 family
+    I8Positive,
+    I8Range,
+    I8RangeStyle,
     I16Default, // MCP wrapper
-    // i32 family
-    I32Positive, I32NonNegative, I32NonZero, I32Range, I32RangeStyle,
+    I16NonNegative,
+    I16NonZero,
+    I16NonZeroStyle,
+    // i16 family
+    I16Positive,
+    I16Range,
+    I16RangeStyle,
     I32Default, // MCP wrapper
-    // i64 family
-    I64Positive, I64NonNegative, I64NonZero, I64Range, I64RangeStyle,
+    I32NonNegative,
+    I32NonZero,
+    // i32 family
+    I32Positive,
+    I32Range,
+    I32RangeStyle,
     I64Default, // MCP wrapper
-    // i128 family
-    I128Positive, I128NonNegative, I128NonZero, I128Range, I128RangeStyle,
+    I64NonNegative,
+    I64NonZero,
+    // i64 family
+    I64Positive,
+    I64Range,
+    I64RangeStyle,
     I128Default, // MCP wrapper
-    // isize family
-    IsizePositive, IsizeNonNegative, IsizeNonZero, IsizeRange, IsizeRangeStyle,
+    I128NonNegative,
+    I128NonZero,
+    // i128 family
+    I128Positive,
+    I128Range,
+    I128RangeStyle,
     IsizeDefault, // MCP wrapper
-    // u8 family
-    U8Positive, U8NonZero, U8Range, U8RangeStyle,
+    IsizeNonNegative,
+    IsizeNonZero,
+    // isize family
+    IsizePositive,
+    IsizeRange,
+    IsizeRangeStyle,
     U8Default, // MCP wrapper
-    // u16 family
-    U16Positive, U16NonZero, U16Range, U16RangeStyle,
+    U8NonZero,
+    // u8 family
+    U8Positive,
+    U8Range,
+    U8RangeStyle,
     U16Default, // MCP wrapper
-    // u32 family
-    U32Positive, U32NonZero, U32Range, U32RangeStyle,
+    U16NonZero,
+    // u16 family
+    U16Positive,
+    U16Range,
+    U16RangeStyle,
     U32Default, // MCP wrapper
-    // u64 family
-    U64Positive, U64NonZero, U64Range, U64RangeStyle,
+    U32NonZero,
+    // u32 family
+    U32Positive,
+    U32Range,
+    U32RangeStyle,
     U64Default, // MCP wrapper
-    // u128 family
-    U128Positive, U128NonZero, U128Range, U128RangeStyle,
+    U64NonZero,
+    // u64 family
+    U64Positive,
+    U64Range,
+    U64RangeStyle,
     U128Default, // MCP wrapper
-    // usize family
-    UsizePositive, UsizeNonZero, UsizeRange, UsizeRangeStyle,
+    U128NonZero,
+    // u128 family
+    U128Positive,
+    U128Range,
+    U128RangeStyle,
     UsizeDefault, // MCP wrapper
+    UsizeNonZero,
+    // usize family
+    UsizePositive,
+    UsizeRange,
+    UsizeRangeStyle,
 };
 
 // Floats
 pub use floats::{
-    F32Positive, F32NonNegative, F32Finite,
     F32Default, // MCP wrapper
-    F64Positive, F64NonNegative, F64Finite,
+    F32Finite,
+    F32NonNegative,
+    F32Positive,
     F64Default, // MCP wrapper
+    F64Finite,
+    F64NonNegative,
+    F64Positive,
 };
 
 // Bools
-pub use bools::{BoolTrue, BoolFalse, BoolDefault};
+pub use bools::{BoolDefault, BoolFalse, BoolTrue};
 
 // Chars
-pub use chars::{CharAlphabetic, CharNumeric, CharAlphanumeric};
+pub use chars::{CharAlphabetic, CharAlphanumeric, CharNumeric};
 
 // Strings
-pub use strings::{StringNonEmpty, StringDefault};
+pub use strings::{StringDefault, StringNonEmpty};
 
 // Collections
 pub use collections::{
-    VecNonEmpty, VecAllSatisfy,
-    OptionSome, ResultOk,
-    BoxSatisfies, ArcSatisfies, RcSatisfies,
-    BoxNonNull, ArcNonNull, RcNonNull,
-    HashMapNonEmpty, BTreeMapNonEmpty,
-    HashSetNonEmpty, BTreeSetNonEmpty,
-    VecDequeNonEmpty, LinkedListNonEmpty,
-    ArrayAllSatisfy,
+    ArcNonNull, ArcSatisfies, ArrayAllSatisfy, BTreeMapNonEmpty, BTreeSetNonEmpty, BoxNonNull,
+    BoxSatisfies, HashMapNonEmpty, HashSetNonEmpty, LinkedListNonEmpty, OptionSome, RcNonNull,
+    RcSatisfies, ResultOk, VecAllSatisfy, VecDequeNonEmpty, VecNonEmpty,
 };
 
 // Tuples
 pub use tuples::{Tuple2, Tuple3, Tuple4};
 
 // Durations
-pub use durations::{DurationPositive, DurationNonZero};
+pub use durations::{DurationNonZero, DurationPositive};
 
 // Networks
-pub use networks::{
-    IpPrivate, IpPublic, IpV4, IpV6,
-    Ipv4Loopback, Ipv6Loopback,
-};
+pub use networks::{IpPrivate, IpPublic, IpV4, IpV6, Ipv4Loopback, Ipv6Loopback};
 
 // Paths
-pub use pathbufs::{
-    PathBufExists, PathBufReadable,
-    PathBufIsDir, PathBufIsFile,
-};
+pub use pathbufs::{PathBufExists, PathBufIsDir, PathBufIsFile, PathBufReadable};
 
 // UUIDs (feature-gated)
 #[cfg(feature = "uuid")]
-pub use uuids::{UuidV4, UuidNonNil};
+pub use uuids::{UuidNonNil, UuidV4};
 
 // DateTimes (feature-gated on chrono/time/jiff)
 #[cfg(feature = "chrono")]
-pub use datetimes::{
-    DateTimeUtcAfter, DateTimeUtcBefore,
-    NaiveDateTimeAfter,
-};
+pub use datetimes::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
 
 #[cfg(feature = "time")]
-pub use datetimes::{
-    OffsetDateTimeAfter, OffsetDateTimeBefore,
-};
+pub use datetimes::{OffsetDateTimeAfter, OffsetDateTimeBefore};
 
 #[cfg(feature = "jiff")]
-pub use datetimes::{
-    TimestampAfter, TimestampBefore,
-};
+pub use datetimes::{TimestampAfter, TimestampBefore};
 
 // Values (JSON - feature gated on serde_json but it might be non-optional)
 #[cfg(feature = "serde_json")]
-pub use values::{ValueObject, ValueArray, ValueNonNull};
+pub use values::{ValueArray, ValueNonNull, ValueObject};
 
 // URLs (feature-gated)
 #[cfg(feature = "url")]
-pub use urls::{
-    UrlValid, UrlHttps,
-    UrlWithHost, UrlCanBeBase,
-};
+pub use urls::{UrlCanBeBase, UrlHttps, UrlValid, UrlWithHost};
 
 // Regexes (feature-gated)
 #[cfg(feature = "regex")]
 pub use regexes::{
-    RegexValid, RegexSetValid,
-    RegexCaseInsensitive, RegexMultiline,
-    RegexSetNonEmpty,
+    RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetValid, RegexValid,
 };
 
 /// Error type for contract validation failures.
@@ -438,15 +454,15 @@ pub enum ValidationError {
     /// URL is invalid or malformed.
     #[display("URL is invalid or cannot be parsed")]
     UrlInvalid,
-    
+
     /// URL syntax is invalid (RFC 3986).
     #[display("URL syntax is invalid")]
     InvalidUrlSyntax,
-    
+
     /// URL is missing authority component.
     #[display("URL must have authority (//host)")]
     UrlMissingAuthority,
-    
+
     /// URL is not absolute (missing scheme + authority).
     #[display("URL must be absolute (scheme://host)")]
     UrlNotAbsolute,
@@ -458,7 +474,7 @@ pub enum ValidationError {
     /// URL scheme is not HTTP.
     #[display("URL must use HTTP or HTTPS scheme")]
     UrlNotHttp,
-    
+
     /// Regex syntax is invalid.
     #[display("Regex syntax is invalid")]
     InvalidRegexSyntax,

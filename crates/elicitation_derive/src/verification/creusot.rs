@@ -38,7 +38,6 @@ pub fn generate_creusot_enum_verification(
 }
 
 /// Extract the type path from a field type (best effort).
-
 fn generate_constructor(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
     let constructor_name = format_ident!("__make_{}", struct_name);
     let field_names: Vec<_> = fields.iter().filter_map(|f| f.ident.as_ref()).collect();

@@ -35,7 +35,7 @@ pub fn is_well_known_port(port: u16) -> bool {
 
 /// Check if port is registered (1024-49151).
 pub fn is_registered_port(port: u16) -> bool {
-    port >= 1024 && port <= 49151
+    (1024..=49151).contains(&port)
 }
 
 /// Check if port is dynamic/private (49152-65535).
@@ -390,7 +390,7 @@ mod tests {
     fn test_socketaddrv4_construction() {
         let ip = Ipv4Bytes::new([192, 168, 1, 1]);
         let port = 8080;
-        
+
         let addr = SocketAddrV4Bytes::new(ip, port);
         assert_eq!(addr.ip().octets(), [192, 168, 1, 1]);
         assert_eq!(addr.port(), 8080);
@@ -399,10 +399,10 @@ mod tests {
     #[test]
     fn test_socketaddrv4_nonzero() {
         let ip = Ipv4Bytes::new([192, 168, 1, 1]);
-        
+
         let zero_result = SocketAddrV4NonZero::new(ip, 0);
         assert!(zero_result.is_err());
-        
+
         let nonzero_result = SocketAddrV4NonZero::new(ip, 8080);
         assert!(nonzero_result.is_ok());
         assert_eq!(nonzero_result.unwrap().port(), 8080);
@@ -411,11 +411,11 @@ mod tests {
     #[test]
     fn test_socketaddrv4_privileged() {
         let ip = Ipv4Bytes::new([192, 168, 1, 1]);
-        
+
         let privileged = SocketAddrV4Privileged::new(ip, 80);
         assert!(privileged.is_ok());
         assert_eq!(privileged.unwrap().port(), 80);
-        
+
         let unprivileged = SocketAddrV4Privileged::new(ip, 8080);
         assert!(unprivileged.is_err());
     }
@@ -423,11 +423,11 @@ mod tests {
     #[test]
     fn test_socketaddrv4_unprivileged() {
         let ip = Ipv4Bytes::new([192, 168, 1, 1]);
-        
+
         let unprivileged = SocketAddrV4Unprivileged::new(ip, 8080);
         assert!(unprivileged.is_ok());
         assert_eq!(unprivileged.unwrap().port(), 8080);
-        
+
         let privileged = SocketAddrV4Unprivileged::new(ip, 80);
         assert!(privileged.is_err());
     }
@@ -436,7 +436,7 @@ mod tests {
     fn test_socketaddrv6_construction() {
         let ip = Ipv6Bytes::new([0x20, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
         let port = 8080;
-        
+
         let addr = SocketAddrV6Bytes::new(ip, port);
         assert_eq!(addr.port(), 8080);
     }
@@ -444,10 +444,10 @@ mod tests {
     #[test]
     fn test_socketaddrv6_nonzero() {
         let ip = Ipv6Bytes::new([0x20, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
-        
+
         let zero_result = SocketAddrV6NonZero::new(ip, 0);
         assert!(zero_result.is_err());
-        
+
         let nonzero_result = SocketAddrV6NonZero::new(ip, 8080);
         assert!(nonzero_result.is_ok());
     }

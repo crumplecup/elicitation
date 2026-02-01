@@ -22,15 +22,15 @@
 
 #![cfg(all(feature = "verify-verus", not(kani)))]
 
-mod integers;
-mod floats;
-mod strings;
 mod bools;
 mod chars;
-mod durations;
 mod collections;
-mod networks;
+mod durations;
+mod floats;
+mod integers;
 mod mechanisms;
+mod networks;
+mod strings;
 
 #[cfg(feature = "url")]
 mod urls;

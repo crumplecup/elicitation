@@ -51,7 +51,10 @@ pub fn number_params(
     max: i64,
 ) -> serde_json::Map<String, serde_json::Value> {
     let mut map = serde_json::Map::new();
-    map.insert("prompt".to_string(), serde_json::Value::String(prompt.to_string()));
+    map.insert(
+        "prompt".to_string(),
+        serde_json::Value::String(prompt.to_string()),
+    );
     map.insert("min".to_string(), serde_json::Value::Number(min.into()));
     map.insert("max".to_string(), serde_json::Value::Number(max.into()));
     map
@@ -69,7 +72,10 @@ pub fn number_params(
 #[tracing::instrument(level = "debug")]
 pub fn bool_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
     let mut map = serde_json::Map::new();
-    map.insert("prompt".to_string(), serde_json::Value::String(prompt.to_string()));
+    map.insert(
+        "prompt".to_string(),
+        serde_json::Value::String(prompt.to_string()),
+    );
     map
 }
 
@@ -85,7 +91,10 @@ pub fn bool_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
 #[tracing::instrument(level = "debug")]
 pub fn text_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
     let mut map = serde_json::Map::new();
-    map.insert("prompt".to_string(), serde_json::Value::String(prompt.to_string()));
+    map.insert(
+        "prompt".to_string(),
+        serde_json::Value::String(prompt.to_string()),
+    );
     map
 }
 
@@ -102,9 +111,18 @@ pub fn text_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
 #[tracing::instrument(level = "debug")]
 pub fn select_params(prompt: &str, options: &[&str]) -> serde_json::Map<String, serde_json::Value> {
     let mut map = serde_json::Map::new();
-    map.insert("prompt".to_string(), serde_json::Value::String(prompt.to_string()));
-    map.insert("options".to_string(), serde_json::Value::Array(
-        options.iter().map(|s| serde_json::Value::String((*s).to_string())).collect()
-    ));
+    map.insert(
+        "prompt".to_string(),
+        serde_json::Value::String(prompt.to_string()),
+    );
+    map.insert(
+        "options".to_string(),
+        serde_json::Value::Array(
+            options
+                .iter()
+                .map(|s| serde_json::Value::String((*s).to_string()))
+                .collect(),
+        ),
+    );
     map
 }

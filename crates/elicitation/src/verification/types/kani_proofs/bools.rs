@@ -1,12 +1,12 @@
 //! Kani proofs for bool contract types.
 
-use crate::{BoolTrue, BoolFalse};
+use crate::{BoolFalse, BoolTrue};
 
 // Bool Contract Proofs
 // ============================================================================
 
 #[kani::proof]
-#[kani::unwind(1)]  // No loops, deterministic bool checks
+#[kani::unwind(1)] // No loops, deterministic bool checks
 fn verify_bool_true() {
     let value: bool = kani::any();
 
@@ -22,7 +22,7 @@ fn verify_bool_true() {
 }
 
 #[kani::proof]
-#[kani::unwind(1)]  // No loops, deterministic bool checks
+#[kani::unwind(1)] // No loops, deterministic bool checks
 fn verify_bool_false() {
     let value: bool = kani::any();
 

@@ -48,29 +48,29 @@ impl<const MAX_LEN: usize> PathBytes<MAX_LEN> {
     /// Returns `ValidationError::PathContainsNull` if contains null bytes.
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let len = bytes.len();
-        
+
         if len > MAX_LEN {
             return Err(ValidationError::TooLong {
                 max: MAX_LEN,
                 actual: len,
             });
         }
-        
+
         // Copy to fixed array (Kani's native domain!)
         let mut fixed = [0u8; MAX_LEN];
         fixed[..len].copy_from_slice(bytes);
-        
+
         // Validate UTF-8 (reuse existing foundation!)
         let utf8 = Utf8Bytes::new(fixed, len)?;
-        
+
         // Then check for null bytes
         if has_null_byte(utf8.as_str()) {
             return Err(ValidationError::PathContainsNull);
         }
-        
+
         Ok(Self { utf8 })
     }
-    
+
     /// Create from Vec (user-facing API, delegates to from_slice).
     ///
     /// # Errors
@@ -131,7 +131,7 @@ impl<const MAX_LEN: usize> PathBytes<MAX_LEN> {
 pub fn has_null_byte(s: &str) -> bool {
     let bytes = s.as_bytes();
     let len = bytes.len();
-    
+
     // Manual loop with explicit bound to help Kani
     let mut i = 0;
     while i < len {
@@ -175,14 +175,14 @@ impl<const MAX_LEN: usize> PathAbsolute<MAX_LEN> {
     /// Returns `ValidationError::PathNotAbsolute` if path doesn't start with /.
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let path = PathBytes::from_slice(bytes)?;
-        
+
         if !path.is_absolute() {
             return Err(ValidationError::PathNotAbsolute(path.to_string()));
         }
-        
+
         Ok(Self(path))
     }
-    
+
     /// Create from Vec (user-facing API).
     ///
     /// # Errors
@@ -224,14 +224,14 @@ impl<const MAX_LEN: usize> PathRelative<MAX_LEN> {
     /// Returns `ValidationError::PathNotRelative` if path starts with /.
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let path = PathBytes::from_slice(bytes)?;
-        
+
         if !path.is_relative() {
             return Err(ValidationError::PathNotRelative(path.to_string()));
         }
-        
+
         Ok(Self(path))
     }
-    
+
     /// Create from Vec (user-facing API).
     ///
     /// # Errors
@@ -273,14 +273,14 @@ impl<const MAX_LEN: usize> PathNonEmpty<MAX_LEN> {
     /// Returns `ValidationError::EmptyString` if path is empty.
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let path = PathBytes::from_slice(bytes)?;
-        
+
         if path.is_empty() {
             return Err(ValidationError::EmptyString);
         }
-        
+
         Ok(Self(path))
     }
-    
+
     /// Create from Vec (user-facing API).
     ///
     /// # Errors
@@ -366,7 +366,7 @@ mod tests {
         let bytes = b"/home/user".to_vec();
         let abs = PathAbsolute::<4096>::new(bytes);
         assert!(abs.is_ok());
-        
+
         let bytes = b"home/user".to_vec();
         let abs = PathAbsolute::<4096>::new(bytes);
         assert!(abs.is_err());
@@ -377,7 +377,7 @@ mod tests {
         let bytes = b"home/user".to_vec();
         let rel = PathRelative::<4096>::new(bytes);
         assert!(rel.is_ok());
-        
+
         let bytes = b"/home/user".to_vec();
         let rel = PathRelative::<4096>::new(bytes);
         assert!(rel.is_err());
@@ -388,7 +388,7 @@ mod tests {
         let bytes = b"/home".to_vec();
         let nonempty = PathNonEmpty::<4096>::new(bytes);
         assert!(nonempty.is_ok());
-        
+
         let bytes = b"".to_vec();
         let nonempty = PathNonEmpty::<4096>::new(bytes);
         assert!(nonempty.is_err());
@@ -400,12 +400,12 @@ mod tests {
         let bytes = b".".to_vec();
         let path = PathBytes::<4096>::new(bytes).unwrap();
         assert!(path.is_relative());
-        
+
         // Parent directory
         let bytes = b"..".to_vec();
         let path = PathBytes::<4096>::new(bytes).unwrap();
         assert!(path.is_relative());
-        
+
         // Relative with ..
         let bytes = b"../parent".to_vec();
         let path = PathBytes::<4096>::new(bytes).unwrap();

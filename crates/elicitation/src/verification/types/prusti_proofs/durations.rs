@@ -13,7 +13,9 @@ use prusti_contracts::*;
 #[cfg(feature = "verify-prusti")]
 #[requires(!value.is_zero())]
 #[ensures(result.is_ok())]
-pub fn verify_duration_positive_valid(value: std::time::Duration) -> Result<DurationPositive, ValidationError> {
+pub fn verify_duration_positive_valid(
+    value: std::time::Duration,
+) -> Result<DurationPositive, ValidationError> {
     DurationPositive::new(value)
 }
 
@@ -21,7 +23,9 @@ pub fn verify_duration_positive_valid(value: std::time::Duration) -> Result<Dura
 #[cfg(feature = "verify-prusti")]
 #[requires(value.is_zero())]
 #[ensures(result.is_err())]
-pub fn verify_duration_positive_invalid(value: std::time::Duration) -> Result<DurationPositive, ValidationError> {
+pub fn verify_duration_positive_invalid(
+    value: std::time::Duration,
+) -> Result<DurationPositive, ValidationError> {
     DurationPositive::new(value)
 }
 

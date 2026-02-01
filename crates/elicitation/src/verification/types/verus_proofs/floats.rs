@@ -57,7 +57,7 @@ pub fn verify_f32_non_negative() {
 // Repeat for F64 variants
 
 // ============================================================================
-// Phase 2: Float Contract Proofs  
+// Phase 2: Float Contract Proofs
 // ============================================================================
 
 proof fn verify_f32_finite_construction(value: f32)

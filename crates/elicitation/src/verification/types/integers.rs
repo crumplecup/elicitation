@@ -1,11 +1,11 @@
 //! Integer contract types.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
-use elicitation_macros::instrumented_impl;
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use elicitation_derive::contract_type;
-use serde::{Deserialize, Serialize};
+use elicitation_macros::instrumented_impl;
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 // ============================================================================
 // Macro: Default Wrapper Generation for Integer Types
@@ -118,16 +118,12 @@ macro_rules! impl_integer_default_wrapper {
 /// let value: i8 = positive.into_inner();
 /// assert_eq!(value, 42);
 /// ```
-#[contract_type(
-    requires = "value > 0",
-    ensures = "result.get() > 0"
+#[contract_type(requires = "value > 0", ensures = "result.get() > 0")]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
 )]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
 #[schemars(description = "Positive integer value (> 0)")]
-pub struct I8Positive(
-    #[schemars(range(min = 1))]
-    i8
-);
+pub struct I8Positive(#[schemars(range(min = 1))] i8);
 
 // Mark as safe for MCP elicitation
 rmcp::elicit_safe!(I8Positive);
@@ -181,7 +177,7 @@ impl Elicitation for I8Positive {
         loop {
             // Elicit base i8 value
             let value = i8::elicit(client).await?;
-            
+
             // Try to construct I8Positive (validates)
             match Self::new(value) {
                 Ok(positive) => {
@@ -235,12 +231,11 @@ mod tests {
 /// Contract type for non-negative i8 values (>= 0).
 ///
 /// Validates on construction, then can unwrap to stdlib i8 via `into_inner()`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
 #[schemars(description = "Non-negative integer value (>= 0)")]
-pub struct I8NonNegative(
-    #[schemars(range(min = 0))]
-    i8
-);
+pub struct I8NonNegative(#[schemars(range(min = 0))] i8);
 
 rmcp::elicit_safe!(I8NonNegative);
 
@@ -291,7 +286,7 @@ impl Elicitation for I8NonNegative {
 
         loop {
             let value = i8::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(non_negative) => {
                     tracing::debug!(value, "Valid I8NonNegative constructed");
@@ -312,11 +307,10 @@ impl Elicitation for I8NonNegative {
 /// Contract type for non-zero i8 values (!= 0).
 ///
 /// Validates on construction, unwraps to stdlib i8.
-#[contract_type(
-    requires = "value != 0",
-    ensures = "result.get() != 0"
+#[contract_type(requires = "value != 0", ensures = "result.get() != 0")]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
 )]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema)]
 #[schemars(description = "Non-zero integer value (!= 0)")]
 pub struct I8NonZero(i8);
 
@@ -367,7 +361,7 @@ impl Elicitation for I8NonZero {
 
         loop {
             let value = i8::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(non_zero) => {
                     tracing::debug!(value, "Valid I8NonZero constructed");
@@ -461,7 +455,7 @@ impl<const MIN: i8, const MAX: i8> Elicitation for I8Range<MIN, MAX> {
 
         loop {
             let value = i8::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(ranged) => {
                     tracing::debug!(value, min = MIN, max = MAX, "Valid I8Range constructed");
@@ -608,7 +602,7 @@ impl Elicitation for I16Positive {
 
         loop {
             let value = i16::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(positive) => {
                     tracing::debug!(value, "Valid I16Positive constructed");
@@ -678,7 +672,7 @@ impl Elicitation for I16NonNegative {
 
         loop {
             let value = i16::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(non_negative) => {
                     tracing::debug!(value, "Valid I16NonNegative constructed");
@@ -697,10 +691,7 @@ impl Elicitation for I16NonNegative {
 // ============================================================================
 
 /// Contract type for non-zero i16 values (!= 0).
-#[contract_type(
-    requires = "value != 0",
-    ensures = "result.get() != 0"
-)]
+#[contract_type(requires = "value != 0", ensures = "result.get() != 0")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct I16NonZero(i16);
 
@@ -749,7 +740,7 @@ impl Elicitation for I16NonZero {
 
         loop {
             let value = i16::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(non_zero) => {
                     tracing::debug!(value, "Valid I16NonZero constructed");
@@ -841,7 +832,7 @@ impl<const MIN: i16, const MAX: i16> Elicitation for I16Range<MIN, MAX> {
 
         loop {
             let value = i16::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(ranged) => {
                     tracing::debug!(value, min = MIN, max = MAX, "Valid I16Range constructed");
@@ -1019,7 +1010,7 @@ impl Elicitation for U8NonZero {
 
         loop {
             let value = u8::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(non_zero) => {
                     tracing::debug!(value, "Valid U8NonZero constructed");
@@ -1111,7 +1102,7 @@ impl<const MIN: u8, const MAX: u8> Elicitation for U8Range<MIN, MAX> {
 
         loop {
             let value = u8::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(ranged) => {
                     tracing::debug!(value, min = MIN, max = MAX, "Valid U8Range constructed");
@@ -1181,7 +1172,7 @@ impl Elicitation for U16NonZero {
 
         loop {
             let value = u16::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(non_zero) => {
                     tracing::debug!(value, "Valid U16NonZero constructed");
@@ -1273,7 +1264,7 @@ impl<const MIN: u16, const MAX: u16> Elicitation for U16Range<MIN, MAX> {
 
         loop {
             let value = u16::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(ranged) => {
                     tracing::debug!(value, min = MIN, max = MAX, "Valid U16Range constructed");
@@ -1436,26 +1427,40 @@ pub struct U8Positive(u8);
 impl U8Positive {
     /// Create a new U8Positive, validating value is positive (> 0).
     pub fn new(value: u8) -> Result<Self, ValidationError> {
-        if value > 0 { Ok(Self(value)) } else { Err(ValidationError::Zero) }
+        if value > 0 {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::Zero)
+        }
     }
     /// Get the inner u8 value.
-    pub fn get(&self) -> u8 { self.0 }
+    pub fn get(&self) -> u8 {
+        self.0
+    }
     /// Consume self and return the inner u8 value.
-    pub fn into_inner(self) -> u8 { self.0 }
+    pub fn into_inner(self) -> u8 {
+        self.0
+    }
 }
 
 crate::default_style!(U8Positive => U8PositiveStyle);
 
 #[instrumented_impl]
 impl Prompt for U8Positive {
-    fn prompt() -> Option<&'static str> { Some("Please enter a positive number (> 0):") }
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a positive number (> 0):")
+    }
 }
 
 #[instrumented_impl]
 impl Elicitation for U8Positive {
     type Style = U8PositiveStyle;
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
-        loop { if let Ok(v) = Self::new(u8::elicit(client).await?) { return Ok(v); } }
+        loop {
+            if let Ok(v) = Self::new(u8::elicit(client).await?) {
+                return Ok(v);
+            }
+        }
     }
 }
 
@@ -1468,26 +1473,40 @@ pub struct U16Positive(u16);
 impl U16Positive {
     /// Create a new U16Positive, validating value is positive (> 0).
     pub fn new(value: u16) -> Result<Self, ValidationError> {
-        if value > 0 { Ok(Self(value)) } else { Err(ValidationError::Zero) }
+        if value > 0 {
+            Ok(Self(value))
+        } else {
+            Err(ValidationError::Zero)
+        }
     }
     /// Get the inner u16 value.
-    pub fn get(&self) -> u16 { self.0 }
+    pub fn get(&self) -> u16 {
+        self.0
+    }
     /// Consume self and return the inner u16 value.
-    pub fn into_inner(self) -> u16 { self.0 }
+    pub fn into_inner(self) -> u16 {
+        self.0
+    }
 }
 
 crate::default_style!(U16Positive => U16PositiveStyle);
 
 #[instrumented_impl]
 impl Prompt for U16Positive {
-    fn prompt() -> Option<&'static str> { Some("Please enter a positive number (> 0):") }
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a positive number (> 0):")
+    }
 }
 
 #[instrumented_impl]
 impl Elicitation for U16Positive {
     type Style = U16PositiveStyle;
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
-        loop { if let Ok(v) = Self::new(u16::elicit(client).await?) { return Ok(v); } }
+        loop {
+            if let Ok(v) = Self::new(u16::elicit(client).await?) {
+                return Ok(v);
+            }
+        }
     }
 }
 
@@ -1547,7 +1566,7 @@ macro_rules! impl_signed_contracts {
 
                     loop {
                         let value = <$base>::elicit(client).await?;
-                        
+
                         match Self::new(value) {
                             Ok(positive) => {
                                 tracing::debug!(value, concat!("Valid ", stringify!($positive), " constructed"));
@@ -1612,7 +1631,7 @@ macro_rules! impl_signed_contracts {
 
                     loop {
                         let value = <$base>::elicit(client).await?;
-                        
+
                         match Self::new(value) {
                             Ok(non_negative) => {
                                 tracing::debug!(value, concat!("Valid ", stringify!($nonnegative), " constructed"));
@@ -1700,7 +1719,7 @@ macro_rules! impl_signed_contracts {
 
                 loop {
                     let value = <$base>::elicit(client).await?;
-                    
+
                     match Self::new(value) {
                         Ok(ranged) => {
                             tracing::debug!(value, min = MIN, max = MAX, concat!("Valid ", stringify!($range), " constructed"));
@@ -1883,7 +1902,7 @@ macro_rules! impl_unsigned_contracts {
 
                     loop {
                         let value = <$base>::elicit(client).await?;
-                        
+
                         match Self::new(value) {
                             Ok(non_zero) => {
                                 tracing::debug!(value, concat!("Valid ", stringify!($nonzero), " constructed"));
@@ -1971,7 +1990,7 @@ macro_rules! impl_unsigned_contracts {
 
                 loop {
                     let value = <$base>::elicit(client).await?;
-                    
+
                     match Self::new(value) {
                         Ok(ranged) => {
                             tracing::debug!(value, min = MIN, max = MAX, concat!("Valid ", stringify!($range), " constructed"));
@@ -2065,7 +2084,18 @@ macro_rules! impl_unsigned_contracts {
 // ============================================================================
 
 // i32 family
-impl_signed_contracts!(i32, I32Positive, I32NonNegative, I32Range, I32RangeStyle, 42, 100, 10, 100, 50);
+impl_signed_contracts!(
+    i32,
+    I32Positive,
+    I32NonNegative,
+    I32Range,
+    I32RangeStyle,
+    42,
+    100,
+    10,
+    100,
+    50
+);
 
 // u32 family
 impl_unsigned_contracts!(u32, U32NonZero, U32Range, U32RangeStyle, 42, 10, 100, 50);
@@ -2095,22 +2125,73 @@ impl_integer_default_wrapper!(usize, UsizeDefault, 0, isize::MAX as i64);
 // ============================================================================
 
 // i64 family
-impl_signed_contracts!(i64, I64Positive, I64NonNegative, I64Range, I64RangeStyle, 42, 100, 10, 100, 50);
+impl_signed_contracts!(
+    i64,
+    I64Positive,
+    I64NonNegative,
+    I64Range,
+    I64RangeStyle,
+    42,
+    100,
+    10,
+    100,
+    50
+);
 
 // u64 family
 impl_unsigned_contracts!(u64, U64NonZero, U64Range, U64RangeStyle, 42, 10, 100, 50);
 
 // i128 family
-impl_signed_contracts!(i128, I128Positive, I128NonNegative, I128Range, I128RangeStyle, 42, 100, 10, 100, 50);
+impl_signed_contracts!(
+    i128,
+    I128Positive,
+    I128NonNegative,
+    I128Range,
+    I128RangeStyle,
+    42,
+    100,
+    10,
+    100,
+    50
+);
 
 // u128 family
-impl_unsigned_contracts!(u128, U128NonZero, U128Range, U128RangeStyle, 42, 10, 100, 50);
+impl_unsigned_contracts!(
+    u128,
+    U128NonZero,
+    U128Range,
+    U128RangeStyle,
+    42,
+    10,
+    100,
+    50
+);
 
 // isize family
-impl_signed_contracts!(isize, IsizePositive, IsizeNonNegative, IsizeRange, IsizeRangeStyle, 42, 100, 10, 100, 50);
+impl_signed_contracts!(
+    isize,
+    IsizePositive,
+    IsizeNonNegative,
+    IsizeRange,
+    IsizeRangeStyle,
+    42,
+    100,
+    10,
+    100,
+    50
+);
 
 // usize family
-impl_unsigned_contracts!(usize, UsizeNonZero, UsizeRange, UsizeRangeStyle, 42, 10, 100, 50);
+impl_unsigned_contracts!(
+    usize,
+    UsizeNonZero,
+    UsizeRange,
+    UsizeRangeStyle,
+    42,
+    10,
+    100,
+    50
+);
 
 // ============================================================================
 // Additional Signed NonZero Types (for Prusti proofs)
@@ -2119,10 +2200,7 @@ impl_unsigned_contracts!(usize, UsizeNonZero, UsizeRange, UsizeRangeStyle, 42, 1
 macro_rules! impl_signed_nonzero {
     ($base:ty, $nonzero:ident, $test_value:expr) => {
         #[doc = concat!("Contract type for non-zero ", stringify!($base), " values (!= 0).")]
-        #[contract_type(
-            requires = "value != 0",
-            ensures = "result.get() != 0"
-        )]
+        #[contract_type(requires = "value != 0", ensures = "result.get() != 0")]
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
         pub struct $nonzero($base);
 
@@ -2191,10 +2269,7 @@ impl_signed_nonzero!(isize, IsizeNonZero, 42);
 macro_rules! impl_unsigned_positive {
     ($base:ty, $positive:ident, $test_value:expr) => {
         #[doc = concat!("Contract type for positive ", stringify!($base), " values (> 0).")]
-        #[contract_type(
-            requires = "value > 0",
-            ensures = "result.get() > 0"
-        )]
+        #[contract_type(requires = "value > 0", ensures = "result.get() > 0")]
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
         pub struct $positive($base);
 
@@ -2259,4 +2334,3 @@ impl_unsigned_positive!(usize, UsizePositive, 42);
 // ============================================================================
 // Float Contract Types (f32, f64)
 // ============================================================================
-

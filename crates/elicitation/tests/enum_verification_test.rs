@@ -5,6 +5,7 @@ use elicitation::{Elicit, Prompt, Select};
 
 /// Test enum with all variant types.
 #[derive(Elicit)]
+#[allow(dead_code)] // Test enum
 enum Status {
     Active { since: StringNonEmpty },
     Pending { count: I8Positive },

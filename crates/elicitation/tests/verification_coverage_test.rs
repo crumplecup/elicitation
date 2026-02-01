@@ -5,6 +5,7 @@ use elicitation::verification::types::*;
 
 /// Comprehensive struct testing ALL type categories.
 #[derive(Elicit)]
+#[allow(dead_code)] // Test struct
 struct ComprehensiveTest {
     // Primitives
     age: I8Positive,

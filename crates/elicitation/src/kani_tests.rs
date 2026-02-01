@@ -11,7 +11,7 @@
 #![cfg(kani)]
 
 use crate::verification::Contract;
-use crate::verification::contracts::{StringNonEmpty, I32Positive, BoolValid};
+use crate::verification::contracts::{BoolValid, I32Positive, StringNonEmpty};
 
 // ============================================================================
 // Phase 1: Primitive Type Contracts
@@ -191,4 +191,3 @@ fn verify_contract_composition_preconditions() {
     // Contract B (NonEmptyString) can accept this
     assert!(NonEmptyString::requires(&email));
 }
-

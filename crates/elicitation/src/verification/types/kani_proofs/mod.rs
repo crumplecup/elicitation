@@ -32,24 +32,24 @@
 
 #![cfg(kani)]
 
-mod integers;
-mod floats;
-mod strings;
+mod benchmark_marginal;
 mod bools;
 mod chars;
-mod durations;
-mod networks;
 mod collections;
+mod durations;
+mod floats;
+mod integers;
+mod ipaddr_bytes;
+mod macaddr;
 mod mechanisms;
+mod networks;
+mod regexbytes;
+mod socketaddr;
+mod strings;
+mod urlbytes;
 mod utf8;
 mod utf8_benchmark;
 mod utf8_chunked;
-mod ipaddr_bytes;
-mod macaddr;
-mod socketaddr;
-mod urlbytes;
-mod regexbytes;
-mod benchmark_marginal;
 
 #[cfg(unix)]
 mod pathbytes;

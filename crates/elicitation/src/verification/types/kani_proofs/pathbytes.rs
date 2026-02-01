@@ -5,9 +5,7 @@
 
 #![cfg(all(kani, unix))]
 
-use crate::verification::types::{
-    PathBytes, PathAbsolute, PathRelative, PathNonEmpty,
-};
+use crate::verification::types::{PathAbsolute, PathBytes, PathNonEmpty, PathRelative};
 
 // ============================================================================
 // UTF-8 + No Null Composition Proofs
@@ -18,10 +16,10 @@ use crate::verification::types::{
 fn verify_valid_ascii_no_null_accepted() {
     // Use small MAX_LEN for tractable proof
     const MAX_LEN: usize = 8;
-    
+
     let len: usize = kani::any();
     kani::assume(len > 0 && len <= MAX_LEN);
-    
+
     let mut bytes = [0u8; MAX_LEN];
     for i in 0..len {
         let byte: u8 = kani::any();
@@ -29,7 +27,7 @@ fn verify_valid_ascii_no_null_accepted() {
         kani::assume(byte > 0 && byte < 128);
         bytes[i] = byte;
     }
-    
+
     // Should construct successfully
     let path_result = PathBytes::<MAX_LEN>::from_slice(&bytes[..len]);
     assert!(path_result.is_ok());
@@ -39,10 +37,10 @@ fn verify_valid_ascii_no_null_accepted() {
 #[kani::unwind(1)]
 fn verify_null_byte_rejected() {
     const MAX_LEN: usize = 8;
-    
+
     // Create path with null byte
     let bytes = [b'/', 0, b't'];
-    
+
     let path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
     assert!(path_result.is_err());
 }
@@ -55,12 +53,12 @@ fn verify_null_byte_rejected() {
 #[kani::unwind(1)]
 fn verify_absolute_path_starts_with_slash() {
     const MAX_LEN: usize = 16;
-    
+
     let bytes = [b'/', b'u', b's', b'r'];
-    
+
     let path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
     assert!(path_result.is_ok());
-    
+
     if let Ok(path) = path_result {
         assert!(path.is_absolute());
         assert!(!path.is_relative());
@@ -71,12 +69,12 @@ fn verify_absolute_path_starts_with_slash() {
 #[kani::unwind(1)]
 fn verify_relative_path_no_leading_slash() {
     const MAX_LEN: usize = 16;
-    
+
     let bytes = [b'u', b's', b'r'];
-    
+
     let path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
     assert!(path_result.is_ok());
-    
+
     if let Ok(path) = path_result {
         assert!(path.is_relative());
         assert!(!path.is_absolute());
@@ -91,9 +89,9 @@ fn verify_relative_path_no_leading_slash() {
 #[kani::unwind(1)]
 fn verify_path_absolute_accepts_leading_slash() {
     const MAX_LEN: usize = 16;
-    
+
     let bytes = [b'/', b'h', b'o', b'm', b'e'];
-    
+
     let abs_result = PathAbsolute::<MAX_LEN>::from_slice(&bytes);
     assert!(abs_result.is_ok());
 }
@@ -102,9 +100,9 @@ fn verify_path_absolute_accepts_leading_slash() {
 #[kani::unwind(1)]
 fn verify_path_absolute_rejects_no_slash() {
     const MAX_LEN: usize = 16;
-    
+
     let bytes = [b'h', b'o', b'm', b'e'];
-    
+
     let abs_result = PathAbsolute::<MAX_LEN>::from_slice(&bytes);
     assert!(abs_result.is_err());
 }
@@ -113,9 +111,9 @@ fn verify_path_absolute_rejects_no_slash() {
 #[kani::unwind(1)]
 fn verify_path_relative_accepts_no_slash() {
     const MAX_LEN: usize = 16;
-    
+
     let bytes = [b'h', b'o', b'm', b'e'];
-    
+
     let rel_result = PathRelative::<MAX_LEN>::from_slice(&bytes);
     assert!(rel_result.is_ok());
 }
@@ -124,9 +122,9 @@ fn verify_path_relative_accepts_no_slash() {
 #[kani::unwind(1)]
 fn verify_path_relative_rejects_slash() {
     const MAX_LEN: usize = 16;
-    
+
     let bytes = [b'/', b'h', b'o', b'm', b'e'];
-    
+
     let rel_result = PathRelative::<MAX_LEN>::from_slice(&bytes);
     assert!(rel_result.is_err());
 }
@@ -135,9 +133,9 @@ fn verify_path_relative_rejects_slash() {
 #[kani::unwind(1)]
 fn verify_path_nonempty_accepts_content() {
     const MAX_LEN: usize = 16;
-    
+
     let bytes = [b't', b'e', b's', b't'];
-    
+
     let nonempty_result = PathNonEmpty::<MAX_LEN>::from_slice(&bytes);
     assert!(nonempty_result.is_ok());
 }
@@ -146,9 +144,9 @@ fn verify_path_nonempty_accepts_content() {
 #[kani::unwind(1)]
 fn verify_path_nonempty_rejects_empty() {
     const MAX_LEN: usize = 16;
-    
+
     let bytes: [u8; 0] = [];
-    
+
     let nonempty_result = PathNonEmpty::<MAX_LEN>::from_slice(&bytes);
     assert!(nonempty_result.is_err());
 }
@@ -161,12 +159,12 @@ fn verify_path_nonempty_rejects_empty() {
 #[kani::unwind(1)]
 fn verify_root_path() {
     const MAX_LEN: usize = 16;
-    
+
     let bytes = [b'/'];
-    
+
     let path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
     assert!(path_result.is_ok());
-    
+
     if let Ok(path) = path_result {
         assert!(path.is_root());
         assert!(path.is_absolute());
@@ -178,12 +176,12 @@ fn verify_root_path() {
 #[kani::unwind(1)]
 fn verify_current_directory() {
     const MAX_LEN: usize = 16;
-    
+
     let bytes = [b'.'];
-    
+
     let path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
     assert!(path_result.is_ok());
-    
+
     if let Ok(path) = path_result {
         assert!(path.is_relative());
         assert!(!path.is_absolute());
@@ -199,17 +197,17 @@ fn verify_current_directory() {
 #[kani::unwind(8)]
 fn verify_has_null_byte_detection() {
     const MAX_LEN: usize = 4;
-    
+
     let len: usize = kani::any();
     kani::assume(len > 0 && len <= MAX_LEN);
-    
+
     let mut bytes = [32u8; MAX_LEN]; // Start with spaces (non-null ASCII)
     let has_null_expected: bool = kani::any();
-    
+
     for i in 0..len {
         let byte: u8 = kani::any();
         kani::assume(byte < 128); // ASCII only
-        
+
         if i == 0 && has_null_expected {
             bytes[i] = 0; // Force null at start if expected
         } else if has_null_expected {
@@ -219,7 +217,7 @@ fn verify_has_null_byte_detection() {
             bytes[i] = byte;
         }
     }
-    
+
     // Manual check
     let mut found_null = false;
     for i in 0..len {
@@ -228,7 +226,7 @@ fn verify_has_null_byte_detection() {
             break;
         }
     }
-    
+
     assert_eq!(found_null, has_null_expected);
 }
 
@@ -240,13 +238,12 @@ fn verify_absolute_path_byte_check() {
     let abs2 = [b'/'];
     let rel1 = [b'u', b's', b'r'];
     let rel2 = [b'.'];
-    
+
     // Absolute: first byte is '/'
     assert_eq!(abs1[0], b'/');
     assert_eq!(abs2[0], b'/');
-    
+
     // Relative: first byte is not '/'
     assert_ne!(rel1[0], b'/');
     assert_ne!(rel2[0], b'/');
 }
-

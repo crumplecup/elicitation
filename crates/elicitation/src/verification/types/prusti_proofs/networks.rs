@@ -45,7 +45,9 @@ pub fn verify_ip_v6_valid(value: std::net::IpAddr) -> Result<IpV6, ValidationErr
 #[cfg(feature = "verify-prusti")]
 #[requires(value.is_loopback())]
 #[ensures(result.is_ok())]
-pub fn verify_ipv4_loopback_valid(value: std::net::Ipv4Addr) -> Result<Ipv4Loopback, ValidationError> {
+pub fn verify_ipv4_loopback_valid(
+    value: std::net::Ipv4Addr,
+) -> Result<Ipv4Loopback, ValidationError> {
     Ipv4Loopback::new(value)
 }
 
@@ -53,7 +55,9 @@ pub fn verify_ipv4_loopback_valid(value: std::net::Ipv4Addr) -> Result<Ipv4Loopb
 #[cfg(feature = "verify-prusti")]
 #[requires(value.is_loopback())]
 #[ensures(result.is_ok())]
-pub fn verify_ipv6_loopback_valid(value: std::net::Ipv6Addr) -> Result<Ipv6Loopback, ValidationError> {
+pub fn verify_ipv6_loopback_valid(
+    value: std::net::Ipv6Addr,
+) -> Result<Ipv6Loopback, ValidationError> {
     Ipv6Loopback::new(value)
 }
 

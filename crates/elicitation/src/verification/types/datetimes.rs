@@ -3,13 +3,13 @@
 //! Available with the `chrono`, `time`, or `jiff` features.
 
 #[cfg(feature = "chrono")]
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
-#[cfg(feature = "chrono")]
 use super::ValidationError;
 #[cfg(feature = "chrono")]
-use elicitation_macros::instrumented_impl;
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 #[cfg(feature = "chrono")]
 use chrono::{DateTime, NaiveDateTime, Utc};
+#[cfg(feature = "chrono")]
+use elicitation_macros::instrumented_impl;
 
 // DateTimeUtcAfter - DateTime<Utc> after a threshold
 /// A DateTime<Utc> that is guaranteed to be after a threshold time.
@@ -178,10 +178,7 @@ pub struct NaiveDateTimeAfter {
 #[instrumented_impl]
 impl NaiveDateTimeAfter {
     /// Create a new NaiveDateTimeAfter, validating value > threshold.
-    pub fn new(
-        value: NaiveDateTime,
-        threshold: NaiveDateTime,
-    ) -> Result<Self, ValidationError> {
+    pub fn new(value: NaiveDateTime, threshold: NaiveDateTime) -> Result<Self, ValidationError> {
         if value > threshold {
             Ok(Self { value, threshold })
         } else {
@@ -524,10 +521,7 @@ pub struct OffsetDateTimeAfter {
 #[instrumented_impl]
 impl OffsetDateTimeAfter {
     /// Create a new OffsetDateTimeAfter, validating value > threshold.
-    pub fn new(
-        value: OffsetDateTime,
-        threshold: OffsetDateTime,
-    ) -> Result<Self, ValidationError> {
+    pub fn new(value: OffsetDateTime, threshold: OffsetDateTime) -> Result<Self, ValidationError> {
         if value > threshold {
             Ok(Self { value, threshold })
         } else {
@@ -606,10 +600,7 @@ pub struct OffsetDateTimeBefore {
 #[instrumented_impl]
 impl OffsetDateTimeBefore {
     /// Create a new OffsetDateTimeBefore, validating value < threshold.
-    pub fn new(
-        value: OffsetDateTime,
-        threshold: OffsetDateTime,
-    ) -> Result<Self, ValidationError> {
+    pub fn new(value: OffsetDateTime, threshold: OffsetDateTime) -> Result<Self, ValidationError> {
         if value < threshold {
             Ok(Self { value, threshold })
         } else {

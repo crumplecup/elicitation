@@ -77,7 +77,7 @@ where
         // Postcondition: output is a valid instance of E
         // For enums, this is trivially true (Rust's type system guarantees it)
         // But we make it explicit for formal verification
-        
+
         // We can't enumerate variants generically in Rust,
         // but the type system guarantees output is a valid E
         let _ = output;
@@ -124,7 +124,7 @@ impl Contract for AffirmReturnsBoolean {
 
     fn ensures(_input: &bool, output: &bool) -> bool {
         // Postcondition: output is true or false (always satisfied)
-        *output == true || *output == false
+        *output || !*output
     }
 
     fn invariant(&self) -> bool {
@@ -412,17 +412,19 @@ mod tests {
 
         // Positive values pass both mechanism and type contracts
         let positive = 42i32;
-        assert!(MechanismWithType::<NumericReturnsValid<i32>, I32Positive>::ensures(
-            &positive,
-            &positive
-        ));
+        assert!(
+            MechanismWithType::<NumericReturnsValid<i32>, I32Positive>::ensures(
+                &positive, &positive
+            )
+        );
 
         // Negative values fail type contract (but pass mechanism)
         let negative = -1i32;
-        assert!(!MechanismWithType::<NumericReturnsValid<i32>, I32Positive>::ensures(
-            &negative,
-            &negative
-        ));
+        assert!(
+            !MechanismWithType::<NumericReturnsValid<i32>, I32Positive>::ensures(
+                &negative, &negative
+            )
+        );
 
         assert!(contract.invariant());
     }

@@ -199,8 +199,8 @@
 //! cargo run --example verification_demo --features verification
 //! ```
 
-use crate::traits::Elicitation;
 use crate::ElicitResult;
+use crate::traits::Elicitation;
 use std::fmt::Debug;
 
 // ============================================================================
@@ -227,66 +227,84 @@ use std::fmt::Debug;
 
 // String contracts
 /// Default String contract (Kani unless overridden by feature).
-#[cfg(all(feature = "verification", not(any(
-    feature = "verify-creusot",
-    feature = "verify-prusti",
-    feature = "verify-verus"
-))))]
+#[cfg(all(
+    feature = "verification",
+    not(any(
+        feature = "verify-creusot",
+        feature = "verify-prusti",
+        feature = "verify-verus"
+    ))
+))]
 pub const DEFAULT_STRING_CONTRACT: contracts::StringNonEmpty = contracts::StringNonEmpty;
 
 /// Default String contract (Creusot).
 #[cfg(feature = "verify-creusot")]
-pub const DEFAULT_STRING_CONTRACT: contracts::creusot::CreusotStringNonEmpty = contracts::creusot::CreusotStringNonEmpty;
+pub const DEFAULT_STRING_CONTRACT: contracts::creusot::CreusotStringNonEmpty =
+    contracts::creusot::CreusotStringNonEmpty;
 
 /// Default String contract (Prusti).
 #[cfg(feature = "verify-prusti")]
-pub const DEFAULT_STRING_CONTRACT: contracts::prusti::PrustiStringNonEmpty = contracts::prusti::PrustiStringNonEmpty;
+pub const DEFAULT_STRING_CONTRACT: contracts::prusti::PrustiStringNonEmpty =
+    contracts::prusti::PrustiStringNonEmpty;
 
 /// Default String contract (Verus).
 #[cfg(feature = "verify-verus")]
-pub const DEFAULT_STRING_CONTRACT: contracts::verus::VerusStringNonEmpty = contracts::verus::VerusStringNonEmpty;
+pub const DEFAULT_STRING_CONTRACT: contracts::verus::VerusStringNonEmpty =
+    contracts::verus::VerusStringNonEmpty;
 
 // i32 contracts
 /// Default i32 contract (Kani unless overridden by feature).
-#[cfg(all(feature = "verification", not(any(
-    feature = "verify-creusot",
-    feature = "verify-prusti",
-    feature = "verify-verus"
-))))]
+#[cfg(all(
+    feature = "verification",
+    not(any(
+        feature = "verify-creusot",
+        feature = "verify-prusti",
+        feature = "verify-verus"
+    ))
+))]
 pub const DEFAULT_I32_CONTRACT: contracts::I32Positive = contracts::I32Positive;
 
 /// Default i32 contract (Creusot).
 #[cfg(feature = "verify-creusot")]
-pub const DEFAULT_I32_CONTRACT: contracts::creusot::CreusotI32Positive = contracts::creusot::CreusotI32Positive;
+pub const DEFAULT_I32_CONTRACT: contracts::creusot::CreusotI32Positive =
+    contracts::creusot::CreusotI32Positive;
 
 /// Default i32 contract (Prusti).
 #[cfg(feature = "verify-prusti")]
-pub const DEFAULT_I32_CONTRACT: contracts::prusti::PrustiI32Positive = contracts::prusti::PrustiI32Positive;
+pub const DEFAULT_I32_CONTRACT: contracts::prusti::PrustiI32Positive =
+    contracts::prusti::PrustiI32Positive;
 
 /// Default i32 contract (Verus).
 #[cfg(feature = "verify-verus")]
-pub const DEFAULT_I32_CONTRACT: contracts::verus::VerusI32Positive = contracts::verus::VerusI32Positive;
+pub const DEFAULT_I32_CONTRACT: contracts::verus::VerusI32Positive =
+    contracts::verus::VerusI32Positive;
 
 // bool contracts
 /// Default bool contract (Kani unless overridden by feature).
-#[cfg(all(feature = "verification", not(any(
-    feature = "verify-creusot",
-    feature = "verify-prusti",
-    feature = "verify-verus"
-))))]
+#[cfg(all(
+    feature = "verification",
+    not(any(
+        feature = "verify-creusot",
+        feature = "verify-prusti",
+        feature = "verify-verus"
+    ))
+))]
 pub const DEFAULT_BOOL_CONTRACT: contracts::BoolValid = contracts::BoolValid;
 
 /// Default bool contract (Creusot).
 #[cfg(feature = "verify-creusot")]
-pub const DEFAULT_BOOL_CONTRACT: contracts::creusot::CreusotBoolValid = contracts::creusot::CreusotBoolValid;
+pub const DEFAULT_BOOL_CONTRACT: contracts::creusot::CreusotBoolValid =
+    contracts::creusot::CreusotBoolValid;
 
 /// Default bool contract (Prusti).
 #[cfg(feature = "verify-prusti")]
-pub const DEFAULT_BOOL_CONTRACT: contracts::prusti::PrustiBoolValid = contracts::prusti::PrustiBoolValid;
+pub const DEFAULT_BOOL_CONTRACT: contracts::prusti::PrustiBoolValid =
+    contracts::prusti::PrustiBoolValid;
 
 /// Default bool contract (Verus).
 #[cfg(feature = "verify-verus")]
-pub const DEFAULT_BOOL_CONTRACT: contracts::verus::VerusBoolValid = contracts::verus::VerusBoolValid;
+pub const DEFAULT_BOOL_CONTRACT: contracts::verus::VerusBoolValid =
+    contracts::verus::VerusBoolValid;
 
 // ============================================================================
 // Contract Trait
@@ -900,7 +918,7 @@ pub mod creusot;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::verification::contracts::{StringNonEmpty, I32Positive, BoolValid};
+    use crate::verification::contracts::{BoolValid, I32Positive, StringNonEmpty};
 
     #[test]
     fn test_verifier_backend_string_kani() {
@@ -941,7 +959,7 @@ mod tests {
 
         let result = verifier.verify(input, |x| x);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), true);
+        assert!(result.unwrap());
     }
 
     #[test]
@@ -971,7 +989,7 @@ mod tests {
     fn test_with_contract_creates_contracted_elicitation() {
         // Test that with_contract() creates a ContractedElicitation
         let contracted = String::with_contract(StringNonEmpty);
-        
+
         // Verify the type is correct (compile-time check)
         let _: ContractedElicitation<String, StringNonEmpty> = contracted;
     }
@@ -1001,13 +1019,13 @@ mod tests {
     #[cfg(feature = "verification")]
     fn test_default_contracts_available() {
         // Test that default contract constants are available when verification feature enabled
-        use super::{DEFAULT_STRING_CONTRACT, DEFAULT_I32_CONTRACT, DEFAULT_BOOL_CONTRACT};
-        
+        use super::{DEFAULT_BOOL_CONTRACT, DEFAULT_I32_CONTRACT, DEFAULT_STRING_CONTRACT};
+
         // Compile-time check that these constants exist and are the expected types
         fn check_string_contract<T: Contract<Input = String, Output = String>>(_: T) {}
         fn check_i32_contract<T: Contract<Input = i32, Output = i32>>(_: T) {}
         fn check_bool_contract<T: Contract<Input = bool, Output = bool>>(_: T) {}
-        
+
         check_string_contract(DEFAULT_STRING_CONTRACT);
         check_i32_contract(DEFAULT_I32_CONTRACT);
         check_bool_contract(DEFAULT_BOOL_CONTRACT);
@@ -1017,8 +1035,8 @@ mod tests {
     #[cfg(feature = "verification")]
     fn test_default_contracts_usable_with_with_contract() {
         // Test that default contracts work with with_contract()
-        use super::{DEFAULT_STRING_CONTRACT, DEFAULT_I32_CONTRACT, DEFAULT_BOOL_CONTRACT};
-        
+        use super::{DEFAULT_BOOL_CONTRACT, DEFAULT_I32_CONTRACT, DEFAULT_STRING_CONTRACT};
+
         // These contracts are zero-sized unit structs
         let _string_contracted = String::with_contract(DEFAULT_STRING_CONTRACT);
         let _i32_contracted = i32::with_contract(DEFAULT_I32_CONTRACT);
@@ -1031,93 +1049,99 @@ mod tests {
 
     #[test]
     fn test_and_contract_both_pass() {
-        use super::contracts::{I32Positive, I32NonNegative};
         use super::AndContract;
-        
+        use super::contracts::{I32NonNegative, I32Positive};
+
         // 42 is both positive and non-negative
         AndContract::new(I32Positive, I32NonNegative);
         assert!(AndContract::<I32Positive, I32NonNegative>::requires(&42));
-        assert!(AndContract::<I32Positive, I32NonNegative>::ensures(&42, &42));
+        assert!(AndContract::<I32Positive, I32NonNegative>::ensures(
+            &42, &42
+        ));
     }
 
     #[test]
     fn test_and_contract_one_fails() {
-        use super::contracts::{I32Positive, I32NonNegative};
         use super::AndContract;
-        
+        use super::contracts::{I32NonNegative, I32Positive};
+
         // 0 is non-negative but not positive
         assert!(!AndContract::<I32Positive, I32NonNegative>::requires(&0));
-        
+
         // -1 fails both
         assert!(!AndContract::<I32Positive, I32NonNegative>::requires(&-1));
     }
 
     #[test]
     fn test_or_contract_either_passes() {
-        use super::contracts::{I32Positive, I32NonNegative};
         use super::OrContract;
-        
+        use super::contracts::{I32NonNegative, I32Positive};
+
         // 42 satisfies both (either is enough)
         assert!(OrContract::<I32Positive, I32NonNegative>::requires(&42));
-        
+
         // 0 satisfies NonNegative only (still passes)
         assert!(OrContract::<I32Positive, I32NonNegative>::requires(&0));
-        
+
         // -1 satisfies neither (fails)
         assert!(!OrContract::<I32Positive, I32NonNegative>::requires(&-1));
     }
 
     #[test]
     fn test_not_contract_inverts_logic() {
-        use super::contracts::I32Positive;
         use super::NotContract;
-        
+        use super::contracts::I32Positive;
+
         // Original: 42 is positive
         assert!(I32Positive::requires(&42));
-        
+
         // Negated: 42 is NOT positive (false)
         assert!(!NotContract::<I32Positive>::requires(&42));
-        
+
         // Original: -1 is not positive (false)
         assert!(!I32Positive::requires(&-1));
-        
+
         // Negated: -1 is NOT positive (true)
         assert!(NotContract::<I32Positive>::requires(&-1));
     }
 
     #[test]
     fn test_string_composition_bounded_non_empty() {
-        use super::contracts::{StringNonEmpty, StringMaxLength};
         use super::AndContract;
-        
+        use super::contracts::{StringMaxLength, StringNonEmpty};
+
         // Create contract: non-empty AND max 10 chars
         AndContract::new(StringNonEmpty, StringMaxLength::<10>);
-        
+
         // "hello" passes (non-empty, 5 chars)
         assert!(AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(&"hello".to_string()));
-        
+
         // "" fails (empty)
         assert!(!AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(&"".to_string()));
-        
+
         // "12345678901" fails (too long)
-        assert!(!AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(&"12345678901".to_string()));
+        assert!(
+            !AndContract::<StringNonEmpty, StringMaxLength<10>>::requires(
+                &"12345678901".to_string()
+            )
+        );
     }
 
     #[test]
     fn test_compose_helpers() {
-        use super::contracts::{I32Positive, I32NonNegative};
         use super::compose;
-        
+        use super::contracts::{I32NonNegative, I32Positive};
+
         // Test helper functions
         let and_contract = compose::and(I32Positive, I32NonNegative);
         assert!(AndContract::<I32Positive, I32NonNegative>::requires(&42));
-        
+
         let or_contract = compose::or(I32Positive, I32NonNegative);
         assert!(OrContract::<I32Positive, I32NonNegative>::requires(&0));
-        
+
         let not_contract = compose::not(I32Positive);
         assert!(NotContract::<I32Positive>::requires(&-1));
-        
+
         // Verify contracts are constructed correctly
         let _: AndContract<I32Positive, I32NonNegative> = and_contract;
         let _: OrContract<I32Positive, I32NonNegative> = or_contract;
@@ -1126,27 +1150,36 @@ mod tests {
 
     #[test]
     fn test_complex_composition() {
-        use super::contracts::{I32Positive, I32NonNegative};
-        use super::{AndContract, OrContract, NotContract};
-        
+        use super::contracts::{I32NonNegative, I32Positive};
+        use super::{AndContract, NotContract, OrContract};
+
         // (Positive AND NonNegative) OR (NOT Positive)
         // This is basically: value >= 0 OR value < 0 (always true)
         let _pos_and_nonneg = AndContract::new(I32Positive, I32NonNegative);
         let _not_pos = NotContract::new(I32Positive);
-        
+
         // Should accept any i32
-        assert!(OrContract::<AndContract<I32Positive, I32NonNegative>, NotContract<I32Positive>>::requires(&42));
-        assert!(OrContract::<AndContract<I32Positive, I32NonNegative>, NotContract<I32Positive>>::requires(&0));
-        assert!(OrContract::<AndContract<I32Positive, I32NonNegative>, NotContract<I32Positive>>::requires(&-1));
+        assert!(OrContract::<
+            AndContract<I32Positive, I32NonNegative>,
+            NotContract<I32Positive>,
+        >::requires(&42));
+        assert!(OrContract::<
+            AndContract<I32Positive, I32NonNegative>,
+            NotContract<I32Positive>,
+        >::requires(&0));
+        assert!(OrContract::<
+            AndContract<I32Positive, I32NonNegative>,
+            NotContract<I32Positive>,
+        >::requires(&-1));
     }
 
     #[test]
     fn test_string_max_length_invariant() {
         use super::contracts::StringMaxLength;
-        
+
         let contract = StringMaxLength::<100>;
         assert!(contract.invariant()); // Max length is positive
-        
+
         let invalid = StringMaxLength::<0>;
         assert!(!invalid.invariant()); // Max length is 0 (invalid)
     }

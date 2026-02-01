@@ -47,17 +47,16 @@ pub fn contract_type_impl(args: TokenStream, input: TokenStream) -> TokenStream 
         if let Meta::NameValue(nv) = meta {
             let name = nv.path.get_ident().map(|i| i.to_string());
 
-            if let Some(name) = name {
-                if let Expr::Lit(ExprLit {
+            if let Some(name) = name
+                && let Expr::Lit(ExprLit {
                     lit: Lit::Str(lit_str),
                     ..
                 }) = nv.value
-                {
-                    match name.as_str() {
-                        "requires" => requires_expr = Some(lit_str.value()),
-                        "ensures" => ensures_expr = Some(lit_str.value()),
-                        _ => {}
-                    }
+            {
+                match name.as_str() {
+                    "requires" => requires_expr = Some(lit_str.value()),
+                    "ensures" => ensures_expr = Some(lit_str.value()),
+                    _ => {}
                 }
             }
         }

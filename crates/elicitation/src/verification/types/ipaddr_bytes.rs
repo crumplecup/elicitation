@@ -93,9 +93,9 @@ impl Ipv4Bytes {
 /// Check if IPv4 octets represent a private address (RFC 1918).
 pub fn is_ipv4_private(octets: &[u8; 4]) -> bool {
     match octets[0] {
-        10 => true,                                      // 10.0.0.0/8
-        172 => octets[1] >= 16 && octets[1] <= 31,      // 172.16.0.0/12
-        192 => octets[1] == 168,                         // 192.168.0.0/16
+        10 => true,                                // 10.0.0.0/8
+        172 => octets[1] >= 16 && octets[1] <= 31, // 172.16.0.0/12
+        192 => octets[1] == 168,                   // 192.168.0.0/16
         _ => false,
     }
 }
@@ -265,7 +265,7 @@ impl Ipv6Private {
             Ok(Self(ipv6))
         } else {
             Err(ValidationError::NotPrivateIp(
-                "IPv6 address not in fc00::/7".to_string()
+                "IPv6 address not in fc00::/7".to_string(),
             ))
         }
     }
@@ -302,7 +302,7 @@ impl Ipv6Public {
             Ok(Self(ipv6))
         } else {
             Err(ValidationError::NotPublicIp(
-                "IPv6 address is not public".to_string()
+                "IPv6 address is not public".to_string(),
             ))
         }
     }
@@ -336,7 +336,7 @@ mod tests {
     fn test_ipv4_private_10() {
         let octets = [10, 0, 0, 1];
         assert!(is_ipv4_private(&octets));
-        
+
         let private = Ipv4Private::new(octets);
         assert!(private.is_ok());
     }
@@ -362,7 +362,7 @@ mod tests {
         let octets = [8, 8, 8, 8]; // Google DNS
         let ipv4 = Ipv4Bytes::new(octets);
         assert!(ipv4.is_public());
-        
+
         let public = Ipv4Public::new(octets);
         assert!(public.is_ok());
     }
@@ -389,10 +389,10 @@ mod tests {
         let mut octets = [0u8; 16];
         octets[0] = 0xfc;
         assert!(is_ipv6_private(&octets));
-        
+
         octets[0] = 0xfd;
         assert!(is_ipv6_private(&octets));
-        
+
         let private = Ipv6Private::new(octets);
         assert!(private.is_ok());
     }
@@ -424,10 +424,12 @@ mod tests {
     #[test]
     fn test_ipv6_public() {
         // 2001:4860:4860::8888 (Google DNS)
-        let octets = [0x20, 0x01, 0x48, 0x60, 0x48, 0x60, 0, 0, 0, 0, 0, 0, 0, 0, 0x88, 0x88];
+        let octets = [
+            0x20, 0x01, 0x48, 0x60, 0x48, 0x60, 0, 0, 0, 0, 0, 0, 0, 0, 0x88, 0x88,
+        ];
         let ipv6 = Ipv6Bytes::new(octets);
         assert!(ipv6.is_public());
-        
+
         let public = Ipv6Public::new(octets);
         assert!(public.is_ok());
     }

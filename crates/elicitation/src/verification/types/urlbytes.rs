@@ -4,7 +4,7 @@
 //! demonstrating that complex parsing can be verified tractably by decomposing
 //! into constrained, bounded types.
 
-use crate::verification::types::{ValidationError, Utf8Bytes};
+use crate::verification::types::{Utf8Bytes, ValidationError};
 
 // ============================================================================
 // Bounded Component Types
@@ -26,27 +26,27 @@ impl<const MAX_LEN: usize> SchemeBytes<MAX_LEN> {
     /// - Contains only letters, digits, +, -, .
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let len = bytes.len();
-        
+
         if len == 0 {
             return Err(ValidationError::InvalidUrlSyntax);
         }
-        
+
         if len > MAX_LEN {
             return Err(ValidationError::TooLong {
                 max: MAX_LEN,
                 actual: len,
             });
         }
-        
+
         // For Kani: assert len is bounded to enable tractable verification
         #[cfg(kani)]
         kani::assume(len <= MAX_LEN);
-        
+
         // First character must be letter
         if !bytes[0].is_ascii_alphabetic() {
             return Err(ValidationError::InvalidUrlSyntax);
         }
-        
+
         // Validate all characters (manual loop for Kani)
         let mut i = 0;
         while i < len {
@@ -55,20 +55,20 @@ impl<const MAX_LEN: usize> SchemeBytes<MAX_LEN> {
             }
             i += 1;
         }
-        
+
         // Copy to fixed array
         let mut fixed = [0u8; MAX_LEN];
         fixed[..len].copy_from_slice(bytes);
-        
+
         let utf8 = Utf8Bytes::new(fixed, len)?;
         Ok(Self { utf8 })
     }
-    
+
     /// Get scheme as string slice.
     pub fn as_str(&self) -> &str {
         self.utf8.as_str()
     }
-    
+
     /// Check if scheme is HTTP or HTTPS.
     pub fn is_http(&self) -> bool {
         let s = self.as_str();
@@ -88,29 +88,29 @@ impl<const MAX_LEN: usize> AuthorityBytes<MAX_LEN> {
     /// Create validated authority from slice.
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let len = bytes.len();
-        
+
         if len > MAX_LEN {
             return Err(ValidationError::TooLong {
                 max: MAX_LEN,
                 actual: len,
             });
         }
-        
+
         // Copy to fixed array
         let mut fixed = [0u8; MAX_LEN];
         if len > 0 {
             fixed[..len].copy_from_slice(bytes);
         }
-        
+
         let utf8 = Utf8Bytes::new(fixed, len)?;
         Ok(Self { utf8 })
     }
-    
+
     /// Get authority as string slice.
     pub fn as_str(&self) -> &str {
         self.utf8.as_str()
     }
-    
+
     /// Check if authority is empty.
     pub fn is_empty(&self) -> bool {
         self.utf8.is_empty()
@@ -157,70 +157,74 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
     /// Returns `ValidationError::InvalidUrlSyntax` if invalid RFC 3986 syntax.
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let len = bytes.len();
-        
+
         if len > MAX_LEN {
             return Err(ValidationError::TooLong {
                 max: MAX_LEN,
                 actual: len,
             });
         }
-        
+
         // Copy to fixed array and validate UTF-8
         let mut fixed = [0u8; MAX_LEN];
         fixed[..len].copy_from_slice(bytes);
         let utf8 = Utf8Bytes::new(fixed, len)?;
-        
+
         // Parse components (bounded)
         let (scheme, authority) = parse_url_bounded::<SCHEME_MAX, AUTHORITY_MAX>(bytes)?;
-        
-        Ok(Self { utf8, scheme, authority })
+
+        Ok(Self {
+            utf8,
+            scheme,
+            authority,
+        })
     }
-    
+
     /// Create from Vec (user-facing API, delegates to from_slice).
     pub fn new(bytes: Vec<u8>) -> Result<Self, ValidationError> {
         Self::from_slice(&bytes)
     }
-    
+
     /// Get the URL as a string slice.
     pub fn as_str(&self) -> &str {
         self.utf8.as_str()
     }
-    
+
     /// Get the URL as bytes.
     pub fn as_bytes(&self) -> &[u8] {
         self.utf8.as_str().as_bytes()
     }
-    
+
     /// Get the length in bytes.
     pub fn len(&self) -> usize {
         self.utf8.len()
     }
-    
+
     /// Check if the URL is empty.
     pub fn is_empty(&self) -> bool {
         self.utf8.is_empty()
     }
-    
+
     /// Get the scheme.
     pub fn scheme(&self) -> &str {
         self.scheme.as_str()
     }
-    
+
     /// Get the authority if present.
     pub fn authority(&self) -> Option<&str> {
         self.authority.as_ref().map(|a| a.as_str())
     }
-    
+
     /// Check if URL has authority (starts with //).
     pub fn has_authority(&self) -> bool {
         self.authority.is_some()
     }
-    
+
     /// Check if URL has HTTP or HTTPS scheme.
     pub fn is_http(&self) -> bool {
         self.scheme.is_http()
     }
-    
+
     /// Convert to String.
     pub fn to_string(&self) -> String {
         self.utf8.to_string()
@@ -247,19 +251,19 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
     /// Create from byte slice (Kani-friendly).
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let url = UrlBytes::from_slice(bytes)?;
-        
+
         if !url.has_authority() {
             return Err(ValidationError::UrlMissingAuthority);
         }
-        
+
         Ok(Self { url })
     }
-    
+
     /// Create from Vec (user-facing API).
     pub fn new(bytes: Vec<u8>) -> Result<Self, ValidationError> {
         Self::from_slice(&bytes)
     }
-    
+
     /// Get the underlying URL.
     pub fn url(&self) -> &UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN> {
         &self.url
@@ -282,19 +286,19 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
     /// Create from byte slice (Kani-friendly).
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let url = UrlBytes::from_slice(bytes)?;
-        
+
         if !url.has_authority() {
             return Err(ValidationError::UrlNotAbsolute);
         }
-        
+
         Ok(Self { url })
     }
-    
+
     /// Create from Vec (user-facing API).
     pub fn new(bytes: Vec<u8>) -> Result<Self, ValidationError> {
         Self::from_slice(&bytes)
     }
-    
+
     /// Get the underlying URL.
     pub fn url(&self) -> &UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN> {
         &self.url
@@ -317,19 +321,19 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
     /// Create from byte slice (Kani-friendly).
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let url = UrlBytes::from_slice(bytes)?;
-        
+
         if !url.is_http() {
             return Err(ValidationError::UrlNotHttp);
         }
-        
+
         Ok(Self { url })
     }
-    
+
     /// Create from Vec (user-facing API).
     pub fn new(bytes: Vec<u8>) -> Result<Self, ValidationError> {
         Self::from_slice(&bytes)
     }
-    
+
     /// Get the underlying URL.
     pub fn url(&self) -> &UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN> {
         &self.url
@@ -344,17 +348,23 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
 /// Parse URL into bounded components.
 fn parse_url_bounded<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize>(
     bytes: &[u8],
-) -> Result<(SchemeBytes<SCHEME_MAX>, Option<AuthorityBytes<AUTHORITY_MAX>>), ValidationError> {
+) -> Result<
+    (
+        SchemeBytes<SCHEME_MAX>,
+        Option<AuthorityBytes<AUTHORITY_MAX>>,
+    ),
+    ValidationError,
+> {
     if bytes.is_empty() {
         return Err(ValidationError::InvalidUrlSyntax);
     }
-    
+
     // Find scheme end (before ':')
     let scheme_end = find_scheme_end(bytes)?;
-    
+
     // Extract scheme into bounded buffer
     let scheme = SchemeBytes::from_slice(&bytes[..scheme_end])?;
-    
+
     // Check for authority (//)
     let authority = if scheme_end + 2 < bytes.len()
         && bytes[scheme_end + 1] == b'/'
@@ -362,7 +372,7 @@ fn parse_url_bounded<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize>(
     {
         let auth_start = scheme_end + 3;
         let auth_end = find_authority_end(bytes, auth_start);
-        
+
         if auth_end > auth_start {
             Some(AuthorityBytes::from_slice(&bytes[auth_start..auth_end])?)
         } else {
@@ -372,7 +382,7 @@ fn parse_url_bounded<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize>(
     } else {
         None
     };
-    
+
     Ok((scheme, authority))
 }
 
@@ -381,40 +391,40 @@ fn find_scheme_end(bytes: &[u8]) -> Result<usize, ValidationError> {
     if bytes.is_empty() || !bytes[0].is_ascii_alphabetic() {
         return Err(ValidationError::InvalidUrlSyntax);
     }
-    
+
     let mut i = 1;
     while i < bytes.len() {
         let ch = bytes[i];
-        
+
         if ch == b':' {
             return Ok(i);
         }
-        
+
         if !is_valid_scheme_char(ch) {
             return Err(ValidationError::InvalidUrlSyntax);
         }
-        
+
         i += 1;
     }
-    
+
     Err(ValidationError::InvalidUrlSyntax)
 }
 
 /// Find the end of authority and start of path.
 fn find_authority_end(bytes: &[u8], start: usize) -> usize {
     let mut i = start;
-    
+
     while i < bytes.len() {
         let ch = bytes[i];
-        
+
         // Authority ends at '/', '?', '#'
         if ch == b'/' || ch == b'?' || ch == b'#' {
             return i;
         }
-        
+
         i += 1;
     }
-    
+
     // Authority extends to end
     bytes.len()
 }

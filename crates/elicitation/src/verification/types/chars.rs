@@ -1,7 +1,7 @@
 //! Char contract types.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use super::ValidationError;
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
 
 // ============================================================================
@@ -55,7 +55,7 @@ impl Elicitation for CharAlphabetic {
 
         loop {
             let value = char::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(alphabetic) => {
                     tracing::debug!(value = %value, "Valid CharAlphabetic constructed");
@@ -117,7 +117,7 @@ impl Elicitation for CharNumeric {
 
         loop {
             let value = char::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(numeric) => {
                     tracing::debug!(value = %value, "Valid CharNumeric constructed");
@@ -180,7 +180,7 @@ impl Elicitation for CharAlphanumeric {
 
         loop {
             let value = char::elicit(client).await?;
-            
+
             match Self::new(value) {
                 Ok(alphanumeric) => {
                     tracing::debug!(value = %value, "Valid CharAlphanumeric constructed");

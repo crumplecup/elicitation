@@ -3,9 +3,9 @@
 //! Available with the `uuid` feature.
 
 #[cfg(feature = "uuid")]
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
-#[cfg(feature = "uuid")]
 use super::ValidationError;
+#[cfg(feature = "uuid")]
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 #[cfg(feature = "uuid")]
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "uuid")]
