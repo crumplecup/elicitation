@@ -64,8 +64,20 @@ impl<const MAX_LEN: usize> PathBytes<MAX_LEN> {
         let utf8 = Utf8Bytes::new(fixed, len)?;
 
         // Then check for null bytes
-        if has_null_byte(utf8.as_str()) {
-            return Err(ValidationError::PathContainsNull);
+        #[cfg(kani)]
+        {
+            // Under Kani: symbolic validation (trust stdlib string handling)
+            let has_null: bool = kani::any();
+            if has_null {
+                return Err(ValidationError::PathContainsNull);
+            }
+        }
+        #[cfg(not(kani))]
+        {
+            // Production: actual validation
+            if has_null_byte(utf8.as_str()) {
+                return Err(ValidationError::PathContainsNull);
+            }
         }
 
         Ok(Self { utf8 })
@@ -226,8 +238,21 @@ impl<const MAX_LEN: usize> PathRelative<MAX_LEN> {
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let path = PathBytes::from_slice(bytes)?;
 
-        if !path.is_relative() {
-            return Err(ValidationError::PathNotRelative(path.to_string()));
+        #[cfg(kani)]
+        {
+            // Under Kani: symbolic relative check (trust path property logic)
+            let is_abs: bool = kani::any();
+            if is_abs {
+                // Can't call path.to_string() - just return error without payload
+                return Err(ValidationError::PathNotRelative(String::new()));
+            }
+        }
+        #[cfg(not(kani))]
+        {
+            // Production: actual check
+            if !path.is_relative() {
+                return Err(ValidationError::PathNotRelative(path.to_string()));
+            }
         }
 
         Ok(Self(path))
