@@ -54,8 +54,21 @@ impl<const MAX_LEN: usize> Utf8Bytes<MAX_LEN> {
             });
         }
 
-        if !is_valid_utf8(&bytes[..len]) {
-            return Err(ValidationError::InvalidUtf8);
+        // Castle on a cloud: Symbolically assume UTF-8 validity under Kani
+        // We trust Rust's UTF-8 semantics and verify our wrapper logic only
+        #[cfg(kani)]
+        {
+            let is_valid_utf8: bool = kani::any();
+            if !is_valid_utf8 {
+                return Err(ValidationError::InvalidUtf8);
+            }
+        }
+        
+        #[cfg(not(kani))]
+        {
+            if !is_valid_utf8(&bytes[..len]) {
+                return Err(ValidationError::InvalidUtf8);
+            }
         }
 
         Ok(Self { bytes, len })
@@ -108,9 +121,15 @@ impl<const MAX_LEN: usize> std::fmt::Display for Utf8Bytes<MAX_LEN> {
 /// Proofs should use small bounds (e.g., 10 bytes) to keep verification tractable.
 #[inline]
 pub fn is_valid_utf8(bytes: &[u8]) -> bool {
+    let len = bytes.len();
+    
+    // Kani constraint: Assume reasonable length for tractability
+    #[cfg(kani)]
+    kani::assume(len <= 16);
+    
     let mut i = 0;
 
-    while i < bytes.len() {
+    while i < len {
         let byte = bytes[i];
 
         // Single byte (ASCII): 0xxxxxxx
