@@ -379,18 +379,17 @@ pub enum ValidationError {
     #[display("IP address must be public (not RFC 1918/4193)")]
     NotPublicIp,
 
-    /// IP address is wrong version.
-    #[display("Expected {} address, got {}", expected, got)]
-    WrongIpVersion {
-        /// Expected IP version.
-        expected: String,
-        /// Actual IP version.
-        got: String,
-    },
+    /// Expected IPv4, got IPv6.
+    #[display("Expected IPv4 address, got IPv6")]
+    ExpectedIpv4GotIpv6,
+
+    /// Expected IPv6, got IPv4.
+    #[display("Expected IPv6 address, got IPv4")]
+    ExpectedIpv6GotIpv4,
 
     /// IP address is not loopback.
-    #[display("IP address must be loopback, got {}", _0)]
-    NotLoopback(String),
+    #[display("IP address must be loopback")]
+    NotLoopback,
 
     /// Path does not exist on filesystem.
     #[display("Path does not exist: {}", _0)]

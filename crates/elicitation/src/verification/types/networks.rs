@@ -143,10 +143,7 @@ impl IpV4 {
     pub fn new(ip: IpAddr) -> Result<Self, ValidationError> {
         match ip {
             IpAddr::V4(v4) => Ok(Self(v4)),
-            IpAddr::V6(v6) => Err(ValidationError::WrongIpVersion {
-                expected: "IPv4".to_string(),
-                got: format!("IPv6 ({})", v6),
-            }),
+            IpAddr::V6(_) => Err(ValidationError::ExpectedIpv4GotIpv6),
         }
     }
 
@@ -202,10 +199,7 @@ impl IpV6 {
     pub fn new(ip: IpAddr) -> Result<Self, ValidationError> {
         match ip {
             IpAddr::V6(v6) => Ok(Self(v6)),
-            IpAddr::V4(v4) => Err(ValidationError::WrongIpVersion {
-                expected: "IPv6".to_string(),
-                got: format!("IPv4 ({})", v4),
-            }),
+            IpAddr::V4(_) => Err(ValidationError::ExpectedIpv6GotIpv4),
         }
     }
 
@@ -262,7 +256,7 @@ impl Ipv4Loopback {
         if ip.is_loopback() {
             Ok(Self(ip))
         } else {
-            Err(ValidationError::NotLoopback(ip.to_string()))
+            Err(ValidationError::NotLoopback)
         }
     }
 
@@ -319,7 +313,7 @@ impl Ipv6Loopback {
         if ip.is_loopback() {
             Ok(Self(ip))
         } else {
-            Err(ValidationError::NotLoopback(ip.to_string()))
+            Err(ValidationError::NotLoopback)
         }
     }
 
