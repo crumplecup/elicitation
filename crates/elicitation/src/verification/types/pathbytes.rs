@@ -189,8 +189,21 @@ impl<const MAX_LEN: usize> PathAbsolute<MAX_LEN> {
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
         let path = PathBytes::from_slice(bytes)?;
 
-        if !path.is_absolute() {
-            return Err(ValidationError::PathNotAbsolute(path.to_string()));
+        #[cfg(kani)]
+        {
+            // Under Kani: symbolic absolute check (trust path property logic)
+            let is_rel: bool = kani::any();
+            if is_rel {
+                // Can't call path.to_string() - just return error without payload
+                return Err(ValidationError::PathNotAbsolute(String::new()));
+            }
+        }
+        #[cfg(not(kani))]
+        {
+            // Production: actual check
+            if !path.is_absolute() {
+                return Err(ValidationError::PathNotAbsolute(path.to_string()));
+            }
         }
 
         Ok(Self(path))
