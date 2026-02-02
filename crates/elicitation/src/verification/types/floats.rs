@@ -101,7 +101,7 @@ macro_rules! impl_float_default_wrapper {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct F32Positive(f32);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl F32Positive {
     /// Constructs a positive f32 value.
     ///
@@ -168,7 +168,7 @@ impl Elicitation for F32Positive {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct F32NonNegative(f32);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl F32NonNegative {
     /// Constructs a non-negative f32 value.
     ///
@@ -235,7 +235,7 @@ impl Elicitation for F32NonNegative {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct F32Finite(f32);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl F32Finite {
     /// Constructs a finite f32 value.
     ///
@@ -299,7 +299,7 @@ impl Elicitation for F32Finite {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct F64Positive(f64);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl F64Positive {
     /// Constructs a positive f64 value.
     ///
@@ -366,7 +366,7 @@ impl Elicitation for F64Positive {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct F64NonNegative(f64);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl F64NonNegative {
     /// Constructs a non-negative f64 value.
     ///
@@ -433,7 +433,7 @@ impl Elicitation for F64NonNegative {
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 pub struct F64Finite(f64);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl F64Finite {
     /// Constructs a finite f64 value.
     ///

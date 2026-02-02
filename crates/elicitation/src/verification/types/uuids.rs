@@ -22,7 +22,7 @@ use uuid::Uuid;
 pub struct UuidV4(Uuid);
 
 #[cfg(feature = "uuid")]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl UuidV4 {
     /// Create a new UuidV4, validating it's Version 4.
     pub fn new(uuid: Uuid) -> Result<Self, ValidationError> {
@@ -49,7 +49,7 @@ impl UuidV4 {
 }
 
 #[cfg(feature = "uuid")]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for UuidV4 {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a Version 4 (random) UUID:")
@@ -57,7 +57,7 @@ impl Prompt for UuidV4 {
 }
 
 #[cfg(feature = "uuid")]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Elicitation for UuidV4 {
     type Style = <Uuid as Elicitation>::Style;
 
@@ -91,7 +91,7 @@ impl Elicitation for UuidV4 {
 pub struct UuidNonNil(Uuid);
 
 #[cfg(feature = "uuid")]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl UuidNonNil {
     /// Create a new UuidNonNil, validating it's not nil.
     pub fn new(uuid: Uuid) -> Result<Self, ValidationError> {
@@ -114,7 +114,7 @@ impl UuidNonNil {
 }
 
 #[cfg(feature = "uuid")]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for UuidNonNil {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a non-nil UUID (not all zeros):")
@@ -122,7 +122,7 @@ impl Prompt for UuidNonNil {
 }
 
 #[cfg(feature = "uuid")]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Elicitation for UuidNonNil {
     type Style = <Uuid as Elicitation>::Style;
 

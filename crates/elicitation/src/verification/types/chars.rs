@@ -12,7 +12,7 @@ use elicitation_macros::instrumented_impl;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CharAlphabetic(char);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl CharAlphabetic {
     /// Constructs an alphabetic char.
     ///
@@ -164,7 +164,7 @@ impl Elicitation for CharNumeric {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct CharAlphanumeric(char);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl CharAlphanumeric {
     /// Constructs an alphanumeric char.
     ///

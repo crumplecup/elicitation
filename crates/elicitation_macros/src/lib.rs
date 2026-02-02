@@ -60,12 +60,33 @@ pub fn instrumented_impl(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 // Only instrument public methods
                 if matches!(method.vis, syn::Visibility::Public(_)) {
                     let method_name = method.sig.ident.to_string();
+                    let has_generics = !method.sig.generics.params.is_empty();
 
                     // Determine instrumentation strategy based on method name
                     let instrument_attr = if is_constructor(&method_name) {
-                        // Constructors: log args and return, with error tracking
-                        quote! {
-                            #[tracing::instrument(ret, err)]
+                        // Constructors: track errors and parameters
+                        if has_generics {
+                            // Skip generic parameters (can't guarantee Debug)
+                            let param_names: Vec<_> = method.sig.inputs.iter()
+                                .filter_map(|arg| {
+                                    if let syn::FnArg::Typed(pat_type) = arg {
+                                        if let syn::Pat::Ident(ident) = &*pat_type.pat {
+                                            return Some(ident.ident.clone());
+                                        }
+                                    }
+                                    None
+                                })
+                                .collect();
+                            
+                            // For constructors with generics, skip params but track errors
+                            quote! {
+                                #[tracing::instrument(skip(#(#param_names),*), err)]
+                            }
+                        } else {
+                            // For constructors without generics, log all params and errors
+                            quote! {
+                                #[tracing::instrument(err)]
+                            }
                         }
                     } else if is_accessor(&method_name) {
                         // Accessors: trace level to avoid noise

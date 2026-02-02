@@ -12,7 +12,7 @@ use std::path::PathBuf;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PathBufExists(PathBuf);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl PathBufExists {
     /// Create a new PathBufExists, validating the path exists.
     pub fn new(path: PathBuf) -> Result<Self, ValidationError> {
@@ -36,14 +36,14 @@ impl PathBufExists {
     }
 }
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for PathBufExists {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a path that exists on the filesystem:")
     }
 }
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Elicitation for PathBufExists {
     type Style = <PathBuf as Elicitation>::Style;
 
@@ -73,7 +73,7 @@ impl Elicitation for PathBufExists {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PathBufReadable(PathBuf);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl PathBufReadable {
     /// Create a new PathBufReadable, validating the path is readable.
     pub fn new(path: PathBuf) -> Result<Self, ValidationError> {
@@ -95,14 +95,14 @@ impl PathBufReadable {
     }
 }
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for PathBufReadable {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a readable path:")
     }
 }
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Elicitation for PathBufReadable {
     type Style = <PathBuf as Elicitation>::Style;
 
@@ -132,7 +132,7 @@ impl Elicitation for PathBufReadable {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PathBufIsDir(PathBuf);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl PathBufIsDir {
     /// Create a new PathBufIsDir, validating the path is a directory.
     pub fn new(path: PathBuf) -> Result<Self, ValidationError> {
@@ -160,14 +160,14 @@ impl PathBufIsDir {
     }
 }
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for PathBufIsDir {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a directory path:")
     }
 }
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Elicitation for PathBufIsDir {
     type Style = <PathBuf as Elicitation>::Style;
 
@@ -197,7 +197,7 @@ impl Elicitation for PathBufIsDir {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PathBufIsFile(PathBuf);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl PathBufIsFile {
     /// Create a new PathBufIsFile, validating the path is a file.
     pub fn new(path: PathBuf) -> Result<Self, ValidationError> {
@@ -223,14 +223,14 @@ impl PathBufIsFile {
     }
 }
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for PathBufIsFile {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a file path:")
     }
 }
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Elicitation for PathBufIsFile {
     type Style = <PathBuf as Elicitation>::Style;
 

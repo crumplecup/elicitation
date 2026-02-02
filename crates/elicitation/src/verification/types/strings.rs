@@ -28,7 +28,7 @@ pub struct StringNonEmpty<const MAX_LEN: usize = 4096> {
     utf8: Utf8Bytes<MAX_LEN>,
 }
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl<const MAX_LEN: usize> StringNonEmpty<MAX_LEN> {
     /// Constructs a non-empty, bounded String from stdlib String.
     ///
@@ -83,14 +83,14 @@ impl<const MAX_LEN: usize> StringNonEmpty<MAX_LEN> {
 
 crate::default_style!(StringNonEmpty<4096> => StringNonEmptyStyle);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl<const MAX_LEN: usize> Prompt for StringNonEmpty<MAX_LEN> {
     fn prompt() -> Option<&'static str> {
         Some("Please enter a non-empty string:")
     }
 }
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl<const MAX_LEN: usize> Elicitation for StringNonEmpty<MAX_LEN> {
     type Style = StringNonEmptyStyle;
 

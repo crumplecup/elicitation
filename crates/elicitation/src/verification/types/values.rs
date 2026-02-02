@@ -4,9 +4,9 @@
 
 #[cfg(feature = "serde_json")]
 use super::ValidationError;
-#[cfg(feature = "serde_json")]
+#[cfg(all(feature = "serde_json", not(kani)))]
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
-#[cfg(feature = "serde_json")]
+#[cfg(all(feature = "serde_json", not(kani)))]
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "serde_json")]
 use serde_json::Value;
@@ -25,7 +25,7 @@ pub struct ValueObject(Value);
 pub struct ValueObject(std::marker::PhantomData<()>);
 
 #[cfg(feature = "serde_json")]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl ValueObject {
     /// Create a new ValueObject, validating it's an object.
     #[cfg(not(kani))]
@@ -79,7 +79,7 @@ impl ValueObject {
 
 #[cfg(feature = "serde_json")]
 #[cfg(not(kani))]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for ValueObject {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a JSON object:")
@@ -88,7 +88,7 @@ impl Prompt for ValueObject {
 
 #[cfg(feature = "serde_json")]
 #[cfg(not(kani))]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Elicitation for ValueObject {
     type Style = <Value as Elicitation>::Style;
 
@@ -125,7 +125,7 @@ pub struct ValueArray(Value);
 pub struct ValueArray(std::marker::PhantomData<()>);
 
 #[cfg(feature = "serde_json")]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl ValueArray {
     /// Create a new ValueArray, validating it's an array.
     #[cfg(not(kani))]
@@ -179,7 +179,7 @@ impl ValueArray {
 
 #[cfg(feature = "serde_json")]
 #[cfg(not(kani))]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for ValueArray {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a JSON array:")
@@ -188,7 +188,7 @@ impl Prompt for ValueArray {
 
 #[cfg(feature = "serde_json")]
 #[cfg(not(kani))]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Elicitation for ValueArray {
     type Style = <Value as Elicitation>::Style;
 
@@ -225,7 +225,7 @@ pub struct ValueNonNull(Value);
 pub struct ValueNonNull(std::marker::PhantomData<()>);
 
 #[cfg(feature = "serde_json")]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl ValueNonNull {
     /// Create a new ValueNonNull, validating it's not null.
     #[cfg(not(kani))]
@@ -273,7 +273,7 @@ impl ValueNonNull {
 
 #[cfg(feature = "serde_json")]
 #[cfg(not(kani))]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for ValueNonNull {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a non-null JSON value:")
@@ -282,7 +282,7 @@ impl Prompt for ValueNonNull {
 
 #[cfg(feature = "serde_json")]
 #[cfg(not(kani))]
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Elicitation for ValueNonNull {
     type Style = <Value as Elicitation>::Style;
 

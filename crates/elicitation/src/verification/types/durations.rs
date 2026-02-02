@@ -10,7 +10,7 @@ use std::time::Duration;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DurationPositive(Duration);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl DurationPositive {
     /// Create a new DurationPositive, validating it's not zero.
     pub fn new(duration: Duration) -> Result<Self, ValidationError> {
@@ -32,14 +32,14 @@ impl DurationPositive {
     }
 }
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for DurationPositive {
     fn prompt() -> Option<&'static str> {
         Some("Please provide a positive duration (greater than zero seconds):")
     }
 }
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl Elicitation for DurationPositive {
     type Style = <Duration as Elicitation>::Style;
 

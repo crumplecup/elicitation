@@ -12,7 +12,7 @@ use elicitation_macros::instrumented_impl;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BoolTrue(bool);
 
-#[instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl BoolTrue {
     /// Constructs a true bool value.
     ///

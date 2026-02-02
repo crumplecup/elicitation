@@ -16,18 +16,28 @@ use url::Url;
 ///
 /// This contract ensures the value is a valid, parseable URL according to
 /// the WHATWG URL Standard.
+///
+/// # Kani Verification
+///
+/// In Kani mode, uses PhantomData and symbolic validation. Trusts url crate's
+/// parsing logic, verifies only wrapper invariants.
+#[cfg(not(kani))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UrlValid(Url);
 
-#[instrumented_impl]
+#[cfg(kani)]
+#[derive(Debug, Clone)]
+pub struct UrlValid(std::marker::PhantomData<Url>);
+
+#[cfg(not(kani))]
 impl UrlValid {
     /// Create a new UrlValid from a string.
     ///
     /// # Errors
     ///
     /// Returns `ValidationError::UrlInvalid` if the URL cannot be parsed.
-    pub fn new(value: impl AsRef<str>) -> Result<Self, ValidationError> {
-        Url::parse(value.as_ref())
+    pub fn new(value: &str) -> Result<Self, ValidationError> {
+        Url::parse(value)
             .map(Self)
             .map_err(|_| ValidationError::UrlInvalid)
     }
@@ -48,22 +58,62 @@ impl UrlValid {
     }
 }
 
+#[cfg(kani)]
+impl UrlValid {
+    /// Create a new UrlValid from a string (Kani mode).
+    ///
+    /// Uses symbolic boolean to verify wrapper logic without URL parsing.
+    pub fn new(_value: &str) -> Result<Self, ValidationError> {
+        let is_valid: bool = kani::any();
+        if is_valid {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::UrlInvalid)
+        }
+    }
+
+    /// Create a new UrlValid from an existing Url (Kani mode).
+    pub fn from_url(_url: Url) -> Self {
+        Self(std::marker::PhantomData)
+    }
+
+    /// Get a reference to the wrapped URL (not available in Kani mode).
+    pub fn get(&self) -> &Url {
+        panic!("UrlValid::get() not available in Kani mode - use symbolic validation")
+    }
+
+    /// Unwrap the URL (not available in Kani mode).
+    pub fn into_inner(self) -> Url {
+        panic!("UrlValid::into_inner() not available in Kani mode - use symbolic validation")
+    }
+}
+
 /// A URL with HTTPS scheme.
 ///
 /// This contract ensures the URL uses the HTTPS protocol for secure
 /// communication.
+///
+/// # Kani Verification
+///
+/// In Kani mode, uses PhantomData and symbolic validation. Trusts url crate's
+/// parsing logic, verifies only wrapper invariants.
+#[cfg(not(kani))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UrlHttps(Url);
 
-#[instrumented_impl]
+#[cfg(kani)]
+#[derive(Debug, Clone)]
+pub struct UrlHttps(std::marker::PhantomData<Url>);
+
+#[cfg(not(kani))]
 impl UrlHttps {
     /// Create a new UrlHttps from a string.
     ///
     /// # Errors
     ///
     /// Returns `ValidationError::UrlNotHttps` if the URL scheme is not HTTPS.
-    pub fn new(value: impl AsRef<str>) -> Result<Self, ValidationError> {
-        let url = Url::parse(value.as_ref()).map_err(|_| ValidationError::UrlInvalid)?;
+    pub fn new(value: &str) -> Result<Self, ValidationError> {
+        let url = Url::parse(value).map_err(|_| ValidationError::UrlInvalid)?;
 
         if url.scheme() == "https" {
             Ok(Self(url))
@@ -96,21 +146,72 @@ impl UrlHttps {
     }
 }
 
+#[cfg(kani)]
+impl UrlHttps {
+    /// Create a new UrlHttps from a string (Kani mode).
+    ///
+    /// Uses symbolic boolean to verify wrapper logic without URL parsing.
+    pub fn new(_value: &str) -> Result<Self, ValidationError> {
+        let is_valid: bool = kani::any();
+        let is_https: bool = kani::any();
+
+        if !is_valid {
+            Err(ValidationError::UrlInvalid)
+        } else if is_https {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::UrlNotHttps)
+        }
+    }
+
+    /// Create a new UrlHttps from an existing Url (Kani mode).
+    ///
+    /// Uses symbolic boolean to verify wrapper logic.
+    pub fn from_url(_url: Url) -> Result<Self, ValidationError> {
+        let is_https: bool = kani::any();
+        if is_https {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::UrlNotHttps)
+        }
+    }
+
+    /// Get a reference to the wrapped URL (not available in Kani mode).
+    pub fn get(&self) -> &Url {
+        panic!("UrlHttps::get() not available in Kani mode - use symbolic validation")
+    }
+
+    /// Unwrap the URL (not available in Kani mode).
+    pub fn into_inner(self) -> Url {
+        panic!("UrlHttps::into_inner() not available in Kani mode - use symbolic validation")
+    }
+}
+
 /// A URL with HTTP scheme.
 ///
 /// This contract ensures the URL uses the HTTP protocol.
+///
+/// # Kani Verification
+///
+/// In Kani mode, uses PhantomData and symbolic validation. Trusts url crate's
+/// parsing logic, verifies only wrapper invariants.
+#[cfg(not(kani))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UrlHttp(Url);
 
-#[instrumented_impl]
+#[cfg(kani)]
+#[derive(Debug, Clone)]
+pub struct UrlHttp(std::marker::PhantomData<Url>);
+
+#[cfg(not(kani))]
 impl UrlHttp {
     /// Create a new UrlHttp from a string.
     ///
     /// # Errors
     ///
     /// Returns `ValidationError::UrlNotHttp` if the URL scheme is not HTTP.
-    pub fn new(value: impl AsRef<str>) -> Result<Self, ValidationError> {
-        let url = Url::parse(value.as_ref()).map_err(|_| ValidationError::UrlInvalid)?;
+    pub fn new(value: &str) -> Result<Self, ValidationError> {
+        let url = Url::parse(value).map_err(|_| ValidationError::UrlInvalid)?;
 
         if url.scheme() == "http" {
             Ok(Self(url))
@@ -143,21 +244,72 @@ impl UrlHttp {
     }
 }
 
+#[cfg(kani)]
+impl UrlHttp {
+    /// Create a new UrlHttp from a string (Kani mode).
+    ///
+    /// Uses symbolic boolean to verify wrapper logic without URL parsing.
+    pub fn new(_value: &str) -> Result<Self, ValidationError> {
+        let is_valid: bool = kani::any();
+        let is_http: bool = kani::any();
+
+        if !is_valid {
+            Err(ValidationError::UrlInvalid)
+        } else if is_http {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::UrlNotHttp)
+        }
+    }
+
+    /// Create a new UrlHttp from an existing Url (Kani mode).
+    ///
+    /// Uses symbolic boolean to verify wrapper logic.
+    pub fn from_url(_url: Url) -> Result<Self, ValidationError> {
+        let is_http: bool = kani::any();
+        if is_http {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::UrlNotHttp)
+        }
+    }
+
+    /// Get a reference to the wrapped URL (not available in Kani mode).
+    pub fn get(&self) -> &Url {
+        panic!("UrlHttp::get() not available in Kani mode - use symbolic validation")
+    }
+
+    /// Unwrap the URL (not available in Kani mode).
+    pub fn into_inner(self) -> Url {
+        panic!("UrlHttp::into_inner() not available in Kani mode - use symbolic validation")
+    }
+}
+
 /// A URL with a host component.
 ///
 /// This contract ensures the URL has a valid host (domain or IP address).
+///
+/// # Kani Verification
+///
+/// In Kani mode, uses PhantomData and symbolic validation. Trusts url crate's
+/// parsing logic, verifies only wrapper invariants.
+#[cfg(not(kani))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UrlWithHost(Url);
 
-#[instrumented_impl]
+#[cfg(kani)]
+#[derive(Debug, Clone)]
+pub struct UrlWithHost(std::marker::PhantomData<Url>);
+
+#[cfg(not(kani))]
 impl UrlWithHost {
     /// Create a new UrlWithHost from a string.
     ///
     /// # Errors
     ///
     /// Returns `ValidationError::UrlNoHost` if the URL has no host component.
-    pub fn new(value: impl AsRef<str>) -> Result<Self, ValidationError> {
-        let url = Url::parse(value.as_ref()).map_err(|_| ValidationError::UrlInvalid)?;
+    pub fn new(value: &str) -> Result<Self, ValidationError> {
+        let url = Url::parse(value).map_err(|_| ValidationError::UrlInvalid)?;
 
         if url.host().is_some() {
             Ok(Self(url))
@@ -190,21 +342,72 @@ impl UrlWithHost {
     }
 }
 
+#[cfg(kani)]
+impl UrlWithHost {
+    /// Create a new UrlWithHost from a string (Kani mode).
+    ///
+    /// Uses symbolic boolean to verify wrapper logic without URL parsing.
+    pub fn new(_value: &str) -> Result<Self, ValidationError> {
+        let is_valid: bool = kani::any();
+        let has_host: bool = kani::any();
+
+        if !is_valid {
+            Err(ValidationError::UrlInvalid)
+        } else if has_host {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::UrlNoHost)
+        }
+    }
+
+    /// Create a new UrlWithHost from an existing Url (Kani mode).
+    ///
+    /// Uses symbolic boolean to verify wrapper logic.
+    pub fn from_url(_url: Url) -> Result<Self, ValidationError> {
+        let has_host: bool = kani::any();
+        if has_host {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::UrlNoHost)
+        }
+    }
+
+    /// Get a reference to the wrapped URL (not available in Kani mode).
+    pub fn get(&self) -> &Url {
+        panic!("UrlWithHost::get() not available in Kani mode - use symbolic validation")
+    }
+
+    /// Unwrap the URL (not available in Kani mode).
+    pub fn into_inner(self) -> Url {
+        panic!("UrlWithHost::into_inner() not available in Kani mode - use symbolic validation")
+    }
+}
+
 /// A URL that can be used as a base for relative URLs.
 ///
 /// This contract ensures the URL can act as a base for resolving relative URLs.
+///
+/// # Kani Verification
+///
+/// In Kani mode, uses PhantomData and symbolic validation. Trusts url crate's
+/// parsing logic, verifies only wrapper invariants.
+#[cfg(not(kani))]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UrlCanBeBase(Url);
 
-#[instrumented_impl]
+#[cfg(kani)]
+#[derive(Debug, Clone)]
+pub struct UrlCanBeBase(std::marker::PhantomData<Url>);
+
+#[cfg(not(kani))]
 impl UrlCanBeBase {
     /// Create a new UrlCanBeBase from a string.
     ///
     /// # Errors
     ///
     /// Returns `ValidationError::UrlCannotBeBase` if the URL cannot be a base.
-    pub fn new(value: impl AsRef<str>) -> Result<Self, ValidationError> {
-        let url = Url::parse(value.as_ref()).map_err(|_| ValidationError::UrlInvalid)?;
+    pub fn new(value: &str) -> Result<Self, ValidationError> {
+        let url = Url::parse(value).map_err(|_| ValidationError::UrlInvalid)?;
 
         if url.cannot_be_a_base() {
             Err(ValidationError::UrlCannotBeBase)
@@ -234,6 +437,47 @@ impl UrlCanBeBase {
     /// Unwrap the URL.
     pub fn into_inner(self) -> Url {
         self.0
+    }
+}
+
+#[cfg(kani)]
+impl UrlCanBeBase {
+    /// Create a new UrlCanBeBase from a string (Kani mode).
+    ///
+    /// Uses symbolic boolean to verify wrapper logic without URL parsing.
+    pub fn new(_value: &str) -> Result<Self, ValidationError> {
+        let is_valid: bool = kani::any();
+        let can_be_base: bool = kani::any();
+
+        if !is_valid {
+            Err(ValidationError::UrlInvalid)
+        } else if can_be_base {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::UrlCannotBeBase)
+        }
+    }
+
+    /// Create a new UrlCanBeBase from an existing Url (Kani mode).
+    ///
+    /// Uses symbolic boolean to verify wrapper logic.
+    pub fn from_url(_url: Url) -> Result<Self, ValidationError> {
+        let can_be_base: bool = kani::any();
+        if can_be_base {
+            Ok(Self(std::marker::PhantomData))
+        } else {
+            Err(ValidationError::UrlCannotBeBase)
+        }
+    }
+
+    /// Get a reference to the wrapped URL (not available in Kani mode).
+    pub fn get(&self) -> &Url {
+        panic!("UrlCanBeBase::get() not available in Kani mode - use symbolic validation")
+    }
+
+    /// Unwrap the URL (not available in Kani mode).
+    pub fn into_inner(self) -> Url {
+        panic!("UrlCanBeBase::into_inner() not available in Kani mode - use symbolic validation")
     }
 }
 
@@ -270,6 +514,13 @@ mod tests {
         assert!(UrlHttp::new("https://example.com").is_err());
         assert!(UrlHttp::new("ftp://example.com").is_err());
         assert!(UrlHttp::new("not a url").is_err());
+
+        // Test from_url, get, and into_inner
+        let url = Url::parse("http://example.com").unwrap();
+        let http_url = UrlHttp::from_url(url).unwrap();
+        assert_eq!(http_url.get().scheme(), "http");
+        let inner = http_url.into_inner();
+        assert_eq!(inner.as_str(), "http://example.com/");
     }
 
     #[test]
