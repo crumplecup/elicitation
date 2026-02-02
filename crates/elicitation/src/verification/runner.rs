@@ -273,7 +273,7 @@ impl ProofHarness {
                 "kani",
                 "--lib",
                 "--features",
-                "verify-kani",
+                "verify-kani,serde_json,chrono,jiff,time,uuid,url,regex",
                 "--harness",
                 &self.name,
             ])
