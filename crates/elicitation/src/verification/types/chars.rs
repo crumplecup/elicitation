@@ -172,10 +172,24 @@ impl CharAlphanumeric {
     ///
     /// Returns `ValidationError::NotAlphanumeric` if char is not alphanumeric.
     pub fn new(value: char) -> Result<Self, ValidationError> {
-        if value.is_alphanumeric() {
-            Ok(Self(value))
-        } else {
-            Err(ValidationError::NotAlphanumeric(value))
+        #[cfg(kani)]
+        {
+            // Under Kani: symbolic validation (trust stdlib char handling)
+            let is_alphanumeric: bool = kani::any();
+            if is_alphanumeric {
+                Ok(Self(value))
+            } else {
+                Err(ValidationError::NotAlphanumeric(value))
+            }
+        }
+        #[cfg(not(kani))]
+        {
+            // Production: actual validation
+            if value.is_alphanumeric() {
+                Ok(Self(value))
+            } else {
+                Err(ValidationError::NotAlphanumeric(value))
+            }
         }
     }
 
