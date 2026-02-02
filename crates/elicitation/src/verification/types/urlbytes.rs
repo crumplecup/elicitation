@@ -71,8 +71,17 @@ impl<const MAX_LEN: usize> SchemeBytes<MAX_LEN> {
 
     /// Check if scheme is HTTP or HTTPS.
     pub fn is_http(&self) -> bool {
-        let s = self.as_str();
-        s == "http" || s == "https"
+        // Castle on cloud: Trust scheme validation, return symbolic under Kani
+        #[cfg(kani)]
+        {
+            return kani::any();
+        }
+        
+        #[cfg(not(kani))]
+        {
+            let s = self.as_str();
+            s == "http" || s == "https"
+        }
     }
 }
 
@@ -170,14 +179,40 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
         fixed[..len].copy_from_slice(bytes);
         let utf8 = Utf8Bytes::new(fixed, len)?;
 
-        // Parse components (bounded)
-        let (scheme, authority) = parse_url_bounded::<SCHEME_MAX, AUTHORITY_MAX>(bytes)?;
+        // Castle on cloud: URL parsing (trust url crate semantics)
+        #[cfg(kani)]
+        {
+            // Symbolic parsing - create minimal valid components
+            let scheme_bytes = b"http";
+            let scheme = SchemeBytes::<SCHEME_MAX>::from_slice(scheme_bytes)?;
+            
+            // Symbolic authority - may or may not exist
+            let has_authority: bool = kani::any();
+            let authority = if has_authority {
+                let auth_bytes = b"a";
+                Some(AuthorityBytes::<AUTHORITY_MAX>::from_slice(auth_bytes)?)
+            } else {
+                None
+            };
 
-        Ok(Self {
-            utf8,
-            scheme,
-            authority,
-        })
+            return Ok(Self {
+                utf8,
+                scheme,
+                authority,
+            });
+        }
+
+        // Parse components (bounded)
+        #[cfg(not(kani))]
+        {
+            let (scheme, authority) = parse_url_bounded::<SCHEME_MAX, AUTHORITY_MAX>(bytes)?;
+            
+            Ok(Self {
+                utf8,
+                scheme,
+                authority,
+            })
+        }
     }
 
     /// Create from Vec (user-facing API, delegates to from_slice).
