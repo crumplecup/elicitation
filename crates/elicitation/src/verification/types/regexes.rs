@@ -489,17 +489,22 @@ impl RegexSetNonEmpty {
     /// Create a new non-empty regex set from pattern strings (Kani mode).
     ///
     /// Uses symbolic boolean to verify wrapper logic without regex compilation.
-    pub fn new<I, S>(_patterns: I) -> Result<Self, ValidationError>
+    pub fn new<I, S>(patterns: I) -> Result<Self, ValidationError>
     where
         I: IntoIterator<Item = S>,
         S: AsRef<str>,
     {
-        let is_valid: bool = kani::any();
-        let is_empty: bool = kani::any();
+        // Actually check if empty (not symbolic - this is deterministic)
+        let patterns: Vec<_> = patterns.into_iter().collect();
         
-        if is_empty {
-            Err(ValidationError::EmptyCollection)
-        } else if is_valid {
+        if patterns.is_empty() {
+            return Err(ValidationError::EmptyCollection);
+        }
+        
+        // Symbolic validation for regex compilation (non-deterministic)
+        let is_valid: bool = kani::any();
+        
+        if is_valid {
             Ok(Self(std::marker::PhantomData))
         } else {
             Err(ValidationError::RegexInvalid)
