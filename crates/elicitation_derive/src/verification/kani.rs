@@ -9,13 +9,12 @@ pub fn generate_kani_verification(struct_name: &Ident, fields: &[&Field]) -> Tok
     let constructor = generate_constructor(struct_name, fields);
     let harness = generate_harness(struct_name, fields);
 
-    // Note: We only gate on the feature flag, not #[cfg(kani)]
-    // This allows cargo expand to show the code, and Kani will find it when running
+    // Note: No feature gates - the verification code is harmless in user crates
+    // and will simply be unused (dead code). Feature gates would cause warnings
+    // about unknown features in user crates.
     quote! {
-        #[cfg(feature = "verify-kani")]
         #constructor
 
-        #[cfg(feature = "verify-kani")]
         #harness
     }
 }
@@ -32,7 +31,6 @@ pub fn generate_kani_enum_verification(
         .collect();
 
     quote! {
-        #[cfg(feature = "verify-kani")]
         const _: () = {
             #(#harnesses)*
         };

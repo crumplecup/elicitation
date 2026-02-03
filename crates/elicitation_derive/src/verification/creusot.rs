@@ -10,10 +10,8 @@ pub fn generate_creusot_verification(struct_name: &Ident, fields: &[&Field]) -> 
     let harness = generate_harness(struct_name, fields);
 
     quote! {
-        #[cfg(feature = "verify-creusot")]
         #constructor
 
-        #[cfg(feature = "verify-creusot")]
         #harness
     }
 }
@@ -30,7 +28,6 @@ pub fn generate_creusot_enum_verification(
         .collect();
 
     quote! {
-        #[cfg(feature = "verify-creusot")]
         const _: () = {
             #(#harnesses)*
         };

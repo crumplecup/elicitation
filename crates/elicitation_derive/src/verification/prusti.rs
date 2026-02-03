@@ -10,10 +10,8 @@ pub fn generate_prusti_verification(struct_name: &Ident, fields: &[&Field]) -> T
     let harness = generate_harness(struct_name, fields);
 
     quote! {
-        #[cfg(feature = "verify-prusti")]
         #constructor
 
-        #[cfg(feature = "verify-prusti")]
         #harness
     }
 }
@@ -30,7 +28,6 @@ pub fn generate_prusti_enum_verification(
         .collect();
 
     quote! {
-        #[cfg(feature = "verify-prusti")]
         const _: () = {
             #(#harnesses)*
         };

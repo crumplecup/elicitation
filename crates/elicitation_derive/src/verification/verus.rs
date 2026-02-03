@@ -10,10 +10,8 @@ pub fn generate_verus_verification(struct_name: &Ident, fields: &[&Field]) -> To
     let harness = generate_harness(struct_name, fields);
 
     quote! {
-        #[cfg(feature = "verify-verus")]
         #constructor
 
-        #[cfg(feature = "verify-verus")]
         #harness
     }
 }
@@ -30,7 +28,6 @@ pub fn generate_verus_enum_verification(
         .collect();
 
     quote! {
-        #[cfg(feature = "verify-verus")]
         const _: () = {
             verus! {
                 #(#harnesses)*
