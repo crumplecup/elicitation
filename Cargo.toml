@@ -73,6 +73,7 @@ regex = "1.12"
 
 # Verification libraries
 creusot-contracts = "0.8"
+creusot-std = { git = "https://github.com/creusot-rs/creusot", branch = "master" }
 prusti-contracts = "0.2"
 
 # Dev dependencies

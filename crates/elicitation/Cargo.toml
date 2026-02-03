@@ -46,6 +46,7 @@ regex = { workspace = true, optional = true }
 
 # Verification libraries (optional)
 creusot-contracts = { workspace = true, optional = true }
+creusot-std = { workspace = true, optional = true }
 prusti-contracts = { workspace = true, optional = true }
 
 # Re-export derive macro
@@ -83,6 +84,7 @@ verify-kani = ["verification"] # Kani model checker
 verify-creusot = [
   "verification",
   "creusot-contracts",
+  "creusot-std",
 ] # Creusot deductive verifier
 verify-prusti = ["verification", "prusti-contracts"] # Prusti separation logic
 verify-verus = ["verification"] # Verus SMT verifier (future)

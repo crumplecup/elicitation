@@ -5,7 +5,7 @@
 #![allow(unused_imports)]
 
 use crate::*;
-use creusot_contracts::*;
+use creusot_contracts::prelude::*;
 
 // URL Contract Proofs
 // ============================================================================
