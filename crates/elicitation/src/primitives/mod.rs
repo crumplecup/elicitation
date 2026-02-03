@@ -25,6 +25,7 @@ mod integers;
 mod network;
 mod pathbuf;
 mod string;
+pub mod systemtime;
 mod tuples;
 
 #[cfg(feature = "uuid")]
