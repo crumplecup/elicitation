@@ -11,6 +11,8 @@ pub fn generate_prusti_verification(struct_name: &Ident, fields: &[&Field]) -> T
     let module_name = format_ident!("__prusti_verification_{}", struct_name);
 
     quote! {
+        #[allow(dead_code, unexpected_cfgs)]
+        #[cfg(prusti)]
         mod #module_name {
             use super::*;
 
@@ -33,6 +35,8 @@ pub fn generate_prusti_enum_verification(
     let module_name = format_ident!("__prusti_verification_{}", enum_name);
 
     quote! {
+        #[allow(dead_code, unexpected_cfgs)]
+        #[cfg(prusti)]
         mod #module_name {
             use super::*;
 

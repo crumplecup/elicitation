@@ -11,6 +11,8 @@ pub fn generate_creusot_verification(struct_name: &Ident, fields: &[&Field]) -> 
     let module_name = format_ident!("__creusot_verification_{}", struct_name);
 
     quote! {
+        #[allow(dead_code, unexpected_cfgs)]
+        #[cfg(creusot)]
         mod #module_name {
             use super::*;
 
@@ -33,6 +35,8 @@ pub fn generate_creusot_enum_verification(
     let module_name = format_ident!("__creusot_verification_{}", enum_name);
 
     quote! {
+        #[allow(dead_code, unexpected_cfgs)]
+        #[cfg(creusot)]
         mod #module_name {
             use super::*;
 

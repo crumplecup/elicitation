@@ -11,6 +11,8 @@ pub fn generate_verus_verification(struct_name: &Ident, fields: &[&Field]) -> To
     let module_name = format_ident!("__verus_verification_{}", struct_name);
 
     quote! {
+        #[allow(dead_code, unexpected_cfgs)]
+        #[cfg(verus)]
         mod #module_name {
             use super::*;
 
@@ -33,6 +35,8 @@ pub fn generate_verus_enum_verification(
     let module_name = format_ident!("__verus_verification_{}", enum_name);
 
     quote! {
+        #[allow(dead_code, unexpected_cfgs)]
+        #[cfg(verus)]
         mod #module_name {
             use super::*;
 
