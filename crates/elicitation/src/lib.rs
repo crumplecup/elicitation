@@ -270,6 +270,9 @@ pub use verification::types::{
 #[cfg(all(any(feature = "verification", kani), feature = "uuid"))]
 pub use verification::types::{UuidNonNil, UuidV4};
 
+#[cfg(feature = "uuid")]
+pub use primitives::uuid::{UuidGenerationMode, UuidGenerator};
+
 // DateTimes (feature-gated on chrono/time/jiff)
 #[cfg(all(any(feature = "verification", kani), feature = "chrono"))]
 pub use verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};

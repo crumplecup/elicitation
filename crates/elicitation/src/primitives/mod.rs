@@ -28,4 +28,4 @@ mod string;
 mod tuples;
 
 #[cfg(feature = "uuid")]
-mod uuid;
+pub mod uuid;
