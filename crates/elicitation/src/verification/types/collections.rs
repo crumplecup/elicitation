@@ -456,7 +456,7 @@ impl<K, V> HashMapNonEmpty<K, V> {
     }
 
     /// Kani version: trust stdlib HashMap, verify wrapper logic.
-    /// 
+    ///
     /// We use PhantomData because HashMap internals cause state explosion
     /// in Kani (see https://github.com/model-checking/kani/issues/1727).
     /// This approach verifies our validation logic without re-verifying stdlib.

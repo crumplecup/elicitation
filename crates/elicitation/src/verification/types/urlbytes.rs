@@ -76,7 +76,7 @@ impl<const MAX_LEN: usize> SchemeBytes<MAX_LEN> {
         {
             return kani::any();
         }
-        
+
         #[cfg(not(kani))]
         {
             let s = self.as_str();
@@ -185,7 +185,7 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
             // Symbolic parsing - create minimal valid components
             let scheme_bytes = b"http";
             let scheme = SchemeBytes::<SCHEME_MAX>::from_slice(scheme_bytes)?;
-            
+
             // Symbolic authority - may or may not exist
             let has_authority: bool = kani::any();
             let authority = if has_authority {
@@ -206,7 +206,7 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
         #[cfg(not(kani))]
         {
             let (scheme, authority) = parse_url_bounded::<SCHEME_MAX, AUTHORITY_MAX>(bytes)?;
-            
+
             Ok(Self {
                 utf8,
                 scheme,

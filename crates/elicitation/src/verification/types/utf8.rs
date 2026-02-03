@@ -63,7 +63,7 @@ impl<const MAX_LEN: usize> Utf8Bytes<MAX_LEN> {
                 return Err(ValidationError::InvalidUtf8);
             }
         }
-        
+
         #[cfg(not(kani))]
         {
             if !is_valid_utf8(&bytes[..len]) {
@@ -122,11 +122,11 @@ impl<const MAX_LEN: usize> std::fmt::Display for Utf8Bytes<MAX_LEN> {
 #[inline]
 pub fn is_valid_utf8(bytes: &[u8]) -> bool {
     let len = bytes.len();
-    
+
     // Kani constraint: Assume reasonable length for tractability
     #[cfg(kani)]
     kani::assume(len <= 16);
-    
+
     let mut i = 0;
 
     while i < len {

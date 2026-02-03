@@ -187,7 +187,7 @@ fn verify_regex_literal() {
 
     let bytes = b"hello";
     let _result = RegexBytes::<MAX_LEN>::from_slice(bytes);
-    
+
     // Verify construction doesn't panic
     // Note: Can't call .as_str() as it triggers UTF-8 validation loop
 }
