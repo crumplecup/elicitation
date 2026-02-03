@@ -584,11 +584,32 @@ verify-kani-failed csv="kani_verification_results.csv":
 verify-kani-list:
     @cargo run --quiet --features cli --release -- verify list
 
-# Run Prusti verification
+# Run Prusti verification (simple)
 verify-prusti:
     @command -v cargo-prusti >/dev/null 2>&1 || (echo "❌ Prusti not installed. Run: just setup-verifiers" && exit 1)
     @echo "🔬 Running Prusti verification..."
     cargo-prusti --package elicitation --features verify-prusti
+
+# Run Prusti verification with CSV tracking (recommended)
+verify-prusti-tracked csv="prusti_verification_results.csv" timeout="600":
+    @command -v cargo-prusti >/dev/null 2>&1 || (echo "❌ Prusti not installed. Run: just setup-verifiers" && exit 1)
+    @echo "🔬 Running Prusti verification with tracking..."
+    @echo "CSV output: {{csv}}"
+    @echo "Timeout: {{timeout}}s"
+    @echo ""
+    cargo run --quiet --package elicitation --features cli -- prusti run --output {{csv}} --timeout {{timeout}}
+
+# Show Prusti verification summary statistics
+verify-prusti-summary csv="prusti_verification_results.csv":
+    cargo run --quiet --package elicitation --features cli -- prusti summary --file {{csv}}
+
+# Show failed Prusti verification modules
+verify-prusti-failed csv="prusti_verification_results.csv":
+    cargo run --quiet --package elicitation --features cli -- prusti failed --file {{csv}}
+
+# List all Prusti proof modules
+verify-prusti-list:
+    @cargo run --quiet --package elicitation --features cli -- prusti list
 
 # Run Creusot verification
 verify-creusot file="":

@@ -11,7 +11,6 @@ use chrono::Utc;
 use csv::{Reader, Writer};
 use derive_getters::Getters;
 use serde::{Deserialize, Serialize};
-use std::io::Write;
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::time::Instant;
