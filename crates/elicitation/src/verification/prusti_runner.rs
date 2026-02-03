@@ -165,7 +165,7 @@ pub fn run_all(output: &Path, timeout: u64) -> Result<()> {
             "elicitation",
         ])
         .env("PRUSTI_CHECK_PANICS", "true")
-        .env("PRUSTI_CHECK_BINARY_OPERATIONS", "true")
+        .env("PRUSTI_CHECK_OVERFLOWS", "true")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
