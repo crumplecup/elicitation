@@ -20,6 +20,7 @@
 mod boolean;
 mod char;
 pub mod duration;
+pub mod errors;
 mod floats;
 mod integers;
 mod network;

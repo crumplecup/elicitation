@@ -288,6 +288,14 @@ pub use primitives::unit_structs::{
     Formatter, Parser, Validator,
 };
 
+// Error generators (for testing)
+pub use primitives::errors::{
+    IoErrorGenerationMode, IoErrorGenerator,
+};
+
+#[cfg(feature = "serde_json")]
+pub use primitives::errors::{JsonErrorGenerationMode, JsonErrorGenerator};
+
 // DateTimes (feature-gated on chrono/time/jiff)
 #[cfg(all(any(feature = "verification", kani), feature = "chrono"))]
 pub use verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
