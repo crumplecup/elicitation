@@ -78,6 +78,13 @@ setup-verifiers install_dir="~/repos":
         mkdir -p {{install_dir}}
         cd {{install_dir}} && git clone https://github.com/viperproject/prusti-dev.git || true
         cd {{install_dir}}/prusti-dev && ./x.py setup && ./x.py build --release
+        # Symlink to cargo bin directory
+        mkdir -p ~/.cargo/bin
+        ln -sf {{install_dir}}/prusti-dev/target/release/cargo-prusti ~/.cargo/bin/cargo-prusti
+        ln -sf {{install_dir}}/prusti-dev/target/release/prusti-driver ~/.cargo/bin/prusti-driver
+        ln -sf {{install_dir}}/prusti-dev/target/release/prusti-rustc ~/.cargo/bin/prusti-rustc
+        ln -sf {{install_dir}}/prusti-dev/target/release/prusti-server ~/.cargo/bin/prusti-server
+        echo "  ✅ Symlinked Prusti binaries to ~/.cargo/bin"
     fi
     echo ""
     
