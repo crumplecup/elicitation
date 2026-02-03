@@ -86,6 +86,7 @@ mod contract_type;
 mod derive_elicit;
 mod enum_impl;
 mod struct_impl;
+mod tool_gen;
 mod verification;
 
 use proc_macro::TokenStream;
