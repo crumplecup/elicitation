@@ -151,7 +151,9 @@ impl Generator for UuidGenerator {
 
 impl Prompt for Uuid {
     fn prompt() -> Option<&'static str> {
-        Some("Please provide a UUID (hyphenated format), type 'generate' for a new random UUID, or choose a generation strategy:")
+        Some(
+            "Please provide a UUID (hyphenated format), type 'generate' for a new random UUID, or choose a generation strategy:",
+        )
     }
 }
 

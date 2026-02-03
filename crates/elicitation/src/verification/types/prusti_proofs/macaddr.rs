@@ -20,20 +20,20 @@ use prusti_contracts::*;
 // ============================================================================
 
 /// Verify: MacAddr construction always succeeds
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_mac_construction(octets: [u8; 6]) -> MacAddr {
     MacAddr::new(octets)
 }
 
 /// Verify: octets() returns the same octets
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.octets() == octets)]
 pub fn verify_mac_octets_accessor(octets: [u8; 6]) -> MacAddr {
     MacAddr::new(octets)
 }
 
 /// Verify: Unicast universal address (bit 0 = 0, bit 1 = 0)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_unicast())]
 #[ensures(result.is_universal())]
 pub fn verify_mac_unicast_universal() -> MacAddr {
@@ -41,7 +41,7 @@ pub fn verify_mac_unicast_universal() -> MacAddr {
 }
 
 /// Verify: Multicast universal address (bit 0 = 1, bit 1 = 0)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_multicast())]
 #[ensures(result.is_universal())]
 pub fn verify_mac_multicast_universal() -> MacAddr {
@@ -49,7 +49,7 @@ pub fn verify_mac_multicast_universal() -> MacAddr {
 }
 
 /// Verify: Unicast local address (bit 0 = 0, bit 1 = 1)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_unicast())]
 #[ensures(result.is_local())]
 pub fn verify_mac_unicast_local() -> MacAddr {
@@ -57,7 +57,7 @@ pub fn verify_mac_unicast_local() -> MacAddr {
 }
 
 /// Verify: Multicast local address (bit 0 = 1, bit 1 = 1)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_multicast())]
 #[ensures(result.is_local())]
 pub fn verify_mac_multicast_local() -> MacAddr {
@@ -65,7 +65,7 @@ pub fn verify_mac_multicast_local() -> MacAddr {
 }
 
 /// Verify: Broadcast address (FF:FF:FF:FF:FF:FF)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_broadcast())]
 #[ensures(result.is_multicast())]
 pub fn verify_mac_broadcast() -> MacAddr {
@@ -73,7 +73,7 @@ pub fn verify_mac_broadcast() -> MacAddr {
 }
 
 /// Verify: Null address (00:00:00:00:00:00)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_null())]
 #[ensures(result.is_unicast())]
 #[ensures(result.is_universal())]
@@ -82,7 +82,7 @@ pub fn verify_mac_null() -> MacAddr {
 }
 
 /// Verify: Common vendor MAC (Intel OUI 00:1B:21)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_unicast())]
 #[ensures(result.is_universal())]
 pub fn verify_mac_intel_oui() -> MacAddr {
@@ -90,7 +90,7 @@ pub fn verify_mac_intel_oui() -> MacAddr {
 }
 
 /// Verify: Common vendor MAC (Cisco OUI 00:1E:14)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_unicast())]
 #[ensures(result.is_universal())]
 pub fn verify_mac_cisco_oui() -> MacAddr {
@@ -101,49 +101,49 @@ pub fn verify_mac_cisco_oui() -> MacAddr {
 // ============================================================================
 
 /// Verify: is_unicast correctly identifies unicast (bit 0 = 0)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_is_unicast_00() -> bool {
     is_unicast(&[0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E])
 }
 
 /// Verify: is_unicast correctly identifies unicast (bit 0 = 0, bit 1 = 1)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_is_unicast_02() -> bool {
     is_unicast(&[0x02, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E])
 }
 
 /// Verify: is_multicast correctly identifies multicast (bit 0 = 1)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_is_multicast_01() -> bool {
     is_multicast(&[0x01, 0x00, 0x5E, 0x00, 0x00, 0x01])
 }
 
 /// Verify: is_multicast correctly identifies multicast (bit 0 = 1, bit 1 = 1)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_is_multicast_03() -> bool {
     is_multicast(&[0x03, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E])
 }
 
 /// Verify: is_multicast correctly identifies broadcast
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_is_multicast_broadcast() -> bool {
     is_multicast(&[0xFF; 6])
 }
 
 /// Verify: is_universal correctly identifies universal (bit 1 = 0)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_is_universal_00() -> bool {
     is_universal(&[0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E])
 }
 
 /// Verify: is_universal correctly identifies universal (bit 0 = 1, bit 1 = 0)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_is_universal_01() -> bool {
     is_universal(&[0x01, 0x00, 0x5E, 0x00, 0x00, 0x01])
@@ -153,21 +153,21 @@ pub fn verify_is_universal_01() -> bool {
 // ============================================================================
 
 /// Verify: Even octets are unicast (bit 0 = 0)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_unicast())]
 pub fn verify_mac_even_first_octet() -> MacAddr {
     MacAddr::new([0x04, 0x00, 0x00, 0x00, 0x00, 0x00])
 }
 
 /// Verify: Odd octets are multicast (bit 0 = 1)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_multicast())]
 pub fn verify_mac_odd_first_octet() -> MacAddr {
     MacAddr::new([0x05, 0x00, 0x00, 0x00, 0x00, 0x00])
 }
 
 /// Verify: 0x00 is unicast universal
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_unicast())]
 #[ensures(result.is_universal())]
 pub fn verify_mac_00_unicast_universal() -> MacAddr {
@@ -175,7 +175,7 @@ pub fn verify_mac_00_unicast_universal() -> MacAddr {
 }
 
 /// Verify: 0x01 is multicast universal
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_multicast())]
 #[ensures(result.is_universal())]
 pub fn verify_mac_01_multicast_universal() -> MacAddr {
@@ -183,7 +183,7 @@ pub fn verify_mac_01_multicast_universal() -> MacAddr {
 }
 
 /// Verify: 0x02 is unicast local
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_unicast())]
 #[ensures(result.is_local())]
 pub fn verify_mac_02_unicast_local() -> MacAddr {
@@ -191,7 +191,7 @@ pub fn verify_mac_02_unicast_local() -> MacAddr {
 }
 
 /// Verify: 0x03 is multicast local
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_multicast())]
 #[ensures(result.is_local())]
 pub fn verify_mac_03_multicast_local() -> MacAddr {
@@ -202,28 +202,28 @@ pub fn verify_mac_03_multicast_local() -> MacAddr {
 // ============================================================================
 
 /// Verify: All zeros (null address)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_null())]
 pub fn verify_mac_all_zeros() -> MacAddr {
     MacAddr::new([0x00; 6])
 }
 
 /// Verify: All ones (broadcast)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_broadcast())]
 pub fn verify_mac_all_ones() -> MacAddr {
     MacAddr::new([0xFF; 6])
 }
 
 /// Verify: Alternating pattern
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_multicast())]
 pub fn verify_mac_alternating() -> MacAddr {
     MacAddr::new([0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00])
 }
 
 /// Verify: Sequential values
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_unicast())]
 pub fn verify_mac_sequential() -> MacAddr {
     MacAddr::new([0x00, 0x01, 0x02, 0x03, 0x04, 0x05])

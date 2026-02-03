@@ -23,7 +23,9 @@
 
 use crate::{
     ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
-    Select, datetime_common::{DateTimeComponents, DateTimeInputMethod}, mcp,
+    Select,
+    datetime_common::{DateTimeComponents, DateTimeInputMethod},
+    mcp,
 };
 use jiff::{Span, Timestamp, Zoned, civil::DateTime as CivilDateTime, tz::TimeZone};
 
@@ -61,7 +63,11 @@ impl Select for TimestampGenerationMode {
     }
 
     fn labels() -> &'static [&'static str] {
-        &["Now (Current UTC)", "Unix Epoch (1970-01-01)", "Offset (Custom)"]
+        &[
+            "Now (Current UTC)",
+            "Unix Epoch (1970-01-01)",
+            "Offset (Custom)",
+        ]
     }
 
     fn from_label(label: &str) -> Option<Self> {

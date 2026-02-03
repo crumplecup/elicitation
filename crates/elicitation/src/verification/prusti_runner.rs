@@ -36,7 +36,6 @@ impl ProofModule {
     }
 }
 
-
 /// Status of a Prusti proof verification.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ProofStatus {

@@ -164,7 +164,7 @@ impl Elicitation for Validator {
 
     async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Validator (unit struct)");
-        
+
         // Unit struct - only one possible value!
         // No need to ask the agent for anything.
         Ok(Validator)
@@ -228,18 +228,19 @@ mod tests {
     fn test_parser_methods() {
         let p = Parser;
         assert_eq!(p.parse_int("42").unwrap(), 42);
-        assert_eq!(p.parse_float("3.14").unwrap(), 3.14);
-        assert_eq!(p.parse_bool("true").unwrap(), true);
+        let result = p.parse_float("3.14").unwrap();
+        assert!((result - 3.14).abs() < 0.001);
+        assert!(p.parse_bool("true").unwrap());
     }
 
     #[test]
     fn test_generator_trivial() {
         let v = Validator;
         assert_eq!(v.generate(), Validator);
-        
+
         let f = Formatter;
         assert_eq!(f.generate(), Formatter);
-        
+
         let p = Parser;
         assert_eq!(p.generate(), Parser);
     }

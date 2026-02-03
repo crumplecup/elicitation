@@ -70,7 +70,7 @@ crate::default_style!(PrimitiveDateTimeGenerationMode => PrimitiveDateTimeGenera
 pub enum InstantGenerationMode {
     /// Use the actual current instant (Instant::now())
     Now,
-    
+
     /// Create an instant offset from a reference point.
     ///
     /// The offset can be positive (future) or negative (past).
@@ -95,7 +95,10 @@ impl crate::Select for InstantGenerationMode {
     fn options() -> &'static [Self] {
         &[
             InstantGenerationMode::Now,
-            InstantGenerationMode::Offset { seconds: 0, nanos: 0 },
+            InstantGenerationMode::Offset {
+                seconds: 0,
+                nanos: 0,
+            },
         ]
     }
 
@@ -106,7 +109,10 @@ impl crate::Select for InstantGenerationMode {
     fn from_label(label: &str) -> Option<Self> {
         match label {
             "Now (current time)" => Some(InstantGenerationMode::Now),
-            "Offset (from reference)" => Some(InstantGenerationMode::Offset { seconds: 0, nanos: 0 }),
+            "Offset (from reference)" => Some(InstantGenerationMode::Offset {
+                seconds: 0,
+                nanos: 0,
+            }),
             _ => None,
         }
     }
@@ -135,10 +141,11 @@ impl Elicitation for InstantGenerationMode {
         let value = mcp::extract_value(result)?;
         let label = mcp::parse_string(value)?;
 
-        let selected = Self::from_label(&label)
-            .ok_or_else(|| ElicitError::new(ElicitErrorKind::ParseError(
-                "Invalid variant selection".to_string()
-            )))?;
+        let selected = Self::from_label(&label).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(
+                "Invalid variant selection".to_string(),
+            ))
+        })?;
 
         // If Offset was selected, elicit the fields
         match selected {
@@ -204,7 +211,7 @@ impl Generator for InstantGenerator {
             InstantGenerationMode::Now => Instant::now(),
             InstantGenerationMode::Offset { seconds, nanos } => {
                 let duration = Duration::new(*seconds as u64, *nanos);
-                
+
                 // For offset mode, we use the reference instant
                 if *seconds >= 0 {
                     self.reference + duration
@@ -275,12 +282,19 @@ impl Select for OffsetDateTimeGenerationMode {
         &[
             OffsetDateTimeGenerationMode::Now,
             OffsetDateTimeGenerationMode::UnixEpoch,
-            OffsetDateTimeGenerationMode::Offset { seconds: 0, nanos: 0 },
+            OffsetDateTimeGenerationMode::Offset {
+                seconds: 0,
+                nanos: 0,
+            },
         ]
     }
 
     fn labels() -> &'static [&'static str] {
-        &["Now (Current UTC)", "Unix Epoch (1970-01-01)", "Offset (Custom)"]
+        &[
+            "Now (Current UTC)",
+            "Unix Epoch (1970-01-01)",
+            "Offset (Custom)",
+        ]
     }
 
     fn from_label(label: &str) -> Option<Self> {
@@ -393,7 +407,7 @@ impl Generator for OffsetDateTimeGenerator {
 }
 
 // ============================================================================
-// OffsetDateTime Elicitation  
+// OffsetDateTime Elicitation
 // ============================================================================
 
 // OffsetDateTime implementation

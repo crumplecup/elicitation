@@ -10,14 +10,14 @@ use prusti_contracts::*;
 // Regex Contract Proofs
 // ============================================================================
 
-#[cfg(all(feature = "verify-prusti", feature = "regex"))]
+#[cfg(all(prusti, feature = "regex"))]
 /// Prove that RegexValid construction succeeds for valid patterns.
 #[ensures(result.is_ok() || result.is_err())]
 pub fn verify_regex_valid_construction(pattern: &str) -> Result<RegexValid, ValidationError> {
     RegexValid::new(pattern)
 }
 
-#[cfg(all(feature = "verify-prusti", feature = "regex"))]
+#[cfg(all(prusti, feature = "regex"))]
 /// Prove that RegexSetValid construction works for multiple patterns.
 #[ensures(result.is_ok() || result.is_err())]
 pub fn verify_regex_set_valid_construction(
@@ -26,7 +26,7 @@ pub fn verify_regex_set_valid_construction(
     RegexSetValid::new(patterns)
 }
 
-#[cfg(all(feature = "verify-prusti", feature = "regex"))]
+#[cfg(all(prusti, feature = "regex"))]
 /// Prove that RegexCaseInsensitive compiles with case-insensitive flag.
 #[ensures(result.is_ok() || result.is_err())]
 pub fn verify_regex_case_insensitive_construction(
@@ -35,7 +35,7 @@ pub fn verify_regex_case_insensitive_construction(
     RegexCaseInsensitive::new(pattern)
 }
 
-#[cfg(all(feature = "verify-prusti", feature = "regex"))]
+#[cfg(all(prusti, feature = "regex"))]
 /// Prove that RegexMultiline compiles with multiline flag.
 #[ensures(result.is_ok() || result.is_err())]
 pub fn verify_regex_multiline_construction(
@@ -44,7 +44,7 @@ pub fn verify_regex_multiline_construction(
     RegexMultiline::new(pattern)
 }
 
-#[cfg(all(feature = "verify-prusti", feature = "regex"))]
+#[cfg(all(prusti, feature = "regex"))]
 /// Prove that RegexSetNonEmpty rejects empty pattern sets.
 #[ensures(match result {
     Ok(ref set) => set.len() > 0,
@@ -56,7 +56,7 @@ pub fn verify_regex_set_non_empty_requirement(
     RegexSetNonEmpty::new(patterns)
 }
 
-#[cfg(all(feature = "verify-prusti", feature = "regex"))]
+#[cfg(all(prusti, feature = "regex"))]
 /// Prove regex trenchcoat pattern: pattern → compile → unwrap preserves pattern.
 #[ensures(match result {
     Ok(ref wrapped) => wrapped.clone().into_inner().as_str() == pattern,
@@ -66,7 +66,7 @@ pub fn verify_regex_trenchcoat(pattern: &str) -> Result<RegexValid, ValidationEr
     RegexValid::new(pattern)
 }
 
-#[cfg(all(feature = "verify-prusti", feature = "regex"))]
+#[cfg(all(prusti, feature = "regex"))]
 /// Prove regex accessor correctness.
 #[ensures(match result {
     Ok(ref wrapped) => wrapped.get().as_str() == pattern,
@@ -81,6 +81,7 @@ pub fn verify_regex_accessor(pattern: &str) -> Result<RegexValid, ValidationErro
 // ============================================================================
 
 /// Total number of Prusti proofs implemented.
+#[cfg(prusti)]
 #[must_use]
 pub const fn total() -> usize {
     // Placeholder: Prusti regex proofs not yet implemented

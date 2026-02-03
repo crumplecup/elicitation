@@ -37,7 +37,9 @@ mod regexes;
 mod regexbytes;
 
 /// Total number of Prusti proofs implemented.
+#[cfg(prusti)]
 pub const PRUSTI_PROOF_COUNT: usize = 375; // 101 + 17 UTF-8 + 33 PathBytes + 45 RegexBytes + 46 UrlBytes + 43 IpAddrBytes + 30 SocketAddr + 27 MacAddr + 33 UuidBytes
 
 /// Verification coverage percentage.
+#[cfg(prusti)]
 pub const PRUSTI_COVERAGE_PERCENT: usize = 100;

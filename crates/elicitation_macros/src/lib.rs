@@ -67,17 +67,20 @@ pub fn instrumented_impl(_attr: TokenStream, item: TokenStream) -> TokenStream {
                         // Constructors: track errors and parameters
                         if has_generics {
                             // Skip generic parameters (can't guarantee Debug)
-                            let param_names: Vec<_> = method.sig.inputs.iter()
+                            let param_names: Vec<_> = method
+                                .sig
+                                .inputs
+                                .iter()
                                 .filter_map(|arg| {
-                                    if let syn::FnArg::Typed(pat_type) = arg {
-                                        if let syn::Pat::Ident(ident) = &*pat_type.pat {
-                                            return Some(ident.ident.clone());
-                                        }
+                                    if let syn::FnArg::Typed(pat_type) = arg
+                                        && let syn::Pat::Ident(ident) = &*pat_type.pat
+                                    {
+                                        return Some(ident.ident.clone());
                                     }
                                     None
                                 })
                                 .collect();
-                            
+
                             // For constructors with generics, skip params but track errors
                             quote! {
                                 #[tracing::instrument(skip(#(#param_names),*), err)]

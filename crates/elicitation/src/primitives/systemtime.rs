@@ -66,12 +66,19 @@ impl Select for SystemTimeGenerationMode {
         &[
             SystemTimeGenerationMode::Now,
             SystemTimeGenerationMode::UnixEpoch,
-            SystemTimeGenerationMode::Offset { seconds: 0, nanos: 0 },
+            SystemTimeGenerationMode::Offset {
+                seconds: 0,
+                nanos: 0,
+            },
         ]
     }
 
     fn labels() -> &'static [&'static str] {
-        &["Now (Current time)", "Unix Epoch (1970-01-01)", "Offset (Custom)"]
+        &[
+            "Now (Current time)",
+            "Unix Epoch (1970-01-01)",
+            "Offset (Custom)",
+        ]
     }
 
     fn from_label(label: &str) -> Option<Self> {

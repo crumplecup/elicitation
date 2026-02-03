@@ -93,7 +93,7 @@ cli = ["clap", "csv", "chrono"]
 dev = ["chrono", "time", "jiff", "uuid", "url", "regex", "cli"]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(prusti)', 'cfg(creusot)', 'cfg(verus)'] }
 
 [[bin]]
 name = "elicitation"

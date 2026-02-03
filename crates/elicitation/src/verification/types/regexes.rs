@@ -4,11 +4,11 @@
 
 #![cfg(feature = "regex")]
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use crate::verification::types::ValidationError;
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use elicitation_macros::instrumented_impl;
 #[cfg(feature = "regex")]
 use regex::{Regex, RegexBuilder, RegexSet};
-use elicitation_macros::instrumented_impl;
 
 // ============================================================================
 // Regex Contract Types
@@ -811,11 +811,11 @@ mod tests {
     }
 }
 
-    #[test]
-    fn test_regex_valid_elicitation_compile() {
-        // This test verifies that RegexValid implements Elicit properly
-        // and can be used in derived structs
-        fn _type_check() {
-            let _: fn() -> Result<RegexValid, crate::ElicitError>;
-        }
+#[test]
+fn test_regex_valid_elicitation_compile() {
+    // This test verifies that RegexValid implements Elicit properly
+    // and can be used in derived structs
+    fn _type_check() {
+        let _: fn() -> Result<RegexValid, crate::ElicitError>;
     }
+}

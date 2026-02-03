@@ -10,7 +10,7 @@ use prusti_contracts::*;
 // ============================================================================
 
 /// Prove that Affirm mechanism returns a boolean value.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result == true || result == false)]
 pub fn verify_affirm_returns_boolean() -> bool {
     // Affirm mechanism contract: always returns boolean
@@ -18,7 +18,7 @@ pub fn verify_affirm_returns_boolean() -> bool {
 }
 
 /// Prove that Survey mechanism returns a valid enum variant.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[pure]
 #[ensures(true)] // Exists a variant such that result equals that variant
 pub fn verify_survey_returns_valid_variant<E>() -> E
@@ -30,7 +30,7 @@ where
 }
 
 /// Prove that Select mechanism returns one of the provided options.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(!options.is_empty())]
 #[ensures(exists(|i: usize| i < options.len() && options[i] == result))]
 pub fn verify_select_returns_from_options<T>(options: Vec<T>) -> T
@@ -42,7 +42,7 @@ where
 }
 
 /// Prove mechanism + type composition maintains contracts.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(value > 0)]
 #[ensures(result.is_ok())]
 pub fn verify_mechanism_type_composition(value: i8) -> Result<I8Positive, ValidationError> {
@@ -51,7 +51,7 @@ pub fn verify_mechanism_type_composition(value: i8) -> Result<I8Positive, Valida
 }
 
 /// Prove mechanisms preserve trenchcoat pattern.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(value > 0)]
 #[ensures(match result {
     Ok(ref wrapped) => wrapped.into_inner() == value,
@@ -71,7 +71,7 @@ pub fn verify_mechanism_trenchcoat_preservation(value: i8) -> Result<I8Positive,
 ///
 /// This is the master theorem: wrapping and unwrapping preserves the value
 /// when validation succeeds. This property enables zero-cost abstraction.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(value > 0)]
 #[ensures(match result {
     Ok(ref wrapped) => wrapped.into_inner() == value,
@@ -83,7 +83,7 @@ pub fn verify_trenchcoat_identity_preservation(value: i8) -> Result<I8Positive, 
 }
 
 /// Prove compositional verification: tuple contracts compose element contracts.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(true)]
 #[ensures(result.is_ok())]
 pub fn verify_compositional_correctness(

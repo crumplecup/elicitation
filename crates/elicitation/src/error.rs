@@ -131,6 +131,10 @@ pub enum ElicitErrorKind {
     #[display("Parse error: {}", _0)]
     ParseError(String),
 
+    /// Contract validation error.
+    #[display("Validation failed: {}", _0)]
+    Validation(String),
+
     /// Recursion depth exceeded during elicitation.
     #[display("Recursion depth exceeded: maximum depth is {}", _0)]
     RecursionDepthExceeded(usize),
@@ -280,6 +284,16 @@ impl From<ElicitErrorKind> for ElicitError {
 error_from!(rmcp::ErrorData);
 error_from!(rmcp::service::ServiceError);
 error_from!(serde_json::Error);
+
+// Add conversion for ValidationError
+impl From<crate::verification::types::ValidationError> for ElicitError {
+    #[track_caller]
+    fn from(err: crate::verification::types::ValidationError) -> Self {
+        let kind = ElicitErrorKind::Validation(err.to_string());
+        tracing::error!(error_kind = %kind, "Error from ValidationError");
+        Self(Box::new(kind))
+    }
+}
 
 // Add conversion for rmcp::service::ElicitationError
 impl From<rmcp::service::ElicitationError> for ElicitError {

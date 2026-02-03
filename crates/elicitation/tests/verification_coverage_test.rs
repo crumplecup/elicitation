@@ -37,7 +37,7 @@ struct ComprehensiveTest {
 
     // DateTime (pick one)
     #[cfg(feature = "chrono")]
-    created: DateTimeNonEmpty,
+    created: DateTimeUtcAfter,
 
     // Value
     #[cfg(feature = "serde_json")]

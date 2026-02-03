@@ -42,10 +42,9 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
 /// Convert PascalCase or camelCase to snake_case.
 fn to_snake_case(s: &str) -> String {
     let mut result = String::with_capacity(s.len() + 5);
-    let mut chars = s.chars().peekable();
     let mut is_first = true;
 
-    while let Some(ch) = chars.next() {
+    for ch in s.chars() {
         if ch.is_uppercase() {
             if !is_first {
                 result.push('_');

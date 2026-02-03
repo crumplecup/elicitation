@@ -482,6 +482,114 @@ impl UrlCanBeBase {
 }
 
 // ============================================================================
+// Elicitation Implementations
+// ============================================================================
+
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+
+// Re-export UrlStyle from primitives
+pub use crate::primitives::url::UrlStyle;
+
+impl Prompt for UrlValid {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter a valid URL:")
+    }
+}
+
+impl Elicitation for UrlValid {
+    type Style = UrlStyle;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        let prompt = "Please enter a URL:";
+        tracing::debug!("Eliciting UrlValid with text elicitation");
+
+        let params = crate::mcp::text_params(prompt);
+
+        let result = client
+            .peer()
+            .call_tool(rmcp::model::CallToolRequestParams {
+                meta: None,
+                name: crate::mcp::tool_names::elicit_text().into(),
+                arguments: Some(params),
+                task: None,
+            })
+            .await?;
+
+        let value = crate::mcp::extract_value(result)?;
+        let url_string: String = serde_json::from_value(value)?;
+        
+        // Parse the string as a URL
+        let url = url::Url::parse(&url_string).map_err(|_| ValidationError::UrlInvalid)?;
+        Ok(Self::from_url(url))
+    }
+}
+
+impl Prompt for UrlHttps {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter an HTTPS URL:")
+    }
+}
+
+impl Elicitation for UrlHttps {
+    type Style = UrlStyle;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        let value = url::Url::elicit(client).await?;
+        Ok(Self::from_url(value).map_err(crate::ElicitError::from)?)
+    }
+}
+
+impl Prompt for UrlHttp {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter an HTTP or HTTPS URL:")
+    }
+}
+
+impl Elicitation for UrlHttp {
+    type Style = UrlStyle;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        let value = url::Url::elicit(client).await?;
+        Ok(Self::from_url(value).map_err(crate::ElicitError::from)?)
+    }
+}
+
+impl Prompt for UrlWithHost {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter a URL with a host:")
+    }
+}
+
+impl Elicitation for UrlWithHost {
+    type Style = UrlStyle;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        let value = url::Url::elicit(client).await?;
+        Ok(Self::from_url(value).map_err(crate::ElicitError::from)?)
+    }
+}
+
+impl Prompt for UrlCanBeBase {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter a base URL:")
+    }
+}
+
+impl Elicitation for UrlCanBeBase {
+    type Style = UrlStyle;
+
+    #[tracing::instrument(skip(client))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        let value = url::Url::elicit(client).await?;
+        Ok(Self::from_url(value).map_err(crate::ElicitError::from)?)
+    }
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 

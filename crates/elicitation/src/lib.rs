@@ -274,24 +274,16 @@ pub use verification::types::{UuidNonNil, UuidV4};
 pub use primitives::uuid::{UuidGenerationMode, UuidGenerator};
 
 // SystemTime (standard library)
-pub use primitives::systemtime::{
-    SystemTimeGenerationMode, SystemTimeGenerator,
-};
+pub use primitives::systemtime::{SystemTimeGenerationMode, SystemTimeGenerator};
 
 // Duration (standard library)
-pub use primitives::duration::{
-    DurationGenerationMode, DurationGenerator,
-};
+pub use primitives::duration::{DurationGenerationMode, DurationGenerator};
 
 // Unit structs (standard library)
-pub use primitives::unit_structs::{
-    Formatter, Parser, Validator,
-};
+pub use primitives::unit_structs::{Formatter, Parser, Validator};
 
 // Error generators (for testing)
-pub use primitives::errors::{
-    IoErrorGenerationMode, IoErrorGenerator,
-};
+pub use primitives::errors::{IoErrorGenerationMode, IoErrorGenerator};
 
 #[cfg(feature = "serde_json")]
 pub use primitives::errors::{JsonErrorGenerationMode, JsonErrorGenerator};

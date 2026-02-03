@@ -23,7 +23,9 @@
 
 use crate::{
     ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
-    Select, datetime_common::{DateTimeComponents, DateTimeInputMethod}, mcp,
+    Select,
+    datetime_common::{DateTimeComponents, DateTimeInputMethod},
+    mcp,
 };
 use chrono::{DateTime, Duration, FixedOffset, NaiveDateTime, TimeZone, Utc};
 
@@ -62,7 +64,11 @@ impl Select for DateTimeUtcGenerationMode {
     }
 
     fn labels() -> &'static [&'static str] {
-        &["Now (Current UTC)", "Unix Epoch (1970-01-01)", "Offset (Custom)"]
+        &[
+            "Now (Current UTC)",
+            "Unix Epoch (1970-01-01)",
+            "Offset (Custom)",
+        ]
     }
 
     fn from_label(label: &str) -> Option<Self> {
@@ -198,7 +204,11 @@ impl Select for NaiveDateTimeGenerationMode {
     }
 
     fn labels() -> &'static [&'static str] {
-        &["Now (Current time)", "Unix Epoch (1970-01-01)", "Offset (Custom)"]
+        &[
+            "Now (Current time)",
+            "Unix Epoch (1970-01-01)",
+            "Offset (Custom)",
+        ]
     }
 
     fn from_label(label: &str) -> Option<Self> {

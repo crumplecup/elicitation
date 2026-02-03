@@ -30,5 +30,8 @@ pub mod systemtime;
 mod tuples;
 pub mod unit_structs;
 
+#[cfg(feature = "url")]
+pub mod url;
+
 #[cfg(feature = "uuid")]
 pub mod uuid;

@@ -16,7 +16,8 @@ pub fn expand(input: TokenStream) -> TokenStream {
         Data::Enum(_) => crate::enum_impl::expand_enum(input.clone()),
         Data::Struct(_) => crate::struct_impl::expand_struct(input.clone()),
         Data::Union(_) => {
-            let error = syn::Error::new_spanned(&input.ident, "Elicit cannot be derived for unions");
+            let error =
+                syn::Error::new_spanned(&input.ident, "Elicit cannot be derived for unions");
             return error.to_compile_error().into();
         }
     };
