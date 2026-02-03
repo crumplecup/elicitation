@@ -275,7 +275,7 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize> 
 
 /// URL with authority (has //).
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UrlWithAuthority<
+pub struct UrlWithAuthorityBytes<
     const SCHEME_MAX: usize = 32,
     const AUTHORITY_MAX: usize = 256,
     const MAX_LEN: usize = 2048,
@@ -284,7 +284,7 @@ pub struct UrlWithAuthority<
 }
 
 impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
-    UrlWithAuthority<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+    UrlWithAuthorityBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
 {
     /// Create from byte slice (Kani-friendly).
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
@@ -310,7 +310,7 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
 
 /// Absolute URL (has scheme + authority).
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UrlAbsolute<
+pub struct UrlAbsoluteBytes<
     const SCHEME_MAX: usize = 32,
     const AUTHORITY_MAX: usize = 256,
     const MAX_LEN: usize = 2048,
@@ -319,7 +319,7 @@ pub struct UrlAbsolute<
 }
 
 impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
-    UrlAbsolute<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+    UrlAbsoluteBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
 {
     /// Create from byte slice (Kani-friendly).
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
@@ -345,7 +345,7 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
 
 /// URL with HTTP/HTTPS scheme.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UrlHttp<
+pub struct UrlHttpBytes<
     const SCHEME_MAX: usize = 32,
     const AUTHORITY_MAX: usize = 256,
     const MAX_LEN: usize = 2048,
@@ -354,7 +354,7 @@ pub struct UrlHttp<
 }
 
 impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
-    UrlHttp<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+    UrlHttpBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
 {
     /// Create from byte slice (Kani-friendly).
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {

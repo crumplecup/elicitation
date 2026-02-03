@@ -21,6 +21,9 @@ mod pathbytes;
 #[cfg(feature = "url")]
 mod urls;
 
+#[cfg(feature = "url")]
+mod urlbytes;
+
 #[cfg(feature = "regex")]
 mod regexes;
 
@@ -28,7 +31,7 @@ mod regexes;
 mod regexbytes;
 
 /// Total number of Prusti proofs implemented.
-pub const PRUSTI_PROOF_COUNT: usize = 196; // 101 + 17 UTF-8 + 33 PathBytes + 45 RegexBytes
+pub const PRUSTI_PROOF_COUNT: usize = 242; // 101 + 17 UTF-8 + 33 PathBytes + 45 RegexBytes + 46 UrlBytes
 
 /// Verification coverage percentage.
 pub const PRUSTI_COVERAGE_PERCENT: usize = 100;

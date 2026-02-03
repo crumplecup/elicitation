@@ -6,7 +6,8 @@
 #![cfg(kani)]
 
 use crate::verification::types::{
-    AuthorityBytes, SchemeBytes, UrlAbsolute, UrlBytes, UrlHttp, UrlWithAuthority, ValidationError,
+    AuthorityBytes, SchemeBytes, UrlAbsoluteBytes, UrlBytes, UrlHttpBytes, UrlWithAuthorityBytes,
+    ValidationError,
 };
 
 // ============================================================================

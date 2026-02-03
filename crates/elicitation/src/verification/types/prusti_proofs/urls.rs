@@ -1,10 +1,12 @@
-//! Prusti proofs for URL contract types.
+//! Prusti proofs for URL contract types (from url crate).
 
 #![cfg(feature = "verify-prusti")]
 #![cfg(feature = "url")]
 #![allow(unused_imports)]
 
-use crate::*;
+use crate::verification::types::{
+    UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost, ValidationError,
+};
 use prusti_contracts::*;
 
 // URL Contract Proofs
