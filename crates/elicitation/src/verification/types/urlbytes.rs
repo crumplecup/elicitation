@@ -76,7 +76,7 @@ impl<const MAX_LEN: usize> SchemeBytes<MAX_LEN> {
         {
             return kani::any();
         }
-        
+
         #[cfg(not(kani))]
         {
             let s = self.as_str();
@@ -185,7 +185,7 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
             // Symbolic parsing - create minimal valid components
             let scheme_bytes = b"http";
             let scheme = SchemeBytes::<SCHEME_MAX>::from_slice(scheme_bytes)?;
-            
+
             // Symbolic authority - may or may not exist
             let has_authority: bool = kani::any();
             let authority = if has_authority {
@@ -206,7 +206,7 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
         #[cfg(not(kani))]
         {
             let (scheme, authority) = parse_url_bounded::<SCHEME_MAX, AUTHORITY_MAX>(bytes)?;
-            
+
             Ok(Self {
                 utf8,
                 scheme,
@@ -275,7 +275,7 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize> 
 
 /// URL with authority (has //).
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UrlWithAuthority<
+pub struct UrlWithAuthorityBytes<
     const SCHEME_MAX: usize = 32,
     const AUTHORITY_MAX: usize = 256,
     const MAX_LEN: usize = 2048,
@@ -284,7 +284,7 @@ pub struct UrlWithAuthority<
 }
 
 impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
-    UrlWithAuthority<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+    UrlWithAuthorityBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
 {
     /// Create from byte slice (Kani-friendly).
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
@@ -310,7 +310,7 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
 
 /// Absolute URL (has scheme + authority).
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UrlAbsolute<
+pub struct UrlAbsoluteBytes<
     const SCHEME_MAX: usize = 32,
     const AUTHORITY_MAX: usize = 256,
     const MAX_LEN: usize = 2048,
@@ -319,7 +319,7 @@ pub struct UrlAbsolute<
 }
 
 impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
-    UrlAbsolute<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+    UrlAbsoluteBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
 {
     /// Create from byte slice (Kani-friendly).
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
@@ -345,7 +345,7 @@ impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
 
 /// URL with HTTP/HTTPS scheme.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UrlHttp<
+pub struct UrlHttpBytes<
     const SCHEME_MAX: usize = 32,
     const AUTHORITY_MAX: usize = 256,
     const MAX_LEN: usize = 2048,
@@ -354,7 +354,7 @@ pub struct UrlHttp<
 }
 
 impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
-    UrlHttp<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+    UrlHttpBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
 {
     /// Create from byte slice (Kani-friendly).
     pub fn from_slice(bytes: &[u8]) -> Result<Self, ValidationError> {
@@ -545,25 +545,25 @@ mod tests {
 
     #[test]
     fn test_url_with_authority_contract() {
-        let url = UrlWithAuthority::<32, 256, 2048>::from_slice(b"http://example.com").unwrap();
+        let url = UrlWithAuthorityBytes::<32, 256, 2048>::from_slice(b"http://example.com").unwrap();
         assert!(url.url().has_authority());
     }
 
     #[test]
     fn test_url_without_authority_rejected() {
-        let result = UrlWithAuthority::<32, 256, 2048>::from_slice(b"mailto:test@example.com");
+        let result = UrlWithAuthorityBytes::<32, 256, 2048>::from_slice(b"mailto:test@example.com");
         assert!(result.is_err());
     }
 
     #[test]
     fn test_url_http_contract() {
-        let url = UrlHttp::<32, 256, 2048>::from_slice(b"https://example.com").unwrap();
+        let url = UrlHttpBytes::<32, 256, 2048>::from_slice(b"https://example.com").unwrap();
         assert!(url.url().is_http());
     }
 
     #[test]
     fn test_non_http_rejected() {
-        let result = UrlHttp::<32, 256, 2048>::from_slice(b"ftp://example.com");
+        let result = UrlHttpBytes::<32, 256, 2048>::from_slice(b"ftp://example.com");
         assert!(result.is_err());
     }
 }

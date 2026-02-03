@@ -10,13 +10,13 @@ mod kani_proofs {
     fn verify_ascii_always_valid() {
         let byte1: u8 = kani::any();
         kani::assume(byte1 < 0x80); // ASCII range
-        
+
         let byte2: u8 = kani::any();
         kani::assume(byte2 < 0x80);
 
         let bytes = [byte1, byte2, 0, 0, 0];
         let result = Utf8Bytes::<5>::new(bytes, 2);
-        
+
         // Verify wrapper handles construction (both valid/invalid paths OK)
         if let Ok(utf8) = result {
             assert_eq!(utf8.len(), 2);
@@ -32,7 +32,7 @@ mod kani_proofs {
 
         let bytes = [byte, 0, 0, 0, 0];
         let result = Utf8Bytes::<5>::new(bytes, 1);
-        
+
         // Wrapper should handle both valid and invalid paths
         match result {
             Ok(_) => { /* Symbolic validation may accept */ }
@@ -52,7 +52,7 @@ mod kani_proofs {
 
         let bytes = [byte1, byte2, 0, 0, 0];
         let result = Utf8Bytes::<5>::new(bytes, 2);
-        
+
         // Wrapper should construct or reject based on symbolic validation
         match result {
             Ok(utf8) => assert_eq!(utf8.len(), 2),
@@ -72,7 +72,7 @@ mod kani_proofs {
 
         let bytes = [0xED, byte2, byte3, 0, 0];
         let result = Utf8Bytes::<5>::new(bytes, 3);
-        
+
         // Wrapper should handle both paths
         match result {
             Ok(utf8) => assert_eq!(utf8.len(), 3),
@@ -87,16 +87,16 @@ mod kani_proofs {
         // First pair of bytes
         let byte1: u8 = kani::any();
         let byte2: u8 = kani::any();
-        
+
         // Second pair of bytes
         let byte3: u8 = kani::any();
         let byte4: u8 = kani::any();
-        
+
         let bytes = [byte1, byte2, byte3, byte4, 0];
         let len = 4;
 
         let result = Utf8Bytes::<5>::new(bytes, len);
-        
+
         if let Ok(utf8) = result {
             // Verify composition: 4 bytes stored correctly
             assert_eq!(utf8.len(), 4);
@@ -114,12 +114,12 @@ mod kani_proofs {
         let byte1: u8 = kani::any();
         let byte2: u8 = kani::any();
         let byte3: u8 = kani::any();
-        
+
         let bytes = [byte1, byte2, byte3, 0, 0];
         let len = 3;
 
         let result = Utf8Bytes::<5>::new(bytes, len);
-        
+
         if let Ok(utf8) = result {
             assert_eq!(utf8.len(), 3);
             let retrieved = utf8.as_bytes();
@@ -137,12 +137,12 @@ mod kani_proofs {
         let byte3: u8 = kani::any();
         let byte4: u8 = kani::any();
         let byte5: u8 = kani::any();
-        
+
         let bytes = [byte1, byte2, byte3, byte4, byte5];
         let len = 5;
 
         let result = Utf8Bytes::<5>::new(bytes, len);
-        
+
         if let Ok(utf8) = result {
             assert_eq!(utf8.len(), 5);
             let retrieved = utf8.as_bytes();
@@ -163,7 +163,7 @@ mod kani_proofs {
 
         let bytes = [byte1, 0, 0, 0, 0];
         let result = Utf8Bytes::<5>::new(bytes, 1);
-        
+
         // Wrapper should handle both paths
         match result {
             Ok(utf8) => assert_eq!(utf8.len(), 1),
@@ -217,7 +217,7 @@ mod kani_proofs {
         let len = 2;
 
         let result = Utf8Bytes::<5>::new(bytes, len);
-        
+
         match result {
             Ok(utf8) => {
                 // Verify wrapper correctly stores and retrieves bytes

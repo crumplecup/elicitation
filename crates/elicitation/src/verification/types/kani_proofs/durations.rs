@@ -132,7 +132,7 @@ fn verify_f32_non_negative() {
     let value: f32 = kani::any();
 
     let _result = F32NonNegative::new(value);
-    
+
     // Verify construction doesn't panic
     // Note: Can't assert on value >= 0.0 or is_finite() with symbolic floats
 }
@@ -142,7 +142,7 @@ fn verify_f64_non_negative() {
     let value: f64 = kani::any();
 
     let _result = F64NonNegative::new(value);
-    
+
     // Verify construction doesn't panic
     // Note: Can't assert on value >= 0.0 or is_finite() with symbolic floats
 }
@@ -152,7 +152,7 @@ fn verify_f32_positive() {
     let value: f32 = kani::any();
 
     let _result = F32Positive::new(value);
-    
+
     // Verify construction doesn't panic
     // Note: Can't assert on value > 0.0 or is_finite() with symbolic floats
 }
@@ -166,7 +166,7 @@ fn verify_char_alphanumeric() {
     let value: char = kani::any();
 
     let _result = CharAlphanumeric::new(value);
-    
+
     // Verify construction doesn't panic
     // Note: Can't call .is_alphanumeric() on symbolic char or assert on .get()/.into_inner()
     // With symbolic validation, both Ok and Err paths are valid

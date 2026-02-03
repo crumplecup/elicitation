@@ -232,7 +232,6 @@ impl UuidV7Bytes {
 
 #[cfg(test)]
 mod tests {
-    
 
     #[test]
     #[cfg(kani)]

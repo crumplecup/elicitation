@@ -1,0 +1,11 @@
+[package]
+name = "elicitation_creusot_proofs"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+creusot-std = "0.9.0"
+
+# Import the contract types from main crate
+elicitation = { path = "../elicitation", default-features = false, features = ["verification"] }

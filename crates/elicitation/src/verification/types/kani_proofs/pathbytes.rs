@@ -18,7 +18,7 @@ fn verify_valid_ascii_no_null_accepted() {
 
     let bytes = b"test";
     let _path_result = PathBytes::<MAX_LEN>::from_slice(bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -30,7 +30,7 @@ fn verify_null_byte_rejected() {
     let bytes = [b'/', 0, b't'];
 
     let _path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic (may return Ok or Err with symbolic validation)
 }
 
@@ -45,7 +45,7 @@ fn verify_absolute_path_starts_with_slash() {
     let bytes = [b'/', b'u', b's', b'r'];
 
     let _path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic
     // Note: Can't call .is_absolute() as it triggers .as_str() → UTF-8 validation
 }
@@ -57,7 +57,7 @@ fn verify_relative_path_no_leading_slash() {
     let bytes = [b'u', b's', b'r'];
 
     let _path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic
     // Note: Can't call .is_relative() as it triggers .as_str() → UTF-8 validation
 }
@@ -73,7 +73,7 @@ fn verify_path_absolute_accepts_leading_slash() {
     let bytes = [b'/', b'h', b'o', b'm', b'e'];
 
     let _abs_result = PathAbsolute::<MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -84,7 +84,7 @@ fn verify_path_absolute_rejects_no_slash() {
     let bytes = [b'h', b'o', b'm', b'e'];
 
     let _abs_result = PathAbsolute::<MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic (may return Ok or Err with symbolic validation)
 }
 
@@ -95,7 +95,7 @@ fn verify_path_relative_accepts_no_slash() {
     let bytes = [b'h', b'o', b'm', b'e'];
 
     let _rel_result = PathRelative::<MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -106,7 +106,7 @@ fn verify_path_relative_rejects_slash() {
     let bytes = [b'/', b'h', b'o', b'm', b'e'];
 
     let _rel_result = PathRelative::<MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic (may return Ok or Err with symbolic validation)
 }
 
@@ -117,7 +117,7 @@ fn verify_path_nonempty_accepts_content() {
     let bytes = [b't', b'e', b's', b't'];
 
     let _nonempty_result = PathNonEmpty::<MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -142,7 +142,7 @@ fn verify_root_path() {
     let bytes = [b'/'];
 
     let _path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic
     // Note: Can't call .is_root(), .is_absolute() - they trigger .as_str()
 }
@@ -154,7 +154,7 @@ fn verify_current_directory() {
     let bytes = [b'.'];
 
     let _path_result = PathBytes::<MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic
     // Note: Can't call .is_relative(), .is_absolute(), .is_root() - they trigger .as_str()
 }
@@ -171,11 +171,11 @@ fn verify_has_null_byte_detection() {
     // Test with null byte present
     let with_null = [b'/', 0, b't'];
     let _result1 = PathBytes::<MAX_LEN>::from_slice(&with_null);
-    
+
     // Test without null byte
     let no_null = [b'/', b'a', b'b'];
     let _result2 = PathBytes::<MAX_LEN>::from_slice(&no_null);
-    
+
     // Verify construction doesn't panic (symbolic validation means both Ok/Err possible)
 }
 

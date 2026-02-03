@@ -260,4 +260,3 @@ fn verify_ipv6_private_roundtrip() {
         kani::cover!(false, "Constructor must succeed for private IPs");
     }
 }
-

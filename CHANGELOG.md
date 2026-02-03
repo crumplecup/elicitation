@@ -7,6 +7,205 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add Creusot deductive verifier support
+- Add comprehensive verification tool setup and management
+- Implement Phase 1 - primitive contracts with Kani
+- Implement Phase 2 - multi-verifier primitive contracts
+- Implement Phase 3.1 - verifier backend registry
+- Implement with_contract() method (Phase 3.2)
+- Compile-time contract selection (Phase 3.3)
+- Contract composition operators (Phase 3.4)
+- Complete Phase 3 - Testing & documentation
+- Add unsigned integer contracts (Phase 4.1)
+- Add signed integer contracts (Phase 4.2)
+- Add floating point contracts (Phase 4.3)
+- Complete Phase 4 - All primitive types (Phase 4.4)
+- Add Phase 5 complex type contracts
+- Add Phase 6 comprehensive examples
+- Add mechanism-level contracts POC
+- Complete vision with Trenchcoat Pattern
+- Add I8Positive contract type (Phase 7 POC)
+- Implement i8 contract types (Phase 7)
+- Add i16, u8, u16 contract type families (Phase 7)
+- Complete all integer contract types with macros (Phase 7)
+- Add float contract types (Phase 8)
+- Add char elicitation support
+- Add string, bool, char contract types (Phase 9)
+- Add UUID and Duration contract types
+- Add Network contract types
+- Add PathBuf contract types (Phase 10 complete)
+- Add DateTime contract types (Phase 11 complete)
+- Add Tuple contract types (Phase 12 partial)
+- Add Collection contract types (Phase 13 complete)
+- Complete all collection and JSON contract types
+- Add Kani proof harnesses for contract types
+- Add 34 new Kani proof harnesses
+- Prove const generic Range types with Kani
+- Complete Kani proof coverage for all contract types
+- Add mechanism contract proofs (Survey, Affirm, composition)
+- Add Verus proof infrastructure (86 proof stubs)
+- Implement 30 actual Verus proofs (~35% complete)
+- Complete Verus implementation - 86/86 proofs (100%)
+- Complete Creusot implementation - 86/86 proofs (100%)
+- Complete Prusti implementation - 86/86 proofs (100%)
+- Add URL contract types (5 types)
+- Add URL verification proofs for all 4 verifiers
+- Add Regex contract types (5 types)
+- Add Regex verification proofs for all 4 verifiers
+- Add proc macro for automatic instrumentation
+- Roll out instrumentation macro to all contract types
+- Add full instrumentation to client module
+- Add instrumentation to Style enums, MCP, errors, contracts
+- Instrument business logic helper functions
+- Add verification contract generation infrastructure
+- Add contract metadata introspection (#[contract_type])
+- Complete Phase 2 - metadata query infrastructure
+- Phase 3 - Generate real Kani contracts
+- Add U8Positive and U16Positive types
+- Add InputNonEmpty and export DurationNonZero
+- Fix verification test and document K
+- Implement Phase 4 - Enum verification support
+- Add Creusot backend support (Phase 5.1)
+- Add Prusti backend support (Phase 5.2)
+- Add Verus backend support (Phase 5.3 COMPLETE)
+- Implement all missing contract types (Phase 5 completion)
+- Add Verus support via external binary
+- Add Utf8Bytes foundation for string contracts
+- Add comprehensive Kani UTF-8 symbolic proofs
+- Add just recipes for Kani benchmarks and long proofs
+- Add UUID byte-level validation foundation
+- Add IP address byte-level validation foundation
+- Add MAC address byte-level validation foundation
+- Add SocketAddr byte-level validation foundation
+- Add PathBuf (Unix) byte validation with compositional UTF-8
+- Systematic Vec → from_slice() pattern for Kani
+- Add regex validation with recursive trait bounds
+- Add verification benchmark suite for all proof types
+- Add marginal cost benchmarking for Kani proofs
+- Add checkpointed chunked proof system
+- Add 2-byte chunked proofs
+- Make chunked proofs dynamically configurable
+- Add 2-byte 16-chunk configuration
+- Add 2-byte 16-chunk harnesses
+- Add MCP derives to integer types
+- Add MCP wrapper types for primitives
+- Use MCP wrapper types internally
+- Replace manual parsing with serde in MCP wrapper types
+- Replace manual implementations with macro-generated Default wrappers
+- Add CSV-based Kani verification tracking system
+- Apply cfg(kani) pattern to external types
+- Apply cfg(kani) pattern to regex/URL types and fix instrumentation
+- Apply castle-on-cloud pattern to UTF-8 validation
+- Convert UTF-8 validation tests to wrapper tests
+- Apply castle-on-cloud to URL parsing and validation
+- Add UTF-8 validation proofs for Prusti
+- Add PathBytes validation proofs for Prusti
+- Add RegexBytes validation proofs for Prusti
+- Add UrlBytes validation proofs for Prusti
+- Add IpAddrBytes validation proofs for Prusti
+- Add network proofs for SocketAddr and MacAddr
+- Add UuidBytes validation proofs for Prusti
+- Add Prusti verification runner with CSV tracking
+- Integrate Prusti runner with CLI and justfile
+- Migrate Creusot proofs to 0.9 and plan core refactor
+
+### Documentation
+
+- Add verification implementation plan
+- Revise verification plan - simple to complex, Kani to many
+- Complete Phase 6 comprehensive documentation
+- Add Total Verification master plan
+- Add compositional verification implementation plan
+- Add missing documentation for U8Positive and U16Positive methods
+- Add Kani limitations and workarounds documentation
+- Add comprehensive Kani verification patterns guide
+- Add MCP verification integration plan
+- Update integration plan with Phase 1 progress
+- Add MCP integration summary
+- Correct verification characterization from 'smoke test' to 'compositional verification'
+- Add Prusti verification tracking documentation
+- Document Prusti Edition 2024 incompatibility
+- Add comprehensive verifier status assessment
+
+### Fixed
+
+- Fix Kani proof compilation errors
+- Correct verification plan - Elicit IS Verifiable
+- Resolve import errors for kani proofs
+- Add type annotations to kani proofs
+- Make instrumented_impl no-op under Kani + add missing imports
+- Add missing type imports to kani_proofs files
+- Replace kani::assert with standard assert! macro
+- Replace kani::assert with assert! in verification/kani.rs
+- Add I8Positive import and fix type annotations in mechanisms.rs
+- Fix proof signatures for Prusti and Creusot
+- Feature-gate verification examples
+- Add loop unwind bounds to prevent Kani infinite loops
+- Replace all to_string() with String::from() in Kani proofs
+- Replace UUID parse_str with from_bytes in Kani proofs
+- Add --default-unwind 20 to Kani verification
+- Increase unwind bounds for URL and Regex proofs
+- Update i64 prompt to match test expectations
+- Preserve serde error source chain in wrapper deserialization
+- Add provably-correct unwinding bounds for UTF-8 Kani proofs
+- Add unwind bounds to all UTF-8 Kani proofs
+- Add unwind bounds to all Kani proofs and remove unused imports
+- Complete unwind bounds for remaining Kani proofs
+- Remove invalid feature gate and unused imports
+- Add missing NoContent match arm and gate Duration import
+- Gate UUID types and unused Duration import with cfg(kani)
+- Match UUID types export gate to definition gate
+- Enable all optional features in runner
+- Fix RegexSetNonEmpty and pathbuf kani proofs
+- Remove String payloads from IP version errors
+- Apply castle-on-cloud to scheme validation tests
+- Apply castle-on-cloud pattern to URL composition tests
+- Reduce buffer size in string contract test
+- Remove as_str() call in regex literal test
+- Apply castle-on-cloud to pathbytes validation
+- Apply castle-on-cloud to PathAbsolute and remaining pathbytes tests
+- Apply castle-on-cloud to float contract types
+- Apply castle-on-cloud to more float and char contract types
+- Remove incompatible assertions from symbolic validation tests
+- Fix Prusti installation and clean dead code
+- Fix Prusti env var (PRUSTI_CHECK_OVERFLOWS)
+- Fix Creusot imports and add creusot-std dependency
+- Complete Verus setup and update justfile
+- Correct URL type names in urlbytes tests
+
+### Miscellaneous
+
+- Update creusot-contracts from 0.2 to 0.8
+- Resolve compilation warnings
+
+### Refactor
+
+- Generic contract framework for multiple verifiers
+- Update plan with contract-as-newtype vision
+- Modularize types into submodules
+- Split kani_proofs.rs into 11 modular files
+- Split verus_proofs.rs into 11 modular files
+- Split creusot_proofs.rs into 11 modular files
+- Split prusti_proofs.rs into 11 modular files
+- Remove glob imports, make all exports explicit
+- Complete kani_proofs import and API fixes
+- Refactor StringNonEmpty to use Utf8Bytes foundation
+- Simplify chunked proofs to use library harnesses
+- Clean chunked proof syntax to use plain numbers
+- Eliminate unwrap calls in parameter builders
+
+### Testing
+
+- Add comprehensive type coverage test
+
+### Wip
+
+- Adding missing integer type exports
+
+## [Unreleased]
+
 ## [0.4.3] - 2026-01-19
 
 ### Fixed

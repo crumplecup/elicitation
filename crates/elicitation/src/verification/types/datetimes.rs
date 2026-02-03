@@ -743,7 +743,10 @@ impl OffsetDateTimeAfter {
 
     /// Kani version: trust time crate, verify wrapper logic.
     #[cfg(kani)]
-    pub fn new(_value: OffsetDateTime, _threshold: OffsetDateTime) -> Result<Self, ValidationError> {
+    pub fn new(
+        _value: OffsetDateTime,
+        _threshold: OffsetDateTime,
+    ) -> Result<Self, ValidationError> {
         let is_after: bool = kani::any();
         if is_after {
             Ok(Self(std::marker::PhantomData))
@@ -862,7 +865,10 @@ impl OffsetDateTimeBefore {
 
     /// Kani version: trust time crate, verify wrapper logic.
     #[cfg(kani)]
-    pub fn new(_value: OffsetDateTime, _threshold: OffsetDateTime) -> Result<Self, ValidationError> {
+    pub fn new(
+        _value: OffsetDateTime,
+        _threshold: OffsetDateTime,
+    ) -> Result<Self, ValidationError> {
         let is_before: bool = kani::any();
         if is_before {
             Ok(Self(std::marker::PhantomData))

@@ -104,7 +104,9 @@ pub use pathbytes::{
 };
 
 // URL Foundation
-pub use urlbytes::{AuthorityBytes, SchemeBytes, UrlAbsolute, UrlBytes, UrlHttp, UrlWithAuthority};
+pub use urlbytes::{
+    AuthorityBytes, SchemeBytes, UrlAbsoluteBytes, UrlBytes, UrlHttpBytes, UrlWithAuthorityBytes,
+};
 
 // Regex Foundation
 pub use regexbytes::{
@@ -255,7 +257,7 @@ pub use values::{ValueArray, ValueNonNull, ValueObject};
 
 // URLs (feature-gated)
 #[cfg(feature = "url")]
-pub use urls::{UrlCanBeBase, UrlHttps, UrlValid, UrlWithHost};
+pub use urls::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost};
 
 // Regexes (feature-gated)
 #[cfg(feature = "regex")]

@@ -115,7 +115,7 @@ impl F32Positive {
             // Under Kani: symbolic validation (trust stdlib float handling)
             let is_finite: bool = kani::any();
             let is_positive: bool = kani::any();
-            
+
             if !is_finite {
                 Err(ValidationError::NotFinite(String::new()))
             } else if is_positive {
@@ -200,7 +200,7 @@ impl F32NonNegative {
             // Under Kani: symbolic validation (trust stdlib float handling)
             let is_finite: bool = kani::any();
             let is_non_negative: bool = kani::any();
-            
+
             if !is_finite {
                 Err(ValidationError::NotFinite(String::new()))
             } else if is_non_negative {
@@ -364,7 +364,7 @@ impl F64Positive {
             // Under Kani: symbolic validation (trust stdlib float handling)
             let is_finite: bool = kani::any();
             let is_positive: bool = kani::any();
-            
+
             if !is_finite {
                 Err(ValidationError::NotFinite(String::new()))
             } else if is_positive {
@@ -449,7 +449,7 @@ impl F64NonNegative {
             // Under Kani: symbolic validation (trust stdlib float handling)
             let is_finite: bool = kani::any();
             let is_non_negative: bool = kani::any();
-            
+
             if !is_finite {
                 Err(ValidationError::NotFinite(String::new()))
             } else if is_non_negative {

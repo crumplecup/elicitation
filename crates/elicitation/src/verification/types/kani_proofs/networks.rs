@@ -119,14 +119,14 @@ fn verify_pathbuf_contracts() {
     // that our wrapper types correctly use Result<T, E> and appropriate error types.
     //
     // These contracts are validated in integration tests with real filesystem state.
-    
+
     // This proof just verifies the types exist and have the expected API
     // without calling filesystem operations
+    use crate::{PathBufExists, PathBufIsDir, PathBufIsFile, PathBufReadable};
     use std::path::PathBuf;
-    use crate::{PathBufExists, PathBufReadable, PathBufIsDir, PathBufIsFile};
-    
+
     let _path = PathBuf::from("/test");
-    
+
     // Type checking only - verify API surface exists
     // Cannot construct these in kani mode without filesystem access
 }

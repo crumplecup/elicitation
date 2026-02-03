@@ -6,7 +6,7 @@
 #![cfg(kani)]
 
 use crate::verification::types::{
-    AuthorityBytes, SchemeBytes, UrlAbsolute, UrlBytes, UrlHttp, UrlWithAuthority,
+    AuthorityBytes, SchemeBytes, UrlAbsoluteBytes, UrlBytes, UrlHttpBytes, UrlWithAuthorityBytes,
     ValidationError,
 };
 
@@ -20,7 +20,7 @@ fn verify_scheme_http() {
 
     let bytes = b"http";
     let _result = SchemeBytes::<MAX_LEN>::from_slice(bytes);
-    
+
     // Verify construction doesn't panic
     // With symbolic UTF-8 validation, both Ok/Err are valid
 }
@@ -31,7 +31,7 @@ fn verify_scheme_https() {
 
     let bytes = b"https";
     let _result = SchemeBytes::<MAX_LEN>::from_slice(bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -41,7 +41,7 @@ fn verify_scheme_ftp() {
 
     let bytes = b"ftp";
     let _result = SchemeBytes::<MAX_LEN>::from_slice(bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -69,7 +69,7 @@ fn verify_authority_simple() {
 
     let bytes = b"com";
     let _result = AuthorityBytes::<MAX_LEN>::from_slice(bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -79,7 +79,7 @@ fn verify_authority_with_port() {
 
     let bytes = b"example.com:8080";
     let _result = AuthorityBytes::<MAX_LEN>::from_slice(bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -89,7 +89,7 @@ fn verify_authority_empty() {
 
     let bytes = b"";
     let _result = AuthorityBytes::<MAX_LEN>::from_slice(bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -105,7 +105,7 @@ fn verify_http_url_composition() {
 
     let bytes = b"http://example.com";
     let _result = UrlBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -117,7 +117,7 @@ fn verify_https_url_composition() {
 
     let bytes = b"https://example.com";
     let _result = UrlBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -129,7 +129,7 @@ fn verify_ftp_url_composition() {
 
     let bytes = b"ftp://ftp.example.com";
     let _result = UrlBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -144,8 +144,9 @@ fn verify_url_with_authority_contract() {
     const MAX_LEN: usize = 10;
 
     let bytes = [0u8; 10];
-    let contract_result = UrlWithAuthority::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
-    
+    let contract_result =
+        UrlWithAuthority::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
+
     // If construction succeeded, verify it has authority
     if let Ok(with_auth) = contract_result {
         assert!(with_auth.url().has_authority());
@@ -159,8 +160,9 @@ fn verify_url_without_authority_rejected() {
     const MAX_LEN: usize = 10;
 
     let bytes = [0u8; 10];
-    let contract_result = UrlWithAuthority::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
-    
+    let contract_result =
+        UrlWithAuthority::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
+
     // If construction succeeded, it must have authority
     if let Ok(with_auth) = contract_result {
         assert!(with_auth.url().has_authority());
@@ -175,10 +177,10 @@ fn verify_url_absolute_contract() {
 
     // Symbolic URL construction (parsing is the cloud)
     let bytes = [0u8; 10];
-    
+
     // Test contract: UrlAbsolute requires has_authority()
     let absolute_result = UrlAbsolute::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
-    
+
     // If construction succeeded, verify it has authority
     if let Ok(absolute) = absolute_result {
         assert!(absolute.url().has_authority());
@@ -193,7 +195,7 @@ fn verify_url_http_contract_http() {
 
     let bytes = [0u8; 10];
     let _http_result = UrlHttp::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic (contract logic executes)
     // With symbolic is_http(), we can't assert the result
 }
@@ -206,7 +208,7 @@ fn verify_url_http_contract_https() {
 
     let bytes = [0u8; 10];
     let _https_result = UrlHttp::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -218,7 +220,7 @@ fn verify_url_http_contract_rejects_ftp() {
 
     let bytes = [0u8; 10];
     let _http_result = UrlHttp::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -230,10 +232,9 @@ fn verify_url_with_port() {
 
     let bytes = [0u8; 10];
     let _result = UrlBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic
 }
-
 
 // ============================================================================
 // Contract Type Proofs
@@ -247,7 +248,7 @@ fn verify_url_no_authority() {
 
     let bytes = [0u8; 10];
     let _result = UrlBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -259,7 +260,7 @@ fn verify_file_url_empty_authority() {
 
     let bytes = b"file:///path/to/file";
     let _result = UrlBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(bytes);
-    
+
     // Verify construction doesn't panic
 }
 
@@ -284,18 +285,23 @@ fn experiment_scheme_no_assertions() {
 #[kani::proof]
 fn experiment_scheme_symbolic_constrained() {
     const MAX_LEN: usize = 4;
-    
+
     let len: usize = kani::any();
     kani::assume(len == 4); // Force exact length
-    
+
     let mut bytes = [0u8; 4];
     for i in 0..4 {
         bytes[i] = kani::any();
         // Constrain to valid scheme characters
-        kani::assume(bytes[i].is_ascii_alphanumeric() || bytes[i] == b'+' || bytes[i] == b'-' || bytes[i] == b'.');
+        kani::assume(
+            bytes[i].is_ascii_alphanumeric()
+                || bytes[i] == b'+'
+                || bytes[i] == b'-'
+                || bytes[i] == b'.',
+        );
     }
     kani::assume(bytes[0].is_ascii_alphabetic()); // First must be letter
-    
+
     let result = SchemeBytes::<MAX_LEN>::from_slice(&bytes);
     // Symbolic validation: both Ok/Err valid // Should always succeed with these constraints
 }

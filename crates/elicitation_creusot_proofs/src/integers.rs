@@ -1,13 +1,7 @@
 //! Creusot proofs for integer contract types.
 
-#![cfg(feature = "verify-creusot")]
-#![allow(unused_imports)]
-
 use crate::*;
-// Contracts provided by creusot_std;
 
-// Integer Contract Proofs
-// ============================================================================
 
 // ----------------------------------------------------------------------------
 // I8 Contracts

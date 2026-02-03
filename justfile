@@ -78,6 +78,13 @@ setup-verifiers install_dir="~/repos":
         mkdir -p {{install_dir}}
         cd {{install_dir}} && git clone https://github.com/viperproject/prusti-dev.git || true
         cd {{install_dir}}/prusti-dev && ./x.py setup && ./x.py build --release
+        # Symlink to cargo bin directory
+        mkdir -p ~/.cargo/bin
+        ln -sf {{install_dir}}/prusti-dev/target/release/cargo-prusti ~/.cargo/bin/cargo-prusti
+        ln -sf {{install_dir}}/prusti-dev/target/release/prusti-driver ~/.cargo/bin/prusti-driver
+        ln -sf {{install_dir}}/prusti-dev/target/release/prusti-rustc ~/.cargo/bin/prusti-rustc
+        ln -sf {{install_dir}}/prusti-dev/target/release/prusti-server ~/.cargo/bin/prusti-server
+        echo "  ✅ Symlinked Prusti binaries to ~/.cargo/bin"
     fi
     echo ""
     
@@ -88,7 +95,12 @@ setup-verifiers install_dir="~/repos":
         echo "📦 Installing Verus..."
         mkdir -p {{install_dir}}
         cd {{install_dir}} && git clone https://github.com/verus-lang/verus.git || true
-        cd {{install_dir}}/verus && ./tools/get-z3.sh && source ./tools/activate && vargo build --release
+        cd {{install_dir}}/verus/source && ../tools/get-z3.sh && source ../tools/activate && vargo build --release
+        # Symlink to cargo bin directory
+        mkdir -p ~/.cargo/bin
+        ln -sf {{install_dir}}/verus/source/target-verus/release/verus ~/.cargo/bin/verus
+        ln -sf {{install_dir}}/verus/source/target-verus/release/rust_verify ~/.cargo/bin/rust_verify
+        echo "  ✅ Symlinked Verus binaries to ~/.cargo/bin"
     fi
     echo ""
     
@@ -584,11 +596,32 @@ verify-kani-failed csv="kani_verification_results.csv":
 verify-kani-list:
     @cargo run --quiet --features cli --release -- verify list
 
-# Run Prusti verification
+# Run Prusti verification (simple)
 verify-prusti:
     @command -v cargo-prusti >/dev/null 2>&1 || (echo "❌ Prusti not installed. Run: just setup-verifiers" && exit 1)
     @echo "🔬 Running Prusti verification..."
     cargo-prusti --package elicitation --features verify-prusti
+
+# Run Prusti verification with CSV tracking (recommended)
+verify-prusti-tracked csv="prusti_verification_results.csv" timeout="600":
+    @command -v cargo-prusti >/dev/null 2>&1 || (echo "❌ Prusti not installed. Run: just setup-verifiers" && exit 1)
+    @echo "🔬 Running Prusti verification with tracking..."
+    @echo "CSV output: {{csv}}"
+    @echo "Timeout: {{timeout}}s"
+    @echo ""
+    cargo run --quiet --package elicitation --features cli -- prusti run --output {{csv}} --timeout {{timeout}}
+
+# Show Prusti verification summary statistics
+verify-prusti-summary csv="prusti_verification_results.csv":
+    cargo run --quiet --package elicitation --features cli -- prusti summary --file {{csv}}
+
+# Show failed Prusti verification modules
+verify-prusti-failed csv="prusti_verification_results.csv":
+    cargo run --quiet --package elicitation --features cli -- prusti failed --file {{csv}}
+
+# List all Prusti proof modules
+verify-prusti-list:
+    @cargo run --quiet --package elicitation --features cli -- prusti list
 
 # Run Creusot verification
 verify-creusot file="":

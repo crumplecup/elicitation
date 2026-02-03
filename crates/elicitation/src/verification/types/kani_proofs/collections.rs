@@ -54,10 +54,10 @@ fn verify_hashmap_wrapper_logic() {
     // 1. The cfg(kani) implementation compiles
     // 2. Both code paths (Ok/Err) are structurally valid
     // 3. Error variant is correct type
-    
+
     // Verify error type exists and is correct
     let _err = ValidationError::EmptyCollection;
-    
+
     // The symbolic boolean in cfg(kani) new() ensures:
     //   - is_empty=true  → Err(EmptyCollection)
     //   - is_empty=false → Ok(Self(PhantomData))

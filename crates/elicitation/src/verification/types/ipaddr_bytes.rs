@@ -66,9 +66,9 @@ impl Ipv4Bytes {
 
     /// Check if this is a public address (not private, not special).
     pub fn is_public(&self) -> bool {
-        !self.is_private() 
-            && !self.is_loopback() 
-            && !self.is_unspecified() 
+        !self.is_private()
+            && !self.is_loopback()
+            && !self.is_unspecified()
             && !self.is_broadcast()
             && !self.is_multicast()
     }
@@ -217,10 +217,7 @@ impl Ipv6Bytes {
 
     /// Check if this is a public address (not private, not special).
     pub fn is_public(&self) -> bool {
-        !self.is_private() 
-            && !self.is_loopback() 
-            && !self.is_unspecified() 
-            && !self.is_multicast()
+        !self.is_private() && !self.is_loopback() && !self.is_unspecified() && !self.is_multicast()
     }
 
     /// Check if this is the loopback address (::1).

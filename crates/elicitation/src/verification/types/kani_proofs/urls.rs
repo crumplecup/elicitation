@@ -17,7 +17,7 @@ use crate::{UrlCanBeBase, UrlHttps, UrlValid, UrlWithHost};
 fn verify_url_https_wrapper() {
     // Test HTTPS wrapper logic
     let result = UrlHttps::new("https://example.com");
-    
+
     match result {
         Ok(_url) => {
             // HTTPS wrapper constructed successfully
@@ -25,8 +25,8 @@ fn verify_url_https_wrapper() {
         Err(e) => {
             // Could be invalid URL or not HTTPS
             assert!(
-                matches!(e, crate::ValidationError::UrlInvalid) ||
-                matches!(e, crate::ValidationError::UrlNotHttps)
+                matches!(e, crate::ValidationError::UrlInvalid)
+                    || matches!(e, crate::ValidationError::UrlNotHttps)
             );
         }
     }
@@ -37,7 +37,7 @@ fn verify_url_https_wrapper() {
 fn verify_url_valid_wrapper() {
     // Test basic URL wrapper
     let result = UrlValid::new("https://example.com");
-    
+
     match result {
         Ok(_url) => {
             // Valid URL wrapper constructed
@@ -53,15 +53,15 @@ fn verify_url_valid_wrapper() {
 fn verify_url_with_host_wrapper() {
     // Test host requirement wrapper
     let result = UrlWithHost::new("https://example.com");
-    
+
     match result {
         Ok(_url) => {
             // URL with host wrapper constructed
         }
         Err(e) => {
             assert!(
-                matches!(e, crate::ValidationError::UrlInvalid) ||
-                matches!(e, crate::ValidationError::UrlNoHost)
+                matches!(e, crate::ValidationError::UrlInvalid)
+                    || matches!(e, crate::ValidationError::UrlNoHost)
             );
         }
     }
@@ -72,15 +72,15 @@ fn verify_url_with_host_wrapper() {
 fn verify_url_can_be_base_wrapper() {
     // Test base URL requirement wrapper
     let result = UrlCanBeBase::new("https://example.com");
-    
+
     match result {
         Ok(_url) => {
             // Base URL wrapper constructed
         }
         Err(e) => {
             assert!(
-                matches!(e, crate::ValidationError::UrlInvalid) ||
-                matches!(e, crate::ValidationError::UrlCannotBeBase)
+                matches!(e, crate::ValidationError::UrlInvalid)
+                    || matches!(e, crate::ValidationError::UrlCannotBeBase)
             );
         }
     }

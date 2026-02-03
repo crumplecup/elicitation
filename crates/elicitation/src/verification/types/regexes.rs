@@ -311,7 +311,9 @@ impl RegexCaseInsensitive {
 
     /// Unwrap the Regex (not available in Kani mode).
     pub fn into_inner(self) -> Regex {
-        panic!("RegexCaseInsensitive::into_inner() not available in Kani mode - use symbolic validation")
+        panic!(
+            "RegexCaseInsensitive::into_inner() not available in Kani mode - use symbolic validation"
+        )
     }
 
     /// Returns true if the regex matches the given text (Kani mode).
@@ -321,7 +323,9 @@ impl RegexCaseInsensitive {
 
     /// Returns the original pattern string (not available in Kani mode).
     pub fn as_str(&self) -> &str {
-        panic!("RegexCaseInsensitive::as_str() not available in Kani mode - use symbolic validation")
+        panic!(
+            "RegexCaseInsensitive::as_str() not available in Kani mode - use symbolic validation"
+        )
     }
 }
 
@@ -496,14 +500,14 @@ impl RegexSetNonEmpty {
     {
         // Actually check if empty (not symbolic - this is deterministic)
         let patterns: Vec<_> = patterns.into_iter().collect();
-        
+
         if patterns.is_empty() {
             return Err(ValidationError::EmptyCollection);
         }
-        
+
         // Symbolic validation for regex compilation (non-deterministic)
         let is_valid: bool = kani::any();
-        
+
         if is_valid {
             Ok(Self(std::marker::PhantomData))
         } else {
@@ -518,7 +522,9 @@ impl RegexSetNonEmpty {
 
     /// Unwrap the RegexSet (not available in Kani mode).
     pub fn into_inner(self) -> RegexSet {
-        panic!("RegexSetNonEmpty::into_inner() not available in Kani mode - use symbolic validation")
+        panic!(
+            "RegexSetNonEmpty::into_inner() not available in Kani mode - use symbolic validation"
+        )
     }
 
     /// Returns true if any pattern in the set matches the given text (Kani mode).

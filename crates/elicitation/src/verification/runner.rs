@@ -15,7 +15,9 @@ use std::process::{Command, Stdio};
 use std::time::Instant;
 
 /// A Kani proof harness identifier.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Getters, Default, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Getters, Default, Serialize, Deserialize,
+)]
 pub struct ProofHarness {
     /// Module name (e.g., "ipaddr_bytes")
     module: String,
@@ -26,9 +28,9 @@ pub struct ProofHarness {
 impl ProofHarness {
     /// Create a new proof harness identifier.
     pub fn new(module: impl Into<String>, name: impl Into<String>) -> Self {
-        Self { 
-            module: module.into(), 
-            name: name.into() 
+        Self {
+            module: module.into(),
+            name: name.into(),
         }
     }
 
@@ -202,19 +204,43 @@ impl ProofHarness {
             Self::new("socketaddr", "verify_socketaddrv4_construction"),
             Self::new("socketaddr", "verify_socketaddrv4_nonzero_accepts_nonzero"),
             Self::new("socketaddr", "verify_socketaddrv4_nonzero_rejects_zero"),
-            Self::new("socketaddr", "verify_socketaddrv4_privileged_accepts_lt1024"),
-            Self::new("socketaddr", "verify_socketaddrv4_privileged_rejects_ge1024"),
+            Self::new(
+                "socketaddr",
+                "verify_socketaddrv4_privileged_accepts_lt1024",
+            ),
+            Self::new(
+                "socketaddr",
+                "verify_socketaddrv4_privileged_rejects_ge1024",
+            ),
             Self::new("socketaddr", "verify_socketaddrv4_roundtrip"),
-            Self::new("socketaddr", "verify_socketaddrv4_unprivileged_accepts_ge1024"),
-            Self::new("socketaddr", "verify_socketaddrv4_unprivileged_rejects_lt1024"),
+            Self::new(
+                "socketaddr",
+                "verify_socketaddrv4_unprivileged_accepts_ge1024",
+            ),
+            Self::new(
+                "socketaddr",
+                "verify_socketaddrv4_unprivileged_rejects_lt1024",
+            ),
             Self::new("socketaddr", "verify_socketaddrv6_construction"),
             Self::new("socketaddr", "verify_socketaddrv6_nonzero_accepts_nonzero"),
             Self::new("socketaddr", "verify_socketaddrv6_nonzero_rejects_zero"),
-            Self::new("socketaddr", "verify_socketaddrv6_privileged_accepts_lt1024"),
-            Self::new("socketaddr", "verify_socketaddrv6_privileged_rejects_ge1024"),
+            Self::new(
+                "socketaddr",
+                "verify_socketaddrv6_privileged_accepts_lt1024",
+            ),
+            Self::new(
+                "socketaddr",
+                "verify_socketaddrv6_privileged_rejects_ge1024",
+            ),
             Self::new("socketaddr", "verify_socketaddrv6_roundtrip"),
-            Self::new("socketaddr", "verify_socketaddrv6_unprivileged_accepts_ge1024"),
-            Self::new("socketaddr", "verify_socketaddrv6_unprivileged_rejects_lt1024"),
+            Self::new(
+                "socketaddr",
+                "verify_socketaddrv6_unprivileged_accepts_ge1024",
+            ),
+            Self::new(
+                "socketaddr",
+                "verify_socketaddrv6_unprivileged_rejects_lt1024",
+            ),
             Self::new("socketaddr", "verify_well_known_port_range"),
             Self::new("strings", "verify_string_non_empty"),
             Self::new("urlbytes", "verify_authority_empty"),
@@ -294,7 +320,7 @@ impl ProofHarness {
             .context("Failed to execute cargo kani")?;
 
         let duration = start.elapsed();
-        
+
         // Check if timeout killed the process (exit code 124)
         let status = if output.status.code() == Some(124) {
             tracing::warn!(duration_secs = duration.as_secs(), "Proof timed out");
@@ -399,7 +425,7 @@ impl Summary {
 #[tracing::instrument(skip(action))]
 pub fn handle(action: &VerifyAction) -> Result<()> {
     tracing::debug!(action = ?action, "Handling verify command");
-    
+
     match action {
         VerifyAction::List => list_harnesses(),
         VerifyAction::Run {
@@ -416,11 +442,11 @@ pub fn handle(action: &VerifyAction) -> Result<()> {
 #[tracing::instrument]
 fn list_harnesses() -> Result<()> {
     tracing::info!("Listing proof harnesses");
-    
+
     for harness in ProofHarness::all() {
         println!("{},{}", harness.module(), harness.name());
     }
-    
+
     tracing::info!(count = ProofHarness::all().len(), "Listed harnesses");
     Ok(())
 }
@@ -453,7 +479,13 @@ fn run_all(output: &Path, timeout: u64, resume: bool) -> Result<()> {
 
         // Check if already passed (resume mode)
         if resume && already_passed(output, harness)? {
-            println!("[{}/{}] ⏭️  Skipped (cached): {}::{}", current, total, harness.module(), harness.name());
+            println!(
+                "[{}/{}] ⏭️  Skipped (cached): {}::{}",
+                current,
+                total,
+                harness.module(),
+                harness.name()
+            );
             summary.skipped += 1;
             continue;
         }
@@ -468,7 +500,9 @@ fn run_all(output: &Path, timeout: u64, resume: bool) -> Result<()> {
         let _ = std::io::stdout().flush();
 
         let result = harness.run(timeout)?;
-        writer.serialize(&result).context("Failed to write CSV row")?;
+        writer
+            .serialize(&result)
+            .context("Failed to write CSV row")?;
         writer.flush().context("Failed to flush CSV")?;
 
         match result.status {
@@ -515,7 +549,8 @@ fn already_passed(csv_path: &Path, harness: &ProofHarness) -> Result<bool> {
 
     for result in reader.deserialize::<ProofResult>() {
         let record = result.context("Failed to parse CSV record")?;
-        if &record.module == harness.module() && &record.harness_name == harness.name()
+        if &record.module == harness.module()
+            && &record.harness_name == harness.name()
             && record.status == ProofStatus::Success
         {
             return Ok(true);

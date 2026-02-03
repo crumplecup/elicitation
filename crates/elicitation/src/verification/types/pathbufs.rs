@@ -257,7 +257,6 @@ impl Elicitation for PathBufIsFile {
 mod tests {
     use super::*;
     use std::env;
-    
 
     #[test]
     fn test_path_exists_valid() {

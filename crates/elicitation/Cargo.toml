@@ -45,7 +45,7 @@ url = { workspace = true, optional = true }
 regex = { workspace = true, optional = true }
 
 # Verification libraries (optional)
-creusot-contracts = { workspace = true, optional = true }
+creusot-std = "0.9.0"
 prusti-contracts = { workspace = true, optional = true }
 
 # Re-export derive macro
@@ -80,10 +80,7 @@ regex = ["dep:regex"]
 # Formal verification support
 verification = [] # Core Contract trait only
 verify-kani = ["verification"] # Kani model checker
-verify-creusot = [
-  "verification",
-  "creusot-contracts",
-] # Creusot deductive verifier
+verify-creusot = ["verification"] # Creusot deductive verifier
 verify-prusti = ["verification", "prusti-contracts"] # Prusti separation logic
 verify-verus = ["verification"] # Verus SMT verifier (future)
 verify-all = ["verify-kani", "verify-creusot", "verify-prusti", "verify-verus"]
