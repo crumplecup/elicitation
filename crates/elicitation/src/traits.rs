@@ -130,3 +130,45 @@ pub trait Elicitation: Sized + Prompt + 'static {
         ElicitBuilder::new(style)
     }
 }
+
+/// Trait for generating values of a type.
+///
+/// Generators encapsulate strategies for creating values without requiring
+/// async elicitation. This is useful for:
+/// - Test data generation with configurable strategies
+/// - Mock value creation for testing
+/// - Deterministic value generation (seeded randomness, offsets, etc.)
+/// - Agent-driven test fixture creation
+///
+/// # Design Philosophy
+///
+/// Generators are **orthogonal to elicitation**. They:
+/// - Are synchronous (no async/await)
+/// - Don't require MCP client access
+/// - Can be configured once and used many times
+/// - Encapsulate "how to create this value" as data
+///
+/// Elicitation implementations can leverage generators when appropriate,
+/// but generators exist independently and can be used without elicitation.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// // Elicit the generation strategy once
+/// let mode = InstantGenerationMode::elicit(client).await?;
+/// let generator = InstantGenerator::new(mode);
+///
+/// // Generate many values with the same strategy
+/// let t1 = generator.generate();
+/// let t2 = generator.generate();
+/// let t3 = generator.generate();
+/// ```
+pub trait Generator {
+    /// The type this generator produces.
+    type Target;
+
+    /// Generate a value of the target type.
+    ///
+    /// This is synchronous - all configuration must happen before calling generate().
+    fn generate(&self) -> Self::Target;
+}

@@ -19,13 +19,19 @@
 
 mod boolean;
 mod char;
-mod duration;
+pub mod duration;
+pub mod errors;
 mod floats;
 mod integers;
 mod network;
 mod pathbuf;
 mod string;
+pub mod systemtime;
 mod tuples;
+pub mod unit_structs;
+
+#[cfg(feature = "url")]
+pub mod url;
 
 #[cfg(feature = "uuid")]
-mod uuid;
+pub mod uuid;

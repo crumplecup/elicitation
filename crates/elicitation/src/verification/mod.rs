@@ -224,7 +224,6 @@ use std::fmt::Debug;
 ///     .elicit(peer)
 ///     .await?;
 /// ```
-
 // String contracts
 /// Default String contract (Kani unless overridden by feature).
 #[cfg(all(
@@ -237,18 +236,21 @@ use std::fmt::Debug;
 ))]
 pub const DEFAULT_STRING_CONTRACT: contracts::StringNonEmpty = contracts::StringNonEmpty;
 
-/// Default String contract (Creusot).
+/// Default String contract (Creusot - priority 1).
 #[cfg(feature = "verify-creusot")]
 pub const DEFAULT_STRING_CONTRACT: contracts::creusot::CreusotStringNonEmpty =
     contracts::creusot::CreusotStringNonEmpty;
 
-/// Default String contract (Prusti).
-#[cfg(feature = "verify-prusti")]
+/// Default String contract (Prusti - priority 2).
+#[cfg(all(feature = "verify-prusti", not(feature = "verify-creusot")))]
 pub const DEFAULT_STRING_CONTRACT: contracts::prusti::PrustiStringNonEmpty =
     contracts::prusti::PrustiStringNonEmpty;
 
-/// Default String contract (Verus).
-#[cfg(feature = "verify-verus")]
+/// Default String contract (Verus - priority 3).
+#[cfg(all(
+    feature = "verify-verus",
+    not(any(feature = "verify-creusot", feature = "verify-prusti"))
+))]
 pub const DEFAULT_STRING_CONTRACT: contracts::verus::VerusStringNonEmpty =
     contracts::verus::VerusStringNonEmpty;
 
@@ -264,18 +266,21 @@ pub const DEFAULT_STRING_CONTRACT: contracts::verus::VerusStringNonEmpty =
 ))]
 pub const DEFAULT_I32_CONTRACT: contracts::I32Positive = contracts::I32Positive;
 
-/// Default i32 contract (Creusot).
+/// Default i32 contract (Creusot - priority 1).
 #[cfg(feature = "verify-creusot")]
 pub const DEFAULT_I32_CONTRACT: contracts::creusot::CreusotI32Positive =
     contracts::creusot::CreusotI32Positive;
 
-/// Default i32 contract (Prusti).
-#[cfg(feature = "verify-prusti")]
+/// Default i32 contract (Prusti - priority 2).
+#[cfg(all(feature = "verify-prusti", not(feature = "verify-creusot")))]
 pub const DEFAULT_I32_CONTRACT: contracts::prusti::PrustiI32Positive =
     contracts::prusti::PrustiI32Positive;
 
-/// Default i32 contract (Verus).
-#[cfg(feature = "verify-verus")]
+/// Default i32 contract (Verus - priority 3).
+#[cfg(all(
+    feature = "verify-verus",
+    not(any(feature = "verify-creusot", feature = "verify-prusti"))
+))]
 pub const DEFAULT_I32_CONTRACT: contracts::verus::VerusI32Positive =
     contracts::verus::VerusI32Positive;
 
@@ -291,18 +296,21 @@ pub const DEFAULT_I32_CONTRACT: contracts::verus::VerusI32Positive =
 ))]
 pub const DEFAULT_BOOL_CONTRACT: contracts::BoolValid = contracts::BoolValid;
 
-/// Default bool contract (Creusot).
+/// Default bool contract (Creusot - priority 1).
 #[cfg(feature = "verify-creusot")]
 pub const DEFAULT_BOOL_CONTRACT: contracts::creusot::CreusotBoolValid =
     contracts::creusot::CreusotBoolValid;
 
-/// Default bool contract (Prusti).
-#[cfg(feature = "verify-prusti")]
+/// Default bool contract (Prusti - priority 2).
+#[cfg(all(feature = "verify-prusti", not(feature = "verify-creusot")))]
 pub const DEFAULT_BOOL_CONTRACT: contracts::prusti::PrustiBoolValid =
     contracts::prusti::PrustiBoolValid;
 
 /// Default bool contract (Verus).
-#[cfg(feature = "verify-verus")]
+#[cfg(all(
+    feature = "verify-verus",
+    not(any(feature = "verify-creusot", feature = "verify-prusti"))
+))]
 pub const DEFAULT_BOOL_CONTRACT: contracts::verus::VerusBoolValid =
     contracts::verus::VerusBoolValid;
 

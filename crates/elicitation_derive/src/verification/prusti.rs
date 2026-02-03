@@ -8,13 +8,18 @@ use syn::{Field, Ident};
 pub fn generate_prusti_verification(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
     let constructor = generate_constructor(struct_name, fields);
     let harness = generate_harness(struct_name, fields);
+    let module_name = format_ident!("__prusti_verification_{}", struct_name);
 
     quote! {
-        #[cfg(feature = "verify-prusti")]
-        #constructor
+        #[allow(dead_code, unexpected_cfgs)]
+        #[cfg(prusti)]
+        mod #module_name {
+            use super::*;
 
-        #[cfg(feature = "verify-prusti")]
-        #harness
+            #constructor
+
+            #harness
+        }
     }
 }
 
@@ -23,17 +28,20 @@ pub fn generate_prusti_enum_verification(
     enum_name: &Ident,
     variants: &[&syn::Variant],
 ) -> TokenStream {
-    // Generate one verification function per variant
     let harnesses: Vec<_> = variants
         .iter()
         .map(|variant| generate_variant_harness(enum_name, variant))
         .collect();
+    let module_name = format_ident!("__prusti_verification_{}", enum_name);
 
     quote! {
-        #[cfg(feature = "verify-prusti")]
-        const _: () = {
+        #[allow(dead_code, unexpected_cfgs)]
+        #[cfg(prusti)]
+        mod #module_name {
+            use super::*;
+
             #(#harnesses)*
-        };
+        }
     }
 }
 

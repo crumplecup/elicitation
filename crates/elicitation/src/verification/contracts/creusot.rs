@@ -17,8 +17,6 @@
 //! cargo creusot --features verify-creusot
 //! ```
 
-#![cfg(feature = "verify-creusot")]
-
 use crate::verification::Contract;
 
 // Note: Creusot verification requires special preprocessing.
@@ -293,6 +291,12 @@ pub struct CreusotOptionIsSome<T> {
     _phantom: std::marker::PhantomData<T>,
 }
 
+impl<T> Default for CreusotOptionIsSome<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> CreusotOptionIsSome<T> {
     /// Create new Creusot OptionIsSome contract.
     pub const fn new() -> Self {
@@ -325,6 +329,12 @@ where
 /// Creusot-verified Result<T, E> must be Ok contract.
 pub struct CreusotResultIsOk<T, E> {
     _phantom: std::marker::PhantomData<(T, E)>,
+}
+
+impl<T, E> Default for CreusotResultIsOk<T, E> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T, E> CreusotResultIsOk<T, E> {
@@ -360,6 +370,12 @@ where
 /// Creusot-verified Vec<T> non-empty contract.
 pub struct CreusotVecNonEmpty<T> {
     _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T> Default for CreusotVecNonEmpty<T> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T> CreusotVecNonEmpty<T> {

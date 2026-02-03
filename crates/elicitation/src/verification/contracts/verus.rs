@@ -17,8 +17,6 @@
 //! verus --features verify-verus src/verification/contracts_verus.rs
 //! ```
 
-#![cfg(feature = "verify-verus")]
-
 use crate::verification::Contract;
 
 // Note: Verus verification requires special syntax:
@@ -279,6 +277,12 @@ pub struct VerusOptionIsSome<T> {
     _phantom: std::marker::PhantomData<T>,
 }
 
+impl<T> Default for VerusOptionIsSome<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> VerusOptionIsSome<T> {
     /// Create new Verus OptionIsSome contract.
     pub const fn new() -> Self {
@@ -311,6 +315,12 @@ where
 /// Verus-verified Result<T, E> must be Ok contract.
 pub struct VerusResultIsOk<T, E> {
     _phantom: std::marker::PhantomData<(T, E)>,
+}
+
+impl<T, E> Default for VerusResultIsOk<T, E> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T, E> VerusResultIsOk<T, E> {
@@ -346,6 +356,12 @@ where
 /// Verus-verified Vec<T> non-empty contract.
 pub struct VerusVecNonEmpty<T> {
     _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T> Default for VerusVecNonEmpty<T> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T> VerusVecNonEmpty<T> {

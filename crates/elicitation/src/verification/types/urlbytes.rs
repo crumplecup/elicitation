@@ -545,7 +545,8 @@ mod tests {
 
     #[test]
     fn test_url_with_authority_contract() {
-        let url = UrlWithAuthorityBytes::<32, 256, 2048>::from_slice(b"http://example.com").unwrap();
+        let url =
+            UrlWithAuthorityBytes::<32, 256, 2048>::from_slice(b"http://example.com").unwrap();
         assert!(url.url().has_authority());
     }
 

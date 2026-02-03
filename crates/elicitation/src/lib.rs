@@ -108,13 +108,13 @@ mod value_impl;
 mod datetime_common;
 
 #[cfg(feature = "chrono")]
-mod datetime_chrono;
+pub mod datetime_chrono;
 
 #[cfg(feature = "time")]
-mod datetime_time;
+pub mod datetime_time;
 
 #[cfg(feature = "jiff")]
-mod datetime_jiff;
+pub mod datetime_jiff;
 
 mod elicitation_style;
 
@@ -126,7 +126,7 @@ pub use client::ElicitClient;
 
 // Core traits
 pub use elicitation_style::ElicitationStyle;
-pub use traits::{ElicitBuilder, Elicitation, Prompt};
+pub use traits::{ElicitBuilder, Elicitation, Generator, Prompt};
 
 // Interaction paradigm traits
 pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
@@ -269,6 +269,39 @@ pub use verification::types::{
 // UUIDs (feature-gated on uuid)
 #[cfg(all(any(feature = "verification", kani), feature = "uuid"))]
 pub use verification::types::{UuidNonNil, UuidV4};
+
+#[cfg(feature = "uuid")]
+pub use primitives::uuid::{UuidGenerationMode, UuidGenerator};
+
+// SystemTime (standard library)
+pub use primitives::systemtime::{SystemTimeGenerationMode, SystemTimeGenerator};
+
+// Duration (standard library)
+pub use primitives::duration::{DurationGenerationMode, DurationGenerator};
+
+// Unit structs (standard library)
+pub use primitives::unit_structs::{Formatter, Parser, Validator};
+
+// Error generators (for testing)
+pub use primitives::errors::{IoErrorGenerationMode, IoErrorGenerator};
+
+#[cfg(feature = "serde_json")]
+pub use primitives::errors::{JsonErrorGenerationMode, JsonErrorGenerator};
+
+// DateTime generators (feature-gated)
+#[cfg(feature = "chrono")]
+pub use datetime_chrono::{
+    DateTimeUtcGenerationMode, DateTimeUtcGenerator, NaiveDateTimeGenerationMode,
+    NaiveDateTimeGenerator,
+};
+
+#[cfg(feature = "time")]
+pub use datetime_time::{
+    InstantGenerationMode, InstantGenerator, OffsetDateTimeGenerationMode, OffsetDateTimeGenerator,
+};
+
+#[cfg(feature = "jiff")]
+pub use datetime_jiff::{TimestampGenerationMode, TimestampGenerator};
 
 // DateTimes (feature-gated on chrono/time/jiff)
 #[cfg(all(any(feature = "verification", kani), feature = "chrono"))]

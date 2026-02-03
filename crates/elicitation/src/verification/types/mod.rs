@@ -58,12 +58,15 @@ mod regexes;
 #[cfg(kani)]
 mod kani_proofs;
 
-#[cfg(feature = "verify-verus")]
+// Verus proofs require verus tool (not a cargo dependency)
+#[cfg(all(feature = "verify-verus", verus))]
 mod verus_proofs;
 
-#[cfg(feature = "verify-creusot")]
+// Creusot proofs require creusot tool (contracts via separate proof crate)
+#[cfg(all(feature = "verify-creusot", creusot))]
 mod creusot_proofs;
 
+// Prusti proofs (prusti-contracts is a real dependency)
 #[cfg(feature = "verify-prusti")]
 mod prusti_proofs;
 

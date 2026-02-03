@@ -8,15 +8,19 @@ use syn::{Field, Ident, Type, TypePath};
 pub fn generate_kani_verification(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
     let constructor = generate_constructor(struct_name, fields);
     let harness = generate_harness(struct_name, fields);
+    let module_name = format_ident!("__kani_verification_{}", struct_name);
 
-    // Note: We only gate on the feature flag, not #[cfg(kani)]
-    // This allows cargo expand to show the code, and Kani will find it when running
+    // Module name includes struct name to avoid conflicts
+    // Only compiled when Kani is actually running
     quote! {
-        #[cfg(feature = "verify-kani")]
-        #constructor
+        #[cfg(kani)]
+        mod #module_name {
+            use super::*;
 
-        #[cfg(feature = "verify-kani")]
-        #harness
+            #constructor
+
+            #harness
+        }
     }
 }
 
@@ -25,17 +29,19 @@ pub fn generate_kani_enum_verification(
     enum_name: &Ident,
     variants: &[&syn::Variant],
 ) -> TokenStream {
-    // Generate one proof harness per variant
     let harnesses: Vec<_> = variants
         .iter()
         .map(|variant| generate_variant_harness(enum_name, variant))
         .collect();
+    let module_name = format_ident!("__kani_verification_{}", enum_name);
 
     quote! {
-        #[cfg(feature = "verify-kani")]
-        const _: () = {
+        #[cfg(kani)]
+        mod #module_name {
+            use super::*;
+
             #(#harnesses)*
-        };
+        }
     }
 }
 

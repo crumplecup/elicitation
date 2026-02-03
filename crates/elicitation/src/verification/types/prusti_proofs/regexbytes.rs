@@ -22,7 +22,7 @@ use prusti_contracts::*;
 // ============================================================================
 
 /// Verify: BalancedDelimiters rejects length exceeding MAX_LEN
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() > MAX_LEN)]
 #[ensures(result.is_err())]
 pub fn verify_balanced_length_check<const MAX_LEN: usize>(
@@ -32,7 +32,7 @@ pub fn verify_balanced_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: BalancedDelimiters accepts valid length
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= MAX_LEN)]
 pub fn verify_balanced_length_valid<const MAX_LEN: usize>(
     bytes: &[u8],
@@ -41,37 +41,37 @@ pub fn verify_balanced_length_valid<const MAX_LEN: usize>(
 }
 
 /// Verify: Simple balanced parentheses
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_balanced_simple() -> Result<BalancedDelimiters<16>, ValidationError> {
     BalancedDelimiters::from_slice(b"(abc)")
 }
 
 /// Verify: Nested balanced delimiters
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_balanced_nested() -> Result<BalancedDelimiters<16>, ValidationError> {
     BalancedDelimiters::from_slice(b"((a|b)c)")
 }
 
 /// Verify: Balanced brackets (character class)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_balanced_brackets() -> Result<BalancedDelimiters<16>, ValidationError> {
     BalancedDelimiters::from_slice(b"[a-z]+")
 }
 
 /// Verify: Balanced braces (quantifier)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_balanced_braces() -> Result<BalancedDelimiters<16>, ValidationError> {
     BalancedDelimiters::from_slice(b"a{2,5}")
 }
 
 /// Verify: Empty regex
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_balanced_empty() -> Result<BalancedDelimiters<16>, ValidationError> {
     BalancedDelimiters::from_slice(b"")
 }
 
 /// Verify: as_str() returns valid string
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= MAX_LEN)]
 pub fn verify_balanced_as_str<const MAX_LEN: usize>(
     bytes: &[u8],
@@ -85,7 +85,7 @@ pub fn verify_balanced_as_str<const MAX_LEN: usize>(
 // ============================================================================
 
 /// Verify: ValidEscapes rejects length exceeding MAX_LEN
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() > MAX_LEN)]
 #[ensures(result.is_err())]
 pub fn verify_escapes_length_check<const MAX_LEN: usize>(
@@ -95,7 +95,7 @@ pub fn verify_escapes_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: ValidEscapes accepts valid length
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= MAX_LEN)]
 pub fn verify_escapes_length_valid<const MAX_LEN: usize>(
     bytes: &[u8],
@@ -104,37 +104,37 @@ pub fn verify_escapes_length_valid<const MAX_LEN: usize>(
 }
 
 /// Verify: Digit escape (\d)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_escape_digit() -> Result<ValidEscapes<16>, ValidationError> {
     ValidEscapes::from_slice(b"\\d+")
 }
 
 /// Verify: Word escape (\w)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_escape_word() -> Result<ValidEscapes<16>, ValidationError> {
     ValidEscapes::from_slice(b"\\w*")
 }
 
 /// Verify: Dot escape (\.)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_escape_dot() -> Result<ValidEscapes<16>, ValidationError> {
     ValidEscapes::from_slice(b"\\.")
 }
 
 /// Verify: Newline escape (\n)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_escape_newline() -> Result<ValidEscapes<16>, ValidationError> {
     ValidEscapes::from_slice(b"\\n")
 }
 
 /// Verify: Tab escape (\t)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_escape_tab() -> Result<ValidEscapes<16>, ValidationError> {
     ValidEscapes::from_slice(b"\\t")
 }
 
 /// Verify: as_str() returns valid string
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= MAX_LEN)]
 pub fn verify_escapes_as_str<const MAX_LEN: usize>(
     bytes: &[u8],
@@ -148,7 +148,7 @@ pub fn verify_escapes_as_str<const MAX_LEN: usize>(
 // ============================================================================
 
 /// Verify: ValidQuantifiers rejects length exceeding MAX_LEN
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() > MAX_LEN)]
 #[ensures(result.is_err())]
 pub fn verify_quantifiers_length_check<const MAX_LEN: usize>(
@@ -158,7 +158,7 @@ pub fn verify_quantifiers_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: ValidQuantifiers accepts valid length
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= MAX_LEN)]
 pub fn verify_quantifiers_length_valid<const MAX_LEN: usize>(
     bytes: &[u8],
@@ -167,37 +167,37 @@ pub fn verify_quantifiers_length_valid<const MAX_LEN: usize>(
 }
 
 /// Verify: Star quantifier (*)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_quantifier_star() -> Result<ValidQuantifiers<16>, ValidationError> {
     ValidQuantifiers::from_slice(b"a*")
 }
 
 /// Verify: Plus quantifier (+)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_quantifier_plus() -> Result<ValidQuantifiers<16>, ValidationError> {
     ValidQuantifiers::from_slice(b"b+")
 }
 
 /// Verify: Question quantifier (?)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_quantifier_question() -> Result<ValidQuantifiers<16>, ValidationError> {
     ValidQuantifiers::from_slice(b"c?")
 }
 
 /// Verify: Exact count quantifier ({n})
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_quantifier_exact() -> Result<ValidQuantifiers<16>, ValidationError> {
     ValidQuantifiers::from_slice(b"d{3}")
 }
 
 /// Verify: Range quantifier ({n,m})
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_quantifier_range() -> Result<ValidQuantifiers<16>, ValidationError> {
     ValidQuantifiers::from_slice(b"e{2,5}")
 }
 
 /// Verify: as_str() returns valid string
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= MAX_LEN)]
 pub fn verify_quantifiers_as_str<const MAX_LEN: usize>(
     bytes: &[u8],
@@ -211,7 +211,7 @@ pub fn verify_quantifiers_as_str<const MAX_LEN: usize>(
 // ============================================================================
 
 /// Verify: ValidCharClass rejects length exceeding MAX_LEN
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() > MAX_LEN)]
 #[ensures(result.is_err())]
 pub fn verify_charclass_length_check<const MAX_LEN: usize>(
@@ -221,7 +221,7 @@ pub fn verify_charclass_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: ValidCharClass accepts valid length
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= MAX_LEN)]
 pub fn verify_charclass_length_valid<const MAX_LEN: usize>(
     bytes: &[u8],
@@ -230,31 +230,31 @@ pub fn verify_charclass_length_valid<const MAX_LEN: usize>(
 }
 
 /// Verify: Character class range [a-z]
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_charclass_range() -> Result<ValidCharClass<16>, ValidationError> {
     ValidCharClass::from_slice(b"[a-z]")
 }
 
 /// Verify: Character class set [abc]
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_charclass_set() -> Result<ValidCharClass<16>, ValidationError> {
     ValidCharClass::from_slice(b"[abc]")
 }
 
 /// Verify: Negated character class [^a-z]
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_charclass_negated() -> Result<ValidCharClass<16>, ValidationError> {
     ValidCharClass::from_slice(b"[^a-z]")
 }
 
 /// Verify: Character class with escape [\\d]
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_charclass_escape() -> Result<ValidCharClass<16>, ValidationError> {
     ValidCharClass::from_slice(b"[\\d]")
 }
 
 /// Verify: as_str() returns valid string
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= MAX_LEN)]
 pub fn verify_charclass_as_str<const MAX_LEN: usize>(
     bytes: &[u8],
@@ -268,7 +268,7 @@ pub fn verify_charclass_as_str<const MAX_LEN: usize>(
 // ============================================================================
 
 /// Verify: RegexBytes rejects length exceeding MAX_LEN
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() > MAX_LEN)]
 #[ensures(result.is_err())]
 pub fn verify_regex_length_check<const MAX_LEN: usize>(
@@ -278,7 +278,7 @@ pub fn verify_regex_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: RegexBytes accepts valid length
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= MAX_LEN)]
 pub fn verify_regex_length_valid<const MAX_LEN: usize>(
     bytes: &[u8],
@@ -287,55 +287,55 @@ pub fn verify_regex_length_valid<const MAX_LEN: usize>(
 }
 
 /// Verify: Simple literal regex
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_regex_literal() -> Result<RegexBytes<16>, ValidationError> {
     RegexBytes::from_slice(b"hello")
 }
 
 /// Verify: Regex with alternation
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_regex_alternation() -> Result<RegexBytes<16>, ValidationError> {
     RegexBytes::from_slice(b"cat|dog")
 }
 
 /// Verify: Regex with quantifiers
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_regex_quantifiers() -> Result<RegexBytes<16>, ValidationError> {
     RegexBytes::from_slice(b"a*b+c?")
 }
 
 /// Verify: Regex with character class
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_regex_charclass() -> Result<RegexBytes<16>, ValidationError> {
     RegexBytes::from_slice(b"[a-z]+")
 }
 
 /// Verify: Regex with escapes
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_regex_escapes() -> Result<RegexBytes<16>, ValidationError> {
     RegexBytes::from_slice(b"\\d{3}-\\d{4}")
 }
 
 /// Verify: Complex regex (email-like)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_regex_complex() -> Result<RegexBytes<32>, ValidationError> {
     RegexBytes::from_slice(b"[a-z]+@[a-z]+\\.[a-z]+")
 }
 
 /// Verify: Regex with groups
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_regex_groups() -> Result<RegexBytes<16>, ValidationError> {
     RegexBytes::from_slice(b"(ab)+c")
 }
 
 /// Verify: Empty regex
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_regex_empty() -> Result<RegexBytes<16>, ValidationError> {
     RegexBytes::from_slice(b"")
 }
 
 /// Verify: as_str() returns valid string
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= MAX_LEN)]
 pub fn verify_regex_as_str<const MAX_LEN: usize>(
     bytes: &[u8],
@@ -349,21 +349,21 @@ pub fn verify_regex_as_str<const MAX_LEN: usize>(
 // ============================================================================
 
 /// Verify: Small buffer (2 bytes)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= 2)]
 pub fn verify_regex_small_buffer(bytes: &[u8]) -> Result<RegexBytes<2>, ValidationError> {
     RegexBytes::from_slice(bytes)
 }
 
 /// Verify: Medium buffer (64 bytes)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= 64)]
 pub fn verify_regex_medium_buffer(bytes: &[u8]) -> Result<RegexBytes<64>, ValidationError> {
     RegexBytes::from_slice(bytes)
 }
 
 /// Verify: Large buffer (256 bytes)
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= 256)]
 pub fn verify_regex_large_buffer(bytes: &[u8]) -> Result<RegexBytes<256>, ValidationError> {
     RegexBytes::from_slice(bytes)

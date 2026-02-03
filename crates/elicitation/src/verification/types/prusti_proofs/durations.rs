@@ -10,7 +10,7 @@ use prusti_contracts::*;
 // ============================================================================
 
 /// Prove that DurationPositive construction succeeds for non-zero durations.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(!value.is_zero())]
 #[ensures(result.is_ok())]
 pub fn verify_duration_positive_valid(
@@ -20,7 +20,7 @@ pub fn verify_duration_positive_valid(
 }
 
 /// Prove that DurationPositive construction fails for zero duration.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(value.is_zero())]
 #[ensures(result.is_err())]
 pub fn verify_duration_positive_invalid(

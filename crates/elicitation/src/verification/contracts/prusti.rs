@@ -17,8 +17,6 @@
 //! cargo prusti --features verify-prusti
 //! ```
 
-#![cfg(feature = "verify-prusti")]
-
 use crate::verification::Contract;
 
 // Note: Prusti verification requires `#[pure]`, `#[requires]`, `#[ensures]` attributes.
@@ -274,6 +272,12 @@ pub struct PrustiOptionIsSome<T> {
     _phantom: std::marker::PhantomData<T>,
 }
 
+impl<T> Default for PrustiOptionIsSome<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> PrustiOptionIsSome<T> {
     /// Create new Prusti OptionIsSome contract.
     pub const fn new() -> Self {
@@ -306,6 +310,12 @@ where
 /// Prusti-verified Result<T, E> must be Ok contract.
 pub struct PrustiResultIsOk<T, E> {
     _phantom: std::marker::PhantomData<(T, E)>,
+}
+
+impl<T, E> Default for PrustiResultIsOk<T, E> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T, E> PrustiResultIsOk<T, E> {
@@ -341,6 +351,12 @@ where
 /// Prusti-verified Vec<T> non-empty contract.
 pub struct PrustiVecNonEmpty<T> {
     _phantom: std::marker::PhantomData<T>,
+}
+
+impl<T> Default for PrustiVecNonEmpty<T> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T> PrustiVecNonEmpty<T> {

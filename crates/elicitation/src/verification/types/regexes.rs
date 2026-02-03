@@ -2,9 +2,9 @@
 //!
 //! This module provides contract types for regex validation using the `regex` crate.
 
-#![cfg(feature = "regex")]
-
 use crate::verification::types::ValidationError;
+use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use elicitation_macros::instrumented_impl;
 #[cfg(feature = "regex")]
 use regex::{Regex, RegexBuilder, RegexSet};
 
@@ -486,6 +486,11 @@ impl RegexSetNonEmpty {
     pub fn len(&self) -> usize {
         self.0.len()
     }
+
+    /// Check if empty (always returns false for non-empty regex set).
+    pub fn is_empty(&self) -> bool {
+        false
+    }
 }
 
 #[cfg(kani)]
@@ -537,6 +542,187 @@ impl RegexSetNonEmpty {
         let len: usize = kani::any();
         kani::assume(len > 0);
         len
+    }
+}
+
+// ============================================================================
+// Elicitation Implementations
+// ============================================================================
+
+// Generate default-only style enums
+crate::default_style!(RegexValid => RegexValidStyle);
+crate::default_style!(RegexSetValid => RegexSetValidStyle);
+crate::default_style!(RegexCaseInsensitive => RegexCaseInsensitiveStyle);
+crate::default_style!(RegexMultiline => RegexMultilineStyle);
+crate::default_style!(RegexSetNonEmpty => RegexSetNonEmptyStyle);
+
+#[cfg_attr(not(kani), instrumented_impl)]
+impl Prompt for RegexValid {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a valid regex pattern:")
+    }
+}
+
+#[cfg_attr(not(kani), instrumented_impl)]
+impl Elicitation for RegexValid {
+    type Style = RegexValidStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "RegexValid"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting RegexValid (valid regex pattern)");
+
+        loop {
+            // Elicit pattern string
+            let pattern = String::elicit(client).await?;
+
+            // Try to construct RegexValid (validates pattern)
+            match Self::new(&pattern) {
+                Ok(regex) => {
+                    tracing::debug!(pattern, "Valid regex pattern compiled");
+                    return Ok(regex);
+                }
+                Err(e) => {
+                    tracing::warn!(pattern, error = %e, "Invalid regex pattern, re-prompting");
+                    // Loop continues, will re-prompt
+                }
+            }
+        }
+    }
+}
+
+#[cfg_attr(not(kani), instrumented_impl)]
+impl Prompt for RegexSetValid {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter regex patterns (as a list):")
+    }
+}
+
+#[cfg_attr(not(kani), instrumented_impl)]
+impl Elicitation for RegexSetValid {
+    type Style = RegexSetValidStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "RegexSetValid"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting RegexSetValid (set of regex patterns)");
+
+        loop {
+            // Elicit Vec of pattern strings
+            let patterns = Vec::<String>::elicit(client).await?;
+
+            // Try to construct RegexSetValid (validates all patterns)
+            match Self::new(patterns.iter().map(|s| s.as_str())) {
+                Ok(regex_set) => {
+                    tracing::debug!(count = patterns.len(), "Valid regex set compiled");
+                    return Ok(regex_set);
+                }
+                Err(e) => {
+                    tracing::warn!(error = %e, "Invalid regex patterns, re-prompting");
+                    // Loop continues, will re-prompt
+                }
+            }
+        }
+    }
+}
+
+#[cfg_attr(not(kani), instrumented_impl)]
+impl Prompt for RegexCaseInsensitive {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a case-insensitive regex pattern:")
+    }
+}
+
+#[cfg_attr(not(kani), instrumented_impl)]
+impl Elicitation for RegexCaseInsensitive {
+    type Style = RegexCaseInsensitiveStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "RegexCaseInsensitive"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting RegexCaseInsensitive (case-insensitive regex pattern)");
+
+        loop {
+            // Elicit pattern string
+            let pattern = String::elicit(client).await?;
+
+            // Try to construct RegexCaseInsensitive (validates pattern)
+            match Self::new(&pattern) {
+                Ok(regex) => {
+                    tracing::debug!(pattern, "Valid case-insensitive regex compiled");
+                    return Ok(regex);
+                }
+                Err(e) => {
+                    tracing::warn!(pattern, error = %e, "Invalid regex pattern, re-prompting");
+                    // Loop continues, will re-prompt
+                }
+            }
+        }
+    }
+}
+
+#[cfg_attr(not(kani), instrumented_impl)]
+impl Prompt for RegexMultiline {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter a multiline regex pattern:")
+    }
+}
+
+#[cfg_attr(not(kani), instrumented_impl)]
+impl Elicitation for RegexMultiline {
+    type Style = RegexMultilineStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "RegexMultiline"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting RegexMultiline (multiline regex pattern)");
+
+        loop {
+            // Elicit pattern string
+            let pattern = String::elicit(client).await?;
+
+            // Try to construct RegexMultiline (validates pattern)
+            match Self::new(&pattern) {
+                Ok(regex) => {
+                    tracing::debug!(pattern, "Valid multiline regex compiled");
+                    return Ok(regex);
+                }
+                Err(e) => {
+                    tracing::warn!(pattern, error = %e, "Invalid regex pattern, re-prompting");
+                    // Loop continues, will re-prompt
+                }
+            }
+        }
+    }
+}
+
+#[cfg_attr(not(kani), instrumented_impl)]
+impl Prompt for RegexSetNonEmpty {
+    fn prompt() -> Option<&'static str> {
+        Some("Please enter at least one regex pattern (as a list):")
+    }
+}
+
+#[cfg_attr(not(kani), instrumented_impl)]
+impl Elicitation for RegexSetNonEmpty {
+    type Style = RegexSetNonEmptyStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "RegexSetNonEmpty"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting RegexSetNonEmpty (non-empty set of regex patterns)");
+
+        loop {
+            // Elicit Vec of pattern strings
+            let patterns = Vec::<String>::elicit(client).await?;
+
+            // Try to construct RegexSetNonEmpty (validates non-empty + patterns)
+            match Self::new(patterns.iter().map(|s| s.as_str())) {
+                Ok(regex_set) => {
+                    tracing::debug!(count = patterns.len(), "Valid non-empty regex set compiled");
+                    return Ok(regex_set);
+                }
+                Err(e) => {
+                    tracing::warn!(error = %e, "Invalid regex patterns (empty or invalid), re-prompting");
+                    // Loop continues, will re-prompt
+                }
+            }
+        }
     }
 }
 
@@ -625,5 +811,14 @@ mod tests {
 
         assert_eq!(unwrapped.as_str(), pattern);
         assert!(unwrapped.is_match("123-4567"));
+    }
+}
+
+#[test]
+fn test_regex_valid_elicitation_compile() {
+    // This test verifies that RegexValid implements Elicit properly
+    // and can be used in derived structs
+    fn _type_check() {
+        let _: fn() -> Result<RegexValid, crate::ElicitError>;
     }
 }

@@ -163,7 +163,7 @@ pub trait Tool: Contract + Sync {
 ///
 /// These provide ergonomic ways to connect generic `Contract` trait
 /// to Creusot's native annotation system.
-
+///
 /// Generate Creusot `#[requires]` from Contract trait.
 ///
 /// # Example

@@ -10,7 +10,7 @@ use prusti_contracts::*;
 // ============================================================================
 
 /// Prove that IpPrivate construction succeeds for private IPs.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(value.is_private())]
 #[ensures(result.is_ok())]
 pub fn verify_ip_private_valid(value: std::net::IpAddr) -> Result<IpPrivate, ValidationError> {
@@ -18,7 +18,7 @@ pub fn verify_ip_private_valid(value: std::net::IpAddr) -> Result<IpPrivate, Val
 }
 
 /// Prove that IpPublic construction succeeds for non-private IPs.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(!value.is_private())]
 #[ensures(result.is_ok())]
 pub fn verify_ip_public_valid(value: std::net::IpAddr) -> Result<IpPublic, ValidationError> {
@@ -26,7 +26,7 @@ pub fn verify_ip_public_valid(value: std::net::IpAddr) -> Result<IpPublic, Valid
 }
 
 /// Prove that IpV4 construction succeeds for IPv4 addresses.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(value.is_ipv4())]
 #[ensures(result.is_ok())]
 pub fn verify_ip_v4_valid(value: std::net::IpAddr) -> Result<IpV4, ValidationError> {
@@ -34,7 +34,7 @@ pub fn verify_ip_v4_valid(value: std::net::IpAddr) -> Result<IpV4, ValidationErr
 }
 
 /// Prove that IpV6 construction succeeds for IPv6 addresses.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(value.is_ipv6())]
 #[ensures(result.is_ok())]
 pub fn verify_ip_v6_valid(value: std::net::IpAddr) -> Result<IpV6, ValidationError> {
@@ -42,7 +42,7 @@ pub fn verify_ip_v6_valid(value: std::net::IpAddr) -> Result<IpV6, ValidationErr
 }
 
 /// Prove that Ipv4Loopback construction succeeds for IPv4 loopback.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(value.is_loopback())]
 #[ensures(result.is_ok())]
 pub fn verify_ipv4_loopback_valid(
@@ -52,7 +52,7 @@ pub fn verify_ipv4_loopback_valid(
 }
 
 /// Prove that Ipv6Loopback construction succeeds for IPv6 loopback.
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(value.is_loopback())]
 #[ensures(result.is_ok())]
 pub fn verify_ipv6_loopback_valid(

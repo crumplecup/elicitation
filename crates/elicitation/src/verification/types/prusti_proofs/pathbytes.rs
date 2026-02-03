@@ -15,7 +15,7 @@ use prusti_contracts::*;
 // ============================================================================
 
 /// Verify: PathBytes correctly rejects length exceeding MAX_LEN
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() > MAX_LEN)]
 #[ensures(result.is_err())]
 pub fn verify_path_length_check<const MAX_LEN: usize>(
@@ -25,7 +25,7 @@ pub fn verify_path_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: PathBytes accepts valid length
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= MAX_LEN)]
 pub fn verify_path_length_valid<const MAX_LEN: usize>(
     bytes: &[u8],
@@ -34,37 +34,37 @@ pub fn verify_path_length_valid<const MAX_LEN: usize>(
 }
 
 /// Verify: PathBytes construction from empty slice
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_path_empty() -> Result<PathBytes<10>, ValidationError> {
     PathBytes::from_slice(&[])
 }
 
 /// Verify: PathBytes construction from single ASCII byte
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_path_single_byte() -> Result<PathBytes<1>, ValidationError> {
     PathBytes::from_slice(b"a")
 }
 
 /// Verify: PathBytes construction from ASCII path
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_path_ascii() -> Result<PathBytes<10>, ValidationError> {
     PathBytes::from_slice(b"/usr/local")
 }
 
 /// Verify: PathBytes construction with root path
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_path_root() -> Result<PathBytes<1>, ValidationError> {
     PathBytes::from_slice(b"/")
 }
 
 /// Verify: PathBytes construction with current directory
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_path_current_dir() -> Result<PathBytes<1>, ValidationError> {
     PathBytes::from_slice(b".")
 }
 
 /// Verify: PathBytes construction with parent directory
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_path_parent_dir() -> Result<PathBytes<2>, ValidationError> {
     PathBytes::from_slice(b"..")
 }
@@ -73,7 +73,7 @@ pub fn verify_path_parent_dir() -> Result<PathBytes<2>, ValidationError> {
 // ============================================================================
 
 /// Verify: PathBytes as_str() returns valid string
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= MAX_LEN)]
 pub fn verify_path_as_str_valid<const MAX_LEN: usize>(
     bytes: &[u8],
@@ -84,7 +84,7 @@ pub fn verify_path_as_str_valid<const MAX_LEN: usize>(
 }
 
 /// Verify: PathBytes len() returns correct value
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= MAX_LEN)]
 #[ensures(match result {
     Ok(ref path) => path.len() == bytes.len(),
@@ -97,7 +97,7 @@ pub fn verify_path_len_accessor<const MAX_LEN: usize>(
 }
 
 /// Verify: PathBytes is_empty() for zero length
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(match result {
     Ok(ref path) => path.is_empty(),
     Err(_) => true,
@@ -107,7 +107,7 @@ pub fn verify_path_empty_predicate() -> Result<PathBytes<10>, ValidationError> {
 }
 
 /// Verify: PathBytes is_empty() for non-zero length
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(match result {
     Ok(ref path) => !path.is_empty(),
     Err(_) => true,
@@ -120,19 +120,19 @@ pub fn verify_path_non_empty_predicate() -> Result<PathBytes<10>, ValidationErro
 // ============================================================================
 
 /// Verify: PathAbsolute accepts path starting with /
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_absolute_with_leading_slash() -> Result<PathAbsolute<10>, ValidationError> {
     PathAbsolute::from_slice(b"/usr/bin")
 }
 
 /// Verify: PathAbsolute accepts root path
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_absolute_root() -> Result<PathAbsolute<1>, ValidationError> {
     PathAbsolute::from_slice(b"/")
 }
 
 /// Verify: PathAbsolute length check propagates
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() > MAX_LEN)]
 #[ensures(result.is_err())]
 pub fn verify_absolute_length_check<const MAX_LEN: usize>(
@@ -142,7 +142,7 @@ pub fn verify_absolute_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: PathAbsolute get() returns underlying PathBytes
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_absolute_get_accessor() -> Result<PathAbsolute<10>, ValidationError> {
     let abs = PathAbsolute::from_slice(b"/home")?;
     let _path = abs.get(); // Should not panic
@@ -150,7 +150,7 @@ pub fn verify_absolute_get_accessor() -> Result<PathAbsolute<10>, ValidationErro
 }
 
 /// Verify: PathAbsolute as_str() returns valid string
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_absolute_as_str() -> Result<PathAbsolute<10>, ValidationError> {
     let abs = PathAbsolute::from_slice(b"/tmp")?;
     let _s = abs.as_str(); // Should not panic
@@ -161,31 +161,31 @@ pub fn verify_absolute_as_str() -> Result<PathAbsolute<10>, ValidationError> {
 // ============================================================================
 
 /// Verify: PathRelative accepts path not starting with /
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_relative_no_leading_slash() -> Result<PathRelative<10>, ValidationError> {
     PathRelative::from_slice(b"usr/local")
 }
 
 /// Verify: PathRelative accepts current directory
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_relative_current_dir() -> Result<PathRelative<1>, ValidationError> {
     PathRelative::from_slice(b".")
 }
 
 /// Verify: PathRelative accepts parent directory
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_relative_parent_dir() -> Result<PathRelative<2>, ValidationError> {
     PathRelative::from_slice(b"..")
 }
 
 /// Verify: PathRelative accepts simple filename
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_relative_filename() -> Result<PathRelative<10>, ValidationError> {
     PathRelative::from_slice(b"file.txt")
 }
 
 /// Verify: PathRelative length check propagates
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() > MAX_LEN)]
 #[ensures(result.is_err())]
 pub fn verify_relative_length_check<const MAX_LEN: usize>(
@@ -195,7 +195,7 @@ pub fn verify_relative_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: PathRelative get() returns underlying PathBytes
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_relative_get_accessor() -> Result<PathRelative<10>, ValidationError> {
     let rel = PathRelative::from_slice(b"home")?;
     let _path = rel.get(); // Should not panic
@@ -203,7 +203,7 @@ pub fn verify_relative_get_accessor() -> Result<PathRelative<10>, ValidationErro
 }
 
 /// Verify: PathRelative as_str() returns valid string
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_relative_as_str() -> Result<PathRelative<10>, ValidationError> {
     let rel = PathRelative::from_slice(b"tmp")?;
     let _s = rel.as_str(); // Should not panic
@@ -214,26 +214,26 @@ pub fn verify_relative_as_str() -> Result<PathRelative<10>, ValidationError> {
 // ============================================================================
 
 /// Verify: PathNonEmpty rejects empty path
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[ensures(result.is_err())]
 pub fn verify_non_empty_rejects_empty() -> Result<PathNonEmpty<10>, ValidationError> {
     PathNonEmpty::from_slice(&[])
 }
 
 /// Verify: PathNonEmpty accepts single character
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_non_empty_single_char() -> Result<PathNonEmpty<1>, ValidationError> {
     PathNonEmpty::from_slice(b"/")
 }
 
 /// Verify: PathNonEmpty accepts multi-character path
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_non_empty_multi_char() -> Result<PathNonEmpty<10>, ValidationError> {
     PathNonEmpty::from_slice(b"/usr/bin")
 }
 
 /// Verify: PathNonEmpty length check propagates
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() > MAX_LEN)]
 #[ensures(result.is_err())]
 pub fn verify_non_empty_length_check<const MAX_LEN: usize>(
@@ -243,7 +243,7 @@ pub fn verify_non_empty_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: PathNonEmpty get() returns underlying PathBytes
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_non_empty_get_accessor() -> Result<PathNonEmpty<10>, ValidationError> {
     let nonempty = PathNonEmpty::from_slice(b"/home")?;
     let _path = nonempty.get(); // Should not panic
@@ -251,7 +251,7 @@ pub fn verify_non_empty_get_accessor() -> Result<PathNonEmpty<10>, ValidationErr
 }
 
 /// Verify: PathNonEmpty as_str() returns valid string
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 pub fn verify_non_empty_as_str() -> Result<PathNonEmpty<10>, ValidationError> {
     let nonempty = PathNonEmpty::from_slice(b"/tmp")?;
     let _s = nonempty.as_str(); // Should not panic
@@ -262,21 +262,21 @@ pub fn verify_non_empty_as_str() -> Result<PathNonEmpty<10>, ValidationError> {
 // ============================================================================
 
 /// Verify: Small buffer (2 bytes) works correctly
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= 2)]
 pub fn verify_path_small_buffer(bytes: &[u8]) -> Result<PathBytes<2>, ValidationError> {
     PathBytes::from_slice(bytes)
 }
 
 /// Verify: Medium buffer (64 bytes) works correctly
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= 64)]
 pub fn verify_path_medium_buffer(bytes: &[u8]) -> Result<PathBytes<64>, ValidationError> {
     PathBytes::from_slice(bytes)
 }
 
 /// Verify: Large buffer (4096 bytes) works correctly
-#[cfg(feature = "verify-prusti")]
+#[cfg(prusti)]
 #[requires(bytes.len() <= 4096)]
 pub fn verify_path_large_buffer(bytes: &[u8]) -> Result<PathBytes<4096>, ValidationError> {
     PathBytes::from_slice(bytes)

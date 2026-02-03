@@ -2,53 +2,179 @@
 //!
 //! Available with the `jiff` feature.
 //!
-//! This module provides `Elicitation` implementations for the newest, most
-//! ergonomic Rust datetime library. Features built-in timezone support and
-//! excellent DST handling.
+//! Provides both direct elicitation and generator-based creation for jiff types.
 //!
-//! # Supported Types
+//! # Generator Pattern
 //!
-//! - [`Timestamp`] - Absolute moment in time (UTC)
-//! - [`Zoned`] - Timestamp with timezone (IANA database)
-//! - [`civil::DateTime`] - Calendar date + time (no timezone)
-//!
-//! # Example
-//!
-//! ```rust,ignore
+//! ```rust,no_run
+//! use elicitation::{TimestampGenerationMode, TimestampGenerator, Generator};
 //! use jiff::Timestamp;
-//! use elicitation::Elicitation;
-//! use rmcp::service::{Peer, RoleClient};
 //!
-//! async fn example(client: &Peer<RoleClient>) {
-//!     // Elicit an absolute timestamp
-//!     let timestamp: Timestamp = Timestamp::elicit(client).await?;
-//!     
-//!     // User can choose:
-//!     // 1. ISO 8601 string: "2024-07-11T15:30:00Z"
-//!     // 2. Manual components: year, month, day, hour, minute, second
-//! }
+//! // Choose generation mode
+//! let mode = TimestampGenerationMode::Now; // Current UTC time
+//!
+//! // Create generator
+//! let generator = TimestampGenerator::new(mode);
+//!
+//! // Generate multiple timestamps
+//! let t1 = generator.generate();
+//! let t2 = generator.generate();
 //! ```
-//!
-//! # Elicitation Flow
-//!
-//! 1. **Input Method Selection** - User chooses ISO 8601 or manual components
-//! 2. **Data Entry** - Based on selection:
-//!    - ISO: Single string prompt with format validation
-//!    - Manual: Six prompts for datetime + timezone (for Zoned)
-//! 3. **Validation** - jiff validates datetime construction
-//! 4. **Result** - Returns validated datetime or error
 
 use crate::{
-    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt,
+    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
+    Select,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
     mcp,
 };
-use jiff::{Timestamp, Zoned, civil::DateTime as CivilDateTime, tz::TimeZone};
+use jiff::{Span, Timestamp, Zoned, civil::DateTime as CivilDateTime, tz::TimeZone};
 
 // Style enums for jiff types
 crate::default_style!(Timestamp => TimestampStyle);
 crate::default_style!(Zoned => ZonedStyle);
 crate::default_style!(CivilDateTime => CivilDateTimeStyle);
+crate::default_style!(TimestampGenerationMode => TimestampGenerationModeStyle);
+
+// ============================================================================
+// Timestamp Generator
+// ============================================================================
+
+/// Generation mode for jiff::Timestamp.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum TimestampGenerationMode {
+    /// Use current UTC time.
+    Now,
+    /// Use Unix epoch (1970-01-01 00:00:00 UTC).
+    UnixEpoch,
+    /// Offset from reference time.
+    Offset {
+        /// Seconds offset.
+        seconds: i64,
+    },
+}
+
+impl Select for TimestampGenerationMode {
+    fn options() -> &'static [Self] {
+        &[
+            TimestampGenerationMode::Now,
+            TimestampGenerationMode::UnixEpoch,
+            TimestampGenerationMode::Offset { seconds: 0 },
+        ]
+    }
+
+    fn labels() -> &'static [&'static str] {
+        &[
+            "Now (Current UTC)",
+            "Unix Epoch (1970-01-01)",
+            "Offset (Custom)",
+        ]
+    }
+
+    fn from_label(label: &str) -> Option<Self> {
+        match label {
+            "Now (Current UTC)" => Some(TimestampGenerationMode::Now),
+            "Unix Epoch (1970-01-01)" => Some(TimestampGenerationMode::UnixEpoch),
+            "Offset (Custom)" => Some(TimestampGenerationMode::Offset { seconds: 0 }),
+            _ => None,
+        }
+    }
+}
+
+impl Prompt for TimestampGenerationMode {
+    fn prompt() -> Option<&'static str> {
+        Some("How should timestamps be generated?")
+    }
+}
+
+impl Elicitation for TimestampGenerationMode {
+    type Style = TimestampGenerationModeStyle;
+
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        let params = mcp::select_params(
+            Self::prompt().unwrap_or("Select an option:"),
+            Self::labels(),
+        );
+
+        let result = client
+            .peer()
+            .call_tool(rmcp::model::CallToolRequestParams {
+                meta: None,
+                name: mcp::tool_names::elicit_select().into(),
+                arguments: Some(params),
+                task: None,
+            })
+            .await?;
+
+        let value = mcp::extract_value(result)?;
+        let label = mcp::parse_string(value)?;
+
+        let selected = Self::from_label(&label).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(
+                "Invalid Timestamp generation mode".to_string(),
+            ))
+        })?;
+
+        match selected {
+            TimestampGenerationMode::Now => Ok(TimestampGenerationMode::Now),
+            TimestampGenerationMode::UnixEpoch => Ok(TimestampGenerationMode::UnixEpoch),
+            TimestampGenerationMode::Offset { .. } => {
+                let seconds = i64::elicit(client).await?;
+                Ok(TimestampGenerationMode::Offset { seconds })
+            }
+        }
+    }
+}
+
+/// Generator for creating Timestamp values.
+#[derive(Debug, Clone, Copy)]
+pub struct TimestampGenerator {
+    mode: TimestampGenerationMode,
+    reference: Timestamp,
+}
+
+impl TimestampGenerator {
+    /// Create a new Timestamp generator.
+    pub fn new(mode: TimestampGenerationMode) -> Self {
+        Self {
+            mode,
+            reference: Timestamp::now(),
+        }
+    }
+
+    /// Create a generator with a custom reference time.
+    pub fn with_reference(mode: TimestampGenerationMode, reference: Timestamp) -> Self {
+        Self { mode, reference }
+    }
+
+    /// Get the generation mode.
+    pub fn mode(&self) -> TimestampGenerationMode {
+        self.mode
+    }
+
+    /// Get the reference time.
+    pub fn reference(&self) -> Timestamp {
+        self.reference
+    }
+}
+
+impl Generator for TimestampGenerator {
+    type Target = Timestamp;
+
+    fn generate(&self) -> Self::Target {
+        match self.mode {
+            TimestampGenerationMode::Now => Timestamp::now(),
+            TimestampGenerationMode::UnixEpoch => Timestamp::UNIX_EPOCH,
+            TimestampGenerationMode::Offset { seconds } => {
+                let span = Span::new().seconds(seconds);
+                self.reference.checked_add(span).unwrap_or(self.reference)
+            }
+        }
+    }
+}
+
+// ============================================================================
+// Timestamp Elicitation
+// ============================================================================
 
 // Timestamp implementation
 impl Prompt for Timestamp {

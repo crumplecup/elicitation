@@ -5,8 +5,10 @@
 
 use crate::*;
 
+#[cfg(feature = "verify-verus")]
 #[allow(unused_imports)]
 use builtin::*;
+#[cfg(feature = "verify-verus")]
 #[allow(unused_imports)]
 use builtin_macros::*;
 
