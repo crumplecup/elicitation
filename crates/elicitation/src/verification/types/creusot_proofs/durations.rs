@@ -4,7 +4,7 @@
 #![allow(unused_imports)]
 
 use crate::*;
-use creusot_contracts::prelude::*;
+// Contracts provided by creusot_std;
 
 // Duration Contract Proofs
 // ============================================================================

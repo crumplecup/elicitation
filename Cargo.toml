@@ -1,8 +1,9 @@
 [workspace]
 members = [
-  "crates/elicitation",
-  "crates/elicitation_derive",
-  "crates/elicitation_macros",
+    "crates/elicitation",
+    "crates/elicitation_derive",
+    "crates/elicitation_macros",
+    "crates/elicitation_creusot_proofs",
 ]
 resolver = "2"
 
@@ -72,8 +73,7 @@ url = "2.5"
 regex = "1.12"
 
 # Verification libraries
-creusot-contracts = "0.8"
-creusot-std = { git = "https://github.com/creusot-rs/creusot", branch = "master" }
+creusot-std = "0.9.0"
 prusti-contracts = "0.2"
 
 # Dev dependencies

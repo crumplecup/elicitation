@@ -1,10 +1,6 @@
 //! Creusot proofs for bool contract types.
 
-#![cfg(feature = "verify-creusot")]
-#![allow(unused_imports)]
-
 use crate::*;
-// Contracts provided by creusot_std (via lib.rs import)
 
 // Bool Contract Proofs
 // ============================================================================
@@ -36,5 +32,3 @@ pub fn verify_bool_false_valid(value: bool) -> Result<BoolFalse, ValidationError
 pub fn verify_bool_false_invalid(value: bool) -> Result<BoolFalse, ValidationError> {
     BoolFalse::new(value)
 }
-
-// ============================================================================
