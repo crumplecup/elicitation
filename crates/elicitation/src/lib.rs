@@ -283,6 +283,11 @@ pub use primitives::duration::{
     DurationGenerationMode, DurationGenerator,
 };
 
+// Unit structs (standard library)
+pub use primitives::unit_structs::{
+    Formatter, Parser, Validator,
+};
+
 // DateTimes (feature-gated on chrono/time/jiff)
 #[cfg(all(any(feature = "verification", kani), feature = "chrono"))]
 pub use verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};

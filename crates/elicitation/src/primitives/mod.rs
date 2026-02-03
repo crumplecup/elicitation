@@ -27,6 +27,7 @@ mod pathbuf;
 mod string;
 pub mod systemtime;
 mod tuples;
+pub mod unit_structs;
 
 #[cfg(feature = "uuid")]
 pub mod uuid;
