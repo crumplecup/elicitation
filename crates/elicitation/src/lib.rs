@@ -108,13 +108,13 @@ mod value_impl;
 mod datetime_common;
 
 #[cfg(feature = "chrono")]
-mod datetime_chrono;
+pub mod datetime_chrono;
 
 #[cfg(feature = "time")]
 pub mod datetime_time;
 
 #[cfg(feature = "jiff")]
-mod datetime_jiff;
+pub mod datetime_jiff;
 
 mod elicitation_style;
 
