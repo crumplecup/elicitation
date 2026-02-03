@@ -23,6 +23,9 @@ verify-creusot = []
 verify-verus = []
 verify-prusti = []
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
+
 [dependencies]
 syn = { workspace = true }
 quote = { workspace = true }

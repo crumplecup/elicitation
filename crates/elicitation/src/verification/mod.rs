@@ -224,7 +224,6 @@ use std::fmt::Debug;
 ///     .elicit(peer)
 ///     .await?;
 /// ```
-
 // String contracts
 /// Default String contract (Kani unless overridden by feature).
 #[cfg(all(

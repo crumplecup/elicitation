@@ -2,8 +2,6 @@
 //!
 //! This module provides contract types for URL validation using the `url` crate.
 
-#![cfg(feature = "url")]
-
 use crate::verification::types::ValidationError;
 #[cfg(feature = "url")]
 use url::Url;
@@ -518,7 +516,7 @@ impl Elicitation for UrlValid {
 
         let value = crate::mcp::extract_value(result)?;
         let url_string: String = serde_json::from_value(value)?;
-        
+
         // Parse the string as a URL
         let url = url::Url::parse(&url_string).map_err(|_| ValidationError::UrlInvalid)?;
         Ok(Self::from_url(url))
@@ -537,7 +535,7 @@ impl Elicitation for UrlHttps {
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let value = url::Url::elicit(client).await?;
-        Ok(Self::from_url(value).map_err(crate::ElicitError::from)?)
+        Self::from_url(value).map_err(crate::ElicitError::from)
     }
 }
 
@@ -553,7 +551,7 @@ impl Elicitation for UrlHttp {
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let value = url::Url::elicit(client).await?;
-        Ok(Self::from_url(value).map_err(crate::ElicitError::from)?)
+        Self::from_url(value).map_err(crate::ElicitError::from)
     }
 }
 
@@ -569,7 +567,7 @@ impl Elicitation for UrlWithHost {
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let value = url::Url::elicit(client).await?;
-        Ok(Self::from_url(value).map_err(crate::ElicitError::from)?)
+        Self::from_url(value).map_err(crate::ElicitError::from)
     }
 }
 
@@ -585,7 +583,7 @@ impl Elicitation for UrlCanBeBase {
     #[tracing::instrument(skip(client))]
     async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
         let value = url::Url::elicit(client).await?;
-        Ok(Self::from_url(value).map_err(crate::ElicitError::from)?)
+        Self::from_url(value).map_err(crate::ElicitError::from)
     }
 }
 

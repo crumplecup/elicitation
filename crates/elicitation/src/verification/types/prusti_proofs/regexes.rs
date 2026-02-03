@@ -1,7 +1,6 @@
 //! Prusti proofs for Regex contract types.
 
 #![cfg(feature = "verify-prusti")]
-#![cfg(feature = "regex")]
 #![allow(unused_imports)]
 
 use crate::*;

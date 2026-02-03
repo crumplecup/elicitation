@@ -297,8 +297,7 @@ pub use datetime_chrono::{
 
 #[cfg(feature = "time")]
 pub use datetime_time::{
-    InstantGenerationMode, InstantGenerator, OffsetDateTimeGenerationMode,
-    OffsetDateTimeGenerator,
+    InstantGenerationMode, InstantGenerator, OffsetDateTimeGenerationMode, OffsetDateTimeGenerator,
 };
 
 #[cfg(feature = "jiff")]

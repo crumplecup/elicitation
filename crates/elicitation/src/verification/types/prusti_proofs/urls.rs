@@ -1,7 +1,6 @@
 //! Prusti proofs for URL contract types (from url crate).
 
 #![cfg(feature = "verify-prusti")]
-#![cfg(feature = "url")]
 #![allow(unused_imports)]
 
 use crate::verification::types::{

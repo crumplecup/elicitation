@@ -2,8 +2,6 @@
 //!
 //! Formal verification using Prusti (Viper/separation logic).
 
-#![cfg(feature = "verify-prusti")]
-
 mod bools;
 mod chars;
 mod collections;

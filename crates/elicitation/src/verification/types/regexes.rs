@@ -2,8 +2,6 @@
 //!
 //! This module provides contract types for regex validation using the `regex` crate.
 
-#![cfg(feature = "regex")]
-
 use crate::verification::types::ValidationError;
 use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
@@ -487,6 +485,11 @@ impl RegexSetNonEmpty {
     #[cfg_attr(not(kani), tracing::instrument(skip(self), level = "trace", ret))]
     pub fn len(&self) -> usize {
         self.0.len()
+    }
+
+    /// Check if empty (always returns false for non-empty regex set).
+    pub fn is_empty(&self) -> bool {
+        false
     }
 }
 
