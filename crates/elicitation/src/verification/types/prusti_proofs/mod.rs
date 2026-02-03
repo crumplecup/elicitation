@@ -15,6 +15,9 @@ mod networks;
 mod strings;
 mod utf8;
 
+#[cfg(unix)]
+mod pathbytes;
+
 #[cfg(feature = "url")]
 mod urls;
 
@@ -22,7 +25,7 @@ mod urls;
 mod regexes;
 
 /// Total number of Prusti proofs implemented.
-pub const PRUSTI_PROOF_COUNT: usize = 118; // 101 + 17 UTF-8 proofs
+pub const PRUSTI_PROOF_COUNT: usize = 151; // 101 + 17 UTF-8 + 33 PathBytes
 
 /// Verification coverage percentage.
 pub const PRUSTI_COVERAGE_PERCENT: usize = 100;
