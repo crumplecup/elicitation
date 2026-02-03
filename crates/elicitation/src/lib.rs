@@ -288,6 +288,22 @@ pub use primitives::errors::{IoErrorGenerationMode, IoErrorGenerator};
 #[cfg(feature = "serde_json")]
 pub use primitives::errors::{JsonErrorGenerationMode, JsonErrorGenerator};
 
+// DateTime generators (feature-gated)
+#[cfg(feature = "chrono")]
+pub use datetime_chrono::{
+    DateTimeUtcGenerationMode, DateTimeUtcGenerator, NaiveDateTimeGenerationMode,
+    NaiveDateTimeGenerator,
+};
+
+#[cfg(feature = "time")]
+pub use datetime_time::{
+    InstantGenerationMode, InstantGenerator, OffsetDateTimeGenerationMode,
+    OffsetDateTimeGenerator,
+};
+
+#[cfg(feature = "jiff")]
+pub use datetime_jiff::{TimestampGenerationMode, TimestampGenerator};
+
 // DateTimes (feature-gated on chrono/time/jiff)
 #[cfg(all(any(feature = "verification", kani), feature = "chrono"))]
 pub use verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};

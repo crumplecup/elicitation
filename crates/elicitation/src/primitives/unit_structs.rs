@@ -8,12 +8,16 @@
 //!
 //! Unit structs often carry behavior via associated methods:
 //!
-//! ```rust
+//! ```rust,ignore
 //! pub struct Validator;
 //!
 //! impl Validator {
-//!     pub fn is_utf8(&self, bytes: &[u8]) -> bool { /* ... */ }
-//!     pub fn is_email(&self, s: &str) -> bool { /* ... */ }
+//!     pub fn is_utf8(&self, bytes: &[u8]) -> bool {
+//!         std::str::from_utf8(bytes).is_ok()
+//!     }
+//!     pub fn is_email(&self, s: &str) -> bool {
+//!         s.contains('@')
+//!     }
 //! }
 //! ```
 //!

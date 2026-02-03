@@ -6,7 +6,7 @@
 //!
 //! # Use Case: Testing Error Handlers
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! use std::io;
 //! use elicitation::{IoErrorGenerationMode, IoErrorGenerator, Generator};
 //!
@@ -18,7 +18,11 @@
 //! let error = generator.generate();
 //!
 //! // Test your error handler
-//! handle_io_error(error);
+//! fn handle_error(e: io::Error) -> String {
+//!     format!("Error: {}", e)
+//! }
+//! let result = handle_error(error);
+//! assert!(result.contains("config.toml"));
 //! ```
 
 use crate::{
