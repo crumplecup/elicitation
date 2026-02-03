@@ -9,6 +9,10 @@ homepage.workspace = true
 documentation.workspace = true
 readme.workspace = true
 
+description = "Internal macros for elicitation crate"
+keywords = ["macros", "elicitation"]
+categories = ["development-tools"]
+
 [lib]
 proc-macro = true
 
