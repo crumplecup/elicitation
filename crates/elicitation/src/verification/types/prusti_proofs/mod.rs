@@ -11,8 +11,10 @@ mod durations;
 mod floats;
 mod integers;
 mod ipaddr_bytes;
+mod macaddr;
 mod mechanisms;
 mod networks;
+mod socketaddr;
 mod strings;
 mod utf8;
 
@@ -32,7 +34,7 @@ mod regexes;
 mod regexbytes;
 
 /// Total number of Prusti proofs implemented.
-pub const PRUSTI_PROOF_COUNT: usize = 285; // 101 + 17 UTF-8 + 33 PathBytes + 45 RegexBytes + 46 UrlBytes + 43 IpAddrBytes
+pub const PRUSTI_PROOF_COUNT: usize = 342; // 101 + 17 UTF-8 + 33 PathBytes + 45 RegexBytes + 46 UrlBytes + 43 IpAddrBytes + 30 SocketAddr + 27 MacAddr
 
 /// Verification coverage percentage.
 pub const PRUSTI_COVERAGE_PERCENT: usize = 100;
