@@ -545,25 +545,25 @@ mod tests {
 
     #[test]
     fn test_url_with_authority_contract() {
-        let url = UrlWithAuthority::<32, 256, 2048>::from_slice(b"http://example.com").unwrap();
+        let url = UrlWithAuthorityBytes::<32, 256, 2048>::from_slice(b"http://example.com").unwrap();
         assert!(url.url().has_authority());
     }
 
     #[test]
     fn test_url_without_authority_rejected() {
-        let result = UrlWithAuthority::<32, 256, 2048>::from_slice(b"mailto:test@example.com");
+        let result = UrlWithAuthorityBytes::<32, 256, 2048>::from_slice(b"mailto:test@example.com");
         assert!(result.is_err());
     }
 
     #[test]
     fn test_url_http_contract() {
-        let url = UrlHttp::<32, 256, 2048>::from_slice(b"https://example.com").unwrap();
+        let url = UrlHttpBytes::<32, 256, 2048>::from_slice(b"https://example.com").unwrap();
         assert!(url.url().is_http());
     }
 
     #[test]
     fn test_non_http_rejected() {
-        let result = UrlHttp::<32, 256, 2048>::from_slice(b"ftp://example.com");
+        let result = UrlHttpBytes::<32, 256, 2048>::from_slice(b"ftp://example.com");
         assert!(result.is_err());
     }
 }
