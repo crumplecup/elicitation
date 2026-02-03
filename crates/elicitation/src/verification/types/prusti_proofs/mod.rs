@@ -18,6 +18,9 @@ mod socketaddr;
 mod strings;
 mod utf8;
 
+#[cfg(kani)]
+mod uuid_bytes;
+
 #[cfg(unix)]
 mod pathbytes;
 
@@ -34,7 +37,7 @@ mod regexes;
 mod regexbytes;
 
 /// Total number of Prusti proofs implemented.
-pub const PRUSTI_PROOF_COUNT: usize = 342; // 101 + 17 UTF-8 + 33 PathBytes + 45 RegexBytes + 46 UrlBytes + 43 IpAddrBytes + 30 SocketAddr + 27 MacAddr
+pub const PRUSTI_PROOF_COUNT: usize = 375; // 101 + 17 UTF-8 + 33 PathBytes + 45 RegexBytes + 46 UrlBytes + 43 IpAddrBytes + 30 SocketAddr + 27 MacAddr + 33 UuidBytes
 
 /// Verification coverage percentage.
 pub const PRUSTI_COVERAGE_PERCENT: usize = 100;
