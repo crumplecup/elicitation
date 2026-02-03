@@ -38,15 +38,213 @@
 //! 4. **Result** - Returns validated datetime or error
 
 use crate::{
-    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt,
+    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
+    Select,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
     mcp,
 };
+use std::time::{Duration, Instant};
 use time::{OffsetDateTime, PrimitiveDateTime, UtcOffset};
 
 // Style enums for time types
 crate::default_style!(OffsetDateTime => OffsetDateTimeStyle);
 crate::default_style!(PrimitiveDateTime => PrimitiveDateTimeStyle);
+crate::default_style!(Instant => InstantStyle);
+
+// ============================================================================
+// Instant Generator
+// ============================================================================
+
+/// Generation mode for time::Instant.
+///
+/// This enum allows an agent (or user) to specify how to create an Instant:
+/// - `Now`: Use the actual current instant
+/// - `Offset`: Create a mock instant by offsetting from a reference point
+///
+/// This is particularly useful for test data generation where deterministic
+/// or specific timing is needed.
+#[derive(Debug, Clone, Copy)]
+pub enum InstantGenerationMode {
+    /// Use the actual current instant (Instant::now())
+    Now,
+    
+    /// Create an instant offset from a reference point.
+    ///
+    /// The offset can be positive (future) or negative (past).
+    Offset {
+        /// Seconds offset from reference (negative = past, positive = future)
+        seconds: i64,
+        /// Additional nanoseconds (0-999,999,999)
+        nanos: u32,
+    },
+}
+
+// Manual implementation of Select pattern for InstantGenerationMode
+crate::default_style!(InstantGenerationMode => InstantGenerationModeStyle);
+
+impl Prompt for InstantGenerationMode {
+    fn prompt() -> Option<&'static str> {
+        Some("Choose how to generate the instant:")
+    }
+}
+
+impl crate::Select for InstantGenerationMode {
+    fn options() -> &'static [Self] {
+        &[
+            InstantGenerationMode::Now,
+            InstantGenerationMode::Offset { seconds: 0, nanos: 0 },
+        ]
+    }
+
+    fn labels() -> &'static [&'static str] {
+        &["Now (current time)", "Offset (from reference)"]
+    }
+
+    fn from_label(label: &str) -> Option<Self> {
+        match label {
+            "Now (current time)" => Some(InstantGenerationMode::Now),
+            "Offset (from reference)" => Some(InstantGenerationMode::Offset { seconds: 0, nanos: 0 }),
+            _ => None,
+        }
+    }
+}
+
+impl Elicitation for InstantGenerationMode {
+    type Style = InstantGenerationModeStyle;
+
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        // Use standard Select elicit pattern
+        let params = mcp::select_params(
+            Self::prompt().unwrap_or("Select an option:"),
+            Self::labels(),
+        );
+
+        let result = client
+            .peer()
+            .call_tool(rmcp::model::CallToolRequestParams {
+                meta: None,
+                name: mcp::tool_names::elicit_select().into(),
+                arguments: Some(params),
+                task: None,
+            })
+            .await?;
+
+        let value = mcp::extract_value(result)?;
+        let label = mcp::parse_string(value)?;
+
+        let selected = Self::from_label(&label)
+            .ok_or_else(|| ElicitError::new(ElicitErrorKind::ParseError(
+                "Invalid variant selection".to_string()
+            )))?;
+
+        // If Offset was selected, elicit the fields
+        match selected {
+            InstantGenerationMode::Now => Ok(InstantGenerationMode::Now),
+            InstantGenerationMode::Offset { .. } => {
+                // Elicit seconds
+                let seconds = i64::elicit(client).await?;
+                // Elicit nanos
+                let nanos = u32::elicit(client).await?;
+                Ok(InstantGenerationMode::Offset { seconds, nanos })
+            }
+        }
+    }
+}
+
+/// Generator for time::Instant.
+///
+/// Encapsulates a strategy for creating Instant values. Can be configured
+/// once via elicitation and then used to generate multiple instants with
+/// the same strategy.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// // Elicit the strategy
+/// let mode = InstantGenerationMode::elicit(client).await?;
+/// let generator = InstantGenerator::new(mode);
+///
+/// // Generate multiple instants with same strategy
+/// let event1_time = generator.generate();
+/// let event2_time = generator.generate();
+/// ```
+#[derive(Debug, Clone)]
+pub struct InstantGenerator {
+    mode: InstantGenerationMode,
+    reference: Instant,
+}
+
+impl InstantGenerator {
+    /// Create a new generator with the given mode.
+    ///
+    /// The reference instant is captured at creation time.
+    pub fn new(mode: InstantGenerationMode) -> Self {
+        Self {
+            mode,
+            reference: Instant::now(),
+        }
+    }
+
+    /// Create a generator with a specific reference instant.
+    ///
+    /// Useful for tests where you want deterministic offsets from a known point.
+    pub fn with_reference(mode: InstantGenerationMode, reference: Instant) -> Self {
+        Self { mode, reference }
+    }
+}
+
+impl Generator for InstantGenerator {
+    type Target = Instant;
+
+    fn generate(&self) -> Instant {
+        match &self.mode {
+            InstantGenerationMode::Now => Instant::now(),
+            InstantGenerationMode::Offset { seconds, nanos } => {
+                let duration = Duration::new(*seconds as u64, *nanos);
+                
+                // For offset mode, we use the reference instant
+                if *seconds >= 0 {
+                    self.reference + duration
+                } else {
+                    // Negative offset - subtract duration
+                    self.reference - Duration::new((-*seconds) as u64, *nanos)
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// Instant Elicitation
+// ============================================================================
+
+#[cfg_attr(not(kani), elicitation_macros::instrumented_impl)]
+impl Prompt for Instant {
+    fn prompt() -> Option<&'static str> {
+        Some("Specify how to create an instant (now vs offset):")
+    }
+}
+
+#[cfg_attr(not(kani), elicitation_macros::instrumented_impl)]
+impl Elicitation for Instant {
+    type Style = InstantStyle;
+
+    #[tracing::instrument(skip(client), fields(type_name = "Instant"))]
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting time::Instant");
+
+        // Elicit the generation mode
+        let mode = InstantGenerationMode::elicit(client).await?;
+
+        // Create generator and generate immediately
+        let generator = InstantGenerator::new(mode);
+        Ok(generator.generate())
+    }
+}
+
+// ============================================================================
+// OffsetDateTime Elicitation  
+// ============================================================================
 
 // OffsetDateTime implementation
 impl Prompt for OffsetDateTime {

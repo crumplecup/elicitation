@@ -111,7 +111,7 @@ mod datetime_common;
 mod datetime_chrono;
 
 #[cfg(feature = "time")]
-mod datetime_time;
+pub mod datetime_time;
 
 #[cfg(feature = "jiff")]
 mod datetime_jiff;
@@ -126,7 +126,7 @@ pub use client::ElicitClient;
 
 // Core traits
 pub use elicitation_style::ElicitationStyle;
-pub use traits::{ElicitBuilder, Elicitation, Prompt};
+pub use traits::{ElicitBuilder, Elicitation, Generator, Prompt};
 
 // Interaction paradigm traits
 pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
