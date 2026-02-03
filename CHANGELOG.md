@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Auto-generate MCP tool functions for #[derive(Elicit)]
+- Implement Elicitation for regex contract types
+- Add Generator trait and Instant support
+- Add Generator support for UUID
+- Add Generator support for SystemTime
+- Add Generator support for Duration
+- Add Generator support for OffsetDateTime
+- Add Generator support for datetime libraries
+- Add Generator for unit structs - the simplest elicitation!
+- Add Generator for std::io::Error and serde_json::Error
+
+### Fixed
+
+- Remove cfg feature gates from generated code
+- Generate only Kani verification in user crates
+- Restore all verifier backends without cfg gates
+- Use cfg gates with allow directives for all verifiers
+- Build errors and verification feature gates
+- Export datetime generators and fix doctest examples
+- Remove duplicate attributes and add missing impls
+
+## [Unreleased]
+
+### Added
+
 - Add Creusot deductive verifier support
 - Add comprehensive verification tool setup and management
 - Implement Phase 1 - primitive contracts with Kani
