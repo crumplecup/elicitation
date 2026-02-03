@@ -50,6 +50,9 @@ use time::{OffsetDateTime, PrimitiveDateTime, UtcOffset};
 crate::default_style!(OffsetDateTime => OffsetDateTimeStyle);
 crate::default_style!(PrimitiveDateTime => PrimitiveDateTimeStyle);
 crate::default_style!(Instant => InstantStyle);
+crate::default_style!(Time => TimeStyle);
+crate::default_style!(OffsetDateTimeGenerationMode => OffsetDateTimeGenerationModeStyle);
+crate::default_style!(PrimitiveDateTimeGenerationMode => PrimitiveDateTimeGenerationModeStyle);
 
 // ============================================================================
 // Instant Generator
@@ -239,6 +242,153 @@ impl Elicitation for Instant {
         // Create generator and generate immediately
         let generator = InstantGenerator::new(mode);
         Ok(generator.generate())
+    }
+}
+
+// ============================================================================
+// OffsetDateTime Generator
+// ============================================================================
+
+/// Generation mode for time::OffsetDateTime.
+///
+/// This enum allows an agent (or user) to specify how to create an OffsetDateTime:
+/// - `Now`: Current UTC time
+/// - `UnixEpoch`: Unix epoch (1970-01-01 00:00:00 UTC)
+/// - `Offset`: Time offset from a reference point
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum OffsetDateTimeGenerationMode {
+    /// Use current UTC time.
+    Now,
+    /// Use Unix epoch (1970-01-01 00:00:00 UTC).
+    UnixEpoch,
+    /// Offset from reference time.
+    Offset {
+        /// Seconds offset (positive = future, negative = past).
+        seconds: i64,
+        /// Nanoseconds component (0-999,999,999).
+        nanos: i32,
+    },
+}
+
+impl Select for OffsetDateTimeGenerationMode {
+    fn options() -> &'static [Self] {
+        &[
+            OffsetDateTimeGenerationMode::Now,
+            OffsetDateTimeGenerationMode::UnixEpoch,
+            OffsetDateTimeGenerationMode::Offset { seconds: 0, nanos: 0 },
+        ]
+    }
+
+    fn labels() -> &'static [&'static str] {
+        &["Now (Current UTC)", "Unix Epoch (1970-01-01)", "Offset (Custom)"]
+    }
+
+    fn from_label(label: &str) -> Option<Self> {
+        match label {
+            "Now (Current UTC)" => Some(OffsetDateTimeGenerationMode::Now),
+            "Unix Epoch (1970-01-01)" => Some(OffsetDateTimeGenerationMode::UnixEpoch),
+            "Offset (Custom)" => Some(OffsetDateTimeGenerationMode::Offset {
+                seconds: 0,
+                nanos: 0,
+            }),
+            _ => None,
+        }
+    }
+}
+
+impl Prompt for OffsetDateTimeGenerationMode {
+    fn prompt() -> Option<&'static str> {
+        Some("How should OffsetDateTime values be generated?")
+    }
+}
+
+impl Elicitation for OffsetDateTimeGenerationMode {
+    type Style = OffsetDateTimeGenerationModeStyle;
+
+    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        let params = mcp::select_params(
+            Self::prompt().unwrap_or("Select an option:"),
+            Self::labels(),
+        );
+
+        let result = client
+            .peer()
+            .call_tool(rmcp::model::CallToolRequestParams {
+                meta: None,
+                name: mcp::tool_names::elicit_select().into(),
+                arguments: Some(params),
+                task: None,
+            })
+            .await?;
+
+        let value = mcp::extract_value(result)?;
+        let label = mcp::parse_string(value)?;
+
+        let selected = Self::from_label(&label).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(
+                "Invalid OffsetDateTime generation mode".to_string(),
+            ))
+        })?;
+
+        match selected {
+            OffsetDateTimeGenerationMode::Now => Ok(OffsetDateTimeGenerationMode::Now),
+            OffsetDateTimeGenerationMode::UnixEpoch => Ok(OffsetDateTimeGenerationMode::UnixEpoch),
+            OffsetDateTimeGenerationMode::Offset { .. } => {
+                let seconds = i64::elicit(client).await?;
+                let nanos = i32::elicit(client).await?;
+                Ok(OffsetDateTimeGenerationMode::Offset { seconds, nanos })
+            }
+        }
+    }
+}
+
+/// Generator for creating OffsetDateTime values with a specified strategy.
+#[derive(Debug, Clone, Copy)]
+pub struct OffsetDateTimeGenerator {
+    mode: OffsetDateTimeGenerationMode,
+    reference: OffsetDateTime,
+}
+
+impl OffsetDateTimeGenerator {
+    /// Create a new OffsetDateTime generator with the specified mode.
+    pub fn new(mode: OffsetDateTimeGenerationMode) -> Self {
+        Self {
+            mode,
+            reference: OffsetDateTime::now_utc(),
+        }
+    }
+
+    /// Create a generator with a custom reference time.
+    pub fn with_reference(mode: OffsetDateTimeGenerationMode, reference: OffsetDateTime) -> Self {
+        Self { mode, reference }
+    }
+
+    /// Get the generation mode.
+    pub fn mode(&self) -> OffsetDateTimeGenerationMode {
+        self.mode
+    }
+
+    /// Get the reference time.
+    pub fn reference(&self) -> OffsetDateTime {
+        self.reference
+    }
+}
+
+impl Generator for OffsetDateTimeGenerator {
+    type Target = OffsetDateTime;
+
+    fn generate(&self) -> Self::Target {
+        match self.mode {
+            OffsetDateTimeGenerationMode::Now => OffsetDateTime::now_utc(),
+            OffsetDateTimeGenerationMode::UnixEpoch => OffsetDateTime::UNIX_EPOCH,
+            OffsetDateTimeGenerationMode::Offset { seconds, nanos } => {
+                if seconds >= 0 {
+                    self.reference + Duration::new(seconds as u64, nanos as u32)
+                } else {
+                    self.reference - Duration::new((-seconds) as u64, nanos.unsigned_abs())
+                }
+            }
+        }
     }
 }
 
