@@ -95,7 +95,12 @@ setup-verifiers install_dir="~/repos":
         echo "📦 Installing Verus..."
         mkdir -p {{install_dir}}
         cd {{install_dir}} && git clone https://github.com/verus-lang/verus.git || true
-        cd {{install_dir}}/verus && ./tools/get-z3.sh && source ./tools/activate && vargo build --release
+        cd {{install_dir}}/verus/source && ../tools/get-z3.sh && source ../tools/activate && vargo build --release
+        # Symlink to cargo bin directory
+        mkdir -p ~/.cargo/bin
+        ln -sf {{install_dir}}/verus/source/target-verus/release/verus ~/.cargo/bin/verus
+        ln -sf {{install_dir}}/verus/source/target-verus/release/rust_verify ~/.cargo/bin/rust_verify
+        echo "  ✅ Symlinked Verus binaries to ~/.cargo/bin"
     fi
     echo ""
     
