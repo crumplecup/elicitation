@@ -8,11 +8,16 @@ use syn::{Field, Ident};
 pub fn generate_verus_verification(struct_name: &Ident, fields: &[&Field]) -> TokenStream {
     let constructor = generate_constructor(struct_name, fields);
     let harness = generate_harness(struct_name, fields);
+    let module_name = format_ident!("__verus_verification_{}", struct_name);
 
     quote! {
-        #constructor
+        mod #module_name {
+            use super::*;
 
-        #harness
+            #constructor
+
+            #harness
+        }
     }
 }
 
@@ -21,18 +26,20 @@ pub fn generate_verus_enum_verification(
     enum_name: &Ident,
     variants: &[&syn::Variant],
 ) -> TokenStream {
-    // Generate one verification function per variant
     let harnesses: Vec<_> = variants
         .iter()
         .map(|variant| generate_variant_harness(enum_name, variant))
         .collect();
+    let module_name = format_ident!("__verus_verification_{}", enum_name);
 
     quote! {
-        const _: () = {
+        mod #module_name {
+            use super::*;
+
             verus! {
                 #(#harnesses)*
             }
-        };
+        }
     }
 }
 
