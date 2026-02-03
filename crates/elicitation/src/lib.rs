@@ -278,6 +278,11 @@ pub use primitives::systemtime::{
     SystemTimeGenerationMode, SystemTimeGenerator,
 };
 
+// Duration (standard library)
+pub use primitives::duration::{
+    DurationGenerationMode, DurationGenerator,
+};
+
 // DateTimes (feature-gated on chrono/time/jiff)
 #[cfg(all(any(feature = "verification", kani), feature = "chrono"))]
 pub use verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
