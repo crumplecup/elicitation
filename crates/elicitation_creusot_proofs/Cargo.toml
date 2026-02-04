@@ -1,6 +1,6 @@
 [package]
 name = "elicitation_creusot_proofs"
-version = "0.4.4"
+version.workspace = true
 edition = "2024"
 publish = false
 
