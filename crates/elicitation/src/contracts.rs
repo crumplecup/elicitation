@@ -208,6 +208,122 @@ pub trait Implies<Q: Prop>: Prop {}
 // Reflexivity: Every proposition implies itself
 impl<P: Prop> Implies<P> for P {}
 
+/// Logical conjunction: both P and Q hold.
+///
+/// `And<P, Q>` represents the proposition that both P and Q are true.
+/// This enables combining multiple proofs into a single compound proof.
+///
+/// # Properties
+///
+/// - **Commutative** (logically): P ∧ Q ≡ Q ∧ P
+/// - **Associative** (logically): (P ∧ Q) ∧ R ≡ P ∧ (Q ∧ R)
+/// - **Projectable**: And<P, Q> → P and And<P, Q> → Q
+///
+/// # Examples
+///
+/// ```rust
+/// use elicitation::contracts::{Established, And, both, fst, snd};
+/// use std::marker::PhantomData;
+///
+/// // Two propositions
+/// struct ValidUrl;
+/// struct HasPort;
+///
+/// impl elicitation::contracts::Prop for ValidUrl {}
+/// impl elicitation::contracts::Prop for HasPort {}
+///
+/// let url_proof: Established<ValidUrl> = Established::assert();
+/// let port_proof: Established<HasPort> = Established::assert();
+///
+/// // Combine into conjunction
+/// let both_proof: Established<And<ValidUrl, HasPort>> = both(url_proof, port_proof);
+///
+/// // Project back out
+/// let url_again: Established<ValidUrl> = fst(both_proof);
+/// let port_again: Established<HasPort> = snd(both_proof);
+/// ```
+pub struct And<P: Prop, Q: Prop> {
+    _marker: PhantomData<(fn() -> P, fn() -> Q)>,
+}
+
+impl<P: Prop, Q: Prop> Prop for And<P, Q> {}
+
+/// Combine two proofs into a conjunction.
+///
+/// Given proofs of P and Q, construct a proof that both hold.
+///
+/// # Examples
+///
+/// ```rust
+/// use elicitation::contracts::{Established, And, both, Prop};
+///
+/// struct P;
+/// struct Q;
+/// impl Prop for P {}
+/// impl Prop for Q {}
+///
+/// let p: Established<P> = Established::assert();
+/// let q: Established<Q> = Established::assert();
+/// let pq: Established<And<P, Q>> = both(p, q);
+/// ```
+#[inline(always)]
+pub fn both<P: Prop, Q: Prop>(
+    _p: Established<P>,
+    _q: Established<Q>,
+) -> Established<And<P, Q>> {
+    Established {
+        _marker: PhantomData,
+    }
+}
+
+/// Project left component from conjunction.
+///
+/// Given a proof that both P and Q hold, extract a proof of P.
+///
+/// # Examples
+///
+/// ```rust
+/// use elicitation::contracts::{Established, And, both, fst, Prop};
+///
+/// struct P;
+/// struct Q;
+/// impl Prop for P {}
+/// impl Prop for Q {}
+///
+/// let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
+/// let p: Established<P> = fst(pq);
+/// ```
+#[inline(always)]
+pub fn fst<P: Prop, Q: Prop>(_both: Established<And<P, Q>>) -> Established<P> {
+    Established {
+        _marker: PhantomData,
+    }
+}
+
+/// Project right component from conjunction.
+///
+/// Given a proof that both P and Q hold, extract a proof of Q.
+///
+/// # Examples
+///
+/// ```rust
+/// use elicitation::contracts::{Established, And, both, snd, Prop};
+///
+/// struct P;
+/// struct Q;
+/// impl Prop for P {}
+/// impl Prop for Q {}
+///
+/// let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
+/// let q: Established<Q> = snd(pq);
+/// ```
+#[inline(always)]
+pub fn snd<P: Prop, Q: Prop>(_both: Established<And<P, Q>>) -> Established<Q> {
+    Established {
+        _marker: PhantomData,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -279,5 +395,81 @@ mod tests {
         // This would fail to compile (no Implies<PropB> for PropA):
         // let a: Established<PropA> = Established::assert();
         // let _b: Established<PropB> = a.weaken();
+    }
+
+    #[test]
+    fn test_conjunction_combine() {
+        struct P;
+        struct Q;
+        impl Prop for P {}
+        impl Prop for Q {}
+        
+        let p: Established<P> = Established::assert();
+        let q: Established<Q> = Established::assert();
+        let _pq: Established<And<P, Q>> = both(p, q);
+    }
+
+    #[test]
+    fn test_conjunction_project_left() {
+        struct P;
+        struct Q;
+        impl Prop for P {}
+        impl Prop for Q {}
+        
+        let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
+        let _p: Established<P> = fst(pq);
+    }
+
+    #[test]
+    fn test_conjunction_project_right() {
+        struct P;
+        struct Q;
+        impl Prop for P {}
+        impl Prop for Q {}
+        
+        let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
+        let _q: Established<Q> = snd(pq);
+    }
+
+    #[test]
+    fn test_conjunction_implies_components() {
+        struct P;
+        struct Q;
+        impl Prop for P {}
+        impl Prop for Q {}
+        
+        // Use projection functions instead of weaken
+        let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
+        let _p: Established<P> = fst(pq);
+        let _q: Established<Q> = snd(pq);
+    }
+
+    #[test]
+    fn test_conjunction_is_zero_sized() {
+        struct P;
+        struct Q;
+        impl Prop for P {}
+        impl Prop for Q {}
+        
+        let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
+        assert_eq!(std::mem::size_of_val(&pq), 0);
+    }
+
+    #[test]
+    fn test_conjunction_chain() {
+        struct P;
+        struct Q;
+        struct R;
+        impl Prop for P {}
+        impl Prop for Q {}
+        impl Prop for R {}
+        
+        // Can nest: (P ∧ Q) ∧ R
+        let p: Established<P> = Established::assert();
+        let q: Established<Q> = Established::assert();
+        let r: Established<R> = Established::assert();
+        
+        let pq = both(p, q);
+        let _pqr: Established<And<And<P, Q>, R>> = both(pq, r);
     }
 }
