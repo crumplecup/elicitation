@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Remove verification code generation to eliminate warnings
+
+## [Unreleased]
+
 ### Added
 
 - Auto-generate MCP tool functions for #[derive(Elicit)]
