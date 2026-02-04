@@ -411,6 +411,74 @@ pub fn snd<P: Prop, Q: Prop>(_both: Established<And<P, Q>>) -> Established<Q> {
     }
 }
 
+/// Type-level refinement: `Self` refines `Base`.
+///
+/// A refinement type has all the properties of its base type, plus
+/// additional constraints. This means:
+/// - If a value inhabits the refined type, it necessarily inhabits the base type
+/// - You can safely downcast from refined proof to base proof
+/// - You cannot upcast (compile error without additional validation)
+///
+/// # Laws
+///
+/// 1. **Reflexivity**: Every type refines itself (T → T)
+/// 2. **Transitivity**: If A refines B and B refines C, then A refines C
+/// 3. **Inhabitation**: `Is<Refined>` implies `Is<Base>` (requires explicit `Implies` impl)
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use elicitation::contracts::{Refines, Is, Established, Implies, Prop, downcast};
+///
+/// // Define a refined string type (in practice, would have validation)
+/// struct NonEmptyString(String);
+///
+/// // Declare refinement relationship and implication
+/// impl Refines<String> for NonEmptyString {}
+/// // In actual code: impl Implies<Is<String>> for Is<NonEmptyString> {}
+///
+/// // Can downcast from refined to base:
+/// // let refined_proof: Established<Is<NonEmptyString>> = Established::assert();
+/// // let base_proof: Established<Is<String>> = downcast(refined_proof);
+/// ```
+pub trait Refines<Base>: 'static {}
+
+// Reflexivity: every type refines itself
+impl<T: 'static> Refines<T> for T {}
+
+/// Downcast proof from refined type to base type.
+///
+/// If you have a proof that a value inhabits a refined type,
+/// you automatically have proof it inhabits the base type.
+///
+/// This works via the `Refines` trait relationship. Users must
+/// implement `Implies<Is<Base>>` for `Is<Refined>` to enable downcasting.
+///
+/// # Examples
+///
+/// ```rust,no_run
+/// use elicitation::contracts::{Refines, Is, Established, Implies, Prop, downcast};
+///
+/// struct NonEmptyString(String);
+/// impl Refines<String> for NonEmptyString {}
+///
+/// // In actual code, you'd implement this in your crate:
+/// // impl Implies<Is<String>> for Is<NonEmptyString> {}
+///
+/// // Then downcast works:
+/// // let refined: Established<Is<NonEmptyString>> = Established::assert();
+/// // let base: Established<Is<String>> = downcast(refined);
+/// ```
+#[inline(always)]
+pub fn downcast<Base: 'static, Refined: Refines<Base>>(
+    proof: Established<Is<Refined>>,
+) -> Established<Is<Base>>
+where
+    Is<Refined>: Implies<Is<Base>>,
+{
+    proof.weaken()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -558,5 +626,98 @@ mod tests {
         
         let pq = both(p, q);
         let _pqr: Established<And<And<P, Q>, R>> = both(pq, r);
+    }
+
+    #[test]
+    fn test_refinement_downcast() {
+        // Define refined type
+        struct NonEmptyString(String);
+        impl Refines<String> for NonEmptyString {}
+        impl Implies<Is<String>> for Is<NonEmptyString> {}
+
+        // Can downcast from refined to base
+        let refined_proof: Established<Is<NonEmptyString>> = Established::assert();
+        let _base_proof: Established<Is<String>> = downcast(refined_proof);
+    }
+
+    #[test]
+    fn test_refinement_via_weaken() {
+        // Refinement requires explicit Implies impl
+        struct NonEmptyString(String);
+        impl Refines<String> for NonEmptyString {}
+        impl Implies<Is<String>> for Is<NonEmptyString> {}
+
+        let refined: Established<Is<NonEmptyString>> = Established::assert();
+        let _base: Established<Is<String>> = refined.weaken();
+    }
+
+    #[test]
+    fn test_refinement_reflexive() {
+        // Every type refines itself (via reflexive Implies)
+        let proof: Established<Is<String>> = Established::assert();
+        let _same: Established<Is<String>> = downcast(proof);
+    }
+
+    #[test]
+    fn test_refinement_chain() {
+        // Test transitivity: HttpsUrl -> ValidUrl -> String
+        struct HttpsUrl(String);
+        struct ValidUrl(String);
+
+        impl Refines<String> for ValidUrl {}
+        impl Implies<Is<String>> for Is<ValidUrl> {}
+
+        impl Refines<ValidUrl> for HttpsUrl {}
+        impl Implies<Is<ValidUrl>> for Is<HttpsUrl> {}
+
+        impl Refines<String> for HttpsUrl {} // Transitive closure
+        impl Implies<Is<String>> for Is<HttpsUrl> {} // Enable direct downcast
+
+        let https: Established<Is<HttpsUrl>> = Established::assert();
+        let valid: Established<Is<ValidUrl>> = downcast(https);
+        let _base: Established<Is<String>> = downcast(valid);
+    }
+
+    #[test]
+    fn test_refinement_direct_chain() {
+        // Direct downcast from most refined to base
+        struct HttpsUrl(String);
+        struct ValidUrl(String);
+
+        impl Refines<String> for ValidUrl {}
+        impl Implies<Is<String>> for Is<ValidUrl> {}
+
+        impl Refines<ValidUrl> for HttpsUrl {}
+        impl Implies<Is<ValidUrl>> for Is<HttpsUrl> {}
+
+        impl Refines<String> for HttpsUrl {}
+        impl Implies<Is<String>> for Is<HttpsUrl> {}
+
+        let https: Established<Is<HttpsUrl>> = Established::assert();
+        let _base: Established<Is<String>> = downcast(https);
+    }
+
+    #[test]
+    fn test_refinement_zero_sized() {
+        struct NonEmptyString(String);
+        impl Refines<String> for NonEmptyString {}
+        impl Implies<Is<String>> for Is<NonEmptyString> {}
+
+        let refined: Established<Is<NonEmptyString>> = Established::assert();
+        assert_eq!(std::mem::size_of_val(&refined), 0);
+
+        let base: Established<Is<String>> = downcast(refined);
+        assert_eq!(std::mem::size_of_val(&base), 0);
+    }
+
+    #[test]
+    fn test_cannot_upcast() {
+        struct NonEmptyString(String);
+        impl Refines<String> for NonEmptyString {}
+        impl Implies<Is<String>> for Is<NonEmptyString> {}
+
+        // This would fail to compile (no Implies<Is<NonEmptyString>> for Is<String>):
+        // let base: Established<Is<String>> = Established::assert();
+        // let _refined: Established<Is<NonEmptyString>> = downcast(base);
     }
 }
