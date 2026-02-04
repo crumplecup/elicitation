@@ -1,6 +1,5 @@
 //! Derive implementation for enums (Select pattern).
 
-use crate::verification;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
@@ -74,16 +73,15 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
     // Generate Elicit impl (handles all variant types)
     let elicit_impl = generate_elicit_impl(name, &variants);
 
-    // Generate verification contracts (feature-gated)
-    let variant_refs: Vec<_> = data_enum.variants.iter().collect();
-    let verification_impl = verification::generate_enum_verification(name, &variant_refs);
+    // Note: Verification code is NOT generated for user types.
+    // Users can write verification harnesses manually if needed.
+    // Verification is primarily for elicitation's own contract types.
 
     let expanded = quote! {
         #style_enum
         #prompt_impl
         #select_impl
         #elicit_impl
-        #verification_impl
     };
 
     TokenStream::from(expanded)

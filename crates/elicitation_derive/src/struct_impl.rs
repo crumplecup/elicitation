@@ -1,6 +1,5 @@
 //! Derive implementation for structs (Survey pattern).
 
-use crate::verification;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
@@ -86,15 +85,14 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
         generate_elicit_impl_styled(name, &field_infos, &skipped_fields, &all_styles)
     };
 
-    // Generate verification contracts (feature-gated)
-    let field_refs: Vec<_> = fields.iter().collect();
-    let verification_impl = verification::generate_struct_verification(name, &field_refs);
+    // Note: Verification code is NOT generated for user types.
+    // Users can write verification harnesses manually if needed.
+    // Verification is primarily for elicitation's own contract types.
 
     let expanded = quote! {
         #prompt_impl
         #survey_impl
         #elicit_impl
-        #verification_impl
     };
 
     TokenStream::from(expanded)
