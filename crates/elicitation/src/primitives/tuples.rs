@@ -78,6 +78,44 @@ macro_rules! count {
     ($head:tt $($tail:tt)*) => (1 + count!($($tail)*));
 }
 
+// Unit type () - the 0-tuple
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum UnitStyle {
+    #[default]
+    Default,
+}
+
+impl Prompt for UnitStyle {
+    fn prompt() -> Option<&'static str> {
+        None
+    }
+}
+
+impl Elicitation for UnitStyle {
+    type Style = UnitStyle;
+
+    #[tracing::instrument(skip(_client), level = "trace")]
+    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        Ok(Self::Default)
+    }
+}
+
+impl Prompt for () {
+    fn prompt() -> Option<&'static str> {
+        None
+    }
+}
+
+impl Elicitation for () {
+    type Style = UnitStyle;
+
+    #[tracing::instrument(skip(_client), level = "trace")]
+    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting unit type ()");
+        Ok(())
+    }
+}
+
 // Implement for tuples of arity 1 through 12
 impl_tuple_elicit!(T0 0);
 impl_tuple_elicit!(T0 0, T1 1);
