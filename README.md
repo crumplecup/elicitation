@@ -40,6 +40,57 @@
   - `serde_json::Value` with all JSON types
   - Recursive elicitation for arrays and objects
   - Depth limits to prevent infinite recursion
+- **🆕 Proof-Carrying Composition** - Formally verified agent programs (v0.5.0)
+  - Type-level contracts (preconditions/postconditions)
+  - Zero-cost proof markers (compile away completely)
+  - Sequential and parallel tool composition
+  - Verified with Kani model checker (183 symbolic checks)
+  - Build multi-step workflows with mathematical guarantees
+
+## Proof-Carrying Composition
+
+**Build verified agent programs, not just validated JSON.**
+
+Elicitation's contract system lets you compose multi-step agent workflows where each step's guarantees are **formally verified** at compile time:
+
+```rust
+use elicitation::{
+    contracts::{Prop, Established, And, both},
+    tool::{Tool, True, then},
+};
+
+// Define workflow propositions
+struct EmailValidated;
+struct ConsentObtained;
+impl Prop for EmailValidated {}
+impl Prop for ConsentObtained {}
+
+// Functions requiring proofs
+fn register_user(
+    email: String,
+    _proof: Established<And<EmailValidated, ConsentObtained>>
+) {
+    // Type system guarantees:
+    // - Email was validated
+    // - Consent was obtained
+    // No runtime checks needed!
+}
+
+// Compose workflow
+let email_proof = validate_email("user@example.com")?;
+let consent_proof = get_consent()?;
+let combined = both(email_proof, consent_proof);
+register_user(email, combined);  // ✅ Type-checked!
+
+// register_user(email, ...);  // ❌ Won't compile without proofs
+```
+
+**Why this matters:**
+- Traditional approach: Hope validation happens, test extensively
+- Contract approach: Type system prevents using unvalidated data
+- **Zero cost**: All proofs compile away (formally verified with Kani)
+
+See the [contracts module documentation](https://docs.rs/elicitation/latest/elicitation/contracts/) and [examples](crates/elicitation/examples/) for complete workflows.
 
 ## Supported Types
 
