@@ -100,6 +100,7 @@ pub mod mcp;
 mod paradigm;
 mod primitives;
 pub mod style;
+pub mod tool;
 mod traits;
 
 #[cfg(feature = "serde_json")]
@@ -133,6 +134,9 @@ pub use traits::{ElicitBuilder, Elicitation, Generator, Prompt};
 pub use contracts::{
     And, Established, Implies, InVariant, Is, Prop, Refines, both, downcast, fst, snd,
 };
+
+// Tools (contract-based MCP tools)
+pub use tool::{Tool, True};
 
 // Interaction paradigm traits
 pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
