@@ -128,6 +128,9 @@ pub use client::ElicitClient;
 pub use elicitation_style::ElicitationStyle;
 pub use traits::{ElicitBuilder, Elicitation, Generator, Prompt};
 
+// Contracts (proof-carrying composition)
+pub use contracts::{Established, Is, Prop};
+
 // Interaction paradigm traits
 pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
 
