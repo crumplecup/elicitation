@@ -17,6 +17,9 @@ homepage = "https://github.com/crumplecup/elicitation"
 documentation = "https://docs.rs/elicitation"
 readme = "README.md"
 
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("verify-kani", "verify-creusot", "verify-prusti", "verify-verus", "verify-all"))'] }
+
 [workspace.dependencies]
 elicitation = { path = "crates/elicitation", version = "0.4.8" }
 elicitation_derive = { path = "crates/elicitation_derive", version = "0.4.8" }
