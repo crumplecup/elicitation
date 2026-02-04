@@ -45,6 +45,7 @@ mod networks;
 mod regexbytes;
 mod socketaddr;
 mod strings;
+mod unit;
 mod urlbytes;
 mod utf8;
 mod utf8_benchmark;
