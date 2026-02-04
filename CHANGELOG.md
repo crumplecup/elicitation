@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add Phase 1.1 - Core contract types
+- Add Phase 1.1 - Core contract types
+- Add Phase 1.2 - Logical implication
+- Add Phase 1.3 - Conjunction algebra
+- Add Phase 2.1 - Proof-returning elicitation
+- Add Phase 2.2 - Type refinement system
+- Add Phase 2.3 - Enum variant proofs
+- Add Phase 3.1 - Tool trait with contracts
+- Add Phase 3.2 - Tool composition
+- Add Phase 4.1 - Basic contract proofs
+- Add Phase 4.2 - Tool chain verification proofs
+
+### Documentation
+
+- Add contracts implementation plan
+- Add composition primitives vision document
+- Add Phase 1.4 - Comprehensive documentation
+- Phase 5 documentation and examples
+
+### Fixed
+
+- Update type names in Kani proofs
+
+### Miscellaneous
+
+- Bump version to 0.4.7 for contracts release
+
+## [Unreleased]
+
 ### Fixed
 
 - Remove verification code generation to eliminate warnings
