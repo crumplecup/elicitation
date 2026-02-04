@@ -129,6 +129,40 @@ pub trait Elicitation: Sized + Prompt + 'static {
     fn with_style(style: Self::Style) -> ElicitBuilder<Self> {
         ElicitBuilder::new(style)
     }
+
+    /// Elicit a value with proof it inhabits type Self.
+    ///
+    /// After successful elicitation, returns both the value and a proof
+    /// that the value inhabits type `Self`. This proof can be carried
+    /// forward to downstream functions requiring guarantees.
+    ///
+    /// # Returns
+    ///
+    /// Returns `Ok((value, proof))` where `proof` is `Established<Is<Self>>`.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// use elicitation::{Elicitation, contracts::{Established, Is}};
+    /// # async fn example(client: &ElicitClient<'_>) -> ElicitResult<()> {
+    /// // Elicit with proof
+    /// let (email, proof): (String, Established<Is<String>>) = 
+    ///     String::elicit_proven(client).await?;
+    ///
+    /// // Use proof in downstream function
+    /// send_email(email, proof).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    fn elicit_proven(
+        client: &ElicitClient<'_>,
+    ) -> impl std::future::Future<Output = ElicitResult<(Self, crate::contracts::Established<crate::contracts::Is<Self>>)>>
+           + Send {
+        async move {
+            let value = Self::elicit(client).await?;
+            Ok((value, crate::contracts::Established::assert()))
+        }
+    }
 }
 
 /// Trait for generating values of a type.
