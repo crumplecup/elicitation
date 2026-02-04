@@ -1,7 +1,7 @@
 //! Integration tests for contract-based elicitation.
 
 use elicitation::{
-    contracts::{And, Established, Is, Prop, both},
+    contracts::{And, Established, InVariant, Is, Prop, both},
     ElicitResult,
 };
 
@@ -63,4 +63,55 @@ fn test_proofs_zero_sized() {
     impl Prop for EmailValid {}
     let custom_proof: Established<EmailValid> = Established::assert();
     assert_eq!(std::mem::size_of_val(&custom_proof), 0);
+}
+
+/// Test InVariant with enum state machine
+#[test]
+fn test_invariant_state_machine() {
+    enum WorkflowState {
+        Draft,
+        Review,
+        Approved,
+    }
+
+    struct DraftVariant;
+    struct ReviewVariant;
+    struct ApprovedVariant;
+
+    // State-specific functions that require variant proofs
+    fn edit_draft(
+        _state: WorkflowState,
+        _proof: Established<InVariant<WorkflowState, DraftVariant>>,
+    ) {
+        // Can only edit in draft state
+    }
+
+    fn submit_for_review(
+        _state: WorkflowState,
+        _proof: Established<InVariant<WorkflowState, DraftVariant>>,
+    ) -> Established<InVariant<WorkflowState, ReviewVariant>> {
+        // Transition: Draft → Review
+        Established::assert()
+    }
+
+    fn approve(
+        _state: WorkflowState,
+        _proof: Established<InVariant<WorkflowState, ReviewVariant>>,
+    ) -> Established<InVariant<WorkflowState, ApprovedVariant>> {
+        // Transition: Review → Approved
+        Established::assert()
+    }
+
+    // Workflow: Draft → Review → Approved
+    let draft_proof: Established<InVariant<WorkflowState, DraftVariant>> = Established::assert();
+    edit_draft(WorkflowState::Draft, draft_proof);
+
+    let review_proof = submit_for_review(WorkflowState::Draft, draft_proof);
+    let approved_proof = approve(WorkflowState::Review, review_proof);
+    
+    // Verify we can construct the final state
+    let _final_state = (WorkflowState::Approved, approved_proof);
+
+    // Cannot skip states (would fail to compile):
+    // approve(WorkflowState::Draft, draft_proof); // Type error!
 }

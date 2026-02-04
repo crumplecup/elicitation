@@ -479,6 +479,43 @@ where
     proof.weaken()
 }
 
+/// Proposition: enum value is in specific variant.
+///
+/// `InVariant<E, V>` represents the statement "enum E is currently
+/// in variant V". This enables variant-specific proofs for enum-based
+/// state machines.
+///
+/// # Type Parameters
+///
+/// - `E`: The enum type
+/// - `V`: A marker type representing the variant (typically a unit struct)
+///
+/// # Example
+///
+/// ```rust
+/// use elicitation::contracts::{InVariant, Established, Prop};
+///
+/// enum Status {
+///     Active,
+///     Inactive,
+/// }
+///
+/// // Marker types for variants
+/// struct ActiveVariant;
+/// struct InactiveVariant;
+///
+/// // Use InVariant to track which variant
+/// fn process_active(_status: Status, _proof: Established<InVariant<Status, ActiveVariant>>) {
+///     // This function can only be called with Active variant
+///     println!("Processing active status");
+/// }
+/// ```
+pub struct InVariant<E, V> {
+    _marker: PhantomData<(fn() -> E, fn() -> V)>,
+}
+
+impl<E: 'static, V: 'static> Prop for InVariant<E, V> {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -719,5 +756,91 @@ mod tests {
         // This would fail to compile (no Implies<Is<NonEmptyString>> for Is<String>):
         // let base: Established<Is<String>> = Established::assert();
         // let _refined: Established<Is<NonEmptyString>> = downcast(base);
+    }
+
+    #[test]
+    fn test_invariant_zero_sized() {
+        enum Status {
+            Active,
+            Inactive,
+        }
+        struct ActiveVariant;
+
+        let proof: Established<InVariant<Status, ActiveVariant>> = Established::assert();
+        assert_eq!(std::mem::size_of_val(&proof), 0);
+    }
+
+    #[test]
+    fn test_invariant_type_safety() {
+        enum Status {
+            Active,
+            Inactive,
+        }
+        struct ActiveVariant;
+        struct InactiveVariant;
+
+        // Function requires specific variant proof
+        fn process_active(
+            _status: Status,
+            _proof: Established<InVariant<Status, ActiveVariant>>,
+        ) {
+        }
+
+        // Can call with correct proof
+        let proof: Established<InVariant<Status, ActiveVariant>> = Established::assert();
+        process_active(Status::Active, proof);
+
+        // This would fail to compile (wrong variant):
+        // let wrong_proof: Established<InVariant<Status, InactiveVariant>> = Established::assert();
+        // process_active(Status::Active, wrong_proof);
+    }
+
+    #[test]
+    fn test_invariant_enum_branches() {
+        enum State {
+            Loading,
+            Ready,
+            Error,
+        }
+
+        struct LoadingVariant;
+        struct ReadyVariant;
+        struct ErrorVariant;
+
+        fn handle_loading(_proof: Established<InVariant<State, LoadingVariant>>) {
+            // Loading-specific logic
+        }
+
+        fn handle_ready(_proof: Established<InVariant<State, ReadyVariant>>) {
+            // Ready-specific logic
+        }
+
+        fn handle_error(_proof: Established<InVariant<State, ErrorVariant>>) {
+            // Error-specific logic
+        }
+
+        // Simulate state machine
+        let loading_proof: Established<InVariant<State, LoadingVariant>> = Established::assert();
+        handle_loading(loading_proof);
+
+        let ready_proof: Established<InVariant<State, ReadyVariant>> = Established::assert();
+        handle_ready(ready_proof);
+
+        let error_proof: Established<InVariant<State, ErrorVariant>> = Established::assert();
+        handle_error(error_proof);
+    }
+
+    #[test]
+    fn test_invariant_with_inhabitation() {
+        enum Color {
+            Red,
+            Green,
+            Blue,
+        }
+        struct RedVariant;
+
+        // Can have both variant and type proofs
+        let _type_proof: Established<Is<Color>> = Established::assert();
+        let _variant_proof: Established<InVariant<Color, RedVariant>> = Established::assert();
     }
 }

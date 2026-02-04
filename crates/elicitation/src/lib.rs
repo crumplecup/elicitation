@@ -130,7 +130,9 @@ pub use elicitation_style::ElicitationStyle;
 pub use traits::{ElicitBuilder, Elicitation, Generator, Prompt};
 
 // Contracts (proof-carrying composition)
-pub use contracts::{And, Established, Implies, Is, Prop, Refines, both, downcast, fst, snd};
+pub use contracts::{
+    And, Established, Implies, InVariant, Is, Prop, Refines, both, downcast, fst, snd,
+};
 
 // Interaction paradigm traits
 pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
