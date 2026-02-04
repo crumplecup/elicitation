@@ -155,6 +155,123 @@ impl True {
     }
 }
 
+/// Sequentially compose two tools where first's postcondition implies second's precondition.
+///
+/// Chains tools together: runs the first tool, then uses its output and
+/// postcondition proof to run the second tool. The postcondition of the
+/// first tool must imply the precondition of the second tool.
+///
+/// # Type Parameters
+///
+/// - `T1`: First tool type
+/// - `T2`: Second tool type (input must match T1's output)
+///
+/// # Arguments
+///
+/// - `tool1`: First tool to execute
+/// - `tool2`: Second tool to execute
+/// - `input1`: Input for first tool
+/// - `pre1`: Precondition proof for first tool
+///
+/// # Returns
+///
+/// Tuple of (final output, final postcondition proof)
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation::tool::{Tool, True, then};
+///
+/// // Chain: validate email then send
+/// let validator = ValidateEmailTool;
+/// let sender = SendEmailTool;
+///
+/// let (result, proof) = then(
+///     &validator,
+///     &sender,
+///     "user@example.com".to_string(),
+///     True::axiom(),
+/// ).await?;
+/// ```
+pub async fn then<T1, T2>(
+    tool1: &T1,
+    tool2: &T2,
+    input1: T1::Input,
+    pre1: Established<T1::Pre>,
+) -> ElicitResult<(T2::Output, Established<T2::Post>)>
+where
+    T1: Tool,
+    T2: Tool<Input = T1::Output>,
+    T1::Post: crate::contracts::Implies<T2::Pre>,
+{
+    let (output1, post1) = tool1.execute(input1, pre1).await?;
+    let pre2 = post1.weaken();
+    let (output2, post2) = tool2.execute(output1, pre2).await?;
+    Ok((output2, post2))
+}
+
+/// Run two tools in parallel and combine their proofs.
+///
+/// Executes both tools concurrently (though this implementation runs
+/// sequentially for now). Requires a proof that both preconditions hold,
+/// and returns both outputs with a proof that both postconditions hold.
+///
+/// # Type Parameters
+///
+/// - `T1`: First tool type
+/// - `T2`: Second tool type
+///
+/// # Arguments
+///
+/// - `tool1`: First tool to execute
+/// - `tool2`: Second tool to execute
+/// - `input1`: Input for first tool
+/// - `input2`: Input for second tool
+/// - `pre`: Proof that both preconditions hold
+///
+/// # Returns
+///
+/// Tuple of ((output1, output2), proof of both postconditions)
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation::tool::{Tool, both_tools};
+/// use elicitation::contracts::{And, both};
+///
+/// let (outputs, combined_proof) = both_tools(
+///     &tool1,
+///     &tool2,
+///     input1,
+///     input2,
+///     both(pre1, pre2),
+/// ).await?;
+/// ```
+pub async fn both_tools<T1, T2>(
+    tool1: &T1,
+    tool2: &T2,
+    input1: T1::Input,
+    input2: T2::Input,
+    pre: Established<crate::contracts::And<T1::Pre, T2::Pre>>,
+) -> ElicitResult<(
+    (T1::Output, T2::Output),
+    Established<crate::contracts::And<T1::Post, T2::Post>>,
+)>
+where
+    T1: Tool,
+    T2: Tool,
+{
+    use crate::contracts::{both, fst, snd};
+
+    let pre1 = fst(pre);
+    let pre2 = snd(pre);
+
+    let (out1, post1) = tool1.execute(input1, pre1).await?;
+    let (out2, post2) = tool2.execute(input2, pre2).await?;
+
+    Ok(((out1, out2), both(post1, post2)))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

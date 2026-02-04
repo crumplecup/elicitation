@@ -136,7 +136,7 @@ pub use contracts::{
 };
 
 // Tools (contract-based MCP tools)
-pub use tool::{Tool, True};
+pub use tool::{Tool, True, both_tools, then};
 
 // Interaction paradigm traits
 pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};

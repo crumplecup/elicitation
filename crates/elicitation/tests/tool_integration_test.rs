@@ -125,3 +125,120 @@ fn test_tool_with_multiple_preconditions() {
 
     let (_output, _post) = tool.register("user@example.com".to_string(), combined_proof);
 }
+
+/// Test sequential tool composition with then
+#[tokio::test]
+async fn test_then_composition() {
+    struct EmailValidated;
+    struct EmailSent;
+    impl Prop for EmailValidated {}
+    impl Prop for EmailSent {}
+
+    // String implements Elicitation
+    struct ValidateEmail;
+    impl elicitation::Tool for ValidateEmail {
+        type Input = String;
+        type Output = String;
+        type Pre = True;
+        type Post = EmailValidated;
+
+        async fn execute(
+            &self,
+            email: String,
+            _pre: Established<True>,
+        ) -> ElicitResult<(String, Established<EmailValidated>)> {
+            Ok((email, Established::assert()))
+        }
+    }
+
+    struct SendEmail;
+    impl elicitation::Tool for SendEmail {
+        type Input = String;
+        type Output = ();
+        type Pre = EmailValidated;
+        type Post = EmailSent;
+
+        async fn execute(
+            &self,
+            _email: String,
+            _pre: Established<EmailValidated>,
+        ) -> ElicitResult<((), Established<EmailSent>)> {
+            Ok(((), Established::assert()))
+        }
+    }
+
+    let validator = ValidateEmail;
+    let sender = SendEmail;
+
+    let (_result, _proof) = elicitation::then(
+        &validator,
+        &sender,
+        "user@example.com".to_string(),
+        True::axiom(),
+    )
+    .await
+    .expect("Chain should succeed");
+}
+
+/// Test parallel tool composition with both_tools
+#[tokio::test]
+async fn test_both_tools_composition() {
+    use elicitation::contracts::both;
+
+    struct EmailValidated;
+    struct PhoneValidated;
+    impl Prop for EmailValidated {}
+    impl Prop for PhoneValidated {}
+
+    struct ValidateEmail;
+    impl elicitation::Tool for ValidateEmail {
+        type Input = String;
+        type Output = String;
+        type Pre = True;
+        type Post = EmailValidated;
+
+        async fn execute(
+            &self,
+            email: String,
+            _pre: Established<True>,
+        ) -> ElicitResult<(String, Established<EmailValidated>)> {
+            Ok((email, Established::assert()))
+        }
+    }
+
+    struct ValidatePhone;
+    impl elicitation::Tool for ValidatePhone {
+        type Input = String;
+        type Output = String;
+        type Pre = True;
+        type Post = PhoneValidated;
+
+        async fn execute(
+            &self,
+            phone: String,
+            _pre: Established<True>,
+        ) -> ElicitResult<(String, Established<PhoneValidated>)> {
+            Ok((phone, Established::assert()))
+        }
+    }
+
+    let email_validator = ValidateEmail;
+    let phone_validator = ValidatePhone;
+
+    let pre1 = True::axiom();
+    let pre2 = True::axiom();
+    let combined_pre = both(pre1, pre2);
+
+    let ((email_result, phone_result), _combined_proof) = elicitation::both_tools(
+        &email_validator,
+        &phone_validator,
+        "user@example.com".to_string(),
+        "+1234567890".to_string(),
+        combined_pre,
+    )
+    .await
+    .expect("Both tools should succeed");
+
+    assert_eq!(email_result, "user@example.com");
+    assert_eq!(phone_result, "+1234567890");
+}
