@@ -145,7 +145,7 @@ fn verify_url_with_authority_contract() {
 
     let bytes = [0u8; 10];
     let contract_result =
-        UrlWithAuthority::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
+        UrlWithAuthorityBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
 
     // If construction succeeded, verify it has authority
     if let Ok(with_auth) = contract_result {
@@ -161,7 +161,7 @@ fn verify_url_without_authority_rejected() {
 
     let bytes = [0u8; 10];
     let contract_result =
-        UrlWithAuthority::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
+        UrlWithAuthorityBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
 
     // If construction succeeded, it must have authority
     if let Ok(with_auth) = contract_result {
@@ -179,7 +179,7 @@ fn verify_url_absolute_contract() {
     let bytes = [0u8; 10];
 
     // Test contract: UrlAbsolute requires has_authority()
-    let absolute_result = UrlAbsolute::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
+    let absolute_result = UrlAbsoluteBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
 
     // If construction succeeded, verify it has authority
     if let Ok(absolute) = absolute_result {
@@ -194,7 +194,7 @@ fn verify_url_http_contract_http() {
     const MAX_LEN: usize = 10;
 
     let bytes = [0u8; 10];
-    let _http_result = UrlHttp::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
+    let _http_result = UrlHttpBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
 
     // Verify construction doesn't panic (contract logic executes)
     // With symbolic is_http(), we can't assert the result
@@ -207,7 +207,7 @@ fn verify_url_http_contract_https() {
     const MAX_LEN: usize = 10;
 
     let bytes = [0u8; 10];
-    let _https_result = UrlHttp::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
+    let _https_result = UrlHttpBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
 
     // Verify construction doesn't panic
 }
@@ -219,7 +219,7 @@ fn verify_url_http_contract_rejects_ftp() {
     const MAX_LEN: usize = 10;
 
     let bytes = [0u8; 10];
-    let _http_result = UrlHttp::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
+    let _http_result = UrlHttpBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
 
     // Verify construction doesn't panic
 }
