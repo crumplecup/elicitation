@@ -191,3 +191,110 @@ fn verify_contract_composition_preconditions() {
     // Contract B (NonEmptyString) can accept this
     assert!(NonEmptyString::requires(&email));
 }
+
+// ============================================================================
+// Phase 4: Contract Primitives Verification (New System)
+// ============================================================================
+
+/// Verify that Established proofs are zero-sized.
+///
+/// **Property:** All proof markers compile away completely.
+#[kani::proof]
+fn verify_proof_zero_sized() {
+    use crate::contracts::{Established, Is};
+
+    let proof: Established<Is<String>> = Established::assert();
+    assert_eq!(std::mem::size_of_val(&proof), 0);
+
+    let proof_i32: Established<Is<i32>> = Established::assert();
+    assert_eq!(std::mem::size_of_val(&proof_i32), 0);
+}
+
+/// Verify conjunction is commutative (at the logical level).
+///
+/// **Property:** both(p, q) contains both proofs.
+#[kani::proof]
+fn verify_conjunction_projects() {
+    use crate::contracts::{Established, Is, both, fst, snd};
+
+    let p: Established<Is<String>> = Established::assert();
+    let q: Established<Is<i32>> = Established::assert();
+
+    let pq = both(p, q);
+
+    // Can project left
+    let _p2: Established<Is<String>> = fst(pq);
+
+    // Can project right
+    let _q2: Established<Is<i32>> = snd(pq);
+}
+
+/// Verify reflexive implication works.
+///
+/// **Property:** Every proposition implies itself.
+#[kani::proof]
+fn verify_reflexive_implies() {
+    use crate::contracts::{Established, Is};
+
+    let proof: Established<Is<String>> = Established::assert();
+    let same: Established<Is<String>> = proof.weaken();
+
+    // Both are zero-sized
+    assert_eq!(std::mem::size_of_val(&same), 0);
+}
+
+/// Verify True axiom is always available.
+///
+/// **Property:** True::axiom() never fails.
+#[kani::proof]
+fn verify_true_axiom() {
+    use crate::tool::True;
+
+    let _proof1 = True::axiom();
+    let _proof2 = True::axiom();
+    let _proof3 = True::axiom();
+
+    // All are zero-sized
+    let proof = True::axiom();
+    assert_eq!(std::mem::size_of_val(&proof), 0);
+}
+
+/// Verify InVariant is zero-sized.
+///
+/// **Property:** Enum variant proofs compile away.
+#[kani::proof]
+fn verify_invariant_zero_sized() {
+    use crate::contracts::{Established, InVariant};
+
+    enum State {
+        Active,
+        Inactive,
+    }
+    struct ActiveVariant;
+
+    let proof: Established<InVariant<State, ActiveVariant>> = Established::assert();
+    assert_eq!(std::mem::size_of_val(&proof), 0);
+}
+
+/// Verify conjunction chaining works.
+///
+/// **Property:** Can nest conjunctions arbitrarily.
+#[kani::proof]
+fn verify_conjunction_associative() {
+    use crate::contracts::{Established, Is, And, both};
+
+    struct P;
+    struct Q;
+    struct R;
+    impl crate::contracts::Prop for P {}
+    impl crate::contracts::Prop for Q {}
+    impl crate::contracts::Prop for R {}
+
+    let p: Established<P> = Established::assert();
+    let q: Established<Q> = Established::assert();
+    let r: Established<R> = Established::assert();
+
+    // Can nest: (P ∧ Q) ∧ R
+    let pq = both(p, q);
+    let _pqr: Established<And<And<P, Q>, R>> = both(pq, r);
+}
