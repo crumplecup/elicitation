@@ -117,6 +117,35 @@ impl<P: Prop> Established<P> {
             _marker: PhantomData,
         }
     }
+
+    /// Weaken proof to a more general proposition.
+    ///
+    /// If P implies Q, then a proof of P can be used as a proof of Q.
+    /// This is logical weakening - moving from a stronger to a weaker claim.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use elicitation::contracts::{Established, Is, Implies, Prop};
+    /// use std::marker::PhantomData;
+    ///
+    /// // StringNonEmpty implies String (via refinement)
+    /// struct StringNonEmpty;
+    /// impl Prop for StringNonEmpty {}
+    /// impl Implies<Is<String>> for StringNonEmpty {}
+    ///
+    /// let strong_proof: Established<StringNonEmpty> = Established::assert();
+    /// let weak_proof: Established<Is<String>> = strong_proof.weaken();
+    /// ```
+    #[inline(always)]
+    pub fn weaken<Q: Prop>(self) -> Established<Q>
+    where
+        P: Implies<Q>,
+    {
+        Established {
+            _marker: PhantomData,
+        }
+    }
 }
 
 // Make Established copyable (it's zero-sized)
@@ -149,6 +178,35 @@ pub struct Is<T> {
 }
 
 impl<T: 'static> Prop for Is<T> {}
+
+/// Logical implication: P implies Q.
+///
+/// If P implies Q, then whenever P is true, Q must also be true.
+/// This enables weakening: converting a proof of P into a proof of Q.
+///
+/// # Laws
+///
+/// 1. **Reflexivity**: Every proposition implies itself (P → P)
+/// 2. **Transitivity**: If P → Q and Q → R, then P → R
+///
+/// # Examples
+///
+/// ```rust
+/// use elicitation::contracts::{Prop, Implies};
+///
+/// struct Strong;
+/// struct Weak;
+///
+/// impl Prop for Strong {}
+/// impl Prop for Weak {}
+///
+/// // Declare that Strong implies Weak
+/// impl Implies<Weak> for Strong {}
+/// ```
+pub trait Implies<Q: Prop>: Prop {}
+
+// Reflexivity: Every proposition implies itself
+impl<P: Prop> Implies<P> for P {}
 
 #[cfg(test)]
 mod tests {
@@ -185,5 +243,41 @@ mod tests {
         // This would fail to compile:
         // let wrong_proof: Established<Is<i32>> = Established::assert();
         // requires_string_proof(wrong_proof);
+    }
+
+    #[test]
+    fn test_implies_reflexive() {
+        // Every proposition implies itself
+        let proof: Established<Is<String>> = Established::assert();
+        let same_proof: Established<Is<String>> = proof.weaken();
+        let _ = same_proof; // Use it
+    }
+
+    #[test]
+    fn test_weaken_with_custom_impl() {
+        // Define custom propositions
+        struct StrongProp;
+        struct WeakProp;
+        
+        impl Prop for StrongProp {}
+        impl Prop for WeakProp {}
+        impl Implies<WeakProp> for StrongProp {}
+        
+        // Can weaken from strong to weak
+        let strong: Established<StrongProp> = Established::assert();
+        let _weak: Established<WeakProp> = strong.weaken();
+    }
+
+    #[test]
+    fn test_cannot_weaken_without_impl() {
+        struct PropA;
+        struct PropB;
+        
+        impl Prop for PropA {}
+        impl Prop for PropB {}
+        
+        // This would fail to compile (no Implies<PropB> for PropA):
+        // let a: Established<PropA> = Established::assert();
+        // let _b: Established<PropB> = a.weaken();
     }
 }
