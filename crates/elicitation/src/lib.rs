@@ -95,6 +95,7 @@ mod kani_tests;
 #[cfg(feature = "cli")]
 pub mod cli;
 
+pub mod contracts;
 pub mod mcp;
 mod paradigm;
 mod primitives;
