@@ -4,6 +4,50 @@
 //! verified agent programs. Contracts are zero-cost proof markers that enable
 //! composing elicitation steps with machine-checked guarantees.
 //!
+//! # Overview
+//!
+//! Contracts let you build multi-step agent workflows where each step's
+//! guarantees are checked at compile time. Instead of re-validating data
+//! at every step, you establish proof once and carry it forward.
+//!
+//! **Key insight**: If step A produces a validated email and step B requires
+//! a validated email, the type system enforces this dependency. No runtime
+//! checks, no forgotten validations.
+//!
+//! # Quick Start
+//!
+//! ```rust
+//! use elicitation::contracts::{Prop, Established, And, both};
+//!
+//! // Define your workflow's propositions
+//! struct EmailValidated;
+//! struct ConsentObtained;
+//! impl Prop for EmailValidated {}
+//! impl Prop for ConsentObtained {}
+//!
+//! // Step 1: Validate (returns proof if valid)
+//! fn validate_email(email: &str) -> Option<Established<EmailValidated>> {
+//!     if email.contains('@') { Some(Established::assert()) } else { None }
+//! }
+//!
+//! // Step 2: Function requiring BOTH proofs
+//! fn register_user(
+//!     email: String,
+//!     _proof: Established<And<EmailValidated, ConsentObtained>>
+//! ) {
+//!     println!("Registered: {}", email);
+//! }
+//!
+//! // Compose: Can't call register_user without both proofs!
+//! # let email = "user@example.com";
+//! if let Some(email_proof) = validate_email(email) {
+//!     let consent_proof = Established::assert(); // Would come from consent flow
+//!     let combined = both(email_proof, consent_proof);
+//!     register_user(email.to_string(), combined); // ✅ Compiles
+//! }
+//! // register_user(email.to_string(), ...); // ❌ Won't compile without proof
+//! ```
+//!
 //! # Core Concepts
 //!
 //! - **Proposition (`Prop`)**: A type-level statement that can be true or false
@@ -51,6 +95,49 @@
 //! - Single-step elicitation (just use `.elicit()` directly)
 //! - No dependencies between steps
 //! - Performance is so critical you can't afford any abstraction (though cost is zero!)
+//!
+//! # Multi-Step Composition Example
+//!
+//! ```rust
+//! use elicitation::contracts::{Prop, Established, Is, And, both};
+//!
+//! // Define propositions for agent workflow
+//! struct EmailValidated;
+//! struct ConsentObtained;
+//! impl Prop for EmailValidated {}
+//! impl Prop for ConsentObtained {}
+//!
+//! // Step 1: Validate email (establishes EmailValidated)
+//! fn validate_email(email: &str) -> Option<Established<EmailValidated>> {
+//!     if email.contains('@') {
+//!         Some(Established::assert())
+//!     } else {
+//!         None
+//!     }
+//! }
+//!
+//! // Step 2: Get consent (establishes ConsentObtained)
+//! fn get_consent(user: &str) -> Established<ConsentObtained> {
+//!     println!("Getting consent from {}", user);
+//!     Established::assert()
+//! }
+//!
+//! // Step 3: Register user (requires BOTH proofs)
+//! fn register_user(
+//!     email: String,
+//!     _proof: Established<And<EmailValidated, ConsentObtained>>
+//! ) {
+//!     println!("Registered: {}", email);
+//! }
+//!
+//! // Compose the workflow
+//! let email = "user@example.com";
+//! if let Some(email_proof) = validate_email(email) {
+//!     let consent_proof = get_consent(email);
+//!     let combined_proof = both(email_proof, consent_proof);
+//!     register_user(email.to_string(), combined_proof);
+//! }
+//! ```
 
 use std::marker::PhantomData;
 
@@ -107,9 +194,9 @@ impl<P: Prop> Established<P> {
     /// ```rust
     /// use elicitation::contracts::{Established, Is};
     ///
-    /// // After validating a URL
-    /// let url = url::Url::parse("https://example.com").unwrap();
-    /// let proof: Established<Is<url::Url>> = Established::assert();
+    /// // After validating a String
+    /// let s = String::from("valid");
+    /// let proof: Established<Is<String>> = Established::assert();
     /// ```
     #[inline(always)]
     pub fn assert() -> Self {
