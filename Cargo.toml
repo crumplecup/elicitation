@@ -1,14 +1,14 @@
 [workspace]
 members = [
-    "crates/elicitation",
-    "crates/elicitation_derive",
-    "crates/elicitation_macros",
-    "crates/elicitation_creusot_proofs",
+  "crates/elicitation",
+  "crates/elicitation_derive",
+  "crates/elicitation_macros",
+  "crates/elicitation_creusot_proofs",
 ]
 resolver = "2"
 
 [workspace.package]
-version = "0.4.7"
+version = "0.4.8"
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/crumplecup/elicitation"
@@ -18,9 +18,9 @@ documentation = "https://docs.rs/elicitation"
 readme = "README.md"
 
 [workspace.dependencies]
-elicitation = { path = "crates/elicitation", version = "0.4.4" }
-elicitation_derive = { path = "crates/elicitation_derive", version = "0.4.4" }
-elicitation_macros = { path = "crates/elicitation_macros", version = "0.4.4" }
+elicitation = { path = "crates/elicitation", version = "0.4.8" }
+elicitation_derive = { path = "crates/elicitation_derive", version = "0.4.8" }
+elicitation_macros = { path = "crates/elicitation_macros", version = "0.4.8" }
 
 
 # MCP client
