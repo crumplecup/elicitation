@@ -19,7 +19,7 @@ use syn::DeriveInput;
 ///     ///
 ///     /// This is the verified, registered variant suitable for production use.
 ///     /// Automatically registered as an MCP tool via `#[rmcp::tool]`.
-///     #[cfg_attr(not(test), elicitation::rmcp::tool)]
+///     #[elicitation::rmcp::tool]
 ///     pub async fn elicit_checked(
 ///         client: std::sync::Arc<elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>>,
 ///     ) -> Result<Self, elicitation::ElicitError> {
@@ -45,7 +45,7 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
             /// Uses the derived `Elicitation` impl to interactively elicit a value
             /// from the user via MCP.
             ///
-            /// Automatically registered as an MCP tool via `#[rmcp::tool]` in non-test builds.
+            /// Automatically registered as an MCP tool via `#[rmcp::tool]`.
             ///
             /// # Examples
             ///
@@ -53,7 +53,7 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
             /// let client = Arc::new(peer.clone());
             /// let config = Config::elicit_checked(client).await?;
             /// ```
-            #[cfg_attr(not(test), elicitation::rmcp::tool)]
+            #[elicitation::rmcp::tool]
             pub async fn elicit_checked(
                 client: std::sync::Arc<elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>>,
             ) -> Result<Self, elicitation::ElicitError> {

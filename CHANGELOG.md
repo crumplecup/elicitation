@@ -7,9 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-02-05
+
+### Fixed
+
+- **Downstream testing support:** Removed `cfg_attr(not(test), rmcp::tool)` guard that prevented downstream users from testing their elicitation-based code
+- Added `rmcp` and `serde_json` as dev-dependencies to support internal tests without disabling tool registration
+
+### Changed
+
+- Tool registration now enabled in all build modes (production + test) for consistent behavior
+
+## [0.6.0] - 2026-02-05
+
 ### ⚠️ BREAKING CHANGES
 
-**Method Generation (0.6.0):**
+**Method Generation:**
 - Changed from standalone `elicit_typename()` functions to `TypeName::elicit_checked()` methods
 - Follows Rust's `checked_*` idiom for verified operations
 - Migration: Replace `elicit_config(client)` with `Config::elicit_checked(client)`
@@ -27,6 +40,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add MIGRATION_0.5_to_0.6.md with detailed migration steps
 - Add ELICIT_METHOD_GENERATION_PROPOSAL.md explaining architecture
 - Update tool_gen.rs documentation for new method generation
+
+### Infrastructure
+
+- Centralize all dependencies in workspace Cargo.toml
+- Update bytes to 1.11.1 (security fix for RUSTSEC-2026-0007)
 
 ## [0.5.0] - 2026-02-05
 
