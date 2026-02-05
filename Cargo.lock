@@ -473,6 +473,7 @@ dependencies = [
  "derive_more",
  "elicitation_derive",
  "elicitation_macros",
+ "inventory",
  "jiff",
  "paste",
  "prusti-contracts",
@@ -781,6 +782,15 @@ checksum = "3acae9609540aa318d1bc588455225fb2085b9ed0c4f6bd0d9d5bcd86f1a0344"
 dependencies = [
  "icu_normalizer",
  "icu_properties",
+]
+
+[[package]]
+name = "inventory"
+version = "0.3.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc61209c082fbeb19919bee74b176221b27223e27b65d781eb91af24eb1fb46e"
+dependencies = [
+ "rustversion",
 ]
 
 [[package]]

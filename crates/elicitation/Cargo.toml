@@ -24,6 +24,7 @@ tracing = { workspace = true }
 tokio = { workspace = true }
 paste = { workspace = true }
 async-trait = { workspace = true }
+inventory = "0.3"
 
 # CLI dependencies (optional)
 anyhow = { workspace = true }

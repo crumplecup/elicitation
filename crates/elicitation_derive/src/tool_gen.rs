@@ -10,6 +10,8 @@ use syn::DeriveInput;
 /// registered elicitation via the MCP protocol. Follows Rust's `checked_*`
 /// idiom for operations that add verification and safety.
 ///
+/// Also submits the type to inventory for automatic tool discovery.
+///
 /// Generates:
 /// ```ignore
 /// impl TypeName {
@@ -25,9 +27,15 @@ use syn::DeriveInput;
 ///         Self::elicit(&ElicitClient::new(client)).await
 ///     }
 /// }
+///
+/// // Inventory submission for automatic discovery
+/// inventory::submit! {
+///     elicitation::ElicitToolDescriptor::new("TypeName", module_path!())
+/// }
 /// ```
 pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
     let type_name = &input.ident;
+    let type_name_str = type_name.to_string();
 
     quote! {
         impl #type_name {
@@ -52,6 +60,11 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
                 use elicitation::{Elicitation, ElicitClient};
                 Self::elicit(&ElicitClient::new(client)).await
             }
+        }
+
+        // Submit to inventory for automatic tool discovery
+        elicitation::inventory::submit! {
+            elicitation::ElicitToolDescriptor::new(#type_name_str, module_path!())
         }
     }
 }
