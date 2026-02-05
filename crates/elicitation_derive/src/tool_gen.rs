@@ -68,4 +68,3 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
         }
     }
 }
-

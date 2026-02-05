@@ -257,6 +257,43 @@ async fn main() -> ElicitResult<()> {
 }
 ```
 
+### MCP Tool Generation (0.6.0+)
+
+Types with `#[derive(Elicit)]` automatically generate `elicit_checked()` methods that are registered as MCP tools:
+
+```rust
+use std::sync::Arc;
+
+#[derive(Debug, Elicit)]
+struct Config {
+    timeout: u32,
+    retries: u8,
+}
+
+// Automatically generated:
+// impl Config {
+//     pub async fn elicit_checked(
+//         client: Arc<Peer<RoleClient>>
+//     ) -> Result<Self, ElicitError>
+// }
+
+// Use the checked method for verified MCP interaction
+let service = ().serve(rmcp::transport::stdio()).await?;
+let peer = Arc::new(service.peer().clone());
+let config = Config::elicit_checked(peer).await?;
+```
+
+**Automatic Discovery:**
+```rust
+use elicitation::collect_all_elicit_tools;
+
+// Discover all elicit tools in your binary
+let tools = collect_all_elicit_tools();
+println!("Found {} elicit tools", tools.len());
+```
+
+See [MIGRATION_0.5_to_0.6.md](MIGRATION_0.5_to_0.6.md) for migration details.
+
 ## Examples
 
 All examples require an MCP client (Claude Desktop or Claude CLI) to run. See [MCP Setup](#mcp-setup) above.
