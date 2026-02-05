@@ -1,9 +1,9 @@
 //! Integration tests for contract-based tools.
 
 use elicitation::{
+    ElicitResult,
     contracts::{Established, Prop},
     tool::True,
-    ElicitResult,
 };
 
 /// Test tool with no preconditions
@@ -28,10 +28,14 @@ fn test_tool_with_precondition() {
     impl Prop for EmailValidated {}
 
     struct MockSendEmail;
-    
+
     // Simulate tool implementation
     impl MockSendEmail {
-        fn send(&self, _email: String, _pre: Established<EmailValidated>) -> ((), Established<True>) {
+        fn send(
+            &self,
+            _email: String,
+            _pre: Established<EmailValidated>,
+        ) -> ((), Established<True>) {
             ((), True::axiom())
         }
     }
@@ -51,18 +55,22 @@ fn test_tool_chain() {
 
     struct ValidateEmail;
     impl ValidateEmail {
-        fn validate(&self, _email: String, _pre: Established<True>) 
-            -> (String, Established<EmailValidated>) 
-        {
+        fn validate(
+            &self,
+            _email: String,
+            _pre: Established<True>,
+        ) -> (String, Established<EmailValidated>) {
             (String::from("valid@example.com"), Established::assert())
         }
     }
 
     struct SendEmail;
     impl SendEmail {
-        fn send(&self, _email: String, _pre: Established<EmailValidated>) 
-            -> ((), Established<EmailSent>) 
-        {
+        fn send(
+            &self,
+            _email: String,
+            _pre: Established<EmailValidated>,
+        ) -> ((), Established<EmailSent>) {
             ((), Established::assert())
         }
     }
@@ -71,10 +79,8 @@ fn test_tool_chain() {
     let validator = ValidateEmail;
     let sender = SendEmail;
 
-    let (validated_email, validation_proof) = validator.validate(
-        "user@example.com".to_string(),
-        True::axiom(),
-    );
+    let (validated_email, validation_proof) =
+        validator.validate("user@example.com".to_string(), True::axiom());
 
     let (_result, _sent_proof) = sender.send(validated_email, validation_proof);
 }
@@ -84,15 +90,15 @@ fn test_tool_chain() {
 fn test_cannot_call_without_proof() {
     // Compile-time enforcement test
     // If this compiles, the following would NOT compile:
-    
+
     // struct EmailValidated;
     // impl Prop for EmailValidated {}
-    // 
+    //
     // struct SendEmail;
     // impl SendEmail {
     //     fn send(&self, _email: String, _pre: Established<EmailValidated>) {}
     // }
-    // 
+    //
     // let tool = SendEmail;
     // tool.send("user@example.com".to_string()); // ERROR: missing proof!
 }

@@ -224,8 +224,8 @@
 //! - [Vision document](../../elicitation_composition_primitives.md): Design philosophy
 
 use crate::{
-    contracts::{Established, Prop},
     ElicitResult, Elicitation,
+    contracts::{Established, Prop},
 };
 
 /// MCP tool with explicit preconditions and postconditions.
@@ -246,7 +246,7 @@ use crate::{
 ///
 /// ```rust,ignore
 /// struct ValidateEmailTool;
-/// 
+///
 /// impl Tool for ValidateEmailTool {
 ///     type Input = String;
 ///     type Output = String;
@@ -292,8 +292,7 @@ pub trait Tool {
         &self,
         input: Self::Input,
         _pre: Established<Self::Pre>,
-    ) -> impl std::future::Future<Output = ElicitResult<(Self::Output, Established<Self::Post>)>>
-           + Send;
+    ) -> impl std::future::Future<Output = ElicitResult<(Self::Output, Established<Self::Post>)>> + Send;
 }
 
 /// Trivially true proposition.

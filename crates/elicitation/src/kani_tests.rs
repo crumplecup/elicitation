@@ -281,7 +281,7 @@ fn verify_invariant_zero_sized() {
 /// **Property:** Can nest conjunctions arbitrarily.
 #[kani::proof]
 fn verify_conjunction_associative() {
-    use crate::contracts::{Established, Is, And, both};
+    use crate::contracts::{And, Established, Is, both};
 
     struct P;
     struct Q;
@@ -338,7 +338,7 @@ fn verify_true_always_available() {
     // Can create True proofs anytime
     let _proof1 = True::axiom();
     let _proof2 = True::axiom();
-    
+
     // Mock unconstrained tool
     fn unconstrained_tool(_input: String, _pre: crate::contracts::Established<True>) -> String {
         "result".to_string()
@@ -367,7 +367,10 @@ fn verify_tool_chain_composition() {
     }
 
     // Tool 2: Transform (requires validation)
-    fn transform(_input: String, _pre: Established<OutputTransformed>) -> (String, Established<True>) {
+    fn transform(
+        _input: String,
+        _pre: Established<OutputTransformed>,
+    ) -> (String, Established<True>) {
         ("transformed".to_string(), True::axiom())
     }
 
@@ -393,12 +396,18 @@ fn verify_parallel_composition() {
     impl Prop for PhoneValidated {}
 
     // Tool 1: Validate email
-    fn validate_email(_email: String, _pre: Established<True>) -> (String, Established<EmailValidated>) {
+    fn validate_email(
+        _email: String,
+        _pre: Established<True>,
+    ) -> (String, Established<EmailValidated>) {
         ("email@example.com".to_string(), Established::assert())
     }
 
     // Tool 2: Validate phone
-    fn validate_phone(_phone: String, _pre: Established<True>) -> (String, Established<PhoneValidated>) {
+    fn validate_phone(
+        _phone: String,
+        _pre: Established<True>,
+    ) -> (String, Established<PhoneValidated>) {
         ("+1234567890".to_string(), Established::assert())
     }
 
@@ -410,11 +419,12 @@ fn verify_parallel_composition() {
     // Simulate both_tools behavior
     let p1 = fst(combined_pre);
     let p2 = snd(combined_pre);
-    
+
     let (_email, email_proof) = validate_email("test@example.com".to_string(), p1);
     let (_phone, phone_proof) = validate_phone("1234567890".to_string(), p2);
-    
-    let _combined_post: Established<And<EmailValidated, PhoneValidated>> = both(email_proof, phone_proof);
+
+    let _combined_post: Established<And<EmailValidated, PhoneValidated>> =
+        both(email_proof, phone_proof);
 
     // Both postconditions established
 }
@@ -432,7 +442,7 @@ fn verify_refinement_soundness() {
 
     // Have proof of refined type
     let refined_proof: Established<Is<NonEmptyString>> = Established::assert();
-    
+
     // Can safely downcast to base
     let _base_proof: Established<Is<String>> = downcast(refined_proof);
 
@@ -453,13 +463,13 @@ fn verify_conjunction_soundness() {
 
     let p: Established<P> = Established::assert();
     let q: Established<Q> = Established::assert();
-    
+
     // Establish conjunction
     let pq: Established<And<P, Q>> = both(p, q);
-    
+
     // Project left: P holds
     let _p_again: Established<P> = fst(pq);
-    
+
     // Project right: Q holds
     let _q_again: Established<Q> = snd(pq);
 
@@ -486,9 +496,10 @@ fn verify_invariant_state_machine() {
     }
 
     // Transition function returns new proof
-    fn approve(_state: State, _draft: Established<InVariant<State, DraftVariant>>) 
-        -> Established<InVariant<State, ApprovedVariant>> 
-    {
+    fn approve(
+        _state: State,
+        _draft: Established<InVariant<State, DraftVariant>>,
+    ) -> Established<InVariant<State, ApprovedVariant>> {
         Established::assert()
     }
 

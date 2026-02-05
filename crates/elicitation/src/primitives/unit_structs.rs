@@ -232,8 +232,8 @@ mod tests {
     fn test_parser_methods() {
         let p = Parser;
         assert_eq!(p.parse_int("42").unwrap(), 42);
-        let result = p.parse_float("3.14").unwrap();
-        assert!((result - 3.14).abs() < 0.001);
+        let result = p.parse_float("2.5").unwrap();
+        assert!((result - 2.5_f64).abs() < 0.001);
         assert!(p.parse_bool("true").unwrap());
     }
 

@@ -8,7 +8,7 @@
 //!
 //! Run with: `cargo run --example contracts_basic`
 
-use elicitation::contracts::{both, And, Established, Prop};
+use elicitation::contracts::{And, Established, Prop, both};
 
 // Define propositions for our domain
 struct EmailValidated;

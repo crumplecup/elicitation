@@ -10,9 +10,9 @@
 //! Run with: `cargo run --example contracts_tools`
 
 use elicitation::{
-    contracts::{both, And, Established, Implies, Prop},
-    tool::{then, Tool, True},
     ElicitResult, ValidationError,
+    contracts::{And, Established, Implies, Prop, both},
+    tool::{Tool, True, then},
 };
 
 // Domain propositions for email workflow
@@ -220,7 +220,7 @@ async fn main() -> ElicitResult<()> {
         True::axiom(),
     )
     .await?;
-    
+
     let (_email5, _spam_proof2) = SpamCheckTool.execute(email4, sanitize_proof2).await?;
     println!("✓ Used then() to compose validate and sanitize steps");
 

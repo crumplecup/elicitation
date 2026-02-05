@@ -1,8 +1,8 @@
 //! Integration tests for contract-based elicitation.
 
 use elicitation::{
-    contracts::{And, Established, InVariant, Is, Prop, both},
     ElicitResult,
+    contracts::{And, Established, InVariant, Is, Prop, both},
 };
 
 /// Test that elicit_proven returns a proof
@@ -108,7 +108,7 @@ fn test_invariant_state_machine() {
 
     let review_proof = submit_for_review(WorkflowState::Draft, draft_proof);
     let approved_proof = approve(WorkflowState::Review, review_proof);
-    
+
     // Verify we can construct the final state
     let _final_state = (WorkflowState::Approved, approved_proof);
 

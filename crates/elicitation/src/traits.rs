@@ -146,7 +146,7 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// use elicitation::{Elicitation, contracts::{Established, Is}};
     /// # async fn example(client: &ElicitClient<'_>) -> ElicitResult<()> {
     /// // Elicit with proof
-    /// let (email, proof): (String, Established<Is<String>>) = 
+    /// let (email, proof): (String, Established<Is<String>>) =
     ///     String::elicit_proven(client).await?;
     ///
     /// // Use proof in downstream function
@@ -156,8 +156,12 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// ```
     fn elicit_proven(
         client: &ElicitClient<'_>,
-    ) -> impl std::future::Future<Output = ElicitResult<(Self, crate::contracts::Established<crate::contracts::Is<Self>>)>>
-           + Send {
+    ) -> impl std::future::Future<
+        Output = ElicitResult<(
+            Self,
+            crate::contracts::Established<crate::contracts::Is<Self>>,
+        )>,
+    > + Send {
         async move {
             let value = Self::elicit(client).await?;
             Ok((value, crate::contracts::Established::assert()))

@@ -179,7 +179,8 @@ fn verify_url_absolute_contract() {
     let bytes = [0u8; 10];
 
     // Test contract: UrlAbsolute requires has_authority()
-    let absolute_result = UrlAbsoluteBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
+    let absolute_result =
+        UrlAbsoluteBytes::<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>::from_slice(&bytes);
 
     // If construction succeeded, verify it has authority
     if let Ok(absolute) = absolute_result {

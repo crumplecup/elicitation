@@ -8,7 +8,7 @@
 //!
 //! Run with: `cargo run --example contracts_composition`
 
-use elicitation::contracts::{both, fst, snd, And, Established, Implies, Is, Prop, Refines};
+use elicitation::contracts::{And, Established, Implies, Is, Prop, Refines, both, fst, snd};
 
 // Domain propositions
 struct EmailFormatValid;
@@ -110,10 +110,7 @@ fn create_user_profile(
 /// Final step: Welcome email.
 ///
 /// Requires both email confirmation AND profile creation.
-fn send_welcome_email(
-    email: &str,
-    _proof: Established<And<EmailConfirmed, UserProfileCreated>>,
-) {
+fn send_welcome_email(email: &str, _proof: Established<And<EmailConfirmed, UserProfileCreated>>) {
     println!("✓ Step 6: Welcome email sent to {}", email);
 }
 

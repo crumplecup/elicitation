@@ -492,8 +492,12 @@ impl<P: Prop> Implies<P> for P {}
 /// let url_again: Established<ValidUrl> = fst(both_proof);
 /// let port_again: Established<HasPort> = snd(both_proof);
 /// ```
+
+/// Type alias to reduce PhantomData complexity.
+type AndMarker<P, Q> = (fn() -> P, fn() -> Q);
+
 pub struct And<P: Prop, Q: Prop> {
-    _marker: PhantomData<(fn() -> P, fn() -> Q)>,
+    _marker: PhantomData<AndMarker<P, Q>>,
 }
 
 impl<P: Prop, Q: Prop> Prop for And<P, Q> {}
@@ -673,8 +677,12 @@ where
 ///     println!("Processing active status");
 /// }
 /// ```
+
+/// Type alias to reduce PhantomData complexity.
+type InVariantMarker<E, V> = (fn() -> E, fn() -> V);
+
 pub struct InVariant<E, V> {
-    _marker: PhantomData<(fn() -> E, fn() -> V)>,
+    _marker: PhantomData<InVariantMarker<E, V>>,
 }
 
 impl<E: 'static, V: 'static> Prop for InVariant<E, V> {}
