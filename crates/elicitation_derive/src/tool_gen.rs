@@ -1,72 +1,58 @@
 //! MCP tool generation for #[derive(Elicit)].
 
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote};
+use quote::quote;
 use syn::DeriveInput;
 
-/// Generate an MCP tool function for a type with #[derive(Elicit)].
+/// Generate an MCP tool method for a type with #[derive(Elicit)].
+///
+/// Generates a method on the type's impl block that provides verified,
+/// registered elicitation via the MCP protocol. Follows Rust's `checked_*`
+/// idiom for operations that add verification and safety.
 ///
 /// Generates:
 /// ```ignore
-/// #[rmcp::tool]
-/// pub async fn elicit_type_name(
-///     client: &rmcp::service::Peer<rmcp::service::RoleClient>,
-/// ) -> Result<TypeName, elicitation::ElicitError> {
-///     use elicitation::{Elicitation, ElicitClient};
-///     TypeName::elicit(&ElicitClient::new(client)).await
+/// impl TypeName {
+///     /// Checked elicitation via MCP protocol.
+///     ///
+///     /// This is the verified, registered variant suitable for production use.
+///     /// Automatically registered as an MCP tool via `#[rmcp::tool]`.
+///     #[cfg_attr(not(test), elicitation::rmcp::tool)]
+///     pub async fn elicit_checked(
+///         client: std::sync::Arc<elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>>,
+///     ) -> Result<Self, elicitation::ElicitError> {
+///         use elicitation::{Elicitation, ElicitClient};
+///         Self::elicit(&ElicitClient::new(client)).await
+///     }
 /// }
 /// ```
 pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
     let type_name = &input.ident;
-    let fn_name = format_ident!("elicit_{}", to_snake_case(&type_name.to_string()));
 
     quote! {
-        /// Auto-generated MCP tool function for eliciting [`#type_name`].
-        ///
-        /// This function uses the derived `Elicitation` impl to
-        /// interactively elicit a value from the user via MCP.
-        ///
-        /// Automatically registered as an MCP tool via `#[rmcp::tool]` in non-test builds.
-        #[cfg_attr(not(test), elicitation::rmcp::tool)]
-        pub async fn #fn_name(
-            client: std::sync::Arc<elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>>,
-        ) -> Result<#type_name, elicitation::ElicitError> {
-            use elicitation::{Elicitation, ElicitClient};
-            #type_name::elicit(&ElicitClient::new(client)).await
-        }
-    }
-}
-
-/// Convert PascalCase or camelCase to snake_case.
-fn to_snake_case(s: &str) -> String {
-    let mut result = String::with_capacity(s.len() + 5);
-    let mut is_first = true;
-
-    for ch in s.chars() {
-        if ch.is_uppercase() {
-            if !is_first {
-                result.push('_');
+        impl #type_name {
+            /// Checked elicitation via MCP protocol.
+            ///
+            /// This is the verified, registered variant suitable for production use.
+            /// Uses the derived `Elicitation` impl to interactively elicit a value
+            /// from the user via MCP.
+            ///
+            /// Automatically registered as an MCP tool via `#[rmcp::tool]` in non-test builds.
+            ///
+            /// # Examples
+            ///
+            /// ```ignore
+            /// let client = Arc::new(peer.clone());
+            /// let config = Config::elicit_checked(client).await?;
+            /// ```
+            #[cfg_attr(not(test), elicitation::rmcp::tool)]
+            pub async fn elicit_checked(
+                client: std::sync::Arc<elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>>,
+            ) -> Result<Self, elicitation::ElicitError> {
+                use elicitation::{Elicitation, ElicitClient};
+                Self::elicit(&ElicitClient::new(client)).await
             }
-            result.push(ch.to_ascii_lowercase());
-        } else {
-            result.push(ch);
         }
-        is_first = false;
-    }
-
-    result
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_to_snake_case() {
-        assert_eq!(to_snake_case("Config"), "config");
-        assert_eq!(to_snake_case("TomlAct"), "toml_act");
-        assert_eq!(to_snake_case("TomlActInput"), "toml_act_input");
-        assert_eq!(to_snake_case("HTTPConfig"), "h_t_t_p_config");
-        assert_eq!(to_snake_case("MyType"), "my_type");
     }
 }
+
