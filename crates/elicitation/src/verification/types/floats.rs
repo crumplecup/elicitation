@@ -1,7 +1,7 @@
 //! Float contract types.
 
 use super::ValidationError;
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -62,16 +62,14 @@ macro_rules! impl_float_default_wrapper {
             impl Elicitation for $wrapper {
                 type Style = [<$wrapper Style>];
 
-                #[tracing::instrument(skip(client))]
-                async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+                #[tracing::instrument(skip(communicator))]
+                async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
                     let prompt = Self::prompt().unwrap();
                     tracing::debug!(concat!("Eliciting ", stringify!($wrapper), " with serde deserialization"));
 
                     let params = crate::mcp::text_params(prompt);
 
-                    let result = client
-                        .peer()
-                        .call_tool(rmcp::model::CallToolRequestParams {
+                    let result = communicator.call_tool(rmcp::model::CallToolRequestParams {
                             meta: None,
                             name: crate::mcp::tool_names::elicit_text().into(),
                             arguments: Some(params),
@@ -159,12 +157,12 @@ impl Prompt for F32Positive {
 impl Elicitation for F32Positive {
     type Style = F32PositiveStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "F32Positive"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "F32Positive"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting F32Positive (positive f32 value)");
 
         loop {
-            let value = f32::elicit(client).await?;
+            let value = f32::elicit(communicator).await?;
 
             match Self::new(value) {
                 Ok(positive) => {
@@ -244,12 +242,12 @@ impl Prompt for F32NonNegative {
 impl Elicitation for F32NonNegative {
     type Style = F32NonNegativeStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "F32NonNegative"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "F32NonNegative"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting F32NonNegative (non-negative f32 value)");
 
         loop {
-            let value = f32::elicit(client).await?;
+            let value = f32::elicit(communicator).await?;
 
             match Self::new(value) {
                 Ok(non_negative) => {
@@ -323,12 +321,12 @@ impl Prompt for F32Finite {
 impl Elicitation for F32Finite {
     type Style = F32FiniteStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "F32Finite"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "F32Finite"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting F32Finite (finite f32 value)");
 
         loop {
-            let value = f32::elicit(client).await?;
+            let value = f32::elicit(communicator).await?;
 
             match Self::new(value) {
                 Ok(finite) => {
@@ -408,12 +406,12 @@ impl Prompt for F64Positive {
 impl Elicitation for F64Positive {
     type Style = F64PositiveStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "F64Positive"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "F64Positive"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting F64Positive (positive f64 value)");
 
         loop {
-            let value = f64::elicit(client).await?;
+            let value = f64::elicit(communicator).await?;
 
             match Self::new(value) {
                 Ok(positive) => {
@@ -493,12 +491,12 @@ impl Prompt for F64NonNegative {
 impl Elicitation for F64NonNegative {
     type Style = F64NonNegativeStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "F64NonNegative"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "F64NonNegative"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting F64NonNegative (non-negative f64 value)");
 
         loop {
-            let value = f64::elicit(client).await?;
+            let value = f64::elicit(communicator).await?;
 
             match Self::new(value) {
                 Ok(non_negative) => {
@@ -557,12 +555,12 @@ impl Prompt for F64Finite {
 impl Elicitation for F64Finite {
     type Style = F64FiniteStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "F64Finite"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "F64Finite"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting F64Finite (finite f64 value)");
 
         loop {
-            let value = f64::elicit(client).await?;
+            let value = f64::elicit(communicator).await?;
 
             match Self::new(value) {
                 Ok(finite) => {

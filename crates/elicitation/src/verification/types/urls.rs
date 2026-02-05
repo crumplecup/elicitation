@@ -483,7 +483,7 @@ impl UrlCanBeBase {
 // Elicitation Implementations
 // ============================================================================
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitClient, ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
 // Re-export UrlStyle from primitives
 pub use crate::primitives::url::UrlStyle;
@@ -497,8 +497,8 @@ impl Prompt for UrlValid {
 impl Elicitation for UrlValid {
     type Style = UrlStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let prompt = "Please enter a URL:";
         tracing::debug!("Eliciting UrlValid with text elicitation");
 
@@ -532,9 +532,9 @@ impl Prompt for UrlHttps {
 impl Elicitation for UrlHttps {
     type Style = UrlStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
-        let value = url::Url::elicit(client).await?;
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        let value = url::Url::elicit(communicator).await?;
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
 }
@@ -548,9 +548,9 @@ impl Prompt for UrlHttp {
 impl Elicitation for UrlHttp {
     type Style = UrlStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
-        let value = url::Url::elicit(client).await?;
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        let value = url::Url::elicit(communicator).await?;
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
 }
@@ -564,9 +564,9 @@ impl Prompt for UrlWithHost {
 impl Elicitation for UrlWithHost {
     type Style = UrlStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
-        let value = url::Url::elicit(client).await?;
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        let value = url::Url::elicit(communicator).await?;
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
 }
@@ -580,9 +580,9 @@ impl Prompt for UrlCanBeBase {
 impl Elicitation for UrlCanBeBase {
     type Style = UrlStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
-        let value = url::Url::elicit(client).await?;
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        let value = url::Url::elicit(communicator).await?;
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
 }

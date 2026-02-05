@@ -1,6 +1,6 @@
 //! Fixed-size array [T; N] implementation using const generics.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
 // Default-only style for arrays
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -18,8 +18,8 @@ impl Prompt for ArrayStyle {
 impl Elicitation for ArrayStyle {
     type Style = ArrayStyle;
 
-    #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(_communicator), level = "trace")]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -39,11 +39,11 @@ where
 {
     type Style = ArrayStyle;
 
-    #[tracing::instrument(skip(client), fields(
+    #[tracing::instrument(skip(communicator), fields(
         item_type = std::any::type_name::<T>(),
         size = N
     ))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!(size = N, "Eliciting fixed-size array");
 
         // Collect items into a Vec first
@@ -51,7 +51,7 @@ where
 
         for i in 0..N {
             tracing::debug!(index = i, total = N, "Eliciting array element");
-            let item = T::elicit(client).await?;
+            let item = T::elicit(communicator).await?;
             items.push(item);
         }
 

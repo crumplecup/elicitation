@@ -1,6 +1,6 @@
 //! String type implementation.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
 // Generate default-only style enum
 crate::default_style!(String => StringStyle);
@@ -14,14 +14,14 @@ impl Prompt for String {
 impl Elicitation for String {
     type Style = StringStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         use crate::verification::types::StringDefault;
 
         tracing::debug!("Eliciting String via StringDefault wrapper");
 
         // Use verification wrapper internally
-        let wrapper = StringDefault::elicit(client).await?;
+        let wrapper = StringDefault::elicit(communicator).await?;
 
         // Unwrap to primitive
         Ok(wrapper.into_inner())

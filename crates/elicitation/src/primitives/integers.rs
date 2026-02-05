@@ -1,6 +1,6 @@
 //! Integer type implementations using generic macros.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
 /// Macro to implement Elicitation for integer types using Default wrappers.
 ///
@@ -27,14 +27,14 @@ macro_rules! impl_integer_elicit_via_wrapper {
         impl Elicitation for $primitive {
             type Style = $style;
 
-            #[tracing::instrument(skip(client), fields(type_name = stringify!($primitive)))]
-            async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+            #[tracing::instrument(skip(communicator), fields(type_name = stringify!($primitive)))]
+            async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
                 use crate::verification::types::$wrapper;
 
                 tracing::debug!(concat!("Eliciting ", stringify!($primitive), " via ", stringify!($wrapper), " wrapper"));
 
                 // Use verification wrapper internally
-                let wrapper = $wrapper::elicit(client).await?;
+                let wrapper = $wrapper::elicit(communicator).await?;
 
                 // Unwrap to primitive
                 Ok(wrapper.into_inner())
@@ -63,14 +63,14 @@ impl Prompt for i64 {
 impl Elicitation for i64 {
     type Style = I64Style;
 
-    #[tracing::instrument(skip(client), fields(type_name = "i64"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "i64"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         use crate::verification::types::I64Default;
 
         tracing::debug!("Eliciting i64 via I64Default wrapper");
 
         // Use verification wrapper internally
-        let wrapper = I64Default::elicit(client).await?;
+        let wrapper = I64Default::elicit(communicator).await?;
 
         // Unwrap to primitive
         Ok(wrapper.into_inner())

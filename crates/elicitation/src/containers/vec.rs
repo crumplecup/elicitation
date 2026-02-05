@@ -1,6 +1,6 @@
 //! Vec<T> implementation for collection elicitation.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
 // Default-only style for Vec
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -18,8 +18,8 @@ impl Prompt for VecStyle {
 impl Elicitation for VecStyle {
     type Style = VecStyle;
 
-    #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(_communicator), level = "trace")]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -33,8 +33,8 @@ impl<T: Elicitation + Send> Prompt for Vec<T> {
 impl<T: Elicitation + Send> Elicitation for Vec<T> {
     type Style = VecStyle;
 
-    #[tracing::instrument(skip(client), fields(item_type = std::any::type_name::<T>()))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(item_type = std::any::type_name::<T>()))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let mut items = Vec::new();
         tracing::debug!("Eliciting vector");
 
@@ -43,12 +43,12 @@ impl<T: Elicitation + Send> Elicitation for Vec<T> {
                 // First item - different prompt
                 tracing::debug!("Prompting for first item");
                 // TODO: In future, could customize prompt: "Add first item?"
-                bool::elicit(client).await?
+                bool::elicit(communicator).await?
             } else {
                 // Subsequent items
                 tracing::debug!(count = items.len(), "Prompting for additional item");
                 // TODO: In future, could customize prompt: "Add another item?"
-                bool::elicit(client).await?
+                bool::elicit(communicator).await?
             };
 
             if !add_more {
@@ -57,7 +57,7 @@ impl<T: Elicitation + Send> Elicitation for Vec<T> {
             }
 
             tracing::debug!("Eliciting item");
-            let item = T::elicit(client).await?;
+            let item = T::elicit(communicator).await?;
             items.push(item);
         }
 

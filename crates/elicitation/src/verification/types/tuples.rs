@@ -3,7 +3,7 @@
 //! Tuples compose contract types - if all elements are valid contract types,
 //! the tuple is guaranteed valid by construction.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
 // Tuple2 - 2-element tuple where both satisfy contracts
 /// A 2-element tuple where both elements are contract types.
@@ -52,11 +52,11 @@ where
 {
     type Style = <(C1, C2) as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Tuple2");
-        let first = C1::elicit(client).await?; // Guaranteed valid by contract!
-        let second = C2::elicit(client).await?; // Guaranteed valid by contract!
+        let first = C1::elicit(communicator).await?; // Guaranteed valid by contract!
+        let second = C2::elicit(communicator).await?; // Guaranteed valid by contract!
         Ok(Self::new(first, second)) // Composition = proven valid
     }
 }
@@ -97,12 +97,12 @@ where
 {
     type Style = <(C1, C2, C3) as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Tuple3");
-        let first = C1::elicit(client).await?;
-        let second = C2::elicit(client).await?;
-        let third = C3::elicit(client).await?;
+        let first = C1::elicit(communicator).await?;
+        let second = C2::elicit(communicator).await?;
+        let third = C3::elicit(communicator).await?;
         Ok(Self::new(first, second, third))
     }
 }
@@ -145,13 +145,13 @@ where
 {
     type Style = <(C1, C2, C3, C4) as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Tuple4");
-        let first = C1::elicit(client).await?;
-        let second = C2::elicit(client).await?;
-        let third = C3::elicit(client).await?;
-        let fourth = C4::elicit(client).await?;
+        let first = C1::elicit(communicator).await?;
+        let second = C2::elicit(communicator).await?;
+        let third = C3::elicit(communicator).await?;
+        let fourth = C4::elicit(communicator).await?;
         Ok(Self::new(first, second, third, fourth))
     }
 }

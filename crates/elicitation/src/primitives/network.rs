@@ -1,6 +1,6 @@
 //! Network type implementations for IP addresses and socket addresses.
 
-use crate::{ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 
 // Generate default-only style enums for all network types
@@ -21,11 +21,11 @@ impl Prompt for IpAddr {
 impl Elicitation for IpAddr {
     type Style = IpAddrStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IpAddr");
 
-        let ip_str = String::elicit(client).await?;
+        let ip_str = String::elicit(communicator).await?;
 
         match ip_str.parse::<IpAddr>() {
             Ok(addr) => {
@@ -53,11 +53,11 @@ impl Prompt for Ipv4Addr {
 impl Elicitation for Ipv4Addr {
     type Style = Ipv4AddrStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv4Addr");
 
-        let ip_str = String::elicit(client).await?;
+        let ip_str = String::elicit(communicator).await?;
 
         match ip_str.parse::<Ipv4Addr>() {
             Ok(addr) => {
@@ -85,11 +85,11 @@ impl Prompt for Ipv6Addr {
 impl Elicitation for Ipv6Addr {
     type Style = Ipv6AddrStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv6Addr");
 
-        let ip_str = String::elicit(client).await?;
+        let ip_str = String::elicit(communicator).await?;
 
         match ip_str.parse::<Ipv6Addr>() {
             Ok(addr) => {
@@ -117,11 +117,11 @@ impl Prompt for SocketAddr {
 impl Elicitation for SocketAddr {
     type Style = SocketAddrStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddr");
 
-        let addr_str = String::elicit(client).await?;
+        let addr_str = String::elicit(communicator).await?;
 
         match addr_str.parse::<SocketAddr>() {
             Ok(addr) => {
@@ -149,11 +149,11 @@ impl Prompt for SocketAddrV4 {
 impl Elicitation for SocketAddrV4 {
     type Style = SocketAddrV4Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddrV4");
 
-        let addr_str = String::elicit(client).await?;
+        let addr_str = String::elicit(communicator).await?;
 
         match addr_str.parse::<SocketAddrV4>() {
             Ok(addr) => {
@@ -181,11 +181,11 @@ impl Prompt for SocketAddrV6 {
 impl Elicitation for SocketAddrV6 {
     type Style = SocketAddrV6Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddrV6");
 
-        let addr_str = String::elicit(client).await?;
+        let addr_str = String::elicit(communicator).await?;
 
         match addr_str.parse::<SocketAddrV6>() {
             Ok(addr) => {

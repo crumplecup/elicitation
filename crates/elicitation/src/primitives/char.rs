@@ -1,6 +1,6 @@
 //! Char type implementation.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt, mcp};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt, mcp};
 
 // Generate default-only style enum
 crate::default_style!(char => CharStyle);
@@ -14,14 +14,13 @@ impl Prompt for char {
 impl Elicitation for char {
     type Style = CharStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting char");
 
         let params = mcp::text_params(prompt);
-        let result = client
-            .peer()
+        let result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_text().into(),

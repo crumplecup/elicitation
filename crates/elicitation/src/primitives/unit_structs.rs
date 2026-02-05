@@ -42,7 +42,7 @@
 //! // (Would be implemented automatically)
 //! ```
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Generator, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Generator, Prompt};
 
 // ============================================================================
 // Example Unit Structs
@@ -166,7 +166,7 @@ impl Prompt for Validator {
 impl Elicitation for Validator {
     type Style = ValidatorStyle;
 
-    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Validator (unit struct)");
 
         // Unit struct - only one possible value!
@@ -184,7 +184,7 @@ impl Prompt for Formatter {
 impl Elicitation for Formatter {
     type Style = FormatterStyle;
 
-    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Formatter (unit struct)");
         Ok(Formatter)
     }
@@ -199,7 +199,7 @@ impl Prompt for Parser {
 impl Elicitation for Parser {
     type Style = ParserStyle;
 
-    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Parser (unit struct)");
         Ok(Parser)
     }

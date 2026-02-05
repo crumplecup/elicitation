@@ -63,8 +63,8 @@ crate::default_style!(Value => ValueStyle);
 impl Elicitation for JsonType {
     type Style = JsonTypeStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting JSON type selection");
 
@@ -96,14 +96,14 @@ impl Prompt for Value {
 impl Elicitation for Value {
     type Style = ValueStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         elicit_with_depth(client, 0).await
     }
 }
 
 /// Elicit a JSON Value with depth tracking.
-#[tracing::instrument(skip(client), fields(depth))]
+#[tracing::instrument(skip(communicator), fields(depth))]
 fn elicit_with_depth<'a>(
     client: &'a ElicitClient,
     depth: usize,
@@ -118,7 +118,7 @@ fn elicit_with_depth<'a>(
         tracing::debug!(depth, "Eliciting JSON value");
 
         // Step 1: Select JSON type
-        let json_type = JsonType::elicit(client).await?;
+        let json_type = JsonType::elicit(communicator).await?;
         tracing::debug!(?json_type, "JSON type selected");
 
         // Step 2: Elicit based on type
@@ -129,12 +129,12 @@ fn elicit_with_depth<'a>(
             }
             JsonType::Bool => {
                 tracing::debug!("Eliciting boolean");
-                let b = bool::elicit(client).await?;
+                let b = bool::elicit(communicator).await?;
                 Ok(Value::Bool(b))
             }
             JsonType::String => {
                 tracing::debug!("Eliciting string");
-                let s = String::elicit(client).await?;
+                let s = String::elicit(communicator).await?;
                 Ok(Value::String(s))
             }
             JsonType::Number => {
@@ -154,7 +154,7 @@ fn elicit_with_depth<'a>(
 }
 
 /// Elicit a JSON number.
-#[tracing::instrument(skip(client))]
+#[tracing::instrument(skip(communicator))]
 async fn elicit_number(client: &ElicitClient) -> ElicitResult<Value> {
     let prompt = "Enter number (integer or decimal):";
     tracing::debug!("Eliciting number");
@@ -185,7 +185,7 @@ async fn elicit_number(client: &ElicitClient) -> ElicitResult<Value> {
 }
 
 /// Elicit a JSON array.
-#[tracing::instrument(skip(client), fields(depth))]
+#[tracing::instrument(skip(communicator), fields(depth))]
 fn elicit_array<'a>(
     client: &'a ElicitClient,
     depth: usize,
@@ -233,7 +233,7 @@ fn elicit_array<'a>(
 }
 
 /// Elicit a JSON object.
-#[tracing::instrument(skip(client), fields(depth))]
+#[tracing::instrument(skip(communicator), fields(depth))]
 fn elicit_object<'a>(
     client: &'a ElicitClient,
     depth: usize,

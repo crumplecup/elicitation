@@ -5,11 +5,8 @@
 //! via `peer.create_message()`.
 
 use rmcp::service::{Peer, RoleServer};
-use std::any::{Any, TypeId};
-use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
 
-use crate::{ElicitResult, Elicitation, ElicitationStyle};
+use crate::{ElicitCommunicator, ElicitResult, ElicitationStyle, ElicitErrorKind, ElicitError, StyleContext};
 
 /// Server wrapper that carries style context.
 ///
@@ -30,6 +27,7 @@ use crate::{ElicitResult, Elicitation, ElicitationStyle};
 ///     Ok(config)
 /// }
 /// ```
+#[derive(Clone)]
 pub struct ElicitServer {
     peer: Peer<RoleServer>,
     style_context: StyleContext,
@@ -51,28 +49,86 @@ impl ElicitServer {
     pub fn peer(&self) -> &Peer<RoleServer> {
         &self.peer
     }
+}
 
-    /// Create a new server with a custom style for a specific type.
-    ///
-    /// Accepts any style type that implements [`ElicitationStyle`], allowing
-    /// users to define custom styles for built-in types.
-    ///
-    /// Returns a new `ElicitServer` with the style added to the context.
-    /// The original server is unchanged.
-    ///
-    /// # Example
-    ///
-    /// ```rust,ignore
-    /// // Use default style
-    /// let server = server.with_style::<Config, _>(ConfigStyle::default());
-    ///
-    /// // Use custom style for i32
-    /// let server = server.with_style::<i32, _>(MyI32Style::Verbose);
-    /// ```
-    #[tracing::instrument(skip(self, style))]
-    pub fn with_style<T: Elicitation + 'static, S: ElicitationStyle>(&self, style: S) -> Self {
-        let type_name = std::any::type_name::<T>();
-        tracing::debug!(type_name, "Setting custom style");
+// Implement ElicitCommunicator for server-side communication
+impl ElicitCommunicator for ElicitServer {
+    #[tracing::instrument(skip(self, prompt), fields(prompt_len = prompt.len()))]
+    async fn send_prompt(&self, prompt: &str) -> ElicitResult<String> {
+        tracing::debug!("Sending prompt to client via create_message");
+        
+        // Create message request
+        let params = rmcp::model::CreateMessageRequestParams {
+            meta: None,
+            task: None,
+            messages: vec![rmcp::model::SamplingMessage {
+                role: rmcp::model::Role::User,
+                content: rmcp::model::Content::text(prompt),
+            }],
+            model_preferences: None,
+            system_prompt: Some(
+                "You are helping elicit structured data. Provide clear, concise responses.".to_string()
+            ),
+            include_context: None,
+            temperature: None,
+            max_tokens: 1000,
+            stop_sequences: None,
+            metadata: None,
+        };
+        
+        // Send request to client
+        let result = self.peer.create_message(params)
+            .await
+            .map_err(|e| {
+                tracing::error!(error = ?e, "create_message failed");
+                ElicitError::new(ElicitErrorKind::Service(e.into()))
+            })?;
+        
+        tracing::debug!(model = %result.model, stop_reason = ?result.stop_reason, "Received response");
+        
+        // Extract text from response
+        use rmcp::model::RawContent;
+        match &*result.message.content {
+            RawContent::Text(text_content) => {
+                tracing::debug!(response_len = text_content.text.len(), "Extracted text response");
+                Ok(text_content.text.clone())
+            }
+            RawContent::Image(_) => {
+                tracing::warn!("Received image content when expecting text");
+                Err(ElicitError::new(ElicitErrorKind::InvalidFormat {
+                    expected: "text".to_string(),
+                    received: "image".to_string(),
+                }))
+            }
+            _ => {
+                tracing::warn!("Received unexpected content type");
+                Err(ElicitError::new(ElicitErrorKind::InvalidFormat {
+                    expected: "text".to_string(),
+                    received: "other".to_string(),
+                }))
+            }
+        }
+    }
+
+    async fn call_tool(
+        &self,
+        _params: rmcp::model::CallToolRequestParams,
+    ) -> Result<rmcp::model::CallToolResult, rmcp::service::ServiceError> {
+        // Servers don't call tools in the server-side elicitation model
+        // (they use create_message instead)
+        Err(rmcp::service::ServiceError::McpError(
+            rmcp::ErrorData::internal_error(
+                "call_tool not supported in server-side elicitation",
+                None
+            )
+        ))
+    }
+
+    fn style_context(&self) -> &StyleContext {
+        &self.style_context
+    }
+
+    fn with_style<T: 'static, S: ElicitationStyle>(&self, style: S) -> Self {
         let mut ctx = self.style_context.clone();
         ctx.set_style::<T, S>(style);
         Self {
@@ -80,111 +136,5 @@ impl ElicitServer {
             style_context: ctx,
         }
     }
-
-    /// Get the current style for a type, or use default if not set.
-    ///
-    /// This method checks if a custom style was set via `with_style()`.
-    /// If a style was set, it returns that style. Otherwise, it returns
-    /// the default style for the type.
-    #[tracing::instrument(skip(self))]
-    pub fn style_or_default<T: Elicitation + 'static>(&self) -> T::Style
-    where
-        T::Style: ElicitationStyle,
-    {
-        let type_name = std::any::type_name::<T>();
-        let has_custom = self.style_context.get_style::<T, T::Style>().is_some();
-        tracing::debug!(type_name, has_custom, "Getting style or default");
-        self.style_context
-            .get_style::<T, T::Style>()
-            .unwrap_or_default()
-    }
-
-    /// Get the current style for a type, eliciting if not set.
-    ///
-    /// This method checks if a custom style was set via `with_style()`.
-    /// If a style was set, it returns that style. Otherwise, it elicits
-    /// the style from the client.
-    ///
-    /// This enables "auto-selection": styles are only elicited when needed.
-    ///
-    /// # TODO
-    ///
-    /// Currently stubbed - requires making Elicitation trait generic over
-    /// ElicitClient/ElicitServer.
-    #[tracing::instrument(skip(self))]
-    pub async fn style_or_elicit<T: Elicitation + 'static>(&self) -> ElicitResult<T::Style>
-    where
-        T::Style: ElicitationStyle,
-    {
-        if let Some(style) = self.style_context.get_style::<T, T::Style>() {
-            tracing::debug!(
-                type_name = std::any::type_name::<T>(),
-                "Using pre-set style"
-            );
-            Ok(style)
-        } else {
-            tracing::debug!(type_name = std::any::type_name::<T>(), "Eliciting style (TODO)");
-            // TODO: T::Style::elicit(self).await
-            Ok(T::Style::default())
-        }
-    }
-
-    /// Get the current style for a type, or use the default.
-    ///
-    /// If a custom style has been set via `with_style()`, returns that.
-    /// Otherwise, returns `T::Style::default()` as fallback.
-    #[tracing::instrument(skip(self))]
-    pub async fn current_style<T: Elicitation + 'static>(&self) -> ElicitResult<T::Style>
-    where
-        T::Style: Clone + Send + Sync + 'static,
-    {
-        // Try to get custom style first
-        if let Some(style) = self.style_context.get_style::<T, T::Style>() {
-            tracing::debug!(type_name = std::any::type_name::<T>(), "Using custom style");
-            return Ok(style);
-        }
-
-        // Fall back to default
-        tracing::debug!(
-            type_name = std::any::type_name::<T>(),
-            "Using default style"
-        );
-        Ok(T::Style::default())
-    }
 }
 
-/// Storage for type-specific styles.
-///
-/// Uses `TypeId` to store different style enums for different types.
-/// This allows each type to have its own style selection without interference.
-/// Internally uses `Arc<RwLock<_>>` for efficient cloning.
-#[derive(Clone, Default)]
-struct StyleContext {
-    styles: Arc<RwLock<HashMap<TypeId, Box<dyn Any + Send + Sync>>>>,
-}
-
-impl StyleContext {
-    /// Set a custom style for a specific type.
-    ///
-    /// Accepts any style type S that implements ElicitationStyle.
-    #[tracing::instrument(skip(self, style), level = "debug", fields(type_id = ?TypeId::of::<T>()))]
-    fn set_style<T: 'static, S: ElicitationStyle>(&mut self, style: S) {
-        let type_id = TypeId::of::<T>();
-        let mut styles = self.styles.write().expect("Lock poisoned");
-        styles.insert(type_id, Box::new(style));
-    }
-
-    /// Get the custom style for a specific type, if one was set.
-    ///
-    /// Returns None if no custom style was provided, allowing
-    /// fallback to T::Style::default().
-    #[tracing::instrument(skip(self), level = "debug", fields(type_id = ?TypeId::of::<T>()))]
-    fn get_style<T: 'static, S: ElicitationStyle>(&self) -> Option<S> {
-        let type_id = TypeId::of::<T>();
-        let styles = self.styles.read().expect("Lock poisoned");
-        styles
-            .get(&type_id)
-            .and_then(|boxed| boxed.downcast_ref::<S>())
-            .cloned()
-    }
-}

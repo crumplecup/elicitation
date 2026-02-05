@@ -1,6 +1,6 @@
 //! Core traits for elicitation.
 
-use crate::{ElicitClient, ElicitResult};
+use crate::{ElicitClient, ElicitCommunicator, ElicitResult};
 use rmcp::service::{Peer, RoleClient};
 use std::sync::Arc;
 
@@ -68,7 +68,7 @@ pub trait Prompt {
 /// use elicitation::{Elicitation, ElicitClient, ElicitResult};
 /// # async fn example(client: &ElicitClient) -> ElicitResult<()> {
 /// // Elicit an i32 from the user
-/// let value: i32 = i32::elicit(client).await?;
+/// let value: i32 = i32::elicit(communicator).await?;
 /// # Ok(())
 /// # }
 /// ```
@@ -99,8 +99,8 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// # Errors
     ///
     /// See [`ElicitError`](crate::ElicitError) for details on error conditions.
-    fn elicit(
-        client: &ElicitClient,
+    fn elicit<C: ElicitCommunicator>(
+        communicator: &C,
     ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send;
 
     /// Create a builder for one-off style override.
@@ -145,18 +145,18 @@ pub trait Elicitation: Sized + Prompt + 'static {
     ///
     /// ```rust,ignore
     /// use elicitation::{Elicitation, contracts::{Established, Is}};
-    /// # async fn example(client: &ElicitClient) -> ElicitResult<()> {
+    /// # async fn example<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<()> {
     /// // Elicit with proof
     /// let (email, proof): (String, Established<Is<String>>) =
-    ///     String::elicit_proven(client).await?;
+    ///     String::elicit_proven(communicator).await?;
     ///
     /// // Use proof in downstream function
     /// send_email(email, proof).await?;
     /// # Ok(())
     /// # }
     /// ```
-    fn elicit_proven(
-        client: &ElicitClient,
+    fn elicit_proven<C: ElicitCommunicator>(
+        communicator: &C,
     ) -> impl std::future::Future<
         Output = ElicitResult<(
             Self,
@@ -164,7 +164,7 @@ pub trait Elicitation: Sized + Prompt + 'static {
         )>,
     > + Send {
         async move {
-            let value = Self::elicit(client).await?;
+            let value = Self::elicit(communicator).await?;
             Ok((value, crate::contracts::Established::assert()))
         }
     }
@@ -194,7 +194,7 @@ pub trait Elicitation: Sized + Prompt + 'static {
 ///
 /// ```rust,ignore
 /// // Elicit the generation strategy once
-/// let mode = InstantGenerationMode::elicit(client).await?;
+/// let mode = InstantGenerationMode::elicit(communicator).await?;
 /// let generator = InstantGenerator::new(mode);
 ///
 /// // Generate many values with the same strategy

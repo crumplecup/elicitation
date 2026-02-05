@@ -1,6 +1,6 @@
 //! Floating-point type implementations using generic macros.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
 /// Macro to implement Elicitation for floating-point types using Default wrappers.
 ///
@@ -19,14 +19,14 @@ macro_rules! impl_float_elicit_via_wrapper {
         impl Elicitation for $primitive {
             type Style = $style;
 
-            #[tracing::instrument(skip(client), fields(type_name = stringify!($primitive)))]
-            async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+            #[tracing::instrument(skip(communicator), fields(type_name = stringify!($primitive)))]
+            async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
                 use crate::verification::types::$wrapper;
 
                 tracing::debug!(concat!("Eliciting ", stringify!($primitive), " via ", stringify!($wrapper), " wrapper"));
 
                 // Use verification wrapper internally
-                let wrapper = $wrapper::elicit(client).await?;
+                let wrapper = $wrapper::elicit(communicator).await?;
 
                 // Unwrap to primitive
                 Ok(wrapper.into_inner())
@@ -51,14 +51,14 @@ impl Prompt for f64 {
 impl Elicitation for f64 {
     type Style = F64Style;
 
-    #[tracing::instrument(skip(client), fields(type_name = "f64"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "f64"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         use crate::verification::types::F64Default;
 
         tracing::debug!("Eliciting f64 via F64Default wrapper");
 
         // Use verification wrapper internally
-        let wrapper = F64Default::elicit(client).await?;
+        let wrapper = F64Default::elicit(communicator).await?;
 
         // Unwrap to primitive
         Ok(wrapper.into_inner())

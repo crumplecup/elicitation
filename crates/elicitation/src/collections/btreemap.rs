@@ -1,6 +1,6 @@
 //! BTreeMap<K, V> implementation for ordered key-value elicitation.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use std::collections::BTreeMap;
 
 // Default-only style for BTreeMap
@@ -19,8 +19,8 @@ impl Prompt for BTreeMapStyle {
 impl Elicitation for BTreeMapStyle {
     type Style = BTreeMapStyle;
 
-    #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(_communicator), level = "trace")]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -42,21 +42,21 @@ where
 {
     type Style = BTreeMapStyle;
 
-    #[tracing::instrument(skip(client), fields(
+    #[tracing::instrument(skip(communicator), fields(
         key_type = std::any::type_name::<K>(),
         value_type = std::any::type_name::<V>()
     ))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let mut map = BTreeMap::new();
         tracing::debug!("Eliciting BTreeMap");
 
         loop {
             let add_more = if map.is_empty() {
                 tracing::debug!("Prompting for first entry");
-                bool::elicit(client).await?
+                bool::elicit(communicator).await?
             } else {
                 tracing::debug!(count = map.len(), "Prompting for additional entry");
-                bool::elicit(client).await?
+                bool::elicit(communicator).await?
             };
 
             if !add_more {
@@ -66,12 +66,12 @@ where
 
             // Elicit key
             tracing::debug!("Eliciting key");
-            let key = K::elicit(client).await?;
+            let key = K::elicit(communicator).await?;
 
             // Check for duplicate keys
             if map.contains_key(&key) {
                 tracing::warn!("Key already exists in map");
-                let replace = bool::elicit(client).await?;
+                let replace = bool::elicit(communicator).await?;
                 if !replace {
                     tracing::debug!("Skipping duplicate key");
                     continue;
@@ -81,7 +81,7 @@ where
 
             // Elicit value
             tracing::debug!("Eliciting value for key");
-            let value = V::elicit(client).await?;
+            let value = V::elicit(communicator).await?;
 
             map.insert(key, value);
         }

@@ -6,7 +6,7 @@
 use super::ValidationError;
 
 #[cfg(all(not(kani), any(feature = "chrono", feature = "jiff", feature = "time")))]
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitClient, ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
 #[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
 use elicitation_macros::instrumented_impl;
@@ -109,13 +109,13 @@ impl Prompt for DateTimeUtcAfter {
 impl Elicitation for DateTimeUtcAfter {
     type Style = <DateTime<Utc> as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting DateTimeUtcAfter");
         // Default threshold to Unix epoch
         let threshold = DateTime::UNIX_EPOCH;
         loop {
-            let dt = DateTime::<Utc>::elicit(client).await?;
+            let dt = DateTime::<Utc>::elicit(communicator).await?;
             match Self::new(dt, threshold) {
                 Ok(valid) => {
                     tracing::debug!(datetime = %valid.value, "Valid datetime after threshold");
@@ -225,13 +225,13 @@ impl Prompt for DateTimeUtcBefore {
 impl Elicitation for DateTimeUtcBefore {
     type Style = <DateTime<Utc> as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting DateTimeUtcBefore");
         // Default threshold to now
         let threshold = Utc::now();
         loop {
-            let dt = DateTime::<Utc>::elicit(client).await?;
+            let dt = DateTime::<Utc>::elicit(communicator).await?;
             match Self::new(dt, threshold) {
                 Ok(valid) => {
                     tracing::debug!(datetime = %valid.value, "Valid datetime before threshold");
@@ -341,13 +341,13 @@ impl Prompt for NaiveDateTimeAfter {
 impl Elicitation for NaiveDateTimeAfter {
     type Style = <NaiveDateTime as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting NaiveDateTimeAfter");
         // Default threshold to Unix epoch
         let threshold = DateTime::<Utc>::UNIX_EPOCH.naive_utc();
         loop {
-            let dt = NaiveDateTime::elicit(client).await?;
+            let dt = NaiveDateTime::elicit(communicator).await?;
             match Self::new(dt, threshold) {
                 Ok(valid) => {
                     tracing::debug!(datetime = %valid.value, "Valid naive datetime after threshold");
@@ -527,13 +527,13 @@ impl Prompt for TimestampAfter {
 impl Elicitation for TimestampAfter {
     type Style = <Timestamp as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting TimestampAfter");
         // Default threshold to Unix epoch
         let threshold = Timestamp::UNIX_EPOCH;
         loop {
-            let ts = Timestamp::elicit(client).await?;
+            let ts = Timestamp::elicit(communicator).await?;
             match Self::new(ts, threshold) {
                 Ok(valid) => {
                     tracing::debug!(timestamp = %valid.value, "Valid timestamp after threshold");
@@ -643,13 +643,13 @@ impl Prompt for TimestampBefore {
 impl Elicitation for TimestampBefore {
     type Style = <Timestamp as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting TimestampBefore");
         // Default threshold to now
         let threshold = Timestamp::now();
         loop {
-            let ts = Timestamp::elicit(client).await?;
+            let ts = Timestamp::elicit(communicator).await?;
             match Self::new(ts, threshold) {
                 Ok(valid) => {
                     tracing::debug!(timestamp = %valid.value, "Valid timestamp before threshold");
@@ -807,13 +807,13 @@ impl Prompt for OffsetDateTimeAfter {
 impl Elicitation for OffsetDateTimeAfter {
     type Style = <OffsetDateTime as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting OffsetDateTimeAfter");
         // Default threshold to Unix epoch
         let threshold = OffsetDateTime::UNIX_EPOCH;
         loop {
-            let dt = OffsetDateTime::elicit(client).await?;
+            let dt = OffsetDateTime::elicit(communicator).await?;
             match Self::new(dt, threshold) {
                 Ok(valid) => {
                     tracing::debug!(datetime = %valid.value, "Valid offset datetime after threshold");
@@ -929,13 +929,13 @@ impl Prompt for OffsetDateTimeBefore {
 impl Elicitation for OffsetDateTimeBefore {
     type Style = <OffsetDateTime as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting OffsetDateTimeBefore");
         // Default threshold to now
         let threshold = OffsetDateTime::now_utc();
         loop {
-            let dt = OffsetDateTime::elicit(client).await?;
+            let dt = OffsetDateTime::elicit(communicator).await?;
             match Self::new(dt, threshold) {
                 Ok(valid) => {
                     tracing::debug!(datetime = %valid.value, "Valid offset datetime before threshold");

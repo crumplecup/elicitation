@@ -24,7 +24,7 @@
 //! ```
 
 use crate::{
-    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
     Select, mcp,
 };
 use std::time::Duration;
@@ -101,15 +101,14 @@ impl Prompt for DurationGenerationMode {
 impl Elicitation for DurationGenerationMode {
     type Style = DurationGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         // Use standard Select elicit pattern
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
             Self::labels(),
         );
 
-        let result = client
-            .peer()
+        let result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_select().into(),
@@ -131,19 +130,19 @@ impl Elicitation for DurationGenerationMode {
         match selected {
             DurationGenerationMode::Zero => Ok(DurationGenerationMode::Zero),
             DurationGenerationMode::FromSecs(_) => {
-                let secs = u64::elicit(client).await?;
+                let secs = u64::elicit(communicator).await?;
                 Ok(DurationGenerationMode::FromSecs(secs))
             }
             DurationGenerationMode::FromMillis(_) => {
-                let millis = u64::elicit(client).await?;
+                let millis = u64::elicit(communicator).await?;
                 Ok(DurationGenerationMode::FromMillis(millis))
             }
             DurationGenerationMode::FromMicros(_) => {
-                let micros = u64::elicit(client).await?;
+                let micros = u64::elicit(communicator).await?;
                 Ok(DurationGenerationMode::FromMicros(micros))
             }
             DurationGenerationMode::FromNanos(_) => {
-                let nanos = u64::elicit(client).await?;
+                let nanos = u64::elicit(communicator).await?;
                 Ok(DurationGenerationMode::FromNanos(nanos))
             }
         }
@@ -198,12 +197,12 @@ impl Prompt for Duration {
 impl Elicitation for Duration {
     type Style = DurationStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Duration");
 
         // Elicit generation mode from agent
-        let mode = DurationGenerationMode::elicit(client).await?;
+        let mode = DurationGenerationMode::elicit(communicator).await?;
 
         // Create generator and generate duration
         let generator = DurationGenerator::new(mode);

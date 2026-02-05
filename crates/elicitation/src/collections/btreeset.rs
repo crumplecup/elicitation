@@ -1,6 +1,6 @@
 //! BTreeSet<T> implementation for ordered unique item collection.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use std::collections::BTreeSet;
 
 // Default-only style for BTreeSet
@@ -19,8 +19,8 @@ impl Prompt for BTreeSetStyle {
 impl Elicitation for BTreeSetStyle {
     type Style = BTreeSetStyle;
 
-    #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(_communicator), level = "trace")]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -40,18 +40,18 @@ where
 {
     type Style = BTreeSetStyle;
 
-    #[tracing::instrument(skip(client), fields(item_type = std::any::type_name::<T>()))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(item_type = std::any::type_name::<T>()))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let mut set = BTreeSet::new();
         tracing::debug!("Eliciting BTreeSet");
 
         loop {
             let add_more = if set.is_empty() {
                 tracing::debug!("Prompting for first item");
-                bool::elicit(client).await?
+                bool::elicit(communicator).await?
             } else {
                 tracing::debug!(count = set.len(), "Prompting for additional item");
-                bool::elicit(client).await?
+                bool::elicit(communicator).await?
             };
 
             if !add_more {
@@ -60,7 +60,7 @@ where
             }
 
             tracing::debug!("Eliciting item");
-            let item = T::elicit(client).await?;
+            let item = T::elicit(communicator).await?;
 
             // Automatic duplicate handling - sets ignore duplicates
             if !set.insert(item) {

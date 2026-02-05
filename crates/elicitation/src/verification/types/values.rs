@@ -5,7 +5,7 @@
 #[cfg(feature = "serde_json")]
 use super::ValidationError;
 #[cfg(all(feature = "serde_json", not(kani)))]
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitClient, ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 #[cfg(all(feature = "serde_json", not(kani)))]
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "serde_json")]
@@ -92,11 +92,11 @@ impl Prompt for ValueObject {
 impl Elicitation for ValueObject {
     type Style = <Value as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ValueObject");
         loop {
-            let value = Value::elicit(client).await?;
+            let value = Value::elicit(communicator).await?;
             match Self::new(value) {
                 Ok(valid) => {
                     tracing::debug!("Valid JSON object");
@@ -192,11 +192,11 @@ impl Prompt for ValueArray {
 impl Elicitation for ValueArray {
     type Style = <Value as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ValueArray");
         loop {
-            let value = Value::elicit(client).await?;
+            let value = Value::elicit(communicator).await?;
             match Self::new(value) {
                 Ok(valid) => {
                     tracing::debug!("Valid JSON array");
@@ -286,11 +286,11 @@ impl Prompt for ValueNonNull {
 impl Elicitation for ValueNonNull {
     type Style = <Value as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ValueNonNull");
         loop {
-            let value = Value::elicit(client).await?;
+            let value = Value::elicit(communicator).await?;
             match Self::new(value) {
                 Ok(valid) => {
                     tracing::debug!("Valid non-null JSON value");

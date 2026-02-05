@@ -1,6 +1,6 @@
 //! HashMap<K, V> implementation for key-value elicitation.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -20,8 +20,8 @@ impl Prompt for HashMapStyle {
 impl Elicitation for HashMapStyle {
     type Style = HashMapStyle;
 
-    #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(_communicator), level = "trace")]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -43,21 +43,21 @@ where
 {
     type Style = HashMapStyle;
 
-    #[tracing::instrument(skip(client), fields(
+    #[tracing::instrument(skip(communicator), fields(
         key_type = std::any::type_name::<K>(),
         value_type = std::any::type_name::<V>()
     ))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let mut map = HashMap::new();
         tracing::debug!("Eliciting HashMap");
 
         loop {
             let add_more = if map.is_empty() {
                 tracing::debug!("Prompting for first entry");
-                bool::elicit(client).await?
+                bool::elicit(communicator).await?
             } else {
                 tracing::debug!(count = map.len(), "Prompting for additional entry");
-                bool::elicit(client).await?
+                bool::elicit(communicator).await?
             };
 
             if !add_more {
@@ -67,14 +67,14 @@ where
 
             // Elicit key
             tracing::debug!("Eliciting key");
-            let key = K::elicit(client).await?;
+            let key = K::elicit(communicator).await?;
 
             // Check for duplicate keys
             if map.contains_key(&key) {
                 tracing::warn!("Key already exists in map");
                 // Ask if they want to replace the value
                 // TODO: Could customize prompt: "Key already exists. Replace value?"
-                let replace = bool::elicit(client).await?;
+                let replace = bool::elicit(communicator).await?;
                 if !replace {
                     tracing::debug!("Skipping duplicate key");
                     continue;
@@ -84,7 +84,7 @@ where
 
             // Elicit value
             tracing::debug!("Eliciting value for key");
-            let value = V::elicit(client).await?;
+            let value = V::elicit(communicator).await?;
 
             map.insert(key, value);
         }

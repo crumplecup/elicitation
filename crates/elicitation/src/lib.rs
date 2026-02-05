@@ -35,13 +35,13 @@
 //!
 //! async fn example(client: &Peer<RoleClient>) -> ElicitResult<()> {
 //!     // Elicit a simple integer
-//!     let age: i32 = i32::elicit(client).await?;
+//!     let age: i32 = i32::elicit(communicator).await?;
 //!
 //!     // Elicit an optional value
-//!     let nickname: Option<String> = Option::<String>::elicit(client).await?;
+//!     let nickname: Option<String> = Option::<String>::elicit(communicator).await?;
 //!
 //!     // Elicit a collection
-//!     let scores: Vec<i32> = Vec::<i32>::elicit(client).await?;
+//!     let scores: Vec<i32> = Vec::<i32>::elicit(communicator).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -82,6 +82,7 @@
 
 mod client;
 mod server;  // Server-side wrapper (analogous to ElicitClient)
+mod communicator;  // Unified trait for client/server communication
 // Verification framework imports
 
 mod collections;
@@ -132,6 +133,7 @@ pub use error::{ElicitError, ElicitErrorKind, ElicitResult, JsonError, RmcpError
 // Core client and server
 pub use client::ElicitClient;
 pub use server::ElicitServer;
+pub use communicator::{ElicitCommunicator, StyleContext};
 
 // Core traits
 pub use elicitation_style::ElicitationStyle;

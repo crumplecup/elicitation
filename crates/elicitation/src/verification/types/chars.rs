@@ -1,7 +1,7 @@
 //! Char contract types.
 
 use super::ValidationError;
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
 
 // ============================================================================
@@ -63,12 +63,12 @@ impl Prompt for CharAlphabetic {
 impl Elicitation for CharAlphabetic {
     type Style = CharAlphabeticStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "CharAlphabetic"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "CharAlphabetic"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting CharAlphabetic (alphabetic char)");
 
         loop {
-            let value = char::elicit(client).await?;
+            let value = char::elicit(communicator).await?;
 
             match Self::new(value) {
                 Ok(alphabetic) => {
@@ -138,12 +138,12 @@ impl Prompt for CharNumeric {
 impl Elicitation for CharNumeric {
     type Style = CharNumericStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "CharNumeric"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "CharNumeric"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting CharNumeric (numeric char)");
 
         loop {
-            let value = char::elicit(client).await?;
+            let value = char::elicit(communicator).await?;
 
             match Self::new(value) {
                 Ok(numeric) => {
@@ -215,12 +215,12 @@ impl Prompt for CharAlphanumeric {
 impl Elicitation for CharAlphanumeric {
     type Style = CharAlphanumericStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "CharAlphanumeric"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "CharAlphanumeric"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting CharAlphanumeric (alphanumeric char)");
 
         loop {
-            let value = char::elicit(client).await?;
+            let value = char::elicit(communicator).await?;
 
             match Self::new(value) {
                 Ok(alphanumeric) => {

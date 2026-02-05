@@ -1,7 +1,7 @@
 //! String contract types.
 
 use super::{Utf8Bytes, ValidationError};
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use elicitation_derive::contract_type;
 use elicitation_macros::instrumented_impl;
 
@@ -94,15 +94,15 @@ impl<const MAX_LEN: usize> Prompt for StringNonEmpty<MAX_LEN> {
 impl<const MAX_LEN: usize> Elicitation for StringNonEmpty<MAX_LEN> {
     type Style = StringNonEmptyStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "StringNonEmpty", max_len = MAX_LEN))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "StringNonEmpty", max_len = MAX_LEN))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!(
             max_len = MAX_LEN,
             "Eliciting StringNonEmpty (non-empty, bounded string)"
         );
 
         loop {
-            let value = String::elicit(client).await?;
+            let value = String::elicit(communicator).await?;
 
             match Self::new(value) {
                 Ok(non_empty) => {
@@ -234,16 +234,14 @@ impl Prompt for StringDefault {
 impl Elicitation for StringDefault {
     type Style = StringDefaultStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting StringDefault with serde deserialization");
 
         let params = crate::mcp::text_params(prompt);
 
-        let result = client
-            .peer()
-            .call_tool(rmcp::model::CallToolRequestParams {
+        let result = communicator.call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: crate::mcp::tool_names::elicit_text().into(),
                 arguments: Some(params),
