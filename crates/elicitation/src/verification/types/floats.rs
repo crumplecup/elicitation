@@ -63,7 +63,7 @@ macro_rules! impl_float_default_wrapper {
                 type Style = [<$wrapper Style>];
 
                 #[tracing::instrument(skip(client))]
-                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
                     let prompt = Self::prompt().unwrap();
                     tracing::debug!(concat!("Eliciting ", stringify!($wrapper), " with serde deserialization"));
 
@@ -160,7 +160,7 @@ impl Elicitation for F32Positive {
     type Style = F32PositiveStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "F32Positive"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting F32Positive (positive f32 value)");
 
         loop {
@@ -245,7 +245,7 @@ impl Elicitation for F32NonNegative {
     type Style = F32NonNegativeStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "F32NonNegative"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting F32NonNegative (non-negative f32 value)");
 
         loop {
@@ -324,7 +324,7 @@ impl Elicitation for F32Finite {
     type Style = F32FiniteStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "F32Finite"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting F32Finite (finite f32 value)");
 
         loop {
@@ -409,7 +409,7 @@ impl Elicitation for F64Positive {
     type Style = F64PositiveStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "F64Positive"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting F64Positive (positive f64 value)");
 
         loop {
@@ -494,7 +494,7 @@ impl Elicitation for F64NonNegative {
     type Style = F64NonNegativeStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "F64NonNegative"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting F64NonNegative (non-negative f64 value)");
 
         loop {
@@ -558,7 +558,7 @@ impl Elicitation for F64Finite {
     type Style = F64FiniteStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "F64Finite"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting F64Finite (finite f64 value)");
 
         loop {

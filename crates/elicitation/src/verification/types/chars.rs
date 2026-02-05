@@ -64,7 +64,7 @@ impl Elicitation for CharAlphabetic {
     type Style = CharAlphabeticStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "CharAlphabetic"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting CharAlphabetic (alphabetic char)");
 
         loop {
@@ -139,7 +139,7 @@ impl Elicitation for CharNumeric {
     type Style = CharNumericStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "CharNumeric"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting CharNumeric (numeric char)");
 
         loop {
@@ -216,7 +216,7 @@ impl Elicitation for CharAlphanumeric {
     type Style = CharAlphanumericStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "CharAlphanumeric"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting CharAlphanumeric (alphanumeric char)");
 
         loop {

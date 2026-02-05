@@ -15,7 +15,7 @@ impl Elicitation for char {
     type Style = CharStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting char");
 

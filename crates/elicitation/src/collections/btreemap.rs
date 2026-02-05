@@ -20,7 +20,7 @@ impl Elicitation for BTreeMapStyle {
     type Style = BTreeMapStyle;
 
     #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -46,7 +46,7 @@ where
         key_type = std::any::type_name::<K>(),
         value_type = std::any::type_name::<V>()
     ))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let mut map = BTreeMap::new();
         tracing::debug!("Eliciting BTreeMap");
 

@@ -44,7 +44,7 @@ impl Elicitation for DurationPositive {
     type Style = <Duration as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting DurationPositive");
         loop {
             let duration = Duration::elicit(client).await?;

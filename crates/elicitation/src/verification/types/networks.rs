@@ -57,7 +57,7 @@ impl Elicitation for IpPrivate {
     type Style = <IpAddr as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IpPrivate");
         loop {
             let ip = IpAddr::elicit(client).await?;
@@ -114,7 +114,7 @@ impl Elicitation for IpPublic {
     type Style = <IpAddr as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IpPublic");
         loop {
             let ip = IpAddr::elicit(client).await?;
@@ -170,7 +170,7 @@ impl Elicitation for IpV4 {
     type Style = <IpAddr as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IpV4");
         loop {
             let ip = IpAddr::elicit(client).await?;
@@ -226,7 +226,7 @@ impl Elicitation for IpV6 {
     type Style = <IpAddr as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IpV6");
         loop {
             let ip = IpAddr::elicit(client).await?;
@@ -283,7 +283,7 @@ impl Elicitation for Ipv4Loopback {
     type Style = <Ipv4Addr as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv4Loopback");
         loop {
             let ip = Ipv4Addr::elicit(client).await?;
@@ -340,7 +340,7 @@ impl Elicitation for Ipv6Loopback {
     type Style = <Ipv6Addr as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv6Loopback");
         loop {
             let ip = Ipv6Addr::elicit(client).await?;

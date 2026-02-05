@@ -147,7 +147,7 @@ impl Prompt for IoErrorGenerationMode {
 impl Elicitation for IoErrorGenerationMode {
     type Style = IoErrorGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
             Self::labels(),
@@ -243,7 +243,7 @@ impl Prompt for io::Error {
 impl Elicitation for io::Error {
     type Style = IoErrorStyle;
 
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting io::Error for testing");
 
         // Elicit generation mode
@@ -324,7 +324,7 @@ mod json_error {
     impl Elicitation for JsonErrorGenerationMode {
         type Style = JsonErrorGenerationModeStyle;
 
-        async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
             let params = mcp::select_params(
                 Self::prompt().unwrap_or("Select an option:"),
                 Self::labels(),
@@ -402,7 +402,7 @@ mod json_error {
     impl Elicitation for serde_json::Error {
         type Style = JsonErrorStyle;
 
-        async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+        async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
             tracing::debug!("Eliciting serde_json::Error for testing");
 
             // Elicit generation mode

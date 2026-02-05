@@ -15,7 +15,7 @@ impl Elicitation for String {
     type Style = StringStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         use crate::verification::types::StringDefault;
 
         tracing::debug!("Eliciting String via StringDefault wrapper");

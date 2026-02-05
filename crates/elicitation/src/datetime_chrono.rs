@@ -90,7 +90,7 @@ impl Prompt for DateTimeUtcGenerationMode {
 impl Elicitation for DateTimeUtcGenerationMode {
     type Style = DateTimeUtcGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
             Self::labels(),
@@ -230,7 +230,7 @@ impl Prompt for NaiveDateTimeGenerationMode {
 impl Elicitation for NaiveDateTimeGenerationMode {
     type Style = NaiveDateTimeGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
             Self::labels(),
@@ -331,7 +331,7 @@ impl Elicitation for DateTime<Utc> {
     type Style = DateTimeUtcStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting DateTime<Utc>");
 
         // Step 1: Choose input method
@@ -407,7 +407,7 @@ impl Elicitation for DateTime<FixedOffset> {
     type Style = DateTimeFixedOffsetStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting DateTime<FixedOffset>");
 
         // Step 1: Choose input method
@@ -506,7 +506,7 @@ impl Elicitation for NaiveDateTime {
     type Style = NaiveDateTimeStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting NaiveDateTime");
 
         // Step 1: Choose input method

@@ -64,7 +64,7 @@ macro_rules! impl_integer_default_wrapper {
                 type Style = [<$wrapper Style>];
 
                 #[tracing::instrument(skip(client))]
-                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
                     let prompt = Self::prompt().unwrap();
                     tracing::debug!(concat!("Eliciting ", stringify!($wrapper), " with serde deserialization"));
 
@@ -171,7 +171,7 @@ impl Elicitation for I8Positive {
     type Style = I8PositiveStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "I8Positive"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting I8Positive (positive i8 value)");
 
         loop {
@@ -281,7 +281,7 @@ impl Elicitation for I8NonNegative {
     type Style = I8NonNegativeStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "I8NonNegative"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting I8NonNegative (non-negative i8 value)");
 
         loop {
@@ -356,7 +356,7 @@ impl Elicitation for I8NonZero {
     type Style = I8NonZeroStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "I8NonZero"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting I8NonZero");
 
         loop {
@@ -434,7 +434,7 @@ impl crate::Prompt for I8RangeStyle {
 impl crate::Elicitation for I8RangeStyle {
     type Style = I8RangeStyle;
 
-    async fn elicit(_client: &crate::ElicitClient<'_>) -> crate::ElicitResult<Self> {
+    async fn elicit(_client: &crate::ElicitClient) -> crate::ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -450,7 +450,7 @@ impl<const MIN: i8, const MAX: i8> Elicitation for I8Range<MIN, MAX> {
     type Style = I8RangeStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "I8Range", min = MIN, max = MAX))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting I8Range<{}, {}> (i8 in range)", MIN, MAX);
 
         loop {
@@ -597,7 +597,7 @@ impl Elicitation for I16Positive {
     type Style = I16PositiveStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "I16Positive"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting I16Positive (positive i16 value)");
 
         loop {
@@ -667,7 +667,7 @@ impl Elicitation for I16NonNegative {
     type Style = I16NonNegativeStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "I16NonNegative"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting I16NonNegative (non-negative i16 value)");
 
         loop {
@@ -735,7 +735,7 @@ impl Elicitation for I16NonZero {
     type Style = I16NonZeroStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "I16NonZero"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting I16NonZero");
 
         loop {
@@ -812,7 +812,7 @@ impl crate::Prompt for I16RangeStyle {
 impl crate::Elicitation for I16RangeStyle {
     type Style = I16RangeStyle;
 
-    async fn elicit(_client: &crate::ElicitClient<'_>) -> crate::ElicitResult<Self> {
+    async fn elicit(_client: &crate::ElicitClient) -> crate::ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -827,7 +827,7 @@ impl<const MIN: i16, const MAX: i16> Elicitation for I16Range<MIN, MAX> {
     type Style = I16RangeStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "I16Range", min = MIN, max = MAX))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting I16Range<{}, {}> (i16 in range)", MIN, MAX);
 
         loop {
@@ -1005,7 +1005,7 @@ impl Elicitation for U8NonZero {
     type Style = U8NonZeroStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "U8NonZero"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting U8NonZero (non-zero u8 value)");
 
         loop {
@@ -1082,7 +1082,7 @@ impl crate::Prompt for U8RangeStyle {
 impl crate::Elicitation for U8RangeStyle {
     type Style = U8RangeStyle;
 
-    async fn elicit(_client: &crate::ElicitClient<'_>) -> crate::ElicitResult<Self> {
+    async fn elicit(_client: &crate::ElicitClient) -> crate::ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -1097,7 +1097,7 @@ impl<const MIN: u8, const MAX: u8> Elicitation for U8Range<MIN, MAX> {
     type Style = U8RangeStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "U8Range", min = MIN, max = MAX))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting U8Range<{}, {}> (u8 in range)", MIN, MAX);
 
         loop {
@@ -1167,7 +1167,7 @@ impl Elicitation for U16NonZero {
     type Style = U16NonZeroStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "U16NonZero"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting U16NonZero (non-zero u16 value)");
 
         loop {
@@ -1244,7 +1244,7 @@ impl crate::Prompt for U16RangeStyle {
 impl crate::Elicitation for U16RangeStyle {
     type Style = U16RangeStyle;
 
-    async fn elicit(_client: &crate::ElicitClient<'_>) -> crate::ElicitResult<Self> {
+    async fn elicit(_client: &crate::ElicitClient) -> crate::ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -1259,7 +1259,7 @@ impl<const MIN: u16, const MAX: u16> Elicitation for U16Range<MIN, MAX> {
     type Style = U16RangeStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "U16Range", min = MIN, max = MAX))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting U16Range<{}, {}> (u16 in range)", MIN, MAX);
 
         loop {
@@ -1455,7 +1455,7 @@ impl Prompt for U8Positive {
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Elicitation for U8Positive {
     type Style = U8PositiveStyle;
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         loop {
             if let Ok(v) = Self::new(u8::elicit(client).await?) {
                 return Ok(v);
@@ -1501,7 +1501,7 @@ impl Prompt for U16Positive {
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Elicitation for U16Positive {
     type Style = U16PositiveStyle;
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         loop {
             if let Ok(v) = Self::new(u16::elicit(client).await?) {
                 return Ok(v);
@@ -1561,7 +1561,7 @@ macro_rules! impl_signed_contracts {
                 type Style = [<$positive Style>];
 
                 #[tracing::instrument(skip(client), fields(type_name = stringify!($positive)))]
-                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
                     tracing::debug!(concat!("Eliciting ", stringify!($positive), " (positive ", stringify!($base), " value)"));
 
                     loop {
@@ -1626,7 +1626,7 @@ macro_rules! impl_signed_contracts {
                 type Style = [<$nonnegative Style>];
 
                 #[tracing::instrument(skip(client), fields(type_name = stringify!($nonnegative)))]
-                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
                     tracing::debug!(concat!("Eliciting ", stringify!($nonnegative), " (non-negative ", stringify!($base), " value)"));
 
                     loop {
@@ -1699,7 +1699,7 @@ macro_rules! impl_signed_contracts {
         impl crate::Elicitation for $range_style {
             type Style = $range_style;
 
-            async fn elicit(_client: &crate::ElicitClient<'_>) -> crate::ElicitResult<Self> {
+            async fn elicit(_client: &crate::ElicitClient) -> crate::ElicitResult<Self> {
                 Ok(Self::Default)
             }
         }
@@ -1714,7 +1714,7 @@ macro_rules! impl_signed_contracts {
             type Style = $range_style;
 
             #[tracing::instrument(skip(client), fields(type_name = stringify!($range), min = MIN, max = MAX))]
-            async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+            async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
                 tracing::debug!(concat!("Eliciting ", stringify!($range), "<{}, {}> (", stringify!($base), " in range)"), MIN, MAX);
 
                 loop {
@@ -1897,7 +1897,7 @@ macro_rules! impl_unsigned_contracts {
                 type Style = [<$nonzero Style>];
 
                 #[tracing::instrument(skip(client), fields(type_name = stringify!($nonzero)))]
-                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
                     tracing::debug!(concat!("Eliciting ", stringify!($nonzero), " (non-zero ", stringify!($base), " value)"));
 
                     loop {
@@ -1970,7 +1970,7 @@ macro_rules! impl_unsigned_contracts {
         impl crate::Elicitation for $range_style {
             type Style = $range_style;
 
-            async fn elicit(_client: &crate::ElicitClient<'_>) -> crate::ElicitResult<Self> {
+            async fn elicit(_client: &crate::ElicitClient) -> crate::ElicitResult<Self> {
                 Ok(Self::Default)
             }
         }
@@ -1985,7 +1985,7 @@ macro_rules! impl_unsigned_contracts {
             type Style = $range_style;
 
             #[tracing::instrument(skip(client), fields(type_name = stringify!($range), min = MIN, max = MAX))]
-            async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+            async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
                 tracing::debug!(concat!("Eliciting ", stringify!($range), "<{}, {}> (", stringify!($base), " in range)"), MIN, MAX);
 
                 loop {
@@ -2242,7 +2242,7 @@ macro_rules! impl_signed_nonzero {
                 type Style = [<$nonzero Style>];
 
                 #[tracing::instrument(skip(client), fields(type_name = stringify!($nonzero)))]
-                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
                     loop {
                         let value = <$base>::elicit(client).await?;
                         match Self::new(value) {
@@ -2311,7 +2311,7 @@ macro_rules! impl_unsigned_positive {
                 type Style = [<$positive Style>];
 
                 #[tracing::instrument(skip(client), fields(type_name = stringify!($positive)))]
-                async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
                     loop {
                         let value = <$base>::elicit(client).await?;
                         match Self::new(value) {

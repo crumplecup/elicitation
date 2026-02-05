@@ -48,7 +48,7 @@ impl Elicitation for PathBufExists {
     type Style = <PathBuf as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PathBufExists");
         loop {
             let path = PathBuf::elicit(client).await?;
@@ -107,7 +107,7 @@ impl Elicitation for PathBufReadable {
     type Style = <PathBuf as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PathBufReadable");
         loop {
             let path = PathBuf::elicit(client).await?;
@@ -172,7 +172,7 @@ impl Elicitation for PathBufIsDir {
     type Style = <PathBuf as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PathBufIsDir");
         loop {
             let path = PathBuf::elicit(client).await?;
@@ -235,7 +235,7 @@ impl Elicitation for PathBufIsFile {
     type Style = <PathBuf as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PathBufIsFile");
         loop {
             let path = PathBuf::elicit(client).await?;

@@ -20,7 +20,7 @@ impl Elicitation for BTreeSetStyle {
     type Style = BTreeSetStyle;
 
     #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -41,7 +41,7 @@ where
     type Style = BTreeSetStyle;
 
     #[tracing::instrument(skip(client), fields(item_type = std::any::type_name::<T>()))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let mut set = BTreeSet::new();
         tracing::debug!("Eliciting BTreeSet");
 

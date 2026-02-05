@@ -21,7 +21,7 @@ impl Elicitation for BoxStyle {
     type Style = BoxStyle;
 
     #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -41,7 +41,7 @@ impl Prompt for RcStyle {
 impl Elicitation for RcStyle {
     type Style = RcStyle;
 
-    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -61,7 +61,7 @@ impl Prompt for ArcStyle {
 impl Elicitation for ArcStyle {
     type Style = ArcStyle;
 
-    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -84,7 +84,7 @@ where
     type Style = BoxStyle;
 
     #[tracing::instrument(skip(client), fields(inner_type = std::any::type_name::<T>()))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Box");
         T::elicit(client).await.map(Box::new)
     }
@@ -108,7 +108,7 @@ where
     type Style = RcStyle;
 
     #[tracing::instrument(skip(client), fields(inner_type = std::any::type_name::<T>()))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Rc");
         T::elicit(client).await.map(Rc::new)
     }
@@ -132,7 +132,7 @@ where
     type Style = ArcStyle;
 
     #[tracing::instrument(skip(client), fields(inner_type = std::any::type_name::<T>()))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Arc");
         T::elicit(client).await.map(Arc::new)
     }

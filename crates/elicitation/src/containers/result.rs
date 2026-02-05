@@ -19,7 +19,7 @@ impl Elicitation for ResultStyle {
     type Style = ResultStyle;
 
     #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -45,7 +45,7 @@ where
         ok_type = std::any::type_name::<T>(),
         err_type = std::any::type_name::<E>()
     ))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Result");
 
         // First, ask if it's Ok or Err

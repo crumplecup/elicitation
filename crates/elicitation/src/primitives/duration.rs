@@ -101,7 +101,7 @@ impl Prompt for DurationGenerationMode {
 impl Elicitation for DurationGenerationMode {
     type Style = DurationGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         // Use standard Select elicit pattern
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
@@ -199,7 +199,7 @@ impl Elicitation for Duration {
     type Style = DurationStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Duration");
 
         // Elicit generation mode from agent

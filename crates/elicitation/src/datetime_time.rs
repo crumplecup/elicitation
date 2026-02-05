@@ -121,7 +121,7 @@ impl crate::Select for InstantGenerationMode {
 impl Elicitation for InstantGenerationMode {
     type Style = InstantGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         // Use standard Select elicit pattern
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
@@ -240,7 +240,7 @@ impl Elicitation for Instant {
     type Style = InstantStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "Instant"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting time::Instant");
 
         // Elicit the generation mode
@@ -319,7 +319,7 @@ impl Prompt for OffsetDateTimeGenerationMode {
 impl Elicitation for OffsetDateTimeGenerationMode {
     type Style = OffsetDateTimeGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
             Self::labels(),
@@ -421,7 +421,7 @@ impl Elicitation for OffsetDateTime {
     type Style = OffsetDateTimeStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting OffsetDateTime");
 
         // Step 1: Choose input method
@@ -524,7 +524,7 @@ impl Elicitation for PrimitiveDateTime {
     type Style = PrimitiveDateTimeStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PrimitiveDateTime");
 
         // Step 1: Choose input method

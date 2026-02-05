@@ -61,7 +61,7 @@ impl Elicitation for DateTimeInputMethod {
     type Style = DateTimeInputMethodStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting datetime input method");
 
@@ -104,7 +104,7 @@ pub struct DateTimeComponents {
 impl DateTimeComponents {
     /// Elicit datetime components from user.
     #[tracing::instrument(skip(client))]
-    pub async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    pub async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting datetime components");
 
         // Year

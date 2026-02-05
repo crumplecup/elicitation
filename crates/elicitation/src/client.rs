@@ -32,19 +32,19 @@ use crate::{ElicitResult, Elicitation, ElicitationStyle};
 /// impl ElicitationStyle for MyI32Style {}
 ///
 /// // Use it
-/// let client = ElicitClient::new(&peer);
+/// let client = ElicitClient::new(peer);
 /// let styled = client.with_style::<i32, _>(MyI32Style::Verbose);
 /// let age = i32::elicit(&styled).await?;
 /// ```
-pub struct ElicitClient<'a> {
-    peer: &'a Peer<RoleClient>,
+pub struct ElicitClient {
+    peer: Arc<Peer<RoleClient>>,
     style_context: StyleContext,
 }
 
-impl<'a> ElicitClient<'a> {
+impl ElicitClient {
     /// Create a new client wrapper from an RMCP peer.
     #[tracing::instrument(skip(peer))]
-    pub fn new(peer: &'a Peer<RoleClient>) -> Self {
+    pub fn new(peer: Arc<Peer<RoleClient>>) -> Self {
         tracing::debug!("Creating new ElicitClient");
         Self {
             peer,
@@ -55,7 +55,7 @@ impl<'a> ElicitClient<'a> {
     /// Get the underlying RMCP peer for making tool calls.
     #[tracing::instrument(skip(self), level = "trace")]
     pub fn peer(&self) -> &Peer<RoleClient> {
-        self.peer
+        &self.peer
     }
 
     /// Create a new client with a custom style for a specific type.
@@ -82,7 +82,7 @@ impl<'a> ElicitClient<'a> {
         let mut ctx = self.style_context.clone();
         ctx.set_style::<T, S>(style);
         Self {
-            peer: self.peer,
+            peer: Arc::clone(&self.peer),
             style_context: ctx,
         }
     }

@@ -103,7 +103,7 @@ impl Prompt for SystemTimeGenerationMode {
 impl Elicitation for SystemTimeGenerationMode {
     type Style = SystemTimeGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         // Use standard Select elicit pattern
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
@@ -216,7 +216,7 @@ impl Elicitation for SystemTime {
     type Style = SystemTimeStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SystemTime");
 
         // Elicit generation mode from agent

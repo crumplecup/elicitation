@@ -22,7 +22,7 @@ impl Elicitation for IpAddr {
     type Style = IpAddrStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IpAddr");
 
         let ip_str = String::elicit(client).await?;
@@ -54,7 +54,7 @@ impl Elicitation for Ipv4Addr {
     type Style = Ipv4AddrStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv4Addr");
 
         let ip_str = String::elicit(client).await?;
@@ -86,7 +86,7 @@ impl Elicitation for Ipv6Addr {
     type Style = Ipv6AddrStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv6Addr");
 
         let ip_str = String::elicit(client).await?;
@@ -118,7 +118,7 @@ impl Elicitation for SocketAddr {
     type Style = SocketAddrStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddr");
 
         let addr_str = String::elicit(client).await?;
@@ -150,7 +150,7 @@ impl Elicitation for SocketAddrV4 {
     type Style = SocketAddrV4Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddrV4");
 
         let addr_str = String::elicit(client).await?;
@@ -182,7 +182,7 @@ impl Elicitation for SocketAddrV6 {
     type Style = SocketAddrV6Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SocketAddrV6");
 
         let addr_str = String::elicit(client).await?;

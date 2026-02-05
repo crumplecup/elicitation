@@ -28,7 +28,7 @@ macro_rules! impl_tuple_elicit {
                 type Style = [<Tuple $( $idx )+ Style>];
 
                 #[tracing::instrument(skip(_client), level = "trace")]
-                async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+                async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
                     Ok(Self::Default)
                 }
             }
@@ -56,7 +56,7 @@ macro_rules! impl_tuple_elicit {
                 types = concat!($(stringify!($T), ", "),+)
             ))]
             async fn elicit(
-                client: &ElicitClient<'_>,
+                client: &ElicitClient,
             ) -> ElicitResult<Self> {
                 tracing::debug!("Eliciting tuple");
 
@@ -95,7 +95,7 @@ impl Elicitation for UnitStyle {
     type Style = UnitStyle;
 
     #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -110,7 +110,7 @@ impl Elicitation for () {
     type Style = UnitStyle;
 
     #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting unit type ()");
         Ok(())
     }

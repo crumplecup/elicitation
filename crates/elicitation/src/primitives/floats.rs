@@ -20,7 +20,7 @@ macro_rules! impl_float_elicit_via_wrapper {
             type Style = $style;
 
             #[tracing::instrument(skip(client), fields(type_name = stringify!($primitive)))]
-            async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+            async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
                 use crate::verification::types::$wrapper;
 
                 tracing::debug!(concat!("Eliciting ", stringify!($primitive), " via ", stringify!($wrapper), " wrapper"));
@@ -52,7 +52,7 @@ impl Elicitation for f64 {
     type Style = F64Style;
 
     #[tracing::instrument(skip(client), fields(type_name = "f64"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         use crate::verification::types::F64Default;
 
         tracing::debug!("Eliciting f64 via F64Default wrapper");

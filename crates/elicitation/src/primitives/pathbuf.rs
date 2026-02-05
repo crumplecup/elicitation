@@ -16,7 +16,7 @@ impl Elicitation for PathBuf {
     type Style = PathBufStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PathBuf");
 
         // Elicit as string

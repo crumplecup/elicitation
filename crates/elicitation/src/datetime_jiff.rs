@@ -89,7 +89,7 @@ impl Prompt for TimestampGenerationMode {
 impl Elicitation for TimestampGenerationMode {
     type Style = TimestampGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
             Self::labels(),
@@ -187,7 +187,7 @@ impl Elicitation for Timestamp {
     type Style = TimestampStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Timestamp");
 
         // Step 1: Choose input method
@@ -266,7 +266,7 @@ impl Elicitation for Zoned {
     type Style = ZonedStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Zoned");
 
         // Step 1: Choose input method
@@ -366,7 +366,7 @@ impl Elicitation for CivilDateTime {
     type Style = CivilDateTimeStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting CivilDateTime");
 
         // Step 1: Choose input method

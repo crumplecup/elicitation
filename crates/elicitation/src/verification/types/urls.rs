@@ -498,7 +498,7 @@ impl Elicitation for UrlValid {
     type Style = UrlStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let prompt = "Please enter a URL:";
         tracing::debug!("Eliciting UrlValid with text elicitation");
 
@@ -533,7 +533,7 @@ impl Elicitation for UrlHttps {
     type Style = UrlStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let value = url::Url::elicit(client).await?;
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
@@ -549,7 +549,7 @@ impl Elicitation for UrlHttp {
     type Style = UrlStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let value = url::Url::elicit(client).await?;
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
@@ -565,7 +565,7 @@ impl Elicitation for UrlWithHost {
     type Style = UrlStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let value = url::Url::elicit(client).await?;
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
@@ -581,7 +581,7 @@ impl Elicitation for UrlCanBeBase {
     type Style = UrlStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let value = url::Url::elicit(client).await?;
         Self::from_url(value).map_err(crate::ElicitError::from)
     }

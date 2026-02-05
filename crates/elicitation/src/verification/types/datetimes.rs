@@ -110,7 +110,7 @@ impl Elicitation for DateTimeUtcAfter {
     type Style = <DateTime<Utc> as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting DateTimeUtcAfter");
         // Default threshold to Unix epoch
         let threshold = DateTime::UNIX_EPOCH;
@@ -226,7 +226,7 @@ impl Elicitation for DateTimeUtcBefore {
     type Style = <DateTime<Utc> as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting DateTimeUtcBefore");
         // Default threshold to now
         let threshold = Utc::now();
@@ -342,7 +342,7 @@ impl Elicitation for NaiveDateTimeAfter {
     type Style = <NaiveDateTime as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting NaiveDateTimeAfter");
         // Default threshold to Unix epoch
         let threshold = DateTime::<Utc>::UNIX_EPOCH.naive_utc();
@@ -528,7 +528,7 @@ impl Elicitation for TimestampAfter {
     type Style = <Timestamp as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting TimestampAfter");
         // Default threshold to Unix epoch
         let threshold = Timestamp::UNIX_EPOCH;
@@ -644,7 +644,7 @@ impl Elicitation for TimestampBefore {
     type Style = <Timestamp as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting TimestampBefore");
         // Default threshold to now
         let threshold = Timestamp::now();
@@ -808,7 +808,7 @@ impl Elicitation for OffsetDateTimeAfter {
     type Style = <OffsetDateTime as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting OffsetDateTimeAfter");
         // Default threshold to Unix epoch
         let threshold = OffsetDateTime::UNIX_EPOCH;
@@ -930,7 +930,7 @@ impl Elicitation for OffsetDateTimeBefore {
     type Style = <OffsetDateTime as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting OffsetDateTimeBefore");
         // Default threshold to now
         let threshold = OffsetDateTime::now_utc();

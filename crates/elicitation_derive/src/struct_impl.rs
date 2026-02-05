@@ -291,7 +291,7 @@ fn generate_elicit_impl_simple(
         impl elicitation::Elicitation for #style_name {
             type Style = #style_name;
 
-            async fn elicit(_client: &elicitation::ElicitClient<'_>) -> elicitation::ElicitResult<Self> {
+            async fn elicit(_client: &elicitation::ElicitClient) -> elicitation::ElicitResult<Self> {
                 Ok(Self::Default)
             }
         }
@@ -301,7 +301,7 @@ fn generate_elicit_impl_simple(
 
             #[tracing::instrument(skip(client))]
             async fn elicit(
-                client: &elicitation::ElicitClient<'_>,
+                client: &elicitation::ElicitClient,
             ) -> elicitation::ElicitResult<Self> {
                 tracing::debug!(struct_name = stringify!(#name), "Eliciting struct");
                 #(#elicit_statements)*
@@ -573,7 +573,7 @@ fn generate_elicit_impl_styled(
 
             #[tracing::instrument(skip(client))]
             async fn elicit(
-                client: &elicitation::ElicitClient<'_>,
+                client: &elicitation::ElicitClient,
             ) -> elicitation::ElicitResult<Self> {
                 let prompt = <Self as elicitation::Prompt>::prompt().unwrap();
                 tracing::debug!("Eliciting style selection");
@@ -606,7 +606,7 @@ fn generate_elicit_impl_styled(
 
             #[tracing::instrument(skip(client))]
             async fn elicit(
-                client: &elicitation::ElicitClient<'_>,
+                client: &elicitation::ElicitClient,
             ) -> elicitation::ElicitResult<Self> {
                 tracing::debug!(struct_name = stringify!(#name), "Eliciting struct with style");
 

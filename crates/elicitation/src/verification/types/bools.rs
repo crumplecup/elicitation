@@ -50,7 +50,7 @@ impl Elicitation for BoolTrue {
     type Style = BoolTrueStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "BoolTrue"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting BoolTrue (must be true)");
 
         loop {
@@ -112,7 +112,7 @@ impl Elicitation for BoolFalse {
     type Style = BoolFalseStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "BoolFalse"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting BoolFalse (must be false)");
 
         loop {
@@ -232,7 +232,7 @@ impl Elicitation for BoolDefault {
     type Style = BoolDefaultStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let prompt = Self::prompt().ok_or_else(|| {
             crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
                 expected: "valid prompt".to_string(),

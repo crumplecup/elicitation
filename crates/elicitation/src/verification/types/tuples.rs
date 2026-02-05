@@ -53,7 +53,7 @@ where
     type Style = <(C1, C2) as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Tuple2");
         let first = C1::elicit(client).await?; // Guaranteed valid by contract!
         let second = C2::elicit(client).await?; // Guaranteed valid by contract!
@@ -98,7 +98,7 @@ where
     type Style = <(C1, C2, C3) as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Tuple3");
         let first = C1::elicit(client).await?;
         let second = C2::elicit(client).await?;
@@ -146,7 +146,7 @@ where
     type Style = <(C1, C2, C3, C4) as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Tuple4");
         let first = C1::elicit(client).await?;
         let second = C2::elicit(client).await?;

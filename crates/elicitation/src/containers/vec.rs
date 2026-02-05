@@ -19,7 +19,7 @@ impl Elicitation for VecStyle {
     type Style = VecStyle;
 
     #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -34,7 +34,7 @@ impl<T: Elicitation + Send> Elicitation for Vec<T> {
     type Style = VecStyle;
 
     #[tracing::instrument(skip(client), fields(item_type = std::any::type_name::<T>()))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let mut items = Vec::new();
         tracing::debug!("Eliciting vector");
 

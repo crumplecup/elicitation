@@ -62,7 +62,7 @@ impl Elicitation for UuidV4 {
     type Style = <Uuid as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting UuidV4");
         loop {
             let uuid = Uuid::elicit(client).await?;
@@ -127,7 +127,7 @@ impl Elicitation for UuidNonNil {
     type Style = <Uuid as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting UuidNonNil");
         loop {
             let uuid = Uuid::elicit(client).await?;

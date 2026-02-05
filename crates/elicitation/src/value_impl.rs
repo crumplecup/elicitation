@@ -64,7 +64,7 @@ impl Elicitation for JsonType {
     type Style = JsonTypeStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting JSON type selection");
 
@@ -97,7 +97,7 @@ impl Elicitation for Value {
     type Style = ValueStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         elicit_with_depth(client, 0).await
     }
 }
@@ -105,7 +105,7 @@ impl Elicitation for Value {
 /// Elicit a JSON Value with depth tracking.
 #[tracing::instrument(skip(client), fields(depth))]
 fn elicit_with_depth<'a>(
-    client: &'a ElicitClient<'_>,
+    client: &'a ElicitClient,
     depth: usize,
 ) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Value>> + Send + 'a>> {
     Box::pin(async move {
@@ -155,7 +155,7 @@ fn elicit_with_depth<'a>(
 
 /// Elicit a JSON number.
 #[tracing::instrument(skip(client))]
-async fn elicit_number(client: &ElicitClient<'_>) -> ElicitResult<Value> {
+async fn elicit_number(client: &ElicitClient) -> ElicitResult<Value> {
     let prompt = "Enter number (integer or decimal):";
     tracing::debug!("Eliciting number");
 
@@ -187,7 +187,7 @@ async fn elicit_number(client: &ElicitClient<'_>) -> ElicitResult<Value> {
 /// Elicit a JSON array.
 #[tracing::instrument(skip(client), fields(depth))]
 fn elicit_array<'a>(
-    client: &'a ElicitClient<'_>,
+    client: &'a ElicitClient,
     depth: usize,
 ) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Value>> + Send + 'a>> {
     Box::pin(async move {
@@ -235,7 +235,7 @@ fn elicit_array<'a>(
 /// Elicit a JSON object.
 #[tracing::instrument(skip(client), fields(depth))]
 fn elicit_object<'a>(
-    client: &'a ElicitClient<'_>,
+    client: &'a ElicitClient,
     depth: usize,
 ) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Value>> + Send + 'a>> {
     Box::pin(async move {

@@ -568,7 +568,7 @@ impl Elicitation for RegexValid {
     type Style = RegexValidStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "RegexValid"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting RegexValid (valid regex pattern)");
 
         loop {
@@ -602,7 +602,7 @@ impl Elicitation for RegexSetValid {
     type Style = RegexSetValidStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "RegexSetValid"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting RegexSetValid (set of regex patterns)");
 
         loop {
@@ -636,7 +636,7 @@ impl Elicitation for RegexCaseInsensitive {
     type Style = RegexCaseInsensitiveStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "RegexCaseInsensitive"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting RegexCaseInsensitive (case-insensitive regex pattern)");
 
         loop {
@@ -670,7 +670,7 @@ impl Elicitation for RegexMultiline {
     type Style = RegexMultilineStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "RegexMultiline"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting RegexMultiline (multiline regex pattern)");
 
         loop {
@@ -704,7 +704,7 @@ impl Elicitation for RegexSetNonEmpty {
     type Style = RegexSetNonEmptyStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "RegexSetNonEmpty"))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting RegexSetNonEmpty (non-empty set of regex patterns)");
 
         loop {

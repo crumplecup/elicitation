@@ -798,7 +798,7 @@ where
     /// - Elicitation error: Standard elicitation failures
     pub async fn elicit(
         self,
-        peer: &crate::rmcp::Peer<crate::rmcp::RoleClient>,
+        peer: std::sync::Arc<crate::rmcp::Peer<crate::rmcp::RoleClient>>,
     ) -> ElicitResult<T> {
         use tracing::{debug, error};
 

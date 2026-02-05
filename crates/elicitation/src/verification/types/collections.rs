@@ -54,7 +54,7 @@ impl<T: Elicitation + Send> Elicitation for VecNonEmpty<T> {
     type Style = <Vec<T> as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting VecNonEmpty");
         loop {
             let vec = Vec::<T>::elicit(client).await?;
@@ -107,7 +107,7 @@ impl<C: Elicitation + Send> Elicitation for VecAllSatisfy<C> {
     type Style = <Vec<C> as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting VecAllSatisfy");
         // Each element is C (contract type), so all guaranteed valid!
         let elements = Vec::<C>::elicit(client).await?;
@@ -156,7 +156,7 @@ impl<T: Elicitation + Send> Elicitation for OptionSome<T> {
     type Style = <Option<T> as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting OptionSome");
         loop {
             let opt = Option::<T>::elicit(client).await?;
@@ -214,7 +214,7 @@ impl<T: Elicitation + Send> Elicitation for ResultOk<T> {
     type Style = <T as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ResultOk");
         // Just elicit T directly since we want guaranteed success
         let value = T::elicit(client).await?;
@@ -256,7 +256,7 @@ impl<C: Elicitation + Send> Elicitation for BoxSatisfies<C> {
     type Style = C::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting BoxSatisfies");
         let value = C::elicit(client).await?; // Guaranteed valid by contract!
         Ok(Self::new(value))
@@ -297,7 +297,7 @@ impl<C: Elicitation + Send> Elicitation for ArcSatisfies<C> {
     type Style = C::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ArcSatisfies");
         let value = C::elicit(client).await?; // Guaranteed valid by contract!
         Ok(Self::new(value))
@@ -338,7 +338,7 @@ impl<C: Elicitation + Send> Elicitation for RcSatisfies<C> {
     type Style = C::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting RcSatisfies");
         let value = C::elicit(client).await?; // Guaranteed valid by contract!
         Ok(Self::new(value))
@@ -540,7 +540,7 @@ where
     type Style = <HashMap<K, V> as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting HashMapNonEmpty");
         loop {
             let map = HashMap::<K, V>::elicit(client).await?;
@@ -652,7 +652,7 @@ where
     type Style = <BTreeMap<K, V> as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting BTreeMapNonEmpty");
         loop {
             let map = BTreeMap::<K, V>::elicit(client).await?;
@@ -766,7 +766,7 @@ where
     type Style = <HashSet<T> as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting HashSetNonEmpty");
         loop {
             let set = HashSet::<T>::elicit(client).await?;
@@ -876,7 +876,7 @@ where
     type Style = <BTreeSet<T> as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting BTreeSetNonEmpty");
         loop {
             let set = BTreeSet::<T>::elicit(client).await?;
@@ -990,7 +990,7 @@ where
     type Style = <VecDeque<T> as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting VecDequeNonEmpty");
         loop {
             let deque = VecDeque::<T>::elicit(client).await?;
@@ -1100,7 +1100,7 @@ where
     type Style = <LinkedList<T> as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting LinkedListNonEmpty");
         loop {
             let list = LinkedList::<T>::elicit(client).await?;
@@ -1163,7 +1163,7 @@ where
     type Style = <[C; N] as Elicitation>::Style;
 
     #[tracing::instrument(skip(client), fields(array_size = N))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ArrayAllSatisfy");
         // Each element is C (contract type), so all guaranteed valid!
         let elements = <[C; N]>::elicit(client).await?;

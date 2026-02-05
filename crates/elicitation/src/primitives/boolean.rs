@@ -17,7 +17,7 @@ impl Elicitation for bool {
     type Style = BoolStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         use crate::verification::types::BoolDefault;
 
         tracing::debug!("Eliciting bool via BoolDefault wrapper");

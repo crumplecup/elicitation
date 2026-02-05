@@ -329,7 +329,7 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
                 )
             )]
             async fn elicit(
-                client: &elicitation::ElicitClient<'_>,
+                client: &elicitation::ElicitClient,
             ) -> elicitation::ElicitResult<Self> {
                 #selection_code
 
@@ -384,7 +384,7 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
         impl elicitation::Elicitation for #style_name {
             type Style = #style_name;
 
-            async fn elicit(_client: &elicitation::ElicitClient<'_>) -> elicitation::ElicitResult<Self> {
+            async fn elicit(_client: &elicitation::ElicitClient) -> elicitation::ElicitResult<Self> {
                 Ok(Self::Default)
             }
         }

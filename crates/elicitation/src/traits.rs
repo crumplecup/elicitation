@@ -2,6 +2,7 @@
 
 use crate::{ElicitClient, ElicitResult};
 use rmcp::service::{Peer, RoleClient};
+use std::sync::Arc;
 
 /// Builder for one-off style overrides.
 ///
@@ -28,7 +29,7 @@ impl<T: Elicitation + 'static> ElicitBuilder<T> {
     /// # Returns
     ///
     /// Returns the elicited value with the style applied.
-    pub async fn elicit(self, peer: &Peer<RoleClient>) -> ElicitResult<T> {
+    pub async fn elicit(self, peer: Arc<Peer<RoleClient>>) -> ElicitResult<T> {
         let client = ElicitClient::new(peer).with_style::<T, T::Style>(self.style);
         T::elicit(&client).await
     }
@@ -65,7 +66,7 @@ pub trait Prompt {
 ///
 /// ```rust,ignore
 /// use elicitation::{Elicitation, ElicitClient, ElicitResult};
-/// # async fn example(client: &ElicitClient<'_>) -> ElicitResult<()> {
+/// # async fn example(client: &ElicitClient) -> ElicitResult<()> {
 /// // Elicit an i32 from the user
 /// let value: i32 = i32::elicit(client).await?;
 /// # Ok(())
@@ -99,7 +100,7 @@ pub trait Elicitation: Sized + Prompt + 'static {
     ///
     /// See [`ElicitError`](crate::ElicitError) for details on error conditions.
     fn elicit(
-        client: &ElicitClient<'_>,
+        client: &ElicitClient,
     ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send;
 
     /// Create a builder for one-off style override.
@@ -144,7 +145,7 @@ pub trait Elicitation: Sized + Prompt + 'static {
     ///
     /// ```rust,ignore
     /// use elicitation::{Elicitation, contracts::{Established, Is}};
-    /// # async fn example(client: &ElicitClient<'_>) -> ElicitResult<()> {
+    /// # async fn example(client: &ElicitClient) -> ElicitResult<()> {
     /// // Elicit with proof
     /// let (email, proof): (String, Established<Is<String>>) =
     ///     String::elicit_proven(client).await?;
@@ -155,7 +156,7 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// # }
     /// ```
     fn elicit_proven(
-        client: &ElicitClient<'_>,
+        client: &ElicitClient,
     ) -> impl std::future::Future<
         Output = ElicitResult<(
             Self,

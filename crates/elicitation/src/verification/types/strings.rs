@@ -95,7 +95,7 @@ impl<const MAX_LEN: usize> Elicitation for StringNonEmpty<MAX_LEN> {
     type Style = StringNonEmptyStyle;
 
     #[tracing::instrument(skip(client), fields(type_name = "StringNonEmpty", max_len = MAX_LEN))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!(
             max_len = MAX_LEN,
             "Eliciting StringNonEmpty (non-empty, bounded string)"
@@ -235,7 +235,7 @@ impl Elicitation for StringDefault {
     type Style = StringDefaultStyle;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting StringDefault with serde deserialization");
 

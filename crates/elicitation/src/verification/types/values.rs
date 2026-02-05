@@ -93,7 +93,7 @@ impl Elicitation for ValueObject {
     type Style = <Value as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ValueObject");
         loop {
             let value = Value::elicit(client).await?;
@@ -193,7 +193,7 @@ impl Elicitation for ValueArray {
     type Style = <Value as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ValueArray");
         loop {
             let value = Value::elicit(client).await?;
@@ -287,7 +287,7 @@ impl Elicitation for ValueNonNull {
     type Style = <Value as Elicitation>::Style;
 
     #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient<'_>) -> ElicitResult<Self> {
+    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ValueNonNull");
         loop {
             let value = Value::elicit(client).await?;
