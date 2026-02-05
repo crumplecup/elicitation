@@ -102,6 +102,10 @@ mod primitives;
 pub mod style;
 pub mod tool;
 mod tool_registry;
+
+// Router macro module (declarative macro)
+#[macro_use]
+mod router_macro;
 mod traits;
 
 #[cfg(feature = "serde_json")]
@@ -147,6 +151,14 @@ pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
 
 // Re-export rmcp for user convenience
 pub use rmcp;
+
+// Re-export serde_json for derive macro (needed in elicit_checked)
+#[doc(hidden)]
+pub use serde_json;
+
+// Re-export paste for macro usage
+#[doc(hidden)]
+pub use paste;
 
 // Re-export inventory for derive macro usage
 #[doc(hidden)]

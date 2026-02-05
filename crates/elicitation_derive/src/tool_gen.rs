@@ -43,22 +43,35 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
             ///
             /// This is the verified, registered variant suitable for production use.
             /// Uses the derived `Elicitation` impl to interactively elicit a value
-            /// from the user via MCP.
+            /// from the peer via MCP.
             ///
             /// Automatically registered as an MCP tool via `#[rmcp::tool]`.
             ///
             /// # Examples
             ///
             /// ```ignore
-            /// let client = Arc::new(peer.clone());
-            /// let config = Config::elicit_checked(client).await?;
+            /// // In a tool handler with peer: Peer<RoleServer>
+            /// let config = Config::elicit_checked(peer).await?;
             /// ```
+            ///
+            /// # Implementation Status
+            ///
+            /// Currently returns a stub error. Full implementation requires:
+            /// 1. Prompt generation from type metadata
+            /// 2. Multi-turn interaction support (for complex types)
+            /// 3. Validation and parsing logic
+            /// 4. Style system integration
+            ///
+            /// See Phase 2 in rmcp_integration_plan.md for details.
             #[elicitation::rmcp::tool]
             pub async fn elicit_checked(
-                client: std::sync::Arc<elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>>,
+                peer: elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleServer>,
             ) -> Result<Self, elicitation::ElicitError> {
-                use elicitation::{Elicitation, ElicitClient};
-                Self::elicit(&ElicitClient::new(client)).await
+                let _ = peer;  // TODO: use peer.create_message() for elicitation
+                let kind = elicitation::ElicitErrorKind::ParseError(
+                    format!("Server-side elicitation not yet implemented for {}", #type_name_str)
+                );
+                Err(elicitation::ElicitError::new(kind))
             }
         }
 
