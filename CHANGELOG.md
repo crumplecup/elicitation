@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- [**BREAKING**] Make all APIs Arc<Peer> compatible for tool registration
+
+### Documentation
+
+- Add Elicit tool attribute patch documentation
+
+### Fixed
+
+- Use cfg_attr for rmcp::tool to support test builds
+
+### Miscellaneous
+
+- [**BREAKING**] Bump version to 0.5.0
+
+## [Unreleased]
+
+### Added
+
 - Add Phase 1.1 - Core contract types
 - Add Phase 1.1 - Core contract types
 - Add Phase 1.2 - Logical implication
