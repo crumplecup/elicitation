@@ -5,6 +5,7 @@
 //!
 //! This example shows how structs automatically use the Survey paradigm,
 //! eliciting each field sequentially to build the complete structure.
+use std::sync::Arc;
 
 use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
@@ -77,8 +78,9 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Starting struct elicitation example");
 
     // Create MCP client with stdio transport
-    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
-    let client = ElicitClient::new(&peer);
+    let service = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = service.peer();
+    let client = ElicitClient::new(Arc::new(peer.clone()));
 
     // Elicit a simple person
     tracing::info!("=== Eliciting Person ===");

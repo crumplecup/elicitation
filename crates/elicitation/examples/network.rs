@@ -10,6 +10,7 @@
 //! - SocketAddr - IP address + port combinations
 //! - SocketAddrV4 - IPv4 socket addresses
 //! - SocketAddrV6 - IPv6 socket addresses
+use std::sync::Arc;
 
 use elicitation::{ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
@@ -26,8 +27,9 @@ async fn main() -> ElicitResult<()> {
 
     // Create MCP client with stdio transport
 
-    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
-    let client = ElicitClient::new(&peer);
+    let service = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = service.peer();
+    let client = ElicitClient::new(Arc::new(peer.clone()));
 
     // Elicit a generic IP address (can be v4 or v6)
     tracing::info!("=== Eliciting IpAddr ===");

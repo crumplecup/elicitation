@@ -234,10 +234,6 @@ fn main() {
     // ========================================================================
     #[cfg(feature = "verification")]
     {
-        use elicitation::verification::{
-            DEFAULT_BOOL_CONTRACT, DEFAULT_I32_CONTRACT, DEFAULT_STRING_CONTRACT,
-        };
-
         println!("\n5. DEFAULT CONTRACTS (FEATURE-GATED)");
         println!("-------------------------------------");
 

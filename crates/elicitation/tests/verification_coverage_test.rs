@@ -47,7 +47,6 @@ struct ComprehensiveTest {
 #[test]
 fn test_comprehensive_struct_compiles() {
     // If this compiles, verification code was generated for ALL field types
-    assert!(true);
 }
 
 // To verify: cargo expand --test verification_coverage_test --features verify-kani,uuid,url,chrono,serde_json

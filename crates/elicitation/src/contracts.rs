@@ -179,17 +179,17 @@
 //!
 //! ## Logical Operators
 //!
-//! - [`And<P, Q>`]: Conjunction (both P and Q hold)
-//! - [`Implies<Q>`]: Implication (P → Q)
-//! - [`Refines<Base>`]: Type refinement (Refined is a Base with extra constraints)
-//! - [`InVariant<E, V>`]: Enum is in specific variant
+//! - [`And<P, Q>`][]: Conjunction (both P and Q hold)
+//! - [`Implies<Q>`][]: Implication (P → Q)
+//! - [`Refines<Base>`][]: Type refinement (Refined is a Base with extra constraints)
+//! - [`InVariant<E, V>`][]: Enum is in specific variant
 //!
 //! ## Composition Functions
 //!
-//! - [`both(p, q)`]: Combine two proofs into conjunction
-//! - [`fst(pq)`]: Project left proof from conjunction
-//! - [`snd(pq)`]: Project right proof from conjunction
-//! - [`downcast(refined)`]: Safe downcast from refined type to base
+//! - [`both(p, q)`][]: Combine two proofs into conjunction
+//! - [`fst(pq)`][]: Project left proof from conjunction
+//! - [`snd(pq)`][]: Project right proof from conjunction
+//! - [`downcast(refined)`][]: Safe downcast from refined type to base
 //!
 //! # Advanced Patterns
 //!
@@ -239,7 +239,7 @@
 //! use elicitation::{Elicitation, contracts::{Established, Is}};
 //!
 //! // Elicit with proof
-//! let (email, proof): (String, Established<Is<String>>) = 
+//! let (email, proof): (String, Established<Is<String>>) =
 //!     String::elicit_proven(&client).await?;
 //!
 //! // Pass proof to functions requiring validation
@@ -520,10 +520,7 @@ impl<P: Prop, Q: Prop> Prop for And<P, Q> {}
 /// let pq: Established<And<P, Q>> = both(p, q);
 /// ```
 #[inline(always)]
-pub fn both<P: Prop, Q: Prop>(
-    _p: Established<P>,
-    _q: Established<Q>,
-) -> Established<And<P, Q>> {
+pub fn both<P: Prop, Q: Prop>(_p: Established<P>, _q: Established<Q>) -> Established<And<P, Q>> {
     Established {
         _marker: PhantomData,
     }
@@ -713,10 +710,10 @@ mod tests {
     #[test]
     fn test_proof_requires_type() {
         fn requires_string_proof(_proof: Established<Is<String>>) {}
-        
+
         let proof: Established<Is<String>> = Established::assert();
         requires_string_proof(proof);
-        
+
         // This would fail to compile:
         // let wrong_proof: Established<Is<i32>> = Established::assert();
         // requires_string_proof(wrong_proof);
@@ -735,11 +732,11 @@ mod tests {
         // Define custom propositions
         struct StrongProp;
         struct WeakProp;
-        
+
         impl Prop for StrongProp {}
         impl Prop for WeakProp {}
         impl Implies<WeakProp> for StrongProp {}
-        
+
         // Can weaken from strong to weak
         let strong: Established<StrongProp> = Established::assert();
         let _weak: Established<WeakProp> = strong.weaken();
@@ -747,15 +744,15 @@ mod tests {
 
     #[test]
     fn test_cannot_weaken_without_impl() {
-        struct PropA;
-        struct PropB;
-        
-        impl Prop for PropA {}
-        impl Prop for PropB {}
-        
-        // This would fail to compile (no Implies<PropB> for PropA):
-        // let a: Established<PropA> = Established::assert();
-        // let _b: Established<PropB> = a.weaken();
+        struct _PropA;
+        struct _PropB;
+
+        impl Prop for _PropA {}
+        impl Prop for _PropB {}
+
+        // This would fail to compile (no Implies<_PropB> for _PropA):
+        // let a: Established<_PropA> = Established::assert();
+        // let _b: Established<_PropB> = a.weaken();
     }
 
     #[test]
@@ -764,7 +761,7 @@ mod tests {
         struct Q;
         impl Prop for P {}
         impl Prop for Q {}
-        
+
         let p: Established<P> = Established::assert();
         let q: Established<Q> = Established::assert();
         let _pq: Established<And<P, Q>> = both(p, q);
@@ -776,7 +773,7 @@ mod tests {
         struct Q;
         impl Prop for P {}
         impl Prop for Q {}
-        
+
         let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
         let _p: Established<P> = fst(pq);
     }
@@ -787,7 +784,7 @@ mod tests {
         struct Q;
         impl Prop for P {}
         impl Prop for Q {}
-        
+
         let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
         let _q: Established<Q> = snd(pq);
     }
@@ -798,7 +795,7 @@ mod tests {
         struct Q;
         impl Prop for P {}
         impl Prop for Q {}
-        
+
         // Use projection functions instead of weaken
         let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
         let _p: Established<P> = fst(pq);
@@ -811,7 +808,7 @@ mod tests {
         struct Q;
         impl Prop for P {}
         impl Prop for Q {}
-        
+
         let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
         assert_eq!(std::mem::size_of_val(&pq), 0);
     }
@@ -824,12 +821,12 @@ mod tests {
         impl Prop for P {}
         impl Prop for Q {}
         impl Prop for R {}
-        
+
         // Can nest: (P ∧ Q) ∧ R
         let p: Established<P> = Established::assert();
         let q: Established<Q> = Established::assert();
         let r: Established<R> = Established::assert();
-        
+
         let pq = both(p, q);
         let _pqr: Established<And<And<P, Q>, R>> = both(pq, r);
     }
@@ -837,23 +834,25 @@ mod tests {
     #[test]
     fn test_refinement_downcast() {
         // Define refined type
-        struct NonEmptyString(String);
-        impl Refines<String> for NonEmptyString {}
-        impl Implies<Is<String>> for Is<NonEmptyString> {}
+        use core::marker::PhantomData;
+        struct _NonEmptyString(PhantomData<String>);
+        impl Refines<String> for _NonEmptyString {}
+        impl Implies<Is<String>> for Is<_NonEmptyString> {}
 
         // Can downcast from refined to base
-        let refined_proof: Established<Is<NonEmptyString>> = Established::assert();
+        let refined_proof: Established<Is<_NonEmptyString>> = Established::assert();
         let _base_proof: Established<Is<String>> = downcast(refined_proof);
     }
 
     #[test]
     fn test_refinement_via_weaken() {
         // Refinement requires explicit Implies impl
-        struct NonEmptyString(String);
-        impl Refines<String> for NonEmptyString {}
-        impl Implies<Is<String>> for Is<NonEmptyString> {}
+        use core::marker::PhantomData;
+        struct _NonEmptyString(PhantomData<String>);
+        impl Refines<String> for _NonEmptyString {}
+        impl Implies<Is<String>> for Is<_NonEmptyString> {}
 
-        let refined: Established<Is<NonEmptyString>> = Established::assert();
+        let refined: Established<Is<_NonEmptyString>> = Established::assert();
         let _base: Established<Is<String>> = refined.weaken();
     }
 
@@ -866,50 +865,53 @@ mod tests {
 
     #[test]
     fn test_refinement_chain() {
-        // Test transitivity: HttpsUrl -> ValidUrl -> String
-        struct HttpsUrl(String);
-        struct ValidUrl(String);
+        // Test transitivity: _HttpsUrl -> _ValidUrl -> String
+        use core::marker::PhantomData;
+        struct _HttpsUrl(PhantomData<String>);
+        struct _ValidUrl(PhantomData<String>);
 
-        impl Refines<String> for ValidUrl {}
-        impl Implies<Is<String>> for Is<ValidUrl> {}
+        impl Refines<String> for _ValidUrl {}
+        impl Implies<Is<String>> for Is<_ValidUrl> {}
 
-        impl Refines<ValidUrl> for HttpsUrl {}
-        impl Implies<Is<ValidUrl>> for Is<HttpsUrl> {}
+        impl Refines<_ValidUrl> for _HttpsUrl {}
+        impl Implies<Is<_ValidUrl>> for Is<_HttpsUrl> {}
 
-        impl Refines<String> for HttpsUrl {} // Transitive closure
-        impl Implies<Is<String>> for Is<HttpsUrl> {} // Enable direct downcast
+        impl Refines<String> for _HttpsUrl {} // Transitive closure
+        impl Implies<Is<String>> for Is<_HttpsUrl> {} // Enable direct downcast
 
-        let https: Established<Is<HttpsUrl>> = Established::assert();
-        let valid: Established<Is<ValidUrl>> = downcast(https);
+        let https: Established<Is<_HttpsUrl>> = Established::assert();
+        let valid: Established<Is<_ValidUrl>> = downcast(https);
         let _base: Established<Is<String>> = downcast(valid);
     }
 
     #[test]
     fn test_refinement_direct_chain() {
         // Direct downcast from most refined to base
-        struct HttpsUrl(String);
-        struct ValidUrl(String);
+        use core::marker::PhantomData;
+        struct _HttpsUrl(PhantomData<String>);
+        struct _ValidUrl(PhantomData<String>);
 
-        impl Refines<String> for ValidUrl {}
-        impl Implies<Is<String>> for Is<ValidUrl> {}
+        impl Refines<String> for _ValidUrl {}
+        impl Implies<Is<String>> for Is<_ValidUrl> {}
 
-        impl Refines<ValidUrl> for HttpsUrl {}
-        impl Implies<Is<ValidUrl>> for Is<HttpsUrl> {}
+        impl Refines<_ValidUrl> for _HttpsUrl {}
+        impl Implies<Is<_ValidUrl>> for Is<_HttpsUrl> {}
 
-        impl Refines<String> for HttpsUrl {}
-        impl Implies<Is<String>> for Is<HttpsUrl> {}
+        impl Refines<String> for _HttpsUrl {}
+        impl Implies<Is<String>> for Is<_HttpsUrl> {}
 
-        let https: Established<Is<HttpsUrl>> = Established::assert();
+        let https: Established<Is<_HttpsUrl>> = Established::assert();
         let _base: Established<Is<String>> = downcast(https);
     }
 
     #[test]
     fn test_refinement_zero_sized() {
-        struct NonEmptyString(String);
-        impl Refines<String> for NonEmptyString {}
-        impl Implies<Is<String>> for Is<NonEmptyString> {}
+        use core::marker::PhantomData;
+        struct _NonEmptyString(PhantomData<String>);
+        impl Refines<String> for _NonEmptyString {}
+        impl Implies<Is<String>> for Is<_NonEmptyString> {}
 
-        let refined: Established<Is<NonEmptyString>> = Established::assert();
+        let refined: Established<Is<_NonEmptyString>> = Established::assert();
         assert_eq!(std::mem::size_of_val(&refined), 0);
 
         let base: Established<Is<String>> = downcast(refined);
@@ -918,98 +920,99 @@ mod tests {
 
     #[test]
     fn test_cannot_upcast() {
-        struct NonEmptyString(String);
-        impl Refines<String> for NonEmptyString {}
-        impl Implies<Is<String>> for Is<NonEmptyString> {}
+        use core::marker::PhantomData;
+        struct _NonEmptyString(PhantomData<String>);
+        impl Refines<String> for _NonEmptyString {}
+        impl Implies<Is<String>> for Is<_NonEmptyString> {}
 
-        // This would fail to compile (no Implies<Is<NonEmptyString>> for Is<String>):
+        // This would fail to compile (no Implies<Is<_NonEmptyString>> for Is<String>):
         // let base: Established<Is<String>> = Established::assert();
-        // let _refined: Established<Is<NonEmptyString>> = downcast(base);
+        // let _refined: Established<Is<_NonEmptyString>> = downcast(base);
     }
 
     #[test]
     fn test_invariant_zero_sized() {
-        enum Status {
-            Active,
-            Inactive,
+        enum _Status {
+            _Active,
+            _Inactive,
         }
-        struct ActiveVariant;
+        struct _ActiveVariant;
 
-        let proof: Established<InVariant<Status, ActiveVariant>> = Established::assert();
+        let proof: Established<InVariant<_Status, _ActiveVariant>> = Established::assert();
         assert_eq!(std::mem::size_of_val(&proof), 0);
     }
 
     #[test]
     fn test_invariant_type_safety() {
-        enum Status {
-            Active,
-            Inactive,
+        enum _Status {
+            _Active,
+            _Inactive,
         }
-        struct ActiveVariant;
-        struct InactiveVariant;
+        struct _ActiveVariant;
+        struct _InactiveVariant;
 
         // Function requires specific variant proof
         fn process_active(
-            _status: Status,
-            _proof: Established<InVariant<Status, ActiveVariant>>,
+            _status: _Status,
+            _proof: Established<InVariant<_Status, _ActiveVariant>>,
         ) {
         }
 
         // Can call with correct proof
-        let proof: Established<InVariant<Status, ActiveVariant>> = Established::assert();
-        process_active(Status::Active, proof);
+        let proof: Established<InVariant<_Status, _ActiveVariant>> = Established::assert();
+        process_active(_Status::_Active, proof);
 
         // This would fail to compile (wrong variant):
-        // let wrong_proof: Established<InVariant<Status, InactiveVariant>> = Established::assert();
-        // process_active(Status::Active, wrong_proof);
+        // let wrong_proof: Established<InVariant<_Status, _InactiveVariant>> = Established::assert();
+        // process_active(_Status::_Active, wrong_proof);
     }
 
     #[test]
     fn test_invariant_enum_branches() {
-        enum State {
-            Loading,
-            Ready,
-            Error,
+        enum _State {
+            _Loading,
+            _Ready,
+            _Error,
         }
 
-        struct LoadingVariant;
-        struct ReadyVariant;
-        struct ErrorVariant;
+        struct _LoadingVariant;
+        struct _ReadyVariant;
+        struct _ErrorVariant;
 
-        fn handle_loading(_proof: Established<InVariant<State, LoadingVariant>>) {
+        fn handle_loading(_proof: Established<InVariant<_State, _LoadingVariant>>) {
             // Loading-specific logic
         }
 
-        fn handle_ready(_proof: Established<InVariant<State, ReadyVariant>>) {
+        fn handle_ready(_proof: Established<InVariant<_State, _ReadyVariant>>) {
             // Ready-specific logic
         }
 
-        fn handle_error(_proof: Established<InVariant<State, ErrorVariant>>) {
+        fn handle_error(_proof: Established<InVariant<_State, _ErrorVariant>>) {
             // Error-specific logic
         }
 
         // Simulate state machine
-        let loading_proof: Established<InVariant<State, LoadingVariant>> = Established::assert();
+        let loading_proof: Established<InVariant<_State, _LoadingVariant>> = Established::assert();
         handle_loading(loading_proof);
 
-        let ready_proof: Established<InVariant<State, ReadyVariant>> = Established::assert();
+        let ready_proof: Established<InVariant<_State, _ReadyVariant>> = Established::assert();
         handle_ready(ready_proof);
 
-        let error_proof: Established<InVariant<State, ErrorVariant>> = Established::assert();
+        let error_proof: Established<InVariant<_State, _ErrorVariant>> = Established::assert();
         handle_error(error_proof);
     }
 
     #[test]
     fn test_invariant_with_inhabitation() {
-        enum Color {
-            Red,
-            Green,
-            Blue,
+        enum _Color {
+            _Red,
+            _Green,
+            _Blue,
         }
-        struct RedVariant;
+        struct _RedVariant;
 
         // Can have both variant and type proofs
-        let _type_proof: Established<Is<Color>> = Established::assert();
-        let _variant_proof: Established<InVariant<Color, RedVariant>> = Established::assert();
+        let _type_proof: Established<Is<_Color>> = Established::assert();
+        let _variant_proof: Established<InVariant<_Color, _RedVariant>> = Established::assert();
     }
 }

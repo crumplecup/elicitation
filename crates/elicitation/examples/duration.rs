@@ -5,6 +5,7 @@
 //!
 //! This example shows how to elicit:
 //! - Duration - Time durations in seconds (supports decimals)
+use std::sync::Arc;
 
 use elicitation::{ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
@@ -21,8 +22,9 @@ async fn main() -> ElicitResult<()> {
 
     // Create MCP client with stdio transport
 
-    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
-    let client = ElicitClient::new(&peer);
+    let service = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = service.peer();
+    let client = ElicitClient::new(Arc::new(peer.clone()));
 
     // Elicit a timeout duration
     tracing::info!("=== Eliciting timeout duration ===");

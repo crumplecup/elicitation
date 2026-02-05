@@ -7,6 +7,7 @@
 //! - Tuples of various sizes (arity 2-12)
 //! - Tuples with mixed types
 //! - Tuples with complex nested types
+use std::sync::Arc;
 
 use elicitation::{ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
@@ -22,8 +23,9 @@ async fn main() -> ElicitResult<()> {
 
     // Create MCP client with stdio transport
 
-    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
-    let client = ElicitClient::new(&peer);
+    let service = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = service.peer();
+    let client = ElicitClient::new(Arc::new(peer.clone()));
 
     // Elicit a simple 2-tuple (pair)
     tracing::info!("=== Eliciting (String, i32) ===");

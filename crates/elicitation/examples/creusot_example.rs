@@ -1,13 +1,21 @@
 //! Creusot verification example - demonstrates deductive verification with prophecy variables.
 
-#![cfg(feature = "verify-creusot")]
+#[cfg(not(feature = "verify-creusot"))]
+fn main() {
+    eprintln!("This example requires the verify-creusot feature.");
+    eprintln!("Run with: cargo run --example creusot_example --features verify-creusot");
+}
 
+#[cfg(feature = "verify-creusot")]
 use elicitation::ElicitResult;
+#[cfg(feature = "verify-creusot")]
 use elicitation::verification::{Contract, creusot::Tool};
 
+#[cfg(feature = "verify-creusot")]
 // Example 1: Email Validation
 struct ValidateEmail;
 
+#[cfg(feature = "verify-creusot")]
 impl Contract for ValidateEmail {
     type Input = String;
     type Output = String;
@@ -21,6 +29,7 @@ impl Contract for ValidateEmail {
     }
 }
 
+#[cfg(feature = "verify-creusot")]
 #[async_trait::async_trait]
 impl Tool for ValidateEmail {
     async fn execute(&self, input: Self::Input) -> ElicitResult<Self::Output> {
@@ -29,8 +38,10 @@ impl Tool for ValidateEmail {
 }
 
 // Example 2: Counter Increment (Prophecy)
+#[cfg(feature = "verify-creusot")]
 struct IncrementCounter;
 
+#[cfg(feature = "verify-creusot")]
 impl Contract for IncrementCounter {
     type Input = i32;
     type Output = i32;
@@ -44,6 +55,7 @@ impl Contract for IncrementCounter {
     }
 }
 
+#[cfg(feature = "verify-creusot")]
 #[async_trait::async_trait]
 impl Tool for IncrementCounter {
     async fn execute(&self, input: Self::Input) -> ElicitResult<Self::Output> {
@@ -51,6 +63,7 @@ impl Tool for IncrementCounter {
     }
 }
 
+#[cfg(feature = "verify-creusot")]
 #[tokio::main]
 async fn main() -> ElicitResult<()> {
     tracing_subscriber::fmt::init();

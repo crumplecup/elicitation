@@ -5,6 +5,7 @@
 //!
 //! This example shows how to elicit:
 //! - Result<T, E> - Success or failure outcomes with values
+use std::sync::Arc;
 
 use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation, Prompt, Select};
 use rmcp::ServiceExt;
@@ -37,8 +38,9 @@ async fn main() -> ElicitResult<()> {
 
     // Create MCP client with stdio transport
 
-    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
-    let client = ElicitClient::new(&peer);
+    let service = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = service.peer();
+    let client = ElicitClient::new(Arc::new(peer.clone()));
 
     // Elicit a simple Result<String, String>
     tracing::info!("=== Eliciting Result<String, String> ===");

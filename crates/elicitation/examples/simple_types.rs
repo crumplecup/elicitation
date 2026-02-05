@@ -10,6 +10,7 @@
 //! - Strings
 //! - Optional values (Option<T>)
 //! - Collections (Vec<T>)
+use std::sync::Arc;
 
 use elicitation::{ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
@@ -24,8 +25,9 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Starting simple types example");
 
     // Create MCP client with stdio transport
-    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
-    let client = ElicitClient::new(&peer);
+    let service = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = service.peer();
+    let client = ElicitClient::new(Arc::new(peer.clone()));
 
     // Elicit an integer
     tracing::info!("=== Eliciting integer ===");

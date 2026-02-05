@@ -10,9 +10,9 @@ use elicitation::*;
 /// Test struct with multiple field types to ensure comprehensive verification.
 #[derive(Debug, Clone, Elicit)]
 pub struct VerifiedUser {
-    name: StringNonEmpty,
-    age: I8Positive,
-    email: StringNonEmpty,
+    _name: StringNonEmpty,
+    _age: I8Positive,
+    _email: StringNonEmpty,
 }
 
 /// Test enum with multiple variant types.
@@ -31,13 +31,11 @@ pub enum VerifiedStatus {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_derive_compiles() {
         // This test just ensures the derive macro expands without errors
         // Actual verification requires running the verifier tools
-        let _ = stringify!(VerifiedUser);
+        let _ = stringify!(super::VerifiedUser);
         let _ = stringify!(VerifiedStatus);
     }
 }

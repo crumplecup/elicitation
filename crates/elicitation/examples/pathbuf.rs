@@ -5,6 +5,7 @@
 //!
 //! This example shows how to elicit:
 //! - PathBuf - Filesystem paths (files, directories, etc.)
+use std::sync::Arc;
 
 use elicitation::{ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
@@ -20,8 +21,9 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Starting PathBuf elicitation example");
 
     // Create MCP client with stdio transport
-    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
-    let client = ElicitClient::new(&peer);
+    let service = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = service.peer();
+    let client = ElicitClient::new(Arc::new(peer.clone()));
 
     // Elicit a file path
     tracing::info!("=== Eliciting file path ===");

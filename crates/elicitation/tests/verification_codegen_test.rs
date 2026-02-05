@@ -12,9 +12,9 @@ use elicitation::verification::types::{I8Positive, StringNonEmpty};
 /// - __make_User constructor with #[kani::requires] and #[kani::ensures]
 /// - __verify_User harness with #[kani::proof_for_contract]
 #[derive(Elicit)]
-struct User {
-    name: StringNonEmpty,
-    age: I8Positive,
+struct _User {
+    _name: StringNonEmpty,
+    _age: I8Positive,
 }
 
 #[test]

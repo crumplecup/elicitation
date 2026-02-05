@@ -8,6 +8,7 @@
 //! - BTreeMap<K, V> - Ordered key-value pairs
 //! - HashSet<T> - Unique items with automatic deduplication
 //! - BTreeSet<T> - Ordered unique items
+use std::sync::Arc;
 
 use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation, Prompt, Select};
 use rmcp::ServiceExt;
@@ -31,8 +32,9 @@ async fn main() -> ElicitResult<()> {
 
     // Create MCP client with stdio transport
 
-    let peer = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
-    let client = ElicitClient::new(&peer);
+    let service = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
+    let peer = service.peer();
+    let client = ElicitClient::new(Arc::new(peer.clone()));
 
     // Elicit a HashMap
     tracing::info!("=== Eliciting HashMap<String, i32> ===");

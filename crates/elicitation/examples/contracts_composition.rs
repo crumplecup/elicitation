@@ -8,7 +8,7 @@
 //!
 //! Run with: `cargo run --example contracts_composition`
 
-use elicitation::contracts::{And, Established, Implies, Is, Prop, Refines, both, fst, snd};
+use elicitation::contracts::{And, Established, Implies, Prop, Refines, both};
 
 // Domain propositions
 struct EmailFormatValid;
@@ -28,12 +28,12 @@ impl Implies<EmailFormatValid> for EmailExists {}
 impl Implies<EmailExists> for EmailConfirmed {}
 
 /// Refined email types
-struct ValidatedEmail(String);
-struct ConfirmedEmail(String);
+struct _ValidatedEmail(String);
+struct _ConfirmedEmail(String);
 
-impl Refines<String> for ValidatedEmail {}
-impl Refines<String> for ConfirmedEmail {}
-impl Refines<ValidatedEmail> for ConfirmedEmail {}
+impl Refines<String> for _ValidatedEmail {}
+impl Refines<String> for _ConfirmedEmail {}
+impl Refines<_ValidatedEmail> for _ConfirmedEmail {}
 
 /// Step 1: Validate email format.
 fn validate_email_format(email: &str) -> Result<Established<EmailFormatValid>, String> {
@@ -83,7 +83,7 @@ fn send_confirmation_code(
 ///
 /// Requires email exists and establishes email is confirmed.
 fn verify_confirmation_code(
-    email: &str,
+    _email: &str,
     code: &str,
     expected_code: &str,
     _exists_proof: Established<EmailExists>,
@@ -125,14 +125,14 @@ fn run_registration_workflow(email: &str) -> Result<(), String> {
     let exists_proof = check_email_exists(email, format_proof)?;
 
     // Step 3: Send code (uses existence proof)
-    let code = send_confirmation_code(email, exists_proof.clone())?;
+    let code = send_confirmation_code(email, exists_proof)?;
 
     // Step 4: Verify code (uses existence proof, establishes confirmation)
     let user_code = "123456"; // In real app, would get from user
     let confirmed_proof = verify_confirmation_code(email, user_code, &code, exists_proof)?;
 
     // Step 5: Create profile (uses confirmation proof)
-    let profile_proof = create_user_profile(email.to_string(), confirmed_proof.clone())?;
+    let profile_proof = create_user_profile(email.to_string(), confirmed_proof)?;
 
     // Step 6: Send welcome (needs BOTH proofs)
     let combined_proof = both(confirmed_proof, profile_proof);

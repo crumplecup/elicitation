@@ -6,16 +6,16 @@ use elicitation::{Elicit, Prompt, Select};
 /// Test enum with all variant types.
 #[derive(Elicit)]
 #[allow(dead_code)] // Test enum
-enum Status {
-    Active { since: StringNonEmpty },
-    Pending { count: I8Positive },
-    Inactive,
+#[allow(clippy::large_enum_variant)] // Test code
+enum _Status {
+    _Active { since: StringNonEmpty },
+    _Pending { count: I8Positive },
+    _Inactive,
 }
 
 #[test]
 fn test_enum_compiles() {
     // This test verifies the enum derive macro compiles successfully
-    assert!(true);
 }
 
 // Note: Generated verification harnesses are only compiled by Kani:
