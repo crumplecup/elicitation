@@ -8,7 +8,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.4.8"
+version = "0.5.0"
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/crumplecup/elicitation"
@@ -18,12 +18,14 @@ documentation = "https://docs.rs/elicitation"
 readme = "README.md"
 
 [workspace.lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("verify-kani", "verify-creusot", "verify-prusti", "verify-verus", "verify-all"))'] }
+unexpected_cfgs = { level = "warn", check-cfg = [
+  'cfg(feature, values("verify-kani", "verify-creusot", "verify-prusti", "verify-verus", "verify-all"))',
+] }
 
 [workspace.dependencies]
-elicitation = { path = "crates/elicitation", version = "0.4.8" }
-elicitation_derive = { path = "crates/elicitation_derive", version = "0.4.8" }
-elicitation_macros = { path = "crates/elicitation_macros", version = "0.4.8" }
+elicitation = { path = "crates/elicitation", version = "0.5.0" }
+elicitation_derive = { path = "crates/elicitation_derive", version = "0.5.0" }
+elicitation_macros = { path = "crates/elicitation_macros", version = "0.5.0" }
 
 
 # MCP client
