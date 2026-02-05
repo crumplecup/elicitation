@@ -81,6 +81,7 @@
 #![warn(missing_docs)]
 
 mod client;
+mod server;  // Server-side wrapper (analogous to ElicitClient)
 // Verification framework imports
 
 mod collections;
@@ -128,8 +129,9 @@ mod elicitation_style;
 // Error types
 pub use error::{ElicitError, ElicitErrorKind, ElicitResult, JsonError, RmcpError, ServiceError};
 
-// Core client
+// Core client and server
 pub use client::ElicitClient;
+pub use server::ElicitServer;
 
 // Core traits
 pub use elicitation_style::ElicitationStyle;
