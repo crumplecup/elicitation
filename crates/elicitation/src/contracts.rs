@@ -458,6 +458,9 @@ pub trait Implies<Q: Prop>: Prop {}
 // Reflexivity: Every proposition implies itself
 impl<P: Prop> Implies<P> for P {}
 
+/// Type alias to reduce PhantomData complexity.
+type AndMarker<P, Q> = (fn() -> P, fn() -> Q);
+
 /// Logical conjunction: both P and Q hold.
 ///
 /// `And<P, Q>` represents the proposition that both P and Q are true.
@@ -492,10 +495,6 @@ impl<P: Prop> Implies<P> for P {}
 /// let url_again: Established<ValidUrl> = fst(both_proof);
 /// let port_again: Established<HasPort> = snd(both_proof);
 /// ```
-
-/// Type alias to reduce PhantomData complexity.
-type AndMarker<P, Q> = (fn() -> P, fn() -> Q);
-
 pub struct And<P: Prop, Q: Prop> {
     _marker: PhantomData<AndMarker<P, Q>>,
 }
@@ -646,6 +645,9 @@ where
     proof.weaken()
 }
 
+/// Type alias to reduce PhantomData complexity.
+type InVariantMarker<E, V> = (fn() -> E, fn() -> V);
+
 /// Proposition: enum value is in specific variant.
 ///
 /// `InVariant<E, V>` represents the statement "enum E is currently
@@ -677,10 +679,6 @@ where
 ///     println!("Processing active status");
 /// }
 /// ```
-
-/// Type alias to reduce PhantomData complexity.
-type InVariantMarker<E, V> = (fn() -> E, fn() -> V);
-
 pub struct InVariant<E, V> {
     _marker: PhantomData<InVariantMarker<E, V>>,
 }
