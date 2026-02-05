@@ -26,8 +26,8 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
         /// This function uses the derived `Elicitation` impl to
         /// interactively elicit a value from the user via MCP.
         ///
-        /// Automatically registered as an MCP tool via `#[rmcp::tool]`.
-        #[elicitation::rmcp::tool]
+        /// Automatically registered as an MCP tool via `#[rmcp::tool]` in non-test builds.
+        #[cfg_attr(not(test), elicitation::rmcp::tool)]
         pub async fn #fn_name(
             client: std::sync::Arc<elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>>,
         ) -> Result<#type_name, elicitation::ElicitError> {
