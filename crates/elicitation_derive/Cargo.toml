@@ -27,3 +27,5 @@ proc-macro2 = { workspace = true }
 [dev-dependencies]
 elicitation = { path = "../elicitation" }
 tracing = { workspace = true }
+rmcp = { workspace = true }
+serde_json = { workspace = true }

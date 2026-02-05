@@ -506,6 +506,8 @@ dependencies = [
  "elicitation",
  "proc-macro2",
  "quote",
+ "rmcp",
+ "serde_json",
  "syn",
  "tracing",
 ]
