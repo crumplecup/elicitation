@@ -101,6 +101,7 @@ mod paradigm;
 mod primitives;
 pub mod style;
 pub mod tool;
+mod tool_registry;
 mod traits;
 
 #[cfg(feature = "serde_json")]
@@ -138,11 +139,18 @@ pub use contracts::{
 // Tools (contract-based MCP tools)
 pub use tool::{Tool, True, both_tools, then};
 
+// Tool registry (automatic discovery)
+pub use tool_registry::{ElicitToolDescriptor, collect_all_elicit_tools};
+
 // Interaction paradigm traits
 pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
 
 // Re-export rmcp for user convenience
 pub use rmcp;
+
+// Re-export inventory for derive macro usage
+#[doc(hidden)]
+pub use inventory;
 
 // Re-export derive macro with user-friendly name
 pub use elicitation_derive::Elicit;

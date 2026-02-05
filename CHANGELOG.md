@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### ⚠️ BREAKING CHANGES
+
+**Method Generation (0.6.0):**
+- Changed from standalone `elicit_typename()` functions to `TypeName::elicit_checked()` methods
+- Follows Rust's `checked_*` idiom for verified operations
+- Migration: Replace `elicit_config(client)` with `Config::elicit_checked(client)`
+- See MIGRATION_0.5_to_0.6.md for detailed migration guide
+
+### Added
+
+- **elicit_checked() methods:** Generated on all #[derive(Elicit)] types
+- **Automatic tool discovery:** Via inventory crate for runtime tool collection
+- **ElicitToolDescriptor:** Metadata for registered elicit tools
+- **collect_all_elicit_tools():** Function to collect all registered tools at runtime
+
+### Documentation
+
+- Add MIGRATION_0.5_to_0.6.md with detailed migration steps
+- Add ELICIT_METHOD_GENERATION_PROPOSAL.md explaining architecture
+- Update tool_gen.rs documentation for new method generation
+
+## [0.5.0] - 2026-02-05
+
 ### Added
 
 - [**BREAKING**] Make all APIs Arc<Peer> compatible for tool registration
