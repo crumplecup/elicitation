@@ -573,7 +573,7 @@ fn generate_elicit_impl_styled(
 
             #[tracing::instrument(skip(communicator))]
             async fn elicit<C: elicitation::ElicitCommunicator>(
-                client: &elicitation::ElicitClient,
+                communicator: &C,
             ) -> elicitation::ElicitResult<Self> {
                 let prompt = <Self as elicitation::Prompt>::prompt().unwrap();
                 tracing::debug!("Eliciting style selection");
