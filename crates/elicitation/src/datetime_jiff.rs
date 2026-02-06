@@ -22,7 +22,7 @@
 //! ```
 
 use crate::{
-    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
     Select,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
     mcp,
@@ -95,8 +95,7 @@ impl Elicitation for TimestampGenerationMode {
             Self::labels(),
         );
 
-        let result = client
-            .peer()
+        let result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_select().into(),
@@ -199,8 +198,7 @@ impl Elicitation for Timestamp {
                 // Elicit ISO 8601 string
                 let prompt = "Enter ISO 8601 timestamp (e.g., \"2024-07-11T15:30:00Z\"):";
                 let params = mcp::text_params(prompt);
-                let result = client
-                    .peer()
+                let result = communicator
                     .call_tool(rmcp::model::CallToolRequestParams {
                         meta: None,
                         name: mcp::tool_names::elicit_text().into(),
@@ -278,8 +276,7 @@ impl Elicitation for Zoned {
                 // Elicit ISO 8601 string with timezone
                 let prompt = "Enter ISO 8601 datetime with timezone (e.g., \"2024-07-11T15:30:00-05[America/New_York]\"):";
                 let params = mcp::text_params(prompt);
-                let result = client
-                    .peer()
+                let result = communicator
                     .call_tool(rmcp::model::CallToolRequestParams {
                         meta: None,
                         name: mcp::tool_names::elicit_text().into(),
@@ -306,8 +303,7 @@ impl Elicitation for Zoned {
                 // Elicit timezone
                 let tz_prompt = "Enter IANA timezone (e.g., \"America/New_York\" or \"UTC\"):";
                 let tz_params = mcp::text_params(tz_prompt);
-                let tz_result = client
-                    .peer()
+                let tz_result = communicator
                     .call_tool(rmcp::model::CallToolRequestParams {
                         meta: None,
                         name: mcp::tool_names::elicit_text().into(),
@@ -378,8 +374,7 @@ impl Elicitation for CivilDateTime {
                 // Elicit ISO 8601 string (no timezone)
                 let prompt = "Enter datetime (e.g., \"2024-07-11T15:30:00\"):";
                 let params = mcp::text_params(prompt);
-                let result = client
-                    .peer()
+                let result = communicator
                     .call_tool(rmcp::model::CallToolRequestParams {
                         meta: None,
                         name: mcp::tool_names::elicit_text().into(),

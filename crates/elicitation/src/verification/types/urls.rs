@@ -483,7 +483,7 @@ impl UrlCanBeBase {
 // Elicitation Implementations
 // ============================================================================
 
-use crate::{ElicitClient, ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
 // Re-export UrlStyle from primitives
 pub use crate::primitives::url::UrlStyle;
@@ -504,8 +504,7 @@ impl Elicitation for UrlValid {
 
         let params = crate::mcp::text_params(prompt);
 
-        let result = client
-            .peer()
+        let result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: crate::mcp::tool_names::elicit_text().into(),

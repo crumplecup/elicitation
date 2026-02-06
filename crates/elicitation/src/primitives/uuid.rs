@@ -23,7 +23,7 @@
 //! ```
 
 use crate::{
-    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
     Select, mcp,
 };
 use uuid::Uuid;
@@ -91,8 +91,7 @@ impl Elicitation for UuidGenerationMode {
             Self::labels(),
         );
 
-        let result = client
-            .peer()
+        let result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_select().into(),

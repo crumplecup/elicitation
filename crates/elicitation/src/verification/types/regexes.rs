@@ -3,7 +3,7 @@
 //! This module provides contract types for regex validation using the `regex` crate.
 
 use crate::verification::types::ValidationError;
-use crate::{ElicitClient, ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "regex")]
 use regex::{Regex, RegexBuilder, RegexSet};

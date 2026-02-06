@@ -22,7 +22,7 @@
 //! ```
 
 use crate::{
-    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
     Select,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
     mcp,
@@ -96,8 +96,7 @@ impl Elicitation for DateTimeUtcGenerationMode {
             Self::labels(),
         );
 
-        let result = client
-            .peer()
+        let result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_select().into(),
@@ -236,8 +235,7 @@ impl Elicitation for NaiveDateTimeGenerationMode {
             Self::labels(),
         );
 
-        let result = client
-            .peer()
+        let result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_select().into(),
@@ -343,8 +341,7 @@ impl Elicitation for DateTime<Utc> {
                 // Elicit ISO 8601 string
                 let prompt = "Enter ISO 8601 datetime (e.g., \"2024-07-11T15:30:00Z\"):";
                 let params = mcp::text_params(prompt);
-                let result = client
-                    .peer()
+                let result = communicator
                     .call_tool(rmcp::model::CallToolRequestParams {
                         meta: None,
                         name: mcp::tool_names::elicit_text().into(),
@@ -420,8 +417,7 @@ impl Elicitation for DateTime<FixedOffset> {
                 let prompt =
                     "Enter ISO 8601 datetime with offset (e.g., \"2024-07-11T15:30:00+05:00\"):";
                 let params = mcp::text_params(prompt);
-                let result = client
-                    .peer()
+                let result = communicator
                     .call_tool(rmcp::model::CallToolRequestParams {
                         meta: None,
                         name: mcp::tool_names::elicit_text().into(),
@@ -448,8 +444,7 @@ impl Elicitation for DateTime<FixedOffset> {
                 // Elicit offset
                 let offset_prompt = "Enter timezone offset in hours (e.g., +5 or -8):";
                 let offset_params = mcp::number_params(offset_prompt, -12, 14);
-                let offset_result = client
-                    .peer()
+                let offset_result = communicator
                     .call_tool(rmcp::model::CallToolRequestParams {
                         meta: None,
                         name: mcp::tool_names::elicit_number().into(),
@@ -518,8 +513,7 @@ impl Elicitation for NaiveDateTime {
                 // Elicit ISO 8601 string (no timezone)
                 let prompt = "Enter datetime (e.g., \"2024-07-11T15:30:00\"):";
                 let params = mcp::text_params(prompt);
-                let result = client
-                    .peer()
+                let result = communicator
                     .call_tool(rmcp::model::CallToolRequestParams {
                         meta: None,
                         name: mcp::tool_names::elicit_text().into(),

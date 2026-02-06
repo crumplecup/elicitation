@@ -5,7 +5,7 @@
 #[cfg(feature = "serde_json")]
 use super::ValidationError;
 #[cfg(all(feature = "serde_json", not(kani)))]
-use crate::{ElicitClient, ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 #[cfg(all(feature = "serde_json", not(kani)))]
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "serde_json")]
