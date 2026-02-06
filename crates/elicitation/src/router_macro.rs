@@ -32,6 +32,7 @@ macro_rules! elicit_router {
                     #[doc = concat!("Elicit `", stringify!($ty), "` via MCP.")]
                     #[$crate::rmcp::tool]
                     async fn [<elicit_ $ty:snake>] (
+                        &self,
                         peer: $crate::rmcp::service::Peer<$crate::rmcp::service::RoleServer>,
                     ) -> ::std::result::Result<$ty, $crate::ElicitError> {
                         <$ty>::elicit_checked(peer).await
