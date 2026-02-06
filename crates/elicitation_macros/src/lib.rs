@@ -159,7 +159,7 @@ fn is_accessor(name: &str) -> bool {
 #[proc_macro_attribute]
 pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
     let impl_block = parse_macro_input!(item as ItemImpl);
-    
+
     // Parse comma-separated list of type names
     let types_input = attr.to_string();
     let types: Vec<&str> = types_input
@@ -167,19 +167,19 @@ pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
         .map(|s| s.trim())
         .filter(|s| !s.is_empty())
         .collect();
-    
+
     if types.is_empty() {
         return syn::Error::new_spanned(
             &impl_block,
-            "elicit_tools requires at least one type: #[elicit_tools(Type1, Type2)]"
+            "elicit_tools requires at least one type: #[elicit_tools(Type1, Type2)]",
         )
         .to_compile_error()
         .into();
     }
-    
+
     // Clone the impl block to modify
     let mut new_impl = impl_block.clone();
-    
+
     // Generate methods and metadata for each type
     for ty_str in types {
         // Parse the type
@@ -188,24 +188,24 @@ pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
             Err(e) => {
                 return syn::Error::new(
                     proc_macro2::Span::call_site(),
-                    format!("Failed to parse type '{}': {}", ty_str, e)
+                    format!("Failed to parse type '{}': {}", ty_str, e),
                 )
                 .to_compile_error()
                 .into();
             }
         };
-        
+
         // Convert type name to snake_case for method name
         let method_name = to_snake_case(ty_str);
         let method_ident = syn::Ident::new(
             &format!("elicit_{}", method_name),
-            proc_macro2::Span::call_site()
+            proc_macro2::Span::call_site(),
         );
         let tool_attr_ident = syn::Ident::new(
             &format!("elicit_{}_tool_attr", method_name),
-            proc_macro2::Span::call_site()
+            proc_macro2::Span::call_site(),
         );
-        
+
         // Generate the tool metadata function
         // Adapted from rmcp-macros tool.rs ResolvedToolAttribute::into_fn
         let tool_name = format!("elicit_{}", method_name);
@@ -232,7 +232,7 @@ pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
             }
         };
-        
+
         // Generate the method (sync fn returning Pin<Box<dyn Future>>)
         // Adapted from rmcp-macros tool.rs async transformation (lines 295-326)
         let method: syn::ImplItemFn = syn::parse_quote! {
@@ -250,12 +250,12 @@ pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
                 })
             }
         };
-        
+
         // Add both to impl block
         new_impl.items.push(syn::ImplItem::Fn(tool_attr_fn));
         new_impl.items.push(syn::ImplItem::Fn(method));
     }
-    
+
     // Output the modified impl block (with all original attributes preserved)
     TokenStream::from(quote! { #new_impl })
 }
@@ -264,7 +264,7 @@ pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
 fn to_snake_case(s: &str) -> String {
     let mut result = String::new();
     let mut prev_was_lowercase = false;
-    
+
     for (i, ch) in s.chars().enumerate() {
         if ch.is_uppercase() {
             // Add underscore before uppercase if previous was lowercase
@@ -278,6 +278,6 @@ fn to_snake_case(s: &str) -> String {
             prev_was_lowercase = ch.is_lowercase();
         }
     }
-    
+
     result
 }

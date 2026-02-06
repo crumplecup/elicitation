@@ -44,7 +44,7 @@ fn test_tool_attr_functions_exist() {
     // Verify that #[tool] generated the _tool_attr functions
     let _config_tool = TestServer::elicit_test_config_tool_attr();
     let _user_tool = TestServer::elicit_test_user_tool_attr();
-    
+
     // Check tool names
     assert_eq!(_config_tool.name, "elicit_test_config");
     assert_eq!(_user_tool.name, "elicit_test_user");
