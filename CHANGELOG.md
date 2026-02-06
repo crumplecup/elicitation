@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.6] - 2026-02-06
+
+### Added
+
+- **Proc macro attribute `#[elicit_tools(...)]`:** Generates elicitation methods that integrate with rmcp's `#[tool_router]`
+  - Solves macro expansion ordering issue (declarative macros expand after attribute macros)
+  - Directly implements rmcp's `#[tool]` transformation logic
+  - Generates `*_tool_attr()` metadata functions
+  - Transforms async methods to sync returning `Pin<Box<dyn Future>>`
+  - Test: `elicit_tools_proc_macro_test.rs` (3 tests)
+- **Documentation:** BOTTICELLI_INTEGRATION.md - Complete integration guide with troubleshooting
+- **Documentation:** MACRO_ORDERING_ISSUE.md - Technical details of the macro ordering problem and solution
+
+### Changed
+
+- **`elicit_tools` proc macro:** Completely rewritten from declarative macro to proc macro attribute
+  - Usage: `#[elicit_tools(Type1, Type2)]` BEFORE `#[tool_router]`
+  - No longer depends on `#[::rmcp::tool]` (proc macros can't apply other proc macros)
+  - Generates complete tool implementation inline
+
+### Technical Details
+
+- Studied rmcp-macros-0.14.0/src/tool.rs and adapted its logic:
+  1. Tool metadata generation (lines 110-164 from rmcp)
+  2. Async-to-Pin transformation (lines 295-326 from rmcp)
+- Satisfies rmcp trait bounds: `CallToolHandler<S, A>`, `IntoToolRoute<S, A>`
+- Compatible with `Peer<RoleServer>` via `FromContextPart` trait
+
+### Testing
+
+- ✅ All 404 tests passing (gained 3 proc macro tests)
+- ✅ Zero warnings, zero clippy warnings
+- ✅ All feature combinations compile (check-features)
+- ✅ Security audit clean (paste unmaintained warning only)
+
+## [0.6.5] - 2026-02-06
+
 ### Added
 
 - **Server-side elicitation:** Complete support for MCP server contexts
