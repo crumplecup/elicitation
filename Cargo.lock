@@ -460,7 +460,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
 name = "elicitation"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -493,7 +493,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_creusot_proofs"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "creusot-std",
  "elicitation",
@@ -501,7 +501,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_derive"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "elicitation",
  "proc-macro2",
@@ -514,7 +514,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_macros"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "proc-macro2",
  "quote",
