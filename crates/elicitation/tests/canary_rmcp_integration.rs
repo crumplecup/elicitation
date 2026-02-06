@@ -16,7 +16,7 @@ fn canary_tool_metadata() {
     let tool = _CanaryConfig::elicit_checked_tool_attr();
     assert!(!tool.name.is_empty());
     assert_eq!(tool.name, "elicit_checked");
-    
+
     // Test 2: The method exists (compilation test)
     // If this compiles, the signature is correct:
     // async fn elicit_checked(peer: Peer<RoleServer>) -> Result<Self, ElicitError>
@@ -27,12 +27,12 @@ fn canary_tool_metadata() {
 #[test]
 fn canary_macro_integration() {
     use elicitation::elicit_router;
-    
+
     // Test that elicit_router! macro works with the generated methods
     elicit_router! {
         _CanaryRouter: _CanaryConfig
     }
-    
+
     // If this compiles, the macro integration is working
     let _router = _CanaryRouter;
 }

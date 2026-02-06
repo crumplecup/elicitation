@@ -7,12 +7,14 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+#[allow(dead_code)]
 struct TestConfig {
     name: String,
     port: u16,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+#[allow(dead_code)]
 struct TestUser {
     username: String,
     email: String,
