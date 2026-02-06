@@ -1,7 +1,7 @@
 //! PathBuf contract types with runtime filesystem validation.
 
 use super::ValidationError;
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
 use std::path::PathBuf;
 
@@ -47,11 +47,11 @@ impl Prompt for PathBufExists {
 impl Elicitation for PathBufExists {
     type Style = <PathBuf as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PathBufExists");
         loop {
-            let path = PathBuf::elicit(client).await?;
+            let path = PathBuf::elicit(communicator).await?;
             match Self::new(path) {
                 Ok(valid) => {
                     tracing::debug!(path = ?valid.0, "Valid existing path");
@@ -106,11 +106,11 @@ impl Prompt for PathBufReadable {
 impl Elicitation for PathBufReadable {
     type Style = <PathBuf as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PathBufReadable");
         loop {
-            let path = PathBuf::elicit(client).await?;
+            let path = PathBuf::elicit(communicator).await?;
             match Self::new(path) {
                 Ok(valid) => {
                     tracing::debug!(path = ?valid.0, "Valid readable path");
@@ -171,11 +171,11 @@ impl Prompt for PathBufIsDir {
 impl Elicitation for PathBufIsDir {
     type Style = <PathBuf as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PathBufIsDir");
         loop {
-            let path = PathBuf::elicit(client).await?;
+            let path = PathBuf::elicit(communicator).await?;
             match Self::new(path) {
                 Ok(valid) => {
                     tracing::debug!(path = ?valid.0, "Valid directory path");
@@ -234,11 +234,11 @@ impl Prompt for PathBufIsFile {
 impl Elicitation for PathBufIsFile {
     type Style = <PathBuf as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PathBufIsFile");
         loop {
-            let path = PathBuf::elicit(client).await?;
+            let path = PathBuf::elicit(communicator).await?;
             match Self::new(path) {
                 Ok(valid) => {
                     tracing::debug!(path = ?valid.0, "Valid file path");

@@ -20,7 +20,7 @@
 //!
 //! async fn example(client: &Peer<RoleClient>) {
 //!     // Elicit a datetime with offset
-//!     let timestamp: OffsetDateTime = OffsetDateTime::elicit(client).await?;
+//!     let timestamp: OffsetDateTime = OffsetDateTime::elicit(communicator).await?;
 //!     
 //!     // User can choose:
 //!     // 1. ISO 8601 string: "2024-07-11T15:30:00+05:00"
@@ -121,7 +121,7 @@ impl crate::Select for InstantGenerationMode {
 impl Elicitation for InstantGenerationMode {
     type Style = InstantGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         // Use standard Select elicit pattern
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
@@ -152,9 +152,9 @@ impl Elicitation for InstantGenerationMode {
             InstantGenerationMode::Now => Ok(InstantGenerationMode::Now),
             InstantGenerationMode::Offset { .. } => {
                 // Elicit seconds
-                let seconds = i64::elicit(client).await?;
+                let seconds = i64::elicit(communicator).await?;
                 // Elicit nanos
-                let nanos = u32::elicit(client).await?;
+                let nanos = u32::elicit(communicator).await?;
                 Ok(InstantGenerationMode::Offset { seconds, nanos })
             }
         }
@@ -171,7 +171,7 @@ impl Elicitation for InstantGenerationMode {
 ///
 /// ```rust,ignore
 /// // Elicit the strategy
-/// let mode = InstantGenerationMode::elicit(client).await?;
+/// let mode = InstantGenerationMode::elicit(communicator).await?;
 /// let generator = InstantGenerator::new(mode);
 ///
 /// // Generate multiple instants with same strategy
@@ -239,12 +239,12 @@ impl Prompt for Instant {
 impl Elicitation for Instant {
     type Style = InstantStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "Instant"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "Instant"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting time::Instant");
 
         // Elicit the generation mode
-        let mode = InstantGenerationMode::elicit(client).await?;
+        let mode = InstantGenerationMode::elicit(communicator).await?;
 
         // Create generator and generate immediately
         let generator = InstantGenerator::new(mode);
@@ -319,7 +319,7 @@ impl Prompt for OffsetDateTimeGenerationMode {
 impl Elicitation for OffsetDateTimeGenerationMode {
     type Style = OffsetDateTimeGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
             Self::labels(),
@@ -348,8 +348,8 @@ impl Elicitation for OffsetDateTimeGenerationMode {
             OffsetDateTimeGenerationMode::Now => Ok(OffsetDateTimeGenerationMode::Now),
             OffsetDateTimeGenerationMode::UnixEpoch => Ok(OffsetDateTimeGenerationMode::UnixEpoch),
             OffsetDateTimeGenerationMode::Offset { .. } => {
-                let seconds = i64::elicit(client).await?;
-                let nanos = i32::elicit(client).await?;
+                let seconds = i64::elicit(communicator).await?;
+                let nanos = i32::elicit(communicator).await?;
                 Ok(OffsetDateTimeGenerationMode::Offset { seconds, nanos })
             }
         }
@@ -420,12 +420,12 @@ impl Prompt for OffsetDateTime {
 impl Elicitation for OffsetDateTime {
     type Style = OffsetDateTimeStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting OffsetDateTime");
 
         // Step 1: Choose input method
-        let method = DateTimeInputMethod::elicit(client).await?;
+        let method = DateTimeInputMethod::elicit(communicator).await?;
         tracing::debug!(?method, "Input method selected");
 
         match method {
@@ -458,7 +458,7 @@ impl Elicitation for OffsetDateTime {
             }
             DateTimeInputMethod::ManualComponents => {
                 // Elicit components
-                let components = DateTimeComponents::elicit(client).await?;
+                let components = DateTimeComponents::elicit(communicator).await?;
 
                 // Elicit offset
                 let offset_prompt = "Enter timezone offset in hours (e.g., +5 or -8):";
@@ -523,12 +523,12 @@ impl Prompt for PrimitiveDateTime {
 impl Elicitation for PrimitiveDateTime {
     type Style = PrimitiveDateTimeStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting PrimitiveDateTime");
 
         // Step 1: Choose input method
-        let method = DateTimeInputMethod::elicit(client).await?;
+        let method = DateTimeInputMethod::elicit(communicator).await?;
         tracing::debug!(?method, "Input method selected");
 
         match method {
@@ -563,7 +563,7 @@ impl Elicitation for PrimitiveDateTime {
             }
             DateTimeInputMethod::ManualComponents => {
                 // Elicit components
-                let components = DateTimeComponents::elicit(client).await?;
+                let components = DateTimeComponents::elicit(communicator).await?;
 
                 // Construct PrimitiveDateTime
                 let date = time::Date::from_calendar_date(

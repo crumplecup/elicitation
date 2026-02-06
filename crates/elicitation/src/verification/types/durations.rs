@@ -1,7 +1,7 @@
 //! Duration contract types.
 
 use super::ValidationError;
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
 use std::time::Duration;
 
@@ -43,11 +43,11 @@ impl Prompt for DurationPositive {
 impl Elicitation for DurationPositive {
     type Style = <Duration as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting DurationPositive");
         loop {
-            let duration = Duration::elicit(client).await?;
+            let duration = Duration::elicit(communicator).await?;
             match Self::new(duration) {
                 Ok(valid) => {
                     tracing::debug!(duration = ?valid.0, "Valid positive duration");

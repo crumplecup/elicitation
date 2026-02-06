@@ -35,13 +35,13 @@
 //!
 //! async fn example(client: &Peer<RoleClient>) -> ElicitResult<()> {
 //!     // Elicit a simple integer
-//!     let age: i32 = i32::elicit(client).await?;
+//!     let age: i32 = i32::elicit(communicator).await?;
 //!
 //!     // Elicit an optional value
-//!     let nickname: Option<String> = Option::<String>::elicit(client).await?;
+//!     let nickname: Option<String> = Option::<String>::elicit(communicator).await?;
 //!
 //!     // Elicit a collection
-//!     let scores: Vec<i32> = Vec::<i32>::elicit(client).await?;
+//!     let scores: Vec<i32> = Vec::<i32>::elicit(communicator).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -81,6 +81,8 @@
 #![warn(missing_docs)]
 
 mod client;
+mod server;  // Server-side wrapper (analogous to ElicitClient)
+mod communicator;  // Unified trait for client/server communication
 // Verification framework imports
 
 mod collections;
@@ -102,6 +104,10 @@ mod primitives;
 pub mod style;
 pub mod tool;
 mod tool_registry;
+
+// Router macro module (declarative macro)
+#[macro_use]
+mod router_macro;
 mod traits;
 
 #[cfg(feature = "serde_json")]
@@ -124,8 +130,10 @@ mod elicitation_style;
 // Error types
 pub use error::{ElicitError, ElicitErrorKind, ElicitResult, JsonError, RmcpError, ServiceError};
 
-// Core client
+// Core client and server
 pub use client::ElicitClient;
+pub use server::ElicitServer;
+pub use communicator::{ElicitCommunicator, StyleContext};
 
 // Core traits
 pub use elicitation_style::ElicitationStyle;
@@ -147,6 +155,14 @@ pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
 
 // Re-export rmcp for user convenience
 pub use rmcp;
+
+// Re-export serde_json for derive macro (needed in elicit_checked)
+#[doc(hidden)]
+pub use serde_json;
+
+// Re-export paste for macro usage
+#[doc(hidden)]
+pub use paste;
 
 // Re-export inventory for derive macro usage
 #[doc(hidden)]

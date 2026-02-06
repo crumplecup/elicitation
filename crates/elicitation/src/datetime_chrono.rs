@@ -90,7 +90,7 @@ impl Prompt for DateTimeUtcGenerationMode {
 impl Elicitation for DateTimeUtcGenerationMode {
     type Style = DateTimeUtcGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
             Self::labels(),
@@ -119,7 +119,7 @@ impl Elicitation for DateTimeUtcGenerationMode {
             DateTimeUtcGenerationMode::Now => Ok(DateTimeUtcGenerationMode::Now),
             DateTimeUtcGenerationMode::UnixEpoch => Ok(DateTimeUtcGenerationMode::UnixEpoch),
             DateTimeUtcGenerationMode::Offset { .. } => {
-                let seconds = i64::elicit(client).await?;
+                let seconds = i64::elicit(communicator).await?;
                 Ok(DateTimeUtcGenerationMode::Offset { seconds })
             }
         }
@@ -230,7 +230,7 @@ impl Prompt for NaiveDateTimeGenerationMode {
 impl Elicitation for NaiveDateTimeGenerationMode {
     type Style = NaiveDateTimeGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
             Self::labels(),
@@ -259,7 +259,7 @@ impl Elicitation for NaiveDateTimeGenerationMode {
             NaiveDateTimeGenerationMode::Now => Ok(NaiveDateTimeGenerationMode::Now),
             NaiveDateTimeGenerationMode::UnixEpoch => Ok(NaiveDateTimeGenerationMode::UnixEpoch),
             NaiveDateTimeGenerationMode::Offset { .. } => {
-                let seconds = i64::elicit(client).await?;
+                let seconds = i64::elicit(communicator).await?;
                 Ok(NaiveDateTimeGenerationMode::Offset { seconds })
             }
         }
@@ -330,12 +330,12 @@ impl Prompt for DateTime<Utc> {
 impl Elicitation for DateTime<Utc> {
     type Style = DateTimeUtcStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting DateTime<Utc>");
 
         // Step 1: Choose input method
-        let method = DateTimeInputMethod::elicit(client).await?;
+        let method = DateTimeInputMethod::elicit(communicator).await?;
         tracing::debug!(?method, "Input method selected");
 
         match method {
@@ -368,7 +368,7 @@ impl Elicitation for DateTime<Utc> {
             }
             DateTimeInputMethod::ManualComponents => {
                 // Elicit components
-                let components = DateTimeComponents::elicit(client).await?;
+                let components = DateTimeComponents::elicit(communicator).await?;
 
                 // Construct DateTime<Utc>
                 Utc.with_ymd_and_hms(
@@ -406,12 +406,12 @@ impl Prompt for DateTime<FixedOffset> {
 impl Elicitation for DateTime<FixedOffset> {
     type Style = DateTimeFixedOffsetStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting DateTime<FixedOffset>");
 
         // Step 1: Choose input method
-        let method = DateTimeInputMethod::elicit(client).await?;
+        let method = DateTimeInputMethod::elicit(communicator).await?;
         tracing::debug!(?method, "Input method selected");
 
         match method {
@@ -443,7 +443,7 @@ impl Elicitation for DateTime<FixedOffset> {
             }
             DateTimeInputMethod::ManualComponents => {
                 // Elicit components
-                let components = DateTimeComponents::elicit(client).await?;
+                let components = DateTimeComponents::elicit(communicator).await?;
 
                 // Elicit offset
                 let offset_prompt = "Enter timezone offset in hours (e.g., +5 or -8):";
@@ -505,12 +505,12 @@ impl Prompt for NaiveDateTime {
 impl Elicitation for NaiveDateTime {
     type Style = NaiveDateTimeStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting NaiveDateTime");
 
         // Step 1: Choose input method
-        let method = DateTimeInputMethod::elicit(client).await?;
+        let method = DateTimeInputMethod::elicit(communicator).await?;
         tracing::debug!(?method, "Input method selected");
 
         match method {
@@ -541,7 +541,7 @@ impl Elicitation for NaiveDateTime {
             }
             DateTimeInputMethod::ManualComponents => {
                 // Elicit components
-                let components = DateTimeComponents::elicit(client).await?;
+                let components = DateTimeComponents::elicit(communicator).await?;
 
                 // Construct NaiveDateTime
                 chrono::NaiveDate::from_ymd_opt(

@@ -1,7 +1,7 @@
 //! Network contract types.
 
 use super::ValidationError;
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
@@ -56,11 +56,11 @@ impl Prompt for IpPrivate {
 impl Elicitation for IpPrivate {
     type Style = <IpAddr as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IpPrivate");
         loop {
-            let ip = IpAddr::elicit(client).await?;
+            let ip = IpAddr::elicit(communicator).await?;
             match Self::new(ip) {
                 Ok(valid) => {
                     tracing::debug!(ip = %valid.0, "Valid private IP");
@@ -113,11 +113,11 @@ impl Prompt for IpPublic {
 impl Elicitation for IpPublic {
     type Style = <IpAddr as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IpPublic");
         loop {
-            let ip = IpAddr::elicit(client).await?;
+            let ip = IpAddr::elicit(communicator).await?;
             match Self::new(ip) {
                 Ok(valid) => {
                     tracing::debug!(ip = %valid.0, "Valid public IP");
@@ -169,11 +169,11 @@ impl Prompt for IpV4 {
 impl Elicitation for IpV4 {
     type Style = <IpAddr as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IpV4");
         loop {
-            let ip = IpAddr::elicit(client).await?;
+            let ip = IpAddr::elicit(communicator).await?;
             match Self::new(ip) {
                 Ok(valid) => {
                     tracing::debug!(ip = %valid.0, "Valid IPv4");
@@ -225,11 +225,11 @@ impl Prompt for IpV6 {
 impl Elicitation for IpV6 {
     type Style = <IpAddr as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting IpV6");
         loop {
-            let ip = IpAddr::elicit(client).await?;
+            let ip = IpAddr::elicit(communicator).await?;
             match Self::new(ip) {
                 Ok(valid) => {
                     tracing::debug!(ip = %valid.0, "Valid IPv6");
@@ -282,11 +282,11 @@ impl Prompt for Ipv4Loopback {
 impl Elicitation for Ipv4Loopback {
     type Style = <Ipv4Addr as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv4Loopback");
         loop {
-            let ip = Ipv4Addr::elicit(client).await?;
+            let ip = Ipv4Addr::elicit(communicator).await?;
             match Self::new(ip) {
                 Ok(valid) => {
                     tracing::debug!(ip = %valid.0, "Valid IPv4 loopback");
@@ -339,11 +339,11 @@ impl Prompt for Ipv6Loopback {
 impl Elicitation for Ipv6Loopback {
     type Style = <Ipv6Addr as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Ipv6Loopback");
         loop {
-            let ip = Ipv6Addr::elicit(client).await?;
+            let ip = Ipv6Addr::elicit(communicator).await?;
             match Self::new(ip) {
                 Ok(valid) => {
                     tracing::debug!(ip = %valid.0, "Valid IPv6 loopback");

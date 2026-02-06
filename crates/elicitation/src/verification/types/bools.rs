@@ -1,7 +1,7 @@
 //! Bool contract types.
 
 use super::ValidationError;
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
 
 // ============================================================================
@@ -49,12 +49,12 @@ impl Prompt for BoolTrue {
 impl Elicitation for BoolTrue {
     type Style = BoolTrueStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "BoolTrue"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "BoolTrue"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting BoolTrue (must be true)");
 
         loop {
-            let value = bool::elicit(client).await?;
+            let value = bool::elicit(communicator).await?;
 
             match Self::new(value) {
                 Ok(bool_true) => {
@@ -111,12 +111,12 @@ impl Prompt for BoolFalse {
 impl Elicitation for BoolFalse {
     type Style = BoolFalseStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "BoolFalse"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "BoolFalse"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting BoolFalse (must be false)");
 
         loop {
-            let value = bool::elicit(client).await?;
+            let value = bool::elicit(communicator).await?;
 
             match Self::new(value) {
                 Ok(bool_false) => {
@@ -231,8 +231,8 @@ impl Prompt for BoolDefault {
 impl Elicitation for BoolDefault {
     type Style = BoolDefaultStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let prompt = Self::prompt().ok_or_else(|| {
             crate::ElicitError::new(crate::ElicitErrorKind::InvalidFormat {
                 expected: "valid prompt".to_string(),
@@ -243,9 +243,7 @@ impl Elicitation for BoolDefault {
 
         let params = crate::mcp::bool_params(prompt);
 
-        let result = client
-            .peer()
-            .call_tool(rmcp::model::CallToolRequestParams {
+        let result = communicator.call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: crate::mcp::tool_names::elicit_bool().into(),
                 arguments: Some(params),

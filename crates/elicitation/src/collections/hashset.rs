@@ -1,6 +1,6 @@
 //! HashSet<T> implementation for unique item collection.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use std::collections::HashSet;
 use std::hash::Hash;
 
@@ -20,8 +20,8 @@ impl Prompt for HashSetStyle {
 impl Elicitation for HashSetStyle {
     type Style = HashSetStyle;
 
-    #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(_communicator), level = "trace")]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -41,18 +41,18 @@ where
 {
     type Style = HashSetStyle;
 
-    #[tracing::instrument(skip(client), fields(item_type = std::any::type_name::<T>()))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(item_type = std::any::type_name::<T>()))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let mut set = HashSet::new();
         tracing::debug!("Eliciting HashSet");
 
         loop {
             let add_more = if set.is_empty() {
                 tracing::debug!("Prompting for first item");
-                bool::elicit(client).await?
+                bool::elicit(communicator).await?
             } else {
                 tracing::debug!(count = set.len(), "Prompting for additional item");
-                bool::elicit(client).await?
+                bool::elicit(communicator).await?
             };
 
             if !add_more {
@@ -61,7 +61,7 @@ where
             }
 
             tracing::debug!("Eliciting item");
-            let item = T::elicit(client).await?;
+            let item = T::elicit(communicator).await?;
 
             // Automatic duplicate handling - sets ignore duplicates
             if !set.insert(item) {

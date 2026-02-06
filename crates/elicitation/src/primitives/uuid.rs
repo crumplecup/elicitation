@@ -84,7 +84,7 @@ impl Prompt for UuidGenerationMode {
 impl Elicitation for UuidGenerationMode {
     type Style = UuidGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         // Use standard Select elicit pattern
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
@@ -160,12 +160,12 @@ impl Prompt for Uuid {
 impl Elicitation for Uuid {
     type Style = UuidStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting UUID");
 
         // Elicit generation mode from agent
-        let mode = UuidGenerationMode::elicit(client).await?;
+        let mode = UuidGenerationMode::elicit(communicator).await?;
 
         // Create generator and generate UUID
         let generator = UuidGenerator::new(mode);

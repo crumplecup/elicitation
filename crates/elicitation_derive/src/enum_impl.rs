@@ -209,7 +209,7 @@ fn generate_variant_match_arm(variant: &VariantInfo, enum_ident: &syn::Ident) ->
                         field_type = stringify!(#field_ty),
                         "Eliciting tuple field"
                     );
-                    let #field_name = <#field_ty as elicitation::Elicitation>::elicit(client).await
+                    let #field_name = <#field_ty as elicitation::Elicitation>::elicit(communicator).await
                         .map_err(|e| {
                             tracing::error!(
                                 variant = #label,
@@ -248,7 +248,7 @@ fn generate_variant_match_arm(variant: &VariantInfo, enum_ident: &syn::Ident) ->
                         field_type = stringify!(#field_ty),
                         "Eliciting struct field"
                     );
-                    let #field_ident = <#field_ty as elicitation::Elicitation>::elicit(client).await
+                    let #field_ident = <#field_ty as elicitation::Elicitation>::elicit(communicator).await
                         .map_err(|e| {
                             tracing::error!(
                                 variant = #label,
@@ -290,7 +290,7 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
         );
 
         let params = elicitation::mcp::select_params(prompt, labels);
-        let result = client
+        let result = communicator
             .peer()
             .call_tool(elicitation::rmcp::model::CallToolRequestParams {
                             meta: None,
@@ -322,14 +322,14 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
             type Style = #style_name;
 
             #[tracing::instrument(
-                skip(client),
+                skip(communicator),
                 fields(
                     enum_name = stringify!(#name),
                     variant = tracing::field::Empty
                 )
             )]
-            async fn elicit(
-                client: &elicitation::ElicitClient,
+            async fn elicit<C: elicitation::ElicitCommunicator>(
+                communicator: &C,
             ) -> elicitation::ElicitResult<Self> {
                 #selection_code
 
@@ -384,7 +384,7 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
         impl elicitation::Elicitation for #style_name {
             type Style = #style_name;
 
-            async fn elicit(_client: &elicitation::ElicitClient) -> elicitation::ElicitResult<Self> {
+            async fn elicit<C: elicitation::ElicitCommunicator>(_communicator: &C) -> elicitation::ElicitResult<Self> {
                 Ok(Self::Default)
             }
         }

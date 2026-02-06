@@ -89,7 +89,7 @@ impl Prompt for TimestampGenerationMode {
 impl Elicitation for TimestampGenerationMode {
     type Style = TimestampGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
             Self::labels(),
@@ -118,7 +118,7 @@ impl Elicitation for TimestampGenerationMode {
             TimestampGenerationMode::Now => Ok(TimestampGenerationMode::Now),
             TimestampGenerationMode::UnixEpoch => Ok(TimestampGenerationMode::UnixEpoch),
             TimestampGenerationMode::Offset { .. } => {
-                let seconds = i64::elicit(client).await?;
+                let seconds = i64::elicit(communicator).await?;
                 Ok(TimestampGenerationMode::Offset { seconds })
             }
         }
@@ -186,12 +186,12 @@ impl Prompt for Timestamp {
 impl Elicitation for Timestamp {
     type Style = TimestampStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Timestamp");
 
         // Step 1: Choose input method
-        let method = DateTimeInputMethod::elicit(client).await?;
+        let method = DateTimeInputMethod::elicit(communicator).await?;
         tracing::debug!(?method, "Input method selected");
 
         match method {
@@ -222,7 +222,7 @@ impl Elicitation for Timestamp {
             }
             DateTimeInputMethod::ManualComponents => {
                 // Elicit components
-                let components = DateTimeComponents::elicit(client).await?;
+                let components = DateTimeComponents::elicit(communicator).await?;
 
                 // Construct CivilDateTime then convert to Timestamp (assumes UTC)
                 let dt = CivilDateTime::new(
@@ -265,12 +265,12 @@ impl Prompt for Zoned {
 impl Elicitation for Zoned {
     type Style = ZonedStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Zoned");
 
         // Step 1: Choose input method
-        let method = DateTimeInputMethod::elicit(client).await?;
+        let method = DateTimeInputMethod::elicit(communicator).await?;
         tracing::debug!(?method, "Input method selected");
 
         match method {
@@ -301,7 +301,7 @@ impl Elicitation for Zoned {
             }
             DateTimeInputMethod::ManualComponents => {
                 // Elicit components
-                let components = DateTimeComponents::elicit(client).await?;
+                let components = DateTimeComponents::elicit(communicator).await?;
 
                 // Elicit timezone
                 let tz_prompt = "Enter IANA timezone (e.g., \"America/New_York\" or \"UTC\"):";
@@ -365,12 +365,12 @@ impl Prompt for CivilDateTime {
 impl Elicitation for CivilDateTime {
     type Style = CivilDateTimeStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting CivilDateTime");
 
         // Step 1: Choose input method
-        let method = DateTimeInputMethod::elicit(client).await?;
+        let method = DateTimeInputMethod::elicit(communicator).await?;
         tracing::debug!(?method, "Input method selected");
 
         match method {
@@ -401,7 +401,7 @@ impl Elicitation for CivilDateTime {
             }
             DateTimeInputMethod::ManualComponents => {
                 // Elicit components
-                let components = DateTimeComponents::elicit(client).await?;
+                let components = DateTimeComponents::elicit(communicator).await?;
 
                 // Construct CivilDateTime
                 CivilDateTime::new(

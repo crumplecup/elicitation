@@ -13,7 +13,7 @@
 //!
 //! ```rust,ignore
 //! // Contract type validates on construction
-//! let validated = I8Positive::elicit(client).await?;
+//! let validated = I8Positive::elicit(communicator).await?;
 //!
 //! // Unwrap to familiar stdlib type
 //! let value: i8 = validated.into_inner();

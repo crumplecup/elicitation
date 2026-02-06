@@ -33,7 +33,7 @@
 /// impl Elicitation for MyI32Style {
 ///     type Style = Self;
 ///     
-///     async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+///     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
 ///         // Implement selection logic
 ///         Ok(Self::default())
 ///     }

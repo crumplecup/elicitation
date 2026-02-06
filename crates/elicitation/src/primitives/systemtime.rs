@@ -24,7 +24,7 @@
 //! ```
 
 use crate::{
-    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
     Select, mcp,
 };
 use std::time::{Duration, SystemTime};
@@ -103,16 +103,14 @@ impl Prompt for SystemTimeGenerationMode {
 impl Elicitation for SystemTimeGenerationMode {
     type Style = SystemTimeGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         // Use standard Select elicit pattern
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
             Self::labels(),
         );
 
-        let result = client
-            .peer()
-            .call_tool(rmcp::model::CallToolRequestParams {
+        let result = communicator.call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_select().into(),
                 arguments: Some(params),
@@ -135,9 +133,9 @@ impl Elicitation for SystemTimeGenerationMode {
             SystemTimeGenerationMode::UnixEpoch => Ok(SystemTimeGenerationMode::UnixEpoch),
             SystemTimeGenerationMode::Offset { .. } => {
                 // Elicit seconds
-                let seconds = i64::elicit(client).await?;
+                let seconds = i64::elicit(communicator).await?;
                 // Elicit nanos
-                let nanos = u32::elicit(client).await?;
+                let nanos = u32::elicit(communicator).await?;
                 Ok(SystemTimeGenerationMode::Offset { seconds, nanos })
             }
         }
@@ -215,12 +213,12 @@ impl Prompt for SystemTime {
 impl Elicitation for SystemTime {
     type Style = SystemTimeStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting SystemTime");
 
         // Elicit generation mode from agent
-        let mode = SystemTimeGenerationMode::elicit(client).await?;
+        let mode = SystemTimeGenerationMode::elicit(communicator).await?;
 
         // Create generator and generate time
         let generator = SystemTimeGenerator::new(mode);

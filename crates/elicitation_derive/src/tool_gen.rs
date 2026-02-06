@@ -42,23 +42,34 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
             /// Checked elicitation via MCP protocol.
             ///
             /// This is the verified, registered variant suitable for production use.
-            /// Uses the derived `Elicitation` impl to interactively elicit a value
-            /// from the user via MCP.
+            /// Uses server-side elicitation to interactively elicit a value from the
+            /// requesting client via MCP.
             ///
             /// Automatically registered as an MCP tool via `#[rmcp::tool]`.
             ///
             /// # Examples
             ///
             /// ```ignore
-            /// let client = Arc::new(peer.clone());
-            /// let config = Config::elicit_checked(client).await?;
+            /// // In a tool handler with peer: Peer<RoleServer>
+            /// let config = Config::elicit_checked(peer).await?;
             /// ```
+            ///
+            /// # Implementation
+            ///
+            /// Creates an `ElicitServer` wrapper and delegates to the `Elicitation` trait.
+            /// This provides server-side elicitation with the same style system and
+            /// validation logic as client-side elicitation.
             #[elicitation::rmcp::tool]
             pub async fn elicit_checked(
-                client: std::sync::Arc<elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleClient>>,
+                peer: elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleServer>,
             ) -> Result<Self, elicitation::ElicitError> {
-                use elicitation::{Elicitation, ElicitClient};
-                Self::elicit(&ElicitClient::new(client)).await
+                use elicitation::{ElicitServer, Elicitation};
+                
+                // Create server wrapper
+                let server = ElicitServer::new(peer);
+                
+                // Delegate to trait implementation
+                Self::elicit(&server).await
             }
         }
 

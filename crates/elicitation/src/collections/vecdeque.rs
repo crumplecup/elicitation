@@ -1,6 +1,6 @@
 //! VecDeque<T> implementation for double-ended queue elicitation.
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use std::collections::VecDeque;
 
 // Default-only style for VecDeque
@@ -19,8 +19,8 @@ impl Prompt for VecDequeStyle {
 impl Elicitation for VecDequeStyle {
     type Style = VecDequeStyle;
 
-    #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(_communicator), level = "trace")]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -40,18 +40,18 @@ where
 {
     type Style = VecDequeStyle;
 
-    #[tracing::instrument(skip(client), fields(item_type = std::any::type_name::<T>()))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(item_type = std::any::type_name::<T>()))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let mut deque = VecDeque::new();
         tracing::debug!("Eliciting VecDeque");
 
         loop {
             let add_more = if deque.is_empty() {
                 tracing::debug!("Prompting for first item");
-                bool::elicit(client).await?
+                bool::elicit(communicator).await?
             } else {
                 tracing::debug!(count = deque.len(), "Prompting for additional item");
-                bool::elicit(client).await?
+                bool::elicit(communicator).await?
             };
 
             if !add_more {
@@ -60,7 +60,7 @@ where
             }
 
             tracing::debug!("Eliciting item");
-            let item = T::elicit(client).await?;
+            let item = T::elicit(communicator).await?;
             deque.push_back(item);
         }
 

@@ -2,7 +2,7 @@
 
 #![allow(non_snake_case)]
 
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
 /// Macro to implement Elicitation for tuples up to arity 12.
 macro_rules! impl_tuple_elicit {
@@ -27,8 +27,8 @@ macro_rules! impl_tuple_elicit {
             impl Elicitation for [<Tuple $( $idx )+ Style>] {
                 type Style = [<Tuple $( $idx )+ Style>];
 
-                #[tracing::instrument(skip(_client), level = "trace")]
-                async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
+                #[tracing::instrument(skip(_communicator), level = "trace")]
+                async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
                     Ok(Self::Default)
                 }
             }
@@ -51,18 +51,18 @@ macro_rules! impl_tuple_elicit {
                 type Style = [<Tuple $( $idx )+ Style>];
             }
 
-            #[tracing::instrument(skip(client), fields(
+            #[tracing::instrument(skip(communicator), fields(
                 tuple_size = count!($($T)+),
                 types = concat!($(stringify!($T), ", "),+)
             ))]
-            async fn elicit(
-                client: &ElicitClient,
+            async fn elicit<C: ElicitCommunicator>(
+                communicator: &C,
             ) -> ElicitResult<Self> {
                 tracing::debug!("Eliciting tuple");
 
                 $(
                     tracing::debug!(index = $idx, type_name = std::any::type_name::<$T>(), "Eliciting tuple element");
-                    let $T = $T::elicit(client).await?;
+                    let $T = $T::elicit(communicator).await?;
                 )+
 
                 tracing::debug!("Tuple complete");
@@ -94,8 +94,8 @@ impl Prompt for UnitStyle {
 impl Elicitation for UnitStyle {
     type Style = UnitStyle;
 
-    #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(_communicator), level = "trace")]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
 }
@@ -109,8 +109,8 @@ impl Prompt for () {
 impl Elicitation for () {
     type Style = UnitStyle;
 
-    #[tracing::instrument(skip(_client), level = "trace")]
-    async fn elicit(_client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(_communicator), level = "trace")]
+    async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting unit type ()");
         Ok(())
     }

@@ -5,7 +5,7 @@
 #[cfg(feature = "uuid")]
 use super::ValidationError;
 #[cfg(feature = "uuid")]
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitClient, ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 #[cfg(feature = "uuid")]
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "uuid")]
@@ -61,11 +61,11 @@ impl Prompt for UuidV4 {
 impl Elicitation for UuidV4 {
     type Style = <Uuid as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting UuidV4");
         loop {
-            let uuid = Uuid::elicit(client).await?;
+            let uuid = Uuid::elicit(communicator).await?;
             match Self::new(uuid) {
                 Ok(valid) => {
                     tracing::debug!(uuid = %valid.0, "Valid V4 UUID");
@@ -126,11 +126,11 @@ impl Prompt for UuidNonNil {
 impl Elicitation for UuidNonNil {
     type Style = <Uuid as Elicitation>::Style;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting UuidNonNil");
         loop {
-            let uuid = Uuid::elicit(client).await?;
+            let uuid = Uuid::elicit(communicator).await?;
             match Self::new(uuid) {
                 Ok(valid) => {
                     tracing::debug!(uuid = %valid.0, "Valid non-nil UUID");

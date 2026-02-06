@@ -26,7 +26,7 @@
 //! ```
 
 use crate::{
-    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
     Select, mcp,
 };
 use std::io;
@@ -147,15 +147,13 @@ impl Prompt for IoErrorGenerationMode {
 impl Elicitation for IoErrorGenerationMode {
     type Style = IoErrorGenerationModeStyle;
 
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
             Self::labels(),
         );
 
-        let result = client
-            .peer()
-            .call_tool(rmcp::model::CallToolRequestParams {
+        let result = communicator.call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_select().into(),
                 arguments: Some(params),
@@ -173,7 +171,7 @@ impl Elicitation for IoErrorGenerationMode {
         })?;
 
         // Elicit error message
-        let message = String::elicit(client).await?;
+        let message = String::elicit(communicator).await?;
 
         // Create mode with the message
         let mode = match selected {
@@ -243,11 +241,11 @@ impl Prompt for io::Error {
 impl Elicitation for io::Error {
     type Style = IoErrorStyle;
 
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting io::Error for testing");
 
         // Elicit generation mode
-        let mode = IoErrorGenerationMode::elicit(client).await?;
+        let mode = IoErrorGenerationMode::elicit(communicator).await?;
 
         // Create generator and generate error
         let generator = IoErrorGenerator::new(mode);
@@ -324,15 +322,13 @@ mod json_error {
     impl Elicitation for JsonErrorGenerationMode {
         type Style = JsonErrorGenerationModeStyle;
 
-        async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+        async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
             let params = mcp::select_params(
                 Self::prompt().unwrap_or("Select an option:"),
                 Self::labels(),
             );
 
-            let result = client
-                .peer()
-                .call_tool(rmcp::model::CallToolRequestParams {
+            let result = communicator.call_tool(rmcp::model::CallToolRequestParams {
                     meta: None,
                     name: mcp::tool_names::elicit_select().into(),
                     arguments: Some(params),
@@ -402,11 +398,11 @@ mod json_error {
     impl Elicitation for serde_json::Error {
         type Style = JsonErrorStyle;
 
-        async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+        async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
             tracing::debug!("Eliciting serde_json::Error for testing");
 
             // Elicit generation mode
-            let mode = JsonErrorGenerationMode::elicit(client).await?;
+            let mode = JsonErrorGenerationMode::elicit(communicator).await?;
 
             // Create generator and generate error
             let generator = JsonErrorGenerator::new(mode);

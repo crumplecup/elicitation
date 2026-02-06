@@ -60,8 +60,8 @@ crate::default_style!(DateTimeInputMethod => DateTimeInputMethodStyle);
 impl Elicitation for DateTimeInputMethod {
     type Style = DateTimeInputMethodStyle;
 
-    #[tracing::instrument(skip(client))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting datetime input method");
 
@@ -103,8 +103,8 @@ pub struct DateTimeComponents {
 
 impl DateTimeComponents {
     /// Elicit datetime components from user.
-    #[tracing::instrument(skip(client))]
-    pub async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator))]
+    pub async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting datetime components");
 
         // Year

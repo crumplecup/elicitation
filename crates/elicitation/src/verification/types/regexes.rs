@@ -3,7 +3,7 @@
 //! This module provides contract types for regex validation using the `regex` crate.
 
 use crate::verification::types::ValidationError;
-use crate::{ElicitClient, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitClient, ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "regex")]
 use regex::{Regex, RegexBuilder, RegexSet};
@@ -567,13 +567,13 @@ impl Prompt for RegexValid {
 impl Elicitation for RegexValid {
     type Style = RegexValidStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "RegexValid"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "RegexValid"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting RegexValid (valid regex pattern)");
 
         loop {
             // Elicit pattern string
-            let pattern = String::elicit(client).await?;
+            let pattern = String::elicit(communicator).await?;
 
             // Try to construct RegexValid (validates pattern)
             match Self::new(&pattern) {
@@ -601,13 +601,13 @@ impl Prompt for RegexSetValid {
 impl Elicitation for RegexSetValid {
     type Style = RegexSetValidStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "RegexSetValid"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "RegexSetValid"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting RegexSetValid (set of regex patterns)");
 
         loop {
             // Elicit Vec of pattern strings
-            let patterns = Vec::<String>::elicit(client).await?;
+            let patterns = Vec::<String>::elicit(communicator).await?;
 
             // Try to construct RegexSetValid (validates all patterns)
             match Self::new(patterns.iter().map(|s| s.as_str())) {
@@ -635,13 +635,13 @@ impl Prompt for RegexCaseInsensitive {
 impl Elicitation for RegexCaseInsensitive {
     type Style = RegexCaseInsensitiveStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "RegexCaseInsensitive"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "RegexCaseInsensitive"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting RegexCaseInsensitive (case-insensitive regex pattern)");
 
         loop {
             // Elicit pattern string
-            let pattern = String::elicit(client).await?;
+            let pattern = String::elicit(communicator).await?;
 
             // Try to construct RegexCaseInsensitive (validates pattern)
             match Self::new(&pattern) {
@@ -669,13 +669,13 @@ impl Prompt for RegexMultiline {
 impl Elicitation for RegexMultiline {
     type Style = RegexMultilineStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "RegexMultiline"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "RegexMultiline"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting RegexMultiline (multiline regex pattern)");
 
         loop {
             // Elicit pattern string
-            let pattern = String::elicit(client).await?;
+            let pattern = String::elicit(communicator).await?;
 
             // Try to construct RegexMultiline (validates pattern)
             match Self::new(&pattern) {
@@ -703,13 +703,13 @@ impl Prompt for RegexSetNonEmpty {
 impl Elicitation for RegexSetNonEmpty {
     type Style = RegexSetNonEmptyStyle;
 
-    #[tracing::instrument(skip(client), fields(type_name = "RegexSetNonEmpty"))]
-    async fn elicit(client: &ElicitClient) -> ElicitResult<Self> {
+    #[tracing::instrument(skip(communicator), fields(type_name = "RegexSetNonEmpty"))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting RegexSetNonEmpty (non-empty set of regex patterns)");
 
         loop {
             // Elicit Vec of pattern strings
-            let patterns = Vec::<String>::elicit(client).await?;
+            let patterns = Vec::<String>::elicit(communicator).await?;
 
             // Try to construct RegexSetNonEmpty (validates non-empty + patterns)
             match Self::new(patterns.iter().map(|s| s.as_str())) {
