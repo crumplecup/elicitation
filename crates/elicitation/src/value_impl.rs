@@ -3,7 +3,7 @@
 //! Available with the `serde_json` feature.
 
 use crate::{
-    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select, mcp,
+    ElicitClient, ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select, mcp,
 };
 use serde_json::Value;
 
@@ -69,8 +69,7 @@ impl Elicitation for JsonType {
         tracing::debug!("Eliciting JSON type selection");
 
         let params = mcp::select_params(prompt, Self::labels());
-        let result = client
-            .peer()
+        let result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_select().into(),
@@ -98,14 +97,14 @@ impl Elicitation for Value {
 
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        elicit_with_depth(client, 0).await
+        elicit_with_depth(communicator, 0).await
     }
 }
 
 /// Elicit a JSON Value with depth tracking.
 #[tracing::instrument(skip(communicator), fields(depth))]
-fn elicit_with_depth<'a>(
-    client: &'a ElicitClient,
+fn elicit_with_depth<'a, C: ElicitCommunicator + 'a>(
+    communicator: &'a C,
     depth: usize,
 ) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Value>> + Send + 'a>> {
     Box::pin(async move {
@@ -139,15 +138,15 @@ fn elicit_with_depth<'a>(
             }
             JsonType::Number => {
                 tracing::debug!("Eliciting number");
-                elicit_number(client).await
+                elicit_number(communicator).await
             }
             JsonType::Array => {
                 tracing::debug!("Eliciting array");
-                elicit_array(client, depth + 1).await
+                elicit_array(communicator, depth + 1).await
             }
             JsonType::Object => {
                 tracing::debug!("Eliciting object");
-                elicit_object(client, depth + 1).await
+                elicit_object(communicator, depth + 1).await
             }
         }
     })
@@ -155,13 +154,12 @@ fn elicit_with_depth<'a>(
 
 /// Elicit a JSON number.
 #[tracing::instrument(skip(communicator))]
-async fn elicit_number(client: &ElicitClient) -> ElicitResult<Value> {
+async fn elicit_number<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Value> {
     let prompt = "Enter number (integer or decimal):";
     tracing::debug!("Eliciting number");
 
     let params = mcp::text_params(prompt);
-    let result = client
-        .peer()
+    let result = communicator
         .call_tool(rmcp::model::CallToolRequestParams {
             meta: None,
             name: mcp::tool_names::elicit_text().into(),
@@ -186,8 +184,8 @@ async fn elicit_number(client: &ElicitClient) -> ElicitResult<Value> {
 
 /// Elicit a JSON array.
 #[tracing::instrument(skip(communicator), fields(depth))]
-fn elicit_array<'a>(
-    client: &'a ElicitClient,
+fn elicit_array<'a, C: ElicitCommunicator + 'a>(
+    communicator: &'a C,
     depth: usize,
 ) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Value>> + Send + 'a>> {
     Box::pin(async move {
@@ -204,8 +202,7 @@ fn elicit_array<'a>(
 
             // Ask if user wants to add an item
             let params = mcp::bool_params(prompt);
-            let result = client
-                .peer()
+            let result = communicator
                 .call_tool(rmcp::model::CallToolRequestParams {
                     meta: None,
                     name: mcp::tool_names::elicit_bool().into(),
@@ -223,7 +220,7 @@ fn elicit_array<'a>(
             }
 
             // Recursively elicit the item
-            let item = elicit_with_depth(client, depth).await?;
+            let item = elicit_with_depth(communicator, depth).await?;
             items.push(item);
             tracing::debug!(count = items.len(), "Item added to array");
         }
@@ -234,8 +231,8 @@ fn elicit_array<'a>(
 
 /// Elicit a JSON object.
 #[tracing::instrument(skip(communicator), fields(depth))]
-fn elicit_object<'a>(
-    client: &'a ElicitClient,
+fn elicit_object<'a, C: ElicitCommunicator + 'a>(
+    communicator: &'a C,
     depth: usize,
 ) -> std::pin::Pin<Box<dyn std::future::Future<Output = ElicitResult<Value>> + Send + 'a>> {
     Box::pin(async move {
@@ -252,8 +249,7 @@ fn elicit_object<'a>(
 
             // Ask if user wants to add a field
             let params = mcp::bool_params(prompt);
-            let result = client
-                .peer()
+            let result = communicator
                 .call_tool(rmcp::model::CallToolRequestParams {
                     meta: None,
                     name: mcp::tool_names::elicit_bool().into(),
@@ -273,8 +269,7 @@ fn elicit_object<'a>(
             // Elicit key
             let key_prompt = "Enter field name:";
             let key_params = mcp::text_params(key_prompt);
-            let key_result = client
-                .peer()
+            let key_result = communicator
                 .call_tool(rmcp::model::CallToolRequestParams {
                     meta: None,
                     name: mcp::tool_names::elicit_text().into(),
@@ -287,7 +282,7 @@ fn elicit_object<'a>(
             let key = mcp::parse_string(key_value)?;
 
             // Recursively elicit the value
-            let field_value = elicit_with_depth(client, depth).await?;
+            let field_value = elicit_with_depth(communicator, depth).await?;
             map.insert(key.clone(), field_value);
             tracing::debug!(key = %key, count = map.len(), "Field added to object");
         }

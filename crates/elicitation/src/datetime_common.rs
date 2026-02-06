@@ -10,7 +10,7 @@
 //! These shared patterns ensure consistent UX across all datetime libraries.
 
 use crate::{
-    ElicitClient, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select, mcp,
+    ElicitClient, ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select, mcp,
 };
 
 /// Input method for datetime elicitation.
@@ -66,8 +66,7 @@ impl Elicitation for DateTimeInputMethod {
         tracing::debug!("Eliciting datetime input method");
 
         let params = mcp::select_params(prompt, Self::labels());
-        let result = client
-            .peer()
+        let result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_select().into(),
@@ -109,8 +108,7 @@ impl DateTimeComponents {
 
         // Year
         let year_params = mcp::number_params("Enter year:", 1970, 2100);
-        let year_result = client
-            .peer()
+        let year_result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_number().into(),
@@ -123,8 +121,7 @@ impl DateTimeComponents {
 
         // Month
         let month_params = mcp::number_params("Enter month (1-12):", 1, 12);
-        let month_result = client
-            .peer()
+        let month_result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_number().into(),
@@ -137,8 +134,7 @@ impl DateTimeComponents {
 
         // Day
         let day_params = mcp::number_params("Enter day (1-31):", 1, 31);
-        let day_result = client
-            .peer()
+        let day_result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_number().into(),
@@ -151,8 +147,7 @@ impl DateTimeComponents {
 
         // Hour
         let hour_params = mcp::number_params("Enter hour (0-23):", 0, 23);
-        let hour_result = client
-            .peer()
+        let hour_result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_number().into(),
@@ -165,8 +160,7 @@ impl DateTimeComponents {
 
         // Minute
         let minute_params = mcp::number_params("Enter minute (0-59):", 0, 59);
-        let minute_result = client
-            .peer()
+        let minute_result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_number().into(),
@@ -179,8 +173,7 @@ impl DateTimeComponents {
 
         // Second
         let second_params = mcp::number_params("Enter second (0-59):", 0, 59);
-        let second_result = client
-            .peer()
+        let second_result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_number().into(),

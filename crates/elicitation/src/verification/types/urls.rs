@@ -504,8 +504,7 @@ impl Elicitation for UrlValid {
 
         let params = crate::mcp::text_params(prompt);
 
-        let result = client
-            .peer()
+        let result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: crate::mcp::tool_names::elicit_text().into(),
