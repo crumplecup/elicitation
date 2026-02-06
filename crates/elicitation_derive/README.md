@@ -1,141 +1,69 @@
 # elicitation_derive
 
-Derive macros for the [elicitation](https://crates.io/crates/elicitation) library.
-
-[![Crates.io](https://img.shields.io/crates/v/elicitation_derive.svg)](https://crates.io/crates/elicitation_derive)
-[![Documentation](https://docs.rs/elicitation_derive/badge.svg)](https://docs.rs/elicitation_derive)
-[![License](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg)](../../LICENSE-APACHE)
-
-This crate provides procedural macros for automatically implementing elicitation traits on custom types. It's typically used through the main `elicitation` crate.
-
-## Features
-
-- **`#[derive(Elicit)]`** - Automatic implementation of elicitation traits
-- **Enum Support** - Generates `Select` pattern for unit variant enums
-- **Struct Support** - Generates `Survey` pattern for structs
-- **Attribute Support** - `#[prompt("...")]`, `#[skip]`, and more
+Derive macros for the `elicitation` crate.
 
 ## Usage
 
-Add this to your `Cargo.toml`:
-
-```toml
-[dependencies]
-elicitation = "0.2"
-```
-
-The derive macro is re-exported through the main crate:
-
 ```rust
 use elicitation::Elicit;
+use schemars::JsonSchema;
 
-#[derive(Debug, Elicit)]
-enum Priority {
-    Low,
-    Medium,
-    High,
-}
-
-#[derive(Debug, Elicit)]
-struct Task {
-    #[prompt("What's the task title?")]
-    title: String,
-
-    priority: Priority,
-}
-```
-
-## Attributes
-
-### `#[prompt("...")]`
-
-Customize the prompt text for types or fields:
-
-```rust
-#[derive(Elicit)]
-#[prompt("Choose your favorite color:")]
-enum Color {
-    Red,
-    Green,
-    Blue,
-}
-
-#[derive(Elicit)]
+#[derive(Debug, Clone, Elicit, JsonSchema)]
 struct Config {
-    #[prompt("Enter the server hostname:")]
     host: String,
+    port: u16,
 }
 ```
 
-### `#[skip]`
+**Important:** You must include `#[derive(schemars::JsonSchema)]` along with `#[derive(Elicit)]`. This is required because the generated `elicit_checked()` function returns `Self`, which must implement `JsonSchema` for rmcp's `#[tool]` attribute to work properly.
 
-Skip a field during elicitation (uses `Default::default()`):
+## What Gets Generated
+
+The `#[derive(Elicit)]` macro generates:
+
+1. **`Elicitation` trait implementation** - Async elicitation logic
+2. **`elicit_checked()` function** - MCP tool decorated with `#[rmcp::tool]`
+3. **Supporting traits** - `Prompt`, `Select` (for enums), `Survey` (for structs)
+
+## Why JsonSchema is Required
+
+The generated tool function looks like:
 
 ```rust
-use chrono::{DateTime, Utc};
-
-#[derive(Default, Elicit)]
-struct Task {
-    title: String,
-
-    #[skip]
-    created_at: DateTime<Utc>,
+#[rmcp::tool]
+pub async fn elicit_checked(peer: Peer<RoleServer>) -> Result<Self, ElicitError> {
+    // ...
 }
 ```
 
-## Generated Implementations
+The `#[rmcp::tool]` macro requires the return type (`Self`) to implement `JsonSchema` for OpenAPI/JSON Schema generation.
 
-### For Enums (Select Pattern)
+## Example with Tool Router
 
 ```rust
-#[derive(Elicit)]
-enum Status {
-    Active,
-    Inactive,
+use elicitation::{Elicit, elicit_router};
+use schemars::JsonSchema;
+
+#[derive(Debug, Clone, Elicit, JsonSchema)]
+struct ServerConfig {
+    host: String,
+    port: u16,
+}
+
+#[derive(Debug, Clone, Elicit, JsonSchema)]
+struct UserProfile {
+    username: String,
+    email: String,
+}
+
+// Generate router with all tools
+elicit_router! {
+    pub MyTools: ServerConfig, UserProfile
 }
 ```
 
-Generates:
-- `impl Prompt for Status`
-- `impl Select for Status`
-- `impl Elicitation for Status`
+This generates MCP tools:
+- `elicit_checked_ServerConfig(peer)` 
+- `elicit_checked_UserProfile(peer)`
 
-### For Structs (Survey Pattern)
-
-```rust
-#[derive(Elicit)]
-struct Person {
-    name: String,
-    age: u8,
-}
-```
-
-Generates:
-- `impl Prompt for Person`
-- `impl Survey for Person`
-- `impl Elicitation for Person`
-
-## Requirements
-
-- Enum variants must be unit variants (no fields) in v0.2.0
-- Struct fields must implement `Elicitation`
-- Struct must implement `Default` if using `#[skip]` attribute
-
-## Version History
-
-See [CHANGELOG.md](../../CHANGELOG.md) for version history.
-
-## License
-
-Licensed under either of:
-
-- Apache License, Version 2.0 ([LICENSE-APACHE](../../LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT license ([LICENSE-MIT](../../LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
-
-at your option.
-
-## Links
-
-- [Main elicitation crate](https://crates.io/crates/elicitation)
-- [Documentation](https://docs.rs/elicitation_derive)
-- [Repository](https://github.com/crumplecup/elicitation)
+All automatically registered and ready to use!

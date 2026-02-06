@@ -7,7 +7,11 @@ use syn::{Data, DeriveInput, parse_macro_input};
 /// Expand the #[derive(Elicit)] macro.
 ///
 /// Dispatches to enum or struct implementation based on the input type.
-/// Generates both the Elicitation trait impl AND an MCP tool function.
+/// Generates the Elicitation trait impl AND MCP tool function.
+///
+/// **Important:** Users must also add `#[derive(schemars::JsonSchema)]` for MCP tool compatibility.
+/// This is required because the generated `elicit_checked()` function returns `Self`, which
+/// must implement JsonSchema for rmcp's `#[tool]` attribute to work.
 pub fn expand(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 

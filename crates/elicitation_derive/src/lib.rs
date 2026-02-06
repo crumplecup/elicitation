@@ -92,6 +92,22 @@ use proc_macro::TokenStream;
 
 /// Derive the Elicit trait for enums (→ Select) or structs (→ Survey).
 ///
+/// **Important:** You must also add `#[derive(schemars::JsonSchema)]` to your type.
+/// This is required for MCP tool compatibility (the generated `elicit_checked()` function).
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation::Elicit;
+/// use schemars::JsonSchema;
+///
+/// #[derive(Debug, Clone, Elicit, JsonSchema)]
+/// struct Config {
+///     host: String,
+///     port: u16,
+/// }
+/// ```
+///
 /// # Supported Attributes
 ///
 /// - `#[prompt("...")]` - Custom prompt text (applies to type or fields)
@@ -110,7 +126,7 @@ use proc_macro::TokenStream;
 /// ## Unit Variants
 ///
 /// ```rust,ignore
-/// #[derive(Elicit)]
+/// #[derive(Elicit, JsonSchema)]
 /// enum Role {
 ///     System,
 ///     User,
@@ -121,7 +137,7 @@ use proc_macro::TokenStream;
 /// ## Tuple Variants
 ///
 /// ```rust,ignore
-/// #[derive(Elicit)]
+/// #[derive(Elicit, JsonSchema)]
 /// enum MediaSource {
 ///     Url(String),
 ///     Base64(String),
@@ -132,7 +148,7 @@ use proc_macro::TokenStream;
 /// ## Struct Variants
 ///
 /// ```rust,ignore
-/// #[derive(Elicit)]
+/// #[derive(Elicit, JsonSchema)]
 /// enum Input {
 ///     Text(String),
 ///     Image {
@@ -155,14 +171,15 @@ use proc_macro::TokenStream;
 ///
 /// ```rust,ignore
 /// use elicitation::Elicit;
+/// use schemars::JsonSchema;
 ///
-/// #[derive(Elicit)]
+/// #[derive(Elicit, JsonSchema)]
 /// enum Status {
 ///     Active,
 ///     Inactive,
 /// }
 ///
-/// #[derive(Elicit)]
+/// #[derive(Elicit, JsonSchema)]
 /// #[prompt("Select your favorite color:")]
 /// enum Color {
 ///     Red,
