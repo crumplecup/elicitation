@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Server-side elicitation:** Complete support for MCP server contexts
+  - `ElicitServer` wrapper for `Peer<RoleServer>`
+  - `ElicitCommunicator` trait abstraction for unified client/server support
+  - `elicit_router!` macro for tool aggregation
+  - All 143+ type implementations work in both client and server contexts
+- **Unified trait system:** Single `Elicitation` trait implementation works for both client and server
+- **Tool registration:** Generated `elicit_checked()` methods now properly integrate with rmcp's `#[tool_router]`
+- **Usage documentation:** SERVER_SIDE_USAGE.md with comprehensive examples
+
+### Changed
+
+- **Breaking:** `Elicitation::elicit()` now generic over `ElicitCommunicator` instead of hardcoded `ElicitClient`
+  - Migration: Change `fn elicit(client: &ElicitClient)` to `fn elicit<C: ElicitCommunicator>(communicator: &C)`
+  - Generated code from `#[derive(Elicit)]` automatically updated
+- **Breaking:** `elicit_checked()` signature changed from `Arc<Peer<RoleClient>>` to `Peer<RoleServer>`
+  - Reflects server-side architecture (tools are served BY servers)
+  - Tool calls now delegate to trait: `Self::elicit(&server).await`
+- **Derive macros:** Updated to generate ElicitCommunicator-compatible code
+
+### Architecture
+
+- Server-side tools use `peer.create_message()` for client communication
+- Client-side tools use `peer.call_tool()` for MCP tool calls  
+- `StyleContext` shared between client and server implementations
+- Zero duplication: same trait impls work everywhere
+
+### Documentation
+
+- Add SERVER_SIDE_ELICITATION_PLAN.md - implementation roadmap
+- Add UNIFIED_ELICITATION_TRAIT_PLAN.md - trait unification design
+- Add SERVER_SIDE_USAGE.md - comprehensive usage guide
+- Update all planning docs with completed status
+
+### Testing
+
+- All 399 library tests passing
+- Router aggregation tests working
+- Zero compilation errors or clippy warnings
+
 ## [0.6.1] - 2026-02-05
 
 ### Fixed
