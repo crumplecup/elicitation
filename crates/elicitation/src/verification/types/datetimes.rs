@@ -6,7 +6,7 @@
 use super::ValidationError;
 
 #[cfg(all(not(kani), any(feature = "chrono", feature = "jiff", feature = "time")))]
-use crate::{ElicitClient, ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
 #[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
 use elicitation_macros::instrumented_impl;

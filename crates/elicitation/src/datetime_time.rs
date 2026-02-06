@@ -38,7 +38,7 @@
 //! 4. **Result** - Returns validated datetime or error
 
 use crate::{
-    ElicitClient, ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
     Select,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
     mcp,

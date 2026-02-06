@@ -483,7 +483,7 @@ impl UrlCanBeBase {
 // Elicitation Implementations
 // ============================================================================
 
-use crate::{ElicitClient, ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
 // Re-export UrlStyle from primitives
 pub use crate::primitives::url::UrlStyle;

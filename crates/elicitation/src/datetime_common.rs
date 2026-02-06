@@ -10,7 +10,7 @@
 //! These shared patterns ensure consistent UX across all datetime libraries.
 
 use crate::{
-    ElicitClient, ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select, mcp,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select, mcp,
 };
 
 /// Input method for datetime elicitation.

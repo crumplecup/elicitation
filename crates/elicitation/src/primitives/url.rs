@@ -1,6 +1,6 @@
 //! URL type implementation.
 
-use crate::{ElicitClient, ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 
 // Generate default-only style enum
 crate::default_style!(url::Url => UrlStyle);

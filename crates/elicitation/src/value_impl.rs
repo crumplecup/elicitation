@@ -3,7 +3,7 @@
 //! Available with the `serde_json` feature.
 
 use crate::{
-    ElicitClient, ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select, mcp,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select, mcp,
 };
 use serde_json::Value;
 
