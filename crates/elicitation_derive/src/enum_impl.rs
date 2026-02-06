@@ -291,7 +291,6 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
 
         let params = elicitation::mcp::select_params(prompt, labels);
         let result = communicator
-            .peer()
             .call_tool(elicitation::rmcp::model::CallToolRequestParams {
                             meta: None,
                 name: elicitation::mcp::tool_names::elicit_select().into(),
