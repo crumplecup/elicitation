@@ -68,13 +68,8 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
                 // Create server wrapper
                 let server = ElicitServer::new(peer);
                 
-                // Delegate to trait (which needs updating to support ElicitServer)
-                // For now, stub until trait is made generic
-                let _ = server;
-                let kind = elicitation::ElicitErrorKind::ParseError(
-                    format!("Server-side elicitation in progress for {}", #type_name_str)
-                );
-                Err(elicitation::ElicitError::new(kind))
+                // Delegate to trait implementation
+                Self::elicit(&server).await
             }
         }
 

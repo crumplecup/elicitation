@@ -247,7 +247,7 @@ fn generate_elicit_impl_simple(
             let name_str = name.to_string();
             quote! {
                 tracing::debug!(field = #name_str, "Eliciting field");
-                let #name = <#ty>::elicit(client).await?;
+                let #name = <#ty>::elicit(communicator).await?;
             }
         })
         .collect();
@@ -291,7 +291,7 @@ fn generate_elicit_impl_simple(
         impl elicitation::Elicitation for #style_name {
             type Style = #style_name;
 
-            async fn elicit(_client: &elicitation::ElicitClient) -> elicitation::ElicitResult<Self> {
+            async fn elicit<C: elicitation::ElicitCommunicator>(_communicator: &C) -> elicitation::ElicitResult<Self> {
                 Ok(Self::Default)
             }
         }
@@ -299,9 +299,9 @@ fn generate_elicit_impl_simple(
         impl elicitation::Elicitation for #name {
             type Style = #style_name;
 
-            #[tracing::instrument(skip(client))]
-            async fn elicit(
-                client: &elicitation::ElicitClient,
+            #[tracing::instrument(skip(communicator))]
+            async fn elicit<C: elicitation::ElicitCommunicator>(
+                communicator: &C,
             ) -> elicitation::ElicitResult<Self> {
                 tracing::debug!(struct_name = stringify!(#name), "Eliciting struct");
                 #(#elicit_statements)*
@@ -406,7 +406,7 @@ fn generate_elicit_impl_styled(
                                 #(#match_arms)*
                             };
                             let params = elicitation::mcp::text_params(prompt);
-                            let result = client
+                            let result = communicator
                                 .peer()
                                 .call_tool(elicitation::rmcp::model::CallToolRequestParams {
                             meta: None,
@@ -427,7 +427,7 @@ fn generate_elicit_impl_styled(
                                 #(#match_arms)*
                             };
                             let params = elicitation::mcp::bool_params(prompt);
-                            let result = client
+                            let result = communicator
                                 .peer()
                                 .call_tool(elicitation::rmcp::model::CallToolRequestParams {
                             meta: None,
@@ -453,7 +453,7 @@ fn generate_elicit_impl_styled(
                                 #field_ty::MIN as i64,
                                 #field_ty::MAX as i64,
                             );
-                            let result = client
+                            let result = communicator
                                 .peer()
                                 .call_tool(elicitation::rmcp::model::CallToolRequestParams {
                             meta: None,
@@ -478,7 +478,7 @@ fn generate_elicit_impl_styled(
                                 i64::MIN,
                                 i64::MAX,
                             );
-                            let result = client
+                            let result = communicator
                                 .peer()
                                 .call_tool(elicitation::rmcp::model::CallToolRequestParams {
                             meta: None,
@@ -495,7 +495,7 @@ fn generate_elicit_impl_styled(
                         // Fallback for unsupported types
                         quote! {
                             tracing::debug!(field = #field_name_str, "Eliciting field (no inline style support for this type)");
-                            let #field_name = <#field_ty>::elicit(client).await?;
+                            let #field_name = <#field_ty>::elicit(communicator).await?;
                         }
                     }
                 }
@@ -503,7 +503,7 @@ fn generate_elicit_impl_styled(
                 // For complex types or fields without styled prompts, fall back to their own elicit()
                 quote! {
                     tracing::debug!(field = #field_name_str, "Eliciting field via standard elicit()");
-                    let #field_name = <#field_ty>::elicit(client).await?;
+                    let #field_name = <#field_ty>::elicit(communicator).await?;
                 }
             }
         })
@@ -571,8 +571,8 @@ fn generate_elicit_impl_styled(
         impl elicitation::Elicitation for #style_enum_name {
             type Style = #style_enum_name;
 
-            #[tracing::instrument(skip(client))]
-            async fn elicit(
+            #[tracing::instrument(skip(communicator))]
+            async fn elicit<C: elicitation::ElicitCommunicator>(
                 client: &elicitation::ElicitClient,
             ) -> elicitation::ElicitResult<Self> {
                 let prompt = <Self as elicitation::Prompt>::prompt().unwrap();
@@ -582,7 +582,7 @@ fn generate_elicit_impl_styled(
                     prompt,
                     <Self as elicitation::Select>::labels()
                 );
-                let result = client
+                let result = communicator
                     .peer()
                     .call_tool(elicitation::rmcp::model::CallToolRequestParams {
                             meta: None,
@@ -604,14 +604,14 @@ fn generate_elicit_impl_styled(
         impl elicitation::Elicitation for #name {
             type Style = #style_enum_name;
 
-            #[tracing::instrument(skip(client))]
-            async fn elicit(
-                client: &elicitation::ElicitClient,
+            #[tracing::instrument(skip(communicator))]
+            async fn elicit<C: elicitation::ElicitCommunicator>(
+                communicator: &C,
             ) -> elicitation::ElicitResult<Self> {
                 tracing::debug!(struct_name = stringify!(#name), "Eliciting struct with style");
 
                 // Step 1: Get style (use pre-set or elicit)
-                let elicit_style = client.style_or_elicit::<#name>().await?;
+                let elicit_style = communicator.style_or_elicit::<#name>().await?;
                 tracing::debug!(?elicit_style, "Style selected");
 
                 // Step 2: Elicit fields with chosen style
