@@ -26,6 +26,8 @@ mod integers;
 mod network;
 mod pathbuf;
 mod string;
+
+pub use string::StringStyle;
 pub mod systemtime;
 mod tuples;
 pub mod unit_structs;

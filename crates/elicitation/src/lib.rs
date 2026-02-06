@@ -313,6 +313,9 @@ pub use primitives::systemtime::{SystemTimeGenerationMode, SystemTimeGenerator};
 // Duration (standard library)
 pub use primitives::duration::{DurationGenerationMode, DurationGenerator};
 
+// String style variants
+pub use primitives::StringStyle;
+
 // Unit structs (standard library)
 pub use primitives::unit_structs::{Formatter, Parser, Validator};
 
