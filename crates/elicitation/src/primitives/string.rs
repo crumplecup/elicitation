@@ -1,6 +1,6 @@
 //! String type implementation.
 
-use crate::{ElicitCommunicator, ElicitResult, Elicitation, ElicitationStyle, Prompt, Select};
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt, Select};
 
 /// Elicitation style variants for String.
 ///

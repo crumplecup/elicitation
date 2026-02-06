@@ -1,9 +1,10 @@
 //! Test String with multiple style variants (Agent vs Human).
 
-use elicitation::{Elicitation, StringStyle};
+use elicitation::StringStyle;
 
 /// Test type with String field that has multiple styles.
 #[derive(Debug, Clone, elicitation::Elicit)]
+#[allow(dead_code)] // Test struct
 struct Config {
     /// Server name (supports Agent/Human styles).
     name: String,
