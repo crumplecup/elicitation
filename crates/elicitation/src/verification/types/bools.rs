@@ -243,7 +243,8 @@ impl Elicitation for BoolDefault {
 
         let params = crate::mcp::bool_params(prompt);
 
-        let result = communicator.call_tool(rmcp::model::CallToolRequestParams {
+        let result = communicator
+            .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: crate::mcp::tool_names::elicit_bool().into(),
                 arguments: Some(params),

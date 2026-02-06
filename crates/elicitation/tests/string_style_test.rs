@@ -16,11 +16,11 @@ fn test_string_style_compiles() {
     // 1. String has a real style enum (not just Default)
     // 2. StringStyle has Agent and Human variants
     // 3. The elicitation impl works with styles
-    
+
     let _agent_style = StringStyle::Agent;
     let _human_style = StringStyle::Human;
     let _default_style = StringStyle::default();
-    
+
     assert_eq!(_default_style, StringStyle::Human);
 }
 

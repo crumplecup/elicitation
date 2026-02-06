@@ -241,7 +241,8 @@ impl Elicitation for StringDefault {
 
         let params = crate::mcp::text_params(prompt);
 
-        let result = communicator.call_tool(rmcp::model::CallToolRequestParams {
+        let result = communicator
+            .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: crate::mcp::tool_names::elicit_text().into(),
                 arguments: Some(params),

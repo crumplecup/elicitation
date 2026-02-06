@@ -24,7 +24,9 @@ macro_rules! default_style {
         impl $crate::Elicitation for $style_name {
             type Style = $style_name; // Self-reference
 
-            async fn elicit<C: $crate::ElicitCommunicator>(_communicator: &C) -> $crate::ElicitResult<Self> {
+            async fn elicit<C: $crate::ElicitCommunicator>(
+                _communicator: &C,
+            ) -> $crate::ElicitResult<Self> {
                 Ok(Self::Default) // Always default
             }
         }

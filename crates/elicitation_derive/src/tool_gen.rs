@@ -68,10 +68,10 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
                 peer: elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleServer>,
             ) -> Result<Self, elicitation::ElicitError> {
                 use elicitation::{ElicitServer, Elicitation};
-                
+
                 // Create server wrapper
                 let server = ElicitServer::new(peer);
-                
+
                 // Delegate to trait implementation
                 Self::elicit(&server).await
             }

@@ -1,6 +1,6 @@
 //! Test for the elicit_tools! macro inside an existing impl block.
 
-use elicitation::{elicit_tools, Elicit};
+use elicitation::{Elicit, elicit_tools};
 use rmcp::handler::server::wrapper::{Json, Parameters};
 use rmcp::{tool, tool_router};
 use schemars::JsonSchema;
@@ -29,8 +29,13 @@ struct TestServer;
 impl TestServer {
     /// A custom tool method.
     #[tool]
-    async fn custom_tool(&self, _name: Parameters<String>) -> Result<Json<CustomResult>, rmcp::ErrorData> {
-        Ok(Json(CustomResult { message: "custom".to_string() }))
+    async fn custom_tool(
+        &self,
+        _name: Parameters<String>,
+    ) -> Result<Json<CustomResult>, rmcp::ErrorData> {
+        Ok(Json(CustomResult {
+            message: "custom".to_string(),
+        }))
     }
 
     // Add elicitation tools using the macro

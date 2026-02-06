@@ -53,7 +53,9 @@ pub trait ElicitCommunicator: Clone + Send + Sync {
     fn call_tool(
         &self,
         params: rmcp::model::CallToolRequestParams,
-    ) -> impl std::future::Future<Output = Result<rmcp::model::CallToolResult, rmcp::service::ServiceError>> + Send;
+    ) -> impl std::future::Future<
+        Output = Result<rmcp::model::CallToolResult, rmcp::service::ServiceError>,
+    > + Send;
 
     /// Get the style context for type-specific styles.
     ///

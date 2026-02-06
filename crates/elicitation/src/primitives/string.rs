@@ -46,24 +46,26 @@ impl Elicitation for StringStyle {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let prompt = <Self as Prompt>::prompt().unwrap();
         let labels = <Self as Select>::labels();
-        
+
         let params = crate::mcp::select_params(prompt, labels);
-        let result = communicator.call_tool(crate::rmcp::model::CallToolRequestParams {
-            meta: None,
-            name: crate::mcp::tool_names::elicit_select().into(),
-            arguments: Some(params),
-            task: None,
-        }).await?;
+        let result = communicator
+            .call_tool(crate::rmcp::model::CallToolRequestParams {
+                meta: None,
+                name: crate::mcp::tool_names::elicit_select().into(),
+                arguments: Some(params),
+                task: None,
+            })
+            .await?;
 
         let value = crate::mcp::extract_value(result)?;
         let label = crate::mcp::parse_string(value)?;
-        
-        <Self as Select>::from_label(&label)
-            .ok_or_else(|| {
-                crate::ElicitError::from(crate::ElicitErrorKind::ParseError(
-                    format!("Invalid style selection: {}", label)
-                ))
-            })
+
+        <Self as Select>::from_label(&label).ok_or_else(|| {
+            crate::ElicitError::from(crate::ElicitErrorKind::ParseError(format!(
+                "Invalid style selection: {}",
+                label
+            )))
+        })
     }
 }
 

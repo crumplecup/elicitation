@@ -110,7 +110,8 @@ impl Elicitation for SystemTimeGenerationMode {
             Self::labels(),
         );
 
-        let result = communicator.call_tool(rmcp::model::CallToolRequestParams {
+        let result = communicator
+            .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,
                 name: mcp::tool_names::elicit_select().into(),
                 arguments: Some(params),

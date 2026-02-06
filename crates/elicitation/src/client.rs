@@ -173,11 +173,9 @@ impl ElicitCommunicator for ElicitClient {
         // This likely involves calling an MCP tool and getting the response
         let _ = prompt;
         let _ = &self.peer;
-        Err(crate::ElicitError::new(
-            crate::ElicitErrorKind::ParseError(
-                "Client-side send_prompt not yet implemented".to_string()
-            )
-        ))
+        Err(crate::ElicitError::new(crate::ElicitErrorKind::ParseError(
+            "Client-side send_prompt not yet implemented".to_string(),
+        )))
     }
 
     async fn call_tool(
@@ -200,4 +198,3 @@ impl ElicitCommunicator for ElicitClient {
         }
     }
 }
-

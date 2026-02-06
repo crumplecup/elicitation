@@ -6,7 +6,9 @@
 
 use rmcp::service::{Peer, RoleServer};
 
-use crate::{ElicitCommunicator, ElicitResult, ElicitationStyle, ElicitErrorKind, ElicitError, StyleContext};
+use crate::{
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, ElicitationStyle, StyleContext,
+};
 
 /// Server wrapper that carries style context.
 ///
@@ -56,7 +58,7 @@ impl ElicitCommunicator for ElicitServer {
     #[tracing::instrument(skip(self, prompt), fields(prompt_len = prompt.len()))]
     async fn send_prompt(&self, prompt: &str) -> ElicitResult<String> {
         tracing::debug!("Sending prompt to client via create_message");
-        
+
         // Create message request
         let params = rmcp::model::CreateMessageRequestParams {
             meta: None,
@@ -67,7 +69,8 @@ impl ElicitCommunicator for ElicitServer {
             }],
             model_preferences: None,
             system_prompt: Some(
-                "You are helping elicit structured data. Provide clear, concise responses.".to_string()
+                "You are helping elicit structured data. Provide clear, concise responses."
+                    .to_string(),
             ),
             include_context: None,
             temperature: None,
@@ -75,22 +78,23 @@ impl ElicitCommunicator for ElicitServer {
             stop_sequences: None,
             metadata: None,
         };
-        
+
         // Send request to client
-        let result = self.peer.create_message(params)
-            .await
-            .map_err(|e| {
-                tracing::error!(error = ?e, "create_message failed");
-                ElicitError::new(ElicitErrorKind::Service(e.into()))
-            })?;
-        
+        let result = self.peer.create_message(params).await.map_err(|e| {
+            tracing::error!(error = ?e, "create_message failed");
+            ElicitError::new(ElicitErrorKind::Service(e.into()))
+        })?;
+
         tracing::debug!(model = %result.model, stop_reason = ?result.stop_reason, "Received response");
-        
+
         // Extract text from response
         use rmcp::model::RawContent;
         match &*result.message.content {
             RawContent::Text(text_content) => {
-                tracing::debug!(response_len = text_content.text.len(), "Extracted text response");
+                tracing::debug!(
+                    response_len = text_content.text.len(),
+                    "Extracted text response"
+                );
                 Ok(text_content.text.clone())
             }
             RawContent::Image(_) => {
@@ -119,8 +123,8 @@ impl ElicitCommunicator for ElicitServer {
         Err(rmcp::service::ServiceError::McpError(
             rmcp::ErrorData::internal_error(
                 "call_tool not supported in server-side elicitation",
-                None
-            )
+                None,
+            ),
         ))
     }
 
@@ -137,4 +141,3 @@ impl ElicitCommunicator for ElicitServer {
         }
     }
 }
-
