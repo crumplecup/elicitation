@@ -230,7 +230,7 @@ pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
         // Generate async method with #[tool] marker
         // NO &self parameter - use peer as standalone function parameter
         // Return Json<T> wrapper for proper rmcp integration (IntoCallToolResult)
-        // Calls Elicit trait method which all types must implement
+        // Calls elicit_checked() method available on all Elicitation types
         let tool_description = format!("Elicit {} via MCP", ty_str);
         let method: syn::ImplItemFn = syn::parse_quote! {
             #[doc = concat!("Elicit `", #ty_str, "` via MCP.")]
@@ -238,8 +238,7 @@ pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
             pub async fn #method_ident(
                 peer: ::rmcp::service::Peer<::rmcp::service::RoleServer>,
             ) -> ::std::result::Result<::rmcp::handler::server::wrapper::Json<#ty>, ::rmcp::ErrorData> {
-                use ::elicitation::Elicit;
-                <#ty as ::elicitation::Elicit>::elicit_checked(peer)
+                #ty::elicit_checked(peer)
                     .await
                     .map(::rmcp::handler::server::wrapper::Json)
                     .map_err(|e| ::rmcp::ErrorData::internal_error(e.to_string(), None))

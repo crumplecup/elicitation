@@ -85,10 +85,6 @@ mod communicator;
 mod server; // Server-side wrapper (analogous to ElicitClient)
 // Unified trait for client/server communication
 
-// Server implementation helper macro
-#[macro_use]
-mod server_impl_macro;
-
 // Verification framework imports
 
 mod collections;
@@ -143,7 +139,7 @@ pub use server::ElicitServer;
 
 // Core traits
 pub use elicitation_style::ElicitationStyle;
-pub use traits::{Elicit, ElicitBuilder, Elicitation, Generator, Prompt};
+pub use traits::{ElicitBuilder, Elicitation, Generator, Prompt};
 
 // Contracts (proof-carrying composition)
 pub use contracts::{
