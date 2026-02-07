@@ -6,11 +6,14 @@ use syn::DeriveInput;
 
 /// Generate an MCP tool method for a type with #[derive(Elicit)].
 ///
-/// Generates a method on the type's impl block that provides verified,
+/// Generates an inherent method `elicit_checked` that provides verified,
 /// registered elicitation via the MCP protocol. Follows Rust's `checked_*`
 /// idiom for operations that add verification and safety.
 ///
 /// Also submits the type to inventory for automatic tool discovery.
+///
+/// Note: The `Elicitation` trait now provides `elicit_checked` as a default
+/// method, so we only need the inherent method for the `#[tool]` attribute.
 ///
 /// Generates:
 /// ```ignore
@@ -42,7 +45,8 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
     let type_name_str = type_name.to_string();
 
     quote! {
-        // Inherent impl for direct access
+        // Inherent impl for direct access AND trait default method override
+        // The #[tool] attribute here makes this discoverable by rmcp
         impl #type_name {
             /// Checked elicitation via MCP protocol.
             ///
@@ -75,17 +79,6 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
 
                 // Delegate to trait implementation
                 Self::elicit(&server).await
-            }
-        }
-
-        // Trait impl for use with #[elicit_tools] macro
-        #[elicitation::async_trait::async_trait]
-        impl elicitation::Elicit for #type_name {
-            async fn elicit_checked(
-                peer: elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleServer>,
-            ) -> elicitation::ElicitResult<Self> {
-                // Delegate to inherent method (which has #[tool] attribute)
-                Self::elicit_checked(peer).await
             }
         }
 

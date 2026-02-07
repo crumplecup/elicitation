@@ -27,6 +27,3 @@ impl Elicitation for url::Url {
         Ok(wrapper.into_inner())
     }
 }
-
-// Server-side integration
-crate::server_elicit_impl!(url::Url);
