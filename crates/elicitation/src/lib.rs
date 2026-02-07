@@ -82,6 +82,7 @@
 
 mod client;
 mod communicator;
+mod mcp_wrapper; // Generic wrapper for MCP tool outputs
 mod server; // Server-side wrapper (analogous to ElicitClient)
 // Unified trait for client/server communication
 
@@ -135,6 +136,7 @@ pub use error::{ElicitError, ElicitErrorKind, ElicitResult, JsonError, RmcpError
 // Core client and server
 pub use client::ElicitClient;
 pub use communicator::{ElicitCommunicator, StyleContext};
+pub use mcp_wrapper::ElicitToolOutput;
 pub use server::ElicitServer;
 
 // Core traits
