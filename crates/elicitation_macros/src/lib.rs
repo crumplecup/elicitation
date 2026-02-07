@@ -181,6 +181,15 @@ fn is_accessor(name: &str) -> bool {
 /// - **Return `Json<T>`**: Wrapper implements `IntoCallToolResult` for structured responses
 /// - **Use `ErrorData`**: rmcp's standard error type
 /// - **`Peer<RoleServer>`**: Parameter extracted via `FromContextPart` trait
+///
+/// # MCP Object Schema Requirement
+///
+/// MCP specification requires tool output schemas to be objects (`"type": "object"`).
+/// Enum types generate `"enum": [...]` schemas without a type field, causing validation
+/// failures. This macro wraps all types in `ElicitToolOutput<T>` to ensure object schemas.
+///
+/// The generic wrapper is defined in `elicitation::ElicitToolOutput` and ensures ALL
+/// types (structs, enums, primitives) produce valid MCP object schemas.
 #[proc_macro_attribute]
 pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
     let impl_block = parse_macro_input!(item as ItemImpl);
@@ -205,7 +214,7 @@ pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
     // Clone the impl block to modify
     let mut new_impl = impl_block.clone();
 
-    // Generate methods and metadata for each type
+    // Generate methods for each type
     for ty_str in types {
         // Parse the type
         let ty: syn::Type = match syn::parse_str(ty_str) {
@@ -228,20 +237,20 @@ pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
         );
 
         // Generate async method with #[tool] marker
-        // NO &self parameter - use peer as standalone function parameter
-        // Return Json<T> wrapper for proper rmcp integration (IntoCallToolResult)
-        // Calls elicit_checked() method available on all Elicitation types
+        // Returns Json<ElicitToolOutput<T>> to ensure object schema for MCP
         let tool_description = format!("Elicit {} via MCP", ty_str);
         let method: syn::ImplItemFn = syn::parse_quote! {
             #[doc = concat!("Elicit `", #ty_str, "` via MCP.")]
             #[tool(description = #tool_description)]
             pub async fn #method_ident(
                 peer: ::rmcp::service::Peer<::rmcp::service::RoleServer>,
-            ) -> ::std::result::Result<::rmcp::handler::server::wrapper::Json<#ty>, ::rmcp::ErrorData> {
-                #ty::elicit_checked(peer)
-                    .await
-                    .map(::rmcp::handler::server::wrapper::Json)
-                    .map_err(|e| ::rmcp::ErrorData::internal_error(e.to_string(), None))
+            ) -> ::std::result::Result<
+                ::rmcp::handler::server::wrapper::Json<::elicitation::ElicitToolOutput<#ty>>,
+                ::rmcp::ErrorData
+            > {
+                let value = #ty::elicit_checked(peer).await
+                    .map_err(|e| ::rmcp::ErrorData::internal_error(e.to_string(), None))?;
+                Ok(::rmcp::handler::server::wrapper::Json(::elicitation::ElicitToolOutput::new(value)))
             }
         };
 
@@ -249,7 +258,7 @@ pub fn elicit_tools(attr: TokenStream, item: TokenStream) -> TokenStream {
         new_impl.items.push(syn::ImplItem::Fn(method));
     }
 
-    // Output the modified impl block (with all original attributes preserved)
+    // Output the modified impl block
     TokenStream::from(quote! { #new_impl })
 }
 
