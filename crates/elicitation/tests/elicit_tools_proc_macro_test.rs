@@ -4,7 +4,8 @@
 
 use elicitation::Elicit;
 use elicitation_macros::elicit_tools;
-use rmcp::tool_router;
+use rmcp::model::{ServerCapabilities, ServerInfo};
+use rmcp::{ServerHandler, tool, tool_router};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -27,15 +28,18 @@ struct TestServer;
 #[tool_router]
 impl TestServer {}
 
-#[test]
-fn test_proc_macro_compiles() {
-    // If this compiles, the macro generated valid code
-    let _server = TestServer;
+impl ServerHandler for TestServer {
+    fn get_info(&self) -> ServerInfo {
+        ServerInfo {
+            capabilities: ServerCapabilities::builder().enable_tools().build(),
+            ..Default::default()
+        }
+    }
 }
 
 #[test]
-fn test_router_generated() {
-    // Verify tool_router generated the router function
+fn test_proc_macro_compiles() {
+    // If this compiles, the macro generated valid code
     let _router = TestServer::tool_router();
 }
 
