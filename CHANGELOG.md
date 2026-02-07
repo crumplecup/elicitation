@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add Elicit trait for feature-gated types
+
+### Fixed
+
+- Rmcp API integration for elicit_tools proc macro
+
+### Refactor
+
+- Simplify server-side elicitation - add method to Elicitation trait
+
+### Testing
+
+- Verify all feature-gated types have elicit_checked()
+- Prove tool composition works - regular + elicit tools together
+
+## [Unreleased]
+
+### Added
+
+- **Tool Composition:** Full support for mixing elicitation tools with regular rmcp tools
+  - Users can freely combine `#[elicit_tools(...)]` with `#[tool]` methods in same impl block
+  - Example and documentation in `examples/tool_composition.{rs,md}`
+  - Systematic tests proving composition works (`composition_systematic_test.rs`)
+
+### Changed
+
+- **`elicit_checked()` method:** Now a default method on `Elicitation` trait
+  - Automatically available on ALL 143+ types (primitives, collections, feature-gated, user types)
+  - No separate trait needed
+  - No manual implementations required
+  - Net reduction of ~100 lines of code
+
+### Fixed
+
+- **Feature-gated types:** Full server-side support for all feature-gated types
+  - url::Url, uuid::Uuid + UuidGenerationMode  
+  - chrono datetime types (DateTime<Utc>, DateTime<FixedOffset>, NaiveDateTime)
+  - time datetime types (Instant, OffsetDateTime, PrimitiveDateTime)
+  - jiff datetime types (Timestamp, Zoned, CivilDateTime)
+  - serde_json::Value
+
+### Testing
+
+- ✅ 502 tests passing (gained 10 feature tests + 5 composition tests)
+- ✅ Comprehensive feature-gated type coverage verification
+- ✅ Systematic tool composition tests (baseline → full composition)
+
 ## [0.6.6] - 2026-02-06
 
 ### Added

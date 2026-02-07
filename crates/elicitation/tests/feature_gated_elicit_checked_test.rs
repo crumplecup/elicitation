@@ -44,7 +44,7 @@ fn test_chrono_types_have_elicit_checked() {
 #[cfg(feature = "time")]
 fn test_time_types_have_elicit_checked() {
     use time::{OffsetDateTime, PrimitiveDateTime};
-    
+
     // Note: time::Instant is deprecated, use std::time::Instant instead
     let _: fn(_) -> _ = std::time::Instant::elicit_checked;
     let _: fn(_) -> _ = OffsetDateTime::elicit_checked;
@@ -55,8 +55,8 @@ fn test_time_types_have_elicit_checked() {
 #[test]
 #[cfg(feature = "jiff")]
 fn test_jiff_types_have_elicit_checked() {
-    use jiff::{Timestamp, Zoned};
     use jiff::civil::DateTime as CivilDateTime;
+    use jiff::{Timestamp, Zoned};
 
     let _: fn(_) -> _ = Timestamp::elicit_checked;
     let _: fn(_) -> _ = Zoned::elicit_checked;
