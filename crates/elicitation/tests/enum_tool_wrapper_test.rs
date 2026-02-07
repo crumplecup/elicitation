@@ -4,7 +4,7 @@
 //! enum schemas without type fields. The macro now wraps all types in
 //! a struct to ensure proper schema generation.
 
-use elicitation::{Affirm, Elicit, ElicitToolOutput, Prompt, Select};
+use elicitation::{Elicit, ElicitToolOutput, Prompt, Select};
 use elicitation_macros::elicit_tools;
 use rmcp::model::{ServerCapabilities, ServerInfo};
 use rmcp::service::RoleServer;
@@ -136,7 +136,6 @@ fn test_tool_methods_exist() {
 #[test]
 fn test_wrapper_derives() {
     // Verify wrapper has all necessary derives
-    use std::fmt::Debug;
 
     fn assert_serde<T: Serialize + for<'de> Deserialize<'de>>() {}
     fn assert_schema<T: JsonSchema>() {}
