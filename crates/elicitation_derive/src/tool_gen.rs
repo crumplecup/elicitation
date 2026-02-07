@@ -42,6 +42,7 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
     let type_name_str = type_name.to_string();
 
     quote! {
+        // Inherent impl for direct access
         impl #type_name {
             /// Checked elicitation via MCP protocol.
             ///
@@ -74,6 +75,17 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
 
                 // Delegate to trait implementation
                 Self::elicit(&server).await
+            }
+        }
+
+        // Trait impl for use with #[elicit_tools] macro
+        #[elicitation::async_trait::async_trait]
+        impl elicitation::Elicit for #type_name {
+            async fn elicit_checked(
+                peer: elicitation::rmcp::service::Peer<elicitation::rmcp::service::RoleServer>,
+            ) -> elicitation::ElicitResult<Self> {
+                // Delegate to inherent method (which has #[tool] attribute)
+                Self::elicit_checked(peer).await
             }
         }
 

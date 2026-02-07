@@ -82,7 +82,13 @@
 
 mod client;
 mod communicator;
-mod server; // Server-side wrapper (analogous to ElicitClient) // Unified trait for client/server communication
+mod server; // Server-side wrapper (analogous to ElicitClient)
+// Unified trait for client/server communication
+
+// Server implementation helper macro
+#[macro_use]
+mod server_impl_macro;
+
 // Verification framework imports
 
 mod collections;
@@ -137,7 +143,7 @@ pub use server::ElicitServer;
 
 // Core traits
 pub use elicitation_style::ElicitationStyle;
-pub use traits::{ElicitBuilder, Elicitation, Generator, Prompt};
+pub use traits::{Elicit, ElicitBuilder, Elicitation, Generator, Prompt};
 
 // Contracts (proof-carrying composition)
 pub use contracts::{
@@ -167,6 +173,10 @@ pub use paste;
 // Re-export inventory for derive macro usage
 #[doc(hidden)]
 pub use inventory;
+
+// Re-export async_trait for derive macro and trait impls
+#[doc(hidden)]
+pub use async_trait;
 
 // Re-export derive macro with user-friendly name
 pub use elicitation_derive::Elicit;

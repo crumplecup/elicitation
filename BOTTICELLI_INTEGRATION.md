@@ -240,7 +240,40 @@ mod tests {
 }
 ```
 
-## Troubleshooting
+## Important Limitation Discovered
+
+**Good news:** All tests pass with `--all-features` ✅
+
+**Caveat:** The `#[elicit_tools(...)]` macro only works with types that:
+1. ✅ Have `#[derive(Elicit)]` (generates `elicit_checked` method)
+2. ✅ Have `#[derive(JsonSchema)]`
+
+**Does NOT work with:**
+- ❌ External types (url::Url, uuid::Uuid) with manual `Elicitation` impls
+- ❌ Feature-gated primitives in elicitation crate
+- ❌ Any type without `elicit_checked` method
+
+**Why:** The macro generates:
+```rust
+Type::elicit_checked(peer)  // Requires Type to have this method
+```
+
+But external types can't have our derive macro, so they only implement `Elicitation` (client-side) not `Elicit` (server-side with `elicit_checked`).
+
+**User Impact:**
+- ✅ Works perfectly for user-defined types: `#[derive(Elicit, JsonSchema)]`
+- ❌ Cannot use with Url, Uuid, or other external types
+- Workaround: Write manual tool methods for external types
+
+This is acceptable since:
+- Target use case is user-defined domain types
+- External type methods can be written manually if needed
+- All user types work correctly
+
+**Next Steps:**
+1. Document this limitation in BOTTICELLI_INTEGRATION.md
+2. Test with actual botticelli integration
+3. Consider adding `elicit_checked` to manual impls (future enhancement)
 
 ### "trait bound `IntoToolRoute` not satisfied"
 

@@ -174,3 +174,7 @@ impl Elicitation for Uuid {
         Ok(uuid)
     }
 }
+
+// Server-side integration
+crate::server_elicit_impl!(Uuid);
+crate::server_elicit_impl!(UuidGenerationMode);

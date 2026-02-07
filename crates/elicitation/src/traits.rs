@@ -211,3 +211,64 @@ pub trait Generator {
     /// This is synchronous - all configuration must happen before calling generate().
     fn generate(&self) -> Self::Target;
 }
+
+/// Server-side elicitation trait.
+///
+/// This trait provides `elicit_checked` for server-side elicitation through rmcp.
+/// It's automatically implemented by `#[derive(Elicit)]` and should be manually
+/// implemented for external types with `Elicitation` impls.
+///
+/// # Relation to `Elicitation`
+///
+/// - `Elicitation` - Client-side trait using `ElicitCommunicator`
+/// - `Elicit` - Server-side trait using rmcp `Peer<RoleServer>`
+///
+/// The `elicit_checked` method bridges these by wrapping the peer in `ElicitServer`.
+///
+/// # Example (Auto-derived)
+///
+/// ```rust,ignore
+/// #[derive(Elicit, JsonSchema)]
+/// struct Config {
+///     host: String,
+///     port: u16,
+/// }
+///
+/// // Now available:
+/// let config = Config::elicit_checked(peer).await?;
+/// ```
+///
+/// # Example (Manual Implementation)
+///
+/// For external types, implement using the `server_elicit_impl!` macro:
+///
+/// ```rust,ignore
+/// impl Elicitation for url::Url { ... }
+///
+/// // Add server-side support
+/// impl Elicit for url::Url {
+///     async fn elicit_checked(
+///         peer: Peer<RoleServer>,
+///     ) -> ElicitResult<Self> {
+///         let server = ElicitServer::new(peer);
+///         Self::elicit(&server).await
+///     }
+/// }
+/// ```
+#[async_trait::async_trait]
+pub trait Elicit: Elicitation {
+    /// Elicit a value via MCP server peer.
+    ///
+    /// This is the server-side entry point for elicitation, used by:
+    /// - `#[elicit_tools]` proc macro for automatic tool generation
+    /// - Direct server-side elicitation in tool implementations
+    ///
+    /// # Arguments
+    ///
+    /// * `peer` - rmcp server peer for MCP communication
+    ///
+    /// # Returns
+    ///
+    /// The elicited value or an `ElicitError`.
+    async fn elicit_checked(peer: Peer<rmcp::service::RoleServer>) -> ElicitResult<Self>;
+}
