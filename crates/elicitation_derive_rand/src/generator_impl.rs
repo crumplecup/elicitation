@@ -16,11 +16,8 @@ pub fn expand_derive_rand(input: &DeriveInput) -> Result<TokenStream> {
         Data::Struct(data_struct) => {
             generate_struct_impl(input, data_struct, contract)
         }
-        Data::Enum(_) => {
-            Err(syn::Error::new_spanned(
-                input,
-                "Enum support not yet implemented (Phase 5)",
-            ))
+        Data::Enum(data_enum) => {
+            generate_enum_impl(input, data_enum, contract)
         }
         Data::Union(_) => {
             Err(syn::Error::new_spanned(
@@ -344,4 +341,152 @@ fn generate_named_struct_impl(
             }
         }
     })
+}
+
+/// Generate implementation for enum.
+fn generate_enum_impl(
+    input: &DeriveInput,
+    data_enum: &syn::DataEnum,
+    _enum_contract: Option<Contract>,
+) -> Result<TokenStream> {
+    let name = &input.ident;
+    let variant_count = data_enum.variants.len();
+    
+    if variant_count == 0 {
+        return Err(syn::Error::new_spanned(input, "Cannot derive Rand for empty enum"));
+    }
+    
+    // Generate match arms for each variant
+    let match_arms: Vec<TokenStream> = data_enum
+        .variants
+        .iter()
+        .enumerate()
+        .map(|(idx, variant)| {
+            let variant_name = &variant.ident;
+            
+            match &variant.fields {
+                // Unit variant: Status::Active
+                Fields::Unit => {
+                    Ok(quote! {
+                        #idx => #name::#variant_name,
+                    })
+                }
+                // Tuple variant: Result::Success(u32)
+                Fields::Unnamed(fields) => {
+                    let field_gens: Vec<TokenStream> = fields
+                        .unnamed
+                        .iter()
+                        .map(|field| {
+                            let field_type = &field.ty;
+                            let field_contract = parse_contract(&field.attrs)?;
+                            
+                            let generator_expr = generate_field_generator(field_type, field_contract)?;
+                            
+                            Ok(quote! {
+                                {
+                                    let generator = #generator_expr;
+                                    generator.generate()
+                                }
+                            })
+                        })
+                        .collect::<Result<Vec<_>>>()?;
+                    
+                    Ok(quote! {
+                        #idx => #name::#variant_name(#(#field_gens),*),
+                    })
+                }
+                // Struct variant: Event::Click { x: i32, y: i32 }
+                Fields::Named(fields) => {
+                    let field_inits: Vec<TokenStream> = fields
+                        .named
+                        .iter()
+                        .map(|field| {
+                            let field_name = field.ident.as_ref().unwrap();
+                            let field_type = &field.ty;
+                            let field_contract = parse_contract(&field.attrs)?;
+                            
+                            let generator_expr = generate_field_generator(field_type, field_contract)?;
+                            
+                            Ok(quote! {
+                                #field_name: {
+                                    let generator = #generator_expr;
+                                    generator.generate()
+                                }
+                            })
+                        })
+                        .collect::<Result<Vec<_>>>()?;
+                    
+                    Ok(quote! {
+                        #idx => #name::#variant_name { #(#field_inits),* },
+                    })
+                }
+            }
+        })
+        .collect::<Result<Vec<_>>>()?;
+    
+    Ok(quote! {
+        impl #name {
+            /// Create a random generator with the given seed.
+            pub fn random_generator(seed: u64) -> impl ::elicitation::Generator<Target = Self> {
+                ::elicitation_rand::generators::MapGenerator::new(
+                    ::elicitation_rand::generators::RandomGenerator::<u64>::with_seed(seed),
+                    move |seed: u64| {
+                        // Select variant based on seed
+                        let variant_gen = ::elicitation_rand::distributions::UniformGenerator::with_seed(seed, 0usize, #variant_count);
+                        let variant_idx = variant_gen.generate();
+                        
+                        match variant_idx {
+                            #(#match_arms)*
+                            _ => unreachable!("Invalid variant index"),
+                        }
+                    }
+                )
+            }
+        }
+
+        impl ::elicitation::Generator for #name {
+            type Target = Self;
+
+            fn generate(&self) -> Self {
+                // Use a fixed seed for deterministic generation
+                Self::random_generator(42).generate()
+            }
+        }
+    })
+}
+
+/// Generate a generator expression for a field (helper for enum variants).
+fn generate_field_generator(
+    field_type: &syn::Type,
+    field_contract: Option<Contract>,
+) -> Result<TokenStream> {
+    match field_contract {
+        Some(Contract::Bounded { low, high }) => {
+            generate_bounded_impl(field_type, &low, &high)
+        }
+        Some(Contract::Positive) => {
+            generate_positive_impl(field_type)
+        }
+        Some(Contract::NonZero) => {
+            generate_nonzero_impl(field_type)
+        }
+        Some(Contract::Even) => {
+            generate_even_impl(field_type)
+        }
+        Some(Contract::Odd) => {
+            generate_odd_impl(field_type)
+        }
+        Some(Contract::And(left, right)) => {
+            generate_and_impl(field_type, &left, &right)
+        }
+        Some(Contract::Or(left, right)) => {
+            generate_or_impl(field_type, &left, &right)
+        }
+        None => {
+            // No contract - use standard RandomGenerator
+            Ok(quote! {
+                ::elicitation_rand::generators::RandomGenerator::<#field_type>::with_seed(seed)
+            })
+        }
+    }
 }
