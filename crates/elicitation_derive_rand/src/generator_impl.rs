@@ -39,15 +39,19 @@ fn generate_struct_impl(
 ) -> Result<TokenStream> {
     let name = &input.ident;
     
-    // Only support newtype structs for Phase 1
     match &data_struct.fields {
+        // Newtype: struct D6(u32)
         Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
             let inner_type = &fields.unnamed[0].ty;
             generate_newtype_impl(name, inner_type, contract)
         }
+        // Named fields: struct Config { port: u16, timeout: u32 }
+        Fields::Named(fields) => {
+            generate_named_struct_impl(name, fields, contract)
+        }
         _ => Err(syn::Error::new_spanned(
             input,
-            "Only newtype structs supported in Phase 1 (e.g., struct D6(u32))",
+            "Only newtype structs and named field structs are supported",
         )),
     }
 }
@@ -257,4 +261,87 @@ fn generate_contract_transform(inner_type: &syn::Type, contract: &Contract) -> R
             ))
         }
     }
+}
+
+/// Generate implementation for struct with named fields.
+fn generate_named_struct_impl(
+    name: &syn::Ident,
+    fields: &syn::FieldsNamed,
+    _struct_contract: Option<Contract>,
+) -> Result<TokenStream> {
+    // Generate constructor for each field
+    let field_inits: Vec<TokenStream> = fields
+        .named
+        .iter()
+        .map(|field| {
+            let field_name = field.ident.as_ref().unwrap();
+            let field_type = &field.ty;
+            
+            // Parse contract from field attributes
+            let field_contract = parse_contract(&field.attrs)?;
+            
+            // Generate the generator expression for this field
+            let generator_expr = match field_contract {
+                Some(Contract::Bounded { low, high }) => {
+                    generate_bounded_impl(field_type, &low, &high)?
+                }
+                Some(Contract::Positive) => {
+                    generate_positive_impl(field_type)?
+                }
+                Some(Contract::NonZero) => {
+                    generate_nonzero_impl(field_type)?
+                }
+                Some(Contract::Even) => {
+                    generate_even_impl(field_type)?
+                }
+                Some(Contract::Odd) => {
+                    generate_odd_impl(field_type)?
+                }
+                Some(Contract::And(left, right)) => {
+                    generate_and_impl(field_type, &left, &right)?
+                }
+                Some(Contract::Or(left, right)) => {
+                    generate_or_impl(field_type, &left, &right)?
+                }
+                None => {
+                    // No contract - use standard RandomGenerator
+                    quote! {
+                        ::elicitation_rand::generators::RandomGenerator::<#field_type>::with_seed(seed)
+                    }
+                }
+            };
+            
+            Ok(quote! {
+                #field_name: {
+                    let generator = #generator_expr;
+                    generator.generate()
+                }
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+    
+    Ok(quote! {
+        impl #name {
+            /// Create a random generator with the given seed.
+            pub fn random_generator(seed: u64) -> impl ::elicitation::Generator<Target = Self> {
+                ::elicitation_rand::generators::MapGenerator::new(
+                    ::elicitation_rand::generators::RandomGenerator::<u64>::with_seed(seed),
+                    move |seed: u64| {
+                        Self {
+                            #(#field_inits),*
+                        }
+                    }
+                )
+            }
+        }
+
+        impl ::elicitation::Generator for #name {
+            type Target = Self;
+
+            fn generate(&self) -> Self {
+                // Use a fixed seed for deterministic generation
+                Self::random_generator(42).generate()
+            }
+        }
+    })
 }

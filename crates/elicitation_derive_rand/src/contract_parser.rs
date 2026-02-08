@@ -128,6 +128,28 @@ fn parse_rand_meta(meta: &Meta) -> Result<Option<Contract>> {
 fn extract_literal(expr: &Expr) -> Result<Lit> {
     match expr {
         Expr::Lit(lit_expr) => Ok(lit_expr.lit.clone()),
+        Expr::Unary(unary) if matches!(unary.op, syn::UnOp::Neg(_)) => {
+            // Handle negative literals like -100
+            match &*unary.expr {
+                Expr::Lit(lit_expr) => {
+                    match &lit_expr.lit {
+                        Lit::Int(lit_int) => {
+                            // Create a negative version
+                            let value = lit_int.base10_parse::<i64>()
+                                .map_err(|e| syn::Error::new_spanned(lit_int, e))?;
+                            let neg_value = -value;
+                            let neg_lit = Lit::Int(syn::LitInt::new(
+                                &neg_value.to_string(),
+                                lit_int.span(),
+                            ));
+                            Ok(neg_lit)
+                        }
+                        _ => Err(syn::Error::new_spanned(expr, "Expected integer literal")),
+                    }
+                }
+                _ => Err(syn::Error::new_spanned(expr, "Expected literal after negation")),
+            }
+        }
         _ => Err(syn::Error::new_spanned(expr, "Expected literal value")),
     }
 }
