@@ -52,7 +52,6 @@
 
 #![warn(missing_docs)]
 #![forbid(unsafe_code)]
-#![cfg_attr(kani, feature(kani))]
 
 // Re-export RNG elicitation from main crate
 pub use elicitation::rand_rng;
@@ -67,6 +66,10 @@ pub mod generators;
 
 // Phase 3 - Distribution generators
 pub mod distributions;
+
+// Phase 5 - Kani verification
+#[cfg(all(kani, feature = "verification"))]
+pub mod verification;
 
 pub use generators::RandomGenerator;
 pub use distributions::{UniformGenerator, WeightedGenerator};

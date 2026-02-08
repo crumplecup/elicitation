@@ -576,6 +576,45 @@ verify-kani harness="":
         cargo kani --harness {{harness}} --features verify-kani --default-unwind 20
     fi
 
+# Run Kani verification for rand integration
+# Note: Limited proofs due to rand's inline assembly (CPU feature detection)
+verify-kani-rand harness="" csv="rand_kani_results.csv":
+    #!/usr/bin/env bash
+    if [ -z "{{harness}}" ]; then
+        echo "🎲 Running rand Kani proofs (bounds logic only)..."
+        echo "module,harness,status,duration_secs,timestamp" > {{csv}}
+        PASS=0
+        FAIL=0
+        for harness in \
+            verify_uniform_bounds_ordering \
+            verify_uniform_f64_finite \
+            verify_uniform_i32_negative_range; do
+            echo "  Running $harness..."
+            START=$(date +%s)
+            if cargo kani --harness $harness -p elicitation_rand --features verification &>/dev/null; then
+                END=$(date +%s)
+                ELAPSED=$((END - START))
+                echo "kani_proofs,$harness,PASS,$ELAPSED,$(date -Iseconds)" >> {{csv}}
+                echo "    ✅ PASS (${ELAPSED}s)"
+                PASS=$((PASS + 1))
+            else
+                END=$(date +%s)
+                ELAPSED=$((END - START))
+                echo "kani_proofs,$harness,FAIL,$ELAPSED,$(date -Iseconds)" >> {{csv}}
+                echo "    ❌ FAIL (${ELAPSED}s)"
+                FAIL=$((FAIL + 1))
+            fi
+        done
+        echo ""
+        echo "Results: $PASS passed, $FAIL failed"
+        echo "CSV: {{csv}}"
+        echo ""
+        echo "Note: RNG construction proofs skipped (rand uses inline asm)"
+    else
+        echo "🎲 Running rand Kani harness: {{harness}}"
+        cargo kani --harness {{harness}} -p elicitation_rand --features verification
+    fi
+
 # Run Kani verification with CSV tracking (recommended)
 verify-kani-tracked csv="kani_verification_results.csv" timeout="300":
     cargo run --quiet --features cli --release -- verify run --output {{csv}} --timeout {{timeout}}
