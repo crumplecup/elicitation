@@ -67,3 +67,9 @@ mod regexes;
 
 #[cfg(feature = "chrono")]
 mod datetime_chrono;
+
+#[cfg(feature = "time")]
+mod datetime_time;
+
+#[cfg(feature = "jiff")]
+mod datetime_jiff;

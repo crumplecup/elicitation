@@ -160,59 +160,72 @@ This document tracks Kani verification coverage for all Generator types in the e
   - Trusts chrono's naive datetime operations
   - Verifies wrapper logic only
 
-### 🔒 time::Instant (feature = "time")
+### ✅ time::Instant (feature = "time")
 - **File:** `crates/elicitation/src/datetime_time.rs`
 - **Generator:** `InstantGenerator`
 - **Modes:**
   - `Now` - Instant::now()
-  - `Custom(duration)` - From duration since epoch
-- **Kani Proofs:** None
-- **Status:** ❌ Missing
-- **Missing:**
-  - All generator proofs
-  - Verification of instant construction
-  - Monotonicity checks (if applicable)
-- **Action Items:**
-  - Create `crates/elicitation/src/verification/types/kani_proofs/datetime_time.rs`
-  - Add `verify_instant_generator_custom()` - Duration-based construction
-  - Add feature-gated tests to verification harness
-- **Notes:** time::Instant is different from std::time::Instant
+  - `Offset { seconds, nanos }` - Custom offset from reference
+- **Kani Proofs:** `crates/elicitation/src/verification/types/kani_proofs/datetime_time.rs`
+- **Status:** ✅ Complete (symbolic gate)
+- **Proofs Added (5 total):**
+  - `verify_instant_generator_mode_preserved()` - Mode storage correctness
+  - `verify_instant_generator_now_mode_logic()` - Now mode branch logic
+  - `verify_instant_generator_offset_positive_logic()` - Positive offset decision logic
+  - `verify_instant_generator_offset_negative_logic()` - Negative offset decision logic
+  - `verify_instant_generator_offset_zero_logic()` - Zero offset decision logic
+- **Verification Time:** 0.02-0.3s per proof
+- **Castle on Cloud + Symbolic Gate Pattern:**
+  - Trust `std::time::Instant::now()` and Duration arithmetic
+  - Verify wrapper's decision logic WITHOUT calling Instant::now()
+  - Reason: Instant::now() calls clock_gettime (unsupported by Kani)
+  - Verify mode storage, branch selection, offset sign handling
+  - Actual time operations validated by unit tests
 
-### 🔒 time::OffsetDateTime (feature = "time")
+### ✅ time::OffsetDateTime (feature = "time")
 - **File:** `crates/elicitation/src/datetime_time.rs`
 - **Generator:** `OffsetDateTimeGenerator`
 - **Modes:**
   - `Now` - OffsetDateTime::now_utc()
-  - `Custom(timestamp)` - From UNIX timestamp
-- **Kani Proofs:** None
-- **Status:** ❌ Missing
-- **Missing:**
-  - All generator proofs
-  - Verification of offset datetime construction
-  - UTC offset handling
-- **Action Items:**
-  - Add to `datetime_time.rs` proof file
-  - Add `verify_offset_datetime_generator_custom()` - Timestamp conversion
-  - Add `verify_offset_datetime_utc_offset()` - UTC offset correctness
-  - Add feature-gated tests to verification harness
+  - `UnixEpoch` - OffsetDateTime::UNIX_EPOCH
+  - `Offset { seconds, nanos }` - Custom offset from reference
+- **Kani Proofs:** `crates/elicitation/src/verification/types/kani_proofs/datetime_time.rs`
+- **Status:** ✅ Complete
+- **Proofs Added (6 total):**
+  - `verify_offsetdatetime_generator_unix_epoch()` - UnixEpoch mode
+  - `verify_offsetdatetime_generator_offset_positive()` - Positive offset calculation
+  - `verify_offsetdatetime_generator_offset_negative()` - Negative offset calculation
+  - `verify_offsetdatetime_generator_offset_zero()` - Zero offset identity
+  - `verify_offsetdatetime_generator_mode_preserved()` - Mode storage correctness
+  - `verify_offsetdatetime_generator_reference_preserved()` - Reference storage correctness
+- **Verification Time:** 0.5-1.5s per proof
+- **Castle on Cloud Pattern:**
+  - Trust time crate's OffsetDateTime operations
+  - Verify wrapper logic only
 
-### 🔒 jiff::Timestamp (feature = "jiff")
+### ✅ jiff::Timestamp (feature = "jiff")
 - **File:** `crates/elicitation/src/datetime_jiff.rs`
 - **Generator:** `TimestampGenerator`
 - **Modes:**
   - `Now` - Timestamp::now()
-  - `Custom(timestamp)` - From UNIX timestamp
-- **Kani Proofs:** None
-- **Status:** ❌ Missing
-- **Missing:**
-  - All generator proofs
-  - Verification of jiff timestamp construction
-  - Precision/range checks
-- **Action Items:**
-  - Create `crates/elicitation/src/verification/types/kani_proofs/datetime_jiff.rs`
-  - Add `verify_timestamp_generator_custom()` - Timestamp conversion
-  - Add `verify_timestamp_generator_precision()` - Precision checks
-  - Add feature-gated tests to verification harness
+  - `UnixEpoch` - Timestamp::UNIX_EPOCH
+  - `Offset { seconds }` - Custom offset from reference
+- **Kani Proofs:** `crates/elicitation/src/verification/types/kani_proofs/datetime_jiff.rs`
+- **Status:** ✅ Complete (symbolic gate)
+- **Proofs Added (6 total):**
+  - `verify_timestamp_generator_unix_epoch()` - UnixEpoch mode (full verification)
+  - `verify_timestamp_generator_offset_positive_logic()` - Positive offset decision logic
+  - `verify_timestamp_generator_offset_negative_logic()` - Negative offset decision logic
+  - `verify_timestamp_generator_offset_zero_logic()` - Zero offset decision logic
+  - `verify_timestamp_generator_mode_preserved()` - Mode storage correctness
+  - `verify_timestamp_generator_reference_preserved()` - Reference storage correctness
+- **Verification Time:** 0.02-0.8s per proof
+- **Castle on Cloud + Symbolic Gate Pattern:**
+  - Trust jiff's Span and Timestamp::checked_add
+  - Verify decision logic WITHOUT calling Span arithmetic
+  - Reason: jiff's Span creates large state spaces (proofs hang)
+  - Verify mode storage, branch selection, offset sign handling
+  - Actual offset arithmetic validated by unit tests
 
 ### 🔒 serde_json::Error (feature = "serde_json")
 - **File:** `crates/elicitation/src/primitives/errors.rs`
@@ -237,14 +250,15 @@ This document tracks Kani verification coverage for all Generator types in the e
 | Category | Total | Complete | Partial | Missing | N/A |
 |----------|-------|----------|---------|---------|-----|
 | **Core Generators** | 5 | 4 | 0 | 1 | 0 |
-| **Feature-Gated** | 6 | 3 | 0 | 3 | 0 |
+| **Feature-Gated** | 6 | 6 | 0 | 0 | 0 |
 | **Unit Structs** | 3 | 0 | 0 | 0 | 3 |
-| **TOTAL** | 14 | 7 | 0 | 4 | 3 |
+| **TOTAL** | 14 | 10 | 0 | 1 | 3 |
 
-**Coverage:** 7/11 types complete (63.6%)  
-**Work Remaining:** 4 types need proofs (3 datetime, 1 core)
+**Coverage:** 10/11 types complete (90.9%)  
+**Work Remaining:** 1 core type needs proofs (serde_json::Error - feature-gated but listed as core)
 
-**Phase 3 Complete:** ✅ chrono types (DateTime<Utc> + NaiveDateTime) - 12 proofs added
+**Phase 4 Complete:** ✅ All datetime generators (time + jiff types) - 17 proofs added
+**Symbolic Gate Usage:** 3 generator types use symbolic gate verification (JsonError, Instant, Timestamp)
 
 ---
 
