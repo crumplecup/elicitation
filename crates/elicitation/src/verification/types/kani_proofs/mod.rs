@@ -64,3 +64,6 @@ mod urls;
 
 #[cfg(feature = "regex")]
 mod regexes;
+
+#[cfg(feature = "chrono")]
+mod datetime_chrono;

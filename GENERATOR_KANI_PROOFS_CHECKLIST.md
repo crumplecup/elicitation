@@ -114,42 +114,51 @@ This document tracks Kani verification coverage for all Generator types in the e
 
 ## Feature-Gated Generators
 
-### 🔒 chrono::DateTime<Utc> (feature = "chrono")
+### ✅ chrono::DateTime<Utc> (feature = "chrono")
 - **File:** `crates/elicitation/src/datetime_chrono.rs`
 - **Generator:** `DateTimeUtcGenerator`
 - **Modes:**
   - `Now` - Utc::now()
-  - `Custom(timestamp)` - From UNIX timestamp
-- **Kani Proofs:** None
-- **Status:** ❌ Missing
-- **Missing:**
-  - All generator proofs
-  - Verification of timestamp conversion
-  - Boundary checks for valid datetime ranges
-- **Action Items:**
-  - Create `crates/elicitation/src/verification/types/kani_proofs/datetime_chrono.rs`
-  - Add `verify_datetime_utc_generator_custom()` - Timestamp conversion
-  - Add `verify_datetime_utc_generator_boundaries()` - Valid range checks
-  - Add feature-gated tests to verification harness
-  - Add to CSV tracking with feature flag column
+  - `UnixEpoch` - DateTime::UNIX_EPOCH
+  - `Offset { seconds }` - Custom offset from reference
+- **Kani Proofs:** `crates/elicitation/src/verification/types/kani_proofs/datetime_chrono.rs`
+- **Status:** ✅ Complete
+- **Proofs Added (6 total):**
+  - `verify_datetime_utc_generator_unix_epoch()` - UnixEpoch mode
+  - `verify_datetime_utc_generator_offset_positive()` - Positive offset calculation
+  - `verify_datetime_utc_generator_offset_negative()` - Negative offset calculation
+  - `verify_datetime_utc_generator_offset_zero()` - Zero offset identity
+  - `verify_datetime_utc_generator_mode_preserved()` - Mode storage correctness
+  - `verify_datetime_utc_generator_reference_preserved()` - Reference storage correctness
+- **Verification Time:** 0.5-1.5s per proof
+- **Castle on Cloud Pattern:**
+  - Trusts `chrono::Utc::now()`, `DateTime::UNIX_EPOCH` correctness
+  - Trusts chrono's Duration and addition/subtraction
+  - Verifies wrapper calls correct functions for each mode
+  - Verifies offset arithmetic direction (positive vs negative)
+  - Does NOT verify Now mode (non-deterministic, trust chrono)
 
-### 🔒 chrono::NaiveDateTime (feature = "chrono")
+### ✅ chrono::NaiveDateTime (feature = "chrono")
 - **File:** `crates/elicitation/src/datetime_chrono.rs`
 - **Generator:** `NaiveDateTimeGenerator`
 - **Modes:**
   - `Now` - Utc::now().naive_utc()
-  - `Custom(timestamp)` - From UNIX timestamp
-- **Kani Proofs:** None
-- **Status:** ❌ Missing
-- **Missing:**
-  - All generator proofs
-  - Verification of naive datetime conversion
-  - Relationship to DateTime<Utc> generator
-- **Action Items:**
-  - Add to `datetime_chrono.rs` proof file
-  - Add `verify_naive_datetime_generator_custom()` - Timestamp conversion
-  - Add `verify_naive_datetime_utc_equivalence()` - Relationship to DateTime<Utc>
-  - Add feature-gated tests to verification harness
+  - `UnixEpoch` - NaiveDateTime::UNIX_EPOCH
+  - `Offset { seconds }` - Custom offset from reference
+- **Kani Proofs:** `crates/elicitation/src/verification/types/kani_proofs/datetime_chrono.rs`
+- **Status:** ✅ Complete
+- **Proofs Added (6 total):**
+  - `verify_naive_datetime_generator_unix_epoch()` - UnixEpoch mode
+  - `verify_naive_datetime_generator_offset_positive()` - Positive offset calculation
+  - `verify_naive_datetime_generator_offset_negative()` - Negative offset calculation
+  - `verify_naive_datetime_generator_offset_zero()` - Zero offset identity
+  - `verify_naive_datetime_generator_mode_preserved()` - Mode storage correctness
+  - `verify_naive_datetime_generator_reference_preserved()` - Reference storage correctness
+- **Verification Time:** 0.5-1.5s per proof
+- **Castle on Cloud Pattern:**
+  - Same pattern as DateTime<Utc>
+  - Trusts chrono's naive datetime operations
+  - Verifies wrapper logic only
 
 ### 🔒 time::Instant (feature = "time")
 - **File:** `crates/elicitation/src/datetime_time.rs`
@@ -228,14 +237,14 @@ This document tracks Kani verification coverage for all Generator types in the e
 | Category | Total | Complete | Partial | Missing | N/A |
 |----------|-------|----------|---------|---------|-----|
 | **Core Generators** | 5 | 4 | 0 | 1 | 0 |
-| **Feature-Gated** | 6 | 1 | 0 | 5 | 0 |
+| **Feature-Gated** | 6 | 3 | 0 | 3 | 0 |
 | **Unit Structs** | 3 | 0 | 0 | 0 | 3 |
-| **TOTAL** | 14 | 5 | 0 | 6 | 3 |
+| **TOTAL** | 14 | 7 | 0 | 4 | 3 |
 
-**Coverage:** 5/11 types complete (45.5%)  
-**Work Remaining:** 6 types need proofs (all datetime feature-gated)
+**Coverage:** 7/11 types complete (63.6%)  
+**Work Remaining:** 4 types need proofs (3 datetime, 1 core)
 
-**Phase 2 Complete:** ✅ IoError + JsonError generator proofs added (11 proofs total)
+**Phase 3 Complete:** ✅ chrono types (DateTime<Utc> + NaiveDateTime) - 12 proofs added
 
 ---
 
