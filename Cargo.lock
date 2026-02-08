@@ -546,6 +546,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicitation_derive_rand"
+version = "0.6.10"
+dependencies = [
+ "elicitation",
+ "elicitation_rand",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "elicitation_macros"
 version = "0.6.10"
 dependencies = [

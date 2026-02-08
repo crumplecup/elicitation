@@ -83,6 +83,62 @@ where
     }
 }
 
+/// Generator that maps output of another generator through a function.
+///
+/// Useful for wrapping generated values in newtypes or applying transformations.
+#[derive(Debug, Clone)]
+pub struct MapGenerator<G, F> {
+    inner: G,
+    map_fn: F,
+}
+
+impl<G, F> MapGenerator<G, F> {
+    /// Create a new mapping generator.
+    pub fn new(inner: G, map_fn: F) -> Self {
+        Self { inner, map_fn }
+    }
+}
+
+impl<G, F, T, U> Generator for MapGenerator<G, F>
+where
+    G: Generator<Target = T>,
+    F: Fn(T) -> U,
+{
+    type Target = U;
+
+    fn generate(&self) -> U {
+        (self.map_fn)(self.inner.generate())
+    }
+}
+
+/// Generator that transforms output through a function.
+///
+/// Similar to MapGenerator but specifically for in-place transformations.
+#[derive(Debug, Clone)]
+pub struct TransformGenerator<G, F> {
+    inner: G,
+    transform_fn: F,
+}
+
+impl<G, F> TransformGenerator<G, F> {
+    /// Create a new transforming generator.
+    pub fn new(inner: G, transform_fn: F) -> Self {
+        Self { inner, transform_fn }
+    }
+}
+
+impl<G, F, T> Generator for TransformGenerator<G, F>
+where
+    G: Generator<Target = T>,
+    F: Fn(T) -> T,
+{
+    type Target = T;
+
+    fn generate(&self) -> T {
+        (self.transform_fn)(self.inner.generate())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

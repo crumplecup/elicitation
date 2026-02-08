@@ -56,6 +56,9 @@
 // Re-export RNG elicitation from main crate
 pub use elicitation::rand_rng;
 
+// Re-export Generator trait for derive macro use
+pub use elicitation::Generator;
+
 // Re-export common types
 pub use rand::rngs::StdRng;
 pub use rand_chacha::ChaCha8Rng;
@@ -72,6 +75,7 @@ pub mod distributions;
 pub mod verification;
 
 pub use generators::RandomGenerator;
+pub use generators::{MapGenerator, TransformGenerator};
 pub use distributions::{UniformGenerator, WeightedGenerator};
 
 // TODO: Phase 5 - Implement Kani verification
