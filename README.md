@@ -410,6 +410,196 @@ claude "Run the basic_task example"
 
 ---
 
+## Requirements and Constraints
+
+### Required Derives
+
+All types using `#[derive(Elicit)]` **must** implement three traits:
+
+```rust
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+use elicitation::Elicit;
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct Task {
+    title: String,
+    priority: Priority,
+}
+```
+
+**Why each derive is required:**
+
+- **`Serialize`** - Convert Rust values to JSON for MCP responses
+- **`Deserialize`** - Parse agent selections back into Rust types
+- **`JsonSchema`** - Generate JSON schemas for MCP tool definitions
+- **`Elicit`** - Generate the elicitation logic (our derive macro)
+
+**Optional but recommended:**
+- **`Debug`** - For printing/logging during development
+- **`Clone`** - Many async patterns need cloneable values
+
+### Field Type Constraints
+
+All field types in your structs must **also** implement `Elicitation`:
+
+```rust
+// ✅ VALID: All fields implement Elicitation
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct User {
+    name: String,           // ✅ stdlib type
+    age: u8,                // ✅ stdlib type
+    email: Option<String>,  // ✅ Option<T> where T: Elicitation
+    tags: Vec<String>,      // ✅ Vec<T> where T: Elicitation
+}
+
+// ❌ INVALID: CustomEmail doesn't implement Elicitation
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct User {
+    name: String,
+    email: CustomEmail,  // ❌ Compile error!
+}
+
+// ✅ FIX: Derive Elicit for nested types
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct CustomEmail(String);
+
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct User {
+    name: String,
+    email: CustomEmail,  // ✅ Now works!
+}
+```
+
+### Common Pitfalls
+
+#### 1. Missing JsonSchema on Nested Types
+
+```rust
+// ❌ BAD: Address missing JsonSchema
+#[derive(Serialize, Deserialize)]
+struct Address { /* ... */ }
+
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct User {
+    address: Address,  // ❌ Compile error: no JsonSchema for Address
+}
+
+// ✅ GOOD: Add JsonSchema to all nested types
+#[derive(Serialize, Deserialize, JsonSchema)]
+struct Address { /* ... */ }
+```
+
+#### 2. Generic Types Need Bounds
+
+```rust
+// ❌ BAD: Missing trait bounds
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct Container<T> {
+    value: T,  // ❌ T might not implement required traits
+}
+
+// ✅ GOOD: Add proper bounds
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct Container<T>
+where
+    T: Serialize + Deserialize + JsonSchema + Elicitation,
+{
+    value: T,  // ✅ Guaranteed to work
+}
+```
+
+#### 3. Enums Must Have Serde Attributes
+
+```rust
+// ❌ BAD: Complex enum variants without serde tags
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+enum Status {
+    Pending,
+    Active { since: String },
+    Completed { at: String, by: String },
+}
+
+// ✅ GOOD: Add serde tagging for complex enums
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+#[serde(tag = "type")]
+enum Status {
+    Pending,
+    Active { since: String },
+    Completed { at: String, by: String },
+}
+```
+
+#### 4. PhantomData Needs Skip
+
+```rust
+// ✅ GOOD: Skip non-serializable fields
+use std::marker::PhantomData;
+
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct TypedId<T> {
+    id: String,
+    #[serde(skip)]
+    _phantom: PhantomData<T>,
+}
+```
+
+### Trait Tools Requirements
+
+When using `#[elicit_trait_tools_router]`, parameter and result types need the same derives:
+
+```rust
+// Tool parameter types
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct CreateTaskParams {
+    title: String,
+    priority: Priority,
+}
+
+// Tool result types
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct CreateTaskResult {
+    id: String,
+    created: bool,
+}
+```
+
+**Note:** These don't need `Elicit` derive (they're not elicited, just passed as JSON).
+
+### Async Requirements
+
+Traits using `#[elicit_trait_tools_router]` need proper async signatures:
+
+```rust
+// Pattern 1: impl Future + Send (zero-cost)
+trait MyTrait: Send + Sync {
+    fn method(&self, params: Parameters<P>) 
+        -> impl Future<Output = Result<Json<R>, ErrorData>> + Send;
+}
+
+// Pattern 2: async_trait (object-safe)
+#[async_trait]
+trait MyTrait: Send + Sync {
+    async fn method(&self, params: Parameters<P>) 
+        -> Result<Json<R>, ErrorData>;
+}
+```
+
+See [ELICIT_TRAIT_TOOLS_ROUTER.md](ELICIT_TRAIT_TOOLS_ROUTER.md) for complete details.
+
+### Quick Checklist
+
+Before deriving `Elicit`:
+
+- [ ] Type has `Serialize + Deserialize + JsonSchema`
+- [ ] All field types implement `Elicitation`
+- [ ] Nested types have all required derives
+- [ ] Generic types have proper bounds
+- [ ] Complex enums have serde tagging
+- [ ] PhantomData fields are marked `#[serde(skip)]`
+
+---
+
 ## Architecture
 
 ### The Elicitation Trait
