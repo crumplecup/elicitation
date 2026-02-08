@@ -12,16 +12,15 @@
 //!
 //! ```rust,ignore
 //! use elicitation::Elicitation;
-//! use elicitation_rand::{RandomGenerator, StdRng};
+//! use elicitation_rand::StdRng;
+//! use rand::Rng;
 //!
 //! // Agent elicits seed for reproducibility
 //! let seed = u64::elicit(communicator).await?;
-//! let generator = RandomGenerator::<User>::with_seed(seed);
+//! let mut rng = StdRng::seed_from_u64(seed);
 //!
 //! // Generate test data
-//! let test_users: Vec<_> = (0..1000)
-//!     .map(|_| generator.generate())
-//!     .collect();
+//! let random_value: u32 = rng.gen();
 //! ```
 //!
 //! ## Gaming & Simulations
@@ -34,14 +33,6 @@
 //! // Roll for initiative
 //! let dice = DiceGenerator::new(2, 6, seed); // 2d6
 //! let initiative = dice.generate();
-//!
-//! // Weighted loot table
-//! let loot = WeightedGenerator::new(vec![
-//!     (Item::CommonSword, 70),
-//!     (Item::RareBow, 25),
-//!     (Item::LegendaryArmor, 5),
-//! ]);
-//! let drop = loot.generate();
 //! ```
 //!
 //! # Castle on Cloud
@@ -57,13 +48,18 @@
 //!
 //! # Features
 //!
-//! - `verify-kani` - Enable Kani verification (dev only)
+//! - Default features enable all RNG types
 
 #![warn(missing_docs)]
 #![cfg_attr(kani, feature(kani))]
 
-// TODO: Phase 1 - Implement RNG elicitation
-// pub mod rng;
+// Re-export RNG elicitation from main crate
+pub use elicitation::rand_rng;
+
+// Re-export common types
+pub use rand::rngs::StdRng;
+pub use rand_chacha::ChaCha8Rng;
+pub use rand::SeedableRng;
 
 // TODO: Phase 2 - Implement basic generators
 // pub mod generators;

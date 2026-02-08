@@ -508,6 +508,8 @@ dependencies = [
  "jiff",
  "paste",
  "prusti-contracts",
+ "rand",
+ "rand_chacha",
  "regex",
  "rmcp",
  "schemars",

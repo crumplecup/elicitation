@@ -11,7 +11,7 @@ keywords = ["elicitation", "rand", "random", "generator", "testing"]
 categories = ["development-tools::testing", "game-development"]
 
 [dependencies]
-elicitation = { version = "0.6.7", path = "../elicitation" }
+elicitation = { version = "0.6.7", path = "../elicitation", features = ["rand"] }
 rand = "0.8"
 rand_chacha = "0.3"
 

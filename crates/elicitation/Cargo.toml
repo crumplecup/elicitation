@@ -39,6 +39,10 @@ jiff = { workspace = true, optional = true }
 # UUID library (optional)
 uuid = { workspace = true, optional = true }
 
+# Random number generation (optional)
+rand = { workspace = true, optional = true }
+rand_chacha = { workspace = true, optional = true }
+
 # URL library (optional)
 url = { workspace = true, optional = true }
 
@@ -73,6 +77,8 @@ time = ["dep:time"]
 jiff = ["dep:jiff"]
 # Enable UUID elicitation
 uuid = ["dep:uuid"]
+# Enable rand RNG elicitation
+rand = ["dep:rand", "dep:rand_chacha"]
 # Enable URL elicitation
 url = ["dep:url"]
 # Enable Regex elicitation
