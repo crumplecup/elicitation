@@ -139,6 +139,43 @@ where
     }
 }
 
+/// Generator that randomly chooses between two generators.
+///
+/// Useful for Or composition - randomly pick one constraint path.
+#[derive(Debug, Clone)]
+pub struct ChoiceGenerator<G1, G2> {
+    choice: bool,
+    gen1: G1,
+    gen2: G2,
+}
+
+impl<G1, G2> ChoiceGenerator<G1, G2> {
+    /// Create a new choice generator.
+    /// 
+    /// Uses the seed to deterministically choose which generator to use.
+    pub fn new(seed: u64, gen1: G1, gen2: G2) -> Self {
+        // Use seed's least significant bit for choice
+        let choice = (seed & 1) == 0;
+        Self { choice, gen1, gen2 }
+    }
+}
+
+impl<G1, G2, T> Generator for ChoiceGenerator<G1, G2>
+where
+    G1: Generator<Target = T>,
+    G2: Generator<Target = T>,
+{
+    type Target = T;
+
+    fn generate(&self) -> T {
+        if self.choice {
+            self.gen1.generate()
+        } else {
+            self.gen2.generate()
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

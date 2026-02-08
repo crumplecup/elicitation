@@ -185,6 +185,94 @@ impl<T: Clone> Generator for WeightedGenerator<T> {
     }
 }
 
+/// Generator for bounded even values.
+///
+/// Generates values in [low, high) that are even.
+#[derive(Debug, Clone)]
+pub struct BoundedEvenGenerator<T> {
+    seed: u64,
+    low: T,
+    high: T,
+}
+
+impl<T> BoundedEvenGenerator<T>
+where
+    T: rand::distributions::uniform::SampleUniform + Copy,
+{
+    /// Create a new bounded even generator.
+    pub fn new(seed: u64, low: T, high: T) -> Self {
+        Self { seed, low, high }
+    }
+}
+
+impl<T> Generator for BoundedEvenGenerator<T>
+where
+    T: rand::distributions::uniform::SampleUniform
+        + Copy
+        + std::ops::Rem<Output = T>
+        + std::ops::Sub<Output = T>
+        + PartialEq
+        + From<u8>,
+{
+    type Target = T;
+
+    fn generate(&self) -> T {
+        let generator = UniformGenerator::with_seed(self.seed, self.low, self.high);
+        let value = generator.generate();
+        let two = T::from(2u8);
+        if value % two == T::from(0u8) {
+            value
+        } else {
+            // Make it even by subtracting 1 (safer than adding)
+            value - T::from(1u8)
+        }
+    }
+}
+
+/// Generator for bounded odd values.
+///
+/// Generates values in [low, high) that are odd.
+#[derive(Debug, Clone)]
+pub struct BoundedOddGenerator<T> {
+    seed: u64,
+    low: T,
+    high: T,
+}
+
+impl<T> BoundedOddGenerator<T>
+where
+    T: rand::distributions::uniform::SampleUniform + Copy,
+{
+    /// Create a new bounded odd generator.
+    pub fn new(seed: u64, low: T, high: T) -> Self {
+        Self { seed, low, high }
+    }
+}
+
+impl<T> Generator for BoundedOddGenerator<T>
+where
+    T: rand::distributions::uniform::SampleUniform
+        + Copy
+        + std::ops::Rem<Output = T>
+        + std::ops::Sub<Output = T>
+        + PartialEq
+        + From<u8>,
+{
+    type Target = T;
+
+    fn generate(&self) -> T {
+        let generator = UniformGenerator::with_seed(self.seed, self.low, self.high);
+        let value = generator.generate();
+        let two = T::from(2u8);
+        if value % two != T::from(0u8) {
+            value
+        } else {
+            // Make it odd by subtracting 1 (safer than adding)
+            value - T::from(1u8)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

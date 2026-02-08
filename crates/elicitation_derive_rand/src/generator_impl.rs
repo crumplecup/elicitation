@@ -74,6 +74,12 @@ fn generate_newtype_impl(
         Some(Contract::Odd) => {
             generate_odd_impl(inner_type)?
         }
+        Some(Contract::And(left, right)) => {
+            generate_and_impl(inner_type, &left, &right)?
+        }
+        Some(Contract::Or(left, right)) => {
+            generate_or_impl(inner_type, &left, &right)?
+        }
         None => {
             // No contract - use standard RandomGenerator
             quote! {
@@ -157,4 +163,98 @@ fn generate_odd_impl(inner_type: &syn::Type) -> Result<TokenStream> {
             |value: #inner_type| if value % 2 != 0 { value } else { value.wrapping_add(1) }
         )
     })
+}
+
+/// Generate And implementation - apply both constraints sequentially.
+fn generate_and_impl(
+    inner_type: &syn::Type,
+    left: &Contract,
+    right: &Contract,
+) -> Result<TokenStream> {
+    // Special case: bounded + even/odd
+    if let (Contract::Bounded { low, high }, Contract::Even) = (left, right) {
+        // Adjust bounds to only generate even values
+        return Ok(quote! {
+            ::elicitation_rand::distributions::BoundedEvenGenerator::new(seed, #low, #high)
+        });
+    }
+    if let (Contract::Bounded { low, high }, Contract::Odd) = (left, right) {
+        // Adjust bounds to only generate odd values
+        return Ok(quote! {
+            ::elicitation_rand::distributions::BoundedOddGenerator::new(seed, #low, #high)
+        });
+    }
+    
+    // General case: generate left first, then apply right transformation
+    let left_gen = generate_contract_impl(inner_type, left)?;
+    let right_transform = generate_contract_transform(inner_type, right)?;
+    
+    Ok(quote! {
+        ::elicitation_rand::generators::TransformGenerator::new(
+            #left_gen,
+            #right_transform
+        )
+    })
+}
+
+/// Generate Or implementation - randomly choose one constraint path.
+fn generate_or_impl(
+    inner_type: &syn::Type,
+    left: &Contract,
+    right: &Contract,
+) -> Result<TokenStream> {
+    let left_gen = generate_contract_impl(inner_type, left)?;
+    let right_gen = generate_contract_impl(inner_type, right)?;
+    
+    // Use a coin flip to decide which constraint to use
+    Ok(quote! {
+        ::elicitation_rand::generators::ChoiceGenerator::new(
+            seed,
+            #left_gen,
+            #right_gen
+        )
+    })
+}
+
+/// Generate implementation for a contract (used in composition).
+fn generate_contract_impl(inner_type: &syn::Type, contract: &Contract) -> Result<TokenStream> {
+    match contract {
+        Contract::Bounded { low, high } => generate_bounded_impl(inner_type, low, high),
+        Contract::Positive => generate_positive_impl(inner_type),
+        Contract::NonZero => generate_nonzero_impl(inner_type),
+        Contract::Even => generate_even_impl(inner_type),
+        Contract::Odd => generate_odd_impl(inner_type),
+        Contract::And(left, right) => generate_and_impl(inner_type, left, right),
+        Contract::Or(left, right) => generate_or_impl(inner_type, left, right),
+    }
+}
+
+/// Generate a transformation function for a contract (used in And composition).
+fn generate_contract_transform(inner_type: &syn::Type, contract: &Contract) -> Result<TokenStream> {
+    match contract {
+        Contract::Even => {
+            Ok(quote! {
+                |value: #inner_type| if value % 2 == 0 { value } else { value.saturating_sub(1) }
+            })
+        }
+        Contract::Odd => {
+            Ok(quote! {
+                |value: #inner_type| if value % 2 != 0 { value } else { value.saturating_sub(1) }
+            })
+        }
+        Contract::Positive => {
+            // For signed types, take absolute value and ensure > 0
+            Ok(quote! {
+                |value: #inner_type| value.abs().max(1)
+            })
+        }
+        _ => {
+            // For complex contracts, just regenerate
+            // This is less efficient but simpler
+            Err(syn::Error::new(
+                proc_macro2::Span::call_site(),
+                "Complex contract not supported in And composition yet",
+            ))
+        }
+    }
 }

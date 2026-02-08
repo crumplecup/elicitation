@@ -24,6 +24,12 @@ pub enum Contract {
     
     /// odd - Odd values only
     Odd,
+    
+    /// and(A, B) - Both constraints must hold
+    And(Box<Contract>, Box<Contract>),
+    
+    /// or(A, B) - Either constraint holds
+    Or(Box<Contract>, Box<Contract>),
 }
 
 /// Parse contract from attributes.
@@ -65,6 +71,32 @@ fn parse_rand_meta(meta: &Meta) -> Result<Option<Contract>> {
                                 
                                 Ok(Some(Contract::Bounded { low, high }))
                             }
+                            "and" => {
+                                if args.len() != 2 {
+                                    return Err(syn::Error::new_spanned(
+                                        &args,
+                                        "and requires exactly 2 arguments: and(contract1, contract2)",
+                                    ));
+                                }
+                                
+                                let left = parse_contract_expr(&args[0])?;
+                                let right = parse_contract_expr(&args[1])?;
+                                
+                                Ok(Some(Contract::And(Box::new(left), Box::new(right))))
+                            }
+                            "or" => {
+                                if args.len() != 2 {
+                                    return Err(syn::Error::new_spanned(
+                                        &args,
+                                        "or requires exactly 2 arguments: or(contract1, contract2)",
+                                    ));
+                                }
+                                
+                                let left = parse_contract_expr(&args[0])?;
+                                let right = parse_contract_expr(&args[1])?;
+                                
+                                Ok(Some(Contract::Or(Box::new(left), Box::new(right))))
+                            }
                             _ => Err(syn::Error::new_spanned(func.as_ref(), "Unknown rand function")),
                         }
                     } else {
@@ -97,5 +129,72 @@ fn extract_literal(expr: &Expr) -> Result<Lit> {
     match expr {
         Expr::Lit(lit_expr) => Ok(lit_expr.lit.clone()),
         _ => Err(syn::Error::new_spanned(expr, "Expected literal value")),
+    }
+}
+
+/// Parse contract from expression (for nested contracts).
+fn parse_contract_expr(expr: &Expr) -> Result<Contract> {
+    match expr {
+        // Function call: bounded(1, 100), and(positive, even)
+        Expr::Call(ExprCall { func, args, .. }) => {
+            if let Expr::Path(path) = func.as_ref() {
+                let func_name = path.path.get_ident()
+                    .ok_or_else(|| syn::Error::new_spanned(func.as_ref(), "Expected function name"))?;
+                
+                match func_name.to_string().as_str() {
+                    "bounded" => {
+                        if args.len() != 2 {
+                            return Err(syn::Error::new_spanned(
+                                &args,
+                                "bounded requires exactly 2 arguments",
+                            ));
+                        }
+                        let low = extract_literal(&args[0])?;
+                        let high = extract_literal(&args[1])?;
+                        Ok(Contract::Bounded { low, high })
+                    }
+                    "and" => {
+                        if args.len() != 2 {
+                            return Err(syn::Error::new_spanned(
+                                &args,
+                                "and requires exactly 2 arguments",
+                            ));
+                        }
+                        let left = parse_contract_expr(&args[0])?;
+                        let right = parse_contract_expr(&args[1])?;
+                        Ok(Contract::And(Box::new(left), Box::new(right)))
+                    }
+                    "or" => {
+                        if args.len() != 2 {
+                            return Err(syn::Error::new_spanned(
+                                &args,
+                                "or requires exactly 2 arguments",
+                            ));
+                        }
+                        let left = parse_contract_expr(&args[0])?;
+                        let right = parse_contract_expr(&args[1])?;
+                        Ok(Contract::Or(Box::new(left), Box::new(right)))
+                    }
+                    _ => Err(syn::Error::new_spanned(func.as_ref(), "Unknown contract function")),
+                }
+            } else {
+                Err(syn::Error::new_spanned(func.as_ref(), "Expected path"))
+            }
+        }
+        // Simple identifier: positive, nonzero, even, odd
+        Expr::Path(path) => {
+            if let Some(ident) = path.path.get_ident() {
+                match ident.to_string().as_str() {
+                    "positive" => Ok(Contract::Positive),
+                    "nonzero" => Ok(Contract::NonZero),
+                    "even" => Ok(Contract::Even),
+                    "odd" => Ok(Contract::Odd),
+                    _ => Err(syn::Error::new_spanned(ident, "Unknown contract")),
+                }
+            } else {
+                Err(syn::Error::new_spanned(path, "Expected identifier"))
+            }
+        }
+        _ => Err(syn::Error::new_spanned(expr, "Expected function call or identifier")),
     }
 }

@@ -75,8 +75,8 @@ pub mod distributions;
 pub mod verification;
 
 pub use generators::RandomGenerator;
-pub use generators::{MapGenerator, TransformGenerator};
-pub use distributions::{UniformGenerator, WeightedGenerator};
+pub use generators::{MapGenerator, TransformGenerator, ChoiceGenerator};
+pub use distributions::{UniformGenerator, WeightedGenerator, BoundedEvenGenerator, BoundedOddGenerator};
 
 // TODO: Phase 5 - Implement Kani verification
 // #[cfg(kani)]
