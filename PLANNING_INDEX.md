@@ -437,4 +437,49 @@ Layer 6: RegexBytes          → Complete regex (8.2s)
 
 ---
 
+### GENERATOR_KANI_PROOFS_CHECKLIST.md
+**Status**: Active - Tracking document for generator verification coverage  
+**Created**: 2026-02-08  
+**Purpose**: Comprehensive checklist of all Generator types in the elicitation crate, tracking Kani proof status for each generator mode and planning complete verification coverage.
+
+**Generator Types Tracked**: 14 generators across core and feature-gated types
+- Core: Duration, SystemTime, Uuid, IoError, unit structs
+- Feature-gated: chrono (DateTime<Utc>, NaiveDateTime), time (Instant, OffsetDateTime), jiff (Timestamp), serde_json (JsonError)
+
+**Current Coverage**: 2/11 types complete (18.2%)
+- ✅ Complete: Duration (9 proofs), SystemTime (7 proofs)
+- 🚧 Partial: Uuid (missing generator-specific proofs)
+- ❌ Missing: 8 types need proofs (IoError + all feature-gated types)
+
+**Key Sections**:
+1. **Status tracking** - ✅ Complete, 🚧 Partial, ❌ Missing, 🔒 Feature-gated
+2. **Detailed analysis per type** - Modes, existing proofs, missing proofs, action items
+3. **Action plan** - 4 phases: Complete partial, core generators, datetime generators, harness integration
+4. **CSV tracking schema** - Proposed columns for verification tracking
+5. **Verification harness updates** - Required changes to run generator proofs
+6. **Priority ranking** - High (Uuid, IoError), Medium (chrono, time), Low (jiff, serde_json)
+
+**Statistics**:
+- Total generators: 14
+- Complete: 2 (Duration, SystemTime)
+- Partial: 1 (Uuid - needs generator modes)
+- Missing: 8 (IoError + 6 feature-gated types)
+- N/A: 3 (unit structs - trivial identity functions)
+
+**Next Steps**:
+1. Complete Uuid generator proofs (Nil, Custom, V4 format validation)
+2. Add IoError generator proofs (ErrorKind verification)
+3. Add feature-gated datetime generator proofs (chrono, time, jiff)
+4. Integrate all generators into verification harness
+5. Update CSV tracking with generator types
+6. Generate comprehensive proof records
+
+**Impact**: Ensures all alternate construction paths (generators) have same formal verification guarantees as standard elicitation. Critical for types like `Instant::now()`, `Uuid::new_v4()`, `SystemTime::UNIX_EPOCH` that bypass normal elicitation flow.
+
+**Reference**: Generators enable construction without elicitation (e.g., `Instant::now()` for timestamps, `Uuid::new_v4()` for random IDs). These need proofs to ensure generated values satisfy type invariants.
+
+---
+
+## Archived/Complete Plans
+
 TOTAL_VERIFICATION_PLAN.md

@@ -279,3 +279,105 @@ fn verify_v7_bytes_roundtrip() {
     // Should match original
     assert_eq!(bytes, extracted);
 }
+
+// ============================================================================
+// UUID Generator Proofs
+// ============================================================================
+
+use crate::{Generator, UuidGenerationMode, UuidGenerator};
+use uuid::Uuid;
+
+/// Verify Nil mode produces the nil UUID.
+///
+/// Castle on cloud: We trust uuid::Uuid::nil() is correct.
+/// We verify our generator wrapper calls it correctly.
+#[kani::proof]
+fn verify_uuid_generator_nil() {
+    let mode = UuidGenerationMode::Nil;
+    let generator = UuidGenerator::new(mode);
+
+    let uuid = generator.generate();
+
+    // Should produce nil UUID (all zeros)
+    assert_eq!(uuid, Uuid::nil(), "Nil mode produces nil UUID");
+    assert_eq!(uuid.as_bytes(), &[0u8; 16], "Nil UUID is all zeros");
+}
+
+/// Verify Max mode produces the max UUID.
+///
+/// Castle on cloud: We trust uuid::Uuid::max() is correct.
+/// We verify our generator wrapper calls it correctly.
+#[kani::proof]
+fn verify_uuid_generator_max() {
+    let mode = UuidGenerationMode::Max;
+    let generator = UuidGenerator::new(mode);
+
+    let uuid = generator.generate();
+
+    // Should produce max UUID (all ones)
+    assert_eq!(uuid, Uuid::max(), "Max mode produces max UUID");
+    assert_eq!(uuid.as_bytes(), &[0xFFu8; 16], "Max UUID is all ones");
+}
+
+/// Verify V4 mode produces a UUID with correct version and variant bits.
+///
+/// Castle on cloud: We trust uuid::Uuid::new_v4() produces valid random V4 UUIDs.
+/// We verify our generator wrapper produces UUIDs with correct format.
+#[kani::proof]
+fn verify_uuid_generator_v4_format() {
+    let mode = UuidGenerationMode::V4;
+    let generator = UuidGenerator::new(mode);
+
+    let uuid = generator.generate();
+    let bytes = uuid.as_bytes();
+
+    // Verify version 4 (bits 12-15 of time_hi_and_version)
+    let version = (bytes[6] & 0xF0) >> 4;
+    assert_eq!(version, 4, "V4 mode produces version 4 UUID");
+
+    // Verify RFC 4122 variant (bits 6-7 of clock_seq_hi_and_reserved)
+    let variant_bits = bytes[8] & 0xC0;
+    assert_eq!(
+        variant_bits, 0x80,
+        "V4 mode produces RFC 4122 variant (10xx)"
+    );
+}
+
+/// Verify generator mode is preserved.
+///
+/// Verifies our struct correctly stores and returns the mode.
+#[kani::proof]
+fn verify_uuid_generator_mode_preserved() {
+    let mode = UuidGenerationMode::Nil;
+    let generator = UuidGenerator::new(mode);
+
+    assert_eq!(generator.mode(), mode, "Generator preserves mode");
+}
+
+/// Verify Nil generator produces consistent results.
+///
+/// Verifies deterministic modes (Nil, Max) produce same UUID on repeated calls.
+#[kani::proof]
+fn verify_uuid_generator_nil_consistent() {
+    let mode = UuidGenerationMode::Nil;
+    let generator = UuidGenerator::new(mode);
+
+    let uuid1 = generator.generate();
+    let uuid2 = generator.generate();
+
+    assert_eq!(uuid1, uuid2, "Nil mode is deterministic");
+}
+
+/// Verify Max generator produces consistent results.
+///
+/// Verifies deterministic modes (Nil, Max) produce same UUID on repeated calls.
+#[kani::proof]
+fn verify_uuid_generator_max_consistent() {
+    let mode = UuidGenerationMode::Max;
+    let generator = UuidGenerator::new(mode);
+
+    let uuid1 = generator.generate();
+    let uuid2 = generator.generate();
+
+    assert_eq!(uuid1, uuid2, "Max mode is deterministic");
+}

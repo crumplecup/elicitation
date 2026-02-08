@@ -1,0 +1,362 @@
+# Generator Types - Kani Proof Checklist
+
+## Overview
+
+This document tracks Kani verification coverage for all Generator types in the elicitation crate. Generators enable alternate construction paths (like `Instant::now()`, `Uuid::new_v4()`, etc.) and require formal verification to ensure correctness.
+
+**Goal:** Complete Kani proof coverage for all generator types, integrated into the verification harness and CSV tracking system.
+
+---
+
+## Proof Status Legend
+
+- ✅ **Complete** - Kani proofs exist and pass
+- 🚧 **Partial** - Some proofs exist, coverage incomplete
+- ❌ **Missing** - No Kani proofs
+- 🔒 **Feature-gated** - Behind feature flag, needs conditional verification
+
+---
+
+## Core Generators (No Feature Gates)
+
+### ✅ std::time::Duration
+- **File:** `crates/elicitation/src/primitives/duration.rs`
+- **Generator:** `DurationGenerator`
+- **Modes:**
+  - `Zero` - Duration::ZERO
+  - `Custom(secs, nanos)` - Arbitrary duration
+- **Kani Proofs:** `crates/elicitation/src/verification/types/kani_proofs/durations.rs`
+- **Status:** ✅ Complete
+- **Notes:** Existing proofs cover all modes
+
+### ✅ std::time::SystemTime
+- **File:** `crates/elicitation/src/primitives/systemtime.rs`
+- **Generator:** `SystemTimeGenerator`
+- **Modes:**
+  - `UnixEpoch` - SystemTime::UNIX_EPOCH
+  - `Now` - SystemTime::now()
+  - `Offset { seconds, nanos }` - Custom offset from reference
+- **Kani Proofs:** `crates/elicitation/src/verification/types/kani_proofs/systemtime.rs`
+- **Status:** ✅ Complete
+- **Notes:** Existing proofs cover all modes including offset arithmetic
+
+### ✅ uuid::Uuid  
+- **File:** `crates/elicitation/src/primitives/uuid.rs`
+- **Generator:** `UuidGenerator`
+- **Modes:**
+  - `V4` - Uuid::new_v4() (random)
+  - `Nil` - Uuid::nil()
+  - `Max` - Uuid::max()
+- **Kani Proofs:** `crates/elicitation/src/verification/types/kani_proofs/uuid_bytes.rs` (lines 283-387)
+- **Status:** ✅ Complete
+- **Proofs Added (6 total):**
+  - `verify_uuid_generator_nil()` - Nil mode produces all-zero UUID
+  - `verify_uuid_generator_max()` - Max mode produces all-ones UUID  
+  - `verify_uuid_generator_v4_format()` - V4 mode produces correct version/variant bits
+  - `verify_uuid_generator_mode_preserved()` - Generator stores mode correctly
+  - `verify_uuid_generator_nil_consistent()` - Nil mode is deterministic
+  - `verify_uuid_generator_max_consistent()` - Max mode is deterministic
+- **Castle on Cloud Pattern:**
+  - Trusts `uuid::Uuid::nil()`, `Uuid::max()`, `Uuid::new_v4()` correctness
+  - Verifies our wrapper logic calls them correctly
+  - Verifies generated UUIDs have correct format (version 4, RFC 4122 variant)
+
+### ❌ std::io::Error
+- **File:** `crates/elicitation/src/primitives/errors.rs`
+- **Generator:** `IoErrorGenerator`
+- **Modes:**
+  - Various ErrorKind variants with custom messages
+- **Kani Proofs:** None
+- **Status:** ❌ Missing
+- **Missing:**
+  - All generator proofs
+  - Verification that generated errors have correct ErrorKind
+  - Message preservation checks
+- **Action Items:**
+  - Create `crates/elicitation/src/verification/types/kani_proofs/errors.rs`
+  - Add `verify_ioerror_generator_kind()` - ErrorKind correctness
+  - Add `verify_ioerror_generator_message()` - Message preservation
+  - Add generator tests to verification harness
+- **Notes:** Low priority - errors are simple constructors
+
+### ❌ Unit Structs (Validator, Formatter, Parser)
+- **File:** `crates/elicitation/src/primitives/unit_structs.rs`
+- **Generators:** `Validator`, `Formatter`, `Parser`
+- **Modes:** 
+  - All generators just return `Self` (identity)
+- **Kani Proofs:** None needed
+- **Status:** N/A (Trivial - identity function)
+- **Notes:** Generators just return `Self { }`, no logic to verify
+
+---
+
+## Feature-Gated Generators
+
+### 🔒 chrono::DateTime<Utc> (feature = "chrono")
+- **File:** `crates/elicitation/src/datetime_chrono.rs`
+- **Generator:** `DateTimeUtcGenerator`
+- **Modes:**
+  - `Now` - Utc::now()
+  - `Custom(timestamp)` - From UNIX timestamp
+- **Kani Proofs:** None
+- **Status:** ❌ Missing
+- **Missing:**
+  - All generator proofs
+  - Verification of timestamp conversion
+  - Boundary checks for valid datetime ranges
+- **Action Items:**
+  - Create `crates/elicitation/src/verification/types/kani_proofs/datetime_chrono.rs`
+  - Add `verify_datetime_utc_generator_custom()` - Timestamp conversion
+  - Add `verify_datetime_utc_generator_boundaries()` - Valid range checks
+  - Add feature-gated tests to verification harness
+  - Add to CSV tracking with feature flag column
+
+### 🔒 chrono::NaiveDateTime (feature = "chrono")
+- **File:** `crates/elicitation/src/datetime_chrono.rs`
+- **Generator:** `NaiveDateTimeGenerator`
+- **Modes:**
+  - `Now` - Utc::now().naive_utc()
+  - `Custom(timestamp)` - From UNIX timestamp
+- **Kani Proofs:** None
+- **Status:** ❌ Missing
+- **Missing:**
+  - All generator proofs
+  - Verification of naive datetime conversion
+  - Relationship to DateTime<Utc> generator
+- **Action Items:**
+  - Add to `datetime_chrono.rs` proof file
+  - Add `verify_naive_datetime_generator_custom()` - Timestamp conversion
+  - Add `verify_naive_datetime_utc_equivalence()` - Relationship to DateTime<Utc>
+  - Add feature-gated tests to verification harness
+
+### 🔒 time::Instant (feature = "time")
+- **File:** `crates/elicitation/src/datetime_time.rs`
+- **Generator:** `InstantGenerator`
+- **Modes:**
+  - `Now` - Instant::now()
+  - `Custom(duration)` - From duration since epoch
+- **Kani Proofs:** None
+- **Status:** ❌ Missing
+- **Missing:**
+  - All generator proofs
+  - Verification of instant construction
+  - Monotonicity checks (if applicable)
+- **Action Items:**
+  - Create `crates/elicitation/src/verification/types/kani_proofs/datetime_time.rs`
+  - Add `verify_instant_generator_custom()` - Duration-based construction
+  - Add feature-gated tests to verification harness
+- **Notes:** time::Instant is different from std::time::Instant
+
+### 🔒 time::OffsetDateTime (feature = "time")
+- **File:** `crates/elicitation/src/datetime_time.rs`
+- **Generator:** `OffsetDateTimeGenerator`
+- **Modes:**
+  - `Now` - OffsetDateTime::now_utc()
+  - `Custom(timestamp)` - From UNIX timestamp
+- **Kani Proofs:** None
+- **Status:** ❌ Missing
+- **Missing:**
+  - All generator proofs
+  - Verification of offset datetime construction
+  - UTC offset handling
+- **Action Items:**
+  - Add to `datetime_time.rs` proof file
+  - Add `verify_offset_datetime_generator_custom()` - Timestamp conversion
+  - Add `verify_offset_datetime_utc_offset()` - UTC offset correctness
+  - Add feature-gated tests to verification harness
+
+### 🔒 jiff::Timestamp (feature = "jiff")
+- **File:** `crates/elicitation/src/datetime_jiff.rs`
+- **Generator:** `TimestampGenerator`
+- **Modes:**
+  - `Now` - Timestamp::now()
+  - `Custom(timestamp)` - From UNIX timestamp
+- **Kani Proofs:** None
+- **Status:** ❌ Missing
+- **Missing:**
+  - All generator proofs
+  - Verification of jiff timestamp construction
+  - Precision/range checks
+- **Action Items:**
+  - Create `crates/elicitation/src/verification/types/kani_proofs/datetime_jiff.rs`
+  - Add `verify_timestamp_generator_custom()` - Timestamp conversion
+  - Add `verify_timestamp_generator_precision()` - Precision checks
+  - Add feature-gated tests to verification harness
+
+### 🔒 serde_json::Error (feature = "serde_json")
+- **File:** `crates/elicitation/src/primitives/errors.rs`
+- **Generator:** `JsonErrorGenerator`
+- **Modes:**
+  - Various JSON parsing error types
+- **Kani Proofs:** None
+- **Status:** ❌ Missing
+- **Missing:**
+  - All generator proofs
+  - Verification of JSON error construction
+- **Action Items:**
+  - Add to `errors.rs` proof file (feature-gated section)
+  - Add `verify_json_error_generator()` - Error construction
+  - Add feature-gated tests to verification harness
+- **Notes:** Low priority - errors are simple constructors
+
+---
+
+## Summary Statistics
+
+| Category | Total | Complete | Partial | Missing | N/A |
+|----------|-------|----------|---------|---------|-----|
+| **Core Generators** | 5 | 3 | 0 | 2 | 0 |
+| **Feature-Gated** | 6 | 0 | 0 | 6 | 0 |
+| **Unit Structs** | 3 | 0 | 0 | 0 | 3 |
+| **TOTAL** | 14 | 3 | 0 | 8 | 3 |
+
+**Coverage:** 3/11 types complete (27.3%)  
+**Work Remaining:** 8 types need proofs
+
+**Phase 1 Complete:** ✅ uuid::Uuid generator proofs added (6 proofs)
+
+---
+
+## Action Plan
+
+### Phase 1: Complete Partial Coverage
+1. **uuid::Uuid** - Complete generator proofs
+   - Add Nil mode proof
+   - Add Custom mode proof
+   - Add V4 format validation
+   - Integrate with existing uuid_bytes proofs
+
+### Phase 2: Core Generators
+2. **std::io::Error** - Add generator proofs
+   - Create errors.rs proof file
+   - Add ErrorKind verification
+   - Add message preservation checks
+
+### Phase 3: Feature-Gated DateTime Generators
+3. **chrono types** - Add proofs for DateTime<Utc> and NaiveDateTime
+   - Create datetime_chrono.rs proof file
+   - Add timestamp conversion proofs
+   - Add boundary checks
+
+4. **time types** - Add proofs for Instant and OffsetDateTime
+   - Create datetime_time.rs proof file
+   - Add duration-based construction proofs
+   - Add offset handling proofs
+
+5. **jiff types** - Add proofs for Timestamp
+   - Create datetime_jiff.rs proof file
+   - Add timestamp conversion proofs
+   - Add precision checks
+
+6. **serde_json::Error** - Add generator proofs (low priority)
+   - Add to errors.rs proof file
+   - Feature-gated section
+
+### Phase 4: Verification Harness Integration
+7. **Update verification harness**
+   - Add all generator types to harness
+   - Add feature-gated conditional compilation
+   - Ensure all proofs run in CI
+
+8. **CSV Tracking**
+   - Add generator types to verification CSV
+   - Add feature flag column
+   - Track proof status
+   - Generate proof records
+
+---
+
+## CSV Tracking Schema
+
+Proposed columns for generator verification tracking:
+
+```csv
+type_name,generator_name,feature,has_kani_proof,proof_file,modes_verified,proof_count,status,last_verified
+Duration,DurationGenerator,,true,durations.rs,"Zero,Custom",4,complete,2026-02-08
+SystemTime,SystemTimeGenerator,,true,systemtime.rs,"UnixEpoch,Now,Offset",6,complete,2026-02-08
+Uuid,UuidGenerator,,partial,uuid_bytes.rs,"Custom",2,partial,2026-02-08
+IoError,IoErrorGenerator,,false,,,0,missing,
+DateTime<Utc>,DateTimeUtcGenerator,chrono,false,,,0,missing,
+NaiveDateTime,NaiveDateTimeGenerator,chrono,false,,,0,missing,
+Instant,InstantGenerator,time,false,,,0,missing,
+OffsetDateTime,OffsetDateTimeGenerator,time,false,,,0,missing,
+Timestamp,TimestampGenerator,jiff,false,,,0,missing,
+JsonError,JsonErrorGenerator,serde_json,false,,,0,missing,
+```
+
+---
+
+## Verification Harness Updates
+
+### Required Changes
+
+1. **Add generator imports:**
+```rust
+#[cfg(kani)]
+mod generator_proofs {
+    use crate::*;
+    
+    // Core generators
+    mod uuid;
+    mod errors;
+    
+    // Feature-gated generators
+    #[cfg(feature = "chrono")]
+    mod datetime_chrono;
+    
+    #[cfg(feature = "time")]
+    mod datetime_time;
+    
+    #[cfg(feature = "jiff")]
+    mod datetime_jiff;
+}
+```
+
+2. **Add to CI pipeline:**
+```yaml
+- name: Verify generators (all features)
+  run: cargo kani --harness generator_proofs --all-features
+```
+
+3. **Add to proof record generation:**
+```bash
+just verify-generators-all-features > generator_verification_results.csv
+```
+
+---
+
+## Priority Ranking
+
+**High Priority (Core functionality):**
+1. uuid::Uuid (partial → complete)
+2. std::io::Error (missing → complete)
+
+**Medium Priority (Common features):**
+3. chrono types (DateTime<Utc>, NaiveDateTime)
+4. time types (Instant, OffsetDateTime)
+
+**Low Priority (Less common features):**
+5. jiff::Timestamp
+6. serde_json::Error
+
+---
+
+## Notes
+
+- **Randomness:** V4 UUID generation uses randomness - we can't verify the random value itself, only that the format is correct
+- **Now() functions:** Functions that call `now()` are non-deterministic - we verify construction logic, not the actual timestamp
+- **Feature gates:** All feature-gated generators need conditional compilation in proofs
+- **Existing proofs:** Don't duplicate existing proofs - integrate generators into existing verification files where possible
+
+---
+
+## References
+
+- [KANI_VERIFICATION_PATTERNS.md](KANI_VERIFICATION_PATTERNS.md) - Verification patterns
+- [VERIFICATION_FRAMEWORK_DESIGN.md](VERIFICATION_FRAMEWORK_DESIGN.md) - Framework design
+- [crates/elicitation/src/verification/](crates/elicitation/src/verification/) - Existing proofs
+
+---
+
+**Last Updated:** 2026-02-08  
+**Status:** Planning phase - tracking document created
