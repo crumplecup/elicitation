@@ -67,7 +67,7 @@ impl<H: EchoTrait + 'static> ServerHandler for EchoServer<H> {
 fn test_simple_trait_tool_generation() {
     let handler = EchoHandler;
     let _server = EchoServer { handler };
-    
+
     // Verify server compiles and has generated tool_router
     let _router = EchoServer::<EchoHandler>::echo_tools();
 }
@@ -78,7 +78,7 @@ fn test_simple_trait_has_echo_method() {
     // (Type checking proves it exists)
     let handler = EchoHandler;
     let server = EchoServer { handler };
-    let _ = &server;  // Just prove it compiles
+    let _ = &server; // Just prove it compiles
 }
 
 // ============================================================================
@@ -139,7 +139,8 @@ impl MathOps for Calculator {
     fn multiply(
         &self,
         params: Parameters<MultiplyParams>,
-    ) -> impl std::future::Future<Output = Result<Json<MultiplyResult>, rmcp::ErrorData>> + Send {
+    ) -> impl std::future::Future<Output = Result<Json<MultiplyResult>, rmcp::ErrorData>> + Send
+    {
         async move {
             Ok(Json(MultiplyResult {
                 result: params.0.x * params.0.y,
@@ -166,7 +167,7 @@ impl<C: MathOps + 'static> ServerHandler for MathServer<C> {
 fn test_multiple_methods_compile() {
     let calc = Calculator;
     let _server = MathServer { calculator: calc };
-    
+
     let _router = MathServer::<Calculator>::math_tools();
 }
 
@@ -176,7 +177,7 @@ fn test_multiple_methods_exist() {
     // (Type checking proves they exist)
     let calc = Calculator;
     let server = MathServer { calculator: calc };
-    let _ = &server;  // Just prove it compiles
+    let _ = &server; // Just prove it compiles
 }
 
 // ============================================================================
@@ -187,13 +188,13 @@ fn test_multiple_methods_exist() {
 fn test_tool_router_discovers_methods() {
     let calc = Calculator;
     let _server = MathServer { calculator: calc };
-    
+
     let router = MathServer::<Calculator>::math_tools();
     let tools = router.list_all();
-    
+
     // Should have 2 tools registered (add + multiply)
     assert_eq!(tools.len(), 2);
-    
+
     let tool_names: Vec<String> = tools.iter().map(|t| t.name.to_string()).collect();
     assert!(tool_names.contains(&"add".to_string()));
     assert!(tool_names.contains(&"multiply".to_string()));

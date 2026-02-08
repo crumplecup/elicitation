@@ -315,7 +315,7 @@ fn to_snake_case(s: &str) -> String {
 ///
 /// ```ignore
 /// trait Calculator: Send + Sync {
-///     async fn add(&self, params: Parameters<AddParams>) 
+///     async fn add(&self, params: Parameters<AddParams>)
 ///         -> Result<Json<AddResult>, rmcp::ErrorData>;
 /// }
 ///
@@ -328,8 +328,8 @@ fn to_snake_case(s: &str) -> String {
 /// impl<C: Calculator> Server<C> {
 ///     // Generates:
 ///     // #[tool(description = "Add operation")]
-///     // pub async fn add(&self, params: Parameters<AddParams>) 
-///     //     -> Result<Json<AddResult>, rmcp::ErrorData> 
+///     // pub async fn add(&self, params: Parameters<AddParams>)
+///     //     -> Result<Json<AddResult>, rmcp::ErrorData>
 ///     // {
 ///     //     self.calc.add(params).await
 ///     // }
@@ -339,12 +339,12 @@ fn to_snake_case(s: &str) -> String {
 pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenStream {
     // Parse attribute: (TraitName, field_name, [method1, method2, ...])
     let attr_str = attr.to_string();
-    
+
     // Split by comma, but handle array brackets
     let mut parts = Vec::new();
     let mut current = String::new();
     let mut bracket_depth = 0;
-    
+
     for ch in attr_str.chars() {
         match ch {
             '[' => {
@@ -365,7 +365,7 @@ pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenS
     if !current.is_empty() {
         parts.push(current.trim().to_string());
     }
-    
+
     if parts.len() != 3 {
         return syn::Error::new(
             proc_macro2::Span::call_site(),
@@ -374,11 +374,11 @@ pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenS
         .to_compile_error()
         .into();
     }
-    
+
     let _trait_name = &parts[0];
     let field_name = &parts[1];
     let methods_str = &parts[2];
-    
+
     // Parse method list from [method1, method2, ...]
     let methods_str = methods_str.trim_start_matches('[').trim_end_matches(']');
     let methods: Vec<&str> = methods_str
@@ -386,7 +386,7 @@ pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenS
         .map(|s| s.trim())
         .filter(|s| !s.is_empty())
         .collect();
-    
+
     if methods.is_empty() {
         return syn::Error::new(
             proc_macro2::Span::call_site(),
@@ -395,17 +395,17 @@ pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenS
         .to_compile_error()
         .into();
     }
-    
+
     // Parse the impl block
     let mut impl_block = parse_macro_input!(item as ItemImpl);
-    
+
     // Generate tool methods for each listed method
     for method_name in methods {
         // Convert method_name to PascalCase for type names
         let pascal_case = to_pascal_case(method_name);
         let params_type = format!("{}Params", pascal_case);
         let result_type = format!("{}Result", pascal_case);
-        
+
         // Parse type names
         let params_ty: syn::Type = match syn::parse_str(&params_type) {
             Ok(t) => t,
@@ -418,7 +418,7 @@ pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenS
                 .into();
             }
         };
-        
+
         let result_ty: syn::Type = match syn::parse_str(&result_type) {
             Ok(t) => t,
             Err(e) => {
@@ -430,12 +430,12 @@ pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenS
                 .into();
             }
         };
-        
+
         let method_ident = syn::Ident::new(method_name, proc_macro2::Span::call_site());
         let field_ident = syn::Ident::new(field_name, proc_macro2::Span::call_site());
-        
+
         let tool_description = format!("{} operation", method_name.replace('_', " "));
-        
+
         // Generate the delegating method
         let method: syn::ImplItemFn = syn::parse_quote! {
             #[doc = concat!("`", #method_name, "` operation via trait method delegation.")]
@@ -450,10 +450,10 @@ pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenS
                 self.#field_ident.#method_ident(params).await
             }
         };
-        
+
         impl_block.items.push(syn::ImplItem::Fn(method));
     }
-    
+
     TokenStream::from(quote! { #impl_block })
 }
 
@@ -464,9 +464,7 @@ fn to_pascal_case(s: &str) -> String {
             let mut chars = word.chars();
             match chars.next() {
                 None => String::new(),
-                Some(first) => {
-                    first.to_uppercase().collect::<String>() + chars.as_str()
-                }
+                Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
             }
         })
         .collect()
