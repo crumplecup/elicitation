@@ -92,8 +92,9 @@ impl<H: EchoTrait + 'static> EchoServer<H> {
 
 ### Trait Method Signatures
 
-Methods must follow this pattern:
+The macro supports **two patterns** for trait methods:
 
+**Pattern 1: `impl Future + Send` (zero-cost)**
 ```rust
 fn method_name(
     &self,
@@ -101,11 +102,22 @@ fn method_name(
 ) -> impl std::future::Future<Output = Result<Json<MethodResult>, rmcp::ErrorData>> + Send;
 ```
 
-**Key requirements:**
-1. **Not `async fn`** - Use `fn` returning `impl Future + Send`
-2. **Parameters** - Use `rmcp::Parameters<T>` wrapper
-3. **Return type** - `Result<Json<T>, rmcp::ErrorData>`
-4. **Send bound** - Future must be `Send` for rmcp compatibility
+**Pattern 2: `async_trait` (object-safe)**
+```rust
+#[async_trait::async_trait]
+trait MyTrait: Send + Sync {
+    async fn method_name(
+        &self,
+        params: Parameters<MethodParams>,
+    ) -> Result<Json<MethodResult>, rmcp::ErrorData>;
+}
+```
+
+**Key requirements (both patterns):**
+1. **Parameters** - Use `rmcp::Parameters<T>` wrapper
+2. **Return type** - `Result<Json<T>, rmcp::ErrorData>`
+3. **Trait bounds** - Trait must be `Send + Sync`
+4. **Type naming** - Follow PascalCase convention (see below)
 
 ### Naming Convention
 
@@ -136,24 +148,22 @@ pub struct MethodResult {
 }
 ```
 
-## Why Not `async fn`?
+## Two Patterns for Async Traits
 
-Trait methods must use `fn` returning `impl Future` instead of `async fn` to add the `Send` bound:
+The macro supports both patterns for defining async trait methods:
 
-```rust
-// ❌ Can't add Send bound to async fn return type
-async fn method(&self, params: Parameters<P>) -> Result<Json<R>, ErrorData>
+### Pattern 1: Explicit `impl Future + Send`
 
-// ✅ Explicit future type allows Send bound
-fn method(
-    &self, 
-    params: Parameters<P>
-) -> impl Future<Output = Result<Json<R>, ErrorData>> + Send
-```
-
-The implementation uses `async move`:
+Use this for maximum performance (zero-cost abstraction):
 
 ```rust
+trait MyTrait: Send + Sync {
+    fn method(
+        &self, 
+        params: Parameters<P>
+    ) -> impl Future<Output = Result<Json<R>, ErrorData>> + Send;
+}
+
 impl MyTrait for Handler {
     fn method(
         &self,
@@ -166,6 +176,94 @@ impl MyTrait for Handler {
     }
 }
 ```
+
+**Pros:** Zero-cost, no boxing, best performance  
+**Cons:** Not object-safe, can't use `Box<dyn MyTrait>`
+
+### Pattern 2: `async_trait` Macro
+
+Use this for object safety (trait objects):
+
+```rust
+#[async_trait::async_trait]
+trait MyTrait: Send + Sync {
+    async fn method(
+        &self,
+        params: Parameters<P>,
+    ) -> Result<Json<R>, ErrorData>;
+}
+
+#[async_trait::async_trait]
+impl MyTrait for Handler {
+    async fn method(
+        &self,
+        params: Parameters<P>,
+    ) -> Result<Json<R>, ErrorData> {
+        // Your async code here
+        Ok(Json(R { /* ... */ }))
+    }
+}
+```
+
+**Pros:** Object-safe, simpler syntax, works with `Box<dyn MyTrait>`  
+**Cons:** Small overhead (boxing), requires `async-trait` dependency
+
+## Object-Safe Traits with `async_trait`
+
+**Good News:** The macro fully supports traits using `#[async_trait]` for object safety!
+
+If you need trait objects (e.g., `Vec<Arc<dyn MyTrait>>`), use `async_trait`:
+
+```rust
+use async_trait::async_trait;
+
+// Object-safe trait using async_trait
+#[async_trait]
+pub trait ResourceHandler: Send + Sync {
+    /// List resources
+    async fn list(
+        &self,
+        params: Parameters<ListParams>,
+    ) -> Result<Json<ListResult>, rmcp::ErrorData>;
+}
+
+// Implementation
+pub struct FileResource;
+
+#[async_trait]
+impl ResourceHandler for FileResource {
+    async fn list(
+        &self,
+        params: Parameters<ListParams>,
+    ) -> Result<Json<ListResult>, rmcp::ErrorData> {
+        Ok(Json(ListResult { items: vec![] }))
+    }
+}
+
+// Server with trait object support
+pub struct ResourceServer<R: ResourceHandler + 'static> {
+    handler: R,
+}
+
+// Macro works with async_trait!
+#[elicit_trait_tools_router(ResourceHandler, handler, [list])]
+#[tool_router(router = resource_tools)]
+impl<R: ResourceHandler + 'static> ResourceServer<R> {}
+```
+
+### Choosing Between Patterns
+
+**Use `impl Future + Send` when:**
+- Don't need trait objects
+- Want zero-cost abstractions (no boxing)
+- Performance-critical code
+
+**Use `#[async_trait]` when:**
+- Need trait objects (`Box<dyn Trait>`, `Arc<dyn Trait>`)
+- Want simpler syntax (`async fn` instead of `impl Future`)
+- Working with dynamic dispatch (registries, plugins)
+
+**Both patterns work with the macro!** The generated code calls `.await` which works identically for both.
 
 ## Complete Example
 
