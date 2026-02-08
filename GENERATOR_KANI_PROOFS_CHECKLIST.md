@@ -61,23 +61,45 @@ This document tracks Kani verification coverage for all Generator types in the e
   - Verifies our wrapper logic calls them correctly
   - Verifies generated UUIDs have correct format (version 4, RFC 4122 variant)
 
-### ❌ std::io::Error
+### ✅ std::io::Error (Core - Complete)
 - **File:** `crates/elicitation/src/primitives/errors.rs`
 - **Generator:** `IoErrorGenerator`
-- **Modes:**
-  - Various ErrorKind variants with custom messages
-- **Kani Proofs:** None
-- **Status:** ❌ Missing
-- **Missing:**
-  - All generator proofs
-  - Verification that generated errors have correct ErrorKind
-  - Message preservation checks
-- **Action Items:**
-  - Create `crates/elicitation/src/verification/types/kani_proofs/errors.rs`
-  - Add `verify_ioerror_generator_kind()` - ErrorKind correctness
-  - Add `verify_ioerror_generator_message()` - Message preservation
-  - Add generator tests to verification harness
-- **Notes:** Low priority - errors are simple constructors
+- **Modes:** 10 ErrorKind variants (NotFound, PermissionDenied, ConnectionRefused, etc.)
+- **Kani Proofs:** `crates/elicitation/src/verification/types/kani_proofs/errors.rs`
+- **Status:** ✅ Complete
+- **Proofs Added (9 total):**
+  - `verify_ioerror_generator_not_found()` - NotFound ErrorKind
+  - `verify_ioerror_generator_permission_denied()` - PermissionDenied ErrorKind
+  - `verify_ioerror_generator_connection_refused()` - ConnectionRefused ErrorKind
+  - `verify_ioerror_generator_broken_pipe()` - BrokenPipe ErrorKind
+  - `verify_ioerror_generator_timed_out()` - TimedOut ErrorKind
+  - `verify_ioerror_generator_other()` - Other ErrorKind
+  - `verify_ioerror_generator_mode_preserved()` - Mode storage correctness
+  - `verify_ioerror_mode_helpers()` - Helper method correctness
+  - `verify_ioerror_all_kinds_map_correctly()` - All 10 ErrorKind mappings
+- **Verification Time:** 2-32s per proof
+- **Castle on Cloud Pattern:**
+  - Trusts `io::Error::new()` correctness
+  - Verifies wrapper calls it with correct ErrorKind
+  - Verifies mode → ErrorKind mapping is complete
+
+### ✅ serde_json::Error (Feature-Gated - Complete with Symbolic Verification)
+- **File:** `crates/elicitation/src/primitives/errors.rs`
+- **Generator:** `JsonErrorGenerator`
+- **Modes:** 5 error types (SyntaxError, EofWhileParsing, InvalidNumber, InvalidEscape, InvalidUnicode)
+- **Kani Proofs:** `crates/elicitation/src/verification/types/kani_proofs/errors.rs`
+- **Status:** ✅ Complete (symbolic verification)
+- **Proofs Added (2 total):**
+  - `verify_jsonerror_generator_mode_preserved()` - Mode storage correctness
+  - `verify_jsonerror_string_mapping()` - All 5 modes → invalid JSON strings
+- **Verification Time:** 0.03-0.7s per proof
+- **Castle on Cloud + Symbolic Gate Pattern:**
+  - Trusts `serde_json::from_str()` correctly parses/fails JSON
+  - Verifies mode → string mapping without calling serde_json (avoids inline asm)
+  - Verifies wrapper stores and retrieves mode correctly
+  - Does NOT call `generate()` to avoid CPU detection code (inline assembly limitation)
+- **What We Prove:** Our wrapper logic is correct (mode storage, string selection)
+- **What We Trust:** serde_json fails on our invalid strings (validated by unit tests)
 
 ### ❌ Unit Structs (Validator, Formatter, Parser)
 - **File:** `crates/elicitation/src/primitives/unit_structs.rs`
@@ -205,15 +227,15 @@ This document tracks Kani verification coverage for all Generator types in the e
 
 | Category | Total | Complete | Partial | Missing | N/A |
 |----------|-------|----------|---------|---------|-----|
-| **Core Generators** | 5 | 3 | 0 | 2 | 0 |
-| **Feature-Gated** | 6 | 0 | 0 | 6 | 0 |
+| **Core Generators** | 5 | 4 | 0 | 1 | 0 |
+| **Feature-Gated** | 6 | 1 | 0 | 5 | 0 |
 | **Unit Structs** | 3 | 0 | 0 | 0 | 3 |
-| **TOTAL** | 14 | 3 | 0 | 8 | 3 |
+| **TOTAL** | 14 | 5 | 0 | 6 | 3 |
 
-**Coverage:** 3/11 types complete (27.3%)  
-**Work Remaining:** 8 types need proofs
+**Coverage:** 5/11 types complete (45.5%)  
+**Work Remaining:** 6 types need proofs (all datetime feature-gated)
 
-**Phase 1 Complete:** ✅ uuid::Uuid generator proofs added (6 proofs)
+**Phase 2 Complete:** ✅ IoError + JsonError generator proofs added (11 proofs total)
 
 ---
 

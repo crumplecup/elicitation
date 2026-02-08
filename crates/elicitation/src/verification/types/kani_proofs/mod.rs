@@ -36,6 +36,7 @@ mod bools;
 mod chars;
 mod collections;
 mod durations;
+mod errors;
 mod floats;
 mod integers;
 mod ipaddr_bytes;
