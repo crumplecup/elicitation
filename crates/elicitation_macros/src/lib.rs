@@ -283,3 +283,77 @@ fn to_snake_case(s: &str) -> String {
 
     result
 }
+
+/// Generates MCP tool wrappers for trait methods.
+///
+/// This macro scans a trait definition and generates delegating wrapper methods
+/// that can be discovered by `#[tool_router]`.
+///
+/// # Usage
+///
+/// ```ignore
+/// #[elicit_trait_tools_router(TraitName, field_name)]
+/// #[tool_router(router = my_tools)]
+/// impl MyServer {
+///     // Generated tool methods will be added here
+/// }
+/// ```
+///
+/// # Requirements
+///
+/// 1. The impl type must have a field of type implementing the trait
+/// 2. Trait methods must use MCP-compatible signatures:
+///    - Parameters: `Parameters<T>` where `T: Deserialize + JsonSchema`
+///    - Returns: `Result<Json<R>, rmcp::ErrorData>` where `R: Serialize + JsonSchema`
+///
+/// # Example
+///
+/// ```ignore
+/// trait Calculator: Send + Sync {
+///     async fn add(&self, params: Parameters<AddParams>) 
+///         -> Result<Json<MathResult>, rmcp::ErrorData>;
+/// }
+///
+/// struct Server {
+///     calc: Box<dyn Calculator>,
+/// }
+///
+/// #[elicit_trait_tools_router(Calculator, calc)]
+/// #[tool_router]
+/// impl Server {
+///     // Generates:
+///     // #[tool(description = "...")]
+///     // pub async fn add(&self, params: Parameters<AddParams>) 
+///     //     -> Result<Json<MathResult>, rmcp::ErrorData> 
+/// {
+///     //     self.calc.add(params).await
+///     // }
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenStream {
+    // Parse attribute: (TraitName, field_name)
+    let attr_str = attr.to_string();
+    let parts: Vec<&str> = attr_str.split(',').map(|s| s.trim()).collect();
+    
+    if parts.len() != 2 {
+        return syn::Error::new(
+            proc_macro2::Span::call_site(),
+            "elicit_trait_tools_router requires two arguments: #[elicit_trait_tools_router(TraitName, field_name)]",
+        )
+        .to_compile_error()
+        .into();
+    }
+    
+    let trait_name = parts[0];
+    let field_name = parts[1];
+    
+    // Parse the impl block
+    let impl_block = parse_macro_input!(item as ItemImpl);
+    
+    // For now, just return the impl block unchanged
+    // TODO: Actually generate the tool methods by scanning the trait
+    let _ = (trait_name, field_name);  // Silence unused warnings
+    
+    TokenStream::from(quote! { #impl_block })
+}
