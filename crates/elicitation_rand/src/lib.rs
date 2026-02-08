@@ -70,6 +70,9 @@ pub mod generators;
 // Phase 3 - Distribution generators
 pub mod distributions;
 
+// Phase 4 - Collection generators
+pub mod collections;
+
 // Phase 5 - Kani verification
 #[cfg(all(kani, feature = "verification"))]
 pub mod verification;
@@ -77,6 +80,7 @@ pub mod verification;
 pub use generators::RandomGenerator;
 pub use generators::{MapGenerator, TransformGenerator, ChoiceGenerator};
 pub use distributions::{UniformGenerator, WeightedGenerator, BoundedEvenGenerator, BoundedOddGenerator};
+pub use collections::VecGenerator;
 
 // TODO: Phase 5 - Implement Kani verification
 // #[cfg(kani)]
