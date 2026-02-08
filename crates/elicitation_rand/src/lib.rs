@@ -61,8 +61,10 @@ pub use rand::rngs::StdRng;
 pub use rand_chacha::ChaCha8Rng;
 pub use rand::SeedableRng;
 
-// TODO: Phase 2 - Implement basic generators
-// pub mod generators;
+// Phase 2 - Basic generators
+pub mod generators;
+
+pub use generators::RandomGenerator;
 
 // TODO: Phase 5 - Implement Kani verification
 // #[cfg(kani)]
