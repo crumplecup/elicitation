@@ -176,6 +176,33 @@ where
     }
 }
 
+/// Generator for constant values (zero-sized types, unit structs).
+///
+/// Always returns the same value - no randomness needed.
+/// Useful for unit structs, ZSTs, and types with only one inhabitant.
+///
+/// Example: enum Response { Success(Data), Timeout(TimeoutMarker) }
+/// where TimeoutMarker is a unit struct that derives Rand.
+#[derive(Debug, Clone)]
+pub struct ConstantGenerator<T> {
+    value: T,
+}
+
+impl<T> ConstantGenerator<T> {
+    /// Create a new constant generator.
+    pub fn new(value: T) -> Self {
+        Self { value }
+    }
+}
+
+impl<T: Clone> Generator for ConstantGenerator<T> {
+    type Target = T;
+
+    fn generate(&self) -> T {
+        self.value.clone()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

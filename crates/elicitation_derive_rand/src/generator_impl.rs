@@ -42,13 +42,17 @@ fn generate_struct_impl(
             let inner_type = &fields.unnamed[0].ty;
             generate_newtype_impl(name, inner_type, contract)
         }
+        // Unit struct: struct Marker;
+        Fields::Unit => {
+            generate_unit_struct_impl(name)
+        }
         // Named fields: struct Config { port: u16, timeout: u32 }
         Fields::Named(fields) => {
             generate_named_struct_impl(name, fields, contract)
         }
         _ => Err(syn::Error::new_spanned(
             input,
-            "Only newtype structs and named field structs are supported",
+            "Only newtype, unit, and named field structs are supported",
         )),
     }
 }
@@ -301,9 +305,9 @@ fn generate_named_struct_impl(
                     generate_or_impl(field_type, &left, &right)?
                 }
                 None => {
-                    // No contract - use standard RandomGenerator
+                    // No contract - delegate to Rand implementation
                     quote! {
-                        ::elicitation_rand::generators::RandomGenerator::<#field_type>::with_seed(seed)
+                        <#field_type as ::elicitation_rand::Rand>::rand_generator(seed)
                     }
                 }
             };
@@ -483,10 +487,31 @@ fn generate_field_generator(
             generate_or_impl(field_type, &left, &right)
         }
         None => {
-            // No contract - use standard RandomGenerator
+            // No contract - delegate to the type's Rand implementation
             Ok(quote! {
-                ::elicitation_rand::generators::RandomGenerator::<#field_type>::with_seed(seed)
+                <#field_type as ::elicitation_rand::Rand>::rand_generator(seed)
             })
         }
     }
+}
+
+/// Generate implementation for unit struct (zero-sized type).
+fn generate_unit_struct_impl(name: &syn::Ident) -> Result<TokenStream> {
+    // Unit structs are zero-sized - just return the value
+    Ok(quote! {
+        impl #name {
+            /// Create a random generator (trivial for unit structs).
+            pub fn random_generator(_seed: u64) -> impl ::elicitation::Generator<Target = Self> {
+                ::elicitation_rand::generators::ConstantGenerator::new(#name)
+            }
+        }
+
+        impl ::elicitation::Generator for #name {
+            type Target = Self;
+
+            fn generate(&self) -> Self {
+                #name
+            }
+        }
+    })
 }

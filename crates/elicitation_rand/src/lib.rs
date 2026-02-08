@@ -73,14 +73,18 @@ pub mod distributions;
 // Phase 4 - Collection generators
 pub mod collections;
 
-// Phase 5 - Kani verification
+// Phase 5 - Rand trait and implementations
+pub mod rand_trait;
+
+// Phase 6 - Kani verification
 #[cfg(all(kani, feature = "verification"))]
 pub mod verification;
 
 pub use generators::RandomGenerator;
-pub use generators::{MapGenerator, TransformGenerator, ChoiceGenerator};
+pub use generators::{MapGenerator, TransformGenerator, ChoiceGenerator, ConstantGenerator};
 pub use distributions::{UniformGenerator, WeightedGenerator, BoundedEvenGenerator, BoundedOddGenerator};
 pub use collections::VecGenerator;
+pub use rand_trait::Rand;
 
 // TODO: Phase 5 - Implement Kani verification
 // #[cfg(kani)]
