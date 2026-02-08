@@ -51,6 +51,7 @@
 //! - Default features enable all RNG types
 
 #![warn(missing_docs)]
+#![forbid(unsafe_code)]
 #![cfg_attr(kani, feature(kani))]
 
 // Re-export RNG elicitation from main crate
@@ -64,7 +65,11 @@ pub use rand::SeedableRng;
 // Phase 2 - Basic generators
 pub mod generators;
 
+// Phase 3 - Distribution generators
+pub mod distributions;
+
 pub use generators::RandomGenerator;
+pub use distributions::{UniformGenerator, WeightedGenerator};
 
 // TODO: Phase 5 - Implement Kani verification
 // #[cfg(kani)]

@@ -7,6 +7,7 @@ use elicitation::Generator;
 use rand::distributions::{Distribution, Standard};
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
+use std::cell::RefCell;
 use std::marker::PhantomData;
 
 /// Generic random generator for types implementing `Distribution<Standard>`.
@@ -46,7 +47,7 @@ use std::marker::PhantomData;
 /// - Seed-based construction works
 #[derive(Debug)]
 pub struct RandomGenerator<T> {
-    rng: StdRng,
+    rng: RefCell<StdRng>,
     _phantom: PhantomData<T>,
 }
 
@@ -57,7 +58,7 @@ where
     /// Create a new generator with the given RNG.
     pub fn new(rng: StdRng) -> Self {
         Self {
-            rng,
+            rng: RefCell::new(rng),
             _phantom: PhantomData,
         }
     }
@@ -77,24 +78,10 @@ where
     type Target = T;
 
     fn generate(&self) -> T {
-        // Trust rand's implementation
-        // We verify: wrapper calls .gen() correctly
-        // SAFETY: StdRng is Send + Sync, interior mutability handled by rand
-        unsafe {
-            let rng_ptr = &self.rng as *const StdRng as *mut StdRng;
-            (*rng_ptr).gen()
-        }
+        // Use RefCell for interior mutability (safe, runtime-checked)
+        self.rng.borrow_mut().gen()
     }
 }
-
-// Note: We need interior mutability because generate() takes &self but
-// gen() requires &mut. Options:
-// 1. Use RefCell (runtime borrow checking)
-// 2. Use unsafe (zero-cost, trust rand's thread safety)
-// 3. Change Generator trait to take &mut self (breaking change)
-//
-// We choose option 2 for now, relying on rand's guarantees.
-// Future: Consider RefCell<StdRng> for stricter safety.
 
 #[cfg(test)]
 mod tests {
