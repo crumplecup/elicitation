@@ -199,3 +199,79 @@ fn test_tool_router_discovers_methods() {
     assert!(tool_names.contains(&"add".to_string()));
     assert!(tool_names.contains(&"multiply".to_string()));
 }
+
+// ============================================================================
+// Test 4: Trait with async_trait (object-safe)
+// ============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct GreetParams {
+    pub name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct GreetResult {
+    pub greeting: String,
+}
+
+/// Greeter trait using async_trait for object safety
+#[async_trait::async_trait]
+pub trait Greeter: Send + Sync {
+    /// Greet someone
+    async fn greet(
+        &self,
+        params: Parameters<GreetParams>,
+    ) -> Result<Json<GreetResult>, rmcp::ErrorData>;
+}
+
+pub struct SimpleGreeter;
+
+#[async_trait::async_trait]
+impl Greeter for SimpleGreeter {
+    async fn greet(
+        &self,
+        params: Parameters<GreetParams>,
+    ) -> Result<Json<GreetResult>, rmcp::ErrorData> {
+        Ok(Json(GreetResult {
+            greeting: format!("Hello, {}!", params.0.name),
+        }))
+    }
+}
+
+pub struct GreeterServer<G: Greeter + 'static> {
+    greeter: G,
+}
+
+#[elicit_trait_tools_router(Greeter, greeter, [greet])]
+#[tool_router(router = greeter_tools)]
+impl<G: Greeter + 'static> GreeterServer<G> {}
+
+impl<G: Greeter + 'static> ServerHandler for GreeterServer<G> {
+    fn get_info(&self) -> ServerInfo {
+        ServerInfo::default()
+    }
+}
+
+#[test]
+fn test_async_trait_tool_generation() {
+    let greeter = SimpleGreeter;
+    let _server = GreeterServer { greeter };
+
+    // Verify server compiles and has generated tool_router
+    let _router = GreeterServer::<SimpleGreeter>::greeter_tools();
+}
+
+#[test]
+fn test_async_trait_tool_router_integration() {
+    let greeter = SimpleGreeter;
+    let _server = GreeterServer { greeter };
+
+    let router = GreeterServer::<SimpleGreeter>::greeter_tools();
+    let tools = router.list_all();
+
+    // Should have 1 tool registered (greet)
+    assert_eq!(tools.len(), 1);
+
+    let tool_names: Vec<String> = tools.iter().map(|t| t.name.to_string()).collect();
+    assert!(tool_names.contains(&"greet".to_string()));
+}
