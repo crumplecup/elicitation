@@ -286,74 +286,188 @@ fn to_snake_case(s: &str) -> String {
 
 /// Generates MCP tool wrappers for trait methods.
 ///
-/// This macro scans a trait definition and generates delegating wrapper methods
+/// This macro generates delegating wrapper methods for trait methods
 /// that can be discovered by `#[tool_router]`.
 ///
 /// # Usage
 ///
 /// ```ignore
-/// #[elicit_trait_tools_router(TraitName, field_name)]
+/// #[elicit_trait_tools_router(TraitName, field_name, [method1, method2])]
 /// #[tool_router(router = my_tools)]
-/// impl MyServer {
+/// impl<T: TraitName> MyServer<T> {
 ///     // Generated tool methods will be added here
 /// }
 /// ```
 ///
-/// # Requirements
+/// # Arguments
 ///
-/// 1. The impl type must have a field of type implementing the trait
-/// 2. Trait methods must use MCP-compatible signatures:
-///    - Parameters: `Parameters<T>` where `T: Deserialize + JsonSchema`
-///    - Returns: `Result<Json<R>, rmcp::ErrorData>` where `R: Serialize + JsonSchema`
+/// 1. `TraitName` - The trait containing methods to expose as tools
+/// 2. `field_name` - Field on the impl type holding the trait implementation
+/// 3. `[method_list]` - List of trait method names to generate tools for
+///
+/// # Naming Conventions
+///
+/// For each method, the macro generates parameter and result types by convention:
+/// - Method: `add` → Params: `AddParams`, Result: `AddResult`
+/// - Method: `get_user` → Params: `GetUserParams`, Result: `GetUserResult`
 ///
 /// # Example
 ///
 /// ```ignore
 /// trait Calculator: Send + Sync {
 ///     async fn add(&self, params: Parameters<AddParams>) 
-///         -> Result<Json<MathResult>, rmcp::ErrorData>;
+///         -> Result<Json<AddResult>, rmcp::ErrorData>;
 /// }
 ///
-/// struct Server {
-///     calc: Box<dyn Calculator>,
+/// struct Server<C: Calculator> {
+///     calc: C,
 /// }
 ///
-/// #[elicit_trait_tools_router(Calculator, calc)]
+/// #[elicit_trait_tools_router(Calculator, calc, [add, subtract])]
 /// #[tool_router]
-/// impl Server {
+/// impl<C: Calculator> Server<C> {
 ///     // Generates:
-///     // #[tool(description = "...")]
+///     // #[tool(description = "Add operation")]
 ///     // pub async fn add(&self, params: Parameters<AddParams>) 
-///     //     -> Result<Json<MathResult>, rmcp::ErrorData> 
-/// {
+///     //     -> Result<Json<AddResult>, rmcp::ErrorData> 
+///     // {
 ///     //     self.calc.add(params).await
 ///     // }
 /// }
 /// ```
 #[proc_macro_attribute]
 pub fn elicit_trait_tools_router(attr: TokenStream, item: TokenStream) -> TokenStream {
-    // Parse attribute: (TraitName, field_name)
+    // Parse attribute: (TraitName, field_name, [method1, method2, ...])
     let attr_str = attr.to_string();
-    let parts: Vec<&str> = attr_str.split(',').map(|s| s.trim()).collect();
     
-    if parts.len() != 2 {
+    // Split by comma, but handle array brackets
+    let mut parts = Vec::new();
+    let mut current = String::new();
+    let mut bracket_depth = 0;
+    
+    for ch in attr_str.chars() {
+        match ch {
+            '[' => {
+                bracket_depth += 1;
+                current.push(ch);
+            }
+            ']' => {
+                bracket_depth -= 1;
+                current.push(ch);
+            }
+            ',' if bracket_depth == 0 => {
+                parts.push(current.trim().to_string());
+                current.clear();
+            }
+            _ => current.push(ch),
+        }
+    }
+    if !current.is_empty() {
+        parts.push(current.trim().to_string());
+    }
+    
+    if parts.len() != 3 {
         return syn::Error::new(
             proc_macro2::Span::call_site(),
-            "elicit_trait_tools_router requires two arguments: #[elicit_trait_tools_router(TraitName, field_name)]",
+            "elicit_trait_tools_router requires three arguments: #[elicit_trait_tools_router(TraitName, field_name, [method1, method2])]",
         )
         .to_compile_error()
         .into();
     }
     
-    let trait_name = parts[0];
-    let field_name = parts[1];
+    let _trait_name = &parts[0];
+    let field_name = &parts[1];
+    let methods_str = &parts[2];
+    
+    // Parse method list from [method1, method2, ...]
+    let methods_str = methods_str.trim_start_matches('[').trim_end_matches(']');
+    let methods: Vec<&str> = methods_str
+        .split(',')
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .collect();
+    
+    if methods.is_empty() {
+        return syn::Error::new(
+            proc_macro2::Span::call_site(),
+            "elicit_trait_tools_router requires at least one method in the list",
+        )
+        .to_compile_error()
+        .into();
+    }
     
     // Parse the impl block
-    let impl_block = parse_macro_input!(item as ItemImpl);
+    let mut impl_block = parse_macro_input!(item as ItemImpl);
     
-    // For now, just return the impl block unchanged
-    // TODO: Actually generate the tool methods by scanning the trait
-    let _ = (trait_name, field_name);  // Silence unused warnings
+    // Generate tool methods for each listed method
+    for method_name in methods {
+        // Convert method_name to PascalCase for type names
+        let pascal_case = to_pascal_case(method_name);
+        let params_type = format!("{}Params", pascal_case);
+        let result_type = format!("{}Result", pascal_case);
+        
+        // Parse type names
+        let params_ty: syn::Type = match syn::parse_str(&params_type) {
+            Ok(t) => t,
+            Err(e) => {
+                return syn::Error::new(
+                    proc_macro2::Span::call_site(),
+                    format!("Failed to parse params type '{}': {}", params_type, e),
+                )
+                .to_compile_error()
+                .into();
+            }
+        };
+        
+        let result_ty: syn::Type = match syn::parse_str(&result_type) {
+            Ok(t) => t,
+            Err(e) => {
+                return syn::Error::new(
+                    proc_macro2::Span::call_site(),
+                    format!("Failed to parse result type '{}': {}", result_type, e),
+                )
+                .to_compile_error()
+                .into();
+            }
+        };
+        
+        let method_ident = syn::Ident::new(method_name, proc_macro2::Span::call_site());
+        let field_ident = syn::Ident::new(field_name, proc_macro2::Span::call_site());
+        
+        let tool_description = format!("{} operation", method_name.replace('_', " "));
+        
+        // Generate the delegating method
+        let method: syn::ImplItemFn = syn::parse_quote! {
+            #[doc = concat!("`", #method_name, "` operation via trait method delegation.")]
+            #[::rmcp::tool(description = #tool_description)]
+            pub async fn #method_ident(
+                &self,
+                params: ::rmcp::handler::server::wrapper::Parameters<#params_ty>,
+            ) -> ::std::result::Result<
+                ::rmcp::handler::server::wrapper::Json<#result_ty>,
+                ::rmcp::ErrorData
+            > {
+                self.#field_ident.#method_ident(params).await
+            }
+        };
+        
+        impl_block.items.push(syn::ImplItem::Fn(method));
+    }
     
     TokenStream::from(quote! { #impl_block })
+}
+
+/// Convert snake_case to PascalCase
+fn to_pascal_case(s: &str) -> String {
+    s.split('_')
+        .map(|word| {
+            let mut chars = word.chars();
+            match chars.next() {
+                None => String::new(),
+                Some(first) => {
+                    first.to_uppercase().collect::<String>() + chars.as_str()
+                }
+            }
+        })
+        .collect()
 }
