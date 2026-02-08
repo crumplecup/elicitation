@@ -33,6 +33,31 @@ This file tracks all planning documents for the elicitation project.
 
 ## Active Plans
 
+### RAND_INTEGRATION_PLAN.md
+**Status:** Active - Next implementation  
+**Created:** 2026-02-08  
+**Purpose:** Plan for separate `elicitation_rand` crate enabling agents to generate random data through elicitation, following "castle on cloud" verification pattern.
+
+**Key Sections:**
+- Use cases (testing, gaming, simulations)
+- 5-phase implementation plan
+- Castle on cloud verification strategy
+- RNG elicitation (StdRng, SmallRng, ChaCha8Rng)
+- Generator implementations (Random, Uniform, Weighted, Dice)
+- Kani symbolic gate verification
+
+**Key Insights:**
+- Separate crate keeps core lean, users opt-in
+- Trust rand, verify our wrapper logic
+- Enables reproducible testing (agent-controlled seeds)
+- Gaming use case: agents as game masters
+- Don't verify randomness, verify configuration
+
+**Related Files:**
+- `crates/elicitation_rand/` (to be created)
+
+---
+
 ### elicitation_vision.md
 **Status**: Complete - Design document
 **Created**: 2025-12-28

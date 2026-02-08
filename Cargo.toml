@@ -4,6 +4,7 @@ members = [
   "crates/elicitation_derive",
   "crates/elicitation_macros",
   "crates/elicitation_creusot_proofs",
+  "crates/elicitation_rand",
 ]
 resolver = "2"
 
