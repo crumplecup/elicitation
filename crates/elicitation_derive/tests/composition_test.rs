@@ -1,7 +1,7 @@
 //! Tests for contract composition (And, Or).
 
 use elicitation::Generator;
-use elicitation_derive_rand::Rand;
+use elicitation_derive::Rand;
 
 #[derive(Debug, Clone, PartialEq, Rand)]
 #[rand(and(positive, even))]

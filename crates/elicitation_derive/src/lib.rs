@@ -87,6 +87,8 @@ mod derive_elicit;
 mod enum_impl;
 mod struct_impl;
 mod tool_gen;
+mod rand_contract_parser;
+mod rand_generator_impl;
 
 use proc_macro::TokenStream;
 
@@ -239,4 +241,47 @@ pub fn derive_elicit(input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn contract_type(args: TokenStream, input: TokenStream) -> TokenStream {
     contract_type::contract_type_impl(args, input)
+}
+
+/// Derive macro for contract-aware random generation.
+///
+/// Generates a `Generator` implementation that respects the type's contract.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// #[derive(Rand)]
+/// #[rand(bounded(1, 100))]
+/// struct Score(u32);
+/// ```
+///
+/// Generates:
+/// ```rust,ignore
+/// impl Score {
+///     pub fn random_generator(seed: u64) -> impl Generator<Target = Self> {
+///         MapGenerator::new(
+///             UniformGenerator::with_seed(seed, 1, 100),
+///             |v| Score(v)
+///         )
+///     }
+/// }
+/// ```
+///
+/// # Supported Contracts
+///
+/// - `#[rand(bounded(L, H))]` - Uniform distribution in [L, H)
+/// - `#[rand(positive)]` - Positive values only
+/// - `#[rand(nonzero)]` - Non-zero values
+/// - `#[rand(even)]` - Even values only
+/// - `#[rand(odd)]` - Odd values only
+/// - `#[rand(and(...))]` - Composition of contracts
+/// - `#[rand(or(...))]` - Alternative contracts
+#[proc_macro_derive(Rand, attributes(rand))]
+pub fn derive_rand(input: TokenStream) -> TokenStream {
+    use syn::parse_macro_input;
+    let input = parse_macro_input!(input as syn::DeriveInput);
+    
+    rand_generator_impl::expand_derive_rand(&input)
+        .unwrap_or_else(|err| err.to_compile_error())
+        .into()
 }

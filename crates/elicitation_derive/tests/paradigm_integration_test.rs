@@ -3,7 +3,7 @@
 //! Shows how paradigm types (Select, Survey, Affirm) can use random generation.
 
 use elicitation::Generator;
-use elicitation_derive_rand::Rand;
+use elicitation_derive::Rand;
 
 // Example: Priority enum that implements Select paradigm
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Rand)]

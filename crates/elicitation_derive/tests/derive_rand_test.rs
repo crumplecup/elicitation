@@ -1,7 +1,7 @@
 //! Integration tests for derive Rand macro.
 
 use elicitation::Generator;
-use elicitation_derive_rand::Rand;
+use elicitation_derive::Rand;
 
 #[derive(Debug, Clone, PartialEq, Rand)]
 #[rand(bounded(1, 6))]

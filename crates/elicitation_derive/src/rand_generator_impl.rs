@@ -2,7 +2,7 @@
 //!
 //! Maps parsed contracts to appropriate generator implementations.
 
-use crate::contract_parser::{parse_contract, Contract};
+use crate::rand_contract_parser::{parse_contract, Contract};
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Data, DeriveInput, Fields, Lit, Result};

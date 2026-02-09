@@ -1,7 +1,7 @@
 //! Tests for edge cases: unit structs, empty structs, unit type.
 
 use elicitation::Generator;
-use elicitation_derive_rand::Rand;
+use elicitation_derive::Rand;
 
 // Unit struct (zero-sized type)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Rand)]

@@ -1,7 +1,7 @@
 //! Integration tests: Using VecGenerator with derive macro types.
 
 use elicitation::Generator;
-use elicitation_derive_rand::Rand;
+use elicitation_derive::Rand;
 use elicitation_rand::VecGenerator;
 
 #[derive(Debug, Clone, PartialEq, Rand)]

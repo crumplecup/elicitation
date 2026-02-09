@@ -26,6 +26,20 @@ proc-macro2 = { workspace = true }
 
 [dev-dependencies]
 elicitation = { path = "../elicitation" }
+elicitation_rand = { path = "../elicitation_rand" }
 tracing = { workspace = true }
 rmcp = { workspace = true }
 serde_json = { workspace = true }
+chrono = "0.4"
+time = "0.3"
+jiff = "0.2"
+uuid = "1.0"
+url = "2.5"
+
+[features]
+# Passthrough features for testing (library users don't pay for these)
+chrono = ["elicitation_rand/chrono"]
+time = ["elicitation_rand/time"]
+jiff = ["elicitation_rand/jiff"]
+uuid = ["elicitation_rand/uuid"]
+url = ["elicitation_rand/url"]
