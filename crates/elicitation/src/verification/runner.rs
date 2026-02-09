@@ -96,6 +96,110 @@ impl ProofHarness {
             Self::new("collections", "verify_vec_all_satisfy"),
             Self::new("collections", "verify_vec_non_empty"),
             Self::new("collections", "verify_vecdeque_non_empty"),
+            Self::new(
+                "datetime_chrono",
+                "verify_datetime_utc_generator_mode_preserved",
+            ),
+            Self::new(
+                "datetime_chrono",
+                "verify_datetime_utc_generator_offset_negative",
+            ),
+            Self::new(
+                "datetime_chrono",
+                "verify_datetime_utc_generator_offset_positive",
+            ),
+            Self::new(
+                "datetime_chrono",
+                "verify_datetime_utc_generator_offset_zero",
+            ),
+            Self::new(
+                "datetime_chrono",
+                "verify_datetime_utc_generator_reference_preserved",
+            ),
+            Self::new(
+                "datetime_chrono",
+                "verify_datetime_utc_generator_unix_epoch",
+            ),
+            Self::new(
+                "datetime_chrono",
+                "verify_naive_datetime_generator_mode_preserved",
+            ),
+            Self::new(
+                "datetime_chrono",
+                "verify_naive_datetime_generator_offset_negative",
+            ),
+            Self::new(
+                "datetime_chrono",
+                "verify_naive_datetime_generator_offset_positive",
+            ),
+            Self::new(
+                "datetime_chrono",
+                "verify_naive_datetime_generator_offset_zero",
+            ),
+            Self::new(
+                "datetime_chrono",
+                "verify_naive_datetime_generator_reference_preserved",
+            ),
+            Self::new(
+                "datetime_chrono",
+                "verify_naive_datetime_generator_unix_epoch",
+            ),
+            Self::new("datetime_jiff", "verify_timestamp_generator_mode_preserved"),
+            Self::new(
+                "datetime_jiff",
+                "verify_timestamp_generator_offset_negative_logic",
+            ),
+            Self::new(
+                "datetime_jiff",
+                "verify_timestamp_generator_offset_positive_logic",
+            ),
+            Self::new(
+                "datetime_jiff",
+                "verify_timestamp_generator_offset_zero_logic",
+            ),
+            Self::new(
+                "datetime_jiff",
+                "verify_timestamp_generator_reference_preserved",
+            ),
+            Self::new("datetime_jiff", "verify_timestamp_generator_unix_epoch"),
+            Self::new("datetime_time", "verify_instant_generator_mode_preserved"),
+            Self::new("datetime_time", "verify_instant_generator_now_mode_logic"),
+            Self::new(
+                "datetime_time",
+                "verify_instant_generator_offset_negative_logic",
+            ),
+            Self::new(
+                "datetime_time",
+                "verify_instant_generator_offset_positive_logic",
+            ),
+            Self::new(
+                "datetime_time",
+                "verify_instant_generator_offset_zero_logic",
+            ),
+            Self::new(
+                "datetime_time",
+                "verify_offsetdatetime_generator_mode_preserved",
+            ),
+            Self::new(
+                "datetime_time",
+                "verify_offsetdatetime_generator_offset_negative",
+            ),
+            Self::new(
+                "datetime_time",
+                "verify_offsetdatetime_generator_offset_positive",
+            ),
+            Self::new(
+                "datetime_time",
+                "verify_offsetdatetime_generator_offset_zero",
+            ),
+            Self::new(
+                "datetime_time",
+                "verify_offsetdatetime_generator_reference_preserved",
+            ),
+            Self::new(
+                "datetime_time",
+                "verify_offsetdatetime_generator_unix_epoch",
+            ),
             Self::new("durations", "verify_char_alphanumeric"),
             Self::new("durations", "verify_duration_positive"),
             Self::new("durations", "verify_f32_non_negative"),
@@ -105,6 +209,17 @@ impl ProofHarness {
             Self::new("durations", "verify_option_some_rejects_none"),
             Self::new("durations", "verify_trenchcoat_pattern"),
             Self::new("durations", "verify_tuple2_composition"),
+            Self::new("errors", "verify_ioerror_all_kinds_map_correctly"),
+            Self::new("errors", "verify_ioerror_generator_broken_pipe"),
+            Self::new("errors", "verify_ioerror_generator_connection_refused"),
+            Self::new("errors", "verify_ioerror_generator_mode_preserved"),
+            Self::new("errors", "verify_ioerror_generator_not_found"),
+            Self::new("errors", "verify_ioerror_generator_other"),
+            Self::new("errors", "verify_ioerror_generator_permission_denied"),
+            Self::new("errors", "verify_ioerror_generator_timed_out"),
+            Self::new("errors", "verify_ioerror_mode_helpers"),
+            Self::new("errors", "verify_jsonerror_generator_mode_preserved"),
+            Self::new("errors", "verify_jsonerror_string_mapping"),
             Self::new("floats", "verify_f32_finite"),
             Self::new("floats", "verify_f64_positive"),
             Self::new("integers", "verify_i16_positive"),
@@ -283,6 +398,12 @@ impl ProofHarness {
             Self::new("uuid_bytes", "verify_ncs_variant_rejected"),
             Self::new("uuid_bytes", "verify_reserved_variant_rejected"),
             Self::new("uuid_bytes", "verify_uuid_bytes_roundtrip"),
+            Self::new("uuid_bytes", "verify_uuid_generator_max"),
+            Self::new("uuid_bytes", "verify_uuid_generator_max_consistent"),
+            Self::new("uuid_bytes", "verify_uuid_generator_mode_preserved"),
+            Self::new("uuid_bytes", "verify_uuid_generator_nil"),
+            Self::new("uuid_bytes", "verify_uuid_generator_nil_consistent"),
+            Self::new("uuid_bytes", "verify_uuid_generator_v4_format"),
             Self::new("uuid_bytes", "verify_v4_bytes_roundtrip"),
             Self::new("uuid_bytes", "verify_v4_invalid_variant_rejected"),
             Self::new("uuid_bytes", "verify_v4_valid_construction"),

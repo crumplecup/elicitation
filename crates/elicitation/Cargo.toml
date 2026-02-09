@@ -39,6 +39,10 @@ jiff = { workspace = true, optional = true }
 # UUID library (optional)
 uuid = { workspace = true, optional = true }
 
+# Random number generation (optional)
+rand = { workspace = true, optional = true }
+rand_chacha = { workspace = true, optional = true }
+
 # URL library (optional)
 url = { workspace = true, optional = true }
 
@@ -60,7 +64,11 @@ uuid = { workspace = true }
 criterion = { workspace = true }
 
 [features]
-default = []
+default = ["full"]
+
+# Full feature bundle - all third-party support + rand
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand"]
+
 # Feature for tests that call real API (rate-limited)
 api = []
 # Enable serde_json::Value elicitation
@@ -73,6 +81,8 @@ time = ["dep:time"]
 jiff = ["dep:jiff"]
 # Enable UUID elicitation
 uuid = ["dep:uuid"]
+# Enable rand RNG elicitation
+rand = ["dep:rand", "dep:rand_chacha"]
 # Enable URL elicitation
 url = ["dep:url"]
 # Enable Regex elicitation
@@ -90,8 +100,8 @@ kani-verifier = []
 # CLI and verification runner
 cli = ["clap", "csv", "chrono"]
 
-# Development (all optional features)
-dev = ["chrono", "time", "jiff", "uuid", "url", "regex", "cli"]
+# Development (all optional features + CLI)
+dev = ["full", "cli"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(prusti)', 'cfg(creusot)', 'cfg(verus)'] }

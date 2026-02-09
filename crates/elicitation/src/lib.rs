@@ -128,6 +128,9 @@ pub mod datetime_time;
 #[cfg(feature = "jiff")]
 pub mod datetime_jiff;
 
+#[cfg(feature = "rand")]
+pub mod rand_rng;
+
 mod elicitation_style;
 
 // Error types

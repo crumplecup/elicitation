@@ -36,6 +36,7 @@ mod bools;
 mod chars;
 mod collections;
 mod durations;
+mod errors;
 mod floats;
 mod integers;
 mod ipaddr_bytes;
@@ -63,3 +64,12 @@ mod urls;
 
 #[cfg(feature = "regex")]
 mod regexes;
+
+#[cfg(feature = "chrono")]
+mod datetime_chrono;
+
+#[cfg(feature = "time")]
+mod datetime_time;
+
+#[cfg(feature = "jiff")]
+mod datetime_jiff;

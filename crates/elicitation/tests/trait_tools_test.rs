@@ -2,6 +2,8 @@
 //!
 //! Tests generating MCP tools from trait definitions.
 
+#![allow(clippy::manual_async_fn)] // We use impl Future for zero-cost async
+
 use elicitation_macros::elicit_trait_tools_router;
 use rmcp::handler::server::wrapper::{Json, Parameters};
 use rmcp::model::ServerInfo;

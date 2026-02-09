@@ -1,224 +1,77 @@
 # Elicitation
 
-> Conversational elicitation of strongly-typed Rust values via MCP
+> **Teaching agents to think in types, not just fill in forms**
 
 [![Crates.io](https://img.shields.io/crates/v/elicitation.svg)](https://crates.io/crates/elicitation)
 [![Documentation](https://docs.rs/elicitation/badge.svg)](https://docs.rs/elicitation)
 [![License](https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg)](LICENSE-APACHE)
-[![Downloads](https://img.shields.io/crates/d/elicitation.svg)](https://crates.io/crates/elicitation)
 [![Rust](https://img.shields.io/badge/rust-2024-orange.svg)](https://www.rust-lang.org)
 
-`elicitation` is a Rust library that transforms conversational LLM interactions into strongly-typed Rust values through the Model Context Protocol (MCP). It provides a trait-based system for eliciting primitive types, enums, structs, and nested data structures through natural language interaction.
+## The Problem: JSON Forms vs. Domain Languages
 
-## Features
-
-- **Comprehensive Type Coverage** - Elicit virtually any Rust standard library type
-- **Trait-Based Design** - Simple `Elicitation` trait for all types
-- **Derive Macros** - Zero-boilerplate implementation for custom types
-- **Type-Safe** - Compile-time guarantees with full type inference
-- **Composable** - Nest types arbitrarily deep without limitations
-- **Async-First** - Built on tokio with proper Send bounds
-- **Four Interaction Paradigms**:
-  - **Select** - Choose from finite options (enum pattern)
-  - **Affirm** - Yes/no confirmation (bool pattern)
-  - **Survey** - Multi-field elicitation (struct pattern)
-  - **Authorize** - Permission policies (planned for v0.2.0)
-- **MCP Integration** - Uses official rmcp (Rust MCP SDK) for communication
-- **🆕 Style System v2** - Revolutionary type-safe style system (v0.4.0)
-  - Every type has associated Style enum for compile-time registration
-  - Runtime style selection with full type safety
-  - Inline elicitation for all primitives with styled prompts
-  - Auto-selection with silent defaults (zero ceremony)
-  - Ergonomic builder pattern for one-off overrides
-  - Extensible: define custom styles for any type (including built-ins)
-- **🆕 DateTime Support** - Three major datetime libraries (v0.4.0)
-  - `chrono` - DateTime<Utc>, DateTime<FixedOffset>, NaiveDateTime
-  - `time` - OffsetDateTime, PrimitiveDateTime
-  - `jiff` - Timestamp, Zoned, civil::DateTime
-  - Dual input methods: ISO 8601 strings or manual components
-- **🆕 JSON Elicitation** - Dynamic JSON value construction (v0.4.0)
-  - `serde_json::Value` with all JSON types
-  - Recursive elicitation for arrays and objects
-  - Depth limits to prevent infinite recursion
-- **🆕 Proof-Carrying Composition** - Formally verified agent programs (v0.5.0)
-  - Type-level contracts (preconditions/postconditions)
-  - Zero-cost proof markers (compile away completely)
-  - Sequential and parallel tool composition
-  - Verified with Kani model checker (183 symbolic checks)
-  - Build multi-step workflows with mathematical guarantees
-
-## Proof-Carrying Composition
-
-**Build verified agent programs, not just validated JSON.**
-
-Elicitation's contract system lets you compose multi-step agent workflows where each step's guarantees are **formally verified** at compile time:
+Most MCP servers follow a familiar pattern: expose domain objects as JSON schemas, let agents fill in forms. This works, but it's **backwards**:
 
 ```rust
-use elicitation::{
-    contracts::{Prop, Established, And, both},
-    tool::{Tool, True, then},
-};
-
-// Define workflow propositions
-struct EmailValidated;
-struct ConsentObtained;
-impl Prop for EmailValidated {}
-impl Prop for ConsentObtained {}
-
-// Functions requiring proofs
-fn register_user(
-    email: String,
-    _proof: Established<And<EmailValidated, ConsentObtained>>
-) {
-    // Type system guarantees:
-    // - Email was validated
-    // - Consent was obtained
-    // No runtime checks needed!
-}
-
-// Compose workflow
-let email_proof = validate_email("user@example.com")?;
-let consent_proof = get_consent()?;
-let combined = both(email_proof, consent_proof);
-register_user(email, combined);  // ✅ Type-checked!
-
-// register_user(email, ...);  // ❌ Won't compile without proofs
+// What most MCP servers do:
+// "Here's a User form. Fill it in."
+let user = agent.call_tool("create_user", json!({
+    "name": "Alice",
+    "email": "alice@example.com",
+    "age": 30
+}));
 ```
 
-**Why this matters:**
-- Traditional approach: Hope validation happens, test extensively
-- Contract approach: Type system prevents using unvalidated data
-- **Zero cost**: All proofs compile away (formally verified with Kani)
+The agent is stuck in JSON-land, translating between natural language and key-value pairs. No understanding of **what** a User actually *is*, no concept of validity beyond "did the JSON match?"
 
-See the [contracts module documentation](https://docs.rs/elicitation/latest/elicitation/contracts/) and [examples](crates/elicitation/examples/) for complete workflows.
+## The Vision: Agents That Speak Your Domain
 
-## Supported Types
-
-### Primitives
-- **Numeric**: `i8`, `i16`, `i32`, `i64`, `i128`, `isize`, `u8`, `u16`, `u32`, `u64`, `u128`, `usize`, `f32`, `f64`
-- **Text**: `String`, `bool`
-- **Time**: `std::time::Duration`
-- **Filesystem**: `std::path::PathBuf`
-- **Network**: `IpAddr`, `Ipv4Addr`, `Ipv6Addr`, `SocketAddr`, `SocketAddrV4`, `SocketAddrV6`
-- **DateTime** (optional features):
-  - `chrono` feature: `DateTime<Utc>`, `DateTime<FixedOffset>`, `NaiveDateTime`
-  - `time` feature: `OffsetDateTime`, `PrimitiveDateTime`
-  - `jiff` feature: `Timestamp`, `Zoned`, `civil::DateTime`
-- **UUID** (optional feature):
-  - `uuid` feature: `Uuid` with parsing and random generation
-- **JSON** (optional feature):
-  - `serde_json` feature: `serde_json::Value` (all JSON types)
-
-### Containers
-- **Option**: `Option<T>` - Optional values
-- **Result**: `Result<T, E>` - Success/failure outcomes
-- **Vec**: `Vec<T>` - Dynamic arrays
-- **Arrays**: `[T; N]` - Fixed-size arrays (any size N)
-- **Tuples**: `(T1, T2, ...)` - Heterogeneous tuples (up to arity 12)
-
-### Smart Pointers
-- **Box**: `Box<T>` - Heap allocation
-- **Rc**: `Rc<T>` - Reference counting
-- **Arc**: `Arc<T>` - Atomic reference counting
-
-### Collections
-- **HashMap**: `HashMap<K, V>` - Hash-based key-value map with duplicate key handling
-- **BTreeMap**: `BTreeMap<K, V>` - Ordered key-value map
-- **HashSet**: `HashSet<T>` - Hash-based unique set with automatic deduplication
-- **BTreeSet**: `BTreeSet<T>` - Ordered unique set
-- **VecDeque**: `VecDeque<T>` - Double-ended queue
-- **LinkedList**: `LinkedList<T>` - Doubly-linked list
-
-### Custom Types
-- **Enums**: Automatic `Select` paradigm via `#[derive(Elicit)]`
-- **Structs**: Automatic `Survey` paradigm via `#[derive(Elicit)]`
-- **Nested**: Unlimited nesting depth (e.g., `Vec<Option<Result<HashMap<String, Arc<T>>, E>>>`)
-
-## Installation
-
-Add this to your `Cargo.toml`:
-
-```toml
-[dependencies]
-elicitation = "0.3"
-rmcp = "0.12"
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-```
-
-### Optional Features
-
-Enable additional functionality with feature flags:
-
-```toml
-[dependencies]
-elicitation = { version = "0.2", features = ["chrono", "time", "jiff", "serde_json"] }
-```
-
-Available features:
-- `chrono` - Enable chrono datetime types
-- `time` - Enable time datetime types  
-- `jiff` - Enable jiff datetime types
-- `serde_json` - Enable JSON Value elicitation
-- `api` - Empty marker for API integration tests
-
-## MCP Setup
-
-This library requires an **MCP client** (like Claude Desktop or Claude CLI) to provide the elicitation tools. Your application runs as an **MCP server** that the client invokes.
-
-### Running with Claude CLI
-
-To run the examples or your own code:
-
-```bash
-# Install Claude CLI if you haven't already
-# (see https://docs.anthropic.com/en/docs/agents-and-tools)
-
-# Run an example through Claude CLI
-claude-cli mcp add elicitation-demo --command "cargo run --example structs"
-
-# Or ask Claude to run it
-claude "Run the structs example from the elicitation crate"
-```
-
-### Integration with Claude Desktop
-
-Add your MCP server to Claude Desktop's configuration:
-
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-**Linux**: `~/.config/claude/claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "elicitation-app": {
-      "command": "/path/to/your/binary",
-      "args": [],
-      "env": {}
-    }
-  }
-}
-```
-
-### How It Works
-
-1. Your application creates an MCP client with `rmcp::transport::stdio()`
-2. Claude (the MCP client) provides elicitation tools via stdin/stdout
-3. When you call `.elicit()`, it sends tool requests to Claude
-4. Claude prompts the user and validates responses
-5. Your code receives strongly-typed Rust values
-
-**Note**: Examples won't work standalone - they must be invoked by an MCP client.
-
-## Quick Start
+**Elicitation flips the script.** Instead of forms, you give agents the **building blocks** of your domain—the types, the constraints, the compositional rules—and let them *construct* values through conversation:
 
 ```rust
-use elicitation::{Elicit, Elicitation, ElicitResult};
-use rmcp::ServiceExt;
+// What elicitation does:
+// "Here's how to construct a valid User. Go."
+#[derive(Elicit)]
+struct User {
+    name: String,
+    email: Email,  // Not String - Email!
+    age: u8,       // Not any number - bounded!
+}
 
-// Derive for enums (Select pattern)
-#[derive(Debug, Elicit)]
-#[prompt("Choose your priority level:")]
+// Agent now speaks in User-construction steps:
+// 1. Select a name (String elicitation)
+// 2. Construct a valid Email (format validation built-in)
+// 3. Choose an age (0-255, type-guaranteed)
+let user = User::elicit(&sampling_context).await?;
+```
+
+The difference? **The agent understands the structure.** It's not filling a form—it's *building* a User through a sequence of typed operations.
+
+## What Is Elicitation?
+
+Elicitation is a Rust library that turns **sampling interactions** (calls to LLMs via MCP) into **strongly-typed domain values**. But it's not just type-safe JSON deserialization—it's a framework for teaching agents to:
+
+1. **Think compositionally** - Build complex types from simpler ones
+2. **Respect constraints** - Types encode validity (Email formats, bounded numbers)
+3. **Follow processes** - Multi-step construction with step-by-step guidance
+4. **Verify formally** - Contracts and composition rules checked at compile time
+5. **Adapt contextually** - Swap prompts/styles without changing types
+
+Think of it as **a DSL for agent-driven data construction**, where the "syntax" is your Rust types and the "semantics" are guaranteed by the compiler.
+
+---
+
+## Tutorial: From Simple Values to Complex Domains
+
+### Part 1: The Four Interaction Mechanics
+
+Elicitation provides four fundamental ways agents construct values:
+
+#### 1. **Select** - Choose from finite options
+
+Used for enums, where the agent picks one variant:
+
+```rust
+#[derive(Elicit)]
 enum Priority {
     Low,
     Medium,
@@ -226,576 +79,1237 @@ enum Priority {
     Critical,
 }
 
-// Derive for structs (Survey pattern)
-#[derive(Debug, Elicit)]
+// Agent sees: "Select Priority: Low, Medium, High, Critical"
+let priority = Priority::elicit(&ctx).await?;
+```
+
+**When to use:** Finite choice sets, enum variants, discriminated unions.
+
+#### 2. **Affirm** - Yes/no decisions
+
+Used for booleans:
+
+```rust
+// Agent sees: "Affirm: Should this task be urgent? (yes/no)"
+let urgent: bool = bool::elicit(&ctx).await?;
+```
+
+**When to use:** Binary decisions, flags, opt-in/opt-out.
+
+#### 3. **Survey** - Multi-field construction
+
+Used for structs, where the agent builds each field in sequence:
+
+```rust
+#[derive(Elicit)]
 struct Task {
-    #[prompt("What's the task title?")]
     title: String,
-
-    #[prompt("Describe the task:")]
-    description: String,
-
     priority: Priority,
+    urgent: bool,
+}
 
-    #[prompt("Estimated hours (optional):")]
-    estimated_hours: Option<i32>,
+// Agent follows a 3-step process:
+// 1. Provide title (String)
+// 2. Select priority (Priority enum)
+// 3. Affirm urgency (bool)
+let task = Task::elicit(&ctx).await?;
+```
+
+**When to use:** Product types, records, multi-field structures.
+
+#### 4. **Authorize** - Permission policies *(future)*
+
+For access control and capability-based security.
+
+**Why these four?** They map to fundamental type constructors: sums (Select), booleans (Affirm), products (Survey), and effects (Authorize). Every Rust type decomposes into these primitives.
+
+---
+
+### Part 2: Compositionality - Types All The Way Down
+
+The power of elicitation is **infinite composition**. Every type that implements `Elicitation` can be nested in any other:
+
+```rust
+#[derive(Elicit)]
+struct Project {
+    name: String,
+    tasks: Vec<Task>,  // Nested: elicit multiple tasks
+    owner: User,       // Nested: elicit a user
+}
+
+#[derive(Elicit)]
+struct Organization {
+    projects: Vec<Project>,  // Nested: elicit multiple projects
+}
+
+// Agent can construct an entire organization structure:
+let org = Organization::elicit(&ctx).await?;
+```
+
+**This works because:**
+
+- `Vec<T>` implements `Elicitation` if `T` does (recursive elicitation)
+- `Option<T>` implements `Elicitation` if `T` does (optional fields)
+- Your custom structs implement via `#[derive(Elicit)]`
+- Primitives implement it built-in
+
+**No depth limit.** Nest 10 levels deep, 100 fields wide—it composes.
+
+---
+
+### Part 3: Validity Guarantees
+
+Elicitation isn't just data entry—it's **construction with guarantees**. Types encode constraints that the agent must respect:
+
+#### Type-Level Constraints
+
+```rust
+use elicitation::bounded::Bounded;
+
+#[derive(Elicit)]
+struct Port(
+    #[elicit(bounded(1024, 65535))]
+    u16
+);  // Must be in range 1024-65535
+
+#[derive(Elicit)]
+struct Email(
+    #[elicit(validator = is_valid_email)]
+    String
+);  // Must pass validation function
+```
+
+#### Contract System (Formal Verification)
+
+Elicitation v0.5.0 introduced **contracts**: type-level proofs that operations maintain invariants.
+
+```rust
+use elicitation::contracts::{Prop, Established, And};
+
+// Define propositions (contracts)
+struct EmailValidated;
+struct ConsentObtained;
+impl Prop for EmailValidated {}
+impl Prop for ConsentObtained {}
+
+// Function requiring proofs
+fn register_user(
+    email: String,
+    _proof: Established<And<EmailValidated, ConsentObtained>>
+) {
+    // Compiler guarantees email was validated AND consent obtained
+    // No runtime checks needed!
+}
+
+// Compose workflow with proofs
+let email_proof = validate_email(email)?;
+let consent_proof = obtain_consent()?;
+let both_proofs = both(email_proof, consent_proof);
+
+register_user(email, both_proofs);  // ✓ Compiles
+register_user(email, email_proof);  // ✗ Missing consent proof
+```
+
+**Verified with Kani:** 183 symbolic execution checks prove the contract system works correctly. Build multi-step agent workflows with **mathematical guarantees**.
+
+---
+
+### Part 4: Style System - Context-Aware Prompts
+
+Agents need context. The same `Email` type might be elicited differently in different scenarios:
+
+```rust
+use elicitation::{Style, Styled};
+
+// Define custom styles for Email
+#[derive(Style)]
+enum EmailStyle {
+    Default,
+    WorkEmail,
+    PersonalEmail,
+}
+
+// Use different prompts based on style
+let work_email = Email::elicit_styled(&ctx, EmailStyle::WorkEmail).await?;
+// Prompt: "Provide work email address (e.g., name@company.com)"
+
+let personal_email = Email::elicit_styled(&ctx, EmailStyle::PersonalEmail).await?;
+// Prompt: "Provide personal email address"
+```
+
+**Hot-swapping prompts** without changing types. One `Email` type, multiple presentation contexts. Extensible: define custom styles for **any type**, including built-ins like `String`, `i32`, etc.
+
+---
+
+### Part 5: Generators - Alternate Constructors
+
+Sometimes you need to construct values in different ways. Elicitation provides **generators** for alternate construction paths.
+
+**Real-world example:** `std::time::Instant` has a `now()` generator:
+
+```rust
+use std::time::Instant;
+
+// Option 1: Agent provides manual timing (default elicitation)
+let instant1 = Instant::elicit(&ctx).await?;
+
+// Option 2: Use generator to capture current time
+let instant2 = Instant::elicit_with_generator(&ctx, "now").await?;
+// Equivalent to: Instant::now()
+```
+
+**Why this matters:** Some types have natural "smart constructors" that don't require user input:
+- `Instant::now()` - Current timestamp
+- `SystemTime::now()` - Current system time  
+- `Uuid::new_v4()` - Random UUID
+- Factory patterns with defaults
+
+**Custom generators:**
+
+```rust
+#[derive(Elicit)]
+#[elicit(generators = [from_template, from_env])]
+struct Config {
+    host: String,
+    port: u16,
+}
+
+// Agent can choose:
+// 1. from_template: Start with defaults
+// 2. from_env: Load from environment variables
+// 3. (default): Build each field manually
+```
+
+**Use cases:**
+- Smart constructors (now(), random(), default())
+- Environment-based initialization
+- Template expansion
+- Multi-stage construction
+
+---
+
+### Part 6: Random Generation - Testing & Simulation
+
+For testing, gaming, and simulation, you need random data. The `#[derive(Rand)]` macro generates contract-aware random values:
+
+```rust
+use elicitation::{Elicit, Rand, Generator};
+
+#[derive(Elicit, Rand)]
+#[rand(bounded(1, 6))]
+struct D6(u32);
+
+// Random dice rolls that respect the contract
+let generator = D6::random_generator(42);
+let roll = generator.generate();  // Always in [1, 6]
+```
+
+**Perfect symmetry:** If you can elicit it, you can randomly generate it.
+
+#### Contract-Aware Generation
+
+Contracts map to appropriate sampling strategies:
+
+```rust
+#[derive(Rand)]
+#[rand(bounded(1, 100))]
+struct Score(u32);  // Uniform [1, 100]
+
+#[derive(Rand)]
+#[rand(positive)]
+struct Health(i32);  // Positive integers only
+
+#[derive(Rand)]
+#[rand(even)]
+struct EvenId(u32);  // Even numbers only
+
+#[derive(Rand)]
+#[rand(and(positive, bounded(10, 50)))]
+struct Level(i32);  // Positive AND bounded
+```
+
+#### Automatic Support for All Types
+
+Works with primitives, third-party types, and custom types:
+
+```rust
+// Primitives
+let gen = u32::rand_generator(seed);
+let n = gen.generate();
+
+// Third-party types
+let gen = uuid::Uuid::rand_generator(seed);
+let id = gen.generate();
+
+let gen = url::Url::rand_generator(seed);
+let url = gen.generate();
+
+// Collections
+let gen = VecGenerator::new(
+    String::rand_generator(seed),
+    0, 10  // Length bounds
+);
+let strings = gen.generate();
+
+// Custom types with contracts
+#[derive(Rand)]
+struct Player {
+    name: String,
+    #[rand(bounded(1, 100))]
+    level: u32,
+}
+```
+
+#### Use Cases
+
+**Testing:**
+```rust
+// Property-based testing
+for _ in 0..1000 {
+    let player = Player::random_generator(seed).generate();
+    assert!(player.level >= 1 && player.level <= 100);
+}
+```
+
+**Gaming:**
+```rust
+// Agent as game master
+let encounter = Encounter::random_generator(seed).generate();
+let loot = LootTable::random_generator(seed).generate();
+```
+
+**Simulation:**
+```rust
+// Generate realistic test data
+let users: Vec<User> = (0..100)
+    .map(|i| User::random_generator(i as u64).generate())
+    .collect();
+```
+
+**Supported types:**
+- Primitives: u8-u128, i8-i128, f32, f64, bool, char
+- Stdlib: String, PathBuf, Duration, SystemTime
+- Third-party: DateTime (chrono), Timestamp (jiff), Uuid, Url
+- Custom: Any type with `#[derive(Rand)]`
+- Collections: Vec, HashMap, HashSet (via generators)
+
+---
+
+### Part 7: Trait-Based MCP Tools (v0.6.0+)
+
+For more complex systems, you might have trait-based APIs. Elicitation supports **automatic tool generation** from traits:
+
+```rust
+use elicitation::elicit_trait_tools_router;
+
+#[async_trait]
+trait TaskManager: Send + Sync {
+    async fn create_task(
+        &self,
+        params: Parameters<CreateTaskParams>,
+    ) -> Result<Json<Task>, ErrorData>;
+    
+    async fn list_tasks(
+        &self,
+        params: Parameters<ListParams>,
+    ) -> Result<Json<Vec<Task>>, ErrorData>;
+}
+
+// Automatically generate MCP tools from trait methods
+#[elicit_trait_tools_router(TaskManager, manager, [create_task, list_tasks])]
+#[tool_router(router = task_tools)]
+impl TaskService {}
+```
+
+**Why this matters:**
+
+- Expose entire trait-based APIs as MCP tools
+- 80-90% less boilerplate (no manual wrapper functions)
+- Supports `async_trait` for object safety (trait objects work!)
+- Compose regular tools with elicitation tools seamlessly
+
+---
+
+## The Complete Picture: Agent-Native Domain Languages
+
+Here's what you get when you use elicitation:
+
+1. **Types as Specifications**
+   - Your Rust types define *what* is valid
+   - The compiler checks correctness
+   - Agents see structured operations, not key-value forms
+
+2. **Compositionality as Architecture**
+   - Build complex systems from simple pieces
+   - Nest types arbitrarily deep
+   - Reuse elicitation logic across your domain
+
+3. **Contracts as Guarantees**
+   - Express invariants as type-level proofs
+   - Compose workflows with verified properties
+   - Catch logic errors at compile time, not runtime
+
+4. **Styles as Adaptation**
+   - Same types, different contexts
+   - Hot-swap prompts without code changes
+   - Customize presentation per use case
+
+5. **Verification as Confidence**
+   - Formally verified with Kani model checker
+   - 183 symbolic checks prove correctness
+   - Zero-cost abstractions (proofs compile away)
+
+**The result?** Agents that don't just fill forms—they **construct valid domain values through typed operations**. They speak your domain language, follow your invariants, and produce verified outputs.
+
+---
+
+## Quick Start
+
+### Installation
+
+```toml
+[dependencies]
+elicitation = "0.6"
+rmcp = "0.14"  # Rust MCP SDK
+tokio = { version = "1", features = ["full"] }
+```
+
+### Basic Example
+
+```rust
+use elicitation::{Elicit, Rand, Generator};
+use rmcp::client::Client;
+
+#[derive(Debug, Elicit, Rand)]
+enum Priority {
+    Low,
+    Medium,
+    High,
+}
+
+#[derive(Debug, Elicit, Rand)]
+struct Task {
+    title: String,
+    priority: Priority,
+    urgent: bool,
 }
 
 #[tokio::main]
-async fn main() -> ElicitResult<()> {
-    // Create MCP client via stdio transport
-    let client = ()
-        .serve(rmcp::transport::stdio())
-        .await?;
-
-    // Elicit a complete task from the user
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Connect to MCP server (Claude Desktop, CLI, etc.)
+    let client = Client::stdio().await?;
+    
+    // Elicit a task from the agent
     let task = Task::elicit(&client).await?;
-
-    println!("Created task: {:?}", task);
-
+    println!("Elicited task: {:?}", task);
+    
+    // Or generate random tasks for testing
+    let generator = Task::random_generator(42);
+    let random_task = generator.generate();
+    println!("Random task: {:?}", random_task);
+    
     Ok(())
 }
 ```
 
-### MCP Tool Generation (0.6.0+)
+Run with Claude Desktop or CLI:
 
-Types with `#[derive(Elicit)]` automatically generate `elicit_checked()` methods that are registered as MCP tools:
+```bash
+cargo run --example basic_task
+# or
+claude "Run the basic_task example"
+```
+
+---
+
+## Requirements and Constraints
+
+### Required Derives
+
+All types using `#[derive(Elicit)]` **must** implement three traits:
 
 ```rust
-use std::sync::Arc;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+use elicitation::Elicit;
 
-#[derive(Debug, Elicit)]
-struct Config {
-    timeout: u32,
-    retries: u8,
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct Task {
+    title: String,
+    priority: Priority,
+}
+```
+
+**Why each derive is required:**
+
+- **`Serialize`** - Convert Rust values to JSON for MCP responses
+- **`Deserialize`** - Parse agent selections back into Rust types
+- **`JsonSchema`** - Generate JSON schemas for MCP tool definitions
+- **`Elicit`** - Generate the elicitation logic (our derive macro)
+
+**Optional but recommended:**
+- **`Debug`** - For printing/logging during development
+- **`Clone`** - Many async patterns need cloneable values
+
+### Field Type Constraints
+
+All field types in your structs must **also** implement `Elicitation`:
+
+```rust
+// ✅ VALID: All fields implement Elicitation
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct User {
+    name: String,           // ✅ stdlib type
+    age: u8,                // ✅ stdlib type
+    email: Option<String>,  // ✅ Option<T> where T: Elicitation
+    tags: Vec<String>,      // ✅ Vec<T> where T: Elicitation
 }
 
-// Automatically generated:
-// impl Config {
-//     pub async fn elicit_checked(
-//         client: Arc<Peer<RoleClient>>
-//     ) -> Result<Self, ElicitError>
-// }
+// ❌ INVALID: CustomEmail doesn't implement Elicitation
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct User {
+    name: String,
+    email: CustomEmail,  // ❌ Compile error!
+}
 
-// Use the checked method for verified MCP interaction
-let service = ().serve(rmcp::transport::stdio()).await?;
-let peer = Arc::new(service.peer().clone());
-let config = Config::elicit_checked(peer).await?;
+// ✅ FIX: Derive Elicit for nested types
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct CustomEmail(String);
+
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct User {
+    name: String,
+    email: CustomEmail,  // ✅ Now works!
+}
 ```
 
-**Automatic Discovery:**
-```rust
-use elicitation::collect_all_elicit_tools;
+### Common Pitfalls
 
-// Discover all elicit tools in your binary
-let tools = collect_all_elicit_tools();
-println!("Found {} elicit tools", tools.len());
+#### 1. Missing JsonSchema on Nested Types
+
+```rust
+// ❌ BAD: Address missing JsonSchema
+#[derive(Serialize, Deserialize)]
+struct Address { /* ... */ }
+
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct User {
+    address: Address,  // ❌ Compile error: no JsonSchema for Address
+}
+
+// ✅ GOOD: Add JsonSchema to all nested types
+#[derive(Serialize, Deserialize, JsonSchema)]
+struct Address { /* ... */ }
 ```
 
-See [MIGRATION_0.5_to_0.6.md](MIGRATION_0.5_to_0.6.md) for migration details.
-
-## Examples
-
-All examples require an MCP client (Claude Desktop or Claude CLI) to run. See [MCP Setup](#mcp-setup) above.
-
-### Primitive Types
+#### 2. Generic Types Need Bounds
 
 ```rust
-// Elicit basic Rust types
-let age: i32 = i32::elicit(&client).await?;
-let name: String = String::elicit(&client).await?;
-let confirmed: bool = bool::elicit(&client).await?;
-let nickname: Option<String> = Option::<String>::elicit(&client).await?;
-let scores: Vec<i32> = Vec::<i32>::elicit(&client).await?;
+// ❌ BAD: Missing trait bounds
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct Container<T> {
+    value: T,  // ❌ T might not implement required traits
+}
 
-// Result types for success/failure outcomes
-let operation: Result<String, i32> = Result::elicit(&client).await?;
+// ✅ GOOD: Add proper bounds
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct Container<T>
+where
+    T: Serialize + Deserialize + JsonSchema + Elicitation,
+{
+    value: T,  // ✅ Guaranteed to work
+}
 ```
 
-**Try it**: `claude "Run the simple_types example"` or `claude "Run the result example"`
-
-### Filesystem Paths
+#### 3. Enums Must Have Serde Attributes
 
 ```rust
-use std::path::PathBuf;
-
-// Elicit a filesystem path
-let file_path: PathBuf = PathBuf::elicit(&client).await?;
-
-// Optional paths work too
-let config_path: Option<PathBuf> = Option::<PathBuf>::elicit(&client).await?;
-```
-
-**Try it**: `claude "Run the pathbuf example"`
-
-### Network Addresses
-
-```rust
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
-
-// Elicit IP addresses with automatic validation
-let ip: IpAddr = IpAddr::elicit(&client).await?; // IPv4 or IPv6
-let ipv4: Ipv4Addr = Ipv4Addr::elicit(&client).await?; // IPv4 only
-let ipv6: Ipv6Addr = Ipv6Addr::elicit(&client).await?; // IPv6 only
-
-// Socket addresses (IP + port)
-let socket: SocketAddr = SocketAddr::elicit(&client).await?;
-```
-
-**Try it**: `claude "Run the network example"`
-
-### Time Durations
-
-```rust
-use std::time::Duration;
-
-// Elicit duration in seconds (supports decimals)
-let timeout: Duration = Duration::elicit(&client).await?;
-
-// Works with optional durations
-let cache_ttl: Option<Duration> = Option::<Duration>::elicit(&client).await?;
-
-// Collections of durations
-let intervals: Vec<Duration> = Vec::<Duration>::elicit(&client).await?;
-```
-
-**Try it**: `claude "Run the duration example"`
-
-### Enums (Select Pattern)
-
-#### Unit Variants (Simple Selection)
-
-```rust
-#[derive(Debug, Elicit)]
+// ❌ BAD: Complex enum variants without serde tags
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
 enum Status {
     Pending,
-    InProgress,
-    Completed,
+    Active { since: String },
+    Completed { at: String, by: String },
 }
 
-let status = Status::elicit(&client).await?;
-```
-
-#### Tuple Variants (Select + Field Elicitation)
-
-```rust
-#[derive(Debug, Elicit)]
-enum MediaSource {
-    Url(String),
-    Base64(String),
-    Binary(Vec<u8>),
-}
-
-// User first selects variant (Url/Base64/Binary), then provides the field value
-let source = MediaSource::elicit(&client).await?;
-```
-
-#### Struct Variants (Select + Multi-Field Survey)
-
-```rust
-#[derive(Debug, Elicit)]
-enum Input {
-    Text(String),
-    Image {
-        mime: Option<String>,
-        source: MediaSource,
-    },
-    Document {
-        format: String,
-        content: String,
-    },
-}
-
-// User selects variant, then provides each field
-let input = Input::elicit(&client).await?;
-```
-
-#### Mixed Variants
-
-All three variant types can coexist in the same enum:
-
-```rust
-#[derive(Debug, Elicit)]
+// ✅ GOOD: Add serde tagging for complex enums
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+#[serde(tag = "type")]
 enum Status {
-    Ok,                                     // Unit variant
-    Warning(String),                        // Tuple variant
-    Error { code: i32, msg: String },      // Struct variant
+    Pending,
+    Active { since: String },
+    Completed { at: String, by: String },
+}
+```
+
+#### 4. PhantomData Needs Skip
+
+```rust
+// ✅ GOOD: Skip non-serializable fields
+use std::marker::PhantomData;
+
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct TypedId<T> {
+    id: String,
+    #[serde(skip)]
+    _phantom: PhantomData<T>,
+}
+```
+
+### Trait Tools Requirements
+
+When using `#[elicit_trait_tools_router]`, parameter and result types need the same derives:
+
+```rust
+// Tool parameter types
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct CreateTaskParams {
+    title: String,
+    priority: Priority,
 }
 
-let status = Status::elicit(&client).await?;
+// Tool result types
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct CreateTaskResult {
+    id: String,
+    created: bool,
+}
 ```
 
-**Try it**: `claude "Run the enums example"`
+**Note:** These don't need `Elicit` derive (they're not elicited, just passed as JSON).
 
-### Structs (Survey Pattern)
+### Async Requirements
+
+Traits using `#[elicit_trait_tools_router]` need proper async signatures:
 
 ```rust
-#[derive(Debug, Elicit)]
-struct Person {
-    #[prompt("What's your name?")]
-    name: String,
-
-    #[prompt("How old are you?")]
-    age: u8,
-
-    #[prompt("What's your email?")]
-    email: String,
+// Pattern 1: impl Future + Send (zero-cost)
+trait MyTrait: Send + Sync {
+    fn method(&self, params: Parameters<P>) 
+        -> impl Future<Output = Result<Json<R>, ErrorData>> + Send;
 }
 
-let person = Person::elicit(&client).await?;
+// Pattern 2: async_trait (object-safe)
+#[async_trait]
+trait MyTrait: Send + Sync {
+    async fn method(&self, params: Parameters<P>) 
+        -> Result<Json<R>, ErrorData>;
+}
 ```
 
-**Try it**: `claude "Run the structs example"`
+See [ELICIT_TRAIT_TOOLS_ROUTER.md](ELICIT_TRAIT_TOOLS_ROUTER.md) for complete details.
 
-### Complex Nested Types
+### Quick Checklist
+
+Before deriving `Elicit`:
+
+- [ ] Type has `Serialize + Deserialize + JsonSchema`
+- [ ] All field types implement `Elicitation`
+- [ ] Nested types have all required derives
+- [ ] Generic types have proper bounds
+- [ ] Complex enums have serde tagging
+- [ ] PhantomData fields are marked `#[serde(skip)]`
+
+---
+
+## Integrating with rmcp Tool Routers
+
+Elicitation tools compose seamlessly with regular rmcp tools using the `#[tool_router]` macro. This is the standard pattern for exposing both elicitation capabilities and domain-specific operations.
+
+### Basic Composition Pattern
 
 ```rust
-#[derive(Debug, Elicit)]
-struct Project {
-    name: String,
-    team: Vec<Member>,
-    tasks: Vec<Task>,
-    budget: Option<f64>,
+use elicitation::{Elicit, elicit_tools};
+use rmcp::{tool, tool_router, Json, Parameters, ErrorData};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+
+// 1. Define elicitable types
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+struct Config {
+    host: String,
+    port: u16,
 }
 
-let project = Project::elicit(&client).await?;
+// 2. Define regular tool types
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct StatusResponse {
+    healthy: bool,
+    uptime: u64,
+}
+
+// 3. Compose both in one server
+struct MyServer;
+
+#[elicit_tools(Config)]  // Generate elicitation tools
+#[tool_router]           // Generate tool router
+impl MyServer {
+    // Regular rmcp tools
+    #[tool(description = "Check server health")]
+    pub async fn status(
+        _peer: Peer<RoleServer>
+    ) -> Result<Json<StatusResponse>, ErrorData> {
+        Ok(Json(StatusResponse {
+            healthy: true,
+            uptime: 12345,
+        }))
+    }
+
+    #[tool(description = "Restart server")]
+    pub async fn restart(
+        _peer: Peer<RoleServer>
+    ) -> Result<Json<StatusResponse>, ErrorData> {
+        // Restart logic...
+        Ok(Json(StatusResponse {
+            healthy: true,
+            uptime: 0,
+        }))
+    }
+    
+    // Elicitation tools are auto-generated:
+    // - elicit_config() - construct Config through conversation
+}
+
+impl ServerHandler for MyServer {
+    fn get_info(&self) -> ServerInfo {
+        ServerInfo {
+            capabilities: ServerCapabilities::builder()
+                .enable_tools()
+                .build(),
+            ..Default::default()
+        }
+    }
+}
 ```
 
-**Try it**: `claude "Run the complex_survey example"`
+**Result:** Server exposes 3 tools:
+- `status` - Regular tool
+- `restart` - Regular tool  
+- `elicit_config` - Elicitation tool (auto-generated)
 
-### Collections
+### Multiple Elicitation Types
+
+You can generate tools for multiple types at once:
 
 ```rust
-use std::collections::{HashMap, HashSet};
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct User { name: String }
 
-// Elicit a HashMap with duplicate key handling
-let scores: HashMap<String, i32> = HashMap::elicit(&client).await?;
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct Task { title: String }
 
-// Elicit a HashSet with automatic deduplication
-let tags: HashSet<String> = HashSet::elicit(&client).await?;
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct Project { name: String, owner: User }
 
-// BTreeMap and BTreeSet also supported for ordered collections
-use std::collections::{BTreeMap, BTreeSet};
-let config: BTreeMap<String, String> = BTreeMap::elicit(&client).await?;
-let priorities: BTreeSet<i32> = BTreeSet::elicit(&client).await?;
-
-// VecDeque and LinkedList for sequential access patterns
-use std::collections::{VecDeque, LinkedList};
-let queue: VecDeque<String> = VecDeque::elicit(&client).await?;
-let linked: LinkedList<i32> = LinkedList::elicit(&client).await?;
+#[elicit_tools(User, Task, Project)]  // Multiple types
+#[tool_router]
+impl MyServer {
+    // Regular tools...
+    
+    // Auto-generated elicitation tools:
+    // - elicit_user()
+    // - elicit_task()
+    // - elicit_project()
+}
 ```
 
-**Try it**: `claude "Run the collections example"`
+### Trait-Based Tool Composition
 
-### DateTime Types (Feature Flags)
-
-Enable datetime support with feature flags: `chrono`, `time`, or `jiff`.
-
-#### Chrono
+Combine `#[elicit_trait_tools_router]` with regular tools:
 
 ```rust
-use chrono::{DateTime, Utc, FixedOffset, NaiveDateTime};
+use elicitation::elicit_trait_tools_router;
 
-// Elicit timezone-aware datetime (UTC)
-let timestamp: DateTime<Utc> = DateTime::<Utc>::elicit(&client).await?;
+#[async_trait]
+trait TaskManager: Send + Sync {
+    async fn create_task(
+        &self,
+        params: Parameters<CreateTaskParams>,
+    ) -> Result<Json<Task>, ErrorData>;
+}
 
-// Elicit timezone-aware datetime (with offset)
-let event: DateTime<FixedOffset> = DateTime::<FixedOffset>::elicit(&client).await?;
+struct TaskService {
+    manager: Arc<dyn TaskManager>,
+}
 
-// Elicit naive datetime (no timezone)
-let meeting: NaiveDateTime = NaiveDateTime::elicit(&client).await?;
+#[elicit_trait_tools_router(TaskManager, manager, [create_task])]
+#[tool_router]
+impl TaskService {
+    // Regular tools
+    #[tool(description = "List all tasks")]
+    pub async fn list_tasks(
+        &self
+    ) -> Result<Json<Vec<Task>>, ErrorData> {
+        // Implementation...
+    }
+    
+    // Trait tools auto-generated:
+    // - create_task() - delegates to self.manager.create_task()
+}
 ```
 
-#### Time
+### Macro Ordering Rules
+
+**Critical:** Macros must be applied in this order:
 
 ```rust
-use time::{OffsetDateTime, PrimitiveDateTime};
-
-// Elicit timezone-aware datetime
-let event: OffsetDateTime = OffsetDateTime::elicit(&client).await?;
-
-// Elicit datetime without timezone
-let schedule: PrimitiveDateTime = PrimitiveDateTime::elicit(&client).await?;
+#[elicit_tools(Type1, Type2)]        // 1. Generate elicitation methods
+#[elicit_trait_tools_router(...)]    // 2. Generate trait tool wrappers
+#[tool_router]                        // 3. Discover all #[tool] methods
+impl MyServer { }
 ```
 
-#### Jiff
+**Why?** Each macro expands before the next one runs:
+1. `#[elicit_tools]` adds methods with `#[tool]` attributes
+2. `#[elicit_trait_tools_router]` adds more methods with `#[tool]` attributes
+3. `#[tool_router]` discovers all methods marked with `#[tool]`
+
+### Tool Discovery
+
+All tools are automatically discovered and registered:
 
 ```rust
-use jiff::{Timestamp, Zoned, civil::DateTime};
+// After macro expansion, you have:
+let router = MyServer::tool_router();
+let tools = router.list_all();
 
-// Elicit Unix timestamp
-let ts: Timestamp = Timestamp::elicit(&client).await?;
+// Tools discovered:
+// - Regular tools (marked with #[tool])
+// - Elicitation tools (generated by #[elicit_tools])
+// - Trait tools (generated by #[elicit_trait_tools_router])
 
-// Elicit timezone-aware datetime (DST-aware!)
-let event: Zoned = Zoned::elicit(&client).await?;
-
-// Elicit calendar datetime (no timezone)
-let meeting: DateTime = DateTime::elicit(&client).await?;
+println!("Server has {} tools", tools.len());
+for tool in &tools {
+    println!("  - {}: {}", tool.name, tool.description);
+}
 ```
 
-**Dual input methods**: All datetime types support both ISO 8601 strings OR manual component entry (year, month, day, etc.).
+### Complete Server Example
 
-### JSON Values (Feature Flag)
+Here's a full-featured server using all composition patterns:
 
-Enable with `serde_json` feature flag to elicit dynamic JSON structures:
+```rust
+use elicitation::{Elicit, elicit_tools, elicit_trait_tools_router};
+use rmcp::*;
+
+// Elicitable domain types
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct User { name: String, email: String }
+
+#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
+struct Config { timeout: u32, retries: u8 }
+
+// Trait for business logic
+#[async_trait]
+trait UserManager: Send + Sync {
+    async fn get_user(
+        &self,
+        params: Parameters<GetUserParams>,
+    ) -> Result<Json<User>, ErrorData>;
+}
+
+// Server combining everything
+struct AppServer {
+    user_manager: Arc<dyn UserManager>,
+}
+
+#[elicit_tools(User, Config)]                                    // Elicitation tools
+#[elicit_trait_tools_router(UserManager, user_manager, [get_user])]  // Trait tools
+#[tool_router]                                                   // Discover all
+impl AppServer {
+    // Regular utility tools
+    #[tool(description = "Get server status")]
+    pub async fn status(&self) -> Result<Json<StatusResponse>, ErrorData> {
+        Ok(Json(StatusResponse { healthy: true }))
+    }
+
+    #[tool(description = "Get server version")]
+    pub async fn version(&self) -> Result<Json<VersionResponse>, ErrorData> {
+        Ok(Json(VersionResponse { version: "1.0.0".into() }))
+    }
+}
+
+impl ServerHandler for AppServer {
+    fn get_info(&self) -> ServerInfo {
+        ServerInfo {
+            name: "app-server".into(),
+            version: "1.0.0".into(),
+            capabilities: ServerCapabilities::builder()
+                .enable_tools()
+                .build(),
+            ..Default::default()
+        }
+    }
+}
+
+// Server now exposes 5 tools:
+// 1. status          - Regular tool
+// 2. version         - Regular tool
+// 3. elicit_user     - Elicitation tool (auto-generated)
+// 4. elicit_config   - Elicitation tool (auto-generated)
+// 5. get_user        - Trait tool (auto-generated)
+```
+
+### Benefits of Composition
+
+**Unified API:** Agents see one consistent interface:
+```json
+{
+  "tools": [
+    {"name": "status", "description": "Get server status"},
+    {"name": "elicit_user", "description": "Construct User through conversation"},
+    {"name": "get_user", "description": "Get user from database"}
+  ]
+}
+```
+
+**Type Safety:** All tools share the same type system:
+- Regular tools: explicit implementations
+- Elicitation tools: derived from domain types
+- Trait tools: derived from trait methods
+
+**Composability:** Mix and match freely:
+- Add elicitation to existing servers
+- Add regular tools to elicitation-focused servers
+- Expose trait-based APIs alongside utilities
+
+### Common Patterns
+
+**Pattern 1: Configuration + Operations**
+```rust
+#[elicit_tools(Config)]    // Let agents configure
+#[tool_router]
+impl Server {
+    #[tool] async fn deploy() { }   // Then operate
+    #[tool] async fn status() { }
+}
+```
+
+**Pattern 2: CRUD + Construction**
+```rust
+#[elicit_tools(User, Task)]        // Construct entities
+#[tool_router]
+impl Server {
+    #[tool] async fn list_users() { }    // Read
+    #[tool] async fn update_user() { }   // Update
+    #[tool] async fn delete_user() { }   // Delete
+}
+```
+
+**Pattern 3: Trait API + Utilities**
+```rust
+#[elicit_trait_tools_router(Api, api, [method1, method2])]  // Core API
+#[tool_router]
+impl Server {
+    #[tool] async fn health() { }   // Utilities
+    #[tool] async fn metrics() { }
+}
+```
+
+### See Also
+
+- [ELICIT_TRAIT_TOOLS_ROUTER.md](ELICIT_TRAIT_TOOLS_ROUTER.md) - Trait tools guide
+- [TOOL_ROUTER_WARNINGS.md](TOOL_ROUTER_WARNINGS.md) - Addressing rmcp warnings
+- [tests/composition_systematic_test.rs](tests/composition_systematic_test.rs) - Composition examples
+
+---
+
+## Architecture
+
+### The Elicitation Trait
+
+The core abstraction:
+
+```rust
+#[async_trait]
+pub trait Elicitation: Sized {
+    /// Elicit a value through sampling interaction
+    async fn elicit(ctx: &SamplingContext) -> Result<Self, ElicitError>;
+}
+```
+
+Every type that implements this trait can be constructed through agent interaction. The derive macro generates the implementation automatically.
+
+### How It Works
+
+1. **At compile time:** `#[derive(Elicit)]` generates:
+   - `Elicitation` trait implementation
+   - MCP tool definitions (JSON schemas)
+   - Prompt templates for each field
+   - Validation logic
+
+2. **At runtime:** Agent calls `Type::elicit()`:
+   - Library presents structured prompts to agent
+   - Agent responds with selections/values
+   - Library validates responses against type constraints
+   - Process repeats for nested types (recursively)
+
+3. **Result:** Fully constructed, type-checked domain value.
+
+### Supported Types (100+ stdlib types)
+
+**Primitives:** `bool`, `i8`-`i128`, `u8`-`u128`, `f32`, `f64`, `char`, `String`  
+**Collections:** `Vec<T>`, `Option<T>`, `Result<T, E>`, `[T; N]`  
+**Network:** `IpAddr`, `Ipv4Addr`, `Ipv6Addr`, `SocketAddr`  
+**Filesystem:** `PathBuf`, `Path`  
+**Time:** `Duration`, `SystemTime`, `Instant`  
+**DateTime:** `chrono`, `time`, `jiff` (3 major datetime libraries)  
+**Data:** `serde_json::Value` (dynamic JSON construction)  
+**Smart Pointers:** `Box<T>`, `Arc<T>`, `Rc<T>`  
+**...and more**
+
+Plus: **Any custom type** via `#[derive(Elicit)]`
+
+---
+
+## Advanced Features
+
+### Feature Flags
+
+**Default:** All third-party support enabled by default via the `full` feature.
+
+```toml
+[dependencies]
+# Default: full feature bundle (all third-party support + rand)
+elicitation = "0.6"
+
+# Minimal build (opt-out of defaults)
+elicitation = { version = "0.6", default-features = false }
+
+# Custom feature selection
+elicitation = { version = "0.6", default-features = false, features = [
+    "chrono",         # chrono datetime types
+    "time",           # time datetime types
+    "jiff",           # jiff datetime types
+    "uuid",           # UUID support
+    "url",            # URL support
+    "regex",          # Regex support
+    "rand",           # Random generation
+    "serde_json",     # JSON value elicitation
+] }
+```
+
+**Available features:**
+
+- `full` (default) - All third-party support + rand
+- `chrono` - `DateTime<Utc>`, `NaiveDateTime`
+- `time` - `OffsetDateTime`
+- `jiff` - `Timestamp`
+- `uuid` - `Uuid`
+- `url` - `Url`
+- `regex` - `Regex`
+- `rand` - Random generation (see Random Generation section)
+- `serde_json` - `serde_json::Value`
+- `verification` - Contract system
+- `verify-kani` - Kani formal verification
+- `verify-creusot` - Creusot verification
+- `verify-prusti` - Prusti verification
+- `cli` - CLI tools
+- `dev` - All features + CLI
+
+### JSON Schema Generation
+
+All elicited types automatically generate JSON schemas for MCP:
+
+```rust
+use schemars::JsonSchema;
+
+#[derive(Elicit, JsonSchema)]
+struct Config {
+    timeout: u32,
+}
+
+// Schema is automatically registered with MCP server
+```
+
+### Datetime Support
+
+Three major datetime libraries supported:
+
+```rust
+// chrono
+use chrono::{DateTime, Utc};
+let timestamp: DateTime<Utc> = DateTime::elicit(&ctx).await?;
+
+// time
+use time::OffsetDateTime;
+let time: OffsetDateTime = OffsetDateTime::elicit(&ctx).await?;
+
+// jiff
+use jiff::Timestamp;
+let jiff_time: Timestamp = Timestamp::elicit(&ctx).await?;
+```
+
+### Dynamic JSON Construction
+
+Agents can build arbitrary JSON structures:
 
 ```rust
 use serde_json::Value;
 
-// Elicit any JSON value (null, bool, number, string, array, object)
-let config: Value = Value::elicit(&client).await?;
-
-// Works with nesting
-let nested: Vec<Value> = Vec::<Value>::elicit(&client).await?;
-let optional: Option<Value> = Option::<Value>::elicit(&client).await?;
+// Agent constructs JSON interactively
+let json: Value = Value::elicit(&ctx).await?;
+// Could be: {"name": "Alice", "scores": [95, 87, 92]}
 ```
 
-The elicitation process handles all JSON types recursively:
-- `null` - Explicit null value
-- `bool` - Boolean true/false
-- `number` - Any JSON number
-- `string` - Text value
-- `array` - List of JSON values (recursive)
-- `object` - Key-value map (recursive)
-
-Depth limit of 10 prevents infinite recursion.
-
-### Style System 🎨 (v0.2.2)
-
-**Revolutionary feature**: Customize prompts per field with multiple styles!
-
-```rust
-#[derive(Debug, Elicit)]
-struct Config {
-    // Multiple prompt styles for same field
-    #[prompt("Name", style = "curt")]
-    #[prompt("What is your full name?", style = "verbose")]
-    name: String,
-    
-    #[prompt("Age?", style = "curt")]
-    #[prompt("Please enter your age in years", style = "verbose")]
-    age: u32,
-    
-    // Mix styled and default prompts
-    #[prompt("Enter city")]  // Used when style doesn't have override
-    #[prompt("City", style = "curt")]
-    city: String,
-}
-```
-
-**How it works**:
-1. Collect unique style names from all `#[prompt(..., style = "name")]` attributes
-2. Generate `ConfigElicitStyle` enum with `Default` + collected styles
-3. At runtime, LLM or user selects style (just another Select elicitation!)
-4. Each field uses its style-specific prompt (or falls back to default)
-
-**Style selection is a state machine step** - irrelevant whether LLM or user chooses. The style system separates *what to ask* (behavior) from *how to ask* (presentation).
-
-**Built-in styles available** (for programmatic use):
-- `DefaultStyle` - Standard prompts
-- `CompactStyle` - Terse, minimal prompts
-- `VerboseStyle` - Detailed, explanatory prompts  
-- `WizardStyle` - Step-by-step with progress
-
-Currently, only `String` fields support styled prompts with inline elicitation. Other types fall back to default elicitation (support expanding in future versions).
-
-## Interaction Paradigms
-
-### Select
-
-For choosing from a finite set of options (enums):
-
-```rust
-#[derive(Elicit)]
-#[prompt("Choose your programming language:")]
-enum Language {
-    Rust,
-    Python,
-    JavaScript,
-}
-```
-
-### Affirm
-
-For yes/no questions (booleans):
-
-```rust
-let confirmed: bool = bool::elicit(&client).await?;
-```
-
-### Survey
-
-For multi-field data collection (structs):
-
-```rust
-#[derive(Elicit)]
-#[prompt("Let's create your profile:")]
-struct Profile {
-    name: String,
-    age: u8,
-    bio: Option<String>,
-}
-```
-
-### Authorize
-
-Permission-based elicitation (planned for v0.2.0).
-
-## Attributes
-
-### `#[prompt("...")]`
-
-Customize prompts for types or fields:
-
-```rust
-#[derive(Elicit)]
-#[prompt("Configure your account:")] // Struct-level prompt
-struct Account {
-    #[prompt("Choose a username:")] // Field-level prompt
-    username: String,
-}
-```
-
-### `#[skip]`
-
-Skip fields during elicitation (uses `Default::default()`):
-
-```rust
-#[derive(Default, Elicit)]
-struct Task {
-    title: String,
-
-    #[skip] // Not elicited, uses Default
-    created_at: DateTime<Utc>,
-}
-```
-
-## Error Handling
-
-The library provides rich error handling with location tracking:
-
-```rust
-use elicitation::{ElicitError, ElicitErrorKind, ElicitResult};
-
-match Task::elicit(&client).await {
-    Ok(task) => println!("Created: {:?}", task),
-    Err(e) => eprintln!("Error: {}", e),
-}
-```
-
-Error types:
-
-- `InvalidFormat` - Parsing failed
-- `OutOfRange` - Value outside valid range
-- `InvalidOption` - Invalid enum selection
-- `MissingField` - Required field missing
-- `Cancelled` - User cancelled operation
-- `Mcp` - MCP protocol error
-- `Json` - JSON parsing error
-
-## Architecture
-
-### Traits
-
-- `Prompt` - Provides prompt text for a type
-- `Elicit` - Implements elicitation logic
-- `Select` - For enum types (finite choices)
-- `Affirm` - For boolean types (yes/no)
-- `Survey` - For struct types (multi-field)
-
-### Type Composition
-
-All elicitation types compose freely:
-
-```rust
-// Nested structures
-let data: Vec<Option<Task>> = Vec::elicit(&client).await?;
-
-// Complex hierarchies
-#[derive(Elicit)]
-struct Organization {
-    name: String,
-    departments: Vec<Department>,
-}
-
-#[derive(Elicit)]
-struct Department {
-    name: String,
-    members: Vec<Member>,
-    projects: Vec<Project>,
-}
-```
-
-## MCP Integration
-
-The library uses the official [rmcp](https://crates.io/crates/rmcp) (Rust MCP SDK) for MCP communication:
-
-```rust
-use rmcp::ServiceExt;
-
-// Create client via stdio transport (for Claude Desktop/CLI)
-let client = ()
-    .serve(rmcp::transport::stdio())
-    .await?;
-
-// Use with elicitation
-let value = MyType::elicit(&client).await?;
-```
+---
 
 ## Documentation
 
-- [API Documentation](https://docs.rs/elicitation)
-- [Examples](./crates/elicitation/examples/)
-- [MCP Protocol](https://modelcontextprotocol.io)
-- [rmcp crate](https://docs.rs/rmcp)
+- **[API Docs](https://docs.rs/elicitation)** - Complete API reference
+- **[ELICIT_TRAIT_TOOLS_ROUTER.md](ELICIT_TRAIT_TOOLS_ROUTER.md)** - Trait-based tool generation guide
+- **[TOOL_ROUTER_WARNINGS.md](TOOL_ROUTER_WARNINGS.md)** - Addressing rmcp warnings
+- **[MIGRATION_0.5_to_0.6.md](MIGRATION_0.5_to_0.6.md)** - Upgrade guide
+- **[Examples](examples/)** - 20+ working examples
+
+---
+
+## Why Elicitation?
+
+### For Library Authors
+
+**Expose your entire domain as agent-native operations:**
+
+- One `#[derive(Elicit)]` per type → instant MCP tools
+- Agents construct domain values, not JSON blobs
+- Type safety = correctness guarantees
+- Composition = reusable building blocks
+
+### For Agent Developers
+
+**Stop wrestling with JSON forms:**
+
+- Structured operations > unstructured key-value
+- Type-driven exploration (what's valid?)
+- Multi-step processes with clear semantics
+- Formal verification catches bugs the LLM can't
+
+### For System Architects
+
+**Build verified agent systems:**
+
+- Contracts express invariants precisely
+- Composition rules checked at compile time
+- Kani verification gives mathematical confidence
+- Zero-cost abstractions = production-ready performance
+
+---
+
+## Comparison: Before vs. After
+
+### Traditional MCP (JSON-Centric)
+
+```rust
+// Server exposes a form
+let schema = json!({
+    "type": "object",
+    "properties": {
+        "title": {"type": "string"},
+        "priority": {"enum": ["Low", "Medium", "High"]},
+        "urgent": {"type": "bool"}
+    }
+});
+
+// Agent fills it in (one shot, hope for the best)
+let response = agent.call_tool("create_task", json!({
+    "title": "Fix bug",
+    "priority": "Hgih",  // Typo! Fails validation
+    "urgent": true
+}));
+```
+
+**Problems:**
+
+- Agent guesses field names/values
+- Validation happens late (after submission)
+- No guidance on nested structures
+- No type safety, no composition
+
+### Elicitation (Type-Centric)
+
+```rust
+#[derive(Elicit)]
+enum Priority { Low, Medium, High }
+
+#[derive(Elicit)]
+struct Task {
+    title: String,
+    priority: Priority,
+    urgent: bool,
+}
+
+// Agent constructs through typed operations
+let task = Task::elicit(&ctx).await?;
+// 1. Provide title (String elicitation)
+// 2. Select priority from {Low, Medium, High}  ← No typos possible
+// 3. Affirm urgency (yes/no)
+```
+
+**Benefits:**
+
+- Agent guided step-by-step
+- Validation built into types
+- Errors impossible to construct
+- Composable, reusable, verified
+
+---
+
+## Formal Verification
+
+Elicitation's contract system is verified with [Kani](https://github.com/model-checking/kani), Amazon's Rust model checker:
+
+```bash
+just verify-kani  # Run 183 symbolic execution checks
+```
+
+**What's verified:**
+
+- Contract composition (sequential and parallel)
+- Proof forwarding and combination
+- Type-level guarantee preservation
+- Zero-cost abstraction (proofs compile to nothing)
+
+See [VERIFICATION_FRAMEWORK_DESIGN.md](VERIFICATION_FRAMEWORK_DESIGN.md) for details.
+
+---
+
+---
 
 ## Contributing
 
-Contributions are welcome! Please:
+We welcome contributions! Areas of interest:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- **New stdlib type support** - More types = more expressiveness
+- **Style system extensions** - Custom styles for domain-specific contexts
+- **Verification coverage** - More Kani proofs = more confidence
+- **Documentation** - Examples, tutorials, guides
+- **MCP integration** - Better tooling, better DX
 
-### Development
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-```bash
-# Run all checks
-just check-all
-
-# Run tests
-cargo test --all
-
-# Check examples
-cargo check --examples
-
-# Build documentation
-cargo doc --open
-```
-
-## Versioning
-
-This project follows [Semantic Versioning](https://semver.org/).
-
-Current version: **0.2.0**
+---
 
 ## License
 
 Licensed under either of:
 
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
+- MIT License ([LICENSE-MIT](LICENSE-MIT))
 
 at your option.
 
-### Contribution
-
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
+---
 
 ## Acknowledgments
 
-- Built with [rmcp](https://crates.io/crates/rmcp) - the official Rust MCP SDK
-- Powered by [tokio](https://tokio.rs) for async runtime
-- Uses [tracing](https://github.com/tokio-rs/tracing) for observability
+Built on:
+
+- [rmcp](https://github.com/zed-industries/mcp) - Rust MCP SDK by Zed Industries
+- [Kani](https://github.com/model-checking/kani) - Rust model checker by Amazon
+- [Model Context Protocol](https://modelcontextprotocol.io) - Anthropic's agent communication standard
+
+Special thanks to the Rust community for creating the type system that makes this possible.
+
+---
+
+**Elicitation: Where types meet agents, and agents learn to think in types.** 🎯
