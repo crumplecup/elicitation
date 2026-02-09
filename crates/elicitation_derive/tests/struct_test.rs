@@ -118,13 +118,13 @@ fn test_game_settings() {
 #[test]
 fn test_struct_deterministic() {
     let seed = 42;
-    let gen1 = ServerConfig::random_generator(seed);
-    let gen2 = ServerConfig::random_generator(seed);
+    let generator1 = ServerConfig::random_generator(seed);
+    let generator2 = ServerConfig::random_generator(seed);
 
     // Same seed should produce same sequence
     for _ in 0..5 {
-        let config1 = gen1.generate();
-        let config2 = gen2.generate();
+        let config1 = generator1.generate();
+        let config2 = generator2.generate();
 
         assert_eq!(config1.port, config2.port);
         assert_eq!(config1.timeout_ms, config2.timeout_ms);

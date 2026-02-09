@@ -56,12 +56,12 @@ fn test_bounded_d20() {
 #[test]
 fn test_deterministic() {
     let seed = 42;
-    let gen1 = D6::random_generator(seed);
-    let gen2 = D6::random_generator(seed);
+    let generator1 = D6::random_generator(seed);
+    let generator2 = D6::random_generator(seed);
 
     // Same seed should produce same sequence
     for _ in 0..10 {
-        assert_eq!(gen1.generate(), gen2.generate());
+        assert_eq!(generator1.generate(), generator2.generate());
     }
 }
 

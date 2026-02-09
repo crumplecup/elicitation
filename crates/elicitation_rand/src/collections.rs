@@ -129,13 +129,13 @@ mod tests {
     #[test]
     fn test_vec_generator_deterministic() {
         let seed = 42;
-        let gen1 = VecGenerator::new(RandomGenerator::<u32>::with_seed(seed), seed);
-        let gen2 = VecGenerator::new(RandomGenerator::<u32>::with_seed(seed), seed);
+        let generator1 = VecGenerator::new(RandomGenerator::<u32>::with_seed(seed), seed);
+        let generator2 = VecGenerator::new(RandomGenerator::<u32>::with_seed(seed), seed);
 
         // Same seed should produce same sequence
         for _ in 0..5 {
-            let vec1 = gen1.generate();
-            let vec2 = gen2.generate();
+            let vec1 = generator1.generate();
+            let vec2 = generator2.generate();
             assert_eq!(vec1, vec2, "Same seed should produce same vectors");
         }
     }

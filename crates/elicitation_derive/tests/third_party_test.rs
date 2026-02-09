@@ -14,10 +14,10 @@ fn test_string_generation() {
 
 #[test]
 fn test_string_deterministic() {
-    let gen1 = String::rand_generator(12345);
-    let gen2 = String::rand_generator(12345);
+    let generator1 = String::rand_generator(12345);
+    let generator2 = String::rand_generator(12345);
 
-    assert_eq!(gen1.generate(), gen2.generate());
+    assert_eq!(generator1.generate(), generator2.generate());
 }
 
 #[test]
@@ -80,8 +80,8 @@ fn test_uuid_generation() {
     assert_ne!(id, Uuid::nil());
 
     // Different seeds = different UUIDs
-    let gen2 = Uuid::rand_generator(222);
-    assert_ne!(id, gen2.generate());
+    let generator2 = Uuid::rand_generator(222);
+    assert_ne!(id, generator2.generate());
 }
 
 #[test]
@@ -89,10 +89,10 @@ fn test_uuid_generation() {
 fn test_uuid_deterministic() {
     use uuid::Uuid;
 
-    let gen1 = Uuid::rand_generator(54321);
-    let gen2 = Uuid::rand_generator(54321);
+    let generator1 = Uuid::rand_generator(54321);
+    let generator2 = Uuid::rand_generator(54321);
 
-    assert_eq!(gen1.generate(), gen2.generate());
+    assert_eq!(generator1.generate(), generator2.generate());
 }
 
 #[test]
@@ -116,10 +116,10 @@ fn test_url_generation() {
 fn test_url_deterministic() {
     use url::Url;
 
-    let gen1 = Url::rand_generator(99999);
-    let gen2 = Url::rand_generator(99999);
+    let generator1 = Url::rand_generator(99999);
+    let generator2 = Url::rand_generator(99999);
 
-    assert_eq!(gen1.generate(), gen2.generate());
+    assert_eq!(generator1.generate(), generator2.generate());
 }
 
 #[test]
@@ -140,10 +140,10 @@ fn test_pathbuf_generation() {
 fn test_pathbuf_deterministic() {
     use std::path::PathBuf;
 
-    let gen1 = PathBuf::rand_generator(11111);
-    let gen2 = PathBuf::rand_generator(11111);
+    let generator1 = PathBuf::rand_generator(11111);
+    let generator2 = PathBuf::rand_generator(11111);
 
-    assert_eq!(gen1.generate(), gen2.generate());
+    assert_eq!(generator1.generate(), generator2.generate());
 }
 
 #[test]

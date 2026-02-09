@@ -23,15 +23,15 @@ use std::marker::PhantomData;
 /// use elicitation::Generator;
 ///
 /// // Create generator with fixed seed for reproducibility
-/// let gen = RandomGenerator::<u32>::with_seed(42);
+/// let generator = RandomGenerator::<u32>::with_seed(42);
 ///
 /// // Generate random values
-/// let value1 = gen.generate();
-/// let value2 = gen.generate();
+/// let value1 = generator.generate();
+/// let value2 = generator.generate();
 ///
 /// // Same seed produces same sequence
-/// let gen2 = RandomGenerator::<u32>::with_seed(42);
-/// assert_eq!(gen2.generate(), value1);
+/// let generator2 = RandomGenerator::<u32>::with_seed(42);
+/// assert_eq!(generator2.generate(), value1);
 /// ```
 ///
 /// # Castle on Cloud
@@ -213,32 +213,32 @@ mod tests {
     #[test]
     fn test_random_generator_deterministic() {
         let seed = 42;
-        let gen1 = RandomGenerator::<u32>::with_seed(seed);
-        let gen2 = RandomGenerator::<u32>::with_seed(seed);
+        let generator1 = RandomGenerator::<u32>::with_seed(seed);
+        let generator2 = RandomGenerator::<u32>::with_seed(seed);
 
         // Same seed should produce same sequence
-        let val1 = gen1.generate();
-        let val2 = gen2.generate();
+        let val1 = generator1.generate();
+        let val2 = generator2.generate();
         assert_eq!(val1, val2);
     }
 
     #[test]
     fn test_random_generator_different_seeds() {
-        let gen1 = RandomGenerator::<u32>::with_seed(1);
-        let gen2 = RandomGenerator::<u32>::with_seed(2);
+        let generator1 = RandomGenerator::<u32>::with_seed(1);
+        let generator2 = RandomGenerator::<u32>::with_seed(2);
 
         // Different seeds should (very likely) produce different values
-        let val1 = gen1.generate();
-        let val2 = gen2.generate();
+        let val1 = generator1.generate();
+        let val2 = generator2.generate();
         assert_ne!(val1, val2);
     }
 
     #[test]
     fn test_random_generator_sequence() {
-        let gen = RandomGenerator::<u8>::with_seed(123);
+        let generator = RandomGenerator::<u8>::with_seed(123);
 
         // Generate sequence
-        let values: Vec<_> = (0..10).map(|_| gen.generate()).collect();
+        let values: Vec<_> = (0..10).map(|_| generator.generate()).collect();
 
         // Verify we got 10 values (obvious, but tests generation works)
         assert_eq!(values.len(), 10);
@@ -270,11 +270,11 @@ mod tests {
 
     #[test]
     fn test_random_bool_distribution() {
-        let gen = RandomGenerator::<bool>::with_seed(42);
+        let generator = RandomGenerator::<bool>::with_seed(42);
 
         // Generate many bools, should get roughly 50/50 split
         let count = 1000;
-        let trues = (0..count).filter(|_| gen.generate()).count();
+        let trues = (0..count).filter(|_| generator.generate()).count();
 
         // Allow for statistical variance (roughly 40-60%)
         assert!(
@@ -287,11 +287,11 @@ mod tests {
 
     #[test]
     fn test_random_f64_range() {
-        let gen = RandomGenerator::<f64>::with_seed(789);
+        let generator = RandomGenerator::<f64>::with_seed(789);
 
         // Generate many f64s, verify they're in [0, 1) range
         for _ in 0..100 {
-            let val = gen.generate();
+            let val = generator.generate();
             assert!((0.0..1.0).contains(&val), "f64 out of range: {}", val);
         }
     }

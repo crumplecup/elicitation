@@ -582,7 +582,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_rand"
-version = "0.6.7"
+version = "0.6.11"
 dependencies = [
  "chrono",
  "csv",

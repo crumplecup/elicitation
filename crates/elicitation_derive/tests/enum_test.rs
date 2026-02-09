@@ -135,12 +135,12 @@ fn test_mixed_enum() {
 #[test]
 fn test_enum_deterministic() {
     let seed = 42;
-    let gen1 = Status::random_generator(seed);
-    let gen2 = Status::random_generator(seed);
+    let generator1 = Status::random_generator(seed);
+    let generator2 = Status::random_generator(seed);
 
     // Same seed should produce same sequence
     for _ in 0..10 {
-        assert_eq!(gen1.generate(), gen2.generate());
+        assert_eq!(generator1.generate(), generator2.generate());
     }
 }
 

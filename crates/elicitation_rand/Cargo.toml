@@ -1,12 +1,11 @@
 [package]
 name = "elicitation_rand"
-version = "0.6.7"
-edition = "2021"
-rust-version = "1.70"
-authors = ["Erik Nordin <erik@nordin.dev>"]
-license = "MIT OR Apache-2.0"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
 description = "Random data generation through elicitation - castle on cloud verification pattern"
-repository = "https://github.com/your-repo/elicitation"
+repository.workspace = true
 keywords = ["elicitation", "rand", "random", "generator", "testing"]
 categories = ["development-tools::testing", "game-development"]
 

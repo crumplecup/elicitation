@@ -28,8 +28,8 @@ use std::cell::RefCell;
 /// use elicitation::Generator;
 ///
 /// // Generate ages between 18 and 65
-/// let gen = UniformGenerator::new(StdRng::seed_from_u64(42), 18, 65);
-/// let age = gen.generate(); // Always in [18, 65)
+/// let generator = UniformGenerator::new(StdRng::seed_from_u64(42), 18, 65);
+/// let age = generator.generate(); // Always in [18, 65)
 /// ```
 ///
 /// # Castle on Cloud
@@ -107,7 +107,7 @@ where
 ///     Legendary,
 /// }
 ///
-/// let gen = WeightedGenerator::new(
+/// let generator = WeightedGenerator::new(
 ///     StdRng::seed_from_u64(42),
 ///     vec![
 ///         (Rarity::Common, 70),
@@ -116,7 +116,7 @@ where
 ///     ],
 /// ).unwrap();
 ///
-/// let drop = gen.generate(); // 70% chance of Common
+/// let drop = generator.generate(); // 70% chance of Common
 /// ```
 ///
 /// # Castle on Cloud
@@ -284,11 +284,11 @@ mod tests {
 
     #[test]
     fn test_uniform_generator_range() {
-        let gen = UniformGenerator::with_seed(42, 10, 20);
+        let generator = UniformGenerator::with_seed(42, 10, 20);
 
         // Generate many values, all should be in [10, 20)
         for _ in 0..1000 {
-            let val = gen.generate();
+            let val = generator.generate();
             assert!(
                 (10..20).contains(&val),
                 "Value {} out of range [10, 20)",
@@ -299,30 +299,30 @@ mod tests {
 
     #[test]
     fn test_uniform_generator_deterministic() {
-        let gen1 = UniformGenerator::with_seed(123, 0, 100);
-        let gen2 = UniformGenerator::with_seed(123, 0, 100);
+        let generator1 = UniformGenerator::with_seed(123, 0, 100);
+        let generator2 = UniformGenerator::with_seed(123, 0, 100);
 
         // Same seed, same range → same sequence
-        assert_eq!(gen1.generate(), gen2.generate());
+        assert_eq!(generator1.generate(), generator2.generate());
     }
 
     #[test]
     fn test_uniform_generator_floats() {
-        let gen = UniformGenerator::with_seed(456, 0.0, 1.0);
+        let generator = UniformGenerator::with_seed(456, 0.0, 1.0);
 
         // Generate many floats, all in [0.0, 1.0)
         for _ in 0..100 {
-            let val = gen.generate();
+            let val = generator.generate();
             assert!((0.0..1.0).contains(&val), "Float {} out of range", val);
         }
     }
 
     #[test]
     fn test_uniform_generator_coverage() {
-        let gen = UniformGenerator::with_seed(789, 0, 10);
+        let generator = UniformGenerator::with_seed(789, 0, 10);
 
         // Generate many values, should hit multiple buckets
-        let samples: Vec<_> = (0..1000).map(|_| gen.generate()).collect();
+        let samples: Vec<_> = (0..1000).map(|_| generator.generate()).collect();
         let unique_count = samples
             .iter()
             .collect::<std::collections::HashSet<_>>()
@@ -342,31 +342,31 @@ mod tests {
 
     #[test]
     fn test_weighted_generator_basic() {
-        let gen =
+        let generator =
             WeightedGenerator::with_seed(42, vec![("common", 70), ("rare", 25), ("legendary", 5)])
                 .unwrap();
 
         // Just verify it generates without panic
-        let _item = gen.generate();
+        let _item = generator.generate();
     }
 
     #[test]
     fn test_weighted_generator_deterministic() {
-        let gen1 = WeightedGenerator::with_seed(123, vec![("a", 50), ("b", 50)]).unwrap();
+        let generator1 = WeightedGenerator::with_seed(123, vec![("a", 50), ("b", 50)]).unwrap();
 
-        let gen2 = WeightedGenerator::with_seed(123, vec![("a", 50), ("b", 50)]).unwrap();
+        let generator2 = WeightedGenerator::with_seed(123, vec![("a", 50), ("b", 50)]).unwrap();
 
         // Same seed → same sequence
-        assert_eq!(gen1.generate(), gen2.generate());
+        assert_eq!(generator1.generate(), generator2.generate());
     }
 
     #[test]
     fn test_weighted_generator_distribution() {
-        let gen = WeightedGenerator::with_seed(42, vec![("common", 90), ("rare", 10)]).unwrap();
+        let generator = WeightedGenerator::with_seed(42, vec![("common", 90), ("rare", 10)]).unwrap();
 
         // Generate many samples, verify distribution roughly matches weights
         let count = 10_000;
-        let common_count = (0..count).filter(|_| gen.generate() == "common").count();
+        let common_count = (0..count).filter(|_| generator.generate() == "common").count();
 
         let common_pct = (common_count as f64 / count as f64) * 100.0;
 
@@ -393,20 +393,20 @@ mod tests {
         // This should succeed - zero weight just means "a" never gets picked
         assert!(result.is_ok());
 
-        let gen = result.unwrap();
+        let generator = result.unwrap();
         // Verify only "b" ever gets generated
         for _ in 0..100 {
-            assert_eq!(gen.generate(), "b");
+            assert_eq!(generator.generate(), "b");
         }
     }
 
     #[test]
     fn test_weighted_generator_single_item() {
-        let gen = WeightedGenerator::with_seed(42, vec![("only", 100)]).unwrap();
+        let generator = WeightedGenerator::with_seed(42, vec![("only", 100)]).unwrap();
 
         // Should always generate the only item
         for _ in 0..10 {
-            assert_eq!(gen.generate(), "only");
+            assert_eq!(generator.generate(), "only");
         }
     }
 
@@ -419,13 +419,13 @@ mod tests {
             Potion,
         }
 
-        let gen = WeightedGenerator::with_seed(
+        let generator = WeightedGenerator::with_seed(
             42,
             vec![(Item::Sword, 40), (Item::Shield, 30), (Item::Potion, 30)],
         )
         .unwrap();
 
         // Verify it works with custom types
-        let _item = gen.generate();
+        let _item = generator.generate();
     }
 }

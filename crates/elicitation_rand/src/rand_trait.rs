@@ -98,21 +98,21 @@ mod tests {
 
     #[test]
     fn test_rand_u32() {
-        let gen = u32::rand_generator(42);
-        let _value = gen.generate();
+        let generator = u32::rand_generator(42);
+        let _value = generator.generate();
         // Just verify it compiles and generates
     }
 
     #[test]
     fn test_rand_bool() {
-        let gen = bool::rand_generator(123);
-        let _value = gen.generate();
+        let generator = bool::rand_generator(123);
+        let _value = generator.generate();
     }
 
     #[test]
     fn test_rand_string() {
-        let gen = String::rand_generator(42);
-        let s = gen.generate();
+        let generator = String::rand_generator(42);
+        let s = generator.generate();
 
         // Should generate lowercase letters
         assert!(s.len() < 32);
@@ -123,10 +123,10 @@ mod tests {
 
     #[test]
     fn test_rand_string_deterministic() {
-        let gen1 = String::rand_generator(42);
-        let gen2 = String::rand_generator(42);
+        let generator1 = String::rand_generator(42);
+        let generator2 = String::rand_generator(42);
 
-        assert_eq!(gen1.generate(), gen2.generate());
+        assert_eq!(generator1.generate(), generator2.generate());
     }
 }
 
