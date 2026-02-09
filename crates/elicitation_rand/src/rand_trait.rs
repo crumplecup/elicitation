@@ -274,7 +274,7 @@ mod url_impls {
                     let hosts = ["example.com", "test.org", "demo.net", "api.io"];
                     let host = hosts[rng.random_range(0..hosts.len())];
 
-                    let port = if rng.gen_bool(0.3) {
+                    let port = if rng.random_bool(0.3) {
                         format!(":{}", rng.random_range(8000..9000))
                     } else {
                         String::new()
