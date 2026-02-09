@@ -37,6 +37,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add comprehensive rmcp tool router integration guide
 - Fix generator checklist to reflect 100% coverage
 
+### Fixed
+
+- Migrate elicitation_rand to use workspace dependencies
+- Rename gen variables to generator
+- Change gen_bool to random_bool for rand 0.10
+
+### Miscellaneous
+
+- Allow manual_async_fn lint in trait tools test
+- Run cargo fmt
+
+### Refactor
+
+- Consolidate derive macros into single crate
+
+## [Unreleased]
+
+### Added
+
+- Add UUID generator Kani proofs - Phase 1 complete
+- Register UUID generator proofs in verification runner
+- Add IoError and JsonError generator Kani proofs - Phase 2 complete
+- Add Kani proofs for chrono datetime generators (Phase 3)
+- Add Kani proofs for time and jiff generators (Phase 4)
+- Create elicitation_rand crate with implementation plan
+- Implement Phase 1 - RNG elicitation (StdRng, ChaCha8Rng)
+- Implement Phase 2 - RandomGenerator for primitives
+- Implement Phase 3 - Distribution generators (Uniform, Weighted)
+- Phase 5 - Kani verification (bounds logic only)
+- Phase 1 MVP - Derive macro for contract-aware random generation
+- Contract composition with And/Or support
+- Full struct support with per-field contracts
+- Enum support with uniform variant selection
+- Collection support with VecGenerator
+- Rand trait architecture + unit struct support
+- Third-party type support (String, chrono, jiff, time)
+- Paradigm integration (Select, Survey, Affirm)
+- Add default "full" feature bundle
+- Add Rand implementations for UUID, URL, PathBuf
+
+### Documentation
+
+- Complete README rewrite - tutorial-driven approach
+- Add comprehensive Requirements and Constraints section
+- Add comprehensive rmcp tool router integration guide
+- Fix generator checklist to reflect 100% coverage
+
 ### Refactor
 
 - Consolidate derive macros into single crate
