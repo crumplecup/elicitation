@@ -549,11 +549,16 @@ dependencies = [
 name = "elicitation_derive_rand"
 version = "0.6.10"
 dependencies = [
+ "chrono",
  "elicitation",
  "elicitation_rand",
+ "jiff",
  "proc-macro2",
  "quote",
  "syn",
+ "time",
+ "url",
+ "uuid",
 ]
 
 [[package]]
@@ -579,6 +584,8 @@ dependencies = [
  "serde",
  "time",
  "tokio",
+ "url",
+ "uuid",
 ]
 
 [[package]]

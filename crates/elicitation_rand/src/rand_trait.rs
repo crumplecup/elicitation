@@ -164,9 +164,6 @@ mod chrono_impls {
     }
 }
 
-#[cfg(feature = "chrono")]
-pub use chrono_impls::*;
-
 // Jiff datetime types
 #[cfg(feature = "jiff")]
 mod jiff_impls {
@@ -186,9 +183,6 @@ mod jiff_impls {
         }
     }
 }
-
-#[cfg(feature = "jiff")]
-pub use jiff_impls::*;
 
 // Time datetime types
 #[cfg(feature = "time")]
@@ -211,5 +205,125 @@ mod time_impls {
     }
 }
 
-#[cfg(feature = "time")]
-pub use time_impls::*;
+// UUID types
+#[cfg(feature = "uuid")]
+mod uuid_impls {
+    use super::*;
+    use uuid::Uuid;
+    
+    impl Rand for Uuid {
+        type Gen = crate::generators::MapGenerator<RandomGenerator<u128>, fn(u128) -> Uuid>;
+        
+        fn rand_generator(seed: u64) -> Self::Gen {
+            crate::generators::MapGenerator::new(
+                RandomGenerator::with_seed(seed),
+                |random: u128| Uuid::from_u128(random)
+            )
+        }
+    }
+}
+
+// URL types
+#[cfg(feature = "url")]
+mod url_impls {
+    use super::*;
+    use url::Url;
+    
+    impl Rand for Url {
+        type Gen = crate::generators::MapGenerator<RandomGenerator<u64>, fn(u64) -> Url>;
+        
+        fn rand_generator(seed: u64) -> Self::Gen {
+            use rand::Rng;
+            use rand::SeedableRng;
+            use rand_chacha::ChaCha8Rng;
+            
+            crate::generators::MapGenerator::new(
+                RandomGenerator::with_seed(seed),
+                |url_seed: u64| {
+                    let mut rng = ChaCha8Rng::seed_from_u64(url_seed);
+                    
+                    // Generate random valid URL
+                    let schemes = ["http", "https", "ftp"];
+                    let scheme = schemes[rng.gen_range(0..schemes.len())];
+                    
+                    let hosts = ["example.com", "test.org", "demo.net", "api.io"];
+                    let host = hosts[rng.gen_range(0..hosts.len())];
+                    
+                    let port = if rng.gen_bool(0.3) {
+                        format!(":{}", rng.gen_range(8000..9000))
+                    } else {
+                        String::new()
+                    };
+                    
+                    let path_len = rng.gen_range(0..4);
+                    let path = (0..path_len)
+                        .map(|_| {
+                            let segment_len = rng.gen_range(3..8);
+                            (0..segment_len)
+                                .map(|_| {
+                                    let c = rng.gen_range(b'a'..=b'z');
+                                    c as char
+                                })
+                                .collect::<String>()
+                        })
+                        .collect::<Vec<_>>()
+                        .join("/");
+                    
+                    let path_str = if path.is_empty() {
+                        String::new()
+                    } else {
+                        format!("/{}", path)
+                    };
+                    
+                    let url_str = format!("{}://{}{}{}", scheme, host, port, path_str);
+                    
+                    Url::parse(&url_str).unwrap_or_else(|_| {
+                        Url::parse("http://example.com").unwrap()
+                    })
+                }
+            )
+        }
+    }
+}
+
+// PathBuf (always available - stdlib)
+mod pathbuf_impls {
+    use super::*;
+    use std::path::PathBuf;
+    
+    impl Rand for PathBuf {
+        type Gen = crate::generators::MapGenerator<RandomGenerator<u64>, fn(u64) -> PathBuf>;
+        
+        fn rand_generator(seed: u64) -> Self::Gen {
+            use rand::Rng;
+            use rand::SeedableRng;
+            use rand_chacha::ChaCha8Rng;
+            
+            crate::generators::MapGenerator::new(
+                RandomGenerator::with_seed(seed),
+                |path_seed: u64| {
+                    let mut rng = ChaCha8Rng::seed_from_u64(path_seed);
+                    
+                    // Generate random path with 1-4 components
+                    let depth = rng.gen_range(1..=4);
+                    let components: Vec<String> = (0..depth)
+                        .map(|_| {
+                            let len = rng.gen_range(4..10);
+                            (0..len)
+                                .map(|_| {
+                                    let c = rng.gen_range(b'a'..=b'z');
+                                    c as char
+                                })
+                                .collect()
+                        })
+                        .collect();
+                    
+                    // Unix-style path (works on all platforms)
+                    let path_str = format!("/{}", components.join("/"));
+                    PathBuf::from(path_str)
+                }
+            )
+        }
+    }
+}
+
