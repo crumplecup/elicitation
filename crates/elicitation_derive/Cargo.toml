@@ -25,8 +25,8 @@ quote = { workspace = true }
 proc-macro2 = { workspace = true }
 
 [dev-dependencies]
-elicitation = { workspace = true }
-elicitation_rand = { workspace = true }
+elicitation = { path = "../elicitation" }
+elicitation_rand = { path = "../elicitation_rand" }
 tracing = { workspace = true }
 rmcp = { workspace = true }
 serde_json = { workspace = true }

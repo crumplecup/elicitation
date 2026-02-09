@@ -10,7 +10,7 @@ keywords = ["elicitation", "rand", "random", "generator", "testing"]
 categories = ["development-tools::testing", "game-development"]
 
 [dependencies]
-elicitation = { workspace = true, features = ["rand"] }
+elicitation = { path = "../elicitation", features = ["rand"] }
 rand = { workspace = true }
 rand_chacha = { workspace = true }
 chrono = { workspace = true, optional = true }
