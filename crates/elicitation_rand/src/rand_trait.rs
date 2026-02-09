@@ -64,10 +64,8 @@ impl_rand_standard!(
 // Manual implementations for platform-dependent sizes
 // StandardUniform doesn't support usize/isize, so we cast from fixed sizes
 impl Rand for usize {
-    type Gen = crate::generators::MapGenerator<
-        crate::generators::RandomGenerator<u64>,
-        fn(u64) -> usize,
-    >;
+    type Gen =
+        crate::generators::MapGenerator<crate::generators::RandomGenerator<u64>, fn(u64) -> usize>;
 
     fn rand_generator(seed: u64) -> Self::Gen {
         crate::generators::MapGenerator::new(
@@ -78,10 +76,8 @@ impl Rand for usize {
 }
 
 impl Rand for isize {
-    type Gen = crate::generators::MapGenerator<
-        crate::generators::RandomGenerator<i64>,
-        fn(i64) -> isize,
-    >;
+    type Gen =
+        crate::generators::MapGenerator<crate::generators::RandomGenerator<i64>, fn(i64) -> isize>;
 
     fn rand_generator(seed: u64) -> Self::Gen {
         crate::generators::MapGenerator::new(

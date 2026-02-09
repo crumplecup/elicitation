@@ -4,10 +4,10 @@
 //! beyond the standard uniform distribution.
 
 use elicitation::Generator;
-use rand::distr::{Distribution, Uniform};
-use rand::distr::weighted::WeightedIndex;
-use rand::rngs::StdRng;
 use rand::SeedableRng;
+use rand::distr::weighted::WeightedIndex;
+use rand::distr::{Distribution, Uniform};
+use rand::rngs::StdRng;
 use std::cell::RefCell;
 
 // ============================================================================
@@ -362,11 +362,14 @@ mod tests {
 
     #[test]
     fn test_weighted_generator_distribution() {
-        let generator = WeightedGenerator::with_seed(42, vec![("common", 90), ("rare", 10)]).unwrap();
+        let generator =
+            WeightedGenerator::with_seed(42, vec![("common", 90), ("rare", 10)]).unwrap();
 
         // Generate many samples, verify distribution roughly matches weights
         let count = 10_000;
-        let common_count = (0..count).filter(|_| generator.generate() == "common").count();
+        let common_count = (0..count)
+            .filter(|_| generator.generate() == "common")
+            .count();
 
         let common_pct = (common_count as f64 / count as f64) * 100.0;
 
