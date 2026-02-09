@@ -39,7 +39,6 @@ pub trait Rand: Sized {
 
 // Implementations for primitive types
 use crate::generators::RandomGenerator;
-use rand::distributions::Standard;
 
 /// Macro to implement Rand for types with Standard distribution.
 macro_rules! impl_rand_standard {

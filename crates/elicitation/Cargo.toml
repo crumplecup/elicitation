@@ -64,7 +64,11 @@ uuid = { workspace = true }
 criterion = { workspace = true }
 
 [features]
-default = []
+default = ["full"]
+
+# Full feature bundle - all third-party support + rand
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand"]
+
 # Feature for tests that call real API (rate-limited)
 api = []
 # Enable serde_json::Value elicitation
@@ -96,8 +100,8 @@ kani-verifier = []
 # CLI and verification runner
 cli = ["clap", "csv", "chrono"]
 
-# Development (all optional features)
-dev = ["chrono", "time", "jiff", "uuid", "url", "regex", "cli"]
+# Development (all optional features + CLI)
+dev = ["full", "cli"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(prusti)', 'cfg(creusot)', 'cfg(verus)'] }

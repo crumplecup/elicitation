@@ -954,17 +954,46 @@ Plus: **Any custom type** via `#[derive(Elicit)]`
 
 ### Feature Flags
 
+**Default:** All third-party support enabled by default via the `full` feature.
+
 ```toml
 [dependencies]
-elicitation = { version = "0.6", features = [
+# Default: full feature bundle (all third-party support + rand)
+elicitation = "0.6"
+
+# Minimal build (opt-out of defaults)
+elicitation = { version = "0.6", default-features = false }
+
+# Custom feature selection
+elicitation = { version = "0.6", default-features = false, features = [
     "chrono",         # chrono datetime types
     "time",           # time datetime types
     "jiff",           # jiff datetime types
+    "uuid",           # UUID support
+    "url",            # URL support
+    "regex",          # Regex support
+    "rand",           # Random generation
     "serde_json",     # JSON value elicitation
-    "contracts",      # Contract system
-    "verification",   # Kani formal verification
 ] }
 ```
+
+**Available features:**
+
+- `full` (default) - All third-party support + rand
+- `chrono` - `DateTime<Utc>`, `NaiveDateTime`
+- `time` - `OffsetDateTime`
+- `jiff` - `Timestamp`
+- `uuid` - `Uuid`
+- `url` - `Url`
+- `regex` - `Regex`
+- `rand` - Random generation (see Random Generation section)
+- `serde_json` - `serde_json::Value`
+- `verification` - Contract system
+- `verify-kani` - Kani formal verification
+- `verify-creusot` - Creusot verification
+- `verify-prusti` - Prusti verification
+- `cli` - CLI tools
+- `dev` - All features + CLI
 
 ### JSON Schema Generation
 
