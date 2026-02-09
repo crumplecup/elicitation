@@ -105,6 +105,9 @@ fn generate_newtype_impl(
                 )
             }
         }
+        
+        // Note: Rand trait implementation would require concrete associated type
+        // Users can call random_generator() directly for now
     })
 }
 
