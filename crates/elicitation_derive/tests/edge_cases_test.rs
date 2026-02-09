@@ -63,12 +63,12 @@ fn test_empty_named_struct() {
 #[test]
 fn test_unit_struct_deterministic() {
     let seed = 42;
-    let gen1 = Marker::random_generator(seed);
-    let gen2 = Marker::random_generator(seed);
+    let generator1 = Marker::random_generator(seed);
+    let generator2 = Marker::random_generator(seed);
 
     // Even though there's no randomness, API should be consistent
     for _ in 0..5 {
-        assert_eq!(gen1.generate(), gen2.generate());
+        assert_eq!(generator1.generate(), generator2.generate());
     }
 }
 

@@ -60,8 +60,8 @@ pub use elicitation::rand_rng;
 pub use elicitation::Generator;
 
 // Re-export common types
-pub use rand::rngs::StdRng;
 pub use rand::SeedableRng;
+pub use rand::rngs::StdRng;
 pub use rand_chacha::ChaCha8Rng;
 
 // Phase 2 - Basic generators

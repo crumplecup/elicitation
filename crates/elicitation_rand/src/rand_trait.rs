@@ -56,9 +56,36 @@ macro_rules! impl_rand_standard {
 }
 
 // Implement for all standard primitive types
+// Note: usize/isize excluded - not supported by StandardUniform in rand 0.10
 impl_rand_standard!(
-    u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize, f32, f64, bool, char
+    u8, u16, u32, u64, u128, i8, i16, i32, i64, i128, f32, f64, bool, char
 );
+
+// Manual implementations for platform-dependent sizes
+// StandardUniform doesn't support usize/isize, so we cast from fixed sizes
+impl Rand for usize {
+    type Gen =
+        crate::generators::MapGenerator<crate::generators::RandomGenerator<u64>, fn(u64) -> usize>;
+
+    fn rand_generator(seed: u64) -> Self::Gen {
+        crate::generators::MapGenerator::new(
+            crate::generators::RandomGenerator::with_seed(seed),
+            |x| x as usize,
+        )
+    }
+}
+
+impl Rand for isize {
+    type Gen =
+        crate::generators::MapGenerator<crate::generators::RandomGenerator<i64>, fn(i64) -> isize>;
+
+    fn rand_generator(seed: u64) -> Self::Gen {
+        crate::generators::MapGenerator::new(
+            crate::generators::RandomGenerator::with_seed(seed),
+            |x| x as isize,
+        )
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -67,21 +94,21 @@ mod tests {
 
     #[test]
     fn test_rand_u32() {
-        let gen = u32::rand_generator(42);
-        let _value = gen.generate();
+        let generator = u32::rand_generator(42);
+        let _value = generator.generate();
         // Just verify it compiles and generates
     }
 
     #[test]
     fn test_rand_bool() {
-        let gen = bool::rand_generator(123);
-        let _value = gen.generate();
+        let generator = bool::rand_generator(123);
+        let _value = generator.generate();
     }
 
     #[test]
     fn test_rand_string() {
-        let gen = String::rand_generator(42);
-        let s = gen.generate();
+        let generator = String::rand_generator(42);
+        let s = generator.generate();
 
         // Should generate lowercase letters
         assert!(s.len() < 32);
@@ -92,31 +119,31 @@ mod tests {
 
     #[test]
     fn test_rand_string_deterministic() {
-        let gen1 = String::rand_generator(42);
-        let gen2 = String::rand_generator(42);
+        let generator1 = String::rand_generator(42);
+        let generator2 = String::rand_generator(42);
 
-        assert_eq!(gen1.generate(), gen2.generate());
+        assert_eq!(generator1.generate(), generator2.generate());
     }
 }
 
 // String implementation - generates random alphanumeric strings
 impl Rand for String {
-    type Gen = crate::generators::MapGenerator<RandomGenerator<usize>, fn(usize) -> String>;
+    type Gen = crate::generators::MapGenerator<RandomGenerator<u64>, fn(u64) -> String>;
 
     fn rand_generator(seed: u64) -> Self::Gen {
-        use rand::Rng;
+        use rand::RngExt;
         use rand::SeedableRng;
         use rand_chacha::ChaCha8Rng;
 
         crate::generators::MapGenerator::new(
             RandomGenerator::with_seed(seed),
-            move |length_seed: usize| {
-                let mut rng = ChaCha8Rng::seed_from_u64(length_seed as u64);
-                let length = rng.gen_range(0..32); // Default: 0-32 chars
+            move |length_seed: u64| {
+                let mut rng = ChaCha8Rng::seed_from_u64(length_seed);
+                let length = rng.random_range(0..32); // Default: 0-32 chars
 
                 (0..length)
                     .map(|_| {
-                        let c = rng.gen_range(b'a'..=b'z');
+                        let c = rng.random_range(b'a'..=b'z');
                         c as char
                     })
                     .collect()
@@ -231,7 +258,7 @@ mod url_impls {
         type Gen = crate::generators::MapGenerator<RandomGenerator<u64>, fn(u64) -> Url>;
 
         fn rand_generator(seed: u64) -> Self::Gen {
-            use rand::Rng;
+            use rand::RngExt;
             use rand::SeedableRng;
             use rand_chacha::ChaCha8Rng;
 
@@ -242,24 +269,24 @@ mod url_impls {
 
                     // Generate random valid URL
                     let schemes = ["http", "https", "ftp"];
-                    let scheme = schemes[rng.gen_range(0..schemes.len())];
+                    let scheme = schemes[rng.random_range(0..schemes.len())];
 
                     let hosts = ["example.com", "test.org", "demo.net", "api.io"];
-                    let host = hosts[rng.gen_range(0..hosts.len())];
+                    let host = hosts[rng.random_range(0..hosts.len())];
 
-                    let port = if rng.gen_bool(0.3) {
-                        format!(":{}", rng.gen_range(8000..9000))
+                    let port = if rng.random_bool(0.3) {
+                        format!(":{}", rng.random_range(8000..9000))
                     } else {
                         String::new()
                     };
 
-                    let path_len = rng.gen_range(0..4);
+                    let path_len = rng.random_range(0..4);
                     let path = (0..path_len)
                         .map(|_| {
-                            let segment_len = rng.gen_range(3..8);
+                            let segment_len = rng.random_range(3..8);
                             (0..segment_len)
                                 .map(|_| {
-                                    let c = rng.gen_range(b'a'..=b'z');
+                                    let c = rng.random_range(b'a'..=b'z');
                                     c as char
                                 })
                                 .collect::<String>()
@@ -292,7 +319,7 @@ mod pathbuf_impls {
         type Gen = crate::generators::MapGenerator<RandomGenerator<u64>, fn(u64) -> PathBuf>;
 
         fn rand_generator(seed: u64) -> Self::Gen {
-            use rand::Rng;
+            use rand::RngExt;
             use rand::SeedableRng;
             use rand_chacha::ChaCha8Rng;
 
@@ -302,13 +329,13 @@ mod pathbuf_impls {
                     let mut rng = ChaCha8Rng::seed_from_u64(path_seed);
 
                     // Generate random path with 1-4 components
-                    let depth = rng.gen_range(1..=4);
+                    let depth = rng.random_range(1..=4);
                     let components: Vec<String> = (0..depth)
                         .map(|_| {
-                            let len = rng.gen_range(4..10);
+                            let len = rng.random_range(4..10);
                             (0..len)
                                 .map(|_| {
-                                    let c = rng.gen_range(b'a'..=b'z');
+                                    let c = rng.random_range(b'a'..=b'z');
                                     c as char
                                 })
                                 .collect()

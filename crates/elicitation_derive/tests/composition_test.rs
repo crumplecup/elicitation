@@ -59,11 +59,11 @@ fn test_or_small_or_large() {
 #[test]
 fn test_composition_deterministic() {
     let seed = 42;
-    let gen1 = PositiveEven::random_generator(seed);
-    let gen2 = PositiveEven::random_generator(seed);
+    let generator1 = PositiveEven::random_generator(seed);
+    let generator2 = PositiveEven::random_generator(seed);
 
     // Same seed should produce same sequence even with composition
     for _ in 0..10 {
-        assert_eq!(gen1.generate(), gen2.generate());
+        assert_eq!(generator1.generate(), generator2.generate());
     }
 }

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Basic trait tools macro with explicit method list
+- Add async_trait support for trait tools macro
 - Add UUID generator Kani proofs - Phase 1 complete
 - Register UUID generator proofs in verification runner
 - Add IoError and JsonError generator Kani proofs - Phase 2 complete
@@ -32,24 +34,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
+- Add guide for tool_router warnings
+- Add comprehensive guide for elicit_trait_tools_router macro
 - Complete README rewrite - tutorial-driven approach
 - Add comprehensive Requirements and Constraints section
 - Add comprehensive rmcp tool router integration guide
 - Fix generator checklist to reflect 100% coverage
+- Update CHANGELOG.md for v0.6.11
+
+### Fixed
+
+- Migrate elicitation_rand to use workspace dependencies
+- Rename gen variables to generator
+- Change gen_bool to random_bool for rand 0.10
+
+### Miscellaneous
+
+- Bump version to 0.6.9 and format code
+- Bump version to 0.6.10
+- Allow manual_async_fn lint in trait tools test
+- Run cargo fmt
 
 ### Refactor
 
 - Consolidate derive macros into single crate
 
-## [Unreleased]
+### Wip
+
+- Start TDD implementation of elicit_trait_tools_router macro
+
+## [0.6.8] - 2026-02-07
+
+### Fixed
+
+- Add ElicitToolOutput wrapper for MCP enum compatibility
+- Remove unused imports from enum test
+
+### Miscellaneous
+
+- Increment patch version
+
+## [0.6.7] - 2026-02-07
 
 ### Added
 
 - Add Elicit trait for feature-gated types
 
+### Documentation
+
+- Add tool composition example and update changelog
+
 ### Fixed
 
 - Rmcp API integration for elicit_tools proc macro
+
+### Miscellaneous
+
+- Bump version to 0.6.7
+- Lockfile checkin
 
 ### Refactor
 
@@ -60,154 +102,124 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Verify all feature-gated types have elicit_checked()
 - Prove tool composition works - regular + elicit tools together
 
-## [Unreleased]
-
-### Added
-
-- **Tool Composition:** Full support for mixing elicitation tools with regular rmcp tools
-  - Users can freely combine `#[elicit_tools(...)]` with `#[tool]` methods in same impl block
-  - Example and documentation in `examples/tool_composition.{rs,md}`
-  - Systematic tests proving composition works (`composition_systematic_test.rs`)
-
-### Changed
-
-- **`elicit_checked()` method:** Now a default method on `Elicitation` trait
-  - Automatically available on ALL 143+ types (primitives, collections, feature-gated, user types)
-  - No separate trait needed
-  - No manual implementations required
-  - Net reduction of ~100 lines of code
-
-### Fixed
-
-- **Feature-gated types:** Full server-side support for all feature-gated types
-  - url::Url, uuid::Uuid + UuidGenerationMode  
-  - chrono datetime types (DateTime<Utc>, DateTime<FixedOffset>, NaiveDateTime)
-  - time datetime types (Instant, OffsetDateTime, PrimitiveDateTime)
-  - jiff datetime types (Timestamp, Zoned, CivilDateTime)
-  - serde_json::Value
-
-### Testing
-
-- ✅ 502 tests passing (gained 10 feature tests + 5 composition tests)
-- ✅ Comprehensive feature-gated type coverage verification
-- ✅ Systematic tool composition tests (baseline → full composition)
-
 ## [0.6.6] - 2026-02-06
 
 ### Added
 
-- **Proc macro attribute `#[elicit_tools(...)]`:** Generates elicitation methods that integrate with rmcp's `#[tool_router]`
-  - Solves macro expansion ordering issue (declarative macros expand after attribute macros)
-  - Directly implements rmcp's `#[tool]` transformation logic
-  - Generates `*_tool_attr()` metadata functions
-  - Transforms async methods to sync returning `Pin<Box<dyn Future>>`
-  - Test: `elicit_tools_proc_macro_test.rs` (3 tests)
-- **Documentation:** BOTTICELLI_INTEGRATION.md - Complete integration guide with troubleshooting
-- **Documentation:** MACRO_ORDERING_ISSUE.md - Technical details of the macro ordering problem and solution
+- Implement #[elicit_tools(...)] proc macro attribute
 
-### Changed
+### Documentation
 
-- **`elicit_tools` proc macro:** Completely rewritten from declarative macro to proc macro attribute
-  - Usage: `#[elicit_tools(Type1, Type2)]` BEFORE `#[tool_router]`
-  - No longer depends on `#[::rmcp::tool]` (proc macros can't apply other proc macros)
-  - Generates complete tool implementation inline
+- Update CHANGELOG.md for 0.6.6 release
 
-### Technical Details
+### Miscellaneous
 
-- Studied rmcp-macros-0.14.0/src/tool.rs and adapted its logic:
-  1. Tool metadata generation (lines 110-164 from rmcp)
-  2. Async-to-Pin transformation (lines 295-326 from rmcp)
-- Satisfies rmcp trait bounds: `CallToolHandler<S, A>`, `IntoToolRoute<S, A>`
-- Compatible with `Peer<RoleServer>` via `FromContextPart` trait
-
-### Testing
-
-- ✅ All 404 tests passing (gained 3 proc macro tests)
-- ✅ Zero warnings, zero clippy warnings
-- ✅ All feature combinations compile (check-features)
-- ✅ Security audit clean (paste unmaintained warning only)
+- Bump version to 0.6.6
 
 ## [0.6.5] - 2026-02-06
 
 ### Added
 
-- **Server-side elicitation:** Complete support for MCP server contexts
-  - `ElicitServer` wrapper for `Peer<RoleServer>`
-  - `ElicitCommunicator` trait abstraction for unified client/server support
-  - `elicit_router!` macro for tool aggregation
-  - All 143+ type implementations work in both client and server contexts
-- **Unified trait system:** Single `Elicitation` trait implementation works for both client and server
-- **Tool registration:** Generated `elicit_checked()` methods now properly integrate with rmcp's `#[tool_router]`
-- **Usage documentation:** SERVER_SIDE_USAGE.md with comprehensive examples
-
-### Changed
-
-- **Breaking:** `Elicitation::elicit()` now generic over `ElicitCommunicator` instead of hardcoded `ElicitClient`
-  - Migration: Change `fn elicit(client: &ElicitClient)` to `fn elicit<C: ElicitCommunicator>(communicator: &C)`
-  - Generated code from `#[derive(Elicit)]` automatically updated
-- **Breaking:** `elicit_checked()` signature changed from `Arc<Peer<RoleClient>>` to `Peer<RoleServer>`
-  - Reflects server-side architecture (tools are served BY servers)
-  - Tool calls now delegate to trait: `Self::elicit(&server).await`
-- **Derive macros:** Updated to generate ElicitCommunicator-compatible code
-
-### Architecture
-
-- Server-side tools use `peer.create_message()` for client communication
-- Client-side tools use `peer.call_tool()` for MCP tool calls  
-- `StyleContext` shared between client and server implementations
-- Zero duplication: same trait impls work everywhere
+- Add elicit_tools! macro for embedding in existing impl blocks
 
 ### Documentation
 
-- Add SERVER_SIDE_ELICITATION_PLAN.md - implementation roadmap
-- Add UNIFIED_ELICITATION_TRAIT_PLAN.md - trait unification design
-- Add SERVER_SIDE_USAGE.md - comprehensive usage guide
-- Update all planning docs with completed status
-
-### Testing
-
-- All 399 library tests passing
-- Router aggregation tests working
-- Zero compilation errors or clippy warnings
-
-## [0.6.1] - 2026-02-05
+- Document JsonSchema requirement for Elicit derive
+- Add integration guide for botticelli
 
 ### Fixed
 
-- **Downstream testing support:** Removed `cfg_attr(not(test), rmcp::tool)` guard that prevented downstream users from testing their elicitation-based code
-- Added `rmcp` and `serde_json` as dev-dependencies to support internal tests without disabling tool registration
+- Add &self to elicit_router methods for rmcp compatibility
+- Update canary test for new method signature
+- Silence dead_code warnings in test structs
+- Update time to 0.3.47 (RUSTSEC-2026-0009)
 
-### Changed
+### Miscellaneous
 
-- Tool registration now enabled in all build modes (production + test) for consistent behavior
+- Bump version to 0.6.5
+- Remove outdated phase3_test example
+- Remove outdated phase4/phase5 examples
 
-## [0.6.0] - 2026-02-05
+## [0.6.4] - 2026-02-06
 
-### ⚠️ BREAKING CHANGES
+### Fixed
 
-**Method Generation:**
-- Changed from standalone `elicit_typename()` functions to `TypeName::elicit_checked()` methods
-- Follows Rust's `checked_*` idiom for verified operations
-- Migration: Replace `elicit_config(client)` with `Config::elicit_checked(client)`
-- See MIGRATION_0.5_to_0.6.md for detailed migration guide
+- Replace all client references with communicator in manual implementations
+- Remove unused imports (clippy --fix)
+- Replace all client references with communicator (0.6.4)
+
+### Miscellaneous
+
+- Bump version to 0.6.4
+
+## [0.6.3] - 2026-02-06
 
 ### Added
 
-- **elicit_checked() methods:** Generated on all #[derive(Elicit)] types
-- **Automatic tool discovery:** Via inventory crate for runtime tool collection
-- **ElicitToolDescriptor:** Metadata for registered elicit tools
-- **collect_all_elicit_tools():** Function to collect all registered tools at runtime
+- Add Agent vs Human style variants to String
+
+### Fixed
+
+- Update derive macro parameter and documentation
+- Remove unused imports and add allow(dead_code) for test struct
+
+## [0.6.2] - 2026-02-06
+
+### Added
+
+- Server-side rmcp tool integration architecture
+- Add ElicitServer for unified client/server support
+- Implement ElicitCommunicator trait for unified client/server support
+- Complete derive macro integration with ElicitCommunicator
 
 ### Documentation
 
-- Add MIGRATION_0.5_to_0.6.md with detailed migration steps
-- Add ELICIT_METHOD_GENERATION_PROPOSAL.md explaining architecture
-- Update tool_gen.rs documentation for new method generation
+- Add server-side elicitation implementation plan
+- Add unified elicitation trait planning document
+- Add comprehensive server-side elicitation documentation
+- Add merge summary for server-side elicitation
 
-### Infrastructure
+### Fixed
+
+- Remove .peer() call in enum_impl
+- Enum_impl derive macro .peer() call
+
+### Miscellaneous
+
+- Increment version to 0.6.2
+
+## [0.6.1] - 2026-02-05
+
+### Documentation
+
+- Update CHANGELOG for 0.6.1 release
+
+### Fixed
+
+- Remove cfg_attr test guard to enable downstream testing
+
+### Miscellaneous
+
+- Bump version to 0.6.1
+
+## [0.6.0] - 2026-02-05
+
+### Added
+
+- Generate elicit_checked() methods
+- Add inventory-based automatic tool discovery
+
+### Documentation
+
+- Update README and CHANGELOG for 0.6.0 API
+
+### Miscellaneous
+
+- Update bytes to 1.11.1 to fix RUSTSEC-2026-0007
+
+### Refactor
 
 - Centralize all dependencies in workspace Cargo.toml
-- Update bytes to 1.11.1 (security fix for RUSTSEC-2026-0007)
 
 ## [0.5.0] - 2026-02-05
 
@@ -218,16 +230,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 
 - Add Elicit tool attribute patch documentation
+- Update CHANGELOG for 0.5.0 release
+- Add elicit_checked() method generation proposal
 
 ### Fixed
 
 - Use cfg_attr for rmcp::tool to support test builds
+- Clean up Arc<Peer> migration issues
 
 ### Miscellaneous
 
 - [**BREAKING**] Bump version to 0.5.0
+- Update Cargo.lock
 
-## [Unreleased]
+## [0.4.8] - 2026-02-05
+
+### Added
+
+- Add Elicitation implementation for unit type ()
+- Add SystemTime Kani proofs with cloud assumptions
+
+### Documentation
+
+- Fix missing documentation warnings
+
+### Fixed
+
+- Remove unused verify-* features causing cfg warnings
+- Resolve type complexity and doc warnings
+
+### Miscellaneous
+
+- Update version to 0.4.8
+
+### Testing
+
+- Add Kani proofs for unit type ()
+
+## [0.4.7] - 2026-02-04
 
 ### Added
 
@@ -249,6 +289,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add composition primitives vision document
 - Add Phase 1.4 - Comprehensive documentation
 - Phase 5 documentation and examples
+- Update CHANGELOG for v0.4.7 release
 
 ### Fixed
 
@@ -258,13 +299,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump version to 0.4.7 for contracts release
 
-## [Unreleased]
+## [0.4.6] - 2026-02-04
 
 ### Fixed
 
 - Remove verification code generation to eliminate warnings
 
-## [Unreleased]
+### Miscellaneous
+
+- Update changelog for 0.4.6
+- Update Cargo.lock for 0.4.6
+
+## [0.4.5] - 2026-02-03
 
 ### Added
 
@@ -289,7 +335,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Export datetime generators and fix doctest examples
 - Remove duplicate attributes and add missing impls
 
-## [Unreleased]
+### Miscellaneous
+
+- Bump version to 0.4.5 and update changelog
+- Update Cargo.lock for 0.4.5 release
+
+## [0.4.4] - 2026-02-03
 
 ### Added
 
@@ -412,6 +463,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Prusti verification tracking documentation
 - Document Prusti Edition 2024 incompatibility
 - Add comprehensive verifier status assessment
+- Update CHANGELOG for unreleased changes
 
 ### Fixed
 
@@ -458,11 +510,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix Creusot imports and add creusot-std dependency
 - Complete Verus setup and update justfile
 - Correct URL type names in urlbytes tests
+- Use path dependency for elicitation_derive tests
 
 ### Miscellaneous
 
 - Update creusot-contracts from 0.2 to 0.8
 - Resolve compilation warnings
+- Add description to elicitation_macros for crates.io
+- Release
 
 ### Refactor
 
@@ -488,29 +543,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Adding missing integer type exports
 
-## [Unreleased]
-
 ## [0.4.3] - 2026-01-19
 
 ### Fixed
 
-- Add missing integer type implementations: `i128`, `isize`, `u128`, `usize`
-- Fix documentation claiming support for types that weren't implemented
+- Add missing integer type implementations (i128, isize, u128, usize)
+
+### Miscellaneous
+
+- Release
 
 ## [0.4.2] - 2026-01-19
 
 ### Added
 
-- Add UUID elicitation support with `uuid` feature
-- Support parsing hyphenated UUID format
-- Support generating random UUIDs with 'generate' keyword
+- Add UUID elicitation support
+
+### Miscellaneous
+
+- Release
 
 ## [0.4.1] - 2026-01-19
 
 ### Documentation
 
-- Update README.md with current feature set and examples
-- Update all documentation to reflect 0.4.x release series
+- Fix CHANGELOG.md to reflect actual published version 0.4.0
+- Update documentation for 0.4.1 release
+
+### Miscellaneous
+
+- Release
 
 ## [0.4.0] - 2026-01-19
 
@@ -539,6 +601,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add custom_style example demonstrating ElicitationStyle
 - Update STYLE_SYSTEM_V2_PLAN with Phase 1-2 completion status
 - Mark all phases complete - Style System v2 ready for v0.3.0
+- Update CHANGELOG.md for 0.3.0 release
 
 ### Fixed
 
@@ -546,6 +609,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix example imports and styled struct derive
 - Add allow(dead_code) to test structs
 - Update release.toml to remove deprecated [workspace] section
+
+### Miscellaneous
+
+- Prepare for 0.3.0 release
+- Release
 
 ### Styling
 
@@ -565,355 +633,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Complete all datetime types with Style v2
 - Complete serde_json::Value with Style v2
 
-## [0.2.2] - 2026-01-19
-
-### Added - Revolutionary Style System 🎨
-
-- **Field-level style customization** via `#[prompt("text", style = "name")]` syntax
-  - Multiple prompt styles per field (e.g., "curt", "verbose", "wizard")
-  - Runtime style selection by LLM or user (just another Select elicitation!)
-  - Sensible fallback strategy: missing style prompts use default
-  - Generated style enum: `{StructName}ElicitStyle` with `Default` + collected styles
-  - Style selection is a state machine step - separates *what* to ask from *how* to ask
-- **Built-in ElicitationStyle trait** with 4 implementations:
-  - `DefaultStyle` - Standard prompts
-  - `CompactStyle` - Terse, minimal prompts
-  - `VerboseStyle` - Detailed, explanatory prompts
-  - `WizardStyle` - Step-by-step with progress tracking
-- **Inline elicitation** for String fields with custom styled prompts
-  - Complex types fall back to default elicit() (expanding in future versions)
-
-### Added - DateTime Support (3 Libraries!)
-
-- **chrono feature**: `DateTime<Utc>`, `DateTime<FixedOffset>`, `NaiveDateTime`
-- **time feature**: `OffsetDateTime`, `PrimitiveDateTime`
-- **jiff feature**: `Timestamp`, `Zoned`, `civil::DateTime`
-  - Jiff validates offset matches timezone (DST-aware!)
-- **Dual input methods**: ISO 8601 strings OR manual component entry
-  - Shared `DateTimeInputMethod` and `DateTimeComponents` patterns
-- **Comprehensive tests**: 11 chrono, 10 time, 13 jiff unit tests
-
-### Added - JSON Value Elicitation
-
-- **serde_json feature**: Full `serde_json::Value` support
-  - All JSON types: null, bool, number, string, array, object
-  - Recursive elicitation for nested arrays and objects
-  - Depth limit (10 levels) prevents infinite recursion
-  - Proper async recursion via `Box::pin` for futures
-- **Error handling**: `InvalidSelection`, `ParseError`, `RecursionDepthExceeded`
-
-### Changed
-
-- **derive macro**: Major refactoring for style system integration
-  - `FieldInfo` struct now includes `styled_prompts: HashMap<String, String>`
-  - Custom attribute parser for `#[prompt("text", style = "name")]` syntax
-  - Split simple vs styled implementation generation
-  - Fully qualified trait method calls (`<Self as Trait>::method()`)
-- **Workspace dependencies**: Added chrono, time, jiff as optional
-  - Cannot mark as optional at workspace level, must use package-level `optional = true`
-
-### Fixed
-
-- Clippy warnings in derive macro (option_as_ref_deref, unnecessary_closure)
-- Trait method resolution in generated code via fully qualified syntax
-- Orphaned code blocks from incomplete edits
-
-### Documentation
-
-- Updated README with comprehensive feature documentation
-- Added examples for all datetime libraries (3 sets)
-- Added JSON Value usage examples
-- Added detailed style system examples and explanation
-- Updated installation section with feature flags
-- Added "🆕" markers for v0.2.2 features
-
-### Testing
-
-- 3 style+derive integration tests
-- 8 datetime chrono integration tests (ignored, require MCP)
-- 6 datetime time integration tests (ignored, require MCP)
-- 8 datetime jiff integration tests (ignored, require MCP)
-- All existing tests still passing
-- Zero clippy warnings across workspace
-
 ## [0.2.1] - 2026-01-18
 
 ### Added
 
-- **Enum variants with fields** - `#[derive(Elicit)]` now supports:
-  - Tuple variants: `Variant(T1, T2, ...)`
-  - Struct variants: `Variant { field1: T1, field2: T2 }`
-  - Mixed enums with unit, tuple, and struct variants
-- Full tracing instrumentation for field elicitation
-- Support for nested enums (enum fields in variants)
-- Automatic recursive elicitation for complex field types
+- Migrate from pmcp to rmcp 0.12.0 SDK
+- Add enum variant field support (v0.2.1)
 
-### Changed
+### Documentation
 
-- Enhanced `Elicitation` implementation for enums:
-  - Two-phase elicitation: variant selection → field elicitation
-  - Each field type must implement `Elicitation` trait
-  - Error context preserved for field elicitation failures
-- Updated documentation with variant type examples
-- Enhanced error messages for invalid variant selections
+- Add publication enhancements and fix examples
 
-### Technical Details
+### Miscellaneous
 
-- New internal structures: `VariantInfo`, `VariantFields`, `FieldInfo`
-- Generated code includes full tracing spans with variant context
-- Variant field elicitation is sequential (tuple fields by index, struct fields by name)
-- Each field type's `Elicitation` impl handles its own prompting
+- Prepare v0.2.0 release with publication metadata
+- Update derive_more to v2
+- Update Rust edition to 2024
+- Enhance release workflow with git-cliff and cargo-release
 
-## [0.2.0] - 2025-12-29
+### Styling
 
-### Changed
+- Fix import ordering per rustfmt
 
-**BREAKING CHANGES**: Migration from pmcp to rmcp (official Rust MCP SDK)
-
-#### Core API Changes
-- **Client Type**: Changed from `pmcp::Client<T>` to `rmcp::service::Peer<RoleClient>`
-  - Removed generic transport parameter (simpler API)
-  - All `Elicitation::elicit` methods now use `&Peer<RoleClient>` instead of `&Client<T>`
-- **Client Creation**: New pattern using `ServiceExt::serve()`
-  ```rust
-  // Old (pmcp):
-  let transport = StdioTransport::new();
-  let client = pmcp::Client::new(transport);
-
-  // New (rmcp):
-  let client = ()
-      .serve(rmcp::transport::stdio(
-          tokio::io::stdin(),
-          tokio::io::stdout(),
-      ))
-      .await?;
-  ```
-
-#### Error Types
-- Added `RmcpError` wrapper for `rmcp::ErrorData`
-- Added `ServiceError` wrapper for `rmcp::service::ServiceError`
-- Removed `PmcpError` (replaced by `RmcpError`)
-- Updated `ElicitErrorKind` enum:
-  - Changed: `Mcp(PmcpError)` → `Rmcp(RmcpError)`
-  - Added: `Service(ServiceError)`
-
-#### Internal Changes
-- MCP tool parameter builders now return `Map<String, Value>` instead of `Value`
-- Content extraction updated for `Annotated<RawContent>` structure
-- All implementations updated across primitives, containers, and collections
-
-#### Dependencies
-- **Removed**: `pmcp = "1.4"` and 100+ transitive dependencies
-- **Added**: `rmcp = "0.12"` (official Rust MCP SDK)
-- Reduced dependency tree significantly
-
-### Migration Guide
-
-To upgrade from 0.1.0 to 0.2.0:
-
-1. **Update Cargo.toml**:
-   ```toml
-   [dependencies]
-   elicitation = "0.2"
-   rmcp = "0.12"  # Changed from pmcp = "1.4"
-   ```
-
-2. **Update imports**:
-   ```rust
-   // Remove:
-   use pmcp::StdioTransport;
-
-   // Add:
-   use rmcp::ServiceExt;
-   ```
-
-3. **Update client creation**:
-   ```rust
-   // Old:
-   let transport = StdioTransport::new();
-   let client = pmcp::Client::new(transport);
-
-   // New:
-   let client = ()
-       .serve(rmcp::transport::stdio(
-           tokio::io::stdin(),
-           tokio::io::stdout(),
-       ))
-       .await?;
-   ```
-
-4. **Update function signatures** (if you implemented `Elicitation` manually):
-   ```rust
-   // Old:
-   async fn elicit<T: pmcp::shared::transport::Transport>(
-       client: &pmcp::Client<T>,
-   ) -> ElicitResult<Self> { ... }
-
-   // New:
-   async fn elicit(
-       client: &rmcp::service::Peer<rmcp::service::RoleClient>,
-   ) -> ElicitResult<Self> { ... }
-   ```
-
-### Benefits
-- Official SDK support and maintenance from the MCP team
-- Cleaner API without generic type parameters
-- Better type safety with `Peer<RoleClient>`
-- Significantly reduced dependency tree
-- Improved performance and reliability
-
----
-
-## [0.1.0] - 2025-01-XX
+## [0.1.0] - 2025-12-28
 
 ### Added
 
-#### Core Traits and Derive Macros
-- `Elicitation` trait for type-safe conversational elicitation via MCP
-- `Prompt` trait for customizable prompt text
-- `#[derive(Elicit)]` proc macro for enums (Select paradigm)
-- `#[derive(Elicit)]` proc macro for structs (Survey paradigm)
-- `#[prompt("...")]` attribute for custom prompts (struct and field level)
-- `#[skip]` attribute for skipping fields during elicitation
+- Implement foundation for elicitation library
+- Implement primitive type elicitation
+- Implement container type elicitation
+- Implement derive macro for enums (Select pattern)
+- Implement derive macro for structs (Survey pattern)
+- Add standard library collection support (HashMap, BTreeMap, HashSet, BTreeSet)
+- Add VecDeque and LinkedList collection support
+- Add PathBuf filesystem path support
+- Add network type support (IP addresses and socket addresses)
+- Add Duration time duration support
+- Add Result<T, E> container support for success/failure outcomes
+- Add v0.3.0 advanced types (tuples, smart pointers, arrays)
 
-#### Interaction Paradigms
-- **Select** - Choose from finite enum variants
-- **Affirm** - Yes/no boolean confirmation
-- **Survey** - Multi-field struct elicitation
-- **Authorize** - Permission policies (trait only, implementation planned for v0.2.0)
+### Documentation
 
-#### Primitive Types
-- All signed integers: `i8`, `i16`, `i32`, `i64`, `i128`, `isize`
-- All unsigned integers: `u8`, `u16`, `u32`, `u64`, `u128`, `usize`
-- Floating point: `f32`, `f64`
-- Text and boolean: `String`, `bool`
-- Time duration: `std::time::Duration` (f64 seconds with validation)
-- Filesystem paths: `std::path::PathBuf`
-- Network types:
-  - `std::net::IpAddr` (IPv4 or IPv6 with string parsing)
-  - `std::net::Ipv4Addr` (IPv4 only)
-  - `std::net::Ipv6Addr` (IPv6 only)
-  - `std::net::SocketAddr` (IP + port)
-  - `std::net::SocketAddrV4` (IPv4 socket)
-  - `std::net::SocketAddrV6` (IPv6 socket)
+- Add planning documents for elicitation library
+- Add implementation plan for v0.1.0
+- Add comprehensive documentation and examples (Phase 6)
+- Add comprehensive roadmap for stdlib type support
+- Add MCP setup instructions and clarify client requirement
+- Update ROADMAP to use Elicitation trait name
+- Mark HashMap, BTreeMap, HashSet, BTreeSet as completed in ROADMAP
+- Add comprehensive validation roadmap and ecosystem analysis
+- Update ROADMAP with refined validation strategy (v0.4.0-0.6.0)
 
-#### Container Types
-- `Option<T>` - Optional value elicitation with affirm-then-elicit pattern
-- `Vec<T>` - Dynamic array with loop-based elicitation
-- `Result<T, E>` - Success/failure outcomes with variant selection
-- `[T; N]` - Fixed-size arrays using const generics (any size N)
-- Tuples from arity 1 to 12: `(T1)`, `(T1, T2)`, ..., `(T1, ..., T12)`
+### Miscellaneous
 
-#### Smart Pointers
-- `Box<T>` - Heap-allocated values
-- `Rc<T>` - Reference-counted shared ownership
-- `Arc<T>` - Atomically reference-counted thread-safe sharing
+- Add markdownlint config and fix linting issues
+- Update repository URL and authors in Cargo.toml
+- Prepare v0.1.0 release
 
-#### Collections
-- `HashMap<K, V>` - Hash-based key-value map with duplicate key handling
-- `BTreeMap<K, V>` - Ordered key-value map
-- `HashSet<T>` - Hash-based unique set with automatic deduplication
-- `BTreeSet<T>` - Ordered unique set
-- `VecDeque<T>` - Double-ended queue
-- `LinkedList<T>` - Doubly-linked list
+### Refactor
 
-#### Error Handling
-- `ElicitError` with location tracking (`#[track_caller]`)
-- `ElicitErrorKind` enum covering all error scenarios:
-  - `InvalidFormat` - Parsing/validation failures
-  - `OutOfRange` - Value outside valid bounds
-  - `InvalidOption` - Invalid enum selection
-  - `MissingField` - Required struct field missing
-  - `Cancelled` - User-initiated cancellation
-  - `Mcp` - MCP protocol errors (wraps `PmcpError`)
-  - `Json` - JSON serialization errors
-- Derived `Display` and `Error` implementations via `derive_more`
-- Automatic conversion from MCP and JSON errors
+- Apply arcgis error pattern for boilerplate reduction
+- Rename core trait to Elicitation, expose derive as Elicit
 
-#### MCP Integration
-- Full integration with `pmcp` crate (v1.4+)
-- Stdio transport support for Claude Desktop/CLI
-- Async-first design with tokio runtime
-- `Send` trait bounds for thread-safe elicitation
-
-#### Testing & Examples
-- 64 unit tests covering all type implementations
-- 8 integration tests for derive macros
-- 15 comprehensive examples:
-  - `simple_types.rs` - Basic primitive elicitation
-  - `enums.rs` - Select paradigm demonstration
-  - `structs.rs` - Survey paradigm with custom prompts
-  - `pathbuf.rs` - Filesystem path elicitation
-  - `network.rs` - IP address and socket elicitation
-  - `duration.rs` - Time duration elicitation
-  - `result.rs` - Success/failure outcome elicitation
-  - `collections.rs` - HashMap, HashSet, BTreeMap, BTreeSet examples
-  - `tuples.rs` - Tuple type elicitation
-  - `arrays.rs` - Fixed-size array elicitation
-  - `smart_pointers.rs` - Box, Rc, Arc examples
-  - `complex_survey.rs` - Deeply nested struct elicitation
-  - And more!
-
-#### Documentation
-- Comprehensive README with MCP setup guide
-- API documentation with doctests for all public items
-- ROADMAP.md outlining future enhancements (validation, advanced patterns)
-- Full tracing integration for observability
-
-### Infrastructure
-- Workspace structure with `elicitation` and `elicitation_derive` crates
-- Just-based development workflow with:
-  - `just check-all` - Complete verification suite
-  - `just test-api` - Feature-gated API tests
-  - `just pre-release` - Full CI pipeline
-  - `just audit` - Security vulnerability scanning
-  - `just dist-*` - Release management (cargo-dist)
-- Dual licensing: Apache-2.0 OR MIT
-- CI/CD ready with comprehensive testing
-- Zero unsafe code (`#![forbid(unsafe_code)]`)
-
-### Design Decisions
-- Never use `#[allow]` directives - fix root causes instead
-- All public functions instrumented with `#[tracing::instrument]`
-- Builder pattern required for all struct construction (no literals)
-- Crate-level exports only (`use crate::Type` not `use crate::module::Type`)
-- Tests in `tests/` directory, never inline `#[cfg(test)]` modules
-- derive_more for all `Display` and `Error` implementations
-
-### Dependencies
-- `rmcp = "0.12"` - Official Rust MCP SDK (changed from pmcp)
-- `tracing = "0.1"` - Structured logging
-- `tokio = "1"` - Async runtime
-- `derive_more = "1"` - Derive utilities
-- `derive-getters = "0.5"` - Field accessors
-- `serde = "1"` - Serialization (MCP protocol)
-
-### Compatibility
-- **Rust Version**: 1.70+ (2021 edition)
-- **MCP Clients**: Claude Desktop, Claude CLI
-- **Platforms**: All platforms supported by Rust and rmcp
-
----
-
-## [Unreleased]
-
-### Planned for v0.2.0
-- Attribute-based validation (`#[validate(...)]`)
-- Integration with `validator` crate
-- Filesystem validators (path_exists, is_file, is_directory, etc.)
-- Email, URL, phone number validation
-- Range and length constraints
-- Custom validator functions
-- Validation error messages with retry logic
-
-### Planned for v0.3.0+
-- Conditional field elicitation (`#[elicit_if(...)]`)
-- Multi-select enum support
-- Ranked choice paradigm
-- Dynamic form generation
-- Cross-field validation
-- Interactive features (pending MCP protocol enhancements)
-
-[0.2.0]: https://github.com/crumplecup/elicitation/releases/tag/v0.2.0
-[0.1.0]: https://github.com/crumplecup/elicitation/releases/tag/v0.1.0
-[Unreleased]: https://github.com/crumplecup/elicitation/compare/v0.2.0...HEAD
+<!-- generated by git-cliff -->
