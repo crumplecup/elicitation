@@ -27,6 +27,7 @@ unexpected_cfgs = { level = "warn", check-cfg = [
 elicitation = { path = "crates/elicitation", version = "0.6.11" }
 elicitation_derive = { path = "crates/elicitation_derive", version = "0.6.11" }
 elicitation_macros = { path = "crates/elicitation_macros", version = "0.6.11" }
+elicitation_rand = { path = "crates/elicitation_rand", version = "0.6.11" }
 
 
 # MCP client
@@ -90,6 +91,7 @@ regex = "1.12"
 # Verification libraries
 creusot-std = { version = "0.9.0" }
 prusti-contracts = { version = "0.2" }
+kani-verifier = { version = "0.57" }
 
 # Dev dependencies
 tokio-test = "0.4"

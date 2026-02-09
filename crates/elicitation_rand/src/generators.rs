@@ -4,13 +4,13 @@
 //! values using the `rand` crate's distribution system.
 
 use elicitation::Generator;
-use rand::distributions::{Distribution, Standard};
+use rand::distr::{Distribution, StandardUniform};
 use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::{RngExt, SeedableRng};
 use std::cell::RefCell;
 use std::marker::PhantomData;
 
-/// Generic random generator for types implementing `Distribution<Standard>`.
+/// Generic random generator for types implementing `Distribution<StandardUniform>`.
 ///
 /// This generator wraps an RNG and produces random values of type `T` on
 /// demand. It's useful for generating test data, game content, or any
@@ -37,8 +37,8 @@ use std::marker::PhantomData;
 /// # Castle on Cloud
 ///
 /// We trust:
-/// - `rand::Rng::gen()` produces random values
-/// - `Distribution<Standard>` implementations are correct
+/// - `rand::RngExt::random()` produces random values
+/// - `Distribution<StandardUniform>` implementations are correct
 /// - RNG state management works
 ///
 /// We verify:
@@ -53,7 +53,7 @@ pub struct RandomGenerator<T> {
 
 impl<T> RandomGenerator<T>
 where
-    Standard: Distribution<T>,
+    StandardUniform: Distribution<T>,
 {
     /// Create a new generator with the given RNG.
     pub fn new(rng: StdRng) -> Self {
@@ -73,13 +73,13 @@ where
 
 impl<T> Generator for RandomGenerator<T>
 where
-    Standard: Distribution<T>,
+    StandardUniform: Distribution<T>,
 {
     type Target = T;
 
     fn generate(&self) -> T {
         // Use RefCell for interior mutability (safe, runtime-checked)
-        self.rng.borrow_mut().gen()
+        self.rng.borrow_mut().random()
     }
 }
 

@@ -4,7 +4,8 @@
 //! beyond the standard uniform distribution.
 
 use elicitation::Generator;
-use rand::distributions::{Distribution, Uniform, WeightedIndex};
+use rand::distr::{Distribution, Uniform};
+use rand::distr::weighted::WeightedIndex;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 use std::cell::RefCell;
@@ -34,7 +35,7 @@ use std::cell::RefCell;
 /// # Castle on Cloud
 ///
 /// We trust:
-/// - `rand::distributions::Uniform` samples uniformly
+/// - `rand::distr::Uniform` samples uniformly
 /// - Range validation by Uniform constructor
 ///
 /// We verify:
@@ -42,7 +43,7 @@ use std::cell::RefCell;
 /// - `generate()` calls sample correctly
 pub struct UniformGenerator<T>
 where
-    T: rand::distributions::uniform::SampleUniform,
+    T: rand::distr::uniform::SampleUniform,
 {
     rng: RefCell<StdRng>,
     distribution: Uniform<T>,
@@ -50,7 +51,7 @@ where
 
 impl<T> UniformGenerator<T>
 where
-    T: rand::distributions::uniform::SampleUniform,
+    T: rand::distr::uniform::SampleUniform,
 {
     /// Create a new uniform generator over the range [low, high).
     ///
@@ -60,7 +61,7 @@ where
     pub fn new(rng: StdRng, low: T, high: T) -> Self {
         Self {
             rng: RefCell::new(rng),
-            distribution: Uniform::new(low, high),
+            distribution: Uniform::new(low, high).expect("Invalid range for Uniform distribution"),
         }
     }
 
@@ -72,7 +73,7 @@ where
 
 impl<T> Generator for UniformGenerator<T>
 where
-    T: rand::distributions::uniform::SampleUniform,
+    T: rand::distr::uniform::SampleUniform,
 {
     type Target = T;
 
@@ -121,13 +122,13 @@ where
 /// # Castle on Cloud
 ///
 /// We trust:
-/// - `rand::distributions::WeightedIndex` respects weights
+/// - `rand::distr::WeightedIndex` respects weights
 /// - Weight validation by WeightedIndex constructor
 ///
 /// We verify:
 /// - Generator stores distribution and values correctly
 /// - `generate()` samples and indexes correctly
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct WeightedGenerator<T> {
     rng: RefCell<StdRng>,
     distribution: WeightedIndex<u32>,
@@ -197,7 +198,7 @@ pub struct BoundedEvenGenerator<T> {
 
 impl<T> BoundedEvenGenerator<T>
 where
-    T: rand::distributions::uniform::SampleUniform + Copy,
+    T: rand::distr::uniform::SampleUniform + Copy,
 {
     /// Create a new bounded even generator.
     pub fn new(seed: u64, low: T, high: T) -> Self {
@@ -207,7 +208,7 @@ where
 
 impl<T> Generator for BoundedEvenGenerator<T>
 where
-    T: rand::distributions::uniform::SampleUniform
+    T: rand::distr::uniform::SampleUniform
         + Copy
         + std::ops::Rem<Output = T>
         + std::ops::Sub<Output = T>
@@ -241,7 +242,7 @@ pub struct BoundedOddGenerator<T> {
 
 impl<T> BoundedOddGenerator<T>
 where
-    T: rand::distributions::uniform::SampleUniform + Copy,
+    T: rand::distr::uniform::SampleUniform + Copy,
 {
     /// Create a new bounded odd generator.
     pub fn new(seed: u64, low: T, high: T) -> Self {
@@ -251,7 +252,7 @@ where
 
 impl<T> Generator for BoundedOddGenerator<T>
 where
-    T: rand::distributions::uniform::SampleUniform
+    T: rand::distr::uniform::SampleUniform
         + Copy
         + std::ops::Rem<Output = T>
         + std::ops::Sub<Output = T>

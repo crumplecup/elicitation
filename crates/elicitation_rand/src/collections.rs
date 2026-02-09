@@ -3,7 +3,7 @@
 //! Generators for standard collections like Vec, HashMap, HashSet.
 
 use crate::Generator;
-use rand::Rng;
+use rand::RngExt;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 
@@ -63,7 +63,7 @@ where
         let length = if self.min_len >= self.max_len {
             self.min_len
         } else {
-            rng.gen_range(self.min_len..self.max_len)
+            rng.random_range(self.min_len..self.max_len)
         };
 
         (0..length)
