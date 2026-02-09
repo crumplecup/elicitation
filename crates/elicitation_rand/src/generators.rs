@@ -123,7 +123,10 @@ pub struct TransformGenerator<G, F> {
 impl<G, F> TransformGenerator<G, F> {
     /// Create a new transforming generator.
     pub fn new(inner: G, transform_fn: F) -> Self {
-        Self { inner, transform_fn }
+        Self {
+            inner,
+            transform_fn,
+        }
     }
 }
 
@@ -151,7 +154,7 @@ pub struct ChoiceGenerator<G1, G2> {
 
 impl<G1, G2> ChoiceGenerator<G1, G2> {
     /// Create a new choice generator.
-    /// 
+    ///
     /// Uses the seed to deterministically choose which generator to use.
     pub fn new(seed: u64, gen1: G1, gen2: G2) -> Self {
         // Use seed's least significant bit for choice
@@ -241,7 +244,10 @@ mod tests {
         assert_eq!(values.len(), 10);
 
         // Values should vary (statistically very likely)
-        let unique_count = values.iter().collect::<std::collections::HashSet<_>>().len();
+        let unique_count = values
+            .iter()
+            .collect::<std::collections::HashSet<_>>()
+            .len();
         assert!(unique_count > 5, "Expected some variety in random values");
     }
 
@@ -271,8 +277,12 @@ mod tests {
         let trues = (0..count).filter(|_| gen.generate()).count();
 
         // Allow for statistical variance (roughly 40-60%)
-        assert!(trues > 400 && trues < 600,
-            "Expected roughly 50% true values, got {}/{}", trues, count);
+        assert!(
+            trues > 400 && trues < 600,
+            "Expected roughly 50% true values, got {}/{}",
+            trues,
+            count
+        );
     }
 
     #[test]
@@ -282,7 +292,7 @@ mod tests {
         // Generate many f64s, verify they're in [0, 1) range
         for _ in 0..100 {
             let val = gen.generate();
-            assert!(val >= 0.0 && val < 1.0, "f64 out of range: {}", val);
+            assert!((0.0..1.0).contains(&val), "f64 out of range: {}", val);
         }
     }
 }

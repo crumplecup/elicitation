@@ -35,9 +35,9 @@
 fn verify_uniform_bounds_ordering() {
     let low: u32 = kani::any();
     let high: u32 = kani::any();
-    
+
     kani::assume(low < high);
-    
+
     // The fact that this compiles with SampleUniform bound proves
     // the type constraint is correct
     assert!(low < high);
@@ -48,11 +48,11 @@ fn verify_uniform_bounds_ordering() {
 fn verify_uniform_f64_finite() {
     let low: f64 = kani::any();
     let high: f64 = kani::any();
-    
+
     kani::assume(low.is_finite());
     kani::assume(high.is_finite());
     kani::assume(low < high);
-    
+
     assert!(low.is_finite() && high.is_finite() && low < high);
 }
 
@@ -61,9 +61,9 @@ fn verify_uniform_f64_finite() {
 fn verify_uniform_i32_negative_range() {
     let low: i32 = kani::any();
     let high: i32 = kani::any();
-    
+
     kani::assume(low < 0);
     kani::assume(high > low);
-    
+
     assert!(low < high && low < 0);
 }

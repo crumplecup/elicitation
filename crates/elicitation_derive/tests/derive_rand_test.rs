@@ -26,22 +26,30 @@ struct OddNumber(u32);
 #[test]
 fn test_bounded_d6() {
     let generator = D6::random_generator(42);
-    
+
     // Generate 100 values and verify all in range [1, 6)
     for _ in 0..100 {
         let roll = generator.generate();
-        assert!(roll.0 >= 1 && roll.0 < 6, "D6 roll out of bounds: {}", roll.0);
+        assert!(
+            roll.0 >= 1 && roll.0 < 6,
+            "D6 roll out of bounds: {}",
+            roll.0
+        );
     }
 }
 
 #[test]
 fn test_bounded_d20() {
     let generator = D20::random_generator(123);
-    
+
     // Generate 100 values and verify all in range [1, 20)
     for _ in 0..100 {
         let roll = generator.generate();
-        assert!(roll.0 >= 1 && roll.0 < 20, "D20 roll out of bounds: {}", roll.0);
+        assert!(
+            roll.0 >= 1 && roll.0 < 20,
+            "D20 roll out of bounds: {}",
+            roll.0
+        );
     }
 }
 
@@ -50,7 +58,7 @@ fn test_deterministic() {
     let seed = 42;
     let gen1 = D6::random_generator(seed);
     let gen2 = D6::random_generator(seed);
-    
+
     // Same seed should produce same sequence
     for _ in 0..10 {
         assert_eq!(gen1.generate(), gen2.generate());
@@ -60,7 +68,7 @@ fn test_deterministic() {
 #[test]
 fn test_positive() {
     let generator = PositiveScore::random_generator(999);
-    
+
     // All values should be positive
     for _ in 0..100 {
         let score = generator.generate();
@@ -71,7 +79,7 @@ fn test_positive() {
 #[test]
 fn test_even() {
     let generator = EvenNumber::random_generator(555);
-    
+
     // All values should be even
     for _ in 0..100 {
         let num = generator.generate();
@@ -82,7 +90,7 @@ fn test_even() {
 #[test]
 fn test_odd() {
     let generator = OddNumber::random_generator(777);
-    
+
     // All values should be odd
     for _ in 0..100 {
         let num = generator.generate();

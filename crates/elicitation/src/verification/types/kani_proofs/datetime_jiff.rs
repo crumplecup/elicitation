@@ -9,7 +9,7 @@
 #![cfg(kani)]
 #![cfg(feature = "jiff")]
 
-use crate::{Generator, TimestampGenerator, TimestampGenerationMode};
+use crate::{Generator, TimestampGenerationMode, TimestampGenerator};
 use jiff::Timestamp;
 
 // ============================================================================
@@ -41,12 +41,12 @@ fn verify_timestamp_generator_unix_epoch() {
 #[kani::proof]
 fn verify_timestamp_generator_offset_positive_logic() {
     let seconds: i64 = kani::any();
-    
+
     kani::assume(seconds > 0);
     kani::assume(seconds < 100_000);
-    
+
     let mode = TimestampGenerationMode::Offset { seconds };
-    
+
     // Verify the wrapper's decision logic
     match mode {
         TimestampGenerationMode::Now => {
@@ -59,7 +59,7 @@ fn verify_timestamp_generator_offset_positive_logic() {
             // Verify positive offset is stored correctly
             assert!(s > 0, "Positive seconds");
             assert_eq!(s, seconds);
-            
+
             // The actual generate() would do:
             // let span = Span::new().seconds(seconds);
             // self.reference.checked_add(span).unwrap_or(self.reference)
@@ -72,18 +72,18 @@ fn verify_timestamp_generator_offset_positive_logic() {
 #[kani::proof]
 fn verify_timestamp_generator_offset_negative_logic() {
     let seconds: i64 = kani::any();
-    
+
     kani::assume(seconds < 0);
     kani::assume(seconds > -100_000);
-    
+
     let mode = TimestampGenerationMode::Offset { seconds };
-    
+
     match mode {
         TimestampGenerationMode::Offset { seconds: s } => {
             // Verify negative offset is stored correctly
             assert!(s < 0, "Negative seconds");
             assert_eq!(s, seconds);
-            
+
             // jiff's Span handles negative seconds correctly (subtraction)
             // We trust jiff's implementation
         }
@@ -95,11 +95,11 @@ fn verify_timestamp_generator_offset_negative_logic() {
 #[kani::proof]
 fn verify_timestamp_generator_offset_zero_logic() {
     let mode = TimestampGenerationMode::Offset { seconds: 0 };
-    
+
     match mode {
         TimestampGenerationMode::Offset { seconds } => {
             assert_eq!(seconds, 0);
-            
+
             // With zero seconds, Span::new().seconds(0) is identity
             // checked_add with zero span returns reference unchanged
             // We verify the wrapper uses the correct mode
@@ -114,7 +114,7 @@ fn verify_timestamp_generator_mode_preserved() {
     let mode = TimestampGenerationMode::UnixEpoch;
     let reference = Timestamp::UNIX_EPOCH;
     let generator = TimestampGenerator::with_reference(mode, reference);
-    
+
     assert_eq!(generator.mode(), mode, "Generator preserves mode");
 }
 
@@ -124,6 +124,10 @@ fn verify_timestamp_generator_reference_preserved() {
     let mode = TimestampGenerationMode::UnixEpoch;
     let reference = Timestamp::UNIX_EPOCH;
     let generator = TimestampGenerator::with_reference(mode, reference);
-    
-    assert_eq!(generator.reference(), reference, "Generator preserves reference");
+
+    assert_eq!(
+        generator.reference(),
+        reference,
+        "Generator preserves reference"
+    );
 }

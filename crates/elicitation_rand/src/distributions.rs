@@ -159,8 +159,8 @@ impl<T: Clone> WeightedGenerator<T> {
 
         let (values, weights): (Vec<_>, Vec<_>) = items.into_iter().unzip();
 
-        let distribution = WeightedIndex::new(weights)
-            .map_err(|e| format!("Invalid weights: {}", e))?;
+        let distribution =
+            WeightedIndex::new(weights).map_err(|e| format!("Invalid weights: {}", e))?;
 
         Ok(Self {
             rng: RefCell::new(rng),
@@ -288,7 +288,11 @@ mod tests {
         // Generate many values, all should be in [10, 20)
         for _ in 0..1000 {
             let val = gen.generate();
-            assert!(val >= 10 && val < 20, "Value {} out of range [10, 20)", val);
+            assert!(
+                (10..20).contains(&val),
+                "Value {} out of range [10, 20)",
+                val
+            );
         }
     }
 
@@ -308,7 +312,7 @@ mod tests {
         // Generate many floats, all in [0.0, 1.0)
         for _ in 0..100 {
             let val = gen.generate();
-            assert!(val >= 0.0 && val < 1.0, "Float {} out of range", val);
+            assert!((0.0..1.0).contains(&val), "Float {} out of range", val);
         }
     }
 
@@ -318,10 +322,17 @@ mod tests {
 
         // Generate many values, should hit multiple buckets
         let samples: Vec<_> = (0..1000).map(|_| gen.generate()).collect();
-        let unique_count = samples.iter().collect::<std::collections::HashSet<_>>().len();
+        let unique_count = samples
+            .iter()
+            .collect::<std::collections::HashSet<_>>()
+            .len();
 
         // Should get at least half the range covered
-        assert!(unique_count >= 5, "Only {} unique values in [0, 10)", unique_count);
+        assert!(
+            unique_count >= 5,
+            "Only {} unique values in [0, 10)",
+            unique_count
+        );
     }
 
     // ========================================================================
@@ -330,11 +341,9 @@ mod tests {
 
     #[test]
     fn test_weighted_generator_basic() {
-        let gen = WeightedGenerator::with_seed(
-            42,
-            vec![("common", 70), ("rare", 25), ("legendary", 5)],
-        )
-        .unwrap();
+        let gen =
+            WeightedGenerator::with_seed(42, vec![("common", 70), ("rare", 25), ("legendary", 5)])
+                .unwrap();
 
         // Just verify it generates without panic
         let _item = gen.generate();
@@ -342,17 +351,9 @@ mod tests {
 
     #[test]
     fn test_weighted_generator_deterministic() {
-        let gen1 = WeightedGenerator::with_seed(
-            123,
-            vec![("a", 50), ("b", 50)],
-        )
-        .unwrap();
+        let gen1 = WeightedGenerator::with_seed(123, vec![("a", 50), ("b", 50)]).unwrap();
 
-        let gen2 = WeightedGenerator::with_seed(
-            123,
-            vec![("a", 50), ("b", 50)],
-        )
-        .unwrap();
+        let gen2 = WeightedGenerator::with_seed(123, vec![("a", 50), ("b", 50)]).unwrap();
 
         // Same seed → same sequence
         assert_eq!(gen1.generate(), gen2.generate());
@@ -360,23 +361,17 @@ mod tests {
 
     #[test]
     fn test_weighted_generator_distribution() {
-        let gen = WeightedGenerator::with_seed(
-            42,
-            vec![("common", 90), ("rare", 10)],
-        )
-        .unwrap();
+        let gen = WeightedGenerator::with_seed(42, vec![("common", 90), ("rare", 10)]).unwrap();
 
         // Generate many samples, verify distribution roughly matches weights
         let count = 10_000;
-        let common_count = (0..count)
-            .filter(|_| gen.generate() == "common")
-            .count();
+        let common_count = (0..count).filter(|_| gen.generate() == "common").count();
 
         let common_pct = (common_count as f64 / count as f64) * 100.0;
 
         // Should be roughly 90% ± 5%
         assert!(
-            common_pct >= 85.0 && common_pct <= 95.0,
+            (85.0..=95.0).contains(&common_pct),
             "Expected ~90% common, got {}%",
             common_pct
         );
@@ -393,13 +388,10 @@ mod tests {
     fn test_weighted_generator_zero_weight() {
         // WeightedIndex actually allows zero weights as long as sum > 0
         // It just makes those items impossible to select
-        let result = WeightedGenerator::with_seed(
-            42,
-            vec![("a", 0), ("b", 10)],
-        );
+        let result = WeightedGenerator::with_seed(42, vec![("a", 0), ("b", 10)]);
         // This should succeed - zero weight just means "a" never gets picked
         assert!(result.is_ok());
-        
+
         let gen = result.unwrap();
         // Verify only "b" ever gets generated
         for _ in 0..100 {
@@ -409,11 +401,7 @@ mod tests {
 
     #[test]
     fn test_weighted_generator_single_item() {
-        let gen = WeightedGenerator::with_seed(
-            42,
-            vec![("only", 100)],
-        )
-        .unwrap();
+        let gen = WeightedGenerator::with_seed(42, vec![("only", 100)]).unwrap();
 
         // Should always generate the only item
         for _ in 0..10 {
@@ -432,11 +420,7 @@ mod tests {
 
         let gen = WeightedGenerator::with_seed(
             42,
-            vec![
-                (Item::Sword, 40),
-                (Item::Shield, 30),
-                (Item::Potion, 30),
-            ],
+            vec![(Item::Sword, 40), (Item::Shield, 30), (Item::Potion, 30)],
         )
         .unwrap();
 

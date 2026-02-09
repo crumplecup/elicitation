@@ -3,8 +3,7 @@
 #![cfg(feature = "serde_json")]
 
 use elicitation::{ElicitResult, Elicitation};
-use rmcp::service::{Peer, RoleClient};
-use serde_json::{Value, json};
+use serde_json::Value;
 
 // Note: These tests require a real MCP client connection.
 // They are designed to be run manually with an MCP client.

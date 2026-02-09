@@ -85,10 +85,10 @@ extern crate proc_macro;
 mod contract_type;
 mod derive_elicit;
 mod enum_impl;
-mod struct_impl;
-mod tool_gen;
 mod rand_contract_parser;
 mod rand_generator_impl;
+mod struct_impl;
+mod tool_gen;
 
 use proc_macro::TokenStream;
 
@@ -280,7 +280,7 @@ pub fn contract_type(args: TokenStream, input: TokenStream) -> TokenStream {
 pub fn derive_rand(input: TokenStream) -> TokenStream {
     use syn::parse_macro_input;
     let input = parse_macro_input!(input as syn::DeriveInput);
-    
+
     rand_generator_impl::expand_derive_rand(&input)
         .unwrap_or_else(|err| err.to_compile_error())
         .into()

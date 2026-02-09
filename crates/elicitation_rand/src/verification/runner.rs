@@ -26,7 +26,7 @@ impl ProofHarness {
     }
 
     /// All available proof harnesses for rand integration.
-    /// 
+    ///
     /// Note: Limited to logic-only proofs due to rand's use of inline assembly.
     /// WeightedGenerator and RNG construction cannot be verified by Kani.
     pub fn all() -> Vec<Self> {
@@ -80,21 +80,12 @@ impl ProofResult {
 
 /// Run a single Kani proof and return the result.
 pub fn run_proof(harness: &ProofHarness) -> std::io::Result<ProofResult> {
-    println!(
-        "Running proof: {}::{}",
-        harness.module, harness.name
-    );
+    println!("Running proof: {}::{}", harness.module, harness.name);
 
     let start = Instant::now();
 
     let output = Command::new("cargo")
-        .args([
-            "kani",
-            "--harness",
-            &harness.name,
-            "-p",
-            "elicitation_rand",
-        ])
+        .args(["kani", "--harness", &harness.name, "-p", "elicitation_rand"])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .output()?;
@@ -111,10 +102,7 @@ pub fn run_proof(harness: &ProofHarness) -> std::io::Result<ProofResult> {
         ProofResult::failure(harness, duration_secs)
     };
 
-    println!(
-        "  {} in {:.2}s",
-        result.status, result.duration_secs
-    );
+    println!("  {} in {:.2}s", result.status, result.duration_secs);
 
     Ok(result)
 }
@@ -145,7 +133,9 @@ fn write_results_csv(results: &[ProofResult], output_path: &Path) -> std::io::Re
     let mut writer = Writer::from_path(output_path)?;
 
     for result in results {
-        writer.serialize(result).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        writer
+            .serialize(result)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
     }
 
     writer.flush()?;
@@ -165,7 +155,11 @@ fn print_summary(results: &[ProofResult]) {
     println!("RAND PROOF SUMMARY");
     println!("{}", "=".repeat(60));
     println!("Total proofs:  {}", total);
-    println!("Passed:        {} ({:.1}%)", passed, (passed as f64 / total as f64) * 100.0);
+    println!(
+        "Passed:        {} ({:.1}%)",
+        passed,
+        (passed as f64 / total as f64) * 100.0
+    );
     println!("Failed:        {}", failed);
     println!("Total time:    {:.2}s", total_time);
     println!("Average time:  {:.2}s", total_time / total as f64);

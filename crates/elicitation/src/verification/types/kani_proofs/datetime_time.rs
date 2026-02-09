@@ -6,8 +6,8 @@
 #![cfg(kani)]
 #![cfg(feature = "time")]
 
-use crate::{Generator, InstantGenerator, InstantGenerationMode};
-use crate::{OffsetDateTimeGenerator, OffsetDateTimeGenerationMode};
+use crate::{Generator, InstantGenerationMode, InstantGenerator};
+use crate::{OffsetDateTimeGenerationMode, OffsetDateTimeGenerator};
 use std::time::{Duration, Instant};
 use time::OffsetDateTime;
 
@@ -25,11 +25,11 @@ fn verify_instant_generator_mode_preserved() {
         seconds: 42,
         nanos: 1000,
     };
-    
+
     // Create generator without calling now() - just verify storage
     // We can't construct an Instant symbolically, so we test the invariant
     // that the mode field is correctly stored and retrieved
-    
+
     // The generator struct stores mode, and mode() accessor returns it
     // This verifies the wrapper's data structure, not time operations
     match mode {
@@ -51,7 +51,7 @@ fn verify_instant_generator_mode_preserved() {
 #[kani::proof]
 fn verify_instant_generator_now_mode_logic() {
     let mode = InstantGenerationMode::Now;
-    
+
     // Verify the match arm is taken correctly
     match mode {
         InstantGenerationMode::Now => {
@@ -72,23 +72,26 @@ fn verify_instant_generator_now_mode_logic() {
 fn verify_instant_generator_offset_positive_logic() {
     let seconds: i64 = kani::any();
     let nanos: u32 = kani::any();
-    
+
     kani::assume(seconds > 0);
     kani::assume(nanos < 1_000_000_000);
-    
+
     let mode = InstantGenerationMode::Offset { seconds, nanos };
-    
+
     // Verify the wrapper's decision logic
     match mode {
         InstantGenerationMode::Now => {
             assert!(false, "Wrong branch");
         }
-        InstantGenerationMode::Offset { seconds: s, nanos: n } => {
+        InstantGenerationMode::Offset {
+            seconds: s,
+            nanos: n,
+        } => {
             // Verify positive offset would use addition
             assert!(s > 0, "Positive seconds");
             assert_eq!(s, seconds);
             assert_eq!(n, nanos);
-            
+
             // The actual generate() would do: reference + duration
             // We trust Duration and Instant addition work
         }
@@ -102,23 +105,26 @@ fn verify_instant_generator_offset_positive_logic() {
 fn verify_instant_generator_offset_negative_logic() {
     let seconds: i64 = kani::any();
     let nanos: u32 = kani::any();
-    
+
     kani::assume(seconds < 0);
     kani::assume(nanos < 1_000_000_000);
-    
+
     let mode = InstantGenerationMode::Offset { seconds, nanos };
-    
+
     // Verify the wrapper's decision logic
     match mode {
         InstantGenerationMode::Now => {
             assert!(false, "Wrong branch");
         }
-        InstantGenerationMode::Offset { seconds: s, nanos: n } => {
+        InstantGenerationMode::Offset {
+            seconds: s,
+            nanos: n,
+        } => {
             // Verify negative offset would use subtraction
             assert!(s < 0, "Negative seconds");
             assert_eq!(s, seconds);
             assert_eq!(n, nanos);
-            
+
             // The actual generate() would do: reference - duration
             // We trust Duration and Instant subtraction work
         }
@@ -134,12 +140,12 @@ fn verify_instant_generator_offset_zero_logic() {
         seconds: 0,
         nanos: 0,
     };
-    
+
     match mode {
         InstantGenerationMode::Offset { seconds, nanos } => {
             assert_eq!(seconds, 0);
             assert_eq!(nanos, 0);
-            
+
             // With zero offset, Duration::new(0, 0) is zero
             // reference + zero = reference (identity)
             // We verify the wrapper would use addition with zero duration
@@ -173,18 +179,18 @@ fn verify_offsetdatetime_generator_unix_epoch() {
 fn verify_offsetdatetime_generator_offset_positive() {
     let seconds: i64 = kani::any();
     let nanos: i32 = kani::any();
-    
+
     kani::assume(seconds > 0);
     kani::assume(seconds < 100_000);
     kani::assume(nanos >= 0);
     kani::assume(nanos < 1_000_000_000);
-    
+
     let mode = OffsetDateTimeGenerationMode::Offset { seconds, nanos };
     let reference = OffsetDateTime::UNIX_EPOCH;
     let generator = OffsetDateTimeGenerator::with_reference(mode, reference);
-    
+
     let dt = generator.generate();
-    
+
     assert!(dt > reference, "Positive offset produces future time");
 }
 
@@ -193,19 +199,19 @@ fn verify_offsetdatetime_generator_offset_positive() {
 fn verify_offsetdatetime_generator_offset_negative() {
     let seconds: i64 = kani::any();
     let nanos: i32 = kani::any();
-    
+
     kani::assume(seconds < 0);
     kani::assume(seconds > -100_000);
     kani::assume(nanos >= 0);
     kani::assume(nanos < 1_000_000_000);
-    
+
     let mode = OffsetDateTimeGenerationMode::Offset { seconds, nanos };
     // Use future reference
     let reference = OffsetDateTime::UNIX_EPOCH + Duration::from_secs(200_000);
     let generator = OffsetDateTimeGenerator::with_reference(mode, reference);
-    
+
     let dt = generator.generate();
-    
+
     assert!(dt < reference, "Negative offset produces past time");
 }
 
@@ -218,9 +224,9 @@ fn verify_offsetdatetime_generator_offset_zero() {
     };
     let reference = OffsetDateTime::UNIX_EPOCH;
     let generator = OffsetDateTimeGenerator::with_reference(mode, reference);
-    
+
     let dt = generator.generate();
-    
+
     assert_eq!(dt, reference, "Zero offset returns reference unchanged");
 }
 
@@ -230,7 +236,7 @@ fn verify_offsetdatetime_generator_mode_preserved() {
     let mode = OffsetDateTimeGenerationMode::UnixEpoch;
     let reference = OffsetDateTime::UNIX_EPOCH;
     let generator = OffsetDateTimeGenerator::with_reference(mode, reference);
-    
+
     assert_eq!(generator.mode(), mode, "Generator preserves mode");
 }
 
@@ -240,6 +246,10 @@ fn verify_offsetdatetime_generator_reference_preserved() {
     let mode = OffsetDateTimeGenerationMode::UnixEpoch;
     let reference = OffsetDateTime::UNIX_EPOCH;
     let generator = OffsetDateTimeGenerator::with_reference(mode, reference);
-    
-    assert_eq!(generator.reference(), reference, "Generator preserves reference");
+
+    assert_eq!(
+        generator.reference(),
+        reference,
+        "Generator preserves reference"
+    );
 }

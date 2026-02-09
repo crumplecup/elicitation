@@ -288,7 +288,114 @@ struct Config {
 
 ---
 
-### Part 6: Trait-Based MCP Tools (v0.6.0+)
+### Part 6: Random Generation - Testing & Simulation
+
+For testing, gaming, and simulation, you need random data. The `#[derive(Rand)]` macro generates contract-aware random values:
+
+```rust
+use elicitation::{Elicit, Rand, Generator};
+
+#[derive(Elicit, Rand)]
+#[rand(bounded(1, 6))]
+struct D6(u32);
+
+// Random dice rolls that respect the contract
+let generator = D6::random_generator(42);
+let roll = generator.generate();  // Always in [1, 6]
+```
+
+**Perfect symmetry:** If you can elicit it, you can randomly generate it.
+
+#### Contract-Aware Generation
+
+Contracts map to appropriate sampling strategies:
+
+```rust
+#[derive(Rand)]
+#[rand(bounded(1, 100))]
+struct Score(u32);  // Uniform [1, 100]
+
+#[derive(Rand)]
+#[rand(positive)]
+struct Health(i32);  // Positive integers only
+
+#[derive(Rand)]
+#[rand(even)]
+struct EvenId(u32);  // Even numbers only
+
+#[derive(Rand)]
+#[rand(and(positive, bounded(10, 50)))]
+struct Level(i32);  // Positive AND bounded
+```
+
+#### Automatic Support for All Types
+
+Works with primitives, third-party types, and custom types:
+
+```rust
+// Primitives
+let gen = u32::rand_generator(seed);
+let n = gen.generate();
+
+// Third-party types
+let gen = uuid::Uuid::rand_generator(seed);
+let id = gen.generate();
+
+let gen = url::Url::rand_generator(seed);
+let url = gen.generate();
+
+// Collections
+let gen = VecGenerator::new(
+    String::rand_generator(seed),
+    0, 10  // Length bounds
+);
+let strings = gen.generate();
+
+// Custom types with contracts
+#[derive(Rand)]
+struct Player {
+    name: String,
+    #[rand(bounded(1, 100))]
+    level: u32,
+}
+```
+
+#### Use Cases
+
+**Testing:**
+```rust
+// Property-based testing
+for _ in 0..1000 {
+    let player = Player::random_generator(seed).generate();
+    assert!(player.level >= 1 && player.level <= 100);
+}
+```
+
+**Gaming:**
+```rust
+// Agent as game master
+let encounter = Encounter::random_generator(seed).generate();
+let loot = LootTable::random_generator(seed).generate();
+```
+
+**Simulation:**
+```rust
+// Generate realistic test data
+let users: Vec<User> = (0..100)
+    .map(|i| User::random_generator(i as u64).generate())
+    .collect();
+```
+
+**Supported types:**
+- Primitives: u8-u128, i8-i128, f32, f64, bool, char
+- Stdlib: String, PathBuf, Duration, SystemTime
+- Third-party: DateTime (chrono), Timestamp (jiff), Uuid, Url
+- Custom: Any type with `#[derive(Rand)]`
+- Collections: Vec, HashMap, HashSet (via generators)
+
+---
+
+### Part 7: Trait-Based MCP Tools (v0.6.0+)
 
 For more complex systems, you might have trait-based APIs. Elicitation supports **automatic tool generation** from traits:
 
@@ -370,17 +477,17 @@ tokio = { version = "1", features = ["full"] }
 ### Basic Example
 
 ```rust
-use elicitation::Elicit;
+use elicitation::{Elicit, Rand, Generator};
 use rmcp::client::Client;
 
-#[derive(Debug, Elicit)]
+#[derive(Debug, Elicit, Rand)]
 enum Priority {
     Low,
     Medium,
     High,
 }
 
-#[derive(Debug, Elicit)]
+#[derive(Debug, Elicit, Rand)]
 struct Task {
     title: String,
     priority: Priority,
@@ -392,10 +499,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Connect to MCP server (Claude Desktop, CLI, etc.)
     let client = Client::stdio().await?;
     
-    // Elicit a complete task from the agent
+    // Elicit a task from the agent
     let task = Task::elicit(&client).await?;
+    println!("Elicited task: {:?}", task);
     
-    println!("Created task: {:?}", task);
+    // Or generate random tasks for testing
+    let generator = Task::random_generator(42);
+    let random_task = generator.generate();
+    println!("Random task: {:?}", random_task);
+    
     Ok(())
 }
 ```

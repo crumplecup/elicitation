@@ -757,7 +757,7 @@ mod tests {
 
     #[test]
     fn test_regex_set_valid() {
-        let set = RegexSetValid::new(&[r"\d+", r"[a-z]+", r"[A-Z]+"]).unwrap();
+        let set = RegexSetValid::new([r"\d+", r"[a-z]+", r"[A-Z]+"]).unwrap();
 
         assert_eq!(set.len(), 3);
         assert!(!set.is_empty());
@@ -796,8 +796,8 @@ mod tests {
 
     #[test]
     fn test_regex_set_non_empty() {
-        assert!(RegexSetNonEmpty::new(&[r"\d+"]).is_ok());
-        assert!(RegexSetNonEmpty::new(&[r"\d+", r"[a-z]+"]).is_ok());
+        assert!(RegexSetNonEmpty::new([r"\d+"]).is_ok());
+        assert!(RegexSetNonEmpty::new([r"\d+", r"[a-z]+"]).is_ok());
 
         // Empty set rejected
         assert!(RegexSetNonEmpty::new::<&[&str], _>(&[]).is_err());

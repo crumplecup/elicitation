@@ -23,8 +23,6 @@ fn main() {
 
 #[cfg(feature = "verify-kani")]
 mod kani_enabled {
-    use elicitation::verification::{Contract, kani::Tool};
-    use elicitation::{Elicit, ElicitResult, Elicitation};
 
     // Domain types and implementations would go here
     // For now, just a simple main that exits

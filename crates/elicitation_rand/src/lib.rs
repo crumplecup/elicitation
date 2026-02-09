@@ -61,8 +61,8 @@ pub use elicitation::Generator;
 
 // Re-export common types
 pub use rand::rngs::StdRng;
-pub use rand_chacha::ChaCha8Rng;
 pub use rand::SeedableRng;
+pub use rand_chacha::ChaCha8Rng;
 
 // Phase 2 - Basic generators
 pub mod generators;
@@ -80,10 +80,12 @@ pub mod rand_trait;
 #[cfg(all(kani, feature = "verification"))]
 pub mod verification;
 
-pub use generators::RandomGenerator;
-pub use generators::{MapGenerator, TransformGenerator, ChoiceGenerator, ConstantGenerator};
-pub use distributions::{UniformGenerator, WeightedGenerator, BoundedEvenGenerator, BoundedOddGenerator};
 pub use collections::VecGenerator;
+pub use distributions::{
+    BoundedEvenGenerator, BoundedOddGenerator, UniformGenerator, WeightedGenerator,
+};
+pub use generators::RandomGenerator;
+pub use generators::{ChoiceGenerator, ConstantGenerator, MapGenerator, TransformGenerator};
 pub use rand_trait::Rand;
 
 // TODO: Phase 5 - Implement Kani verification

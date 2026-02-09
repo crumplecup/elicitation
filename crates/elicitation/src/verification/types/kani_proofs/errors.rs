@@ -113,11 +113,7 @@ fn verify_ioerror_generator_mode_preserved() {
     let mode = IoErrorGenerationMode::NotFound("test".to_string());
     let generator = IoErrorGenerator::new(mode.clone());
 
-    assert_eq!(
-        generator.mode(),
-        &mode,
-        "Generator preserves mode"
-    );
+    assert_eq!(generator.mode(), &mode, "Generator preserves mode");
 }
 
 /// Verify mode helper methods return correct values.
@@ -128,7 +124,11 @@ fn verify_ioerror_mode_helpers() {
     let message = "test message";
     let mode = IoErrorGenerationMode::NotFound(message.to_string());
 
-    assert_eq!(mode.error_kind(), io::ErrorKind::NotFound, "error_kind() matches mode");
+    assert_eq!(
+        mode.error_kind(),
+        io::ErrorKind::NotFound,
+        "error_kind() matches mode"
+    );
     assert_eq!(mode.message(), message, "message() returns correct value");
 }
 
@@ -189,11 +189,7 @@ fn verify_jsonerror_generator_mode_preserved() {
     let mode = JsonErrorGenerationMode::SyntaxError;
     let generator = JsonErrorGenerator::new(mode);
 
-    assert_eq!(
-        generator.mode(),
-        mode,
-        "Generator preserves mode"
-    );
+    assert_eq!(generator.mode(), mode, "Generator preserves mode");
 }
 
 /// Verify mode-to-string mapping is complete and correct.
@@ -210,7 +206,7 @@ fn verify_jsonerror_string_mapping() {
         JsonErrorGenerationMode::InvalidEscape,
         JsonErrorGenerationMode::InvalidUnicode,
     ];
-    
+
     let expected_strings = [
         "{invalid}",
         "{\"key\":",
@@ -218,7 +214,7 @@ fn verify_jsonerror_string_mapping() {
         r#"{"str": "\x"}"#,
         r#"{"str": "\uDEAD"}"#,
     ];
-    
+
     // Verify each mode maps to expected string
     for (mode, expected) in modes.iter().zip(expected_strings.iter()) {
         let selected = match mode {
@@ -228,7 +224,7 @@ fn verify_jsonerror_string_mapping() {
             JsonErrorGenerationMode::InvalidEscape => r#"{"str": "\x"}"#,
             JsonErrorGenerationMode::InvalidUnicode => r#"{"str": "\uDEAD"}"#,
         };
-        
+
         assert_eq!(selected, *expected, "Mode maps to expected string");
         assert!(!selected.is_empty(), "String is non-empty");
     }

@@ -22,9 +22,9 @@
 //! }
 //! ```
 
-use crate::{default_style, Elicitation, ElicitCommunicator, ElicitResult, Prompt};
-use rand::rngs::StdRng;
+use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt, default_style};
 use rand::SeedableRng;
+use rand::rngs::StdRng;
 use rand_chacha::ChaCha8Rng;
 
 // Style types for RNG elicitation
@@ -47,7 +47,7 @@ impl Elicitation for StdRng {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         // Elicit seed from agent
         let seed: u64 = u64::elicit(communicator).await?;
-        
+
         // Construct RNG (trust rand's implementation)
         Ok(StdRng::seed_from_u64(seed))
     }
