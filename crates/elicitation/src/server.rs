@@ -65,7 +65,13 @@ impl ElicitCommunicator for ElicitServer {
             task: None,
             messages: vec![rmcp::model::SamplingMessage {
                 role: rmcp::model::Role::User,
-                content: rmcp::model::Content::text(prompt),
+                content: rmcp::model::SamplingContent::Single(
+                    rmcp::model::SamplingMessageContent::Text(rmcp::model::RawTextContent {
+                        text: prompt.to_string(),
+                        meta: None,
+                    }),
+                ),
+                meta: None,
             }],
             model_preferences: None,
             system_prompt: Some(
@@ -77,6 +83,8 @@ impl ElicitCommunicator for ElicitServer {
             max_tokens: 1000,
             stop_sequences: None,
             metadata: None,
+            tools: None,
+            tool_choice: None,
         };
 
         // Send request to client
@@ -88,16 +96,16 @@ impl ElicitCommunicator for ElicitServer {
         tracing::debug!(model = %result.model, stop_reason = ?result.stop_reason, "Received response");
 
         // Extract text from response
-        use rmcp::model::RawContent;
-        match &*result.message.content {
-            RawContent::Text(text_content) => {
+        use rmcp::model::{SamplingContent, SamplingMessageContent};
+        match &result.message.content {
+            SamplingContent::Single(SamplingMessageContent::Text(text_content)) => {
                 tracing::debug!(
                     response_len = text_content.text.len(),
                     "Extracted text response"
                 );
                 Ok(text_content.text.clone())
             }
-            RawContent::Image(_) => {
+            SamplingContent::Single(SamplingMessageContent::Image(_)) => {
                 tracing::warn!("Received image content when expecting text");
                 Err(ElicitError::new(ElicitErrorKind::InvalidFormat {
                     expected: "text".to_string(),
