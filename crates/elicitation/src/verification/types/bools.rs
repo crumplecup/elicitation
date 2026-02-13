@@ -239,23 +239,27 @@ impl Elicitation for BoolDefault {
                 received: "None".to_string(),
             })
         })?;
-        tracing::debug!("Eliciting BoolDefault with serde deserialization");
+        tracing::debug!("Eliciting BoolDefault with prompt-based parsing");
 
-        let params = crate::mcp::bool_params(prompt);
+        // Use send_prompt for server compatibility
+        let response = communicator.send_prompt(prompt).await?;
+        
+        tracing::debug!(response = %response, "Received response, parsing as bool");
 
-        let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: crate::mcp::tool_names::elicit_bool().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await?;
+        // Parse response as boolean (case-insensitive)
+        let trimmed = response.trim().to_lowercase();
+        let value = match trimmed.as_str() {
+            "true" | "yes" | "y" | "1" => true,
+            "false" | "no" | "n" | "0" => false,
+            _ => {
+                tracing::error!(response = %trimmed, "Invalid boolean response");
+                return Err(crate::ElicitError::new(crate::ElicitErrorKind::ParseError(
+                    format!("Invalid boolean: '{}' (expected true/false, yes/no, y/n, 1/0)", trimmed)
+                )));
+            }
+        };
 
-        let value = crate::mcp::extract_value(result)?;
-
-        // Use serde to deserialize directly into wrapper type
-        // Preserves error source via From<serde_json::Error> chain
-        Ok(serde_json::from_value(value)?)
+        tracing::debug!(value = value, "Successfully parsed boolean");
+        Ok(Self::new(value))
     }
 }
