@@ -399,96 +399,62 @@ fn generate_elicit_impl_styled(
                 // Generate inline elicitation based on type
                 match type_str.as_str() {
                     "String" => {
-                        // String: use elicit_text
+                        // String: use send_prompt directly
                         quote! {
                             tracing::debug!(field = #field_name_str, "Eliciting string field with styled prompt");
                             let prompt = match elicit_style {
                                 #(#match_arms)*
                             };
-                            let params = elicitation::mcp::text_params(prompt);
-                            let result = communicator
-                                .peer()
-                                .call_tool(elicitation::rmcp::model::CallToolRequestParams {
-                            meta: None,
-                                    name: elicitation::mcp::tool_names::elicit_text().into(),
-                                    arguments: Some(params),
-                                    task: None,
-                                })
-                                .await?;
-                            let value = elicitation::mcp::extract_value(result)?;
-                            let #field_name = elicitation::mcp::parse_string(value)?;
+                            let #field_name = communicator.send_prompt(prompt).await?;
                         }
                     }
                     "bool" => {
-                        // Boolean: use elicit_bool
+                        // Boolean: use send_prompt and parse
                         quote! {
                             tracing::debug!(field = #field_name_str, "Eliciting bool field with styled prompt");
                             let prompt = match elicit_style {
                                 #(#match_arms)*
                             };
-                            let params = elicitation::mcp::bool_params(prompt);
-                            let result = communicator
-                                .peer()
-                                .call_tool(elicitation::rmcp::model::CallToolRequestParams {
-                            meta: None,
-                                    name: elicitation::mcp::tool_names::elicit_bool().into(),
-                                    arguments: Some(params),
-                                    task: None,
-                                })
-                                .await?;
-                            let value = elicitation::mcp::extract_value(result)?;
-                            let #field_name = elicitation::mcp::parse_bool(value)?;
+                            let response = communicator.send_prompt(prompt).await?;
+                            let #field_name = response.trim().parse::<bool>()
+                                .map_err(|e| elicitation::ElicitError::new(
+                                    elicitation::ElicitErrorKind::ParseError(
+                                        format!("Failed to parse boolean: {}", e)
+                                    )
+                                ))?;
                         }
                     }
                     "u8" | "u16" | "u32" | "u64" | "u128" | "usize" |
                     "i8" | "i16" | "i32" | "i64" | "i128" | "isize" => {
-                        // Integer types: use elicit_number
+                        // Integer types: use send_prompt and parse
                         quote! {
                             tracing::debug!(field = #field_name_str, "Eliciting integer field with styled prompt");
                             let prompt = match elicit_style {
                                 #(#match_arms)*
                             };
-                            let params = elicitation::mcp::number_params(
-                                prompt,
-                                #field_ty::MIN as i64,
-                                #field_ty::MAX as i64,
-                            );
-                            let result = communicator
-                                .peer()
-                                .call_tool(elicitation::rmcp::model::CallToolRequestParams {
-                            meta: None,
-                                    name: elicitation::mcp::tool_names::elicit_number().into(),
-                                    arguments: Some(params),
-                                    task: None,
-                                })
-                                .await?;
-                            let value = elicitation::mcp::extract_value(result)?;
-                            let #field_name = elicitation::mcp::parse_integer::<#field_ty>(value)?;
+                            let response = communicator.send_prompt(prompt).await?;
+                            let #field_name = response.trim().parse::<#field_ty>()
+                                .map_err(|e| elicitation::ElicitError::new(
+                                    elicitation::ElicitErrorKind::ParseError(
+                                        format!("Failed to parse {}: {}", stringify!(#field_ty), e)
+                                    )
+                                ))?;
                         }
                     }
                     "f32" | "f64" => {
-                        // Float types: use elicit_number with f64 min/max
+                        // Float types: use send_prompt and parse
                         quote! {
                             tracing::debug!(field = #field_name_str, "Eliciting float field with styled prompt");
                             let prompt = match elicit_style {
                                 #(#match_arms)*
                             };
-                            let params = elicitation::mcp::number_params(
-                                prompt,
-                                i64::MIN,
-                                i64::MAX,
-                            );
-                            let result = communicator
-                                .peer()
-                                .call_tool(elicitation::rmcp::model::CallToolRequestParams {
-                            meta: None,
-                                    name: elicitation::mcp::tool_names::elicit_number().into(),
-                                    arguments: Some(params),
-                                    task: None,
-                                })
-                                .await?;
-                            let value = elicitation::mcp::extract_value(result)?;
-                            let #field_name = elicitation::mcp::parse_integer::<i64>(value)? as #field_ty;
+                            let response = communicator.send_prompt(prompt).await?;
+                            let #field_name = response.trim().parse::<#field_ty>()
+                                .map_err(|e| elicitation::ElicitError::new(
+                                    elicitation::ElicitErrorKind::ParseError(
+                                        format!("Failed to parse {}: {}", stringify!(#field_ty), e)
+                                    )
+                                ))?;
                         }
                     }
                     _ => {
@@ -578,24 +544,39 @@ fn generate_elicit_impl_styled(
                 let prompt = <Self as elicitation::Prompt>::prompt().unwrap();
                 tracing::debug!("Eliciting style selection");
 
-                let params = elicitation::mcp::select_params(
-                    prompt,
-                    <Self as elicitation::Select>::labels()
-                );
-                let result = communicator
-                    .peer()
-                    .call_tool(elicitation::rmcp::model::CallToolRequestParams {
-                            meta: None,
-                        name: elicitation::mcp::tool_names::elicit_select().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
-                    .await?;
+                // Use send_prompt for server-side compatibility
+                let options_text = <Self as elicitation::Select>::labels().iter()
+                    .enumerate()
+                    .map(|(i, label)| format!("{}. {}", i + 1, label))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                
+                let full_prompt = format!("{}\n\nOptions:\n{}\n\nRespond with the number (1-{}) or exact label:", 
+                    prompt, options_text, <Self as elicitation::Select>::labels().len());
 
-                let value = elicitation::mcp::extract_value(result)?;
-                let label = elicitation::mcp::parse_string(value)?;
+                let response = communicator.send_prompt(&full_prompt).await?;
+                
+                // Parse response - try as number first, then as label  
+                let selected = response.trim();
+                let label = if let Ok(num) = selected.parse::<usize>() {
+                    // User gave a number (1-indexed)
+                    let labels = <Self as elicitation::Select>::labels();
+                    if num > 0 && num <= labels.len() {
+                        labels[num - 1]
+                    } else {
+                        return Err(elicitation::ElicitError::new(
+                            elicitation::ElicitErrorKind::InvalidOption {
+                                value: selected.to_string(),
+                                options: labels.join(", "),
+                            }
+                        ));
+                    }
+                } else {
+                    // User gave a label directly
+                    selected
+                };
 
-                <Self as elicitation::Select>::from_label(&label).ok_or_else(|| {
+                <Self as elicitation::Select>::from_label(label).ok_or_else(|| {
                     elicitation::ElicitError::new(elicitation::ElicitErrorKind::InvalidSelection(label))
                 })
             }

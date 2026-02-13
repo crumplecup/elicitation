@@ -280,7 +280,7 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
 
     // Phase 1: Variant selection
     let selection_code = quote! {
-        let prompt = Self::prompt().unwrap();
+        let base_prompt = Self::prompt().unwrap();
         let labels = Self::labels();
 
         tracing::debug!(
@@ -289,22 +289,41 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
             "Eliciting enum variant selection"
         );
 
-        let params = elicitation::mcp::select_params(prompt, labels);
-        let result = communicator
-            .call_tool(elicitation::rmcp::model::CallToolRequestParams {
-                            meta: None,
-                name: elicitation::mcp::tool_names::elicit_select().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await
+        // Format prompt with options for server-side elicitation
+        let options_text = labels.iter()
+            .enumerate()
+            .map(|(i, label)| format!("{}. {}", i + 1, label))
+            .collect::<Vec<_>>()
+            .join("\n");
+        
+        let full_prompt = format!("{}\n\nOptions:\n{}\n\nRespond with the number (1-{}) or exact label:", 
+            base_prompt, options_text, labels.len());
+
+        // Use send_prompt for server-side compatibility
+        let response = communicator.send_prompt(&full_prompt).await
             .map_err(|e| {
-                tracing::error!(error = ?e, "MCP tool call failed");
+                tracing::error!(error = ?e, "Prompt send failed");
                 elicitation::ElicitError::from(e)
             })?;
 
-        let value = elicitation::mcp::extract_value(result)?;
-        let selected = elicitation::mcp::parse_string(value)?;
+        // Parse response - try as number first, then as label
+        let selected = response.trim();
+        let selected = if let Ok(num) = selected.parse::<usize>() {
+            // User gave a number (1-indexed)
+            if num > 0 && num <= labels.len() {
+                labels[num - 1].to_string()
+            } else {
+                return Err(elicitation::ElicitError::new(
+                    elicitation::ElicitErrorKind::InvalidOption {
+                        value: selected.to_string(),
+                        options: labels.join(", "),
+                    }
+                ));
+            }
+        } else {
+            // User gave a label directly
+            selected.to_string()
+        };
 
         tracing::debug!(
             selected = %selected,
