@@ -25,7 +25,6 @@ use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
     Select,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
-    mcp,
 };
 use jiff::{Span, Timestamp, Zoned, civil::DateTime as CivilDateTime, tz::TimeZone};
 
@@ -90,24 +89,32 @@ impl Elicitation for TimestampGenerationMode {
     type Style = TimestampGenerationModeStyle;
 
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Select an option:"),
-            Self::labels(),
-        );
-
-        let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_select().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await?;
-
-        let value = mcp::extract_value(result)?;
-        let label = mcp::parse_string(value)?;
-
-        let selected = Self::from_label(&label).ok_or_else(|| {
+        let prompt = Self::prompt().unwrap_or("Select an option:");
+        
+        let options_text = Self::labels()
+            .iter()
+            .enumerate()
+            .map(|(i, label)| format!("{}. {}", i + 1, label))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let full_prompt = format!("{}\n\nOptions:\n{}", prompt, options_text);
+        
+        let response = communicator.send_prompt(&full_prompt).await?;
+        let trimmed = response.trim();
+        
+        // Try to parse as number first
+        let selected = if let Ok(choice) = trimmed.parse::<usize>() {
+            if choice >= 1 && choice <= Self::labels().len() {
+                let label = Self::labels()[choice - 1];
+                Self::from_label(label)
+            } else {
+                None
+            }
+        } else {
+            Self::from_label(trimmed)
+        };
+        
+        let selected = selected.ok_or_else(|| {
             ElicitError::new(ElicitErrorKind::ParseError(
                 "Invalid Timestamp generation mode".to_string(),
             ))
@@ -197,18 +204,8 @@ impl Elicitation for Timestamp {
             DateTimeInputMethod::Iso8601String => {
                 // Elicit ISO 8601 string
                 let prompt = "Enter ISO 8601 timestamp (e.g., \"2024-07-11T15:30:00Z\"):";
-                let params = mcp::text_params(prompt);
-                let result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
-                    .await?;
-
-                let value = mcp::extract_value(result)?;
-                let iso_string = mcp::parse_string(value)?;
+                let response = communicator.send_prompt(prompt).await?;
+                let iso_string = response.trim();
 
                 // Parse ISO 8601
                 iso_string.parse::<Timestamp>().map_err(|e| {
@@ -275,18 +272,8 @@ impl Elicitation for Zoned {
             DateTimeInputMethod::Iso8601String => {
                 // Elicit ISO 8601 string with timezone
                 let prompt = "Enter ISO 8601 datetime with timezone (e.g., \"2024-07-11T15:30:00-05[America/New_York]\"):";
-                let params = mcp::text_params(prompt);
-                let result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
-                    .await?;
-
-                let value = mcp::extract_value(result)?;
-                let iso_string = mcp::parse_string(value)?;
+                let response = communicator.send_prompt(prompt).await?;
+                let iso_string = response.trim();
 
                 // Parse ISO 8601
                 iso_string.parse::<Zoned>().map_err(|e| {
@@ -302,20 +289,10 @@ impl Elicitation for Zoned {
 
                 // Elicit timezone
                 let tz_prompt = "Enter IANA timezone (e.g., \"America/New_York\" or \"UTC\"):";
-                let tz_params = mcp::text_params(tz_prompt);
-                let tz_result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(tz_params),
-                        task: None,
-                    })
-                    .await?;
+                let tz_response = communicator.send_prompt(tz_prompt).await?;
+                let tz_string = tz_response.trim();
 
-                let tz_value = mcp::extract_value(tz_result)?;
-                let tz_string = mcp::parse_string(tz_value)?;
-
-                let tz = TimeZone::get(&tz_string).map_err(|e| {
+                let tz = TimeZone::get(tz_string).map_err(|e| {
                     ElicitError::new(ElicitErrorKind::ParseError(format!(
                         "Invalid timezone: {}",
                         e
@@ -373,18 +350,8 @@ impl Elicitation for CivilDateTime {
             DateTimeInputMethod::Iso8601String => {
                 // Elicit ISO 8601 string (no timezone)
                 let prompt = "Enter datetime (e.g., \"2024-07-11T15:30:00\"):";
-                let params = mcp::text_params(prompt);
-                let result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
-                    .await?;
-
-                let value = mcp::extract_value(result)?;
-                let iso_string = mcp::parse_string(value)?;
+                let response = communicator.send_prompt(prompt).await?;
+                let iso_string = response.trim();
 
                 // Parse ISO 8601
                 iso_string.parse::<CivilDateTime>().map_err(|e| {

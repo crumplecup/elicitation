@@ -25,7 +25,6 @@ use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
     Select,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
-    mcp,
 };
 use chrono::{DateTime, Duration, FixedOffset, NaiveDateTime, TimeZone, Utc};
 
@@ -91,24 +90,32 @@ impl Elicitation for DateTimeUtcGenerationMode {
     type Style = DateTimeUtcGenerationModeStyle;
 
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Select an option:"),
-            Self::labels(),
-        );
-
-        let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_select().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await?;
-
-        let value = mcp::extract_value(result)?;
-        let label = mcp::parse_string(value)?;
-
-        let selected = Self::from_label(&label).ok_or_else(|| {
+        let prompt = Self::prompt().unwrap_or("Select an option:");
+        
+        let options_text = Self::labels()
+            .iter()
+            .enumerate()
+            .map(|(i, label)| format!("{}. {}", i + 1, label))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let full_prompt = format!("{}\n\nOptions:\n{}", prompt, options_text);
+        
+        let response = communicator.send_prompt(&full_prompt).await?;
+        let trimmed = response.trim();
+        
+        // Try to parse as number first
+        let selected = if let Ok(choice) = trimmed.parse::<usize>() {
+            if choice >= 1 && choice <= Self::labels().len() {
+                let label = Self::labels()[choice - 1];
+                Self::from_label(label)
+            } else {
+                None
+            }
+        } else {
+            Self::from_label(trimmed)
+        };
+        
+        let selected = selected.ok_or_else(|| {
             ElicitError::new(ElicitErrorKind::ParseError(
                 "Invalid DateTime<Utc> generation mode".to_string(),
             ))
@@ -230,24 +237,32 @@ impl Elicitation for NaiveDateTimeGenerationMode {
     type Style = NaiveDateTimeGenerationModeStyle;
 
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Select an option:"),
-            Self::labels(),
-        );
-
-        let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_select().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await?;
-
-        let value = mcp::extract_value(result)?;
-        let label = mcp::parse_string(value)?;
-
-        let selected = Self::from_label(&label).ok_or_else(|| {
+        let prompt = Self::prompt().unwrap_or("Select an option:");
+        
+        let options_text = Self::labels()
+            .iter()
+            .enumerate()
+            .map(|(i, label)| format!("{}. {}", i + 1, label))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let full_prompt = format!("{}\n\nOptions:\n{}", prompt, options_text);
+        
+        let response = communicator.send_prompt(&full_prompt).await?;
+        let trimmed = response.trim();
+        
+        // Try to parse as number first
+        let selected = if let Ok(choice) = trimmed.parse::<usize>() {
+            if choice >= 1 && choice <= Self::labels().len() {
+                let label = Self::labels()[choice - 1];
+                Self::from_label(label)
+            } else {
+                None
+            }
+        } else {
+            Self::from_label(trimmed)
+        };
+        
+        let selected = selected.ok_or_else(|| {
             ElicitError::new(ElicitErrorKind::ParseError(
                 "Invalid NaiveDateTime generation mode".to_string(),
             ))
@@ -340,21 +355,11 @@ impl Elicitation for DateTime<Utc> {
             DateTimeInputMethod::Iso8601String => {
                 // Elicit ISO 8601 string
                 let prompt = "Enter ISO 8601 datetime (e.g., \"2024-07-11T15:30:00Z\"):";
-                let params = mcp::text_params(prompt);
-                let result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
-                    .await?;
-
-                let value = mcp::extract_value(result)?;
-                let iso_string = mcp::parse_string(value)?;
+                let response = communicator.send_prompt(prompt).await?;
+                let iso_string = response.trim();
 
                 // Parse ISO 8601
-                DateTime::parse_from_rfc3339(&iso_string)
+                DateTime::parse_from_rfc3339(iso_string)
                     .map(|dt| dt.with_timezone(&Utc))
                     .map_err(|e| {
                         ElicitError::new(ElicitErrorKind::ParseError(format!(
@@ -416,21 +421,11 @@ impl Elicitation for DateTime<FixedOffset> {
                 // Elicit ISO 8601 string
                 let prompt =
                     "Enter ISO 8601 datetime with offset (e.g., \"2024-07-11T15:30:00+05:00\"):";
-                let params = mcp::text_params(prompt);
-                let result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
-                    .await?;
-
-                let value = mcp::extract_value(result)?;
-                let iso_string = mcp::parse_string(value)?;
+                let response = communicator.send_prompt(prompt).await?;
+                let iso_string = response.trim();
 
                 // Parse ISO 8601
-                DateTime::parse_from_rfc3339(&iso_string).map_err(|e| {
+                DateTime::parse_from_rfc3339(iso_string).map_err(|e| {
                     ElicitError::new(ElicitErrorKind::ParseError(format!(
                         "Invalid ISO 8601 datetime: {}",
                         e
@@ -443,18 +438,17 @@ impl Elicitation for DateTime<FixedOffset> {
 
                 // Elicit offset
                 let offset_prompt = "Enter timezone offset in hours (e.g., +5 or -8):";
-                let offset_params = mcp::number_params(offset_prompt, -12, 14);
-                let offset_result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_number().into(),
-                        arguments: Some(offset_params),
-                        task: None,
-                    })
-                    .await?;
-
-                let offset_value = mcp::extract_value(offset_result)?;
-                let offset_hours = mcp::parse_integer::<i64>(offset_value)? as i32;
+                let offset_response = communicator.send_prompt(offset_prompt).await?;
+                let offset_hours = offset_response.trim().parse::<i32>().map_err(|e| {
+                    ElicitError::new(ElicitErrorKind::ParseError(
+                        format!("Invalid offset: '{}' ({})", offset_response.trim(), e)
+                    ))
+                })?;
+                if !(-12..=14).contains(&offset_hours) {
+                    return Err(ElicitError::new(ElicitErrorKind::ParseError(
+                        format!("Offset must be between -12 and 14, got {}", offset_hours)
+                    )));
+                }
 
                 let offset = FixedOffset::east_opt(offset_hours * 3600).ok_or_else(|| {
                     ElicitError::new(ElicitErrorKind::ParseError(format!(
@@ -512,21 +506,11 @@ impl Elicitation for NaiveDateTime {
             DateTimeInputMethod::Iso8601String => {
                 // Elicit ISO 8601 string (no timezone)
                 let prompt = "Enter datetime (e.g., \"2024-07-11T15:30:00\"):";
-                let params = mcp::text_params(prompt);
-                let result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
-                    .await?;
-
-                let value = mcp::extract_value(result)?;
-                let iso_string = mcp::parse_string(value)?;
+                let response = communicator.send_prompt(prompt).await?;
+                let iso_string = response.trim();
 
                 // Parse ISO 8601 (naive)
-                NaiveDateTime::parse_from_str(&iso_string, "%Y-%m-%dT%H:%M:%S").map_err(|e| {
+                NaiveDateTime::parse_from_str(iso_string, "%Y-%m-%dT%H:%M:%S").map_err(|e| {
                     ElicitError::new(ElicitErrorKind::ParseError(format!(
                         "Invalid datetime: {}",
                         e

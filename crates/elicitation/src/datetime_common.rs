@@ -11,7 +11,6 @@
 
 use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select,
-    mcp,
 };
 
 /// Input method for datetime elicitation.
@@ -66,21 +65,29 @@ impl Elicitation for DateTimeInputMethod {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting datetime input method");
 
-        let params = mcp::select_params(prompt, Self::labels());
-        let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_select().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await?;
-
-        let value = mcp::extract_value(result)?;
-        let label = mcp::parse_string(value)?;
-
-        Self::from_label(&label)
-            .ok_or_else(|| ElicitError::new(ElicitErrorKind::InvalidSelection(label)))
+        let options_text = Self::labels()
+            .iter()
+            .enumerate()
+            .map(|(i, label)| format!("{}. {}", i + 1, label))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let full_prompt = format!("{}\n\nOptions:\n{}", prompt, options_text);
+        
+        let response = communicator.send_prompt(&full_prompt).await?;
+        let trimmed = response.trim();
+        
+        // Try to parse as number first
+        if let Ok(choice) = trimmed.parse::<usize>()
+            && choice >= 1 && choice <= Self::labels().len()
+        {
+            let label = Self::labels()[choice - 1];
+            return Self::from_label(label)
+                .ok_or_else(|| ElicitError::new(ElicitErrorKind::InvalidSelection(label.to_string())));
+        }
+        
+        // Otherwise try to match as label
+        Self::from_label(trimmed)
+            .ok_or_else(|| ElicitError::new(ElicitErrorKind::InvalidSelection(trimmed.to_string())))
     }
 }
 
@@ -108,82 +115,88 @@ impl DateTimeComponents {
         tracing::debug!("Eliciting datetime components");
 
         // Year
-        let year_params = mcp::number_params("Enter year:", 1970, 2100);
-        let year_result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_number().into(),
-                arguments: Some(year_params),
-                task: None,
-            })
-            .await?;
-        let year_value = mcp::extract_value(year_result)?;
-        let year = mcp::parse_integer::<i64>(year_value)? as i32;
+        let year_prompt = "Enter year (1970-2100):";
+        let year_response = communicator.send_prompt(year_prompt).await?;
+        let year = year_response.trim().parse::<i32>().map_err(|e| {
+            ElicitError::new(ElicitErrorKind::ParseError(
+                format!("Invalid year: '{}' ({})", year_response.trim(), e)
+            ))
+        })?;
+        if !(1970..=2100).contains(&year) {
+            return Err(ElicitError::new(ElicitErrorKind::ParseError(
+                format!("Year must be between 1970 and 2100, got {}", year)
+            )));
+        }
 
         // Month
-        let month_params = mcp::number_params("Enter month (1-12):", 1, 12);
-        let month_result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_number().into(),
-                arguments: Some(month_params),
-                task: None,
-            })
-            .await?;
-        let month_value = mcp::extract_value(month_result)?;
-        let month = mcp::parse_integer::<i64>(month_value)? as u8;
+        let month_prompt = "Enter month (1-12):";
+        let month_response = communicator.send_prompt(month_prompt).await?;
+        let month = month_response.trim().parse::<u8>().map_err(|e| {
+            ElicitError::new(ElicitErrorKind::ParseError(
+                format!("Invalid month: '{}' ({})", month_response.trim(), e)
+            ))
+        })?;
+        if !(1..=12).contains(&month) {
+            return Err(ElicitError::new(ElicitErrorKind::ParseError(
+                format!("Month must be between 1 and 12, got {}", month)
+            )));
+        }
 
         // Day
-        let day_params = mcp::number_params("Enter day (1-31):", 1, 31);
-        let day_result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_number().into(),
-                arguments: Some(day_params),
-                task: None,
-            })
-            .await?;
-        let day_value = mcp::extract_value(day_result)?;
-        let day = mcp::parse_integer::<i64>(day_value)? as u8;
+        let day_prompt = "Enter day (1-31):";
+        let day_response = communicator.send_prompt(day_prompt).await?;
+        let day = day_response.trim().parse::<u8>().map_err(|e| {
+            ElicitError::new(ElicitErrorKind::ParseError(
+                format!("Invalid day: '{}' ({})", day_response.trim(), e)
+            ))
+        })?;
+        if !(1..=31).contains(&day) {
+            return Err(ElicitError::new(ElicitErrorKind::ParseError(
+                format!("Day must be between 1 and 31, got {}", day)
+            )));
+        }
 
         // Hour
-        let hour_params = mcp::number_params("Enter hour (0-23):", 0, 23);
-        let hour_result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_number().into(),
-                arguments: Some(hour_params),
-                task: None,
-            })
-            .await?;
-        let hour_value = mcp::extract_value(hour_result)?;
-        let hour = mcp::parse_integer::<i64>(hour_value)? as u8;
+        let hour_prompt = "Enter hour (0-23):";
+        let hour_response = communicator.send_prompt(hour_prompt).await?;
+        let hour = hour_response.trim().parse::<u8>().map_err(|e| {
+            ElicitError::new(ElicitErrorKind::ParseError(
+                format!("Invalid hour: '{}' ({})", hour_response.trim(), e)
+            ))
+        })?;
+        if hour > 23 {
+            return Err(ElicitError::new(ElicitErrorKind::ParseError(
+                format!("Hour must be between 0 and 23, got {}", hour)
+            )));
+        }
 
         // Minute
-        let minute_params = mcp::number_params("Enter minute (0-59):", 0, 59);
-        let minute_result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_number().into(),
-                arguments: Some(minute_params),
-                task: None,
-            })
-            .await?;
-        let minute_value = mcp::extract_value(minute_result)?;
-        let minute = mcp::parse_integer::<i64>(minute_value)? as u8;
+        let minute_prompt = "Enter minute (0-59):";
+        let minute_response = communicator.send_prompt(minute_prompt).await?;
+        let minute = minute_response.trim().parse::<u8>().map_err(|e| {
+            ElicitError::new(ElicitErrorKind::ParseError(
+                format!("Invalid minute: '{}' ({})", minute_response.trim(), e)
+            ))
+        })?;
+        if minute > 59 {
+            return Err(ElicitError::new(ElicitErrorKind::ParseError(
+                format!("Minute must be between 0 and 59, got {}", minute)
+            )));
+        }
 
         // Second
-        let second_params = mcp::number_params("Enter second (0-59):", 0, 59);
-        let second_result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_number().into(),
-                arguments: Some(second_params),
-                task: None,
-            })
-            .await?;
-        let second_value = mcp::extract_value(second_result)?;
-        let second = mcp::parse_integer::<i64>(second_value)? as u8;
+        let second_prompt = "Enter second (0-59):";
+        let second_response = communicator.send_prompt(second_prompt).await?;
+        let second = second_response.trim().parse::<u8>().map_err(|e| {
+            ElicitError::new(ElicitErrorKind::ParseError(
+                format!("Invalid second: '{}' ({})", second_response.trim(), e)
+            ))
+        })?;
+        if second > 59 {
+            return Err(ElicitError::new(ElicitErrorKind::ParseError(
+                format!("Second must be between 0 and 59, got {}", second)
+            )));
+        }
 
         tracing::debug!(
             year,
