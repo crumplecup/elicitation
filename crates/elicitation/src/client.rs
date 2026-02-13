@@ -1,5 +1,6 @@
 //! Client wrapper for style-aware elicitation.
 
+use async_trait::async_trait;
 use rmcp::service::{Peer, RoleClient};
 use std::sync::Arc;
 
@@ -167,6 +168,7 @@ impl ElicitClient {
 }
 
 // Implement ElicitCommunicator for client-side communication
+#[async_trait]
 impl ElicitCommunicator for ElicitClient {
     async fn send_prompt(&self, prompt: &str) -> ElicitResult<String> {
         // TODO: Implement client-side prompt sending

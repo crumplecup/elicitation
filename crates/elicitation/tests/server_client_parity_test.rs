@@ -10,7 +10,7 @@
 //!
 //! This test ensures EVERY type in the library works in both modes.
 
-use elicitation::{Elicitation, ElicitCommunicator, ElicitResult, ElicitError, ElicitErrorKind};
+use elicitation::{Elicitation, ElicitCommunicator, ElicitResult};
 use elicitation::StyleContext;
 
 /// Mock communicator that simulates server-side behavior.
@@ -29,6 +29,7 @@ impl MockServerCommunicator {
     }
 }
 
+#[async_trait::async_trait]
 impl ElicitCommunicator for MockServerCommunicator {
     async fn send_prompt(&self, prompt: &str) -> ElicitResult<String> {
         // Simulate server-side: return appropriate mock response based on prompt type

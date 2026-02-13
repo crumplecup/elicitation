@@ -6,6 +6,7 @@
 //! work with either context seamlessly.
 
 use crate::{ElicitResult, Elicitation, ElicitationStyle};
+use async_trait::async_trait;
 use std::any::TypeId;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -20,6 +21,7 @@ use std::sync::{Arc, RwLock};
 ///
 /// - `ElicitClient` - Client-side communication via `Peer<RoleClient>`
 /// - `ElicitServer` - Server-side communication via `Peer<RoleServer>`
+#[async_trait]
 pub trait ElicitCommunicator: Clone + Send + Sync {
     /// Send a prompt and receive a text response.
     ///
@@ -33,10 +35,7 @@ pub trait ElicitCommunicator: Clone + Send + Sync {
     /// # Returns
     ///
     /// Returns the response text on success, or an error if communication fails.
-    fn send_prompt(
-        &self,
-        prompt: &str,
-    ) -> impl std::future::Future<Output = ElicitResult<String>> + Send;
+    async fn send_prompt(&self, prompt: &str) -> ElicitResult<String>;
 
     /// Call an MCP tool directly with given parameters.
     ///
@@ -50,12 +49,10 @@ pub trait ElicitCommunicator: Clone + Send + Sync {
     /// # Returns
     ///
     /// Returns the tool call result or an error.
-    fn call_tool(
+    async fn call_tool(
         &self,
         params: rmcp::model::CallToolRequestParams,
-    ) -> impl std::future::Future<
-        Output = Result<rmcp::model::CallToolResult, rmcp::service::ServiceError>,
-    > + Send;
+    ) -> Result<rmcp::model::CallToolResult, rmcp::service::ServiceError>;
 
     /// Get the style context for type-specific styles.
     ///

@@ -23,7 +23,7 @@ derive-getters = { workspace = true }
 tracing = { workspace = true }
 tokio = { workspace = true }
 paste = { workspace = true }
-async-trait = { workspace = true }
+async-trait.workspace = true
 inventory = { workspace = true }
 
 # CLI dependencies (optional)
@@ -62,6 +62,7 @@ tokio-test = { workspace = true }
 tracing-subscriber = { workspace = true }
 uuid = { workspace = true }
 criterion = { workspace = true }
+mockall = "0.14.0"
 
 [features]
 default = ["full"]

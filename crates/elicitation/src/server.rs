@@ -4,6 +4,7 @@
 //! and provides the same style management API, but uses server-to-client communication
 //! via `peer.create_message()`.
 
+use async_trait::async_trait;
 use rmcp::service::{Peer, RoleServer};
 
 use crate::{
@@ -54,6 +55,7 @@ impl ElicitServer {
 }
 
 // Implement ElicitCommunicator for server-side communication
+#[async_trait]
 impl ElicitCommunicator for ElicitServer {
     #[tracing::instrument(skip(self, prompt), fields(prompt_len = prompt.len()))]
     async fn send_prompt(&self, prompt: &str) -> ElicitResult<String> {
