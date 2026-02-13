@@ -1,7 +1,7 @@
 //! Float contract types.
 
 use super::ValidationError;
-use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use crate::{ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -65,23 +65,21 @@ macro_rules! impl_float_default_wrapper {
                 #[tracing::instrument(skip(communicator))]
                 async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
                     let prompt = Self::prompt().unwrap();
-                    tracing::debug!(concat!("Eliciting ", stringify!($wrapper), " with serde deserialization"));
+                    tracing::debug!(concat!("Eliciting ", stringify!($wrapper), " with text parsing"));
 
-                    let params = crate::mcp::text_params(prompt);
+                    let response = communicator.send_prompt(prompt).await?;
+                    let trimmed = response.trim();
 
-                    let result = communicator.call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
-                            name: crate::mcp::tool_names::elicit_text().into(),
-                            arguments: Some(params),
-                            task: None,
-                        })
-                        .await?;
+                    let value: $primitive = trimmed.parse().map_err(|e| {
+                        ElicitError::new(ElicitErrorKind::ParseError(format!(
+                            "Failed to parse '{}' as {}: {}",
+                            trimmed,
+                            stringify!($primitive),
+                            e
+                        )))
+                    })?;
 
-                    let value = crate::mcp::extract_value(result)?;
-
-                    // Use serde to deserialize directly into wrapper type
-                    // Preserves error source via From<serde_json::Error> chain
-                    Ok(serde_json::from_value(value)?)
+                    Ok(Self::new(value))
                 }
             }
         }
