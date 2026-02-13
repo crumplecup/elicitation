@@ -66,24 +66,24 @@ macro_rules! impl_integer_default_wrapper {
                 #[tracing::instrument(skip(communicator))]
                 async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
                     let prompt = Self::prompt().unwrap();
-                    tracing::debug!(concat!("Eliciting ", stringify!($wrapper), " with serde deserialization"));
+                    tracing::debug!(concat!("Eliciting ", stringify!($wrapper), " with prompt-based parsing"));
 
-                    let params = crate::mcp::number_params(prompt, $min, $max);
+                    // Use send_prompt instead of call_tool for server compatibility
+                    let response = communicator.send_prompt(prompt).await?;
+                    
+                    tracing::debug!(response = %response, "Received response, parsing as number");
 
-                    let result = communicator
-                        .call_tool(rmcp::model::CallToolRequestParams {
-                            meta: None,
-                            name: crate::mcp::tool_names::elicit_number().into(),
-                            arguments: Some(params),
-                            task: None,
-                        })
-                        .await?;
+                    // Parse response as integer
+                    let trimmed = response.trim();
+                    let value: $primitive = trimmed.parse().map_err(|e| {
+                        tracing::error!(error = ?e, response = %trimmed, "Failed to parse as integer");
+                        crate::ElicitError::new(crate::ElicitErrorKind::ParseError(
+                            format!("Invalid {}: '{}' ({})", stringify!($primitive), trimmed, e)
+                        ))
+                    })?;
 
-                    let value = crate::mcp::extract_value(result)?;
-
-                    // Use serde to deserialize directly into wrapper type
-                    // Preserves error source via From<serde_json::Error> chain
-                    Ok(serde_json::from_value(value)?)
+                    tracing::debug!(value = value, "Successfully parsed integer");
+                    Ok(Self::new(value))
                 }
             }
         }
