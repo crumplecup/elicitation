@@ -24,7 +24,7 @@
 
 use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
-    Select, mcp,
+    Select,
 };
 use uuid::Uuid;
 
@@ -85,28 +85,42 @@ impl Elicitation for UuidGenerationMode {
     type Style = UuidGenerationModeStyle;
 
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        // Use standard Select elicit pattern
-        let params = mcp::select_params(
+        // Format options into prompt
+        let options_text = Self::labels()
+            .iter()
+            .enumerate()
+            .map(|(i, label)| format!("{}. {}", i + 1, label))
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        let prompt = format!(
+            "{}\n\nOptions:\n{}\n\nPlease enter the number of your choice:",
             Self::prompt().unwrap_or("Select an option:"),
-            Self::labels(),
+            options_text
         );
 
-        let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_select().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await?;
+        let response = communicator.send_prompt(&prompt).await?;
+        let trimmed = response.trim();
 
-        let value = mcp::extract_value(result)?;
-        let label = mcp::parse_string(value)?;
+        // Try parsing as number first
+        if let Ok(index) = trimmed.parse::<usize>() {
+            if index > 0 && index <= Self::labels().len() {
+                let label = Self::labels()[index - 1];
+                return Self::from_label(label).ok_or_else(|| {
+                    ElicitError::new(ElicitErrorKind::ParseError(
+                        "Invalid UUID generation mode".to_string(),
+                    ))
+                });
+            }
+        }
 
-        Self::from_label(&label).ok_or_else(|| {
-            ElicitError::new(ElicitErrorKind::ParseError(
-                "Invalid UUID generation mode".to_string(),
-            ))
+        // Try direct label match
+        Self::from_label(trimmed).ok_or_else(|| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid selection '{}'. Expected number 1-{} or option label.",
+                trimmed,
+                Self::labels().len()
+            )))
         })
     }
 }
