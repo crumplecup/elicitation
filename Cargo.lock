@@ -556,6 +556,7 @@ dependencies = [
 name = "elicitation_derive"
 version = "0.6.11"
 dependencies = [
+ "async-trait",
  "chrono",
  "elicitation",
  "elicitation_rand",
@@ -566,6 +567,7 @@ dependencies = [
  "serde_json",
  "syn",
  "time",
+ "tokio",
  "tracing",
  "url",
  "uuid",

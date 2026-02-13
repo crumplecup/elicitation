@@ -499,25 +499,18 @@ impl Elicitation for UrlValid {
 
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let prompt = "Please enter a URL:";
-        tracing::debug!("Eliciting UrlValid with text elicitation");
+        let prompt = Self::prompt().unwrap();
+        tracing::debug!("Eliciting UrlValid with server-side send_prompt");
 
-        let params = crate::mcp::text_params(prompt);
-
-        let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: crate::mcp::tool_names::elicit_text().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await?;
-
-        let value = crate::mcp::extract_value(result)?;
-        let url_string: String = serde_json::from_value(value)?;
+        // Use send_prompt for server-side compatibility
+        let response = communicator.send_prompt(prompt).await?;
 
         // Parse the string as a URL
-        let url = url::Url::parse(&url_string).map_err(|_| ValidationError::UrlInvalid)?;
+        let url = url::Url::parse(response.trim())
+            .map_err(|e| crate::ElicitError::new(
+                crate::ElicitErrorKind::ParseError(format!("Invalid URL: {}", e))
+            ))?;
+
         Ok(Self::from_url(url))
     }
 }

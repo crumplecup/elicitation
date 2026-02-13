@@ -239,23 +239,18 @@ impl Elicitation for BoolDefault {
                 received: "None".to_string(),
             })
         })?;
-        tracing::debug!("Eliciting BoolDefault with serde deserialization");
+        tracing::debug!("Eliciting BoolDefault with server-side send_prompt");
 
-        let params = crate::mcp::bool_params(prompt);
+        // Use send_prompt for server-side compatibility
+        let response = communicator.send_prompt(prompt).await?;
 
-        let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: crate::mcp::tool_names::elicit_bool().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await?;
+        // Parse response as bool
+        let value: bool = response.trim().parse().map_err(|e| {
+            crate::ElicitError::new(crate::ElicitErrorKind::ParseError(
+                format!("Failed to parse bool: {}", e),
+            ))
+        })?;
 
-        let value = crate::mcp::extract_value(result)?;
-
-        // Use serde to deserialize directly into wrapper type
-        // Preserves error source via From<serde_json::Error> chain
-        Ok(serde_json::from_value(value)?)
+        Ok(Self::new(value))
     }
 }

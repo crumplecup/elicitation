@@ -35,6 +35,8 @@ time = { workspace = true }
 jiff = { workspace = true }
 uuid = { workspace = true }
 url = { workspace = true }
+tokio = { workspace = true }
+async-trait = { workspace = true }
 
 [features]
 # Passthrough features for testing (library users don't pay for these)

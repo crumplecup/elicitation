@@ -47,23 +47,14 @@ impl Elicitation for StringStyle {
         let prompt = <Self as Prompt>::prompt().unwrap();
         let labels = <Self as Select>::labels();
 
-        let params = crate::mcp::select_params(prompt, labels);
-        let result = communicator
-            .call_tool(crate::rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: crate::mcp::tool_names::elicit_select().into(),
-                arguments: Some(params),
-                task: None,
-            })
-            .await?;
+        // Use Select paradigm with send_prompt (for server-side)
+        let formatted_prompt = format!("{}\nOptions: {}", prompt, labels.join(", "));
+        let response = communicator.send_prompt(&formatted_prompt).await?;
 
-        let value = crate::mcp::extract_value(result)?;
-        let label = crate::mcp::parse_string(value)?;
-
-        <Self as Select>::from_label(&label).ok_or_else(|| {
+        <Self as Select>::from_label(response.trim()).ok_or_else(|| {
             crate::ElicitError::from(crate::ElicitErrorKind::ParseError(format!(
                 "Invalid style selection: {}",
-                label
+                response.trim()
             )))
         })
     }
