@@ -506,10 +506,12 @@ impl Elicitation for UrlValid {
         let response = communicator.send_prompt(prompt).await?;
 
         // Parse the string as a URL
-        let url = url::Url::parse(response.trim())
-            .map_err(|e| crate::ElicitError::new(
-                crate::ElicitErrorKind::ParseError(format!("Invalid URL: {}", e))
-            ))?;
+        let url = url::Url::parse(response.trim()).map_err(|e| {
+            crate::ElicitError::new(crate::ElicitErrorKind::ParseError(format!(
+                "Invalid URL: {}",
+                e
+            )))
+        })?;
 
         Ok(Self::from_url(url))
     }

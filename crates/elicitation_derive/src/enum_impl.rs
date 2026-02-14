@@ -295,8 +295,8 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
             .map(|(i, label)| format!("{}. {}", i + 1, label))
             .collect::<Vec<_>>()
             .join("\n");
-        
-        let full_prompt = format!("{}\n\nOptions:\n{}\n\nRespond with the number (1-{}) or exact label:", 
+
+        let full_prompt = format!("{}\n\nOptions:\n{}\n\nRespond with the number (1-{}) or exact label:",
             base_prompt, options_text, labels.len());
 
         // Use send_prompt for server-side compatibility

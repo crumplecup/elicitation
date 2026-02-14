@@ -4,9 +4,8 @@
 //! call_tool() instead of send_prompt(), which broke server-side elicitation.
 
 use elicitation::{ElicitCommunicator, ElicitError, Elicitation, Prompt, Select};
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use std::cell::RefCell;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 ///Mock communicator that tracks which methods are called.
 #[derive(Clone)]
@@ -71,15 +70,15 @@ enum ColorEnum {
 #[tokio::test]
 async fn test_simple_enum_uses_send_prompt() {
     let mock = MockCommunicator::new("1"); // Select first option
-    
+
     let result = SimpleEnum::elicit(&mock).await;
-    
+
     // Verify send_prompt was called (not call_tool)
     assert!(
         mock.was_send_prompt_called(),
         "Enum derive MUST use send_prompt(), not call_tool()"
     );
-    
+
     // Verify it actually worked
     assert!(result.is_ok(), "Elicitation should succeed");
     assert_eq!(result.unwrap(), SimpleEnum::First);
@@ -88,15 +87,15 @@ async fn test_simple_enum_uses_send_prompt() {
 #[tokio::test]
 async fn test_enum_with_custom_prompt_uses_send_prompt() {
     let mock = MockCommunicator::new("2"); // Select second option
-    
+
     let result = ColorEnum::elicit(&mock).await;
-    
+
     // Verify send_prompt was called (not call_tool)
     assert!(
         mock.was_send_prompt_called(),
         "Enum derive MUST use send_prompt(), not call_tool()"
     );
-    
+
     // Verify it actually worked
     assert!(result.is_ok(), "Elicitation should succeed");
     assert_eq!(result.unwrap(), ColorEnum::Green);
@@ -105,15 +104,15 @@ async fn test_enum_with_custom_prompt_uses_send_prompt() {
 #[tokio::test]
 async fn test_enum_label_response_uses_send_prompt() {
     let mock = MockCommunicator::new("Blue"); // Select by label
-    
+
     let result = ColorEnum::elicit(&mock).await;
-    
+
     // Verify send_prompt was called (not call_tool)
     assert!(
         mock.was_send_prompt_called(),
         "Enum derive MUST use send_prompt(), not call_tool()"
     );
-    
+
     // Verify it actually worked
     assert!(result.is_ok(), "Elicitation should succeed");
     assert_eq!(result.unwrap(), ColorEnum::Blue);
@@ -122,15 +121,15 @@ async fn test_enum_label_response_uses_send_prompt() {
 #[tokio::test]
 async fn test_enum_invalid_response_still_uses_send_prompt() {
     let mock = MockCommunicator::new("99"); // Invalid selection
-    
+
     let result = ColorEnum::elicit(&mock).await;
-    
+
     // Even on error, verify send_prompt was called (not call_tool)
     assert!(
         mock.was_send_prompt_called(),
         "Enum derive MUST use send_prompt(), not call_tool() (even on error)"
     );
-    
+
     // Should fail with invalid selection
     assert!(result.is_err(), "Invalid selection should error");
 }

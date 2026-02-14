@@ -246,9 +246,10 @@ impl Elicitation for BoolDefault {
 
         // Parse response as bool
         let value: bool = response.trim().parse().map_err(|e| {
-            crate::ElicitError::new(crate::ElicitErrorKind::ParseError(
-                format!("Failed to parse bool: {}", e),
-            ))
+            crate::ElicitError::new(crate::ElicitErrorKind::ParseError(format!(
+                "Failed to parse bool: {}",
+                e
+            )))
         })?;
 
         Ok(Self::new(value))

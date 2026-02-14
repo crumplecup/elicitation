@@ -511,7 +511,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
 name = "elicitation"
-version = "0.6.11"
+version = "0.7.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -546,7 +546,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_creusot_proofs"
-version = "0.6.11"
+version = "0.7.0"
 dependencies = [
  "creusot-std",
  "elicitation",
@@ -554,7 +554,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_derive"
-version = "0.6.11"
+version = "0.7.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -575,7 +575,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_macros"
-version = "0.6.11"
+version = "0.7.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -584,7 +584,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_rand"
-version = "0.6.11"
+version = "0.7.0"
 dependencies = [
  "chrono",
  "csv",
@@ -1016,9 +1016,9 @@ dependencies = [
 
 [[package]]
 name = "kani-verifier"
-version = "0.57.0"
+version = "0.67.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6f72a5e34d065319bbedd7476a5186c6d6065a4d3fd633cdef1aa5ad7820399"
+checksum = "d6225a7ec13037e984f6bebdda33d34390e643a1cd2a4522cb5d5e8e6ed85e2b"
 dependencies = [
  "anyhow",
  "home",

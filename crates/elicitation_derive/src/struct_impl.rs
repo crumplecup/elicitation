@@ -550,13 +550,13 @@ fn generate_elicit_impl_styled(
                     .map(|(i, label)| format!("{}. {}", i + 1, label))
                     .collect::<Vec<_>>()
                     .join("\n");
-                
-                let full_prompt = format!("{}\n\nOptions:\n{}\n\nRespond with the number (1-{}) or exact label:", 
+
+                let full_prompt = format!("{}\n\nOptions:\n{}\n\nRespond with the number (1-{}) or exact label:",
                     prompt, options_text, <Self as elicitation::Select>::labels().len());
 
                 let response = communicator.send_prompt(&full_prompt).await?;
-                
-                // Parse response - try as number first, then as label  
+
+                // Parse response - try as number first, then as label
                 let selected = response.trim();
                 let label = if let Ok(num) = selected.parse::<usize>() {
                     // User gave a number (1-indexed)
