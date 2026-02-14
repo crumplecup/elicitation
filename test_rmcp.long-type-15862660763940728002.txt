@@ -1,2 +1,0 @@
-(Tool, for<'a> fn(&'a TestServer, std::string::String) -> Pin<Box<(dyn Future<Output = std::string::String> + Send + 'a)>> {TestServer::test_method})
-(Tool, for<'a> fn(&'a TestServer, std::string::String) -> Pin<Box<(dyn Future<Output = std::string::String> + Send + 'a)>> {TestServer::test_method}): IntoToolRoute<TestServer, _>

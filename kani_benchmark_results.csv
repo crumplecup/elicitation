@@ -1,4 +1,0 @@
-Problem_Space,Time_Seconds,Iteration,Harness_Name
-1,15.961492206,1,bench_concrete_1_byte
-1,.885948165,2,bench_concrete_1_byte
-1,1.091888797,3,bench_concrete_1_byte

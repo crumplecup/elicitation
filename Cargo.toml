@@ -9,7 +9,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.6.11"
+version = "0.7.0"
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/crumplecup/elicitation"
@@ -24,10 +24,10 @@ unexpected_cfgs = { level = "warn", check-cfg = [
 ] }
 
 [workspace.dependencies]
-elicitation = { path = "crates/elicitation", version = "0.6.11" }
-elicitation_derive = { path = "crates/elicitation_derive", version = "0.6.11" }
-elicitation_macros = { path = "crates/elicitation_macros", version = "0.6.11" }
-elicitation_rand = { path = "crates/elicitation_rand", version = "0.6.11" }
+elicitation = { path = "crates/elicitation", version = "0.7.0" }
+elicitation_derive = { path = "crates/elicitation_derive", version = "0.7.0" }
+elicitation_macros = { path = "crates/elicitation_macros", version = "0.7.0" }
+elicitation_rand = { path = "crates/elicitation_rand", version = "0.7.0" }
 
 
 # MCP client
@@ -91,7 +91,7 @@ regex = "1.12"
 # Verification libraries
 creusot-std = { version = "0.9.0" }
 prusti-contracts = { version = "0.2" }
-kani-verifier = { version = "0.57" }
+kani-verifier = { version = "0.67" }
 
 # Dev dependencies
 tokio-test = "0.4"
