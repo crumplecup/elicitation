@@ -30,17 +30,17 @@ impl crate::Prompt for DateTimeInputMethod {
 }
 
 impl Select for DateTimeInputMethod {
-    fn options() -> &'static [Self] {
-        &[
+    fn options() -> Vec<Self> {
+        vec![
             DateTimeInputMethod::Iso8601String,
             DateTimeInputMethod::ManualComponents,
         ]
     }
 
-    fn labels() -> &'static [&'static str] {
-        &[
-            "ISO 8601 string (e.g., \"2024-07-11T15:30:00Z\")",
-            "Manual components (year, month, day, etc.)",
+    fn labels() -> Vec<String> {
+        vec![
+            "ISO 8601 string (e.g., \"2024-07-11T15:30:00Z\")".to_string(),
+            "Manual components (year, month, day, etc.)".to_string(),
         ]
     }
 
@@ -66,7 +66,7 @@ impl Elicitation for DateTimeInputMethod {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting datetime input method");
 
-        let params = mcp::select_params(prompt, Self::labels());
+        let params = mcp::select_params(prompt, &Self::labels());
         let result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,

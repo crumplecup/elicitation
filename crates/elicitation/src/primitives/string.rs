@@ -23,12 +23,12 @@ impl Prompt for StringStyle {
 }
 
 impl Select for StringStyle {
-    fn options() -> &'static [Self] {
-        &[Self::Human, Self::Agent]
+    fn options() -> Vec<Self> {
+        vec![Self::Human, Self::Agent]
     }
 
-    fn labels() -> &'static [&'static str] {
-        &["human", "agent"]
+    fn labels() -> Vec<String> {
+        vec!["human".to_string(), "agent".to_string()]
     }
 
     fn from_label(label: &str) -> Option<Self> {

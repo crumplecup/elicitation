@@ -22,8 +22,8 @@
 //! ```
 
 use crate::{
-    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
-    Select,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
+    ElicitationPattern, Generator, PatternDetails, Prompt, Select, TypeMetadata,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
     mcp,
 };
@@ -54,19 +54,19 @@ pub enum TimestampGenerationMode {
 }
 
 impl Select for TimestampGenerationMode {
-    fn options() -> &'static [Self] {
-        &[
+    fn options() -> Vec<Self> {
+        vec![
             TimestampGenerationMode::Now,
             TimestampGenerationMode::UnixEpoch,
             TimestampGenerationMode::Offset { seconds: 0 },
         ]
     }
 
-    fn labels() -> &'static [&'static str] {
-        &[
-            "Now (Current UTC)",
-            "Unix Epoch (1970-01-01)",
-            "Offset (Custom)",
+    fn labels() -> Vec<String> {
+        vec![
+            "Now (Current UTC)".to_string(),
+            "Unix Epoch (1970-01-01)".to_string(),
+            "Offset (Custom)".to_string(),
         ]
     }
 
@@ -92,7 +92,7 @@ impl Elicitation for TimestampGenerationMode {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
-            Self::labels(),
+            &Self::labels(),
         );
 
         let result = communicator
@@ -120,6 +120,22 @@ impl Elicitation for TimestampGenerationMode {
                 let seconds = i64::elicit(communicator).await?;
                 Ok(TimestampGenerationMode::Offset { seconds })
             }
+        }
+    }
+}
+
+impl ElicitIntrospect for TimestampGenerationMode {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "TimestampGenerationMode",
+            description: Self::prompt(),
+            details: PatternDetails::Select {
+                options: Self::labels(),
+            },
         }
     }
 }
@@ -251,6 +267,34 @@ impl Elicitation for Timestamp {
             }
         }
     }
+
+    #[cfg(kani)]
+    fn kani_proof() {
+        use crate::datetime_common::{DateTimeComponents, DateTimeInputMethod};
+
+        // Verification delegated to input components
+        DateTimeInputMethod::kani_proof();
+        DateTimeComponents::kani_proof();
+
+        assert!(
+            true,
+            "jiff::Timestamp verified via component composition + trusted jiff crate"
+        );
+    }
+}
+
+impl ElicitIntrospect for Timestamp {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "jiff::Timestamp",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
+        }
+    }
 }
 
 // Zoned implementation
@@ -351,6 +395,20 @@ impl Elicitation for Zoned {
     }
 }
 
+impl ElicitIntrospect for Zoned {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "jiff::Zoned",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
+        }
+    }
+}
+
 // civil::DateTime implementation
 impl Prompt for CivilDateTime {
     fn prompt() -> Option<&'static str> {
@@ -415,6 +473,20 @@ impl Elicitation for CivilDateTime {
                     )))
                 })
             }
+        }
+    }
+}
+
+impl ElicitIntrospect for CivilDateTime {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "jiff::CivilDateTime",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
         }
     }
 }

@@ -29,8 +29,8 @@ impl Prompt for JsonType {
 }
 
 impl Select for JsonType {
-    fn options() -> &'static [Self] {
-        &[
+    fn options() -> Vec<Self> {
+        vec![
             JsonType::Null,
             JsonType::Bool,
             JsonType::String,
@@ -40,8 +40,15 @@ impl Select for JsonType {
         ]
     }
 
-    fn labels() -> &'static [&'static str] {
-        &["null", "boolean", "string", "number", "array", "object"]
+    fn labels() -> Vec<String> {
+        vec![
+            "null".to_string(),
+            "boolean".to_string(),
+            "string".to_string(),
+            "number".to_string(),
+            "array".to_string(),
+            "object".to_string(),
+        ]
     }
 
     fn from_label(label: &str) -> Option<Self> {
@@ -69,7 +76,7 @@ impl Elicitation for JsonType {
         let prompt = Self::prompt().unwrap();
         tracing::debug!("Eliciting JSON type selection");
 
-        let params = mcp::select_params(prompt, Self::labels());
+        let params = mcp::select_params(prompt, &Self::labels());
         let result = communicator
             .call_tool(rmcp::model::CallToolRequestParams {
                 meta: None,

@@ -8,6 +8,12 @@ use crate::Prompt;
 /// radio button group. It is the natural elicitation mode for enums and
 /// categorical fields.
 ///
+/// # Owned Returns for Flexibility
+///
+/// All methods return owned data (Vec<T>, Vec<String>) rather than static slices.
+/// This allows implementations for both compile-time enums and runtime collections
+/// like `Vec<T>` and `HashMap<K, V>`.
+///
 /// # Example
 ///
 /// ```rust,no_run
@@ -27,12 +33,12 @@ use crate::Prompt;
 /// }
 ///
 /// impl Select for Color {
-///     fn options() -> &'static [Self] {
-///         &[Color::Red, Color::Green, Color::Blue]
+///     fn options() -> Vec<Self> {
+///         vec![Color::Red, Color::Green, Color::Blue]
 ///     }
 ///
-///     fn labels() -> &'static [&'static str] {
-///         &["Red", "Green", "Blue"]
+///     fn labels() -> Vec<String> {
+///         vec!["Red".to_string(), "Green".to_string(), "Blue".to_string()]
 ///     }
 ///
 ///     fn from_label(label: &str) -> Option<Self> {
@@ -48,15 +54,15 @@ use crate::Prompt;
 pub trait Select: Prompt + Sized {
     /// All valid options for this selection.
     ///
-    /// Returns a static slice of all possible values. The MCP tool will
+    /// Returns a vector of all possible values. The MCP tool will
     /// ensure the user selects one of these options.
-    fn options() -> &'static [Self];
+    fn options() -> Vec<Self>;
 
     /// Human-readable labels for each option.
     ///
     /// Returns labels corresponding to each value in `options()`. These
     /// are presented to the user and used to parse their selection.
-    fn labels() -> &'static [&'static str];
+    fn labels() -> Vec<String>;
 
     /// Parse a label back into the type.
     ///
@@ -101,7 +107,9 @@ pub trait Survey: Prompt {
     ///
     /// Returns information about each field in the struct, used to drive
     /// the elicitation state machine.
-    fn fields() -> &'static [FieldInfo];
+    ///
+    /// Returns owned data to support both static and dynamic field sets.
+    fn fields() -> Vec<FieldInfo>;
 }
 
 /// Metadata for a single survey field.

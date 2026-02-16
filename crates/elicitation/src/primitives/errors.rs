@@ -97,24 +97,24 @@ impl IoErrorGenerationMode {
 }
 
 impl Select for IoErrorGenerationMode {
-    fn options() -> &'static [Self] {
+    fn options() -> Vec<Self> {
         // Can't return non-static Self with String fields
         // Options will be constructed from labels
-        &[]
+        vec![]
     }
 
-    fn labels() -> &'static [&'static str] {
-        &[
-            "NotFound",
-            "PermissionDenied",
-            "ConnectionRefused",
-            "ConnectionReset",
-            "BrokenPipe",
-            "AlreadyExists",
-            "InvalidInput",
-            "TimedOut",
-            "UnexpectedEof",
-            "Other",
+    fn labels() -> Vec<String> {
+        vec![
+            "NotFound".to_string(),
+            "PermissionDenied".to_string(),
+            "ConnectionRefused".to_string(),
+            "ConnectionReset".to_string(),
+            "BrokenPipe".to_string(),
+            "AlreadyExists".to_string(),
+            "InvalidInput".to_string(),
+            "TimedOut".to_string(),
+            "UnexpectedEof".to_string(),
+            "Other".to_string(),
         ]
     }
 
@@ -150,7 +150,7 @@ impl Elicitation for IoErrorGenerationMode {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
-            Self::labels(),
+            &Self::labels(),
         );
 
         let result = communicator
@@ -280,8 +280,8 @@ mod json_error {
     }
 
     impl Select for JsonErrorGenerationMode {
-        fn options() -> &'static [Self] {
-            &[
+        fn options() -> Vec<Self> {
+            vec![
                 JsonErrorGenerationMode::SyntaxError,
                 JsonErrorGenerationMode::EofWhileParsing,
                 JsonErrorGenerationMode::InvalidNumber,
@@ -290,13 +290,13 @@ mod json_error {
             ]
         }
 
-        fn labels() -> &'static [&'static str] {
-            &[
-                "Syntax Error",
-                "EOF While Parsing",
-                "Invalid Number",
-                "Invalid Escape",
-                "Invalid Unicode",
+        fn labels() -> Vec<String> {
+            vec![
+                "Syntax Error".to_string(),
+                "EOF While Parsing".to_string(),
+                "Invalid Number".to_string(),
+                "Invalid Escape".to_string(),
+                "Invalid Unicode".to_string(),
             ]
         }
 

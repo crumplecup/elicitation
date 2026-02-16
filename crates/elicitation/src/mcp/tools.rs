@@ -108,8 +108,13 @@ pub fn text_params(prompt: &str) -> serde_json::Map<String, serde_json::Value> {
 /// # Returns
 ///
 /// JSON object with prompt and options fields.
-#[tracing::instrument(level = "debug")]
-pub fn select_params(prompt: &str, options: &[&str]) -> serde_json::Map<String, serde_json::Value> {
+///
+/// Accepts any collection of string-like items (String, &str, etc.).
+#[tracing::instrument(level = "debug", skip(options))]
+pub fn select_params<S: AsRef<str>>(
+    prompt: &str,
+    options: &[S],
+) -> serde_json::Map<String, serde_json::Value> {
     let mut map = serde_json::Map::new();
     map.insert(
         "prompt".to_string(),
@@ -120,7 +125,7 @@ pub fn select_params(prompt: &str, options: &[&str]) -> serde_json::Map<String, 
         serde_json::Value::Array(
             options
                 .iter()
-                .map(|s| serde_json::Value::String((*s).to_string()))
+                .map(|s| serde_json::Value::String(s.as_ref().to_string()))
                 .collect(),
         ),
     );
