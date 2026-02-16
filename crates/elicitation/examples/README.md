@@ -226,6 +226,23 @@ Standard library collection types:
 
 ---
 
+#### `dynamic_choices.rs`
+Dynamic choice set elicitation with `ChoiceSet`:
+- Runtime-generated option lists (e.g., game moves)
+- Conditional menu items based on state
+- Filtered selections
+- Custom prompts for context
+
+**Run**: `cargo run --example dynamic_choices`
+
+**Demonstrates**:
+- `ChoiceSet<T>` wrapper for dynamic options
+- Tic-tac-toe move selection
+- State-based action menus
+- Selecting from filtered collections
+
+---
+
 #### `smart_pointers.rs`
 Heap allocation and reference counting:
 - `Box<T>` - heap allocation
