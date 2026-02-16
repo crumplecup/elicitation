@@ -408,7 +408,7 @@ changelog-preview:
 changelog-update:
     @command -v git-cliff >/dev/null 2>&1 || (echo "❌ git-cliff not installed. Run: just setup" && exit 1)
     @echo "📋 Updating CHANGELOG.md..."
-    git cliff --unreleased --prepend CHANGELOG.md
+    git cliff --output CHANGELOG.md
     @echo "✅ CHANGELOG.md updated"
 
 # Generate full changelog

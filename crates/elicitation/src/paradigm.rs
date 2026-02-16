@@ -104,7 +104,10 @@ where
     F: Fn(&T) -> bool,
 {
     fn select_filtered(filter: F) -> Vec<T> {
-        T::options().into_iter().filter(|item| filter(item)).collect()
+        T::options()
+            .into_iter()
+            .filter(|item| filter(item))
+            .collect()
     }
 }
 

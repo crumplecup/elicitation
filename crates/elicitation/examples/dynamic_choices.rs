@@ -21,10 +21,7 @@ async fn main() -> ElicitResult<()> {
     tracing::info!("Starting dynamic choices elicitation example");
 
     // Create MCP client with stdio transport
-    let service = ()
-        .serve(rmcp::transport::stdio())
-        .await
-        .expect("Failed to create MCP client");
+    let service = ().serve(rmcp::transport::stdio()).await.expect("Failed to create MCP client");
     let peer = service.peer();
     let client = ElicitClient::new(Arc::new(peer.clone()));
 

@@ -103,7 +103,10 @@ impl crate::Select for InstantGenerationMode {
     }
 
     fn labels() -> Vec<String> {
-        vec!["Now (current time)".to_string(), "Offset (from reference)".to_string()]
+        vec![
+            "Now (current time)".to_string(),
+            "Offset (from reference)".to_string(),
+        ]
     }
 
     fn from_label(label: &str) -> Option<Self> {

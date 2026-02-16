@@ -324,10 +324,8 @@ mod json_error {
         type Style = JsonErrorGenerationModeStyle;
 
         async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-            let params = mcp::select_params(
-                Self::prompt().unwrap_or("Select an option:"),
-                Self::labels(),
-            );
+            let labels = Self::labels();
+            let params = mcp::select_params(Self::prompt().unwrap_or("Select an option:"), &labels);
 
             let result = communicator
                 .call_tool(rmcp::model::CallToolRequestParams {

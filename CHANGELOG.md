@@ -9,8 +9,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Basic trait tools macro with explicit method list
-- Add async_trait support for trait tools macro
+- Add ElicitationContext for tracking elicitation state
+- Add ChoiceSet for dynamic choice elicitation
+- Add Filter trait for filtered selection
+
+### Documentation
+
+- Add dynamic_choices example demonstrating ChoiceSet
+- Add compositional verification examples and guide
+
+### Miscellaneous
+
+- Update author field with email
+
+### Refactor
+
+- Change Select/Survey traits to return owned Vec types
+- Update macros to generate Vec returns for Select/Survey
+
+### Testing
+
+- Add tests for ChoiceSet dynamic choice elicitation
+
+## [0.7.0] - 2026-02-14
+
+### Added
+
+- Update to rmcp 0.15 with SEP-1577 sampling changes
+
+### Fixed
+
+- Server-side elicitation for enum and struct derive macros
+- Use send_prompt() for server-side elicitation in all verification types
+
+### Miscellaneous
+
+- Archive outdated planning docs and cleanup
+- Apply pre-merge clippy fixes
+
+## [0.6.11] - 2026-02-09
+
+### Added
+
 - Add UUID generator Kani proofs - Phase 1 complete
 - Register UUID generator proofs in verification runner
 - Add IoError and JsonError generator Kani proofs - Phase 2 complete
@@ -34,30 +74,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
-- Add guide for tool_router warnings
-- Add comprehensive guide for elicit_trait_tools_router macro
 - Complete README rewrite - tutorial-driven approach
 - Add comprehensive Requirements and Constraints section
 - Add comprehensive rmcp tool router integration guide
 - Fix generator checklist to reflect 100% coverage
 - Update CHANGELOG.md for v0.6.11
+- Regenerate complete CHANGELOG.md from scratch
 
 ### Fixed
 
 - Migrate elicitation_rand to use workspace dependencies
 - Rename gen variables to generator
 - Change gen_bool to random_bool for rand 0.10
+- Use path for workspace member dependencies
+- Regular dependencies use workspace, dev-dependencies use path
 
 ### Miscellaneous
 
-- Bump version to 0.6.9 and format code
-- Bump version to 0.6.10
 - Allow manual_async_fn lint in trait tools test
 - Run cargo fmt
 
 ### Refactor
 
 - Consolidate derive macros into single crate
+
+## [0.6.10] - 2026-02-08
+
+### Added
+
+- Add async_trait support for trait tools macro
+
+### Miscellaneous
+
+- Bump version to 0.6.10
+
+## [0.6.9] - 2026-02-08
+
+### Added
+
+- Basic trait tools macro with explicit method list
+
+### Documentation
+
+- Add guide for tool_router warnings
+- Add comprehensive guide for elicit_trait_tools_router macro
+
+### Miscellaneous
+
+- Bump version to 0.6.9 and format code
 
 ### Wip
 

@@ -5,7 +5,9 @@
 //! `ElicitServer` implement this trait, allowing the `Elicitation` trait to
 //! work with either context seamlessly.
 
-use crate::{ElicitError, ElicitErrorKind, ElicitResult, Elicitation, ElicitationStyle, TypeMetadata};
+use crate::{
+    ElicitError, ElicitErrorKind, ElicitResult, Elicitation, ElicitationStyle, TypeMetadata,
+};
 use std::any::TypeId;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -86,7 +88,10 @@ pub trait ElicitCommunicator: Clone + Send + Sync {
     where
         T::Style: ElicitationStyle,
     {
-        Ok(self.style_context().get_style::<T, T::Style>()?.unwrap_or_default())
+        Ok(self
+            .style_context()
+            .get_style::<T, T::Style>()?
+            .unwrap_or_default())
     }
 
     /// Get the current style for a type, eliciting if not set.

@@ -85,7 +85,6 @@ use elicitation::Elicitation;
 #[cfg(any(feature = "verification", kani))]
 mod layer2 {
     use super::*;
-    use elicitation::{Prompt, Select, Survey};
 
     /// Network configuration with verified constraints.
     ///
@@ -96,6 +95,7 @@ mod layer2 {
     ///
     /// Note: In a real application, you would use contract types like U16NonZero
     /// and I32Positive. This example uses primitives for simplicity.
+    #[allow(dead_code)]
     #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
     pub struct NetworkConfig {
         /// Network port.
@@ -111,6 +111,7 @@ mod layer2 {
     /// - `name`: String (primitive type, symbolically verifiable)
     /// - `max_retries`: u8 (primitive type, symbolically verifiable)
     /// - ⟹ AppMetadata is verified ∎
+    #[allow(dead_code)]
     #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
     pub struct AppMetadata {
         /// Application name.
@@ -131,7 +132,7 @@ use layer2::{AppMetadata, NetworkConfig};
 #[cfg(any(feature = "verification", kani))]
 mod layer3 {
     use super::*;
-    use elicitation::{Prompt, Select, Survey};
+    use elicitation::{Prompt, Select};
 
     /// Complete application configuration.
     ///
@@ -145,6 +146,7 @@ mod layer3 {
     /// 2. Layer 2 structs are proven by composition (NetworkConfig, AppMetadata)
     /// 3. Layer 3 structs are proven by composition (ApplicationConfig)
     /// 4. ∴ The entire hierarchy is formally verified ∎
+    #[allow(dead_code)]
     #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
     pub struct ApplicationConfig {
         /// Network settings (verified).
@@ -160,6 +162,7 @@ mod layer3 {
     /// - `Development`: Unit variant (trivially verified)
     /// - `Production`: Contains NetworkConfig (verified struct)
     /// - ⟹ DeploymentMode is verified ∎
+    #[allow(dead_code)]
     #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
     pub enum DeploymentMode {
         /// Development mode (no configuration needed).
@@ -174,12 +177,11 @@ mod layer3 {
 }
 
 #[cfg(any(feature = "verification", kani))]
-use layer3::{ApplicationConfig, DeploymentMode};
+// Example types removed;
 
 // ============================================================================
 // Kani Proof Harness: Witness the Compositional Chain
 // ============================================================================
-
 #[cfg(kani)]
 #[kani::proof]
 fn verify_compositional_legos() {

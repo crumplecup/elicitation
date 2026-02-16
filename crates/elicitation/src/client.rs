@@ -3,7 +3,10 @@
 use rmcp::service::{Peer, RoleClient};
 use std::sync::Arc;
 
-use crate::{ElicitCommunicator, ElicitResult, Elicitation, ElicitationContext, ElicitationStyle, StyleContext};
+use crate::{
+    ElicitCommunicator, ElicitResult, Elicitation, ElicitationContext, ElicitationStyle,
+    StyleContext,
+};
 
 /// Client wrapper that carries style context.
 ///

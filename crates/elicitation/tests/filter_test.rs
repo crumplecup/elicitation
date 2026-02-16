@@ -52,9 +52,8 @@ impl Select for Color {
 
 #[test]
 fn test_filter_with_closure() {
-    let warm_colors = Color::select_with_filter(|c| {
-        matches!(c, Color::Red | Color::Yellow | Color::Orange)
-    });
+    let warm_colors =
+        Color::select_with_filter(|c| matches!(c, Color::Red | Color::Yellow | Color::Orange));
 
     assert_eq!(warm_colors.len(), 3);
     assert!(warm_colors.contains(&Color::Red));

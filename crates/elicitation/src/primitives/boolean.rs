@@ -1,8 +1,8 @@
 //! Boolean type implementation using the Affirm pattern.
 
 use crate::{
-    Affirm, ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitationPattern, PatternDetails, Prompt, TypeMetadata,
+    Affirm, ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
+    PatternDetails, Prompt, TypeMetadata,
 };
 
 // Generate default-only style enum

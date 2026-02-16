@@ -145,8 +145,8 @@ pub use server::ElicitServer;
 // Core traits
 pub use elicitation_style::ElicitationStyle;
 pub use traits::{
-    ElicitBuilder, ElicitIntrospect, Elicitation, ElicitationPattern, Generator,
-    PatternDetails, Prompt, TypeMetadata,
+    ElicitBuilder, ElicitIntrospect, Elicitation, ElicitationPattern, Generator, PatternDetails,
+    Prompt, TypeMetadata,
 };
 
 // Contracts (proof-carrying composition)

@@ -37,6 +37,7 @@ use elicitation::{Elicit, ElicitIntrospect, PatternDetails, Prompt, Select};
 // Example Types
 // ============================================================================
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
 struct NetworkConfig {
     host: String,
@@ -44,6 +45,7 @@ struct NetworkConfig {
     timeout_sec: i32,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
 enum DeploymentMode {
     Development,
@@ -51,6 +53,7 @@ enum DeploymentMode {
     Production { replicas: u8 },
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
 struct ApplicationConfig {
     name: String,
@@ -136,7 +139,8 @@ impl ElicitationMetrics {
     /// ```
     fn record_elicitation<T: ElicitIntrospect>(&self) {
         let meta = T::metadata();
-        self.elicitation_total.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.elicitation_total
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
 
         println!(
             "[METRIC] elicitation_total{{type=\"{}\",pattern=\"{}\"}} +1",
@@ -159,8 +163,7 @@ impl ElicitationMetrics {
 
         println!(
             "[METRIC] elicitation_duration_seconds{{type=\"{}\"}} {:.3}",
-            meta.type_name,
-            duration_secs
+            meta.type_name, duration_secs
         );
     }
 }
@@ -184,7 +187,8 @@ fn plan_elicitation_strategy<T: ElicitIntrospect>() {
             println!("Steps required: {}", fields.len());
             println!("\nExecution plan:");
             for (i, field) in fields.iter().enumerate() {
-                println!("  {}. Elicit {}: {} ({})",
+                println!(
+                    "  {}. Elicit {}: {} ({})",
                     i + 1,
                     field.name,
                     field.type_name,
@@ -218,11 +222,19 @@ fn introspect_nested<T: ElicitIntrospect>(depth: usize) {
     let meta = T::metadata();
     let indent = "  ".repeat(depth);
 
-    println!("{}├─ {} [{}]", indent, meta.type_name, meta.pattern().as_str());
+    println!(
+        "{}├─ {} [{}]",
+        indent,
+        meta.type_name,
+        meta.pattern().as_str()
+    );
 
     if let PatternDetails::Survey { fields } = meta.details {
         for field in fields {
-            println!("{}│  ├─ field: {} ({})", indent, field.name, field.type_name);
+            println!(
+                "{}│  ├─ field: {} ({})",
+                indent, field.name, field.type_name
+            );
         }
     }
 }
@@ -283,7 +295,8 @@ fn main() {
 
     println!("\n🎯 Production Usage Pattern");
     println!("═══════════════════════════════════════════════");
-    println!(r#"
+    println!(
+        r#"
 // In your production code:
 #[tracing::instrument(
     skip(communicator),
@@ -310,7 +323,8 @@ async fn elicit_with_observability<T: ElicitIntrospect>(
 
     result
 }}
-    "#);
+    "#
+    );
 
     println!("\n✅ Example complete!");
     println!("\nFor more details, see:");

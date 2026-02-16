@@ -62,7 +62,11 @@ impl Select for UuidGenerationMode {
     }
 
     fn labels() -> Vec<String> {
-        vec!["V4 (Random)".to_string(), "Nil (All zeros)".to_string(), "Max (All ones)".to_string()]
+        vec![
+            "V4 (Random)".to_string(),
+            "Nil (All zeros)".to_string(),
+            "Max (All ones)".to_string(),
+        ]
     }
 
     fn from_label(label: &str) -> Option<Self> {

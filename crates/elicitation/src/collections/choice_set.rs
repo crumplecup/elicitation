@@ -108,10 +108,7 @@ where
         // Build labels from Display
         let labels: Vec<String> = self.items.iter().map(|item| item.to_string()).collect();
 
-        let prompt_text = self
-            .prompt
-            .as_deref()
-            .unwrap_or("Choose an option:");
+        let prompt_text = self.prompt.as_deref().unwrap_or("Choose an option:");
 
         let params = mcp::select_params(prompt_text, &labels);
 
@@ -140,4 +137,3 @@ where
         )))
     }
 }
-
