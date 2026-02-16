@@ -161,7 +161,7 @@ pub use tool::{Tool, True, both_tools, then};
 pub use tool_registry::{ElicitToolDescriptor, collect_all_elicit_tools};
 
 // Interaction paradigm traits
-pub use paradigm::{Affirm, Authorize, FieldInfo, Select, Survey};
+pub use paradigm::{Affirm, Authorize, FieldInfo, Filter, Select, Survey};
 
 // Dynamic collections
 pub use collections::ChoiceSet;

@@ -77,6 +77,35 @@ pub trait Select: Prompt + Sized {
     ///
     /// `Some(Self)` if the label is valid, `None` otherwise.
     fn from_label(label: &str) -> Option<Self>;
+
+    /// Select from filtered options.
+    ///
+    /// Provides a default implementation that delegates to the `Filter` trait.
+    fn select_with_filter<F, V>(filter: F) -> V
+    where
+        Self: Filter<F, V>,
+    {
+        Self::select_filtered(filter)
+    }
+}
+
+/// Collection-level filtering for selection options.
+///
+/// Enables filtering `Select` options based on runtime predicates.
+pub trait Filter<F, V>: Sized {
+    /// Filter options based on the given predicate.
+    fn select_filtered(filter: F) -> V;
+}
+
+/// Blanket implementation for closure-based filtering.
+impl<T, F> Filter<F, Vec<T>> for T
+where
+    T: Select,
+    F: Fn(&T) -> bool,
+{
+    fn select_filtered(filter: F) -> Vec<T> {
+        T::options().into_iter().filter(|item| filter(item)).collect()
+    }
 }
 
 /// Binary confirmation (yes/no, true/false pattern).

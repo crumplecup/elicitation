@@ -66,6 +66,27 @@ where
         &self.items
     }
 
+    /// Create a filtered choice set from a vector.
+    pub fn filtered<F>(items: Vec<T>, filter: F) -> Self
+    where
+        F: Fn(&T) -> bool,
+    {
+        let filtered_items: Vec<T> = items.into_iter().filter(filter).collect();
+        Self::new(filtered_items)
+    }
+
+    /// Apply a filter to this choice set.
+    pub fn with_filter<F>(self, filter: F) -> Self
+    where
+        F: Fn(&T) -> bool,
+    {
+        let filtered_items = self.items.into_iter().filter(filter).collect();
+        Self {
+            items: filtered_items,
+            prompt: self.prompt,
+        }
+    }
+
     /// Elicit a selection from this choice set.
     ///
     /// Presents the items as a select menu and returns the selected item.

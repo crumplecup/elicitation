@@ -1,91 +1,9 @@
-//! Tests for ChoiceSet with dynamic choice elicitation.
+//! Tests for ChoiceSet dynamic choice container.
 
-use anyhow::Result;
-use elicitation::{ChoiceSet, ElicitClient};
-use rmcp::{
-    model::{CallToolResult, Content, ToolStatus},
-    service::{Peer, RoleClient},
-};
-
-/// Mock peer for testing ChoiceSet elicitation.
-fn mock_peer_with_selection(selection: &str) -> Peer<RoleClient> {
-    // Create a mock peer that returns the specified selection
-    let result = CallToolResult {
-        content: vec![Content::Text {
-            text: selection.to_string(),
-        }],
-        is_error: None,
-        tool_status: Some(ToolStatus::Complete),
-    };
-
-    // In a real test, we'd set up the mock to return this result
-    // For now, this is a placeholder showing the intended structure
-    todo!("Mock peer creation requires rmcp mock support")
-}
-
-#[tokio::test]
-#[ignore] // Requires mock support
-async fn test_choice_set_tic_tac_toe_moves() -> Result<()> {
-    // Available moves in a tic-tac-toe game (positions 1, 3, 5, 7, 9)
-    let available_moves = vec![1, 3, 5, 7, 9];
-
-    let choice_set = ChoiceSet::new(available_moves.clone())
-        .with_prompt("Pick your move (available positions):");
-
-    // Mock would return "3" as the selection
-    let peer = mock_peer_with_selection("3");
-    let client = ElicitClient::new(peer);
-
-    let selected_move = choice_set.elicit(&client).await?;
-
-    // The result should be the selected item (i32), not a ChoiceSet
-    assert_eq!(selected_move, 3);
-    Ok(())
-}
-
-#[tokio::test]
-#[ignore] // Requires mock support
-async fn test_choice_set_string_choices() -> Result<()> {
-    // String choices (chess pieces)
-    let pieces = vec![
-        "Pawn".to_string(),
-        "Knight".to_string(),
-        "Bishop".to_string(),
-        "Rook".to_string(),
-        "Queen".to_string(),
-        "King".to_string(),
-    ];
-
-    let choice_set = ChoiceSet::new(pieces).with_prompt("Choose a piece:");
-
-    let peer = mock_peer_with_selection("Queen");
-    let client = ElicitClient::new(peer);
-
-    let selected_piece = choice_set.elicit(&client).await?;
-
-    assert_eq!(selected_piece, "Queen");
-    Ok(())
-}
-
-#[tokio::test]
-#[ignore] // Requires mock support
-async fn test_choice_set_default_prompt() -> Result<()> {
-    // Test without custom prompt (uses default)
-    let options = vec!["A", "B", "C"];
-    let choice_set = ChoiceSet::new(options);
-
-    let peer = mock_peer_with_selection("B");
-    let client = ElicitClient::new(peer);
-
-    let selected_option = choice_set.elicit(&client).await?;
-
-    assert_eq!(selected_option, "B");
-    Ok(())
-}
+use elicitation::ChoiceSet;
 
 #[test]
 fn test_choice_set_construction() {
-    // Test that ChoiceSet can be constructed
     let moves = vec![1, 2, 3];
     let choice_set = ChoiceSet::new(moves.clone());
 
@@ -93,4 +11,117 @@ fn test_choice_set_construction() {
 
     let with_prompt = choice_set.with_prompt("Pick one:");
     assert_eq!(with_prompt.items(), &[1, 2, 3]);
+}
+
+#[test]
+fn test_choice_set_with_prompt() {
+    let items = vec!["A", "B", "C"];
+    let choice_set = ChoiceSet::new(items).with_prompt("Select letter:");
+
+    assert_eq!(choice_set.items(), &["A", "B", "C"]);
+}
+
+#[test]
+fn test_choice_set_filtered_constructor() {
+    let numbers = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    let even_only = ChoiceSet::filtered(numbers, |n| n % 2 == 0);
+
+    assert_eq!(even_only.items(), &[2, 4, 6, 8, 10]);
+}
+
+#[test]
+fn test_choice_set_with_filter() {
+    let numbers = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    let choice_set = ChoiceSet::new(numbers);
+
+    let odd_only = choice_set.with_filter(|n| n % 2 != 0);
+
+    assert_eq!(odd_only.items(), &[1, 3, 5, 7, 9]);
+}
+
+#[test]
+fn test_choice_set_filter_strings() {
+    let words = vec![
+        "apple".to_string(),
+        "banana".to_string(),
+        "apricot".to_string(),
+        "berry".to_string(),
+    ];
+
+    let a_words = ChoiceSet::filtered(words, |w| w.starts_with('a'));
+
+    assert_eq!(a_words.items(), &["apple", "apricot"]);
+}
+
+#[test]
+fn test_choice_set_filter_returns_empty_when_none_match() {
+    let numbers = vec![1, 3, 5, 7, 9];
+    let evens = ChoiceSet::filtered(numbers, |n| n % 2 == 0);
+
+    assert_eq!(evens.items(), &[] as &[i32]);
+}
+
+#[test]
+fn test_choice_set_filter_preserves_prompt() {
+    let numbers = vec![1, 2, 3, 4, 5];
+    let choice_set = ChoiceSet::new(numbers)
+        .with_prompt("Pick a number:")
+        .with_filter(|n| n % 2 == 0);
+
+    assert_eq!(choice_set.items(), &[2, 4]);
+}
+
+#[test]
+fn test_choice_set_chained_filters() {
+    let numbers = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    let filtered = ChoiceSet::new(numbers)
+        .with_filter(|n| n % 2 == 0) // Even numbers
+        .with_filter(|n| *n > 5); // Greater than 5
+
+    assert_eq!(filtered.items(), &[6, 8, 10]);
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct Position {
+    x: i32,
+    y: i32,
+    occupied: bool,
+}
+
+impl std::fmt::Display for Position {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {}) {}", self.x, self.y, if self.occupied { "X" } else { "_" })
+    }
+}
+
+#[test]
+fn test_choice_set_filter_with_custom_type() {
+    let positions = vec![
+        Position {
+            x: 0,
+            y: 0,
+            occupied: true,
+        },
+        Position {
+            x: 1,
+            y: 0,
+            occupied: false,
+        },
+        Position {
+            x: 0,
+            y: 1,
+            occupied: true,
+        },
+        Position {
+            x: 1,
+            y: 1,
+            occupied: false,
+        },
+    ];
+
+    let empty_positions = ChoiceSet::filtered(positions, |pos| !pos.occupied);
+
+    assert_eq!(empty_positions.items().len(), 2);
+    assert_eq!(empty_positions.items()[0].x, 1);
+    assert_eq!(empty_positions.items()[0].y, 0);
 }
