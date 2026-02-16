@@ -1,6 +1,9 @@
 //! Integer type implementations using generic macros.
 
-use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use crate::{
+    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
+    PatternDetails, Prompt, TypeMetadata,
+};
 
 /// Macro to implement Elicitation for integer types using Default wrappers.
 ///
@@ -40,6 +43,20 @@ macro_rules! impl_integer_elicit_via_wrapper {
                 Ok(wrapper.into_inner())
             }
         }
+
+        impl ElicitIntrospect for $primitive {
+            fn pattern() -> ElicitationPattern {
+                ElicitationPattern::Primitive
+            }
+
+            fn metadata() -> TypeMetadata {
+                TypeMetadata {
+                    type_name: stringify!($primitive),
+                    description: <Self as Prompt>::prompt(),
+                    details: PatternDetails::Primitive,
+                }
+            }
+        }
     };
 }
 
@@ -74,6 +91,20 @@ impl Elicitation for i64 {
 
         // Unwrap to primitive
         Ok(wrapper.into_inner())
+    }
+}
+
+impl ElicitIntrospect for i64 {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "i64",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
+        }
     }
 }
 

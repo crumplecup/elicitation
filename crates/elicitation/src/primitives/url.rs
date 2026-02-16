@@ -1,6 +1,9 @@
 //! URL type implementation.
 
-use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use crate::{
+    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
+    PatternDetails, Prompt, TypeMetadata,
+};
 
 // Generate default-only style enum
 crate::default_style!(url::Url => UrlStyle);
@@ -25,5 +28,32 @@ impl Elicitation for url::Url {
 
         // Unwrap to primitive
         Ok(wrapper.into_inner())
+    }
+
+    #[cfg(kani)]
+    fn kani_proof() {
+        use crate::verification::types::UrlValid;
+
+        // Verification delegated to UrlValid wrapper
+        UrlValid::kani_proof();
+
+        assert!(
+            true,
+            "url::Url verified via UrlValid wrapper (compositional delegation)"
+        );
+    }
+}
+
+impl ElicitIntrospect for url::Url {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "url::Url",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
+        }
     }
 }

@@ -1,6 +1,9 @@
 //! Boolean type implementation using the Affirm pattern.
 
-use crate::{Affirm, ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use crate::{
+    Affirm, ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
+    PatternDetails, Prompt, TypeMetadata,
+};
 
 // Generate default-only style enum
 crate::default_style!(bool => BoolStyle);
@@ -27,5 +30,19 @@ impl Elicitation for bool {
 
         // Unwrap to primitive
         Ok(wrapper.into_inner())
+    }
+}
+
+impl ElicitIntrospect for bool {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Affirm
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "bool",
+            description: Self::prompt(),
+            details: PatternDetails::Affirm,
+        }
     }
 }

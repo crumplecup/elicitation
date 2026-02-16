@@ -1,6 +1,9 @@
 //! Floating-point type implementations using generic macros.
 
-use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use crate::{
+    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
+    PatternDetails, Prompt, TypeMetadata,
+};
 
 /// Macro to implement Elicitation for floating-point types using Default wrappers.
 ///
@@ -30,6 +33,20 @@ macro_rules! impl_float_elicit_via_wrapper {
 
                 // Unwrap to primitive
                 Ok(wrapper.into_inner())
+            }
+        }
+
+        impl ElicitIntrospect for $primitive {
+            fn pattern() -> ElicitationPattern {
+                ElicitationPattern::Primitive
+            }
+
+            fn metadata() -> TypeMetadata {
+                TypeMetadata {
+                    type_name: stringify!($primitive),
+                    description: <Self as Prompt>::prompt(),
+                    details: PatternDetails::Primitive,
+                }
             }
         }
     };
@@ -62,5 +79,19 @@ impl Elicitation for f64 {
 
         // Unwrap to primitive
         Ok(wrapper.into_inner())
+    }
+}
+
+impl ElicitIntrospect for f64 {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "f64",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
+        }
     }
 }

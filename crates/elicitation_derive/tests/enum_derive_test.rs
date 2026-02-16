@@ -153,8 +153,8 @@ fn test_multi_tuple_compiles() {
 fn test_multi_tuple_labels() {
     let labels = MultiTuple::labels();
     assert_eq!(labels.len(), 2);
-    assert!(labels.contains(&"Pair"));
-    assert!(labels.contains(&"Triple"));
+    assert!(labels.contains(&"Pair".to_string()));
+    assert!(labels.contains(&"Triple".to_string()));
 }
 
 // Struct variant tests
@@ -176,8 +176,8 @@ fn test_struct_variant_labels() {
 fn test_multi_struct_labels() {
     let labels = MultiStruct::labels();
     assert_eq!(labels.len(), 2);
-    assert!(labels.contains(&"ServerConfig"));
-    assert!(labels.contains(&"ClientConfig"));
+    assert!(labels.contains(&"ServerConfig".to_string()));
+    assert!(labels.contains(&"ClientConfig".to_string()));
 }
 
 // Mixed variant tests
@@ -185,9 +185,9 @@ fn test_multi_struct_labels() {
 fn test_mixed_variants() {
     let labels = Mixed::labels();
     assert_eq!(labels.len(), 3);
-    assert!(labels.contains(&"Unit"));
-    assert!(labels.contains(&"Tuple"));
-    assert!(labels.contains(&"Struct"));
+    assert!(labels.contains(&"Unit".to_string()));
+    assert!(labels.contains(&"Tuple".to_string()));
+    assert!(labels.contains(&"Struct".to_string()));
 }
 
 #[test]
@@ -210,9 +210,9 @@ fn test_nested_enum_compiles() {
 fn test_nested_enum_labels() {
     let labels = Outer::labels();
     assert_eq!(labels.len(), 3);
-    assert!(labels.contains(&"Contains"));
-    assert!(labels.contains(&"StructContains"));
-    assert!(labels.contains(&"JustUnit"));
+    assert!(labels.contains(&"Contains".to_string()));
+    assert!(labels.contains(&"StructContains".to_string()));
+    assert!(labels.contains(&"JustUnit".to_string()));
 }
 
 #[test]

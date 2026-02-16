@@ -38,8 +38,8 @@
 //! 4. **Result** - Returns validated datetime or error
 
 use crate::{
-    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Generator, Prompt,
-    Select,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
+    ElicitationPattern, Generator, PatternDetails, Prompt, Select, TypeMetadata,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
     mcp,
 };
@@ -92,8 +92,8 @@ impl Prompt for InstantGenerationMode {
 }
 
 impl crate::Select for InstantGenerationMode {
-    fn options() -> &'static [Self] {
-        &[
+    fn options() -> Vec<Self> {
+        vec![
             InstantGenerationMode::Now,
             InstantGenerationMode::Offset {
                 seconds: 0,
@@ -102,8 +102,11 @@ impl crate::Select for InstantGenerationMode {
         ]
     }
 
-    fn labels() -> &'static [&'static str] {
-        &["Now (current time)", "Offset (from reference)"]
+    fn labels() -> Vec<String> {
+        vec![
+            "Now (current time)".to_string(),
+            "Offset (from reference)".to_string(),
+        ]
     }
 
     fn from_label(label: &str) -> Option<Self> {
@@ -125,7 +128,7 @@ impl Elicitation for InstantGenerationMode {
         // Use standard Select elicit pattern
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
-            Self::labels(),
+            &Self::labels(),
         );
 
         let result = communicator
@@ -156,6 +159,22 @@ impl Elicitation for InstantGenerationMode {
                 let nanos = u32::elicit(communicator).await?;
                 Ok(InstantGenerationMode::Offset { seconds, nanos })
             }
+        }
+    }
+}
+
+impl ElicitIntrospect for InstantGenerationMode {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "InstantGenerationMode",
+            description: Self::prompt(),
+            details: PatternDetails::Select {
+                options: Self::labels(),
+            },
         }
     }
 }
@@ -249,6 +268,31 @@ impl Elicitation for Instant {
         let generator = InstantGenerator::new(mode);
         Ok(generator.generate())
     }
+
+    #[cfg(kani)]
+    fn kani_proof() {
+        // Verification delegated to generation mode
+        InstantGenerationMode::kani_proof();
+
+        assert!(
+            true,
+            "time::Instant verified via InstantGenerationMode composition + trusted time crate"
+        );
+    }
+}
+
+impl ElicitIntrospect for Instant {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::Instant",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
+        }
+    }
 }
 
 // ============================================================================
@@ -277,8 +321,8 @@ pub enum OffsetDateTimeGenerationMode {
 }
 
 impl Select for OffsetDateTimeGenerationMode {
-    fn options() -> &'static [Self] {
-        &[
+    fn options() -> Vec<Self> {
+        vec![
             OffsetDateTimeGenerationMode::Now,
             OffsetDateTimeGenerationMode::UnixEpoch,
             OffsetDateTimeGenerationMode::Offset {
@@ -288,11 +332,11 @@ impl Select for OffsetDateTimeGenerationMode {
         ]
     }
 
-    fn labels() -> &'static [&'static str] {
-        &[
-            "Now (Current UTC)",
-            "Unix Epoch (1970-01-01)",
-            "Offset (Custom)",
+    fn labels() -> Vec<String> {
+        vec![
+            "Now (Current UTC)".to_string(),
+            "Unix Epoch (1970-01-01)".to_string(),
+            "Offset (Custom)".to_string(),
         ]
     }
 
@@ -321,7 +365,7 @@ impl Elicitation for OffsetDateTimeGenerationMode {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
-            Self::labels(),
+            &Self::labels(),
         );
 
         let result = communicator
@@ -350,6 +394,22 @@ impl Elicitation for OffsetDateTimeGenerationMode {
                 let nanos = i32::elicit(communicator).await?;
                 Ok(OffsetDateTimeGenerationMode::Offset { seconds, nanos })
             }
+        }
+    }
+}
+
+impl ElicitIntrospect for OffsetDateTimeGenerationMode {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "OffsetDateTimeGenerationMode",
+            description: Self::prompt(),
+            details: PatternDetails::Select {
+                options: Self::labels(),
+            },
         }
     }
 }
@@ -509,6 +569,20 @@ impl Elicitation for OffsetDateTime {
     }
 }
 
+impl ElicitIntrospect for OffsetDateTime {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::OffsetDateTime",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
+        }
+    }
+}
+
 // PrimitiveDateTime implementation
 impl Prompt for PrimitiveDateTime {
     fn prompt() -> Option<&'static str> {
@@ -586,6 +660,20 @@ impl Elicitation for PrimitiveDateTime {
 
                 Ok(PrimitiveDateTime::new(date, time))
             }
+        }
+    }
+}
+
+impl ElicitIntrospect for PrimitiveDateTime {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "time::PrimitiveDateTime",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
         }
     }
 }

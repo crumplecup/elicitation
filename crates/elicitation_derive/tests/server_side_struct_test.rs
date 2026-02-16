@@ -13,19 +13,21 @@ struct MockCommunicator {
     send_prompt_count: Arc<AtomicUsize>,
     responses: Arc<Vec<String>>,
     style_context: elicitation::StyleContext,
+    elicitation_context: elicitation::ElicitationContext,
 }
 
 impl MockCommunicator {
     fn new(responses: Vec<String>) -> Self {
         let mut style_context = elicitation::StyleContext::default();
         // Pre-set StringStyle to Human to avoid extra elicitation
-        style_context
+        let _ = style_context
             .set_style::<String, elicitation::StringStyle>(elicitation::StringStyle::Human);
 
         Self {
             send_prompt_count: Arc::new(AtomicUsize::new(0)),
             responses: Arc::new(responses),
             style_context,
+            elicitation_context: elicitation::ElicitationContext::default(),
         }
     }
 
@@ -63,6 +65,10 @@ impl ElicitCommunicator for MockCommunicator {
 
     fn with_style<T: 'static, S: elicitation::ElicitationStyle>(&self, _style: S) -> Self {
         self.clone()
+    }
+
+    fn elicitation_context(&self) -> &elicitation::ElicitationContext {
+        &self.elicitation_context
     }
 }
 

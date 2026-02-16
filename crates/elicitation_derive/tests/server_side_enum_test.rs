@@ -13,6 +13,7 @@ struct MockCommunicator {
     send_prompt_called: Arc<AtomicBool>,
     response: String,
     style_context: elicitation::StyleContext,
+    elicitation_context: elicitation::ElicitationContext,
 }
 
 impl MockCommunicator {
@@ -21,6 +22,7 @@ impl MockCommunicator {
             send_prompt_called: Arc::new(AtomicBool::new(false)),
             response: response.into(),
             style_context: elicitation::StyleContext::default(),
+            elicitation_context: elicitation::ElicitationContext::default(),
         }
     }
 
@@ -48,6 +50,10 @@ impl ElicitCommunicator for MockCommunicator {
 
     fn with_style<T: 'static, S: elicitation::ElicitationStyle>(&self, _style: S) -> Self {
         self.clone()
+    }
+
+    fn elicitation_context(&self) -> &elicitation::ElicitationContext {
+        &self.elicitation_context
     }
 }
 

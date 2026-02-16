@@ -62,8 +62,8 @@ pub enum SystemTimeGenerationMode {
 }
 
 impl Select for SystemTimeGenerationMode {
-    fn options() -> &'static [Self] {
-        &[
+    fn options() -> Vec<Self> {
+        vec![
             SystemTimeGenerationMode::Now,
             SystemTimeGenerationMode::UnixEpoch,
             SystemTimeGenerationMode::Offset {
@@ -73,11 +73,11 @@ impl Select for SystemTimeGenerationMode {
         ]
     }
 
-    fn labels() -> &'static [&'static str] {
-        &[
-            "Now (Current time)",
-            "Unix Epoch (1970-01-01)",
-            "Offset (Custom)",
+    fn labels() -> Vec<String> {
+        vec![
+            "Now (Current time)".to_string(),
+            "Unix Epoch (1970-01-01)".to_string(),
+            "Offset (Custom)".to_string(),
         ]
     }
 
@@ -107,7 +107,7 @@ impl Elicitation for SystemTimeGenerationMode {
         // Use standard Select elicit pattern
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
-            Self::labels(),
+            &Self::labels(),
         );
 
         let result = communicator

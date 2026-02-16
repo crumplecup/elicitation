@@ -9,11 +9,11 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.7.0"
+version = "0.8.0"
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/crumplecup/elicitation"
-authors = ["crumplecup"]
+authors = ["Erik Rose <erik.w.rose@gmail.com>"]
 homepage = "https://github.com/crumplecup/elicitation"
 documentation = "https://docs.rs/elicitation"
 readme = "README.md"
@@ -24,10 +24,10 @@ unexpected_cfgs = { level = "warn", check-cfg = [
 ] }
 
 [workspace.dependencies]
-elicitation = { path = "crates/elicitation", version = "0.7.0" }
-elicitation_derive = { path = "crates/elicitation_derive", version = "0.7.0" }
-elicitation_macros = { path = "crates/elicitation_macros", version = "0.7.0" }
-elicitation_rand = { path = "crates/elicitation_rand", version = "0.7.0" }
+elicitation = { path = "crates/elicitation", version = "0.8.0" }
+elicitation_derive = { path = "crates/elicitation_derive", version = "0.8.0" }
+elicitation_macros = { path = "crates/elicitation_macros", version = "0.8.0" }
+elicitation_rand = { path = "crates/elicitation_rand", version = "0.8.0" }
 
 
 # MCP client

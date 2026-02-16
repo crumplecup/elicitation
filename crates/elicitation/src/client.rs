@@ -3,7 +3,10 @@
 use rmcp::service::{Peer, RoleClient};
 use std::sync::Arc;
 
-use crate::{ElicitCommunicator, ElicitResult, Elicitation, ElicitationStyle, StyleContext};
+use crate::{
+    ElicitCommunicator, ElicitResult, Elicitation, ElicitationContext, ElicitationStyle,
+    StyleContext,
+};
 
 /// Client wrapper that carries style context.
 ///
@@ -38,6 +41,7 @@ use crate::{ElicitCommunicator, ElicitResult, Elicitation, ElicitationStyle, Sty
 pub struct ElicitClient {
     peer: Arc<Peer<RoleClient>>,
     style_context: StyleContext,
+    elicitation_context: ElicitationContext,
 }
 
 impl ElicitClient {
@@ -48,6 +52,7 @@ impl ElicitClient {
         Self {
             peer,
             style_context: StyleContext::default(),
+            elicitation_context: ElicitationContext::default(),
         }
     }
 
@@ -79,10 +84,13 @@ impl ElicitClient {
         let type_name = std::any::type_name::<T>();
         tracing::debug!(type_name, "Setting custom style");
         let mut ctx = self.style_context.clone();
-        ctx.set_style::<T, S>(style);
+        // Note: We ignore the error here because this is a convenience builder method
+        // If the lock is poisoned, the clone will work with the data anyway
+        let _ = ctx.set_style::<T, S>(style);
         Self {
             peer: Arc::clone(&self.peer),
             style_context: ctx,
+            elicitation_context: self.elicitation_context.clone(),
         }
     }
 
@@ -104,11 +112,20 @@ impl ElicitClient {
         T::Style: ElicitationStyle,
     {
         let type_name = std::any::type_name::<T>();
-        let has_custom = self.style_context.get_style::<T, T::Style>().is_some();
-        tracing::debug!(type_name, has_custom, "Getting style or default");
-        self.style_context
-            .get_style::<T, T::Style>()
-            .unwrap_or_default()
+        match self.style_context.get_style::<T, T::Style>() {
+            Ok(Some(style)) => {
+                tracing::debug!(type_name, has_custom = true, "Getting style or default");
+                style
+            }
+            Ok(None) => {
+                tracing::debug!(type_name, has_custom = false, "Getting style or default");
+                T::Style::default()
+            }
+            Err(e) => {
+                tracing::warn!(type_name, error = %e, "Lock poisoned, using default style");
+                T::Style::default()
+            }
+        }
     }
 
     /// Get the current style for a type, eliciting if not set.
@@ -130,7 +147,7 @@ impl ElicitClient {
     where
         T::Style: ElicitationStyle,
     {
-        if let Some(style) = self.style_context.get_style::<T, T::Style>() {
+        if let Some(style) = self.style_context.get_style::<T, T::Style>()? {
             tracing::debug!(
                 type_name = std::any::type_name::<T>(),
                 "Using pre-set style"
@@ -152,7 +169,7 @@ impl ElicitClient {
         T::Style: Clone + Send + Sync + 'static,
     {
         // Try to get custom style first
-        if let Some(style) = self.style_context.get_style::<T, T::Style>() {
+        if let Some(style) = self.style_context.get_style::<T, T::Style>()? {
             tracing::debug!(type_name = std::any::type_name::<T>(), "Using custom style");
             return Ok(style);
         }
@@ -191,10 +208,15 @@ impl ElicitCommunicator for ElicitClient {
 
     fn with_style<T: 'static, S: ElicitationStyle>(&self, style: S) -> Self {
         let mut ctx = self.style_context.clone();
-        ctx.set_style::<T, S>(style);
+        let _ = ctx.set_style::<T, S>(style);
         Self {
             peer: Arc::clone(&self.peer),
             style_context: ctx,
+            elicitation_context: self.elicitation_context.clone(),
         }
+    }
+
+    fn elicitation_context(&self) -> &ElicitationContext {
+        &self.elicitation_context
     }
 }

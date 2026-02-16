@@ -7,7 +7,8 @@
 use rmcp::service::{Peer, RoleServer};
 
 use crate::{
-    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, ElicitationStyle, StyleContext,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, ElicitationContext,
+    ElicitationStyle, StyleContext,
 };
 
 /// Server wrapper that carries style context.
@@ -33,6 +34,7 @@ use crate::{
 pub struct ElicitServer {
     peer: Peer<RoleServer>,
     style_context: StyleContext,
+    elicitation_context: ElicitationContext,
 }
 
 impl ElicitServer {
@@ -43,6 +45,7 @@ impl ElicitServer {
         Self {
             peer,
             style_context: StyleContext::default(),
+            elicitation_context: ElicitationContext::default(),
         }
     }
 
@@ -142,10 +145,15 @@ impl ElicitCommunicator for ElicitServer {
 
     fn with_style<T: 'static, S: ElicitationStyle>(&self, style: S) -> Self {
         let mut ctx = self.style_context.clone();
-        ctx.set_style::<T, S>(style);
+        let _ = ctx.set_style::<T, S>(style);
         Self {
             peer: self.peer.clone(),
             style_context: ctx,
+            elicitation_context: self.elicitation_context.clone(),
         }
+    }
+
+    fn elicitation_context(&self) -> &ElicitationContext {
+        &self.elicitation_context
     }
 }

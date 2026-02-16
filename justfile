@@ -355,7 +355,7 @@ pre-release: ci security
     git cliff --unreleased
     @echo ""
     @echo "📦 Testing release dry-run..."
-    cargo release --workspace --no-publish --no-push --no-tag --allow-branch '*' --execute
+    cargo release --workspace --no-publish --no-push --no-tag --allow-branch '*'
     @echo ""
     @echo "🏗️  Building release artifacts..."
     just build
@@ -364,7 +364,7 @@ pre-release: ci security
     @echo ""
     @echo "Next steps:"
     @echo "  1. Review changelog above"
-    @echo "  2. Run: git cliff --unreleased --prepend CHANGELOG.md"
+    @echo "  2. Run: just changelog-update"
     @echo "  3. Commit changelog updates"
     @echo "  4. Run: cargo release [patch|minor|major] --workspace --execute"
 
@@ -408,7 +408,7 @@ changelog-preview:
 changelog-update:
     @command -v git-cliff >/dev/null 2>&1 || (echo "❌ git-cliff not installed. Run: just setup" && exit 1)
     @echo "📋 Updating CHANGELOG.md..."
-    git cliff --unreleased --prepend CHANGELOG.md
+    git cliff --output CHANGELOG.md
     @echo "✅ CHANGELOG.md updated"
 
 # Generate full changelog

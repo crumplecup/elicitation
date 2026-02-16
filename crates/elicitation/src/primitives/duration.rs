@@ -60,8 +60,8 @@ pub enum DurationGenerationMode {
 }
 
 impl Select for DurationGenerationMode {
-    fn options() -> &'static [Self] {
-        &[
+    fn options() -> Vec<Self> {
+        vec![
             DurationGenerationMode::Zero,
             DurationGenerationMode::FromSecs(0),
             DurationGenerationMode::FromMillis(0),
@@ -70,13 +70,13 @@ impl Select for DurationGenerationMode {
         ]
     }
 
-    fn labels() -> &'static [&'static str] {
-        &[
-            "Zero",
-            "From Seconds",
-            "From Milliseconds",
-            "From Microseconds",
-            "From Nanoseconds",
+    fn labels() -> Vec<String> {
+        vec![
+            "Zero".to_string(),
+            "From Seconds".to_string(),
+            "From Milliseconds".to_string(),
+            "From Microseconds".to_string(),
+            "From Nanoseconds".to_string(),
         ]
     }
 
@@ -105,7 +105,7 @@ impl Elicitation for DurationGenerationMode {
         // Use standard Select elicit pattern
         let params = mcp::select_params(
             Self::prompt().unwrap_or("Select an option:"),
-            Self::labels(),
+            &Self::labels(),
         );
 
         let result = communicator
