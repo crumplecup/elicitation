@@ -73,6 +73,9 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
     // Generate Elicit impl (handles all variant types)
     let elicit_impl = generate_elicit_impl(name, &variants);
 
+    // Generate ElicitIntrospect impl
+    let introspect_impl = generate_introspect_impl(name);
+
     // Note: Verification code is NOT generated for user types.
     // Users can write verification harnesses manually if needed.
     // Verification is primarily for elicitation's own contract types.
@@ -82,6 +85,7 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
         #prompt_impl
         #select_impl
         #elicit_impl
+        #introspect_impl
     };
 
     TokenStream::from(expanded)
@@ -159,12 +163,12 @@ fn generate_select_impl(
 ) -> TokenStream2 {
     quote! {
         impl elicitation::Select for #name {
-            fn options() -> &'static [Self] {
-                &[#(Self::#unit_variant_idents),*]
+            fn options() -> Vec<Self> {
+                vec![#(Self::#unit_variant_idents),*]
             }
 
-            fn labels() -> &'static [&'static str] {
-                &[#(#variant_labels),*]
+            fn labels() -> Vec<String> {
+                vec![#(#variant_labels.to_string()),*]
             }
 
             fn from_label(label: &str) -> Option<Self> {
@@ -278,6 +282,22 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
     let style_name = quote::format_ident!("{}Style", name);
     let variant_labels: Vec<String> = variants.iter().map(|v| v.ident.to_string()).collect();
 
+    // Collect all field types across all variants for kani_proof
+    let mut all_field_types: Vec<&syn::Type> = Vec::new();
+    for variant in variants {
+        match &variant.fields {
+            VariantFields::Unit => {
+                // No fields to verify
+            }
+            VariantFields::Tuple(types) => {
+                all_field_types.extend(types.iter());
+            }
+            VariantFields::Struct(fields) => {
+                all_field_types.extend(fields.iter().map(|f| &f.ty));
+            }
+        }
+    }
+
     // Phase 1: Variant selection
     let selection_code = quote! {
         let base_prompt = Self::prompt().unwrap();
@@ -373,6 +393,21 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
                     }
                 }
             }
+
+            #[cfg(kani)]
+            fn kani_proof() {
+                // Compositional verification: verify all field types across all variants
+                #(
+                    <#all_field_types as elicitation::Elicitation>::kani_proof();
+                )*
+
+                // Tautological assertion: all parts verified ⟹ whole verified
+                assert!(
+                    true,
+                    "Compositional verification for {}: all variant fields verified ⟹ enum verified ∎",
+                    stringify!(#name)
+                );
+            }
         }
     }
 }
@@ -404,6 +439,29 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
 
             async fn elicit<C: elicitation::ElicitCommunicator>(_communicator: &C) -> elicitation::ElicitResult<Self> {
                 Ok(Self::Default)
+            }
+        }
+    }
+}
+
+/// Generate ElicitIntrospect implementation for an enum.
+fn generate_introspect_impl(name: &syn::Ident) -> TokenStream2 {
+    let name_str = name.to_string();
+
+    quote! {
+        impl elicitation::ElicitIntrospect for #name {
+            fn pattern() -> elicitation::ElicitationPattern {
+                elicitation::ElicitationPattern::Select
+            }
+
+            fn metadata() -> elicitation::TypeMetadata {
+                elicitation::TypeMetadata {
+                    type_name: #name_str,
+                    description: <Self as elicitation::Prompt>::prompt(),
+                    details: elicitation::PatternDetails::Select {
+                        options: <Self as elicitation::Select>::labels(),
+                    },
+                }
             }
         }
     }

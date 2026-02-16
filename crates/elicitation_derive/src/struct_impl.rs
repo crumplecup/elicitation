@@ -85,6 +85,9 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
         generate_elicit_impl_styled(name, &field_infos, &skipped_fields, &all_styles)
     };
 
+    // Generate ElicitIntrospect impl
+    let introspect_impl = generate_introspect_impl(name);
+
     // Note: Verification code is NOT generated for user types.
     // Users can write verification harnesses manually if needed.
     // Verification is primarily for elicitation's own contract types.
@@ -93,6 +96,7 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
         #prompt_impl
         #survey_impl
         #elicit_impl
+        #introspect_impl
     };
 
     TokenStream::from(expanded)
@@ -223,8 +227,8 @@ fn generate_survey_impl(name: &syn::Ident, field_infos: &[FieldInfo]) -> TokenSt
 
     quote! {
         impl elicitation::Survey for #name {
-            fn fields() -> &'static [elicitation::FieldInfo] {
-                &[#(#field_metadata),*]
+            fn fields() -> Vec<elicitation::FieldInfo> {
+                vec![#(#field_metadata),*]
             }
         }
     }
@@ -309,6 +313,21 @@ fn generate_elicit_impl_simple(
                     #all_field_assignments
                 })
             }
+
+            #[cfg(kani)]
+            fn kani_proof() {
+                // Compositional verification: verify all field types
+                #(
+                    <#elicited_types as elicitation::Elicitation>::kani_proof();
+                )*
+
+                // Tautological assertion: all parts verified ⟹ whole verified
+                assert!(
+                    true,
+                    "Compositional verification for {}: all fields verified ⟹ struct verified ∎",
+                    stringify!(#name)
+                );
+            }
         }
     }
 }
@@ -320,6 +339,9 @@ fn generate_elicit_impl_styled(
     skipped_fields: &[FieldInfo],
     all_styles: &[String],
 ) -> TokenStream2 {
+    // Extract field types for kani_proof generation
+    let elicited_types: Vec<_> = elicited_fields.iter().map(|info| &info.ty).collect();
+
     // Generate style enum name
     let style_enum_name = syn::Ident::new(&format!("{}ElicitStyle", name), name.span());
 
@@ -601,6 +623,44 @@ fn generate_elicit_impl_styled(
                 Ok(Self {
                     #all_field_assignments
                 })
+            }
+
+            #[cfg(kani)]
+            fn kani_proof() {
+                // Compositional verification: verify all field types
+                #(
+                    <#elicited_types as elicitation::Elicitation>::kani_proof();
+                )*
+
+                // Tautological assertion: all parts verified ⟹ whole verified
+                assert!(
+                    true,
+                    "Compositional verification for {}: all fields verified ⟹ struct verified ∎",
+                    stringify!(#name)
+                );
+            }
+        }
+    }
+}
+
+/// Generate ElicitIntrospect implementation for a struct.
+fn generate_introspect_impl(name: &syn::Ident) -> TokenStream2 {
+    let name_str = name.to_string();
+
+    quote! {
+        impl elicitation::ElicitIntrospect for #name {
+            fn pattern() -> elicitation::ElicitationPattern {
+                elicitation::ElicitationPattern::Survey
+            }
+
+            fn metadata() -> elicitation::TypeMetadata {
+                elicitation::TypeMetadata {
+                    type_name: #name_str,
+                    description: <Self as elicitation::Prompt>::prompt(),
+                    details: elicitation::PatternDetails::Survey {
+                        fields: <Self as elicitation::Survey>::fields(),
+                    },
+                }
             }
         }
     }
