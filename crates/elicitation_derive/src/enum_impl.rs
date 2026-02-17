@@ -356,6 +356,7 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
 
     quote! {
         #[automatically_derived]
+        #[allow(unexpected_cfgs)]
         impl elicitation::Elicitation for #name {
             type Style = #style_name;
 
