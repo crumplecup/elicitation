@@ -300,6 +300,7 @@ fn generate_elicit_impl_simple(
             }
         }
 
+        #[allow(unexpected_cfgs)]
         impl elicitation::Elicitation for #name {
             type Style = #style_name;
 
@@ -604,6 +605,7 @@ fn generate_elicit_impl_styled(
             }
         }
 
+        #[allow(unexpected_cfgs)]
         impl elicitation::Elicitation for #name {
             type Style = #style_enum_name;
 
