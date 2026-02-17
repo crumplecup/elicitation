@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update tests and examples for v0.8.0 API changes
 - Remove --execute flag from pre-release dry-run
+- Suppress unexpected_cfgs warnings for kani
 
 ### Miscellaneous
 
