@@ -617,10 +617,6 @@ where
     /// Kani model checker (bounded verification)
     Kani(Box<dyn DynContract<I, O>>),
 
-    /// Creusot deductive verifier (unbounded proofs)
-    #[cfg(feature = "verify-creusot")]
-    Creusot(Box<dyn DynContract<I, O>>),
-
     /// Prusti separation logic verifier
     #[cfg(feature = "verify-prusti")]
     Prusti(Box<dyn DynContract<I, O>>),
@@ -880,8 +876,6 @@ pub mod runner;
 #[cfg(feature = "verify-kani")]
 pub mod kani;
 
-#[cfg(feature = "verify-creusot")]
-pub mod creusot;
 #[cfg(feature = "cli")]
 pub mod prusti_runner;
 #[cfg(feature = "cli")]
