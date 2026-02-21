@@ -75,6 +75,24 @@ use elicitation::{
     Tuple2,
     Tuple3,
     Tuple4,
+    // Collection types
+    VecNonEmpty,
+    VecAllSatisfy,
+    OptionSome,
+    ResultOk,
+    BoxSatisfies,
+    ArcSatisfies,
+    RcSatisfies,
+    HashMapNonEmpty,
+    BTreeMapNonEmpty,
+    HashSetNonEmpty,
+    BTreeSetNonEmpty,
+    VecDequeNonEmpty,
+    LinkedListNonEmpty,
+    ArrayAllSatisfy,
+    BoxNonNull,
+    ArcNonNull,
+    RcNonNull,
     // Error type
     ValidationError,
 };
@@ -82,6 +100,7 @@ use elicitation::{
 // Module declarations
 mod bools;
 mod chars;
+mod collections;
 mod durations;
 mod floats;
 mod integers;
