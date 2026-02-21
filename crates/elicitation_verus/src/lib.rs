@@ -6,3 +6,4 @@ use vstd::prelude::*;
 
 pub mod bools;
 pub mod chars;
+pub mod integers;
