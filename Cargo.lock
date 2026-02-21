@@ -567,7 +567,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "elicitation_creusot_proofs"
+name = "elicitation_creusot"
 version = "0.8.1"
 dependencies = [
  "creusot-std",

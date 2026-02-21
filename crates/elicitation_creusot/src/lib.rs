@@ -58,7 +58,12 @@ use elicitation::{
     UsizeRange,
     // Error type
     ValidationError,
+    // Char types
+    CharAlphabetic,
+    CharNumeric,
+    CharAlphanumeric,
 };
 
 pub mod bools;
+pub mod chars;
 pub mod integers;

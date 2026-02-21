@@ -3,7 +3,7 @@ members = [
   "crates/elicitation",
   "crates/elicitation_derive",
   "crates/elicitation_macros",
-  "crates/elicitation_creusot_proofs",
+  "crates/elicitation_creusot",
   "crates/elicitation_rand",
 ]
 # Verus verification crate - verification only, not buildable with cargo

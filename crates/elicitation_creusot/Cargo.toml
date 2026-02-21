@@ -1,5 +1,5 @@
 [package]
-name = "elicitation_creusot_proofs"
+name = "elicitation_creusot"
 version.workspace = true
 edition = "2024"
 publish = false
