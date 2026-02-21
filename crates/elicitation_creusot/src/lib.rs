@@ -13,6 +13,10 @@ use elicitation::{
     BoolFalse,
     // Bool types
     BoolTrue,
+    // Char types
+    CharAlphabetic,
+    CharAlphanumeric,
+    CharNumeric,
     I8NonNegative,
     I8NonZero,
     // Signed integer types
@@ -58,10 +62,6 @@ use elicitation::{
     UsizeRange,
     // Error type
     ValidationError,
-    // Char types
-    CharAlphabetic,
-    CharNumeric,
-    CharAlphanumeric,
 };
 
 pub mod bools;

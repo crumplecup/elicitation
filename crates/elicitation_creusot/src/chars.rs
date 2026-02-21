@@ -41,8 +41,6 @@ pub fn verify_char_alphanumeric_valid(value: char) -> Result<CharAlphanumeric, V
 
 /// Prove that CharAlphanumeric construction fails for non-alphanumeric chars.
 #[trusted]
-pub fn verify_char_alphanumeric_invalid(
-    value: char,
-) -> Result<CharAlphanumeric, ValidationError> {
+pub fn verify_char_alphanumeric_invalid(value: char) -> Result<CharAlphanumeric, ValidationError> {
     CharAlphanumeric::new(value)
 }
