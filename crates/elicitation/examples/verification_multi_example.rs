@@ -67,6 +67,10 @@ fn main() {
     println!("   Step 3: Switch to stronger verifier for production");
     #[cfg(feature = "verify-prusti")]
     {
+        use elicitation::verification::contracts::prusti::PrustiStringNonEmpty;
+        println!(
+            "      Prusti contract: {}",
+            PrustiStringNonEmpty::requires(&hello)
         );
     }
     println!();
