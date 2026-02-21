@@ -473,6 +473,11 @@ impl<K, V> HashMapNonEmpty<K, V> {
         }
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Get the inner HashMap.
     #[cfg(not(kani))]
     pub fn get(&self) -> &HashMap<K, V> {
@@ -485,6 +490,11 @@ impl<K, V> HashMapNonEmpty<K, V> {
         panic!("get() not supported in Kani verification")
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Unwrap into the inner HashMap.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> HashMap<K, V> {
@@ -495,6 +505,11 @@ impl<K, V> HashMapNonEmpty<K, V> {
     #[cfg(kani)]
     pub fn into_inner(self) -> HashMap<K, V> {
         panic!("into_inner() not supported in Kani verification")
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 
     /// Get the length (always >= 1).
@@ -515,10 +530,20 @@ impl<K, V> HashMapNonEmpty<K, V> {
         panic!("len() not supported in Kani verification")
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Kani version: accessor not verifiable (PhantomData).
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 }
 
@@ -589,6 +614,11 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         }
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Get the inner BTreeMap.
     #[cfg(not(kani))]
     pub fn get(&self) -> &BTreeMap<K, V> {
@@ -600,6 +630,11 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         panic!("get() not supported in Kani verification")
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Unwrap into the inner BTreeMap.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> BTreeMap<K, V> {
@@ -609,6 +644,11 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
     #[cfg(kani)]
     pub fn into_inner(self) -> BTreeMap<K, V> {
         panic!("into_inner() not supported in Kani verification")
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 
     /// Get the length (always >= 1).
@@ -628,9 +668,19 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         panic!("len() not supported in Kani verification")
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 }
 
@@ -705,6 +755,11 @@ impl<T> HashSetNonEmpty<T> {
         }
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Get the inner HashSet.
     #[cfg(not(kani))]
     pub fn get(&self) -> &HashSet<T> {
@@ -716,6 +771,11 @@ impl<T> HashSetNonEmpty<T> {
         panic!("get() not supported in Kani verification")
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Unwrap into the inner HashSet.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> HashSet<T> {
@@ -725,6 +785,11 @@ impl<T> HashSetNonEmpty<T> {
     #[cfg(kani)]
     pub fn into_inner(self) -> HashSet<T> {
         panic!("into_inner() not supported in Kani verification")
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 
     /// Get the length (always >= 1).
@@ -744,9 +809,19 @@ impl<T> HashSetNonEmpty<T> {
         panic!("len() not supported in Kani verification")
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 }
 
@@ -815,6 +890,11 @@ impl<T> BTreeSetNonEmpty<T> {
         }
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Get the inner BTreeSet.
     #[cfg(not(kani))]
     pub fn get(&self) -> &BTreeSet<T> {
@@ -826,6 +906,11 @@ impl<T> BTreeSetNonEmpty<T> {
         panic!("get() not supported in Kani verification")
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Unwrap into the inner BTreeSet.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> BTreeSet<T> {
@@ -835,6 +920,11 @@ impl<T> BTreeSetNonEmpty<T> {
     #[cfg(kani)]
     pub fn into_inner(self) -> BTreeSet<T> {
         panic!("into_inner() not supported in Kani verification")
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 
     /// Get the length (always >= 1).
@@ -854,9 +944,19 @@ impl<T> BTreeSetNonEmpty<T> {
         panic!("len() not supported in Kani verification")
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 }
 
@@ -929,6 +1029,11 @@ impl<T> VecDequeNonEmpty<T> {
         }
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Get the inner VecDeque.
     #[cfg(not(kani))]
     pub fn get(&self) -> &VecDeque<T> {
@@ -940,6 +1045,11 @@ impl<T> VecDequeNonEmpty<T> {
         panic!("get() not supported in Kani verification")
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Unwrap into the inner VecDeque.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> VecDeque<T> {
@@ -949,6 +1059,11 @@ impl<T> VecDequeNonEmpty<T> {
     #[cfg(kani)]
     pub fn into_inner(self) -> VecDeque<T> {
         panic!("into_inner() not supported in Kani verification")
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 
     /// Get the length (always >= 1).
@@ -968,9 +1083,19 @@ impl<T> VecDequeNonEmpty<T> {
         panic!("len() not supported in Kani verification")
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 }
 
@@ -1039,6 +1164,11 @@ impl<T> LinkedListNonEmpty<T> {
         }
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Get the inner LinkedList.
     #[cfg(not(kani))]
     pub fn get(&self) -> &LinkedList<T> {
@@ -1050,6 +1180,11 @@ impl<T> LinkedListNonEmpty<T> {
         panic!("get() not supported in Kani verification")
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Unwrap into the inner LinkedList.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> LinkedList<T> {
@@ -1059,6 +1194,11 @@ impl<T> LinkedListNonEmpty<T> {
     #[cfg(kani)]
     pub fn into_inner(self) -> LinkedList<T> {
         panic!("into_inner() not supported in Kani verification")
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 
     /// Get the length (always >= 1).
@@ -1078,9 +1218,19 @@ impl<T> LinkedListNonEmpty<T> {
         panic!("len() not supported in Kani verification")
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 }
 

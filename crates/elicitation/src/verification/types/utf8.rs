@@ -220,6 +220,11 @@ pub fn is_valid_utf8(bytes: &[u8]) -> bool {
         return false;
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     true
 }
 

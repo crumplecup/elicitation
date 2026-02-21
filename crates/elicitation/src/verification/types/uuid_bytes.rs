@@ -245,6 +245,11 @@ mod tests {
         assert!(has_valid_variant(&bytes));
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     #[test]
     #[cfg(kani)]
     fn test_invalid_variant() {
@@ -263,6 +268,11 @@ mod tests {
         assert!(!has_valid_variant(&bytes));
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     #[test]
     #[cfg(kani)]
     fn test_version_extraction() {
@@ -278,6 +288,11 @@ mod tests {
         assert!(has_version(&bytes, 7));
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     #[test]
     #[cfg(kani)]
     fn test_uuid_v4_bytes_valid() {
@@ -289,6 +304,11 @@ mod tests {
         assert!(uuid.is_ok());
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     #[test]
     #[cfg(kani)]
     fn test_uuid_v4_bytes_wrong_version() {
@@ -298,6 +318,11 @@ mod tests {
 
         let uuid = UuidV4Bytes::new(bytes);
         assert!(uuid.is_err());
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 
     #[test]
@@ -318,5 +343,10 @@ mod tests {
         let uuid = UuidV7Bytes::new(bytes).unwrap();
         let expected = 0x0001_8F3B_4C5Du64;
         assert_eq!(uuid.timestamp_ms(), expected);
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 }

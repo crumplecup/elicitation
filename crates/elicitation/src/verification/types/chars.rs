@@ -41,6 +41,11 @@ impl CharAlphabetic {
         }
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
     /// Gets the wrapped value.
     pub fn get(&self) -> char {
         self.0
@@ -114,6 +119,11 @@ impl CharNumeric {
         } else {
             Err(ValidationError::NotNumeric(value))
         }
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
     }
 
     /// Gets the wrapped value.

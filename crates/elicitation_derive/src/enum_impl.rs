@@ -409,6 +409,14 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
                     stringify!(#name)
                 );
             }
+
+            #[cfg(verus)]
+            fn verus_proof() {
+                // Compositional verification: verify all field types across all variants
+                #(
+                    <#all_field_types as elicitation::Elicitation>::verus_proof();
+                )*
+            }
         }
     }
 }
