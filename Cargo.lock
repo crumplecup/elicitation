@@ -538,7 +538,6 @@ dependencies = [
  "async-trait",
  "chrono",
  "clap",
- "creusot-std",
  "criterion",
  "csv",
  "derive-getters",

@@ -238,6 +238,8 @@ pub const DEFAULT_STRING_CONTRACT: contracts::StringNonEmpty = contracts::String
 
 /// Default String contract (Creusot - priority 1).
 #[cfg(feature = "verify-creusot")]
+pub const DEFAULT_STRING_CONTRACT: contracts::creusot::CreusotStringNonEmpty =
+    contracts::creusot::CreusotStringNonEmpty;
 
 /// Default String contract (Prusti - priority 2).
 #[cfg(all(feature = "verify-prusti", not(feature = "verify-creusot")))]
@@ -266,6 +268,8 @@ pub const DEFAULT_I32_CONTRACT: contracts::I32Positive = contracts::I32Positive;
 
 /// Default i32 contract (Creusot - priority 1).
 #[cfg(feature = "verify-creusot")]
+pub const DEFAULT_I32_CONTRACT: contracts::creusot::CreusotI32Positive =
+    contracts::creusot::CreusotI32Positive;
 
 /// Default i32 contract (Prusti - priority 2).
 #[cfg(all(feature = "verify-prusti", not(feature = "verify-creusot")))]
@@ -294,6 +298,8 @@ pub const DEFAULT_BOOL_CONTRACT: contracts::BoolValid = contracts::BoolValid;
 
 /// Default bool contract (Creusot - priority 1).
 #[cfg(feature = "verify-creusot")]
+pub const DEFAULT_BOOL_CONTRACT: contracts::creusot::CreusotBoolValid =
+    contracts::creusot::CreusotBoolValid;
 
 /// Default bool contract (Prusti - priority 2).
 #[cfg(all(feature = "verify-prusti", not(feature = "verify-creusot")))]
@@ -623,6 +629,7 @@ where
 ///
 /// // Refine to Creusot for stronger guarantees
 /// let verifier = VerifierBackend::Creusot(Box::new(
+///     contracts::creusot::CreusotStringNonEmpty
 /// ));
 /// ```
 pub enum VerifierBackend<I, O>
@@ -906,6 +913,7 @@ pub mod runner;
 pub mod kani;
 
 #[cfg(feature = "verify-creusot")]
+pub mod creusot;
 #[cfg(feature = "cli")]
 pub mod prusti_runner;
 #[cfg(feature = "cli")]

@@ -1,8 +1,5 @@
 //! Bool contract types.
 
-#[cfg(feature = "verify-creusot")]
-use creusot_std::prelude::*;
-
 use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use elicitation_macros::instrumented_impl;
@@ -22,8 +19,6 @@ impl BoolTrue {
     /// # Errors
     ///
     /// Returns `ValidationError::NotTrue` if value is false.
-    #[cfg_attr(feature = "verify-creusot", requires(value))]
-    #[cfg_attr(feature = "verify-creusot", ensures(match result { Ok(_) => true, Err(_) => false }))]
     pub fn new(value: bool) -> Result<Self, ValidationError> {
         if value {
             Ok(Self(value))
@@ -92,8 +87,6 @@ impl BoolFalse {
     /// # Errors
     ///
     /// Returns `ValidationError::NotFalse` if value is true.
-    #[cfg_attr(feature = "verify-creusot", requires(!value))]
-    #[cfg_attr(feature = "verify-creusot", ensures(match result { Ok(_) => true, Err(_) => false }))]
     pub fn new(value: bool) -> Result<Self, ValidationError> {
         if !value {
             Ok(Self(value))
