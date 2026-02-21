@@ -32,6 +32,13 @@ pub enum Commands {
         #[command(subcommand)]
         action: PrustiAction,
     },
+
+    /// Run and manage Verus verification proofs
+    Verus {
+        /// Action to perform
+        #[command(subcommand)]
+        action: VerusAction,
+    },
 }
 
 /// Verification actions
@@ -102,6 +109,46 @@ pub enum PrustiAction {
     },
 }
 
+/// Verus verification actions
+#[derive(Debug, Clone, Subcommand)]
+pub enum VerusAction {
+    /// List all proof modules
+    List,
+
+    /// Run Verus verification with CSV tracking
+    Run {
+        /// CSV output file
+        #[arg(short, long, default_value = "verus_verification_results.csv")]
+        output: PathBuf,
+
+        /// Timeout per proof in seconds
+        #[arg(short, long, default_value_t = 600)]
+        timeout: u64,
+
+        /// Resume mode: skip already-passed proofs
+        #[arg(short, long)]
+        resume: bool,
+
+        /// Path to Verus binary (defaults to VERUS_PATH env var or ~/repos/verus/source/target-verus/release/verus)
+        #[arg(long)]
+        verus_path: Option<PathBuf>,
+    },
+
+    /// Show summary statistics from CSV
+    Summary {
+        /// CSV file to analyze
+        #[arg(short, long, default_value = "verus_verification_results.csv")]
+        file: PathBuf,
+    },
+
+    /// Show failed proofs from CSV
+    Failed {
+        /// CSV file to analyze
+        #[arg(short, long, default_value = "verus_verification_results.csv")]
+        file: PathBuf,
+    },
+}
+
 /// Execute the CLI command.
 #[tracing::instrument(skip(cli))]
 pub fn execute(cli: Cli) -> anyhow::Result<()> {
@@ -110,6 +157,25 @@ pub fn execute(cli: Cli) -> anyhow::Result<()> {
     match cli.command() {
         Commands::Verify { action } => crate::verification::runner::handle(action),
         Commands::Prusti { action } => handle_prusti(action),
+        Commands::Verus { action } => handle_verus(action),
+    }
+}
+
+/// Handle Verus verification commands.
+#[tracing::instrument(skip(action))]
+fn handle_verus(action: &VerusAction) -> anyhow::Result<()> {
+    tracing::debug!(action = ?action, "Handling Verus command");
+
+    match action {
+        VerusAction::List => list_verus_proofs(),
+        VerusAction::Run {
+            output,
+            timeout,
+            resume,
+            verus_path,
+        } => run_verus_proofs(output, *timeout, *resume, verus_path.as_deref()),
+        VerusAction::Summary { file } => show_verus_summary(file),
+        VerusAction::Failed { file } => show_verus_failed(file),
     }
 }
 
@@ -126,4 +192,114 @@ fn handle_prusti(action: &PrustiAction) -> anyhow::Result<()> {
         PrustiAction::Summary { file } => crate::verification::prusti_runner::show_summary(file),
         PrustiAction::Failed { file } => crate::verification::prusti_runner::show_failed(file),
     }
+}
+
+/// List all Verus proofs.
+fn list_verus_proofs() -> anyhow::Result<()> {
+    use crate::verification::verus_runner::VerusProof;
+
+    let proofs = VerusProof::all();
+    println!("📋 Available Verus Proofs ({} total):", proofs.len());
+    println!();
+
+    let mut by_module: std::collections::BTreeMap<String, Vec<String>> =
+        std::collections::BTreeMap::new();
+    for proof in proofs {
+        by_module
+            .entry(proof.module().to_string())
+            .or_default()
+            .push(proof.name().to_string());
+    }
+
+    for (module, proofs) in by_module {
+        println!("  {}:", module);
+        for proof in proofs {
+            println!("    - {}", proof);
+        }
+        println!();
+    }
+
+    Ok(())
+}
+
+/// Run all Verus proofs with tracking.
+fn run_verus_proofs(
+    output: &std::path::Path,
+    timeout: u64,
+    resume: bool,
+    verus_path: Option<&std::path::Path>,
+) -> anyhow::Result<()> {
+    use crate::verification::verus_runner;
+
+    // Determine Verus path
+    let verus_path = if let Some(path) = verus_path {
+        path.to_path_buf()
+    } else if let Ok(env_path) = std::env::var("VERUS_PATH") {
+        // Try environment variable
+        std::path::PathBuf::from(shellexpand::tilde(&env_path).to_string())
+    } else {
+        // Try default location
+        let default_path =
+            shellexpand::tilde("~/repos/verus/source/target-verus/release/verus").to_string();
+        std::path::PathBuf::from(default_path)
+    };
+
+    if !verus_path.exists() {
+        anyhow::bail!(
+            "Verus not found at: {}\nSet VERUS_PATH environment variable or use --verus-path",
+            verus_path.display()
+        );
+    }
+
+    verus_runner::run_all_proofs(&verus_path, output, Some(timeout), resume)?;
+    Ok(())
+}
+
+/// Show summary of Verus verification results.
+fn show_verus_summary(file: &std::path::Path) -> anyhow::Result<()> {
+    use crate::verification::verus_runner;
+
+    let summary = verus_runner::summarize_results(file)?;
+
+    println!("📊 Verus Verification Summary");
+    println!("============================");
+    println!();
+    println!("  Total:   {}", summary.total());
+    println!("  Passed:  {} ✅", summary.passed());
+    println!("  Failed:  {} ❌", summary.failed());
+    println!("  Errors:  {} 🔥", summary.errors());
+    println!();
+    println!("  Success Rate: {:.1}%", summary.success_rate());
+
+    Ok(())
+}
+
+/// Show failed Verus proofs.
+fn show_verus_failed(file: &std::path::Path) -> anyhow::Result<()> {
+    use crate::verification::verus_runner;
+
+    let failed = verus_runner::list_failed_proofs(file)?;
+
+    if failed.is_empty() {
+        println!("✅ No failed proofs!");
+        return Ok(());
+    }
+
+    println!("❌ Failed Verus Proofs ({} total):", failed.len());
+    println!();
+
+    for result in failed {
+        println!("  {}::{}", result.module(), result.proof());
+        println!("    Status: {:?}", result.status());
+        println!("    Time: {}s", result.time_seconds());
+        if !result.error_message().is_empty() {
+            println!(
+                "    Error: {}",
+                result.error_message().lines().next().unwrap_or("")
+            );
+        }
+        println!();
+    }
+
+    Ok(())
 }

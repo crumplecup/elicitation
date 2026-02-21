@@ -6,6 +6,8 @@ members = [
   "crates/elicitation_creusot_proofs",
   "crates/elicitation_rand",
 ]
+# Verus verification crate - verification only, not buildable with cargo
+exclude = ["crates/elicitation_verus"]
 resolver = "2"
 
 [workspace.package]

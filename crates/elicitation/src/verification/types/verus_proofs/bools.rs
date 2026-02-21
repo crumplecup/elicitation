@@ -1,48 +1,36 @@
 //! Verus proofs for bool contract types.
+//!
+//! These proofs verify that BoolTrue and BoolFalse correctly validate boolean values.
 
-#[cfg(feature = "verify-verus")]
-#[allow(unused_imports)]
-use builtin::*;
-#[cfg(feature = "verify-verus")]
-#[allow(unused_imports)]
-use builtin_macros::*;
+#[cfg(verus)]
+use verus_builtin::*;
+#[cfg(verus)]
+use verus_builtin_macros::*;
+#[cfg(verus)]
+use vstd::prelude::*;
 
+use crate::verification::types::ValidationError;
+use crate::verification::types::bools::{BoolFalse, BoolTrue};
+
+#[cfg(verus)]
 verus! {
 
-/// Verify BoolTrue contract correctness.
-///
-/// **Verified Properties:**
-/// - Construction succeeds ⟺ value == true
-#[cfg(verus)]
-pub fn verify_bool_true() {
-    // Proof structure for Verus
-}
-
-/// Verify BoolFalse contract correctness.
-#[cfg(verus)]
-pub fn verify_bool_false() {
-    // Proof structure for Verus
-}
-
-/// Verify CharAlphabetic contract correctness.
-///
-/// **Verified Properties:**
-/// - Construction succeeds ⟺ char.is_alphabetic()
-
-proof fn verify_bool_true_construction(value: bool)
+/// Verify that BoolTrue::new correctly accepts true and rejects false
+pub fn verify_bool_true_new(value: bool) -> (result: Result<BoolTrue, ValidationError>)
     ensures
-        value == true ==> BoolTrue::new(value).is_ok(),
-        value == false ==> BoolTrue::new(value).is_err(),
+        value == true ==> (result matches Ok(_)),
+        value == false ==> (result matches Err(_)),
 {
-    // Boolean reasoning (trivial)
+    BoolTrue::new(value)
 }
 
-proof fn verify_bool_false_construction(value: bool)
+/// Verify that BoolFalse::new correctly accepts false and rejects true
+pub fn verify_bool_false_new(value: bool) -> (result: Result<BoolFalse, ValidationError>)
     ensures
-        value == false ==> BoolFalse::new(value).is_ok(),
-        value == true ==> BoolFalse::new(value).is_err(),
+        value == false ==> (result matches Ok(_)),
+        value == true ==> (result matches Err(_)),
 {
+    BoolFalse::new(value)
 }
-
 
 } // verus!

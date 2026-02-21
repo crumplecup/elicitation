@@ -1,16 +1,19 @@
 //! Verus proofs for duration and specialized contract types.
 
-#![cfg(all(feature = "verify-verus", not(kani)))]
-#![allow(unused_imports)]
+use crate::verification::types::ValidationError;
+use crate::verification::types::durations::DurationPositive;
+use crate::verification::types::networks::{
+    IpPrivate, IpPublic, IpV4, IpV6, Ipv4Loopback, Ipv6Loopback,
+};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use std::time::Duration;
 
-use crate::*;
-
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin::*;
-#[cfg(feature = "verify-verus")]
+use verus_builtin::*;
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin_macros::*;
+use verus_builtin_macros::*;
 
 verus! {
 

@@ -1,16 +1,21 @@
 //! Verus proofs for network and pointer contract types.
 
-#![cfg(all(feature = "verify-verus", not(kani)))]
-#![allow(unused_imports)]
+use crate::verification::types::ValidationError;
+use crate::verification::types::networks::{
+    IpPrivate, IpPublic, IpV4, IpV6, Ipv4Loopback, Ipv6Loopback,
+};
+use crate::verification::types::pathbufs::PathBufNonEmpty;
+use crate::verification::types::uuids::{UuidNonNil, UuidV4};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use std::path::PathBuf;
+use uuid::Uuid;
 
-use crate::*;
-
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin::*;
-#[cfg(feature = "verify-verus")]
+use verus_builtin::*;
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin_macros::*;
+use verus_builtin_macros::*;
 
 verus! {
 

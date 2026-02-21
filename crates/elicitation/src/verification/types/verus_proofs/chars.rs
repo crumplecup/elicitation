@@ -1,16 +1,14 @@
 //! Verus proofs for char contract types.
 
-#![cfg(all(feature = "verify-verus", not(kani)))]
-#![allow(unused_imports)]
+use crate::verification::types::ValidationError;
+use crate::verification::types::chars::{CharAlphabetic, CharAlphanumeric, CharNumeric};
 
-use crate::*;
-
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin::*;
-#[cfg(feature = "verify-verus")]
+use verus_builtin::*;
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin_macros::*;
+use verus_builtin_macros::*;
 
 verus! {
 

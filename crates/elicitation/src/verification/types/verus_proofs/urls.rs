@@ -1,16 +1,17 @@
 //! Verus proofs for URL contract types.
 
-#![cfg(all(feature = "verify-verus", feature = "url", not(kani)))]
-#![allow(unused_imports)]
+use crate::verification::types::ValidationError;
+use crate::verification::types::urlbytes::{
+    UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost,
+};
+use url::Url;
 
-use crate::*;
-
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin::*;
-#[cfg(feature = "verify-verus")]
+use verus_builtin::*;
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin_macros::*;
+use verus_builtin_macros::*;
 
 verus! {
 

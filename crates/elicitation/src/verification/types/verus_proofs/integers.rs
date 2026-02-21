@@ -1,16 +1,20 @@
 //! Verus proofs for integer contract types.
 
-#![cfg(all(feature = "verify-verus", not(kani)))]
-#![allow(unused_imports)]
+use crate::verification::types::ValidationError;
+use crate::verification::types::integers::{
+    I8NonNegative, I8Positive, I8Range, I16NonNegative, I16Positive, I16Range, I32NonNegative,
+    I32Positive, I32Range, I64NonNegative, I64Positive, I64Range, I128NonNegative, I128Positive,
+    I128Range, IsizeNonNegative, IsizePositive, IsizeRange, U8NonZero, U8Range, U16NonZero,
+    U16Range, U32NonZero, U32Range, U64NonZero, U64Range, U128NonZero, U128Range, UsizeNonZero,
+    UsizeRange,
+};
 
-use crate::*;
-
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin::*;
-#[cfg(feature = "verify-verus")]
+use verus_builtin::*;
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin_macros::*;
+use verus_builtin_macros::*;
 
 verus! {
 
