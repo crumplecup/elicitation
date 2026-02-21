@@ -62,6 +62,13 @@ use elicitation::{
     UsizeRange,
     // String types
     StringNonEmpty,
+    // Float types
+    F32Positive,
+    F32NonNegative,
+    F32Finite,
+    F64Positive,
+    F64NonNegative,
+    F64Finite,
     // Error type
     ValidationError,
 };
@@ -69,5 +76,6 @@ use elicitation::{
 // Module declarations
 mod bools;
 mod chars;
+mod floats;
 mod integers;
 mod strings;
