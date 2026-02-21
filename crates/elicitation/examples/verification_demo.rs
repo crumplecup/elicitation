@@ -10,7 +10,6 @@
 //! ```bash
 //! cargo run --example verification_demo --features verification
 //! cargo run --example verification_demo --features verify-kani
-//! cargo run --example verification_demo --features verify-creusot
 //! ```
 
 use elicitation::verification::{
@@ -177,22 +176,6 @@ fn main() {
         Err(e) => println!("  Verification failed: {}", e),
     }
 
-    // Creusot backend (runtime checking)
-    #[cfg(feature = "verify-creusot")]
-    {
-        use elicitation::verification::contracts::creusot::CreusotStringNonEmpty;
-        let creusot_verifier = VerifierBackend::Creusot(Box::new(CreusotStringNonEmpty));
-        println!("\nCreusot Verifier (StringNonEmpty):");
-        println!(
-            "  Precondition(\"hello\"):  {}",
-            creusot_verifier.check_precondition(&hello)
-        );
-        println!(
-            "  Precondition(\"\"):       {}",
-            creusot_verifier.check_precondition(&empty)
-        );
-    }
-
     // Prusti backend
     #[cfg(feature = "verify-prusti")]
     {
@@ -217,16 +200,10 @@ fn main() {
         );
     }
 
-    #[cfg(not(any(
-        feature = "verify-creusot",
-        feature = "verify-prusti",
-        feature = "verify-verus"
-    )))]
+    #[cfg(not(any(feature = "verify-prusti", feature = "verify-verus")))]
     {
-        println!("\nNote: Creusot, Prusti, and Verus verifiers are feature-gated.");
-        println!(
-            "      Run with --features verify-creusot|verify-prusti|verify-verus to test them."
-        );
+        println!("\nNote: Prusti and Verus verifiers are feature-gated.");
+        println!("      Run with --features verify-prusti|verify-verus to test them.");
     }
 
     // ========================================================================
@@ -238,14 +215,8 @@ fn main() {
         println!("-------------------------------------");
 
         println!("\nDefault contracts are selected at compile-time based on features:");
-        #[cfg(not(any(
-            feature = "verify-creusot",
-            feature = "verify-prusti",
-            feature = "verify-verus"
-        )))]
+        #[cfg(not(any(feature = "verify-prusti", feature = "verify-verus")))]
         println!("  Active verifier: Kani (default)");
-        #[cfg(feature = "verify-creusot")]
-        println!("  Active verifier: Creusot");
         #[cfg(feature = "verify-prusti")]
         println!("  Active verifier: Prusti");
         #[cfg(feature = "verify-verus")]

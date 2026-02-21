@@ -62,10 +62,6 @@ mod kani_proofs;
 #[cfg(all(feature = "verify-verus", verus))]
 mod verus_proofs;
 
-// Creusot proofs require creusot tool (contracts via separate proof crate)
-#[cfg(all(feature = "verify-creusot", creusot))]
-mod creusot_proofs;
-
 // Prusti proofs (prusti-contracts is a real dependency)
 #[cfg(feature = "verify-prusti")]
 mod prusti_proofs;
