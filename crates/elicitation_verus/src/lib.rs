@@ -7,6 +7,8 @@ use vstd::prelude::*;
 pub mod bools;
 pub mod chars;
 pub mod collections;
+pub mod durations;
 pub mod floats;
 pub mod integers;
 pub mod strings;
+pub mod tuples;
