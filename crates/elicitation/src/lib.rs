@@ -80,6 +80,10 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+#[cfg(feature = "verify-creusot")]
+#[allow(unused_imports)]
+use creusot_std::prelude::*;
+
 mod client;
 mod communicator;
 mod mcp_wrapper; // Generic wrapper for MCP tool outputs

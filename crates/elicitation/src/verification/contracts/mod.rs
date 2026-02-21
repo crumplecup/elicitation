@@ -33,7 +33,6 @@ use super::Contract;
 
 // Verifier-specific contract implementations (feature-gated)
 #[cfg(feature = "verify-creusot")]
-pub mod creusot;
 
 #[cfg(feature = "verify-prusti")]
 pub mod prusti;
