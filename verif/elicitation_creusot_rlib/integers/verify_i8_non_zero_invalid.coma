@@ -1,0 +1,177 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 54 0 54 82 *)
+
+let%span sintegers = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 55 4 55 25
+let%span sintegers'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 52 11 52 22
+let%span sintegers'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 54 48 54 82
+let%span sintegers'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 53 10 53 57
+
+use creusot.int.Int128
+use creusot.float.Float64
+use creusot.int.UInt64
+use creusot.prelude.Char
+use creusot.int.UInt8
+use creusot.int.UInt16
+use creusot.prelude.Any
+use creusot.int.Int8
+
+type t_I8NonZero
+
+type t_String
+
+type t_ValidationError =
+  | NotPositive Int128.t
+  | Negative Int128.t
+  | Zero
+  | NotFinite t_String
+  | FloatNotPositive Float64.t
+  | FloatNegative Float64.t
+  | FloatOutOfRange Float64.t Float64.t Float64.t
+  | OutOfRange Int128.t Int128.t Int128.t
+  | EmptyString
+  | StringTooLong UInt64.t UInt64.t
+  | StringTooShort UInt64.t UInt64.t
+  | NotTrue
+  | NotFalse
+  | NotAlphabetic Char.t
+  | NotNumeric Char.t
+  | NotAlphanumeric Char.t
+  | WrongUuidVersion UInt8.t UInt8.t
+  | NilUuid
+  | DurationNotPositive
+  | NotPrivateIp
+  | NotPublicIp
+  | ExpectedIpv4GotIpv6
+  | ExpectedIpv6GotIpv4
+  | NotLoopback
+  | PathDoesNotExist t_String
+  | PathNotReadable t_String
+  | PathNotDirectory t_String
+  | PathNotFile t_String
+  | DateTimeTooEarly t_String t_String
+  | DateTimeTooLate t_String t_String
+  | EmptyCollection
+  | OptionIsNone
+  | ResultIsErr
+  | WrongJsonType t_String t_String
+  | JsonIsNull
+  | UrlInvalid
+  | InvalidUrlSyntax
+  | UrlMissingAuthority
+  | UrlNotAbsolute
+  | UrlNotHttps
+  | UrlNotHttp
+  | InvalidRegexSyntax
+  | UrlNoHost
+  | UrlCannotBeBase
+  | RegexInvalid
+  | InvalidUuidVariant
+  | NotUnicastMac
+  | NotMulticastMac
+  | NotUniversalMac
+  | NotLocalMac
+  | PortIsZero
+  | PortNotPrivileged UInt16.t
+  | PortIsPrivileged UInt16.t
+  | PathContainsNull
+  | PathNotAbsolute t_String
+  | PathNotRelative t_String
+  | InvalidUtf8
+  | TooLong UInt64.t UInt64.t
+
+type t_Result_I8NonZero_ValidationError = Ok t_I8NonZero | Err t_ValidationError
+
+predicate inv_I8NonZero (_1: t_I8NonZero)
+
+predicate inv_String (_1: t_String)
+
+predicate inv_ValidationError (_1: t_ValidationError)
+
+axiom inv_axiom [@rewrite]: forall x: t_ValidationError [inv_ValidationError x]. inv_ValidationError x
+    = match x with
+      | NotPositive f0 -> true
+      | Negative f0 -> true
+      | Zero -> true
+      | NotFinite f0 -> inv_String f0
+      | FloatNotPositive f0 -> true
+      | FloatNegative f0 -> true
+      | FloatOutOfRange value min max -> true
+      | OutOfRange value min max -> true
+      | EmptyString -> true
+      | StringTooLong actual max -> true
+      | StringTooShort actual min -> true
+      | NotTrue -> true
+      | NotFalse -> true
+      | NotAlphabetic f0 -> true
+      | NotNumeric f0 -> true
+      | NotAlphanumeric f0 -> true
+      | WrongUuidVersion expected got -> true
+      | NilUuid -> true
+      | DurationNotPositive -> true
+      | NotPrivateIp -> true
+      | NotPublicIp -> true
+      | ExpectedIpv4GotIpv6 -> true
+      | ExpectedIpv6GotIpv4 -> true
+      | NotLoopback -> true
+      | PathDoesNotExist f0 -> inv_String f0
+      | PathNotReadable f0 -> inv_String f0
+      | PathNotDirectory f0 -> inv_String f0
+      | PathNotFile f0 -> inv_String f0
+      | DateTimeTooEarly value threshold -> inv_String value /\ inv_String threshold
+      | DateTimeTooLate value threshold -> inv_String value /\ inv_String threshold
+      | EmptyCollection -> true
+      | OptionIsNone -> true
+      | ResultIsErr -> true
+      | WrongJsonType expected got -> inv_String expected /\ inv_String got
+      | JsonIsNull -> true
+      | UrlInvalid -> true
+      | InvalidUrlSyntax -> true
+      | UrlMissingAuthority -> true
+      | UrlNotAbsolute -> true
+      | UrlNotHttps -> true
+      | UrlNotHttp -> true
+      | InvalidRegexSyntax -> true
+      | UrlNoHost -> true
+      | UrlCannotBeBase -> true
+      | RegexInvalid -> true
+      | InvalidUuidVariant -> true
+      | NotUnicastMac -> true
+      | NotMulticastMac -> true
+      | NotUniversalMac -> true
+      | NotLocalMac -> true
+      | PortIsZero -> true
+      | PortNotPrivileged f0 -> true
+      | PortIsPrivileged f0 -> true
+      | PathContainsNull -> true
+      | PathNotAbsolute f0 -> inv_String f0
+      | PathNotRelative f0 -> inv_String f0
+      | InvalidUtf8 -> true
+      | TooLong max actual -> true
+      end
+
+predicate inv_Result_I8NonZero_ValidationError (_1: t_Result_I8NonZero_ValidationError)
+
+axiom inv_axiom'0 [@rewrite]:
+  forall x: t_Result_I8NonZero_ValidationError [inv_Result_I8NonZero_ValidationError x]. inv_Result_I8NonZero_ValidationError x
+    = match x with
+      | Ok f0 -> inv_I8NonZero f0
+      | Err f0 -> inv_ValidationError f0
+      end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_i8_non_zero_invalid
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 54 0 54 82] (value: Int8.t)
+  (return (x: t_Result_I8NonZero_ValidationError)) =
+  {[@expl:verify_i8_non_zero_invalid requires] [%#sintegers'0] Int8.to_int value = 0}
+  (! bb0
+  [ bb0 = {[%#sintegers] false} any ]
+  [ & _ret: t_Result_I8NonZero_ValidationError = Any.any_l () | & value: Int8.t = value ])
+  [ return (result: t_Result_I8NonZero_ValidationError) ->
+  {([@expl:verify_i8_non_zero_invalid result type invariant] [%#sintegers'1] inv_Result_I8NonZero_ValidationError result)
+    /\ ([@expl:verify_i8_non_zero_invalid ensures] [%#sintegers'2] match result with
+      | Ok _ -> false
+      | Err _ -> true
+      end)}
+    (! return {result}) ]

@@ -1,0 +1,238 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 122 0 122 84 *)
+
+let%span sintegers = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 123 4 123 27
+let%span sintegers'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 120 11 120 21
+let%span sintegers'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 122 48 122 84
+let%span sintegers'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 121 10 121 57
+let%span sord = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 125 41 125 91
+let%span sord'0 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 129 41 129 88
+let%span sord'1 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 133 41 133 88
+let%span sord'2 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 137 41 137 91
+let%span sord'3 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 141 41 141 72
+let%span sord'4 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 145 42 145 59
+let%span sord'5 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 146 42 146 59
+let%span sord'6 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 147 41 147 58
+let%span sord'7 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 151 42 151 72
+let%span sord'8 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 152 41 152 74
+let%span sord'9 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 156 42 156 75
+let%span sord'10 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 157 41 157 71
+let%span sord'11 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 161 41 161 86
+let%span sord'12 = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.9.0/src/logic/ord.rs" 200 8 206 9
+
+use creusot.int.Int128
+use creusot.float.Float64
+use creusot.int.UInt64
+use creusot.prelude.Char
+use creusot.int.UInt8
+use creusot.int.UInt16
+use creusot.prelude.Any
+use mach.int.Int
+
+type t_U16Positive
+
+type t_String
+
+type t_ValidationError =
+  | NotPositive Int128.t
+  | Negative Int128.t
+  | Zero
+  | NotFinite t_String
+  | FloatNotPositive Float64.t
+  | FloatNegative Float64.t
+  | FloatOutOfRange Float64.t Float64.t Float64.t
+  | OutOfRange Int128.t Int128.t Int128.t
+  | EmptyString
+  | StringTooLong UInt64.t UInt64.t
+  | StringTooShort UInt64.t UInt64.t
+  | NotTrue
+  | NotFalse
+  | NotAlphabetic Char.t
+  | NotNumeric Char.t
+  | NotAlphanumeric Char.t
+  | WrongUuidVersion UInt8.t UInt8.t
+  | NilUuid
+  | DurationNotPositive
+  | NotPrivateIp
+  | NotPublicIp
+  | ExpectedIpv4GotIpv6
+  | ExpectedIpv6GotIpv4
+  | NotLoopback
+  | PathDoesNotExist t_String
+  | PathNotReadable t_String
+  | PathNotDirectory t_String
+  | PathNotFile t_String
+  | DateTimeTooEarly t_String t_String
+  | DateTimeTooLate t_String t_String
+  | EmptyCollection
+  | OptionIsNone
+  | ResultIsErr
+  | WrongJsonType t_String t_String
+  | JsonIsNull
+  | UrlInvalid
+  | InvalidUrlSyntax
+  | UrlMissingAuthority
+  | UrlNotAbsolute
+  | UrlNotHttps
+  | UrlNotHttp
+  | InvalidRegexSyntax
+  | UrlNoHost
+  | UrlCannotBeBase
+  | RegexInvalid
+  | InvalidUuidVariant
+  | NotUnicastMac
+  | NotMulticastMac
+  | NotUniversalMac
+  | NotLocalMac
+  | PortIsZero
+  | PortNotPrivileged UInt16.t
+  | PortIsPrivileged UInt16.t
+  | PathContainsNull
+  | PathNotAbsolute t_String
+  | PathNotRelative t_String
+  | InvalidUtf8
+  | TooLong UInt64.t UInt64.t
+
+type t_Result_U16Positive_ValidationError = Ok t_U16Positive | Err t_ValidationError
+
+type t_Ordering = Less | Equal | Greater
+
+function cmp_log_Int (self: int) (o: int) : t_Ordering = [%#sord'12] if Int.(<) self o then
+    Less
+  else
+    if self = o then Equal else Greater
+
+
+function eq_cmp_Int (x: int) (y: int) : ()
+
+axiom eq_cmp_Int_spec: forall x: int, y: int. [%#sord'11] (x = y) = (cmp_log_Int x y = Equal)
+
+function antisym2_Int (x: int) (y: int) : ()
+
+axiom antisym2_Int_spec: forall x: int, y: int. ([%#sord'9] cmp_log_Int x y = Greater)
+    -> ([%#sord'10] cmp_log_Int y x = Less)
+
+function antisym1_Int (x: int) (y: int) : ()
+
+axiom antisym1_Int_spec: forall x: int, y: int. ([%#sord'7] cmp_log_Int x y = Less)
+    -> ([%#sord'8] cmp_log_Int y x = Greater)
+
+function trans_Int (x: int) (y: int) (z: int) (o: t_Ordering) : ()
+
+axiom trans_Int_spec: forall x: int, y: int, z: int, o: t_Ordering. ([%#sord'4] cmp_log_Int x y = o)
+    -> ([%#sord'5] cmp_log_Int y z = o) -> ([%#sord'6] cmp_log_Int x z = o)
+
+function refl_Int (x: int) : ()
+
+axiom refl_Int_spec: forall x: int. [%#sord'3] cmp_log_Int x x = Equal
+
+function cmp_gt_log_Int (x: int) (y: int) : ()
+
+axiom cmp_gt_log_Int_spec: forall x: int, y: int. [%#sord'2] Int.(>) x y = (cmp_log_Int x y = Greater)
+
+function cmp_ge_log_Int (x: int) (y: int) : ()
+
+axiom cmp_ge_log_Int_spec: forall x: int, y: int. [%#sord'1] Int.(>=) x y = (cmp_log_Int x y <> Less)
+
+function cmp_lt_log_Int (x: int) (y: int) : ()
+
+axiom cmp_lt_log_Int_spec: forall x: int, y: int. [%#sord'0] Int.(<) x y = (cmp_log_Int x y = Less)
+
+function cmp_le_log_Int (x: int) (y: int) : ()
+
+axiom cmp_le_log_Int_spec: forall x: int, y: int. [%#sord] Int.(<=) x y = (cmp_log_Int x y <> Greater)
+
+predicate inv_U16Positive (_1: t_U16Positive)
+
+predicate inv_String (_1: t_String)
+
+predicate inv_ValidationError (_1: t_ValidationError)
+
+axiom inv_axiom [@rewrite]: forall x: t_ValidationError [inv_ValidationError x]. inv_ValidationError x
+    = match x with
+      | NotPositive f0 -> true
+      | Negative f0 -> true
+      | Zero -> true
+      | NotFinite f0 -> inv_String f0
+      | FloatNotPositive f0 -> true
+      | FloatNegative f0 -> true
+      | FloatOutOfRange value min max -> true
+      | OutOfRange value min max -> true
+      | EmptyString -> true
+      | StringTooLong actual max -> true
+      | StringTooShort actual min -> true
+      | NotTrue -> true
+      | NotFalse -> true
+      | NotAlphabetic f0 -> true
+      | NotNumeric f0 -> true
+      | NotAlphanumeric f0 -> true
+      | WrongUuidVersion expected got -> true
+      | NilUuid -> true
+      | DurationNotPositive -> true
+      | NotPrivateIp -> true
+      | NotPublicIp -> true
+      | ExpectedIpv4GotIpv6 -> true
+      | ExpectedIpv6GotIpv4 -> true
+      | NotLoopback -> true
+      | PathDoesNotExist f0 -> inv_String f0
+      | PathNotReadable f0 -> inv_String f0
+      | PathNotDirectory f0 -> inv_String f0
+      | PathNotFile f0 -> inv_String f0
+      | DateTimeTooEarly value threshold -> inv_String value /\ inv_String threshold
+      | DateTimeTooLate value threshold -> inv_String value /\ inv_String threshold
+      | EmptyCollection -> true
+      | OptionIsNone -> true
+      | ResultIsErr -> true
+      | WrongJsonType expected got -> inv_String expected /\ inv_String got
+      | JsonIsNull -> true
+      | UrlInvalid -> true
+      | InvalidUrlSyntax -> true
+      | UrlMissingAuthority -> true
+      | UrlNotAbsolute -> true
+      | UrlNotHttps -> true
+      | UrlNotHttp -> true
+      | InvalidRegexSyntax -> true
+      | UrlNoHost -> true
+      | UrlCannotBeBase -> true
+      | RegexInvalid -> true
+      | InvalidUuidVariant -> true
+      | NotUnicastMac -> true
+      | NotMulticastMac -> true
+      | NotUniversalMac -> true
+      | NotLocalMac -> true
+      | PortIsZero -> true
+      | PortNotPrivileged f0 -> true
+      | PortIsPrivileged f0 -> true
+      | PathContainsNull -> true
+      | PathNotAbsolute f0 -> inv_String f0
+      | PathNotRelative f0 -> inv_String f0
+      | InvalidUtf8 -> true
+      | TooLong max actual -> true
+      end
+
+predicate inv_Result_U16Positive_ValidationError (_1: t_Result_U16Positive_ValidationError)
+
+axiom inv_axiom'0 [@rewrite]:
+  forall x: t_Result_U16Positive_ValidationError [inv_Result_U16Positive_ValidationError x]. inv_Result_U16Positive_ValidationError x
+    = match x with
+      | Ok f0 -> inv_U16Positive f0
+      | Err f0 -> inv_ValidationError f0
+      end
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_u16_positive_valid
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 122 0 122 84] (value: UInt16.t)
+  (return (x: t_Result_U16Positive_ValidationError)) =
+  {[@expl:verify_u16_positive_valid requires] [%#sintegers'0] Int.(>) (UInt16.t'int value) 0}
+  (! bb0
+  [ bb0 = {[%#sintegers] false} any ]
+  [ & _ret: t_Result_U16Positive_ValidationError = Any.any_l () | & value: UInt16.t = value ])
+  [ return (result: t_Result_U16Positive_ValidationError) ->
+  {([@expl:verify_u16_positive_valid result type invariant] [%#sintegers'1] inv_Result_U16Positive_ValidationError result)
+    /\ ([@expl:verify_u16_positive_valid ensures] [%#sintegers'2] match result with
+      | Ok _ -> true
+      | Err _ -> false
+      end)}
+    (! return {result}) ]
