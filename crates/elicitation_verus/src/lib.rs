@@ -5,3 +5,4 @@ use verus_builtin_macros::*;
 use vstd::prelude::*;
 
 pub mod bools;
+pub mod chars;
