@@ -223,10 +223,7 @@ use std::fmt::Debug;
 /// Default String contract (Kani unless overridden by feature).
 #[cfg(all(
     feature = "verification",
-    not(any(
-        feature = "verify-prusti",
-        feature = "verify-verus"
-    ))
+    not(any(feature = "verify-prusti", feature = "verify-verus"))
 ))]
 pub const DEFAULT_STRING_CONTRACT: contracts::StringNonEmpty = contracts::StringNonEmpty;
 
@@ -236,10 +233,7 @@ pub const DEFAULT_STRING_CONTRACT: contracts::prusti::PrustiStringNonEmpty =
     contracts::prusti::PrustiStringNonEmpty;
 
 /// Default String contract (Verus - priority 2).
-#[cfg(all(
-    feature = "verify-verus",
-    not(feature = "verify-prusti")
-))]
+#[cfg(all(feature = "verify-verus", not(feature = "verify-prusti")))]
 pub const DEFAULT_STRING_CONTRACT: contracts::verus::VerusStringNonEmpty =
     contracts::verus::VerusStringNonEmpty;
 
@@ -247,10 +241,7 @@ pub const DEFAULT_STRING_CONTRACT: contracts::verus::VerusStringNonEmpty =
 /// Default i32 contract (Kani unless overridden by feature).
 #[cfg(all(
     feature = "verification",
-    not(any(
-        feature = "verify-prusti",
-        feature = "verify-verus"
-    ))
+    not(any(feature = "verify-prusti", feature = "verify-verus"))
 ))]
 pub const DEFAULT_I32_CONTRACT: contracts::I32Positive = contracts::I32Positive;
 
@@ -260,10 +251,7 @@ pub const DEFAULT_I32_CONTRACT: contracts::prusti::PrustiI32Positive =
     contracts::prusti::PrustiI32Positive;
 
 /// Default i32 contract (Verus - priority 2).
-#[cfg(all(
-    feature = "verify-verus",
-    not(feature = "verify-prusti")
-))]
+#[cfg(all(feature = "verify-verus", not(feature = "verify-prusti")))]
 pub const DEFAULT_I32_CONTRACT: contracts::verus::VerusI32Positive =
     contracts::verus::VerusI32Positive;
 
@@ -271,10 +259,7 @@ pub const DEFAULT_I32_CONTRACT: contracts::verus::VerusI32Positive =
 /// Default bool contract (Kani unless overridden by feature).
 #[cfg(all(
     feature = "verification",
-    not(any(
-        feature = "verify-prusti",
-        feature = "verify-verus"
-    ))
+    not(any(feature = "verify-prusti", feature = "verify-verus"))
 ))]
 pub const DEFAULT_BOOL_CONTRACT: contracts::BoolValid = contracts::BoolValid;
 
@@ -284,10 +269,7 @@ pub const DEFAULT_BOOL_CONTRACT: contracts::prusti::PrustiBoolValid =
     contracts::prusti::PrustiBoolValid;
 
 /// Default bool contract (Verus).
-#[cfg(all(
-    feature = "verify-verus",
-    not(feature = "verify-prusti")
-))]
+#[cfg(all(feature = "verify-verus", not(feature = "verify-prusti")))]
 pub const DEFAULT_BOOL_CONTRACT: contracts::verus::VerusBoolValid =
     contracts::verus::VerusBoolValid;
 

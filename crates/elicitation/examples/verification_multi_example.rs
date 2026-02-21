@@ -28,18 +28,6 @@ fn main() {
         kani_backend.check_precondition(&value)
     );
 
-    #[cfg(feature = "verify-creusot")]
-    {
-        use elicitation::verification::contracts::creusot::CreusotI32Positive;
-        let creusot_backend = VerifierBackend::Creusot(
-            Box::new(CreusotI32Positive) as Box<dyn DynContract<i32, i32>>
-        );
-        println!(
-            "   Creusot backend precondition: {}",
-            creusot_backend.check_precondition(&value)
-        );
-    }
-
     #[cfg(feature = "verify-prusti")]
     {
         use elicitation::verification::contracts::prusti::PrustiI32Positive;
@@ -77,12 +65,8 @@ fn main() {
     );
 
     println!("   Step 3: Switch to stronger verifier for production");
-    #[cfg(feature = "verify-creusot")]
+    #[cfg(feature = "verify-prusti")]
     {
-        use elicitation::verification::contracts::creusot::CreusotStringNonEmpty;
-        println!(
-            "      Creusot contract: {}",
-            CreusotStringNonEmpty::requires(&hello)
         );
     }
     println!();
