@@ -4,6 +4,7 @@ use verus_builtin::*;
 use verus_builtin_macros::*;
 use vstd::prelude::*;
 
+// Contract type proofs (newtypes/wrappers)
 pub mod bools;
 pub mod chars;
 pub mod collections;
@@ -20,3 +21,8 @@ pub mod urls;
 pub mod utf8;
 pub mod uuids;
 pub mod values;
+
+// Base type proofs (stdlib and external crates)
+pub mod primitives;
+pub mod stdlib_collections;
+pub mod external_types;
