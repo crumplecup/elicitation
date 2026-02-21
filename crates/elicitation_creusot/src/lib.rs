@@ -60,10 +60,14 @@ use elicitation::{
     UsizeNonZero,
     UsizePositive,
     UsizeRange,
+    // String types
+    StringNonEmpty,
     // Error type
     ValidationError,
 };
 
-pub mod bools;
-pub mod chars;
-pub mod integers;
+// Module declarations
+mod bools;
+mod chars;
+mod integers;
+mod strings;
