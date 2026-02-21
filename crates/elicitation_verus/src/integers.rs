@@ -8,8 +8,12 @@ verus! {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ValidationError {
-    NotPositive(i8),
-    Negative(i8),
+    NotPositiveI8(i8),
+    NegativeI8(i8),
+    NotPositiveI16(i16),
+    NegativeI16(i16),
+    NotPositiveU8(u8),
+    NotPositiveU16(u16),
     Zero,
 }
 
@@ -28,12 +32,12 @@ impl I8Positive {
     pub fn new(value: i8) -> (result: Result<Self, ValidationError>)
         ensures
             value > 0 ==> (result matches Ok(p) && p.value == value),
-            value <= 0 ==> (result matches Err(ValidationError::NotPositive(v)) && v == value),
+            value <= 0 ==> (result matches Err(ValidationError::NotPositiveI8(v)) && v == value),
     {
         if value > 0 {
             Ok(I8Positive { value })
         } else {
-            Err(ValidationError::NotPositive(value))
+            Err(ValidationError::NotPositiveI8(value))
         }
     }
 
@@ -69,12 +73,12 @@ impl I8NonNegative {
     pub fn new(value: i8) -> (result: Result<Self, ValidationError>)
         ensures
             value >= 0 ==> (result matches Ok(nn) && nn.value == value),
-            value < 0 ==> (result matches Err(ValidationError::Negative(v)) && v == value),
+            value < 0 ==> (result matches Err(ValidationError::NegativeI8(v)) && v == value),
     {
         if value >= 0 {
             Ok(I8NonNegative { value })
         } else {
-            Err(ValidationError::Negative(value))
+            Err(ValidationError::NegativeI8(value))
         }
     }
 
@@ -129,6 +133,249 @@ impl I8NonZero {
 
     /// Unwraps to i8 (trenchcoat off).
     pub fn into_inner(self) -> (result: i8)
+        requires self.value != 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+}
+
+// ============================================================================
+// I16 Types
+// ============================================================================
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct I16Positive {
+    pub value: i16,
+}
+
+impl I16Positive {
+    pub fn new(value: i16) -> (result: Result<Self, ValidationError>)
+        ensures
+            value > 0 ==> (result matches Ok(p) && p.value == value),
+            value <= 0 ==> (result matches Err(ValidationError::NotPositiveI16(v)) && v == value),
+    {
+        if value > 0 {
+            Ok(I16Positive { value })
+        } else {
+            Err(ValidationError::NotPositiveI16(value))
+        }
+    }
+
+    pub fn get(&self) -> (result: i16)
+        requires self.value > 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+
+    pub fn into_inner(self) -> (result: i16)
+        requires self.value > 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct I16NonNegative {
+    pub value: i16,
+}
+
+impl I16NonNegative {
+    pub fn new(value: i16) -> (result: Result<Self, ValidationError>)
+        ensures
+            value >= 0 ==> (result matches Ok(nn) && nn.value == value),
+            value < 0 ==> (result matches Err(ValidationError::NegativeI16(v)) && v == value),
+    {
+        if value >= 0 {
+            Ok(I16NonNegative { value })
+        } else {
+            Err(ValidationError::NegativeI16(value))
+        }
+    }
+
+    pub fn get(&self) -> (result: i16)
+        requires self.value >= 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+
+    pub fn into_inner(self) -> (result: i16)
+        requires self.value >= 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct I16NonZero {
+    pub value: i16,
+}
+
+impl I16NonZero {
+    pub fn new(value: i16) -> (result: Result<Self, ValidationError>)
+        ensures
+            value != 0 ==> (result matches Ok(nz) && nz.value == value),
+            value == 0 ==> (result matches Err(ValidationError::Zero)),
+    {
+        if value != 0 {
+            Ok(I16NonZero { value })
+        } else {
+            Err(ValidationError::Zero)
+        }
+    }
+
+    pub fn get(&self) -> (result: i16)
+        requires self.value != 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+
+    pub fn into_inner(self) -> (result: i16)
+        requires self.value != 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+}
+
+// ============================================================================
+// U8 Types (unsigned)
+// ============================================================================
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct U8Positive {
+    pub value: u8,
+}
+
+impl U8Positive {
+    pub fn new(value: u8) -> (result: Result<Self, ValidationError>)
+        ensures
+            value > 0 ==> (result matches Ok(p) && p.value == value),
+            value == 0 ==> (result matches Err(ValidationError::NotPositiveU8(v)) && v == value),
+    {
+        if value > 0 {
+            Ok(U8Positive { value })
+        } else {
+            Err(ValidationError::NotPositiveU8(value))
+        }
+    }
+
+    pub fn get(&self) -> (result: u8)
+        requires self.value > 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+
+    pub fn into_inner(self) -> (result: u8)
+        requires self.value > 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct U8NonZero {
+    pub value: u8,
+}
+
+impl U8NonZero {
+    pub fn new(value: u8) -> (result: Result<Self, ValidationError>)
+        ensures
+            value != 0 ==> (result matches Ok(nz) && nz.value == value),
+            value == 0 ==> (result matches Err(ValidationError::Zero)),
+    {
+        if value != 0 {
+            Ok(U8NonZero { value })
+        } else {
+            Err(ValidationError::Zero)
+        }
+    }
+
+    pub fn get(&self) -> (result: u8)
+        requires self.value != 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+
+    pub fn into_inner(self) -> (result: u8)
+        requires self.value != 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+}
+
+// ============================================================================
+// U16 Types (unsigned)
+// ============================================================================
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct U16Positive {
+    pub value: u16,
+}
+
+impl U16Positive {
+    pub fn new(value: u16) -> (result: Result<Self, ValidationError>)
+        ensures
+            value > 0 ==> (result matches Ok(p) && p.value == value),
+            value == 0 ==> (result matches Err(ValidationError::NotPositiveU16(v)) && v == value),
+    {
+        if value > 0 {
+            Ok(U16Positive { value })
+        } else {
+            Err(ValidationError::NotPositiveU16(value))
+        }
+    }
+
+    pub fn get(&self) -> (result: u16)
+        requires self.value > 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+
+    pub fn into_inner(self) -> (result: u16)
+        requires self.value > 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct U16NonZero {
+    pub value: u16,
+}
+
+impl U16NonZero {
+    pub fn new(value: u16) -> (result: Result<Self, ValidationError>)
+        ensures
+            value != 0 ==> (result matches Ok(nz) && nz.value == value),
+            value == 0 ==> (result matches Err(ValidationError::Zero)),
+    {
+        if value != 0 {
+            Ok(U16NonZero { value })
+        } else {
+            Err(ValidationError::Zero)
+        }
+    }
+
+    pub fn get(&self) -> (result: u16)
+        requires self.value != 0,
+        ensures result == self.value,
+    {
+        self.value
+    }
+
+    pub fn into_inner(self) -> (result: u16)
         requires self.value != 0,
         ensures result == self.value,
     {
