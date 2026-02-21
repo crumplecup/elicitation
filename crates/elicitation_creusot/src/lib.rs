@@ -69,6 +69,12 @@ use elicitation::{
     F64Positive,
     F64NonNegative,
     F64Finite,
+    // Duration types
+    DurationPositive,
+    // Tuple types
+    Tuple2,
+    Tuple3,
+    Tuple4,
     // Error type
     ValidationError,
 };
@@ -76,6 +82,8 @@ use elicitation::{
 // Module declarations
 mod bools;
 mod chars;
+mod durations;
 mod floats;
 mod integers;
 mod strings;
+mod tuples;
