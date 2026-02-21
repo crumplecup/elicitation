@@ -1,16 +1,15 @@
 //! Verus proofs for Regex contract types.
 
-#![cfg(all(feature = "verify-verus", feature = "regex", not(kani)))]
-#![allow(unused_imports)]
 
-use crate::*;
+// Regex types may be in regexbytes module or elsewhere
+// Using minimal imports for now since regex is feature-gated
 
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin::*;
-#[cfg(feature = "verify-verus")]
+use verus_builtin::*;
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin_macros::*;
+use verus_builtin_macros::*;
 
 verus! {
 

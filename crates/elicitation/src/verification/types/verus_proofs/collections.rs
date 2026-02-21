@@ -1,16 +1,18 @@
 //! Verus proofs for collection contract types.
 
-#![cfg(all(feature = "verify-verus", not(kani)))]
-#![allow(unused_imports)]
 
-use crate::*;
+use crate::verification::types::collections::{
+    BTreeMapNonEmpty, BTreeSetNonEmpty, HashMapNonEmpty, HashSetNonEmpty,
+    LinkedListNonEmpty, OptionSome, ResultOk, VecDequeNonEmpty, VecNonEmpty,
+};
+use crate::verification::types::ValidationError;
 
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin::*;
-#[cfg(feature = "verify-verus")]
+use verus_builtin::*;
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin_macros::*;
+use verus_builtin_macros::*;
 
 verus! {
 

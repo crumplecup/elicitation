@@ -1,16 +1,15 @@
 //! Verus proofs for elicitation mechanism contracts.
 
-#![cfg(all(feature = "verify-verus", not(kani)))]
-#![allow(unused_imports)]
 
-use crate::*;
+// Mechanisms are behavioral properties, not data types
+// No type imports needed
 
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin::*;
-#[cfg(feature = "verify-verus")]
+use verus_builtin::*;
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin_macros::*;
+use verus_builtin_macros::*;
 
 verus! {
 

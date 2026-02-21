@@ -1,16 +1,19 @@
 //! Verus proofs for string contract types.
 
-#![cfg(all(feature = "verify-verus", not(kani)))]
-#![allow(unused_imports)]
 
-use crate::*;
+use crate::verification::types::strings::{
+    StringAlphabetic, StringAlphanumeric, StringContains, StringEndsWith,
+    StringLengthMax, StringLengthMin, StringLengthRange, StringNonEmpty,
+    StringNumeric, StringStartsWith,
+};
+use crate::verification::types::ValidationError;
 
-#[cfg(feature = "verify-verus")]
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin::*;
-#[cfg(feature = "verify-verus")]
+use verus_builtin::*;
+#[cfg(verus)]
 #[allow(unused_imports)]
-use builtin_macros::*;
+use verus_builtin_macros::*;
 
 verus! {
 

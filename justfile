@@ -676,7 +676,7 @@ verify-creusot file="":
     echo "🔬 Running Creusot verification on {{file}}"
     creusot verify {{file}}
 
-# Run Verus verification
+# Run Verus verification (simple mode)
 verify-verus:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -697,6 +697,30 @@ verify-verus:
     
     echo "🔬 Running Verus verification..."
     "$VERUS_BIN" --crate-type=lib crates/elicitation/src/lib.rs
+
+# Run Verus verification with CSV tracking (recommended)
+verify-verus-tracked csv="verus_verification_results.csv" timeout="600":
+    @echo "🔬 Running Verus verification with tracking..."
+    @echo "   CSV: {{csv}}"
+    @echo "   Timeout: {{timeout}}s per proof"
+    @echo ""
+    cargo run --quiet --features cli --release -- verus run --output {{csv}} --timeout {{timeout}}
+
+# Resume Verus verification (skips already-passed proofs)
+verify-verus-resume csv="verus_verification_results.csv":
+    cargo run --quiet --features cli --release -- verus run --output {{csv}} --resume
+
+# Show Verus verification summary statistics
+verify-verus-summary csv="verus_verification_results.csv":
+    cargo run --quiet --features cli --release -- verus summary --file {{csv}}
+
+# Show failed Verus proofs
+verify-verus-failed csv="verus_verification_results.csv":
+    cargo run --quiet --features cli --release -- verus failed --file {{csv}}
+
+# List all Verus proof modules
+verify-verus-list:
+    @cargo run --quiet --features cli --release -- verus list
 
 # Run all formal verification tools
 verify-all: verify-kani verify-prusti verify-creusot verify-verus

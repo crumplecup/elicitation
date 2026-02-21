@@ -916,6 +916,8 @@ pub mod kani;
 pub mod creusot;
 #[cfg(feature = "cli")]
 pub mod prusti_runner;
+#[cfg(feature = "cli")]
+pub mod verus_runner;
 
 // TODO: Phase 2 - These will be top-level modules when we add Tool trait impls
 // For now, verifier-specific contracts are in contracts/ submodules
