@@ -93,6 +93,13 @@ use elicitation::{
     BoxNonNull,
     ArcNonNull,
     RcNonNull,
+    // Network types
+    IpPrivate,
+    IpPublic,
+    IpV4,
+    IpV6,
+    Ipv4Loopback,
+    Ipv6Loopback,
     // Error type
     ValidationError,
 };
@@ -104,5 +111,6 @@ mod collections;
 mod durations;
 mod floats;
 mod integers;
+mod networks;
 mod strings;
 mod tuples;
