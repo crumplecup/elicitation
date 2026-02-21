@@ -329,6 +329,14 @@ fn generate_elicit_impl_simple(
                     stringify!(#name)
                 );
             }
+
+            #[cfg(verus)]
+            fn verus_proof() {
+                // Compositional verification: verify all field types
+                #(
+                    <#elicited_types as elicitation::Elicitation>::verus_proof();
+                )*
+            }
         }
     }
 }
@@ -640,6 +648,14 @@ fn generate_elicit_impl_styled(
                     "Compositional verification for {}: all fields verified ⟹ struct verified ∎",
                     stringify!(#name)
                 );
+            }
+
+            #[cfg(verus)]
+            fn verus_proof() {
+                // Compositional verification: verify all field types
+                #(
+                    <#elicited_types as elicitation::Elicitation>::verus_proof();
+                )*
             }
         }
     }

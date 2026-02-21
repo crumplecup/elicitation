@@ -67,6 +67,12 @@ impl Elicitation for BoolTrue {
             }
         }
     }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus::bools::BoolTrue
+        // Verifies: new() ensures true values accepted, false values rejected
+    }
 }
 
 /// Contract type for false bool values.
@@ -128,6 +134,12 @@ impl Elicitation for BoolFalse {
                 }
             }
         }
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus::bools::BoolFalse
+        // Verifies: new() ensures false values accepted, true values rejected
     }
 }
 
