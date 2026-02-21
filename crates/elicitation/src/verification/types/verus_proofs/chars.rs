@@ -1,8 +1,7 @@
 //! Verus proofs for char contract types.
 
-
-use crate::verification::types::chars::{CharAlphabetic, CharAlphanumeric, CharNumeric};
 use crate::verification::types::ValidationError;
+use crate::verification::types::chars::{CharAlphabetic, CharAlphanumeric, CharNumeric};
 
 #[cfg(verus)]
 #[allow(unused_imports)]

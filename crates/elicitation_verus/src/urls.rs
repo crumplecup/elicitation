@@ -28,7 +28,7 @@ pub struct UrlValid {
 
 impl UrlValid {
     /// Creates a UrlValid given parsing result.
-    /// 
+    ///
     /// Parameters abstract the URL parsing:
     /// - parses: result of Url::parse(string).is_ok()
     pub fn new(parses: bool) -> (result: Result<Self, ValidationError>)
@@ -63,7 +63,7 @@ pub struct UrlHttps {
 
 impl UrlHttps {
     /// Creates a UrlHttps given parsing and scheme check.
-    /// 
+    ///
     /// Parameters:
     /// - parses: result of Url::parse(string).is_ok()
     /// - is_https: result of url.scheme() == "https"

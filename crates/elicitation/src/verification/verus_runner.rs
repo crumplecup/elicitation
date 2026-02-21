@@ -276,7 +276,10 @@ fn main() {{
             )
         }
     } else if stderr.contains("timeout") || stdout.contains("timeout") {
-        (VerificationStatus::Timeout, "Verification timed out".to_string())
+        (
+            VerificationStatus::Timeout,
+            "Verification timed out".to_string(),
+        )
     } else {
         (
             VerificationStatus::Failed,
@@ -416,13 +419,7 @@ pub struct VerusSummary {
 
 impl VerusSummary {
     /// Create a new summary.
-    pub fn new(
-        total: usize,
-        passed: usize,
-        failed: usize,
-        errors: usize,
-        skipped: usize,
-    ) -> Self {
+    pub fn new(total: usize, passed: usize, failed: usize, errors: usize, skipped: usize) -> Self {
         Self {
             total,
             passed,

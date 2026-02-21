@@ -14,7 +14,7 @@ verus! {
 // ============================================================================
 
 /// Proof that Regex can be constructed when compilation succeeds.
-/// 
+///
 /// Parameters:
 /// - compiles: whether Regex::new(pattern) succeeds
 pub fn verify_regex_construction(compiles: bool) -> (result: bool)
@@ -35,7 +35,7 @@ pub fn verify_regex_case_insensitive_construction(compiles: bool) -> (result: bo
 // ============================================================================
 
 /// Proof that Url can be constructed when parsing succeeds.
-/// 
+///
 /// Parameters:
 /// - parses: whether Url::parse(string) succeeds
 pub fn verify_url_construction(parses: bool) -> (result: bool)

@@ -29,10 +29,10 @@ pub struct StringNonEmpty {
 
 impl StringNonEmpty {
     /// Creates a StringNonEmpty given validation results.
-    /// 
+    ///
     /// Parameters abstract the string properties we'd check:
     /// - is_empty: result of string.is_empty()
-    /// 
+    ///
     /// This verifies our wrapper logic is correct.
     pub fn new(is_empty: bool) -> (result: Result<Self, ValidationError>)
         ensures
@@ -68,11 +68,11 @@ pub struct StringBounded {
 
 impl StringBounded {
     /// Creates a StringBounded given length and max.
-    /// 
+    ///
     /// Parameters abstract the string properties:
     /// - length: result of string.len()
     /// - max_len: maximum allowed length
-    /// 
+    ///
     /// Verifies: length <= max_len check is correct.
     pub fn new(length: usize, max_len: usize) -> (result: Result<Self, ValidationError>)
         ensures
@@ -111,11 +111,11 @@ pub struct StringNonEmptyBounded {
 
 impl StringNonEmptyBounded {
     /// Creates a StringNonEmptyBounded given validation results.
-    /// 
+    ///
     /// Parameters abstract the string properties:
     /// - length: result of string.len()
     /// - max_len: maximum allowed length
-    /// 
+    ///
     /// Verifies: both non-empty AND bounded checks are correct.
     pub fn new(length: usize, max_len: usize) -> (result: Result<Self, ValidationError>)
         ensures

@@ -269,10 +269,7 @@ fn show_verus_summary(file: &std::path::Path) -> anyhow::Result<()> {
     println!("  Failed:  {} ❌", summary.failed());
     println!("  Errors:  {} 🔥", summary.errors());
     println!();
-    println!(
-        "  Success Rate: {:.1}%",
-        summary.success_rate()
-    );
+    println!("  Success Rate: {:.1}%", summary.success_rate());
 
     Ok(())
 }
@@ -296,7 +293,10 @@ fn show_verus_failed(file: &std::path::Path) -> anyhow::Result<()> {
         println!("    Status: {:?}", result.status());
         println!("    Time: {}s", result.time_seconds());
         if !result.error_message().is_empty() {
-            println!("    Error: {}", result.error_message().lines().next().unwrap_or(""));
+            println!(
+                "    Error: {}",
+                result.error_message().lines().next().unwrap_or("")
+            );
         }
         println!();
     }

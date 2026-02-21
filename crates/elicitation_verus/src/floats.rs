@@ -24,7 +24,7 @@ pub struct F32Positive {
 
 impl F32Positive {
     /// Creates an F32Positive from a value.
-    /// 
+    ///
     /// For Verus, we abstract is_finite() and > 0.0 checks as parameters
     /// since we can't verify float IEEE 754 properties directly.
     pub fn new(value: f32, is_finite: bool, is_positive: bool) -> (result: Result<Self, ValidationError>)

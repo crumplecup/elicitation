@@ -1,6 +1,5 @@
 //! Verus proofs for elicitation mechanism contracts.
 
-
 // Mechanisms are behavioral properties, not data types
 // No type imports needed
 

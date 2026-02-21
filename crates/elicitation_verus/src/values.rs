@@ -28,7 +28,7 @@ pub struct ValueObject {
 
 impl ValueObject {
     /// Creates a ValueObject given type check result.
-    /// 
+    ///
     /// Parameters abstract the JSON type check:
     /// - is_object: result of value.is_object()
     pub fn new(is_object: bool) -> (result: Result<Self, ValidationError>)
@@ -63,7 +63,7 @@ pub struct ValueArray {
 
 impl ValueArray {
     /// Creates a ValueArray given type check result.
-    /// 
+    ///
     /// Parameters:
     /// - is_array: result of value.is_array()
     pub fn new(is_array: bool) -> (result: Result<Self, ValidationError>)
@@ -98,7 +98,7 @@ pub struct ValueNonNull {
 
 impl ValueNonNull {
     /// Creates a ValueNonNull given null check result.
-    /// 
+    ///
     /// Parameters:
     /// - is_null: result of value.is_null()
     pub fn new(is_null: bool) -> (result: Result<Self, ValidationError>)

@@ -1,12 +1,10 @@
 //! Verus proofs for string contract types.
 
-
-use crate::verification::types::strings::{
-    StringAlphabetic, StringAlphanumeric, StringContains, StringEndsWith,
-    StringLengthMax, StringLengthMin, StringLengthRange, StringNonEmpty,
-    StringNumeric, StringStartsWith,
-};
 use crate::verification::types::ValidationError;
+use crate::verification::types::strings::{
+    StringAlphabetic, StringAlphanumeric, StringContains, StringEndsWith, StringLengthMax,
+    StringLengthMin, StringLengthRange, StringNonEmpty, StringNumeric, StringStartsWith,
+};
 
 #[cfg(verus)]
 #[allow(unused_imports)]

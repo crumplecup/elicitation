@@ -9,8 +9,8 @@ use verus_builtin_macros::*;
 #[cfg(verus)]
 use vstd::prelude::*;
 
-use crate::verification::types::bools::{BoolTrue, BoolFalse};
 use crate::verification::types::ValidationError;
+use crate::verification::types::bools::{BoolFalse, BoolTrue};
 
 #[cfg(verus)]
 verus! {

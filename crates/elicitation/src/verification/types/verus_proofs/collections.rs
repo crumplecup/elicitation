@@ -1,11 +1,10 @@
 //! Verus proofs for collection contract types.
 
-
-use crate::verification::types::collections::{
-    BTreeMapNonEmpty, BTreeSetNonEmpty, HashMapNonEmpty, HashSetNonEmpty,
-    LinkedListNonEmpty, OptionSome, ResultOk, VecDequeNonEmpty, VecNonEmpty,
-};
 use crate::verification::types::ValidationError;
+use crate::verification::types::collections::{
+    BTreeMapNonEmpty, BTreeSetNonEmpty, HashMapNonEmpty, HashSetNonEmpty, LinkedListNonEmpty,
+    OptionSome, ResultOk, VecDequeNonEmpty, VecNonEmpty,
+};
 
 #[cfg(verus)]
 #[allow(unused_imports)]

@@ -27,7 +27,7 @@ pub struct RegexValid {
 
 impl RegexValid {
     /// Creates a RegexValid given compilation result.
-    /// 
+    ///
     /// Parameters abstract the regex compilation:
     /// - compiles: result of Regex::new(pattern).is_ok()
     pub fn new(compiles: bool) -> (result: Result<Self, ValidationError>)
@@ -62,7 +62,7 @@ pub struct RegexCaseInsensitive {
 
 impl RegexCaseInsensitive {
     /// Creates a RegexCaseInsensitive given compilation result.
-    /// 
+    ///
     /// Parameters:
     /// - compiles: result of RegexBuilder::new(pattern).case_insensitive(true).build().is_ok()
     pub fn new(compiles: bool) -> (result: Result<Self, ValidationError>)

@@ -24,7 +24,7 @@ pub struct CharAlphabetic {
 
 impl CharAlphabetic {
     /// Creates a CharAlphabetic from a char and validation result.
-    /// 
+    ///
     /// For Verus, we abstract the is_alphabetic() check as a parameter
     /// (similar to Kani approach) since we can't verify Unicode tables.
     /// This verifies the wrapper logic is correct.

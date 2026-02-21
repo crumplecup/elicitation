@@ -23,6 +23,6 @@ pub mod uuids;
 pub mod values;
 
 // Base type proofs (stdlib and external crates)
+pub mod external_types;
 pub mod primitives;
 pub mod stdlib_collections;
-pub mod external_types;

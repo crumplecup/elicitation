@@ -1,10 +1,9 @@
 //! Verus proofs for URL contract types.
 
-
+use crate::verification::types::ValidationError;
 use crate::verification::types::urlbytes::{
     UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost,
 };
-use crate::verification::types::ValidationError;
 use url::Url;
 
 #[cfg(verus)]

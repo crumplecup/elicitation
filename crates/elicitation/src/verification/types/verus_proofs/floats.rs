@@ -1,11 +1,9 @@
 //! Verus proofs for float contract types.
 
-
-use crate::verification::types::floats::{
-    F32Finite, F32NonNegative, F32Positive,
-    F64Finite, F64NonNegative, F64Positive,
-};
 use crate::verification::types::ValidationError;
+use crate::verification::types::floats::{
+    F32Finite, F32NonNegative, F32Positive, F64Finite, F64NonNegative, F64Positive,
+};
 
 #[cfg(verus)]
 #[allow(unused_imports)]

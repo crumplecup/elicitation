@@ -1,6 +1,5 @@
 //! Verus proofs for Regex contract types.
 
-
 // Regex types may be in regexbytes module or elsewhere
 // Using minimal imports for now since regex is feature-gated
 

@@ -1,12 +1,11 @@
 //! Verus proofs for network and pointer contract types.
 
-
+use crate::verification::types::ValidationError;
 use crate::verification::types::networks::{
     IpPrivate, IpPublic, IpV4, IpV6, Ipv4Loopback, Ipv6Loopback,
 };
 use crate::verification::types::pathbufs::PathBufNonEmpty;
 use crate::verification::types::uuids::{UuidNonNil, UuidV4};
-use crate::verification::types::ValidationError;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::path::PathBuf;
 use uuid::Uuid;

@@ -26,10 +26,10 @@ pub struct DurationPositive {
 
 impl DurationPositive {
     /// Creates a DurationPositive given validation result.
-    /// 
+    ///
     /// Parameters abstract the Duration properties we'd check:
     /// - is_positive: result of duration.as_nanos() > 0
-    /// 
+    ///
     /// This verifies our wrapper logic is correct.
     pub fn new(is_positive: bool) -> (result: Result<Self, ValidationError>)
         ensures

@@ -28,10 +28,10 @@ pub struct VecNonEmpty {
 
 impl VecNonEmpty {
     /// Creates a VecNonEmpty given validation results.
-    /// 
+    ///
     /// Parameters abstract the Vec properties we'd check:
     /// - is_empty: result of vec.is_empty()
-    /// 
+    ///
     /// This verifies our wrapper logic is correct.
     pub fn new(is_empty: bool) -> (result: Result<Self, ValidationError>)
         ensures
@@ -75,7 +75,7 @@ pub struct VecBounded {
 
 impl VecBounded {
     /// Creates a VecBounded given length and max.
-    /// 
+    ///
     /// Parameters abstract the Vec properties:
     /// - length: result of vec.len()
     /// - max_len: maximum allowed length
@@ -113,7 +113,7 @@ pub struct VecNonEmptyBounded {
 
 impl VecNonEmptyBounded {
     /// Creates a VecNonEmptyBounded given validation results.
-    /// 
+    ///
     /// Verifies: both non-empty AND bounded checks are correct.
     pub fn new(length: usize, max_len: usize) -> (result: Result<Self, ValidationError>)
         ensures
@@ -150,7 +150,7 @@ pub struct OptionSome {
 
 impl OptionSome {
     /// Creates an OptionSome given validation result.
-    /// 
+    ///
     /// Parameters abstract the Option state:
     /// - is_some: result of option.is_some()
     pub fn new(is_some: bool) -> (result: Result<Self, ValidationError>)
@@ -186,7 +186,7 @@ pub struct ResultOk {
 
 impl ResultOk {
     /// Creates a ResultOk given validation result.
-    /// 
+    ///
     /// Parameters abstract the Result state:
     /// - is_ok: result of result.is_ok()
     pub fn new(is_ok: bool) -> (result: Result<Self, ValidationError>)

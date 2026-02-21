@@ -25,7 +25,7 @@ pub struct Tuple2 {
 
 impl Tuple2 {
     /// Creates a Tuple2 given validation results for both elements.
-    /// 
+    ///
     /// Both elements must be validated for tuple to be valid.
     pub fn new(first_valid: bool, second_valid: bool) -> (result: Self)
         ensures
