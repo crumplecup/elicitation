@@ -250,6 +250,18 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     #[test]
     #[cfg(kani)]
     fn test_invalid_variant() {
@@ -273,6 +285,18 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     #[test]
     #[cfg(kani)]
     fn test_version_extraction() {
@@ -293,6 +317,18 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     #[test]
     #[cfg(kani)]
     fn test_uuid_v4_bytes_valid() {
@@ -309,6 +345,18 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     #[test]
     #[cfg(kani)]
     fn test_uuid_v4_bytes_wrong_version() {
@@ -323,6 +371,18 @@ mod tests {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     #[test]
@@ -348,5 +408,17 @@ mod tests {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
