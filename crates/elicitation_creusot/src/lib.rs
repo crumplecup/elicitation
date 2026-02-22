@@ -143,9 +143,22 @@ mod paths;
 mod strings;
 mod tuples;
 
+// Trenchcoat verification types (internal wrappers)
+mod ipaddr_bytes;
+mod macaddr;
+mod mechanisms;
+mod socketaddr;
+mod utf8;
+
+#[cfg(unix)]
+mod pathbytes;
+
 // Feature-gated module declarations
 #[cfg(feature = "uuid")]
 mod uuids;
+
+#[cfg(feature = "uuid")]
+mod uuid_bytes;
 
 #[cfg(feature = "serde_json")]
 mod values;
@@ -153,8 +166,14 @@ mod values;
 #[cfg(feature = "url")]
 mod urls;
 
+#[cfg(feature = "url")]
+mod urlbytes;
+
 #[cfg(feature = "regex")]
 mod regexes;
+
+#[cfg(feature = "regex")]
+mod regexbytes;
 
 #[cfg(feature = "chrono")]
 mod datetimes_chrono;
