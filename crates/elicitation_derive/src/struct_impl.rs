@@ -338,6 +338,14 @@ fn generate_elicit_impl_simple(
                 )*
             }
         }
+
+            #[cfg(prusti)]
+            fn prusti_proof() {
+                // Compositional verification: verify all field types
+                #(
+                    <#elicited_types as elicitation::Elicitation>::prusti_proof();
+                )*
+            }
     }
 }
 
