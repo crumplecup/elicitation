@@ -1,7 +1,7 @@
 //! Prusti proofs for integer contract types.
 
-
-use crate::*;
+// Proof modules import types directly from elicitation
+// use crate::*;
 
 // Integer Contract Proofs
 // ============================================================================

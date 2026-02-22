@@ -23,6 +23,7 @@ pub fn verify_duration_positive_valid() -> Result<DurationPositive, elicitation:
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_duration_positive_invalid() -> Result<DurationPositive, elicitation::ValidationError> {
+pub fn verify_duration_positive_invalid() -> Result<DurationPositive, elicitation::ValidationError>
+{
     DurationPositive::new(Duration::from_secs(0))
 }

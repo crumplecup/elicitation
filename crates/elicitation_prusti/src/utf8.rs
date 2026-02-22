@@ -3,7 +3,7 @@
 //! These proofs verify the UTF-8 wrapper logic assuming correct stdlib validation.
 //! This is compositional verification: stdlib_correct → wrapper_correct.
 
-
+#[cfg(prusti)]
 use elicitation::verification::types::{Utf8Bytes, ValidationError};
 
 // UTF-8 Validation Proofs

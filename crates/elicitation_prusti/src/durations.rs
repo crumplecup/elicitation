@@ -1,7 +1,7 @@
 //! Prusti proofs for duration contract types.
 
-
-use crate::*;
+// Proof modules import types directly from elicitation
+// use crate::*;
 
 // Duration Contract Proofs
 // ============================================================================

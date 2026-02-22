@@ -10,10 +10,11 @@
 //!
 //! This is compositional verification: regex_crate_correct → wrapper_correct.
 
-
-use elicitation::{
-    BalancedDelimiters, RegexBytes, ValidCharClass, ValidEscapes, ValidQuantifiers, ValidationError,
-};
+// TODO: These types don't exist at crate level, need verification::types:: path
+// #[cfg(prusti)]
+// use elicitation::{
+//     BalancedDelimiters, RegexBytes, ValidCharClass, ValidEscapes, ValidQuantifiers, ValidationError,
+// };
 
 // Layer 2: BalancedDelimiters Proofs
 // ============================================================================

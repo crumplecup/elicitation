@@ -414,6 +414,22 @@ impl ProofHarness {
             Self::new("uuid_bytes", "verify_v7_wrong_version_rejected"),
             Self::new("uuid_bytes", "verify_valid_variant_accepted"),
             Self::new("uuid_bytes", "verify_version_extraction"),
+            // systemtime
+            Self::new("systemtime", "verify_systemtime_unix_epoch"),
+            Self::new("systemtime", "verify_systemtime_offset_positive"),
+            Self::new("systemtime", "verify_systemtime_offset_negative"),
+            Self::new("systemtime", "verify_systemtime_offset_zero"),
+            Self::new("systemtime", "verify_systemtime_generator_mode_preserved"),
+            Self::new("systemtime", "verify_systemtime_consistent_generation"),
+            Self::new("systemtime", "verify_systemtime_reference_preserved"),
+            // unit
+            Self::new("unit", "verify_unit_type_unique_value"),
+            Self::new("unit", "verify_unit_type_zero_sized"),
+            Self::new("unit", "verify_unit_type_default"),
+            // urlbytes experiments
+            Self::new("urlbytes", "experiment_scheme_exact_size"),
+            Self::new("urlbytes", "experiment_scheme_no_assertions"),
+            Self::new("urlbytes", "experiment_scheme_symbolic_constrained"),
         ]
     }
 
@@ -429,9 +445,10 @@ impl ProofHarness {
                 &format!("{}s", timeout_secs),
                 "cargo",
                 "kani",
+                "-p",
+                "elicitation",
                 "--lib",
-                "--features",
-                "verify-kani,serde_json,chrono,jiff,time,uuid,url,regex",
+                "--all-features",
                 "--harness",
                 &self.name,
             ])

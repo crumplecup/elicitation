@@ -4,10 +4,7 @@
 //! and our positivity/non-negativity comparisons. We verify wrapper structure.
 
 use creusot_std::prelude::*;
-use elicitation::{
-    F32Positive, F32NonNegative, F32Finite,
-    F64Positive, F64NonNegative, F64Finite,
-};
+use elicitation::{F32Finite, F32NonNegative, F32Positive, F64Finite, F64NonNegative, F64Positive};
 
 // ============================================================================
 // F32 Proofs

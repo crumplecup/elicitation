@@ -275,6 +275,7 @@ impl Elicitation for Timestamp {
         // Verification delegated to input components
         DateTimeInputMethod::kani_proof();
         DateTimeComponents::kani_proof();
+        DateTimeComponents::kani_proof();
 
         assert!(
             true,

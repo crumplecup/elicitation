@@ -10,7 +10,7 @@
 //!
 //! This is compositional verification: regex_crate_correct → wrapper_correct.
 
-
+#[cfg(creusot)]
 use elicitation::verification::types::{
     BalancedDelimiters, RegexBytes, ValidCharClass, ValidEscapes, ValidQuantifiers, ValidationError,
 };

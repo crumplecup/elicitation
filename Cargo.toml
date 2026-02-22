@@ -7,8 +7,9 @@ members = [
   "crates/elicitation_prusti",
   "crates/elicitation_rand",
 ]
+# Kani tests in separate directory structure
 # Verus verification crate - verification only, not buildable with cargo
-exclude = ["crates/elicitation_verus"]
+exclude = ["crates/elicitation_verus", "crates/elicitation_kani"]
 resolver = "2"
 
 [workspace.package]

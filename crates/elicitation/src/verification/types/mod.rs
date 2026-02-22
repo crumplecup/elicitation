@@ -63,8 +63,9 @@ mod kani_proofs;
 mod verus_proofs;
 
 // Prusti proofs (prusti-contracts is a real dependency)
-#[cfg(feature = "verify-prusti")]
-mod prusti_proofs;
+// TODO: Create prusti_proofs.rs when ready
+// #[cfg(feature = "verify-prusti")]
+// mod prusti_proofs;
 
 // Explicit exports (no globs - helps compiler show what's missing)
 

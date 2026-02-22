@@ -27,7 +27,8 @@ pub fn verify_datetime_utc_after_valid() -> Result<DateTimeUtcAfter, elicitation
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_datetime_utc_after_invalid() -> Result<DateTimeUtcAfter, elicitation::ValidationError> {
+pub fn verify_datetime_utc_after_invalid() -> Result<DateTimeUtcAfter, elicitation::ValidationError>
+{
     use chrono::{DateTime, Utc};
     let threshold = DateTime::parse_from_rfc3339("2020-01-01T00:00:00Z")
         .expect("Valid threshold")
@@ -42,7 +43,8 @@ pub fn verify_datetime_utc_after_invalid() -> Result<DateTimeUtcAfter, elicitati
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_datetime_utc_before_valid() -> Result<DateTimeUtcBefore, elicitation::ValidationError> {
+pub fn verify_datetime_utc_before_valid() -> Result<DateTimeUtcBefore, elicitation::ValidationError>
+{
     use chrono::{DateTime, Utc};
     let threshold = DateTime::parse_from_rfc3339("2020-01-01T00:00:00Z")
         .expect("Valid threshold")
@@ -57,7 +59,8 @@ pub fn verify_datetime_utc_before_valid() -> Result<DateTimeUtcBefore, elicitati
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_datetime_utc_before_invalid() -> Result<DateTimeUtcBefore, elicitation::ValidationError> {
+pub fn verify_datetime_utc_before_invalid()
+-> Result<DateTimeUtcBefore, elicitation::ValidationError> {
     use chrono::{DateTime, Utc};
     let threshold = DateTime::parse_from_rfc3339("2020-01-01T00:00:00Z")
         .expect("Valid threshold")
@@ -72,7 +75,8 @@ pub fn verify_datetime_utc_before_invalid() -> Result<DateTimeUtcBefore, elicita
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_naive_datetime_after_valid() -> Result<NaiveDateTimeAfter, elicitation::ValidationError> {
+pub fn verify_naive_datetime_after_valid()
+-> Result<NaiveDateTimeAfter, elicitation::ValidationError> {
     use chrono::NaiveDateTime;
     let threshold = NaiveDateTime::parse_from_str("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S")
         .expect("Valid threshold");
@@ -85,7 +89,8 @@ pub fn verify_naive_datetime_after_valid() -> Result<NaiveDateTimeAfter, elicita
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_naive_datetime_after_invalid() -> Result<NaiveDateTimeAfter, elicitation::ValidationError> {
+pub fn verify_naive_datetime_after_invalid()
+-> Result<NaiveDateTimeAfter, elicitation::ValidationError> {
     use chrono::NaiveDateTime;
     let threshold = NaiveDateTime::parse_from_str("2020-01-01 00:00:00", "%Y-%m-%d %H:%M:%S")
         .expect("Valid threshold");

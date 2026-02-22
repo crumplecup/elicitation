@@ -14,8 +14,7 @@ use elicitation::{UuidNonNil, UuidV4};
 #[trusted]
 pub fn verify_uuid_non_nil_valid() -> Result<UuidNonNil, elicitation::ValidationError> {
     use uuid::Uuid;
-    let uuid = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000")
-        .expect("Valid UUID");
+    let uuid = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").expect("Valid UUID");
     UuidNonNil::new(uuid)
 }
 
@@ -34,8 +33,7 @@ pub fn verify_uuid_non_nil_invalid() -> Result<UuidNonNil, elicitation::Validati
 #[trusted]
 pub fn verify_uuid_v4_valid() -> Result<UuidV4, elicitation::ValidationError> {
     use uuid::Uuid;
-    let uuid = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000")
-        .expect("Valid v4 UUID");
+    let uuid = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").expect("Valid v4 UUID");
     UuidV4::new(uuid)
 }
 
@@ -46,7 +44,6 @@ pub fn verify_uuid_v4_valid() -> Result<UuidV4, elicitation::ValidationError> {
 pub fn verify_uuid_v4_invalid() -> Result<UuidV4, elicitation::ValidationError> {
     use uuid::Uuid;
     // v1 UUID (time-based)
-    let uuid = Uuid::parse_str("c232ab00-9414-11ec-b3c8-9f68deced846")
-        .expect("Valid v1 UUID");
+    let uuid = Uuid::parse_str("c232ab00-9414-11ec-b3c8-9f68deced846").expect("Valid v1 UUID");
     UuidV4::new(uuid)
 }

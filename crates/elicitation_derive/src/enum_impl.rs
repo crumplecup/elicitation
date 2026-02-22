@@ -333,6 +333,14 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
             if num > 0 && num <= labels.len() {
                 labels[num - 1].to_string()
             } else {
+
+            #[cfg(prusti)]
+            fn prusti_proof() {
+                // Compositional verification: verify all field types across all variants
+                #(
+                    <#all_field_types as elicitation::Elicitation>::prusti_proof();
+                )*
+            }
                 return Err(elicitation::ElicitError::new(
                     elicitation::ElicitErrorKind::InvalidOption {
                         value: selected.to_string(),
@@ -410,6 +418,14 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
                 );
             }
 
+
+            #[cfg(prusti)]
+            fn prusti_proof() {
+                // Compositional verification: verify all field types across all variants
+                #(
+                    <#all_field_types as elicitation::Elicitation>::prusti_proof();
+                )*
+            }
             #[cfg(verus)]
             fn verus_proof() {
                 // Compositional verification: verify all field types across all variants

@@ -1,10 +1,7 @@
 //! Prusti proofs for bool contract types.
 
-
-use crate::*;
-
-// Bool Contract Proofs
-// ============================================================================
+#[cfg(prusti)]
+use elicitation::{BoolFalse, BoolTrue, ValidationError};
 
 /// Prove that BoolTrue construction succeeds for true.
 #[cfg(prusti)]

@@ -65,12 +65,6 @@ impl DateTimeUtcAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -91,12 +85,6 @@ impl DateTimeUtcAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]
@@ -121,12 +109,6 @@ impl DateTimeUtcAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -147,12 +129,6 @@ impl DateTimeUtcAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]
@@ -249,12 +225,6 @@ impl DateTimeUtcBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -275,12 +245,6 @@ impl DateTimeUtcBefore {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]
@@ -305,12 +269,6 @@ impl DateTimeUtcBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -331,12 +289,6 @@ impl DateTimeUtcBefore {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]
@@ -433,12 +385,6 @@ impl NaiveDateTimeAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -459,12 +405,6 @@ impl NaiveDateTimeAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]
@@ -489,12 +429,6 @@ impl NaiveDateTimeAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -515,12 +449,6 @@ impl NaiveDateTimeAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]
@@ -687,12 +615,6 @@ impl TimestampAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -713,12 +635,6 @@ impl TimestampAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]
@@ -743,12 +659,6 @@ impl TimestampAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -769,12 +679,6 @@ impl TimestampAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]
@@ -871,12 +775,6 @@ impl TimestampBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -897,12 +795,6 @@ impl TimestampBefore {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]
@@ -927,12 +819,6 @@ impl TimestampBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -953,12 +839,6 @@ impl TimestampBefore {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]
@@ -1103,12 +983,6 @@ impl OffsetDateTimeAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1129,12 +1003,6 @@ impl OffsetDateTimeAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]
@@ -1159,12 +1027,6 @@ impl OffsetDateTimeAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1185,12 +1047,6 @@ impl OffsetDateTimeAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]
@@ -1293,12 +1149,6 @@ impl OffsetDateTimeBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1319,12 +1169,6 @@ impl OffsetDateTimeBefore {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]
@@ -1349,12 +1193,6 @@ impl OffsetDateTimeBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1375,12 +1213,6 @@ impl OffsetDateTimeBefore {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
     }
 
     #[cfg(prusti)]

@@ -12,7 +12,8 @@ use elicitation::{OffsetDateTimeAfter, OffsetDateTimeBefore};
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_offset_datetime_after_valid() -> Result<OffsetDateTimeAfter, elicitation::ValidationError> {
+pub fn verify_offset_datetime_after_valid()
+-> Result<OffsetDateTimeAfter, elicitation::ValidationError> {
     use time::macros::datetime;
     let threshold = datetime!(2020-01-01 0:00 UTC);
     let after = datetime!(2021-01-01 0:00 UTC);
@@ -23,7 +24,8 @@ pub fn verify_offset_datetime_after_valid() -> Result<OffsetDateTimeAfter, elici
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_offset_datetime_after_invalid() -> Result<OffsetDateTimeAfter, elicitation::ValidationError> {
+pub fn verify_offset_datetime_after_invalid()
+-> Result<OffsetDateTimeAfter, elicitation::ValidationError> {
     use time::macros::datetime;
     let threshold = datetime!(2020-01-01 0:00 UTC);
     let before = datetime!(2019-01-01 0:00 UTC);
@@ -34,7 +36,8 @@ pub fn verify_offset_datetime_after_invalid() -> Result<OffsetDateTimeAfter, eli
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_offset_datetime_before_valid() -> Result<OffsetDateTimeBefore, elicitation::ValidationError> {
+pub fn verify_offset_datetime_before_valid()
+-> Result<OffsetDateTimeBefore, elicitation::ValidationError> {
     use time::macros::datetime;
     let threshold = datetime!(2020-01-01 0:00 UTC);
     let before = datetime!(2019-01-01 0:00 UTC);
@@ -45,7 +48,8 @@ pub fn verify_offset_datetime_before_valid() -> Result<OffsetDateTimeBefore, eli
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_offset_datetime_before_invalid() -> Result<OffsetDateTimeBefore, elicitation::ValidationError> {
+pub fn verify_offset_datetime_before_invalid()
+-> Result<OffsetDateTimeBefore, elicitation::ValidationError> {
     use time::macros::datetime;
     let threshold = datetime!(2020-01-01 0:00 UTC);
     let after = datetime!(2021-01-01 0:00 UTC);

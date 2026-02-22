@@ -6,14 +6,12 @@
 //! Unlike Kani (which runs individual harnesses), Prusti verifies all functions
 //! with contracts during compilation. Therefore, we track verification per module/file.
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::Utc;
 use csv::{Reader, Writer};
 use derive_getters::Getters;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use std::process::{Command, Stdio};
-use std::time::Instant;
 
 /// A Prusti proof module identifier.
 #[derive(
@@ -126,15 +124,97 @@ pub fn list_modules() -> Result<()> {
 
 /// Run Prusti verification and save results to CSV.
 ///
-/// Since Prusti verifies the entire crate in one go, we run it once
-/// and record the result for all modules.
+/// Note: Checks edition compatibility and runs verification if on prusti-verification branch.
 #[tracing::instrument]
 pub fn run_all(output: &Path, timeout: u64) -> Result<()> {
+    // Check if we're on a compatible edition (2021) by trying to detect workspace edition
+    let workspace_toml = std::path::Path::new("Cargo.toml");
+    if workspace_toml.exists() {
+        let content = std::fs::read_to_string(workspace_toml)?;
+        if content.contains("edition = \"2024\"") {
+            // On main branch with edition 2024 - show guidance
+            show_branch_guidance(output)?;
+            bail!("Prusti verification requires prusti-verification branch")
+        }
+    }
+
+    // Edition 2021 detected - proceed with verification
     tracing::info!(
         output = %output.display(),
         timeout,
         "Running Prusti verification"
     );
+
+    run_verification_impl(output, timeout)
+}
+
+/// Show guidance for switching to prusti-verification branch.
+fn show_branch_guidance(output: &Path) -> Result<()> {
+    let modules = all_modules();
+    let total_proofs: usize = modules.iter().map(|m| m.proof_count()).sum();
+
+    println!("⚠️  Prusti Verification Edition Compatibility Notice");
+    println!("====================================================");
+    println!();
+    println!("Prusti uses rustc 1.74 (2023) which only supports edition 2021.");
+    println!("This repository uses edition 2024 on the main development branch.");
+    println!();
+    println!("To run Prusti verification:");
+    println!("  1. Switch to the prusti-verification branch:");
+    println!("     $ git checkout prusti-verification");
+    println!();
+    println!("  2. Run verification:");
+    println!("     $ cd crates/elicitation_prusti && cargo prusti --all-features");
+    println!();
+    println!("  3. Or use justfile:");
+    println!("     $ just verify-prusti");
+    println!();
+    println!("The prusti-verification branch:");
+    println!("  - Uses edition 2021 (Prusti compatible)");
+    println!("  - Contains identical code to main branch");
+    println!("  - Automatically runs CI verification");
+    println!("  - Periodically syncs from dev/main");
+    println!();
+    println!("See PRUSTI_BRANCH.md for full documentation.");
+    println!();
+
+    // Write CSV indicating verification requires branch switch
+    let mut writer = Writer::from_path(output).context("Failed to create CSV file")?;
+
+    writer.write_record(&[
+        "module",
+        "proof_count",
+        "status",
+        "duration_secs",
+        "timestamp",
+        "error_message",
+    ])?;
+
+    let timestamp = Utc::now().to_rfc3339();
+    for module in &modules {
+        writer.write_record(&[
+            module.name(),
+            &module.proof_count().to_string(),
+            "RequiresBranch",
+            "0",
+            &timestamp,
+            "Use prusti-verification branch - see PRUSTI_BRANCH.md",
+        ])?;
+    }
+
+    writer.flush()?;
+
+    println!("📊 Status written to: {}", output.display());
+    println!("Total modules: {}", modules.len());
+    println!("Total proofs: {}", total_proofs);
+
+    Ok(())
+}
+
+/// Implementation of Prusti verification (runs on edition 2021).
+fn run_verification_impl(output: &Path, timeout: u64) -> Result<()> {
+    use std::process::{Command, Stdio};
+    use std::time::Instant;
 
     let mut writer = Writer::from_path(output).context("Failed to create CSV file")?;
     let modules = all_modules();
@@ -147,21 +227,18 @@ pub fn run_all(output: &Path, timeout: u64) -> Result<()> {
     println!("CSV output: {}", output.display());
     println!("Timeout: {}s", timeout);
     println!();
-    println!("Running cargo prusti on entire crate...");
+    println!("Running cargo prusti on elicitation_prusti crate...");
     println!();
 
-    // Run Prusti once on the entire crate
     let start = Instant::now();
     let timestamp = Utc::now().to_rfc3339();
 
     let output_result = Command::new("cargo")
         .args([
             "prusti",
-            "--features",
-            "verify-prusti",
-            "--no-default-features",
             "--package",
-            "elicitation",
+            "elicitation_prusti",
+            "--all-features",
         ])
         .env("PRUSTI_CHECK_PANICS", "true")
         .env("PRUSTI_CHECK_OVERFLOWS", "true")
@@ -175,7 +252,6 @@ pub fn run_all(output: &Path, timeout: u64) -> Result<()> {
     let duration = start.elapsed();
     let duration_secs = duration.as_secs();
 
-    // Check timeout
     let status = if duration_secs >= timeout {
         ProofStatus::Timeout
     } else if output_result.status.success() {
@@ -232,7 +308,7 @@ pub fn run_all(output: &Path, timeout: u64) -> Result<()> {
             println!("Error output:");
             println!("{}", err);
         }
-        anyhow::bail!("Verification failed");
+        bail!("Verification failed");
     }
 
     Ok(())

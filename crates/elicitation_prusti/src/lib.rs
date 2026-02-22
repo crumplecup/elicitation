@@ -13,124 +13,10 @@
 //! - Tested pattern (Kani tests already do this)
 //!
 //! When Prusti supports edition 2024, we can upgrade this crate.
+//!
+//! All proof functions are public and serve as documentation of verification coverage.
 
 #![forbid(unsafe_code)]
-
-use prusti_contracts::*;
-
-// Import contract types from elicitation (edition 2024 → edition 2021 is safe)
-use elicitation::{
-    BoolFalse,
-    // Bool types
-    BoolTrue,
-    // Char types
-    CharAlphabetic,
-    CharAlphanumeric,
-    CharNumeric,
-    DurationPositive,
-    // Duration types
-    DurationNonZero,
-    F32Finite,
-    F32NonNegative,
-    // Float types
-    F32Positive,
-    F64Finite,
-    F64NonNegative,
-    F64Positive,
-    HashMapNonEmpty,
-    HashSetNonEmpty,
-    I8NonNegative,
-    I8NonZero,
-    // Signed integer types
-    I8Positive,
-    // Range types
-    I8Range,
-    I16NonNegative,
-    I16NonZero,
-    I16Positive,
-    I16Range,
-    I32NonNegative,
-    I32NonZero,
-    I32Positive,
-    I32Range,
-    I64NonNegative,
-    I64NonZero,
-    I64Positive,
-    I64Range,
-    I128NonNegative,
-    I128NonZero,
-    I128Positive,
-    I128Range,
-    IsizeNonNegative,
-    IsizeNonZero,
-    IsizePositive,
-    IsizeRange,
-    // Networks
-    IpPrivate,
-    IpPublic,
-    IpV4,
-    IpV6,
-    Ipv4Loopback,
-    Ipv6Loopback,
-    LinkedListNonEmpty,
-    OptionSome,
-    // Paths
-    PathBufExists,
-    PathBufIsDir,
-    PathBufIsFile,
-    PathBufReadable,
-    ResultOk,
-    // Strings
-    StringNonEmpty,
-    // Tuples
-    Tuple2,
-    Tuple3,
-    Tuple4,
-    U8NonZero,
-    // Unsigned integer types
-    U8Positive,
-    U8Range,
-    U16NonZero,
-    U16Positive,
-    U16Range,
-    U32NonZero,
-    U32Positive,
-    U32Range,
-    U64NonZero,
-    U64Positive,
-    U64Range,
-    U128NonZero,
-    U128Positive,
-    U128Range,
-    UsizeNonZero,
-    UsizePositive,
-    UsizeRange,
-    // Error type
-    ValidationError,
-    VecAllSatisfy,
-    VecDequeNonEmpty,
-    // Collections
-    VecNonEmpty,
-};
-
-// Feature-gated imports
-#[cfg(feature = "uuid")]
-use elicitation::{UuidNonNil, UuidV4};
-
-#[cfg(feature = "url")]
-use elicitation::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost};
-
-#[cfg(feature = "regex")]
-use elicitation::{RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetValid, RegexValid};
-
-#[cfg(feature = "chrono")]
-use elicitation::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
-
-#[cfg(feature = "time")]
-use elicitation::{OffsetDateTimeAfter, OffsetDateTimeBefore};
-
-#[cfg(feature = "jiff")]
-use elicitation::{TimestampAfter, TimestampBefore};
 
 // Module declarations
 mod bools;
@@ -143,8 +29,10 @@ mod ipaddr_bytes;
 mod macaddr;
 mod mechanisms;
 mod networks;
+mod paths;
 mod socketaddr;
 mod strings;
+mod tuples;
 mod utf8;
 
 // Platform-specific modules
@@ -152,6 +40,9 @@ mod utf8;
 mod pathbytes;
 
 // Feature-gated module declarations
+#[cfg(feature = "uuid")]
+mod uuids;
+
 #[cfg(feature = "uuid")]
 mod uuid_bytes;
 
@@ -166,3 +57,15 @@ mod regexes;
 
 #[cfg(feature = "regex")]
 mod regexbytes;
+
+#[cfg(feature = "chrono")]
+mod datetimes_chrono;
+
+#[cfg(feature = "time")]
+mod datetimes_time;
+
+#[cfg(feature = "jiff")]
+mod datetimes_jiff;
+
+#[cfg(feature = "serde_json")]
+mod values;

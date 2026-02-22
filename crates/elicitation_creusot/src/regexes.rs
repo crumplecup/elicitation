@@ -6,7 +6,9 @@
 #![cfg(feature = "regex")]
 
 use creusot_std::prelude::*;
-use elicitation::{RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetValid, RegexValid};
+use elicitation::{
+    RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetValid, RegexValid,
+};
 
 /// Verify RegexValid construction with valid regex pattern.
 #[requires(true)]
@@ -28,7 +30,8 @@ pub fn verify_regex_valid_invalid() -> Result<RegexValid, elicitation::Validatio
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_regex_case_insensitive_valid() -> Result<RegexCaseInsensitive, elicitation::ValidationError> {
+pub fn verify_regex_case_insensitive_valid()
+-> Result<RegexCaseInsensitive, elicitation::ValidationError> {
     RegexCaseInsensitive::new(r"(?i)test")
 }
 
@@ -36,7 +39,8 @@ pub fn verify_regex_case_insensitive_valid() -> Result<RegexCaseInsensitive, eli
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_regex_case_insensitive_invalid() -> Result<RegexCaseInsensitive, elicitation::ValidationError> {
+pub fn verify_regex_case_insensitive_invalid()
+-> Result<RegexCaseInsensitive, elicitation::ValidationError> {
     RegexCaseInsensitive::new(r"test")
 }
 
@@ -78,7 +82,8 @@ pub fn verify_regex_set_valid_invalid() -> Result<RegexSetValid, elicitation::Va
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_regex_set_non_empty_valid() -> Result<RegexSetNonEmpty, elicitation::ValidationError> {
+pub fn verify_regex_set_non_empty_valid() -> Result<RegexSetNonEmpty, elicitation::ValidationError>
+{
     let patterns = std::vec![r"\d+", r"[a-z]+"];
     RegexSetNonEmpty::new(patterns)
 }
@@ -87,7 +92,8 @@ pub fn verify_regex_set_non_empty_valid() -> Result<RegexSetNonEmpty, elicitatio
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_regex_set_non_empty_invalid() -> Result<RegexSetNonEmpty, elicitation::ValidationError> {
+pub fn verify_regex_set_non_empty_invalid() -> Result<RegexSetNonEmpty, elicitation::ValidationError>
+{
     let patterns: Vec<String> = Vec::new();
     RegexSetNonEmpty::new(patterns)
 }

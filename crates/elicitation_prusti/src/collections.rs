@@ -1,10 +1,11 @@
 //! Prusti proofs for collection contract types.
 
-
-use crate::*;
-
-// Collection Contract Proofs
-// ============================================================================
+#[cfg(prusti)]
+use elicitation::{
+    ArcNonNull, BTreeMapNonEmpty, BTreeSetNonEmpty, BoxNonNull, HashMapNonEmpty, HashSetNonEmpty,
+    LinkedListNonEmpty, OptionSome, RcNonNull, ResultOk, Tuple2, Tuple3, Tuple4, ValidationError,
+    VecDequeNonEmpty, VecNonEmpty,
+};
 
 /// Prove that VecNonEmpty construction succeeds for non-empty vectors.
 #[cfg(prusti)]

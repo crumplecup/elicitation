@@ -3,3 +3,5 @@
 # Verification artifacts
 *.log
 *.csv
+crates/elicitation_verus/.verus-log/
+crates/elicitation_prusti/Cargo.lock

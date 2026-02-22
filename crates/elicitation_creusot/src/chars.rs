@@ -1,6 +1,7 @@
 //! Creusot proofs for char contract types.
 
 use crate::*;
+use elicitation::{CharAlphabetic, CharAlphanumeric, CharNumeric, ValidationError};
 
 // Char Contract Proofs
 // ============================================================================

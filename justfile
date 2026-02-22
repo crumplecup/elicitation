@@ -722,6 +722,18 @@ verify-verus-failed csv="verus_verification_results.csv":
 verify-verus-list:
     @cargo run --quiet --features cli --release -- verus list
 
+# Run Creusot verification with CSV tracking
+verify-creusot-tracked csv="creusot_verification_results.csv":
+    cargo run --manifest-path crates/elicitation/Cargo.toml --features cli --bin elicitation -- creusot run --output "{{csv}}"
+
+# Show summary statistics from CSV
+verify-creusot-summary csv="creusot_verification_results.csv":
+    cargo run --manifest-path crates/elicitation/Cargo.toml --features cli --bin elicitation -- creusot summary --file "{{csv}}"
+
+# List all Creusot modules
+verify-creusot-list:
+    cargo run --manifest-path crates/elicitation/Cargo.toml --features cli --bin elicitation -- creusot list
+
 # Run all formal verification tools
 verify-all: verify-kani verify-prusti verify-creusot verify-verus
     @echo "✅ All verification completed!"

@@ -6,14 +6,11 @@
 
 use creusot_std::prelude::*;
 use elicitation::{
-    VecNonEmpty, VecAllSatisfy, OptionSome, ResultOk,
-    BoxSatisfies, ArcSatisfies, RcSatisfies,
-    HashMapNonEmpty, BTreeMapNonEmpty, HashSetNonEmpty, BTreeSetNonEmpty,
-    VecDequeNonEmpty, LinkedListNonEmpty,
-    ArrayAllSatisfy, BoxNonNull, ArcNonNull, RcNonNull,
-    I32Positive, StringNonEmpty,
+    ArcNonNull, ArcSatisfies, ArrayAllSatisfy, BTreeMapNonEmpty, BTreeSetNonEmpty, BoxNonNull,
+    BoxSatisfies, HashMapNonEmpty, HashSetNonEmpty, I32Positive, LinkedListNonEmpty, OptionSome,
+    RcNonNull, RcSatisfies, ResultOk, VecAllSatisfy, VecDequeNonEmpty, VecNonEmpty,
 };
-use std::collections::{HashMap, BTreeMap, HashSet, BTreeSet, VecDeque, LinkedList};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, LinkedList, VecDeque};
 
 // ============================================================================
 // Vec Proofs
@@ -44,9 +41,7 @@ pub fn verify_vec_non_empty_invalid() -> Result<VecNonEmpty<i32>, elicitation::V
 pub fn verify_vec_all_satisfy_valid() -> VecAllSatisfy<I32Positive> {
     let v1 = I32Positive::new(1).unwrap();
     let v2 = I32Positive::new(2).unwrap();
-    let mut v = Vec::new();
-    v.push(v1);
-    v.push(v2);
+    let v = std::vec![v1, v2];
     VecAllSatisfy::new(v)
 }
 
@@ -125,7 +120,8 @@ pub fn verify_rc_satisfies_valid() -> RcSatisfies<I32Positive> {
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_hashmap_non_empty_valid() -> Result<HashMapNonEmpty<i32, String>, elicitation::ValidationError> {
+pub fn verify_hashmap_non_empty_valid()
+-> Result<HashMapNonEmpty<i32, String>, elicitation::ValidationError> {
     let mut map = HashMap::new();
     map.insert(1, "one".to_string());
     HashMapNonEmpty::new(map)
@@ -135,7 +131,8 @@ pub fn verify_hashmap_non_empty_valid() -> Result<HashMapNonEmpty<i32, String>, 
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_hashmap_non_empty_invalid() -> Result<HashMapNonEmpty<i32, String>, elicitation::ValidationError> {
+pub fn verify_hashmap_non_empty_invalid()
+-> Result<HashMapNonEmpty<i32, String>, elicitation::ValidationError> {
     HashMapNonEmpty::new(HashMap::new())
 }
 
@@ -143,7 +140,8 @@ pub fn verify_hashmap_non_empty_invalid() -> Result<HashMapNonEmpty<i32, String>
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_btreemap_non_empty_valid() -> Result<BTreeMapNonEmpty<i32, String>, elicitation::ValidationError> {
+pub fn verify_btreemap_non_empty_valid()
+-> Result<BTreeMapNonEmpty<i32, String>, elicitation::ValidationError> {
     let mut map = BTreeMap::new();
     map.insert(1, "one".to_string());
     BTreeMapNonEmpty::new(map)
@@ -153,7 +151,8 @@ pub fn verify_btreemap_non_empty_valid() -> Result<BTreeMapNonEmpty<i32, String>
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_btreemap_non_empty_invalid() -> Result<BTreeMapNonEmpty<i32, String>, elicitation::ValidationError> {
+pub fn verify_btreemap_non_empty_invalid()
+-> Result<BTreeMapNonEmpty<i32, String>, elicitation::ValidationError> {
     BTreeMapNonEmpty::new(BTreeMap::new())
 }
 
@@ -165,7 +164,8 @@ pub fn verify_btreemap_non_empty_invalid() -> Result<BTreeMapNonEmpty<i32, Strin
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_hashset_non_empty_valid() -> Result<HashSetNonEmpty<i32>, elicitation::ValidationError> {
+pub fn verify_hashset_non_empty_valid() -> Result<HashSetNonEmpty<i32>, elicitation::ValidationError>
+{
     let mut set = HashSet::new();
     set.insert(42);
     HashSetNonEmpty::new(set)
@@ -175,7 +175,8 @@ pub fn verify_hashset_non_empty_valid() -> Result<HashSetNonEmpty<i32>, elicitat
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_hashset_non_empty_invalid() -> Result<HashSetNonEmpty<i32>, elicitation::ValidationError> {
+pub fn verify_hashset_non_empty_invalid()
+-> Result<HashSetNonEmpty<i32>, elicitation::ValidationError> {
     HashSetNonEmpty::new(HashSet::new())
 }
 
@@ -183,7 +184,8 @@ pub fn verify_hashset_non_empty_invalid() -> Result<HashSetNonEmpty<i32>, elicit
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_btreeset_non_empty_valid() -> Result<BTreeSetNonEmpty<i32>, elicitation::ValidationError> {
+pub fn verify_btreeset_non_empty_valid()
+-> Result<BTreeSetNonEmpty<i32>, elicitation::ValidationError> {
     let mut set = BTreeSet::new();
     set.insert(42);
     BTreeSetNonEmpty::new(set)
@@ -193,7 +195,8 @@ pub fn verify_btreeset_non_empty_valid() -> Result<BTreeSetNonEmpty<i32>, elicit
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_btreeset_non_empty_invalid() -> Result<BTreeSetNonEmpty<i32>, elicitation::ValidationError> {
+pub fn verify_btreeset_non_empty_invalid()
+-> Result<BTreeSetNonEmpty<i32>, elicitation::ValidationError> {
     BTreeSetNonEmpty::new(BTreeSet::new())
 }
 
@@ -205,7 +208,8 @@ pub fn verify_btreeset_non_empty_invalid() -> Result<BTreeSetNonEmpty<i32>, elic
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_vecdeque_non_empty_valid() -> Result<VecDequeNonEmpty<i32>, elicitation::ValidationError> {
+pub fn verify_vecdeque_non_empty_valid()
+-> Result<VecDequeNonEmpty<i32>, elicitation::ValidationError> {
     let mut deque = VecDeque::new();
     deque.push_back(1);
     VecDequeNonEmpty::new(deque)
@@ -215,7 +219,8 @@ pub fn verify_vecdeque_non_empty_valid() -> Result<VecDequeNonEmpty<i32>, elicit
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_vecdeque_non_empty_invalid() -> Result<VecDequeNonEmpty<i32>, elicitation::ValidationError> {
+pub fn verify_vecdeque_non_empty_invalid()
+-> Result<VecDequeNonEmpty<i32>, elicitation::ValidationError> {
     VecDequeNonEmpty::new(VecDeque::new())
 }
 
@@ -223,7 +228,8 @@ pub fn verify_vecdeque_non_empty_invalid() -> Result<VecDequeNonEmpty<i32>, elic
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_linkedlist_non_empty_valid() -> Result<LinkedListNonEmpty<i32>, elicitation::ValidationError> {
+pub fn verify_linkedlist_non_empty_valid()
+-> Result<LinkedListNonEmpty<i32>, elicitation::ValidationError> {
     let mut list = LinkedList::new();
     list.push_back(42);
     LinkedListNonEmpty::new(list)
@@ -233,7 +239,8 @@ pub fn verify_linkedlist_non_empty_valid() -> Result<LinkedListNonEmpty<i32>, el
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_linkedlist_non_empty_invalid() -> Result<LinkedListNonEmpty<i32>, elicitation::ValidationError> {
+pub fn verify_linkedlist_non_empty_invalid()
+-> Result<LinkedListNonEmpty<i32>, elicitation::ValidationError> {
     LinkedListNonEmpty::new(LinkedList::new())
 }
 

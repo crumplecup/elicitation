@@ -186,6 +186,7 @@ fn verify_value_object() {
 }
 
 #[cfg(feature = "serde_json")]
+#[cfg(feature = "serde_json")]
 #[kani::proof]
 fn verify_value_array() {
     let _err = ValidationError::WrongJsonType {

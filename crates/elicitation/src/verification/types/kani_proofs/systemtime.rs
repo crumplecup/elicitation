@@ -7,7 +7,7 @@ use std::time::{Duration, SystemTime};
 // ============================================================================
 
 #[kani::proof]
-fn verify_systemtime_unix_epoch() {
+pub fn verify_systemtime_unix_epoch() {
     let mode = SystemTimeGenerationMode::UnixEpoch;
     let reference = SystemTime::UNIX_EPOCH; // Use known reference
     let generator = SystemTimeGenerator::with_reference(mode, reference);
@@ -21,7 +21,7 @@ fn verify_systemtime_unix_epoch() {
 }
 
 #[kani::proof]
-fn verify_systemtime_offset_positive() {
+pub fn verify_systemtime_offset_positive() {
     let seconds: i64 = kani::any();
     let nanos: u32 = kani::any();
 
@@ -49,7 +49,7 @@ fn verify_systemtime_offset_positive() {
 }
 
 #[kani::proof]
-fn verify_systemtime_offset_negative() {
+pub fn verify_systemtime_offset_negative() {
     let seconds: i64 = kani::any();
     let nanos: u32 = kani::any();
 
@@ -77,7 +77,7 @@ fn verify_systemtime_offset_negative() {
 }
 
 #[kani::proof]
-fn verify_systemtime_offset_zero() {
+pub fn verify_systemtime_offset_zero() {
     let mode = SystemTimeGenerationMode::Offset {
         seconds: 0,
         nanos: 0,
@@ -94,7 +94,7 @@ fn verify_systemtime_offset_zero() {
 }
 
 #[kani::proof]
-fn verify_systemtime_generator_mode_preserved() {
+pub fn verify_systemtime_generator_mode_preserved() {
     let mode = SystemTimeGenerationMode::UnixEpoch;
     let reference = SystemTime::UNIX_EPOCH;
     let generator = SystemTimeGenerator::with_reference(mode, reference);
@@ -103,7 +103,7 @@ fn verify_systemtime_generator_mode_preserved() {
 }
 
 #[kani::proof]
-fn verify_systemtime_consistent_generation() {
+pub fn verify_systemtime_consistent_generation() {
     let seconds: i64 = kani::any();
     let nanos: u32 = kani::any();
 
@@ -127,7 +127,7 @@ fn verify_systemtime_consistent_generation() {
 }
 
 #[kani::proof]
-fn verify_systemtime_reference_preserved() {
+pub fn verify_systemtime_reference_preserved() {
     let reference = SystemTime::UNIX_EPOCH + Duration::from_secs(42);
     let mode = SystemTimeGenerationMode::UnixEpoch;
     let generator = SystemTimeGenerator::with_reference(mode, reference);

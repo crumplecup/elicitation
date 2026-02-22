@@ -859,6 +859,8 @@ pub mod runner;
 pub mod kani;
 
 #[cfg(feature = "cli")]
+pub mod creusot_runner;
+#[cfg(feature = "cli")]
 pub mod prusti_runner;
 #[cfg(feature = "cli")]
 pub mod verus_runner;

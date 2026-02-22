@@ -205,3 +205,37 @@ impl DateTimeComponents {
         })
     }
 }
+
+impl Prompt for DateTimeComponents {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter datetime components")
+    }
+}
+
+impl Elicitation for DateTimeComponents {
+    type Style = (); // No styling - components use simple prompts
+
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        Self::elicit(communicator).await
+    }
+
+    #[cfg(kani)]
+    fn kani_proof() {
+        // Witness method - proofs exist for datetime component validation
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Witness method - proofs in elicitation_verus
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Witness method - proofs in elicitation_creusot
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Witness method - proofs in elicitation_prusti
+    }
+}

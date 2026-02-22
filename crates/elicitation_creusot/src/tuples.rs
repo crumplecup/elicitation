@@ -4,7 +4,7 @@
 //! contract types, the tuple is valid. We verify tuple wrapper structure.
 
 use creusot_std::prelude::*;
-use elicitation::{Tuple2, Tuple3, Tuple4, I32Positive, StringNonEmpty, BoolTrue};
+use elicitation::{BoolTrue, I32Positive, StringNonEmpty, Tuple2, Tuple3, Tuple4};
 
 // ============================================================================
 // Tuple2 Proofs

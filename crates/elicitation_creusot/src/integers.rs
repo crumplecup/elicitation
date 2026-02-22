@@ -5,6 +5,14 @@
 //! We verify: That our wrapper types correctly use these trusted components.
 
 use crate::*;
+use elicitation::{
+    I8NonNegative, I8NonZero, I8Positive, I8Range, I16NonNegative, I16NonZero, I16Positive,
+    I16Range, I32NonNegative, I32NonZero, I32Positive, I32Range, I64NonNegative, I64NonZero,
+    I64Positive, I64Range, I128NonNegative, I128NonZero, I128Positive, IsizeNonNegative,
+    IsizeNonZero, IsizePositive, IsizeRange, U8NonZero, U8Positive, U8Range, U16NonZero,
+    U16Positive, U16Range, U32NonZero, U32Positive, U32Range, U64NonZero, U64Positive, U64Range,
+    U128NonZero, U128Positive, UsizeNonZero, UsizePositive, UsizeRange, ValidationError,
+};
 
 // ----------------------------------------------------------------------------
 // I8 Contracts

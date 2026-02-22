@@ -7,7 +7,7 @@ use crate::{F32Finite, F64Positive};
 // ============================================================================
 
 #[kani::proof]
-fn verify_f32_finite() {
+pub fn verify_f32_finite() {
     let value: f32 = kani::any();
 
     let _result = F32Finite::new(value);
@@ -18,7 +18,7 @@ fn verify_f32_finite() {
 }
 
 #[kani::proof]
-fn verify_f64_positive() {
+pub fn verify_f64_positive() {
     let value: f64 = kani::any();
 
     let _result = F64Positive::new(value);
