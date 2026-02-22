@@ -1,6 +1,5 @@
 //! Prusti proofs for string contract types.
 
-
 use crate::*;
 
 // String Contract Proofs

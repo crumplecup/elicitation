@@ -8,7 +8,7 @@
 
 use creusot_std::prelude::*;
 
-// Import contract types from elicitation
+// Import base types needed for proof structure
 use elicitation::{
     BoolFalse,
     // Bool types
@@ -60,76 +60,9 @@ use elicitation::{
     UsizeNonZero,
     UsizePositive,
     UsizeRange,
-    // String types
-    StringNonEmpty,
-    // Float types
-    F32Positive,
-    F32NonNegative,
-    F32Finite,
-    F64Positive,
-    F64NonNegative,
-    F64Finite,
-    // Duration types
-    DurationPositive,
-    // Tuple types
-    Tuple2,
-    Tuple3,
-    Tuple4,
-    // Collection types
-    VecNonEmpty,
-    VecAllSatisfy,
-    OptionSome,
-    ResultOk,
-    BoxSatisfies,
-    ArcSatisfies,
-    RcSatisfies,
-    HashMapNonEmpty,
-    BTreeMapNonEmpty,
-    HashSetNonEmpty,
-    BTreeSetNonEmpty,
-    VecDequeNonEmpty,
-    LinkedListNonEmpty,
-    ArrayAllSatisfy,
-    BoxNonNull,
-    ArcNonNull,
-    RcNonNull,
-    // Network types
-    IpPrivate,
-    IpPublic,
-    IpV4,
-    IpV6,
-    Ipv4Loopback,
-    Ipv6Loopback,
-    // Path types
-    PathBufExists,
-    PathBufIsDir,
-    PathBufIsFile,
-    PathBufReadable,
     // Error type
     ValidationError,
 };
-
-// Feature-gated imports
-#[cfg(feature = "uuid")]
-use elicitation::{UuidNonNil, UuidV4};
-
-#[cfg(feature = "serde_json")]
-use elicitation::{ValueArray, ValueNonNull, ValueObject};
-
-#[cfg(feature = "url")]
-use elicitation::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost};
-
-#[cfg(feature = "regex")]
-use elicitation::{RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetValid, RegexValid};
-
-#[cfg(feature = "chrono")]
-use elicitation::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
-
-#[cfg(feature = "time")]
-use elicitation::{OffsetDateTimeAfter, OffsetDateTimeBefore};
-
-#[cfg(feature = "jiff")]
-use elicitation::{TimestampAfter, TimestampBefore};
 
 // Module declarations
 mod bools;

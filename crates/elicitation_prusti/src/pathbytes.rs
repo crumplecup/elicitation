@@ -3,7 +3,6 @@
 //! These proofs verify path wrapper logic assuming correct UTF-8 and null-byte validation.
 //! This is compositional verification: (utf8_correct ∧ no_null_correct) → wrapper_correct.
 
-
 use elicitation::verification::types::{
     PathAbsolute, PathBytes, PathNonEmpty, PathRelative, ValidationError,
 };

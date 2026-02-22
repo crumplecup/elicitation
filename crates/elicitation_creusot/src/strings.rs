@@ -30,7 +30,8 @@ pub fn verify_string_non_empty_invalid() -> Result<StringNonEmpty, elicitation::
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_string_non_empty_bounded_valid() -> Result<StringNonEmpty<10>, elicitation::ValidationError> {
+pub fn verify_string_non_empty_bounded_valid()
+-> Result<StringNonEmpty<10>, elicitation::ValidationError> {
     StringNonEmpty::<10>::new("short".to_string())
 }
 
@@ -38,7 +39,7 @@ pub fn verify_string_non_empty_bounded_valid() -> Result<StringNonEmpty<10>, eli
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_string_non_empty_too_long() -> Result<StringNonEmpty<10>, elicitation::ValidationError> {
+pub fn verify_string_non_empty_too_long() -> Result<StringNonEmpty<10>, elicitation::ValidationError>
+{
     StringNonEmpty::<10>::new("this string is way too long".to_string())
 }
-

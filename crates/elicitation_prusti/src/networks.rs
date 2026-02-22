@@ -1,6 +1,5 @@
 //! Prusti proofs for network contract types.
 
-
 use crate::*;
 
 // Network Contract Proofs

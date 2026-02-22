@@ -292,6 +292,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "creusot-std"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b6989d2fc081ac6e3f08fe18e4461b29b3e72fbcba78058131892d000f06bab"
+dependencies = [
+ "creusot-std-proc",
+ "num-rational",
+]
+
+[[package]]
+name = "creusot-std-proc"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f41572ae8e96468a0eb0411dbdf1defc4896287672041ca3c3c161c4e09c57d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "criterion"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -545,6 +566,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicitation_creusot"
+version = "0.8.1"
+dependencies = [
+ "chrono",
+ "creusot-std",
+ "elicitation",
+ "jiff",
+ "regex",
+ "serde_json",
+ "time",
+ "url",
+ "uuid",
+]
+
+[[package]]
 name = "elicitation_derive"
 version = "0.8.1"
 dependencies = [
@@ -572,6 +608,20 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "elicitation_prusti"
+version = "0.8.1"
+dependencies = [
+ "chrono",
+ "elicitation",
+ "jiff",
+ "prusti-contracts",
+ "regex",
+ "time",
+ "url",
+ "uuid",
 ]
 
 [[package]]
@@ -1105,10 +1155,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "num-bigint"
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5e44f723f1133c9deac646763579fdb3ac745e418f2a7af9cd0c431da1f20b9"
+dependencies = [
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
 name = "num-conv"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf97ec579c3c42f953ef76dbf8d55ac91fb219dde70e49aa4a6b7d74e9919050"
+
+[[package]]
+name = "num-integer"
+version = "0.1.46"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7969661fd2958a5cb096e56c8e1ad0444ac2bbcd0061bd28660485a44879858f"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
+name = "num-rational"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f83d14da390562dca69fc84082e73e548e1ad308d24accdedd2720017cb37824"
+dependencies = [
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+]
 
 [[package]]
 name = "num-traits"

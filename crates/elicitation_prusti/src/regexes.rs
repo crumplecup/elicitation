@@ -1,6 +1,5 @@
 //! Prusti proofs for Regex contract types.
 
-
 use crate::*;
 
 // Regex Contract Proofs

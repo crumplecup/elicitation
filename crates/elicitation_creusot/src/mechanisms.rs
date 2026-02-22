@@ -1,7 +1,7 @@
 //! Creusot proofs for mechanism contracts.
 
-
-use crate::*;
+#[cfg(creusot)]
+use elicitation::{I8Positive, Tuple2, ValidationError};
 
 // Mechanism Contract Proofs
 // ============================================================================

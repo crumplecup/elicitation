@@ -1,6 +1,5 @@
 //! Prusti proofs for duration contract types.
 
-
 use crate::*;
 
 // Duration Contract Proofs

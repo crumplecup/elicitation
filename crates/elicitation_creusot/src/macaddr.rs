@@ -8,7 +8,7 @@
 //!
 //! This is compositional verification: bit_logic_correct → wrapper_correct.
 
-
+#[cfg(creusot)]
 use elicitation::verification::types::{
     MacAddr, ValidationError, is_multicast, is_unicast, is_universal,
 };

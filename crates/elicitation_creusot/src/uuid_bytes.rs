@@ -7,8 +7,7 @@
 //!
 //! This is compositional verification: rfc4122_correct → wrapper_correct.
 
-#![cfg(all(feature = "verify-prusti", kani))]
-
+#[cfg(creusot)]
 use elicitation::{
     UuidBytes, UuidV4Bytes, UuidV7Bytes, ValidationError, has_valid_variant, has_version,
     is_valid_v4, is_valid_v7,

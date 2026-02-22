@@ -1,6 +1,5 @@
 //! Prusti proofs for bool contract types.
 
-
 use crate::*;
 
 // Bool Contract Proofs

@@ -1,6 +1,5 @@
 //! Prusti proofs for integer contract types.
 
-
 use crate::*;
 
 // Integer Contract Proofs

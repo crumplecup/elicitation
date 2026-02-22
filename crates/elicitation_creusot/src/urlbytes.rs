@@ -8,7 +8,7 @@
 //!
 //! This is compositional verification: (utf8_correct ∧ url_crate_correct) → wrapper_correct.
 
-
+#[cfg(creusot)]
 use elicitation::verification::types::{
     AuthorityBytes, SchemeBytes, UrlAbsoluteBytes, UrlBytes, UrlHttpBytes, UrlWithAuthorityBytes,
     ValidationError,

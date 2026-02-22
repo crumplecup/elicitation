@@ -1,6 +1,5 @@
 //! Prusti proofs for float contract types.
 
-
 use crate::*;
 
 // Float Contract Proofs

@@ -1,6 +1,5 @@
 //! Prusti proofs for mechanism contracts.
 
-
 use crate::*;
 
 // Mechanism Contract Proofs

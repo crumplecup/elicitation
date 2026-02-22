@@ -10,8 +10,8 @@
 #![cfg(all(feature = "verify-prusti", kani))]
 
 use elicitation::{
-    UuidBytes, UuidV4Bytes, UuidV7Bytes, ValidationError, has_valid_variant, has_version,
-    is_valid_v4, is_valid_v7,
+    has_valid_variant, has_version, is_valid_v4, is_valid_v7, UuidBytes, UuidV4Bytes, UuidV7Bytes,
+    ValidationError,
 };
 
 // UuidBytes Validation Proofs

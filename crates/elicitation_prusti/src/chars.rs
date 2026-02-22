@@ -1,6 +1,5 @@
 //! Prusti proofs for char contract types.
 
-
 use crate::*;
 
 // Char Contract Proofs

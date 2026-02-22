@@ -8,11 +8,12 @@
 //!
 //! This is compositional verification: (utf8_correct ∧ url_crate_correct) → wrapper_correct.
 
-
-use elicitation::{
-    AuthorityBytes, SchemeBytes, UrlAbsoluteBytes, UrlBytes, UrlHttpBytes, UrlWithAuthorityBytes,
-    ValidationError,
-};
+// TODO: These types don't exist at crate level, need verification::types:: path
+// #[cfg(prusti)]
+// use elicitation::{
+//     AuthorityBytes, SchemeBytes, UrlAbsoluteBytes, UrlBytes, UrlHttpBytes, UrlWithAuthorityBytes,
+//     ValidationError,
+// };
 
 // SchemeBytes Validation Proofs
 // ============================================================================

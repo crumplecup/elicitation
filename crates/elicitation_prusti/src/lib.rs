@@ -27,9 +27,9 @@ use elicitation::{
     CharAlphabetic,
     CharAlphanumeric,
     CharNumeric,
-    DurationPositive,
     // Duration types
     DurationNonZero,
+    DurationPositive,
     F32Finite,
     F32NonNegative,
     // Float types
@@ -39,12 +39,10 @@ use elicitation::{
     F64Positive,
     HashMapNonEmpty,
     HashSetNonEmpty,
-    I8NonNegative,
-    I8NonZero,
-    // Signed integer types
-    I8Positive,
-    // Range types
-    I8Range,
+    I128NonNegative,
+    I128NonZero,
+    I128Positive,
+    I128Range,
     I16NonNegative,
     I16NonZero,
     I16Positive,
@@ -57,14 +55,12 @@ use elicitation::{
     I64NonZero,
     I64Positive,
     I64Range,
-    I128NonNegative,
-    I128NonZero,
-    I128Positive,
-    I128Range,
-    IsizeNonNegative,
-    IsizeNonZero,
-    IsizePositive,
-    IsizeRange,
+    I8NonNegative,
+    I8NonZero,
+    // Signed integer types
+    I8Positive,
+    // Range types
+    I8Range,
     // Networks
     IpPrivate,
     IpPublic,
@@ -72,6 +68,10 @@ use elicitation::{
     IpV6,
     Ipv4Loopback,
     Ipv6Loopback,
+    IsizeNonNegative,
+    IsizeNonZero,
+    IsizePositive,
+    IsizeRange,
     LinkedListNonEmpty,
     OptionSome,
     // Paths
@@ -86,10 +86,9 @@ use elicitation::{
     Tuple2,
     Tuple3,
     Tuple4,
-    U8NonZero,
-    // Unsigned integer types
-    U8Positive,
-    U8Range,
+    U128NonZero,
+    U128Positive,
+    U128Range,
     U16NonZero,
     U16Positive,
     U16Range,
@@ -99,9 +98,10 @@ use elicitation::{
     U64NonZero,
     U64Positive,
     U64Range,
-    U128NonZero,
-    U128Positive,
-    U128Range,
+    U8NonZero,
+    // Unsigned integer types
+    U8Positive,
+    U8Range,
     UsizeNonZero,
     UsizePositive,
     UsizeRange,
@@ -121,7 +121,9 @@ use elicitation::{UuidNonNil, UuidV4};
 use elicitation::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost};
 
 #[cfg(feature = "regex")]
-use elicitation::{RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetValid, RegexValid};
+use elicitation::{
+    RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetValid, RegexValid,
+};
 
 #[cfg(feature = "chrono")]
 use elicitation::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};

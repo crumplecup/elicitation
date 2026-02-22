@@ -1,6 +1,5 @@
 //! Prusti proofs for collection contract types.
 
-
 use crate::*;
 
 // Collection Contract Proofs

@@ -10,7 +10,7 @@
 //!
 //! This is compositional verification: stdlib_ip_logic_correct → wrapper_correct.
 
-
+#[cfg(creusot)]
 use elicitation::verification::types::{
     Ipv4Bytes, Ipv4Private, Ipv4Public, Ipv6Bytes, Ipv6Private, Ipv6Public, ValidationError,
     is_ipv4_private, is_ipv6_private,
