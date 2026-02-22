@@ -52,6 +52,12 @@ impl CharAlphabetic {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Gets the wrapped value.
     pub fn get(&self) -> char {
         self.0
@@ -136,6 +142,12 @@ impl CharNumeric {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Gets the wrapped value.

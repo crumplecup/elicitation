@@ -71,6 +71,12 @@ impl DateTimeUtcAfter {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> DateTime<Utc> {
@@ -91,6 +97,12 @@ impl DateTimeUtcAfter {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -115,6 +127,12 @@ impl DateTimeUtcAfter {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap into the inner DateTime<Utc>.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> DateTime<Utc> {
@@ -135,6 +153,12 @@ impl DateTimeUtcAfter {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -231,6 +255,12 @@ impl DateTimeUtcBefore {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> DateTime<Utc> {
@@ -251,6 +281,12 @@ impl DateTimeUtcBefore {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -275,6 +311,12 @@ impl DateTimeUtcBefore {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap into the inner DateTime<Utc>.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> DateTime<Utc> {
@@ -295,6 +337,12 @@ impl DateTimeUtcBefore {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -391,6 +439,12 @@ impl NaiveDateTimeAfter {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> NaiveDateTime {
@@ -411,6 +465,12 @@ impl NaiveDateTimeAfter {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -435,6 +495,12 @@ impl NaiveDateTimeAfter {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap into the inner NaiveDateTime.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> NaiveDateTime {
@@ -455,6 +521,12 @@ impl NaiveDateTimeAfter {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -621,6 +693,12 @@ impl TimestampAfter {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Get the timestamp value.
     #[cfg(not(kani))]
     pub fn get(&self) -> Timestamp {
@@ -641,6 +719,12 @@ impl TimestampAfter {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -665,6 +749,12 @@ impl TimestampAfter {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap into the inner Timestamp.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> Timestamp {
@@ -685,6 +775,12 @@ impl TimestampAfter {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -781,6 +877,12 @@ impl TimestampBefore {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Get the timestamp value.
     #[cfg(not(kani))]
     pub fn get(&self) -> Timestamp {
@@ -801,6 +903,12 @@ impl TimestampBefore {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -825,6 +933,12 @@ impl TimestampBefore {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap into the inner Timestamp.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> Timestamp {
@@ -845,6 +959,12 @@ impl TimestampBefore {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -989,6 +1109,12 @@ impl OffsetDateTimeAfter {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> OffsetDateTime {
@@ -1009,6 +1135,12 @@ impl OffsetDateTimeAfter {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -1033,6 +1165,12 @@ impl OffsetDateTimeAfter {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap into the inner OffsetDateTime.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> OffsetDateTime {
@@ -1053,6 +1191,12 @@ impl OffsetDateTimeAfter {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -1155,6 +1299,12 @@ impl OffsetDateTimeBefore {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> OffsetDateTime {
@@ -1175,6 +1325,12 @@ impl OffsetDateTimeBefore {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -1199,6 +1355,12 @@ impl OffsetDateTimeBefore {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap into the inner OffsetDateTime.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> OffsetDateTime {
@@ -1219,6 +1381,12 @@ impl OffsetDateTimeBefore {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 

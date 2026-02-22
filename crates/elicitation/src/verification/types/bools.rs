@@ -79,6 +79,12 @@ impl Elicitation for BoolTrue {
         // Creusot proof exists in elicitation_creusot::bools::verify_bool_true_*
         // Verifies: wrapper structure for true bool constraint
     }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
 }
 
 /// Contract type for false bool values.
@@ -152,6 +158,12 @@ impl Elicitation for BoolFalse {
     fn creusot_proof() {
         // Creusot proof exists in elicitation_creusot::bools::verify_bool_false_*
         // Verifies: wrapper structure for false bool constraint
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 

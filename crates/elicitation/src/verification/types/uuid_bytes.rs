@@ -256,6 +256,12 @@ mod tests {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     #[test]
     #[cfg(kani)]
     fn test_invalid_variant() {
@@ -285,6 +291,12 @@ mod tests {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     #[test]
     #[cfg(kani)]
     fn test_version_extraction() {
@@ -311,6 +323,12 @@ mod tests {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     #[test]
     #[cfg(kani)]
     fn test_uuid_v4_bytes_valid() {
@@ -333,6 +351,12 @@ mod tests {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     #[test]
     #[cfg(kani)]
     fn test_uuid_v4_bytes_wrong_version() {
@@ -353,6 +377,12 @@ mod tests {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     #[test]
@@ -384,5 +414,11 @@ mod tests {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }

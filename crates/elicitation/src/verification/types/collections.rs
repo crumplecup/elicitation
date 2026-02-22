@@ -484,6 +484,12 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Get the inner HashMap.
     #[cfg(not(kani))]
     pub fn get(&self) -> &HashMap<K, V> {
@@ -507,6 +513,12 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap into the inner HashMap.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> HashMap<K, V> {
@@ -528,6 +540,12 @@ impl<K, V> HashMapNonEmpty<K, V> {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the length (always >= 1).
@@ -559,6 +577,12 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Kani version: accessor not verifiable (PhantomData).
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
@@ -574,6 +598,12 @@ impl<K, V> HashMapNonEmpty<K, V> {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -655,6 +685,12 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Get the inner BTreeMap.
     #[cfg(not(kani))]
     pub fn get(&self) -> &BTreeMap<K, V> {
@@ -677,6 +713,12 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap into the inner BTreeMap.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> BTreeMap<K, V> {
@@ -697,6 +739,12 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the length (always >= 1).
@@ -727,6 +775,12 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
@@ -741,6 +795,12 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -826,6 +886,12 @@ impl<T> HashSetNonEmpty<T> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Get the inner HashSet.
     #[cfg(not(kani))]
     pub fn get(&self) -> &HashSet<T> {
@@ -848,6 +914,12 @@ impl<T> HashSetNonEmpty<T> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap into the inner HashSet.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> HashSet<T> {
@@ -868,6 +940,12 @@ impl<T> HashSetNonEmpty<T> {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the length (always >= 1).
@@ -898,6 +976,12 @@ impl<T> HashSetNonEmpty<T> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
@@ -912,6 +996,12 @@ impl<T> HashSetNonEmpty<T> {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -991,6 +1081,12 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Get the inner BTreeSet.
     #[cfg(not(kani))]
     pub fn get(&self) -> &BTreeSet<T> {
@@ -1013,6 +1109,12 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap into the inner BTreeSet.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> BTreeSet<T> {
@@ -1033,6 +1135,12 @@ impl<T> BTreeSetNonEmpty<T> {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the length (always >= 1).
@@ -1063,6 +1171,12 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
@@ -1077,6 +1191,12 @@ impl<T> BTreeSetNonEmpty<T> {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -1160,6 +1280,12 @@ impl<T> VecDequeNonEmpty<T> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Get the inner VecDeque.
     #[cfg(not(kani))]
     pub fn get(&self) -> &VecDeque<T> {
@@ -1182,6 +1308,12 @@ impl<T> VecDequeNonEmpty<T> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap into the inner VecDeque.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> VecDeque<T> {
@@ -1202,6 +1334,12 @@ impl<T> VecDequeNonEmpty<T> {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the length (always >= 1).
@@ -1232,6 +1370,12 @@ impl<T> VecDequeNonEmpty<T> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
@@ -1246,6 +1390,12 @@ impl<T> VecDequeNonEmpty<T> {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -1325,6 +1475,12 @@ impl<T> LinkedListNonEmpty<T> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Get the inner LinkedList.
     #[cfg(not(kani))]
     pub fn get(&self) -> &LinkedList<T> {
@@ -1347,6 +1503,12 @@ impl<T> LinkedListNonEmpty<T> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap into the inner LinkedList.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> LinkedList<T> {
@@ -1367,6 +1529,12 @@ impl<T> LinkedListNonEmpty<T> {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the length (always >= 1).
@@ -1397,6 +1565,12 @@ impl<T> LinkedListNonEmpty<T> {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
@@ -1411,6 +1585,12 @@ impl<T> LinkedListNonEmpty<T> {
     fn creusot_proof() {
         // Creusot proofs exist in elicitation_creusot crate
         // Verifies: wrapper structure with cloud of assumptions
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
     }
 }
 

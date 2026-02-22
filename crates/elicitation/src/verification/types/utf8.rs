@@ -231,6 +231,12 @@ pub fn is_valid_utf8(bytes: &[u8]) -> bool {
         // Verifies: wrapper structure with cloud of assumptions
     }
 
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     true
 }
 
