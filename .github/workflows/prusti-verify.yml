@@ -1,0 +1,24 @@
+name: Prusti Verification
+
+on:
+  push:
+    branches: [ prusti-verification ]
+  pull_request:
+    branches: [ prusti-verification ]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Prusti
+        run: |
+          curl -sSL https://github.com/viperproject/prusti-dev/releases/latest/download/prusti-release-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          echo "$PWD/prusti-release/bin" >> $GITHUB_PATH
+      
+      - name: Run Prusti verification
+        run: |
+          cd crates/elicitation_prusti
+          cargo prusti --all-features

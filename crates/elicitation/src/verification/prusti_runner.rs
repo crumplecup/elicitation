@@ -6,14 +6,12 @@
 //! Unlike Kani (which runs individual harnesses), Prusti verifies all functions
 //! with contracts during compilation. Therefore, we track verification per module/file.
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use chrono::Utc;
 use csv::{Reader, Writer};
 use derive_getters::Getters;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use std::process::{Command, Stdio};
-use std::time::Instant;
 
 /// A Prusti proof module identifier.
 #[derive(
@@ -126,116 +124,74 @@ pub fn list_modules() -> Result<()> {
 
 /// Run Prusti verification and save results to CSV.
 ///
-/// Since Prusti verifies the entire crate in one go, we run it once
-/// and record the result for all modules.
+/// Note: Prusti requires edition 2021 compatibility. Use the prusti-verification branch.
 #[tracing::instrument]
 pub fn run_all(output: &Path, timeout: u64) -> Result<()> {
     tracing::info!(
         output = %output.display(),
         timeout,
-        "Running Prusti verification"
+        "Prusti verification requires prusti-verification branch"
     );
 
-    let mut writer = Writer::from_path(output).context("Failed to create CSV file")?;
     let modules = all_modules();
     let total_proofs: usize = modules.iter().map(|m| m.proof_count()).sum();
 
-    println!("🔬 Prusti Verification Tracking");
-    println!("================================");
+    println!("⚠️  Prusti Verification Edition Compatibility Notice");
+    println!("====================================================");
+    println!();
+    println!("Prusti uses rustc 1.74 (2023) which only supports edition 2021.");
+    println!("This repository uses edition 2024 on the main development branch.");
+    println!();
+    println!("To run Prusti verification:");
+    println!("  1. Switch to the prusti-verification branch:");
+    println!("     $ git checkout prusti-verification");
+    println!();
+    println!("  2. Run verification:");
+    println!("     $ cd crates/elicitation_prusti && cargo prusti --all-features");
+    println!();
+    println!("  3. Or use justfile:");
+    println!("     $ just verify-prusti");
+    println!();
+    println!("The prusti-verification branch:");
+    println!("  - Uses edition 2021 (Prusti compatible)");
+    println!("  - Contains identical code to main branch");
+    println!("  - Automatically runs CI verification");
+    println!("  - Periodically syncs from dev/main");
+    println!();
+    println!("See PRUSTI_BRANCH.md for full documentation.");
+    println!();
+    
+    // Write CSV indicating verification requires branch switch
+    let mut writer = Writer::from_path(output).context("Failed to create CSV file")?;
+    
+    writer.write_record(&[
+        "module",
+        "proof_count", 
+        "status",
+        "duration_secs",
+        "timestamp",
+        "error_message",
+    ])?;
+    
+    let timestamp = Utc::now().to_rfc3339();
+    for module in &modules {
+        writer.write_record(&[
+            module.name(),
+            &module.proof_count().to_string(),
+            "RequiresBranch",
+            "0",
+            &timestamp,
+            "Use prusti-verification branch - see PRUSTI_BRANCH.md",
+        ])?;
+    }
+    
+    writer.flush()?;
+    
+    println!("📊 Status written to: {}", output.display());
     println!("Total modules: {}", modules.len());
     println!("Total proofs: {}", total_proofs);
-    println!("CSV output: {}", output.display());
-    println!("Timeout: {}s", timeout);
-    println!();
-    println!("Running cargo prusti on entire crate...");
-    println!();
-
-    // Run Prusti once on the entire crate
-    let start = Instant::now();
-    let timestamp = Utc::now().to_rfc3339();
-
-    let output_result = Command::new("cargo")
-        .args([
-            "prusti",
-            "--features",
-            "verify-prusti",
-            "--no-default-features",
-            "--package",
-            "elicitation",
-        ])
-        .env("PRUSTI_CHECK_PANICS", "true")
-        .env("PRUSTI_CHECK_OVERFLOWS", "true")
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .context("Failed to spawn cargo prusti")?
-        .wait_with_output()
-        .context("Failed to run cargo prusti")?;
-
-    let duration = start.elapsed();
-    let duration_secs = duration.as_secs();
-
-    // Check timeout
-    let status = if duration_secs >= timeout {
-        ProofStatus::Timeout
-    } else if output_result.status.success() {
-        ProofStatus::Success
-    } else {
-        ProofStatus::Failed
-    };
-
-    let stderr = String::from_utf8_lossy(&output_result.stderr);
-    let error_message = if status != ProofStatus::Success {
-        Some(stderr.to_string())
-    } else {
-        None
-    };
-
-    // Write one result entry per module
-    let mut summary = Summary::default();
-    for module in &modules {
-        let result = ProofResult {
-            module: module.name().clone(),
-            proof_count: *module.proof_count(),
-            status,
-            duration_secs,
-            timestamp: timestamp.clone(),
-            error_message: error_message.clone(),
-        };
-
-        writer
-            .serialize(&result)
-            .context("Failed to write CSV row")?;
-        summary.update(&result);
-    }
-
-    writer.flush().context("Failed to flush CSV")?;
-
-    // Print summary
-    println!();
-    println!("================================");
-    match status {
-        ProofStatus::Success => println!("✅ All Verifications Passed"),
-        ProofStatus::Failed => println!("❌ Verification Failed"),
-        ProofStatus::Timeout => println!("⏱️  Verification Timeout"),
-    }
-    println!();
-    println!("Modules: {}", modules.len());
-    println!("Proofs: {}", total_proofs);
-    println!("Duration: {}s", duration_secs);
-    println!();
-    println!("📊 Results saved to: {}", output.display());
-
-    if status != ProofStatus::Success {
-        if let Some(err) = &error_message {
-            println!();
-            println!("Error output:");
-            println!("{}", err);
-        }
-        anyhow::bail!("Verification failed");
-    }
-
-    Ok(())
+    
+    bail!("Prusti verification requires prusti-verification branch")
 }
 
 /// Show summary statistics from CSV.
