@@ -429,9 +429,9 @@ impl ProofHarness {
                 &format!("{}s", timeout_secs),
                 "cargo",
                 "kani",
+                "-p",
+                "elicitation",
                 "--lib",
-                "--features",
-                "verify-kani",
                 "--harness",
                 &self.name,
             ])
