@@ -139,9 +139,17 @@ mod collections;
 mod durations;
 mod floats;
 mod integers;
+mod ipaddr_bytes;
+mod macaddr;
 mod mechanisms;
 mod networks;
+mod socketaddr;
 mod strings;
+mod utf8;
+
+// Platform-specific modules
+#[cfg(unix)]
+mod pathbytes;
 
 // Feature-gated module declarations
 #[cfg(feature = "uuid")]
