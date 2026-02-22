@@ -31,7 +31,6 @@
 
 #![cfg(kani)]
 
-mod benchmark_marginal;
 mod bools;
 mod chars;
 mod collections;
@@ -50,8 +49,6 @@ mod systemtime;
 mod unit;
 mod urlbytes;
 mod utf8;
-mod utf8_benchmark;
-mod utf8_chunked;
 
 #[cfg(unix)]
 mod pathbytes;

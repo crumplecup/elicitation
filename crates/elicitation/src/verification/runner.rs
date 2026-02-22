@@ -96,110 +96,35 @@ impl ProofHarness {
             Self::new("collections", "verify_vec_all_satisfy"),
             Self::new("collections", "verify_vec_non_empty"),
             Self::new("collections", "verify_vecdeque_non_empty"),
-            Self::new(
-                "datetime_chrono",
-                "verify_datetime_utc_generator_mode_preserved",
-            ),
-            Self::new(
-                "datetime_chrono",
-                "verify_datetime_utc_generator_offset_negative",
-            ),
-            Self::new(
-                "datetime_chrono",
-                "verify_datetime_utc_generator_offset_positive",
-            ),
-            Self::new(
-                "datetime_chrono",
-                "verify_datetime_utc_generator_offset_zero",
-            ),
-            Self::new(
-                "datetime_chrono",
-                "verify_datetime_utc_generator_reference_preserved",
-            ),
-            Self::new(
-                "datetime_chrono",
-                "verify_datetime_utc_generator_unix_epoch",
-            ),
-            Self::new(
-                "datetime_chrono",
-                "verify_naive_datetime_generator_mode_preserved",
-            ),
-            Self::new(
-                "datetime_chrono",
-                "verify_naive_datetime_generator_offset_negative",
-            ),
-            Self::new(
-                "datetime_chrono",
-                "verify_naive_datetime_generator_offset_positive",
-            ),
-            Self::new(
-                "datetime_chrono",
-                "verify_naive_datetime_generator_offset_zero",
-            ),
-            Self::new(
-                "datetime_chrono",
-                "verify_naive_datetime_generator_reference_preserved",
-            ),
-            Self::new(
-                "datetime_chrono",
-                "verify_naive_datetime_generator_unix_epoch",
-            ),
+            Self::new("datetime_chrono", "verify_datetime_utc_generator_mode_preserved"),
+            Self::new("datetime_chrono", "verify_datetime_utc_generator_offset_negative"),
+            Self::new("datetime_chrono", "verify_datetime_utc_generator_offset_positive"),
+            Self::new("datetime_chrono", "verify_datetime_utc_generator_offset_zero"),
+            Self::new("datetime_chrono", "verify_datetime_utc_generator_reference_preserved"),
+            Self::new("datetime_chrono", "verify_datetime_utc_generator_unix_epoch"),
+            Self::new("datetime_chrono", "verify_naive_datetime_generator_mode_preserved"),
+            Self::new("datetime_chrono", "verify_naive_datetime_generator_offset_negative"),
+            Self::new("datetime_chrono", "verify_naive_datetime_generator_offset_positive"),
+            Self::new("datetime_chrono", "verify_naive_datetime_generator_offset_zero"),
+            Self::new("datetime_chrono", "verify_naive_datetime_generator_reference_preserved"),
+            Self::new("datetime_chrono", "verify_naive_datetime_generator_unix_epoch"),
             Self::new("datetime_jiff", "verify_timestamp_generator_mode_preserved"),
-            Self::new(
-                "datetime_jiff",
-                "verify_timestamp_generator_offset_negative_logic",
-            ),
-            Self::new(
-                "datetime_jiff",
-                "verify_timestamp_generator_offset_positive_logic",
-            ),
-            Self::new(
-                "datetime_jiff",
-                "verify_timestamp_generator_offset_zero_logic",
-            ),
-            Self::new(
-                "datetime_jiff",
-                "verify_timestamp_generator_reference_preserved",
-            ),
+            Self::new("datetime_jiff", "verify_timestamp_generator_offset_negative_logic"),
+            Self::new("datetime_jiff", "verify_timestamp_generator_offset_positive_logic"),
+            Self::new("datetime_jiff", "verify_timestamp_generator_offset_zero_logic"),
+            Self::new("datetime_jiff", "verify_timestamp_generator_reference_preserved"),
             Self::new("datetime_jiff", "verify_timestamp_generator_unix_epoch"),
             Self::new("datetime_time", "verify_instant_generator_mode_preserved"),
             Self::new("datetime_time", "verify_instant_generator_now_mode_logic"),
-            Self::new(
-                "datetime_time",
-                "verify_instant_generator_offset_negative_logic",
-            ),
-            Self::new(
-                "datetime_time",
-                "verify_instant_generator_offset_positive_logic",
-            ),
-            Self::new(
-                "datetime_time",
-                "verify_instant_generator_offset_zero_logic",
-            ),
-            Self::new(
-                "datetime_time",
-                "verify_offsetdatetime_generator_mode_preserved",
-            ),
-            Self::new(
-                "datetime_time",
-                "verify_offsetdatetime_generator_offset_negative",
-            ),
-            Self::new(
-                "datetime_time",
-                "verify_offsetdatetime_generator_offset_positive",
-            ),
-            Self::new(
-                "datetime_time",
-                "verify_offsetdatetime_generator_offset_zero",
-            ),
-            Self::new(
-                "datetime_time",
-                "verify_offsetdatetime_generator_reference_preserved",
-            ),
-            Self::new(
-                "datetime_time",
-                "verify_offsetdatetime_generator_unix_epoch",
-            ),
+            Self::new("datetime_time", "verify_instant_generator_offset_negative_logic"),
+            Self::new("datetime_time", "verify_instant_generator_offset_positive_logic"),
+            Self::new("datetime_time", "verify_instant_generator_offset_zero_logic"),
+            Self::new("datetime_time", "verify_offsetdatetime_generator_mode_preserved"),
+            Self::new("datetime_time", "verify_offsetdatetime_generator_offset_negative"),
+            Self::new("datetime_time", "verify_offsetdatetime_generator_offset_positive"),
+            Self::new("datetime_time", "verify_offsetdatetime_generator_offset_zero"),
+            Self::new("datetime_time", "verify_offsetdatetime_generator_reference_preserved"),
+            Self::new("datetime_time", "verify_offsetdatetime_generator_unix_epoch"),
             Self::new("durations", "verify_char_alphanumeric"),
             Self::new("durations", "verify_duration_positive"),
             Self::new("durations", "verify_f32_non_negative"),
@@ -319,43 +244,19 @@ impl ProofHarness {
             Self::new("socketaddr", "verify_socketaddrv4_construction"),
             Self::new("socketaddr", "verify_socketaddrv4_nonzero_accepts_nonzero"),
             Self::new("socketaddr", "verify_socketaddrv4_nonzero_rejects_zero"),
-            Self::new(
-                "socketaddr",
-                "verify_socketaddrv4_privileged_accepts_lt1024",
-            ),
-            Self::new(
-                "socketaddr",
-                "verify_socketaddrv4_privileged_rejects_ge1024",
-            ),
+            Self::new("socketaddr", "verify_socketaddrv4_privileged_accepts_lt1024"),
+            Self::new("socketaddr", "verify_socketaddrv4_privileged_rejects_ge1024"),
             Self::new("socketaddr", "verify_socketaddrv4_roundtrip"),
-            Self::new(
-                "socketaddr",
-                "verify_socketaddrv4_unprivileged_accepts_ge1024",
-            ),
-            Self::new(
-                "socketaddr",
-                "verify_socketaddrv4_unprivileged_rejects_lt1024",
-            ),
+            Self::new("socketaddr", "verify_socketaddrv4_unprivileged_accepts_ge1024"),
+            Self::new("socketaddr", "verify_socketaddrv4_unprivileged_rejects_lt1024"),
             Self::new("socketaddr", "verify_socketaddrv6_construction"),
             Self::new("socketaddr", "verify_socketaddrv6_nonzero_accepts_nonzero"),
             Self::new("socketaddr", "verify_socketaddrv6_nonzero_rejects_zero"),
-            Self::new(
-                "socketaddr",
-                "verify_socketaddrv6_privileged_accepts_lt1024",
-            ),
-            Self::new(
-                "socketaddr",
-                "verify_socketaddrv6_privileged_rejects_ge1024",
-            ),
+            Self::new("socketaddr", "verify_socketaddrv6_privileged_accepts_lt1024"),
+            Self::new("socketaddr", "verify_socketaddrv6_privileged_rejects_ge1024"),
             Self::new("socketaddr", "verify_socketaddrv6_roundtrip"),
-            Self::new(
-                "socketaddr",
-                "verify_socketaddrv6_unprivileged_accepts_ge1024",
-            ),
-            Self::new(
-                "socketaddr",
-                "verify_socketaddrv6_unprivileged_rejects_lt1024",
-            ),
+            Self::new("socketaddr", "verify_socketaddrv6_unprivileged_accepts_ge1024"),
+            Self::new("socketaddr", "verify_socketaddrv6_unprivileged_rejects_lt1024"),
             Self::new("socketaddr", "verify_well_known_port_range"),
             Self::new("strings", "verify_string_non_empty"),
             Self::new("urlbytes", "verify_authority_empty"),
@@ -414,6 +315,22 @@ impl ProofHarness {
             Self::new("uuid_bytes", "verify_v7_wrong_version_rejected"),
             Self::new("uuid_bytes", "verify_valid_variant_accepted"),
             Self::new("uuid_bytes", "verify_version_extraction"),
+            // systemtime
+            Self::new("systemtime", "verify_systemtime_unix_epoch"),
+            Self::new("systemtime", "verify_systemtime_offset_positive"),
+            Self::new("systemtime", "verify_systemtime_offset_negative"),
+            Self::new("systemtime", "verify_systemtime_offset_zero"),
+            Self::new("systemtime", "verify_systemtime_generator_mode_preserved"),
+            Self::new("systemtime", "verify_systemtime_consistent_generation"),
+            Self::new("systemtime", "verify_systemtime_reference_preserved"),
+            // unit
+            Self::new("unit", "verify_unit_type_unique_value"),
+            Self::new("unit", "verify_unit_type_zero_sized"),
+            Self::new("unit", "verify_unit_type_default"),
+            // urlbytes experiments
+            Self::new("urlbytes", "experiment_scheme_exact_size"),
+            Self::new("urlbytes", "experiment_scheme_no_assertions"),
+            Self::new("urlbytes", "experiment_scheme_symbolic_constrained"),
         ]
     }
 

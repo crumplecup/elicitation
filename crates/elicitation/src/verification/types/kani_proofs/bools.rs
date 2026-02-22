@@ -6,7 +6,7 @@ use crate::{BoolFalse, BoolTrue};
 // ============================================================================
 
 #[kani::proof]
-fn verify_bool_true() {
+pub fn verify_bool_true() {
     let value: bool = kani::any();
 
     match BoolTrue::new(value) {
@@ -21,7 +21,7 @@ fn verify_bool_true() {
 }
 
 #[kani::proof]
-fn verify_bool_false() {
+pub fn verify_bool_false() {
     let value: bool = kani::any();
 
     match BoolFalse::new(value) {

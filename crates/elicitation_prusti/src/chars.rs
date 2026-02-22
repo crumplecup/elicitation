@@ -1,10 +1,7 @@
 //! Prusti proofs for char contract types.
 
-// Proof modules import types directly from elicitation
-// use crate::*;
-
-// Char Contract Proofs
-// ============================================================================
+#[cfg(prusti)]
+use elicitation::{CharAlphabetic, CharAlphanumeric, CharNumeric, ValidationError};
 
 /// Prove that CharAlphabetic construction succeeds for alphabetic chars.
 #[cfg(prusti)]

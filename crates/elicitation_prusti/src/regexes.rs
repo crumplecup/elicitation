@@ -1,6 +1,7 @@
 //! Prusti proofs for Regex contract types.
 
-use crate::*;
+#[cfg(all(prusti, feature = "regex"))]
+use elicitation::RegexValid;
 
 // Regex Contract Proofs
 // ============================================================================

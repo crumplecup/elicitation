@@ -7,7 +7,7 @@
 //!
 //! This is compositional verification: rfc4122_correct → wrapper_correct.
 
-#![cfg(all(feature = "verify-prusti", kani))]
+#![cfg(prusti)]
 
 use elicitation::{
     has_valid_variant, has_version, is_valid_v4, is_valid_v7, UuidBytes, UuidV4Bytes, UuidV7Bytes,
@@ -18,7 +18,7 @@ use elicitation::{
 // ============================================================================
 
 /// Verify: UuidBytes accepts valid RFC 4122 variant (10xx)
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_valid_variant() -> Result<UuidBytes, ValidationError> {
     let mut bytes = [0u8; 16];
     // Set 10xx pattern in byte 8 bits 6-7
@@ -27,7 +27,7 @@ pub fn verify_uuid_valid_variant() -> Result<UuidBytes, ValidationError> {
 }
 
 /// Verify: bytes() accessor returns the same bytes
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_bytes_accessor() -> Result<UuidBytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[8] = 0x80;
@@ -37,7 +37,7 @@ pub fn verify_uuid_bytes_accessor() -> Result<UuidBytes, ValidationError> {
 }
 
 /// Verify: version() extracts version bits
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_version_extraction() -> Result<UuidBytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x40; // Version 4
@@ -48,7 +48,7 @@ pub fn verify_uuid_version_extraction() -> Result<UuidBytes, ValidationError> {
 }
 
 /// Verify: has_version() correctly identifies version
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 #[ensures(result.is_ok())]
 pub fn verify_uuid_has_version() -> Result<UuidBytes, ValidationError> {
     let mut bytes = [0u8; 16];
@@ -60,7 +60,7 @@ pub fn verify_uuid_has_version() -> Result<UuidBytes, ValidationError> {
 }
 
 /// Verify: Example V4 UUID (all zeros except version/variant)
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_v4_example() -> Result<UuidBytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x40; // Version 4
@@ -69,7 +69,7 @@ pub fn verify_uuid_v4_example() -> Result<UuidBytes, ValidationError> {
 }
 
 /// Verify: Example V7 UUID (all zeros except version/variant)
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_v7_example() -> Result<UuidBytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x70; // Version 7
@@ -81,7 +81,7 @@ pub fn verify_uuid_v7_example() -> Result<UuidBytes, ValidationError> {
 // ============================================================================
 
 /// Verify: UuidV4Bytes accepts valid V4 UUID
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_v4_accepts_valid() -> Result<UuidV4Bytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x40; // Version 4
@@ -90,7 +90,7 @@ pub fn verify_uuid_v4_accepts_valid() -> Result<UuidV4Bytes, ValidationError> {
 }
 
 /// Verify: get() returns underlying UuidBytes
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_v4_get() -> Result<UuidV4Bytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x40;
@@ -101,7 +101,7 @@ pub fn verify_uuid_v4_get() -> Result<UuidV4Bytes, ValidationError> {
 }
 
 /// Verify: bytes() accessor works
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_v4_bytes() -> Result<UuidV4Bytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x40;
@@ -112,7 +112,7 @@ pub fn verify_uuid_v4_bytes() -> Result<UuidV4Bytes, ValidationError> {
 }
 
 /// Verify: version() returns 4
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 #[ensures(result.is_ok())]
 pub fn verify_uuid_v4_version() -> Result<UuidV4Bytes, ValidationError> {
     let mut bytes = [0u8; 16];
@@ -124,7 +124,7 @@ pub fn verify_uuid_v4_version() -> Result<UuidV4Bytes, ValidationError> {
 }
 
 /// Verify: Example V4 with random-looking bytes
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_v4_randomish() -> Result<UuidV4Bytes, ValidationError> {
     let bytes = [
         0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0x4D, 0xEF, // Version 4
@@ -138,7 +138,7 @@ pub fn verify_uuid_v4_randomish() -> Result<UuidV4Bytes, ValidationError> {
 // ============================================================================
 
 /// Verify: UuidV7Bytes accepts valid V7 UUID
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_v7_accepts_valid() -> Result<UuidV7Bytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x70; // Version 7
@@ -147,7 +147,7 @@ pub fn verify_uuid_v7_accepts_valid() -> Result<UuidV7Bytes, ValidationError> {
 }
 
 /// Verify: get() returns underlying UuidBytes
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_v7_get() -> Result<UuidV7Bytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x70;
@@ -158,7 +158,7 @@ pub fn verify_uuid_v7_get() -> Result<UuidV7Bytes, ValidationError> {
 }
 
 /// Verify: bytes() accessor works
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_v7_bytes() -> Result<UuidV7Bytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x70;
@@ -169,7 +169,7 @@ pub fn verify_uuid_v7_bytes() -> Result<UuidV7Bytes, ValidationError> {
 }
 
 /// Verify: version() returns 7
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 #[ensures(result.is_ok())]
 pub fn verify_uuid_v7_version() -> Result<UuidV7Bytes, ValidationError> {
     let mut bytes = [0u8; 16];
@@ -181,7 +181,7 @@ pub fn verify_uuid_v7_version() -> Result<UuidV7Bytes, ValidationError> {
 }
 
 /// Verify: timestamp_ms() accessor works
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_v7_timestamp() -> Result<UuidV7Bytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x70;
@@ -192,7 +192,7 @@ pub fn verify_uuid_v7_timestamp() -> Result<UuidV7Bytes, ValidationError> {
 }
 
 /// Verify: Example V7 with timestamp bytes
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_v7_with_timestamp() -> Result<UuidV7Bytes, ValidationError> {
     let bytes = [
         0x01, 0x8E, 0xB3, 0x4F, 0x12, 0x34, // Timestamp (48 bits)
@@ -207,7 +207,7 @@ pub fn verify_uuid_v7_with_timestamp() -> Result<UuidV7Bytes, ValidationError> {
 // ============================================================================
 
 /// Verify: has_valid_variant accepts 10xx pattern
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_has_valid_variant_80() -> bool {
     let mut bytes = [0u8; 16];
@@ -216,7 +216,7 @@ pub fn verify_has_valid_variant_80() -> bool {
 }
 
 /// Verify: has_valid_variant accepts 10xx pattern (upper)
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_has_valid_variant_bf() -> bool {
     let mut bytes = [0u8; 16];
@@ -225,7 +225,7 @@ pub fn verify_has_valid_variant_bf() -> bool {
 }
 
 /// Verify: has_version correctly identifies version 4
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_has_version_4() -> bool {
     let mut bytes = [0u8; 16];
@@ -234,7 +234,7 @@ pub fn verify_has_version_4() -> bool {
 }
 
 /// Verify: has_version correctly identifies version 7
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_has_version_7() -> bool {
     let mut bytes = [0u8; 16];
@@ -243,7 +243,7 @@ pub fn verify_has_version_7() -> bool {
 }
 
 /// Verify: is_valid_v4 accepts V4 UUID
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_is_valid_v4_accepts() -> bool {
     let mut bytes = [0u8; 16];
@@ -253,7 +253,7 @@ pub fn verify_is_valid_v4_accepts() -> bool {
 }
 
 /// Verify: is_valid_v7 accepts V7 UUID
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_is_valid_v7_accepts() -> bool {
     let mut bytes = [0u8; 16];
@@ -266,7 +266,7 @@ pub fn verify_is_valid_v7_accepts() -> bool {
 // ============================================================================
 
 /// Verify: Version 1 (timestamp + MAC)
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_version_1() -> Result<UuidBytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x10; // Version 1
@@ -275,7 +275,7 @@ pub fn verify_uuid_version_1() -> Result<UuidBytes, ValidationError> {
 }
 
 /// Verify: Version 2 (DCE Security)
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_version_2() -> Result<UuidBytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x20; // Version 2
@@ -284,7 +284,7 @@ pub fn verify_uuid_version_2() -> Result<UuidBytes, ValidationError> {
 }
 
 /// Verify: Version 3 (MD5 hash)
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_version_3() -> Result<UuidBytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x30; // Version 3
@@ -293,7 +293,7 @@ pub fn verify_uuid_version_3() -> Result<UuidBytes, ValidationError> {
 }
 
 /// Verify: Version 5 (SHA-1 hash)
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_version_5() -> Result<UuidBytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x50; // Version 5
@@ -305,7 +305,7 @@ pub fn verify_uuid_version_5() -> Result<UuidBytes, ValidationError> {
 // ============================================================================
 
 /// Verify: Variant 10xx lower bound (0x80)
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_variant_10xx_lower() -> bool {
     let mut bytes = [0u8; 16];
@@ -314,7 +314,7 @@ pub fn verify_variant_10xx_lower() -> bool {
 }
 
 /// Verify: Variant 10xx upper bound (0xBF)
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 #[ensures(result)]
 pub fn verify_variant_10xx_upper() -> bool {
     let mut bytes = [0u8; 16];
@@ -326,7 +326,7 @@ pub fn verify_variant_10xx_upper() -> bool {
 // ============================================================================
 
 /// Verify: All zeros except version/variant
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_minimal_v4() -> Result<UuidV4Bytes, ValidationError> {
     let bytes = [
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, // Version 4
@@ -337,7 +337,7 @@ pub fn verify_uuid_minimal_v4() -> Result<UuidV4Bytes, ValidationError> {
 }
 
 /// Verify: All ones except version/variant
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_maximal_v4() -> Result<UuidV4Bytes, ValidationError> {
     let bytes = [
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x4F, 0xFF, // Version 4
@@ -348,7 +348,7 @@ pub fn verify_uuid_maximal_v4() -> Result<UuidV4Bytes, ValidationError> {
 }
 
 /// Verify: Minimal V7 (all zeros)
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_minimal_v7() -> Result<UuidV7Bytes, ValidationError> {
     let bytes = [
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x70, 0x00, // Version 7
@@ -359,7 +359,7 @@ pub fn verify_uuid_minimal_v7() -> Result<UuidV7Bytes, ValidationError> {
 }
 
 /// Verify: Maximal V7 (all ones)
-#[cfg(all(feature = "verify-prusti", kani))]
+#[cfg(prusti)]
 pub fn verify_uuid_maximal_v7() -> Result<UuidV7Bytes, ValidationError> {
     let bytes = [
         0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F, 0xFF, // Version 7

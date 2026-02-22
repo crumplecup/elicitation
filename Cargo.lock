@@ -619,6 +619,7 @@ dependencies = [
  "jiff",
  "prusti-contracts",
  "regex",
+ "serde_json",
  "time",
  "url",
  "uuid",

@@ -7,7 +7,7 @@ use crate::StringNonEmpty;
 // ============================================================================
 
 #[kani::proof]
-fn verify_string_non_empty() {
+pub fn verify_string_non_empty() {
     // Reduced buffer size for Kani
     const MAX_LEN: usize = 2;
 

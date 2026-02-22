@@ -1,0 +1,60 @@
+//! Prusti proofs for time crate datetime contract types (feature-gated on time).
+//!
+//! Cloud of assumptions: Trust time crate datetime construction and comparisons.
+//! Verify wrapper structure.
+
+#![cfg(feature = "time")]
+
+#[cfg(prusti)]
+use prusti_contracts::{ensures, trusted};
+
+#[cfg(prusti)]
+use elicitation::{OffsetDateTimeAfter, OffsetDateTimeBefore};
+
+/// Verify OffsetDateTimeAfter construction with datetime after threshold.
+#[trusted]
+#[ensures(matches!(result, Ok(_)))]
+#[cfg(prusti)]
+pub fn verify_offset_datetime_after_valid()
+-> Result<OffsetDateTimeAfter, elicitation::ValidationError> {
+    use time::macros::datetime;
+    let threshold = datetime!(2020-01-01 0:00 UTC);
+    let after = datetime!(2021-01-01 0:00 UTC);
+    OffsetDateTimeAfter::new(after, threshold)
+}
+
+/// Verify OffsetDateTimeAfter rejects datetime before threshold.
+#[trusted]
+#[ensures(matches!(result, Err(_)))]
+#[cfg(prusti)]
+pub fn verify_offset_datetime_after_invalid()
+-> Result<OffsetDateTimeAfter, elicitation::ValidationError> {
+    use time::macros::datetime;
+    let threshold = datetime!(2020-01-01 0:00 UTC);
+    let before = datetime!(2019-01-01 0:00 UTC);
+    OffsetDateTimeAfter::new(before, threshold)
+}
+
+/// Verify OffsetDateTimeBefore construction with datetime before threshold.
+#[trusted]
+#[ensures(matches!(result, Ok(_)))]
+#[cfg(prusti)]
+pub fn verify_offset_datetime_before_valid()
+-> Result<OffsetDateTimeBefore, elicitation::ValidationError> {
+    use time::macros::datetime;
+    let threshold = datetime!(2020-01-01 0:00 UTC);
+    let before = datetime!(2019-01-01 0:00 UTC);
+    OffsetDateTimeBefore::new(before, threshold)
+}
+
+/// Verify OffsetDateTimeBefore rejects datetime after threshold.
+#[trusted]
+#[ensures(matches!(result, Err(_)))]
+#[cfg(prusti)]
+pub fn verify_offset_datetime_before_invalid()
+-> Result<OffsetDateTimeBefore, elicitation::ValidationError> {
+    use time::macros::datetime;
+    let threshold = datetime!(2020-01-01 0:00 UTC);
+    let after = datetime!(2021-01-01 0:00 UTC);
+    OffsetDateTimeBefore::new(after, threshold)
+}
