@@ -75,19 +75,26 @@ pub use networks::*;
 pub use paths::*;
 pub use strings::*;
 pub use tuples::*;
+
+// Trenchcoat proof modules (all #[cfg(creusot)] gated)
+#[cfg(creusot)]
 pub use ipaddr_bytes::*;
+#[cfg(creusot)]
 pub use macaddr::*;
+#[cfg(creusot)]
 pub use mechanisms::*;
+#[cfg(creusot)]
 pub use socketaddr::*;
+#[cfg(creusot)]
 pub use utf8::*;
 
-#[cfg(unix)]
+#[cfg(all(unix, creusot))]
 pub use pathbytes::*;
 
 #[cfg(feature = "uuid")]
 pub use uuids::*;
 
-#[cfg(feature = "uuid")]
+#[cfg(all(feature = "uuid", creusot))]
 pub use uuid_bytes::*;
 
 #[cfg(feature = "serde_json")]
@@ -96,13 +103,13 @@ pub use values::*;
 #[cfg(feature = "url")]
 pub use urls::*;
 
-#[cfg(feature = "url")]
+#[cfg(all(feature = "url", creusot))]
 pub use urlbytes::*;
 
 #[cfg(feature = "regex")]
 pub use regexes::*;
 
-#[cfg(feature = "regex")]
+#[cfg(all(feature = "regex", creusot))]
 pub use regexbytes::*;
 
 #[cfg(feature = "chrono")]

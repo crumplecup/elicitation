@@ -40,8 +40,9 @@ mod tuples;
 mod pathbytes;
 
 // Feature-gated module declarations
-#[cfg(feature = "uuid")]
-mod uuids;
+// Note: Some modules are stubs (uuids, datetimes) - commented out until implemented
+// #[cfg(feature = "uuid")]
+// mod uuids;
 
 #[cfg(feature = "uuid")]
 mod uuid_bytes;
@@ -58,14 +59,14 @@ mod regexes;
 #[cfg(feature = "regex")]
 mod regexbytes;
 
-#[cfg(feature = "chrono")]
-mod datetimes_chrono;
+// #[cfg(feature = "chrono")]
+// mod datetimes_chrono;
 
-#[cfg(feature = "time")]
-mod datetimes_time;
+// #[cfg(feature = "time")]
+// mod datetimes_time;
 
-#[cfg(feature = "jiff")]
-mod datetimes_jiff;
+// #[cfg(feature = "jiff")]
+// mod datetimes_jiff;
 
 // Re-export all proof functions for discoverability
 pub use bools::*;
@@ -87,29 +88,29 @@ pub use tuples::*;
 #[cfg(unix)]
 pub use pathbytes::*;
 
-#[cfg(feature = "uuid")]
-pub use uuids::*;
+// #[cfg(feature = "uuid")]
+// pub use uuids::*;
 
-#[cfg(feature = "uuid")]
+#[cfg(all(feature = "uuid", prusti))]
 pub use uuid_bytes::*;
 
 #[cfg(feature = "url")]
 pub use urls::*;
 
-#[cfg(feature = "url")]
+#[cfg(all(feature = "url", prusti))]
 pub use urlbytes::*;
 
 #[cfg(feature = "regex")]
 pub use regexes::*;
 
-#[cfg(feature = "regex")]
+#[cfg(all(feature = "regex", prusti))]
 pub use regexbytes::*;
 
-#[cfg(feature = "chrono")]
-pub use datetimes_chrono::*;
+// #[cfg(feature = "chrono")]
+// pub use datetimes_chrono::*;
 
-#[cfg(feature = "time")]
-pub use datetimes_time::*;
+// #[cfg(feature = "time")]
+// pub use datetimes_time::*;
 
-#[cfg(feature = "jiff")]
-pub use datetimes_jiff::*;
+// #[cfg(feature = "jiff")]
+// pub use datetimes_jiff::*;
