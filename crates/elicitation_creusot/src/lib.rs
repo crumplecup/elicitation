@@ -100,9 +100,36 @@ use elicitation::{
     IpV6,
     Ipv4Loopback,
     Ipv6Loopback,
+    // Path types
+    PathBufExists,
+    PathBufIsDir,
+    PathBufIsFile,
+    PathBufReadable,
     // Error type
     ValidationError,
 };
+
+// Feature-gated imports
+#[cfg(feature = "uuid")]
+use elicitation::{UuidNonNil, UuidV4};
+
+#[cfg(feature = "serde_json")]
+use elicitation::{ValueArray, ValueNonNull, ValueObject};
+
+#[cfg(feature = "url")]
+use elicitation::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost};
+
+#[cfg(feature = "regex")]
+use elicitation::{RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetValid, RegexValid};
+
+#[cfg(feature = "chrono")]
+use elicitation::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
+
+#[cfg(feature = "time")]
+use elicitation::{OffsetDateTimeAfter, OffsetDateTimeBefore};
+
+#[cfg(feature = "jiff")]
+use elicitation::{TimestampAfter, TimestampBefore};
 
 // Module declarations
 mod bools;
@@ -112,5 +139,28 @@ mod durations;
 mod floats;
 mod integers;
 mod networks;
+mod paths;
 mod strings;
 mod tuples;
+
+// Feature-gated module declarations
+#[cfg(feature = "uuid")]
+mod uuids;
+
+#[cfg(feature = "serde_json")]
+mod values;
+
+#[cfg(feature = "url")]
+mod urls;
+
+#[cfg(feature = "regex")]
+mod regexes;
+
+#[cfg(feature = "chrono")]
+mod datetimes_chrono;
+
+#[cfg(feature = "time")]
+mod datetimes_time;
+
+#[cfg(feature = "jiff")]
+mod datetimes_jiff;

@@ -569,8 +569,15 @@ dependencies = [
 name = "elicitation_creusot"
 version = "0.8.1"
 dependencies = [
+ "chrono",
  "creusot-std",
  "elicitation",
+ "jiff",
+ "regex",
+ "serde_json",
+ "time",
+ "url",
+ "uuid",
 ]
 
 [[package]]

@@ -9,3 +9,25 @@ creusot-std = { workspace = true }
 
 # Import the contract types from main crate
 elicitation = { path = "../elicitation", default-features = false, features = ["verification"] }
+
+# Optional dependencies for feature-gated proofs (must match elicitation features)
+uuid = { workspace = true, optional = true }
+serde_json = { workspace = true, optional = true }
+url = { workspace = true, optional = true }
+regex = { workspace = true, optional = true }
+chrono = { workspace = true, optional = true }
+time = { workspace = true, optional = true, features = ["macros"] }
+jiff = { workspace = true, optional = true }
+
+[features]
+# Feature flags matching elicitation crate
+uuid = ["dep:uuid", "elicitation/uuid"]
+serde_json = ["dep:serde_json", "elicitation/serde_json"]
+url = ["dep:url", "elicitation/url"]
+regex = ["dep:regex", "elicitation/regex"]
+chrono = ["dep:chrono", "elicitation/chrono"]
+time = ["dep:time", "elicitation/time"]
+jiff = ["dep:jiff", "elicitation/jiff"]
+
+# Convenience feature for all feature-gated types
+all = ["uuid", "serde_json", "url", "regex", "chrono", "time", "jiff"]
