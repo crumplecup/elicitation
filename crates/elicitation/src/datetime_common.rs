@@ -11,7 +11,7 @@
 
 use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, Elicitation, Prompt, Select,
-    mcp,
+    UnitStyle, mcp,
 };
 
 /// Input method for datetime elicitation.
@@ -206,10 +206,36 @@ impl DateTimeComponents {
     }
 }
 
-impl DateTimeComponents {
-    /// Kani verification proof for datetime components.
+impl Prompt for DateTimeComponents {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter datetime components")
+    }
+}
+
+impl Elicitation for DateTimeComponents {
+    type Style = UnitStyle;
+
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        Self::elicit(communicator).await
+    }
+
     #[cfg(kani)]
-    pub fn kani_proof() {
+    fn kani_proof() {
         // Witness method - proofs exist for datetime component validation
+    }
+
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Witness method - proofs in elicitation_verus
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Witness method - proofs in elicitation_creusot
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Witness method - proofs in elicitation_prusti
     }
 }
