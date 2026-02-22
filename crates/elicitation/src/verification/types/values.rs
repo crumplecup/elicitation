@@ -59,6 +59,12 @@ impl ValueObject {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the inner Value.
     #[cfg(not(kani))]
     pub fn get(&self) -> &Value {
@@ -75,6 +81,12 @@ impl ValueObject {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner Value.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> Value {
@@ -89,6 +101,12 @@ impl ValueObject {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
@@ -174,6 +192,12 @@ impl ValueArray {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the inner Value.
     #[cfg(not(kani))]
     pub fn get(&self) -> &Value {
@@ -190,6 +214,12 @@ impl ValueArray {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner Value.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> Value {
@@ -204,6 +234,12 @@ impl ValueArray {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
@@ -283,6 +319,12 @@ impl ValueNonNull {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the inner Value.
     #[cfg(not(kani))]
     pub fn get(&self) -> &Value {
@@ -299,6 +341,12 @@ impl ValueNonNull {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner Value.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> Value {
@@ -313,6 +361,12 @@ impl ValueNonNull {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 

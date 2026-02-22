@@ -478,6 +478,12 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the inner HashMap.
     #[cfg(not(kani))]
     pub fn get(&self) -> &HashMap<K, V> {
@@ -495,6 +501,12 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner HashMap.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> HashMap<K, V> {
@@ -510,6 +522,12 @@ impl<K, V> HashMapNonEmpty<K, V> {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 
     /// Get the length (always >= 1).
@@ -535,6 +553,12 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Kani version: accessor not verifiable (PhantomData).
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
@@ -544,6 +568,12 @@ impl<K, V> HashMapNonEmpty<K, V> {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
@@ -619,6 +649,12 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the inner BTreeMap.
     #[cfg(not(kani))]
     pub fn get(&self) -> &BTreeMap<K, V> {
@@ -635,6 +671,12 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner BTreeMap.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> BTreeMap<K, V> {
@@ -649,6 +691,12 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 
     /// Get the length (always >= 1).
@@ -673,6 +721,12 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
@@ -681,6 +735,12 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
@@ -760,6 +820,12 @@ impl<T> HashSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the inner HashSet.
     #[cfg(not(kani))]
     pub fn get(&self) -> &HashSet<T> {
@@ -776,6 +842,12 @@ impl<T> HashSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner HashSet.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> HashSet<T> {
@@ -790,6 +862,12 @@ impl<T> HashSetNonEmpty<T> {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 
     /// Get the length (always >= 1).
@@ -814,6 +892,12 @@ impl<T> HashSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
@@ -822,6 +906,12 @@ impl<T> HashSetNonEmpty<T> {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
@@ -895,6 +985,12 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the inner BTreeSet.
     #[cfg(not(kani))]
     pub fn get(&self) -> &BTreeSet<T> {
@@ -911,6 +1007,12 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner BTreeSet.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> BTreeSet<T> {
@@ -925,6 +1027,12 @@ impl<T> BTreeSetNonEmpty<T> {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 
     /// Get the length (always >= 1).
@@ -949,6 +1057,12 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
@@ -957,6 +1071,12 @@ impl<T> BTreeSetNonEmpty<T> {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
@@ -1034,6 +1154,12 @@ impl<T> VecDequeNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the inner VecDeque.
     #[cfg(not(kani))]
     pub fn get(&self) -> &VecDeque<T> {
@@ -1050,6 +1176,12 @@ impl<T> VecDequeNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner VecDeque.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> VecDeque<T> {
@@ -1064,6 +1196,12 @@ impl<T> VecDequeNonEmpty<T> {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 
     /// Get the length (always >= 1).
@@ -1088,6 +1226,12 @@ impl<T> VecDequeNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
@@ -1096,6 +1240,12 @@ impl<T> VecDequeNonEmpty<T> {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
@@ -1169,6 +1319,12 @@ impl<T> LinkedListNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the inner LinkedList.
     #[cfg(not(kani))]
     pub fn get(&self) -> &LinkedList<T> {
@@ -1185,6 +1341,12 @@ impl<T> LinkedListNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner LinkedList.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> LinkedList<T> {
@@ -1199,6 +1361,12 @@ impl<T> LinkedListNonEmpty<T> {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 
     /// Get the length (always >= 1).
@@ -1223,6 +1391,12 @@ impl<T> LinkedListNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
@@ -1231,6 +1405,12 @@ impl<T> LinkedListNonEmpty<T> {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 

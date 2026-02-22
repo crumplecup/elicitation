@@ -337,6 +337,14 @@ fn generate_elicit_impl_simple(
                     <#elicited_types as elicitation::Elicitation>::verus_proof();
                 )*
             }
+
+            #[cfg(creusot)]
+            fn creusot_proof() {
+                // Compositional verification: verify all field types
+                #(
+                    <#elicited_types as elicitation::Elicitation>::creusot_proof();
+                )*
+            }
         }
     }
 }
@@ -655,6 +663,14 @@ fn generate_elicit_impl_styled(
                 // Compositional verification: verify all field types
                 #(
                     <#elicited_types as elicitation::Elicitation>::verus_proof();
+                )*
+            }
+
+            #[cfg(creusot)]
+            fn creusot_proof() {
+                // Compositional verification: verify all field types
+                #(
+                    <#elicited_types as elicitation::Elicitation>::creusot_proof();
                 )*
             }
         }

@@ -417,6 +417,14 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
                     <#all_field_types as elicitation::Elicitation>::verus_proof();
                 )*
             }
+
+            #[cfg(creusot)]
+            fn creusot_proof() {
+                // Compositional verification: verify all field types across all variants
+                #(
+                    <#all_field_types as elicitation::Elicitation>::creusot_proof();
+                )*
+            }
         }
     }
 }

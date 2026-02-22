@@ -65,6 +65,12 @@ impl DateTimeUtcAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> DateTime<Utc> {
@@ -79,6 +85,12 @@ impl DateTimeUtcAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 
     /// Get the threshold.
@@ -97,6 +109,12 @@ impl DateTimeUtcAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner DateTime<Utc>.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> DateTime<Utc> {
@@ -111,6 +129,12 @@ impl DateTimeUtcAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
@@ -201,6 +225,12 @@ impl DateTimeUtcBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> DateTime<Utc> {
@@ -215,6 +245,12 @@ impl DateTimeUtcBefore {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 
     /// Get the threshold.
@@ -233,6 +269,12 @@ impl DateTimeUtcBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner DateTime<Utc>.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> DateTime<Utc> {
@@ -247,6 +289,12 @@ impl DateTimeUtcBefore {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
@@ -337,6 +385,12 @@ impl NaiveDateTimeAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> NaiveDateTime {
@@ -351,6 +405,12 @@ impl NaiveDateTimeAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 
     /// Get the threshold.
@@ -369,6 +429,12 @@ impl NaiveDateTimeAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner NaiveDateTime.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> NaiveDateTime {
@@ -383,6 +449,12 @@ impl NaiveDateTimeAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
@@ -543,6 +615,12 @@ impl TimestampAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the timestamp value.
     #[cfg(not(kani))]
     pub fn get(&self) -> Timestamp {
@@ -557,6 +635,12 @@ impl TimestampAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 
     /// Get the threshold.
@@ -575,6 +659,12 @@ impl TimestampAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner Timestamp.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> Timestamp {
@@ -589,6 +679,12 @@ impl TimestampAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
@@ -679,6 +775,12 @@ impl TimestampBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the timestamp value.
     #[cfg(not(kani))]
     pub fn get(&self) -> Timestamp {
@@ -693,6 +795,12 @@ impl TimestampBefore {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 
     /// Get the threshold.
@@ -711,6 +819,12 @@ impl TimestampBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner Timestamp.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> Timestamp {
@@ -725,6 +839,12 @@ impl TimestampBefore {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
@@ -863,6 +983,12 @@ impl OffsetDateTimeAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> OffsetDateTime {
@@ -877,6 +1003,12 @@ impl OffsetDateTimeAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 
     /// Get the threshold.
@@ -895,6 +1027,12 @@ impl OffsetDateTimeAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner OffsetDateTime.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> OffsetDateTime {
@@ -909,6 +1047,12 @@ impl OffsetDateTimeAfter {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
@@ -1005,6 +1149,12 @@ impl OffsetDateTimeBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> OffsetDateTime {
@@ -1019,6 +1169,12 @@ impl OffsetDateTimeBefore {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 
     /// Get the threshold.
@@ -1037,6 +1193,12 @@ impl OffsetDateTimeBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
+    }
+
     /// Unwrap into the inner OffsetDateTime.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> OffsetDateTime {
@@ -1051,6 +1213,12 @@ impl OffsetDateTimeBefore {
     #[cfg(verus)]
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(creusot)]
+    fn creusot_proof() {
+        // Creusot proofs exist in elicitation_creusot crate
+        // Verifies: wrapper structure with cloud of assumptions
     }
 }
 
