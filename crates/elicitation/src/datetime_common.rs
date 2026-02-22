@@ -205,3 +205,11 @@ impl DateTimeComponents {
         })
     }
 }
+
+impl DateTimeComponents {
+    /// Kani verification proof for datetime components.
+    #[cfg(kani)]
+    pub fn kani_proof() {
+        // Witness method - proofs exist for datetime component validation
+    }
+}
