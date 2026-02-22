@@ -1,6 +1,6 @@
 //! Kani proofs for network and filesystem contract types.
 
-use crate::{
+use elicitation::{
     IpPrivate, IpPublic, Ipv4Loopback, Ipv6Loopback, PathBufExists, PathBufIsDir, PathBufIsFile,
     PathBufReadable,
 };

@@ -1,6 +1,6 @@
 //! Kani proofs for duration contract types.
 
-use crate::{
+use elicitation::{
     CharAlphanumeric, DurationPositive, F32NonNegative, F32Positive, F64NonNegative, I8Positive,
     OptionSome, Tuple2,
 };
@@ -19,7 +19,8 @@ fn verify_duration_positive() {
     match DurationPositive::new(duration) {
         Ok(positive) => {
             assert!(duration.as_nanos() > 0, "DurationPositive invariant");
-            assert!(positive.get().as_nanos() > 0, "get() preserves invariant");
+            let retrieved = DurationPositive::get(&positive);
+            assert!(retrieved.as_nanos() > 0, "get() preserves invariant");
         }
         Err(_) => {
             assert!(
@@ -65,9 +66,9 @@ fn verify_option_some() {
     let value: i32 = kani::any();
     let opt = Some(value);
 
-    match OptionSome::new(opt) {
+    match OptionSome::<i32>::new(opt) {
         Ok(some) => {
-            let val: &i32 = some.get();
+            let val: &i32 = OptionSome::get(&some);
             assert!(*val == value, "OptionSome unwraps correctly");
         }
         Err(_) => {

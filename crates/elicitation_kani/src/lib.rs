@@ -41,8 +41,6 @@
 //! cargo kani -p elicitation_kani --all-features -- --default-unwind 20
 //! ```
 
-#![cfg_attr(kani, feature(kani))]
-
 // Re-export verification framework from main crate
 pub use elicitation::verification::contracts;
 pub use elicitation::verification::{Contract, WithContract};

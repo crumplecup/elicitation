@@ -17,7 +17,7 @@ use elicitation::I8Positive;
 /// Affirm mechanism always returns a valid boolean (true or false).
 #[kani::proof]
 fn verify_affirm_returns_boolean() {
-    use crate::verification::mechanisms::AffirmReturnsBoolean;
+    use elicitation::verification::mechanisms::AffirmReturnsBoolean;
     use elicitation::Contract;
 
     let contract = AffirmReturnsBoolean;
@@ -55,7 +55,7 @@ fn verify_affirm_returns_boolean() {
 /// The type system guarantees this, but we prove the contract explicitly.
 #[kani::proof]
 fn verify_survey_returns_valid_variant() {
-    use crate::verification::mechanisms::SurveyReturnsValidVariant;
+    use elicitation::verification::mechanisms::SurveyReturnsValidVariant;
     use elicitation::Contract;
 
     // Test with bool (simplest enum-like type that implements required traits)
