@@ -9,7 +9,6 @@
 //! Run with different verifier features:
 //! ```bash
 //! cargo run --example verification_demo --features verification
-//! cargo run --example verification_demo --features verify-kani
 //! ```
 
 use elicitation::verification::{

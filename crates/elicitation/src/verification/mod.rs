@@ -813,8 +813,7 @@ pub mod types;
 #[cfg(feature = "cli")]
 pub mod runner;
 
-// Tool-specific adapters (feature-gated)
-#[cfg(feature = "verify-kani")]
+// Tool-specific adapters
 pub mod kani;
 
 #[cfg(feature = "cli")]

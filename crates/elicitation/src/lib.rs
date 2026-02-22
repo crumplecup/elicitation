@@ -188,6 +188,9 @@ pub use elicitation_derive::Elicit;
 // Re-export verification contract types at crate level (for kani_proofs imports)
 // EXPLICIT exports - no globs (helps compiler show what's missing)
 #[cfg(any(feature = "verification", kani))]
+pub use verification::Contract;
+
+#[cfg(any(feature = "verification", kani))]
 pub use verification::types::{
     ArcNonNull,
     ArcSatisfies,

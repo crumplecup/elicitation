@@ -11,8 +11,9 @@
 //!
 //! # Verifying with Kani
 //!
+//! Kani proofs are in the dedicated elicitation_kani crate:
 //! ```bash
-//! cargo kani --features verify-kani
+//! cargo kani -p elicitation_kani --all-features
 //! ```
 
 #![cfg(feature = "verification")]
