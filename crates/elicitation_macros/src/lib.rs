@@ -72,10 +72,10 @@ pub fn instrumented_impl(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 .inputs
                                 .iter()
                                 .filter_map(|arg| {
-                                    if let syn::FnArg::Typed(pat_type) = arg
-                                        && let syn::Pat::Ident(ident) = &*pat_type.pat
-                                    {
-                                        return Some(ident.ident.clone());
+                                    if let syn::FnArg::Typed(pat_type) = arg {
+                                        if let syn::Pat::Ident(ident) = &*pat_type.pat {
+                                            return Some(ident.ident.clone());
+                                        }
                                     }
                                     None
                                 })
