@@ -3,3 +3,4 @@
 # Verification artifacts
 *.log
 *.csv
+crates/elicitation_verus/.verus-log/

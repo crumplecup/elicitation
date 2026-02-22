@@ -8,6 +8,7 @@ use chrono::Utc;
 use csv::{Reader, Writer};
 use derive_getters::Getters;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::io::Write;
 use std::path::Path;
 use std::process::{Command, Stdio};
@@ -33,111 +34,61 @@ impl VerusProof {
         }
     }
 
-    /// All available Verus proofs.
+    /// All available Verus proofs from the elicitation_verus crate.
     pub fn all() -> Vec<Self> {
         vec![
-            // Bools
-            Self::new("bools", "verify_bool_true"),
-            Self::new("bools", "verify_bool_false"),
-            // Chars
-            Self::new("chars", "verify_char_alphabetic_accepts"),
-            Self::new("chars", "verify_char_alphabetic_rejects"),
-            Self::new("chars", "verify_char_numeric_accepts"),
-            Self::new("chars", "verify_char_numeric_rejects"),
-            // Collections
-            Self::new("collections", "verify_vec_non_empty"),
-            Self::new("collections", "verify_vec_all_satisfy"),
-            Self::new("collections", "verify_option_some"),
-            Self::new("collections", "verify_option_some_rejects_none"),
-            Self::new("collections", "verify_result_ok"),
-            Self::new("collections", "verify_hashmap_non_empty"),
-            Self::new("collections", "verify_btreemap_non_empty"),
-            Self::new("collections", "verify_hashset_non_empty"),
-            Self::new("collections", "verify_btreeset_non_empty"),
-            Self::new("collections", "verify_vecdeque_non_empty"),
-            Self::new("collections", "verify_linkedlist_non_empty"),
-            Self::new("collections", "verify_box_satisfies"),
-            Self::new("collections", "verify_arc_satisfies"),
-            Self::new("collections", "verify_rc_satisfies"),
-            Self::new("collections", "verify_array_all_satisfy"),
-            // Durations
-            Self::new("durations", "verify_duration_positive"),
-            // Floats
-            Self::new("floats", "verify_f32_finite"),
-            Self::new("floats", "verify_f32_positive"),
-            Self::new("floats", "verify_f32_non_negative"),
-            Self::new("floats", "verify_f64_finite"),
-            Self::new("floats", "verify_f64_positive"),
-            Self::new("floats", "verify_f64_non_negative"),
-            // Integers
-            Self::new("integers", "verify_i8_range_concrete"),
-            Self::new("integers", "verify_i8_range_positive"),
-            Self::new("integers", "verify_i8_range_singleton"),
-            Self::new("integers", "verify_i16_range_concrete"),
-            Self::new("integers", "verify_i32_positive"),
-            Self::new("integers", "verify_i32_non_negative"),
-            Self::new("integers", "verify_i32_range"),
-            Self::new("integers", "verify_i64_positive"),
-            Self::new("integers", "verify_i64_non_negative"),
-            Self::new("integers", "verify_i64_range"),
-            Self::new("integers", "verify_i128_positive"),
-            Self::new("integers", "verify_i128_non_negative"),
-            Self::new("integers", "verify_i128_range"),
-            Self::new("integers", "verify_isize_positive"),
-            Self::new("integers", "verify_isize_non_negative"),
-            Self::new("integers", "verify_isize_range"),
-            Self::new("integers", "verify_u8_range_concrete"),
-            Self::new("integers", "verify_u16_range_concrete"),
-            Self::new("integers", "verify_u32_non_zero"),
-            Self::new("integers", "verify_u32_range"),
-            Self::new("integers", "verify_u64_non_zero"),
-            Self::new("integers", "verify_u64_range"),
-            Self::new("integers", "verify_u128_non_zero"),
-            Self::new("integers", "verify_u128_range"),
-            Self::new("integers", "verify_usize_non_zero"),
-            Self::new("integers", "verify_usize_range"),
-            // Mechanisms
-            Self::new("mechanisms", "verify_affirm_returns_boolean"),
-            Self::new("mechanisms", "verify_survey_returns_valid_variant"),
-            Self::new("mechanisms", "verify_select_returns_valid_option"),
-            Self::new("mechanisms", "verify_input_contracts"),
-            Self::new("mechanisms", "verify_slider_validates"),
-            // Networks
-            Self::new("networks", "verify_ip_private"),
-            Self::new("networks", "verify_ip_public"),
-            Self::new("networks", "verify_ipv4_loopback"),
-            Self::new("networks", "verify_ipv6_loopback"),
-            Self::new("networks", "verify_ipv4"),
-            Self::new("networks", "verify_ipv6"),
-            Self::new("networks", "verify_uuid_v4"),
-            Self::new("networks", "verify_uuid_non_nil"),
-            Self::new("networks", "verify_pathbuf_contracts"),
-            // Strings
-            Self::new("strings", "verify_string_non_empty"),
-            Self::new("strings", "verify_string_alphabetic_accepts"),
-            Self::new("strings", "verify_string_alphabetic_rejects"),
-            Self::new("strings", "verify_string_numeric_accepts"),
-            Self::new("strings", "verify_string_numeric_rejects"),
-            Self::new("strings", "verify_string_length_min"),
-            Self::new("strings", "verify_string_length_max"),
-            Self::new("strings", "verify_string_length_range"),
-            Self::new("strings", "verify_string_starts_with"),
-            Self::new("strings", "verify_string_ends_with"),
-            Self::new("strings", "verify_string_contains"),
-            // Regexes (if feature enabled)
-            #[cfg(feature = "regex")]
-            Self::new("regexes", "verify_regex_matches"),
-            #[cfg(feature = "regex")]
-            Self::new("regexes", "verify_regex_rejects"),
-            // URLs (if feature enabled)
-            #[cfg(feature = "url")]
-            Self::new("urls", "verify_url_http_scheme"),
-            #[cfg(feature = "url")]
-            Self::new("urls", "verify_url_https_scheme"),
-            #[cfg(feature = "url")]
-            Self::new("urls", "verify_url_host_present"),
-            #[cfg(feature = "url")]
-            Self::new("urls", "verify_url_port_present"),
+            // external_types (25 proofs)
+            Self::new("external_types", "verify_datetime_after_construction"),
+            Self::new("external_types", "verify_datetime_before_construction"),
+            Self::new("external_types", "verify_datetime_construction"),
+            Self::new("external_types", "verify_duration_construction"),
+            Self::new("external_types", "verify_duration_positive_construction"),
+            Self::new("external_types", "verify_ip_private_construction"),
+            Self::new("external_types", "verify_ip_public_construction"),
+            Self::new("external_types", "verify_ipaddr_construction"),
+            Self::new("external_types", "verify_ipv4_construction"),
+            Self::new("external_types", "verify_ipv6_construction"),
+            Self::new("external_types", "verify_json_array_construction"),
+            Self::new("external_types", "verify_json_non_null_construction"),
+            Self::new("external_types", "verify_json_object_construction"),
+            Self::new("external_types", "verify_json_value_construction"),
+            Self::new("external_types", "verify_path_absolute_construction"),
+            Self::new("external_types", "verify_path_relative_construction"),
+            Self::new("external_types", "verify_pathbuf_construction"),
+            Self::new("external_types", "verify_regex_case_insensitive_construction"),
+            Self::new("external_types", "verify_regex_construction"),
+            Self::new("external_types", "verify_url_construction"),
+            Self::new("external_types", "verify_url_http_construction"),
+            Self::new("external_types", "verify_url_https_construction"),
+            Self::new("external_types", "verify_uuid_construction"),
+            Self::new("external_types", "verify_uuid_non_nil_construction"),
+            Self::new("external_types", "verify_uuid_v4_construction"),
+            // primitives (13 proofs)
+            Self::new("primitives", "verify_bool_construction"),
+            Self::new("primitives", "verify_char_construction"),
+            Self::new("primitives", "verify_f32_construction"),
+            Self::new("primitives", "verify_f64_construction"),
+            Self::new("primitives", "verify_i16_construction"),
+            Self::new("primitives", "verify_i32_construction"),
+            Self::new("primitives", "verify_i64_construction"),
+            Self::new("primitives", "verify_i8_construction"),
+            Self::new("primitives", "verify_u16_construction"),
+            Self::new("primitives", "verify_u32_construction"),
+            Self::new("primitives", "verify_u64_construction"),
+            Self::new("primitives", "verify_u8_construction"),
+            Self::new("primitives", "verify_unit_construction"),
+            // stdlib_collections (11 proofs)
+            Self::new("stdlib_collections", "verify_option_is_none_true"),
+            Self::new("stdlib_collections", "verify_option_is_some_true"),
+            Self::new("stdlib_collections", "verify_option_none"),
+            Self::new("stdlib_collections", "verify_option_some"),
+            Self::new("stdlib_collections", "verify_result_err"),
+            Self::new("stdlib_collections", "verify_result_is_err_true"),
+            Self::new("stdlib_collections", "verify_result_is_ok_true"),
+            Self::new("stdlib_collections", "verify_result_ok"),
+            Self::new("stdlib_collections", "verify_tuple2_construction"),
+            Self::new("stdlib_collections", "verify_tuple3_construction"),
+            Self::new("stdlib_collections", "verify_tuple4_construction"),
         ]
     }
 }
@@ -210,7 +161,7 @@ impl VerusProofResult {
     }
 }
 
-/// Run a single Verus proof.
+/// Run a single Verus proof by running entire elicitation_verus crate and extracting results.
 pub fn run_verus_proof(
     proof: &VerusProof,
     verus_path: &Path,
@@ -218,38 +169,17 @@ pub fn run_verus_proof(
 ) -> Result<VerusProofResult> {
     let start = Instant::now();
 
-    // Create a temporary source file that imports and calls the specific proof
-    let temp_src = format!(
-        r#"
-#![feature(register_tool)]
-#![register_tool(verus)]
-#![feature(custom_inner_attributes)]
-
-use elicitation::verification::types::verus_proofs::{}::{}; 
-
-fn main() {{
-    {}();
-}}
-"#,
-        proof.module(),
-        proof.name(),
-        proof.name()
-    );
-
-    let temp_dir = std::env::temp_dir();
-    let temp_file = temp_dir.join(format!("verus_{}_{}.rs", proof.module(), proof.name()));
-    std::fs::write(&temp_file, temp_src)
-        .with_context(|| format!("Failed to write temp file: {}", temp_file.display()))?;
-
-    // Run Verus on the temp file
+    // Run Verus on the entire elicitation_verus crate with JSON output
+    let crate_path = Path::new("crates/elicitation_verus/src/lib.rs");
+    
     let mut cmd = Command::new(verus_path);
-    cmd.arg("--crate-type=bin")
-        .arg(&temp_file)
+    cmd.arg("--crate-type=lib")
+        .arg("--output-json")
+        .arg(crate_path)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
 
     if let Some(timeout) = timeout_secs {
-        // Note: This is a simple timeout - you might want to use a crate like `wait-timeout`
         cmd.env("VERUS_TIMEOUT", timeout.to_string());
     }
 
@@ -259,21 +189,21 @@ fn main() {{
 
     let elapsed = start.elapsed().as_secs();
 
-    // Clean up temp file
-    let _ = std::fs::remove_file(&temp_file);
-
-    // Parse output
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
+    // Parse JSON output to extract result for this specific proof
     let (status, error_message) = if output.status.success() {
-        if stdout.contains("verification results:: ") && stdout.contains(" verified, 0 errors") {
-            (VerificationStatus::Success, String::new())
-        } else {
-            (
+        match parse_verus_json_for_proof(&stdout, proof) {
+            Ok(true) => (VerificationStatus::Success, String::new()),
+            Ok(false) => (
                 VerificationStatus::Failed,
-                format!("stdout: {}\nstderr: {}", stdout, stderr),
-            )
+                "Proof verification failed".to_string(),
+            ),
+            Err(e) => (
+                VerificationStatus::Failed,
+                format!("JSON parsing error: {}\nstderr: {}", e, stderr),
+            ),
         }
     } else if stderr.contains("timeout") || stdout.contains("timeout") {
         (
@@ -283,7 +213,7 @@ fn main() {{
     } else {
         (
             VerificationStatus::Failed,
-            format!("stdout: {}\nstderr: {}", stdout, stderr),
+            format!("Verus execution failed\nstderr: {}", stderr),
         )
     };
 
@@ -294,6 +224,60 @@ fn main() {{
         elapsed,
         error_message,
     ))
+}
+
+/// Parse Verus JSON output to check if a specific proof passed.
+fn parse_verus_json_for_proof(output: &str, proof: &VerusProof) -> Result<bool> {
+    // Find the JSON object in the output (starts after text output)
+    let lines: Vec<&str> = output.lines().collect();
+    let mut json_lines = Vec::new();
+    let mut in_json = false;
+    let mut brace_count = 0;
+
+    for line in lines {
+        if !in_json && line.trim().starts_with('{') {
+            in_json = true;
+        }
+
+        if in_json {
+            json_lines.push(line);
+            brace_count += line.matches('{').count() as i32;
+            brace_count -= line.matches('}').count() as i32;
+
+            if brace_count == 0 {
+                break;
+            }
+        }
+    }
+
+    if json_lines.is_empty() {
+        anyhow::bail!("No JSON found in Verus output");
+    }
+
+    let json_str = json_lines.join("\n");
+    let data: Value = serde_json::from_str(&json_str)
+        .context("Failed to parse Verus JSON output")?;
+
+    let func_details = data
+        .get("func-details")
+        .and_then(|v| v.as_object())
+        .context("Missing func-details in JSON")?;
+
+    // Build the expected function name: lib::module::function_name
+    let expected_name = format!("lib::{}::{}", proof.module(), proof.name());
+
+    // Find the proof in func-details
+    if let Some(details) = func_details.get(&expected_name) {
+        let failed_notes = details
+            .get("failed_proof_notes")
+            .and_then(|v| v.as_array())
+            .context("Missing failed_proof_notes")?;
+
+        // If failed_proof_notes is empty, the proof passed
+        Ok(failed_notes.is_empty())
+    } else {
+        anyhow::bail!("Proof {} not found in Verus output", expected_name);
+    }
 }
 
 /// Run all Verus proofs and track results.
