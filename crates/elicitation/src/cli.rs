@@ -39,6 +39,13 @@ pub enum Commands {
         #[command(subcommand)]
         action: VerusAction,
     },
+
+    /// Run and manage Creusot verification modules
+    Creusot {
+        /// Action to perform
+        #[command(subcommand)]
+        action: CreusotAction,
+    },
 }
 
 /// Verification actions
@@ -149,6 +156,31 @@ pub enum VerusAction {
     },
 }
 
+/// Creusot verification actions
+#[derive(Debug, Clone, Subcommand)]
+pub enum CreusotAction {
+    /// List all Creusot modules
+    List,
+
+    /// Run Creusot verification on all modules
+    Run {
+        /// CSV output file
+        #[arg(short, long, default_value = "creusot_verification_results.csv")]
+        output: PathBuf,
+
+        /// Resume mode: skip already-passed modules
+        #[arg(short, long)]
+        resume: bool,
+    },
+
+    /// Show summary statistics from CSV
+    Summary {
+        /// CSV file to analyze
+        #[arg(short, long, default_value = "creusot_verification_results.csv")]
+        file: PathBuf,
+    },
+}
+
 /// Execute the CLI command.
 #[tracing::instrument(skip(cli))]
 pub fn execute(cli: Cli) -> anyhow::Result<()> {
@@ -158,6 +190,7 @@ pub fn execute(cli: Cli) -> anyhow::Result<()> {
         Commands::Verify { action } => crate::verification::runner::handle(action),
         Commands::Prusti { action } => handle_prusti(action),
         Commands::Verus { action } => handle_verus(action),
+        Commands::Creusot { action } => handle_creusot(action),
     }
 }
 
@@ -191,6 +224,26 @@ fn handle_prusti(action: &PrustiAction) -> anyhow::Result<()> {
         }
         PrustiAction::Summary { file } => crate::verification::prusti_runner::show_summary(file),
         PrustiAction::Failed { file } => crate::verification::prusti_runner::show_failed(file),
+    }
+}
+
+/// Handle Creusot verification commands.
+#[tracing::instrument(skip(action))]
+fn handle_creusot(action: &CreusotAction) -> anyhow::Result<()> {
+    tracing::debug!(action = ?action, "Handling Creusot command");
+
+    match action {
+        CreusotAction::List => crate::verification::creusot_runner::list_modules(),
+        CreusotAction::Run { output, resume } => {
+            let summary = crate::verification::creusot_runner::run_all_modules(output, *resume)?;
+            println!();
+            println!("✅ Creusot verification complete!");
+            println!("   Total: {}", summary.total());
+            println!("   Passed: {}", summary.passed());
+            println!("   Failed: {}", summary.failed());
+            Ok(())
+        }
+        CreusotAction::Summary { file } => crate::verification::creusot_runner::show_summary(file),
     }
 }
 

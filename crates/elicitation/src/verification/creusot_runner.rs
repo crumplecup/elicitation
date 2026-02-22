@@ -24,7 +24,8 @@ pub struct CreusotModule {
     /// Optional feature requirement (e.g., Some("uuid"), None for core)
     feature: Option<String>,
     /// Whether this is unix-only
-    unix_only: bool,
+    #[getter(skip)]
+    unix_only_flag: bool,
 }
 
 impl CreusotModule {
@@ -33,7 +34,7 @@ impl CreusotModule {
         Self {
             name: name.into(),
             feature: None,
-            unix_only: false,
+            unix_only_flag: false,
         }
     }
 
@@ -42,7 +43,7 @@ impl CreusotModule {
         Self {
             name: name.into(),
             feature: Some(feature.into()),
-            unix_only: false,
+            unix_only_flag: false,
         }
     }
 
@@ -51,8 +52,13 @@ impl CreusotModule {
         Self {
             name: name.into(),
             feature: None,
-            unix_only: true,
+            unix_only_flag: true,
         }
+    }
+
+    /// Check if this module is unix-only.
+    pub fn is_unix_only(&self) -> bool {
+        self.unix_only_flag
     }
 
     /// All available Creusot proof modules.
@@ -92,7 +98,7 @@ impl CreusotModule {
 
     /// Check if this module should be compiled on current platform.
     pub fn is_available(&self) -> bool {
-        if self.unix_only && !cfg!(unix) {
+        if self.is_unix_only() && !cfg!(unix) {
             return false;
         }
         true
@@ -103,7 +109,7 @@ impl std::fmt::Display for CreusotModule {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(feature) = &self.feature {
             write!(f, "{} (feature: {})", self.name, feature)
-        } else if self.unix_only {
+        } else if self.is_unix_only() {
             write!(f, "{} (unix)", self.name)
         } else {
             write!(f, "{}", self.name)
@@ -311,16 +317,16 @@ pub fn run_all_modules(output_csv: &Path, resume: bool) -> Result<CreusotSummary
 }
 
 /// Summary statistics for Creusot module compilation.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Getters)]
 pub struct CreusotSummary {
     /// Total number of modules
-    pub total: usize,
+    total: usize,
     /// Number passed
-    pub passed: usize,
+    passed: usize,
     /// Number failed
-    pub failed: usize,
+    failed: usize,
     /// Number skipped
-    pub skipped: usize,
+    skipped: usize,
 }
 
 impl CreusotSummary {
@@ -375,7 +381,7 @@ pub fn show_summary(csv_path: &Path) -> Result<()> {
 }
 
 /// List all Creusot modules.
-pub fn list_modules() {
+pub fn list_modules() -> Result<()> {
     let modules = CreusotModule::all();
 
     println!("📋 Available Creusot Modules ({} total):", modules.len());
@@ -384,9 +390,9 @@ pub fn list_modules() {
     // Group by category
     let core: Vec<_> = modules
         .iter()
-        .filter(|m| m.feature().is_none() && !m.unix_only())
+        .filter(|m| m.feature().is_none() && !m.is_unix_only())
         .collect();
-    let unix: Vec<_> = modules.iter().filter(|m| m.unix_only()).collect();
+    let unix: Vec<_> = modules.iter().filter(|m| m.is_unix_only()).collect();
     let featured: Vec<_> = modules.iter().filter(|m| m.feature().is_some()).collect();
 
     if !core.is_empty() {
@@ -415,4 +421,6 @@ pub fn list_modules() {
             );
         }
     }
+
+    Ok(())
 }
