@@ -29,11 +29,11 @@ mod ipaddr_bytes;
 mod macaddr;
 mod mechanisms;
 mod networks;
+mod paths;
 mod socketaddr;
 mod strings;
-mod utf8;
-mod paths;
 mod tuples;
+mod utf8;
 
 // Platform-specific modules
 #[cfg(unix)]

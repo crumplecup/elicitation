@@ -55,7 +55,10 @@ impl VerusProof {
             Self::new("external_types", "verify_path_absolute_construction"),
             Self::new("external_types", "verify_path_relative_construction"),
             Self::new("external_types", "verify_pathbuf_construction"),
-            Self::new("external_types", "verify_regex_case_insensitive_construction"),
+            Self::new(
+                "external_types",
+                "verify_regex_case_insensitive_construction",
+            ),
             Self::new("external_types", "verify_regex_construction"),
             Self::new("external_types", "verify_url_construction"),
             Self::new("external_types", "verify_url_http_construction"),
@@ -171,7 +174,7 @@ pub fn run_verus_proof(
 
     // Run Verus on the entire elicitation_verus crate with JSON output
     let crate_path = Path::new("crates/elicitation_verus/src/lib.rs");
-    
+
     let mut cmd = Command::new(verus_path);
     cmd.arg("--crate-type=lib")
         .arg("--output-json")
@@ -255,8 +258,8 @@ fn parse_verus_json_for_proof(output: &str, proof: &VerusProof) -> Result<bool> 
     }
 
     let json_str = json_lines.join("\n");
-    let data: Value = serde_json::from_str(&json_str)
-        .context("Failed to parse Verus JSON output")?;
+    let data: Value =
+        serde_json::from_str(&json_str).context("Failed to parse Verus JSON output")?;
 
     let func_details = data
         .get("func-details")

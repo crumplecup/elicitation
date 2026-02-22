@@ -41,9 +41,7 @@ pub fn verify_vec_non_empty_invalid() -> Result<VecNonEmpty<i32>, elicitation::V
 pub fn verify_vec_all_satisfy_valid() -> VecAllSatisfy<I32Positive> {
     let v1 = I32Positive::new(1).unwrap();
     let v2 = I32Positive::new(2).unwrap();
-    let mut v = Vec::new();
-    v.push(v1);
-    v.push(v2);
+    let v = std::vec![v1, v2];
     VecAllSatisfy::new(v)
 }
 

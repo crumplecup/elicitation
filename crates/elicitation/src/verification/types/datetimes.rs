@@ -65,7 +65,6 @@ impl DateTimeUtcAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -87,7 +86,6 @@ impl DateTimeUtcAfter {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -111,7 +109,6 @@ impl DateTimeUtcAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -133,7 +130,6 @@ impl DateTimeUtcAfter {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -229,7 +225,6 @@ impl DateTimeUtcBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -251,7 +246,6 @@ impl DateTimeUtcBefore {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -275,7 +269,6 @@ impl DateTimeUtcBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -297,7 +290,6 @@ impl DateTimeUtcBefore {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -393,7 +385,6 @@ impl NaiveDateTimeAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -415,7 +406,6 @@ impl NaiveDateTimeAfter {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -439,7 +429,6 @@ impl NaiveDateTimeAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -461,7 +450,6 @@ impl NaiveDateTimeAfter {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -627,7 +615,6 @@ impl TimestampAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -649,7 +636,6 @@ impl TimestampAfter {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -673,7 +659,6 @@ impl TimestampAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -695,7 +680,6 @@ impl TimestampAfter {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -791,7 +775,6 @@ impl TimestampBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -813,7 +796,6 @@ impl TimestampBefore {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -837,7 +819,6 @@ impl TimestampBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -859,7 +840,6 @@ impl TimestampBefore {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1003,7 +983,6 @@ impl OffsetDateTimeAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1025,7 +1004,6 @@ impl OffsetDateTimeAfter {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1049,7 +1027,6 @@ impl OffsetDateTimeAfter {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1071,7 +1048,6 @@ impl OffsetDateTimeAfter {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1173,7 +1149,6 @@ impl OffsetDateTimeBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1195,7 +1170,6 @@ impl OffsetDateTimeBefore {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1219,7 +1193,6 @@ impl OffsetDateTimeBefore {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1241,7 +1214,6 @@ impl OffsetDateTimeBefore {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {

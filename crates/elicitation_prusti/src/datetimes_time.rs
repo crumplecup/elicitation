@@ -15,8 +15,8 @@ use elicitation::{OffsetDateTimeAfter, OffsetDateTimeBefore};
 #[trusted]
 #[ensures(matches!(result, Ok(_)))]
 #[cfg(prusti)]
-pub fn verify_offset_datetime_after_valid()
--> Result<OffsetDateTimeAfter, elicitation::ValidationError> {
+pub fn verify_offset_datetime_after_valid(
+) -> Result<OffsetDateTimeAfter, elicitation::ValidationError> {
     use time::macros::datetime;
     let threshold = datetime!(2020-01-01 0:00 UTC);
     let after = datetime!(2021-01-01 0:00 UTC);
@@ -27,8 +27,8 @@ pub fn verify_offset_datetime_after_valid()
 #[trusted]
 #[ensures(matches!(result, Err(_)))]
 #[cfg(prusti)]
-pub fn verify_offset_datetime_after_invalid()
--> Result<OffsetDateTimeAfter, elicitation::ValidationError> {
+pub fn verify_offset_datetime_after_invalid(
+) -> Result<OffsetDateTimeAfter, elicitation::ValidationError> {
     use time::macros::datetime;
     let threshold = datetime!(2020-01-01 0:00 UTC);
     let before = datetime!(2019-01-01 0:00 UTC);
@@ -39,8 +39,8 @@ pub fn verify_offset_datetime_after_invalid()
 #[trusted]
 #[ensures(matches!(result, Ok(_)))]
 #[cfg(prusti)]
-pub fn verify_offset_datetime_before_valid()
--> Result<OffsetDateTimeBefore, elicitation::ValidationError> {
+pub fn verify_offset_datetime_before_valid(
+) -> Result<OffsetDateTimeBefore, elicitation::ValidationError> {
     use time::macros::datetime;
     let threshold = datetime!(2020-01-01 0:00 UTC);
     let before = datetime!(2019-01-01 0:00 UTC);
@@ -51,8 +51,8 @@ pub fn verify_offset_datetime_before_valid()
 #[trusted]
 #[ensures(matches!(result, Err(_)))]
 #[cfg(prusti)]
-pub fn verify_offset_datetime_before_invalid()
--> Result<OffsetDateTimeBefore, elicitation::ValidationError> {
+pub fn verify_offset_datetime_before_invalid(
+) -> Result<OffsetDateTimeBefore, elicitation::ValidationError> {
     use time::macros::datetime;
     let threshold = datetime!(2020-01-01 0:00 UTC);
     let after = datetime!(2021-01-01 0:00 UTC);

@@ -478,7 +478,6 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -502,7 +501,6 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -525,7 +523,6 @@ impl<K, V> HashMapNonEmpty<K, V> {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -556,7 +553,6 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -573,7 +569,6 @@ impl<K, V> HashMapNonEmpty<K, V> {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -654,7 +649,6 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -677,7 +671,6 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -699,7 +692,6 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -729,7 +721,6 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -745,7 +736,6 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -830,7 +820,6 @@ impl<T> HashSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -853,7 +842,6 @@ impl<T> HashSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -875,7 +863,6 @@ impl<T> HashSetNonEmpty<T> {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -905,7 +892,6 @@ impl<T> HashSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -921,7 +907,6 @@ impl<T> HashSetNonEmpty<T> {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1000,7 +985,6 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1023,7 +1007,6 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1045,7 +1028,6 @@ impl<T> BTreeSetNonEmpty<T> {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1075,7 +1057,6 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1091,7 +1072,6 @@ impl<T> BTreeSetNonEmpty<T> {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1174,7 +1154,6 @@ impl<T> VecDequeNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1197,7 +1176,6 @@ impl<T> VecDequeNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1219,7 +1197,6 @@ impl<T> VecDequeNonEmpty<T> {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1249,7 +1226,6 @@ impl<T> VecDequeNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1265,7 +1241,6 @@ impl<T> VecDequeNonEmpty<T> {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1344,7 +1319,6 @@ impl<T> LinkedListNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1367,7 +1341,6 @@ impl<T> LinkedListNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1389,7 +1362,6 @@ impl<T> LinkedListNonEmpty<T> {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1419,7 +1391,6 @@ impl<T> LinkedListNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -1435,7 +1406,6 @@ impl<T> LinkedListNonEmpty<T> {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {

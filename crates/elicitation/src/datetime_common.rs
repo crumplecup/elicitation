@@ -213,7 +213,7 @@ impl Prompt for DateTimeComponents {
 }
 
 impl Elicitation for DateTimeComponents {
-    type Style = ();  // No styling - components use simple prompts
+    type Style = (); // No styling - components use simple prompts
 
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         Self::elicit(communicator).await

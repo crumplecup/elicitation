@@ -46,7 +46,6 @@ impl CharAlphabetic {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -132,7 +131,6 @@ impl CharNumeric {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {

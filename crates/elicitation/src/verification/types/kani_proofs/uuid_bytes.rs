@@ -327,17 +327,17 @@ fn verify_uuid_generator_max() {
 fn verify_uuid_generator_v4_format() {
     // Create symbolic UUID bytes
     let mut bytes: [u8; 16] = kani::any();
-    
+
     // Assume V4 format: version 4 in bits 12-15 of byte 6
     bytes[6] = (bytes[6] & 0x0F) | 0x40;
-    
+
     // Assume RFC 4122 variant (10xx) in bits 6-7 of byte 8
     bytes[8] = (bytes[8] & 0x3F) | 0x80;
-    
+
     // Verify format checking logic
     let version = (bytes[6] & 0xF0) >> 4;
     assert_eq!(version, 4, "Version bits identify V4");
-    
+
     let variant_bits = bytes[8] & 0xC0;
     assert_eq!(variant_bits, 0x80, "Variant bits identify RFC 4122");
 }

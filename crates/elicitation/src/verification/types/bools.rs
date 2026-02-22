@@ -74,7 +74,6 @@ impl Elicitation for BoolTrue {
         // Verifies: new() ensures true values accepted, false values rejected
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -148,7 +147,6 @@ impl Elicitation for BoolFalse {
         // Verus proof exists in elicitation_verus::bools::BoolFalse
         // Verifies: new() ensures false values accepted, true values rejected
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {

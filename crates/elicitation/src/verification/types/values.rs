@@ -59,7 +59,6 @@ impl ValueObject {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -82,7 +81,6 @@ impl ValueObject {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -104,7 +102,6 @@ impl ValueObject {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -195,7 +192,6 @@ impl ValueArray {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -218,7 +214,6 @@ impl ValueArray {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -240,7 +235,6 @@ impl ValueArray {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -325,7 +319,6 @@ impl ValueNonNull {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -348,7 +341,6 @@ impl ValueNonNull {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -370,7 +362,6 @@ impl ValueNonNull {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {

@@ -225,7 +225,6 @@ pub fn is_valid_utf8(bytes: &[u8]) -> bool {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate

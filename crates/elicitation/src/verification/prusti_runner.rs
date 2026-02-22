@@ -6,7 +6,7 @@
 //! Unlike Kani (which runs individual harnesses), Prusti verifies all functions
 //! with contracts during compilation. Therefore, we track verification per module/file.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::Utc;
 use csv::{Reader, Writer};
 use derive_getters::Getters;
@@ -177,19 +177,19 @@ fn show_branch_guidance(output: &Path) -> Result<()> {
     println!();
     println!("See PRUSTI_BRANCH.md for full documentation.");
     println!();
-    
+
     // Write CSV indicating verification requires branch switch
     let mut writer = Writer::from_path(output).context("Failed to create CSV file")?;
-    
+
     writer.write_record(&[
         "module",
-        "proof_count", 
+        "proof_count",
         "status",
         "duration_secs",
         "timestamp",
         "error_message",
     ])?;
-    
+
     let timestamp = Utc::now().to_rfc3339();
     for module in &modules {
         writer.write_record(&[
@@ -201,13 +201,13 @@ fn show_branch_guidance(output: &Path) -> Result<()> {
             "Use prusti-verification branch - see PRUSTI_BRANCH.md",
         ])?;
     }
-    
+
     writer.flush()?;
-    
+
     println!("📊 Status written to: {}", output.display());
     println!("Total modules: {}", modules.len());
     println!("Total proofs: {}", total_proofs);
-    
+
     Ok(())
 }
 
@@ -215,7 +215,7 @@ fn show_branch_guidance(output: &Path) -> Result<()> {
 fn run_verification_impl(output: &Path, timeout: u64) -> Result<()> {
     use std::process::{Command, Stdio};
     use std::time::Instant;
-    
+
     let mut writer = Writer::from_path(output).context("Failed to create CSV file")?;
     let modules = all_modules();
     let total_proofs: usize = modules.iter().map(|m| m.proof_count()).sum();
@@ -234,7 +234,12 @@ fn run_verification_impl(output: &Path, timeout: u64) -> Result<()> {
     let timestamp = Utc::now().to_rfc3339();
 
     let output_result = Command::new("cargo")
-        .args(["prusti", "--package", "elicitation_prusti", "--all-features"])
+        .args([
+            "prusti",
+            "--package",
+            "elicitation_prusti",
+            "--all-features",
+        ])
         .env("PRUSTI_CHECK_PANICS", "true")
         .env("PRUSTI_CHECK_OVERFLOWS", "true")
         .stdout(Stdio::piped())
@@ -274,7 +279,9 @@ fn run_verification_impl(output: &Path, timeout: u64) -> Result<()> {
             error_message: error_message.clone(),
         };
 
-        writer.serialize(&result).context("Failed to write CSV row")?;
+        writer
+            .serialize(&result)
+            .context("Failed to write CSV row")?;
         summary.update(&result);
     }
 

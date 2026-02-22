@@ -250,7 +250,6 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -280,7 +279,6 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -307,7 +305,6 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -330,7 +327,6 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
-
     #[cfg(prusti)]
     fn prusti_proof() {
         // Prusti proof exists in elicitation_prusti crate
@@ -352,7 +348,6 @@ mod tests {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -384,7 +379,6 @@ mod tests {
     fn verus_proof() {
         // Verus proof exists in elicitation_verus crate
     }
-
 
     #[cfg(prusti)]
     fn prusti_proof() {
