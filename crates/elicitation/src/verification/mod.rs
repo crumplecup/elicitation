@@ -30,7 +30,7 @@
 //!
 //! - `verification` - Core trait only (Kani contracts by default)
 //! - `verify-kani` - Kani model checker support (default for verification)
-//! - `verify-prusti` - Prusti separation logic
+//! - `verify-creusot` - Creusot deductive verifier  
 //! - `verify-verus` - Verus SMT-based verifier
 //!
 //! # Contract Swapping
@@ -42,9 +42,6 @@
 //! ```bash
 //! # Use Kani (default)
 //! cargo build --features verification
-//!
-//! # Use Prusti
-//! cargo build --features verify-prusti
 //!
 //! # Use Verus
 //! cargo build --features verify-verus
@@ -208,7 +205,6 @@ use std::fmt::Debug;
 /// When verification features are enabled, these constants resolve to the appropriate
 /// verifier-specific contract:
 /// - `verify-kani` → Kani contracts (default)
-/// - `verify-prusti` → Prusti contracts
 /// - `verify-verus` → Verus contracts
 ///
 /// Usage:
@@ -221,55 +217,31 @@ use std::fmt::Debug;
 /// ```
 // String contracts
 /// Default String contract (Kani unless overridden by feature).
-#[cfg(all(
-    feature = "verification",
-    not(any(feature = "verify-prusti", feature = "verify-verus"))
-))]
+#[cfg(all(feature = "verification", not(feature = "verify-verus")))]
 pub const DEFAULT_STRING_CONTRACT: contracts::StringNonEmpty = contracts::StringNonEmpty;
 
-/// Default String contract (Prusti - priority 1).
-#[cfg(all(feature = "verify-prusti", not(feature = "verify-verus")))]
-pub const DEFAULT_STRING_CONTRACT: contracts::prusti::PrustiStringNonEmpty =
-    contracts::prusti::PrustiStringNonEmpty;
-
-/// Default String contract (Verus - priority 2).
-#[cfg(all(feature = "verify-verus", not(feature = "verify-prusti")))]
+/// Default String contract (Verus).
+#[cfg(feature = "verify-verus")]
 pub const DEFAULT_STRING_CONTRACT: contracts::verus::VerusStringNonEmpty =
     contracts::verus::VerusStringNonEmpty;
 
 // i32 contracts
 /// Default i32 contract (Kani unless overridden by feature).
-#[cfg(all(
-    feature = "verification",
-    not(any(feature = "verify-prusti", feature = "verify-verus"))
-))]
+#[cfg(all(feature = "verification", not(feature = "verify-verus")))]
 pub const DEFAULT_I32_CONTRACT: contracts::I32Positive = contracts::I32Positive;
 
-/// Default i32 contract (Prusti - priority 1).
-#[cfg(all(feature = "verify-prusti", not(feature = "verify-verus")))]
-pub const DEFAULT_I32_CONTRACT: contracts::prusti::PrustiI32Positive =
-    contracts::prusti::PrustiI32Positive;
-
-/// Default i32 contract (Verus - priority 2).
-#[cfg(all(feature = "verify-verus", not(feature = "verify-prusti")))]
+/// Default i32 contract (Verus).
+#[cfg(feature = "verify-verus")]
 pub const DEFAULT_I32_CONTRACT: contracts::verus::VerusI32Positive =
     contracts::verus::VerusI32Positive;
 
 // bool contracts
 /// Default bool contract (Kani unless overridden by feature).
-#[cfg(all(
-    feature = "verification",
-    not(any(feature = "verify-prusti", feature = "verify-verus"))
-))]
+#[cfg(all(feature = "verification", not(feature = "verify-verus")))]
 pub const DEFAULT_BOOL_CONTRACT: contracts::BoolValid = contracts::BoolValid;
 
-/// Default bool contract (Prusti - priority 1).
-#[cfg(all(feature = "verify-prusti", not(feature = "verify-verus")))]
-pub const DEFAULT_BOOL_CONTRACT: contracts::prusti::PrustiBoolValid =
-    contracts::prusti::PrustiBoolValid;
-
 /// Default bool contract (Verus).
-#[cfg(all(feature = "verify-verus", not(feature = "verify-prusti")))]
+#[cfg(feature = "verify-verus")]
 pub const DEFAULT_BOOL_CONTRACT: contracts::verus::VerusBoolValid =
     contracts::verus::VerusBoolValid;
 
@@ -599,10 +571,6 @@ where
     /// Kani model checker (bounded verification)
     Kani(Box<dyn DynContract<I, O>>),
 
-    /// Prusti separation logic verifier
-    #[cfg(feature = "verify-prusti")]
-    Prusti(Box<dyn DynContract<I, O>>),
-
     /// Verus SMT-based verifier
     #[cfg(feature = "verify-verus")]
     Verus(Box<dyn DynContract<I, O>>),
@@ -618,9 +586,6 @@ where
         match self {
             Self::Kani(contract) => contract.check_requires(input),
 
-            #[cfg(feature = "verify-prusti")]
-            Self::Prusti(contract) => contract.check_requires(input),
-
             #[cfg(feature = "verify-verus")]
             Self::Verus(contract) => contract.check_requires(input),
         }
@@ -631,9 +596,6 @@ where
         match self {
             Self::Kani(contract) => contract.check_ensures(input, output),
 
-            #[cfg(feature = "verify-prusti")]
-            Self::Prusti(contract) => contract.check_ensures(input, output),
-
             #[cfg(feature = "verify-verus")]
             Self::Verus(contract) => contract.check_ensures(input, output),
         }
@@ -643,9 +605,6 @@ where
     pub fn check_invariant(&self) -> bool {
         match self {
             Self::Kani(contract) => contract.check_invariant(),
-
-            #[cfg(feature = "verify-prusti")]
-            Self::Prusti(contract) => contract.check_invariant(),
 
             #[cfg(feature = "verify-verus")]
             Self::Verus(contract) => contract.check_invariant(),
@@ -861,9 +820,9 @@ pub mod kani;
 #[cfg(feature = "cli")]
 pub mod creusot_runner;
 #[cfg(feature = "cli")]
-pub mod prusti_runner;
-#[cfg(feature = "cli")]
 pub mod verus_runner;
+
+// Prusti runner lives on prusti-verification branch (frozen until tooling updates)
 
 // TODO: Phase 2 - These will be top-level modules when we add Tool trait impls
 // For now, verifier-specific contracts are in contracts/ submodules

@@ -26,7 +26,6 @@ pub enum VerifiedStatus {
 // Note: The actual verification happens when running the verifier tools:
 // - cargo kani --features verify-kani (works now, Kani installed)
 // - cargo creusot --features verify-creusot (requires Creusot toolchain)
-// - cargo prusti --features verify-prusti (requires Prusti toolchain)
 // - verus --features verify-verus src/lib.rs (requires Verus toolchain)
 
 #[cfg(test)]

@@ -28,17 +28,6 @@ fn main() {
         kani_backend.check_precondition(&value)
     );
 
-    #[cfg(feature = "verify-prusti")]
-    {
-        use elicitation::verification::contracts::prusti::PrustiI32Positive;
-        let prusti_backend =
-            VerifierBackend::Prusti(Box::new(PrustiI32Positive) as Box<dyn DynContract<i32, i32>>);
-        println!(
-            "   Prusti backend precondition: {}",
-            prusti_backend.check_precondition(&value)
-        );
-    }
-
     #[cfg(feature = "verify-verus")]
     {
         use elicitation::verification::contracts::verus::VerusI32Positive;
@@ -65,12 +54,12 @@ fn main() {
     );
 
     println!("   Step 3: Switch to stronger verifier for production");
-    #[cfg(feature = "verify-prusti")]
+    #[cfg(feature = "verify-verus")]
     {
-        use elicitation::verification::contracts::prusti::PrustiStringNonEmpty;
+        use elicitation::verification::contracts::verus::VerusStringNonEmpty;
         println!(
-            "      Prusti contract: {}",
-            PrustiStringNonEmpty::requires(&hello)
+            "      Verus contract: {}",
+            VerusStringNonEmpty::requires(&hello)
         );
     }
     println!();

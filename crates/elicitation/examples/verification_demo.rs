@@ -176,18 +176,6 @@ fn main() {
         Err(e) => println!("  Verification failed: {}", e),
     }
 
-    // Prusti backend
-    #[cfg(feature = "verify-prusti")]
-    {
-        use elicitation::verification::contracts::prusti::PrustiStringNonEmpty;
-        let prusti_verifier = VerifierBackend::Prusti(Box::new(PrustiStringNonEmpty));
-        println!("\nPrusti Verifier (StringNonEmpty):");
-        println!(
-            "  Precondition(\"hello\"):  {}",
-            prusti_verifier.check_precondition(&hello)
-        );
-    }
-
     // Verus backend
     #[cfg(feature = "verify-verus")]
     {
@@ -200,10 +188,10 @@ fn main() {
         );
     }
 
-    #[cfg(not(any(feature = "verify-prusti", feature = "verify-verus")))]
+    #[cfg(not(feature = "verify-verus"))]
     {
-        println!("\nNote: Prusti and Verus verifiers are feature-gated.");
-        println!("      Run with --features verify-prusti|verify-verus to test them.");
+        println!("\nNote: Verus verifier is feature-gated.");
+        println!("      Run with --features verify-verus to test it.");
     }
 
     // ========================================================================
@@ -215,10 +203,8 @@ fn main() {
         println!("-------------------------------------");
 
         println!("\nDefault contracts are selected at compile-time based on features:");
-        #[cfg(not(any(feature = "verify-prusti", feature = "verify-verus")))]
+        #[cfg(not(feature = "verify-verus"))]
         println!("  Active verifier: Kani (default)");
-        #[cfg(feature = "verify-prusti")]
-        println!("  Active verifier: Prusti");
         #[cfg(feature = "verify-verus")]
         println!("  Active verifier: Verus");
 

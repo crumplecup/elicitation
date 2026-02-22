@@ -26,13 +26,6 @@ pub enum Commands {
         action: VerifyAction,
     },
 
-    /// Run and manage Prusti verification proofs
-    Prusti {
-        /// Action to perform
-        #[command(subcommand)]
-        action: PrustiAction,
-    },
-
     /// Run and manage Verus verification proofs
     Verus {
         /// Action to perform
@@ -80,38 +73,6 @@ pub enum VerifyAction {
     Failed {
         /// CSV file to analyze
         #[arg(default_value = "kani_verification_results.csv")]
-        file: PathBuf,
-    },
-}
-
-/// Prusti verification actions
-#[derive(Debug, Clone, Subcommand)]
-pub enum PrustiAction {
-    /// List all proof modules
-    List,
-
-    /// Run Prusti verification with CSV tracking
-    Run {
-        /// CSV output file
-        #[arg(short, long, default_value = "prusti_verification_results.csv")]
-        output: PathBuf,
-
-        /// Timeout in seconds
-        #[arg(short, long, default_value_t = 600)]
-        timeout: u64,
-    },
-
-    /// Show summary statistics from CSV
-    Summary {
-        /// CSV file to analyze
-        #[arg(short, long, default_value = "prusti_verification_results.csv")]
-        file: PathBuf,
-    },
-
-    /// Show failed modules from CSV
-    Failed {
-        /// CSV file to analyze
-        #[arg(short, long, default_value = "prusti_verification_results.csv")]
         file: PathBuf,
     },
 }
@@ -188,7 +149,6 @@ pub fn execute(cli: Cli) -> anyhow::Result<()> {
 
     match cli.command() {
         Commands::Verify { action } => crate::verification::runner::handle(action),
-        Commands::Prusti { action } => handle_prusti(action),
         Commands::Verus { action } => handle_verus(action),
         Commands::Creusot { action } => handle_creusot(action),
     }
@@ -209,21 +169,6 @@ fn handle_verus(action: &VerusAction) -> anyhow::Result<()> {
         } => run_verus_proofs(output, *timeout, *resume, verus_path.as_deref()),
         VerusAction::Summary { file } => show_verus_summary(file),
         VerusAction::Failed { file } => show_verus_failed(file),
-    }
-}
-
-/// Handle Prusti verification commands.
-#[tracing::instrument(skip(action))]
-fn handle_prusti(action: &PrustiAction) -> anyhow::Result<()> {
-    tracing::debug!(action = ?action, "Handling Prusti command");
-
-    match action {
-        PrustiAction::List => crate::verification::prusti_runner::list_modules(),
-        PrustiAction::Run { output, timeout } => {
-            crate::verification::prusti_runner::run_all(output, *timeout)
-        }
-        PrustiAction::Summary { file } => crate::verification::prusti_runner::show_summary(file),
-        PrustiAction::Failed { file } => crate::verification::prusti_runner::show_failed(file),
     }
 }
 

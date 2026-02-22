@@ -54,7 +54,7 @@ url = { workspace = true, optional = true }
 regex = { workspace = true, optional = true }
 
 # Verification libraries (optional)
-prusti-contracts = { workspace = true, optional = true }
+# prusti-contracts lives on prusti-verification branch
 
 # Re-export derive macro
 elicitation_derive = { workspace = true }
@@ -94,9 +94,9 @@ regex = ["dep:regex"]
 # Formal verification support
 verification = [] # Core Contract trait only
 verify-kani = ["verification"] # Kani model checker
-verify-prusti = ["verification", "prusti-contracts"] # Prusti separation logic
-verify-verus = ["verification"] # Verus SMT verifier (future)
-verify-all = ["verify-kani", "verify-prusti", "verify-verus"]
+# verify-prusti lives on prusti-verification branch (frozen until tooling updates)
+verify-verus = ["verification"] # Verus SMT verifier
+verify-all = ["verify-kani", "verify-verus"]
 kani-verifier = []
 
 # CLI and verification runner
