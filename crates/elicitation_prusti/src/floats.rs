@@ -1,6 +1,7 @@
 //! Prusti proofs for float contract types.
 
-use crate::*;
+// Proof modules import types directly from elicitation
+// use crate::*;
 
 // Float Contract Proofs
 // ============================================================================

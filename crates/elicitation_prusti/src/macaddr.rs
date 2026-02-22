@@ -8,6 +8,7 @@
 //!
 //! This is compositional verification: bit_logic_correct → wrapper_correct.
 
+#[cfg(prusti)]
 use elicitation::verification::types::{
     is_multicast, is_unicast, is_universal, MacAddr, ValidationError,
 };

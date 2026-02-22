@@ -1,6 +1,7 @@
 //! Prusti proofs for mechanism contracts.
 
-use crate::*;
+// Proof modules import types directly from elicitation
+// use crate::*;
 
 // Mechanism Contract Proofs
 // ============================================================================

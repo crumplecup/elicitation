@@ -4,6 +4,9 @@ version.workspace = true
 edition = "2021"  # Prusti requires edition 2021 (uses nightly-2023-09-15)
 publish = false
 
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(prusti)'] }
+
 [dependencies]
 prusti-contracts = { workspace = true }
 

@@ -1,6 +1,7 @@
 //! Prusti proofs for string contract types.
 
-use crate::*;
+// Proof modules import types directly from elicitation
+// use crate::*;
 
 // String Contract Proofs
 // ============================================================================

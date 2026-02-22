@@ -1,6 +1,7 @@
 //! Prusti proofs for collection contract types.
 
-use crate::*;
+// Proof modules import types directly from elicitation
+// use crate::*;
 
 // Collection Contract Proofs
 // ============================================================================

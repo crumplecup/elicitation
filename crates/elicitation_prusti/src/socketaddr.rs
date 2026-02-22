@@ -7,6 +7,7 @@
 //!
 //! This is compositional verification: stdlib_ip_correct → socket_wrapper_correct.
 
+#[cfg(prusti)]
 use elicitation::verification::types::{
     is_dynamic_port, is_nonzero_port, is_privileged_port, is_registered_port, is_well_known_port,
     Ipv4Bytes, Ipv6Bytes, SocketAddrV4Bytes, SocketAddrV6Bytes, ValidationError,

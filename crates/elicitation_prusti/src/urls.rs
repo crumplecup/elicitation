@@ -1,5 +1,6 @@
 //! Prusti proofs for URL contract types (from url crate).
 
+#[cfg(prusti)]
 use elicitation::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost, ValidationError};
 
 // URL Contract Proofs
