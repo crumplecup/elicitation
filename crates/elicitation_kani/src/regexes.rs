@@ -26,7 +26,7 @@ fn verify_regex_valid_wrapper() {
         }
         Err(e) => {
             // If Err, correct error variant returned
-            assert!(matches!(e, crate::ValidationError::RegexInvalid));
+            assert!(matches!(e, elicitation::ValidationError::RegexInvalid));
         }
     }
 }
@@ -42,7 +42,7 @@ fn verify_regex_set_valid_wrapper() {
             // Wrapper constructed successfully
         }
         Err(e) => {
-            assert!(matches!(e, crate::ValidationError::RegexInvalid));
+            assert!(matches!(e, elicitation::ValidationError::RegexInvalid));
         }
     }
 }
@@ -58,7 +58,7 @@ fn verify_regex_case_insensitive_wrapper() {
             // Case-insensitive wrapper constructed
         }
         Err(e) => {
-            assert!(matches!(e, crate::ValidationError::RegexInvalid));
+            assert!(matches!(e, elicitation::ValidationError::RegexInvalid));
         }
     }
 }
@@ -74,7 +74,7 @@ fn verify_regex_multiline_wrapper() {
             // Multiline wrapper constructed
         }
         Err(e) => {
-            assert!(matches!(e, crate::ValidationError::RegexInvalid));
+            assert!(matches!(e, elicitation::ValidationError::RegexInvalid));
         }
     }
 }
@@ -92,8 +92,8 @@ fn verify_regex_set_non_empty_wrapper() {
         Err(e) => {
             // Could fail on regex invalid OR empty collection
             assert!(
-                matches!(e, crate::ValidationError::RegexInvalid)
-                    || matches!(e, crate::ValidationError::EmptyCollection)
+                matches!(e, elicitation::ValidationError::RegexInvalid)
+                    || matches!(e, elicitation::ValidationError::EmptyCollection)
             );
         }
     }
@@ -102,6 +102,6 @@ fn verify_regex_set_non_empty_wrapper() {
     let empty_result = RegexSetNonEmpty::new::<&[&str], _>(&[]);
     assert!(empty_result.is_err(), "Empty set must be rejected");
     if let Err(e) = empty_result {
-        assert!(matches!(e, crate::ValidationError::EmptyCollection));
+        assert!(matches!(e, elicitation::ValidationError::EmptyCollection));
     }
 }

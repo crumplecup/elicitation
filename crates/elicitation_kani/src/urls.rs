@@ -25,8 +25,8 @@ fn verify_url_https_wrapper() {
         Err(e) => {
             // Could be invalid URL or not HTTPS
             assert!(
-                matches!(e, crate::ValidationError::UrlInvalid)
-                    || matches!(e, crate::ValidationError::UrlNotHttps)
+                matches!(e, elicitation::ValidationError::UrlInvalid)
+                    || matches!(e, elicitation::ValidationError::UrlNotHttps)
             );
         }
     }
@@ -43,7 +43,7 @@ fn verify_url_valid_wrapper() {
             // Valid URL wrapper constructed
         }
         Err(e) => {
-            assert!(matches!(e, crate::ValidationError::UrlInvalid));
+            assert!(matches!(e, elicitation::ValidationError::UrlInvalid));
         }
     }
 }
@@ -60,8 +60,8 @@ fn verify_url_with_host_wrapper() {
         }
         Err(e) => {
             assert!(
-                matches!(e, crate::ValidationError::UrlInvalid)
-                    || matches!(e, crate::ValidationError::UrlNoHost)
+                matches!(e, elicitation::ValidationError::UrlInvalid)
+                    || matches!(e, elicitation::ValidationError::UrlNoHost)
             );
         }
     }
@@ -79,8 +79,8 @@ fn verify_url_can_be_base_wrapper() {
         }
         Err(e) => {
             assert!(
-                matches!(e, crate::ValidationError::UrlInvalid)
-                    || matches!(e, crate::ValidationError::UrlCannotBeBase)
+                matches!(e, elicitation::ValidationError::UrlInvalid)
+                    || matches!(e, elicitation::ValidationError::UrlCannotBeBase)
             );
         }
     }
