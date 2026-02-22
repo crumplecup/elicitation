@@ -205,29 +205,3 @@ impl DateTimeComponents {
         })
     }
 }
-
-impl Elicitation for DateTimeComponents {
-    fn elicit() -> Self {
-        Self::default()
-    }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        // Witness method - proofs in kani_proofs module
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Witness method - proofs in elicitation_verus
-    }
-
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Witness method - proofs in elicitation_creusot
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Witness method - proofs in elicitation_prusti
-    }
-}
