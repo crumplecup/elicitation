@@ -6,6 +6,8 @@ This document describes the Creusot proof infrastructure for the elicitation pro
 
 The Creusot verification system provides:
 - **456 trusted proofs** across 26 modules covering all user-derivable contract types AND internal trenchcoat wrappers
+- **Module-level tracking** - CLI runner tracks compilation status for each of 26 modules
+- **CSV output** - Verification results with timestamps and timing data
 - **Zero verification time** - all proofs compile instantly (marked `#[trusted]`)
 - **Cloud of assumptions** - trust stdlib, verify wrapper structure
 - **Compositional verification** - user types inherit proofs automatically through all layers
@@ -130,6 +132,36 @@ pub fn verify_typename_condition(...) -> Result<ContractType, ValidationError> {
 
 ## Quick Start
 
+### List All Modules
+
+```bash
+# List all 26 Creusot modules
+just verify-creusot-list
+
+# Or directly:
+cargo run -p elicitation --features cli --bin elicitation -- creusot list
+```
+
+### Run All Module Checks
+
+```bash
+# Run verification on all modules with CSV tracking
+just verify-creusot-tracked
+
+# Or with custom CSV file:
+just verify-creusot-tracked creusot_results.csv
+```
+
+### View Summary Statistics
+
+```bash
+# Show summary from CSV
+just verify-creusot-summary
+
+# Or with custom CSV file:
+just verify-creusot-summary creusot_results.csv
+```
+
 ### Check Core Proofs Compile
 
 ```bash
@@ -146,13 +178,6 @@ cargo check -p elicitation_creusot
 cargo check -p elicitation_creusot --all-features
 
 # Should complete instantly with zero warnings
-```
-
-### Verify Compositional Integration
-
-```bash
-# Check example showing user types inherit verification
-cargo check --example creusot_compositional_verification
 ```
 
 ## Proof Function Pattern
