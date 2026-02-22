@@ -478,11 +478,6 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -507,11 +502,6 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -536,11 +526,6 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -571,11 +556,6 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -594,11 +574,6 @@ impl<K, V> HashMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -679,11 +654,6 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -707,11 +677,6 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -735,11 +700,6 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -769,11 +729,6 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -791,11 +746,6 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -880,11 +830,6 @@ impl<T> HashSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -908,11 +853,6 @@ impl<T> HashSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -936,11 +876,6 @@ impl<T> HashSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -970,11 +905,6 @@ impl<T> HashSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -992,11 +922,6 @@ impl<T> HashSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1075,11 +1000,6 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1103,11 +1023,6 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1131,11 +1046,6 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1165,11 +1075,6 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1187,11 +1092,6 @@ impl<T> BTreeSetNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1274,11 +1174,6 @@ impl<T> VecDequeNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1302,11 +1197,6 @@ impl<T> VecDequeNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1330,11 +1220,6 @@ impl<T> VecDequeNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1364,11 +1249,6 @@ impl<T> VecDequeNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1386,11 +1266,6 @@ impl<T> VecDequeNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1469,11 +1344,6 @@ impl<T> LinkedListNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1497,11 +1367,6 @@ impl<T> LinkedListNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1525,11 +1390,6 @@ impl<T> LinkedListNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1559,11 +1419,6 @@ impl<T> LinkedListNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -1581,11 +1436,6 @@ impl<T> LinkedListNonEmpty<T> {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {

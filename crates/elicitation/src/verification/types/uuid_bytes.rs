@@ -250,11 +250,6 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -285,11 +280,6 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -317,11 +307,6 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -345,11 +330,6 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -373,11 +353,6 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
@@ -410,11 +385,6 @@ mod tests {
         // Verus proof exists in elicitation_verus crate
     }
 
-    #[cfg(creusot)]
-    fn creusot_proof() {
-        // Creusot proofs exist in elicitation_creusot crate
-        // Verifies: wrapper structure with cloud of assumptions
-    }
 
     #[cfg(prusti)]
     fn prusti_proof() {
