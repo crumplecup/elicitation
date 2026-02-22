@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[cfg(feature = "uuid")]
-use crate::{UuidNonNil, UuidV4};
+use elicitation::{UuidNonNil, UuidV4};
 
 // ============================================================================
 // Network Proofs
@@ -122,7 +122,7 @@ fn verify_pathbuf_contracts() {
 
     // This proof just verifies the types exist and have the expected API
     // without calling filesystem operations
-    use crate::{PathBufExists, PathBufIsDir, PathBufIsFile, PathBufReadable};
+    use elicitation::{PathBufExists, PathBufIsDir, PathBufIsFile, PathBufReadable};
     use std::path::PathBuf;
 
     let _path = PathBuf::from("/test");

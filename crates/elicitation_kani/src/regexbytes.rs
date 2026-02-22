@@ -4,7 +4,7 @@
 
 #![cfg(kani)]
 
-use crate::verification::types::{
+use elicitation::verification::types::{
     BalancedDelimiters, RegexBytes, ValidCharClass, ValidEscapes, ValidQuantifiers,
 };
 

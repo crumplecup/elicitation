@@ -93,11 +93,9 @@ regex = ["dep:regex"]
 
 # Formal verification support
 verification = [] # Core Contract trait only
-verify-kani = ["verification"] # Kani model checker
-# verify-prusti lives on prusti-verification branch (frozen until tooling updates)
+# verify-kani lives in elicitation_kani crate (dedicated)
 verify-verus = ["verification"] # Verus SMT verifier
-verify-all = ["verify-kani", "verify-verus"]
-kani-verifier = []
+verify-all = ["verify-verus"]
 
 # CLI and verification runner
 cli = ["clap", "csv", "chrono", "shellexpand"]
@@ -106,7 +104,7 @@ cli = ["clap", "csv", "chrono", "shellexpand"]
 dev = ["full", "cli"]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(prusti)', 'cfg(creusot)', 'cfg(verus)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(prusti)', 'cfg(creusot)', 'cfg(verus)'] }
 
 [[bin]]
 name = "elicitation"

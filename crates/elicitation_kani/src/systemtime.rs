@@ -1,6 +1,6 @@
 //! Kani proofs for SystemTime and SystemTimeGenerator.
 
-use crate::{Generator, SystemTimeGenerationMode, SystemTimeGenerator};
+use elicitation::{Generator, SystemTimeGenerationMode, SystemTimeGenerator};
 use std::time::{Duration, SystemTime};
 
 // SystemTime Generator Proofs

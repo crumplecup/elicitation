@@ -5,7 +5,7 @@
 
 #![cfg(kani)]
 
-use crate::verification::types::{
+use elicitation::verification::types::{
     UuidBytes, UuidV4Bytes, UuidV7Bytes, has_valid_variant, has_version, is_valid_v4, is_valid_v7,
 };
 
@@ -284,7 +284,7 @@ fn verify_v7_bytes_roundtrip() {
 // UUID Generator Proofs
 // ============================================================================
 
-use crate::{Generator, UuidGenerationMode, UuidGenerator};
+use elicitation::{Generator, UuidGenerationMode, UuidGenerator};
 use uuid::Uuid;
 
 /// Verify Nil mode produces the nil UUID.

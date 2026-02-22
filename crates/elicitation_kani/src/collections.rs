@@ -2,7 +2,7 @@
 //!
 //! Includes Vec, HashMap, HashSet, BTreeMap, BTreeSet, LinkedList, Arc, Box, Array.
 
-use crate::*;
+use elicitation::*;
 
 // ============================================================================
 // Phase 4: Collection Type Proofs

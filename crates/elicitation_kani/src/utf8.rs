@@ -2,7 +2,7 @@
 
 #[cfg(kani)]
 mod kani_proofs {
-    use crate::verification::types::{Utf8Bytes, is_valid_utf8};
+    use elicitation::verification::types::{Utf8Bytes, is_valid_utf8};
 
     /// Verify: Utf8Bytes wrapper handles ASCII bytes
     /// Tests wrapper accepts bytes (symbolic validation handles correctness)

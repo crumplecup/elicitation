@@ -6,8 +6,8 @@
 #![cfg(kani)]
 #![cfg(feature = "time")]
 
-use crate::{Generator, InstantGenerationMode, InstantGenerator};
-use crate::{OffsetDateTimeGenerationMode, OffsetDateTimeGenerator};
+use elicitation::{Generator, InstantGenerationMode, InstantGenerator};
+use elicitation::{OffsetDateTimeGenerationMode, OffsetDateTimeGenerator};
 use std::time::{Duration, Instant};
 use time::OffsetDateTime;
 

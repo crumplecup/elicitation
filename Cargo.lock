@@ -601,6 +601,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicitation_kani"
+version = "0.8.1"
+dependencies = [
+ "chrono",
+ "elicitation",
+ "jiff",
+ "kani-verifier",
+ "regex",
+ "time",
+ "url",
+ "uuid",
+]
+
+[[package]]
 name = "elicitation_macros"
 version = "0.8.1"
 dependencies = [

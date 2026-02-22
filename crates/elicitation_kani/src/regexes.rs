@@ -1,7 +1,9 @@
 //! Kani proofs for Regex contract types.
 
 #[cfg(feature = "regex")]
-use crate::{RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetValid, RegexValid};
+use elicitation::{
+    RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetValid, RegexValid,
+};
 
 // ============================================================================
 // Regex Contract Proofs - Wrapper Logic Only

@@ -5,7 +5,7 @@
 
 #![cfg(kani)]
 
-use crate::verification::types::{
+use elicitation::verification::types::{
     MacAddr, MacLocal, MacMulticast, MacUnicast, MacUniversal, is_local, is_multicast, is_unicast,
     is_universal,
 };

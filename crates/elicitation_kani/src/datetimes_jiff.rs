@@ -9,7 +9,7 @@
 #![cfg(kani)]
 #![cfg(feature = "jiff")]
 
-use crate::{Generator, TimestampGenerationMode, TimestampGenerator};
+use elicitation::{Generator, TimestampGenerationMode, TimestampGenerator};
 use jiff::Timestamp;
 
 // ============================================================================

@@ -6,9 +6,9 @@
 #![cfg(kani)]
 #![cfg(feature = "chrono")]
 
-use crate::{DateTimeUtcGenerationMode, DateTimeUtcGenerator, Generator};
-use crate::{NaiveDateTimeGenerationMode, NaiveDateTimeGenerator};
 use chrono::{DateTime, Duration, NaiveDateTime, Utc};
+use elicitation::{DateTimeUtcGenerationMode, DateTimeUtcGenerator, Generator};
+use elicitation::{NaiveDateTimeGenerationMode, NaiveDateTimeGenerator};
 
 // ============================================================================
 // DateTime<Utc> Generator Proofs

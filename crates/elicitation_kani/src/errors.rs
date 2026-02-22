@@ -5,7 +5,7 @@
 
 #![cfg(kani)]
 
-use crate::{Generator, IoErrorGenerationMode, IoErrorGenerator};
+use elicitation::{Generator, IoErrorGenerationMode, IoErrorGenerator};
 use std::io;
 
 // ============================================================================
@@ -177,7 +177,7 @@ fn verify_ioerror_all_kinds_map_correctly() {
 // ============================================================================
 
 #[cfg(feature = "serde_json")]
-use crate::{JsonErrorGenerationMode, JsonErrorGenerator};
+use elicitation::{JsonErrorGenerationMode, JsonErrorGenerator};
 
 /// Verify JsonError generator mode preservation.
 ///

@@ -3,7 +3,7 @@
 //! These proofs verify that elicitation methods (Survey, Affirm, etc.)
 //! work correctly, independent of the data types being elicited.
 
-use crate::I8Positive;
+use elicitation::I8Positive;
 
 // ============================================================================
 // Mechanism Contract Proofs
@@ -17,8 +17,8 @@ use crate::I8Positive;
 /// Affirm mechanism always returns a valid boolean (true or false).
 #[kani::proof]
 fn verify_affirm_returns_boolean() {
-    use crate::verification::Contract;
     use crate::verification::mechanisms::AffirmReturnsBoolean;
+    use elicitation::Contract;
 
     let contract = AffirmReturnsBoolean;
 
@@ -55,8 +55,8 @@ fn verify_affirm_returns_boolean() {
 /// The type system guarantees this, but we prove the contract explicitly.
 #[kani::proof]
 fn verify_survey_returns_valid_variant() {
-    use crate::verification::Contract;
     use crate::verification::mechanisms::SurveyReturnsValidVariant;
+    use elicitation::Contract;
 
     // Test with bool (simplest enum-like type that implements required traits)
     let contract = SurveyReturnsValidVariant::<bool>::new();

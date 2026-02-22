@@ -1,6 +1,6 @@
 //! Kani proofs for char contract types.
 
-use crate::{CharAlphabetic, CharNumeric, ValidationError};
+use elicitation::{CharAlphabetic, CharNumeric, ValidationError};
 
 // Char Contract Proofs
 // ============================================================================

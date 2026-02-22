@@ -5,7 +5,7 @@
 
 #![cfg(all(kani, unix))]
 
-use crate::verification::types::{PathAbsolute, PathBytes, PathNonEmpty, PathRelative};
+use elicitation::verification::types::{PathAbsolute, PathBytes, PathNonEmpty, PathRelative};
 
 // ============================================================================
 // UTF-8 + No Null Composition Proofs

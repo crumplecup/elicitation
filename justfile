@@ -562,7 +562,7 @@ verify-kani harness="":
     #!/usr/bin/env bash
     if [ -z "{{harness}}" ]; then
         echo "🔬 Running all Kani verifications with default unwind bound..."
-        cargo kani --features verify-kani --default-unwind 20
+        cargo kani -p elicitation_kani_kani --all-features --default-unwind 20
     else
         echo "🔬 Running Kani harness: {{harness}}"
         cargo kani --harness {{harness}} --features verify-kani --default-unwind 20
@@ -731,7 +731,7 @@ kani-long-proofs proof="2byte":
             fi
             echo ""
             echo "Starting 2-byte proof (output: utf8_2byte_proof.log)..."
-            cargo kani --features verify-kani --harness verify_valid_two_byte_accepted 2>&1 | tee utf8_2byte_proof.log
+            cargo kani -p elicitation_kani_kani --all-features --harness verify_valid_two_byte_accepted 2>&1 | tee utf8_2byte_proof.log
             ;;
         3byte)
             echo "🔬 Kani UTF-8 3-Byte Symbolic Proof"
@@ -748,7 +748,7 @@ kani-long-proofs proof="2byte":
             fi
             echo ""
             echo "Starting 3-byte proof (output: utf8_3byte_proof.log)..."
-            cargo kani --features verify-kani --harness verify_valid_three_byte_accepted 2>&1 | tee utf8_3byte_proof.log
+            cargo kani -p elicitation_kani_kani --all-features --harness verify_valid_three_byte_accepted 2>&1 | tee utf8_3byte_proof.log
             ;;
         4byte)
             echo "🔬 Kani UTF-8 4-Byte Symbolic Proof"
@@ -765,7 +765,7 @@ kani-long-proofs proof="2byte":
             fi
             echo ""
             echo "Starting 4-byte proof (output: utf8_4byte_proof.log)..."
-            cargo kani --features verify-kani --harness verify_valid_four_byte_accepted 2>&1 | tee utf8_4byte_proof.log
+            cargo kani -p elicitation_kani_kani --all-features --harness verify_valid_four_byte_accepted 2>&1 | tee utf8_4byte_proof.log
             ;;
         all)
             echo "🔬 All Kani UTF-8 Symbolic Proofs"
@@ -848,7 +848,7 @@ kani-chunked proof_type num_chunks:
         echo "🔬 Chunk $i/$(({{num_chunks}}-1)): $HARNESS"
         START=$(date +%s)
         
-        if cargo kani --features verify-kani --harness "$HARNESS" 2>&1 | tee "kani_${HARNESS}.log"; then
+        if cargo kani -p elicitation_kani_kani --all-features --harness "$HARNESS" 2>&1 | tee "kani_${HARNESS}.log"; then
             END=$(date +%s)
             ELAPSED=$((END - START))
             TIMESTAMP=$(date -Iseconds)

@@ -1,6 +1,6 @@
 //! Kani proofs for string contract types.
 
-use crate::StringNonEmpty;
+use elicitation::StringNonEmpty;
 
 // ============================================================================
 // String Contract Proofs

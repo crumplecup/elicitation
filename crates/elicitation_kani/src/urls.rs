@@ -1,7 +1,7 @@
 //! Kani proofs for URL contract types.
 
 #[cfg(feature = "url")]
-use crate::{UrlCanBeBase, UrlHttps, UrlValid, UrlWithHost};
+use elicitation::{UrlCanBeBase, UrlHttps, UrlValid, UrlWithHost};
 
 // Note: UrlHttp is from urlbytes.rs, not urls.rs
 

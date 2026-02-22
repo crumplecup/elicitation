@@ -5,7 +5,7 @@
 
 #![cfg(kani)]
 
-use crate::verification::types::{
+use elicitation::verification::types::{
     Ipv4Bytes, Ipv6Bytes, SocketAddrV4Bytes, SocketAddrV4NonZero, SocketAddrV4Privileged,
     SocketAddrV4Unprivileged, SocketAddrV6Bytes, SocketAddrV6NonZero, SocketAddrV6Privileged,
     SocketAddrV6Unprivileged, is_dynamic_port, is_privileged_port, is_registered_port,

@@ -1,6 +1,6 @@
 //! Kani proofs for integer contract types.
 
-use crate::{I8NonNegative, I8Positive, I16Positive, U8NonZero, U16NonZero};
+use elicitation::{I8NonNegative, I8Positive, I16Positive, U8NonZero, U16NonZero};
 
 // ============================================================================
 // Integer Contract Proofs

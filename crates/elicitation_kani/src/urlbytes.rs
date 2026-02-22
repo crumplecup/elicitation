@@ -5,7 +5,7 @@
 
 #![cfg(kani)]
 
-use crate::verification::types::{
+use elicitation::verification::types::{
     AuthorityBytes, SchemeBytes, UrlAbsoluteBytes, UrlBytes, UrlHttpBytes, UrlWithAuthorityBytes,
     ValidationError,
 };

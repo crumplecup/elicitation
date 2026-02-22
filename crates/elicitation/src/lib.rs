@@ -94,9 +94,6 @@ mod default_style;
 mod error;
 pub mod verification;
 
-#[cfg(kani)]
-mod kani_tests;
-
 #[cfg(feature = "cli")]
 pub mod cli;
 
