@@ -9,3 +9,15 @@ creusot-std = { workspace = true }
 
 # Import the contract types from main crate
 elicitation = { path = "../elicitation", default-features = false, features = ["verification"] }
+
+[features]
+default = []
+all = ["uuid", "serde_json", "url", "regex", "chrono", "time", "jiff"]
+uuid = ["elicitation/uuid"]
+serde_json = ["elicitation/serde_json"]
+url = ["elicitation/url"]
+regex = ["elicitation/regex"]
+chrono = ["elicitation/chrono"]
+time = ["elicitation/time"]
+jiff = ["elicitation/jiff"]
+verify-kani = []  # Dummy feature for Kani compatibility
