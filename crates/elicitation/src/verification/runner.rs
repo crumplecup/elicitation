@@ -349,6 +349,7 @@ impl ProofHarness {
                 "-p",
                 "elicitation",
                 "--lib",
+                "--all-features",
                 "--harness",
                 &self.name,
             ])
