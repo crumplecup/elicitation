@@ -32,12 +32,17 @@ mod networks;
 mod socketaddr;
 mod strings;
 mod utf8;
+mod paths;
+mod tuples;
 
 // Platform-specific modules
 #[cfg(unix)]
 mod pathbytes;
 
 // Feature-gated module declarations
+#[cfg(feature = "uuid")]
+mod uuids;
+
 #[cfg(feature = "uuid")]
 mod uuid_bytes;
 
@@ -52,3 +57,59 @@ mod regexes;
 
 #[cfg(feature = "regex")]
 mod regexbytes;
+
+#[cfg(feature = "chrono")]
+mod datetimes_chrono;
+
+#[cfg(feature = "time")]
+mod datetimes_time;
+
+#[cfg(feature = "jiff")]
+mod datetimes_jiff;
+
+// Re-export all proof functions for discoverability
+pub use bools::*;
+pub use chars::*;
+pub use collections::*;
+pub use durations::*;
+pub use floats::*;
+pub use integers::*;
+pub use ipaddr_bytes::*;
+pub use macaddr::*;
+pub use mechanisms::*;
+pub use networks::*;
+pub use socketaddr::*;
+pub use strings::*;
+pub use utf8::*;
+pub use paths::*;
+pub use tuples::*;
+
+#[cfg(unix)]
+pub use pathbytes::*;
+
+#[cfg(feature = "uuid")]
+pub use uuids::*;
+
+#[cfg(feature = "uuid")]
+pub use uuid_bytes::*;
+
+#[cfg(feature = "url")]
+pub use urls::*;
+
+#[cfg(feature = "url")]
+pub use urlbytes::*;
+
+#[cfg(feature = "regex")]
+pub use regexes::*;
+
+#[cfg(feature = "regex")]
+pub use regexbytes::*;
+
+#[cfg(feature = "chrono")]
+pub use datetimes_chrono::*;
+
+#[cfg(feature = "time")]
+pub use datetimes_time::*;
+
+#[cfg(feature = "jiff")]
+pub use datetimes_jiff::*;

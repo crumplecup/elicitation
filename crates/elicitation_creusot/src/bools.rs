@@ -1,6 +1,7 @@
 //! Creusot proofs for bool contract types.
 
 use crate::*;
+use elicitation::{BoolTrue, BoolFalse, ValidationError};
 
 // Bool Contract Proofs
 // ============================================================================
