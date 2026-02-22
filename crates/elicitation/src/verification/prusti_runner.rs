@@ -124,15 +124,32 @@ pub fn list_modules() -> Result<()> {
 
 /// Run Prusti verification and save results to CSV.
 ///
-/// Note: Prusti requires edition 2021 compatibility. Use the prusti-verification branch.
+/// Note: Checks edition compatibility and runs verification if on prusti-verification branch.
 #[tracing::instrument]
 pub fn run_all(output: &Path, timeout: u64) -> Result<()> {
+    // Check if we're on a compatible edition (2021) by trying to detect workspace edition
+    let workspace_toml = std::path::Path::new("Cargo.toml");
+    if workspace_toml.exists() {
+        let content = std::fs::read_to_string(workspace_toml)?;
+        if content.contains("edition = \"2024\"") {
+            // On main branch with edition 2024 - show guidance
+            show_branch_guidance(output)?;
+            bail!("Prusti verification requires prusti-verification branch")
+        }
+    }
+
+    // Edition 2021 detected - proceed with verification
     tracing::info!(
         output = %output.display(),
         timeout,
-        "Prusti verification requires prusti-verification branch"
+        "Running Prusti verification"
     );
 
+    run_verification_impl(output, timeout)
+}
+
+/// Show guidance for switching to prusti-verification branch.
+fn show_branch_guidance(output: &Path) -> Result<()> {
     let modules = all_modules();
     let total_proofs: usize = modules.iter().map(|m| m.proof_count()).sum();
 
@@ -191,7 +208,103 @@ pub fn run_all(output: &Path, timeout: u64) -> Result<()> {
     println!("Total modules: {}", modules.len());
     println!("Total proofs: {}", total_proofs);
     
-    bail!("Prusti verification requires prusti-verification branch")
+    Ok(())
+}
+
+/// Implementation of Prusti verification (runs on edition 2021).
+fn run_verification_impl(output: &Path, timeout: u64) -> Result<()> {
+    use std::process::{Command, Stdio};
+    use std::time::Instant;
+    
+    let mut writer = Writer::from_path(output).context("Failed to create CSV file")?;
+    let modules = all_modules();
+    let total_proofs: usize = modules.iter().map(|m| m.proof_count()).sum();
+
+    println!("🔬 Prusti Verification Tracking");
+    println!("================================");
+    println!("Total modules: {}", modules.len());
+    println!("Total proofs: {}", total_proofs);
+    println!("CSV output: {}", output.display());
+    println!("Timeout: {}s", timeout);
+    println!();
+    println!("Running cargo prusti on elicitation_prusti crate...");
+    println!();
+
+    let start = Instant::now();
+    let timestamp = Utc::now().to_rfc3339();
+
+    let output_result = Command::new("cargo")
+        .args(["prusti", "--package", "elicitation_prusti", "--all-features"])
+        .env("PRUSTI_CHECK_PANICS", "true")
+        .env("PRUSTI_CHECK_OVERFLOWS", "true")
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .context("Failed to spawn cargo prusti")?
+        .wait_with_output()
+        .context("Failed to run cargo prusti")?;
+
+    let duration = start.elapsed();
+    let duration_secs = duration.as_secs();
+
+    let status = if duration_secs >= timeout {
+        ProofStatus::Timeout
+    } else if output_result.status.success() {
+        ProofStatus::Success
+    } else {
+        ProofStatus::Failed
+    };
+
+    let stderr = String::from_utf8_lossy(&output_result.stderr);
+    let error_message = if status != ProofStatus::Success {
+        Some(stderr.to_string())
+    } else {
+        None
+    };
+
+    // Write one result entry per module
+    let mut summary = Summary::default();
+    for module in &modules {
+        let result = ProofResult {
+            module: module.name().clone(),
+            proof_count: *module.proof_count(),
+            status,
+            duration_secs,
+            timestamp: timestamp.clone(),
+            error_message: error_message.clone(),
+        };
+
+        writer.serialize(&result).context("Failed to write CSV row")?;
+        summary.update(&result);
+    }
+
+    writer.flush().context("Failed to flush CSV")?;
+
+    // Print summary
+    println!();
+    println!("================================");
+    match status {
+        ProofStatus::Success => println!("✅ All Verifications Passed"),
+        ProofStatus::Failed => println!("❌ Verification Failed"),
+        ProofStatus::Timeout => println!("⏱️  Verification Timeout"),
+    }
+    println!();
+    println!("Modules: {}", modules.len());
+    println!("Proofs: {}", total_proofs);
+    println!("Duration: {}s", duration_secs);
+    println!();
+    println!("📊 Results saved to: {}", output.display());
+
+    if status != ProofStatus::Success {
+        if let Some(err) = &error_message {
+            println!();
+            println!("Error output:");
+            println!("{}", err);
+        }
+        bail!("Verification failed");
+    }
+
+    Ok(())
 }
 
 /// Show summary statistics from CSV.
