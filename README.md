@@ -1103,7 +1103,7 @@ elicitation = { version = "0.6", default-features = false, features = [
 - `verification` - Contract system
 - `verify-kani` - Kani formal verification
 - `verify-creusot` - Creusot verification
-- `verify-prusti` - Prusti verification
+- `verify-verus` - Verus verification
 - `cli` - CLI tools
 - `dev` - All features + CLI
 

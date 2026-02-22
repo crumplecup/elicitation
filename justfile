@@ -548,14 +548,6 @@ _status-creusot:
     fi
 
 # Show Prusti status
-_status-prusti:
-    #!/usr/bin/env bash
-    if command -v cargo-prusti &> /dev/null; then
-        echo "✅ Prusti: Installed"
-    else
-        echo "❌ Prusti: Not installed"
-    fi
-
 # Show Verus status
 _status-verus:
     #!/usr/bin/env bash
@@ -570,7 +562,7 @@ verify-kani harness="":
     #!/usr/bin/env bash
     if [ -z "{{harness}}" ]; then
         echo "🔬 Running all Kani verifications with default unwind bound..."
-        cargo kani --features verify-kani --default-unwind 20
+        cargo kani -p elicitation_kani_kani --all-features --default-unwind 20
     else
         echo "🔬 Running Kani harness: {{harness}}"
         cargo kani --harness {{harness}} --features verify-kani --default-unwind 20
@@ -636,32 +628,10 @@ verify-kani-list:
     @cargo run --quiet --features cli --release -- verify list
 
 # Run Prusti verification (simple)
-verify-prusti:
-    @command -v cargo-prusti >/dev/null 2>&1 || (echo "❌ Prusti not installed. Run: just setup-verifiers" && exit 1)
-    @echo "🔬 Running Prusti verification..."
-    cargo-prusti --package elicitation --features verify-prusti
-
 # Run Prusti verification with CSV tracking (recommended)
-verify-prusti-tracked csv="prusti_verification_results.csv" timeout="600":
-    @command -v cargo-prusti >/dev/null 2>&1 || (echo "❌ Prusti not installed. Run: just setup-verifiers" && exit 1)
-    @echo "🔬 Running Prusti verification with tracking..."
-    @echo "CSV output: {{csv}}"
-    @echo "Timeout: {{timeout}}s"
-    @echo ""
-    cargo run --quiet --package elicitation --features cli -- prusti run --output {{csv}} --timeout {{timeout}}
-
 # Show Prusti verification summary statistics
-verify-prusti-summary csv="prusti_verification_results.csv":
-    cargo run --quiet --package elicitation --features cli -- prusti summary --file {{csv}}
-
 # Show failed Prusti verification modules
-verify-prusti-failed csv="prusti_verification_results.csv":
-    cargo run --quiet --package elicitation --features cli -- prusti failed --file {{csv}}
-
 # List all Prusti proof modules
-verify-prusti-list:
-    @cargo run --quiet --package elicitation --features cli -- prusti list
-
 # Run Creusot verification
 verify-creusot file="":
     #!/usr/bin/env bash
@@ -735,7 +705,7 @@ verify-creusot-list:
     cargo run --manifest-path crates/elicitation/Cargo.toml --features cli --bin elicitation -- creusot list
 
 # Run all formal verification tools
-verify-all: verify-kani verify-prusti verify-creusot verify-verus
+verify-all: verify-kani verify-creusot verify-verus
     @echo "✅ All verification completed!"
 
 
@@ -761,7 +731,7 @@ kani-long-proofs proof="2byte":
             fi
             echo ""
             echo "Starting 2-byte proof (output: utf8_2byte_proof.log)..."
-            cargo kani --features verify-kani --harness verify_valid_two_byte_accepted 2>&1 | tee utf8_2byte_proof.log
+            cargo kani -p elicitation_kani_kani --all-features --harness verify_valid_two_byte_accepted 2>&1 | tee utf8_2byte_proof.log
             ;;
         3byte)
             echo "🔬 Kani UTF-8 3-Byte Symbolic Proof"
@@ -778,7 +748,7 @@ kani-long-proofs proof="2byte":
             fi
             echo ""
             echo "Starting 3-byte proof (output: utf8_3byte_proof.log)..."
-            cargo kani --features verify-kani --harness verify_valid_three_byte_accepted 2>&1 | tee utf8_3byte_proof.log
+            cargo kani -p elicitation_kani_kani --all-features --harness verify_valid_three_byte_accepted 2>&1 | tee utf8_3byte_proof.log
             ;;
         4byte)
             echo "🔬 Kani UTF-8 4-Byte Symbolic Proof"
@@ -795,7 +765,7 @@ kani-long-proofs proof="2byte":
             fi
             echo ""
             echo "Starting 4-byte proof (output: utf8_4byte_proof.log)..."
-            cargo kani --features verify-kani --harness verify_valid_four_byte_accepted 2>&1 | tee utf8_4byte_proof.log
+            cargo kani -p elicitation_kani_kani --all-features --harness verify_valid_four_byte_accepted 2>&1 | tee utf8_4byte_proof.log
             ;;
         all)
             echo "🔬 All Kani UTF-8 Symbolic Proofs"
@@ -878,7 +848,7 @@ kani-chunked proof_type num_chunks:
         echo "🔬 Chunk $i/$(({{num_chunks}}-1)): $HARNESS"
         START=$(date +%s)
         
-        if cargo kani --features verify-kani --harness "$HARNESS" 2>&1 | tee "kani_${HARNESS}.log"; then
+        if cargo kani -p elicitation_kani_kani --all-features --harness "$HARNESS" 2>&1 | tee "kani_${HARNESS}.log"; then
             END=$(date +%s)
             ELAPSED=$((END - START))
             TIMESTAMP=$(date -Iseconds)

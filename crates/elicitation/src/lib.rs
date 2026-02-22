@@ -94,9 +94,6 @@ mod default_style;
 mod error;
 pub mod verification;
 
-#[cfg(kani)]
-mod kani_tests;
-
 #[cfg(feature = "cli")]
 pub mod cli;
 
@@ -190,6 +187,9 @@ pub use elicitation_derive::Elicit;
 
 // Re-export verification contract types at crate level (for kani_proofs imports)
 // EXPLICIT exports - no globs (helps compiler show what's missing)
+#[cfg(any(feature = "verification", kani))]
+pub use verification::Contract;
+
 #[cfg(any(feature = "verification", kani))]
 pub use verification::types::{
     ArcNonNull,

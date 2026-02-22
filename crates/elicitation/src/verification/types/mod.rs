@@ -55,9 +55,6 @@ mod urls;
 #[cfg(feature = "regex")]
 mod regexes;
 
-#[cfg(kani)]
-mod kani_proofs;
-
 // Verus proofs require verus tool (not a cargo dependency)
 #[cfg(all(feature = "verify-verus", verus))]
 mod verus_proofs;

@@ -446,7 +446,7 @@ impl ProofHarness {
                 "cargo",
                 "kani",
                 "-p",
-                "elicitation",
+                "elicitation_kani",
                 "--lib",
                 "--all-features",
                 "--harness",

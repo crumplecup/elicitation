@@ -7,21 +7,21 @@
 //!
 //! Run with:
 //! ```bash
-//! cargo run --example kani_example --features verify-kani
+//! cargo run --example kani_example --features verification
 //! ```
 //!
-//! Verify with Kani:
+//! Verify with Kani (proofs in elicitation_kani crate):
 //! ```bash
-//! cargo kani --example kani_example
+//! cargo kani -p elicitation_kani --all-features
 //! ```
 
-#[cfg(not(feature = "verify-kani"))]
+#[cfg(not(feature = "verification"))]
 fn main() {
-    eprintln!("This example requires the verify-kani feature.");
-    eprintln!("Run with: cargo run --example kani_example --features verify-kani");
+    eprintln!("This example requires the verification feature.");
+    eprintln!("Run with: cargo run --example kani_example --features verification");
 }
 
-#[cfg(feature = "verify-kani")]
+#[cfg(feature = "verification")]
 mod kani_enabled {
 
     // Domain types and implementations would go here
@@ -31,7 +31,7 @@ mod kani_enabled {
     }
 }
 
-#[cfg(feature = "verify-kani")]
+#[cfg(feature = "verification")]
 fn main() {
     kani_enabled::run_main();
 }
