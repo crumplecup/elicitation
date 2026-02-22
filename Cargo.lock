@@ -604,6 +604,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicitation_prusti"
+version = "0.8.1"
+dependencies = [
+ "chrono",
+ "elicitation",
+ "jiff",
+ "prusti-contracts",
+ "regex",
+ "time",
+ "url",
+ "uuid",
+]
+
+[[package]]
 name = "elicitation_rand"
 version = "0.8.1"
 dependencies = [
