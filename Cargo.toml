@@ -32,6 +32,7 @@ elicitation = { path = "crates/elicitation", version = "0.8.2" }
 elicitation_derive = { path = "crates/elicitation_derive", version = "0.8.2" }
 elicitation_macros = { path = "crates/elicitation_macros", version = "0.8.2" }
 elicitation_rand = { path = "crates/elicitation_rand", version = "0.8.2" }
+elicitation_kani = { path = "crates/elicitation_kani", version = "0.8.2" }
 
 
 # MCP client

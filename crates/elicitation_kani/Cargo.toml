@@ -14,10 +14,12 @@ categories = ["development-tools"]
 
 [dependencies]
 # Core dependency - verification framework only
-elicitation = { path = "../elicitation", default-features = false, features = ["verification"] }
+elicitation = { path = "../elicitation", default-features = false, features = [
+  "verification",
+] }
 
 # Kani verifier
-kani-verifier = { version = "*", optional = true }
+kani-verifier = { version = "0.67", optional = true }
 
 # Feature-gated dependencies (match main crate)
 chrono = { workspace = true, optional = true }
