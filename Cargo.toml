@@ -35,7 +35,7 @@ elicitation_rand = { path = "crates/elicitation_rand", version = "0.8.1" }
 
 
 # MCP client
-rmcp = { version = "0.15", features = [
+rmcp = { version = "0.16", features = [
   "client",
   "transport-io",
   "schemars",
