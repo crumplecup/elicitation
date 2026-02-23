@@ -1,4 +1,5 @@
-/target
+target/
+**/target/
 
 # Verification artifacts
 *.log

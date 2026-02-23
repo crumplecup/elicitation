@@ -9,7 +9,7 @@ homepage.workspace = true
 documentation.workspace = true
 
 description = "Creusot formal verification proofs for elicitation contracts"
-keywords = ["verification", "creusot", "formal-methods", "deductive-verification"]
+keywords = ["verification", "creusot", "formal-methods", "deductive"]
 categories = ["development-tools"]
 
 [lints.rust]
