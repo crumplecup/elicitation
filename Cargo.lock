@@ -532,7 +532,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
 name = "elicitation"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -566,7 +566,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_creusot"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "chrono",
  "creusot-std",
@@ -581,7 +581,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_derive"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "async-trait",
  "chrono",
@@ -602,7 +602,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_kani"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "chrono",
  "elicitation",
@@ -616,7 +616,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_macros"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -625,7 +625,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_rand"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "chrono",
  "csv",

@@ -33,7 +33,7 @@ inventory = { workspace = true }
 anyhow = { workspace = true }
 clap = { workspace = true, optional = true }
 csv = { workspace = true, optional = true }
-shellexpand = { version = "3.1", optional = true }
+shellexpand = { workspace = true, optional = true }
 
 # DateTime libraries (optional)
 chrono = { workspace = true, optional = true }
@@ -52,9 +52,6 @@ url = { workspace = true, optional = true }
 
 # Regex library (optional)
 regex = { workspace = true, optional = true }
-
-# Verification libraries (optional)
-# prusti-contracts lives on prusti-verification branch
 
 # Re-export derive macro
 elicitation_derive = { workspace = true }
@@ -104,7 +101,12 @@ cli = ["clap", "csv", "chrono", "shellexpand"]
 dev = ["full", "cli"]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(prusti)', 'cfg(creusot)', 'cfg(verus)'] }
+unexpected_cfgs = { level = "warn", check-cfg = [
+  'cfg(kani)',
+  'cfg(prusti)',
+  'cfg(creusot)',
+  'cfg(verus)',
+] }
 
 [[bin]]
 name = "elicitation"
