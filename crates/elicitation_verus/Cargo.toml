@@ -7,6 +7,7 @@ edition = "2024"
 verify = true
 
 [dependencies]
+elicitation = { version = "0.8.2", path = "../elicitation", features = ["verification"] }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(verus)'] }
