@@ -3,6 +3,7 @@
 use super::{Utf8Bytes, ValidationError};
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 use elicitation_derive::contract_type;
+#[cfg(not(kani))]
 use elicitation_macros::instrumented_impl;
 
 // ============================================================================

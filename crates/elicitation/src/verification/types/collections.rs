@@ -441,6 +441,7 @@ use std::hash::Hash;
 #[cfg(not(kani))]
 pub struct HashMapNonEmpty<K, V>(HashMap<K, V>);
 
+/// Kani verification stub for HashMap non-empty contract (PhantomData for bounded verification).
 #[cfg(kani)]
 pub struct HashMapNonEmpty<K, V>(std::marker::PhantomData<(K, V)>);
 
@@ -491,6 +492,7 @@ impl<K, V> HashMapNonEmpty<K, V> {
     }
 
     /// Kani version: accessor not verifiable (PhantomData).
+    /// Kani verification stub for get method (panics to indicate unsupported operation).
     #[cfg(kani)]
     pub fn get(&self) -> &HashMap<K, V> {
         panic!("get() not supported in Kani verification")
@@ -514,6 +516,7 @@ impl<K, V> HashMapNonEmpty<K, V> {
     }
 
     /// Kani version: accessor not verifiable (PhantomData).
+    /// Kani verification stub for into_inner method (panics to indicate unsupported operation).
     #[cfg(kani)]
     pub fn into_inner(self) -> HashMap<K, V> {
         panic!("into_inner() not supported in Kani verification")
@@ -619,6 +622,7 @@ where
 #[cfg(not(kani))]
 pub struct BTreeMapNonEmpty<K, V>(BTreeMap<K, V>);
 
+/// Kani verification stub for BTreeMap non-empty contract (PhantomData for bounded verification).
 #[cfg(kani)]
 pub struct BTreeMapNonEmpty<K, V>(std::marker::PhantomData<(K, V)>);
 
@@ -661,6 +665,7 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         &self.0
     }
 
+    /// Kani verification stub for get method (panics to indicate unsupported operation).
     #[cfg(kani)]
     pub fn get(&self) -> &BTreeMap<K, V> {
         panic!("get() not supported in Kani verification")
@@ -683,6 +688,7 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         self.0
     }
 
+    /// Kani verification stub for into_inner method (panics to indicate unsupported operation).
     #[cfg(kani)]
     pub fn into_inner(self) -> BTreeMap<K, V> {
         panic!("into_inner() not supported in Kani verification")
@@ -711,6 +717,7 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         false
     }
 
+    /// Kani verification stub for len method (panics to indicate unsupported operation).
     #[cfg(kani)]
     pub fn len(&self) -> usize {
         panic!("len() not supported in Kani verification")
@@ -727,6 +734,7 @@ impl<K, V> BTreeMapNonEmpty<K, V> {
         // Verifies: wrapper structure with separation logic
     }
 
+    /// Kani verification stub for is_empty method (panics to indicate unsupported operation).
     #[cfg(kani)]
     pub fn is_empty(&self) -> bool {
         panic!("is_empty() not supported in Kani verification")
