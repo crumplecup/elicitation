@@ -6,3 +6,4 @@ target/
 *.csv
 crates/elicitation_verus/.verus-log/
 crates/elicitation_prusti/Cargo.lock
+Cargo.lock

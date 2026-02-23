@@ -1,11 +1,4 @@
-//! Verus proofs for stdlib primitive types.
-//!
-//! These proofs verify that stdlib primitives can be constructed
-//! and used correctly, matching Kani's coverage of base types.
-
-use verus_builtin::*;
-use verus_builtin_macros::*;
-use vstd::prelude::*;
+use verus_builtin_macros::verus;
 
 verus! {
 

@@ -15,9 +15,6 @@
 //! These proofs are for verification only and don't affect runtime behavior.
 //! Run with: `verus crates/elicitation_verus/src/lib.rs`
 
-use verus_builtin::*;
-use verus_builtin_macros::*;
-use vstd::prelude::*;
 
 // Contract type proofs (newtypes/wrappers)
 pub mod bools;
