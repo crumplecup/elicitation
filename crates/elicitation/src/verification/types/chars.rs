@@ -2,6 +2,7 @@
 
 use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+#[cfg(not(kani))]
 use elicitation_macros::instrumented_impl;
 
 // ============================================================================
