@@ -9,6 +9,97 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- First working proof module - bools
+- Add char contract type proofs
+- Add i8 integer contract type proofs
+- Complete integer contract type proofs
+- Add float contract type proofs
+- Add string contract type proofs
+- Add collection contract type proofs
+- Add duration and tuple contract type proofs
+- Complete all remaining contract type proofs
+- Add base type proofs for stdlib and external crates
+- Add verus_proof trait method for compositional verification
+- Add char contract proofs
+- Complete cloud of assumptions approach
+- Add verification trenchcoat coverage (456 total proofs)
+- Add verification trenchcoat coverage (27 modules total)
+- Add prusti_proof() trait integration
+- Update derive macros for compositional verification
+- Export all proof functions from lib.rs
+- Add creusot_runner module for compilation tracking
+- Complete CLI integration and justfile recipes
+- Implement branch strategy for edition compatibility
+- Add edition detection and full verification workflow
+
+### Documentation
+
+- Document verification status
+- Update tracking with trenchcoat coverage (456 proofs)
+- Add comprehensive tracking documentation
+- Update tracking docs with CLI usage
+- Update Prusti branch documentation to reflect frozen status
+
+### Fixed
+
+- Exclude elicitation_verus from cargo builds
+- Remove remaining verify-creusot references
+- Remove verify-creusot from examples
+- Fix syntax error in verification_multi_example
+- Restore verification trenchcoat proofs (393 total)
+- Restore missing module files from origin/main
+- Restore all 19 proof modules from main branch
+- Add missing kani_proof() to DateTimeComponents
+- Add Elicitation impl for DateTimeComponents
+- Remove invalid DateTimeComponents kani_proof calls
+- Add kani_proof() to DateTimeComponents for full verification
+- Implement Elicitation trait for DateTimeComponents
+- Add feature flags to Cargo.toml
+- Implement Elicitation trait for DateTimeComponents
+- Add verify-kani feature for workspace compatibility
+- Scope runner to elicitation package only
+- Temporarily exclude Creusot/Prusti to unblock Kani
+- Clean workspace build - zero errors
+- Remove invalid check-cfg for feature flags
+- Complete module imports and exports
+- Remove star imports and add cfg guards
+- Rewrite runner to use elicitation_verus crate with JSON parsing
+- Remove 78 non-functional creusot stub functions
+- Add --all-features flag to cargo kani invocation
+- Use std::vec! to avoid macro ambiguity
+- Add kani to check-cfg allowlist
+- Remove verify-kani feature references
+- Resolve compilation errors in elicitation_kani crate
+- Fix ValidationError import in elicitation_kani crate
+- Remove misplaced Prusti code generation
+- Eliminate all warnings in Kani verification builds
+
+### Miscellaneous
+
+- Simplify lib.rs, add cfg checks
+- Bump version to 0.8.2 and fix shellexpand workspace dependency
+
+### Refactor
+
+- Rename crate to elicitation_creusot
+- Remove Creusot code from main crate
+- Remove verify-creusot feature from main crate
+- Remove inline proof directory
+- Remove Prusti from dev branch
+- Extract Kani to dedicated crate
+
+### Styling
+
+- Reorder imports for consistency
+
+### Wip
+
+- Attempt adding contracts to main crate
+
+## [0.8.1] - 2026-02-17
+
+### Added
+
 - Add ElicitationContext for tracking elicitation state
 - Add ChoiceSet for dynamic choice elicitation
 - Add Filter trait for filtered selection
@@ -17,6 +108,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add dynamic_choices example demonstrating ChoiceSet
 - Add compositional verification examples and guide
+- Update CHANGELOG for v0.8.1
 
 ### Fixed
 
