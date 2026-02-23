@@ -14,9 +14,7 @@ categories = ["development-tools"]
 
 [dependencies]
 # Core dependency - verification framework only
-elicitation = { path = "../elicitation", default-features = false, features = [
-  "verification",
-] }
+elicitation = { workspace = true }
 
 # Kani verifier
 kani-verifier = { version = "0.67", optional = true }

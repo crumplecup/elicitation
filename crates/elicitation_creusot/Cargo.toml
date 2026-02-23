@@ -11,7 +11,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(creusot)', 'cfg(kani)'] }
 creusot-std = { workspace = true }
 
 # Import the contract types from main crate
-elicitation = { path = "../elicitation", default-features = false, features = ["verification"] }
+elicitation = { workspace = true }
 
 # External dependencies needed by proofs (feature-gated)
 uuid = { workspace = true, optional = true }
