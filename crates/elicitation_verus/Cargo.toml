@@ -17,9 +17,9 @@ verify = true
 
 [dependencies]
 elicitation = { version = "0.8.2", path = "../elicitation", features = ["verification"] }
-builtin = { package = "verus-builtin" }
-builtin_macros = { package = "verus-builtin-macros" }
-vstd = "*"
+verus_builtin = "0.0.0-2026-02-08-0120"
+verus_builtin_macros = "0.0.0-2026-02-22-0103"
+vstd = "0.0.0-2026-02-22-0103"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(verus)'] }
