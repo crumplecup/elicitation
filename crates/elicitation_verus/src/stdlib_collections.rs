@@ -1,11 +1,4 @@
-//! Verus proofs for stdlib collection types.
-//!
-//! These prove stdlib collections (Vec, Option, Result) can be
-//! constructed and satisfy basic properties.
-
-use verus_builtin::*;
-use verus_builtin_macros::*;
-use vstd::prelude::*;
+use verus_builtin_macros::verus;
 
 verus! {
 

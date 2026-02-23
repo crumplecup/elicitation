@@ -1,11 +1,8 @@
-//! Verus proofs for URL byte validation types (RFC 3986).
-//!
-//! Validates URL syntax through component validation.
-//! Simplified stubs for compositional verification.
-
-use verus_builtin::*;
-use verus_builtin_macros::*;
-use vstd::prelude::*;
+use verus_builtin_macros::verus;
+// Required by verus! macro for comparison operators (<=, >, etc.)
+// Cargo cannot detect this usage as it occurs during macro expansion
+#[allow(unused_imports)]
+use vstd::prelude::SpecOrd;
 
 verus! {
 

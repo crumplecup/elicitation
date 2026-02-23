@@ -1,8 +1,4 @@
-//! Verus proofs for regex contract types.
-
-use verus_builtin::*;
-use verus_builtin_macros::*;
-use vstd::prelude::*;
+use verus_builtin_macros::verus;
 
 verus! {
 

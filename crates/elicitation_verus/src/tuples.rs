@@ -1,11 +1,4 @@
-//! Verus proofs for tuple contract types.
-//!
-//! Tuples demonstrate compositional verification - if all elements
-//! are validated contract types, the tuple is automatically valid.
-
-use verus_builtin::*;
-use verus_builtin_macros::*;
-use vstd::prelude::*;
+use verus_builtin_macros::verus;
 
 verus! {
 

@@ -22,4 +22,4 @@ verus_builtin_macros = "0.0.0-2026-02-22-0103"
 vstd = "0.0.0-2026-02-22-0103"
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(verus)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(verus)', 'cfg(verus_verify_core)'] }

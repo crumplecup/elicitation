@@ -1,11 +1,4 @@
-//! Verus proofs for external crate types.
-//!
-//! These prove that external types (regex, url, uuid, etc.) can be
-//! constructed given successful validation, matching Kani's coverage.
-
-use verus_builtin::*;
-use verus_builtin_macros::*;
-use vstd::prelude::*;
+use verus_builtin_macros::verus;
 
 verus! {
 

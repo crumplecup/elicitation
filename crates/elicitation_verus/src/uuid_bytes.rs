@@ -1,11 +1,4 @@
-//! Verus proofs for UUID byte validation types.
-//!
-//! Validates UUIDs (RFC 4122) with version and variant checking.
-//! Simplified stubs for compositional verification.
-
-use verus_builtin::*;
-use verus_builtin_macros::*;
-use vstd::prelude::*;
+use verus_builtin_macros::verus;
 
 verus! {
 

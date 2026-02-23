@@ -1,11 +1,4 @@
-//! Verus proofs for socket address validation types.
-//!
-//! Validates socket addresses (IP + port) with port classification.
-//! Simplified stubs for compositional verification.
-
-use verus_builtin::*;
-use verus_builtin_macros::*;
-use vstd::prelude::*;
+use verus_builtin_macros::verus;
 
 verus! {
 

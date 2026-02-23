@@ -1,8 +1,10 @@
 //! Verus proofs for collection contract types.
 
-use verus_builtin::*;
-use verus_builtin_macros::*;
-use vstd::prelude::*;
+use verus_builtin_macros::verus;
+// Required by verus! macro for comparison operators (<=, >, etc.)
+// Cargo cannot detect this usage as it occurs during macro expansion
+#[allow(unused_imports)]
+use vstd::prelude::SpecOrd;
 
 verus! {
 

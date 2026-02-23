@@ -1,11 +1,4 @@
-//! Verus proofs for MAC address validation types.
-//!
-//! Validates MAC addresses (48-bit IEEE 802) with multicast/unicast classification.
-//! Simplified stubs for compositional verification.
-
-use verus_builtin::*;
-use verus_builtin_macros::*;
-use vstd::prelude::*;
+use verus_builtin_macros::verus;
 
 verus! {
 
