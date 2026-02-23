@@ -2,6 +2,15 @@
 name = "elicitation_verus"
 version = "0.8.2"
 edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/crumplecup/elicitation"
+authors = ["Erik Rose <crumplecup@gmail.com>"]
+homepage = "https://github.com/crumplecup/elicitation"
+documentation = "https://docs.rs/elicitation_verus"
+
+description = "Verus formal verification proofs for elicitation contracts"
+keywords = ["verification", "verus", "formal-methods", "smt-verification"]
+categories = ["development-tools"]
 
 [package.metadata.verus]
 verify = true

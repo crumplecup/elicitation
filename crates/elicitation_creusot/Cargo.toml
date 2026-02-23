@@ -2,6 +2,15 @@
 name = "elicitation_creusot"
 version.workspace = true
 edition = "2024"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+
+description = "Creusot formal verification proofs for elicitation contracts"
+keywords = ["verification", "creusot", "formal-methods", "deductive-verification"]
+categories = ["development-tools"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(creusot)', 'cfg(kani)'] }
