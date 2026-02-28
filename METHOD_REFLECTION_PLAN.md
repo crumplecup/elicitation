@@ -1,5 +1,48 @@
 # Method Reflection Implementation Plan
 
+## ✅ Implementation Progress (2026-02-28)
+
+### Milestone 1: Newtype Infrastructure - COMPLETE
+- ✅ Implemented `elicit_newtype!` declarative macro in `elicitation/src/newtype_macro.rs`
+- ✅ Implemented `elicit_newtypes!` bulk generation macro
+- ✅ Type conversions via derive_more (Deref, DerefMut, From, AsRef)
+- ✅ Bidirectional From implementations
+- ✅ 6 integration tests passing
+- ✅ Documentation with correct syntax examples (PathBuf, not Path)
+- ✅ Committed: feat(macros) commit on method-reflection-macros branch
+
+### Milestone 2: Method Discovery & Parameter Generation - COMPLETE
+- ✅ Module structure in `elicitation_derive/src/method_reflection/`
+  - `mod.rs` - Pipeline orchestration
+  - `discovery.rs` - Method extraction from impl blocks
+  - `params.rs` - Parameter struct generation with conversions
+  - `wrapper.rs` - Wrapper method generation logic
+- ✅ Method discovery from user-provided impl blocks
+- ✅ Parameter struct generation with #[derive(Elicit, JsonSchema)]
+- ✅ Type conversions: &str → String, &[T] → Vec<T>, &T → T
+- ✅ Return type extraction (Result<T, E> → T)
+- ✅ 13 unit tests passing (discovery + params + wrapper modules)
+- ✅ 4 integration tests passing
+- ✅ Wrapper generation logic implemented and tested
+- ✅ Committed: feat(derive) commits
+
+### Current State
+The `#[reflect_methods]` macro currently:
+1. Discovers public methods from impl blocks
+2. Generates parameter structs with type conversions
+3. Preserves original impl block (methods work via Deref)
+
+Wrapper method generation logic is **implemented and tested** but **not yet integrated** into the pipeline. This allows us to:
+- Keep original methods functional (via Deref)
+- Generate parameter structs for type safety
+- Defer MCP tool wrapper integration to next phase
+
+### Next Steps
+1. **Integrate wrapper generation** - Make it opt-in or default
+2. **Reference conversion warnings** - Emit warnings for large clones
+3. **Generic support** - Add JsonSchema bounds
+4. **Documentation** - Update user guide with examples
+
 ## Executive Summary
 
 Automatically generate MCP tool wrappers for third-party crate methods through **newtype-based method reflection**. This enables instant AI tool integration for any Rust library with minimal configuration, while maintaining formal verification guarantees.
