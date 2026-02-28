@@ -10,12 +10,20 @@
 ///
 /// # Usage with Custom Name (Required)
 ///
-/// Due to macro limitations, you must specify the wrapper name explicitly:
+/// Due to macro limitations, you must specify the wrapper name explicitly.
+/// The syntax is: `elicit_newtype!(path::to::Type, as WrapperName);`
+///
+/// **Note:** The first argument must be a valid type path. Use concrete types like
+/// `std::path::PathBuf`, not type aliases like `std::path::Path`.
 ///
 /// ```ignore
 /// use elicitation::elicit_newtype;
 ///
-/// // Wrap reqwest::Client as Client
+/// // Standard library types (best practice: use :: prefix for clarity)
+/// elicit_newtype!(::std::path::PathBuf, as PathBuf);
+/// elicit_newtype!(::std::collections::HashMap<String, i32>, as IntMap);
+///
+/// // Third-party crates (companion crate pattern)
 /// elicit_newtype!(reqwest::Client, as Client);
 ///
 /// // Generates:
@@ -27,10 +35,10 @@
 /// // }
 /// ```
 ///
-/// #Generated Code
+/// # Generated Code
 ///
 /// The macro generates:
-/// - Newtype struct with `derive_more` traits (Deref, DerefMut, From, AsRef, AsMut)
+/// - Newtype struct with `derive_more` traits (Deref, DerefMut, From, AsRef)
 /// - Manual `From` impl for unwrapping direction
 /// - Debug and Clone derives
 /// - All fields are public for maximum transparency
@@ -50,8 +58,8 @@
 /// ```
 #[macro_export]
 macro_rules! elicit_newtype {
-    // With custom name (required pattern)
-    // elicit_newtype!(reqwest::Client, as Client);
+    // Syntax: elicit_newtype!(path::to::Type, as WrapperName);
+    // Example: elicit_newtype!(::std::path::PathBuf, as PathBuf);
     ($inner_path:path, as $wrapper_name:ident) => {
         #[derive(
             ::std::fmt::Debug,
@@ -77,18 +85,28 @@ macro_rules! elicit_newtype {
 /// This is a convenience macro for generating multiple newtypes at once,
 /// typically used in companion crates.
 ///
+/// # Syntax
+///
+/// Items are separated by **semicolons**, with an optional trailing semicolon.
+/// Each item uses the same syntax as `elicit_newtype!`: `path::to::Type, as Name`
+///
 /// # Example
 ///
 /// ```ignore
 /// use elicitation::elicit_newtypes;
 ///
+/// // Semicolon-separated items (trailing semicolon optional)
 /// elicit_newtypes! {
+///     ::std::path::PathBuf, as PathBuf;
+///     ::std::collections::HashMap<String, i32>, as IntMap;
 ///     reqwest::Client, as Client;
 ///     reqwest::Request, as Request;
-///     reqwest::Response, as Response;
+///     reqwest::Response, as Response
 /// }
 ///
 /// // Generates:
+/// // pub struct PathBuf(pub ::std::path::PathBuf);
+/// // pub struct IntMap(pub ::std::collections::HashMap<String, i32>);
 /// // pub struct Client(pub reqwest::Client);
 /// // pub struct Request(pub reqwest::Request);
 /// // pub struct Response(pub reqwest::Response);
