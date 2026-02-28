@@ -30,6 +30,8 @@ elicitation_rand = { path = "../elicitation_rand" }
 tracing = { workspace = true }
 rmcp = { workspace = true }
 serde_json = { workspace = true }
+schemars = { workspace = true }
+derive_more = { workspace = true }
 chrono = { workspace = true }
 time = { workspace = true }
 jiff = { workspace = true }

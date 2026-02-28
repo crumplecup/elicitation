@@ -13,7 +13,11 @@
 //!
 //! // Automatically discover and wrap methods
 //! #[reflect_methods]
-//! impl PathBuf { }
+//! impl PathBuf {
+//!     pub fn exists(&self) -> bool {
+//!         self.0.exists()
+//!     }
+//! }
 //! ```
 //!
 //! This generates:
@@ -25,23 +29,40 @@ mod discovery;
 mod params;
 mod wrapper;
 
+use discovery::discover_methods;
+use params::generate_param_struct;
 use proc_macro::TokenStream;
+use proc_macro2::TokenStream as TokenStream2;
+use quote::quote;
 use syn::{parse_macro_input, ItemImpl};
 
 /// Entry point for the #[reflect_methods] attribute macro.
 ///
 /// This macro:
 /// 1. Parses the impl block
-/// 2. Discovers public methods on the wrapped type
+/// 2. Discovers public methods that the user has added
 /// 3. Generates parameter structs for method arguments
-/// 4. Generates wrapper methods with #[tool] attributes
+/// 4. Keeps the original impl block intact
 pub fn expand(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let impl_block = parse_macro_input!(item as ItemImpl);
 
-    // TODO: Implement method discovery
-    // TODO: Generate parameter structs
-    // TODO: Generate wrapper methods
+    // Discover methods from the impl block
+    let methods = discover_methods(&impl_block);
 
-    // For now, return the impl block unchanged
-    TokenStream::from(quote::quote! { #impl_block })
+    // Generate parameter structs for each method
+    let param_structs: Vec<TokenStream2> = methods
+        .iter()
+        .filter(|method| !method.params.is_empty()) // Only generate if method has parameters
+        .map(|method| generate_param_struct(&method.name, &method.params))
+        .collect();
+
+    // TODO: Generate wrapper methods with #[tool] attributes
+    // For now, we'll keep the original impl block and just add parameter structs
+
+    // Output: parameter structs + original impl block
+    TokenStream::from(quote! {
+        #(#param_structs)*
+
+        #impl_block
+    })
 }

@@ -3,7 +3,7 @@
 //! This module provides functionality to discover public methods on wrapped types
 //! through compile-time introspection.
 
-use syn::{FnArg, ImplItemFn, ItemImpl, ReturnType, Signature, Type, Visibility};
+use syn::{FnArg, ImplItemFn, ItemImpl, ReturnType, Signature, Visibility};
 
 /// Information about a discovered method.
 #[derive(Debug, Clone)]
@@ -26,41 +26,79 @@ pub struct MethodInfo {
 
 /// Discovers public methods from an impl block.
 ///
-/// This extracts all public method signatures from the newtype's inner type.
-/// Currently this is a placeholder - actual discovery will require:
-/// 1. Extracting the inner type from the newtype
-/// 2. Querying the compiler for available methods (challenging at proc macro time)
-/// 3. Or requiring users to manually list methods to wrap
+/// This extracts all public method signatures that the user has explicitly
+/// added to the impl block. Users write the methods they want to wrap,
+/// and we generate parameter structs and MCP tool wrappers for them.
 ///
-/// For now, we'll implement a simpler approach: the user provides an empty
-/// impl block and we generate wrappers for all methods they explicitly add.
-pub fn discover_methods(_impl_block: &ItemImpl) -> Vec<MethodInfo> {
-    // TODO: Implement actual method discovery
-    // This is challenging because:
-    // 1. We need to know what methods exist on reqwest::Client at proc macro time
-    // 2. Proc macros run before type checking, so we can't query the type system
-    // 3. We can't easily inspect methods on external types
-    //
-    // Possible approaches:
-    // A) Require explicit method signatures in impl block (user lists what to wrap)
-    // B) Use a configuration file/macro with method names
-    // C) Generate at runtime using reflection (not available in Rust)
-    //
-    // For Milestone 2, we'll use approach A: users add method signatures to wrap
-
-    vec![]
+/// # Approach
+///
+/// Users add explicit method signatures to the impl block:
+/// ```ignore
+/// #[reflect_methods]
+/// impl Client {
+///     pub async fn get(&self, url: &str) -> Result<Response, Error> {
+///         self.0.get(url).await
+///     }
+/// }
+/// ```
+///
+/// We extract these methods and generate wrappers for each one.
+pub fn discover_methods(impl_block: &ItemImpl) -> Vec<MethodInfo> {
+    impl_block
+        .items
+        .iter()
+        .filter_map(|item| {
+            if let syn::ImplItem::Fn(method) = item {
+                // Only process public methods
+                if matches!(method.vis, Visibility::Public(_)) {
+                    extract_method_info(method)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        })
+        .collect()
 }
 
-/// Extracts the inner type from a newtype wrapper.
-///
-/// Given `impl TypeName`, determines what inner type is being wrapped.
-/// This requires the newtype to follow the standard pattern:
-/// `pub struct TypeName(pub InnerType);`
-fn extract_inner_type(_impl_block: &ItemImpl) -> Option<Type> {
-    // TODO: Parse the newtype struct to find the inner type
-    // This requires reading the struct definition, which isn't available
-    // in the impl block alone
-    None
+/// Extracts method information from a method definition.
+fn extract_method_info(method: &ImplItemFn) -> Option<MethodInfo> {
+    let name = method.sig.ident.to_string();
+    let signature = method.sig.clone();
+    let visibility = method.vis.clone();
+
+    // Analyze self parameter
+    let mut has_self = false;
+    let mut has_mut_self = false;
+
+    // Extract non-self parameters
+    let params: Vec<FnArg> = signature
+        .inputs
+        .iter()
+        .filter_map(|arg| {
+            match arg {
+                FnArg::Receiver(receiver) => {
+                    has_self = true;
+                    has_mut_self = receiver.mutability.is_some();
+                    None
+                }
+                FnArg::Typed(_) => Some(arg.clone()),
+            }
+        })
+        .collect();
+
+    let return_type = signature.output.clone();
+
+    Some(MethodInfo {
+        name,
+        signature,
+        visibility,
+        has_self,
+        has_mut_self,
+        params,
+        return_type,
+    })
 }
 
 #[cfg(test)]
@@ -68,9 +106,66 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_discover_methods_placeholder() {
-        // Placeholder test - will implement when discovery is ready
-        let methods: Vec<MethodInfo> = vec![];
+    fn test_discover_methods_from_impl_block() {
+        // Parse a sample impl block
+        let impl_block: ItemImpl = syn::parse_quote! {
+            impl Client {
+                pub fn get(&self, url: &str) -> Result<Response, Error> {
+                    self.0.get(url)
+                }
+
+                pub async fn post(&self, url: &str, body: Vec<u8>) -> Result<Response, Error> {
+                    self.0.post(url, body).await
+                }
+
+                // Private method - should be filtered out
+                fn internal_helper(&self) -> bool {
+                    true
+                }
+            }
+        };
+
+        let methods = discover_methods(&impl_block);
+
+        // Should discover 2 public methods, ignoring the private one
+        assert_eq!(methods.len(), 2);
+
+        // Check first method
+        assert_eq!(methods[0].name, "get");
+        assert_eq!(methods[0].has_self, true);
+        assert_eq!(methods[0].has_mut_self, false);
+        assert_eq!(methods[0].params.len(), 1); // url parameter
+
+        // Check second method
+        assert_eq!(methods[1].name, "post");
+        assert_eq!(methods[1].has_self, true);
+        assert_eq!(methods[1].params.len(), 2); // url and body parameters
+    }
+
+    #[test]
+    fn test_discover_no_methods() {
+        let impl_block: ItemImpl = syn::parse_quote! {
+            impl Client {
+                // No methods
+            }
+        };
+
+        let methods = discover_methods(&impl_block);
         assert_eq!(methods.len(), 0);
+    }
+
+    #[test]
+    fn test_extract_method_with_mut_self() {
+        let impl_block: ItemImpl = syn::parse_quote! {
+            impl Client {
+                pub fn modify(&mut self, value: i32) {
+                    self.0 = value;
+                }
+            }
+        };
+
+        let methods = discover_methods(&impl_block);
+        assert_eq!(methods.len(), 1);
+        assert_eq!(methods[0].has_mut_self, true);
     }
 }
