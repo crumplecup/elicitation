@@ -108,6 +108,11 @@ mod tool_registry;
 // Router macro module (declarative macro)
 #[macro_use]
 mod router_macro;
+
+// Newtype wrapper macro module (declarative macros)
+#[macro_use]
+mod newtype_macro;
+
 mod traits;
 
 #[cfg(feature = "serde_json")]
