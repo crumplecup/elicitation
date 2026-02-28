@@ -85,6 +85,7 @@ extern crate proc_macro;
 mod contract_type;
 mod derive_elicit;
 mod enum_impl;
+mod method_reflection;
 mod rand_contract_parser;
 mod rand_generator_impl;
 mod struct_impl;
@@ -284,4 +285,92 @@ pub fn derive_rand(input: TokenStream) -> TokenStream {
     rand_generator_impl::expand_derive_rand(&input)
         .unwrap_or_else(|err| err.to_compile_error())
         .into()
+}
+
+/// Automatically discovers and wraps methods for MCP tool generation.
+///
+/// This attribute macro enables automatic method reflection on newtype wrappers,
+/// generating parameter structs and MCP tool interfaces.
+///
+/// # Basic Usage
+///
+/// ```rust,ignore
+/// use elicitation::elicit_newtype;
+/// use elicitation_derive::reflect_methods;
+///
+/// // Create newtype wrapper
+/// elicit_newtype!(::std::path::PathBuf, as PathBuf);
+///
+/// // Auto-generate MCP tools for methods
+/// #[reflect_methods]
+/// impl PathBuf {
+///     // Add method signatures to wrap
+///     pub fn exists(&self) -> bool { self.0.exists() }
+/// }
+/// ```
+///
+/// # What It Generates
+///
+/// For each public method in the impl block:
+/// 1. A parameter struct with `#[derive(Elicit, JsonSchema)]`
+/// 2. A wrapper method marked with `#[tool]` for MCP registration
+/// 3. Automatic type conversions (`&str` → `String`, `&[T]` → `Vec<T>`)
+///
+/// # Example Expansion
+///
+/// Input:
+/// ```rust,ignore
+/// #[reflect_methods]
+/// impl Client {
+///     pub async fn get(&self, url: &str) -> Result<Response, Error> {
+///         self.0.get(url).await
+///     }
+/// }
+/// ```
+///
+/// Generates:
+/// ```rust,ignore
+/// #[derive(Debug, Clone, Elicit, JsonSchema)]
+/// pub struct GetParams {
+///     pub url: String,  // &str converted to String
+/// }
+///
+/// impl Client {
+///     #[tool(description = "Get resource from URL")]
+///     pub async fn get(
+///         &self,
+///         params: Parameters<GetParams>,
+///     ) -> Result<Json<Response>, ErrorData> {
+///         self.0.get(params.url.as_str())
+///             .await
+///             .map(Json)
+///             .map_err(|e| ErrorData::internal_error(e.to_string(), None))
+///     }
+/// }
+/// ```
+///
+/// # Configuration Attributes
+///
+/// ```rust,ignore
+/// #[reflect_methods(
+///     warn_clone_threshold = 1024,  // Warn for clones > 1KB
+///     allow_large_clones = false,   // Show warnings (default)
+/// )]
+/// impl Client { }
+/// ```
+///
+/// # Type Conversions
+///
+/// - `&str` → `String` (no warnings)
+/// - `&[T]` → `Vec<T>` (warn if large)
+/// - `&T` → `T` (warn if large, requires Clone)
+///
+/// # Limitations
+///
+/// - Currently requires explicit method signatures in impl block
+/// - Automatic discovery of external type methods not yet implemented
+/// - Generic methods require JsonSchema bounds (Milestone 3)
+#[proc_macro_attribute]
+pub fn reflect_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
+    method_reflection::expand(attr, item)
 }
