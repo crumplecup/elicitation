@@ -28,12 +28,14 @@ use syn::{FnArg, GenericArgument, Ident, PathArguments, ReturnType, Type, TypePa
 /// }
 /// ```
 pub fn generate_wrapper_method(
-    method_name: &str,
+    wrapper_method_name: &str,
+    original_method_name: &str,
     params: &[FnArg],
     return_type: &ReturnType,
     is_async: bool,
 ) -> TokenStream {
-    let method_ident = Ident::new(method_name, proc_macro2::Span::call_site());
+    let method_ident = Ident::new(wrapper_method_name, proc_macro2::Span::call_site());
+    let original_method_ident = Ident::new(original_method_name, proc_macro2::Span::call_site());
 
     // Extract the success type from the return type
     let response_type = extract_return_type(return_type);
@@ -43,8 +45,9 @@ pub fn generate_wrapper_method(
         // No parameters - no params argument needed
         (quote! {}, vec![])
     } else {
+        // Use original method name for parameter struct (not wrapper name)
         let params_struct = Ident::new(
-            &format!("{}Params", to_pascal_case(method_name)),
+            &format!("{}Params", to_pascal_case(original_method_name)),
             proc_macro2::Span::call_site(),
         );
 
@@ -70,14 +73,14 @@ pub fn generate_wrapper_method(
         )
     };
 
-    // Generate method call
+    // Generate method call - call the original method, not the wrapper
     let method_call = if is_async {
         quote! {
-            self.#method_ident(#(#param_conversions),*).await
+            self.#original_method_ident(#(#param_conversions),*).await
         }
     } else {
         quote! {
-            self.#method_ident(#(#param_conversions),*)
+            self.#original_method_ident(#(#param_conversions),*)
         }
     };
 
@@ -90,10 +93,10 @@ pub fn generate_wrapper_method(
         quote! {}
     };
 
-    let tool_description = format!("{} operation", method_name.replace('_', " "));
+    let tool_description = format!("{} operation", original_method_name.replace('_', " "));
 
     quote! {
-        #[doc = concat!("`", #method_name, "` wrapper method.")]
+        #[doc = concat!("`", #original_method_name, "` MCP tool wrapper method.")]
         #[::rmcp::tool(description = #tool_description)]
         pub #async_keyword fn #method_ident(
             &self,
@@ -110,9 +113,11 @@ pub fn generate_wrapper_method(
 /// Generates conversion code for a parameter.
 ///
 /// Examples:
-/// - `url: String` → `params.url.as_str()` (for &str parameter)
-/// - `data: Vec<u8>` → `&params.data` (for &[u8] parameter)
-/// - `value: i32` → `params.value` (for owned parameter)
+/// - `url: String` → `params.0.url.as_str()` (for &str parameter)
+/// - `data: Vec<u8>` → `&params.0.data` (for &[u8] parameter)
+/// - `value: i32` → `params.0.value` (for owned parameter)
+///
+/// Note: Parameters<T> is a tuple struct, so we access the inner value via `.0`
 fn generate_param_conversion(name: &Ident, ty: &Type) -> TokenStream {
     match ty {
         Type::Reference(type_ref) => {
@@ -120,21 +125,21 @@ fn generate_param_conversion(name: &Ident, ty: &Type) -> TokenStream {
             if let Type::Path(type_path) = &*type_ref.elem {
                 if let Some(segment) = type_path.path.segments.last() {
                     if segment.ident == "str" {
-                        return quote! { params.#name.as_str() };
+                        return quote! { params.0.#name.as_str() };
                     }
                 }
             }
 
-            // &[T]: use &params.name
+            // &[T]: use &params.0.name
             if matches!(&*type_ref.elem, Type::Slice(_)) {
-                return quote! { &params.#name };
+                return quote! { &params.0.#name };
             }
 
-            // &T: use &params.name
-            quote! { &params.#name }
+            // &T: use &params.0.name
+            quote! { &params.0.#name }
         }
         // Owned type: direct access
-        _ => quote! { params.#name },
+        _ => quote! { params.0.#name },
     }
 }
 
@@ -235,10 +240,11 @@ mod tests {
         let name = Ident::new("url", proc_macro2::Span::call_site());
         let ty: Type = syn::parse_quote! { &str };
         let conversion = generate_param_conversion(&name, &ty);
-        assert_eq!(
-            quote! { #conversion }.to_string(),
-            quote! { params.url.as_str() }.to_string()
-        );
+        let conversion_str = quote! { #conversion }.to_string();
+        // Check that it accesses params.0.url and calls as_str()
+        assert!(conversion_str.contains("params"));
+        assert!(conversion_str.contains("url"));
+        assert!(conversion_str.contains("as_str"));
     }
 
     #[test]
@@ -246,10 +252,10 @@ mod tests {
         let name = Ident::new("count", proc_macro2::Span::call_site());
         let ty: Type = syn::parse_quote! { i32 };
         let conversion = generate_param_conversion(&name, &ty);
-        assert_eq!(
-            quote! { #conversion }.to_string(),
-            quote! { params.count }.to_string()
-        );
+        let conversion_str = quote! { #conversion }.to_string();
+        // Check that it accesses params.0.count
+        assert!(conversion_str.contains("params"));
+        assert!(conversion_str.contains("count"));
     }
 
     #[test]
@@ -305,15 +311,16 @@ mod tests {
         let params: Vec<FnArg> = vec![syn::parse_quote! { url: &str }];
         let return_ty: ReturnType = syn::parse_quote! { -> Result<Response, Error> };
 
-        let wrapper = generate_wrapper_method("get", &params, &return_ty, false);
+        let wrapper = generate_wrapper_method("get_tool", "get", &params, &return_ty, false);
         let wrapper_str = wrapper.to_string();
 
         // Verify key components are present
-        assert!(wrapper_str.contains("GetParams"));
-        assert!(wrapper_str.contains("pub fn get"));
+        assert!(wrapper_str.contains("GetParams"));  // Based on original name
+        assert!(wrapper_str.contains("pub fn get_tool"));  // Wrapper name
         assert!(wrapper_str.contains("tool"));  // #[tool] attribute
         assert!(wrapper_str.contains("rmcp"));
         assert!(wrapper_str.contains("as_str")); // params.url.as_str()
+        assert!(wrapper_str.contains("self . get"));  // Calls original method
     }
 
     #[test]
@@ -321,14 +328,15 @@ mod tests {
         let params: Vec<FnArg> = vec![];
         let return_ty: ReturnType = syn::parse_quote! { -> usize };
 
-        let wrapper = generate_wrapper_method("len", &params, &return_ty, false);
+        let wrapper = generate_wrapper_method("len_tool", "len", &params, &return_ty, false);
         let wrapper_str = wrapper.to_string();
 
         // Should not have Parameters argument
         assert!(!wrapper_str.contains("Parameters"));
-        assert!(wrapper_str.contains("pub fn len"));
+        assert!(wrapper_str.contains("pub fn len_tool"));  // Wrapper name
         assert!(wrapper_str.contains("tool"));  // #[tool] attribute
         assert!(wrapper_str.contains("rmcp"));
+        assert!(wrapper_str.contains("self . len"));  // Calls original method
     }
 
     #[test]
@@ -336,11 +344,12 @@ mod tests {
         let params: Vec<FnArg> = vec![syn::parse_quote! { url: &str }];
         let return_ty: ReturnType = syn::parse_quote! { -> Result<Response, Error> };
 
-        let wrapper = generate_wrapper_method("fetch", &params, &return_ty, true);
+        let wrapper = generate_wrapper_method("fetch_tool", "fetch", &params, &return_ty, true);
         let wrapper_str = wrapper.to_string();
 
         // Verify async keyword is present
-        assert!(wrapper_str.contains("pub async fn fetch"));
+        assert!(wrapper_str.contains("pub async fn fetch_tool"));  // Wrapper name
         assert!(wrapper_str.contains(". await"));
+        assert!(wrapper_str.contains("self . fetch"));  // Calls original method
     }
 }

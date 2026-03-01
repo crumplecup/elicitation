@@ -82,3 +82,50 @@ fn test_method_with_slice_param() {
     let result = client.extend_with(&[1, 2], 2);
     assert_eq!(result, vec![0, 1, 2, 1, 2]);
 }
+
+// Test that MCP tool wrapper methods are generated
+#[test]
+fn test_wrapper_methods_generated() {
+    use rmcp::handler::server::wrapper::{Json, Parameters};
+
+    let client = StringClient("hello".to_string());
+
+    // Test append_tool wrapper
+    let params = Parameters(AppendParams {
+        suffix: " world".to_string(),
+    });
+    let result = client.append_tool(params);
+    assert!(result.is_ok());
+    let Json(value) = result.unwrap();
+    assert_eq!(value, "hello world");
+
+    // Test repeat_tool wrapper
+    let params = Parameters(RepeatParams { times: 3 });
+    let result = client.repeat_tool(params);
+    assert!(result.is_ok());
+    let Json(value) = result.unwrap();
+    assert_eq!(value, "hellohellohello");
+
+    // Test len_tool wrapper (no params)
+    let result = client.len_tool();
+    assert!(result.is_ok());
+    let Json(value) = result.unwrap();
+    assert_eq!(value, 5);
+}
+
+#[test]
+fn test_wrapper_with_slice_param() {
+    use rmcp::handler::server::wrapper::{Json, Parameters};
+
+    let client = ByteClient(vec![0]);
+
+    let params = Parameters(ExtendWithParams {
+        data: vec![1, 2],
+        count: 2,
+    });
+
+    let result = client.extend_with_tool(params);
+    assert!(result.is_ok());
+    let Json(value) = result.unwrap();
+    assert_eq!(value, vec![0, 1, 2, 1, 2]);
+}
