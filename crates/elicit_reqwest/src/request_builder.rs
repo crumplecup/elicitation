@@ -9,4 +9,14 @@
 
 use elicitation::elicit_newtype;
 
+// Note: reqwest::RequestBuilder does not implement Clone, so we cannot use
+// consuming methods with `elicit_newtype_methods!` (the fallback clone path
+// would fail compilation even if never executed).
+//
+// This is a known limitation of declarative macros - proc macros could handle
+// this by generating conditional code based on trait bounds.
+//
+// For Phase 2 demonstration, we use only the basic newtype wrapper.
+// Phase 3 will use #[reflect_methods] proc macro for generic methods.
+
 elicit_newtype!(reqwest::RequestBuilder, as RequestBuilder);

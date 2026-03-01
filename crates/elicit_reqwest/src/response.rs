@@ -8,4 +8,10 @@
 
 use elicitation::elicit_newtype;
 
+// Note: reqwest::Response does not implement Clone, so we cannot use
+// consuming methods with `elicit_newtype_methods!` (same limitation as RequestBuilder).
+//
+// For Phase 2 demonstration, we use only the basic newtype wrapper.
+// Phase 3 will use #[reflect_methods] proc macro for generic methods.
+
 elicit_newtype!(reqwest::Response, as Response);
