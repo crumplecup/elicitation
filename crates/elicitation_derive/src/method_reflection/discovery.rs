@@ -18,12 +18,19 @@ pub struct MethodInfo {
     pub return_type: ReturnType,
     /// Generic parameters (type parameters, lifetimes, const params)
     pub generics: Generics,
+    /// Whether this method consumes self (true) or borrows &self (false)
+    pub is_consuming: bool,
 }
 
 impl MethodInfo {
     /// Returns true if this method has generic type parameters.
     pub fn is_generic(&self) -> bool {
         !self.generics.params.is_empty()
+    }
+
+    /// Returns true if this method consumes self instead of borrowing &self.
+    pub fn is_consuming(&self) -> bool {
+        self.is_consuming
     }
 }
 
@@ -70,6 +77,17 @@ fn extract_method_info(method: &ImplItemFn) -> Option<MethodInfo> {
     let name = method.sig.ident.to_string();
     let signature = method.sig.clone();
 
+    // Detect if method consumes self or borrows &self
+    let is_consuming = signature.inputs.iter().any(|arg| {
+        if let FnArg::Receiver(receiver) = arg {
+            // If there's no reference, it's consuming (self)
+            // If there's a reference, it's borrowing (&self)
+            receiver.reference.is_none()
+        } else {
+            false
+        }
+    });
+
     // Extract non-self parameters
     let params: Vec<FnArg> = signature
         .inputs
@@ -89,6 +107,7 @@ fn extract_method_info(method: &ImplItemFn) -> Option<MethodInfo> {
         params,
         return_type,
         generics,
+        is_consuming,
     })
 }
 

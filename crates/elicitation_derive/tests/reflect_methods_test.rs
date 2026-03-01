@@ -45,8 +45,8 @@ fn test_param_struct_generation() {
 
 #[test]
 fn test_original_methods_still_work() {
-    // Use the newtype constructor directly
-    let client = StringClient("hello".to_string());
+    // Use the newtype constructor via From
+    let client = StringClient::from("hello".to_string());
 
     // Original methods should still work
     assert_eq!(client.len(), 5);
@@ -60,7 +60,8 @@ elicit_newtype!(Vec<u8>, as ByteClient);
 #[reflect_methods]
 impl ByteClient {
     pub fn extend_with(&self, data: &[u8], count: usize) -> Vec<u8> {
-        let mut result = self.0.clone();
+        // Deref Arc and clone the inner Vec
+        let mut result = (*self.0).clone();
         for _ in 0..count {
             result.extend_from_slice(data);
         }
@@ -82,7 +83,7 @@ fn test_slice_conversion() {
 
 #[test]
 fn test_method_with_slice_param() {
-    let client = ByteClient(vec![0]);
+    let client = ByteClient::from(vec![0]);
     let result = client.extend_with(&[1, 2], 2);
     assert_eq!(result, vec![0, 1, 2, 1, 2]);
 }
@@ -92,7 +93,7 @@ fn test_method_with_slice_param() {
 fn test_wrapper_methods_generated() {
     use rmcp::handler::server::wrapper::{Json, Parameters};
 
-    let client = StringClient("hello".to_string());
+    let client = StringClient::from("hello".to_string());
 
     // Test append_tool wrapper
     let params = Parameters(AppendParams {
@@ -121,7 +122,7 @@ fn test_wrapper_methods_generated() {
 fn test_wrapper_with_slice_param() {
     use rmcp::handler::server::wrapper::{Json, Parameters};
 
-    let client = ByteClient(vec![0]);
+    let client = ByteClient::from(vec![0]);
 
     let params = Parameters(ExtendWithParams {
         data: vec![1, 2],
