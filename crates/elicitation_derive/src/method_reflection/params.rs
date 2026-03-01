@@ -5,9 +5,11 @@
 
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{FnArg, Ident, Type};
+use syn::{FnArg, Generics, Ident, Type};
 
 /// Generates a parameter struct for a method's arguments.
+///
+/// # Non-Generic Method
 ///
 /// Given method signature: `fn get(url: &str, timeout: u64) -> Response`
 /// Generates:
@@ -18,9 +20,24 @@ use syn::{FnArg, Ident, Type};
 ///     pub timeout: u64,
 /// }
 /// ```
+///
+/// # Generic Method
+///
+/// Given method signature: `fn contains<T>(item: &T) -> bool where T: Elicitation + JsonSchema`
+/// Generates:
+/// ```ignore
+/// #[derive(Debug, Clone, Elicit, JsonSchema)]
+/// pub struct ContainsParams<T>
+/// where
+///     T: Elicitation + JsonSchema,
+/// {
+///     pub item: T,  // Reference removed, requires owned type
+/// }
+/// ```
 pub fn generate_param_struct(
     method_name: &str,
     params: &[FnArg],
+    generics: &Generics,
 ) -> TokenStream {
     let struct_name = format!("{}Params", to_pascal_case(method_name));
     let struct_ident = Ident::new(&struct_name, proc_macro2::Span::call_site());
@@ -49,15 +66,38 @@ pub fn generate_param_struct(
         })
         .collect();
 
-    quote! {
-        #[derive(
-            ::std::fmt::Debug,
-            ::std::clone::Clone,
-            ::elicitation::Elicit,
-            ::schemars::JsonSchema,
-        )]
-        pub struct #struct_ident {
-            #(#fields),*
+    // Extract generic params and where clause
+    let generic_params = &generics.params;
+    let where_clause = &generics.where_clause;
+
+    // Generate struct with or without generics
+    if generic_params.is_empty() {
+        // Non-generic struct
+        quote! {
+            #[derive(
+                ::std::fmt::Debug,
+                ::std::clone::Clone,
+                ::elicitation::Elicit,
+                ::schemars::JsonSchema,
+            )]
+            pub struct #struct_ident {
+                #(#fields),*
+            }
+        }
+    } else {
+        // Generic struct
+        quote! {
+            #[derive(
+                ::std::fmt::Debug,
+                ::std::clone::Clone,
+                ::elicitation::Elicit,
+                ::schemars::JsonSchema,
+            )]
+            pub struct #struct_ident<#generic_params>
+            #where_clause
+            {
+                #(#fields),*
+            }
         }
     }
 }
@@ -134,5 +174,80 @@ mod tests {
         let converted = convert_param_type(&ty);
         let expected: Type = syn::parse_quote! { Vec<u8> };
         assert_eq!(quote! { #converted }.to_string(), quote! { #expected }.to_string());
+    }
+
+    /// Helper to extract generics from a function signature
+    fn parse_sig_generics(sig: &str) -> Generics {
+        let sig: syn::Signature = syn::parse_str(sig).unwrap();
+        sig.generics
+    }
+
+    #[test]
+    fn test_generate_param_struct_non_generic() {
+        let params: Vec<FnArg> = vec![
+            syn::parse_quote! { url: &str },
+            syn::parse_quote! { timeout: u64 },
+        ];
+        let generics = parse_sig_generics("fn get()");
+
+        let output = generate_param_struct("get", &params, &generics);
+        let output_str = output.to_string();
+
+        // Verify struct name
+        assert!(output_str.contains("GetParams"));
+        // Verify fields
+        assert!(output_str.contains("url"));
+        assert!(output_str.contains("String")); // &str converted to String
+        assert!(output_str.contains("timeout"));
+        assert!(output_str.contains("u64"));
+        // Verify derives
+        assert!(output_str.contains("Elicit"));
+        assert!(output_str.contains("JsonSchema"));
+    }
+
+    #[test]
+    fn test_generate_param_struct_generic() {
+        let params: Vec<FnArg> = vec![
+            syn::parse_quote! { item: &T },
+        ];
+        let generics = parse_sig_generics("fn contains<T>() where T: Elicitation + JsonSchema");
+
+        let output = generate_param_struct("contains", &params, &generics);
+        let output_str = output.to_string();
+
+        // Verify struct has generic parameter
+        assert!(output_str.contains("ContainsParams"));
+        assert!(output_str.contains("<"));
+        assert!(output_str.contains("T"));
+        // Verify where clause
+        assert!(output_str.contains("where"));
+        assert!(output_str.contains("Elicitation"));
+        assert!(output_str.contains("JsonSchema"));
+        // Verify field type is T (not &T)
+        assert!(output_str.contains("item"));
+    }
+
+    #[test]
+    fn test_generate_param_struct_multiple_generics() {
+        let params: Vec<FnArg> = vec![
+            syn::parse_quote! { key: K },
+            syn::parse_quote! { value: V },
+        ];
+        let generics = parse_sig_generics(
+            "fn insert<K, V>() where K: Elicitation + JsonSchema + Hash, V: Elicitation + JsonSchema"
+        );
+
+        let output = generate_param_struct("insert", &params, &generics);
+        let output_str = output.to_string();
+
+        // Verify struct has multiple generic parameters
+        assert!(output_str.contains("InsertParams"));
+        assert!(output_str.contains("K"));
+        assert!(output_str.contains("V"));
+        // Verify where clause with multiple bounds
+        assert!(output_str.contains("Hash"));
+        // Verify fields
+        assert!(output_str.contains("key"));
+        assert!(output_str.contains("value"));
     }
 }

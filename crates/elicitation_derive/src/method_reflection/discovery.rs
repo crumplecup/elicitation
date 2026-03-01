@@ -3,7 +3,7 @@
 //! This module provides functionality to discover public methods on wrapped types
 //! through compile-time introspection.
 
-use syn::{FnArg, ImplItemFn, ItemImpl, ReturnType, Signature, Visibility};
+use syn::{FnArg, Generics, ImplItemFn, ItemImpl, ReturnType, Signature, Visibility};
 
 /// Information about a discovered method.
 #[derive(Debug, Clone)]
@@ -16,6 +16,15 @@ pub struct MethodInfo {
     pub params: Vec<FnArg>,
     /// Return type
     pub return_type: ReturnType,
+    /// Generic parameters (type parameters, lifetimes, const params)
+    pub generics: Generics,
+}
+
+impl MethodInfo {
+    /// Returns true if this method has generic type parameters.
+    pub fn is_generic(&self) -> bool {
+        !self.generics.params.is_empty()
+    }
 }
 
 /// Discovers public methods from an impl block.
@@ -74,12 +83,14 @@ fn extract_method_info(method: &ImplItemFn) -> Option<MethodInfo> {
         .collect();
 
     let return_type = signature.output.clone();
+    let generics = signature.generics.clone();
 
     Some(MethodInfo {
         name,
         signature,
         params,
         return_type,
+        generics,
     })
 }
 
@@ -131,5 +142,76 @@ mod tests {
 
         let methods = discover_methods(&impl_block);
         assert_eq!(methods.len(), 0);
+    }
+
+    #[test]
+    fn test_discover_generic_methods() {
+        let impl_block: ItemImpl = syn::parse_quote! {
+            impl StringList {
+                pub fn contains<T>(&self, item: &T) -> bool
+                where
+                    T: Elicitation + JsonSchema + PartialEq,
+                {
+                    self.0.contains(item)
+                }
+
+                pub fn insert<K, V>(&mut self, key: K, value: V) -> Option<V>
+                where
+                    K: Elicitation + JsonSchema + Hash + Eq,
+                    V: Elicitation + JsonSchema,
+                {
+                    self.0.insert(key, value)
+                }
+            }
+        };
+
+        let methods = discover_methods(&impl_block);
+
+        // Should discover 2 generic methods
+        assert_eq!(methods.len(), 2);
+
+        // Check first method - has 1 type parameter
+        assert_eq!(methods[0].name, "contains");
+        assert_eq!(methods[0].params.len(), 1); // item parameter
+        assert!(methods[0].is_generic());
+        assert_eq!(methods[0].generics.params.len(), 1); // T
+
+        // Check second method - has 2 type parameters
+        assert_eq!(methods[1].name, "insert");
+        assert_eq!(methods[1].params.len(), 2); // key and value parameters
+        assert!(methods[1].is_generic());
+        assert_eq!(methods[1].generics.params.len(), 2); // K, V
+    }
+
+    #[test]
+    fn test_discover_mixed_generic_non_generic() {
+        let impl_block: ItemImpl = syn::parse_quote! {
+            impl Client {
+                pub fn get(&self, url: &str) -> Result<Response, Error> {
+                    self.0.get(url)
+                }
+
+                pub fn fetch<T>(&self, url: &str) -> Result<T, Error>
+                where
+                    T: Elicitation + JsonSchema,
+                {
+                    self.0.fetch(url)
+                }
+            }
+        };
+
+        let methods = discover_methods(&impl_block);
+
+        assert_eq!(methods.len(), 2);
+
+        // First method is non-generic
+        assert_eq!(methods[0].name, "get");
+        assert!(!methods[0].is_generic());
+        assert_eq!(methods[0].generics.params.len(), 0);
+
+        // Second method is generic
+        assert_eq!(methods[1].name, "fetch");
+        assert!(methods[1].is_generic());
+        assert_eq!(methods[1].generics.params.len(), 1);
     }
 }

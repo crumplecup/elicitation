@@ -27,10 +27,12 @@
 
 mod discovery;
 mod params;
+mod validation;
 mod wrapper;
 
 use discovery::discover_methods;
 use params::generate_param_struct;
+use validation::validate_generic_bounds;
 use wrapper::generate_wrapper_method;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
@@ -42,10 +44,14 @@ use syn::{parse_macro_input, ItemImpl};
 /// This macro:
 /// 1. Parses the impl block
 /// 2. Discovers public methods that the user has added
-/// 3. Generates parameter structs for method arguments
-/// 4. Generates MCP tool wrapper methods with #[tool] attributes
-/// 5. Keeps the original impl block intact
+/// 3. Validates that generic methods have required bounds
+/// 4. Generates parameter structs for method arguments
+/// 5. Generates MCP tool wrapper methods with #[tool] attributes
+/// 6. Keeps the original impl block intact
 pub fn expand(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    // Preserve the original token stream for output
+    let original_item = proc_macro2::TokenStream::from(item.clone());
+
     let impl_block = parse_macro_input!(item as ItemImpl);
 
     // Extract impl type for wrapper impl block
@@ -54,11 +60,20 @@ pub fn expand(_attr: TokenStream, item: TokenStream) -> TokenStream {
     // Discover methods from the impl block
     let methods = discover_methods(&impl_block);
 
+    // Validate generic bounds for all generic methods
+    for method in &methods {
+        if method.is_generic() {
+            if let Err(err) = validate_generic_bounds(&method.generics) {
+                return TokenStream::from(err.to_compile_error());
+            }
+        }
+    }
+
     // Generate parameter structs for each method
     let param_structs: Vec<TokenStream2> = methods
         .iter()
         .filter(|method| !method.params.is_empty()) // Only generate if method has parameters
-        .map(|method| generate_param_struct(&method.name, &method.params))
+        .map(|method| generate_param_struct(&method.name, &method.params, &method.generics))
         .collect();
 
     // Generate wrapper methods with #[tool] attributes
@@ -75,15 +90,18 @@ pub fn expand(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 &method.params,
                 &method.return_type,
                 is_async,
+                &method.generics,
             )
         })
         .collect();
 
     // Output: parameter structs + original impl block + wrapper impl block
+    // NOTE: We use the original_item TokenStream instead of #impl_block to preserve
+    // the exact original tokens and avoid any potential issues with ToTokens conversion
     TokenStream::from(quote! {
         #(#param_structs)*
 
-        #impl_block
+        #original_item
 
         // MCP tool wrappers
         impl #impl_type {

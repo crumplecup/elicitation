@@ -8,9 +8,14 @@
 
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{FnArg, GenericArgument, Ident, PathArguments, ReturnType, Type, TypePath};
+use syn::{
+    FnArg, GenericArgument, GenericParam, Generics, Ident, PathArguments, ReturnType, Type,
+    TypePath,
+};
 
 /// Generates a wrapper method that delegates to the inner type.
+///
+/// # Non-Generic Method
 ///
 /// Given method: `fn get(url: &str) -> Result<Response, Error>`
 /// Generates:
@@ -27,18 +32,56 @@ use syn::{FnArg, GenericArgument, Ident, PathArguments, ReturnType, Type, TypePa
 ///         .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))
 /// }
 /// ```
+///
+/// # Generic Method
+///
+/// Given method: `fn contains<T>(item: &T) -> bool where T: Elicitation + JsonSchema`
+/// Generates:
+/// ```ignore
+/// #[tool(description = "contains operation")]
+/// pub fn contains_tool<T>(
+///     &self,
+///     params: Parameters<ContainsParams<T>>,
+/// ) -> Result<Json<bool>, ErrorData>
+/// where
+///     T: Elicitation + JsonSchema,
+/// {
+///     let item = &params.0.item;
+///     self.contains::<T>(item)
+///         .map(Json)
+///         .map_err(|e| ErrorData::internal_error(e.to_string(), None))
+/// }
+/// ```
 pub fn generate_wrapper_method(
     wrapper_method_name: &str,
     original_method_name: &str,
     params: &[FnArg],
     return_type: &ReturnType,
     is_async: bool,
+    generics: &Generics,
 ) -> TokenStream {
     let method_ident = Ident::new(wrapper_method_name, proc_macro2::Span::call_site());
     let original_method_ident = Ident::new(original_method_name, proc_macro2::Span::call_site());
 
     // Extract the success type from the return type
     let response_type = extract_return_type(return_type);
+
+    // Extract generic components
+    let generic_params = &generics.params;
+    let where_clause = &generics.where_clause;
+    let is_generic = !generic_params.is_empty();
+
+    // Extract just type parameter names for turbofish (T, U, V...)
+    let turbofish_params: Vec<_> = generic_params
+        .iter()
+        .filter_map(|param| {
+            if let GenericParam::Type(type_param) = param {
+                Some(&type_param.ident)
+            } else {
+                None
+            }
+        })
+        .collect();
 
     // Generate parameter handling
     let (params_arg, param_conversions) = if params.is_empty() {
@@ -67,20 +110,37 @@ pub fn generate_wrapper_method(
             })
             .collect();
 
-        (
-            quote! { params: ::rmcp::handler::server::wrapper::Parameters<#params_struct>, },
-            conversions,
-        )
+        // Add generic parameters to params struct if method is generic
+        let params_type = if is_generic {
+            quote! { params: ::rmcp::handler::server::wrapper::Parameters<#params_struct<#(#turbofish_params),*>>, }
+        } else {
+            quote! { params: ::rmcp::handler::server::wrapper::Parameters<#params_struct>, }
+        };
+
+        (params_type, conversions)
     };
 
     // Generate method call - call the original method, not the wrapper
-    let method_call = if is_async {
-        quote! {
-            self.#original_method_ident(#(#param_conversions),*).await
+    // Add turbofish if method is generic
+    let method_call = if is_generic {
+        if is_async {
+            quote! {
+                self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*).await
+            }
+        } else {
+            quote! {
+                self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*)
+            }
         }
     } else {
-        quote! {
-            self.#original_method_ident(#(#param_conversions),*)
+        if is_async {
+            quote! {
+                self.#original_method_ident(#(#param_conversions),*).await
+            }
+        } else {
+            quote! {
+                self.#original_method_ident(#(#param_conversions),*)
+            }
         }
     };
 
@@ -95,17 +155,47 @@ pub fn generate_wrapper_method(
 
     let tool_description = format!("{} operation", original_method_name.replace('_', " "));
 
-    quote! {
-        #[doc = concat!("`", #original_method_name, "` MCP tool wrapper method.")]
-        #[::rmcp::tool(description = #tool_description)]
-        pub #async_keyword fn #method_ident(
-            &self,
-            #params_arg
-        ) -> ::std::result::Result<
-            ::rmcp::handler::server::wrapper::Json<#response_type>,
-            ::rmcp::ErrorData
-        > {
-            #result_handling
+    // Generate method signature with or without generics
+    if is_generic {
+        // NOTE: We don't use #[tool] attribute for generic methods because:
+        // 1. The #[tool] macro generates helper functions that reference generic types
+        //    but those helpers are not themselves generic, causing compilation errors
+        // 2. MCP tool registration requires concrete JSON schemas at registration time
+        // 3. Generic methods need to be monomorphized to concrete types before use
+        //
+        // To use generic methods as MCP tools, you'll need to either:
+        // - Create non-generic wrapper methods that call the generic method with concrete types
+        // - Manually register the monomorphized versions as separate tools
+        quote! {
+            #[doc = concat!("`", #original_method_name, "` MCP tool wrapper method (generic - requires manual registration).")]
+            #[doc = ""]
+            #[doc = "**Note:** This is a generic method. It cannot be automatically registered as an MCP tool."]
+            #[doc = "You must create non-generic wrappers or manually register monomorphized versions."]
+            pub #async_keyword fn #method_ident<#generic_params>(
+                &self,
+                #params_arg
+            ) -> ::std::result::Result<
+                ::rmcp::handler::server::wrapper::Json<#response_type>,
+                ::rmcp::ErrorData
+            >
+            #where_clause
+            {
+                #result_handling
+            }
+        }
+    } else {
+        quote! {
+            #[doc = concat!("`", #original_method_name, "` MCP tool wrapper method.")]
+            #[::rmcp::tool(description = #tool_description)]
+            pub #async_keyword fn #method_ident(
+                &self,
+                #params_arg
+            ) -> ::std::result::Result<
+                ::rmcp::handler::server::wrapper::Json<#response_type>,
+                ::rmcp::ErrorData
+            > {
+                #result_handling
+            }
         }
     }
 }
@@ -306,12 +396,19 @@ mod tests {
         );
     }
 
+    /// Helper to extract generics from a function signature
+    fn parse_sig_generics(sig: &str) -> Generics {
+        let sig: syn::Signature = syn::parse_str(sig).unwrap();
+        sig.generics
+    }
+
     #[test]
     fn test_generate_wrapper_method_with_params() {
         let params: Vec<FnArg> = vec![syn::parse_quote! { url: &str }];
         let return_ty: ReturnType = syn::parse_quote! { -> Result<Response, Error> };
+        let generics = parse_sig_generics("fn get()");
 
-        let wrapper = generate_wrapper_method("get_tool", "get", &params, &return_ty, false);
+        let wrapper = generate_wrapper_method("get_tool", "get", &params, &return_ty, false, &generics);
         let wrapper_str = wrapper.to_string();
 
         // Verify key components are present
@@ -327,8 +424,9 @@ mod tests {
     fn test_generate_wrapper_method_no_params() {
         let params: Vec<FnArg> = vec![];
         let return_ty: ReturnType = syn::parse_quote! { -> usize };
+        let generics = parse_sig_generics("fn len()");
 
-        let wrapper = generate_wrapper_method("len_tool", "len", &params, &return_ty, false);
+        let wrapper = generate_wrapper_method("len_tool", "len", &params, &return_ty, false, &generics);
         let wrapper_str = wrapper.to_string();
 
         // Should not have Parameters argument
@@ -343,13 +441,78 @@ mod tests {
     fn test_generate_wrapper_method_async() {
         let params: Vec<FnArg> = vec![syn::parse_quote! { url: &str }];
         let return_ty: ReturnType = syn::parse_quote! { -> Result<Response, Error> };
+        let generics = parse_sig_generics("fn fetch()");
 
-        let wrapper = generate_wrapper_method("fetch_tool", "fetch", &params, &return_ty, true);
+        let wrapper = generate_wrapper_method("fetch_tool", "fetch", &params, &return_ty, true, &generics);
         let wrapper_str = wrapper.to_string();
 
         // Verify async keyword is present
         assert!(wrapper_str.contains("pub async fn fetch_tool"));  // Wrapper name
         assert!(wrapper_str.contains(". await"));
         assert!(wrapper_str.contains("self . fetch"));  // Calls original method
+    }
+
+    #[test]
+    fn test_generate_wrapper_method_generic() {
+        let params: Vec<FnArg> = vec![syn::parse_quote! { item: &T }];
+        let return_ty: ReturnType = syn::parse_quote! { -> bool };
+        let generics = parse_sig_generics("fn contains<T>() where T: Elicitation + JsonSchema");
+
+        let wrapper = generate_wrapper_method("contains_tool", "contains", &params, &return_ty, false, &generics);
+        let wrapper_str = wrapper.to_string();
+
+        // Verify generic method components
+        assert!(wrapper_str.contains("ContainsParams"));
+        assert!(wrapper_str.contains("< T >"));  // Spaces in token stream
+        assert!(wrapper_str.contains("where"));
+        assert!(wrapper_str.contains("Elicitation"));
+        assert!(wrapper_str.contains("JsonSchema"));
+        // Verify turbofish in method call: "contains :: < T >"
+        assert!(wrapper_str.contains("contains :: <"));
+        // Verify parameter type includes generic
+        assert!(wrapper_str.contains("ContainsParams < T >"));
+    }
+
+    #[test]
+    fn test_generate_wrapper_method_multiple_generics() {
+        let params: Vec<FnArg> = vec![
+            syn::parse_quote! { key: K },
+            syn::parse_quote! { value: V },
+        ];
+        let return_ty: ReturnType = syn::parse_quote! { -> Option<V> };
+        let generics = parse_sig_generics(
+            "fn insert<K, V>() where K: Elicitation + JsonSchema + Hash, V: Elicitation + JsonSchema"
+        );
+
+        let wrapper = generate_wrapper_method("insert_tool", "insert", &params, &return_ty, false, &generics);
+        let wrapper_str = wrapper.to_string();
+
+        // Verify multiple generic parameters
+        assert!(wrapper_str.contains("InsertParams"));
+        assert!(wrapper_str.contains("K"));
+        assert!(wrapper_str.contains("V"));
+        assert!(wrapper_str.contains("Hash"));
+        // Verify turbofish with multiple params: "insert :: < K , V >"
+        assert!(wrapper_str.contains("insert :: <"));
+        // Verify parameter type includes generics
+        assert!(wrapper_str.contains("InsertParams < K , V >"));
+    }
+
+    #[test]
+    fn test_generate_wrapper_method_generic_async() {
+        let params: Vec<FnArg> = vec![syn::parse_quote! { url: &str }];
+        let return_ty: ReturnType = syn::parse_quote! { -> Result<T, Error> };
+        let generics = parse_sig_generics("fn fetch<T>() where T: Elicitation + JsonSchema");
+
+        let wrapper = generate_wrapper_method("fetch_tool", "fetch", &params, &return_ty, true, &generics);
+        let wrapper_str = wrapper.to_string();
+
+        // Verify async generic method
+        assert!(wrapper_str.contains("pub async fn fetch_tool"));
+        assert!(wrapper_str.contains("< T >"));
+        assert!(wrapper_str.contains("where"));
+        assert!(wrapper_str.contains(". await"));
+        // Verify turbofish: "fetch :: < T >"
+        assert!(wrapper_str.contains("fetch :: <"));
     }
 }
