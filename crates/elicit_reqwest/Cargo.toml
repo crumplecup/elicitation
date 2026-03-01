@@ -10,8 +10,8 @@ documentation.workspace = true
 readme.workspace = true
 
 [dependencies]
-# Elicitation framework
-elicitation.workspace = true
+# Elicitation framework with url support
+elicitation = { workspace = true, features = ["url"] }
 elicitation_derive.workspace = true
 
 # HTTP client
@@ -20,6 +20,7 @@ reqwest.workspace = true
 # Required for types
 url.workspace = true
 http.workspace = true
+bytes.workspace = true
 
 # Serialization
 serde.workspace = true

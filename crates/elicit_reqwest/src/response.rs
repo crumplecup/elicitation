@@ -1,17 +1,21 @@
 //! Response wrapper for reqwest HTTP responses.
 //!
-//! Provides an elicitation-enabled wrapper around reqwest::Response
-//! with MCP tool generation for response reading methods.
+//! Demonstrates async consuming generic methods.
 //!
-//! Most Response methods are non-generic and use `elicit_newtype_methods!`,
-//! with only `json<T>()` requiring generic support via `#[reflect_methods]`.
+//! NOTE: This is a SHADOW CRATE demonstrating macro usage only.
+//! All Elicitation/JsonSchema/Prompt impls belong in elicitation crate.
 
 use elicitation::elicit_newtype;
 
-// Note: reqwest::Response does not implement Clone, so we cannot use
-// consuming methods with `elicit_newtype_methods!` (same limitation as RequestBuilder).
-//
-// For Phase 2 demonstration, we use only the basic newtype wrapper.
-// Phase 3 will use #[reflect_methods] proc macro for generic methods.
-
 elicit_newtype!(reqwest::Response, as Response);
+
+// TODO: Response methods demonstration
+// Blocked pending reqwest feature support in elicitation crate:
+// - Response needs Elicitation + JsonSchema + Prompt impls
+//
+// #[reflect_methods]
+// impl Response {
+//     pub fn status(&self) -> u16 { ... }
+//     pub async fn json<T>(self) -> Result<T, String> { ... }
+//     pub async fn text(self) -> Result<String, String> { ... }
+// }
