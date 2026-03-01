@@ -81,20 +81,48 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
     let all_styles: Vec<String> = all_styles.into_iter().collect();
 
     // Generate Prompt impl
-    let prompt_impl = generate_prompt_impl(name, custom_prompt, &impl_generics, &ty_generics, &where_clause);
+    let prompt_impl = generate_prompt_impl(
+        name,
+        custom_prompt,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
 
     // Generate Survey impl
-    let survey_impl = generate_survey_impl(name, &field_infos, &impl_generics, &ty_generics, &where_clause);
+    let survey_impl = generate_survey_impl(
+        name,
+        &field_infos,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
 
     // Generate Elicit impl (style-aware if styles present)
     let elicit_impl = if all_styles.is_empty() {
-        generate_elicit_impl_simple(name, &field_infos, &skipped_fields, &impl_generics, &ty_generics, &where_clause)
+        generate_elicit_impl_simple(
+            name,
+            &field_infos,
+            &skipped_fields,
+            &impl_generics,
+            &ty_generics,
+            &where_clause,
+        )
     } else {
-        generate_elicit_impl_styled(name, &field_infos, &skipped_fields, &all_styles, &impl_generics, &ty_generics, &where_clause)
+        generate_elicit_impl_styled(
+            name,
+            &field_infos,
+            &skipped_fields,
+            &all_styles,
+            &impl_generics,
+            &ty_generics,
+            &where_clause,
+        )
     };
 
     // Generate ElicitIntrospect impl
-    let introspect_impl = generate_introspect_impl(name, &impl_generics, &ty_generics, &where_clause);
+    let introspect_impl =
+        generate_introspect_impl(name, &impl_generics, &ty_generics, &where_clause);
 
     // Note: Verification code is NOT generated for user types.
     // Users can write verification harnesses manually if needed.
