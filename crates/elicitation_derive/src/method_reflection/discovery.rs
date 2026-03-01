@@ -12,12 +12,6 @@ pub struct MethodInfo {
     pub name: String,
     /// Method signature
     pub signature: Signature,
-    /// Method visibility
-    pub visibility: Visibility,
-    /// Whether the method takes &self
-    pub has_self: bool,
-    /// Whether the method takes &mut self
-    pub has_mut_self: bool,
     /// Method parameters (excluding self)
     pub params: Vec<FnArg>,
     /// Return type
@@ -66,11 +60,6 @@ pub fn discover_methods(impl_block: &ItemImpl) -> Vec<MethodInfo> {
 fn extract_method_info(method: &ImplItemFn) -> Option<MethodInfo> {
     let name = method.sig.ident.to_string();
     let signature = method.sig.clone();
-    let visibility = method.vis.clone();
-
-    // Analyze self parameter
-    let mut has_self = false;
-    let mut has_mut_self = false;
 
     // Extract non-self parameters
     let params: Vec<FnArg> = signature
@@ -78,11 +67,7 @@ fn extract_method_info(method: &ImplItemFn) -> Option<MethodInfo> {
         .iter()
         .filter_map(|arg| {
             match arg {
-                FnArg::Receiver(receiver) => {
-                    has_self = true;
-                    has_mut_self = receiver.mutability.is_some();
-                    None
-                }
+                FnArg::Receiver(_) => None,
                 FnArg::Typed(_) => Some(arg.clone()),
             }
         })
@@ -93,9 +78,6 @@ fn extract_method_info(method: &ImplItemFn) -> Option<MethodInfo> {
     Some(MethodInfo {
         name,
         signature,
-        visibility,
-        has_self,
-        has_mut_self,
         params,
         return_type,
     })
@@ -132,13 +114,10 @@ mod tests {
 
         // Check first method
         assert_eq!(methods[0].name, "get");
-        assert_eq!(methods[0].has_self, true);
-        assert_eq!(methods[0].has_mut_self, false);
         assert_eq!(methods[0].params.len(), 1); // url parameter
 
         // Check second method
         assert_eq!(methods[1].name, "post");
-        assert_eq!(methods[1].has_self, true);
         assert_eq!(methods[1].params.len(), 2); // url and body parameters
     }
 
@@ -152,20 +131,5 @@ mod tests {
 
         let methods = discover_methods(&impl_block);
         assert_eq!(methods.len(), 0);
-    }
-
-    #[test]
-    fn test_extract_method_with_mut_self() {
-        let impl_block: ItemImpl = syn::parse_quote! {
-            impl Client {
-                pub fn modify(&mut self, value: i32) {
-                    self.0 = value;
-                }
-            }
-        };
-
-        let methods = discover_methods(&impl_block);
-        assert_eq!(methods.len(), 1);
-        assert_eq!(methods[0].has_mut_self, true);
     }
 }

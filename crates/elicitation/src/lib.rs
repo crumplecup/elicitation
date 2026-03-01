@@ -113,6 +113,10 @@ mod router_macro;
 #[macro_use]
 mod newtype_macro;
 
+// Newtype methods macro module (declarative macros with method delegation)
+#[macro_use]
+mod newtype_methods_macro;
+
 mod traits;
 
 #[cfg(feature = "serde_json")]
