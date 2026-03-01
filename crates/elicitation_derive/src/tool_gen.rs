@@ -44,10 +44,14 @@ pub fn generate_tool_function(input: &DeriveInput) -> TokenStream {
     let type_name = &input.ident;
     let type_name_str = type_name.to_string();
 
+    // Extract generics for the impl block
+    let generics = &input.generics;
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+
     quote! {
         // Inherent impl for direct access AND trait default method override
         // The #[tool] attribute here makes this discoverable by rmcp
-        impl #type_name {
+        impl #impl_generics #type_name #ty_generics #where_clause {
             /// Checked elicitation via MCP protocol.
             ///
             /// This is the verified, registered variant suitable for production use.
