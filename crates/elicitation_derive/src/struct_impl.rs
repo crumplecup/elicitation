@@ -11,8 +11,16 @@ use syn::{DeriveInput, Field, Fields};
 /// - Prompt (with optional custom prompt from #[prompt] attribute)
 /// - Survey (field metadata)
 /// - Elicit (sequential field elicitation)
+///
+/// **Generic Support:**
+/// Supports generic type parameters. All type parameters will have `Elicitation` bounds
+/// added to ensure their fields can be elicited.
 pub fn expand_struct(input: DeriveInput) -> TokenStream {
     let name = &input.ident;
+
+    // Extract generics for trait implementations
+    let generics = &input.generics;
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     // Extract custom prompt from #[prompt("...")] attribute
     let (custom_prompt, _) = extract_prompts(&input.attrs);
@@ -73,20 +81,20 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
     let all_styles: Vec<String> = all_styles.into_iter().collect();
 
     // Generate Prompt impl
-    let prompt_impl = generate_prompt_impl(name, custom_prompt);
+    let prompt_impl = generate_prompt_impl(name, custom_prompt, &impl_generics, &ty_generics, &where_clause);
 
     // Generate Survey impl
-    let survey_impl = generate_survey_impl(name, &field_infos);
+    let survey_impl = generate_survey_impl(name, &field_infos, &impl_generics, &ty_generics, &where_clause);
 
     // Generate Elicit impl (style-aware if styles present)
     let elicit_impl = if all_styles.is_empty() {
-        generate_elicit_impl_simple(name, &field_infos, &skipped_fields)
+        generate_elicit_impl_simple(name, &field_infos, &skipped_fields, &impl_generics, &ty_generics, &where_clause)
     } else {
-        generate_elicit_impl_styled(name, &field_infos, &skipped_fields, &all_styles)
+        generate_elicit_impl_styled(name, &field_infos, &skipped_fields, &all_styles, &impl_generics, &ty_generics, &where_clause)
     };
 
     // Generate ElicitIntrospect impl
-    let introspect_impl = generate_introspect_impl(name);
+    let introspect_impl = generate_introspect_impl(name, &impl_generics, &ty_generics, &where_clause);
 
     // Note: Verification code is NOT generated for user types.
     // Users can write verification harnesses manually if needed.
@@ -181,10 +189,16 @@ fn has_skip_attr(attrs: &[syn::Attribute]) -> bool {
 }
 
 /// Generate Prompt implementation.
-fn generate_prompt_impl(name: &syn::Ident, custom_prompt: Option<String>) -> TokenStream2 {
+fn generate_prompt_impl(
+    name: &syn::Ident,
+    custom_prompt: Option<String>,
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
+) -> TokenStream2 {
     if let Some(prompt) = custom_prompt {
         quote! {
-            impl elicitation::Prompt for #name {
+            impl #impl_generics elicitation::Prompt for #name #ty_generics #where_clause {
                 fn prompt() -> Option<&'static str> {
                     Some(#prompt)
                 }
@@ -193,7 +207,7 @@ fn generate_prompt_impl(name: &syn::Ident, custom_prompt: Option<String>) -> Tok
     } else {
         let default_prompt = format!("Let's create a {}:", name);
         quote! {
-            impl elicitation::Prompt for #name {
+            impl #impl_generics elicitation::Prompt for #name #ty_generics #where_clause {
                 fn prompt() -> Option<&'static str> {
                     Some(#default_prompt)
                 }
@@ -203,7 +217,13 @@ fn generate_prompt_impl(name: &syn::Ident, custom_prompt: Option<String>) -> Tok
 }
 
 /// Generate Survey implementation.
-fn generate_survey_impl(name: &syn::Ident, field_infos: &[FieldInfo]) -> TokenStream2 {
+fn generate_survey_impl(
+    name: &syn::Ident,
+    field_infos: &[FieldInfo],
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
+) -> TokenStream2 {
     let field_metadata: Vec<_> = field_infos
         .iter()
         .map(|info| {
@@ -226,7 +246,7 @@ fn generate_survey_impl(name: &syn::Ident, field_infos: &[FieldInfo]) -> TokenSt
         .collect();
 
     quote! {
-        impl elicitation::Survey for #name {
+        impl #impl_generics elicitation::Survey for #name #ty_generics #where_clause {
             fn fields() -> Vec<elicitation::FieldInfo> {
                 vec![#(#field_metadata),*]
             }
@@ -239,6 +259,9 @@ fn generate_elicit_impl_simple(
     name: &syn::Ident,
     elicited_fields: &[FieldInfo],
     skipped_fields: &[FieldInfo],
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
 ) -> TokenStream2 {
     let style_name = quote::format_ident!("{}Style", name);
     let elicited_names: Vec<_> = elicited_fields.iter().map(|info| &info.ident).collect();
@@ -301,7 +324,7 @@ fn generate_elicit_impl_simple(
         }
 
         #[allow(unexpected_cfgs)]
-        impl elicitation::Elicitation for #name {
+        impl #impl_generics elicitation::Elicitation for #name #ty_generics #where_clause {
             type Style = #style_name;
 
             #[tracing::instrument(skip(communicator))]
@@ -355,6 +378,9 @@ fn generate_elicit_impl_styled(
     elicited_fields: &[FieldInfo],
     skipped_fields: &[FieldInfo],
     all_styles: &[String],
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
 ) -> TokenStream2 {
     // Extract field types for kani_proof generation
     let elicited_types: Vec<_> = elicited_fields.iter().map(|info| &info.ty).collect();
@@ -622,7 +648,7 @@ fn generate_elicit_impl_styled(
         }
 
         #[allow(unexpected_cfgs)]
-        impl elicitation::Elicitation for #name {
+        impl #impl_generics elicitation::Elicitation for #name #ty_generics #where_clause {
             type Style = #style_enum_name;
 
             #[tracing::instrument(skip(communicator))]
@@ -632,7 +658,7 @@ fn generate_elicit_impl_styled(
                 tracing::debug!(struct_name = stringify!(#name), "Eliciting struct with style");
 
                 // Step 1: Get style (use pre-set or elicit)
-                let elicit_style = communicator.style_or_elicit::<#name>().await?;
+                let elicit_style = communicator.style_or_elicit::<#name #ty_generics>().await?;
                 tracing::debug!(?elicit_style, "Style selected");
 
                 // Step 2: Elicit fields with chosen style
@@ -678,11 +704,16 @@ fn generate_elicit_impl_styled(
 }
 
 /// Generate ElicitIntrospect implementation for a struct.
-fn generate_introspect_impl(name: &syn::Ident) -> TokenStream2 {
+fn generate_introspect_impl(
+    name: &syn::Ident,
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
+) -> TokenStream2 {
     let name_str = name.to_string();
 
     quote! {
-        impl elicitation::ElicitIntrospect for #name {
+        impl #impl_generics elicitation::ElicitIntrospect for #name #ty_generics #where_clause {
             fn pattern() -> elicitation::ElicitationPattern {
                 elicitation::ElicitationPattern::Survey
             }
