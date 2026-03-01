@@ -15,6 +15,12 @@
 //!     async fn post(url: &str, body: Vec<u8>) -> Result<Response, Error>;
 //! }
 //! ```
+//!
+//! # Limitations
+//!
+//! **Generic methods are not supported** in the declarative macro due to parsing
+//! limitations. For generic method support, use the `#[reflect_methods]` proc macro
+//! from `elicitation_derive` which has full AST access via `syn`.
 
 /// Generates both newtype and method wrappers with MCP tools.
 ///
@@ -75,11 +81,26 @@ macro_rules! __elicit_methods_impl {
     // Base case: no methods
     ($wrapper_name:ident,) => {};
 
-    // Synchronous method with return type
+    // Parse each method - pass entire signature to classifier
     (
         $wrapper_name:ident,
-        fn $method:ident($($param_name:ident: $param_ty:ty),* $(,)?) -> $ret:ty;
-        $($rest:tt)*
+        $($method_tokens:tt)*
+    ) => {
+        $crate::__classify_method! {
+            $wrapper_name,
+            $($method_tokens)*
+        }
+    };
+}
+
+/// Internal macro for classifying and routing method types.
+#[macro_export]
+#[doc(hidden)]
+macro_rules! __classify_method {
+    // Synchronous method
+    (
+        $wrapper_name:ident,
+        fn $method:ident ( $($param_name:ident : $param_ty:ty),* $(,)? ) -> $ret:ty ; $($rest:tt)*
     ) => {
         $crate::__elicit_method_generate! {
             $wrapper_name,
@@ -92,11 +113,10 @@ macro_rules! __elicit_methods_impl {
         }
     };
 
-    // Async method with return type
+    // Async method
     (
         $wrapper_name:ident,
-        async fn $method:ident($($param_name:ident: $param_ty:ty),* $(,)?) -> $ret:ty;
-        $($rest:tt)*
+        async fn $method:ident ( $($param_name:ident : $param_ty:ty),* $(,)? ) -> $ret:ty ; $($rest:tt)*
     ) => {
         $crate::__elicit_method_generate! {
             $wrapper_name,
