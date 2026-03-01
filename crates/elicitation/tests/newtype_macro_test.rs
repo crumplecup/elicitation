@@ -1,6 +1,7 @@
 //! Tests for the elicit_newtype! and elicit_newtypes! macros.
 
 use elicitation::{elicit_newtype, elicit_newtypes};
+use std::sync::Arc;
 
 // Simple wrapper test
 elicit_newtype!(String, as StringWrapper);
@@ -10,12 +11,13 @@ fn test_simple_wrapper() {
     let s = String::from("hello");
     let wrapper = StringWrapper::from(s.clone());
 
-    // Test Deref
+    // Test Deref - derefs through Arc to String in one step
     assert_eq!(&*wrapper, "hello");
-    assert_eq!((*wrapper).len(), 5);
+    assert_eq!(wrapper.len(), 5);
 
-    // Test unwrap
-    let unwrapped: String = wrapper.into();
+    // Test unwrap - extract Arc and try_unwrap
+    let arc: Arc<String> = wrapper.into();
+    let unwrapped = Arc::try_unwrap(arc).unwrap();
     assert_eq!(unwrapped, s);
 }
 
@@ -73,7 +75,7 @@ mod bulk_test {
         assert_eq!(*i, 42);
 
         let b = B1::from(true);
-        assert!(*b);
+        assert!(&*b);
     }
 }
 
@@ -85,11 +87,12 @@ fn test_vec_wrapper() {
     let v = vec!["a".to_string(), "b".to_string()];
     let wrapper = StringVec::from(v.clone());
 
-    // Test Deref - need to explicitly deref
-    assert_eq!((*wrapper).len(), 2);
-    assert_eq!((*wrapper)[0], "a");
+    // Test Deref - derefs through Arc to Vec in one step
+    assert_eq!(wrapper.len(), 2);
+    assert_eq!(wrapper[0], "a");
 
-    // Test unwrap
-    let unwrapped: Vec<String> = wrapper.into();
+    // Test unwrap - extract Arc and try_unwrap
+    let arc: Arc<Vec<String>> = wrapper.into();
+    let unwrapped = Arc::try_unwrap(arc).unwrap();
     assert_eq!(unwrapped, v);
 }

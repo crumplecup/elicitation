@@ -27,7 +27,7 @@ fn test_generic_method_compiles() {
 
 #[test]
 fn test_generic_method_delegation() {
-    let list = StringList(vec!["hello".to_string(), "world".to_string()]);
+    let list = StringList::from(vec!["hello".to_string(), "world".to_string()]);
 
     // Test contains - delegates to inner Vec
     assert!(list.contains(&"hello".to_string()));

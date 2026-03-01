@@ -28,7 +28,7 @@ fn test_non_generic_method_compiles() {
 
 #[test]
 fn test_non_generic_method_delegation() {
-    let s = MyString("hello".to_string());
+    let s = MyString::from("hello".to_string());
 
     // Test methods delegate to inner String
     assert_eq!(s.len(), 5);

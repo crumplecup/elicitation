@@ -12,7 +12,7 @@ elicit_newtype_methods! {
 
 #[test]
 fn test_delegating_methods() {
-    let client = StringClient("hello".to_string());
+    let client = StringClient::from("hello".to_string());
 
     // Test len method
     assert_eq!(client.len(), 5);
@@ -28,7 +28,7 @@ fn test_delegating_methods() {
 fn test_tool_wrapper_methods() {
     use rmcp::handler::server::wrapper::Json;
 
-    let client = StringClient("hello".to_string());
+    let client = StringClient::from("hello".to_string());
 
     // Test len_tool (no params)
     let result = client.len_tool();
@@ -58,7 +58,7 @@ elicit_newtype_methods! {
 
 #[test]
 fn test_methods_with_params() {
-    let calc = Calculator(10);
+    let calc = Calculator::from(10);
 
     assert_eq!(calc.saturating_add(5), 15);
     assert_eq!(calc.saturating_sub(3), 7);
@@ -75,7 +75,7 @@ fn test_param_struct_generated() {
 fn test_tool_wrappers_with_params() {
     use rmcp::handler::server::wrapper::{Json, Parameters};
 
-    let calc = Calculator(10);
+    let calc = Calculator::from(10);
 
     // Test saturating_add_tool
     let params = Parameters(SaturatingAddParams { rhs: 5 });

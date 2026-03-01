@@ -8,6 +8,12 @@
 /// This macro creates a newtype that satisfies the orphan rule while providing
 /// transparent access to the wrapped type through `Deref` and `DerefMut`.
 ///
+/// # Implementation Strategy
+///
+/// The wrapper uses `Arc<T>` internally to ensure `Clone` is always available,
+/// regardless of whether the inner type implements `Clone`. This is transparent
+/// to users due to `Deref`/`DerefMut`.
+///
 /// # Usage with Custom Name (Required)
 ///
 /// Due to macro limitations, you must specify the wrapper name explicitly.
@@ -27,10 +33,18 @@
 /// elicit_newtype!(reqwest::Client, as Client);
 ///
 /// // Generates:
-/// // #[derive(Debug, Clone, derive_more::Deref, derive_more::DerefMut, derive_more::From)]
-/// // pub struct Client(pub reqwest::Client);
+/// // #[derive(Debug, Clone, derive_more::Deref, derive_more::DerefMut)]
+/// // pub struct Client(pub Arc<reqwest::Client>);
 /// //
-/// // impl From<Client> for reqwest::Client {
+/// // impl From<reqwest::Client> for Client {
+/// //     fn from(inner: reqwest::Client) -> Self { Self(Arc::new(inner)) }
+/// // }
+/// //
+/// // impl From<Arc<reqwest::Client>> for Client {
+/// //     fn from(arc: Arc<reqwest::Client>) -> Self { Self(arc) }
+/// // }
+/// //
+/// // impl From<Client> for Arc<reqwest::Client> {
 /// //     fn from(wrapper: Client) -> Self { wrapper.0 }
 /// // }
 /// ```
@@ -38,8 +52,10 @@
 /// # Generated Code
 ///
 /// The macro generates:
-/// - Newtype struct with `derive_more` traits (Deref, DerefMut, From, AsRef)
-/// - Manual `From` impl for unwrapping direction
+/// - Newtype struct wrapping `Arc<T>` with `derive_more` traits (Deref, DerefMut, AsRef)
+/// - `From<T>` impl that auto-wraps in Arc
+/// - `From<Arc<T>>` impl for zero-copy wrapping
+/// - `From<Wrapper>` impl that extracts the Arc
 /// - Debug and Clone derives
 /// - All fields are public for maximum transparency
 ///
@@ -61,18 +77,56 @@ macro_rules! elicit_newtype {
     // Syntax: elicit_newtype!(path::to::Type, as WrapperName);
     // Example: elicit_newtype!(::std::path::PathBuf, as PathBuf);
     ($inner_path:path, as $wrapper_name:ident) => {
+        #[doc = concat!("Elicitation-enabled wrapper around `", stringify!($inner_path), "`.")]
+        #[doc = ""]
+        #[doc = "This newtype uses `Arc` internally to ensure `Clone` is always available,"]
+        #[doc = "providing transparent access via `Deref` and `DerefMut`."]
         #[derive(
             ::std::fmt::Debug,
             ::std::clone::Clone,
-            ::derive_more::Deref,
-            ::derive_more::DerefMut,
-            ::derive_more::From,
-            ::derive_more::AsRef,
         )]
-        pub struct $wrapper_name(pub $inner_path);
+        pub struct $wrapper_name(pub ::std::sync::Arc<$inner_path>);
 
-        // Manual From impl for unwrapping direction
-        impl ::std::convert::From<$wrapper_name> for $inner_path {
+        // Manual Deref impl that derefs through Arc to the inner type
+        impl ::std::ops::Deref for $wrapper_name {
+            type Target = $inner_path;
+
+            fn deref(&self) -> &Self::Target {
+                &*self.0
+            }
+        }
+
+        // Manual DerefMut impl that derefs through Arc to the inner type
+        impl ::std::ops::DerefMut for $wrapper_name {
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                ::std::sync::Arc::get_mut(&mut self.0)
+                    .expect("Cannot get mutable reference to Arc with multiple references")
+            }
+        }
+
+        // AsRef impl for convenience
+        impl ::std::convert::AsRef<$inner_path> for $wrapper_name {
+            fn as_ref(&self) -> &$inner_path {
+                &*self.0
+            }
+        }
+
+        // From T -> Wrapper (auto-wraps in Arc)
+        impl ::std::convert::From<$inner_path> for $wrapper_name {
+            fn from(inner: $inner_path) -> Self {
+                Self(::std::sync::Arc::new(inner))
+            }
+        }
+
+        // From Arc<T> -> Wrapper (zero-copy)
+        impl ::std::convert::From<::std::sync::Arc<$inner_path>> for $wrapper_name {
+            fn from(arc: ::std::sync::Arc<$inner_path>) -> Self {
+                Self(arc)
+            }
+        }
+
+        // From Wrapper -> Arc<T> (extract the Arc)
+        impl ::std::convert::From<$wrapper_name> for ::std::sync::Arc<$inner_path> {
             fn from(wrapper: $wrapper_name) -> Self {
                 wrapper.0
             }
