@@ -41,3 +41,4 @@ chrono = ["dep:chrono", "elicitation/chrono"]
 time = ["dep:time", "elicitation/time"]
 jiff = ["dep:jiff", "elicitation/jiff"]
 verify-kani = []  # Dummy feature for Kani compatibility
+reqwest = ["elicitation/reqwest"]

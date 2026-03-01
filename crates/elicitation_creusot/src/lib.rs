@@ -64,6 +64,9 @@ mod datetimes_time;
 #[cfg(feature = "jiff")]
 mod datetimes_jiff;
 
+#[cfg(feature = "reqwest")]
+mod http;
+
 // Re-export all proof functions for discoverability
 pub use bools::*;
 pub use chars::*;
@@ -120,3 +123,6 @@ pub use datetimes_time::*;
 
 #[cfg(feature = "jiff")]
 pub use datetimes_jiff::*;
+
+#[cfg(feature = "reqwest")]
+pub use http::*;

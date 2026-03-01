@@ -38,9 +38,30 @@ impl StatusCodeValid {
         self.0
     }
 
+    #[cfg(verus)]
+    fn verus_proof() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof() {
+        // Prusti proof exists in elicitation_prusti crate
+        // Verifies: wrapper structure with separation logic
+    }
+
     /// Unwrap to the inner status code.
     pub fn into_inner(self) -> reqwest::StatusCode {
         self.0
+    }
+
+    #[cfg(verus)]
+    fn verus_proof_into_inner() {
+        // Verus proof exists in elicitation_verus crate
+    }
+
+    #[cfg(prusti)]
+    fn prusti_proof_into_inner() {
+        // Prusti proof exists in elicitation_prusti crate
     }
 }
 
