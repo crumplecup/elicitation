@@ -55,6 +55,9 @@ mod urls;
 #[cfg(feature = "regex")]
 mod regexes;
 
+#[cfg(feature = "reqwest")]
+mod http;
+
 // Verus proofs require verus tool (not a cargo dependency)
 #[cfg(all(feature = "verify-verus", verus))]
 mod verus_proofs;
@@ -261,6 +264,10 @@ pub use urls::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost};
 pub use regexes::{
     RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetValid, RegexValid,
 };
+
+// HTTP (feature-gated)
+#[cfg(feature = "reqwest")]
+pub use http::StatusCodeValid;
 
 /// Error type for contract validation failures.
 #[derive(Debug, Clone, PartialEq, derive_more::Display)]
@@ -545,6 +552,14 @@ pub enum ValidationError {
         /// Actual length.
         actual: usize,
     },
+
+    /// HTTP status code is invalid (must be 100–999).
+    #[display("HTTP status code {} is invalid (must be 100–999)", _0)]
+    StatusCodeInvalid(u16),
+
+    /// HTTP header name or value is invalid.
+    #[display("HTTP header is invalid: {}", _0)]
+    HeaderInvalid(String),
 }
 
 impl std::error::Error for ValidationError {}

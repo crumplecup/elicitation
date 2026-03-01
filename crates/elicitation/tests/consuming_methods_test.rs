@@ -46,12 +46,12 @@ impl Builder {
 #[test]
 fn test_consuming_method_chain() {
     let result = Builder::new()
-        .add(5)        // Consuming: unwraps Arc
-        .multiply(3)   // Consuming: unwraps Arc
-        .add(2)        // Consuming: unwraps Arc
-        .build();      // Consuming: unwraps Arc
+        .add(5) // Consuming: unwraps Arc
+        .multiply(3) // Consuming: unwraps Arc
+        .add(2) // Consuming: unwraps Arc
+        .build(); // Consuming: unwraps Arc
 
-    assert_eq!(result, 17);  // (0 + 5) * 3 + 2 = 17
+    assert_eq!(result, 17); // (0 + 5) * 3 + 2 = 17
 }
 
 #[test]
@@ -67,12 +67,12 @@ fn test_consuming_method_single_step() {
 fn test_consuming_method_with_clone() {
     // Test the clone path: clone wrapper, then consume
     let builder = Builder::new().add(5);
-    let builder2 = builder.clone();  // Arc refcount becomes 2
+    let builder2 = builder.clone(); // Arc refcount becomes 2
 
     // Both should still work (inner BuilderInner is Clone)
-    let result1 = builder.multiply(2).build();   // Clones inner, then builds
-    let result2 = builder2.multiply(3).build();  // Clones inner, then builds
+    let result1 = builder.multiply(2).build(); // Clones inner, then builds
+    let result2 = builder2.multiply(3).build(); // Clones inner, then builds
 
-    assert_eq!(result1, 10);  // 5 * 2 = 10
-    assert_eq!(result2, 15);  // 5 * 3 = 15
+    assert_eq!(result1, 10); // 5 * 2 = 10
+    assert_eq!(result2, 15); // 5 * 3 = 15
 }

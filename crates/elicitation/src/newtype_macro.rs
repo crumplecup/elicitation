@@ -87,6 +87,23 @@ macro_rules! elicit_newtype {
         )]
         pub struct $wrapper_name(pub ::std::sync::Arc<$inner_path>);
 
+        impl ::schemars::JsonSchema for $wrapper_name {
+            fn schema_name() -> ::std::borrow::Cow<'static, str> {
+                stringify!($wrapper_name).into()
+            }
+
+            fn json_schema(_gen: &mut ::schemars::SchemaGenerator) -> ::schemars::Schema {
+                ::schemars::json_schema!({
+                    "type": "object",
+                    "description": concat!(
+                        "Elicitation-enabled wrapper around `",
+                        stringify!($inner_path),
+                        "`"
+                    )
+                })
+            }
+        }
+
         // Manual Deref impl that derefs through Arc to the inner type
         impl ::std::ops::Deref for $wrapper_name {
             type Target = $inner_path;

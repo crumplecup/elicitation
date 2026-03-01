@@ -28,8 +28,7 @@ elicit_newtype!(Inner, as Wrapper);
 impl Wrapper {
     pub fn consume_and_get(self) -> String {
         // Hybrid unwrap-or-clone strategy for Arc-based newtypes
-        let inner = ::std::sync::Arc::try_unwrap(self.0)
-            .unwrap_or_else(|arc| (*arc).clone());
+        let inner = ::std::sync::Arc::try_unwrap(self.0).unwrap_or_else(|arc| (*arc).clone());
         inner.consume_and_get()
     }
 }
@@ -44,11 +43,11 @@ fn test_consuming_method_single_use() {
 #[test]
 fn test_consuming_method_with_clone() {
     let wrapper = Wrapper::from(Inner::new("test".to_string()));
-    let wrapper2 = wrapper.clone();  // Arc refcount = 2
+    let wrapper2 = wrapper.clone(); // Arc refcount = 2
 
     // Both should work (inner Inner is Clone)
-    let result1 = wrapper.consume_and_get();   // Clones inner
-    let result2 = wrapper2.consume_and_get();  // Clones inner
+    let result1 = wrapper.consume_and_get(); // Clones inner
+    let result2 = wrapper2.consume_and_get(); // Clones inner
 
     assert_eq!(result1, "test");
     assert_eq!(result2, "test");
@@ -99,10 +98,7 @@ impl NonCloneBuilder {
 #[test]
 fn test_non_clone_consuming() {
     let builder = NonCloneBuilder::from(NonCloneInner::new("hello".to_string()));
-    let result = builder
-        .append(" ")
-        .append("world")
-        .finish();
+    let result = builder.append(" ").append("world").finish();
 
     assert_eq!(result, "hello world");
 }

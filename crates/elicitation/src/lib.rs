@@ -396,3 +396,13 @@ pub use verification::mechanisms::{
     AffirmReturnsBoolean, InputNonEmpty, MechanismWithType, NumericReturnsValid,
     SurveyReturnsValidVariant, TextReturnsNonEmpty, TextReturnsString,
 };
+
+// Reqwest HTTP types (feature-gated)
+#[cfg(feature = "reqwest")]
+pub use primitives::http::{
+    ClientStyle, HeaderMapStyle, MethodStyle, RequestBuilderStyle, ResponseStyle, StatusCodeStyle,
+    VersionStyle,
+};
+
+#[cfg(all(any(feature = "verification", kani), feature = "reqwest"))]
+pub use verification::types::StatusCodeValid;

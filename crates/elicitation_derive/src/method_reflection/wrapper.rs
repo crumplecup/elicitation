@@ -121,46 +121,26 @@ pub fn generate_wrapper_method(
         (params_type, conversions)
     };
 
-    // Check if method returns Self (needs wrapping for consuming methods)
-    let returns_self = matches!(return_type, ReturnType::Type(_, ty) if is_self_type(ty));
-
     // Generate method call - different strategy for consuming vs borrowing methods
     let method_call = if is_consuming {
-        // Consuming methods use hybrid Arc unwrap-or-clone strategy
-        let inner_call = if is_generic && is_async {
+        // Consuming method tool wrappers delegate to the user's implementation (self.method()),
+        // which is responsible for Arc unwrapping and any type conversions. This ensures
+        // return types match the declared signature even when the inner type differs.
+        if is_generic && is_async {
             quote! {
-                inner.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*).await
+                self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*).await
             }
         } else if is_generic {
             quote! {
-                inner.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*)
+                self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*)
             }
         } else if is_async {
             quote! {
-                inner.#original_method_ident(#(#param_conversions),*).await
+                self.#original_method_ident(#(#param_conversions),*).await
             }
         } else {
             quote! {
-                inner.#original_method_ident(#(#param_conversions),*)
-            }
-        };
-
-        // If method returns Self, wrap the result back in the wrapper type
-        let wrapped_call = if returns_self {
-            quote! { Self::from(#inner_call) }
-        } else {
-            inner_call
-        };
-
-        quote! {
-            {
-                // Consuming methods require exclusive ownership of the wrapped value.
-                // This will panic if the Arc has multiple references (refcount > 1).
-                // For exclusive ownership, this is the correct behavior regardless of
-                // whether the inner type implements Clone.
-                let inner = ::std::sync::Arc::try_unwrap(self.0)
-                    .expect("Consuming method requires exclusive ownership (Arc refcount must be 1)");
-                #wrapped_call
+                self.#original_method_ident(#(#param_conversions),*)
             }
         }
     } else {
@@ -322,16 +302,6 @@ fn is_result_type(ty: &Type) -> bool {
     false
 }
 
-/// Checks if a type is `Self`
-fn is_self_type(ty: &Type) -> bool {
-    if let Type::Path(TypePath { path, .. }) = ty
-        && let Some(segment) = path.segments.last()
-    {
-        return segment.ident == "Self";
-    }
-    false
-}
-
 /// Extracts the success type from Result<T, E> or returns the type itself
 fn extract_return_type(return_type: &ReturnType) -> Type {
     match return_type {
@@ -457,8 +427,9 @@ mod tests {
         let return_ty: ReturnType = syn::parse_quote! { -> Result<Response, Error> };
         let generics = parse_sig_generics("fn get()");
 
-        let wrapper =
-            generate_wrapper_method("get_tool", "get", &params, &return_ty, false, &generics, false);
+        let wrapper = generate_wrapper_method(
+            "get_tool", "get", &params, &return_ty, false, &generics, false,
+        );
         let wrapper_str = wrapper.to_string();
 
         // Verify key components are present
@@ -476,8 +447,9 @@ mod tests {
         let return_ty: ReturnType = syn::parse_quote! { -> usize };
         let generics = parse_sig_generics("fn len()");
 
-        let wrapper =
-            generate_wrapper_method("len_tool", "len", &params, &return_ty, false, &generics, false);
+        let wrapper = generate_wrapper_method(
+            "len_tool", "len", &params, &return_ty, false, &generics, false,
+        );
         let wrapper_str = wrapper.to_string();
 
         // Should not have Parameters argument
@@ -494,8 +466,15 @@ mod tests {
         let return_ty: ReturnType = syn::parse_quote! { -> Result<Response, Error> };
         let generics = parse_sig_generics("fn fetch()");
 
-        let wrapper =
-            generate_wrapper_method("fetch_tool", "fetch", &params, &return_ty, true, &generics, false);
+        let wrapper = generate_wrapper_method(
+            "fetch_tool",
+            "fetch",
+            &params,
+            &return_ty,
+            true,
+            &generics,
+            false,
+        );
         let wrapper_str = wrapper.to_string();
 
         // Verify async keyword is present
@@ -569,8 +548,15 @@ mod tests {
         let return_ty: ReturnType = syn::parse_quote! { -> Result<T, Error> };
         let generics = parse_sig_generics("fn fetch<T>() where T: Elicitation + JsonSchema");
 
-        let wrapper =
-            generate_wrapper_method("fetch_tool", "fetch", &params, &return_ty, true, &generics, false);
+        let wrapper = generate_wrapper_method(
+            "fetch_tool",
+            "fetch",
+            &params,
+            &return_ty,
+            true,
+            &generics,
+            false,
+        );
         let wrapper_str = wrapper.to_string();
 
         // Verify async generic method

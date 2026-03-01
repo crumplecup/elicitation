@@ -3,19 +3,18 @@
 //! Provides an elicitation-enabled wrapper around reqwest::Client
 //! with MCP tool generation for all HTTP methods.
 //!
-//! All Client methods are generic over `U: IntoUrl`, making this module
-//! an excellent test of the `#[reflect_methods]` generic support.
-//!
-//! NOTE: This is a SHADOW CRATE demonstrating macro usage only.
-//! All Elicitation/JsonSchema/Prompt impls should be in the main
-//! elicitation crate under appropriate feature flags.
+//! All HTTP method wrappers are generic over `U: IntoUrl + Elicitation + JsonSchema`,
+//! demonstrating the `#[reflect_methods]` generic support added to the derive macro.
 
 use elicitation::elicit_newtype;
+use elicitation_derive::reflect_methods;
+
+use crate::RequestBuilder;
 
 elicit_newtype!(reqwest::Client, as Client);
 
 impl Client {
-    /// Creates a new HTTP client.
+    /// Creates a new HTTP client with default settings.
     pub fn new() -> Self {
         reqwest::Client::new().into()
     }
@@ -27,16 +26,53 @@ impl Default for Client {
     }
 }
 
-// TODO: Generic HTTP methods demonstration
-// Blocked pending reqwest feature support in elicitation crate:
-// - reqwest::Client needs Elicitation + JsonSchema + Prompt impls
-// - url::Url already has impls (feature = "url")
-// - RequestBuilder needs Elicitation + JsonSchema + Prompt impls
-//
-// #[reflect_methods]
-// impl Client {
-//     pub fn get<U>(&self, url: U) -> RequestBuilder
-//     where
-//         U: elicitation::Elicitation + schemars::JsonSchema + reqwest::IntoUrl,
-//     { ... }
-// }
+#[reflect_methods]
+impl Client {
+    /// Start building a GET request to `url`.
+    pub fn get<U>(&self, url: U) -> RequestBuilder
+    where
+        U: elicitation::Elicitation + schemars::JsonSchema + reqwest::IntoUrl,
+    {
+        self.0.get(url).into()
+    }
+
+    /// Start building a POST request to `url`.
+    pub fn post<U>(&self, url: U) -> RequestBuilder
+    where
+        U: elicitation::Elicitation + schemars::JsonSchema + reqwest::IntoUrl,
+    {
+        self.0.post(url).into()
+    }
+
+    /// Start building a PUT request to `url`.
+    pub fn put<U>(&self, url: U) -> RequestBuilder
+    where
+        U: elicitation::Elicitation + schemars::JsonSchema + reqwest::IntoUrl,
+    {
+        self.0.put(url).into()
+    }
+
+    /// Start building a DELETE request to `url`.
+    pub fn delete<U>(&self, url: U) -> RequestBuilder
+    where
+        U: elicitation::Elicitation + schemars::JsonSchema + reqwest::IntoUrl,
+    {
+        self.0.delete(url).into()
+    }
+
+    /// Start building a PATCH request to `url`.
+    pub fn patch<U>(&self, url: U) -> RequestBuilder
+    where
+        U: elicitation::Elicitation + schemars::JsonSchema + reqwest::IntoUrl,
+    {
+        self.0.patch(url).into()
+    }
+
+    /// Start building a HEAD request to `url`.
+    pub fn head<U>(&self, url: U) -> RequestBuilder
+    where
+        U: elicitation::Elicitation + schemars::JsonSchema + reqwest::IntoUrl,
+    {
+        self.0.head(url).into()
+    }
+}
