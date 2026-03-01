@@ -32,12 +32,12 @@ mod wrapper;
 
 use discovery::discover_methods;
 use params::generate_param_struct;
-use validation::validate_generic_bounds;
-use wrapper::generate_wrapper_method;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
-use syn::{parse_macro_input, ItemImpl};
+use syn::{ItemImpl, parse_macro_input};
+use validation::validate_generic_bounds;
+use wrapper::generate_wrapper_method;
 
 /// Entry point for the #[reflect_methods] attribute macro.
 ///
@@ -62,10 +62,10 @@ pub fn expand(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // Validate generic bounds for all generic methods
     for method in &methods {
-        if method.is_generic() {
-            if let Err(err) = validate_generic_bounds(&method.generics) {
-                return TokenStream::from(err.to_compile_error());
-            }
+        if method.is_generic()
+            && let Err(err) = validate_generic_bounds(&method.generics)
+        {
+            return TokenStream::from(err.to_compile_error());
         }
     }
 
@@ -85,8 +85,8 @@ pub fn expand(_attr: TokenStream, item: TokenStream) -> TokenStream {
             let is_async = method.signature.asyncness.is_some();
 
             generate_wrapper_method(
-                &format!("{}_tool", method.name),  // Wrapper method name with _tool suffix
-                &method.name,                       // Original method name (for params and delegation)
+                &format!("{}_tool", method.name), // Wrapper method name with _tool suffix
+                &method.name, // Original method name (for params and delegation)
                 &method.params,
                 &method.return_type,
                 is_async,

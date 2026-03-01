@@ -113,12 +113,11 @@ fn convert_param_type(ty: &Type) -> Type {
     match ty {
         Type::Reference(type_ref) => {
             // Handle &str → String
-            if let Type::Path(type_path) = &*type_ref.elem {
-                if let Some(segment) = type_path.path.segments.last() {
-                    if segment.ident == "str" {
-                        return syn::parse_quote! { String };
-                    }
-                }
+            if let Type::Path(type_path) = &*type_ref.elem
+                && let Some(segment) = type_path.path.segments.last()
+                && segment.ident == "str"
+            {
+                return syn::parse_quote! { String };
             }
 
             // Handle &[T] → Vec<T>
@@ -165,7 +164,10 @@ mod tests {
         let ty: Type = syn::parse_quote! { &str };
         let converted = convert_param_type(&ty);
         let expected: Type = syn::parse_quote! { String };
-        assert_eq!(quote! { #converted }.to_string(), quote! { #expected }.to_string());
+        assert_eq!(
+            quote! { #converted }.to_string(),
+            quote! { #expected }.to_string()
+        );
     }
 
     #[test]
@@ -173,7 +175,10 @@ mod tests {
         let ty: Type = syn::parse_quote! { &[u8] };
         let converted = convert_param_type(&ty);
         let expected: Type = syn::parse_quote! { Vec<u8> };
-        assert_eq!(quote! { #converted }.to_string(), quote! { #expected }.to_string());
+        assert_eq!(
+            quote! { #converted }.to_string(),
+            quote! { #expected }.to_string()
+        );
     }
 
     /// Helper to extract generics from a function signature
@@ -207,9 +212,7 @@ mod tests {
 
     #[test]
     fn test_generate_param_struct_generic() {
-        let params: Vec<FnArg> = vec![
-            syn::parse_quote! { item: &T },
-        ];
+        let params: Vec<FnArg> = vec![syn::parse_quote! { item: &T }];
         let generics = parse_sig_generics("fn contains<T>() where T: Elicitation + JsonSchema");
 
         let output = generate_param_struct("contains", &params, &generics);
@@ -229,12 +232,9 @@ mod tests {
 
     #[test]
     fn test_generate_param_struct_multiple_generics() {
-        let params: Vec<FnArg> = vec![
-            syn::parse_quote! { key: K },
-            syn::parse_quote! { value: V },
-        ];
+        let params: Vec<FnArg> = vec![syn::parse_quote! { key: K }, syn::parse_quote! { value: V }];
         let generics = parse_sig_generics(
-            "fn insert<K, V>() where K: Elicitation + JsonSchema + Hash, V: Elicitation + JsonSchema"
+            "fn insert<K, V>() where K: Elicitation + JsonSchema + Hash, V: Elicitation + JsonSchema",
         );
 
         let output = generate_param_struct("insert", &params, &generics);

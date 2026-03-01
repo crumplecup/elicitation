@@ -97,25 +97,24 @@ fn has_trait_bound(
         let param_ident = &type_param.ident;
 
         for predicate in &where_clause.predicates {
-            if let WherePredicate::Type(PredicateType { bounded_ty, bounds, .. }) = predicate {
-                // Check if this predicate is for our type parameter
-                if let Type::Path(type_path) = bounded_ty {
-                    if let Some(segment) = type_path.path.segments.last() {
-                        if segment.ident == *param_ident {
-                            // This is our type parameter - check its bounds
-                            let has_bound = bounds.iter().any(|bound| {
-                                if let TypeParamBound::Trait(trait_bound) = bound {
-                                    is_trait_path(trait_bound, trait_name)
-                                } else {
-                                    false
-                                }
-                            });
-
-                            if has_bound {
-                                return true;
-                            }
-                        }
+            if let WherePredicate::Type(PredicateType {
+                bounded_ty, bounds, ..
+            }) = predicate
+                && let Type::Path(type_path) = bounded_ty
+                && let Some(segment) = type_path.path.segments.last()
+                && segment.ident == *param_ident
+            {
+                // This is our type parameter - check its bounds
+                let has_bound = bounds.iter().any(|bound| {
+                    if let TypeParamBound::Trait(trait_bound) = bound {
+                        is_trait_path(trait_bound, trait_name)
+                    } else {
+                        false
                     }
+                });
+
+                if has_bound {
+                    return true;
                 }
             }
         }
@@ -178,7 +177,8 @@ mod tests {
 
     #[test]
     fn test_validate_bounds_with_additional_traits() {
-        let generics = parse_generics("fn test<T>() where T: Elicitation + JsonSchema + PartialEq + Clone");
+        let generics =
+            parse_generics("fn test<T>() where T: Elicitation + JsonSchema + PartialEq + Clone");
 
         let result = validate_generic_bounds(&generics);
         assert!(result.is_ok());
@@ -187,7 +187,7 @@ mod tests {
     #[test]
     fn test_validate_bounds_multiple_params() {
         let generics = parse_generics(
-            "fn test<K, V>() where K: Elicitation + JsonSchema + Hash + Eq, V: Elicitation + JsonSchema"
+            "fn test<K, V>() where K: Elicitation + JsonSchema + Hash + Eq, V: Elicitation + JsonSchema",
         );
 
         let result = validate_generic_bounds(&generics);
@@ -222,7 +222,8 @@ mod tests {
 
     #[test]
     fn test_validate_bounds_qualified_paths() {
-        let generics = parse_generics("fn test<T: ::elicitation::Elicitation + ::schemars::JsonSchema>()");
+        let generics =
+            parse_generics("fn test<T: ::elicitation::Elicitation + ::schemars::JsonSchema>()");
 
         let result = validate_generic_bounds(&generics);
         assert!(result.is_ok());

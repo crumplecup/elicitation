@@ -122,25 +122,21 @@ pub fn generate_wrapper_method(
 
     // Generate method call - call the original method, not the wrapper
     // Add turbofish if method is generic
-    let method_call = if is_generic {
-        if is_async {
-            quote! {
-                self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*).await
-            }
-        } else {
-            quote! {
-                self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*)
-            }
+    let method_call = if is_generic && is_async {
+        quote! {
+            self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*).await
+        }
+    } else if is_generic {
+        quote! {
+            self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*)
+        }
+    } else if is_async {
+        quote! {
+            self.#original_method_ident(#(#param_conversions),*).await
         }
     } else {
-        if is_async {
-            quote! {
-                self.#original_method_ident(#(#param_conversions),*).await
-            }
-        } else {
-            quote! {
-                self.#original_method_ident(#(#param_conversions),*)
-            }
+        quote! {
+            self.#original_method_ident(#(#param_conversions),*)
         }
     };
 
@@ -212,12 +208,11 @@ fn generate_param_conversion(name: &Ident, ty: &Type) -> TokenStream {
     match ty {
         Type::Reference(type_ref) => {
             // &str: use .as_str()
-            if let Type::Path(type_path) = &*type_ref.elem {
-                if let Some(segment) = type_path.path.segments.last() {
-                    if segment.ident == "str" {
-                        return quote! { params.0.#name.as_str() };
-                    }
-                }
+            if let Type::Path(type_path) = &*type_ref.elem
+                && let Some(segment) = type_path.path.segments.last()
+                && segment.ident == "str"
+            {
+                return quote! { params.0.#name.as_str() };
             }
 
             // &[T]: use &params.0.name
@@ -238,10 +233,7 @@ fn generate_param_conversion(name: &Ident, ty: &Type) -> TokenStream {
 /// Wraps the result in MCP-compatible format:
 /// - Ok values wrapped in Json<T>
 /// - Errors converted to ErrorData
-fn generate_result_handling(
-    return_type: &ReturnType,
-    method_call: TokenStream,
-) -> TokenStream {
+fn generate_result_handling(return_type: &ReturnType, method_call: TokenStream) -> TokenStream {
     match return_type {
         ReturnType::Default => {
             // No return value - wrap in Ok(())
@@ -271,10 +263,10 @@ fn generate_result_handling(
 
 /// Checks if a type is Result<T, E>
 fn is_result_type(ty: &Type) -> bool {
-    if let Type::Path(TypePath { path, .. }) = ty {
-        if let Some(segment) = path.segments.last() {
-            return segment.ident == "Result";
-        }
+    if let Type::Path(TypePath { path, .. }) = ty
+        && let Some(segment) = path.segments.last()
+    {
+        return segment.ident == "Result";
     }
     false
 }
@@ -284,17 +276,13 @@ fn extract_return_type(return_type: &ReturnType) -> Type {
     match return_type {
         ReturnType::Default => syn::parse_quote! { () },
         ReturnType::Type(_, ty) => {
-            if let Type::Path(TypePath { path, .. }) = &**ty {
-                if let Some(segment) = path.segments.last() {
-                    if segment.ident == "Result" {
-                        // Extract T from Result<T, E>
-                        if let PathArguments::AngleBracketed(args) = &segment.arguments {
-                            if let Some(GenericArgument::Type(success_type)) = args.args.first() {
-                                return success_type.clone();
-                            }
-                        }
-                    }
-                }
+            if let Type::Path(TypePath { path, .. }) = &**ty
+                && let Some(segment) = path.segments.last()
+                && segment.ident == "Result"
+                && let PathArguments::AngleBracketed(args) = &segment.arguments
+                && let Some(GenericArgument::Type(success_type)) = args.args.first()
+            {
+                return success_type.clone();
             }
             // Not a Result, return the type itself
             (**ty).clone()
@@ -408,16 +396,17 @@ mod tests {
         let return_ty: ReturnType = syn::parse_quote! { -> Result<Response, Error> };
         let generics = parse_sig_generics("fn get()");
 
-        let wrapper = generate_wrapper_method("get_tool", "get", &params, &return_ty, false, &generics);
+        let wrapper =
+            generate_wrapper_method("get_tool", "get", &params, &return_ty, false, &generics);
         let wrapper_str = wrapper.to_string();
 
         // Verify key components are present
-        assert!(wrapper_str.contains("GetParams"));  // Based on original name
-        assert!(wrapper_str.contains("pub fn get_tool"));  // Wrapper name
-        assert!(wrapper_str.contains("tool"));  // #[tool] attribute
+        assert!(wrapper_str.contains("GetParams")); // Based on original name
+        assert!(wrapper_str.contains("pub fn get_tool")); // Wrapper name
+        assert!(wrapper_str.contains("tool")); // #[tool] attribute
         assert!(wrapper_str.contains("rmcp"));
         assert!(wrapper_str.contains("as_str")); // params.url.as_str()
-        assert!(wrapper_str.contains("self . get"));  // Calls original method
+        assert!(wrapper_str.contains("self . get")); // Calls original method
     }
 
     #[test]
@@ -426,15 +415,16 @@ mod tests {
         let return_ty: ReturnType = syn::parse_quote! { -> usize };
         let generics = parse_sig_generics("fn len()");
 
-        let wrapper = generate_wrapper_method("len_tool", "len", &params, &return_ty, false, &generics);
+        let wrapper =
+            generate_wrapper_method("len_tool", "len", &params, &return_ty, false, &generics);
         let wrapper_str = wrapper.to_string();
 
         // Should not have Parameters argument
         assert!(!wrapper_str.contains("Parameters"));
-        assert!(wrapper_str.contains("pub fn len_tool"));  // Wrapper name
-        assert!(wrapper_str.contains("tool"));  // #[tool] attribute
+        assert!(wrapper_str.contains("pub fn len_tool")); // Wrapper name
+        assert!(wrapper_str.contains("tool")); // #[tool] attribute
         assert!(wrapper_str.contains("rmcp"));
-        assert!(wrapper_str.contains("self . len"));  // Calls original method
+        assert!(wrapper_str.contains("self . len")); // Calls original method
     }
 
     #[test]
@@ -443,13 +433,14 @@ mod tests {
         let return_ty: ReturnType = syn::parse_quote! { -> Result<Response, Error> };
         let generics = parse_sig_generics("fn fetch()");
 
-        let wrapper = generate_wrapper_method("fetch_tool", "fetch", &params, &return_ty, true, &generics);
+        let wrapper =
+            generate_wrapper_method("fetch_tool", "fetch", &params, &return_ty, true, &generics);
         let wrapper_str = wrapper.to_string();
 
         // Verify async keyword is present
-        assert!(wrapper_str.contains("pub async fn fetch_tool"));  // Wrapper name
+        assert!(wrapper_str.contains("pub async fn fetch_tool")); // Wrapper name
         assert!(wrapper_str.contains(". await"));
-        assert!(wrapper_str.contains("self . fetch"));  // Calls original method
+        assert!(wrapper_str.contains("self . fetch")); // Calls original method
     }
 
     #[test]
@@ -458,12 +449,19 @@ mod tests {
         let return_ty: ReturnType = syn::parse_quote! { -> bool };
         let generics = parse_sig_generics("fn contains<T>() where T: Elicitation + JsonSchema");
 
-        let wrapper = generate_wrapper_method("contains_tool", "contains", &params, &return_ty, false, &generics);
+        let wrapper = generate_wrapper_method(
+            "contains_tool",
+            "contains",
+            &params,
+            &return_ty,
+            false,
+            &generics,
+        );
         let wrapper_str = wrapper.to_string();
 
         // Verify generic method components
         assert!(wrapper_str.contains("ContainsParams"));
-        assert!(wrapper_str.contains("< T >"));  // Spaces in token stream
+        assert!(wrapper_str.contains("< T >")); // Spaces in token stream
         assert!(wrapper_str.contains("where"));
         assert!(wrapper_str.contains("Elicitation"));
         assert!(wrapper_str.contains("JsonSchema"));
@@ -475,16 +473,20 @@ mod tests {
 
     #[test]
     fn test_generate_wrapper_method_multiple_generics() {
-        let params: Vec<FnArg> = vec![
-            syn::parse_quote! { key: K },
-            syn::parse_quote! { value: V },
-        ];
+        let params: Vec<FnArg> = vec![syn::parse_quote! { key: K }, syn::parse_quote! { value: V }];
         let return_ty: ReturnType = syn::parse_quote! { -> Option<V> };
         let generics = parse_sig_generics(
-            "fn insert<K, V>() where K: Elicitation + JsonSchema + Hash, V: Elicitation + JsonSchema"
+            "fn insert<K, V>() where K: Elicitation + JsonSchema + Hash, V: Elicitation + JsonSchema",
         );
 
-        let wrapper = generate_wrapper_method("insert_tool", "insert", &params, &return_ty, false, &generics);
+        let wrapper = generate_wrapper_method(
+            "insert_tool",
+            "insert",
+            &params,
+            &return_ty,
+            false,
+            &generics,
+        );
         let wrapper_str = wrapper.to_string();
 
         // Verify multiple generic parameters
@@ -504,7 +506,8 @@ mod tests {
         let return_ty: ReturnType = syn::parse_quote! { -> Result<T, Error> };
         let generics = parse_sig_generics("fn fetch<T>() where T: Elicitation + JsonSchema");
 
-        let wrapper = generate_wrapper_method("fetch_tool", "fetch", &params, &return_ty, true, &generics);
+        let wrapper =
+            generate_wrapper_method("fetch_tool", "fetch", &params, &return_ty, true, &generics);
         let wrapper_str = wrapper.to_string();
 
         // Verify async generic method

@@ -73,7 +73,7 @@ mod bulk_test {
         assert_eq!(*i, 42);
 
         let b = B1::from(true);
-        assert_eq!(*b, true);
+        assert!(*b);
     }
 }
 

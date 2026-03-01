@@ -74,11 +74,9 @@ fn extract_method_info(method: &ImplItemFn) -> Option<MethodInfo> {
     let params: Vec<FnArg> = signature
         .inputs
         .iter()
-        .filter_map(|arg| {
-            match arg {
-                FnArg::Receiver(_) => None,
-                FnArg::Typed(_) => Some(arg.clone()),
-            }
+        .filter_map(|arg| match arg {
+            FnArg::Receiver(_) => None,
+            FnArg::Typed(_) => Some(arg.clone()),
         })
         .collect();
 
