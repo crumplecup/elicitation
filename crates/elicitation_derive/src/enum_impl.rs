@@ -32,8 +32,16 @@ struct FieldInfo {
 /// - Elicit (calls elicit_select MCP tool, then elicits fields)
 ///
 /// Supports unit variants, tuple variants, and struct variants.
+///
+/// **Generic Support:**
+/// Supports generic type parameters. All type parameters will have `Elicitation` bounds
+/// added to ensure their fields can be elicited.
 pub fn expand_enum(input: DeriveInput) -> TokenStream {
     let name = &input.ident;
+
+    // Extract generics for trait implementations
+    let generics = &input.generics;
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     // Extract custom prompt from #[prompt("...")] attribute
     let custom_prompt = extract_prompt_attr(&input.attrs);
@@ -62,19 +70,34 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
     let variant_labels: Vec<String> = variants.iter().map(|v| v.ident.to_string()).collect();
 
     // Generate Prompt impl
-    let prompt_impl = generate_prompt_impl(name, custom_prompt);
+    let prompt_impl = generate_prompt_impl(
+        name,
+        custom_prompt,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
 
     // Generate Select impl (only for unit variants in options())
-    let select_impl = generate_select_impl(name, &unit_variant_idents, &variant_labels);
+    let select_impl = generate_select_impl(
+        name,
+        &unit_variant_idents,
+        &variant_labels,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
 
     // Generate style enum
     let style_enum = generate_style_enum(name);
 
     // Generate Elicit impl (handles all variant types)
-    let elicit_impl = generate_elicit_impl(name, &variants);
+    let elicit_impl =
+        generate_elicit_impl(name, &variants, &impl_generics, &ty_generics, &where_clause);
 
     // Generate ElicitIntrospect impl
-    let introspect_impl = generate_introspect_impl(name);
+    let introspect_impl =
+        generate_introspect_impl(name, &impl_generics, &ty_generics, &where_clause);
 
     // Note: Verification code is NOT generated for user types.
     // Users can write verification harnesses manually if needed.
@@ -134,10 +157,16 @@ fn parse_variant(variant: &syn::Variant) -> VariantInfo {
 }
 
 /// Generate Prompt trait implementation.
-fn generate_prompt_impl(name: &syn::Ident, custom_prompt: Option<String>) -> TokenStream2 {
+fn generate_prompt_impl(
+    name: &syn::Ident,
+    custom_prompt: Option<String>,
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
+) -> TokenStream2 {
     if let Some(prompt) = custom_prompt {
         quote! {
-            impl elicitation::Prompt for #name {
+            impl #impl_generics elicitation::Prompt for #name #ty_generics #where_clause {
                 fn prompt() -> Option<&'static str> {
                     Some(#prompt)
                 }
@@ -146,7 +175,7 @@ fn generate_prompt_impl(name: &syn::Ident, custom_prompt: Option<String>) -> Tok
     } else {
         let default_prompt = format!("Please select a {}:", name);
         quote! {
-            impl elicitation::Prompt for #name {
+            impl #impl_generics elicitation::Prompt for #name #ty_generics #where_clause {
                 fn prompt() -> Option<&'static str> {
                     Some(#default_prompt)
                 }
@@ -160,9 +189,12 @@ fn generate_select_impl(
     name: &syn::Ident,
     unit_variant_idents: &[&syn::Ident],
     variant_labels: &[String],
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
 ) -> TokenStream2 {
     quote! {
-        impl elicitation::Select for #name {
+        impl #impl_generics elicitation::Select for #name #ty_generics #where_clause {
             fn options() -> Vec<Self> {
                 vec![#(Self::#unit_variant_idents),*]
             }
@@ -278,7 +310,13 @@ fn generate_variant_match_arm(variant: &VariantInfo, enum_ident: &syn::Ident) ->
 }
 
 /// Generate the Elicitation implementation for an enum.
-fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStream2 {
+fn generate_elicit_impl(
+    name: &syn::Ident,
+    variants: &[VariantInfo],
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
+) -> TokenStream2 {
     let style_name = quote::format_ident!("{}Style", name);
     let variant_labels: Vec<String> = variants.iter().map(|v| v.ident.to_string()).collect();
 
@@ -357,7 +395,7 @@ fn generate_elicit_impl(name: &syn::Ident, variants: &[VariantInfo]) -> TokenStr
     quote! {
         #[automatically_derived]
         #[allow(unexpected_cfgs)]
-        impl elicitation::Elicitation for #name {
+        impl #impl_generics elicitation::Elicitation for #name #ty_generics #where_clause {
             type Style = #style_name;
 
             #[tracing::instrument(
@@ -462,11 +500,16 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
 }
 
 /// Generate ElicitIntrospect implementation for an enum.
-fn generate_introspect_impl(name: &syn::Ident) -> TokenStream2 {
+fn generate_introspect_impl(
+    name: &syn::Ident,
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
+) -> TokenStream2 {
     let name_str = name.to_string();
 
     quote! {
-        impl elicitation::ElicitIntrospect for #name {
+        impl #impl_generics elicitation::ElicitIntrospect for #name #ty_generics #where_clause {
             fn pattern() -> elicitation::ElicitationPattern {
                 elicitation::ElicitationPattern::Select
             }
