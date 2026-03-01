@@ -29,17 +29,35 @@ fn generate_struct_impl(
     contract: Option<Contract>,
 ) -> Result<TokenStream> {
     let name = &input.ident;
+    let generics = &input.generics;
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     match &data_struct.fields {
         // Newtype: struct D6(u32)
         Fields::Unnamed(fields) if fields.unnamed.len() == 1 => {
             let inner_type = &fields.unnamed[0].ty;
-            generate_newtype_impl(name, inner_type, contract)
+            generate_newtype_impl(
+                name,
+                inner_type,
+                contract,
+                &impl_generics,
+                &ty_generics,
+                &where_clause,
+            )
         }
         // Unit struct: struct Marker;
-        Fields::Unit => generate_unit_struct_impl(name),
+        Fields::Unit => {
+            generate_unit_struct_impl(name, &impl_generics, &ty_generics, &where_clause)
+        }
         // Named fields: struct Config { port: u16, timeout: u32 }
-        Fields::Named(fields) => generate_named_struct_impl(name, fields, contract),
+        Fields::Named(fields) => generate_named_struct_impl(
+            name,
+            fields,
+            contract,
+            &impl_generics,
+            &ty_generics,
+            &where_clause,
+        ),
         _ => Err(syn::Error::new_spanned(
             input,
             "Only newtype, unit, and named field structs are supported",
@@ -52,6 +70,9 @@ fn generate_newtype_impl(
     name: &syn::Ident,
     inner_type: &syn::Type,
     contract: Option<Contract>,
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
 ) -> Result<TokenStream> {
     let generator_expr = match contract {
         Some(Contract::Bounded { low, high }) => generate_bounded_impl(inner_type, &low, &high)?,
@@ -70,7 +91,7 @@ fn generate_newtype_impl(
     };
 
     Ok(quote! {
-        impl #name {
+        impl #impl_generics #name #ty_generics #where_clause {
             /// Create a random generator for this type with the given seed.
             ///
             /// The generator respects the type's contract constraints.
@@ -240,6 +261,9 @@ fn generate_named_struct_impl(
     name: &syn::Ident,
     fields: &syn::FieldsNamed,
     _struct_contract: Option<Contract>,
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
 ) -> Result<TokenStream> {
     // Generate constructor for each field
     let field_inits: Vec<TokenStream> = fields
@@ -281,7 +305,7 @@ fn generate_named_struct_impl(
         .collect::<Result<Vec<_>>>()?;
 
     Ok(quote! {
-        impl #name {
+        impl #impl_generics #name #ty_generics #where_clause {
             /// Create a random generator with the given seed.
             pub fn random_generator(seed: u64) -> impl ::elicitation::Generator<Target = Self> {
                 ::elicitation_rand::generators::MapGenerator::new(
@@ -295,7 +319,7 @@ fn generate_named_struct_impl(
             }
         }
 
-        impl ::elicitation::Generator for #name {
+        impl #impl_generics ::elicitation::Generator for #name #ty_generics #where_clause {
             type Target = Self;
 
             fn generate(&self) -> Self {
@@ -313,6 +337,8 @@ fn generate_enum_impl(
     _enum_contract: Option<Contract>,
 ) -> Result<TokenStream> {
     let name = &input.ident;
+    let generics = &input.generics;
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     let variant_count = data_enum.variants.len();
 
     if variant_count == 0 {
@@ -391,7 +417,7 @@ fn generate_enum_impl(
         .collect::<Result<Vec<_>>>()?;
 
     Ok(quote! {
-        impl #name {
+        impl #impl_generics #name #ty_generics #where_clause {
             /// Create a random generator with the given seed.
             pub fn random_generator(seed: u64) -> impl ::elicitation::Generator<Target = Self> {
                 ::elicitation_rand::generators::MapGenerator::new(
@@ -410,7 +436,7 @@ fn generate_enum_impl(
             }
         }
 
-        impl ::elicitation::Generator for #name {
+        impl #impl_generics ::elicitation::Generator for #name #ty_generics #where_clause {
             type Target = Self;
 
             fn generate(&self) -> Self {
@@ -444,17 +470,22 @@ fn generate_field_generator(
 }
 
 /// Generate implementation for unit struct (zero-sized type).
-fn generate_unit_struct_impl(name: &syn::Ident) -> Result<TokenStream> {
+fn generate_unit_struct_impl(
+    name: &syn::Ident,
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
+) -> Result<TokenStream> {
     // Unit structs are zero-sized - just return the value
     Ok(quote! {
-        impl #name {
+        impl #impl_generics #name #ty_generics #where_clause {
             /// Create a random generator (trivial for unit structs).
             pub fn random_generator(_seed: u64) -> impl ::elicitation::Generator<Target = Self> {
                 ::elicitation_rand::generators::ConstantGenerator::new(#name)
             }
         }
 
-        impl ::elicitation::Generator for #name {
+        impl #impl_generics ::elicitation::Generator for #name #ty_generics #where_clause {
             type Target = Self;
 
             fn generate(&self) -> Self {
