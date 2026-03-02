@@ -35,6 +35,7 @@ mod scalars;
 mod std_extras;
 mod string_contracts;
 mod strings;
+pub mod type_spec_plugin;
 mod url_specs;
 mod uuid_specs;
 mod value_specs;
