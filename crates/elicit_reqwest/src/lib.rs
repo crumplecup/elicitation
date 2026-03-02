@@ -23,13 +23,19 @@
 mod client;
 mod error;
 mod plugin;
+pub mod plugins;
 mod request_builder;
 mod response;
 mod types;
 
 pub use client::Client;
 pub use error::Error;
+// Re-export Plugin at crate root for backward compatibility.
 pub use plugin::Plugin;
+pub use plugins::Plugin as HttpPlugin;
+pub use plugins::{
+    HeaderMapPlugin, MethodPlugin, RequestBuilderPlugin, RequestSpec, StatusCodePlugin, UrlPlugin,
+};
 pub use request_builder::RequestBuilder;
 pub use response::Response;
 pub use types::{HeaderMap, Method, StatusCode, Url, Version};
