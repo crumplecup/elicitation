@@ -760,6 +760,6 @@ fn status_code_valid_registered() {
         .unwrap();
     assert_eq!(
         req.entries()[0].expression().as_deref(),
-        Some("value >= 100 && value <= 999")
+        Some("(100..=999).contains(&value)")
     );
 }

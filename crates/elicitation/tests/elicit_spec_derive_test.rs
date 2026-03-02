@@ -10,7 +10,7 @@ use std::any::TypeId;
 
 // ── Basic composition ─────────────────────────────────────────────────────────
 
-#[derive(Elicit)]
+#[derive(Elicit, Debug)]
 struct SimpleStruct {
     count: I32Positive,
     label: StringNonEmpty,
@@ -18,6 +18,11 @@ struct SimpleStruct {
 
 #[test]
 fn derived_struct_registers_type_spec() {
+    let s = SimpleStruct {
+        count: I32Positive::new(1).unwrap(),
+        label: StringNonEmpty::new("hello".to_string()).unwrap(),
+    };
+    tracing::info!(count = ?s.count, label = ?s.label, "SimpleStruct instance");
     let spec = lookup_type_spec("SimpleStruct").expect("SimpleStruct should be registered");
     assert_eq!(spec.type_name(), "SimpleStruct");
 }
@@ -75,7 +80,7 @@ fn derived_struct_registered_by_type_id() {
 
 // ── #[spec_summary] override ──────────────────────────────────────────────────
 
-#[derive(Elicit)]
+#[derive(Elicit, Debug)]
 #[spec_summary = "A date range with a validated start and end point."]
 struct DateRange {
     start: I32Positive,
@@ -84,6 +89,11 @@ struct DateRange {
 
 #[test]
 fn spec_summary_attr_overrides_auto() {
+    let d = DateRange {
+        start: I32Positive::new(1).unwrap(),
+        end: I32Positive::new(10).unwrap(),
+    };
+    tracing::info!(start = ?d.start, end = ?d.end, "DateRange instance");
     let spec = lookup_type_spec("DateRange").unwrap();
     assert_eq!(
         spec.summary(),
@@ -93,7 +103,7 @@ fn spec_summary_attr_overrides_auto() {
 
 // ── #[spec_requires] on struct (top-level invariant) ─────────────────────────
 
-#[derive(Elicit)]
+#[derive(Elicit, Debug)]
 #[spec_requires(start < end)]
 struct OrderedRange {
     start: I32Positive,
@@ -102,6 +112,11 @@ struct OrderedRange {
 
 #[test]
 fn struct_level_spec_requires_creates_requires_category() {
+    let o = OrderedRange {
+        start: I32Positive::new(1).unwrap(),
+        end: I32Positive::new(5).unwrap(),
+    };
+    tracing::info!(start = ?o.start, end = ?o.end, "OrderedRange instance");
     let spec = lookup_type_spec("OrderedRange").unwrap();
     let cat = spec.categories().iter().find(|c| c.name() == "requires");
     assert!(
@@ -112,7 +127,7 @@ fn struct_level_spec_requires_creates_requires_category() {
     let has_expr = cat.entries().iter().any(|e| {
         e.expression()
             .as_deref()
-            .map_or(false, |x| x.contains("start") && x.contains("end"))
+            .is_some_and(|x| x.contains("start") && x.contains("end"))
     });
     assert!(
         has_expr,
@@ -122,7 +137,7 @@ fn struct_level_spec_requires_creates_requires_category() {
 
 // ── #[spec_requires] on a field (extra entry in field's sub-category) ─────────
 
-#[derive(Elicit)]
+#[derive(Elicit, Debug)]
 struct BoundedCount {
     #[spec_requires(value < 100)]
     count: I32Positive,
@@ -131,6 +146,11 @@ struct BoundedCount {
 
 #[test]
 fn field_level_spec_requires_appends_to_field_category() {
+    let b = BoundedCount {
+        count: I32Positive::new(42).unwrap(),
+        label: StringNonEmpty::new("hi".to_string()).unwrap(),
+    };
+    tracing::info!(count = ?b.count, label = ?b.label, "BoundedCount instance");
     let spec = lookup_type_spec("BoundedCount").unwrap();
     let cat = spec
         .categories()
@@ -142,11 +162,10 @@ fn field_level_spec_requires_appends_to_field_category() {
         .entries()
         .iter()
         .any(|e| e.expression().as_deref() == Some("value > 0"));
-    let has_extra = cat.entries().iter().any(|e| {
-        e.expression()
-            .as_deref()
-            .map_or(false, |x| x.contains("100"))
-    });
+    let has_extra = cat
+        .entries()
+        .iter()
+        .any(|e| e.expression().as_deref().is_some_and(|x| x.contains("100")));
     assert!(
         has_inherited,
         "should still have inherited I32Positive requires"
@@ -163,12 +182,12 @@ fn field_level_spec_requires_appends_to_field_category() {
 
 // ── Recursive composition ─────────────────────────────────────────────────────
 
-#[derive(Elicit)]
+#[derive(Elicit, Debug)]
 struct Inner {
     value: I32Positive,
 }
 
-#[derive(Elicit)]
+#[derive(Elicit, Debug)]
 struct Outer {
     inner: Inner,
     label: StringNonEmpty,
@@ -176,6 +195,13 @@ struct Outer {
 
 #[test]
 fn recursive_composition_propagates_specs() {
+    let o = Outer {
+        inner: Inner {
+            value: I32Positive::new(7).unwrap(),
+        },
+        label: StringNonEmpty::new("outer".to_string()).unwrap(),
+    };
+    tracing::info!(inner = ?o.inner.value, label = ?o.label, "Outer instance");
     // Inner must be registered first for Outer to find it
     let inner_spec = lookup_type_spec("Inner").expect("Inner registered");
     assert!(

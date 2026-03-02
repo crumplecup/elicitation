@@ -290,14 +290,16 @@ fn extract_spec_summary(attrs: &[syn::Attribute]) -> Option<String> {
         if !attr.path().is_ident("spec_summary") {
             continue;
         }
-        if let syn::Meta::NameValue(nv) = &attr.meta {
-            if let syn::Expr::Lit(syn::ExprLit {
-                lit: syn::Lit::Str(s),
-                ..
-            }) = &nv.value
-            {
-                return Some(s.value());
-            }
+        if let syn::Meta::NameValue(syn::MetaNameValue {
+            value:
+                syn::Expr::Lit(syn::ExprLit {
+                    lit: syn::Lit::Str(s),
+                    ..
+                }),
+            ..
+        }) = &attr.meta
+        {
+            return Some(s.value());
         }
     }
     None

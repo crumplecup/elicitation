@@ -25,7 +25,7 @@ mod reqwest_specs {
                         "Status code must be in the range 100–999 (valid HTTP status codes)."
                             .to_string(),
                     )
-                    .expression(Some("value >= 100 && value <= 999".to_string()))
+                    .expression(Some("(100..=999).contains(&value)".to_string()))
                     .build()
                     .expect("valid SpecEntry")])
                     .build()
