@@ -61,6 +61,7 @@
 //! cargo kani --harness verify_compositional_legos
 //! ```
 
+#[cfg(any(feature = "verification", kani))]
 use elicitation::Elicit;
 
 #[cfg(kani)]

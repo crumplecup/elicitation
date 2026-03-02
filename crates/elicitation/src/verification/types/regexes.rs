@@ -4,6 +4,7 @@
 
 use crate::verification::types::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use anodized::spec;
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "regex")]
 use regex::{Regex, RegexBuilder, RegexSet};
@@ -37,6 +38,7 @@ impl RegexValid {
     ///
     /// Returns `ValidationError::RegexInvalid` if the pattern cannot be compiled.
     #[cfg_attr(not(kani), tracing::instrument(err))]
+    #[spec(requires: [!pattern.is_empty()])]
     pub fn new(pattern: &str) -> Result<Self, ValidationError> {
         Regex::new(pattern)
             .map(Self)
@@ -256,6 +258,7 @@ impl RegexCaseInsensitive {
     /// # Errors
     ///
     /// Returns `ValidationError::RegexInvalid` if the pattern cannot be compiled.
+    #[spec(requires: [!pattern.is_empty()])]
     #[cfg_attr(not(kani), tracing::instrument(err))]
     pub fn new(pattern: &str) -> Result<Self, ValidationError> {
         RegexBuilder::new(pattern)
@@ -353,6 +356,7 @@ impl RegexMultiline {
     /// # Errors
     ///
     /// Returns `ValidationError::RegexInvalid` if the pattern cannot be compiled.
+    #[spec(requires: [!pattern.is_empty()])]
     #[cfg_attr(not(kani), tracing::instrument(err))]
     pub fn new(pattern: &str) -> Result<Self, ValidationError> {
         RegexBuilder::new(pattern)

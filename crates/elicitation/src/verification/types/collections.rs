@@ -5,6 +5,7 @@
 
 use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use anodized::spec;
 use std::rc::Rc;
 use std::sync::Arc;
 
@@ -15,6 +16,7 @@ pub struct VecNonEmpty<T>(Vec<T>);
 
 impl<T> VecNonEmpty<T> {
     /// Create a new VecNonEmpty, validating the Vec is non-empty.
+    #[spec(requires: [!vec.is_empty()])]
     pub fn new(vec: Vec<T>) -> Result<Self, ValidationError> {
         if vec.is_empty() {
             Err(ValidationError::EmptyCollection)
@@ -123,6 +125,7 @@ pub struct OptionSome<T>(T);
 
 impl<T> OptionSome<T> {
     /// Create a new OptionSome from an Option, validating it's Some.
+    #[spec(requires: [opt.is_some()])]
     pub fn new(opt: Option<T>) -> Result<Self, ValidationError> {
         match opt {
             Some(value) => Ok(Self(value)),
@@ -181,6 +184,7 @@ pub struct ResultOk<T>(T);
 
 impl<T> ResultOk<T> {
     /// Create a new ResultOk from a Result, validating it's Ok.
+    #[spec(requires: [result.is_ok()])]
     pub fn new<E>(result: Result<T, E>) -> Result<Self, ValidationError> {
         match result {
             Ok(value) => Ok(Self(value)),
@@ -448,6 +452,7 @@ pub struct HashMapNonEmpty<K, V>(std::marker::PhantomData<(K, V)>);
 impl<K, V> HashMapNonEmpty<K, V> {
     /// Create a new HashMapNonEmpty, validating the map is non-empty.
     #[cfg(not(kani))]
+    #[spec(requires: [!map.is_empty()])]
     pub fn new(map: HashMap<K, V>) -> Result<Self, ValidationError> {
         if map.is_empty() {
             Err(ValidationError::EmptyCollection)
@@ -629,6 +634,7 @@ pub struct BTreeMapNonEmpty<K, V>(std::marker::PhantomData<(K, V)>);
 impl<K, V> BTreeMapNonEmpty<K, V> {
     /// Create a new BTreeMapNonEmpty, validating the map is non-empty.
     #[cfg(not(kani))]
+    #[spec(requires: [!map.is_empty()])]
     pub fn new(map: BTreeMap<K, V>) -> Result<Self, ValidationError> {
         if map.is_empty() {
             Err(ValidationError::EmptyCollection)
@@ -804,6 +810,7 @@ pub struct HashSetNonEmpty<T>(std::marker::PhantomData<T>);
 impl<T> HashSetNonEmpty<T> {
     /// Create a new HashSetNonEmpty, validating the set is non-empty.
     #[cfg(not(kani))]
+    #[spec(requires: [!set.is_empty()])]
     pub fn new(set: HashSet<T>) -> Result<Self, ValidationError> {
         if set.is_empty() {
             Err(ValidationError::EmptyCollection)
@@ -969,6 +976,7 @@ pub struct BTreeSetNonEmpty<T>(std::marker::PhantomData<T>);
 impl<T> BTreeSetNonEmpty<T> {
     /// Create a new BTreeSetNonEmpty, validating the set is non-empty.
     #[cfg(not(kani))]
+    #[spec(requires: [!set.is_empty()])]
     pub fn new(set: BTreeSet<T>) -> Result<Self, ValidationError> {
         if set.is_empty() {
             Err(ValidationError::EmptyCollection)
@@ -1138,6 +1146,7 @@ pub struct VecDequeNonEmpty<T>(std::marker::PhantomData<T>);
 impl<T> VecDequeNonEmpty<T> {
     /// Create a new VecDequeNonEmpty, validating the deque is non-empty.
     #[cfg(not(kani))]
+    #[spec(requires: [!deque.is_empty()])]
     pub fn new(deque: VecDeque<T>) -> Result<Self, ValidationError> {
         if deque.is_empty() {
             Err(ValidationError::EmptyCollection)
@@ -1303,6 +1312,7 @@ pub struct LinkedListNonEmpty<T>(std::marker::PhantomData<T>);
 impl<T> LinkedListNonEmpty<T> {
     /// Create a new LinkedListNonEmpty, validating the list is non-empty.
     #[cfg(not(kani))]
+    #[spec(requires: [!list.is_empty()])]
     pub fn new(list: LinkedList<T>) -> Result<Self, ValidationError> {
         if list.is_empty() {
             Err(ValidationError::EmptyCollection)

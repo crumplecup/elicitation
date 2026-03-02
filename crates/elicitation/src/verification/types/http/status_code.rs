@@ -1,6 +1,7 @@
 //! HTTP status code contract type.
 
 use crate::verification::types::ValidationError;
+use anodized::spec;
 
 /// A valid HTTP status code (100–999).
 ///
@@ -27,6 +28,7 @@ impl StatusCodeValid {
     ///
     /// Returns `ValidationError::StatusCodeInvalid` if the value is outside
     /// the range accepted by `reqwest::StatusCode::from_u16()` (100–999).
+    #[spec(requires: [(100..=999).contains(&value)])]
     pub fn new(value: u16) -> Result<Self, ValidationError> {
         reqwest::StatusCode::from_u16(value)
             .map(Self)

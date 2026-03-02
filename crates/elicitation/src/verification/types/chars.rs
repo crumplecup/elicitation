@@ -2,6 +2,7 @@
 
 use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use anodized::spec;
 #[cfg(not(kani))]
 use elicitation_macros::instrumented_impl;
 
@@ -21,6 +22,7 @@ impl CharAlphabetic {
     ///
     /// Returns `ValidationError::NotAlphabetic` if char is not alphabetic.
     #[cfg(not(kani))]
+    #[spec(requires: [value.is_alphabetic()])]
     pub fn new(value: char) -> Result<Self, ValidationError> {
         if value.is_alphabetic() {
             Ok(Self(value))
@@ -108,6 +110,7 @@ impl CharNumeric {
     ///
     /// Returns `ValidationError::NotNumeric` if char is not numeric.
     #[cfg(not(kani))]
+    #[spec(requires: [value.is_numeric()])]
     pub fn new(value: char) -> Result<Self, ValidationError> {
         if value.is_numeric() {
             Ok(Self(value))
@@ -194,6 +197,7 @@ impl CharAlphanumeric {
     /// # Errors
     ///
     /// Returns `ValidationError::NotAlphanumeric` if char is not alphanumeric.
+    #[spec(requires: [value.is_alphanumeric()])]
     pub fn new(value: char) -> Result<Self, ValidationError> {
         #[cfg(kani)]
         {

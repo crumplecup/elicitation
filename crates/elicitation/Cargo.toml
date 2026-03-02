@@ -24,11 +24,15 @@ serde_json = { workspace = true }
 schemars = { workspace = true }
 derive_more = { workspace = true }
 derive-getters = { workspace = true }
+derive_setters = { workspace = true }
+derive_builder = { workspace = true }
+derive-new = { workspace = true }
 tracing = { workspace = true }
 tokio = { workspace = true }
 paste = { workspace = true }
 async-trait = { workspace = true }
 inventory = { workspace = true }
+anodized = { workspace = true }
 
 # CLI dependencies (optional)
 anyhow = { workspace = true }

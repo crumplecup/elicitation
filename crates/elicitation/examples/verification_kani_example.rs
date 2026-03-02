@@ -16,14 +16,23 @@
 //! cargo kani -p elicitation_kani --all-features
 //! ```
 
-#![cfg(feature = "verification")]
-
+#[cfg(feature = "verification")]
 use elicitation::verification::contracts::{
     I32Positive, OptionIsSome, ResultIsOk, StringNonEmpty, VecNonEmpty,
 };
+#[cfg(feature = "verification")]
 use elicitation::verification::{Contract, DynContract, compose};
 
 fn main() {
+    #[cfg(not(feature = "verification"))]
+    println!("Run with --features verification to see Kani verification examples.");
+
+    #[cfg(feature = "verification")]
+    run();
+}
+
+#[cfg(feature = "verification")]
+fn run() {
     println!("=== Kani Verification Example ===\n");
 
     // Example 1: String contracts

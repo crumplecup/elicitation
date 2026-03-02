@@ -61,6 +61,9 @@ derive_more = { version = "2", features = [
   "as_ref",
 ] }
 derive-getters = "0.5"
+derive_setters = "0.1"
+derive_builder = "0.20"
+derive-new = "0.6"
 anyhow = "1.0"
 
 # Tracing
@@ -114,6 +117,11 @@ regex = "1.12"
 creusot-std = { version = "0.10.0" }
 kani-verifier = { version = "0.67" }
 # prusti-contracts lives on prusti-verification branch
+
+# Spec annotations (core, not optional — powers the agent prompt strategy)
+# runtime-no-check: specs are purely documentation/static-analysis hooks.
+# Runtime validation is already handled by Result-returning constructors.
+anodized = { version = "0.3", features = ["runtime-no-check"] }
 
 # Dev dependencies
 tokio-test = "0.4"

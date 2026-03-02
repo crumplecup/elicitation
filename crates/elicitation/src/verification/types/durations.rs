@@ -2,6 +2,7 @@
 
 use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use anodized::spec;
 #[cfg(not(kani))]
 use elicitation_macros::instrumented_impl;
 use std::time::Duration;
@@ -14,6 +15,7 @@ pub struct DurationPositive(Duration);
 #[cfg_attr(not(kani), instrumented_impl)]
 impl DurationPositive {
     /// Create a new DurationPositive, validating it's not zero.
+    #[spec(requires: [duration.as_nanos() > 0])]
     pub fn new(duration: Duration) -> Result<Self, ValidationError> {
         if duration.as_nanos() > 0 {
             Ok(Self(duration))

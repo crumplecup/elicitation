@@ -2,6 +2,7 @@
 
 use super::{Utf8Bytes, ValidationError};
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use anodized::spec;
 use elicitation_derive::contract_type;
 #[cfg(not(kani))]
 use elicitation_macros::instrumented_impl;
@@ -39,6 +40,7 @@ impl<const MAX_LEN: usize> StringNonEmpty<MAX_LEN> {
     /// - String is empty
     /// - String length exceeds MAX_LEN bytes
     /// - String is not valid UTF-8 (should never happen for stdlib String)
+    #[spec(requires: [!value.is_empty(), value.len() <= MAX_LEN])]
     pub fn new(value: String) -> Result<Self, ValidationError> {
         if value.is_empty() {
             return Err(ValidationError::EmptyString);

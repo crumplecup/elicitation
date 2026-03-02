@@ -2,6 +2,7 @@
 
 use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use anodized::spec;
 use elicitation_derive::contract_type;
 #[cfg(not(kani))]
 use elicitation_macros::instrumented_impl;
@@ -130,6 +131,7 @@ impl I8Positive {
     /// # Errors
     ///
     /// Returns `ValidationError::NotPositive` if value <= 0.
+    #[spec(requires: [value > 0])]
     pub fn new(value: i8) -> Result<Self, ValidationError> {
         if value > 0 {
             Ok(Self(value))
@@ -243,6 +245,7 @@ impl I8NonNegative {
     /// # Errors
     ///
     /// Returns `ValidationError::Negative` if value < 0.
+    #[spec(requires: [value >= 0])]
     pub fn new(value: i8) -> Result<Self, ValidationError> {
         if value >= 0 {
             Ok(Self(value))
@@ -318,6 +321,7 @@ impl I8NonZero {
     /// # Errors
     ///
     /// Returns `ValidationError::Zero` if value == 0.
+    #[spec(requires: [value != 0])]
     pub fn new(value: i8) -> Result<Self, ValidationError> {
         if value != 0 {
             Ok(Self(value))
@@ -386,6 +390,7 @@ impl<const MIN: i8, const MAX: i8> I8Range<MIN, MAX> {
     /// # Errors
     ///
     /// Returns `ValidationError::OutOfRange` if value not in [MIN, MAX].
+    #[spec(requires: [value >= MIN, value <= MAX])]
     pub fn new(value: i8) -> Result<Self, ValidationError> {
         if value >= MIN && value <= MAX {
             Ok(Self(value))
@@ -559,6 +564,7 @@ impl I16Positive {
     /// # Errors
     ///
     /// Returns `ValidationError::NotPositive` if value <= 0.
+    #[spec(requires: [value > 0])]
     pub fn new(value: i16) -> Result<Self, ValidationError> {
         if value > 0 {
             Ok(Self(value))
@@ -629,6 +635,7 @@ impl I16NonNegative {
     /// # Errors
     ///
     /// Returns `ValidationError::Negative` if value < 0.
+    #[spec(requires: [value >= 0])]
     pub fn new(value: i16) -> Result<Self, ValidationError> {
         if value >= 0 {
             Ok(Self(value))
@@ -697,6 +704,7 @@ impl I16NonZero {
     /// # Errors
     ///
     /// Returns `ValidationError::Zero` if value == 0.
+    #[spec(requires: [value != 0])]
     pub fn new(value: i16) -> Result<Self, ValidationError> {
         if value != 0 {
             Ok(Self(value))
@@ -765,6 +773,7 @@ impl<const MIN: i16, const MAX: i16> I16Range<MIN, MAX> {
     /// # Errors
     ///
     /// Returns `ValidationError::OutOfRange` if value not in [MIN, MAX].
+    #[spec(requires: [value >= MIN, value <= MAX])]
     pub fn new(value: i16) -> Result<Self, ValidationError> {
         if value >= MIN && value <= MAX {
             Ok(Self(value))
@@ -967,6 +976,7 @@ impl U8NonZero {
     /// # Errors
     ///
     /// Returns `ValidationError::Zero` if value == 0.
+    #[spec(requires: [value != 0])]
     pub fn new(value: u8) -> Result<Self, ValidationError> {
         if value != 0 {
             Ok(Self(value))
@@ -1035,6 +1045,7 @@ impl<const MIN: u8, const MAX: u8> U8Range<MIN, MAX> {
     /// # Errors
     ///
     /// Returns `ValidationError::OutOfRange` if value not in [MIN, MAX].
+    #[spec(requires: [value >= MIN, value <= MAX])]
     pub fn new(value: u8) -> Result<Self, ValidationError> {
         if value >= MIN && value <= MAX {
             Ok(Self(value))
@@ -1129,6 +1140,7 @@ impl U16NonZero {
     /// # Errors
     ///
     /// Returns `ValidationError::Zero` if value == 0.
+    #[spec(requires: [value != 0])]
     pub fn new(value: u16) -> Result<Self, ValidationError> {
         if value != 0 {
             Ok(Self(value))
@@ -1197,6 +1209,7 @@ impl<const MIN: u16, const MAX: u16> U16Range<MIN, MAX> {
     /// # Errors
     ///
     /// Returns `ValidationError::OutOfRange` if value not in [MIN, MAX].
+    #[spec(requires: [value >= MIN, value <= MAX])]
     pub fn new(value: u16) -> Result<Self, ValidationError> {
         if value >= MIN && value <= MAX {
             Ok(Self(value))
@@ -1421,6 +1434,7 @@ pub struct U8Positive(u8);
 #[elicitation_macros::instrumented_impl]
 impl U8Positive {
     /// Create a new U8Positive, validating value is positive (> 0).
+    #[spec(requires: [value > 0])]
     pub fn new(value: u8) -> Result<Self, ValidationError> {
         if value > 0 {
             Ok(Self(value))
@@ -1467,6 +1481,7 @@ pub struct U16Positive(u16);
 #[elicitation_macros::instrumented_impl]
 impl U16Positive {
     /// Create a new U16Positive, validating value is positive (> 0).
+    #[spec(requires: [value > 0])]
     pub fn new(value: u16) -> Result<Self, ValidationError> {
         if value > 0 {
             Ok(Self(value))
@@ -1524,6 +1539,7 @@ macro_rules! impl_signed_contracts {
             /// # Errors
             ///
             /// Returns `ValidationError::NotPositive` if value <= 0.
+            #[spec(requires: [value > 0])]
             pub fn new(value: $base) -> Result<Self, ValidationError> {
                 if value > 0 {
                     Ok(Self(value))
@@ -1589,6 +1605,7 @@ macro_rules! impl_signed_contracts {
             /// # Errors
             ///
             /// Returns `ValidationError::Negative` if value < 0.
+            #[spec(requires: [value >= 0])]
             pub fn new(value: $base) -> Result<Self, ValidationError> {
                 if value >= 0 {
                     Ok(Self(value))
@@ -1654,6 +1671,7 @@ macro_rules! impl_signed_contracts {
             /// # Errors
             ///
             /// Returns `ValidationError::OutOfRange` if value not in [MIN, MAX].
+            #[spec(requires: [value >= MIN, value <= MAX])]
             pub fn new(value: $base) -> Result<Self, ValidationError> {
                 if value >= MIN && value <= MAX {
                     Ok(Self(value))
@@ -1860,6 +1878,7 @@ macro_rules! impl_unsigned_contracts {
             /// # Errors
             ///
             /// Returns `ValidationError::Zero` if value == 0.
+            #[spec(requires: [value != 0])]
             pub fn new(value: $base) -> Result<Self, ValidationError> {
                 if value != 0 {
                     Ok(Self(value))
@@ -1925,6 +1944,7 @@ macro_rules! impl_unsigned_contracts {
             /// # Errors
             ///
             /// Returns `ValidationError::OutOfRange` if value not in [MIN, MAX].
+            #[spec(requires: [value >= MIN, value <= MAX])]
             pub fn new(value: $base) -> Result<Self, ValidationError> {
                 if value >= MIN && value <= MAX {
                     Ok(Self(value))
@@ -2205,6 +2225,7 @@ macro_rules! impl_signed_nonzero {
             /// # Errors
             ///
             /// Returns `ValidationError::Zero` if value == 0.
+            #[spec(requires: [value != 0])]
             pub fn new(value: $base) -> Result<Self, ValidationError> {
                 if value != 0 {
                     Ok(Self(value))
@@ -2274,6 +2295,7 @@ macro_rules! impl_unsigned_positive {
             /// # Errors
             ///
             /// Returns `ValidationError::NotPositive` if value <= 0.
+            #[spec(requires: [value > 0])]
             pub fn new(value: $base) -> Result<Self, ValidationError> {
                 if value > 0 {
                     Ok(Self(value))

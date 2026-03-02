@@ -92,6 +92,7 @@ mod collections;
 mod containers;
 mod default_style;
 mod error;
+pub mod type_spec;
 pub mod verification;
 
 #[cfg(feature = "cli")]
@@ -147,6 +148,7 @@ mod elicitation_style;
 
 // Error types
 pub use error::{ElicitError, ElicitErrorKind, ElicitResult, JsonError, RmcpError, ServiceError};
+pub use verification::types::ValidationError;
 
 // Core client and server
 pub use client::ElicitClient;
@@ -159,6 +161,13 @@ pub use elicitation_style::ElicitationStyle;
 pub use traits::{
     ElicitBuilder, ElicitIntrospect, Elicitation, ElicitationPattern, Generator, PatternDetails,
     Prompt, TypeMetadata,
+};
+
+// Type spec layer (agent-browsable contracts)
+pub use type_spec::{
+    ElicitSpec, SpecCategory, SpecCategoryBuilder, SpecEntry, SpecEntryBuilder, TypeSpec,
+    TypeSpecBuilder, TypeSpecInventoryKey, lookup_type_spec, lookup_type_spec_by_id,
+    type_spec_plugin::TypeSpecPlugin,
 };
 
 // Contracts (proof-carrying composition)
@@ -324,8 +333,6 @@ pub use verification::types::{
     UsizePositive,
     UsizeRange,
     UsizeRangeStyle,
-    // ValidationError
-    ValidationError,
     VecAllSatisfy,
     VecDequeNonEmpty,
     // Collections

@@ -2,6 +2,7 @@
 
 use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use anodized::spec;
 #[cfg(not(kani))]
 use elicitation_macros::instrumented_impl;
 use schemars::JsonSchema;
@@ -104,6 +105,7 @@ impl F32Positive {
     ///
     /// Returns `ValidationError::NotFinite` if value is NaN or infinite.
     /// Returns `ValidationError::FloatNotPositive` if value <= 0.0.
+    #[spec(requires: [value.is_finite(), value > 0.0])]
     pub fn new(value: f32) -> Result<Self, ValidationError> {
         #[cfg(kani)]
         {
@@ -189,6 +191,7 @@ impl F32NonNegative {
     ///
     /// Returns `ValidationError::NotFinite` if value is NaN or infinite.
     /// Returns `ValidationError::FloatNegative` if value < 0.0.
+    #[spec(requires: [value.is_finite(), value >= 0.0])]
     pub fn new(value: f32) -> Result<Self, ValidationError> {
         #[cfg(kani)]
         {
@@ -273,6 +276,7 @@ impl F32Finite {
     /// # Errors
     ///
     /// Returns `ValidationError::NotFinite` if value is NaN or infinite.
+    #[spec(requires: [value.is_finite()])]
     pub fn new(value: f32) -> Result<Self, ValidationError> {
         #[cfg(kani)]
         {
@@ -353,6 +357,7 @@ impl F64Positive {
     ///
     /// Returns `ValidationError::NotFinite` if value is NaN or infinite.
     /// Returns `ValidationError::FloatNotPositive` if value <= 0.0.
+    #[spec(requires: [value.is_finite(), value > 0.0])]
     pub fn new(value: f64) -> Result<Self, ValidationError> {
         #[cfg(kani)]
         {
@@ -438,6 +443,7 @@ impl F64NonNegative {
     ///
     /// Returns `ValidationError::NotFinite` if value is NaN or infinite.
     /// Returns `ValidationError::FloatNegative` if value < 0.0.
+    #[spec(requires: [value.is_finite(), value >= 0.0])]
     pub fn new(value: f64) -> Result<Self, ValidationError> {
         #[cfg(kani)]
         {
@@ -522,6 +528,7 @@ impl F64Finite {
     /// # Errors
     ///
     /// Returns `ValidationError::NotFinite` if value is NaN or infinite.
+    #[spec(requires: [value.is_finite()])]
     pub fn new(value: f64) -> Result<Self, ValidationError> {
         if value.is_finite() {
             Ok(Self(value))

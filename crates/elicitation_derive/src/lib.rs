@@ -190,7 +190,7 @@ use proc_macro::TokenStream;
 ///     Blue,
 /// }
 /// ```
-#[proc_macro_derive(Elicit, attributes(prompt, alts, skip))]
+#[proc_macro_derive(Elicit, attributes(prompt, alts, skip, spec_summary, spec_requires))]
 pub fn derive_elicit(input: TokenStream) -> TokenStream {
     derive_elicit::expand(input)
 }
