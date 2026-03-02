@@ -6,6 +6,57 @@ This crate wraps reqwest's core types as MCP tools and composes them into
 verified HTTP workflows using the elicitation framework's action traits and
 contract primitives.
 
+## Quick start
+
+Add the crate and wire the plugins into your rmcp server:
+
+```toml
+[dependencies]
+elicit_reqwest = { version = "0.8" }
+rmcp = { version = "0.1", features = ["server"] }
+tokio = { version = "1", features = ["full"] }
+```
+
+```rust,no_run
+use elicitation::PluginRegistry;
+use elicit_reqwest::plugins::{
+    Plugin, StatusCodePlugin, UrlPlugin, MethodPlugin,
+    HeaderMapPlugin, RequestBuilderPlugin, WorkflowPlugin,
+};
+use rmcp::{ServerHandler, transport};
+
+struct MyServer {
+    http: PluginRegistry,
+}
+
+impl MyServer {
+    fn new() -> Self {
+        Self {
+            http: PluginRegistry::new()
+                .register("http",            Plugin::new())
+                .register("status_code",     StatusCodePlugin)
+                .register("url",             UrlPlugin)
+                .register("method",          MethodPlugin)
+                .register("header_map",      HeaderMapPlugin)
+                .register("request_builder", RequestBuilderPlugin::new())
+                .register("workflow",        WorkflowPlugin::default_client()),
+        }
+    }
+}
+
+// impl ServerHandler for MyServer { … }
+
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    let server = MyServer::new();
+    rmcp::serve_server(server, transport::stdio()).await?;
+    Ok(())
+}
+```
+
+Tools are namespaced by plugin — an agent calls `workflow__fetch_json`,
+`url__parse`, `header_map__insert`, and so on.
+
 ## What it does
 
 `elicit_reqwest` exposes HTTP operations to AI agents as MCP tools, organized
