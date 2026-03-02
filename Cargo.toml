@@ -14,7 +14,7 @@ exclude = ["crates/elicitation_verus"]
 resolver = "2"
 
 [workspace.package]
-version = "0.8.2"
+version = "0.8.3"
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/crumplecup/elicitation"
@@ -29,11 +29,11 @@ unexpected_cfgs = { level = "warn", check-cfg = [
 ] }
 
 [workspace.dependencies]
-elicitation = { path = "crates/elicitation", version = "0.8.2" }
-elicitation_derive = { path = "crates/elicitation_derive", version = "0.8.2" }
-elicitation_macros = { path = "crates/elicitation_macros", version = "0.8.2" }
-elicitation_rand = { path = "crates/elicitation_rand", version = "0.8.2" }
-elicitation_kani = { path = "crates/elicitation_kani", version = "0.8.2" }
+elicitation = { path = "crates/elicitation", version = "0.8.3" }
+elicitation_derive = { path = "crates/elicitation_derive", version = "0.8.3" }
+elicitation_macros = { path = "crates/elicitation_macros", version = "0.8.3" }
+elicitation_rand = { path = "crates/elicitation_rand", version = "0.8.3" }
+elicitation_kani = { path = "crates/elicitation_kani", version = "0.8.3" }
 
 
 # MCP client
@@ -63,7 +63,7 @@ derive_more = { version = "2", features = [
 derive-getters = "0.5"
 derive_setters = "0.1"
 derive_builder = "0.20"
-derive-new = "0.6"
+derive-new = "0.7"
 anyhow = "1.0"
 
 # Tracing
