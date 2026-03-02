@@ -8,9 +8,10 @@ authors.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 
-description = "Kani formal verification proofs for elicitation contracts"
-keywords = ["verification", "kani", "formal-methods", "model-checking"]
-categories = ["development-tools"]
+readme = "README.md"
+description = "Kani model-checking proofs for elicitation contract types"
+keywords = ["verification", "kani", "formal-methods", "model-checking", "contracts"]
+categories = ["development-tools", "mathematics"]
 
 [dependencies]
 # Core dependency - verification framework only
