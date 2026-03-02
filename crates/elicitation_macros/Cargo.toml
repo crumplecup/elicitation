@@ -7,8 +7,6 @@ repository.workspace = true
 authors.workspace = true
 homepage.workspace = true
 documentation.workspace = true
-readme.workspace = true
-
 readme = "README.md"
 description = "Procedural macros for MCP tool generation, tracing instrumentation, and newtype wrapping in the elicitation framework"
 keywords = ["macros", "elicitation", "mcp", "procedural", "codegen"]
