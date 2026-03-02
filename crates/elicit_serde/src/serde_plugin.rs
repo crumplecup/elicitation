@@ -118,9 +118,7 @@ impl ElicitPlugin for SerdePlugin {
                             Ok(canonical) => {
                                 Ok(CallToolResult::success(vec![Content::text(canonical)]))
                             }
-                            Err(e) => {
-                                Ok(CallToolResult::error(vec![Content::text(e.to_string())]))
-                            }
+                            Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
                         },
                         Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
                     }
@@ -131,9 +129,7 @@ impl ElicitPlugin for SerdePlugin {
                     match serde_json::from_str::<serde_json::Value>(&p.json) {
                         Ok(v) => match serde_json::to_string(&v) {
                             Ok(s) => Ok(CallToolResult::success(vec![Content::text(s)])),
-                            Err(e) => {
-                                Ok(CallToolResult::error(vec![Content::text(e.to_string())]))
-                            }
+                            Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
                         },
                         Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
                     }

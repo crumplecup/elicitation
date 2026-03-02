@@ -120,7 +120,8 @@ mod newtype_methods_macro;
 
 mod traits;
 
-// Plugin registry (composable tool plugins)
+mod elicit_json;
+pub use elicit_json::ElicitJson;
 mod plugin;
 mod plugin_registry;
 pub use plugin::ElicitPlugin;
