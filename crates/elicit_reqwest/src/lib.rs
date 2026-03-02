@@ -35,6 +35,7 @@ pub use plugin::Plugin;
 pub use plugins::Plugin as HttpPlugin;
 pub use plugins::{
     HeaderMapPlugin, MethodPlugin, RequestBuilderPlugin, RequestSpec, StatusCodePlugin, UrlPlugin,
+    WorkflowPlugin,
 };
 pub use request_builder::RequestBuilder;
 pub use response::Response;

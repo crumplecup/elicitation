@@ -9,6 +9,7 @@
 
 use elicit_reqwest::plugins::{
     HeaderMapPlugin, MethodPlugin, Plugin, RequestBuilderPlugin, StatusCodePlugin, UrlPlugin,
+    WorkflowPlugin,
 };
 use elicitation::{ElicitPlugin, PluginRegistry};
 
@@ -21,6 +22,7 @@ async fn main() {
         ("method", Box::new(MethodPlugin)),
         ("header_map", Box::new(HeaderMapPlugin)),
         ("request_builder", Box::new(RequestBuilderPlugin::new())),
+        ("workflow", Box::new(WorkflowPlugin::default_client())),
     ];
 
     let mut total = 0usize;
@@ -45,7 +47,8 @@ async fn main() {
         .register("url", UrlPlugin)
         .register("method", MethodPlugin)
         .register("header_map", HeaderMapPlugin)
-        .register("request_builder", RequestBuilderPlugin::new());
+        .register("request_builder", RequestBuilderPlugin::new())
+        .register("workflow", WorkflowPlugin::default_client());
 
     // Curate a safe read-only toolchain
     let _toolchain = registry.filter(|t| {
