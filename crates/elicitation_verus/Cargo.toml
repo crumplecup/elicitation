@@ -8,9 +8,10 @@ authors = ["Erik Rose <erik.w.rose@gmail.com>"]
 homepage = "https://github.com/crumplecup/elicitation"
 documentation = "https://docs.rs/elicitation_verus"
 
-description = "Verus formal verification proofs for elicitation contracts"
-keywords = ["verification", "verus", "formal-methods", "smt-verification"]
-categories = ["development-tools"]
+description = "Verus formal verification proofs for elicitation contract types"
+keywords = ["verification", "verus", "formal-methods", "smt-verification", "contracts"]
+categories = ["development-tools", "mathematics"]
+readme = "README.md"
 
 [package.metadata.verus]
 verify = true
