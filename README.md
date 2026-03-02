@@ -55,6 +55,8 @@ Elicitation is a Rust library that turns **sampling interactions** (calls to LLM
 3. **Follow processes** - Multi-step construction with step-by-step guidance
 4. **Verify formally** - Contracts and composition rules checked at compile time
 5. **Adapt contextually** - Swap prompts/styles without changing types
+6. **Wrap existing crates** - Expose third-party APIs as MCP tools via newtype macros
+7. **Query type surfaces** - Agents browse type invariants on demand via the TypeSpec explorer
 
 Think of it as **a DSL for agent-driven data construction**, where the "syntax" is your Rust types and the "semantics" are guaranteed by the compiler.
 
@@ -1152,9 +1154,103 @@ let json: Value = Value::elicit(&ctx).await?;
 // Could be: {"name": "Alice", "scores": [95, 87, 92]}
 ```
 
+### Newtype Wrappers and Tool Transport for Third-Party Crates
+
+The `elicit_newtype!` and `reflect_methods!` macros let you expose an existing
+crate's API as MCP tools without rewriting it. The pattern has three steps:
+
+**1. Wrap the type** — `elicit_newtype!` places the inner value behind `Arc` so
+that consuming builder types become `Clone`-able across async and MCP boundaries:
+
+```rust
+use elicitation::elicit_newtype;
+
+elicit_newtype!(pub struct Client(reqwest::Client));
+elicit_newtype!(pub struct RequestBuilder(reqwest::RequestBuilder));
+```
+
+**2. Expose methods as tools** — `reflect_methods!` on an impl block
+auto-generates MCP tool signatures (names, descriptions, JSON schemas) from the
+method signatures, without any hand-written boilerplate:
+
+```rust
+use elicitation::reflect_methods;
+
+#[reflect_methods]
+impl Client {
+    pub async fn get(&self, url: Url) -> RequestBuilder { … }
+    pub async fn post(&self, url: Url) -> RequestBuilder { … }
+}
+```
+
+**3. Register with a plugin** — group related tools under a namespace and hand
+the plugin to an rmcp server registry:
+
+```rust
+use elicitation::PluginRegistry;
+
+let registry = PluginRegistry::new()
+    .register("http", ClientPlugin::new())
+    .register("request_builder", RequestBuilderPlugin::new());
+```
+
+This pattern is used throughout [`elicit_reqwest`](crates/elicit_reqwest/) to
+expose the full reqwest API — ~79 MCP tools across seven plugins — with zero
+hand-written schemas.
+
 ---
 
-## Documentation
+### Type Spec Queries (Anodized Prompt Layer)
+
+When an agent needs to understand a complex type's constraints before constructing
+it, dumping the full type contract into a prompt is expensive and often exceeds
+the context window. The **TypeSpec explorer** solves this with on-demand lookup.
+
+Every type that implements `Elicit` also registers an `ElicitSpec` — a structured
+catalogue of its invariants (requires, ensures, bounds, summary) — in a global
+inventory keyed by both name and `TypeId`.
+
+Agents query specs surgically using the `TypeSpecPlugin` MCP tools:
+
+```
+list_types          → ["I32Positive", "StringNonEmpty", "StatusCodeValid", …]
+describe_type       → summary + top-level category list for a type
+explore_type        → entries in a specific category ("requires", "ensures", …)
+```
+
+Instead of receiving the whole Merriam-Webster, the agent does a dictionary
+lookup:
+
+```
+agent → describe_type("StatusCodeValid")
+      ← { summary: "HTTP status code in 100–999", categories: ["requires"] }
+
+agent → explore_type("StatusCodeValid", "requires")
+      ← [{ expression: "(100..=999).contains(&value)" }]
+```
+
+**Composed specs via `#[derive(Elicit)]`** — when you derive `Elicit` on your
+own struct, a composed `ElicitSpec` is generated automatically. Field-type specs
+are assembled at runtime via `TypeId` lookup, and you can annotate additional
+invariants with attributes:
+
+```rust
+#[derive(Elicit)]
+#[spec_summary = "A validated date range."]
+#[spec_requires(start < end)]
+struct DateRange {
+    #[spec_requires(value > 0)]
+    start: I32Positive,
+    end: I32Positive,
+}
+```
+
+The result: agents get a browsable, token-efficient interface to type invariants,
+and library authors get a documentation layer that stays in sync with the code.
+
+---
+
+
 
 - **[API Docs](https://docs.rs/elicitation)** - Complete API reference
 - **[ELICIT_TRAIT_TOOLS_ROUTER.md](ELICIT_TRAIT_TOOLS_ROUTER.md)** - Trait-based tool generation guide

@@ -9,9 +9,10 @@ homepage.workspace = true
 documentation.workspace = true
 readme.workspace = true
 
-description = "Internal macros for elicitation crate"
-keywords = ["macros", "elicitation"]
-categories = ["development-tools"]
+readme = "README.md"
+description = "Procedural macros for MCP tool generation, tracing instrumentation, and newtype wrapping in the elicitation framework"
+keywords = ["macros", "elicitation", "mcp", "procedural", "codegen"]
+categories = ["development-tools::procedural-macro-helpers"]
 
 [lib]
 proc-macro = true

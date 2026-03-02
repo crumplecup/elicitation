@@ -7,7 +7,10 @@ repository.workspace = true
 authors.workspace = true
 homepage.workspace = true
 documentation.workspace = true
-readme.workspace = true
+readme = "README.md"
+description = "MCP tool transport for reqwest — newtype wrappers, plugin registry, and contract-verified HTTP workflows"
+keywords = ["mcp", "reqwest", "http", "elicitation", "workflow"]
+categories = ["web-programming::http-client", "development-tools", "asynchronous"]
 
 [dependencies]
 # Elicitation framework with reqwest + url support

@@ -9,6 +9,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add elicit_newtype! declarative macro for transparent wrappers
+- Add method reflection infrastructure for MCP tool generation
+- Connect method reflection pipeline with parameter struct generation
+- Implement wrapper method generation logic for MCP tools
+- Integrate MCP tool wrapper generation into reflect_methods pipeline
+- Add elicit_newtype_methods! declarative macro
+- Add generic method support
+- Add generic support for struct derives
+- Add generic support for enum derives
+- Add generic support for #[derive(Rand)]
+- Use Arc internally in elicit_newtype! for universal Clone support
+- Add shadow crate skeleton for integration testing
+- Add consuming method support to elicit_newtype_methods!
+- Add Phase 2 implementation with declarative macro limitations
+- Add consuming method support to #[reflect_methods]
+- Add reqwest feature with full Elicitation trait impls
+- Add Kani/Verus/Creusot coverage for reqwest types
+- Implement ElicitPlugin for elicit_reqwest with HTTP tools
+- Expose all reqwest type methods as MCP tools
+- Add WorkflowPlugin with 10 phrase-level HTTP tool compositions
+- Phase 2 anodized spec layer - complete std + feature-gated specs
+- Phase 3 TypeSpecPlugin MCP tools
+- Phase 2 gaps - time OffsetDateTime and reqwest StatusCode specs
+- Phase 4 composed ElicitSpec via #[derive(Elicit)]
+
+### Documentation
+
+- Add method reflection implementation plan
+- Fix newtype macro documentation with correct syntax examples
+- Update METHOD_REFLECTION_PLAN with implementation progress
+- Add README
+- Add quick start section to README
+- Update README with newtype macros and TypeSpec explorer
+- Add README and update Cargo.toml metadata
+- Add README and update Cargo.toml metadata
+- Add README and update Cargo.toml metadata
+- Add README and update Cargo.toml metadata
+
+### Fixed
+
+- Add generic support for elicit_checked tool generation
+- Replace single-arm match with if let (clippy)
+- Resolve CI failures in elicit_spec_derive tests
+
+### Miscellaneous
+
+- Bump version to 0.8.3 and update derive-new to 0.7
+- Set crate-specific readme, description, keywords, categories
+
+### Refactor
+
+- Remove generic method support from declarative macro
+- Remove ad-hoc trait impls, document coverage gaps
+
+### Styling
+
+- Fix clippy warnings in method_reflection module
+- Apply cargo fmt to struct_impl function calls
+
+### Testing
+
+- Add integration tests for method reflection
+
+## [0.8.2] - 2026-02-23
+
+### Added
+
 - First working proof module - bools
 - Add char contract type proofs
 - Add i8 integer contract type proofs
@@ -22,6 +89,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add verus_proof trait method for compositional verification
 - Add char contract proofs
 - Complete cloud of assumptions approach
+- Add string contract proofs
+- Add float contract proofs
+- Add duration and tuple contract proofs
+- Add collection contract proofs
+- Add network address contract proofs
+- Complete coverage with 171 proofs across all derivable types
+- Add creusot_proof() trait integration for compositional verification
+- Create elicitation_prusti workspace crate with 239 proofs
+- Add verification trenchcoat coverage (456 total proofs)
+- Add verification trenchcoat coverage (27 modules total)
+- Add prusti_proof() trait integration
 - Add verification trenchcoat coverage (456 total proofs)
 - Add verification trenchcoat coverage (27 modules total)
 - Add prusti_proof() trait integration
@@ -35,6 +113,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 
 - Document verification status
+- Add progress tracking summary
+- Add compositional verification example and comprehensive tracking documentation
+- Update tracking with trenchcoat coverage (456 proofs)
 - Update tracking with trenchcoat coverage (456 proofs)
 - Add comprehensive tracking documentation
 - Update tracking docs with CLI usage
@@ -46,6 +127,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove remaining verify-creusot references
 - Remove verify-creusot from examples
 - Fix syntax error in verification_multi_example
+- Restore verification trenchcoat proofs (393 total)
 - Restore verification trenchcoat proofs (393 total)
 - Restore missing module files from origin/main
 - Restore all 19 proof modules from main branch
@@ -73,11 +155,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix ValidationError import in elicitation_kani crate
 - Remove misplaced Prusti code generation
 - Eliminate all warnings in Kani verification builds
+- Kani registration in cargo
+- Use workspace dependencies for elicitation
+- Remove publish = false to allow publishing
+- Add verification feature to elicitation dependency
+- Add elicitation dependency with verification feature
+- Update gitignore to exclude all target directories
+- Email for author
+- Add missing Verus standard library dependencies
+- Add Verus stdlib dependencies and update gitignore
+- Remove unused star imports and use explicit SpecOrd imports
+- Remove path dependency for publishability
 
 ### Miscellaneous
 
 - Simplify lib.rs, add cfg checks
 - Bump version to 0.8.2 and fix shellexpand workspace dependency
+- Update CHANGELOG.md for v0.8.2
+- Add package metadata to creusot and verus crates
 
 ### Refactor
 
@@ -98,6 +193,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.8.1] - 2026-02-17
 
+### Documentation
+
+- Update CHANGELOG for v0.8.1
+
+### Fixed
+
+- Suppress unexpected_cfgs warnings for kani
+
+## [0.8.0] - 2026-02-16
+
 ### Added
 
 - Add ElicitationContext for tracking elicitation state
@@ -108,13 +213,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add dynamic_choices example demonstrating ChoiceSet
 - Add compositional verification examples and guide
-- Update CHANGELOG for v0.8.1
 
 ### Fixed
 
 - Update tests and examples for v0.8.0 API changes
 - Remove --execute flag from pre-release dry-run
-- Suppress unexpected_cfgs warnings for kani
 
 ### Miscellaneous
 
