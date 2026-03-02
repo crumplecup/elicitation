@@ -173,7 +173,9 @@ impl From<FieldInfoDe> for FieldInfo {
     fn from(de: FieldInfoDe) -> Self {
         Self {
             name: Box::leak(de.name.into_boxed_str()),
-            prompt: de.prompt.map(|s| Box::leak(s.into_boxed_str()) as &'static str),
+            prompt: de
+                .prompt
+                .map(|s| Box::leak(s.into_boxed_str()) as &'static str),
             type_name: Box::leak(de.type_name.into_boxed_str()),
         }
     }

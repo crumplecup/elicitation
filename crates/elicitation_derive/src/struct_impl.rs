@@ -420,6 +420,7 @@ fn generate_elicit_impl_simple(
     quote! {
         /// Style enum for this type (default-only).
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
         pub enum #style_name {
             /// Default elicitation style.
             #[default]
@@ -687,6 +688,7 @@ fn generate_elicit_impl_styled(
     quote! {
         // Generate style selection enum
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
         enum #style_enum_name {
             #[default]
             #default_variant,
