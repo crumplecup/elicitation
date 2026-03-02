@@ -149,6 +149,73 @@ macro_rules! elicit_newtype {
             }
         }
     };
+
+    // Syntax: elicit_newtype!(path::to::Type, as WrapperName, serde);
+    // Like the base form but also derives Serialize + Deserialize (only for types where T: Serialize).
+    ($inner_path:path, as $wrapper_name:ident, serde) => {
+        #[doc = concat!("Elicitation-enabled wrapper around `", stringify!($inner_path), "`.")]
+        #[doc = ""]
+        #[doc = "This newtype uses `Arc` internally to ensure `Clone` is always available,"]
+        #[doc = "providing transparent access via `Deref` and `DerefMut`."]
+        #[doc = "Serialization is delegated transparently to the inner type."]
+        #[derive(
+            ::std::fmt::Debug,
+            ::std::clone::Clone,
+            ::serde::Serialize,
+            ::serde::Deserialize,
+        )]
+        #[serde(transparent)]
+        pub struct $wrapper_name(pub ::std::sync::Arc<$inner_path>);
+
+        impl ::schemars::JsonSchema for $wrapper_name {
+            fn schema_name() -> ::std::borrow::Cow<'static, str> {
+                stringify!($wrapper_name).into()
+            }
+
+            fn json_schema(gen: &mut ::schemars::SchemaGenerator) -> ::schemars::Schema {
+                <$inner_path as ::schemars::JsonSchema>::json_schema(gen)
+            }
+        }
+
+        impl ::std::ops::Deref for $wrapper_name {
+            type Target = $inner_path;
+
+            fn deref(&self) -> &Self::Target {
+                &*self.0
+            }
+        }
+
+        impl ::std::ops::DerefMut for $wrapper_name {
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                ::std::sync::Arc::get_mut(&mut self.0)
+                    .expect("Cannot get mutable reference to Arc with multiple references")
+            }
+        }
+
+        impl ::std::convert::AsRef<$inner_path> for $wrapper_name {
+            fn as_ref(&self) -> &$inner_path {
+                &*self.0
+            }
+        }
+
+        impl ::std::convert::From<$inner_path> for $wrapper_name {
+            fn from(inner: $inner_path) -> Self {
+                Self(::std::sync::Arc::new(inner))
+            }
+        }
+
+        impl ::std::convert::From<::std::sync::Arc<$inner_path>> for $wrapper_name {
+            fn from(arc: ::std::sync::Arc<$inner_path>) -> Self {
+                Self(arc)
+            }
+        }
+
+        impl ::std::convert::From<$wrapper_name> for ::std::sync::Arc<$inner_path> {
+            fn from(wrapper: $wrapper_name) -> Self {
+                wrapper.0
+            }
+        }
+    };
 }
 
 /// Generates multiple newtype wrappers in bulk.
@@ -196,6 +263,17 @@ macro_rules! elicit_newtypes {
     // Multiple types (semicolon-separated)
     ($inner_path:path, as $wrapper_name:ident; $($rest:tt)*) => {
         $crate::elicit_newtype!($inner_path, as $wrapper_name);
+        $crate::elicit_newtypes!($($rest)*);
+    };
+
+    // Single type with serde
+    ($inner_path:path, as $wrapper_name:ident, serde $(;)?) => {
+        $crate::elicit_newtype!($inner_path, as $wrapper_name, serde);
+    };
+
+    // Multiple types with serde flag (serde flag applies per item)
+    ($inner_path:path, as $wrapper_name:ident, serde; $($rest:tt)*) => {
+        $crate::elicit_newtype!($inner_path, as $wrapper_name, serde);
         $crate::elicit_newtypes!($($rest)*);
     };
 }
