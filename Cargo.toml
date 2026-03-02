@@ -7,6 +7,7 @@ members = [
   "crates/elicitation_creusot",
   "crates/elicitation_rand",
   "crates/elicit_reqwest",
+  "crates/elicit_serde",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
