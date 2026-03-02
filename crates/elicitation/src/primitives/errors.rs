@@ -39,6 +39,7 @@ use std::io;
 ///
 /// Allows creating IO errors for testing without actual IO failures.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum IoErrorGenerationMode {
     /// File/directory not found error.
     NotFound(String),
@@ -206,6 +207,7 @@ impl Elicitation for IoErrorGenerationMode {
 ///
 /// Allows deterministic creation of IO errors without actual IO failures.
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct IoErrorGenerator {
     mode: IoErrorGenerationMode,
 }
@@ -266,6 +268,7 @@ mod json_error {
     ///
     /// Creates real JSON parsing errors by attempting to parse invalid JSON.
     #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+    #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
     pub enum JsonErrorGenerationMode {
         /// Syntax error (invalid JSON).
         SyntaxError,
@@ -351,6 +354,7 @@ mod json_error {
     ///
     /// Creates real JSON errors by parsing intentionally invalid JSON.
     #[derive(Debug, Clone, Copy)]
+    #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
     pub struct JsonErrorGenerator {
         mode: JsonErrorGenerationMode,
     }

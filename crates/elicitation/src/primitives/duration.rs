@@ -46,6 +46,7 @@ crate::default_style!(DurationGenerationMode => DurationGenerationModeStyle);
 /// - `FromMicros`: Duration from microseconds
 /// - `FromNanos`: Duration from nanoseconds
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum DurationGenerationMode {
     /// Zero duration.
     Zero,
@@ -154,6 +155,7 @@ impl Elicitation for DurationGenerationMode {
 /// Created from a [`DurationGenerationMode`] to enable consistent duration
 /// generation across multiple calls.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DurationGenerator {
     mode: DurationGenerationMode,
 }

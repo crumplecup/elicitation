@@ -673,6 +673,7 @@ pub trait ElicitIntrospect: Elicitation {
 /// - **Affirm**: Yes/no confirmation (booleans)
 /// - **Primitive**: Direct value elicitation (strings, numbers, etc.)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ElicitationPattern {
     /// Struct with sequential field elicitation.
     ///
@@ -712,6 +713,7 @@ impl ElicitationPattern {
 /// This is static metadata returned by `ElicitIntrospect::metadata()`.
 /// It describes the structure without tracking runtime state.
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct TypeMetadata {
     /// Type name (e.g., "Config", "Mode", "String").
     pub type_name: &'static str,
@@ -744,6 +746,7 @@ impl TypeMetadata {
 ///
 /// Uses owned data to support both static and dynamic implementations.
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum PatternDetails {
     /// Survey pattern (structs).
     Survey {

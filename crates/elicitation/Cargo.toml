@@ -22,6 +22,7 @@ futures = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 schemars = { workspace = true }
+erased-serde = { workspace = true }
 derive_more = { workspace = true }
 derive-getters = { workspace = true }
 derive_setters = { workspace = true }
@@ -81,6 +82,8 @@ full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
+# Enable serde derives on elicitation's own types + erased-serde registry
+serde = []
 # Enable serde_json::Value elicitation
 serde_json = []
 # Enable chrono datetime elicitation
