@@ -7,10 +7,10 @@ repository.workspace = true
 authors.workspace = true
 homepage.workspace = true
 documentation.workspace = true
-
-description = "Creusot formal verification proofs for elicitation contracts"
-keywords = ["verification", "creusot", "formal-methods", "deductive"]
-categories = ["development-tools"]
+readme = "README.md"
+description = "Creusot formal verification proofs for elicitation contract types"
+keywords = ["verification", "creusot", "formal-methods", "deductive", "contracts"]
+categories = ["development-tools", "mathematics"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(creusot)', 'cfg(kani)'] }
@@ -40,5 +40,5 @@ regex = ["dep:regex", "elicitation/regex"]
 chrono = ["dep:chrono", "elicitation/chrono"]
 time = ["dep:time", "elicitation/time"]
 jiff = ["dep:jiff", "elicitation/jiff"]
-verify-kani = []  # Dummy feature for Kani compatibility
+verify-kani = []                                                       # Dummy feature for Kani compatibility
 reqwest = ["elicitation/reqwest"]
