@@ -703,3 +703,55 @@ fn ip_private_registered() {
         .unwrap();
     assert!(!req.entries().is_empty());
 }
+
+// ── time ──────────────────────────────────────────────────────────────────────
+
+#[test]
+#[cfg(feature = "time")]
+fn offset_datetime_after_registered() {
+    let spec = lookup_type_spec("OffsetDateTimeAfter").expect("OffsetDateTimeAfter");
+    assert!(spec.summary().contains("after"));
+    let req = spec
+        .categories()
+        .iter()
+        .find(|c| c.name() == "requires")
+        .unwrap();
+    assert_eq!(
+        req.entries()[0].expression().as_deref(),
+        Some("value > threshold")
+    );
+}
+
+#[test]
+#[cfg(feature = "time")]
+fn offset_datetime_before_registered() {
+    let spec = lookup_type_spec("OffsetDateTimeBefore").expect("OffsetDateTimeBefore");
+    assert!(spec.summary().contains("before"));
+    let req = spec
+        .categories()
+        .iter()
+        .find(|c| c.name() == "requires")
+        .unwrap();
+    assert_eq!(
+        req.entries()[0].expression().as_deref(),
+        Some("value < threshold")
+    );
+}
+
+// ── reqwest ───────────────────────────────────────────────────────────────────
+
+#[test]
+#[cfg(feature = "reqwest")]
+fn status_code_valid_registered() {
+    let spec = lookup_type_spec("StatusCodeValid").expect("StatusCodeValid");
+    assert!(spec.summary().contains("100"));
+    let req = spec
+        .categories()
+        .iter()
+        .find(|c| c.name() == "requires")
+        .unwrap();
+    assert_eq!(
+        req.entries()[0].expression().as_deref(),
+        Some("value >= 100 && value <= 999")
+    );
+}

@@ -124,7 +124,7 @@ fn explore_type(type_name: &str, category: &str) -> String {
 /// # Example
 ///
 /// ```rust,no_run
-/// use elicitation::{PluginRegistry, type_spec::TypeSpecPlugin};
+/// use elicitation::{PluginRegistry, TypeSpecPlugin};
 ///
 /// let registry = PluginRegistry::new()
 ///     .register("type_spec", TypeSpecPlugin::new());

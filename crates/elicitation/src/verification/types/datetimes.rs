@@ -955,6 +955,7 @@ pub struct OffsetDateTimeAfter(std::marker::PhantomData<()>);
 impl OffsetDateTimeAfter {
     /// Create a new OffsetDateTimeAfter, validating value > threshold.
     #[cfg(not(kani))]
+    #[spec(requires: [value > threshold])]
     pub fn new(value: OffsetDateTime, threshold: OffsetDateTime) -> Result<Self, ValidationError> {
         if value > threshold {
             Ok(Self { value, threshold })
@@ -1121,6 +1122,7 @@ pub struct OffsetDateTimeBefore(std::marker::PhantomData<()>);
 impl OffsetDateTimeBefore {
     /// Create a new OffsetDateTimeBefore, validating value < threshold.
     #[cfg(not(kani))]
+    #[spec(requires: [value < threshold])]
     pub fn new(value: OffsetDateTime, threshold: OffsetDateTime) -> Result<Self, ValidationError> {
         if value < threshold {
             Ok(Self { value, threshold })

@@ -112,3 +112,27 @@ mod jiff_specs {
         related  = "jiff::Timestamp",
     );
 }
+
+// ── time ──────────────────────────────────────────────────────────────────────
+
+#[cfg(feature = "time")]
+mod time_specs {
+    use super::*;
+    use crate::verification::types::{OffsetDateTimeAfter, OffsetDateTimeBefore};
+
+    impl_datetime_spec!(
+        type     = OffsetDateTimeAfter,
+        name     = "OffsetDateTimeAfter",
+        summary  = "A time OffsetDateTime guaranteed to be strictly after a given threshold.",
+        requires = [("after", "Value must be strictly after the threshold.", "value > threshold")],
+        related  = "time::OffsetDateTime",
+    );
+
+    impl_datetime_spec!(
+        type     = OffsetDateTimeBefore,
+        name     = "OffsetDateTimeBefore",
+        summary  = "A time OffsetDateTime guaranteed to be strictly before a given threshold.",
+        requires = [("before", "Value must be strictly before the threshold.", "value < threshold")],
+        related  = "time::OffsetDateTime",
+    );
+}
