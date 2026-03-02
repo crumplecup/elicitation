@@ -7,6 +7,8 @@ use super::ValidationError;
 #[cfg(feature = "uuid")]
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
 #[cfg(feature = "uuid")]
+use anodized::spec;
+#[cfg(all(feature = "uuid", not(kani)))]
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "uuid")]
 use uuid::Uuid;
@@ -25,6 +27,8 @@ pub struct UuidV4(Uuid);
 #[cfg_attr(not(kani), instrumented_impl)]
 impl UuidV4 {
     /// Create a new UuidV4, validating it's Version 4.
+    #[spec(requires: [uuid.get_version_num() == 4])]
+    #[spec(requires: [uuid != Uuid::nil()])]
     pub fn new(uuid: Uuid) -> Result<Self, ValidationError> {
         let version = uuid.get_version_num() as u8;
         if version == 4 {

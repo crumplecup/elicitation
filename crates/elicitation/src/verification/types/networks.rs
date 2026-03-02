@@ -2,6 +2,7 @@
 
 use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use anodized::spec;
 #[cfg(not(kani))]
 use elicitation_macros::instrumented_impl;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
@@ -17,6 +18,7 @@ pub struct IpPrivate(IpAddr);
 #[cfg_attr(not(kani), instrumented_impl)]
 impl IpPrivate {
     /// Create a new IpPrivate, validating it's a private address.
+    #[spec(requires: [matches!(ip, IpAddr::V4(_) | IpAddr::V6(_))])]
     pub fn new(ip: IpAddr) -> Result<Self, ValidationError> {
         // Check based on IP version
         let is_private = match ip {
@@ -84,6 +86,7 @@ pub struct IpPublic(IpAddr);
 #[cfg_attr(not(kani), instrumented_impl)]
 impl IpPublic {
     /// Create a new IpPublic, validating it's not a private address.
+    #[spec(requires: [!ip.is_loopback()])]
     pub fn new(ip: IpAddr) -> Result<Self, ValidationError> {
         // Use IpPrivate validation logic, but invert
         match IpPrivate::new(ip) {
@@ -141,6 +144,7 @@ pub struct IpV4(Ipv4Addr);
 #[cfg_attr(not(kani), instrumented_impl)]
 impl IpV4 {
     /// Create a new IpV4, validating it's an IPv4 address.
+    #[spec(requires: [ip.is_ipv4()])]
     pub fn new(ip: IpAddr) -> Result<Self, ValidationError> {
         match ip {
             IpAddr::V4(v4) => Ok(Self(v4)),
@@ -197,6 +201,7 @@ pub struct IpV6(Ipv6Addr);
 #[cfg_attr(not(kani), instrumented_impl)]
 impl IpV6 {
     /// Create a new IpV6, validating it's an IPv6 address.
+    #[spec(requires: [ip.is_ipv6()])]
     pub fn new(ip: IpAddr) -> Result<Self, ValidationError> {
         match ip {
             IpAddr::V6(v6) => Ok(Self(v6)),
@@ -253,6 +258,7 @@ pub struct Ipv4Loopback(Ipv4Addr);
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Ipv4Loopback {
     /// Create a new Ipv4Loopback, validating it's a loopback address.
+    #[spec(requires: [ip.is_loopback()])]
     pub fn new(ip: Ipv4Addr) -> Result<Self, ValidationError> {
         if ip.is_loopback() {
             Ok(Self(ip))
@@ -310,6 +316,7 @@ pub struct Ipv6Loopback(Ipv6Addr);
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Ipv6Loopback {
     /// Create a new Ipv6Loopback, validating it's the loopback address.
+    #[spec(requires: [ip.is_loopback()])]
     pub fn new(ip: Ipv6Addr) -> Result<Self, ValidationError> {
         if ip.is_loopback() {
             Ok(Self(ip))

@@ -2,6 +2,7 @@
 
 use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use anodized::spec;
 #[cfg(not(kani))]
 use elicitation_macros::instrumented_impl;
 use std::path::PathBuf;
@@ -16,6 +17,7 @@ pub struct PathBufExists(PathBuf);
 #[cfg_attr(not(kani), instrumented_impl)]
 impl PathBufExists {
     /// Create a new PathBufExists, validating the path exists.
+    #[spec(requires: [path.exists()])]
     pub fn new(path: PathBuf) -> Result<Self, ValidationError> {
         if path.exists() {
             Ok(Self(path))
@@ -77,6 +79,7 @@ pub struct PathBufReadable(PathBuf);
 #[cfg_attr(not(kani), instrumented_impl)]
 impl PathBufReadable {
     /// Create a new PathBufReadable, validating the path is readable.
+    #[spec(requires: [path.metadata().is_ok()])]
     pub fn new(path: PathBuf) -> Result<Self, ValidationError> {
         // Try to read metadata as a proxy for readability
         match path.metadata() {
@@ -136,6 +139,7 @@ pub struct PathBufIsDir(PathBuf);
 #[cfg_attr(not(kani), instrumented_impl)]
 impl PathBufIsDir {
     /// Create a new PathBufIsDir, validating the path is a directory.
+    #[spec(requires: [path.is_dir()])]
     pub fn new(path: PathBuf) -> Result<Self, ValidationError> {
         if path.is_dir() {
             Ok(Self(path))
@@ -201,6 +205,7 @@ pub struct PathBufIsFile(PathBuf);
 #[cfg_attr(not(kani), instrumented_impl)]
 impl PathBufIsFile {
     /// Create a new PathBufIsFile, validating the path is a file.
+    #[spec(requires: [path.is_file()])]
     pub fn new(path: PathBuf) -> Result<Self, ValidationError> {
         if path.is_file() {
             Ok(Self(path))

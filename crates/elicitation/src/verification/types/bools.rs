@@ -2,6 +2,7 @@
 
 use super::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+use anodized::spec;
 #[cfg(not(kani))]
 use elicitation_macros::instrumented_impl;
 
@@ -20,6 +21,7 @@ impl BoolTrue {
     /// # Errors
     ///
     /// Returns `ValidationError::NotTrue` if value is false.
+    #[spec(requires: [value])]
     pub fn new(value: bool) -> Result<Self, ValidationError> {
         if value {
             Ok(Self(value))
@@ -94,6 +96,7 @@ impl BoolFalse {
     /// # Errors
     ///
     /// Returns `ValidationError::NotFalse` if value is true.
+    #[spec(requires: [!value])]
     pub fn new(value: bool) -> Result<Self, ValidationError> {
         if !value {
             Ok(Self(value))

@@ -4,6 +4,8 @@
 
 #[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
 use super::ValidationError;
+#[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
+use anodized::spec;
 
 #[cfg(all(not(kani), any(feature = "chrono", feature = "jiff", feature = "time")))]
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
@@ -35,6 +37,8 @@ pub struct DateTimeUtcAfter(std::marker::PhantomData<()>);
 impl DateTimeUtcAfter {
     /// Create a new DateTimeUtcAfter, validating value > threshold.
     #[cfg(not(kani))]
+    #[spec(requires: [value > threshold])]
+    #[spec(requires: [value < threshold])]
     pub fn new(value: DateTime<Utc>, threshold: DateTime<Utc>) -> Result<Self, ValidationError> {
         if value > threshold {
             Ok(Self { value, threshold })
@@ -355,6 +359,7 @@ pub struct NaiveDateTimeAfter(std::marker::PhantomData<()>);
 impl NaiveDateTimeAfter {
     /// Create a new NaiveDateTimeAfter, validating value > threshold.
     #[cfg(not(kani))]
+    #[spec(requires: [value > threshold])]
     pub fn new(value: NaiveDateTime, threshold: NaiveDateTime) -> Result<Self, ValidationError> {
         if value > threshold {
             Ok(Self { value, threshold })

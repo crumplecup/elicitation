@@ -6,6 +6,8 @@
 use super::ValidationError;
 #[cfg(all(feature = "serde_json", not(kani)))]
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+#[cfg(feature = "serde_json")]
+use anodized::spec;
 #[cfg(all(feature = "serde_json", not(kani)))]
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "serde_json")]
@@ -29,6 +31,9 @@ pub struct ValueObject(std::marker::PhantomData<()>);
 impl ValueObject {
     /// Create a new ValueObject, validating it's an object.
     #[cfg(not(kani))]
+    #[spec(requires: [value.is_object()])]
+    #[spec(requires: [value.is_array()])]
+    #[spec(requires: [!value.is_null()])]
     pub fn new(value: Value) -> Result<Self, ValidationError> {
         if value.is_object() {
             Ok(Self(value))

@@ -3,6 +3,7 @@
 //! This module provides contract types for URL validation using the `url` crate.
 
 use crate::verification::types::ValidationError;
+use anodized::spec;
 #[cfg(feature = "url")]
 use url::Url;
 
@@ -34,6 +35,7 @@ impl UrlValid {
     /// # Errors
     ///
     /// Returns `ValidationError::UrlInvalid` if the URL cannot be parsed.
+    #[spec(requires: [!value.is_empty()])]
     pub fn new(value: &str) -> Result<Self, ValidationError> {
         Url::parse(value)
             .map(Self)
@@ -110,6 +112,7 @@ impl UrlHttps {
     /// # Errors
     ///
     /// Returns `ValidationError::UrlNotHttps` if the URL scheme is not HTTPS.
+    #[spec(requires: [!value.is_empty()])]
     pub fn new(value: &str) -> Result<Self, ValidationError> {
         let url = Url::parse(value).map_err(|_| ValidationError::UrlInvalid)?;
 
@@ -208,6 +211,7 @@ impl UrlHttp {
     /// # Errors
     ///
     /// Returns `ValidationError::UrlNotHttp` if the URL scheme is not HTTP.
+    #[spec(requires: [!value.is_empty()])]
     pub fn new(value: &str) -> Result<Self, ValidationError> {
         let url = Url::parse(value).map_err(|_| ValidationError::UrlInvalid)?;
 
@@ -306,6 +310,7 @@ impl UrlWithHost {
     /// # Errors
     ///
     /// Returns `ValidationError::UrlNoHost` if the URL has no host component.
+    #[spec(requires: [!value.is_empty()])]
     pub fn new(value: &str) -> Result<Self, ValidationError> {
         let url = Url::parse(value).map_err(|_| ValidationError::UrlInvalid)?;
 
@@ -404,6 +409,7 @@ impl UrlCanBeBase {
     /// # Errors
     ///
     /// Returns `ValidationError::UrlCannotBeBase` if the URL cannot be a base.
+    #[spec(requires: [!value.is_empty()])]
     pub fn new(value: &str) -> Result<Self, ValidationError> {
         let url = Url::parse(value).map_err(|_| ValidationError::UrlInvalid)?;
 
