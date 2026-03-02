@@ -172,8 +172,8 @@ macro_rules! elicit_newtype {
                 stringify!($wrapper_name).into()
             }
 
-            fn json_schema(gen: &mut ::schemars::SchemaGenerator) -> ::schemars::Schema {
-                <$inner_path as ::schemars::JsonSchema>::json_schema(gen)
+            fn json_schema(schema_gen: &mut ::schemars::SchemaGenerator) -> ::schemars::Schema {
+                <$inner_path as ::schemars::JsonSchema>::json_schema(schema_gen)
             }
         }
 

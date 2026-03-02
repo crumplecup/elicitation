@@ -831,6 +831,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_serde_json"
+version = "0.8.3"
+dependencies = [
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
 name = "elicitation"
 version = "0.8.3"
 dependencies = [
@@ -902,6 +916,7 @@ dependencies = [
  "quote",
  "rmcp",
  "schemars",
+ "serde",
  "serde_json",
  "syn",
  "time",
