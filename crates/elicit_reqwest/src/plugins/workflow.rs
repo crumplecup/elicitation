@@ -717,13 +717,10 @@ impl ElicitPlugin for WorkflowPlugin {
 
                 "health_check" => {
                     let p: HealthCheckParams = parse_args(&params)?;
-                    match url::Url::parse(&p.url) {
-                        Err(e) => {
-                            return Ok(CallToolResult::error(vec![Content::text(format!(
-                                "UrlValid not established: {e}"
-                            ))]));
-                        }
-                        Ok(_) => {}
+                    if let Err(e) = url::Url::parse(&p.url) {
+                        return Ok(CallToolResult::error(vec![Content::text(format!(
+                            "UrlValid not established: {e}"
+                        ))]));
                     }
 
                     let resp = self
