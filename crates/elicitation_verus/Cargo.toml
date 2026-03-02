@@ -1,6 +1,6 @@
 [package]
 name = "elicitation_verus"
-version = "0.8.2"
+version = "0.8.3"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/crumplecup/elicitation"
@@ -9,7 +9,13 @@ homepage = "https://github.com/crumplecup/elicitation"
 documentation = "https://docs.rs/elicitation_verus"
 
 description = "Verus formal verification proofs for elicitation contract types"
-keywords = ["verification", "verus", "formal-methods", "smt-verification", "contracts"]
+keywords = [
+  "verification",
+  "verus",
+  "formal-methods",
+  "smt-verification",
+  "contracts",
+]
 categories = ["development-tools", "mathematics"]
 readme = "README.md"
 
@@ -17,10 +23,13 @@ readme = "README.md"
 verify = true
 
 [dependencies]
-elicitation = { version = "0.8.2", features = ["verification"] }
-verus_builtin = "0.0.0-2026-02-08-0120"
-verus_builtin_macros = "0.0.0-2026-02-22-0103"
-vstd = "0.0.0-2026-02-22-0103"
+elicitation = { version = "0.8.3", features = ["verification"] }
+verus_builtin = "0.0.0-2026-03-01-0109"
+verus_builtin_macros = "0.0.0-2026-03-01-0109"
+vstd = "0.0.0-2026-03-01-0109"
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(verus)', 'cfg(verus_verify_core)'] }
+unexpected_cfgs = { level = "warn", check-cfg = [
+  'cfg(verus)',
+  'cfg(verus_verify_core)',
+] }
