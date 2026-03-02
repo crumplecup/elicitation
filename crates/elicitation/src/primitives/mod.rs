@@ -37,3 +37,6 @@ pub mod url;
 
 #[cfg(feature = "uuid")]
 pub mod uuid;
+
+#[cfg(feature = "reqwest")]
+pub mod http;

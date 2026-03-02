@@ -35,7 +35,7 @@ use params::generate_param_struct;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
-use syn::{ItemImpl, parse_macro_input};
+use syn::{ItemImpl, ReturnType, Type, TypePath, parse_macro_input};
 use validation::validate_generic_bounds;
 use wrapper::generate_wrapper_method;
 
@@ -78,8 +78,17 @@ pub fn expand(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // Generate wrapper methods with #[tool] attributes
     // These have _tool suffix to avoid name collision with original methods
+    //
+    // NOTE: We skip generating tool wrappers for consuming methods that return Self.
+    // These are builder-pattern methods meant for direct Rust usage, not MCP tools.
+    // Only consuming methods that return other types (like final build/send methods)
+    // get tool wrappers.
     let wrapper_methods: Vec<TokenStream2> = methods
         .iter()
+        .filter(|method| {
+            // Skip consuming methods that return Self (builder pattern)
+            !(method.is_consuming() && returns_self_type(&method.return_type))
+        })
         .map(|method| {
             // Check if method is async by looking at signature
             let is_async = method.signature.asyncness.is_some();
@@ -91,6 +100,7 @@ pub fn expand(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 &method.return_type,
                 is_async,
                 &method.generics,
+                method.is_consuming(), // Whether method takes self or &self
             )
         })
         .collect();
@@ -108,4 +118,15 @@ pub fn expand(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #(#wrapper_methods)*
         }
     })
+}
+
+/// Helper to check if a return type is `Self`.
+fn returns_self_type(return_type: &ReturnType) -> bool {
+    if let ReturnType::Type(_, ty) = return_type
+        && let Type::Path(TypePath { path, .. }) = &**ty
+        && let Some(segment) = path.segments.last()
+    {
+        return segment.ident == "Self";
+    }
+    false
 }

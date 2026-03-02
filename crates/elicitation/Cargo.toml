@@ -18,6 +18,7 @@ verify = true
 
 [dependencies]
 rmcp = { workspace = true }
+futures = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 schemars = { workspace = true }
@@ -53,6 +54,11 @@ url = { workspace = true, optional = true }
 # Regex library (optional)
 regex = { workspace = true, optional = true }
 
+# Reqwest HTTP client (optional)
+reqwest = { workspace = true, optional = true }
+http = { workspace = true, optional = true }
+bytes = { workspace = true, optional = true }
+
 # Re-export derive macro
 elicitation_derive = { workspace = true }
 elicitation_macros = { workspace = true }
@@ -67,7 +73,7 @@ criterion = { workspace = true }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -87,6 +93,8 @@ rand = ["dep:rand", "dep:rand_chacha"]
 url = ["dep:url"]
 # Enable Regex elicitation
 regex = ["dep:regex"]
+# Enable reqwest HTTP client elicitation
+reqwest = ["dep:reqwest", "dep:http", "dep:bytes", "url"]
 
 # Formal verification support
 verification = [] # Core Contract trait only

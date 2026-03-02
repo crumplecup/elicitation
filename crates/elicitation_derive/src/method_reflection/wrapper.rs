@@ -59,6 +59,7 @@ pub fn generate_wrapper_method(
     return_type: &ReturnType,
     is_async: bool,
     generics: &Generics,
+    is_consuming: bool,
 ) -> TokenStream {
     let method_ident = Ident::new(wrapper_method_name, proc_macro2::Span::call_site());
     let original_method_ident = Ident::new(original_method_name, proc_macro2::Span::call_site());
@@ -120,23 +121,46 @@ pub fn generate_wrapper_method(
         (params_type, conversions)
     };
 
-    // Generate method call - call the original method, not the wrapper
-    // Add turbofish if method is generic
-    let method_call = if is_generic && is_async {
-        quote! {
-            self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*).await
-        }
-    } else if is_generic {
-        quote! {
-            self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*)
-        }
-    } else if is_async {
-        quote! {
-            self.#original_method_ident(#(#param_conversions),*).await
+    // Generate method call - different strategy for consuming vs borrowing methods
+    let method_call = if is_consuming {
+        // Consuming method tool wrappers delegate to the user's implementation (self.method()),
+        // which is responsible for Arc unwrapping and any type conversions. This ensures
+        // return types match the declared signature even when the inner type differs.
+        if is_generic && is_async {
+            quote! {
+                self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*).await
+            }
+        } else if is_generic {
+            quote! {
+                self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*)
+            }
+        } else if is_async {
+            quote! {
+                self.#original_method_ident(#(#param_conversions),*).await
+            }
+        } else {
+            quote! {
+                self.#original_method_ident(#(#param_conversions),*)
+            }
         }
     } else {
-        quote! {
-            self.#original_method_ident(#(#param_conversions),*)
+        // Borrowing methods call through Deref
+        if is_generic && is_async {
+            quote! {
+                self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*).await
+            }
+        } else if is_generic {
+            quote! {
+                self.#original_method_ident::<#(#turbofish_params),*>(#(#param_conversions),*)
+            }
+        } else if is_async {
+            quote! {
+                self.#original_method_ident(#(#param_conversions),*).await
+            }
+        } else {
+            quote! {
+                self.#original_method_ident(#(#param_conversions),*)
+            }
         }
     };
 
@@ -150,6 +174,13 @@ pub fn generate_wrapper_method(
     };
 
     let tool_description = format!("{} operation", original_method_name.replace('_', " "));
+
+    // Determine receiver type: self or &self
+    let receiver = if is_consuming {
+        quote! { self }
+    } else {
+        quote! { &self }
+    };
 
     // Generate method signature with or without generics
     if is_generic {
@@ -168,7 +199,7 @@ pub fn generate_wrapper_method(
             #[doc = "**Note:** This is a generic method. It cannot be automatically registered as an MCP tool."]
             #[doc = "You must create non-generic wrappers or manually register monomorphized versions."]
             pub #async_keyword fn #method_ident<#generic_params>(
-                &self,
+                #receiver,
                 #params_arg
             ) -> ::std::result::Result<
                 ::rmcp::handler::server::wrapper::Json<#response_type>,
@@ -184,7 +215,7 @@ pub fn generate_wrapper_method(
             #[doc = concat!("`", #original_method_name, "` MCP tool wrapper method.")]
             #[::rmcp::tool(description = #tool_description)]
             pub #async_keyword fn #method_ident(
-                &self,
+                #receiver,
                 #params_arg
             ) -> ::std::result::Result<
                 ::rmcp::handler::server::wrapper::Json<#response_type>,
@@ -396,8 +427,9 @@ mod tests {
         let return_ty: ReturnType = syn::parse_quote! { -> Result<Response, Error> };
         let generics = parse_sig_generics("fn get()");
 
-        let wrapper =
-            generate_wrapper_method("get_tool", "get", &params, &return_ty, false, &generics);
+        let wrapper = generate_wrapper_method(
+            "get_tool", "get", &params, &return_ty, false, &generics, false,
+        );
         let wrapper_str = wrapper.to_string();
 
         // Verify key components are present
@@ -415,8 +447,9 @@ mod tests {
         let return_ty: ReturnType = syn::parse_quote! { -> usize };
         let generics = parse_sig_generics("fn len()");
 
-        let wrapper =
-            generate_wrapper_method("len_tool", "len", &params, &return_ty, false, &generics);
+        let wrapper = generate_wrapper_method(
+            "len_tool", "len", &params, &return_ty, false, &generics, false,
+        );
         let wrapper_str = wrapper.to_string();
 
         // Should not have Parameters argument
@@ -433,8 +466,15 @@ mod tests {
         let return_ty: ReturnType = syn::parse_quote! { -> Result<Response, Error> };
         let generics = parse_sig_generics("fn fetch()");
 
-        let wrapper =
-            generate_wrapper_method("fetch_tool", "fetch", &params, &return_ty, true, &generics);
+        let wrapper = generate_wrapper_method(
+            "fetch_tool",
+            "fetch",
+            &params,
+            &return_ty,
+            true,
+            &generics,
+            false,
+        );
         let wrapper_str = wrapper.to_string();
 
         // Verify async keyword is present
@@ -456,6 +496,7 @@ mod tests {
             &return_ty,
             false,
             &generics,
+            false,
         );
         let wrapper_str = wrapper.to_string();
 
@@ -486,6 +527,7 @@ mod tests {
             &return_ty,
             false,
             &generics,
+            false,
         );
         let wrapper_str = wrapper.to_string();
 
@@ -506,8 +548,15 @@ mod tests {
         let return_ty: ReturnType = syn::parse_quote! { -> Result<T, Error> };
         let generics = parse_sig_generics("fn fetch<T>() where T: Elicitation + JsonSchema");
 
-        let wrapper =
-            generate_wrapper_method("fetch_tool", "fetch", &params, &return_ty, true, &generics);
+        let wrapper = generate_wrapper_method(
+            "fetch_tool",
+            "fetch",
+            &params,
+            &return_ty,
+            true,
+            &generics,
+            false,
+        );
         let wrapper_str = wrapper.to_string();
 
         // Verify async generic method

@@ -119,6 +119,12 @@ mod newtype_methods_macro;
 
 mod traits;
 
+// Plugin registry (composable tool plugins)
+mod plugin;
+mod plugin_registry;
+pub use plugin::ElicitPlugin;
+pub use plugin_registry::{PluginRegistry, Toolchain};
+
 #[cfg(feature = "serde_json")]
 mod value_impl;
 
@@ -396,3 +402,13 @@ pub use verification::mechanisms::{
     AffirmReturnsBoolean, InputNonEmpty, MechanismWithType, NumericReturnsValid,
     SurveyReturnsValidVariant, TextReturnsNonEmpty, TextReturnsString,
 };
+
+// Reqwest HTTP types (feature-gated)
+#[cfg(feature = "reqwest")]
+pub use primitives::http::{
+    ClientStyle, HeaderMapStyle, MethodStyle, RequestBuilderStyle, ResponseStyle, StatusCodeStyle,
+    VersionStyle,
+};
+
+#[cfg(all(any(feature = "verification", kani), feature = "reqwest"))]
+pub use verification::types::StatusCodeValid;

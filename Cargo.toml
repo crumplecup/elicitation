@@ -6,6 +6,7 @@ members = [
   "crates/elicitation_kani",
   "crates/elicitation_creusot",
   "crates/elicitation_rand",
+  "crates/elicit_reqwest",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
@@ -73,6 +74,9 @@ syn = { version = "2", features = ["full", "extra-traits"] }
 quote = "1"
 proc-macro2 = "1"
 
+# Async utilities
+futures = "0.3"
+
 # Utility
 paste = "1.0"
 async-trait = "0.1"
@@ -97,6 +101,11 @@ rand_chacha = "0.10"
 
 # URL library
 url = "2.5"
+
+# HTTP library
+http = "1.0"
+bytes = "1.0"
+reqwest = { version = "0.13", features = ["json", "cookies", "stream"] }
 
 # Regex library
 regex = "1.12"

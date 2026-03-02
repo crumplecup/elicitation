@@ -38,8 +38,11 @@ mod urls;
 #[cfg(feature = "regex")]
 mod regexes;
 
+#[cfg(feature = "reqwest")]
+mod http;
+
 /// Total number of Verus proofs implemented.
-pub const VERUS_PROOF_COUNT: usize = 101;
+pub const VERUS_PROOF_COUNT: usize = 104;
 
 /// Verification coverage percentage.
 pub const VERUS_COVERAGE_PERCENT: usize = 100;

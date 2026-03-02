@@ -19,7 +19,7 @@ elicit_newtype_methods! {
 
 #[test]
 fn test_non_generic_methods() {
-    let wrapper = StringWrapper("hello".to_string());
+    let wrapper = StringWrapper::from("hello".to_string());
     assert_eq!(wrapper.len(), 5);
     assert!(!wrapper.is_empty());
 }
@@ -28,7 +28,7 @@ fn test_non_generic_methods() {
 fn test_non_generic_tool_wrapper() {
     use rmcp::handler::server::wrapper::Json;
 
-    let wrapper = StringWrapper("test".to_string());
+    let wrapper = StringWrapper::from("test".to_string());
     let result = wrapper.len_tool();
     assert!(result.is_ok());
     let Json(len) = result.unwrap();
