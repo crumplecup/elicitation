@@ -22,12 +22,14 @@
 
 mod client;
 mod error;
+mod plugin;
 mod request_builder;
 mod response;
 mod types;
 
 pub use client::Client;
 pub use error::Error;
+pub use plugin::Plugin;
 pub use request_builder::RequestBuilder;
 pub use response::Response;
 pub use types::{HeaderMap, Method, StatusCode, Url, Version};

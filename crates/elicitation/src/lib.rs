@@ -119,6 +119,12 @@ mod newtype_methods_macro;
 
 mod traits;
 
+// Plugin registry (composable tool plugins)
+mod plugin;
+mod plugin_registry;
+pub use plugin::ElicitPlugin;
+pub use plugin_registry::{PluginRegistry, Toolchain};
+
 #[cfg(feature = "serde_json")]
 mod value_impl;
 

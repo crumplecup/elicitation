@@ -29,6 +29,8 @@ serde_json.workspace = true
 # Async runtime
 tokio.workspace = true
 
+futures.workspace = true
+
 # JSON Schema
 schemars.workspace = true
 
