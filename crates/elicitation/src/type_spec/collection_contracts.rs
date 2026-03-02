@@ -43,7 +43,8 @@ macro_rules! impl_nonempty_spec {
 
         inventory::submit!(TypeSpecInventoryKey::new(
             $name,
-            <$ty as ElicitSpec>::type_spec
+            <$ty as ElicitSpec>::type_spec,
+            std::any::TypeId::of::<$ty>
         ));
     };
 }
@@ -130,7 +131,8 @@ impl ElicitSpec for OptionSome<i32> {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "OptionSome",
-    OptionSome::<i32>::type_spec
+    OptionSome::<i32>::type_spec,
+    std::any::TypeId::of::<OptionSome<i32>>
 ));
 
 impl ElicitSpec for ResultOk<i32> {
@@ -158,5 +160,6 @@ impl ElicitSpec for ResultOk<i32> {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "ResultOk",
-    ResultOk::<i32>::type_spec
+    ResultOk::<i32>::type_spec,
+    std::any::TypeId::of::<ResultOk<i32>>
 ));

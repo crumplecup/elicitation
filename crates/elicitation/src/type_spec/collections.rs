@@ -53,7 +53,11 @@ impl ElicitSpec for VecSpec {
     }
 }
 
-inventory::submit!(TypeSpecInventoryKey::new("Vec<T>", VecSpec::type_spec));
+inventory::submit!(TypeSpecInventoryKey::new(
+    "Vec<T>",
+    VecSpec::type_spec,
+    std::any::TypeId::of::<VecSpec>
+));
 
 // ── HashMap<K, V> ────────────────────────────────────────────────────────────
 
@@ -85,7 +89,8 @@ impl ElicitSpec for HashMapSpec {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "HashMap<K, V>",
-    HashMapSpec::type_spec
+    HashMapSpec::type_spec,
+    std::any::TypeId::of::<HashMapSpec>
 ));
 
 // ── HashSet<T> ───────────────────────────────────────────────────────────────
@@ -129,7 +134,8 @@ impl ElicitSpec for HashSetSpec {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "HashSet<T>",
-    HashSetSpec::type_spec
+    HashSetSpec::type_spec,
+    std::any::TypeId::of::<HashSetSpec>
 ));
 
 // ── Option<T> ────────────────────────────────────────────────────────────────
@@ -171,7 +177,8 @@ impl ElicitSpec for OptionSpec {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "Option<T>",
-    OptionSpec::type_spec
+    OptionSpec::type_spec,
+    std::any::TypeId::of::<OptionSpec>
 ));
 
 // ── Result<T, E> ─────────────────────────────────────────────────────────────
@@ -215,5 +222,6 @@ impl ElicitSpec for ResultSpec {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "Result<T, E>",
-    ResultSpec::type_spec
+    ResultSpec::type_spec,
+    std::any::TypeId::of::<ResultSpec>
 ));

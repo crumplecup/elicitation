@@ -56,6 +56,7 @@ mod reqwest_specs {
 
     inventory::submit!(TypeSpecInventoryKey::new(
         "StatusCodeValid",
-        <StatusCodeValid as ElicitSpec>::type_spec
+        <StatusCodeValid as ElicitSpec>::type_spec,
+        std::any::TypeId::of::<StatusCodeValid>
     ));
 }

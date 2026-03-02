@@ -24,6 +24,9 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
 
     // Extract custom prompt from #[prompt("...")] attribute
     let (custom_prompt, _) = extract_prompts(&input.attrs);
+    // Extract spec attrs from the struct itself
+    let spec_summary = extract_spec_summary(&input.attrs);
+    let struct_spec_requires = extract_spec_requires(&input.attrs);
 
     let data_struct = match &input.data {
         syn::Data::Struct(s) => s,
@@ -124,6 +127,22 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
     let introspect_impl =
         generate_introspect_impl(name, &impl_generics, &ty_generics, &where_clause);
 
+    // Generate ElicitSpec impl (composed from field type specs + user attributes)
+    // Skip for generic structs: inventory::submit! cannot register generic types.
+    let elicit_spec_impl = if generics.params.is_empty() {
+        generate_elicit_spec_impl(
+            name,
+            &field_infos,
+            &spec_summary,
+            &struct_spec_requires,
+            &impl_generics,
+            &ty_generics,
+            &where_clause,
+        )
+    } else {
+        quote! {}
+    };
+
     // Note: Verification code is NOT generated for user types.
     // Users can write verification harnesses manually if needed.
     // Verification is primarily for elicitation's own contract types.
@@ -133,6 +152,7 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
         #survey_impl
         #elicit_impl
         #introspect_impl
+        #elicit_spec_impl
     };
 
     TokenStream::from(expanded)
@@ -144,17 +164,21 @@ struct FieldInfo {
     ty: syn::Type,
     default_prompt: Option<String>,
     styled_prompts: std::collections::HashMap<String, String>, // style_name -> prompt_text
+    /// Extra requires expressions from `#[spec_requires(expr)]` on this field.
+    spec_requires: Vec<String>,
 }
 
 /// Parse field information from a Field.
 fn parse_field_info(field: &Field) -> FieldInfo {
     let (default_prompt, styled_prompts) = extract_prompts(&field.attrs);
+    let spec_requires = extract_spec_requires(&field.attrs);
 
     FieldInfo {
         ident: field.ident.clone().expect("Named field has ident"),
         ty: field.ty.clone(),
         default_prompt,
         styled_prompts,
+        spec_requires,
     }
 }
 
@@ -214,6 +238,69 @@ fn extract_prompts(
 /// Check if field has #[skip] attribute.
 fn has_skip_attr(attrs: &[syn::Attribute]) -> bool {
     attrs.iter().any(|attr| attr.path().is_ident("skip"))
+}
+
+/// Extract `#[spec_requires(expr, ...)]` attribute values from a list of attributes.
+///
+/// Each `#[spec_requires(...)]` contributes one or more expression strings.
+fn extract_spec_requires(attrs: &[syn::Attribute]) -> Vec<String> {
+    let mut exprs = Vec::new();
+    for attr in attrs {
+        if !attr.path().is_ident("spec_requires") {
+            continue;
+        }
+        // Parse the token stream inside the attribute as comma-separated expressions.
+        let tokens = attr.meta.require_list().map(|l| l.tokens.clone());
+        if let Ok(ts) = tokens {
+            // Split on commas at depth 0 and collect each fragment as a string.
+            let mut current = proc_macro2::TokenStream::new();
+            let mut depth: usize = 0;
+            for tt in ts {
+                match &tt {
+                    proc_macro2::TokenTree::Group(g) => {
+                        depth += 1;
+                        current.extend(std::iter::once(tt.clone()));
+                        let _ = g; // used implicitly via depth tracking
+                        depth -= 1;
+                    }
+                    proc_macro2::TokenTree::Punct(p) if p.as_char() == ',' && depth == 0 => {
+                        let s = current.to_string().trim().to_string();
+                        if !s.is_empty() {
+                            exprs.push(s);
+                        }
+                        current = proc_macro2::TokenStream::new();
+                    }
+                    _ => current.extend(std::iter::once(tt.clone())),
+                }
+            }
+            let s = current.to_string().trim().to_string();
+            if !s.is_empty() {
+                exprs.push(s);
+            }
+        }
+    }
+    exprs
+}
+
+/// Extract `#[spec_summary = "..."]` from struct-level attributes.
+///
+/// Returns `None` if no such attribute is present.
+fn extract_spec_summary(attrs: &[syn::Attribute]) -> Option<String> {
+    for attr in attrs {
+        if !attr.path().is_ident("spec_summary") {
+            continue;
+        }
+        if let syn::Meta::NameValue(nv) = &attr.meta {
+            if let syn::Expr::Lit(syn::ExprLit {
+                lit: syn::Lit::Str(s),
+                ..
+            }) = &nv.value
+            {
+                return Some(s.value());
+            }
+        }
+    }
+    None
 }
 
 /// Generate Prompt implementation.
@@ -765,5 +852,157 @@ fn capitalize_first(s: &str) -> String {
     match c.next() {
         None => String::new(),
         Some(f) => f.to_uppercase().chain(c).collect(),
+    }
+}
+
+/// Generate `ElicitSpec` impl for a derived struct.
+///
+/// The composed spec has:
+/// - One `"fields.<name>"` sub-category per non-skipped field, populated by a runtime
+///   `lookup_type_spec_by_id` call on the field's type (plus any `#[spec_requires]` extras).
+/// - An optional top-level `"requires"` category for struct-level `#[spec_requires]` entries.
+/// - A summary from `#[spec_summary = "..."]` or an auto-generated fallback.
+/// - An `inventory::submit!` registration so `lookup_type_spec("MyType")` works.
+fn generate_elicit_spec_impl(
+    name: &syn::Ident,
+    field_infos: &[FieldInfo],
+    spec_summary: &Option<String>,
+    struct_spec_requires: &[String],
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
+) -> TokenStream2 {
+    let name_str = name.to_string();
+    let field_count = field_infos.len();
+
+    let summary_expr = match spec_summary {
+        Some(s) => quote! { #s.to_string() },
+        None => {
+            let auto = format!(
+                "User-defined type with {} field{}.",
+                field_count,
+                if field_count == 1 { "" } else { "s" }
+            );
+            quote! { #auto.to_string() }
+        }
+    };
+
+    // Build one block per field that resolves to an `Option<SpecCategory>`
+    let field_category_blocks: Vec<TokenStream2> = field_infos.iter().map(|f| {
+        let field_name = f.ident.to_string();
+        let cat_name = format!("fields.{field_name}");
+        let ty = &f.ty;
+        let extra_exprs: Vec<&str> = f.spec_requires.iter().map(String::as_str).collect();
+        let extra_count = extra_exprs.len();
+        let extra_label = format!("{field_name}_invariant");
+
+        quote! {
+            {
+                let type_id = std::any::TypeId::of::<#ty>();
+                let inherited: Vec<elicitation::SpecEntry> = elicitation::lookup_type_spec_by_id(type_id)
+                    .map(|spec| {
+                        spec.categories().iter()
+                            .flat_map(|c| c.entries().iter().cloned())
+                            .collect()
+                    })
+                    .unwrap_or_default();
+
+                let mut entries = inherited;
+
+                // Append user #[spec_requires] extras for this field
+                let extra_exprs: &[&str] = &[#(#extra_exprs),*];
+                for (i, expr) in extra_exprs.iter().enumerate() {
+                    let label = if #extra_count == 1 {
+                        #extra_label.to_string()
+                    } else {
+                        format!("{}_{}", #extra_label, i + 1)
+                    };
+                    entries.push(
+                        elicitation::SpecEntryBuilder::default()
+                            .label(label)
+                            .description(format!("Additional invariant: {}", expr))
+                            .expression(Some((*expr).to_string()))
+                            .build()
+                            .expect("valid SpecEntry"),
+                    );
+                }
+
+                if !entries.is_empty() {
+                    Some(
+                        elicitation::SpecCategoryBuilder::default()
+                            .name(#cat_name.to_string())
+                            .entries(entries)
+                            .build()
+                            .expect("valid SpecCategory"),
+                    )
+                } else {
+                    None
+                }
+            }
+        }
+    }).collect();
+
+    // Build struct-level "requires" entries from #[spec_requires] on the struct
+    let struct_requires_block = if struct_spec_requires.is_empty() {
+        quote! {}
+    } else {
+        let exprs: Vec<&str> = struct_spec_requires.iter().map(String::as_str).collect();
+        let count = exprs.len();
+        quote! {
+            {
+                let exprs: &[&str] = &[#(#exprs),*];
+                let entries: Vec<elicitation::SpecEntry> = exprs.iter().enumerate().map(|(i, expr)| {
+                    let label = if #count == 1 {
+                        "invariant".to_string()
+                    } else {
+                        format!("invariant_{}", i + 1)
+                    };
+                    elicitation::SpecEntryBuilder::default()
+                        .label(label)
+                        .description(format!("Struct-level invariant: {}", expr))
+                        .expression(Some((*expr).to_string()))
+                        .build()
+                        .expect("valid SpecEntry")
+                }).collect();
+                categories.push(
+                    elicitation::SpecCategoryBuilder::default()
+                        .name("requires".to_string())
+                        .entries(entries)
+                        .build()
+                        .expect("valid SpecCategory"),
+                );
+            }
+        }
+    };
+
+    quote! {
+        impl #impl_generics elicitation::ElicitSpec for #name #ty_generics #where_clause {
+            fn type_spec() -> elicitation::TypeSpec {
+                let mut categories: Vec<elicitation::SpecCategory> = Vec::new();
+
+                // Per-field sub-categories
+                #(
+                    if let Some(cat) = #field_category_blocks {
+                        categories.push(cat);
+                    }
+                )*
+
+                // Struct-level requires
+                #struct_requires_block
+
+                elicitation::TypeSpecBuilder::default()
+                    .type_name(#name_str.to_string())
+                    .summary(#summary_expr)
+                    .categories(categories)
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
+
+        elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
+            #name_str,
+            <#name #ty_generics as elicitation::ElicitSpec>::type_spec,
+            std::any::TypeId::of::<#name #ty_generics>
+        ));
     }
 }

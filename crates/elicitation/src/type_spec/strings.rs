@@ -52,5 +52,6 @@ impl ElicitSpec for String {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "String",
-    <String as ElicitSpec>::type_spec
+    <String as ElicitSpec>::type_spec,
+    std::any::TypeId::of::<String>
 ));

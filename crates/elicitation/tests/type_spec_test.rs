@@ -126,7 +126,11 @@ impl ElicitSpec for TestType {
     }
 }
 
-inventory::submit!(TypeSpecInventoryKey::new("TestType", TestType::type_spec,));
+inventory::submit!(TypeSpecInventoryKey::new(
+    "TestType",
+    TestType::type_spec,
+    std::any::TypeId::of::<TestType>
+));
 
 #[test]
 fn lookup_registered_type() {
@@ -144,13 +148,17 @@ fn lookup_unknown_type_returns_none() {
 
 #[test]
 fn inventory_key_type_name_and_build() {
-    let key = TypeSpecInventoryKey::new("Direct", || {
-        TypeSpecBuilder::default()
-            .type_name("Direct".to_string())
-            .summary("direct build".to_string())
-            .build()
-            .expect("valid spec")
-    });
+    let key = TypeSpecInventoryKey::new(
+        "Direct",
+        || {
+            TypeSpecBuilder::default()
+                .type_name("Direct".to_string())
+                .summary("direct build".to_string())
+                .build()
+                .expect("valid spec")
+        },
+        std::any::TypeId::of::<u8>,
+    ); // u8 as a placeholder type_id for this test-only key
 
     assert_eq!(key.type_name(), "Direct");
     let spec = key.build();

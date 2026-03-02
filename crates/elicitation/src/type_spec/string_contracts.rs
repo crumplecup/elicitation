@@ -56,5 +56,6 @@ impl ElicitSpec for StringNonEmpty {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "StringNonEmpty",
-    StringNonEmpty::type_spec
+    StringNonEmpty::type_spec,
+    std::any::TypeId::of::<StringNonEmpty>
 ));

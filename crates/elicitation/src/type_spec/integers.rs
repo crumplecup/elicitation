@@ -58,7 +58,8 @@ macro_rules! impl_integer_spec {
 
         inventory::submit!(TypeSpecInventoryKey::new(
             $name,
-            <$primitive as ElicitSpec>::type_spec
+            <$primitive as ElicitSpec>::type_spec,
+            std::any::TypeId::of::<$primitive>
         ));
     };
 }

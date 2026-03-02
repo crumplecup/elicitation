@@ -166,7 +166,8 @@ pub use traits::{
 // Type spec layer (agent-browsable contracts)
 pub use type_spec::{
     ElicitSpec, SpecCategory, SpecCategoryBuilder, SpecEntry, SpecEntryBuilder, TypeSpec,
-    TypeSpecBuilder, TypeSpecInventoryKey, lookup_type_spec, type_spec_plugin::TypeSpecPlugin,
+    TypeSpecBuilder, TypeSpecInventoryKey, lookup_type_spec, lookup_type_spec_by_id,
+    type_spec_plugin::TypeSpecPlugin,
 };
 
 // Contracts (proof-carrying composition)

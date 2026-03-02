@@ -51,7 +51,7 @@ macro_rules! impl_float_contract_spec {
             }
         }
 
-        inventory::submit!(TypeSpecInventoryKey::new($name, <$ty as ElicitSpec>::type_spec));
+        inventory::submit!(TypeSpecInventoryKey::new($name, <$ty as ElicitSpec>::type_spec, std::any::TypeId::of::<$ty>));
     };
 }
 

@@ -64,7 +64,8 @@ impl ElicitSpec for f32 {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "f32",
-    <f32 as ElicitSpec>::type_spec
+    <f32 as ElicitSpec>::type_spec,
+    std::any::TypeId::of::<f32>
 ));
 
 // ── f64 ──────────────────────────────────────────────────────────────────────
@@ -128,7 +129,8 @@ impl ElicitSpec for f64 {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "f64",
-    <f64 as ElicitSpec>::type_spec
+    <f64 as ElicitSpec>::type_spec,
+    std::any::TypeId::of::<f64>
 ));
 
 // ── bool ─────────────────────────────────────────────────────────────────────
@@ -169,7 +171,8 @@ impl ElicitSpec for bool {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "bool",
-    <bool as ElicitSpec>::type_spec
+    <bool as ElicitSpec>::type_spec,
+    std::any::TypeId::of::<bool>
 ));
 
 // ── char ─────────────────────────────────────────────────────────────────────
@@ -221,5 +224,6 @@ impl ElicitSpec for char {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "char",
-    <char as ElicitSpec>::type_spec
+    <char as ElicitSpec>::type_spec,
+    std::any::TypeId::of::<char>
 ));

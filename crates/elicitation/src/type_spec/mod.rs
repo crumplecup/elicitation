@@ -44,7 +44,7 @@ mod value_specs;
 pub use collections::{HashMapSpec, HashSetSpec, OptionSpec, ResultSpec, VecSpec};
 
 pub use elicit_spec::ElicitSpec;
-pub use registry::{TypeSpecInventoryKey, lookup_type_spec};
+pub use registry::{TypeSpecInventoryKey, lookup_type_spec, lookup_type_spec_by_id};
 
 use derive_builder::Builder;
 use derive_getters::Getters;

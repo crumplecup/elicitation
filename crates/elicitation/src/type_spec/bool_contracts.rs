@@ -29,7 +29,11 @@ impl ElicitSpec for BoolTrue {
     }
 }
 
-inventory::submit!(TypeSpecInventoryKey::new("BoolTrue", BoolTrue::type_spec));
+inventory::submit!(TypeSpecInventoryKey::new(
+    "BoolTrue",
+    BoolTrue::type_spec,
+    std::any::TypeId::of::<BoolTrue>
+));
 
 impl ElicitSpec for BoolFalse {
     fn type_spec() -> TypeSpec {
@@ -54,4 +58,8 @@ impl ElicitSpec for BoolFalse {
     }
 }
 
-inventory::submit!(TypeSpecInventoryKey::new("BoolFalse", BoolFalse::type_spec));
+inventory::submit!(TypeSpecInventoryKey::new(
+    "BoolFalse",
+    BoolFalse::type_spec,
+    std::any::TypeId::of::<BoolFalse>
+));

@@ -52,7 +52,8 @@ macro_rules! impl_datetime_spec {
 
         inventory::submit!(TypeSpecInventoryKey::new(
             $name,
-            <$ty as ElicitSpec>::type_spec
+            <$ty as ElicitSpec>::type_spec,
+            std::any::TypeId::of::<$ty>
         ));
     };
 }

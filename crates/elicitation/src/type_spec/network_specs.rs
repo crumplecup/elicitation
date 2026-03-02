@@ -38,7 +38,8 @@ macro_rules! impl_network_spec {
 
         inventory::submit!(TypeSpecInventoryKey::new(
             $name,
-            <$ty as ElicitSpec>::type_spec
+            <$ty as ElicitSpec>::type_spec,
+            std::any::TypeId::of::<$ty>
         ));
     };
 }

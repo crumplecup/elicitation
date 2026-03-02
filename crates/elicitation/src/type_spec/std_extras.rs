@@ -38,7 +38,8 @@ impl ElicitSpec for DurationPositive {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "DurationPositive",
-    DurationPositive::type_spec
+    DurationPositive::type_spec,
+    std::any::TypeId::of::<DurationPositive>
 ));
 
 // ── PathBuf contract types ────────────────────────────────────────────────────
@@ -90,7 +91,8 @@ macro_rules! impl_pathbuf_spec {
 
         inventory::submit!(TypeSpecInventoryKey::new(
             $name,
-            <$ty as ElicitSpec>::type_spec
+            <$ty as ElicitSpec>::type_spec,
+            std::any::TypeId::of::<$ty>
         ));
     };
 }
