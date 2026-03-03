@@ -66,6 +66,13 @@ pub struct EmitBinaryParams {
     /// If true, also runs `cargo build --release` after writing source.
     #[serde(default)]
     pub compile: bool,
+    /// Absolute path to the elicitation workspace root.
+    ///
+    /// When set, `elicit_*` / `elicitation` deps in the generated `Cargo.toml`
+    /// are emitted as path deps pointing into this workspace — enabling
+    /// pre-publish builds without a crates.io release. Falls back to the
+    /// `ELICIT_WORKSPACE_ROOT` environment variable when omitted.
+    pub workspace_root: Option<String>,
 }
 
 fn default_true() -> bool {
@@ -143,7 +150,10 @@ async fn emit_binary_impl(p: EmitBinaryParams) -> Result<CallToolResult, ErrorDa
         }
     }
 
-    let scaffold = BinaryScaffold::new(steps, p.with_tracing);
+    let mut scaffold = BinaryScaffold::new(steps, p.with_tracing);
+    if let Some(root) = p.workspace_root.as_deref().map(std::path::Path::new) {
+        scaffold = scaffold.with_workspace_root(root);
+    }
     let output_dir = std::path::PathBuf::from(&p.output_dir);
 
     let main_rs = match scaffold.emit_to_disk(&output_dir, &p.package_name) {

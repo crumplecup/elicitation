@@ -1079,10 +1079,22 @@ impl EmitCode for StatusSummaryParams {
     fn emit_code(&self) -> TokenStream {
         let status = self.status;
         quote::quote! {
-            let _code = reqwest::StatusCode::from_u16(#status)
+            let _code = elicit_reqwest::StatusCode::from_u16(#status)
                 .map_err(|e| format!("Invalid status code: {}", e))?;
-            let _summary = elicit_reqwest::WorkflowPlugin::status_summary(_code);
-            println!("{}", _summary);
+            let _class = match #status {
+                100..=199 => "informational",
+                200..=299 => "success",
+                300..=399 => "redirection",
+                400..=499 => "client_error",
+                500..=599 => "server_error",
+                _ => "unknown",
+            };
+            println!(
+                "status={} reason={} class={}",
+                _code.as_u16(),
+                _code.canonical_reason().unwrap_or("Unknown"),
+                _class,
+            );
         }
     }
     fn crate_deps(&self) -> Vec<CrateDep> {

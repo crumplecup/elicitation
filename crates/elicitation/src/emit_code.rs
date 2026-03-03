@@ -173,6 +173,12 @@ impl_emit_totokens!(
 pub struct BinaryScaffold {
     steps: Vec<Box<dyn EmitCode>>,
     with_tracing: bool,
+    /// When set, `elicit_*` / `elicitation` deps are emitted as path deps
+    /// instead of crates.io version refs — enabling pre-publish dev/test.
+    ///
+    /// Falls back to the `ELICIT_WORKSPACE_ROOT` environment variable when
+    /// `None`. Integrates cleanly with crates like `config` that manage env.
+    workspace_root: Option<std::path::PathBuf>,
 }
 
 impl BinaryScaffold {
@@ -186,7 +192,27 @@ impl BinaryScaffold {
         Self {
             steps,
             with_tracing,
+            workspace_root: None,
         }
+    }
+
+    /// Override elicit workspace crates with local path deps instead of
+    /// crates.io version strings.
+    ///
+    /// Use this during development / pre-publish testing so the emitted
+    /// `Cargo.toml` resolves against your local checkout rather than the
+    /// registry. Falls back to the `ELICIT_WORKSPACE_ROOT` env var when not
+    /// set explicitly.
+    pub fn with_workspace_root(mut self, root: impl Into<std::path::PathBuf>) -> Self {
+        self.workspace_root = Some(root.into());
+        self
+    }
+
+    /// Resolve the effective workspace root: explicit field → env var → None.
+    fn resolved_workspace_root(&self) -> Option<std::path::PathBuf> {
+        self.workspace_root
+            .clone()
+            .or_else(|| std::env::var("ELICIT_WORKSPACE_ROOT").ok().map(Into::into))
     }
 
     /// Collect all crate dependencies from all steps, deduplicated by name.
@@ -251,13 +277,31 @@ impl BinaryScaffold {
 
     /// Emit the `Cargo.toml` content as a string.
     ///
-    /// Uses `"generated_workflow"` as the package name by default.
-    /// Versions are pinned from each step's [`CrateDep`] declarations.
+    /// When a workspace root is available (via [`Self::with_workspace_root`]
+    /// or the `ELICIT_WORKSPACE_ROOT` env var), any `elicit_*` / `elicitation*`
+    /// dep is emitted as `{ path = "<root>/crates/<name>" }` instead of a
+    /// crates.io version string. All other deps use their declared versions.
     pub fn to_cargo_toml(&self, package_name: &str) -> String {
+        let ws_root = self.resolved_workspace_root();
         let deps = self.all_deps();
         let dep_lines: String = deps
             .iter()
-            .map(|d| format!("{}\n", d.to_toml_line()))
+            .map(|d| {
+                let line = if let Some(ref root) = ws_root {
+                    if d.name == "elicitation"
+                        || d.name.starts_with("elicit_")
+                        || d.name.starts_with("elicitation_")
+                    {
+                        let path = root.join("crates").join(d.name);
+                        format!(r#"{} = {{ path = "{}" }}"#, d.name, path.display())
+                    } else {
+                        d.to_toml_line()
+                    }
+                } else {
+                    d.to_toml_line()
+                };
+                format!("{line}\n")
+            })
             .collect();
 
         format!(
