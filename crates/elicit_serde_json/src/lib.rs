@@ -33,3 +33,6 @@ pub use workflow::{
     ObjectJson, ObjectMergeMode, ParsedJson, ParsedObject, PointerResolved, RawJson,
     RequiredKeysPresent, UpdateApplied, ValidatedObject,
 };
+
+#[cfg(feature = "emit")]
+pub use workflow::dispatch_emit as dispatch_serde_json_emit;

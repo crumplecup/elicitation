@@ -858,3 +858,36 @@ impl EmitCode for FieldChainParams {
         vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP]
     }
 }
+
+// ── Public dispatch for cross-crate EmitCode recovery ────────────────────────
+
+/// Deserialize a tool's params from JSON and return its [`EmitCode`] impl.
+///
+/// Used by `elicit_server` to recover serde_json workflow steps without
+/// exposing internal param structs.
+///
+/// Returns `Err` if `tool_name` is unknown or `params` fails to deserialize.
+#[cfg(feature = "emit")]
+pub fn dispatch_emit(
+    tool_name: &str,
+    params: serde_json::Value,
+) -> Result<Box<dyn EmitCode>, String> {
+    match tool_name {
+        "parse_and_focus" => serde_json::from_value::<ParseFocusParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "validate_object" => serde_json::from_value::<ValidateObjectParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "safe_merge" => serde_json::from_value::<MergeParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "pointer_update" => serde_json::from_value::<PointerUpdateParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "field_chain" => serde_json::from_value::<FieldChainParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        other => Err(format!("Unknown serde_json tool: '{other}'")),
+    }
+}

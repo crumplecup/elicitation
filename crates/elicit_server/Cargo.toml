@@ -1,0 +1,54 @@
+[package]
+name = "elicit_server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+
+description = "Cross-crate workflow plugins for elicitation — code recovery, multi-crate compositions, and server-side orchestration"
+keywords = ["mcp", "elicitation", "workflow", "server", "codegen"]
+categories = ["development-tools", "asynchronous"]
+
+[dependencies]
+# Elicitation core
+elicitation = { path = "../elicitation" }
+
+# Workflow crates (cross-crate composition)
+elicit_reqwest = { path = "../elicit_reqwest" }
+elicit_serde_json = { path = "../elicit_serde_json" }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+schemars = { workspace = true }
+
+# Async
+tokio = { workspace = true }
+futures = { workspace = true }
+
+# MCP
+rmcp = { workspace = true }
+
+# Tracing
+tracing = { workspace = true }
+
+# Code recovery (optional)
+proc-macro2 = { workspace = true, optional = true }
+quote = { workspace = true, optional = true }
+
+[features]
+emit = [
+    "dep:proc-macro2",
+    "dep:quote",
+    "elicitation/emit",
+    "elicit_reqwest/emit",
+    "elicit_serde_json/emit",
+]
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full"] }
+tracing-subscriber = { workspace = true }

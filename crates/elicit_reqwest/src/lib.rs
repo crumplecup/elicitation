@@ -37,6 +37,9 @@ pub use plugins::{
     HeaderMapPlugin, MethodPlugin, RequestBuilderPlugin, RequestSpec, StatusCodePlugin, UrlPlugin,
     WorkflowPlugin,
 };
+
+#[cfg(feature = "emit")]
+pub use plugins::dispatch_reqwest_emit;
 pub use request_builder::RequestBuilder;
 pub use response::Response;
 pub use types::{HeaderMap, Method, StatusCode, Url, Version};

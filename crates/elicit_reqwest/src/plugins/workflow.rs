@@ -1171,3 +1171,48 @@ impl EmitCode for PaginatedGetParams {
         vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
     }
 }
+
+// ── Public dispatch for cross-crate EmitCode recovery ────────────────────────
+
+/// Deserialize a tool's params from JSON and return its [`EmitCode`] impl.
+///
+/// Used by `elicit_server` to recover reqwest workflow steps without
+/// exposing internal param structs.
+///
+/// Returns `Err` if `tool_name` is unknown or `params` fails to deserialize.
+#[cfg(feature = "emit")]
+pub fn dispatch_emit(
+    tool_name: &str,
+    params: serde_json::Value,
+) -> Result<Box<dyn EmitCode>, String> {
+    match tool_name {
+        "fetch" => serde_json::from_value::<FetchParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "auth_fetch" => serde_json::from_value::<AuthFetchParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "post" => serde_json::from_value::<PostParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "api_call" => serde_json::from_value::<ApiCallParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "health_check" => serde_json::from_value::<HealthCheckParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "url_build" => serde_json::from_value::<UrlBuildParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "status_summary" => serde_json::from_value::<StatusSummaryParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "build_request" => serde_json::from_value::<BuildRequestParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "paginated_get" => serde_json::from_value::<PaginatedGetParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        other => Err(format!("Unknown reqwest tool: '{other}'")),
+    }
+}
