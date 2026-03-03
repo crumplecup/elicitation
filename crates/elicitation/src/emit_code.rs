@@ -310,6 +310,9 @@ name = "{}"
 version = "0.1.0"
 edition = "2021"
 
+# Prevent cargo from treating this as a member of any parent workspace.
+[workspace]
+
 [dependencies]
 {}
 "#,

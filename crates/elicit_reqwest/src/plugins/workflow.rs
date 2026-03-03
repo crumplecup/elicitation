@@ -223,12 +223,15 @@ struct PaginatedGetParams {
 /// Result of a successful fetch, carrying the established propositions in the
 /// `contract` field for downstream tools to inspect.
 #[derive(Debug, Serialize)]
-struct FetchResult {
-    status: u16,
-    url: String,
-    body: String,
+pub struct FetchResult {
+    /// HTTP status code of the response.
+    pub status: u16,
+    /// Final URL after any redirects.
+    pub url: String,
+    /// Response body as a UTF-8 string.
+    pub body: String,
     /// Human-readable summary of the contract propositions established.
-    contract: String,
+    pub contract: String,
 }
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
@@ -430,6 +433,238 @@ impl WorkflowPlugin {
     /// Create a `WorkflowPlugin` with a default client.
     pub fn default_client() -> Self {
         Self::new(reqwest::Client::new())
+    }
+
+    /// Construct and validate a URL from base, optional path, and query pairs.
+    ///
+    /// Returns the validated URL string. Errors if `base` is not a valid URL.
+    pub fn build_url(
+        base: &str,
+        path: Option<&str>,
+        query: &[(&str, &str)],
+    ) -> Result<String, String> {
+        let mut url = url::Url::parse(base)
+            .map_err(|e| format!("UrlValid not established: '{base}' — {e}"))?;
+        if let Some(p) = path {
+            url.set_path(p);
+        }
+        if !query.is_empty() {
+            let qs: String = query
+                .iter()
+                .map(|(k, v)| format!("{k}={v}"))
+                .collect::<Vec<_>>()
+                .join("&");
+            url.set_query(Some(&qs));
+        }
+        Ok(url.to_string())
+    }
+
+    /// GET `url`, verify the response is successful, and return the result.
+    pub async fn fetch(
+        &self,
+        url: &str,
+        timeout: Duration,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        do_fetch(&self.client, url, HeaderMap::new(), timeout)
+            .await
+            .map_err(|r| {
+                r.content
+                    .first()
+                    .and_then(|c| c.as_text().map(|t| t.text.to_string()))
+                    .unwrap_or_else(|| "fetch failed".to_string())
+            })
+    }
+
+    /// GET `url` with an Authorization header, verify success.
+    pub async fn auth_fetch(
+        &self,
+        url: &str,
+        token: &str,
+        auth_type: AuthType,
+        timeout: Duration,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        let parsed_url =
+            url::Url::parse(url).map_err(|e| format!("UrlValid not established: '{url}' — {e}"))?;
+        let url_proof: Established<UrlValid> = Established::assert();
+
+        let rb = self.client.get(parsed_url.as_str()).timeout(timeout);
+        let (rb, _auth_proof) = apply_auth(rb, &auth_type, Some(token));
+
+        let resp = rb
+            .send()
+            .await
+            .map_err(|e| format!("Request failed: {e}"))?;
+        let req_proof: Established<RequestCompleted> = Established::assert();
+
+        if !resp.status().is_success() {
+            return Err(format!(
+                "StatusSuccess not established: got {}",
+                resp.status().as_u16()
+            ));
+        }
+        let status_proof: Established<StatusSuccess> = Established::assert();
+        let combined = both(url_proof, both(req_proof, status_proof));
+
+        let status = resp.status().as_u16();
+        let final_url = resp.url().to_string();
+        let body = resp.text().await.unwrap_or_default();
+        Ok((
+            FetchResult {
+                status,
+                url: final_url,
+                body,
+                contract: "UrlValid ∧ RequestCompleted ∧ StatusSuccess".to_string(),
+            },
+            combined,
+        ))
+    }
+
+    /// POST `url` with `body` and `content_type`, verify success.
+    pub async fn post(
+        &self,
+        url: &str,
+        body: &str,
+        content_type: ContentType,
+        timeout: Duration,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        do_post(
+            &self.client,
+            url,
+            body.to_string(),
+            content_type.as_mime(),
+            HeaderMap::new(),
+            timeout,
+        )
+        .await
+        .map_err(|r| {
+            r.content
+                .first()
+                .and_then(|c| c.as_text().map(|t| t.text.to_string()))
+                .unwrap_or_else(|| "post failed".to_string())
+        })
+    }
+
+    /// Authenticated JSON POST with Bearer token.
+    pub async fn api_call(
+        &self,
+        url: &str,
+        token: &str,
+        body: &str,
+        timeout: Duration,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        let mut headers = HeaderMap::new();
+        headers.insert("Authorization", format!("Bearer {token}").parse().unwrap());
+        do_post(
+            &self.client,
+            url,
+            body.to_string(),
+            ContentType::Json.as_mime(),
+            headers,
+            timeout,
+        )
+        .await
+        .map_err(|r| {
+            r.content
+                .first()
+                .and_then(|c| c.as_text().map(|t| t.text.to_string()))
+                .unwrap_or_else(|| "api_call failed".to_string())
+        })
+    }
+
+    /// Probe `url` and return `true` if it responds with 2xx within `timeout`.
+    pub async fn health_check(&self, url: &str, timeout: Duration) -> bool {
+        do_fetch(&self.client, url, HeaderMap::new(), timeout)
+            .await
+            .is_ok()
+    }
+
+    /// Build and send an HTTP request with full control over method, auth, body.
+    pub async fn build_request(
+        &self,
+        method: &str,
+        url: &str,
+        auth_type: AuthType,
+        token: Option<&str>,
+        body: Option<&str>,
+        content_type: Option<ContentType>,
+        timeout: Duration,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        let parsed_url =
+            url::Url::parse(url).map_err(|e| format!("UrlValid not established: '{url}' — {e}"))?;
+        let _url_proof: Established<UrlValid> = Established::assert();
+
+        let method_val = reqwest::Method::from_bytes(method.as_bytes())
+            .map_err(|e| format!("Invalid HTTP method '{method}': {e}"))?;
+
+        let rb = self
+            .client
+            .request(method_val, parsed_url.as_str())
+            .timeout(timeout);
+        let (rb, _auth_proof) = apply_auth(rb, &auth_type, token);
+
+        let rb = if let (Some(b), Some(ct)) = (body, &content_type) {
+            rb.header("Content-Type", ct.as_mime()).body(b.to_string())
+        } else {
+            rb
+        };
+
+        let resp = rb
+            .send()
+            .await
+            .map_err(|e| format!("Request failed: {e}"))?;
+        let _req_proof: Established<RequestCompleted> = Established::assert();
+
+        if !resp.status().is_success() {
+            return Err(format!(
+                "StatusSuccess not established: got {}",
+                resp.status().as_u16()
+            ));
+        }
+        let _status_proof: Established<StatusSuccess> = Established::assert();
+        let combined = both(_url_proof, both(_req_proof, _status_proof));
+
+        let status = resp.status().as_u16();
+        let final_url = resp.url().to_string();
+        let resp_body = resp.text().await.unwrap_or_default();
+        Ok((
+            FetchResult {
+                status,
+                url: final_url,
+                body: resp_body,
+                contract: "UrlValid ∧ RequestCompleted ∧ StatusSuccess".to_string(),
+            },
+            combined,
+        ))
+    }
+
+    /// GET paginated resources, following `Link: rel="next"` headers.
+    ///
+    /// Returns response bodies for all pages (stops when no next-page link).
+    pub async fn paginated_get(
+        &self,
+        url: &str,
+        token: Option<&str>,
+        timeout: Duration,
+    ) -> Result<Vec<String>, String> {
+        let mut pages = Vec::new();
+        let mut next = Some(url.to_string());
+        while let Some(current_url) = next {
+            let mut headers = HeaderMap::new();
+            if let Some(t) = token {
+                headers.insert("Authorization", format!("Bearer {t}").parse().unwrap());
+            }
+            let resp = self
+                .client
+                .get(&current_url)
+                .timeout(timeout)
+                .headers(headers)
+                .send()
+                .await
+                .map_err(|e| format!("Paginated GET failed: {e}"))?;
+            next = extract_link_next(resp.headers());
+            pages.push(resp.text().await.unwrap_or_default());
+        }
+        Ok(pages)
     }
 }
 
@@ -1053,7 +1288,6 @@ impl EmitCode for UrlBuildParams {
             Some(p) => quote::quote! { Some(#p) },
             None => quote::quote! { None::<&str> },
         };
-        // Emit query as a Vec of (key, value) pairs
         let query_pairs: Vec<TokenStream> = self
             .query
             .as_ref()

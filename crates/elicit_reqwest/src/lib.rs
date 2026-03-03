@@ -34,8 +34,8 @@ pub use error::Error;
 pub use plugin::Plugin;
 pub use plugins::Plugin as HttpPlugin;
 pub use plugins::{
-    HeaderMapPlugin, MethodPlugin, RequestBuilderPlugin, RequestSpec, StatusCodePlugin, UrlPlugin,
-    WorkflowPlugin,
+    AuthType, ContentType, FetchResult, HeaderMapPlugin, MethodPlugin, RequestBuilderPlugin,
+    RequestSpec, StatusCodePlugin, UrlPlugin, WorkflowPlugin,
 };
 
 #[cfg(feature = "emit")]

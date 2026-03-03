@@ -29,3 +29,4 @@ quote = { workspace = true, optional = true }
 
 [features]
 emit = ["dep:proc-macro2", "dep:quote", "elicitation/emit"]
+serde = []

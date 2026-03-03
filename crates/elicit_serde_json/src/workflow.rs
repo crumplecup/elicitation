@@ -168,6 +168,47 @@ impl RawJson {
 }
 
 impl ParsedJson {
+    /// Consume and return the inner `serde_json::Value`.
+    ///
+    /// Use when you need to operate on the raw value directly after parsing.
+    pub fn into_value(self) -> serde_json::Value {
+        self.value
+    }
+
+    /// Apply a pointer update in one step: resolve the pointer and write the new value.
+    ///
+    /// Combines `focus` + `FocusedJson::update` into a single ergonomic call.
+    /// `MissingKeyPolicy::CreatePath` will create intermediate nodes; `Error` returns `Err`.
+    pub fn pointer_update(
+        self,
+        ptr: &str,
+        new_value: serde_json::Value,
+        policy: MissingKeyPolicy,
+        proof: Established<JsonParsed>,
+    ) -> Result<(serde_json::Value, Established<UpdateApplied>), String> {
+        // For CreatePath: keep a copy before focus consumes self.
+        let value_copy = if matches!(policy, MissingKeyPolicy::CreatePath) {
+            Some(self.value.clone())
+        } else {
+            None
+        };
+        match self.focus(ptr, proof) {
+            Ok((focused, _located_proof)) => {
+                let update_proof: Established<UpdateApplied> = Established::assert();
+                let updated = focused.update(new_value, ptr, update_proof);
+                Ok((updated, Established::assert()))
+            }
+            Err(focus_err) => match policy {
+                MissingKeyPolicy::Error => Err(focus_err),
+                MissingKeyPolicy::CreatePath => {
+                    let mut doc = value_copy.unwrap_or_default();
+                    set_pointer(&mut doc, ptr, new_value);
+                    Ok((doc, Established::assert()))
+                }
+            },
+        }
+    }
+
     /// Assert that this value is a JSON object, establishing `ParsedObject` proof.
     ///
     /// Like `validate_square_empty()` in tic-tac-toe: establishes a precondition
@@ -718,6 +759,9 @@ const ELICIT_SERDE_JSON_DEP: CrateDep = CrateDep::new("elicit_serde_json", "0.8"
 #[cfg(feature = "emit")]
 const ELICITATION_DEP: CrateDep = CrateDep::new("elicitation", "0.8");
 
+#[cfg(feature = "emit")]
+const SERDE_JSON_DEP: CrateDep = CrateDep::new("serde_json", "1");
+
 /// `parse_and_focus` → `RawJson::new → .parse() → .focus() → .extract()`
 #[cfg(feature = "emit")]
 impl EmitCode for ParseFocusParams {
@@ -789,12 +833,12 @@ impl EmitCode for MergeParams {
                 .map_err(|e| format!("Patch is not a JSON object: {}", e))?;
 
             let _both_proof = elicitation::contracts::both(_base_obj_proof, _patch_obj_proof);
-            let _merged = _base_obj.merge(_patch_obj, #mode_expr, _both_proof);
+            let _merged = _base_obj.merge(_patch_obj, _both_proof, &#mode_expr);
             println!("{}", serde_json::to_string_pretty(&_merged).unwrap_or_default());
         }
     }
     fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP]
+        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP, SERDE_JSON_DEP]
     }
 }
 
@@ -827,7 +871,7 @@ impl EmitCode for PointerUpdateParams {
         }
     }
     fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP]
+        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP, SERDE_JSON_DEP]
     }
 }
 
@@ -841,7 +885,7 @@ impl EmitCode for FieldChainParams {
             let _raw = elicit_serde_json::RawJson::new(#json.to_string());
             let (_parsed, _proof) = _raw.parse()
                 .map_err(|e| format!("JSON parse failed: {}", e))?;
-            let mut _current = _parsed.value().clone();
+            let mut _current = _parsed.into_value();
             for _key in &[ #( #keys ),* ] {
                 let _key_ptr = format!("/{}", _key);
                 let _step_raw = elicit_serde_json::RawJson::new(_current.to_string());
@@ -855,7 +899,7 @@ impl EmitCode for FieldChainParams {
         }
     }
     fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP]
+        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP, SERDE_JSON_DEP]
     }
 }
 
