@@ -903,3 +903,271 @@ fn urlencoding_simple(s: &str) -> String {
     }
     out
 }
+
+// ── EmitCode impls ────────────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+use elicitation::emit_code::{CrateDep, EmitCode};
+#[cfg(feature = "emit")]
+use proc_macro2::TokenStream;
+
+#[cfg(feature = "emit")]
+const ELICIT_REQWEST_DEP: CrateDep = CrateDep::new("elicit_reqwest", "0.8");
+#[cfg(feature = "emit")]
+const ELICITATION_DEP: CrateDep = CrateDep::new("elicitation", "0.8");
+
+/// `fetch` → `WorkflowPlugin::default_client() → .fetch(url, timeout)`
+#[cfg(feature = "emit")]
+impl EmitCode for FetchParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        let timeout = self.timeout_secs.unwrap_or(30.0);
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let (_resp, _proof) = _plugin.fetch(
+                #url,
+                std::time::Duration::from_secs_f64(#timeout),
+            ).await.map_err(|e| format!("Fetch failed: {}", e))?;
+            println!("Status: {}", _resp.status);
+            println!("{}", _resp.body);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `auth_fetch` → fetch with Authorization header
+#[cfg(feature = "emit")]
+impl EmitCode for AuthFetchParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        let token = &self.token;
+        let timeout = self.timeout_secs.unwrap_or(30.0);
+        let auth_expr = match self.auth_type {
+            AuthType::Bearer => quote::quote! { elicit_reqwest::AuthType::Bearer },
+            AuthType::Basic => quote::quote! { elicit_reqwest::AuthType::Basic },
+            AuthType::ApiKey => quote::quote! { elicit_reqwest::AuthType::ApiKey },
+            AuthType::None => quote::quote! { elicit_reqwest::AuthType::None },
+        };
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let (_resp, _proof) = _plugin.auth_fetch(
+                #url,
+                #token,
+                #auth_expr,
+                std::time::Duration::from_secs_f64(#timeout),
+            ).await.map_err(|e| format!("Auth fetch failed: {}", e))?;
+            println!("Status: {}", _resp.status);
+            println!("{}", _resp.body);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `post` → POST with body
+#[cfg(feature = "emit")]
+impl EmitCode for PostParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        let body = &self.body;
+        let timeout = self.timeout_secs.unwrap_or(30.0);
+        let ct_expr = match self.content_type {
+            ContentType::Json => quote::quote! { elicit_reqwest::ContentType::Json },
+            ContentType::FormUrlEncoded => {
+                quote::quote! { elicit_reqwest::ContentType::FormUrlEncoded }
+            }
+            ContentType::PlainText => quote::quote! { elicit_reqwest::ContentType::PlainText },
+            ContentType::OctetStream => quote::quote! { elicit_reqwest::ContentType::OctetStream },
+        };
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let (_resp, _proof) = _plugin.post(
+                #url,
+                #body,
+                #ct_expr,
+                std::time::Duration::from_secs_f64(#timeout),
+            ).await.map_err(|e| format!("POST failed: {}", e))?;
+            println!("Status: {}", _resp.status);
+            println!("{}", _resp.body);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `api_call` → authenticated JSON POST
+#[cfg(feature = "emit")]
+impl EmitCode for ApiCallParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        let token = &self.token;
+        let body = &self.body;
+        let timeout = self.timeout_secs.unwrap_or(30.0);
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let (_resp, _proof) = _plugin.api_call(
+                #url,
+                #token,
+                #body,
+                std::time::Duration::from_secs_f64(#timeout),
+            ).await.map_err(|e| format!("API call failed: {}", e))?;
+            println!("Status: {}", _resp.status);
+            println!("{}", _resp.body);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `health_check` → probe URL, emit status
+#[cfg(feature = "emit")]
+impl EmitCode for HealthCheckParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        let timeout = self.timeout_secs.unwrap_or(10.0);
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let _healthy = _plugin.health_check(
+                #url,
+                std::time::Duration::from_secs_f64(#timeout),
+            ).await;
+            println!("Healthy: {}", _healthy);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `url_build` → construct URL from base + path + query
+#[cfg(feature = "emit")]
+impl EmitCode for UrlBuildParams {
+    fn emit_code(&self) -> TokenStream {
+        let base = &self.base;
+        let path_expr = match &self.path {
+            Some(p) => quote::quote! { Some(#p) },
+            None => quote::quote! { None::<&str> },
+        };
+        // Emit query as a Vec of (key, value) pairs
+        let query_pairs: Vec<TokenStream> = self
+            .query
+            .as_ref()
+            .map(|q| q.iter().map(|(k, v)| quote::quote! { (#k, #v) }).collect())
+            .unwrap_or_default();
+        quote::quote! {
+            let _url = elicit_reqwest::WorkflowPlugin::build_url(
+                #base,
+                #path_expr,
+                &[ #( #query_pairs ),* ],
+            ).map_err(|e| format!("URL build failed: {}", e))?;
+            println!("{}", _url);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `status_summary` → classify HTTP status code
+#[cfg(feature = "emit")]
+impl EmitCode for StatusSummaryParams {
+    fn emit_code(&self) -> TokenStream {
+        let status = self.status;
+        quote::quote! {
+            let _code = reqwest::StatusCode::from_u16(#status)
+                .map_err(|e| format!("Invalid status code: {}", e))?;
+            let _summary = elicit_reqwest::WorkflowPlugin::status_summary(_code);
+            println!("{}", _summary);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `build_request` → construct a full request and send it
+#[cfg(feature = "emit")]
+impl EmitCode for BuildRequestParams {
+    fn emit_code(&self) -> TokenStream {
+        let method = &self.method;
+        let url = &self.url;
+        let token_expr = match &self.token {
+            Some(t) => quote::quote! { Some(#t) },
+            None => quote::quote! { None::<&str> },
+        };
+        let body_expr = match &self.body {
+            Some(b) => quote::quote! { Some(#b) },
+            None => quote::quote! { None::<&str> },
+        };
+        let timeout = self.timeout_secs.unwrap_or(30.0);
+        let auth_expr = match self.auth_type {
+            AuthType::Bearer => quote::quote! { elicit_reqwest::AuthType::Bearer },
+            AuthType::Basic => quote::quote! { elicit_reqwest::AuthType::Basic },
+            AuthType::ApiKey => quote::quote! { elicit_reqwest::AuthType::ApiKey },
+            AuthType::None => quote::quote! { elicit_reqwest::AuthType::None },
+        };
+        let ct_expr = match &self.content_type {
+            Some(ContentType::Json) => quote::quote! { Some(elicit_reqwest::ContentType::Json) },
+            Some(ContentType::FormUrlEncoded) => {
+                quote::quote! { Some(elicit_reqwest::ContentType::FormUrlEncoded) }
+            }
+            Some(ContentType::PlainText) => {
+                quote::quote! { Some(elicit_reqwest::ContentType::PlainText) }
+            }
+            Some(ContentType::OctetStream) => {
+                quote::quote! { Some(elicit_reqwest::ContentType::OctetStream) }
+            }
+            None => quote::quote! { None::<elicit_reqwest::ContentType> },
+        };
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let (_resp, _proof) = _plugin.build_request(
+                #method,
+                #url,
+                #auth_expr,
+                #token_expr,
+                #body_expr,
+                #ct_expr,
+                std::time::Duration::from_secs_f64(#timeout),
+            ).await.map_err(|e| format!("Request failed: {}", e))?;
+            println!("Status: {}", _resp.status);
+            println!("{}", _resp.body);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `paginated_get` → follow next-page links
+#[cfg(feature = "emit")]
+impl EmitCode for PaginatedGetParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        let token_expr = match &self.token {
+            Some(t) => quote::quote! { Some(#t) },
+            None => quote::quote! { None::<&str> },
+        };
+        let timeout = self.timeout_secs.unwrap_or(30.0);
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let _pages = _plugin.paginated_get(
+                #url,
+                #token_expr,
+                std::time::Duration::from_secs_f64(#timeout),
+            ).await.map_err(|e| format!("Paginated GET failed: {}", e))?;
+            for (_i, _page) in _pages.iter().enumerate() {
+                println!("--- Page {} ---", _i + 1);
+                println!("{}", _page);
+            }
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}

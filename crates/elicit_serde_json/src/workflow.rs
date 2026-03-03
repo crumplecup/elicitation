@@ -703,3 +703,158 @@ impl ElicitPlugin for JsonWorkflowPlugin {
         })
     }
 }
+
+// ── EmitCode impls ────────────────────────────────────────────────────────────
+// Each params struct recovers the typestate sequence it drives as Rust source.
+
+#[cfg(feature = "emit")]
+use elicitation::emit_code::{CrateDep, EmitCode};
+#[cfg(feature = "emit")]
+use proc_macro2::TokenStream;
+
+#[cfg(feature = "emit")]
+const ELICIT_SERDE_JSON_DEP: CrateDep = CrateDep::new("elicit_serde_json", "0.8");
+
+#[cfg(feature = "emit")]
+const ELICITATION_DEP: CrateDep = CrateDep::new("elicitation", "0.8");
+
+/// `parse_and_focus` → `RawJson::new → .parse() → .focus() → .extract()`
+#[cfg(feature = "emit")]
+impl EmitCode for ParseFocusParams {
+    fn emit_code(&self) -> TokenStream {
+        let json = &self.json;
+        let pointer = &self.pointer;
+        quote::quote! {
+            let _raw = elicit_serde_json::RawJson::new(#json.to_string());
+            let (_parsed, _json_proof) = _raw.parse()
+                .map_err(|e| format!("JSON parse failed: {}", e))?;
+            let (_focused, _focus_proof) = _parsed.focus(#pointer, _json_proof)
+                .map_err(|e| format!("Pointer resolution failed: {}", e))?;
+            let _value = _focused.extract();
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP]
+    }
+}
+
+/// `validate_object` → `RawJson → .parse() → .assert_object() → .validate_required()`
+#[cfg(feature = "emit")]
+impl EmitCode for ValidateObjectParams {
+    fn emit_code(&self) -> TokenStream {
+        let json = &self.json;
+        let keys = &self.required_keys;
+        quote::quote! {
+            let _raw = elicit_serde_json::RawJson::new(#json.to_string());
+            let (_parsed, _proof) = _raw.parse()
+                .map_err(|e| format!("JSON parse failed: {}", e))?;
+            let (_obj, _obj_proof) = _parsed.assert_object(_proof)
+                .map_err(|e| format!("Not a JSON object: {}", e))?;
+            let (_validated, _val_proof) = _obj.validate_required(
+                &[ #( #keys ),* ],
+                _obj_proof,
+            ).map_err(|e| format!("Missing required keys: {}", e))?;
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP]
+    }
+}
+
+/// `safe_merge` → two independent parse+assert_object chains, then `both()` + merge
+#[cfg(feature = "emit")]
+impl EmitCode for MergeParams {
+    fn emit_code(&self) -> TokenStream {
+        let base = self.base.to_string();
+        let patch = self.patch.to_string();
+        let mode_expr = match self.mode {
+            ObjectMergeMode::MergePatch => {
+                quote::quote! { elicit_serde_json::ObjectMergeMode::MergePatch }
+            }
+            ObjectMergeMode::DeepMerge => {
+                quote::quote! { elicit_serde_json::ObjectMergeMode::DeepMerge }
+            }
+        };
+        quote::quote! {
+            let _base_raw = elicit_serde_json::RawJson::new(#base.to_string());
+            let (_base_parsed, _base_proof) = _base_raw.parse()
+                .map_err(|e| format!("Base JSON parse failed: {}", e))?;
+            let (_base_obj, _base_obj_proof) = _base_parsed.assert_object(_base_proof)
+                .map_err(|e| format!("Base is not a JSON object: {}", e))?;
+
+            let _patch_raw = elicit_serde_json::RawJson::new(#patch.to_string());
+            let (_patch_parsed, _patch_proof) = _patch_raw.parse()
+                .map_err(|e| format!("Patch JSON parse failed: {}", e))?;
+            let (_patch_obj, _patch_obj_proof) = _patch_parsed.assert_object(_patch_proof)
+                .map_err(|e| format!("Patch is not a JSON object: {}", e))?;
+
+            let _both_proof = elicitation::contracts::both(_base_obj_proof, _patch_obj_proof);
+            let _merged = _base_obj.merge(_patch_obj, #mode_expr, _both_proof);
+            println!("{}", serde_json::to_string_pretty(&_merged).unwrap_or_default());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP]
+    }
+}
+
+/// `pointer_update` → `RawJson → .parse() → set_pointer()`
+#[cfg(feature = "emit")]
+impl EmitCode for PointerUpdateParams {
+    fn emit_code(&self) -> TokenStream {
+        let json = &self.json;
+        let pointer = &self.pointer;
+        let new_value = self.new_value.to_string();
+        let policy_expr = match self.missing_key_policy {
+            MissingKeyPolicy::Error => quote::quote! { elicit_serde_json::MissingKeyPolicy::Error },
+            MissingKeyPolicy::CreatePath => {
+                quote::quote! { elicit_serde_json::MissingKeyPolicy::CreatePath }
+            }
+        };
+        quote::quote! {
+            let _raw = elicit_serde_json::RawJson::new(#json.to_string());
+            let (_parsed, _proof) = _raw.parse()
+                .map_err(|e| format!("JSON parse failed: {}", e))?;
+            let _new_val: serde_json::Value = serde_json::from_str(#new_value)
+                .map_err(|e| format!("Invalid replacement value: {}", e))?;
+            let (_updated, _update_proof) = _parsed.pointer_update(
+                #pointer,
+                _new_val,
+                #policy_expr,
+                _proof,
+            ).map_err(|e| format!("Pointer update failed: {}", e))?;
+            println!("{}", serde_json::to_string_pretty(&_updated).unwrap_or_default());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP]
+    }
+}
+
+/// `field_chain` → iterative focus loop over ordered keys
+#[cfg(feature = "emit")]
+impl EmitCode for FieldChainParams {
+    fn emit_code(&self) -> TokenStream {
+        let json = &self.json;
+        let keys = &self.path;
+        quote::quote! {
+            let _raw = elicit_serde_json::RawJson::new(#json.to_string());
+            let (_parsed, _proof) = _raw.parse()
+                .map_err(|e| format!("JSON parse failed: {}", e))?;
+            let mut _current = _parsed.value().clone();
+            for _key in &[ #( #keys ),* ] {
+                let _key_ptr = format!("/{}", _key);
+                let _step_raw = elicit_serde_json::RawJson::new(_current.to_string());
+                let (_step_parsed, _step_proof) = _step_raw.parse()
+                    .map_err(|e| format!("Parse failed at key '{}': {}", _key, e))?;
+                let (_focused, _) = _step_parsed.focus(&_key_ptr, _step_proof)
+                    .map_err(|e| format!("Key '{}' not found: {}", _key, e))?;
+                _current = _focused.extract();
+            }
+            println!("{}", serde_json::to_string_pretty(&_current).unwrap_or_default());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP]
+    }
+}
