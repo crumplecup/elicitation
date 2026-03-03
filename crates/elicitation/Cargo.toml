@@ -64,6 +64,12 @@ reqwest = { workspace = true, optional = true }
 http = { workspace = true, optional = true }
 bytes = { workspace = true, optional = true }
 
+# Code recovery / emission (optional)
+proc-macro2 = { workspace = true, optional = true }
+quote = { workspace = true, optional = true }
+prettyplease = { workspace = true, optional = true }
+syn = { workspace = true, optional = true }
+
 # Re-export derive macro
 elicitation_derive = { workspace = true }
 elicitation_macros = { workspace = true }
@@ -102,6 +108,9 @@ url = ["dep:url"]
 regex = ["dep:regex"]
 # Enable reqwest HTTP client elicitation
 reqwest = ["dep:reqwest", "dep:http", "dep:bytes", "url"]
+
+# Code recovery — emit verified workflows as Rust source
+emit = ["dep:proc-macro2", "dep:quote", "dep:prettyplease", "dep:syn"]
 
 # Formal verification support
 verification = [] # Core Contract trait only

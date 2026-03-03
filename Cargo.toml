@@ -79,6 +79,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std"] }
 syn = { version = "2", features = ["full", "extra-traits"] }
 quote = "1"
 proc-macro2 = "1"
+prettyplease = "0.2"
 
 # Async utilities
 futures = "0.3"

@@ -99,6 +99,9 @@ pub mod verification;
 pub mod cli;
 
 pub mod contracts;
+
+#[cfg(feature = "emit")]
+pub mod emit_code;
 pub mod mcp;
 mod paradigm;
 mod primitives;
