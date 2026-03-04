@@ -200,3 +200,51 @@ fn test_struct_field_usage() {
     assert_eq!(skip.name, "Eve");
     assert_eq!(skip.internal_id, 0);
 }
+
+// ── Tuple struct (newtype and multi-field) ────────────────────────────────────
+
+/// Newtype wrapper: single-field tuple struct
+#[derive(Debug, Clone, Elicit)]
+struct WrappedName(String);
+
+/// Multi-value tuple struct
+#[derive(Debug, Clone, Elicit)]
+struct Point(f64, f64);
+
+/// Newtype with prompt
+#[derive(Debug, Clone, Elicit)]
+#[prompt("Enter a list of tags:")]
+struct TagList(Vec<String>);
+
+#[test]
+fn test_newtype_has_prompt() {
+    assert_eq!(<WrappedName as Prompt>::prompt(), None);
+    assert_eq!(<TagList as Prompt>::prompt(), Some("Enter a list of tags:"));
+}
+
+#[test]
+fn test_newtype_survey_fields() {
+    let fields = WrappedName::fields();
+    assert_eq!(fields.len(), 1);
+    assert_eq!(fields[0].name, "0");
+    assert_eq!(fields[0].type_name, "String");
+}
+
+#[test]
+fn test_tuple_struct_survey_fields() {
+    let fields = Point::fields();
+    assert_eq!(fields.len(), 2);
+    assert_eq!(fields[0].name, "0");
+    assert_eq!(fields[1].name, "1");
+    assert_eq!(fields[0].type_name, "f64");
+    assert_eq!(fields[1].type_name, "f64");
+}
+
+#[test]
+fn test_newtype_construction() {
+    let w = WrappedName("Alice".to_string());
+    assert_eq!(w.0, "Alice");
+    let p = Point(1.0, 2.5);
+    assert_eq!(p.0, 1.0);
+    assert_eq!(p.1, 2.5);
+}
