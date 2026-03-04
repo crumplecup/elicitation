@@ -1,0 +1,27 @@
+[package]
+name = "elicit_serde"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "MCP tool transport for serde — serialize/deserialize any registered Elicitation type as JSON"
+keywords = ["mcp", "serde", "serialization", "elicitation", "tools"]
+categories = ["encoding", "development-tools"]
+
+[dependencies]
+elicitation = { workspace = true, features = ["serde"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+erased-serde = { workspace = true }
+rmcp = { workspace = true }
+schemars = { workspace = true }
+tracing = { workspace = true }
+
+futures = { workspace = true }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

@@ -50,3 +50,7 @@ pub use request_builder::{RequestBuilderPlugin, RequestSpec};
 pub use status_code::StatusCodePlugin;
 pub use url::UrlPlugin;
 pub use workflow::WorkflowPlugin;
+pub use workflow::{AuthType, BuildRequestParams, BuildRequestParamsBuilder, ContentType, FetchResult};
+
+#[cfg(feature = "emit")]
+pub use workflow::dispatch_emit as dispatch_reqwest_emit;

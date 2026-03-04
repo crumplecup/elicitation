@@ -99,6 +99,9 @@ pub mod verification;
 pub mod cli;
 
 pub mod contracts;
+
+#[cfg(feature = "emit")]
+pub mod emit_code;
 pub mod mcp;
 mod paradigm;
 mod primitives;
@@ -120,7 +123,8 @@ mod newtype_methods_macro;
 
 mod traits;
 
-// Plugin registry (composable tool plugins)
+mod elicit_json;
+pub use elicit_json::ElicitJson;
 mod plugin;
 mod plugin_registry;
 pub use plugin::ElicitPlugin;

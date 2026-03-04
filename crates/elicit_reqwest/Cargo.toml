@@ -42,9 +42,17 @@ rmcp.workspace = true
 
 # Derive utilities (needed by elicit_newtype! macro)
 derive_more.workspace = true
+derive_builder.workspace = true
 
 # Tracing (needed by #[derive(Elicit)])
 tracing.workspace = true
+
+# Code recovery (optional)
+proc-macro2 = { workspace = true, optional = true }
+quote = { workspace = true, optional = true }
+
+[features]
+emit = ["dep:proc-macro2", "dep:quote", "elicitation/emit"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["test-util"] }

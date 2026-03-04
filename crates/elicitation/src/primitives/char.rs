@@ -21,12 +21,10 @@ impl Elicitation for char {
 
         let params = mcp::text_params(prompt);
         let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_text().into(),
-                arguments: Some(params),
-                task: None,
-            })
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                    .with_arguments(params),
+            )
             .await?;
 
         let value = mcp::extract_value(result)?;

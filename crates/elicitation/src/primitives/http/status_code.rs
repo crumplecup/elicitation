@@ -71,12 +71,10 @@ impl Elicitation for StatusCodeValid {
         );
 
         let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_number().into(),
-                arguments: Some(params),
-                task: None,
-            })
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
+                    .with_arguments(params),
+            )
             .await?;
 
         let value = mcp::extract_value(result)?;

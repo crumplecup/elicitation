@@ -4,6 +4,7 @@ use derive_more::{Display, From};
 
 /// RMCP error wrapper.
 #[derive(Debug, Clone, Display, derive_getters::Getters)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[display("RMCP error: {}", source)]
 pub struct RmcpError {
     /// The underlying rmcp error.
@@ -11,6 +12,7 @@ pub struct RmcpError {
     /// Line number where the error occurred.
     line: u32,
     /// File where the error occurred.
+    #[cfg_attr(feature = "serde", serde(skip))]
     file: &'static str,
 }
 
@@ -38,6 +40,7 @@ impl From<rmcp::ErrorData> for RmcpError {
 
 /// JSON parsing error wrapper.
 #[derive(Debug, Clone, Display, derive_getters::Getters)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[display("JSON error: {}", source)]
 pub struct JsonError {
     /// The underlying serde_json error.
@@ -45,6 +48,7 @@ pub struct JsonError {
     /// Line number where the error occurred.
     line: u32,
     /// File where the error occurred.
+    #[cfg_attr(feature = "serde", serde(skip))]
     file: &'static str,
 }
 
@@ -72,6 +76,7 @@ impl From<serde_json::Error> for JsonError {
 
 /// Specific error conditions during elicitation.
 #[derive(Debug, Clone, Display, From)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ElicitErrorKind {
     /// RMCP error.
     #[display("{}", _0)]
@@ -168,6 +173,7 @@ macro_rules! bridge_error {
 
 /// RMCP ServiceError wrapper for error conversion.
 #[derive(Debug, Clone, Display, derive_getters::Getters)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[display("Service error: {}", source)]
 pub struct ServiceError {
     /// The underlying service error message.
@@ -175,6 +181,7 @@ pub struct ServiceError {
     /// Line number where the error occurred.
     line: u32,
     /// File where the error occurred.
+    #[cfg_attr(feature = "serde", serde(skip))]
     file: &'static str,
 }
 
@@ -314,6 +321,10 @@ impl From<rmcp::service::ElicitationError> for ElicitError {
             EE::NoContent => ElicitErrorKind::InvalidFormat {
                 expected: "elicitation response".to_string(),
                 received: "no content".to_string(),
+            },
+            _ => ElicitErrorKind::InvalidFormat {
+                expected: "elicitation response".to_string(),
+                received: "unknown error".to_string(),
             },
         };
         tracing::error!(error_kind = %kind, "Error from ElicitationError");

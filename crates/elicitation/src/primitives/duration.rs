@@ -46,6 +46,7 @@ crate::default_style!(DurationGenerationMode => DurationGenerationModeStyle);
 /// - `FromMicros`: Duration from microseconds
 /// - `FromNanos`: Duration from nanoseconds
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum DurationGenerationMode {
     /// Zero duration.
     Zero,
@@ -109,12 +110,10 @@ impl Elicitation for DurationGenerationMode {
         );
 
         let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_select().into(),
-                arguments: Some(params),
-                task: None,
-            })
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
             .await?;
 
         let value = mcp::extract_value(result)?;
@@ -154,6 +153,7 @@ impl Elicitation for DurationGenerationMode {
 /// Created from a [`DurationGenerationMode`] to enable consistent duration
 /// generation across multiple calls.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DurationGenerator {
     mode: DurationGenerationMode,
 }

@@ -7,6 +7,9 @@ members = [
   "crates/elicitation_creusot",
   "crates/elicitation_rand",
   "crates/elicit_reqwest",
+  "crates/elicit_serde",
+  "crates/elicit_serde_json",
+  "crates/elicit_server",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
@@ -14,7 +17,7 @@ exclude = ["crates/elicitation_verus"]
 resolver = "2"
 
 [workspace.package]
-version = "0.8.3"
+version = "0.8.4"
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/crumplecup/elicitation"
@@ -29,15 +32,15 @@ unexpected_cfgs = { level = "warn", check-cfg = [
 ] }
 
 [workspace.dependencies]
-elicitation = { path = "crates/elicitation", version = "0.8.3" }
-elicitation_derive = { path = "crates/elicitation_derive", version = "0.8.3" }
-elicitation_macros = { path = "crates/elicitation_macros", version = "0.8.3" }
-elicitation_rand = { path = "crates/elicitation_rand", version = "0.8.3" }
-elicitation_kani = { path = "crates/elicitation_kani", version = "0.8.3" }
+elicitation = { path = "crates/elicitation", version = "0.8.4" }
+elicitation_derive = { path = "crates/elicitation_derive", version = "0.8.4" }
+elicitation_macros = { path = "crates/elicitation_macros", version = "0.8.4" }
+elicitation_rand = { path = "crates/elicitation_rand", version = "0.8.4" }
+elicitation_kani = { path = "crates/elicitation_kani", version = "0.8.4" }
 
 
 # MCP client
-rmcp = { version = "0.17", features = [
+rmcp = { version = "1.1.0", features = [
   "client",
   "transport-io",
   "schemars",
@@ -47,6 +50,7 @@ rmcp = { version = "0.17", features = [
 # Serialization
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+erased-serde = "0.4"
 
 # JSON Schema generation for MCP
 schemars = { version = "1", features = ["derive"] }
@@ -76,6 +80,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std"] }
 syn = { version = "2", features = ["full", "extra-traits"] }
 quote = "1"
 proc-macro2 = "1"
+prettyplease = "0.2"
 
 # Async utilities
 futures = "0.3"

@@ -190,22 +190,30 @@ struct StatusSummaryParams {
     status: u16,
 }
 
-#[derive(Debug, Deserialize, JsonSchema)]
-struct BuildRequestParams {
+/// Parameters for [`WorkflowPlugin::build_request`].
+///
+/// Use [`BuildRequestParamsBuilder`] to construct this type.
+#[derive(Debug, Deserialize, JsonSchema, derive_builder::Builder)]
+#[builder(setter(into))]
+pub struct BuildRequestParams {
     /// HTTP method (e.g. `"GET"`, `"POST"`).
-    method: String,
+    pub method: String,
     /// Destination URL.
-    url: String,
+    pub url: String,
     /// Authorization type.
-    auth_type: AuthType,
+    pub auth_type: AuthType,
     /// Credential for the chosen auth type. Required unless auth_type is `none`.
-    token: Option<String>,
+    #[builder(setter(into, strip_option), default)]
+    pub token: Option<String>,
     /// Optional body for methods that carry one.
-    body: Option<String>,
+    #[builder(setter(into, strip_option), default)]
+    pub body: Option<String>,
     /// Content-Type for the body (required when body is present).
-    content_type: Option<ContentType>,
+    #[builder(setter(into, strip_option), default)]
+    pub content_type: Option<ContentType>,
     /// Optional timeout in seconds.
-    timeout_secs: Option<f64>,
+    #[builder(setter(into, strip_option), default)]
+    pub timeout_secs: Option<f64>,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -223,12 +231,15 @@ struct PaginatedGetParams {
 /// Result of a successful fetch, carrying the established propositions in the
 /// `contract` field for downstream tools to inspect.
 #[derive(Debug, Serialize)]
-struct FetchResult {
-    status: u16,
-    url: String,
-    body: String,
+pub struct FetchResult {
+    /// HTTP status code of the response.
+    pub status: u16,
+    /// Final URL after any redirects.
+    pub url: String,
+    /// Response body as a UTF-8 string.
+    pub body: String,
     /// Human-readable summary of the contract propositions established.
-    contract: String,
+    pub contract: String,
 }
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
@@ -430,6 +441,236 @@ impl WorkflowPlugin {
     /// Create a `WorkflowPlugin` with a default client.
     pub fn default_client() -> Self {
         Self::new(reqwest::Client::new())
+    }
+
+    /// Construct and validate a URL from base, optional path, and query pairs.
+    ///
+    /// Returns the validated URL string. Errors if `base` is not a valid URL.
+    pub fn build_url(
+        base: &str,
+        path: Option<&str>,
+        query: &[(&str, &str)],
+    ) -> Result<String, String> {
+        let mut url = url::Url::parse(base)
+            .map_err(|e| format!("UrlValid not established: '{base}' — {e}"))?;
+        if let Some(p) = path {
+            url.set_path(p);
+        }
+        if !query.is_empty() {
+            let qs: String = query
+                .iter()
+                .map(|(k, v)| format!("{k}={v}"))
+                .collect::<Vec<_>>()
+                .join("&");
+            url.set_query(Some(&qs));
+        }
+        Ok(url.to_string())
+    }
+
+    /// GET `url`, verify the response is successful, and return the result.
+    pub async fn fetch(
+        &self,
+        url: &str,
+        timeout: Duration,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        do_fetch(&self.client, url, HeaderMap::new(), timeout)
+            .await
+            .map_err(|r| {
+                r.content
+                    .first()
+                    .and_then(|c| c.as_text().map(|t| t.text.to_string()))
+                    .unwrap_or_else(|| "fetch failed".to_string())
+            })
+    }
+
+    /// GET `url` with an Authorization header, verify success.
+    pub async fn auth_fetch(
+        &self,
+        url: &str,
+        token: &str,
+        auth_type: AuthType,
+        timeout: Duration,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        let parsed_url =
+            url::Url::parse(url).map_err(|e| format!("UrlValid not established: '{url}' — {e}"))?;
+        let url_proof: Established<UrlValid> = Established::assert();
+
+        let rb = self.client.get(parsed_url.as_str()).timeout(timeout);
+        let (rb, _auth_proof) = apply_auth(rb, &auth_type, Some(token));
+
+        let resp = rb
+            .send()
+            .await
+            .map_err(|e| format!("Request failed: {e}"))?;
+        let req_proof: Established<RequestCompleted> = Established::assert();
+
+        if !resp.status().is_success() {
+            return Err(format!(
+                "StatusSuccess not established: got {}",
+                resp.status().as_u16()
+            ));
+        }
+        let status_proof: Established<StatusSuccess> = Established::assert();
+        let combined = both(url_proof, both(req_proof, status_proof));
+
+        let status = resp.status().as_u16();
+        let final_url = resp.url().to_string();
+        let body = resp.text().await.unwrap_or_default();
+        Ok((
+            FetchResult {
+                status,
+                url: final_url,
+                body,
+                contract: "UrlValid ∧ RequestCompleted ∧ StatusSuccess".to_string(),
+            },
+            combined,
+        ))
+    }
+
+    /// POST `url` with `body` and `content_type`, verify success.
+    pub async fn post(
+        &self,
+        url: &str,
+        body: &str,
+        content_type: ContentType,
+        timeout: Duration,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        do_post(
+            &self.client,
+            url,
+            body.to_string(),
+            content_type.as_mime(),
+            HeaderMap::new(),
+            timeout,
+        )
+        .await
+        .map_err(|r| {
+            r.content
+                .first()
+                .and_then(|c| c.as_text().map(|t| t.text.to_string()))
+                .unwrap_or_else(|| "post failed".to_string())
+        })
+    }
+
+    /// Authenticated JSON POST with Bearer token.
+    pub async fn api_call(
+        &self,
+        url: &str,
+        token: &str,
+        body: &str,
+        timeout: Duration,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        let mut headers = HeaderMap::new();
+        headers.insert("Authorization", format!("Bearer {token}").parse().unwrap());
+        do_post(
+            &self.client,
+            url,
+            body.to_string(),
+            ContentType::Json.as_mime(),
+            headers,
+            timeout,
+        )
+        .await
+        .map_err(|r| {
+            r.content
+                .first()
+                .and_then(|c| c.as_text().map(|t| t.text.to_string()))
+                .unwrap_or_else(|| "api_call failed".to_string())
+        })
+    }
+
+    /// Probe `url` and return `true` if it responds with 2xx within `timeout`.
+    pub async fn health_check(&self, url: &str, timeout: Duration) -> bool {
+        do_fetch(&self.client, url, HeaderMap::new(), timeout)
+            .await
+            .is_ok()
+    }
+
+    /// Build and send an HTTP request with full control over method, auth, body.
+    pub async fn build_request(
+        &self,
+        params: BuildRequestParams,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        let method = params.method.as_str();
+        let url = params.url.as_str();
+        let timeout = Duration::from_secs_f64(params.timeout_secs.unwrap_or(30.0));
+
+        let parsed_url =
+            url::Url::parse(url).map_err(|e| format!("UrlValid not established: '{url}' — {e}"))?;
+        let _url_proof: Established<UrlValid> = Established::assert();
+
+        let method_val = reqwest::Method::from_bytes(method.as_bytes())
+            .map_err(|e| format!("Invalid HTTP method '{method}': {e}"))?;
+
+        let rb = self
+            .client
+            .request(method_val, parsed_url.as_str())
+            .timeout(timeout);
+        let (rb, _auth_proof) = apply_auth(rb, &params.auth_type, params.token.as_deref());
+
+        let rb = if let (Some(b), Some(ct)) = (params.body.as_deref(), &params.content_type) {
+            rb.header("Content-Type", ct.as_mime()).body(b.to_string())
+        } else {
+            rb
+        };
+
+        let resp = rb
+            .send()
+            .await
+            .map_err(|e| format!("Request failed: {e}"))?;
+        let _req_proof: Established<RequestCompleted> = Established::assert();
+
+        if !resp.status().is_success() {
+            return Err(format!(
+                "StatusSuccess not established: got {}",
+                resp.status().as_u16()
+            ));
+        }
+        let _status_proof: Established<StatusSuccess> = Established::assert();
+        let combined = both(_url_proof, both(_req_proof, _status_proof));
+
+        let status = resp.status().as_u16();
+        let final_url = resp.url().to_string();
+        let resp_body = resp.text().await.unwrap_or_default();
+        Ok((
+            FetchResult {
+                status,
+                url: final_url,
+                body: resp_body,
+                contract: "UrlValid ∧ RequestCompleted ∧ StatusSuccess".to_string(),
+            },
+            combined,
+        ))
+    }
+
+    /// GET paginated resources, following `Link: rel="next"` headers.
+    ///
+    /// Returns response bodies for all pages (stops when no next-page link).
+    pub async fn paginated_get(
+        &self,
+        url: &str,
+        token: Option<&str>,
+        timeout: Duration,
+    ) -> Result<Vec<String>, String> {
+        let mut pages = Vec::new();
+        let mut next = Some(url.to_string());
+        while let Some(current_url) = next {
+            let mut headers = HeaderMap::new();
+            if let Some(t) = token {
+                headers.insert("Authorization", format!("Bearer {t}").parse().unwrap());
+            }
+            let resp = self
+                .client
+                .get(&current_url)
+                .timeout(timeout)
+                .headers(headers)
+                .send()
+                .await
+                .map_err(|e| format!("Paginated GET failed: {e}"))?;
+            next = extract_link_next(resp.headers());
+            pages.push(resp.text().await.unwrap_or_default());
+        }
+        Ok(pages)
     }
 }
 
@@ -902,4 +1143,336 @@ fn urlencoding_simple(s: &str) -> String {
         }
     }
     out
+}
+
+// ── EmitCode impls ────────────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+use elicitation::emit_code::{CrateDep, EmitCode};
+#[cfg(feature = "emit")]
+use proc_macro2::TokenStream;
+
+#[cfg(feature = "emit")]
+const ELICIT_REQWEST_DEP: CrateDep = CrateDep::new("elicit_reqwest", "0.8");
+#[cfg(feature = "emit")]
+const ELICITATION_DEP: CrateDep = CrateDep::new("elicitation", "0.8");
+
+/// `fetch` → `WorkflowPlugin::default_client() → .fetch(url, timeout)`
+#[cfg(feature = "emit")]
+impl EmitCode for FetchParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        let timeout = self.timeout_secs.unwrap_or(30.0);
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let (_resp, _proof) = _plugin.fetch(
+                #url,
+                std::time::Duration::from_secs_f64(#timeout),
+            ).await.map_err(|e| format!("Fetch failed: {}", e))?;
+            println!("Status: {}", _resp.status);
+            println!("{}", _resp.body);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `auth_fetch` → fetch with Authorization header
+#[cfg(feature = "emit")]
+impl EmitCode for AuthFetchParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        let token = &self.token;
+        let timeout = self.timeout_secs.unwrap_or(30.0);
+        let auth_expr = match self.auth_type {
+            AuthType::Bearer => quote::quote! { elicit_reqwest::AuthType::Bearer },
+            AuthType::Basic => quote::quote! { elicit_reqwest::AuthType::Basic },
+            AuthType::ApiKey => quote::quote! { elicit_reqwest::AuthType::ApiKey },
+            AuthType::None => quote::quote! { elicit_reqwest::AuthType::None },
+        };
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let (_resp, _proof) = _plugin.auth_fetch(
+                #url,
+                #token,
+                #auth_expr,
+                std::time::Duration::from_secs_f64(#timeout),
+            ).await.map_err(|e| format!("Auth fetch failed: {}", e))?;
+            println!("Status: {}", _resp.status);
+            println!("{}", _resp.body);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `post` → POST with body
+#[cfg(feature = "emit")]
+impl EmitCode for PostParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        let body = &self.body;
+        let timeout = self.timeout_secs.unwrap_or(30.0);
+        let ct_expr = match self.content_type {
+            ContentType::Json => quote::quote! { elicit_reqwest::ContentType::Json },
+            ContentType::FormUrlEncoded => {
+                quote::quote! { elicit_reqwest::ContentType::FormUrlEncoded }
+            }
+            ContentType::PlainText => quote::quote! { elicit_reqwest::ContentType::PlainText },
+            ContentType::OctetStream => quote::quote! { elicit_reqwest::ContentType::OctetStream },
+        };
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let (_resp, _proof) = _plugin.post(
+                #url,
+                #body,
+                #ct_expr,
+                std::time::Duration::from_secs_f64(#timeout),
+            ).await.map_err(|e| format!("POST failed: {}", e))?;
+            println!("Status: {}", _resp.status);
+            println!("{}", _resp.body);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `api_call` → authenticated JSON POST
+#[cfg(feature = "emit")]
+impl EmitCode for ApiCallParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        let token = &self.token;
+        let body = &self.body;
+        let timeout = self.timeout_secs.unwrap_or(30.0);
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let (_resp, _proof) = _plugin.api_call(
+                #url,
+                #token,
+                #body,
+                std::time::Duration::from_secs_f64(#timeout),
+            ).await.map_err(|e| format!("API call failed: {}", e))?;
+            println!("Status: {}", _resp.status);
+            println!("{}", _resp.body);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `health_check` → probe URL, emit status
+#[cfg(feature = "emit")]
+impl EmitCode for HealthCheckParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        let timeout = self.timeout_secs.unwrap_or(10.0);
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let _healthy = _plugin.health_check(
+                #url,
+                std::time::Duration::from_secs_f64(#timeout),
+            ).await;
+            println!("Healthy: {}", _healthy);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `url_build` → construct URL from base + path + query
+#[cfg(feature = "emit")]
+impl EmitCode for UrlBuildParams {
+    fn emit_code(&self) -> TokenStream {
+        let base = &self.base;
+        let path_expr = match &self.path {
+            Some(p) => quote::quote! { Some(#p) },
+            None => quote::quote! { None::<&str> },
+        };
+        let query_pairs: Vec<TokenStream> = self
+            .query
+            .as_ref()
+            .map(|q| q.iter().map(|(k, v)| quote::quote! { (#k, #v) }).collect())
+            .unwrap_or_default();
+        quote::quote! {
+            let _url = elicit_reqwest::WorkflowPlugin::build_url(
+                #base,
+                #path_expr,
+                &[ #( #query_pairs ),* ],
+            ).map_err(|e| format!("URL build failed: {}", e))?;
+            println!("{}", _url);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `status_summary` → classify HTTP status code
+#[cfg(feature = "emit")]
+impl EmitCode for StatusSummaryParams {
+    fn emit_code(&self) -> TokenStream {
+        let status = self.status;
+        quote::quote! {
+            let _code = elicit_reqwest::StatusCode::from_u16(#status)
+                .map_err(|e| format!("Invalid status code: {}", e))?;
+            let _class = match #status {
+                100..=199 => "informational",
+                200..=299 => "success",
+                300..=399 => "redirection",
+                400..=499 => "client_error",
+                500..=599 => "server_error",
+                _ => "unknown",
+            };
+            println!(
+                "status={} reason={} class={}",
+                _code.as_u16(),
+                _code.canonical_reason().unwrap_or("Unknown"),
+                _class,
+            );
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `build_request` → construct a full request and send it
+#[cfg(feature = "emit")]
+impl EmitCode for BuildRequestParams {
+    fn emit_code(&self) -> TokenStream {
+        let method = &self.method;
+        let url = &self.url;
+        let auth_expr = match self.auth_type {
+            AuthType::Bearer => quote::quote! { elicit_reqwest::AuthType::Bearer },
+            AuthType::Basic => quote::quote! { elicit_reqwest::AuthType::Basic },
+            AuthType::ApiKey => quote::quote! { elicit_reqwest::AuthType::ApiKey },
+            AuthType::None => quote::quote! { elicit_reqwest::AuthType::None },
+        };
+        let token_stmt = match &self.token {
+            Some(t) => quote::quote! { .token(#t) },
+            None => quote::quote! {},
+        };
+        let body_stmt = match &self.body {
+            Some(b) => quote::quote! { .body(#b) },
+            None => quote::quote! {},
+        };
+        let timeout_stmt = match self.timeout_secs {
+            Some(t) => quote::quote! { .timeout_secs(#t) },
+            None => quote::quote! {},
+        };
+        let ct_stmt = match &self.content_type {
+            Some(ContentType::Json) => {
+                quote::quote! { .content_type(elicit_reqwest::ContentType::Json) }
+            }
+            Some(ContentType::FormUrlEncoded) => {
+                quote::quote! { .content_type(elicit_reqwest::ContentType::FormUrlEncoded) }
+            }
+            Some(ContentType::PlainText) => {
+                quote::quote! { .content_type(elicit_reqwest::ContentType::PlainText) }
+            }
+            Some(ContentType::OctetStream) => {
+                quote::quote! { .content_type(elicit_reqwest::ContentType::OctetStream) }
+            }
+            None => quote::quote! {},
+        };
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let _params = elicit_reqwest::BuildRequestParamsBuilder::default()
+                .method(#method)
+                .url(#url)
+                .auth_type(#auth_expr)
+                #token_stmt
+                #body_stmt
+                #ct_stmt
+                #timeout_stmt
+                .build()
+                .map_err(|e| format!("BuildRequestParams build error: {}", e))?;
+            let (_resp, _proof) = _plugin.build_request(_params)
+                .await.map_err(|e| format!("Request failed: {}", e))?;
+            println!("Status: {}", _resp.status);
+            println!("{}", _resp.body);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+/// `paginated_get` → follow next-page links
+#[cfg(feature = "emit")]
+impl EmitCode for PaginatedGetParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        let token_expr = match &self.token {
+            Some(t) => quote::quote! { Some(#t) },
+            None => quote::quote! { None::<&str> },
+        };
+        let timeout = self.timeout_secs.unwrap_or(30.0);
+        quote::quote! {
+            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
+            let _pages = _plugin.paginated_get(
+                #url,
+                #token_expr,
+                std::time::Duration::from_secs_f64(#timeout),
+            ).await.map_err(|e| format!("Paginated GET failed: {}", e))?;
+            for (_i, _page) in _pages.iter().enumerate() {
+                println!("--- Page {} ---", _i + 1);
+                println!("{}", _page);
+            }
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
+    }
+}
+
+// ── Public dispatch for cross-crate EmitCode recovery ────────────────────────
+
+/// Deserialize a tool's params from JSON and return its [`EmitCode`] impl.
+///
+/// Used by `elicit_server` to recover reqwest workflow steps without
+/// exposing internal param structs.
+///
+/// Returns `Err` if `tool_name` is unknown or `params` fails to deserialize.
+#[cfg(feature = "emit")]
+pub fn dispatch_emit(
+    tool_name: &str,
+    params: serde_json::Value,
+) -> Result<Box<dyn EmitCode>, String> {
+    match tool_name {
+        "fetch" => serde_json::from_value::<FetchParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "auth_fetch" => serde_json::from_value::<AuthFetchParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "post" => serde_json::from_value::<PostParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "api_call" => serde_json::from_value::<ApiCallParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "health_check" => serde_json::from_value::<HealthCheckParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "url_build" => serde_json::from_value::<UrlBuildParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "status_summary" => serde_json::from_value::<StatusSummaryParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "build_request" => serde_json::from_value::<BuildRequestParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "paginated_get" => serde_json::from_value::<PaginatedGetParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        other => Err(format!("Unknown reqwest tool: '{other}'")),
+    }
 }

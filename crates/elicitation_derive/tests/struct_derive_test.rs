@@ -200,3 +200,80 @@ fn test_struct_field_usage() {
     assert_eq!(skip.name, "Eve");
     assert_eq!(skip.internal_id, 0);
 }
+
+// ── Tuple struct (newtype and multi-field) ────────────────────────────────────
+
+/// Newtype wrapper: single-field tuple struct
+#[derive(Debug, Clone, Elicit)]
+struct WrappedName(String);
+
+/// Multi-value tuple struct
+#[derive(Debug, Clone, Elicit)]
+struct Point(f64, f64);
+
+/// Newtype with prompt
+#[derive(Debug, Clone, Elicit)]
+#[prompt("Enter a list of tags:")]
+struct TagList(Vec<String>);
+
+#[test]
+fn test_newtype_has_prompt() {
+    assert_eq!(<WrappedName as Prompt>::prompt(), None);
+    assert_eq!(<TagList as Prompt>::prompt(), Some("Enter a list of tags:"));
+}
+
+#[test]
+fn test_newtype_survey_fields() {
+    let fields = WrappedName::fields();
+    assert_eq!(fields.len(), 1);
+    assert_eq!(fields[0].name, "0");
+    assert_eq!(fields[0].type_name, "String");
+}
+
+#[test]
+fn test_tuple_struct_survey_fields() {
+    let fields = Point::fields();
+    assert_eq!(fields.len(), 2);
+    assert_eq!(fields[0].name, "0");
+    assert_eq!(fields[1].name, "1");
+    assert_eq!(fields[0].type_name, "f64");
+    assert_eq!(fields[1].type_name, "f64");
+}
+
+#[test]
+fn test_newtype_construction() {
+    let w = WrappedName("Alice".to_string());
+    assert_eq!(w.0, "Alice");
+    let p = Point(1.0, 2.5);
+    assert_eq!(p.0, 1.0);
+    assert_eq!(p.1, 2.5);
+    let t = TagList(vec!["a".to_string(), "b".to_string()]);
+    assert_eq!(t.0.len(), 2);
+}
+
+// ── Unit structs ──────────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Copy, Elicit)]
+struct Parse;
+
+#[derive(Debug, Clone, Copy, Elicit)]
+#[prompt("Validate the input:")]
+struct Validate;
+
+#[test]
+fn test_unit_struct_prompt() {
+    assert_eq!(<Parse as Prompt>::prompt(), None);
+    assert_eq!(<Validate as Prompt>::prompt(), Some("Validate the input:"));
+}
+
+#[test]
+fn test_unit_struct_survey_fields() {
+    assert_eq!(Parse::fields().len(), 0);
+    assert_eq!(Validate::fields().len(), 0);
+}
+
+#[test]
+fn test_unit_struct_construction() {
+    let _p = Parse;
+    let _v = Validate;
+}

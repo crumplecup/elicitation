@@ -1,9 +1,12 @@
+// #![cfg(unix)]
 //! Path byte-level validation foundation.
 //!
 //! This module provides validated path byte sequences with platform-specific
 //! constraints. It forms the foundation for path contract types.
 
+#[cfg(unix)]
 use super::ValidationError;
+#[cfg(unix)]
 use super::utf8::Utf8Bytes;
 
 // ============================================================================
@@ -130,6 +133,7 @@ impl<const MAX_LEN: usize> PathBytes<MAX_LEN> {
     }
 }
 
+#[cfg(unix)]
 impl<const MAX_LEN: usize> std::fmt::Display for PathBytes<MAX_LEN> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.utf8)
@@ -141,6 +145,7 @@ impl<const MAX_LEN: usize> std::fmt::Display for PathBytes<MAX_LEN> {
 // ============================================================================
 
 /// Check if string contains null bytes.
+#[cfg(unix)]
 pub fn has_null_byte(s: &str) -> bool {
     let bytes = s.as_bytes();
     let len = bytes.len();

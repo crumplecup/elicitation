@@ -21,12 +21,11 @@ impl TestServer {
 
 impl rmcp::ServerHandler for TestServer {
     fn get_info(&self) -> rmcp::model::ServerInfo {
-        rmcp::model::ServerInfo {
-            capabilities: rmcp::model::ServerCapabilities::builder()
+        rmcp::model::ServerInfo::new(
+            rmcp::model::ServerCapabilities::builder()
                 .enable_tools()
                 .build(),
-            ..Default::default()
-        }
+        )
     }
 }
 

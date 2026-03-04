@@ -22,6 +22,7 @@ futures = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 schemars = { workspace = true }
+erased-serde = { workspace = true }
 derive_more = { workspace = true }
 derive-getters = { workspace = true }
 derive_setters = { workspace = true }
@@ -63,6 +64,12 @@ reqwest = { workspace = true, optional = true }
 http = { workspace = true, optional = true }
 bytes = { workspace = true, optional = true }
 
+# Code recovery / emission (optional)
+proc-macro2 = { workspace = true, optional = true }
+quote = { workspace = true, optional = true }
+prettyplease = { workspace = true, optional = true }
+syn = { workspace = true, optional = true }
+
 # Re-export derive macro
 elicitation_derive = { workspace = true }
 elicitation_macros = { workspace = true }
@@ -81,6 +88,8 @@ full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
+# Enable serde derives on elicitation's own types + erased-serde registry
+serde = []
 # Enable serde_json::Value elicitation
 serde_json = []
 # Enable chrono datetime elicitation
@@ -99,6 +108,9 @@ url = ["dep:url"]
 regex = ["dep:regex"]
 # Enable reqwest HTTP client elicitation
 reqwest = ["dep:reqwest", "dep:http", "dep:bytes", "url"]
+
+# Code recovery — emit verified workflows as Rust source
+emit = ["dep:proc-macro2", "dep:quote", "dep:prettyplease", "dep:syn"]
 
 # Formal verification support
 verification = [] # Core Contract trait only

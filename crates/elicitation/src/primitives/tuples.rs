@@ -80,6 +80,7 @@ macro_rules! count {
 
 // Unit type () - the 0-tuple
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum UnitStyle {
     #[default]
     Default,

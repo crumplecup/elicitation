@@ -96,12 +96,10 @@ impl Elicitation for TimestampGenerationMode {
         );
 
         let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_select().into(),
-                arguments: Some(params),
-                task: None,
-            })
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
             .await?;
 
         let value = mcp::extract_value(result)?;
@@ -215,12 +213,10 @@ impl Elicitation for Timestamp {
                 let prompt = "Enter ISO 8601 timestamp (e.g., \"2024-07-11T15:30:00Z\"):";
                 let params = mcp::text_params(prompt);
                 let result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                            .with_arguments(params),
+                    )
                     .await?;
 
                 let value = mcp::extract_value(result)?;
@@ -322,12 +318,10 @@ impl Elicitation for Zoned {
                 let prompt = "Enter ISO 8601 datetime with timezone (e.g., \"2024-07-11T15:30:00-05[America/New_York]\"):";
                 let params = mcp::text_params(prompt);
                 let result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                            .with_arguments(params),
+                    )
                     .await?;
 
                 let value = mcp::extract_value(result)?;
@@ -349,12 +343,10 @@ impl Elicitation for Zoned {
                 let tz_prompt = "Enter IANA timezone (e.g., \"America/New_York\" or \"UTC\"):";
                 let tz_params = mcp::text_params(tz_prompt);
                 let tz_result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(tz_params),
-                        task: None,
-                    })
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                            .with_arguments(tz_params),
+                    )
                     .await?;
 
                 let tz_value = mcp::extract_value(tz_result)?;
@@ -434,12 +426,10 @@ impl Elicitation for CivilDateTime {
                 let prompt = "Enter datetime (e.g., \"2024-07-11T15:30:00\"):";
                 let params = mcp::text_params(prompt);
                 let result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                            .with_arguments(params),
+                    )
                     .await?;
 
                 let value = mcp::extract_value(result)?;

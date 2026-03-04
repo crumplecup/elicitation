@@ -798,14 +798,17 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
 name = "elicit_reqwest"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "bytes",
+ "derive_builder",
  "derive_more",
  "elicitation",
  "elicitation_derive",
  "futures",
  "http",
+ "proc-macro2",
+ "quote",
  "reqwest",
  "rmcp",
  "schemars",
@@ -817,8 +820,57 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_serde"
+version = "0.8.4"
+dependencies = [
+ "elicitation",
+ "erased-serde",
+ "futures",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "elicit_serde_json"
+version = "0.8.4"
+dependencies = [
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "proc-macro2",
+ "quote",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "elicit_server"
+version = "0.8.4"
+dependencies = [
+ "elicit_reqwest",
+ "elicit_serde_json",
+ "elicitation",
+ "futures",
+ "proc-macro2",
+ "quote",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "elicitation"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "anodized",
  "anyhow",
@@ -835,11 +887,15 @@ dependencies = [
  "derive_setters",
  "elicitation_derive",
  "elicitation_macros",
+ "erased-serde",
  "futures",
  "http",
  "inventory",
  "jiff",
  "paste",
+ "prettyplease",
+ "proc-macro2",
+ "quote",
  "rand 0.10.0",
  "rand_chacha 0.10.0",
  "regex",
@@ -849,6 +905,7 @@ dependencies = [
  "serde",
  "serde_json",
  "shellexpand",
+ "syn",
  "time",
  "tokio",
  "tokio-test",
@@ -860,7 +917,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_creusot"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "chrono",
  "creusot-std",
@@ -875,7 +932,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_derive"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "async-trait",
  "chrono",
@@ -887,6 +944,7 @@ dependencies = [
  "quote",
  "rmcp",
  "schemars",
+ "serde",
  "serde_json",
  "syn",
  "time",
@@ -898,7 +956,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_kani"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "chrono",
  "elicitation",
@@ -912,7 +970,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_macros"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -921,7 +979,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_rand"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "chrono",
  "csv",
@@ -951,6 +1009,27 @@ name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
+
+[[package]]
+name = "erased-serde"
+version = "0.4.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "89e8918065695684b2b0702da20382d5ae6065cf3327bc2d6436bd49a71ce9f3"
+dependencies = [
+ "serde",
+ "serde_core",
+ "typeid",
+]
+
+[[package]]
+name = "errno"
+version = "0.3.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
+dependencies = [
+ "libc",
+ "windows-sys 0.61.2",
+]
 
 [[package]]
 name = "find-msvc-tools"
@@ -1608,6 +1687,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "11d3d7f243d5c5a8b9bb5d6dd2b1602c0cb0b9db1621bafc7ed66e35ff9fe092"
 
 [[package]]
+name = "lock_api"
+version = "0.4.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "224399e74b87b5f3557511d98dff8b14089b3dadafcab6bb93eab67d3aace965"
+dependencies = [
+ "scopeguard",
+]
+
+[[package]]
 name = "log"
 version = "0.4.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1932,6 +2020,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "parking_lot"
+version = "0.12.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "93857453250e3077bd71ff98b6a65ea6621a19bb0f559a85248955ac12c45a1a"
+dependencies = [
+ "lock_api",
+ "parking_lot_core",
+]
+
+[[package]]
+name = "parking_lot_core"
+version = "0.9.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2621685985a2ebf1c516881c026032ac7deafcda1a2c9b7850dc81e3dfcb64c1"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "redox_syscall",
+ "smallvec",
+ "windows-link",
+]
+
+[[package]]
 name = "paste"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2211,6 +2322,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "redox_syscall"
+version = "0.5.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed2bf2547551a7053d6fdfafda3f938979645c44812fbfcda098faae3f1a362d"
+dependencies = [
+ "bitflags",
+]
+
+[[package]]
 name = "redox_users"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2331,9 +2451,9 @@ dependencies = [
 
 [[package]]
 name = "rmcp"
-version = "0.17.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a0ce46f9101dc911f07e1468084c057839d15b08040d110820c5513312ef56a"
+checksum = "d2cb14cb9278a12eae884c9f3c0cfeca2cc28f361211206424a1d7abed95f090"
 dependencies = [
  "async-trait",
  "base64",
@@ -2355,9 +2475,9 @@ dependencies = [
 
 [[package]]
 name = "rmcp-macros"
-version = "0.17.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "abad6f5f46e220e3bda2fc90fd1ad64c1c2a2bd716d52c845eb5c9c64cda7542"
+checksum = "6a02ea81d9482b07e1fe156ac7cf98b6823d51fb84531936a5e1cbb4eec31ad5"
 dependencies = [
  "darling 0.23.0",
  "proc-macro2",
@@ -2513,6 +2633,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "scopeguard"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
+
+[[package]]
 name = "security-framework"
 version = "3.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2618,6 +2744,16 @@ name = "shlex"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
+
+[[package]]
+name = "signal-hook-registry"
+version = "1.4.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c4db69cba1110affc0e9f7bcd48bbf87b3f4fc7c61fc9155afd4c469eb3d6c1b"
+dependencies = [
+ "errno",
+ "libc",
+]
 
 [[package]]
 name = "slab"
@@ -2835,7 +2971,9 @@ dependencies = [
  "bytes",
  "libc",
  "mio",
+ "parking_lot",
  "pin-project-lite",
+ "signal-hook-registry",
  "socket2",
  "tokio-macros",
  "windows-sys 0.61.2",
@@ -3008,6 +3146,12 @@ name = "try-lock"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
+
+[[package]]
+name = "typeid"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc7d623258602320d5c55d1bc22793b57daff0ec7efc270ea7d55ce1d5f5471c"
 
 [[package]]
 name = "unicode-ident"

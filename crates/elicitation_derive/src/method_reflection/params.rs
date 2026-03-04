@@ -79,6 +79,8 @@ pub fn generate_param_struct(
                 ::std::clone::Clone,
                 ::elicitation::Elicit,
                 ::schemars::JsonSchema,
+                ::serde::Serialize,
+                ::serde::Deserialize,
             )]
             pub struct #struct_ident {
                 #(#fields),*
@@ -92,6 +94,8 @@ pub fn generate_param_struct(
                 ::std::clone::Clone,
                 ::elicitation::Elicit,
                 ::schemars::JsonSchema,
+                ::serde::Serialize,
+                ::serde::Deserialize,
             )]
             pub struct #struct_ident<#generic_params>
             #where_clause

@@ -146,6 +146,7 @@ pub trait Survey: Prompt {
 
 /// Metadata for a single survey field.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct FieldInfo {
     /// Field name in the struct.
     pub name: &'static str,
@@ -153,6 +154,38 @@ pub struct FieldInfo {
     pub prompt: Option<&'static str>,
     /// Type name for dispatching elicitation.
     pub type_name: &'static str,
+}
+
+/// Serde deserialization helper for [`FieldInfo`].
+///
+/// Uses owned `String` fields to avoid `'de: 'static` constraints that arise
+/// from `&'static str`. Strings are leaked to produce `'static` references.
+#[cfg(feature = "serde")]
+#[derive(serde::Deserialize)]
+struct FieldInfoDe {
+    name: String,
+    prompt: Option<String>,
+    type_name: String,
+}
+
+#[cfg(feature = "serde")]
+impl From<FieldInfoDe> for FieldInfo {
+    fn from(de: FieldInfoDe) -> Self {
+        Self {
+            name: Box::leak(de.name.into_boxed_str()),
+            prompt: de
+                .prompt
+                .map(|s| Box::leak(s.into_boxed_str()) as &'static str),
+            type_name: Box::leak(de.type_name.into_boxed_str()),
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for FieldInfo {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        FieldInfoDe::deserialize(deserializer).map(Into::into)
+    }
 }
 
 /// Permission-granting interaction with policy choices.

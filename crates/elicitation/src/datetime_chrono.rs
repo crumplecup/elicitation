@@ -97,12 +97,10 @@ impl Elicitation for DateTimeUtcGenerationMode {
         );
 
         let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_select().into(),
-                arguments: Some(params),
-                task: None,
-            })
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
             .await?;
 
         let value = mcp::extract_value(result)?;
@@ -252,12 +250,10 @@ impl Elicitation for NaiveDateTimeGenerationMode {
         );
 
         let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_select().into(),
-                arguments: Some(params),
-                task: None,
-            })
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
             .await?;
 
         let value = mcp::extract_value(result)?;
@@ -374,12 +370,10 @@ impl Elicitation for DateTime<Utc> {
                 let prompt = "Enter ISO 8601 datetime (e.g., \"2024-07-11T15:30:00Z\"):";
                 let params = mcp::text_params(prompt);
                 let result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                            .with_arguments(params),
+                    )
                     .await?;
 
                 let value = mcp::extract_value(result)?;
@@ -478,12 +472,10 @@ impl Elicitation for DateTime<FixedOffset> {
                     "Enter ISO 8601 datetime with offset (e.g., \"2024-07-11T15:30:00+05:00\"):";
                 let params = mcp::text_params(prompt);
                 let result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                            .with_arguments(params),
+                    )
                     .await?;
 
                 let value = mcp::extract_value(result)?;
@@ -505,12 +497,10 @@ impl Elicitation for DateTime<FixedOffset> {
                 let offset_prompt = "Enter timezone offset in hours (e.g., +5 or -8):";
                 let offset_params = mcp::number_params(offset_prompt, -12, 14);
                 let offset_result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_number().into(),
-                        arguments: Some(offset_params),
-                        task: None,
-                    })
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
+                            .with_arguments(offset_params),
+                    )
                     .await?;
 
                 let offset_value = mcp::extract_value(offset_result)?;
@@ -588,12 +578,10 @@ impl Elicitation for NaiveDateTime {
                 let prompt = "Enter datetime (e.g., \"2024-07-11T15:30:00\"):";
                 let params = mcp::text_params(prompt);
                 let result = communicator
-                    .call_tool(rmcp::model::CallToolRequestParams {
-                        meta: None,
-                        name: mcp::tool_names::elicit_text().into(),
-                        arguments: Some(params),
-                        task: None,
-                    })
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                            .with_arguments(params),
+                    )
                     .await?;
 
                 let value = mcp::extract_value(result)?;
