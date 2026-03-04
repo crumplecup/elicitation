@@ -1,0 +1,31 @@
+[package]
+name = "elicit_uuid"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled Uuid newtype — JsonSchema-compatible wrapper around uuid::Uuid for MCP tool integration"
+keywords = ["mcp", "uuid", "elicitation", "jsonschema", "tools"]
+categories = ["development-tools"]
+
+[dependencies]
+elicitation = { workspace = true, features = ["uuid"] }
+elicitation_derive.workspace = true
+uuid = { workspace = true }
+# uuid1 feature wires up JsonSchema for uuid::Uuid
+schemars = { workspace = true, features = ["uuid1"] }
+hex.workspace = true
+serde = { workspace = true }
+rmcp.workspace = true
+tracing.workspace = true
+futures.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

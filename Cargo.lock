@@ -870,6 +870,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_uuid"
+version = "0.8.4"
+dependencies = [
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "hex",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "elicitation"
 version = "0.8.4"
 dependencies = [
@@ -1245,6 +1261,12 @@ name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
+
+[[package]]
+name = "hex"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
 name = "home"
@@ -2619,6 +2641,7 @@ dependencies = [
  "schemars_derive",
  "serde",
  "serde_json",
+ "uuid",
 ]
 
 [[package]]
