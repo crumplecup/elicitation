@@ -42,6 +42,7 @@ rmcp.workspace = true
 
 # Derive utilities (needed by elicit_newtype! macro)
 derive_more.workspace = true
+derive_builder.workspace = true
 
 # Tracing (needed by #[derive(Elicit)])
 tracing.workspace = true

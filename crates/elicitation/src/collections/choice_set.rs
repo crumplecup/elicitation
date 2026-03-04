@@ -113,8 +113,10 @@ where
         let params = mcp::select_params(prompt_text, &labels);
 
         let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                .with_arguments(params))
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
             .await?;
 
         let value = mcp::extract_value(result)?;

@@ -155,8 +155,10 @@ impl Elicitation for IoErrorGenerationMode {
         );
 
         let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                .with_arguments(params))
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
             .await?;
 
         let value = mcp::extract_value(result)?;
@@ -327,8 +329,10 @@ mod json_error {
             let params = mcp::select_params(Self::prompt().unwrap_or("Select an option:"), &labels);
 
             let result = communicator
-                .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                .with_arguments(params))
+                .call_tool(
+                    rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                        .with_arguments(params),
+                )
                 .await?;
 
             let value = mcp::extract_value(result)?;

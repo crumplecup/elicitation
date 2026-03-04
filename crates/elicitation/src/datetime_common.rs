@@ -68,8 +68,10 @@ impl Elicitation for DateTimeInputMethod {
 
         let params = mcp::select_params(prompt, &Self::labels());
         let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                .with_arguments(params))
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
             .await?;
 
         let value = mcp::extract_value(result)?;
@@ -106,8 +108,10 @@ impl DateTimeComponents {
         // Year
         let year_params = mcp::number_params("Enter year:", 1970, 2100);
         let year_result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                .with_arguments(year_params))
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
+                    .with_arguments(year_params),
+            )
             .await?;
         let year_value = mcp::extract_value(year_result)?;
         let year = mcp::parse_integer::<i64>(year_value)? as i32;
@@ -115,8 +119,10 @@ impl DateTimeComponents {
         // Month
         let month_params = mcp::number_params("Enter month (1-12):", 1, 12);
         let month_result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                .with_arguments(month_params))
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
+                    .with_arguments(month_params),
+            )
             .await?;
         let month_value = mcp::extract_value(month_result)?;
         let month = mcp::parse_integer::<i64>(month_value)? as u8;
@@ -124,8 +130,10 @@ impl DateTimeComponents {
         // Day
         let day_params = mcp::number_params("Enter day (1-31):", 1, 31);
         let day_result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                .with_arguments(day_params))
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
+                    .with_arguments(day_params),
+            )
             .await?;
         let day_value = mcp::extract_value(day_result)?;
         let day = mcp::parse_integer::<i64>(day_value)? as u8;
@@ -133,8 +141,10 @@ impl DateTimeComponents {
         // Hour
         let hour_params = mcp::number_params("Enter hour (0-23):", 0, 23);
         let hour_result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                .with_arguments(hour_params))
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
+                    .with_arguments(hour_params),
+            )
             .await?;
         let hour_value = mcp::extract_value(hour_result)?;
         let hour = mcp::parse_integer::<i64>(hour_value)? as u8;
@@ -142,8 +152,10 @@ impl DateTimeComponents {
         // Minute
         let minute_params = mcp::number_params("Enter minute (0-59):", 0, 59);
         let minute_result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                .with_arguments(minute_params))
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
+                    .with_arguments(minute_params),
+            )
             .await?;
         let minute_value = mcp::extract_value(minute_result)?;
         let minute = mcp::parse_integer::<i64>(minute_value)? as u8;
@@ -151,8 +163,10 @@ impl DateTimeComponents {
         // Second
         let second_params = mcp::number_params("Enter second (0-59):", 0, 59);
         let second_result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
-                .with_arguments(second_params))
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_number())
+                    .with_arguments(second_params),
+            )
             .await?;
         let second_value = mcp::extract_value(second_result)?;
         let second = mcp::parse_integer::<i64>(second_value)? as u8;

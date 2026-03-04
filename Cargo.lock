@@ -801,6 +801,7 @@ name = "elicit_reqwest"
 version = "0.8.4"
 dependencies = [
  "bytes",
+ "derive_builder",
  "derive_more",
  "elicitation",
  "elicitation_derive",

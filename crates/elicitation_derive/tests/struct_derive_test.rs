@@ -247,6 +247,8 @@ fn test_newtype_construction() {
     let p = Point(1.0, 2.5);
     assert_eq!(p.0, 1.0);
     assert_eq!(p.1, 2.5);
+    let t = TagList(vec!["a".to_string(), "b".to_string()]);
+    assert_eq!(t.0.len(), 2);
 }
 
 // ── Unit structs ──────────────────────────────────────────────────────────────

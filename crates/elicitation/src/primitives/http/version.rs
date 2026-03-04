@@ -56,8 +56,10 @@ impl Elicitation for reqwest::Version {
         );
 
         let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
-                .with_arguments(params))
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
             .await?;
 
         let value = mcp::extract_value(result)?;

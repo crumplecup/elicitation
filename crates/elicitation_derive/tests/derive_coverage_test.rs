@@ -176,7 +176,10 @@ fn plain_struct_metadata_type_name() {
 
 #[test]
 fn prompted_struct_prompt() {
-    assert_eq!(<PromptedStruct as Prompt>::prompt(), Some("Configure the server:"));
+    assert_eq!(
+        <PromptedStruct as Prompt>::prompt(),
+        Some("Configure the server:")
+    );
 }
 
 #[test]
@@ -247,7 +250,10 @@ fn multi_field_tuple_fields() {
 
 #[test]
 fn prompted_tuple_prompt() {
-    assert_eq!(<PromptedTuple as Prompt>::prompt(), Some("Enter a comma-separated list:"));
+    assert_eq!(
+        <PromptedTuple as Prompt>::prompt(),
+        Some("Enter a comma-separated list:")
+    );
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -271,7 +277,10 @@ fn unit_no_prompt_is_survey_pattern() {
 
 #[test]
 fn unit_with_prompt_has_prompt() {
-    assert_eq!(<UnitWithPrompt as Prompt>::prompt(), Some("Confirm action:"));
+    assert_eq!(
+        <UnitWithPrompt as Prompt>::prompt(),
+        Some("Confirm action:")
+    );
 }
 
 #[test]
@@ -332,7 +341,10 @@ fn unit_enum_metadata_type_name() {
 
 #[test]
 fn prompted_enum_prompt() {
-    assert_eq!(<PromptedEnum as Prompt>::prompt(), Some("Choose a direction:"));
+    assert_eq!(
+        <PromptedEnum as Prompt>::prompt(),
+        Some("Choose a direction:")
+    );
 }
 
 #[test]
@@ -421,6 +433,48 @@ fn outer_enum_unit_from_label() {
     assert_eq!(Outer::from_label("Leaf"), Some(Outer::Leaf));
     assert_eq!(Outer::from_label("Nested"), None);
     assert_eq!(Outer::from_label("Config"), None);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Construction tests (ensures fields are read, preventing dead_code warnings)
+// ═════════════════════════════════════════════════════════════════════════════
+
+#[test]
+fn construct_named_structs() {
+    let s = PlainStruct { name: "Alice".to_string(), age: 30 };
+    assert_eq!(s.name, "Alice");
+    assert_eq!(s.age, 30);
+
+    let s = PromptedStruct { host: "localhost".to_string(), port: 8080 };
+    assert_eq!(s.host, "localhost");
+    assert_eq!(s.port, 8080);
+
+    let s = SkipStruct { visible: "yes".to_string(), internal_id: 42 };
+    assert_eq!(s.visible, "yes");
+    assert_eq!(s.internal_id, 42);
+
+    let inner = PlainStruct { name: "inner".to_string(), age: 1 };
+    let s = NestedNamedStruct { label: "outer".to_string(), inner };
+    assert_eq!(s.label, "outer");
+    assert_eq!(s.inner.age, 1);
+
+    let s = OptionFieldStruct { required: "yes".to_string(), optional: None };
+    assert_eq!(s.required, "yes");
+    assert!(s.optional.is_none());
+}
+
+#[test]
+fn construct_tuple_structs() {
+    let n = Newtype("hello".to_string());
+    assert_eq!(n.0, "hello");
+
+    let m = MultiField(1.0, 2.0, 3.0);
+    assert_eq!(m.0, 1.0);
+    assert_eq!(m.1, 2.0);
+    assert_eq!(m.2, 3.0);
+
+    let p = PromptedTuple(vec!["a".to_string()]);
+    assert_eq!(p.0.len(), 1);
 }
 
 // ═════════════════════════════════════════════════════════════════════════════

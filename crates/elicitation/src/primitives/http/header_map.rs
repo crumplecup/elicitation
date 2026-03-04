@@ -30,8 +30,10 @@ impl Elicitation for HeaderMap {
         let params = mcp::text_params(Self::prompt().unwrap_or("Enter HTTP headers:"));
 
         let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
-                .with_arguments(params))
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                    .with_arguments(params),
+            )
             .await?;
 
         let value = mcp::extract_value(result)?;

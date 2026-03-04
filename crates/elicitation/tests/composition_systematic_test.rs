@@ -34,10 +34,7 @@ impl RegularOnlyServer {
 
 impl ServerHandler for RegularOnlyServer {
     fn get_info(&self) -> ServerInfo {
-        ServerInfo {
-            capabilities: ServerCapabilities::builder().enable_tools().build(),
-            ..Default::default()
-        }
+        ServerInfo::new(ServerCapabilities::builder().enable_tools().build())
     }
 }
 
@@ -71,10 +68,7 @@ impl ElicitOnlyServer {}
 
 impl ServerHandler for ElicitOnlyServer {
     fn get_info(&self) -> ServerInfo {
-        ServerInfo {
-            capabilities: ServerCapabilities::builder().enable_tools().build(),
-            ..Default::default()
-        }
+        ServerInfo::new(ServerCapabilities::builder().enable_tools().build())
     }
 }
 
@@ -125,10 +119,7 @@ impl ComposedServer {
 
 impl ServerHandler for ComposedServer {
     fn get_info(&self) -> ServerInfo {
-        ServerInfo {
-            capabilities: ServerCapabilities::builder().enable_tools().build(),
-            ..Default::default()
-        }
+        ServerInfo::new(ServerCapabilities::builder().enable_tools().build())
     }
 }
 
@@ -181,10 +172,7 @@ impl MultiToolServer {
 
 impl ServerHandler for MultiToolServer {
     fn get_info(&self) -> ServerInfo {
-        ServerInfo {
-            capabilities: ServerCapabilities::builder().enable_tools().build(),
-            ..Default::default()
-        }
+        ServerInfo::new(ServerCapabilities::builder().enable_tools().build())
     }
 }
 

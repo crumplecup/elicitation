@@ -190,22 +190,30 @@ struct StatusSummaryParams {
     status: u16,
 }
 
-#[derive(Debug, Deserialize, JsonSchema)]
-struct BuildRequestParams {
+/// Parameters for [`WorkflowPlugin::build_request`].
+///
+/// Use [`BuildRequestParamsBuilder`] to construct this type.
+#[derive(Debug, Deserialize, JsonSchema, derive_builder::Builder)]
+#[builder(setter(into))]
+pub struct BuildRequestParams {
     /// HTTP method (e.g. `"GET"`, `"POST"`).
-    method: String,
+    pub method: String,
     /// Destination URL.
-    url: String,
+    pub url: String,
     /// Authorization type.
-    auth_type: AuthType,
+    pub auth_type: AuthType,
     /// Credential for the chosen auth type. Required unless auth_type is `none`.
-    token: Option<String>,
+    #[builder(setter(into, strip_option), default)]
+    pub token: Option<String>,
     /// Optional body for methods that carry one.
-    body: Option<String>,
+    #[builder(setter(into, strip_option), default)]
+    pub body: Option<String>,
     /// Content-Type for the body (required when body is present).
-    content_type: Option<ContentType>,
+    #[builder(setter(into, strip_option), default)]
+    pub content_type: Option<ContentType>,
     /// Optional timeout in seconds.
-    timeout_secs: Option<f64>,
+    #[builder(setter(into, strip_option), default)]
+    pub timeout_secs: Option<f64>,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -581,14 +589,12 @@ impl WorkflowPlugin {
     /// Build and send an HTTP request with full control over method, auth, body.
     pub async fn build_request(
         &self,
-        method: &str,
-        url: &str,
-        auth_type: AuthType,
-        token: Option<&str>,
-        body: Option<&str>,
-        content_type: Option<ContentType>,
-        timeout: Duration,
+        params: BuildRequestParams,
     ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        let method = params.method.as_str();
+        let url = params.url.as_str();
+        let timeout = Duration::from_secs_f64(params.timeout_secs.unwrap_or(30.0));
+
         let parsed_url =
             url::Url::parse(url).map_err(|e| format!("UrlValid not established: '{url}' — {e}"))?;
         let _url_proof: Established<UrlValid> = Established::assert();
@@ -600,9 +606,9 @@ impl WorkflowPlugin {
             .client
             .request(method_val, parsed_url.as_str())
             .timeout(timeout);
-        let (rb, _auth_proof) = apply_auth(rb, &auth_type, token);
+        let (rb, _auth_proof) = apply_auth(rb, &params.auth_type, params.token.as_deref());
 
-        let rb = if let (Some(b), Some(ct)) = (body, &content_type) {
+        let rb = if let (Some(b), Some(ct)) = (params.body.as_deref(), &params.content_type) {
             rb.header("Content-Type", ct.as_mime()).body(b.to_string())
         } else {
             rb
@@ -1342,45 +1348,53 @@ impl EmitCode for BuildRequestParams {
     fn emit_code(&self) -> TokenStream {
         let method = &self.method;
         let url = &self.url;
-        let token_expr = match &self.token {
-            Some(t) => quote::quote! { Some(#t) },
-            None => quote::quote! { None::<&str> },
-        };
-        let body_expr = match &self.body {
-            Some(b) => quote::quote! { Some(#b) },
-            None => quote::quote! { None::<&str> },
-        };
-        let timeout = self.timeout_secs.unwrap_or(30.0);
         let auth_expr = match self.auth_type {
             AuthType::Bearer => quote::quote! { elicit_reqwest::AuthType::Bearer },
             AuthType::Basic => quote::quote! { elicit_reqwest::AuthType::Basic },
             AuthType::ApiKey => quote::quote! { elicit_reqwest::AuthType::ApiKey },
             AuthType::None => quote::quote! { elicit_reqwest::AuthType::None },
         };
-        let ct_expr = match &self.content_type {
-            Some(ContentType::Json) => quote::quote! { Some(elicit_reqwest::ContentType::Json) },
+        let token_stmt = match &self.token {
+            Some(t) => quote::quote! { .token(#t) },
+            None => quote::quote! {},
+        };
+        let body_stmt = match &self.body {
+            Some(b) => quote::quote! { .body(#b) },
+            None => quote::quote! {},
+        };
+        let timeout_stmt = match self.timeout_secs {
+            Some(t) => quote::quote! { .timeout_secs(#t) },
+            None => quote::quote! {},
+        };
+        let ct_stmt = match &self.content_type {
+            Some(ContentType::Json) => {
+                quote::quote! { .content_type(elicit_reqwest::ContentType::Json) }
+            }
             Some(ContentType::FormUrlEncoded) => {
-                quote::quote! { Some(elicit_reqwest::ContentType::FormUrlEncoded) }
+                quote::quote! { .content_type(elicit_reqwest::ContentType::FormUrlEncoded) }
             }
             Some(ContentType::PlainText) => {
-                quote::quote! { Some(elicit_reqwest::ContentType::PlainText) }
+                quote::quote! { .content_type(elicit_reqwest::ContentType::PlainText) }
             }
             Some(ContentType::OctetStream) => {
-                quote::quote! { Some(elicit_reqwest::ContentType::OctetStream) }
+                quote::quote! { .content_type(elicit_reqwest::ContentType::OctetStream) }
             }
-            None => quote::quote! { None::<elicit_reqwest::ContentType> },
+            None => quote::quote! {},
         };
         quote::quote! {
             let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
-            let (_resp, _proof) = _plugin.build_request(
-                #method,
-                #url,
-                #auth_expr,
-                #token_expr,
-                #body_expr,
-                #ct_expr,
-                std::time::Duration::from_secs_f64(#timeout),
-            ).await.map_err(|e| format!("Request failed: {}", e))?;
+            let _params = elicit_reqwest::BuildRequestParamsBuilder::default()
+                .method(#method)
+                .url(#url)
+                .auth_type(#auth_expr)
+                #token_stmt
+                #body_stmt
+                #ct_stmt
+                #timeout_stmt
+                .build()
+                .map_err(|e| format!("BuildRequestParams build error: {}", e))?;
+            let (_resp, _proof) = _plugin.build_request(_params)
+                .await.map_err(|e| format!("Request failed: {}", e))?;
             println!("Status: {}", _resp.status);
             println!("{}", _resp.body);
         }

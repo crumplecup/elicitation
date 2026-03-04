@@ -50,10 +50,7 @@ impl EnumTestServer {
 
 impl ServerHandler for EnumTestServer {
     fn get_info(&self) -> ServerInfo {
-        ServerInfo {
-            capabilities: ServerCapabilities::builder().enable_tools().build(),
-            ..Default::default()
-        }
+        ServerInfo::new(ServerCapabilities::builder().enable_tools().build())
     }
 }
 
