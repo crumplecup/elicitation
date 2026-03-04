@@ -63,32 +63,13 @@ impl ElicitCommunicator for ElicitServer {
         tracing::debug!("Sending prompt to client via create_message");
 
         // Create message request
-        let params = rmcp::model::CreateMessageRequestParams {
-            meta: None,
-            task: None,
-            messages: vec![rmcp::model::SamplingMessage {
-                role: rmcp::model::Role::User,
-                content: rmcp::model::SamplingContent::Single(
-                    rmcp::model::SamplingMessageContent::Text(rmcp::model::RawTextContent {
-                        text: prompt.to_string(),
-                        meta: None,
-                    }),
-                ),
-                meta: None,
-            }],
-            model_preferences: None,
-            system_prompt: Some(
-                "You are helping elicit structured data. Provide clear, concise responses."
-                    .to_string(),
-            ),
-            include_context: None,
-            temperature: None,
-            max_tokens: 1000,
-            stop_sequences: None,
-            metadata: None,
-            tools: None,
-            tool_choice: None,
-        };
+        let params = rmcp::model::CreateMessageRequestParams::new(
+            vec![rmcp::model::SamplingMessage::user_text(prompt)],
+            1000,
+        )
+        .with_system_prompt(
+            "You are helping elicit structured data. Provide clear, concise responses.",
+        );
 
         // Send request to client
         let result = self.peer.create_message(params).await.map_err(|e| {

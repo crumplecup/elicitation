@@ -78,12 +78,8 @@ impl Elicitation for JsonType {
 
         let params = mcp::select_params(prompt, &Self::labels());
         let result = communicator
-            .call_tool(rmcp::model::CallToolRequestParams {
-                meta: None,
-                name: mcp::tool_names::elicit_select().into(),
-                arguments: Some(params),
-                task: None,
-            })
+            .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                .with_arguments(params))
             .await?;
 
         let value = mcp::extract_value(result)?;
@@ -168,12 +164,8 @@ async fn elicit_number<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<
 
     let params = mcp::text_params(prompt);
     let result = communicator
-        .call_tool(rmcp::model::CallToolRequestParams {
-            meta: None,
-            name: mcp::tool_names::elicit_text().into(),
-            arguments: Some(params),
-            task: None,
-        })
+        .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                .with_arguments(params))
         .await?;
 
     let value = mcp::extract_value(result)?;
@@ -211,12 +203,8 @@ fn elicit_array<'a, C: ElicitCommunicator + 'a>(
             // Ask if user wants to add an item
             let params = mcp::bool_params(prompt);
             let result = communicator
-                .call_tool(rmcp::model::CallToolRequestParams {
-                    meta: None,
-                    name: mcp::tool_names::elicit_bool().into(),
-                    arguments: Some(params),
-                    task: None,
-                })
+                .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_bool())
+                .with_arguments(params))
                 .await?;
 
             let value = mcp::extract_value(result)?;
@@ -258,12 +246,8 @@ fn elicit_object<'a, C: ElicitCommunicator + 'a>(
             // Ask if user wants to add a field
             let params = mcp::bool_params(prompt);
             let result = communicator
-                .call_tool(rmcp::model::CallToolRequestParams {
-                    meta: None,
-                    name: mcp::tool_names::elicit_bool().into(),
-                    arguments: Some(params),
-                    task: None,
-                })
+                .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_bool())
+                .with_arguments(params))
                 .await?;
 
             let value = mcp::extract_value(result)?;
@@ -278,12 +262,8 @@ fn elicit_object<'a, C: ElicitCommunicator + 'a>(
             let key_prompt = "Enter field name:";
             let key_params = mcp::text_params(key_prompt);
             let key_result = communicator
-                .call_tool(rmcp::model::CallToolRequestParams {
-                    meta: None,
-                    name: mcp::tool_names::elicit_text().into(),
-                    arguments: Some(key_params),
-                    task: None,
-                })
+                .call_tool(rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                .with_arguments(key_params))
                 .await?;
 
             let key_value = mcp::extract_value(key_result)?;

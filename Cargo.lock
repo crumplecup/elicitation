@@ -798,7 +798,7 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
 name = "elicit_reqwest"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "bytes",
  "derive_more",
@@ -820,7 +820,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_serde"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "elicitation",
  "erased-serde",
@@ -834,7 +834,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_serde_json"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -850,7 +850,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_server"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "elicit_reqwest",
  "elicit_serde_json",
@@ -869,7 +869,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "anodized",
  "anyhow",
@@ -916,7 +916,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_creusot"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "chrono",
  "creusot-std",
@@ -931,7 +931,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_derive"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "async-trait",
  "chrono",
@@ -955,7 +955,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_kani"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "chrono",
  "elicitation",
@@ -969,7 +969,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_macros"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -978,7 +978,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_rand"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "chrono",
  "csv",
@@ -1027,7 +1027,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -2450,9 +2450,9 @@ dependencies = [
 
 [[package]]
 name = "rmcp"
-version = "0.17.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a0ce46f9101dc911f07e1468084c057839d15b08040d110820c5513312ef56a"
+checksum = "d2cb14cb9278a12eae884c9f3c0cfeca2cc28f361211206424a1d7abed95f090"
 dependencies = [
  "async-trait",
  "base64",
@@ -2474,9 +2474,9 @@ dependencies = [
 
 [[package]]
 name = "rmcp-macros"
-version = "0.17.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "abad6f5f46e220e3bda2fc90fd1ad64c1c2a2bd716d52c845eb5c9c64cda7542"
+checksum = "6a02ea81d9482b07e1fe156ac7cf98b6823d51fb84531936a5e1cbb4eec31ad5"
 dependencies = [
  "darling 0.23.0",
  "proc-macro2",
