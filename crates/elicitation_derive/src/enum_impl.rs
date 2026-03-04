@@ -477,8 +477,6 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
     quote! {
         /// Style enum for this type (default-only for now).
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-        #[allow(unexpected_cfgs)]
-        #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
         pub enum #style_name {
             /// Default elicitation style.
             #[default]
