@@ -441,24 +441,42 @@ fn outer_enum_unit_from_label() {
 
 #[test]
 fn construct_named_structs() {
-    let s = PlainStruct { name: "Alice".to_string(), age: 30 };
+    let s = PlainStruct {
+        name: "Alice".to_string(),
+        age: 30,
+    };
     assert_eq!(s.name, "Alice");
     assert_eq!(s.age, 30);
 
-    let s = PromptedStruct { host: "localhost".to_string(), port: 8080 };
+    let s = PromptedStruct {
+        host: "localhost".to_string(),
+        port: 8080,
+    };
     assert_eq!(s.host, "localhost");
     assert_eq!(s.port, 8080);
 
-    let s = SkipStruct { visible: "yes".to_string(), internal_id: 42 };
+    let s = SkipStruct {
+        visible: "yes".to_string(),
+        internal_id: 42,
+    };
     assert_eq!(s.visible, "yes");
     assert_eq!(s.internal_id, 42);
 
-    let inner = PlainStruct { name: "inner".to_string(), age: 1 };
-    let s = NestedNamedStruct { label: "outer".to_string(), inner };
+    let inner = PlainStruct {
+        name: "inner".to_string(),
+        age: 1,
+    };
+    let s = NestedNamedStruct {
+        label: "outer".to_string(),
+        inner,
+    };
     assert_eq!(s.label, "outer");
     assert_eq!(s.inner.age, 1);
 
-    let s = OptionFieldStruct { required: "yes".to_string(), optional: None };
+    let s = OptionFieldStruct {
+        required: "yes".to_string(),
+        optional: None,
+    };
     assert_eq!(s.required, "yes");
     assert!(s.optional.is_none());
 }
