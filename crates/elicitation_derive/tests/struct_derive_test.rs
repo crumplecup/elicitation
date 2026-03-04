@@ -248,3 +248,30 @@ fn test_newtype_construction() {
     assert_eq!(p.0, 1.0);
     assert_eq!(p.1, 2.5);
 }
+
+// ── Unit structs ──────────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Copy, Elicit)]
+struct Parse;
+
+#[derive(Debug, Clone, Copy, Elicit)]
+#[prompt("Validate the input:")]
+struct Validate;
+
+#[test]
+fn test_unit_struct_prompt() {
+    assert_eq!(<Parse as Prompt>::prompt(), None);
+    assert_eq!(<Validate as Prompt>::prompt(), Some("Validate the input:"));
+}
+
+#[test]
+fn test_unit_struct_survey_fields() {
+    assert_eq!(Parse::fields().len(), 0);
+    assert_eq!(Validate::fields().len(), 0);
+}
+
+#[test]
+fn test_unit_struct_construction() {
+    let _p = Parse;
+    let _v = Validate;
+}

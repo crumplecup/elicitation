@@ -26,6 +26,9 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
         let unnamed = f.unnamed.clone();
         return expand_tuple_struct(input, unnamed);
     }
+    if let Fields::Unit = &data_struct.fields {
+        return expand_unit_struct(input);
+    }
 
     let name = &input.ident;
 
@@ -48,11 +51,7 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
     let fields = match &data_struct.fields {
         Fields::Named(f) => &f.named,
         Fields::Unnamed(_) => unreachable!("Unnamed already dispatched"),
-        Fields::Unit => {
-            let error =
-                syn::Error::new_spanned(name, "Elicit derive for unit structs is not supported.");
-            return error.to_compile_error().into();
-        }
+        Fields::Unit => unreachable!("Unit already dispatched"),
     };
 
     // Parse field information - separate elicited and skipped fields
@@ -413,6 +412,163 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
     TokenStream::from(expanded)
 }
 
+/// Expand #[derive(Elicit)] for unit structs.
+///
+/// Unit structs have exactly one value, so `elicit()` returns `Ok(Self)` immediately
+/// with no user interaction needed.
+fn expand_unit_struct(input: DeriveInput) -> TokenStream {
+    let name = &input.ident;
+    let generics = &input.generics;
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    let style_name = quote::format_ident!("{}Style", name);
+    let name_str = name.to_string();
+
+    let custom_prompt = extract_prompts(&input.attrs).0;
+    let spec_summary = extract_spec_summary(&input.attrs);
+    let struct_spec_requires = extract_spec_requires(&input.attrs);
+
+    let prompt_expr = match custom_prompt {
+        Some(ref p) => quote! { Some(#p) },
+        None => quote! { None },
+    };
+
+    let summary_expr = match spec_summary {
+        Some(ref s) => quote! { #s.to_string() },
+        None => quote! { "Unit type with a single value.".to_string() },
+    };
+
+    let struct_requires_block = if struct_spec_requires.is_empty() {
+        quote! {}
+    } else {
+        let exprs: Vec<&str> = struct_spec_requires.iter().map(String::as_str).collect();
+        quote! {
+            {
+                let exprs: &[&str] = &[#(#exprs),*];
+                let entries: Vec<elicitation::SpecEntry> = exprs.iter().enumerate().map(|(i, expr)| {
+                    elicitation::SpecEntryBuilder::default()
+                        .label(format!("invariant_{}", i + 1))
+                        .description(format!("Invariant: {}", expr))
+                        .expression(Some((*expr).to_string()))
+                        .build()
+                        .expect("valid SpecEntry")
+                }).collect();
+                categories.push(
+                    elicitation::SpecCategoryBuilder::default()
+                        .name("requires".to_string())
+                        .entries(entries)
+                        .build()
+                        .expect("valid SpecCategory"),
+                );
+            }
+        }
+    };
+
+    let elicit_spec_impl = if generics.params.is_empty() {
+        quote! {
+            impl elicitation::ElicitSpec for #name {
+                fn type_spec() -> elicitation::TypeSpec {
+                    let mut categories: Vec<elicitation::SpecCategory> = Vec::new();
+                    #struct_requires_block
+                    elicitation::TypeSpecBuilder::default()
+                        .type_name(#name_str.to_string())
+                        .summary(#summary_expr)
+                        .categories(categories)
+                        .build()
+                        .expect("valid TypeSpec")
+                }
+            }
+
+            elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
+                #name_str,
+                <#name as elicitation::ElicitSpec>::type_spec,
+                std::any::TypeId::of::<#name>
+            ));
+        }
+    } else {
+        quote! {}
+    };
+
+    let expanded = quote! {
+        impl elicitation::Prompt for #name #ty_generics #where_clause {
+            fn prompt() -> Option<&'static str> {
+                #prompt_expr
+            }
+        }
+
+        impl #impl_generics elicitation::Survey for #name #ty_generics #where_clause {
+            fn fields() -> Vec<elicitation::FieldInfo> {
+                vec![]
+            }
+        }
+
+        /// Style enum for this type (default-only).
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+        pub enum #style_name {
+            /// Default elicitation style.
+            #[default]
+            Default,
+        }
+
+        impl elicitation::Prompt for #style_name {
+            fn prompt() -> Option<&'static str> { None }
+        }
+
+        impl elicitation::Elicitation for #style_name {
+            type Style = #style_name;
+            async fn elicit<C: elicitation::ElicitCommunicator>(
+                _communicator: &C,
+            ) -> elicitation::ElicitResult<Self> {
+                Ok(Self::Default)
+            }
+        }
+
+        #[allow(unexpected_cfgs)]
+        impl #impl_generics elicitation::Elicitation for #name #ty_generics #where_clause {
+            type Style = #style_name;
+
+            #[tracing::instrument(skip(_communicator))]
+            async fn elicit<C: elicitation::ElicitCommunicator>(
+                _communicator: &C,
+            ) -> elicitation::ElicitResult<Self> {
+                tracing::debug!(struct_name = #name_str, "Eliciting unit struct");
+                Ok(Self)
+            }
+
+            #[cfg(kani)]
+            fn kani_proof() {
+                assert!(true, "Unit struct {} has exactly one value ∎", #name_str);
+            }
+
+            #[cfg(verus)]
+            fn verus_proof() {}
+
+            #[cfg(creusot)]
+            fn creusot_proof() {}
+        }
+
+        impl #impl_generics elicitation::ElicitIntrospect for #name #ty_generics #where_clause {
+            fn pattern() -> elicitation::ElicitationPattern {
+                elicitation::ElicitationPattern::Survey
+            }
+
+            fn metadata() -> elicitation::TypeMetadata {
+                elicitation::TypeMetadata {
+                    type_name: #name_str,
+                    description: <Self as elicitation::Prompt>::prompt(),
+                    details: elicitation::PatternDetails::Survey {
+                        fields: vec![],
+                    },
+                }
+            }
+        }
+
+        #elicit_spec_impl
+    };
+
+    TokenStream::from(expanded)
+}
+
+/// Field information for code generation.
 struct FieldInfo {
     ident: syn::Ident,
     ty: syn::Type,
