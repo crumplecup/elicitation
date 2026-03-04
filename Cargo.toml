@@ -97,9 +97,9 @@ csv = "1.3"
 shellexpand = "3.1"
 
 # DateTime libraries
-chrono = "0.4"
-time = { version = "0.3", features = ["parsing", "formatting", "macros"] }
-jiff = "0.2"
+chrono = { version = "0.4", features = ["serde"] }
+time = { version = "0.3", features = ["parsing", "formatting", "macros", "serde"] }
+jiff = { version = "0.2", features = ["serde"] }
 
 # UUID library
 uuid = { version = "1.0", features = ["v4", "serde"] }
@@ -112,7 +112,7 @@ rand = "0.10"
 rand_chacha = "0.10"
 
 # URL library
-url = "2.5"
+url = { version = "2.5", features = ["serde"] }
 
 # HTTP library
 http = "1.0"

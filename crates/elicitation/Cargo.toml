@@ -92,18 +92,18 @@ api = []
 serde = []
 # Enable serde_json::Value elicitation
 serde_json = []
-# Enable chrono datetime elicitation
-chrono = ["dep:chrono"]
-# Enable time datetime elicitation
+# Enable chrono datetime elicitation (+ JsonSchema via schemars/chrono04)
+chrono = ["dep:chrono", "schemars/chrono04"]
+# Enable time datetime elicitation (schemars has no time support — needs elicit_time)
 time = ["dep:time"]
-# Enable jiff datetime elicitation
-jiff = ["dep:jiff"]
-# Enable UUID elicitation
-uuid = ["dep:uuid"]
+# Enable jiff datetime elicitation (+ JsonSchema via schemars/jiff02)
+jiff = ["dep:jiff", "schemars/jiff02"]
+# Enable UUID elicitation (+ JsonSchema via schemars/uuid1)
+uuid = ["dep:uuid", "schemars/uuid1"]
 # Enable rand RNG elicitation
 rand = ["dep:rand", "dep:rand_chacha"]
-# Enable URL elicitation
-url = ["dep:url"]
+# Enable URL elicitation (+ JsonSchema via schemars/url2)
+url = ["dep:url", "schemars/url2"]
 # Enable Regex elicitation
 regex = ["dep:regex"]
 # Enable reqwest HTTP client elicitation
