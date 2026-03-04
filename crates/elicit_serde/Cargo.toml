@@ -23,5 +23,8 @@ tracing = { workspace = true }
 
 futures = { workspace = true }
 
+[dev-dependencies]
+tokio = { workspace = true }
+
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
