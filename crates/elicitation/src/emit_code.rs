@@ -293,7 +293,10 @@ impl BinaryScaffold {
                         || d.name.starts_with("elicitation_")
                     {
                         let path = root.join("crates").join(d.name);
-                        format!(r#"{} = {{ path = "{}" }}"#, d.name, path.display())
+                        // Use forward slashes — TOML treats `\` as an escape
+                        // character, so Windows paths would be invalid otherwise.
+                        let path_str = path.to_string_lossy().replace('\\', "/");
+                        format!(r#"{} = {{ path = "{}" }}"#, d.name, path_str)
                     } else {
                         d.to_toml_line()
                     }
