@@ -3,7 +3,7 @@
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
-use syn::{DeriveInput, Field, Fields, Generics, Ident, punctuated::Punctuated, token::Comma};
+use syn::{DeriveInput, Field, Fields, punctuated::Punctuated, token::Comma};
 
 /// Expand #[derive(Elicit)] for structs.
 ///
