@@ -82,6 +82,9 @@ criterion = { workspace = true }
 elicit_time = { path = "../elicit_time" }
 elicit_regex = { path = "../elicit_regex" }
 elicit_reqwest = { path = "../elicit_reqwest" }
+elicit_chrono = { path = "../elicit_chrono" }
+elicit_url = { path = "../elicit_url" }
+elicit_jiff = { path = "../elicit_jiff" }
 
 [features]
 default = ["full"]

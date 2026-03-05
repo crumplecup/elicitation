@@ -28,20 +28,26 @@
 //!
 //! | Type                            | serde  | JsonSchema | Status                      |
 //! |---------------------------------|--------|------------|-----------------------------|
-//! | `uuid::Uuid`                    | ✅     | ✅ (via schemars/uuid1)   | ✅ wire feature  |
-//! | `url::Url`                      | ✅     | ✅ (via schemars/url2)    | ✅ wire feature  |
-//! | `chrono::DateTime<Utc>`         | ✅     | ✅ (via schemars/chrono04)| ✅ wire feature  |
-//! | `chrono::DateTime<FixedOffset>` | ✅     | ✅ (via schemars/chrono04)| ✅ wire feature  |
-//! | `chrono::NaiveDateTime`         | ✅     | ✅ (via schemars/chrono04)| ✅ wire feature  |
-//! | `jiff::Zoned`                   | ✅     | ✅ (via schemars/jiff02)  | ✅ wire feature  |
-//! | `jiff::Timestamp`               | ✅     | ✅ (via schemars/jiff02)  | ✅ wire feature  |
-//! | `elicit_time::OffsetDateTime`   | ✅     | ✅ (manual newtype)       | ✅ elicit_time   |
-//! | `elicit_time::PrimitiveDateTime`| ✅     | ✅ (manual newtype)       | ✅ elicit_time   |
-//! | `elicit_regex::Regex`           | ✅     | ✅ (manual newtype)       | ✅ elicit_regex  |
-//! | `elicit_reqwest::Method`        | ✅     | ✅ (manual newtype)       | ✅ elicit_reqwest|
-//! | `elicit_reqwest::StatusCode`    | ✅     | ✅ (manual newtype)       | ✅ elicit_reqwest|
-//! | `elicit_reqwest::Version`       | ✅     | ✅ (manual newtype)       | ✅ elicit_reqwest|
-//! | `elicit_reqwest::HeaderMap`     | ✅     | ✅ (manual newtype)       | ✅ elicit_reqwest|
+//! | `uuid::Uuid`                    | ✅     | ✅ (via schemars/uuid1)   | ✅ wire feature   |
+//! | `url::Url`                      | ✅     | ✅ (via schemars/url2)    | ✅ wire feature   |
+//! | `chrono::DateTime<Utc>`         | ✅     | ✅ (via schemars/chrono04)| ✅ wire feature   |
+//! | `chrono::DateTime<FixedOffset>` | ✅     | ✅ (via schemars/chrono04)| ✅ wire feature   |
+//! | `chrono::NaiveDateTime`         | ✅     | ✅ (via schemars/chrono04)| ✅ wire feature   |
+//! | `jiff::Zoned`                   | ✅     | ✅ (via schemars/jiff02)  | ✅ wire feature   |
+//! | `jiff::Timestamp`               | ✅     | ✅ (via schemars/jiff02)  | ✅ wire feature   |
+//! | `elicit_chrono::DateTimeUtc`    | ✅     | ✅ (delegated)            | ✅ elicit_chrono  |
+//! | `elicit_chrono::DateTimeFixed`  | ✅     | ✅ (delegated)            | ✅ elicit_chrono  |
+//! | `elicit_chrono::NaiveDateTime`  | ✅     | ✅ (delegated)            | ✅ elicit_chrono  |
+//! | `elicit_url::Url`               | ✅     | ✅ (delegated)            | ✅ elicit_url     |
+//! | `elicit_jiff::Zoned`            | ✅     | ✅ (delegated)            | ✅ elicit_jiff    |
+//! | `elicit_jiff::Timestamp`        | ✅     | ✅ (delegated)            | ✅ elicit_jiff    |
+//! | `elicit_time::OffsetDateTime`   | ✅     | ✅ (manual newtype)       | ✅ elicit_time    |
+//! | `elicit_time::PrimitiveDateTime`| ✅     | ✅ (manual newtype)       | ✅ elicit_time    |
+//! | `elicit_regex::Regex`           | ✅     | ✅ (manual newtype)       | ✅ elicit_regex   |
+//! | `elicit_reqwest::Method`        | ✅     | ✅ (manual newtype)       | ✅ elicit_reqwest |
+//! | `elicit_reqwest::StatusCode`    | ✅     | ✅ (manual newtype)       | ✅ elicit_reqwest |
+//! | `elicit_reqwest::Version`       | ✅     | ✅ (manual newtype)       | ✅ elicit_reqwest |
+//! | `elicit_reqwest::HeaderMap`     | ✅     | ✅ (manual newtype)       | ✅ elicit_reqwest |
 
 use schemars::JsonSchema;
 use serde::Serialize;
@@ -115,6 +121,48 @@ fn elicit_time_offset_datetime_is_mcp_compat() {
 #[test]
 fn elicit_time_primitive_datetime_is_mcp_compat() {
     assert_mcp_compat::<elicit_time::PrimitiveDateTime>();
+}
+
+// ── elicit_chrono ─────────────────────────────────────────────────────────────
+// chrono types have serde + JsonSchema via schemars/chrono04. elicit_chrono
+// adds reflect_methods for field access and formatting as MCP tools.
+
+#[test]
+fn elicit_chrono_date_time_utc_is_mcp_compat() {
+    assert_mcp_compat::<elicit_chrono::DateTimeUtc>();
+}
+
+#[test]
+fn elicit_chrono_date_time_fixed_is_mcp_compat() {
+    assert_mcp_compat::<elicit_chrono::DateTimeFixed>();
+}
+
+#[test]
+fn elicit_chrono_naive_date_time_is_mcp_compat() {
+    assert_mcp_compat::<elicit_chrono::NaiveDateTime>();
+}
+
+// ── elicit_url ────────────────────────────────────────────────────────────────
+// url::Url has serde + JsonSchema via schemars/url2. elicit_url adds
+// reflect_methods for URL decomposition and joining as MCP tools.
+
+#[test]
+fn elicit_url_url_is_mcp_compat() {
+    assert_mcp_compat::<elicit_url::Url>();
+}
+
+// ── elicit_jiff ───────────────────────────────────────────────────────────────
+// jiff types have serde + JsonSchema via schemars/jiff02. elicit_jiff adds
+// reflect_methods for field access, timezone ops, and arithmetic as MCP tools.
+
+#[test]
+fn elicit_jiff_zoned_is_mcp_compat() {
+    assert_mcp_compat::<elicit_jiff::Zoned>();
+}
+
+#[test]
+fn elicit_jiff_timestamp_is_mcp_compat() {
+    assert_mcp_compat::<elicit_jiff::Timestamp>();
 }
 
 // ── elicit_regex ──────────────────────────────────────────────────────────────

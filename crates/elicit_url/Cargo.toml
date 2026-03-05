@@ -1,0 +1,29 @@
+[package]
+name = "elicit_url"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled url::Url wrapper with MCP reflect methods"
+keywords = ["mcp", "url", "elicitation", "jsonschema", "tools"]
+categories = ["development-tools", "web-programming"]
+
+[dependencies]
+elicitation = { workspace = true, features = ["url"] }
+elicitation_derive.workspace = true
+url = { workspace = true }
+schemars = { workspace = true, features = ["url2"] }
+serde.workspace = true
+rmcp.workspace = true
+tracing.workspace = true
+futures.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

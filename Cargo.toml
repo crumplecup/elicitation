@@ -13,6 +13,9 @@ members = [
   "crates/elicit_uuid",
   "crates/elicit_time",
   "crates/elicit_regex",
+  "crates/elicit_chrono",
+  "crates/elicit_url",
+  "crates/elicit_jiff",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
