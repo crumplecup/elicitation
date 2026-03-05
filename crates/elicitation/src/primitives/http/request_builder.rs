@@ -39,17 +39,6 @@ impl Elicitation for RequestBuilder {
         let request = Request::new(method, url);
         Ok(RequestBuilder::from_parts(Client::new(), request))
     }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        // Compositional: both constituents are verified independently.
-        <reqwest::Method as Elicitation>::kani_proof();
-        <Url as Elicitation>::kani_proof();
-        assert!(
-            true,
-            "reqwest::RequestBuilder construction verified via components ∎"
-        );
-    }
 }
 
 impl ElicitIntrospect for RequestBuilder {

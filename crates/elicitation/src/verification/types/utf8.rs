@@ -220,17 +220,6 @@ pub fn is_valid_utf8(bytes: &[u8]) -> bool {
         return false;
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     true
 }
 

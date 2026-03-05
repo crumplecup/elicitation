@@ -266,17 +266,6 @@ impl Elicitation for Instant {
         let generator = InstantGenerator::new(mode);
         Ok(generator.generate())
     }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        // Verification delegated to generation mode
-        InstantGenerationMode::kani_proof();
-
-        assert!(
-            true,
-            "time::Instant verified via InstantGenerationMode composition + trusted time crate"
-        );
-    }
 }
 
 impl ElicitIntrospect for Instant {

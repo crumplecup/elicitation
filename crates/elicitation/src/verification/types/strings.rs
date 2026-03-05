@@ -123,6 +123,18 @@ impl<const MAX_LEN: usize> Elicitation for StringNonEmpty<MAX_LEN> {
             }
         }
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_string_non_empty()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 #[cfg(test)]
@@ -256,5 +268,17 @@ impl Elicitation for StringDefault {
         // Use serde to deserialize directly into wrapper type
         // Preserves error source via From<serde_json::Error> chain
         Ok(serde_json::from_value(value)?)
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }

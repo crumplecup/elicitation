@@ -521,6 +521,18 @@ impl Elicitation for UrlValid {
 
         Ok(Self::from_url(url))
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_url_valid()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl Prompt for UrlHttps {
@@ -536,6 +548,18 @@ impl Elicitation for UrlHttps {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let value = url::Url::elicit(communicator).await?;
         Self::from_url(value).map_err(crate::ElicitError::from)
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_url_https()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 
@@ -553,6 +577,18 @@ impl Elicitation for UrlHttp {
         let value = url::Url::elicit(communicator).await?;
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl Prompt for UrlWithHost {
@@ -569,6 +605,18 @@ impl Elicitation for UrlWithHost {
         let value = url::Url::elicit(communicator).await?;
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_url_with_host()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl Prompt for UrlCanBeBase {
@@ -584,6 +632,18 @@ impl Elicitation for UrlCanBeBase {
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         let value = url::Url::elicit(communicator).await?;
         Self::from_url(value).map_err(crate::ElicitError::from)
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_url_can_be_base()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 

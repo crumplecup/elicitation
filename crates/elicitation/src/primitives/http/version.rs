@@ -71,15 +71,6 @@ impl Elicitation for reqwest::Version {
             )))
         })
     }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        let _v10 = reqwest::Version::HTTP_10;
-        let _v11 = reqwest::Version::HTTP_11;
-        let _v2 = reqwest::Version::HTTP_2;
-        let _v3 = reqwest::Version::HTTP_3;
-        assert!(true, "reqwest::Version variants verified ∎");
-    }
 }
 
 impl ElicitIntrospect for reqwest::Version {

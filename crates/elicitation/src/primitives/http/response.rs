@@ -54,18 +54,6 @@ impl Elicitation for Response {
 
         Ok(Response::from(response))
     }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        // Compositional: constituent types are independently verified.
-        <reqwest::StatusCode as Elicitation>::kani_proof();
-        <String as Elicitation>::kani_proof();
-        <Url as Elicitation>::kani_proof();
-        assert!(
-            true,
-            "reqwest::Response mock construction verified via components ∎"
-        );
-    }
 }
 
 impl ElicitIntrospect for Response {

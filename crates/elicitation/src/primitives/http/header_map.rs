@@ -41,17 +41,6 @@ impl Elicitation for HeaderMap {
 
         parse_header_map(&raw)
     }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        // HeaderMap construction from valid ASCII never panics.
-        let mut map = HeaderMap::new();
-        map.insert(
-            HeaderName::from_static("content-type"),
-            HeaderValue::from_static("application/json"),
-        );
-        assert!(!map.is_empty(), "HeaderMap insertion verified ∎");
-    }
 }
 
 impl ElicitIntrospect for HeaderMap {

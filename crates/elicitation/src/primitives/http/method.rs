@@ -86,14 +86,6 @@ impl Elicitation for reqwest::Method {
             )))
         })
     }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        // All variants are statically known constants — construction never panics.
-        let _get = reqwest::Method::GET;
-        let _post = reqwest::Method::POST;
-        assert!(true, "reqwest::Method variants verified ∎");
-    }
 }
 
 impl ElicitIntrospect for reqwest::Method {
