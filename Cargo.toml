@@ -23,7 +23,7 @@ exclude = ["crates/elicitation_verus"]
 resolver = "2"
 
 [workspace.package]
-version = "0.8.4"
+version = "0.9.0"
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/crumplecup/elicitation"
@@ -38,11 +38,11 @@ unexpected_cfgs = { level = "warn", check-cfg = [
 ] }
 
 [workspace.dependencies]
-elicitation = { path = "crates/elicitation", version = "0.8.4" }
-elicitation_derive = { path = "crates/elicitation_derive", version = "0.8.4" }
-elicitation_macros = { path = "crates/elicitation_macros", version = "0.8.4" }
-elicitation_rand = { path = "crates/elicitation_rand", version = "0.8.4" }
-elicitation_kani = { path = "crates/elicitation_kani", version = "0.8.4" }
+elicitation = { path = "crates/elicitation", version = "0.9.0" }
+elicitation_derive = { path = "crates/elicitation_derive", version = "0.9.0" }
+elicitation_macros = { path = "crates/elicitation_macros", version = "0.9.0" }
+elicitation_rand = { path = "crates/elicitation_rand", version = "0.9.0" }
+elicitation_kani = { path = "crates/elicitation_kani", version = "0.9.0" }
 
 
 # MCP client
@@ -103,7 +103,12 @@ shellexpand = "3.1"
 
 # DateTime libraries
 chrono = { version = "0.4", features = ["serde"] }
-time = { version = "0.3", features = ["parsing", "formatting", "macros", "serde"] }
+time = { version = "0.3", features = [
+  "parsing",
+  "formatting",
+  "macros",
+  "serde",
+] }
 jiff = { version = "0.2", features = ["serde"] }
 
 # UUID library

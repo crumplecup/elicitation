@@ -449,8 +449,10 @@ macro_rules! impl_emit_tuple {
     ( $( $T:ident ),+ ; $( $idx:tt ),+ ) => {
         impl< $( $T: EmitCode ),+ > EmitCode for ( $( $T, )+ ) {
             fn emit_code(&self) -> TokenStream {
-                $( let $T = self.$idx.emit_code(); )+
-                quote::quote! { ( $( #$T ),+ ) }
+                paste::paste! {
+                    $( let [<$T:lower _val>] = self.$idx.emit_code(); )+
+                    quote::quote! { ( $( #[<$T:lower _val>] ),+ ) }
+                }
             }
         }
     };
