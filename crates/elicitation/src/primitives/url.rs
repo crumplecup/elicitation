@@ -29,19 +29,6 @@ impl Elicitation for url::Url {
         // Unwrap to primitive
         Ok(wrapper.into_inner())
     }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        use crate::verification::types::UrlValid;
-
-        // Verification delegated to UrlValid wrapper
-        UrlValid::kani_proof();
-
-        assert!(
-            true,
-            "url::Url verified via UrlValid wrapper (compositional delegation)"
-        );
-    }
 }
 
 impl ElicitIntrospect for url::Url {

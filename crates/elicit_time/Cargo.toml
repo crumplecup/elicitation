@@ -1,0 +1,38 @@
+[package]
+name = "elicit_time"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled time newtypes — JsonSchema-compatible wrappers around time::OffsetDateTime and time::PrimitiveDateTime"
+keywords = ["mcp", "time", "datetime", "elicitation", "jsonschema"]
+categories = ["development-tools", "date-and-time"]
+
+[dependencies]
+elicitation = { workspace = true, features = ["time"] }
+elicitation_derive.workspace = true
+time = { workspace = true }
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+derive_builder.workspace = true
+rmcp.workspace = true
+tracing.workspace = true
+futures.workspace = true
+
+# Code recovery (optional)
+proc-macro2 = { workspace = true, optional = true }
+quote = { workspace = true, optional = true }
+
+[features]
+emit = ["dep:proc-macro2", "dep:quote", "elicitation/emit"]
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

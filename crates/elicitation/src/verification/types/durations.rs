@@ -63,6 +63,18 @@ impl Elicitation for DurationPositive {
             }
         }
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_duration_positive()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 // DurationNonZero - Non-zero durations (same as positive for Duration)

@@ -433,35 +433,28 @@ fn generate_elicit_impl(
                 }
             }
 
-            #[cfg(kani)]
-            fn kani_proof() {
-                // Compositional verification: verify all field types across all variants
+            fn kani_proof() -> proc_macro2::TokenStream {
+                let mut ts = proc_macro2::TokenStream::new();
                 #(
-                    <#all_field_types as elicitation::Elicitation>::kani_proof();
+                    ts.extend(<#all_field_types as elicitation::Elicitation>::kani_proof());
                 )*
-
-                // Tautological assertion: all parts verified ⟹ whole verified
-                assert!(
-                    true,
-                    "Compositional verification for {}: all variant fields verified ⟹ enum verified ∎",
-                    stringify!(#name)
-                );
+                ts
             }
 
-            #[cfg(verus)]
-            fn verus_proof() {
-                // Compositional verification: verify all field types across all variants
+            fn verus_proof() -> proc_macro2::TokenStream {
+                let mut ts = proc_macro2::TokenStream::new();
                 #(
-                    <#all_field_types as elicitation::Elicitation>::verus_proof();
+                    ts.extend(<#all_field_types as elicitation::Elicitation>::verus_proof());
                 )*
+                ts
             }
 
-            #[cfg(creusot)]
-            fn creusot_proof() {
-                // Compositional verification: verify all field types across all variants
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                let mut ts = proc_macro2::TokenStream::new();
                 #(
-                    <#all_field_types as elicitation::Elicitation>::creusot_proof();
+                    ts.extend(<#all_field_types as elicitation::Elicitation>::creusot_proof());
                 )*
+                ts
             }
         }
     }

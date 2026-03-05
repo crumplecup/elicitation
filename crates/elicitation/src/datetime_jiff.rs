@@ -263,21 +263,6 @@ impl Elicitation for Timestamp {
             }
         }
     }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        use crate::datetime_common::{DateTimeComponents, DateTimeInputMethod};
-
-        // Verification delegated to input components
-        DateTimeInputMethod::kani_proof();
-        DateTimeComponents::kani_proof();
-        DateTimeComponents::kani_proof();
-
-        assert!(
-            true,
-            "jiff::Timestamp verified via component composition + trusted jiff crate"
-        );
-    }
 }
 
 impl ElicitIntrospect for Timestamp {

@@ -25,14 +25,6 @@ impl Elicitation for reqwest::Client {
         tracing::debug!("Constructing reqwest::Client");
         Ok(reqwest::Client::new())
     }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        // Client::new() is always valid; construction must not panic.
-        // We assert the tautological invariant — the real proof is that
-        // this code compiles and does not reach unreachable!().
-        assert!(true, "reqwest::Client construction verified ∎");
-    }
 }
 
 impl ElicitIntrospect for reqwest::Client {

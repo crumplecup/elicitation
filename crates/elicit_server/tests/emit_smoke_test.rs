@@ -12,6 +12,7 @@
 
 #[cfg(feature = "emit")]
 mod smoke {
+    use elicit_server;
     use elicitation::emit_code::BinaryScaffold;
     use std::path::PathBuf;
     use std::process::Command;
@@ -49,21 +50,40 @@ mod smoke {
                 .unwrap_or_else(|e| panic!("dispatch_reqwest_emit({tool_name}): {e}")),
             "serde_json" => elicit_serde_json::dispatch_serde_json_emit(tool_name, params)
                 .unwrap_or_else(|e| panic!("dispatch_serde_json_emit({tool_name}): {e}")),
+            "url" => elicit_url::dispatch_url_emit(tool_name, params)
+                .unwrap_or_else(|e| panic!("dispatch_url_emit({tool_name}): {e}")),
+            "chrono" => elicit_chrono::dispatch_chrono_emit(tool_name, params)
+                .unwrap_or_else(|e| panic!("dispatch_chrono_emit({tool_name}): {e}")),
+            "jiff" => elicit_jiff::dispatch_jiff_emit(tool_name, params)
+                .unwrap_or_else(|e| panic!("dispatch_jiff_emit({tool_name}): {e}")),
+            "time" => elicit_time::dispatch_time_emit(tool_name, params)
+                .unwrap_or_else(|e| panic!("dispatch_time_emit({tool_name}): {e}")),
+            "secure_fetch" => elicit_server::dispatch_secure_fetch_emit(tool_name, params)
+                .unwrap_or_else(|e| panic!("dispatch_secure_fetch_emit({tool_name}): {e}")),
+            "fetch_and_parse" => elicit_server::dispatch_fetch_and_parse_emit(tool_name, params)
+                .unwrap_or_else(|e| panic!("dispatch_fetch_and_parse_emit({tool_name}): {e}")),
             other => panic!("Unknown crate: {other}"),
         };
 
         let scaffold = BinaryScaffold::new(vec![step], false).with_workspace_root(workspace_root());
 
-        let (out_dir, target_dir) = emit_test_paths(tool_name);
+        // Use "{crate_name}_{tool_name}" so tools with the same name in different crates
+        // (e.g. "compute_duration" in both elicit_chrono and elicit_time) don't collide.
+        let unique_name = format!("{crate_name}_{tool_name}");
+        let pkg_name = unique_name.replace('-', "_");
+        let (out_dir, target_dir) = emit_test_paths(&unique_name);
         scaffold
-            .emit_to_disk(&out_dir, tool_name)
+            .emit_to_disk(&out_dir, &pkg_name)
             .unwrap_or_else(|e| panic!("emit_to_disk({tool_name}): {e}"));
 
-        // Always verify path deps are present
-        let cargo_toml = std::fs::read_to_string(out_dir.join("Cargo.toml")).unwrap();
+        // Verify Cargo.toml was generated and contains the package name.
+        // (Path deps appear when workspace crates are used; tools that only depend on
+        // crates.io packages won't have path deps, but still compile correctly.)
+        let cargo_toml = std::fs::read_to_string(out_dir.join("Cargo.toml"))
+            .unwrap_or_else(|e| panic!("Cargo.toml missing for {tool_name}: {e}"));
         assert!(
-            cargo_toml.contains("path ="),
-            "Cargo.toml for {tool_name} should use path deps:\n{cargo_toml}"
+            cargo_toml.contains(&pkg_name),
+            "Cargo.toml for {tool_name} is malformed:\n{cargo_toml}"
         );
 
         (out_dir, target_dir)
@@ -315,5 +335,306 @@ mod smoke {
             .status()
             .expect("cargo run");
         assert!(status.success(), "Multi-step composition failed");
+    }
+
+    // ── elicit_url ────────────────────────────────────────────────────────────
+
+    #[test]
+    fn emit_parse_url_and_run() {
+        assert_runs(
+            "parse_url",
+            "url",
+            serde_json::json!({ "url": "https://api.example.com/v1/users?page=1" }),
+        );
+    }
+
+    #[test]
+    fn emit_assert_https_and_run() {
+        assert_runs(
+            "assert_https",
+            "url",
+            serde_json::json!({ "url": "https://api.example.com/secure" }),
+        );
+    }
+
+    #[test]
+    fn emit_build_url_and_run() {
+        assert_runs(
+            "build_url",
+            "url",
+            serde_json::json!({
+                "base": "https://api.example.com",
+                "path": "/v2/items",
+                "query": { "limit": "50", "offset": "0" }
+            }),
+        );
+    }
+
+    #[test]
+    fn emit_join_url_and_run() {
+        assert_runs(
+            "join_url",
+            "url",
+            serde_json::json!({
+                "base": "https://api.example.com/v1/",
+                "relative": "users/42"
+            }),
+        );
+    }
+
+    // ── elicit_chrono ─────────────────────────────────────────────────────────
+
+    #[test]
+    fn emit_parse_datetime_and_run() {
+        assert_runs(
+            "parse_datetime",
+            "chrono",
+            serde_json::json!({ "datetime": "2099-06-15T12:00:00Z" }),
+        );
+    }
+
+    #[test]
+    fn emit_assert_future_chrono_and_run() {
+        assert_runs(
+            "assert_future",
+            "chrono",
+            serde_json::json!({ "datetime": "2099-06-15T12:00:00Z" }),
+        );
+    }
+
+    #[test]
+    fn emit_assert_in_range_and_run() {
+        assert_runs(
+            "assert_in_range",
+            "chrono",
+            serde_json::json!({
+                "datetime": "2099-06-15T12:00:00Z",
+                "start": "2099-01-01T00:00:00Z",
+                "end": "2099-12-31T23:59:59Z"
+            }),
+        );
+    }
+
+    #[test]
+    fn emit_compute_duration_chrono_and_run() {
+        assert_runs(
+            "compute_duration",
+            "chrono",
+            serde_json::json!({
+                "from": "2024-01-01T00:00:00Z",
+                "to": "2024-06-01T00:00:00Z"
+            }),
+        );
+    }
+
+    #[test]
+    fn emit_add_seconds_chrono_and_run() {
+        assert_runs(
+            "add_seconds",
+            "chrono",
+            serde_json::json!({
+                "datetime": "2099-06-15T12:00:00Z",
+                "seconds": 3600
+            }),
+        );
+    }
+
+    // ── elicit_jiff ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn emit_parse_timestamp_and_run() {
+        assert_runs(
+            "parse_timestamp",
+            "jiff",
+            serde_json::json!({ "timestamp": "2099-06-15T12:00:00Z" }),
+        );
+    }
+
+    #[test]
+    fn emit_parse_zoned_and_run() {
+        assert_runs(
+            "parse_zoned",
+            "jiff",
+            serde_json::json!({ "zoned": "2099-06-15T12:00:00[America/New_York]" }),
+        );
+    }
+
+    #[test]
+    fn emit_assert_future_jiff_and_run() {
+        assert_runs(
+            "assert_future",
+            "jiff",
+            serde_json::json!({ "timestamp": "2099-06-15T12:00:00Z" }),
+        );
+    }
+
+    #[test]
+    fn emit_convert_tz_and_run() {
+        assert_runs(
+            "convert_tz",
+            "jiff",
+            serde_json::json!({
+                "zoned": "2099-06-15T12:00:00[America/New_York]",
+                "timezone": "UTC"
+            }),
+        );
+    }
+
+    #[test]
+    fn emit_compute_span_and_run() {
+        assert_runs(
+            "compute_span",
+            "jiff",
+            serde_json::json!({
+                "from": "2024-01-01T00:00:00Z",
+                "to": "2024-06-01T00:00:00Z"
+            }),
+        );
+    }
+
+    // ── elicit_time ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn emit_parse_offset_datetime_and_run() {
+        assert_runs(
+            "parse_offset_datetime",
+            "time",
+            serde_json::json!({ "datetime": "2099-06-15T12:00:00Z" }),
+        );
+    }
+
+    #[test]
+    fn emit_parse_primitive_datetime_and_run() {
+        assert_runs(
+            "parse_primitive_datetime",
+            "time",
+            serde_json::json!({ "datetime": "2099-06-15T12:00:00" }),
+        );
+    }
+
+    #[test]
+    fn emit_assert_future_time_and_run() {
+        assert_runs(
+            "assert_future",
+            "time",
+            serde_json::json!({ "datetime": "2099-06-15T12:00:00Z" }),
+        );
+    }
+
+    #[test]
+    fn emit_compute_duration_time_and_run() {
+        assert_runs(
+            "compute_duration",
+            "time",
+            serde_json::json!({
+                "from": "2024-01-01T00:00:00Z",
+                "to": "2024-06-01T00:00:00Z"
+            }),
+        );
+    }
+
+    #[test]
+    fn emit_add_seconds_time_and_run() {
+        assert_runs(
+            "add_seconds",
+            "time",
+            serde_json::json!({
+                "datetime": "2099-06-15T12:00:00Z",
+                "seconds": 3600
+            }),
+        );
+    }
+
+    // ── Cross-crate: secure_fetch (build only — network) ─────────────────────
+
+    #[test]
+    fn emit_secure_fetch_builds() {
+        assert_builds(
+            "secure_fetch",
+            "secure_fetch",
+            serde_json::json!({
+                "url": "https://httpbin.org/get",
+                "timeout_secs": 30.0
+            }),
+        );
+    }
+
+    #[test]
+    fn emit_validated_api_call_builds() {
+        assert_builds(
+            "validated_api_call",
+            "secure_fetch",
+            serde_json::json!({
+                "url": "https://api.example.com/data",
+                "token": "test-token",
+                "method": "GET"
+            }),
+        );
+    }
+
+    // ── Cross-crate: fetch_and_parse (build only — network) ──────────────────
+
+    #[test]
+    fn emit_fetch_and_extract_builds() {
+        assert_builds(
+            "fetch_and_extract",
+            "fetch_and_parse",
+            serde_json::json!({
+                "url": "https://httpbin.org/json",
+                "pointer": "/slideshow/title"
+            }),
+        );
+    }
+
+    #[test]
+    fn emit_fetch_and_validate_builds() {
+        assert_builds(
+            "fetch_and_validate",
+            "fetch_and_parse",
+            serde_json::json!({
+                "url": "https://httpbin.org/json",
+                "required_keys": ["slideshow"]
+            }),
+        );
+    }
+
+    // ── Cross-crate multi-step: parse_url + secure_fetch ─────────────────────
+
+    #[test]
+    fn emit_parse_url_then_secure_fetch_builds() {
+        let step1 = elicit_url::dispatch_url_emit(
+            "parse_url",
+            serde_json::json!({ "url": "https://api.example.com/health" }),
+        )
+        .expect("dispatch parse_url");
+
+        let step2 = elicit_server::dispatch_secure_fetch_emit(
+            "secure_fetch",
+            serde_json::json!({
+                "url": "https://api.example.com/health",
+                "timeout_secs": 30.0
+            }),
+        )
+        .expect("dispatch secure_fetch");
+
+        let ws = workspace_root();
+        let scaffold = BinaryScaffold::new(vec![step1, step2], false).with_workspace_root(&ws);
+
+        let (out_dir, target_dir) = emit_test_paths("parse_url_then_secure_fetch");
+        scaffold
+            .emit_to_disk(&out_dir, "parse_url_then_secure_fetch")
+            .expect("emit_to_disk");
+
+        let output = Command::new("cargo")
+            .args(["build", "--quiet"])
+            .env("CARGO_TARGET_DIR", &target_dir)
+            .current_dir(&out_dir)
+            .output()
+            .expect("cargo build");
+        assert!(
+            output.status.success(),
+            "parse_url + secure_fetch cross-crate build failed:\n{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
     }
 }

@@ -9,6 +9,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Phase 1 — erased-serde dep + serde derives on elicitation types
+- Phase 2 — derive(Elicit) emits serde derives on Style enums
+- Scaffold SerdePlugin with 4 MCP tools via erased-serde
+- Phase 3 — ElicitJson blanket impl for single-shot JSON elicitation
+- Phase 4 — serde derives on param structs and newtype wrappers
+- Phase 6 — serde_json newtype wrappers via library macros
+- Verified JSON workflows with typestate contracts
+- EmitCode trait — code recovery foundation
+- EmitCode impls for serde_json and reqwest workflow tools
+- Add EmitBinaryPlugin for code recovery
+- Workspace path override + smoke test
+- Support tuple structs in #[derive(Elicit)]
+- Support unit structs in #[derive(Elicit)]
+- New crate — JsonSchema-compatible Uuid newtype
+- Add elicit_time, elicit_regex shadow crates; reqwest type newtypes
+- Add elicit_chrono, elicit_url, elicit_jiff shadow crates
+- Add workflow plugins to elicit_url, elicit_chrono, elicit_jiff, elicit_time
+- Cross-crate workflow plugins, EmitCode for all new crates, smoke test parity
+- Replace tautological proof stubs with real TokenStream-returning proof generators
+- Wire all existing kani/verus/creusot harnesses into emission methods for all types
+
+### Fixed
+
+- Add ParsedJson::into_value and pointer_update; fix serde cfg warning
+- Impl blocks, imports and functions properly gated for unix only, enabling compilation on Windows.
+- Suppress unexpected_cfgs on generated serde cfg_attr
+- Remove serde cfg_attr from generated style enums
+- Remove unused Generics and Ident imports
+- Complete rmcp 1.1.0 migration — clippy clean pre-merge
+- Add tokio dev-dep for doctest compilation
+- Use forward slashes in path deps for Windows TOML compat
+- Silence non_snake_case warning in impl_emit_tuple macro
+
+### Miscellaneous
+
+- Migrate to rmcp 1.1.0 API
+
+### Styling
+
+- Run cargo fmt across workspace
+
+### Testing
+
+- Add derive regression coverage matrix and cross-platform CI
+- Add third-party MCP compat coverage matrix
+
+### Ci
+
+- Add workflow_dispatch trigger for manual runs
+
+### Merge
+
+- Dev → main (rmcp 1.1.0 migration, derive coverage, CI workflow)
+
+## [0.8.3] - 2026-03-02
+
+### Added
+
 - Add elicit_newtype! declarative macro for transparent wrappers
 - Add method reflection infrastructure for MCP tool generation
 - Connect method reflection pipeline with parameter struct generation
@@ -33,6 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Phase 3 TypeSpecPlugin MCP tools
 - Phase 2 gaps - time OffsetDateTime and reqwest StatusCode specs
 - Phase 4 composed ElicitSpec via #[derive(Elicit)]
+- Anodized TypeSpec explorer — phases 1-4
 
 ### Documentation
 
@@ -46,17 +105,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add README and update Cargo.toml metadata
 - Add README and update Cargo.toml metadata
 - Add README and update Cargo.toml metadata
+- Regenerate full changelog from git history
 
 ### Fixed
 
 - Add generic support for elicit_checked tool generation
 - Replace single-arm match with if let (clippy)
 - Resolve CI failures in elicit_spec_derive tests
+- Remove duplicate readme key in Cargo.toml
 
 ### Miscellaneous
 
 - Bump version to 0.8.3 and update derive-new to 0.7
 - Set crate-specific readme, description, keywords, categories
+- Bump to 0.8.3 and update verus deps to 2026-03-01
 
 ### Refactor
 
@@ -71,6 +133,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Testing
 
 - Add integration tests for method reflection
+
+### Merge
+
+- Plugin registry + 81-tool reqwest shadow crate
+- Doc sprint - crate READMEs, changelog, version 0.8.3
+- Bump elicitation_verus to 0.8.3, update verus deps 2026-03-01
 
 ## [0.8.2] - 2026-02-23
 

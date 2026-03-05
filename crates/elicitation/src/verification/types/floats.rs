@@ -174,6 +174,18 @@ impl Elicitation for F32Positive {
             }
         }
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_float_positive("F32Positive", "f32")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 // F32NonNegative (f32 >= 0.0 and finite)
@@ -260,6 +272,18 @@ impl Elicitation for F32NonNegative {
             }
         }
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_float_nonneg("F32NonNegative", "f32")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 // F32Finite (finite f32, not NaN or infinite)
@@ -339,6 +363,18 @@ impl Elicitation for F32Finite {
                 }
             }
         }
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_float_finite("F32Finite", "f32")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 
@@ -426,6 +462,18 @@ impl Elicitation for F64Positive {
             }
         }
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_float_positive("F64Positive", "f64")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 // F64NonNegative (f64 >= 0.0 and finite)
@@ -512,6 +560,18 @@ impl Elicitation for F64NonNegative {
             }
         }
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_float_nonneg("F64NonNegative", "f64")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 // F64Finite (finite f64, not NaN or infinite)
@@ -576,6 +636,18 @@ impl Elicitation for F64Finite {
                 }
             }
         }
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_float_finite("F64Finite", "f64")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 

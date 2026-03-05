@@ -417,20 +417,6 @@ impl Elicitation for DateTime<Utc> {
             }
         }
     }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        // Verification delegated to input method components
-        DateTimeInputMethod::kani_proof();
-        DateTimeComponents::kani_proof();
-
-        // DateTime construction is handled by trusted chrono library
-        // The compositional chain: DateTimeInputMethod + DateTimeComponents (verified) → DateTime (trusted library)
-        assert!(
-            true,
-            "chrono::DateTime<Utc> verified via component composition + trusted chrono crate"
-        );
-    }
 }
 
 impl ElicitIntrospect for DateTime<Utc> {

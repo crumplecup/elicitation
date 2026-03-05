@@ -20,6 +20,17 @@ elicitation = { path = "../elicitation" }
 # Workflow crates (cross-crate composition)
 elicit_reqwest = { path = "../elicit_reqwest" }
 elicit_serde_json = { path = "../elicit_serde_json" }
+elicit_url = { path = "../elicit_url" }
+elicit_chrono = { path = "../elicit_chrono" }
+elicit_jiff = { path = "../elicit_jiff" }
+elicit_time = { path = "../elicit_time" }
+
+# Third-party types (needed in cross-crate workflows)
+reqwest = { workspace = true }
+chrono = { workspace = true }
+jiff = { workspace = true }
+url = { workspace = true }
+time = { workspace = true }
 
 # Serialization
 serde = { workspace = true }
@@ -47,6 +58,10 @@ emit = [
     "elicitation/emit",
     "elicit_reqwest/emit",
     "elicit_serde_json/emit",
+    "elicit_url/emit",
+    "elicit_chrono/emit",
+    "elicit_jiff/emit",
+    "elicit_time/emit",
 ]
 
 [dev-dependencies]

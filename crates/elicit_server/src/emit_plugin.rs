@@ -106,7 +106,14 @@ impl ElicitPlugin for EmitBinaryPlugin {
                  Supported tools: fetch, auth_fetch, post, api_call, health_check, url_build, \
                  status_summary, build_request, paginated_get (elicit_reqwest); \
                  parse_and_focus, validate_object, safe_merge, pointer_update, field_chain \
-                 (elicit_serde_json).",
+                 (elicit_serde_json); parse_url, assert_https, validate_scheme, build_url, \
+                 join_url (elicit_url); parse_datetime, assert_future, assert_in_range, \
+                 compute_duration, add_seconds (elicit_chrono); parse_timestamp, parse_zoned, \
+                 assert_future, convert_tz, compute_span (elicit_jiff); \
+                 parse_offset_datetime, parse_primitive_datetime, assert_future, \
+                 compute_duration, add_seconds (elicit_time); secure_fetch, \
+                 validated_api_call (secure_fetch); fetch_and_extract, fetch_and_validate \
+                 (fetch_and_parse).",
         )]
     }
 
@@ -191,8 +198,8 @@ async fn emit_binary_impl(p: EmitBinaryParams) -> Result<CallToolResult, ErrorDa
 
 /// Dispatch a tool name + raw JSON params to the matching `EmitCode` impl.
 ///
-/// Tries reqwest tools first, then serde_json tools. Returns an error if
-/// the tool name is not recognized by either crate.
+/// Tries reqwest → serde_json → url → chrono → jiff → time → secure_fetch →
+/// fetch_and_parse. Returns an error if the tool name is not recognized.
 fn dispatch_step(tool: &str, params: &serde_json::Value) -> Result<Box<dyn EmitCode>, String> {
     if let Ok(boxed) = elicit_reqwest::dispatch_reqwest_emit(tool, params.clone()) {
         return Ok(boxed);
@@ -200,9 +207,34 @@ fn dispatch_step(tool: &str, params: &serde_json::Value) -> Result<Box<dyn EmitC
     if let Ok(boxed) = elicit_serde_json::dispatch_serde_json_emit(tool, params.clone()) {
         return Ok(boxed);
     }
+    if let Ok(boxed) = elicit_url::dispatch_url_emit(tool, params.clone()) {
+        return Ok(boxed);
+    }
+    if let Ok(boxed) = elicit_chrono::dispatch_chrono_emit(tool, params.clone()) {
+        return Ok(boxed);
+    }
+    if let Ok(boxed) = elicit_jiff::dispatch_jiff_emit(tool, params.clone()) {
+        return Ok(boxed);
+    }
+    if let Ok(boxed) = elicit_time::dispatch_time_emit(tool, params.clone()) {
+        return Ok(boxed);
+    }
+    if let Ok(boxed) = crate::secure_fetch::dispatch_secure_fetch_emit(tool, params.clone()) {
+        return Ok(boxed);
+    }
+    if let Ok(boxed) = crate::fetch_and_parse::dispatch_fetch_and_parse_emit(tool, params.clone()) {
+        return Ok(boxed);
+    }
     Err(format!(
         "Unknown tool: '{tool}'. Supported: fetch, auth_fetch, post, api_call, health_check, \
-         url_build, status_summary, build_request, paginated_get, parse_and_focus, \
-         validate_object, safe_merge, pointer_update, field_chain"
+         url_build, status_summary, build_request, paginated_get (elicit_reqwest); \
+         parse_and_focus, validate_object, safe_merge, pointer_update, field_chain \
+         (elicit_serde_json); parse_url, assert_https, validate_scheme, build_url, join_url \
+         (elicit_url); parse_datetime, assert_future, assert_in_range, compute_duration, \
+         add_seconds (elicit_chrono); parse_timestamp, parse_zoned, assert_future, \
+         convert_tz, compute_span (elicit_jiff); parse_offset_datetime, \
+         parse_primitive_datetime, assert_future, compute_duration, add_seconds \
+         (elicit_time); secure_fetch, validated_api_call (secure_fetch); \
+         fetch_and_extract, fetch_and_validate (fetch_and_parse)"
     ))
 }

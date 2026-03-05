@@ -59,17 +59,6 @@ impl ValueObject {
         }
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Get the inner Value.
     #[cfg(not(kani))]
     pub fn get(&self) -> &Value {
@@ -81,17 +70,6 @@ impl ValueObject {
         panic!("get() not supported in Kani verification")
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Unwrap into the inner Value.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> Value {
@@ -101,17 +79,6 @@ impl ValueObject {
     #[cfg(kani)]
     pub fn into_inner(self) -> Value {
         panic!("into_inner() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -192,17 +159,6 @@ impl ValueArray {
         }
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Get the inner Value.
     #[cfg(not(kani))]
     pub fn get(&self) -> &Value {
@@ -214,17 +170,6 @@ impl ValueArray {
         panic!("get() not supported in Kani verification")
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Unwrap into the inner Value.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> Value {
@@ -234,17 +179,6 @@ impl ValueArray {
     #[cfg(kani)]
     pub fn into_inner(self) -> Value {
         panic!("into_inner() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -319,17 +253,6 @@ impl ValueNonNull {
         }
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Get the inner Value.
     #[cfg(not(kani))]
     pub fn get(&self) -> &Value {
@@ -341,17 +264,6 @@ impl ValueNonNull {
         panic!("get() not supported in Kani verification")
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Unwrap into the inner Value.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> Value {
@@ -361,17 +273,6 @@ impl ValueNonNull {
     #[cfg(kani)]
     pub fn into_inner(self) -> Value {
         panic!("into_inner() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 }
 

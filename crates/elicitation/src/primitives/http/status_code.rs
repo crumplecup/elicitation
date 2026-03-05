@@ -23,12 +23,6 @@ impl Elicitation for reqwest::StatusCode {
         let wrapper = StatusCodeValid::elicit(communicator).await?;
         Ok(wrapper.into_inner())
     }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        StatusCodeValid::kani_proof();
-        assert!(true, "reqwest::StatusCode verified via StatusCodeValid ∎");
-    }
 }
 
 impl ElicitIntrospect for reqwest::StatusCode {
@@ -87,17 +81,6 @@ impl Elicitation for StatusCodeValid {
 
         StatusCodeValid::new(code)
             .map_err(|e| ElicitError::new(ElicitErrorKind::ParseError(e.to_string())))
-    }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        let value: u16 = kani::any();
-        let result = StatusCodeValid::new(value);
-        if value >= 100 && value <= 999 {
-            assert!(result.is_ok(), "Valid status code must succeed ∎");
-        } else {
-            assert!(result.is_err(), "Invalid status code must fail ∎");
-        }
     }
 }
 

@@ -637,6 +637,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ececcb659e7ba858fb4f10388c250a7252eb0a27373f1a72b8748afdd248e587"
 dependencies = [
  "powerfmt",
+ "serde_core",
 ]
 
 [[package]]
@@ -797,8 +798,60 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
+name = "elicit_chrono"
+version = "0.9.0"
+dependencies = [
+ "chrono",
+ "derive_builder",
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "proc-macro2",
+ "quote",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "elicit_jiff"
+version = "0.9.0"
+dependencies = [
+ "derive_builder",
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "jiff",
+ "proc-macro2",
+ "quote",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
+name = "elicit_regex"
+version = "0.9.0"
+dependencies = [
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "proc-macro2",
+ "regex",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
 name = "elicit_reqwest"
-version = "0.8.4"
+version = "0.9.0"
 dependencies = [
  "bytes",
  "derive_builder",
@@ -821,7 +874,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_serde"
-version = "0.8.4"
+version = "0.9.0"
 dependencies = [
  "elicitation",
  "erased-serde",
@@ -836,7 +889,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_serde_json"
-version = "0.8.4"
+version = "0.9.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -852,11 +905,39 @@ dependencies = [
 
 [[package]]
 name = "elicit_server"
-version = "0.8.4"
+version = "0.9.0"
 dependencies = [
+ "chrono",
+ "elicit_chrono",
+ "elicit_jiff",
  "elicit_reqwest",
  "elicit_serde_json",
+ "elicit_time",
+ "elicit_url",
  "elicitation",
+ "futures",
+ "jiff",
+ "proc-macro2",
+ "quote",
+ "reqwest",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "time",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+]
+
+[[package]]
+name = "elicit_time"
+version = "0.9.0"
+dependencies = [
+ "derive_builder",
+ "elicitation",
+ "elicitation_derive",
  "futures",
  "proc-macro2",
  "quote",
@@ -864,14 +945,31 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
- "tokio",
+ "time",
  "tracing",
- "tracing-subscriber",
+]
+
+[[package]]
+name = "elicit_url"
+version = "0.9.0"
+dependencies = [
+ "derive_builder",
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "proc-macro2",
+ "quote",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tracing",
+ "url",
 ]
 
 [[package]]
 name = "elicit_uuid"
-version = "0.8.4"
+version = "0.9.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -887,7 +985,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation"
-version = "0.8.4"
+version = "0.9.0"
 dependencies = [
  "anodized",
  "anyhow",
@@ -902,6 +1000,12 @@ dependencies = [
  "derive_builder",
  "derive_more",
  "derive_setters",
+ "elicit_chrono",
+ "elicit_jiff",
+ "elicit_regex",
+ "elicit_reqwest",
+ "elicit_time",
+ "elicit_url",
  "elicitation_derive",
  "elicitation_macros",
  "erased-serde",
@@ -934,7 +1038,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_creusot"
-version = "0.8.4"
+version = "0.9.0"
 dependencies = [
  "chrono",
  "creusot-std",
@@ -949,7 +1053,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_derive"
-version = "0.8.4"
+version = "0.9.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -973,7 +1077,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_kani"
-version = "0.8.4"
+version = "0.9.0"
 dependencies = [
  "chrono",
  "elicitation",
@@ -987,7 +1091,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_macros"
-version = "0.8.4"
+version = "0.9.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -996,7 +1100,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_rand"
-version = "0.8.4"
+version = "0.9.0"
 dependencies = [
  "chrono",
  "csv",
@@ -2637,10 +2741,12 @@ checksum = "a2b42f36aa1cd011945615b92222f6bf73c599a102a300334cd7f8dbeec726cc"
 dependencies = [
  "chrono",
  "dyn-clone",
+ "jiff",
  "ref-cast",
  "schemars_derive",
  "serde",
  "serde_json",
+ "url",
  "uuid",
 ]
 
@@ -3211,6 +3317,7 @@ dependencies = [
  "idna",
  "percent-encoding",
  "serde",
+ "serde_derive",
 ]
 
 [[package]]

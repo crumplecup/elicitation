@@ -191,19 +191,6 @@ impl Elicitation for Uuid {
         tracing::debug!(uuid = %uuid, mode = ?mode, "Generated UUID");
         Ok(uuid)
     }
-
-    #[cfg(kani)]
-    fn kani_proof() {
-        // Verification delegated to UuidGenerationMode (our enum)
-        UuidGenerationMode::kani_proof();
-
-        // UUID generation itself is handled by third-party uuid library
-        // The compositional chain: UuidGenerationMode (verified) → Uuid (trusted library)
-        assert!(
-            true,
-            "uuid::Uuid verified via UuidGenerationMode composition + trusted uuid crate"
-        );
-    }
 }
 
 impl ElicitIntrospect for Uuid {

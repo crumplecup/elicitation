@@ -64,17 +64,6 @@ impl DateTimeUtcAfter {
         }
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> DateTime<Utc> {
@@ -84,17 +73,6 @@ impl DateTimeUtcAfter {
     #[cfg(kani)]
     pub fn get(&self) -> DateTime<Utc> {
         panic!("get() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -108,17 +86,6 @@ impl DateTimeUtcAfter {
         panic!("threshold() not supported in Kani verification")
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Unwrap into the inner DateTime<Utc>.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> DateTime<Utc> {
@@ -128,17 +95,6 @@ impl DateTimeUtcAfter {
     #[cfg(kani)]
     pub fn into_inner(self) -> DateTime<Utc> {
         panic!("into_inner() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -224,17 +180,6 @@ impl DateTimeUtcBefore {
         }
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> DateTime<Utc> {
@@ -244,17 +189,6 @@ impl DateTimeUtcBefore {
     #[cfg(kani)]
     pub fn get(&self) -> DateTime<Utc> {
         panic!("get() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -268,17 +202,6 @@ impl DateTimeUtcBefore {
         panic!("threshold() not supported in Kani verification")
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Unwrap into the inner DateTime<Utc>.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> DateTime<Utc> {
@@ -288,17 +211,6 @@ impl DateTimeUtcBefore {
     #[cfg(kani)]
     pub fn into_inner(self) -> DateTime<Utc> {
         panic!("into_inner() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -385,17 +297,6 @@ impl NaiveDateTimeAfter {
         }
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> NaiveDateTime {
@@ -405,17 +306,6 @@ impl NaiveDateTimeAfter {
     #[cfg(kani)]
     pub fn get(&self) -> NaiveDateTime {
         panic!("get() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -429,17 +319,6 @@ impl NaiveDateTimeAfter {
         panic!("threshold() not supported in Kani verification")
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Unwrap into the inner NaiveDateTime.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> NaiveDateTime {
@@ -449,17 +328,6 @@ impl NaiveDateTimeAfter {
     #[cfg(kani)]
     pub fn into_inner(self) -> NaiveDateTime {
         panic!("into_inner() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -615,17 +483,6 @@ impl TimestampAfter {
         }
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Get the timestamp value.
     #[cfg(not(kani))]
     pub fn get(&self) -> Timestamp {
@@ -635,17 +492,6 @@ impl TimestampAfter {
     #[cfg(kani)]
     pub fn get(&self) -> Timestamp {
         panic!("get() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -659,17 +505,6 @@ impl TimestampAfter {
         panic!("threshold() not supported in Kani verification")
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Unwrap into the inner Timestamp.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> Timestamp {
@@ -679,17 +514,6 @@ impl TimestampAfter {
     #[cfg(kani)]
     pub fn into_inner(self) -> Timestamp {
         panic!("into_inner() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -775,17 +599,6 @@ impl TimestampBefore {
         }
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Get the timestamp value.
     #[cfg(not(kani))]
     pub fn get(&self) -> Timestamp {
@@ -795,17 +608,6 @@ impl TimestampBefore {
     #[cfg(kani)]
     pub fn get(&self) -> Timestamp {
         panic!("get() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -819,17 +621,6 @@ impl TimestampBefore {
         panic!("threshold() not supported in Kani verification")
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Unwrap into the inner Timestamp.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> Timestamp {
@@ -839,17 +630,6 @@ impl TimestampBefore {
     #[cfg(kani)]
     pub fn into_inner(self) -> Timestamp {
         panic!("into_inner() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -984,17 +764,6 @@ impl OffsetDateTimeAfter {
         }
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> OffsetDateTime {
@@ -1004,17 +773,6 @@ impl OffsetDateTimeAfter {
     #[cfg(kani)]
     pub fn get(&self) -> OffsetDateTime {
         panic!("get() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -1028,17 +786,6 @@ impl OffsetDateTimeAfter {
         panic!("threshold() not supported in Kani verification")
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Unwrap into the inner OffsetDateTime.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> OffsetDateTime {
@@ -1048,17 +795,6 @@ impl OffsetDateTimeAfter {
     #[cfg(kani)]
     pub fn into_inner(self) -> OffsetDateTime {
         panic!("into_inner() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 }
 
@@ -1151,17 +887,6 @@ impl OffsetDateTimeBefore {
         }
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Get the datetime value.
     #[cfg(not(kani))]
     pub fn get(&self) -> OffsetDateTime {
@@ -1171,17 +896,6 @@ impl OffsetDateTimeBefore {
     #[cfg(kani)]
     pub fn get(&self) -> OffsetDateTime {
         panic!("get() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 
     /// Get the threshold.
@@ -1195,17 +909,6 @@ impl OffsetDateTimeBefore {
         panic!("threshold() not supported in Kani verification")
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Unwrap into the inner OffsetDateTime.
     #[cfg(not(kani))]
     pub fn into_inner(self) -> OffsetDateTime {
@@ -1215,17 +918,6 @@ impl OffsetDateTimeBefore {
     #[cfg(kani)]
     pub fn into_inner(self) -> OffsetDateTime {
         panic!("into_inner() not supported in Kani verification")
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 }
 

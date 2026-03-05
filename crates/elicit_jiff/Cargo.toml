@@ -1,0 +1,38 @@
+[package]
+name = "elicit_jiff"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled jiff datetime wrappers with MCP reflect methods"
+keywords = ["mcp", "jiff", "datetime", "elicitation", "jsonschema"]
+categories = ["development-tools", "date-and-time"]
+
+[dependencies]
+elicitation = { workspace = true, features = ["jiff"] }
+elicitation_derive.workspace = true
+jiff = { workspace = true }
+schemars = { workspace = true, features = ["jiff02"] }
+serde.workspace = true
+serde_json.workspace = true
+derive_builder.workspace = true
+rmcp.workspace = true
+tracing.workspace = true
+futures.workspace = true
+
+# Code recovery (optional)
+proc-macro2 = { workspace = true }
+quote = { workspace = true, optional = true }
+
+[features]
+emit = ["dep:quote", "elicitation/emit"]
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

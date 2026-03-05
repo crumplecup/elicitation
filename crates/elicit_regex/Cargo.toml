@@ -1,0 +1,30 @@
+[package]
+name = "elicit_regex"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled Regex newtype — JsonSchema-compatible wrapper around regex::Regex with serde support"
+keywords = ["mcp", "regex", "elicitation", "jsonschema", "tools"]
+categories = ["development-tools", "text-processing"]
+
+[dependencies]
+elicitation = { workspace = true, features = ["regex"] }
+elicitation_derive.workspace = true
+proc-macro2 = { workspace = true }
+regex.workspace = true
+schemars.workspace = true
+serde.workspace = true
+rmcp.workspace = true
+tracing.workspace = true
+futures.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

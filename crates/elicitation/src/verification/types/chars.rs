@@ -44,17 +44,6 @@ impl CharAlphabetic {
         }
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
-    }
-
     /// Gets the wrapped value.
     pub fn get(&self) -> char {
         self.0
@@ -95,6 +84,18 @@ impl Elicitation for CharAlphabetic {
             }
         }
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_char_alphabetic()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 /// Contract type for numeric char values.
@@ -129,17 +130,6 @@ impl CharNumeric {
         } else {
             Err(ValidationError::NotNumeric(value))
         }
-    }
-
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus crate
-    }
-
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
     }
 
     /// Gets the wrapped value.
@@ -181,6 +171,18 @@ impl Elicitation for CharNumeric {
                 }
             }
         }
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_char_numeric()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 
@@ -259,6 +261,18 @@ impl Elicitation for CharAlphanumeric {
                 }
             }
         }
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_char_alphanumeric()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 

@@ -188,6 +188,18 @@ impl Elicitation for I8Positive {
             }
         }
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_numeric_positive("I8Positive", "i8")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_numeric_positive("I8Positive", "i8")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_numeric_positive("I8Positive", "i8")
+    }
 }
 
 #[cfg(test)]
@@ -296,6 +308,18 @@ impl Elicitation for I8NonNegative {
             }
         }
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_numeric_nonneg("I8NonNegative", "i8")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_numeric_positive("I8NonNegative", "i8")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_numeric_positive("I8NonNegative", "i8")
+    }
 }
 
 // ============================================================================
@@ -371,6 +395,18 @@ impl Elicitation for I8NonZero {
                 }
             }
         }
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_numeric_nonzero("I8NonZero", "i8")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_numeric_nonzero("I8NonZero", "i8")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_numeric_nonzero("I8NonZero", "i8")
     }
 }
 
@@ -615,6 +651,18 @@ impl Elicitation for I16Positive {
             }
         }
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_numeric_positive("I16Positive", "i16")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_numeric_positive("I16Positive", "i16")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_numeric_positive("I16Positive", "i16")
+    }
 }
 
 // ============================================================================
@@ -686,6 +734,18 @@ impl Elicitation for I16NonNegative {
             }
         }
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_numeric_nonneg("I16NonNegative", "i16")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_numeric_positive("I16NonNegative", "i16")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_numeric_positive("I16NonNegative", "i16")
+    }
 }
 
 // ============================================================================
@@ -754,6 +814,18 @@ impl Elicitation for I16NonZero {
                 }
             }
         }
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_numeric_nonzero("I16NonZero", "i16")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_numeric_nonzero("I16NonZero", "i16")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_numeric_nonzero("I16NonZero", "i16")
     }
 }
 
@@ -1027,6 +1099,18 @@ impl Elicitation for U8NonZero {
             }
         }
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_numeric_nonzero("U8NonZero", "u8")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_numeric_nonzero("U8NonZero", "u8")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_numeric_nonzero("U8NonZero", "u8")
+    }
 }
 
 // ============================================================================
@@ -1190,6 +1274,18 @@ impl Elicitation for U16NonZero {
                 }
             }
         }
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_numeric_nonzero("U16NonZero", "u16")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_numeric_nonzero("U16NonZero", "u16")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_numeric_nonzero("U16NonZero", "u16")
     }
 }
 
@@ -1471,6 +1567,18 @@ impl Elicitation for U8Positive {
             }
         }
     }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_numeric_positive("U8Positive", "u8")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_numeric_positive("U8Positive", "u8")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_numeric_positive("U8Positive", "u8")
+    }
 }
 
 // U16Positive - Positive u16 (> 0)
@@ -1517,6 +1625,18 @@ impl Elicitation for U16Positive {
                 return Ok(v);
             }
         }
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_numeric_positive("U16Positive", "u16")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_numeric_positive("U16Positive", "u16")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_numeric_positive("U16Positive", "u16")
     }
 }
 
@@ -1589,6 +1709,18 @@ macro_rules! impl_signed_contracts {
                         }
                     }
                 }
+
+                fn kani_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::kani_numeric_positive(stringify!($positive), stringify!($base))
+                }
+
+                fn verus_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::verus_numeric_positive(stringify!($positive), stringify!($base))
+                }
+
+                fn creusot_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::creusot_numeric_positive(stringify!($positive), stringify!($base))
+                }
             }
         }
 
@@ -1654,6 +1786,18 @@ macro_rules! impl_signed_contracts {
                             }
                         }
                     }
+                }
+
+                fn kani_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::kani_numeric_nonneg(stringify!($nonnegative), stringify!($base))
+                }
+
+                fn verus_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::verus_numeric_positive(stringify!($nonnegative), stringify!($base))
+                }
+
+                fn creusot_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::creusot_numeric_positive(stringify!($nonnegative), stringify!($base))
                 }
             }
         }
@@ -1927,6 +2071,18 @@ macro_rules! impl_unsigned_contracts {
                             }
                         }
                     }
+                }
+
+                fn kani_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::kani_numeric_nonzero(stringify!($nonzero), stringify!($base))
+                }
+
+                fn verus_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::verus_numeric_nonzero(stringify!($nonzero), stringify!($base))
+                }
+
+                fn creusot_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::creusot_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
             }
         }
@@ -2267,6 +2423,18 @@ macro_rules! impl_signed_nonzero {
                         }
                     }
                 }
+
+                fn kani_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::kani_numeric_nonzero(stringify!($nonzero), stringify!($base))
+                }
+
+                fn verus_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::verus_numeric_nonzero(stringify!($nonzero), stringify!($base))
+                }
+
+                fn creusot_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::creusot_numeric_nonzero(stringify!($nonzero), stringify!($base))
+                }
             }
         }
     };
@@ -2336,6 +2504,18 @@ macro_rules! impl_unsigned_positive {
                             Err(e) => tracing::warn!(error = %e, "Invalid, re-prompting"),
                         }
                     }
+                }
+
+                fn kani_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::kani_numeric_positive(stringify!($positive), stringify!($base))
+                }
+
+                fn verus_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::verus_numeric_positive(stringify!($positive), stringify!($base))
+                }
+
+                fn creusot_proof() -> proc_macro2::TokenStream {
+                    crate::verification::proof_helpers::creusot_numeric_positive(stringify!($positive), stringify!($base))
                 }
             }
         }
