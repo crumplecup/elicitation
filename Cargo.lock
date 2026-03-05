@@ -798,6 +798,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 
 [[package]]
+name = "elicit_regex"
+version = "0.8.4"
+dependencies = [
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "regex",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
 name = "elicit_reqwest"
 version = "0.8.4"
 dependencies = [
@@ -871,6 +886,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_time"
+version = "0.8.4"
+dependencies = [
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "time",
+ "tracing",
+]
+
+[[package]]
 name = "elicit_uuid"
 version = "0.8.4"
 dependencies = [
@@ -903,6 +933,9 @@ dependencies = [
  "derive_builder",
  "derive_more",
  "derive_setters",
+ "elicit_regex",
+ "elicit_reqwest",
+ "elicit_time",
  "elicitation_derive",
  "elicitation_macros",
  "erased-serde",

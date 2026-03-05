@@ -26,22 +26,22 @@
 //!
 //! Types are grouped by their shadow-crate status:
 //!
-//! | Type                            | serde  | JsonSchema | Status                     |
-//! |---------------------------------|--------|------------|----------------------------|
-//! | `uuid::Uuid`                    | ✅     | ✅ (via schemars/uuid1)  | ✅ wire feature  |
-//! | `url::Url`                      | ✅     | ✅ (via schemars/url2)   | ✅ wire feature  |
-//! | `chrono::DateTime<Utc>`         | ✅     | ✅ (via schemars/chrono04)| ✅ wire feature |
-//! | `chrono::DateTime<FixedOffset>` | ✅     | ✅ (via schemars/chrono04)| ✅ wire feature |
-//! | `chrono::NaiveDateTime`         | ✅     | ✅ (via schemars/chrono04)| ✅ wire feature |
-//! | `jiff::Zoned`                   | ✅     | ✅ (via schemars/jiff02)  | ✅ wire feature |
-//! | `jiff::Timestamp`               | ✅     | ✅ (via schemars/jiff02)  | ✅ wire feature |
-//! | `time::OffsetDateTime`          | ✅     | ❌ not in schemars        | needs elicit_time |
-//! | `time::PrimitiveDateTime`       | ✅     | ❌ not in schemars        | needs elicit_time |
-//! | `regex::Regex`                  | ❌     | ❌ not in schemars        | needs elicit_regex |
-//! | `reqwest::Method`               | ✅     | ❌ not in schemars        | needs newtype in elicit_reqwest |
-//! | `reqwest::StatusCode`           | ✅     | ❌ not in schemars        | needs newtype in elicit_reqwest |
-//! | `reqwest::Version`              | ❓     | ❌ not in schemars        | needs newtype in elicit_reqwest |
-//! | `http::HeaderMap`               | ❌     | ❌ not in schemars        | needs newtype in elicit_reqwest |
+//! | Type                            | serde  | JsonSchema | Status                      |
+//! |---------------------------------|--------|------------|-----------------------------|
+//! | `uuid::Uuid`                    | ✅     | ✅ (via schemars/uuid1)   | ✅ wire feature  |
+//! | `url::Url`                      | ✅     | ✅ (via schemars/url2)    | ✅ wire feature  |
+//! | `chrono::DateTime<Utc>`         | ✅     | ✅ (via schemars/chrono04)| ✅ wire feature  |
+//! | `chrono::DateTime<FixedOffset>` | ✅     | ✅ (via schemars/chrono04)| ✅ wire feature  |
+//! | `chrono::NaiveDateTime`         | ✅     | ✅ (via schemars/chrono04)| ✅ wire feature  |
+//! | `jiff::Zoned`                   | ✅     | ✅ (via schemars/jiff02)  | ✅ wire feature  |
+//! | `jiff::Timestamp`               | ✅     | ✅ (via schemars/jiff02)  | ✅ wire feature  |
+//! | `elicit_time::OffsetDateTime`   | ✅     | ✅ (manual newtype)       | ✅ elicit_time   |
+//! | `elicit_time::PrimitiveDateTime`| ✅     | ✅ (manual newtype)       | ✅ elicit_time   |
+//! | `elicit_regex::Regex`           | ✅     | ✅ (manual newtype)       | ✅ elicit_regex  |
+//! | `elicit_reqwest::Method`        | ✅     | ✅ (manual newtype)       | ✅ elicit_reqwest|
+//! | `elicit_reqwest::StatusCode`    | ✅     | ✅ (manual newtype)       | ✅ elicit_reqwest|
+//! | `elicit_reqwest::Version`       | ✅     | ✅ (manual newtype)       | ✅ elicit_reqwest|
+//! | `elicit_reqwest::HeaderMap`     | ✅     | ✅ (manual newtype)       | ✅ elicit_reqwest|
 
 use schemars::JsonSchema;
 use serde::Serialize;
@@ -103,28 +103,49 @@ fn jiff_timestamp_is_mcp_compat() {
     assert_mcp_compat::<jiff::Timestamp>();
 }
 
-// ── time ─────────────────────────────────────────────────────────────────────
-// BLOCKED: schemars has no time support. Needs elicit_time shadow crate.
-// Tracked: https://github.com/crumplecup/elicitation/issues (elicit_time)
-//
-// #[test]
-// #[cfg(feature = "time")]
-// fn time_offset_datetime_is_mcp_compat() {
-//     assert_mcp_compat::<time::OffsetDateTime>();
-// }
-//
-// #[test]
-// #[cfg(feature = "time")]
-// fn time_primitive_datetime_is_mcp_compat() {
-//     assert_mcp_compat::<time::PrimitiveDateTime>();
-// }
+// ── elicit_time ───────────────────────────────────────────────────────────────
+// time::OffsetDateTime and time::PrimitiveDateTime have serde but no JsonSchema.
+// elicit_time provides newtypes with manual JsonSchema (RFC 3339 / ISO 8601 strings).
 
-// ── regex ─────────────────────────────────────────────────────────────────────
-// BLOCKED: regex::Regex has no serde or JsonSchema support.
-// Needs elicit_regex shadow crate.
-//
-// #[test]
-// #[cfg(feature = "regex")]
-// fn regex_regex_is_mcp_compat() {
-//     assert_mcp_compat::<regex::Regex>();
-// }
+#[test]
+fn elicit_time_offset_datetime_is_mcp_compat() {
+    assert_mcp_compat::<elicit_time::OffsetDateTime>();
+}
+
+#[test]
+fn elicit_time_primitive_datetime_is_mcp_compat() {
+    assert_mcp_compat::<elicit_time::PrimitiveDateTime>();
+}
+
+// ── elicit_regex ──────────────────────────────────────────────────────────────
+// regex::Regex has no serde or JsonSchema. elicit_regex provides a newtype that
+// serializes as/from the pattern string.
+
+#[test]
+fn elicit_regex_regex_is_mcp_compat() {
+    assert_mcp_compat::<elicit_regex::Regex>();
+}
+
+// ── elicit_reqwest ────────────────────────────────────────────────────────────
+// reqwest's Method/StatusCode/Version/HeaderMap lack JsonSchema.
+// elicit_reqwest now provides newtypes with manual JsonSchema + serde.
+
+#[test]
+fn elicit_reqwest_method_is_mcp_compat() {
+    assert_mcp_compat::<elicit_reqwest::Method>();
+}
+
+#[test]
+fn elicit_reqwest_status_code_is_mcp_compat() {
+    assert_mcp_compat::<elicit_reqwest::StatusCode>();
+}
+
+#[test]
+fn elicit_reqwest_version_is_mcp_compat() {
+    assert_mcp_compat::<elicit_reqwest::Version>();
+}
+
+#[test]
+fn elicit_reqwest_header_map_is_mcp_compat() {
+    assert_mcp_compat::<elicit_reqwest::HeaderMap>();
+}

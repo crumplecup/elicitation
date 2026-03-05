@@ -79,6 +79,9 @@ tokio-test = { workspace = true }
 tracing-subscriber = { workspace = true }
 uuid = { workspace = true }
 criterion = { workspace = true }
+elicit_time = { path = "../elicit_time" }
+elicit_regex = { path = "../elicit_regex" }
+elicit_reqwest = { path = "../elicit_reqwest" }
 
 [features]
 default = ["full"]
