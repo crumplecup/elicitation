@@ -373,20 +373,22 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
                 Ok(Self(#(#var_idents),*))
             }
 
-            #[cfg(kani)]
-            fn kani_proof() {
-                #(<#field_types as elicitation::Elicitation>::kani_proof();)*
-                assert!(true, "Compositional verification for {}: all fields verified ∎", #name_str);
+            fn kani_proof() -> proc_macro2::TokenStream {
+                let mut ts = proc_macro2::TokenStream::new();
+                #(ts.extend(<#field_types as elicitation::Elicitation>::kani_proof());)*
+                ts
             }
 
-            #[cfg(verus)]
-            fn verus_proof() {
-                #(<#field_types as elicitation::Elicitation>::verus_proof();)*
+            fn verus_proof() -> proc_macro2::TokenStream {
+                let mut ts = proc_macro2::TokenStream::new();
+                #(ts.extend(<#field_types as elicitation::Elicitation>::verus_proof());)*
+                ts
             }
 
-            #[cfg(creusot)]
-            fn creusot_proof() {
-                #(<#field_types as elicitation::Elicitation>::creusot_proof();)*
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                let mut ts = proc_macro2::TokenStream::new();
+                #(ts.extend(<#field_types as elicitation::Elicitation>::creusot_proof());)*
+                ts
             }
         }
 
@@ -534,16 +536,17 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
                 Ok(Self)
             }
 
-            #[cfg(kani)]
-            fn kani_proof() {
-                assert!(true, "Unit struct {} has exactly one value ∎", #name_str);
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
             }
 
-            #[cfg(verus)]
-            fn verus_proof() {}
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
 
-            #[cfg(creusot)]
-            fn creusot_proof() {}
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
         }
 
         impl #impl_generics elicitation::ElicitIntrospect for #name #ty_generics #where_clause {
@@ -865,35 +868,28 @@ fn generate_elicit_impl_simple(
                 })
             }
 
-            #[cfg(kani)]
-            fn kani_proof() {
-                // Compositional verification: verify all field types
+            fn kani_proof() -> proc_macro2::TokenStream {
+                let mut ts = proc_macro2::TokenStream::new();
                 #(
-                    <#elicited_types as elicitation::Elicitation>::kani_proof();
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
                 )*
-
-                // Tautological assertion: all parts verified ⟹ whole verified
-                assert!(
-                    true,
-                    "Compositional verification for {}: all fields verified ⟹ struct verified ∎",
-                    stringify!(#name)
-                );
+                ts
             }
 
-            #[cfg(verus)]
-            fn verus_proof() {
-                // Compositional verification: verify all field types
+            fn verus_proof() -> proc_macro2::TokenStream {
+                let mut ts = proc_macro2::TokenStream::new();
                 #(
-                    <#elicited_types as elicitation::Elicitation>::verus_proof();
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
                 )*
+                ts
             }
 
-            #[cfg(creusot)]
-            fn creusot_proof() {
-                // Compositional verification: verify all field types
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                let mut ts = proc_macro2::TokenStream::new();
                 #(
-                    <#elicited_types as elicitation::Elicitation>::creusot_proof();
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
                 )*
+                ts
             }
         }
     }
@@ -1196,35 +1192,28 @@ fn generate_elicit_impl_styled(
                 })
             }
 
-            #[cfg(kani)]
-            fn kani_proof() {
-                // Compositional verification: verify all field types
+            fn kani_proof() -> proc_macro2::TokenStream {
+                let mut ts = proc_macro2::TokenStream::new();
                 #(
-                    <#elicited_types as elicitation::Elicitation>::kani_proof();
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
                 )*
-
-                // Tautological assertion: all parts verified ⟹ whole verified
-                assert!(
-                    true,
-                    "Compositional verification for {}: all fields verified ⟹ struct verified ∎",
-                    stringify!(#name)
-                );
+                ts
             }
 
-            #[cfg(verus)]
-            fn verus_proof() {
-                // Compositional verification: verify all field types
+            fn verus_proof() -> proc_macro2::TokenStream {
+                let mut ts = proc_macro2::TokenStream::new();
                 #(
-                    <#elicited_types as elicitation::Elicitation>::verus_proof();
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
                 )*
+                ts
             }
 
-            #[cfg(creusot)]
-            fn creusot_proof() {
-                // Compositional verification: verify all field types
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                let mut ts = proc_macro2::TokenStream::new();
                 #(
-                    <#elicited_types as elicitation::Elicitation>::creusot_proof();
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
                 )*
+                ts
             }
         }
     }

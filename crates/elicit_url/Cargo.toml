@@ -25,11 +25,11 @@ tracing.workspace = true
 futures.workspace = true
 
 # Code recovery (optional)
-proc-macro2 = { workspace = true, optional = true }
+proc-macro2 = { workspace = true }
 quote = { workspace = true, optional = true }
 
 [features]
-emit = ["dep:proc-macro2", "dep:quote", "elicitation/emit"]
+emit = ["dep:quote", "elicitation/emit"]
 
 [dev-dependencies]
 serde_json.workspace = true

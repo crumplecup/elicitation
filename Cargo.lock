@@ -840,6 +840,7 @@ dependencies = [
  "elicitation",
  "elicitation_derive",
  "futures",
+ "proc-macro2",
  "regex",
  "rmcp",
  "schemars",

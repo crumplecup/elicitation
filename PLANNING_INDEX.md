@@ -57,4 +57,16 @@ git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:elicitation_vision.md
 
 **Timeline:** 4 phases (structure, non-generic, generic, integration)
 
+### Proof Emission Redesign
+
+**Document:** [PROOF_EMISSION_PLAN.md](PROOF_EMISSION_PLAN.md)
+
+**Status:** 🔴 Not Started
+
+**Description:** Replace the tautological `#[cfg(kani)] fn kani_proof()` stubs with
+`TokenStream`-returning `emit_kani_proof()` / `emit_verus_proof()` / `emit_creusot_proof()`
+methods on the `Elicitation` trait, feature-gated behind `"emit"`. Each primitive type
+becomes a proof code generator. The derive macro composes field proofs into complete
+composite harnesses. A new `ProofPlugin` exposes these as MCP tools.
+
 New plans can be added here as needed for future development.

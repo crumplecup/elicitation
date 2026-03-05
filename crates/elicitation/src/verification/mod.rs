@@ -815,6 +815,7 @@ pub mod runner;
 
 // Tool-specific adapters
 pub mod kani;
+pub(crate) mod proof_helpers;
 
 #[cfg(feature = "cli")]
 pub mod creusot_runner;

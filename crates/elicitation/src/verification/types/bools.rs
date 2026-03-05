@@ -71,16 +71,16 @@ impl Elicitation for BoolTrue {
         }
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus::bools::BoolTrue
-        // Verifies: new() ensures true values accepted, false values rejected
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_bool_true("BoolTrue")
     }
 
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 
@@ -146,16 +146,16 @@ impl Elicitation for BoolFalse {
         }
     }
 
-    #[cfg(verus)]
-    fn verus_proof() {
-        // Verus proof exists in elicitation_verus::bools::BoolFalse
-        // Verifies: new() ensures false values accepted, true values rejected
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_bool_false("BoolFalse")
     }
 
-    #[cfg(prusti)]
-    fn prusti_proof() {
-        // Prusti proof exists in elicitation_prusti crate
-        // Verifies: wrapper structure with separation logic
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 
