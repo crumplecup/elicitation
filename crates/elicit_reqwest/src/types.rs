@@ -108,6 +108,15 @@ impl std::ops::Deref for StatusCode {
     }
 }
 
+impl StatusCode {
+    /// Construct a `StatusCode` from a raw `u16`.
+    ///
+    /// Returns an error if the value is not in the range 100–599.
+    pub fn from_u16(src: u16) -> Result<Self, <reqwest::StatusCode as TryFrom<u16>>::Error> {
+        reqwest::StatusCode::from_u16(src).map(|sc| Self(Arc::new(sc)))
+    }
+}
+
 impl From<reqwest::StatusCode> for StatusCode {
     fn from(sc: reqwest::StatusCode) -> Self {
         Self(Arc::new(sc))

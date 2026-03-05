@@ -77,6 +77,13 @@ pub struct FutureOffsetDateTimeState {
     inner: OffsetDateTime,
 }
 
+impl FutureOffsetDateTimeState {
+    /// Return the inner `OffsetDateTime`.
+    pub fn into_inner(self) -> OffsetDateTime {
+        self.inner
+    }
+}
+
 /// An unvalidated ISO 8601 local datetime string.
 pub struct UnvalidatedPrimitiveStr {
     src: String,
@@ -85,6 +92,13 @@ pub struct UnvalidatedPrimitiveStr {
 /// A successfully parsed `PrimitiveDateTime`.
 pub struct ParsedPrimitiveDateTime {
     inner: PrimitiveDateTime,
+}
+
+impl ParsedPrimitiveDateTime {
+    /// Return the inner `PrimitiveDateTime`.
+    pub fn into_inner(self) -> PrimitiveDateTime {
+        self.inner
+    }
 }
 
 // ── Typestate transitions ─────────────────────────────────────────────────────
@@ -421,5 +435,144 @@ impl ElicitPlugin for TimeWorkflowPlugin {
                 ))])),
             }
         })
+    }
+}
+
+// ── EmitCode ──────────────────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+use elicitation::emit_code::{CrateDep, EmitCode};
+#[cfg(feature = "emit")]
+use proc_macro2::TokenStream;
+
+#[cfg(feature = "emit")]
+const ELICIT_TIME_DEP: CrateDep = CrateDep::new("elicit_time", "0.8");
+#[cfg(feature = "emit")]
+const ELICITATION_DEP_T: CrateDep = CrateDep::new("elicitation", "0.8");
+#[cfg(feature = "emit")]
+const TIME_DEP: CrateDep = CrateDep::new("time", "0.3");
+
+/// `parse_offset_datetime` → `UnvalidatedOffsetStr::new → .parse()`
+#[cfg(feature = "emit")]
+impl EmitCode for ParseOffsetParams {
+    fn emit_code(&self) -> TokenStream {
+        let dt = &self.datetime;
+        quote::quote! {
+            let (_dt, _dt_proof) = elicit_time::UnvalidatedOffsetStr::new(#dt.to_string())
+                .parse()
+                .map_err(|e| format!("OffsetDateTime parse failed: {}", e))?;
+            let _inner = _dt.into_inner();
+            println!("OffsetDateTimeParsed: {}", _inner.unix_timestamp());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_T, ELICIT_TIME_DEP]
+    }
+}
+
+/// `parse_primitive_datetime` → `UnvalidatedPrimitiveStr::new → .parse()`
+#[cfg(feature = "emit")]
+impl EmitCode for ParsePrimitiveParams {
+    fn emit_code(&self) -> TokenStream {
+        let dt = &self.datetime;
+        quote::quote! {
+            let (_dt, _dt_proof) = elicit_time::UnvalidatedPrimitiveStr::new(#dt.to_string())
+                .parse()
+                .map_err(|e| format!("PrimitiveDateTime parse failed: {}", e))?;
+            let _inner = _dt.into_inner();
+            println!("PrimitiveDateTimeParsed: {}-{}-{}", _inner.year(), _inner.month() as u8, _inner.day());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_T, ELICIT_TIME_DEP]
+    }
+}
+
+/// `assert_future` → `UnvalidatedOffsetStr → ParsedOffsetDateTime → FutureOffsetDateTimeState`
+#[cfg(feature = "emit")]
+impl EmitCode for AssertFutureParams {
+    fn emit_code(&self) -> TokenStream {
+        let dt = &self.datetime;
+        quote::quote! {
+            let (_dt, _dt_proof) = elicit_time::UnvalidatedOffsetStr::new(#dt.to_string())
+                .parse()
+                .map_err(|e| format!("OffsetDateTime parse failed: {}", e))?;
+            let (_future, _future_proof) = _dt.assert_future(_dt_proof)
+                .map_err(|e| format!("OffsetDateTimeFuture not established: {}", e))?;
+            println!("OffsetDateTimeParsed \u{2227} OffsetDateTimeFuture: {}",
+                _future.into_inner().unix_timestamp());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_T, ELICIT_TIME_DEP]
+    }
+}
+
+/// `compute_duration` → parse two OffsetDateTimes and compute signed duration
+#[cfg(feature = "emit")]
+impl EmitCode for ComputeDurationParams {
+    fn emit_code(&self) -> TokenStream {
+        let from = &self.from;
+        let to = &self.to;
+        quote::quote! {
+            use time::format_description::well_known::Rfc3339;
+            let _from = time::OffsetDateTime::parse(#from, &Rfc3339)
+                .map_err(|e| format!("From parse failed: {}", e))?;
+            let _to = time::OffsetDateTime::parse(#to, &Rfc3339)
+                .map_err(|e| format!("To parse failed: {}", e))?;
+            let _dur = _to - _from;
+            println!("Duration: {}s / {}m / {}h / {}d",
+                _dur.whole_seconds(), _dur.whole_minutes(), _dur.whole_hours(), _dur.whole_days());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_T, ELICIT_TIME_DEP, TIME_DEP]
+    }
+}
+
+/// `add_seconds` → parse OffsetDateTime and add/subtract seconds
+#[cfg(feature = "emit")]
+impl EmitCode for AddSecondsParams {
+    fn emit_code(&self) -> TokenStream {
+        let dt = &self.datetime;
+        let secs = self.seconds;
+        quote::quote! {
+            use time::format_description::well_known::Rfc3339;
+            let _dt = time::OffsetDateTime::parse(#dt, &Rfc3339)
+                .map_err(|e| format!("DateTime parse failed: {}", e))?;
+            let _result = _dt + time::Duration::seconds(#secs);
+            println!("Result: {}", _result.format(&Rfc3339).unwrap_or_else(|_| "(err)".to_string()));
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_T, ELICIT_TIME_DEP, TIME_DEP]
+    }
+}
+
+// ── dispatch_emit ─────────────────────────────────────────────────────────────
+
+/// Deserialize a time_workflow tool's params from JSON and return its [`EmitCode`] impl.
+#[cfg(feature = "emit")]
+pub fn dispatch_emit(
+    tool_name: &str,
+    params: serde_json::Value,
+) -> Result<Box<dyn EmitCode>, String> {
+    match tool_name {
+        "parse_offset_datetime" => serde_json::from_value::<ParseOffsetParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "parse_primitive_datetime" => serde_json::from_value::<ParsePrimitiveParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "assert_future" => serde_json::from_value::<AssertFutureParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "compute_duration" => serde_json::from_value::<ComputeDurationParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "add_seconds" => serde_json::from_value::<AddSecondsParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        other => Err(format!("Unknown time_workflow tool: '{other}'")),
     }
 }

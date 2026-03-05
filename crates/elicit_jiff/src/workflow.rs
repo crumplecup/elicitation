@@ -89,6 +89,13 @@ pub struct FutureTimestampState {
     inner: Timestamp,
 }
 
+impl FutureTimestampState {
+    /// Return the inner jiff `Timestamp`.
+    pub fn into_inner(self) -> Timestamp {
+        self.inner
+    }
+}
+
 /// An unvalidated zoned datetime string — the initial state.
 pub struct UnvalidatedZonedStr {
     src: String,
@@ -102,6 +109,13 @@ pub struct ParsedZoned {
 /// A zoned datetime successfully converted to a new timezone.
 pub struct ConvertedZonedState {
     inner: jiff::Zoned,
+}
+
+impl ConvertedZonedState {
+    /// Return the inner jiff `Zoned` datetime.
+    pub fn into_inner(self) -> jiff::Zoned {
+        self.inner
+    }
 }
 
 // ── Typestate transitions ─────────────────────────────────────────────────────
@@ -438,5 +452,143 @@ impl ElicitPlugin for JiffWorkflowPlugin {
                 ))])),
             }
         })
+    }
+}
+
+// ── EmitCode ──────────────────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+use elicitation::emit_code::{CrateDep, EmitCode};
+#[cfg(feature = "emit")]
+use proc_macro2::TokenStream;
+
+#[cfg(feature = "emit")]
+const ELICIT_JIFF_DEP: CrateDep = CrateDep::new("elicit_jiff", "0.8");
+#[cfg(feature = "emit")]
+const ELICITATION_DEP_J: CrateDep = CrateDep::new("elicitation", "0.8");
+#[cfg(feature = "emit")]
+const JIFF_DEP: CrateDep = CrateDep::new("jiff", "0.2");
+
+/// `parse_timestamp` → `UnvalidatedTimestampStr::new → .parse()`
+#[cfg(feature = "emit")]
+impl EmitCode for ParseTimestampParams {
+    fn emit_code(&self) -> TokenStream {
+        let ts = &self.timestamp;
+        quote::quote! {
+            let (_ts, _ts_proof) = elicit_jiff::UnvalidatedTimestampStr::new(#ts.to_string())
+                .parse()
+                .map_err(|e| format!("Timestamp parse failed: {}", e))?;
+            let _inner = _ts.into_inner();
+            println!("TimestampParsed: {} ({}s)", _inner, _inner.as_second());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_J, ELICIT_JIFF_DEP]
+    }
+}
+
+/// `parse_zoned` → `UnvalidatedZonedStr::new → .parse()`
+#[cfg(feature = "emit")]
+impl EmitCode for ParseZonedParams {
+    fn emit_code(&self) -> TokenStream {
+        let z = &self.zoned;
+        quote::quote! {
+            let (_zoned, _zoned_proof) = elicit_jiff::UnvalidatedZonedStr::new(#z.to_string())
+                .parse()
+                .map_err(|e| format!("Zoned parse failed: {}", e))?;
+            let _inner = _zoned.into_inner();
+            println!("ZonedParsed: {}", _inner);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_J, ELICIT_JIFF_DEP]
+    }
+}
+
+/// `assert_future` → `UnvalidatedTimestampStr → ParsedTimestamp → FutureTimestampState`
+#[cfg(feature = "emit")]
+impl EmitCode for AssertFutureParams {
+    fn emit_code(&self) -> TokenStream {
+        let ts = &self.timestamp;
+        quote::quote! {
+            let (_ts, _ts_proof) = elicit_jiff::UnvalidatedTimestampStr::new(#ts.to_string())
+                .parse()
+                .map_err(|e| format!("Timestamp parse failed: {}", e))?;
+            let (_future, _future_proof) = _ts.assert_future(_ts_proof)
+                .map_err(|e| format!("TimestampFuture not established: {}", e))?;
+            println!("TimestampParsed \u{2227} TimestampFuture: {}", _future.into_inner());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_J, ELICIT_JIFF_DEP]
+    }
+}
+
+/// `convert_tz` → `UnvalidatedZonedStr → ParsedZoned → ConvertedZonedState`
+#[cfg(feature = "emit")]
+impl EmitCode for ConvertTzParams {
+    fn emit_code(&self) -> TokenStream {
+        let z = &self.zoned;
+        let tz = &self.timezone;
+        quote::quote! {
+            let (_zoned, _zoned_proof) = elicit_jiff::UnvalidatedZonedStr::new(#z.to_string())
+                .parse()
+                .map_err(|e| format!("Zoned parse failed: {}", e))?;
+            let (_converted, _tz_proof) = _zoned.convert_tz(#tz, _zoned_proof)
+                .map_err(|e| format!("TimezoneConverted not established: {}", e))?;
+            println!("ZonedParsed \u{2227} TimezoneConverted: {}", _converted.into_inner());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_J, ELICIT_JIFF_DEP]
+    }
+}
+
+/// `compute_span` → parse two timestamps and compute span
+#[cfg(feature = "emit")]
+impl EmitCode for ComputeSpanParams {
+    fn emit_code(&self) -> TokenStream {
+        let from = &self.from;
+        let to = &self.to;
+        quote::quote! {
+            let _from: jiff::Timestamp = #from.parse()
+                .map_err(|e| format!("From parse failed: {}", e))?;
+            let _to: jiff::Timestamp = #to.parse()
+                .map_err(|e| format!("To parse failed: {}", e))?;
+            let _secs = _to.as_second() - _from.as_second();
+            println!("Span: {}s / {}m / {}h / {}d",
+                _secs, _secs / 60, _secs / 3600, _secs / 86400);
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_J, ELICIT_JIFF_DEP, JIFF_DEP]
+    }
+}
+
+// ── dispatch_emit ─────────────────────────────────────────────────────────────
+
+/// Deserialize a jiff_workflow tool's params from JSON and return its [`EmitCode`] impl.
+#[cfg(feature = "emit")]
+pub fn dispatch_emit(
+    tool_name: &str,
+    params: serde_json::Value,
+) -> Result<Box<dyn EmitCode>, String> {
+    match tool_name {
+        "parse_timestamp" => serde_json::from_value::<ParseTimestampParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "parse_zoned" => serde_json::from_value::<ParseZonedParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "assert_future" => serde_json::from_value::<AssertFutureParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "convert_tz" => serde_json::from_value::<ConvertTzParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "compute_span" => serde_json::from_value::<ComputeSpanParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        other => Err(format!("Unknown jiff_workflow tool: '{other}'")),
     }
 }

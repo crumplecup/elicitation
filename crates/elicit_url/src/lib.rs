@@ -13,4 +13,11 @@ mod url_type;
 pub mod workflow;
 
 pub use url_type::Url;
-pub use workflow::UrlWorkflowPlugin;
+pub use workflow::{
+    AssertHttpsParams, BuildUrlParams, HttpsRequired, JoinUrlParams, ParseUrlParams, ParsedUrl,
+    SchemeAllowed, SecureUrl, SecureUrlState, UnvalidatedUrl, UrlParsed, UrlWorkflowPlugin,
+    ValidateSchemeParams,
+};
+
+#[cfg(feature = "emit")]
+pub use workflow::dispatch_emit as dispatch_url_emit;

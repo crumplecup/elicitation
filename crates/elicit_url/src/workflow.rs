@@ -425,3 +425,163 @@ impl ElicitPlugin for UrlWorkflowPlugin {
         })
     }
 }
+
+// ── EmitCode ──────────────────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+use elicitation::emit_code::{CrateDep, EmitCode};
+#[cfg(feature = "emit")]
+use proc_macro2::TokenStream;
+
+#[cfg(feature = "emit")]
+const ELICIT_URL_DEP: CrateDep = CrateDep::new("elicit_url", "0.8");
+#[cfg(feature = "emit")]
+const ELICITATION_DEP: CrateDep = CrateDep::new("elicitation", "0.8");
+
+/// `parse_url` → `UnvalidatedUrl::new → .parse()`
+#[cfg(feature = "emit")]
+impl EmitCode for ParseUrlParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        quote::quote! {
+            let (_parsed, _url_proof) = elicit_url::UnvalidatedUrl::new(#url.to_string())
+                .parse()
+                .map_err(|e| format!("URL parse failed: {}", e))?;
+            println!("UrlParsed: {}", _parsed.as_str());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_URL_DEP]
+    }
+}
+
+/// `assert_https` → `UnvalidatedUrl → ParsedUrl → SecureUrlState`
+#[cfg(feature = "emit")]
+impl EmitCode for AssertHttpsParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        quote::quote! {
+            let (_parsed, _parsed_proof) = elicit_url::UnvalidatedUrl::new(#url.to_string())
+                .parse()
+                .map_err(|e| format!("URL parse failed: {}", e))?;
+            let (_secure, _proof) = _parsed.assert_https(_parsed_proof)
+                .map_err(|e| format!("HttpsRequired not established: {}", e))?;
+            println!("UrlParsed \u{2227} HttpsRequired: {}", _secure.as_str());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_URL_DEP]
+    }
+}
+
+/// `validate_scheme` → `UnvalidatedUrl → ParsedUrl.validate_scheme(allowed)`
+#[cfg(feature = "emit")]
+impl EmitCode for ValidateSchemeParams {
+    fn emit_code(&self) -> TokenStream {
+        let url = &self.url;
+        let schemes: Vec<&str> = self.allowed_schemes.iter().map(String::as_str).collect();
+        quote::quote! {
+            let (_parsed, _parsed_proof) = elicit_url::UnvalidatedUrl::new(#url.to_string())
+                .parse()
+                .map_err(|e| format!("URL parse failed: {}", e))?;
+            let allowed: &[&str] = &[ #( #schemes ),* ];
+            let (_validated, _proof) = _parsed.validate_scheme(allowed, _parsed_proof)
+                .map_err(|e| format!("SchemeAllowed not established: {}", e))?;
+            println!("UrlParsed \u{2227} SchemeAllowed: {}", _validated.as_str());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_URL_DEP]
+    }
+}
+
+/// `build_url` → parse base, join path, append query params
+#[cfg(feature = "emit")]
+impl EmitCode for BuildUrlParams {
+    fn emit_code(&self) -> TokenStream {
+        let base = &self.base;
+        let path_opt = &self.path;
+        let has_path = path_opt.is_some();
+        let path_val = path_opt.as_deref().unwrap_or("");
+        // encode query params as a sorted list of (key, value) pairs
+        let (qk, qv): (Vec<_>, Vec<_>) = self
+            .params
+            .as_ref()
+            .map(|m| m.iter().map(|(k, v)| (k.as_str(), v.as_str())).unzip())
+            .unwrap_or_default();
+        let has_params = !qk.is_empty();
+        quote::quote! {
+            let mut _url = ::url::Url::parse(#base)
+                .map_err(|e| format!("URL parse failed: {}", e))?;
+            if #has_path {
+                let _base_str = _url.as_str().trim_end_matches('/').to_string() + "/";
+                let _base2 = ::url::Url::parse(&_base_str).unwrap_or(_url.clone());
+                _url = _base2.join(#path_val.trim_start_matches('/'))
+                    .map_err(|e| format!("Path join failed: {}", e))?;
+            }
+            if #has_params {
+                let mut _pairs: Vec<(String, String)> = _url.query_pairs()
+                    .map(|(k, v)| (k.into_owned(), v.into_owned()))
+                    .collect();
+                #( _pairs.push((#qk.to_string(), #qv.to_string())); )*
+                let mut _new_url = _url.clone();
+                _new_url.set_query(None);
+                { let mut _s = _new_url.query_pairs_mut(); for (k, v) in &_pairs { _s.append_pair(k, v); } }
+                _url = _new_url;
+            }
+            println!("UrlParsed (built): {}", _url.as_str());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_URL_DEP, CrateDep::new("url", "2")]
+    }
+}
+
+/// `join_url` → parse base, resolve relative
+#[cfg(feature = "emit")]
+impl EmitCode for JoinUrlParams {
+    fn emit_code(&self) -> TokenStream {
+        let base = &self.base;
+        let relative = &self.relative;
+        quote::quote! {
+            let _base = ::url::Url::parse(#base)
+                .map_err(|e| format!("URL parse failed: {}", e))?;
+            let _result = _base.join(#relative)
+                .map_err(|e| format!("Join failed: {}", e))?;
+            println!("UrlParsed(base) \u{2227} UrlParsed(result): {}", _result.as_str());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP, ELICIT_URL_DEP, CrateDep::new("url", "2")]
+    }
+}
+
+// ── dispatch_emit ─────────────────────────────────────────────────────────────
+
+/// Deserialize a url_workflow tool's params from JSON and return its [`EmitCode`] impl.
+///
+/// Returns `Err` if `tool_name` is unknown or `params` fails to deserialize.
+#[cfg(feature = "emit")]
+pub fn dispatch_emit(
+    tool_name: &str,
+    params: serde_json::Value,
+) -> Result<Box<dyn EmitCode>, String> {
+    match tool_name {
+        "parse_url" => serde_json::from_value::<ParseUrlParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "assert_https" => serde_json::from_value::<AssertHttpsParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "validate_scheme" => serde_json::from_value::<ValidateSchemeParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "build_url" => serde_json::from_value::<BuildUrlParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "join_url" => serde_json::from_value::<JoinUrlParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        other => Err(format!("Unknown url_workflow tool: '{other}'")),
+    }
+}

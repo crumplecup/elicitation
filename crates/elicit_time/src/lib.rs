@@ -15,4 +15,12 @@ pub mod workflow;
 
 pub use offset_date_time::OffsetDateTime;
 pub use primitive_date_time::PrimitiveDateTime;
-pub use workflow::TimeWorkflowPlugin;
+pub use workflow::{
+    AddSecondsParams, AssertFutureParams, ComputeDurationParams, FutureOffsetDateTimeState,
+    FutureOffsetProof, OffsetDateTimeFuture, OffsetDateTimeParsed, ParseOffsetParams,
+    ParsePrimitiveParams, ParsedOffsetDateTime, ParsedPrimitiveDateTime, PrimitiveDateTimeParsed,
+    TimeWorkflowPlugin, UnvalidatedOffsetStr, UnvalidatedPrimitiveStr,
+};
+
+#[cfg(feature = "emit")]
+pub use workflow::dispatch_emit as dispatch_time_emit;

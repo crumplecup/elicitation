@@ -906,19 +906,28 @@ dependencies = [
 name = "elicit_server"
 version = "0.8.4"
 dependencies = [
+ "chrono",
+ "elicit_chrono",
+ "elicit_jiff",
  "elicit_reqwest",
  "elicit_serde_json",
+ "elicit_time",
+ "elicit_url",
  "elicitation",
  "futures",
+ "jiff",
  "proc-macro2",
  "quote",
+ "reqwest",
  "rmcp",
  "schemars",
  "serde",
  "serde_json",
+ "time",
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "url",
 ]
 
 [[package]]

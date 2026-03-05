@@ -430,3 +430,146 @@ impl ElicitPlugin for ChronoWorkflowPlugin {
         })
     }
 }
+
+// ── EmitCode ──────────────────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+use elicitation::emit_code::{CrateDep, EmitCode};
+#[cfg(feature = "emit")]
+use proc_macro2::TokenStream;
+
+#[cfg(feature = "emit")]
+const ELICIT_CHRONO_DEP: CrateDep = CrateDep::new("elicit_chrono", "0.8");
+#[cfg(feature = "emit")]
+const ELICITATION_DEP_C: CrateDep = CrateDep::new("elicitation", "0.8");
+#[cfg(feature = "emit")]
+const CHRONO_DEP: CrateDep = CrateDep::new("chrono", "0.4");
+
+/// `parse_datetime` → `UnvalidatedDateStr::new → .parse() → .into_inner()`
+#[cfg(feature = "emit")]
+impl EmitCode for ParseDateTimeParams {
+    fn emit_code(&self) -> TokenStream {
+        let dt = &self.datetime;
+        quote::quote! {
+            let (_dt, _dt_proof) = elicit_chrono::UnvalidatedDateStr::new(#dt.to_string())
+                .parse()
+                .map_err(|e| format!("DateTime parse failed: {}", e))?;
+            let _inner = _dt.into_inner();
+            println!("DateTimeParsed: {}", _inner.to_rfc3339());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_C, ELICIT_CHRONO_DEP]
+    }
+}
+
+/// `assert_future` → `UnvalidatedDateStr → ParsedDateTime → FutureDateTimeState`
+#[cfg(feature = "emit")]
+impl EmitCode for AssertFutureParams {
+    fn emit_code(&self) -> TokenStream {
+        let dt = &self.datetime;
+        quote::quote! {
+            let (_dt, _dt_proof) = elicit_chrono::UnvalidatedDateStr::new(#dt.to_string())
+                .parse()
+                .map_err(|e| format!("DateTime parse failed: {}", e))?;
+            let (_future, _future_proof) = _dt.assert_future(_dt_proof)
+                .map_err(|e| format!("DateTimeFuture not established: {}", e))?;
+            println!("DateTimeParsed \u{2227} DateTimeFuture: {}", _future.into_inner().to_rfc3339());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_C, ELICIT_CHRONO_DEP]
+    }
+}
+
+/// `assert_in_range` → parse datetime + bounds, then `assert_in_range`
+#[cfg(feature = "emit")]
+impl EmitCode for AssertInRangeParams {
+    fn emit_code(&self) -> TokenStream {
+        let dt = &self.datetime;
+        let start = &self.start;
+        let end = &self.end;
+        quote::quote! {
+            let _start: chrono::DateTime<chrono::Utc> = #start.parse()
+                .map_err(|e| format!("Start parse failed: {}", e))?;
+            let _end: chrono::DateTime<chrono::Utc> = #end.parse()
+                .map_err(|e| format!("End parse failed: {}", e))?;
+            let (_dt, _dt_proof) = elicit_chrono::UnvalidatedDateStr::new(#dt.to_string())
+                .parse()
+                .map_err(|e| format!("DateTime parse failed: {}", e))?;
+            let (_ranged, _ranged_proof) = _dt.assert_in_range(_start, _end, _dt_proof)
+                .map_err(|e| format!("DateTimeInRange not established: {}", e))?;
+            println!("DateTimeParsed \u{2227} DateTimeInRange: {}", _ranged.into_inner().to_rfc3339());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_C, ELICIT_CHRONO_DEP, CHRONO_DEP]
+    }
+}
+
+/// `compute_duration` → parse two datetimes and compute signed duration
+#[cfg(feature = "emit")]
+impl EmitCode for ComputeDurationParams {
+    fn emit_code(&self) -> TokenStream {
+        let from = &self.from;
+        let to = &self.to;
+        quote::quote! {
+            let _from: chrono::DateTime<chrono::Utc> = #from.parse()
+                .map_err(|e| format!("From parse failed: {}", e))?;
+            let _to: chrono::DateTime<chrono::Utc> = #to.parse()
+                .map_err(|e| format!("To parse failed: {}", e))?;
+            let _dur = _to.signed_duration_since(_from);
+            println!("Duration: {}s / {}m / {}h / {}d",
+                _dur.num_seconds(), _dur.num_minutes(), _dur.num_hours(), _dur.num_days());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_C, ELICIT_CHRONO_DEP, CHRONO_DEP]
+    }
+}
+
+/// `add_seconds` → parse datetime and add/subtract seconds
+#[cfg(feature = "emit")]
+impl EmitCode for AddSecondsParams {
+    fn emit_code(&self) -> TokenStream {
+        let dt = &self.datetime;
+        let secs = self.seconds;
+        quote::quote! {
+            let _dt: chrono::DateTime<chrono::Utc> = #dt.parse()
+                .map_err(|e| format!("DateTime parse failed: {}", e))?;
+            let _result = _dt + chrono::Duration::seconds(#secs);
+            println!("Result: {}", _result.to_rfc3339());
+        }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![ELICITATION_DEP_C, ELICIT_CHRONO_DEP, CHRONO_DEP]
+    }
+}
+
+// ── dispatch_emit ─────────────────────────────────────────────────────────────
+
+/// Deserialize a chrono_workflow tool's params from JSON and return its [`EmitCode`] impl.
+#[cfg(feature = "emit")]
+pub fn dispatch_emit(
+    tool_name: &str,
+    params: serde_json::Value,
+) -> Result<Box<dyn EmitCode>, String> {
+    match tool_name {
+        "parse_datetime" => serde_json::from_value::<ParseDateTimeParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "assert_future" => serde_json::from_value::<AssertFutureParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "assert_in_range" => serde_json::from_value::<AssertInRangeParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "compute_duration" => serde_json::from_value::<ComputeDurationParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        "add_seconds" => serde_json::from_value::<AddSecondsParams>(params)
+            .map(|p| Box::new(p) as Box<dyn EmitCode>)
+            .map_err(|e| format!("{e}")),
+        other => Err(format!("Unknown chrono_workflow tool: '{other}'")),
+    }
+}
