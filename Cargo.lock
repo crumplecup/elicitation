@@ -802,9 +802,12 @@ name = "elicit_chrono"
 version = "0.8.4"
 dependencies = [
  "chrono",
+ "derive_builder",
  "elicitation",
  "elicitation_derive",
  "futures",
+ "proc-macro2",
+ "quote",
  "rmcp",
  "schemars",
  "serde",
@@ -816,10 +819,13 @@ dependencies = [
 name = "elicit_jiff"
 version = "0.8.4"
 dependencies = [
+ "derive_builder",
  "elicitation",
  "elicitation_derive",
  "futures",
  "jiff",
+ "proc-macro2",
+ "quote",
  "rmcp",
  "schemars",
  "serde",
@@ -919,9 +925,12 @@ dependencies = [
 name = "elicit_time"
 version = "0.8.4"
 dependencies = [
+ "derive_builder",
  "elicitation",
  "elicitation_derive",
  "futures",
+ "proc-macro2",
+ "quote",
  "rmcp",
  "schemars",
  "serde",
@@ -934,9 +943,12 @@ dependencies = [
 name = "elicit_url"
 version = "0.8.4"
 dependencies = [
+ "derive_builder",
  "elicitation",
  "elicitation_derive",
  "futures",
+ "proc-macro2",
+ "quote",
  "rmcp",
  "schemars",
  "serde",

@@ -2,7 +2,6 @@
 
 use elicit_jiff::{Timestamp, Zoned};
 use schemars::schema_for;
-use serde_json::json;
 
 // ── Zoned ──────────────────────────────────────────────────────────────────
 
