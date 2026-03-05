@@ -43,6 +43,15 @@ elicitation_derive = { path = "crates/elicitation_derive", version = "0.9.0" }
 elicitation_macros = { path = "crates/elicitation_macros", version = "0.9.0" }
 elicitation_rand = { path = "crates/elicitation_rand", version = "0.9.0" }
 elicitation_kani = { path = "crates/elicitation_kani", version = "0.9.0" }
+elicit_chrono = { path = "crates/elicit_chrono", version = "0.9.0" }
+elicit_jiff = { path = "crates/elicit_jiff", version = "0.9.0" }
+elicit_url = { path = "crates/elicit_url", version = "0.9.0" }
+elicit_time = { path = "crates/elicit_time", version = "0.9.0" }
+elicit_reqwest = { path = "crates/elicit_reqwest", version = "0.9.0" }
+elicit_serde_json = { path = "crates/elicit_serde_json", version = "0.9.0" }
+elicit_regex = { path = "crates/elicit_regex", version = "0.9.0" }
+elicit_uuid = { path = "crates/elicit_uuid", version = "0.9.0" }
+elicit_serde = { path = "crates/elicit_serde", version = "0.9.0" }
 
 
 # MCP client

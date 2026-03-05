@@ -14,8 +14,8 @@ keywords = ["mcp", "serde", "json", "elicitation", "tool"]
 categories = ["development-tools"]
 
 [dependencies]
-elicitation = { path = "../elicitation" }
-elicitation_derive = { path = "../elicitation_derive" }
+elicitation = { workspace = true }
+elicitation_derive = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 schemars = { workspace = true }

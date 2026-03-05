@@ -15,15 +15,15 @@ categories = ["development-tools", "asynchronous"]
 
 [dependencies]
 # Elicitation core
-elicitation = { path = "../elicitation" }
+elicitation = { workspace = true }
 
 # Workflow crates (cross-crate composition)
-elicit_reqwest = { path = "../elicit_reqwest" }
-elicit_serde_json = { path = "../elicit_serde_json" }
-elicit_url = { path = "../elicit_url" }
-elicit_chrono = { path = "../elicit_chrono" }
-elicit_jiff = { path = "../elicit_jiff" }
-elicit_time = { path = "../elicit_time" }
+elicit_reqwest = { workspace = true }
+elicit_serde_json = { workspace = true }
+elicit_url = { workspace = true }
+elicit_chrono = { workspace = true }
+elicit_jiff = { workspace = true }
+elicit_time = { workspace = true }
 
 # Third-party types (needed in cross-crate workflows)
 reqwest = { workspace = true }
@@ -53,15 +53,15 @@ quote = { workspace = true, optional = true }
 
 [features]
 emit = [
-    "dep:proc-macro2",
-    "dep:quote",
-    "elicitation/emit",
-    "elicit_reqwest/emit",
-    "elicit_serde_json/emit",
-    "elicit_url/emit",
-    "elicit_chrono/emit",
-    "elicit_jiff/emit",
-    "elicit_time/emit",
+  "dep:proc-macro2",
+  "dep:quote",
+  "elicitation/emit",
+  "elicit_reqwest/emit",
+  "elicit_serde_json/emit",
+  "elicit_url/emit",
+  "elicit_chrono/emit",
+  "elicit_jiff/emit",
+  "elicit_time/emit",
 ]
 
 [dev-dependencies]
