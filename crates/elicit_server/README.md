@@ -1,35 +1,55 @@
 # elicit_server
 
-Cross-crate workflow plugins for elicitation — server-side orchestration,
-multi-crate composition, and code recovery.
+> **Compositions that no single crate can hold**
 
-## Why this crate
+The [elicitation](https://docs.rs/elicitation) library teaches agents to
+think in types — constructing valid domain values through typed, contract-carrying
+operations rather than filling in JSON forms. Each shadow crate (`elicit_reqwest`,
+`elicit_url`, `elicit_serde_json`, …) exposes one slice of that language.
 
-Individual elicitation shadow crates (`elicit_reqwest`, `elicit_url`,
-`elicit_serde_json`, etc.) each expose their own MCP tools, but some
-high-value workflows need types from two or more crates simultaneously.
-`elicit_server` is the home for those compositions — it can depend on all
-sibling crates without creating circular dependency chains.
+`elicit_server` is where those slices compose into something greater.
 
-## Plugins
+## What makes cross-crate composition special
 
-| Plugin | Tools | Crates composed |
-|---|---|---|
-| [`SecureFetchPlugin`] | `secure_fetch`, `validated_api_call` | `elicit_url` + `elicit_reqwest` |
-| [`FetchAndParsePlugin`] | `fetch_and_extract`, `fetch_and_validate` | `elicit_reqwest` + `elicit_serde_json` |
-| [`EmitBinaryPlugin`] *(emit feature)* | `emit_binary` | all workflow crates |
+Individual crates prove local invariants. Composition proves end-to-end
+contracts that span multiple domains. The typestate proof chains here are not
+validation — they are compiler-enforced proofs that an agent cannot skip a step:
 
-## Cross-crate typestate chains
-
-**SecureFetchPlugin**
+**SecureFetchPlugin** (`elicit_url` + `elicit_reqwest`)
 ```text
 UnvalidatedUrl → UrlParsed → HttpsRequired → RequestCompleted ∧ StatusSuccess
 ```
+An agent cannot reach `RequestCompleted` without first passing through
+`HttpsRequired`. The HTTPS contract is not a runtime check — it is structurally
+unreachable to bypass.
 
-**FetchAndParsePlugin**
+**FetchAndParsePlugin** (`elicit_reqwest` + `elicit_serde_json`)
 ```text
 RequestCompleted → JsonParsed → PointerResolved
 ```
+The JSON pointer is only resolvable against a value that was provably fetched and
+parsed. The agent builds the proof chain step by step.
+
+## Code recovery (`emit` feature)
+
+When an agent has assembled a verified workflow interactively, it can ask
+`EmitBinaryPlugin` to recover that session as a standalone, compilable Rust binary
+— with all typestate ceremony, proof tokens, and contract types intact.
+
+```text
+Agent builds workflow → calls emit_binary → gets a main.rs → cargo build → ships it
+```
+
+The output is not a script. It is idiomatic Rust that compiles and runs without
+the MCP server. The agent's exploration becomes production code.
+
+## Plugins
+
+| Plugin | Tools | Feature |
+|---|---|---|
+| `SecureFetchPlugin` | `secure_fetch`, `validated_api_call` | default |
+| `FetchAndParsePlugin` | `fetch_and_extract`, `fetch_and_validate` | default |
+| `EmitBinaryPlugin` | `emit_binary` | `emit` |
 
 ## Usage
 
@@ -45,30 +65,3 @@ async fn main() {
     // registry.serve(rmcp::transport::stdio()).await.unwrap();
 }
 ```
-
-## Feature flags
-
-| Feature | Enables |
-|---|---|
-| `emit` | [`EmitBinaryPlugin`] — recover agent tool compositions as standalone Rust binaries |
-
-### Code recovery with `emit`
-
-When an agent has built a verified workflow interactively, it can call
-`emit_binary` to recover that session as a compilable `main.rs`:
-
-```rust,no_run
-// Tool: emit_binary
-// args: {
-//   "steps": [
-//     { "tool": "fetch", "params": { "url": "https://api.example.com/data", "timeout_secs": 10 } },
-//     { "tool": "parse_and_focus", "params": { "pointer": "/results" } }
-//   ],
-//   "output_dir": "/tmp/my_workflow",
-//   "compile": true
-// }
-// → "/tmp/my_workflow/target/release/my_workflow"
-```
-
-The emitted binary preserves the full typestate ceremony, proof tokens, and
-contract types from the original interactive session.
