@@ -48,7 +48,6 @@ derive_builder.workspace = true
 tracing.workspace = true
 
 # Code recovery (optional)
-proc-macro2 = { workspace = true }
 quote = { workspace = true, optional = true }
 
 [features]

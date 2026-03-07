@@ -751,7 +751,7 @@ impl ElicitPlugin for JsonWorkflowPlugin {
 #[cfg(feature = "emit")]
 use elicitation::emit_code::{CrateDep, EmitCode};
 #[cfg(feature = "emit")]
-use proc_macro2::TokenStream;
+use elicitation::proc_macro2::TokenStream;
 
 #[cfg(feature = "emit")]
 const ELICIT_SERDE_JSON_DEP: CrateDep = CrateDep::new("elicit_serde_json", "0.8");

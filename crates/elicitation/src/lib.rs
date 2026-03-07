@@ -210,6 +210,12 @@ pub use inventory;
 #[doc(hidden)]
 pub use async_trait;
 
+// Re-export proc_macro2 so generated code can use elicitation::proc_macro2
+// instead of requiring proc_macro2 as a direct dep of downstream crates.
+#[cfg(feature = "proofs")]
+#[doc(hidden)]
+pub use proc_macro2;
+
 // Re-export derive macro with user-friendly name
 pub use elicitation_derive::Elicit;
 

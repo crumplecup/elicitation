@@ -436,7 +436,7 @@ impl ElicitPlugin for ChronoWorkflowPlugin {
 #[cfg(feature = "emit")]
 use elicitation::emit_code::{CrateDep, EmitCode};
 #[cfg(feature = "emit")]
-use proc_macro2::TokenStream;
+use elicitation::proc_macro2::TokenStream;
 
 #[cfg(feature = "emit")]
 const ELICIT_CHRONO_DEP: CrateDep = CrateDep::new("elicit_chrono", "0.8");

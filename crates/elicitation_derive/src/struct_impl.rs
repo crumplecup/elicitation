@@ -326,6 +326,29 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
         quote! {}
     };
 
+    #[cfg(feature = "proofs")]
+    let proof_methods = quote! {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            #(ts.extend(<#field_types as elicitation::Elicitation>::kani_proof());)*
+            ts
+        }
+
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            #(ts.extend(<#field_types as elicitation::Elicitation>::verus_proof());)*
+            ts
+        }
+
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            #(ts.extend(<#field_types as elicitation::Elicitation>::creusot_proof());)*
+            ts
+        }
+    };
+    #[cfg(not(feature = "proofs"))]
+    let proof_methods = quote! {};
+
     let expanded = quote! {
         impl elicitation::Prompt for #name #ty_generics #where_clause {
             fn prompt() -> Option<&'static str> {
@@ -373,23 +396,7 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
                 Ok(Self(#(#var_idents),*))
             }
 
-            fn kani_proof() -> proc_macro2::TokenStream {
-                let mut ts = proc_macro2::TokenStream::new();
-                #(ts.extend(<#field_types as elicitation::Elicitation>::kani_proof());)*
-                ts
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                let mut ts = proc_macro2::TokenStream::new();
-                #(ts.extend(<#field_types as elicitation::Elicitation>::verus_proof());)*
-                ts
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                let mut ts = proc_macro2::TokenStream::new();
-                #(ts.extend(<#field_types as elicitation::Elicitation>::creusot_proof());)*
-                ts
-            }
+            #proof_methods
         }
 
         impl #impl_generics elicitation::ElicitIntrospect for #name #ty_generics #where_clause {
@@ -490,6 +497,23 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
         quote! {}
     };
 
+    #[cfg(feature = "proofs")]
+    let proof_methods = quote! {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+    };
+    #[cfg(not(feature = "proofs"))]
+    let proof_methods = quote! {};
+
     let expanded = quote! {
         impl elicitation::Prompt for #name #ty_generics #where_clause {
             fn prompt() -> Option<&'static str> {
@@ -536,17 +560,7 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
                 Ok(Self)
             }
 
-            fn kani_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                proc_macro2::TokenStream::new()
-            }
+            #proof_methods
         }
 
         impl #impl_generics elicitation::ElicitIntrospect for #name #ty_generics #where_clause {
@@ -830,6 +844,35 @@ fn generate_elicit_impl_simple(
         }
     };
 
+    #[cfg(feature = "proofs")]
+    let proof_methods = quote! {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            #(
+                ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
+            )*
+            ts
+        }
+
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            #(
+                ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
+            )*
+            ts
+        }
+
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            #(
+                ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
+            )*
+            ts
+        }
+    };
+    #[cfg(not(feature = "proofs"))]
+    let proof_methods = quote! {};
+
     quote! {
         /// Style enum for this type (default-only).
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -868,29 +911,7 @@ fn generate_elicit_impl_simple(
                 })
             }
 
-            fn kani_proof() -> proc_macro2::TokenStream {
-                let mut ts = proc_macro2::TokenStream::new();
-                #(
-                    ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
-                )*
-                ts
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                let mut ts = proc_macro2::TokenStream::new();
-                #(
-                    ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
-                )*
-                ts
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                let mut ts = proc_macro2::TokenStream::new();
-                #(
-                    ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
-                )*
-                ts
-            }
+            #proof_methods
         }
     }
 }
@@ -1086,6 +1107,35 @@ fn generate_elicit_impl_styled(
         }
     };
 
+    #[cfg(feature = "proofs")]
+    let proof_methods = quote! {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            #(
+                ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
+            )*
+            ts
+        }
+
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            #(
+                ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
+            )*
+            ts
+        }
+
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            #(
+                ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
+            )*
+            ts
+        }
+    };
+    #[cfg(not(feature = "proofs"))]
+    let proof_methods = quote! {};
+
     // Generate enum with first variant as default
     let default_variant = &style_variants[0];
     let other_variants = &style_variants[1..];
@@ -1192,29 +1242,7 @@ fn generate_elicit_impl_styled(
                 })
             }
 
-            fn kani_proof() -> proc_macro2::TokenStream {
-                let mut ts = proc_macro2::TokenStream::new();
-                #(
-                    ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
-                )*
-                ts
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                let mut ts = proc_macro2::TokenStream::new();
-                #(
-                    ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
-                )*
-                ts
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                let mut ts = proc_macro2::TokenStream::new();
-                #(
-                    ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
-                )*
-                ts
-            }
+            #proof_methods
         }
     }
 }

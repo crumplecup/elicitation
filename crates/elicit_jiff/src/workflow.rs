@@ -460,7 +460,7 @@ impl ElicitPlugin for JiffWorkflowPlugin {
 #[cfg(feature = "emit")]
 use elicitation::emit_code::{CrateDep, EmitCode};
 #[cfg(feature = "emit")]
-use proc_macro2::TokenStream;
+use elicitation::proc_macro2::TokenStream;
 
 #[cfg(feature = "emit")]
 const ELICIT_JIFF_DEP: CrateDep = CrateDep::new("elicit_jiff", "0.8");

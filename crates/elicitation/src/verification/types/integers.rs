@@ -189,14 +189,17 @@ impl Elicitation for I8Positive {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_positive("I8Positive", "i8")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_positive("I8Positive", "i8")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_positive("I8Positive", "i8")
     }
@@ -309,14 +312,17 @@ impl Elicitation for I8NonNegative {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_nonneg("I8NonNegative", "i8")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_positive("I8NonNegative", "i8")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_positive("I8NonNegative", "i8")
     }
@@ -397,14 +403,17 @@ impl Elicitation for I8NonZero {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_nonzero("I8NonZero", "i8")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_nonzero("I8NonZero", "i8")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_nonzero("I8NonZero", "i8")
     }
@@ -652,14 +661,17 @@ impl Elicitation for I16Positive {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_positive("I16Positive", "i16")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_positive("I16Positive", "i16")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_positive("I16Positive", "i16")
     }
@@ -735,14 +747,17 @@ impl Elicitation for I16NonNegative {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_nonneg("I16NonNegative", "i16")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_positive("I16NonNegative", "i16")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_positive("I16NonNegative", "i16")
     }
@@ -816,14 +831,17 @@ impl Elicitation for I16NonZero {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_nonzero("I16NonZero", "i16")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_nonzero("I16NonZero", "i16")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_nonzero("I16NonZero", "i16")
     }
@@ -1100,14 +1118,17 @@ impl Elicitation for U8NonZero {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_nonzero("U8NonZero", "u8")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_nonzero("U8NonZero", "u8")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_nonzero("U8NonZero", "u8")
     }
@@ -1276,14 +1297,17 @@ impl Elicitation for U16NonZero {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_nonzero("U16NonZero", "u16")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_nonzero("U16NonZero", "u16")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_nonzero("U16NonZero", "u16")
     }
@@ -1568,14 +1592,17 @@ impl Elicitation for U8Positive {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_positive("U8Positive", "u8")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_positive("U8Positive", "u8")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_positive("U8Positive", "u8")
     }
@@ -1627,14 +1654,17 @@ impl Elicitation for U16Positive {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_positive("U16Positive", "u16")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_positive("U16Positive", "u16")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_positive("U16Positive", "u16")
     }
@@ -1710,14 +1740,17 @@ macro_rules! impl_signed_contracts {
                     }
                 }
 
+                #[cfg(feature = "proofs")]
                 fn kani_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::kani_numeric_positive(stringify!($positive), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn verus_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::verus_numeric_positive(stringify!($positive), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_positive(stringify!($positive), stringify!($base))
                 }
@@ -1788,14 +1821,17 @@ macro_rules! impl_signed_contracts {
                     }
                 }
 
+                #[cfg(feature = "proofs")]
                 fn kani_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::kani_numeric_nonneg(stringify!($nonnegative), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn verus_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::verus_numeric_positive(stringify!($nonnegative), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_positive(stringify!($nonnegative), stringify!($base))
                 }
@@ -2073,14 +2109,17 @@ macro_rules! impl_unsigned_contracts {
                     }
                 }
 
+                #[cfg(feature = "proofs")]
                 fn kani_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::kani_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn verus_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::verus_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
@@ -2424,14 +2463,17 @@ macro_rules! impl_signed_nonzero {
                     }
                 }
 
+                #[cfg(feature = "proofs")]
                 fn kani_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::kani_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn verus_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::verus_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
@@ -2506,14 +2548,17 @@ macro_rules! impl_unsigned_positive {
                     }
                 }
 
+                #[cfg(feature = "proofs")]
                 fn kani_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::kani_numeric_positive(stringify!($positive), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn verus_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::verus_numeric_positive(stringify!($positive), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_positive(stringify!($positive), stringify!($base))
                 }
