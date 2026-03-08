@@ -84,6 +84,7 @@ extern crate proc_macro;
 
 mod contract_type;
 mod derive_elicit;
+mod elicit_tool;
 mod enum_impl;
 mod method_reflection;
 mod rand_contract_parser;
@@ -373,4 +374,52 @@ pub fn derive_rand(input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn reflect_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
     method_reflection::expand(attr, item)
+}
+
+/// Generate a [`ToolDescriptor`] companion function from an async tool handler.
+///
+/// Place this attribute on an `async fn` that accepts a typed params struct and
+/// returns `Result<CallToolResult, ErrorData>`.  The macro emits the original
+/// function unchanged plus a companion `{fn_name}_descriptor() -> ToolDescriptor`
+/// constructor, ready for use in a [`DescriptorPlugin`].
+///
+/// [`ToolDescriptor`]: elicitation::plugin::ToolDescriptor
+/// [`DescriptorPlugin`]: elicitation::plugin::DescriptorPlugin
+///
+/// # Arguments
+///
+/// - `name = "..."` — bare tool name (no namespace prefix)
+/// - `description = "..."` — human-readable description shown to the agent
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation_derive::elicit_tool;
+/// use rmcp::model::{CallToolResult, Content};
+/// use rmcp::ErrorData;
+/// use schemars::JsonSchema;
+/// use serde::Deserialize;
+///
+/// #[derive(Deserialize, JsonSchema)]
+/// struct PingParams { message: String }
+///
+/// #[elicit_tool(name = "ping", description = "Echo a message")]
+/// async fn ping(p: PingParams) -> Result<CallToolResult, ErrorData> {
+///     Ok(CallToolResult::success(vec![Content::text(p.message)]))
+/// }
+///
+/// // Generates: pub fn ping_descriptor() -> elicitation::plugin::ToolDescriptor { ... }
+/// ```
+///
+/// The descriptor can then be returned from a [`DescriptorPlugin::descriptors`] impl:
+///
+/// ```rust,ignore
+/// impl DescriptorPlugin for MyPlugin {
+///     fn name(&self) -> &'static str { "my_plugin" }
+///     fn descriptors(&self) -> &[ToolDescriptor] { &self.tools }
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn elicit_tool(args: TokenStream, item: TokenStream) -> TokenStream {
+    elicit_tool::expand(args.into(), item.into()).into()
 }

@@ -17,7 +17,7 @@
 //! [`EmitCode`](elicitation::emit_code::EmitCode) impls so agent sessions can be
 //! recovered as standalone Rust binaries.
 
-use elicitation::{DescriptorPlugin, ToolDescriptor, make_descriptor};
+use elicitation::{DescriptorPlugin, ToolDescriptor, elicit_tool};
 use rmcp::{ErrorData, model::CallToolResult};
 use schemars::JsonSchema;
 use serde::Deserialize;
@@ -75,20 +75,8 @@ impl Default for SecureFetchPlugin {
     fn default() -> Self {
         Self {
             tools: vec![
-                make_descriptor::<SecureFetchParams, _>(
-                    "secure_fetch",
-                    "Assert HTTPS and fetch a URL. Combines elicit_url typestate (parse → assert \
-                     HTTPS) with elicit_reqwest HTTP tooling. The proof chain \
-                     UrlParsed ∧ HttpsRequired is established before any network I/O.",
-                    |p| Box::pin(secure_fetch_impl(p)),
-                ),
-                make_descriptor::<ValidatedApiCallParams, _>(
-                    "validated_api_call",
-                    "Assert HTTPS then make an authenticated GET or POST request. Combines \
-                     URL validation, HTTPS enforcement, and bearer token authorization into \
-                     a single verified operation.",
-                    |p| Box::pin(validated_api_call_impl(p)),
-                ),
+                secure_fetch_descriptor(),
+                validated_api_call_descriptor(),
             ],
         }
     }
@@ -106,8 +94,14 @@ impl DescriptorPlugin for SecureFetchPlugin {
 
 // ── Implementations ────────────────────────────────────────────────────────────
 
+#[elicit_tool(
+    name = "secure_fetch",
+    description = "Assert HTTPS and fetch a URL. Combines elicit_url typestate (parse → assert \
+                   HTTPS) with elicit_reqwest HTTP tooling. The proof chain \
+                   UrlParsed ∧ HttpsRequired is established before any network I/O."
+)]
 #[instrument(skip_all, fields(url = %p.url, timeout = p.timeout_secs))]
-async fn secure_fetch_impl(p: SecureFetchParams) -> Result<CallToolResult, ErrorData> {
+async fn secure_fetch(p: SecureFetchParams) -> Result<CallToolResult, ErrorData> {
     // Phase 1: URL validation (elicit_url typestate)
     let (parsed, url_proof) = elicit_url::UnvalidatedUrl::new(p.url.clone())
         .parse()
@@ -141,8 +135,14 @@ async fn secure_fetch_impl(p: SecureFetchParams) -> Result<CallToolResult, Error
     )]))
 }
 
+#[elicit_tool(
+    name = "validated_api_call",
+    description = "Assert HTTPS then make an authenticated GET or POST request. Combines \
+                   URL validation, HTTPS enforcement, and bearer token authorization into \
+                   a single verified operation."
+)]
 #[instrument(skip(p), fields(url = %p.url, method = %p.method, timeout = p.timeout_secs))]
-async fn validated_api_call_impl(p: ValidatedApiCallParams) -> Result<CallToolResult, ErrorData> {
+async fn validated_api_call(p: ValidatedApiCallParams) -> Result<CallToolResult, ErrorData> {
     // Phase 1: URL validation
     let (parsed, url_proof) = elicit_url::UnvalidatedUrl::new(p.url.clone())
         .parse()

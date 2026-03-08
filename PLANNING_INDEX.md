@@ -90,3 +90,8 @@ serves as the canary conversion.
 - ✅ `DescriptorPlugin` blanket impl in `plugin/descriptor_plugin.rs`
 - ✅ `SecureFetchPlugin` converted (canary validates design)
 
+**Phase 2 Progress:**
+- ✅ `#[elicit_tool]` attribute macro in `elicitation_derive/src/elicit_tool.rs`
+- ✅ Re-exported as `elicitation::elicit_tool`
+- ✅ `SecureFetchPlugin` canary updated: `#[elicit_tool]` on both handlers, `make_descriptor` calls eliminated
+

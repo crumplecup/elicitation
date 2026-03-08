@@ -216,8 +216,8 @@ pub use async_trait;
 #[doc(hidden)]
 pub use proc_macro2;
 
-// Re-export derive macro with user-friendly name
-pub use elicitation_derive::Elicit;
+// Re-export derive macros with user-friendly names
+pub use elicitation_derive::{Elicit, elicit_tool};
 
 // Re-export verification contract types at crate level (for kani_proofs imports)
 // EXPLICIT exports - no globs (helps compiler show what's missing)
