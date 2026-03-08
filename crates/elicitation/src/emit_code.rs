@@ -36,6 +36,97 @@
 
 use proc_macro2::TokenStream;
 
+// ── Global emit registry ──────────────────────────────────────────────────────
+
+/// An inventory entry connecting a tool name to an [`EmitCode`] constructor.
+///
+/// Register via `inventory::submit!(EmitEntry { ... })` in each crate that
+/// exposes tools with code-recovery support.  The global [`dispatch_emit`]
+/// function collects all registered entries at runtime.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// # use elicitation::emit_code::{EmitEntry, EmitCode};
+/// fn make_my_emit(v: serde_json::Value) -> Result<Box<dyn EmitCode>, String> {
+///     serde_json::from_value::<MyParams>(v)
+///         .map(|p| Box::new(p) as Box<dyn EmitCode>)
+///         .map_err(|e| e.to_string())
+/// }
+///
+/// inventory::submit! {
+///     EmitEntry { tool: "my_tool", constructor: make_my_emit }
+/// }
+/// ```
+pub struct EmitEntry {
+    /// Bare tool name (no namespace prefix), e.g. `"parse_url"`.
+    pub tool: &'static str,
+    /// Deserialize params from JSON and box as [`EmitCode`].
+    pub constructor: fn(serde_json::Value) -> Result<Box<dyn EmitCode>, String>,
+}
+
+inventory::collect!(EmitEntry);
+
+/// Look up a tool name in the global emit registry and deserialize its params.
+///
+/// Returns a boxed [`EmitCode`] ready to pass to [`BinaryScaffold`], or an
+/// error string if the tool is not registered or params fail to deserialize.
+///
+/// This replaces the per-crate `dispatch_*_emit` chain that was previously
+/// required in [`EmitBinaryPlugin`](crate::plugin::ElicitPlugin).
+pub fn dispatch_emit(
+    tool: &str,
+    params: serde_json::Value,
+) -> Result<Box<dyn EmitCode>, String> {
+    inventory::iter::<EmitEntry>()
+        .find(|e| e.tool == tool)
+        .ok_or_else(|| format!("unknown emit tool: '{tool}'"))
+        .and_then(|e| (e.constructor)(params))
+}
+
+// ── Registration helper macro ─────────────────────────────────────────────────
+
+/// Register a params type with the global emit registry under a tool name.
+///
+/// Generates a named constructor function (to satisfy `inventory`'s requirement
+/// for `'static` function pointers) and submits an [`EmitEntry`].
+///
+/// Only active when the `emit` feature is enabled.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// // In workflow.rs, under #[cfg(feature = "emit")]:
+/// register_emit!("parse_url", ParseUrlParams);
+/// register_emit!("assert_https", AssertHttpsParams);
+/// ```
+#[macro_export]
+macro_rules! register_emit {
+    ($tool:literal, $T:ty) => {
+        const _: () = {
+            fn __emit_constructor(
+                v: elicitation::serde_json::Value,
+            ) -> ::std::result::Result<
+                ::std::boxed::Box<dyn elicitation::emit_code::EmitCode>,
+                ::std::string::String,
+            > {
+                elicitation::serde_json::from_value::<$T>(v)
+                    .map(|p| {
+                        ::std::boxed::Box::new(p)
+                            as ::std::boxed::Box<dyn elicitation::emit_code::EmitCode>
+                    })
+                    .map_err(|e| e.to_string())
+            }
+            elicitation::inventory::submit! {
+                elicitation::emit_code::EmitEntry {
+                    tool: $tool,
+                    constructor: __emit_constructor,
+                }
+            }
+        };
+    };
+}
+
 /// A type that knows how to recover itself as Rust source code.
 ///
 /// Two roles:

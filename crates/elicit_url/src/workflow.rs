@@ -585,3 +585,16 @@ pub fn dispatch_emit(
         other => Err(format!("Unknown url_workflow tool: '{other}'")),
     }
 }
+
+// ── Global emit registry ──────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+elicitation::register_emit!("parse_url", ParseUrlParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("assert_https", AssertHttpsParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("validate_scheme", ValidateSchemeParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("build_url", BuildUrlParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("join_url", JoinUrlParams);

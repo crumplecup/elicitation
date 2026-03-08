@@ -1476,3 +1476,24 @@ pub fn dispatch_emit(
         other => Err(format!("Unknown reqwest tool: '{other}'")),
     }
 }
+
+// ── Global emit registry ──────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+elicitation::register_emit!("fetch", FetchParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("auth_fetch", AuthFetchParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("post", PostParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("api_call", ApiCallParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("health_check", HealthCheckParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("url_build", UrlBuildParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("status_summary", StatusSummaryParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("build_request", BuildRequestParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("paginated_get", PaginatedGetParams);

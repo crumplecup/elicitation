@@ -935,3 +935,16 @@ pub fn dispatch_emit(
         other => Err(format!("Unknown serde_json tool: '{other}'")),
     }
 }
+
+// ── Global emit registry ──────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+elicitation::register_emit!("parse_and_focus", ParseFocusParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("validate_object", ValidateObjectParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("safe_merge", MergeParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("pointer_update", PointerUpdateParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("field_chain", FieldChainParams);

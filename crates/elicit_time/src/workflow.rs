@@ -576,3 +576,16 @@ pub fn dispatch_emit(
         other => Err(format!("Unknown time_workflow tool: '{other}'")),
     }
 }
+
+// ── Global emit registry ──────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+elicitation::register_emit!("parse_offset_datetime", ParseOffsetParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("parse_primitive_datetime", ParsePrimitiveParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("assert_future", AssertFutureParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("compute_duration", ComputeDurationParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("add_seconds", AddSecondsParams);

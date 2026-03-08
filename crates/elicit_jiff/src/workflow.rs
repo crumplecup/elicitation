@@ -592,3 +592,16 @@ pub fn dispatch_emit(
         other => Err(format!("Unknown jiff_workflow tool: '{other}'")),
     }
 }
+
+// ── Global emit registry ──────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+elicitation::register_emit!("parse_timestamp", ParseTimestampParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("parse_zoned", ParseZonedParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("assert_future", AssertFutureParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("convert_tz", ConvertTzParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("compute_span", ComputeSpanParams);

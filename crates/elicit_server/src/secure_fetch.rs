@@ -315,3 +315,10 @@ pub fn dispatch_secure_fetch_emit(
         other => Err(format!("Unknown secure_fetch tool: {other}")),
     }
 }
+
+// ── Global emit registry ──────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+elicitation::register_emit!("secure_fetch", SecureFetchParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("validated_api_call", ValidatedApiCallParams);
