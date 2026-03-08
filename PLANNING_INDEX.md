@@ -95,3 +95,10 @@ serves as the canary conversion.
 - ✅ Re-exported as `elicitation::elicit_tool`
 - ✅ `SecureFetchPlugin` canary updated: `#[elicit_tool]` on both handlers, `make_descriptor` calls eliminated
 
+**Phase 3 Progress:**
+- ✅ `PluginToolRegistration` + `inventory::collect!` in `plugin/descriptor.rs`
+- ✅ `#[elicit_tool]` updated: optional `plugin = "..."` emits `inventory::submit!`
+- ✅ `#[derive(ElicitPlugin)]` in `elicitation_derive/src/derive_elicit_plugin.rs`
+- ✅ `elicitation::futures` re-exported (needed by generated code)
+- ✅ `SecureFetchPlugin` is now a plain unit struct — 332 lines → ~75 lines of non-boilerplate
+

@@ -12,10 +12,12 @@ use syn::{
 
 // ── Attribute args ─────────────────────────────────────────────────────────────
 
-/// Parsed arguments from `#[elicit_tool(name = "...", description = "...")]`.
+/// Parsed arguments from `#[elicit_tool(name = "...", description = "...", plugin = "...")]`.
 struct ElicitToolArgs {
     name: String,
     description: String,
+    /// Optional owning plugin name. When set, emits `inventory::submit!`.
+    plugin: Option<String>,
 }
 
 impl Parse for ElicitToolArgs {
@@ -24,6 +26,7 @@ impl Parse for ElicitToolArgs {
 
         let mut name = None;
         let mut description = None;
+        let mut plugin = None;
 
         for meta in pairs {
             let Meta::NameValue(nv) = meta else {
@@ -33,12 +36,13 @@ impl Parse for ElicitToolArgs {
                 ));
             };
 
-            let key = nv.path.get_ident().map(|i| i.to_string()).unwrap_or_default();
+            let key = nv
+                .path
+                .get_ident()
+                .map(|i| i.to_string())
+                .unwrap_or_default();
             let Expr::Lit(expr_lit) = &nv.value else {
-                return Err(Error::new_spanned(
-                    &nv.value,
-                    "expected a string literal",
-                ));
+                return Err(Error::new_spanned(&nv.value, "expected a string literal"));
             };
             let Lit::Str(s) = &expr_lit.lit else {
                 return Err(Error::new_spanned(
@@ -50,10 +54,13 @@ impl Parse for ElicitToolArgs {
             match key.as_str() {
                 "name" => name = Some(s.value()),
                 "description" => description = Some(s.value()),
+                "plugin" => plugin = Some(s.value()),
                 other => {
                     return Err(Error::new_spanned(
                         &nv.path,
-                        format!("unknown key `{other}`; expected `name` or `description`"),
+                        format!(
+                            "unknown key `{other}`; expected `name`, `description`, or `plugin`"
+                        ),
                     ));
                 }
             }
@@ -69,6 +76,7 @@ impl Parse for ElicitToolArgs {
                     "missing `description = \"...\"`",
                 )
             })?,
+            plugin,
         })
     }
 }
@@ -91,7 +99,11 @@ pub fn expand(args: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
-    let ElicitToolArgs { name, description } = syn::parse2(args)?;
+    let ElicitToolArgs {
+        name,
+        description,
+        plugin,
+    } = syn::parse2(args)?;
     let func: ItemFn = syn::parse2(item.clone())?;
 
     // Extract the params type from the first parameter.
@@ -104,6 +116,19 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
 
     let fn_ident = &func.sig.ident;
     let descriptor_ident = format_ident!("{fn_ident}_descriptor");
+
+    // Optional inventory registration when `plugin = "..."` is specified.
+    let inventory_submit = plugin.map(|plugin_name| {
+        quote! {
+            elicitation::inventory::submit! {
+                elicitation::PluginToolRegistration {
+                    plugin: #plugin_name,
+                    name: #name,
+                    constructor: #descriptor_ident,
+                }
+            }
+        }
+    });
 
     let expanded = quote! {
         #func
@@ -118,6 +143,8 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
                 |p| ::std::boxed::Box::pin(#fn_ident(p)),
             )
         }
+
+        #inventory_submit
     };
 
     Ok(expanded)

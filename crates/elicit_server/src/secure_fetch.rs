@@ -17,7 +17,7 @@
 //! [`EmitCode`](elicitation::emit_code::EmitCode) impls so agent sessions can be
 //! recovered as standalone Rust binaries.
 
-use elicitation::{DescriptorPlugin, ToolDescriptor, elicit_tool};
+use elicitation::{ElicitPlugin, elicit_tool};
 use rmcp::{ErrorData, model::CallToolResult};
 use schemars::JsonSchema;
 use serde::Deserialize;
@@ -67,34 +67,17 @@ fn default_get() -> String {
 /// Every tool in this plugin asserts HTTPS before making any network call —
 /// the typestate proof is embedded in the function signature, so the contract
 /// cannot be bypassed.
-pub struct SecureFetchPlugin {
-    tools: Vec<ToolDescriptor>,
-}
-
-impl Default for SecureFetchPlugin {
-    fn default() -> Self {
-        Self {
-            tools: vec![
-                secure_fetch_descriptor(),
-                validated_api_call_descriptor(),
-            ],
-        }
-    }
-}
-
-impl DescriptorPlugin for SecureFetchPlugin {
-    fn name(&self) -> &'static str {
-        "secure_fetch"
-    }
-
-    fn descriptors(&self) -> &[ToolDescriptor] {
-        &self.tools
-    }
-}
+///
+/// Tools are registered at link time via `#[elicit_tool(plugin = "secure_fetch")]`
+/// on each handler; no manual wiring required.
+#[derive(ElicitPlugin)]
+#[plugin(name = "secure_fetch")]
+pub struct SecureFetchPlugin;
 
 // ── Implementations ────────────────────────────────────────────────────────────
 
 #[elicit_tool(
+    plugin = "secure_fetch",
     name = "secure_fetch",
     description = "Assert HTTPS and fetch a URL. Combines elicit_url typestate (parse → assert \
                    HTTPS) with elicit_reqwest HTTP tooling. The proof chain \
@@ -136,6 +119,7 @@ async fn secure_fetch(p: SecureFetchParams) -> Result<CallToolResult, ErrorData>
 }
 
 #[elicit_tool(
+    plugin = "secure_fetch",
     name = "validated_api_call",
     description = "Assert HTTPS then make an authenticated GET or POST request. Combines \
                    URL validation, HTTPS enforcement, and bearer token authorization into \

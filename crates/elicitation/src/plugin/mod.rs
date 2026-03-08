@@ -15,7 +15,7 @@
 pub mod descriptor;
 pub mod descriptor_plugin;
 
-pub use descriptor::{ToolDescriptor, make_descriptor};
+pub use descriptor::{PluginToolRegistration, ToolDescriptor, make_descriptor};
 pub use descriptor_plugin::DescriptorPlugin;
 
 use std::borrow::Cow;

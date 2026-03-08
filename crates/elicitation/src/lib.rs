@@ -127,7 +127,9 @@ mod elicit_json;
 pub use elicit_json::ElicitJson;
 pub mod plugin;
 mod plugin_registry;
-pub use plugin::{DescriptorPlugin, ElicitPlugin, ToolDescriptor, make_descriptor};
+pub use plugin::{
+    DescriptorPlugin, ElicitPlugin, PluginToolRegistration, ToolDescriptor, make_descriptor,
+};
 pub use plugin_registry::{PluginRegistry, Toolchain};
 
 #[cfg(feature = "serde_json")]
@@ -194,6 +196,10 @@ pub use collections::ChoiceSet;
 // Re-export rmcp for user convenience
 pub use rmcp;
 
+// Re-export futures for derive macro (BoxFuture in ElicitPlugin blanket impls)
+#[doc(hidden)]
+pub use futures;
+
 // Re-export serde_json for derive macro (needed in elicit_checked)
 #[doc(hidden)]
 pub use serde_json;
@@ -217,7 +223,7 @@ pub use async_trait;
 pub use proc_macro2;
 
 // Re-export derive macros with user-friendly names
-pub use elicitation_derive::{Elicit, elicit_tool};
+pub use elicitation_derive::{Elicit, ElicitPlugin, elicit_tool};
 
 // Re-export verification contract types at crate level (for kani_proofs imports)
 // EXPLICIT exports - no globs (helps compiler show what's missing)

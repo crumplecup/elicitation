@@ -84,6 +84,7 @@ extern crate proc_macro;
 
 mod contract_type;
 mod derive_elicit;
+mod derive_elicit_plugin;
 mod elicit_tool;
 mod enum_impl;
 mod method_reflection;
@@ -419,6 +420,42 @@ pub fn reflect_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
 ///     fn descriptors(&self) -> &[ToolDescriptor] { &self.tools }
 /// }
 /// ```
+/// Derive an [`ElicitPlugin`] implementation for a unit struct using inventory.
+///
+/// Requires `#[plugin(name = "...")]` on the struct.  At runtime, iterates all
+/// [`PluginToolRegistration`]s submitted via `#[elicit_tool(plugin = "...")]`
+/// and filters by plugin name — eliminating all handwritten `list_tools` and
+/// `call_tool` dispatch.
+///
+/// [`ElicitPlugin`]: elicitation::plugin::ElicitPlugin
+/// [`PluginToolRegistration`]: elicitation::plugin::PluginToolRegistration
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation_derive::ElicitPlugin;
+///
+/// #[derive(ElicitPlugin)]
+/// #[plugin(name = "my_plugin")]
+/// pub struct MyPlugin;
+/// ```
+///
+/// Combined with `#[elicit_tool(plugin = "my_plugin", ...)]` on each handler,
+/// the full plugin is:
+///
+/// ```rust,ignore
+/// #[derive(ElicitPlugin)]
+/// #[plugin(name = "my_plugin")]
+/// pub struct MyPlugin;
+///
+/// #[elicit_tool(plugin = "my_plugin", name = "ping", description = "Echo")]
+/// async fn ping(p: PingParams) -> Result<CallToolResult, ErrorData> { ... }
+/// ```
+#[proc_macro_derive(ElicitPlugin, attributes(plugin))]
+pub fn derive_elicit_plugin(input: TokenStream) -> TokenStream {
+    derive_elicit_plugin::expand(input.into()).into()
+}
+
 #[proc_macro_attribute]
 pub fn elicit_tool(args: TokenStream, item: TokenStream) -> TokenStream {
     elicit_tool::expand(args.into(), item.into()).into()

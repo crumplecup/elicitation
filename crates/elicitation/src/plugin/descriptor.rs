@@ -125,6 +125,26 @@ where
     }
 }
 
+/// Lightweight inventory registration connecting a tool to its plugin.
+///
+/// Submitted via `inventory::submit!` by the `#[elicit_tool(plugin = "...")]`
+/// macro.  Collected by `#[derive(ElicitPlugin)]` to discover all tools that
+/// belong to a given plugin at link time.
+///
+/// The `constructor` is a plain function pointer (zero-cost, `'static`) that
+/// builds the full [`ToolDescriptor`] on demand.
+#[derive(Debug)]
+pub struct PluginToolRegistration {
+    /// Name of the owning plugin (e.g. `"secure_fetch"`).
+    pub plugin: &'static str,
+    /// Bare tool name (no namespace prefix).
+    pub name: &'static str,
+    /// Builds the [`ToolDescriptor`] for this tool.
+    pub constructor: fn() -> ToolDescriptor,
+}
+
+inventory::collect!(PluginToolRegistration);
+
 impl ToolDescriptor {
     /// Return the rmcp [`Tool`] (schema + metadata) for this descriptor.
     pub fn as_tool(&self) -> Tool {
