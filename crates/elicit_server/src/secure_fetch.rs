@@ -17,10 +17,11 @@
 //! [`EmitCode`](elicitation::emit_code::EmitCode) impls so agent sessions can be
 //! recovered as standalone Rust binaries.
 
-use elicitation::{ElicitPlugin, elicit_tool};
+use elicitation::{ElicitPlugin, PluginContext, elicit_tool};
 use rmcp::{ErrorData, model::CallToolResult};
 use schemars::JsonSchema;
 use serde::Deserialize;
+use std::sync::Arc;
 use tracing::instrument;
 
 // ── Param types ────────────────────────────────────────────────────────────────
@@ -70,9 +71,25 @@ fn default_get() -> String {
 ///
 /// Tools are registered at link time via `#[elicit_tool(plugin = "secure_fetch")]`
 /// on each handler; no manual wiring required.
+///
+/// The shared `reqwest::Client` inside the [`PluginContext`] is reused across
+/// all tool calls, keeping the connection pool alive for the plugin's lifetime.
 #[derive(ElicitPlugin)]
 #[plugin(name = "secure_fetch")]
-pub struct SecureFetchPlugin;
+pub struct SecureFetchPlugin(pub Arc<PluginContext>);
+
+impl SecureFetchPlugin {
+    /// Create a new plugin with a fresh shared context.
+    pub fn new() -> Self {
+        Self(PluginContext::new())
+    }
+}
+
+impl Default for SecureFetchPlugin {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 // ── Implementations ────────────────────────────────────────────────────────────
 
@@ -84,7 +101,10 @@ pub struct SecureFetchPlugin;
                    UrlParsed ∧ HttpsRequired is established before any network I/O."
 )]
 #[instrument(skip_all, fields(url = %p.url, timeout = p.timeout_secs))]
-async fn secure_fetch(p: SecureFetchParams) -> Result<CallToolResult, ErrorData> {
+async fn secure_fetch(
+    ctx: Arc<PluginContext>,
+    p: SecureFetchParams,
+) -> Result<CallToolResult, ErrorData> {
     // Phase 1: URL validation (elicit_url typestate)
     let (parsed, url_proof) = elicit_url::UnvalidatedUrl::new(p.url.clone())
         .parse()
@@ -94,9 +114,9 @@ async fn secure_fetch(p: SecureFetchParams) -> Result<CallToolResult, ErrorData>
         .assert_https(url_proof)
         .map_err(|e| ErrorData::invalid_params(format!("HTTPS required: {e}"), None))?;
 
-    // Phase 2: HTTP request (elicit_reqwest — use reqwest directly to avoid re-parsing)
-    let client = reqwest::Client::new();
-    let response = client
+    // Phase 2: HTTP request — reuse the shared client from context
+    let response = ctx
+        .http
         .get(p.url.as_str())
         .timeout(std::time::Duration::from_secs_f64(p.timeout_secs))
         .send()
@@ -125,8 +145,11 @@ async fn secure_fetch(p: SecureFetchParams) -> Result<CallToolResult, ErrorData>
                    URL validation, HTTPS enforcement, and bearer token authorization into \
                    a single verified operation."
 )]
-#[instrument(skip(p), fields(url = %p.url, method = %p.method, timeout = p.timeout_secs))]
-async fn validated_api_call(p: ValidatedApiCallParams) -> Result<CallToolResult, ErrorData> {
+#[instrument(skip(ctx, p), fields(url = %p.url, method = %p.method, timeout = p.timeout_secs))]
+async fn validated_api_call(
+    ctx: Arc<PluginContext>,
+    p: ValidatedApiCallParams,
+) -> Result<CallToolResult, ErrorData> {
     // Phase 1: URL validation
     let (parsed, url_proof) = elicit_url::UnvalidatedUrl::new(p.url.clone())
         .parse()
@@ -136,11 +159,11 @@ async fn validated_api_call(p: ValidatedApiCallParams) -> Result<CallToolResult,
         .assert_https(url_proof)
         .map_err(|e| ErrorData::invalid_params(format!("HTTPS required: {e}"), None))?;
 
-    // Phase 2: Authenticated HTTP request
-    let client = reqwest::Client::new();
+    // Phase 2: Authenticated HTTP request — reuse the shared client from context
     let builder = match p.method.to_uppercase().as_str() {
         "POST" => {
-            let mut b = client
+            let mut b = ctx
+                .http
                 .post(p.url.as_str())
                 .bearer_auth(&p.token)
                 .timeout(std::time::Duration::from_secs_f64(p.timeout_secs));
@@ -151,7 +174,8 @@ async fn validated_api_call(p: ValidatedApiCallParams) -> Result<CallToolResult,
             }
             b
         }
-        _ => client
+        _ => ctx
+            .http
             .get(p.url.as_str())
             .bearer_auth(&p.token)
             .timeout(std::time::Duration::from_secs_f64(p.timeout_secs)),

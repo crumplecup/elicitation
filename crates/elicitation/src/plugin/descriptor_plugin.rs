@@ -14,7 +14,7 @@ use tracing::instrument;
 
 use crate::rmcp::RoleServer;
 
-use super::{ElicitPlugin, descriptor::ToolDescriptor};
+use super::{ElicitPlugin, PluginContext, descriptor::ToolDescriptor};
 
 /// A plugin that exposes a static slice of [`ToolDescriptor`]s.
 ///
@@ -79,7 +79,10 @@ impl<T: DescriptorPlugin> ElicitPlugin for T {
             .unwrap_or_else(|| params.name.to_string());
 
         match self.descriptors().iter().find(|d| d.name == bare.as_str()) {
-            Some(descriptor) => descriptor.dispatch(params),
+            Some(descriptor) => {
+                let ctx = std::sync::Arc::new(PluginContext::default());
+                descriptor.dispatch(ctx, params)
+            }
             None => Box::pin(async move {
                 Err(ErrorData::invalid_params(
                     format!("unknown tool: {bare}"),

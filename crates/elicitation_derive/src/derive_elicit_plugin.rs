@@ -4,12 +4,18 @@
 //! and dispatches to them, eliminating all handwritten `list_tools` / `call_tool`
 //! boilerplate.
 //!
+//! # Struct shapes
+//!
+//! - **Unit struct** `struct MyPlugin;` — a fresh `PluginContext` is created per call
+//! - **Newtype** `struct MyPlugin(Arc<PluginContext>);` — the stored context is cloned per call,
+//!   enabling resource sharing (e.g. a single `reqwest::Client` connection pool)
+//!
 //! [`ElicitPlugin`]: elicitation::plugin::ElicitPlugin
 //! [`PluginToolRegistration`]: elicitation::plugin::PluginToolRegistration
 
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{DeriveInput, Error, Lit, Meta, Result};
+use syn::{Data, DeriveInput, Error, Fields, Lit, Meta, Result};
 
 /// Expand `#[derive(ElicitPlugin)]` with `#[plugin(name = "...")]`.
 pub fn expand(input: TokenStream) -> TokenStream {
@@ -25,6 +31,9 @@ fn expand_inner(input: TokenStream) -> Result<TokenStream> {
 
     // Extract plugin name from #[plugin(name = "...")]
     let plugin_name = extract_plugin_name(&ast)?;
+
+    // Determine context source based on struct shape.
+    let ctx_expr = context_source_expr(&ast)?;
 
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
@@ -64,10 +73,12 @@ fn expand_inner(input: TokenStream) -> Result<TokenStream> {
                     .find(|r| r.name == bare)
                     .map(|r| (r.constructor)());
 
+                let plugin_ctx = #ctx_expr;
+
                 ::std::boxed::Box::pin(async move {
                     match found {
                         ::std::option::Option::Some(descriptor) => {
-                            descriptor.dispatch(params).await
+                            descriptor.dispatch(plugin_ctx, params).await
                         }
                         ::std::option::Option::None => {
                             ::std::result::Result::Err(
@@ -82,6 +93,33 @@ fn expand_inner(input: TokenStream) -> Result<TokenStream> {
             }
         }
     })
+}
+
+/// Return a `TokenStream` expression that evaluates to `Arc<PluginContext>`.
+///
+/// - Unit struct → `Arc::new(PluginContext::default())`
+/// - One unnamed field → `self.0.clone()` (assumes `Arc<PluginContext>` newtype)
+fn context_source_expr(ast: &DeriveInput) -> Result<TokenStream> {
+    let Data::Struct(ref data) = ast.data else {
+        return Err(Error::new_spanned(
+            ast,
+            "#[derive(ElicitPlugin)] is only supported on structs",
+        ));
+    };
+
+    match &data.fields {
+        Fields::Unit => Ok(quote! {
+            ::std::sync::Arc::new(elicitation::PluginContext::default())
+        }),
+        Fields::Unnamed(unnamed) if unnamed.unnamed.len() == 1 => Ok(quote! {
+            self.0.clone()
+        }),
+        other => Err(Error::new_spanned(
+            other,
+            "#[derive(ElicitPlugin)] supports only unit structs or newtypes with one \
+             unnamed field (e.g. `struct MyPlugin(Arc<PluginContext>);`)",
+        )),
+    }
 }
 
 fn extract_plugin_name(ast: &DeriveInput) -> Result<String> {

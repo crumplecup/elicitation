@@ -106,11 +106,14 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
     } = syn::parse2(args)?;
     let func: ItemFn = syn::parse2(item.clone())?;
 
-    // Extract the params type from the first parameter.
-    let params_ty = first_param_type(&func).ok_or_else(|| {
+    // Check if the first param is a context param (Arc<PluginContext>).
+    let is_ctx_aware = first_param_is_context(&func);
+
+    // Extract the params type: skip the context param if present.
+    let params_ty = nth_params_type(&func, if is_ctx_aware { 1 } else { 0 }).ok_or_else(|| {
         Error::new_spanned(
             &func.sig,
-            "#[elicit_tool] requires at least one typed parameter (the params struct)",
+            "#[elicit_tool] requires a typed params parameter (the params struct)",
         )
     })?;
 
@@ -130,6 +133,25 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
         }
     });
 
+    // Generate the descriptor constructor, using the context-aware variant if needed.
+    let descriptor_body = if is_ctx_aware {
+        quote! {
+            elicitation::make_descriptor_ctx::<#params_ty, _>(
+                #name,
+                #description,
+                |ctx, p| ::std::boxed::Box::pin(#fn_ident(ctx, p)),
+            )
+        }
+    } else {
+        quote! {
+            elicitation::make_descriptor::<#params_ty, _>(
+                #name,
+                #description,
+                |p| ::std::boxed::Box::pin(#fn_ident(p)),
+            )
+        }
+    };
+
     let expanded = quote! {
         #func
 
@@ -137,11 +159,7 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
         ///
         /// [`ToolDescriptor`]: elicitation::plugin::ToolDescriptor
         pub fn #descriptor_ident() -> elicitation::plugin::ToolDescriptor {
-            elicitation::make_descriptor::<#params_ty, _>(
-                #name,
-                #description,
-                |p| ::std::boxed::Box::pin(#fn_ident(p)),
-            )
+            #descriptor_body
         }
 
         #inventory_submit
@@ -150,18 +168,62 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
     Ok(expanded)
 }
 
-/// Pull the type from the first non-`self` parameter of a function signature.
-fn first_param_type(func: &ItemFn) -> Option<&Type> {
-    for arg in &func.sig.inputs {
-        if let FnArg::Typed(PatType { pat, ty, .. }) = arg {
-            // Skip if it's a `self` pattern somehow typed
-            if let Pat::Ident(p) = pat.as_ref() {
-                if p.ident == "self" {
-                    continue;
+/// Returns `true` if the first non-`self` parameter looks like `ctx: Arc<PluginContext>`.
+///
+/// Detection is name-based (`ctx`) as a heuristic; type path is also checked
+/// for a segment ending in `PluginContext`.
+fn first_param_is_context(func: &ItemFn) -> bool {
+    let Some(first) = func.sig.inputs.iter().find_map(|arg| {
+        if let FnArg::Typed(pt) = arg {
+            if let Pat::Ident(p) = pt.pat.as_ref() {
+                if p.ident != "self" {
+                    return Some(pt);
                 }
             }
-            return Some(ty.as_ref());
+        }
+        None
+    }) else {
+        return false;
+    };
+
+    // Name heuristic: parameter named `ctx`
+    if let Pat::Ident(p) = first.pat.as_ref() {
+        if p.ident == "ctx" {
+            return true;
         }
     }
-    None
+
+    // Type heuristic: last path segment is `PluginContext`
+    type_path_ends_with(first.ty.as_ref(), "PluginContext")
+}
+
+/// Check whether any segment in a type path ends with `name`.
+fn type_path_ends_with(ty: &Type, name: &str) -> bool {
+    match ty {
+        Type::Path(tp) => tp
+            .path
+            .segments
+            .iter()
+            .any(|seg| seg.ident == name),
+        Type::Reference(r) => type_path_ends_with(&r.elem, name),
+        _ => false,
+    }
+}
+
+/// Pull the type from the Nth non-`self` parameter of a function signature.
+fn nth_params_type(func: &ItemFn, n: usize) -> Option<&Type> {
+    func.sig
+        .inputs
+        .iter()
+        .filter_map(|arg| {
+            if let FnArg::Typed(PatType { pat, ty, .. }) = arg {
+                if let Pat::Ident(p) = pat.as_ref() {
+                    if p.ident != "self" {
+                        return Some(ty.as_ref());
+                    }
+                }
+            }
+            None
+        })
+        .nth(n)
 }

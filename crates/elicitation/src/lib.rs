@@ -128,7 +128,8 @@ pub use elicit_json::ElicitJson;
 pub mod plugin;
 mod plugin_registry;
 pub use plugin::{
-    DescriptorPlugin, ElicitPlugin, PluginToolRegistration, ToolDescriptor, make_descriptor,
+    DescriptorPlugin, ElicitPlugin, PluginContext, PluginToolRegistration, ToolDescriptor,
+    make_descriptor, make_descriptor_ctx,
 };
 pub use plugin_registry::{PluginRegistry, Toolchain};
 
