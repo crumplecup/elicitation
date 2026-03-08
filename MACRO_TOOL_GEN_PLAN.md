@@ -264,12 +264,18 @@ Global dispatcher in elicitation::emit_code:
 EmitBinaryPlugin in elicit_server then becomes a thin wrapper over this.
 
 ─────────────────────────────────────────────────────
-PHASE 7 — #[requires_https] and typestate guard attrs
+PHASE 7 — SUPERSEDED
 ─────────────────────────────────────────────────────
 
-Goal
-Make the typestate proof chain declarative. This is last because it
-requires the macro infrastructure from Phases 1–3 to be stable.
+The guard-attribute approach (`#[requires_https(url)]` etc.) was replaced
+by CONTRACT_PARAMS_PLAN.md — contract-carrying param types.
+
+Reason: guard attributes hide proof tokens, proliferate per-concept
+attributes, and push validation to the wrong layer. The newtype approach
+embeds the proof chain in `Deserialize`, making each type self-validating.
+No new macros or attributes needed.
+
+See CONTRACT_PARAMS_PLAN.md for the replacement plan.
 
     #[elicit_tool(name = "secure_fetch", description = "...")]
     #[requires_https(url)]

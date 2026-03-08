@@ -102,3 +102,39 @@ serves as the canary conversion.
 - ✅ `elicitation::futures` re-exported (needed by generated code)
 - ✅ `SecureFetchPlugin` is now a plain unit struct — 332 lines → ~75 lines of non-boilerplate
 
+**Phase 4 Progress:**
+- ✅ `PluginContext` in `plugin/context.rs` — feature-gated `http: reqwest::Client`
+- ✅ `ToolDescriptor` handler type updated to `Arc<dyn Fn(Arc<PluginContext>, ...) -> ...>`
+- ✅ `make_descriptor` (ctx-free) + `make_descriptor_ctx` (ctx-aware) constructors
+- ✅ `#[derive(ElicitPlugin)]` detects unit vs newtype struct; unit → fresh context, newtype → `self.0.clone()`
+- ✅ `#[elicit_tool]` detects `ctx: Arc<PluginContext>` first param; emits `make_descriptor_ctx`
+- ✅ `SecureFetchPlugin(Arc<PluginContext>)` newtype; handlers use `ctx.http`; connection pool shared
+
+**Phase 6 Progress (global emit registry):**
+- ✅ `EmitEntry { tool, constructor }` + `inventory::collect!` in `elicitation::emit_code`
+- ✅ `emit_code::dispatch_emit()` global lookup via inventory
+- ✅ `register_emit!` macro using `elicitation::serde_json` and `elicitation::inventory`
+- ✅ `register_emit!` calls added to all 8 workflow crates (37 registrations)
+- ✅ `emit_plugin.rs` `dispatch_step` collapsed to single `elicitation::emit_code::dispatch_emit` call
+- ✅ Phase 7 (guard attributes) superseded — see CONTRACT_PARAMS_PLAN.md
+
+---
+
+### Contract-Carrying Param Types
+
+**Document:** [CONTRACT_PARAMS_PLAN.md](CONTRACT_PARAMS_PLAN.md)
+
+**Status:** 🟡 Planning
+
+**Description:** Replaces Phase 7 (guard attributes). Proof chains move into `Deserialize`
+implementations on newtype param primitives — the type *is* the contract. No new attributes
+or macros required. Tool bodies lose their validation ceremony; the JSON schema gains
+machine-readable constraint metadata.
+
+**Phases:**
+- A: `elicitation::params` — `PositiveF64`, `NonNegativeF64`, `PositiveU32`, `NonEmptyString`, `BoundedUsize<MIN, MAX>`
+- B: `elicit_url` contract types — `HttpsUrl` (wraps `SecureUrlState`), `ParsedUrl`
+- C: Canary — `SecureFetchParams.url: HttpsUrl`; proof ceremony removed from handlers
+- D: Propagation — apply contract types across all workflow params structs
+- E: Kani harnesses for constructor correctness
+
