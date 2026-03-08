@@ -24,13 +24,13 @@
 
 - Add the planning document to PLANNING_INDEX.md for tracking.
 
-2. **For each step:**
+1. **For each step:**
    - Generate code
    - Fix cargo check errors/warnings
    - Run all checks (see below)
    - Commit with audit-friendly message
    - Push to branch
-3. **Update** planning document to serve as user guide
+2. **Update** planning document to serve as user guide
 
 ### Pre-Commit Verification
 
@@ -1098,6 +1098,7 @@ just pre-release
 ```
 
 This will:
+
 1. Run CI pipeline (fmt, lint, features, tests, audit)
 2. Run security checks (audit, omnibor)
 3. Generate changelog preview
@@ -1105,6 +1106,7 @@ This will:
 5. Build release artifacts
 
 Then manually:
+
 1. Review changelog preview
 2. Update changelog: `just changelog-update`
 3. Commit changelog updates

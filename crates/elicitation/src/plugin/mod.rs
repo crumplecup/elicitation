@@ -1,8 +1,22 @@
 //! Type-erased plugin interface for the elicitation tool registry.
 //!
 //! Each shadow crate (e.g., `elicit_reqwest`) provides a `Plugin` struct that
-//! implements `ElicitPlugin`. The `PluginRegistry` collects these and serves
-//! them as a single MCP server.
+//! implements [`ElicitPlugin`]. The [`PluginRegistry`](crate::PluginRegistry)
+//! collects these and serves them as a single MCP server.
+//!
+//! # Implementing a plugin
+//!
+//! **Simple path** — implement [`DescriptorPlugin`] and expose a slice of
+//! [`ToolDescriptor`]s built with [`make_descriptor`].  The blanket impl
+//! provides [`ElicitPlugin`] for free.
+//!
+//! **Full control** — implement [`ElicitPlugin`] directly.
+
+pub mod descriptor;
+pub mod descriptor_plugin;
+
+pub use descriptor::{ToolDescriptor, make_descriptor};
+pub use descriptor_plugin::DescriptorPlugin;
 
 use std::borrow::Cow;
 use std::sync::Arc;
@@ -18,13 +32,12 @@ use crate::rmcp::RoleServer;
 
 /// Type-erased interface for a shadow-crate tool plugin.
 ///
-/// Each shadow crate (e.g., `elicit_reqwest`) implements this on its `Plugin`
-/// struct, which owns the underlying state (e.g., `Arc<reqwest::Client>`) and
-/// holds a cached `ToolRouter<State>`.
-///
 /// # Object Safety
 ///
 /// This trait is object-safe: all async methods return `BoxFuture`.
+///
+/// Prefer implementing [`DescriptorPlugin`] over this trait directly unless
+/// you need custom dispatch logic.
 pub trait ElicitPlugin: Send + Sync + 'static {
     /// Human-readable plugin name, used as the namespace prefix.
     ///

@@ -13,6 +13,7 @@ git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:<filename>
 ```
 
 Example:
+
 ```bash
 git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:UTF8_VERIFICATION_STRATEGY.md
 git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:KANI_VERIFICATION_PATTERNS.md
@@ -32,6 +33,7 @@ git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:elicitation_vision.md
 **Description:** Automatic MCP tool generation for third-party crate methods through newtype-based method reflection. Enables one-line integration of any Rust library as verified AI tools.
 
 **Key Features:**
+
 - `elicit_newtype!` macro for transparent wrapper generation
 - `#[reflect_methods]` attribute for automatic method discovery
 - Smart &T → T conversion for borrowed parameters
@@ -49,6 +51,7 @@ git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:elicitation_vision.md
 **Description:** Comprehensive integration test demonstrating all macro capabilities by wrapping the reqwest HTTP client library. Serves as both a real-world example and validation of generic support.
 
 **Key Features:**
+
 - Tests all three macro types: `elicit_newtype!`, `elicit_newtype_methods!`, `#[reflect_methods]`
 - Mixed macro usage on same types (non-generic + generic methods)
 - Generic trait bounds preservation (IntoUrl, Serialize, DeserializeOwned)
@@ -70,3 +73,20 @@ becomes a proof code generator. The derive macro composes field proofs into comp
 composite harnesses. A new `ProofPlugin` exposes these as MCP tools.
 
 New plans can be added here as needed for future development.
+
+### Macro-Driven MCP Tool System
+
+**Document:** [MACRO_TOOL_GEN_PLAN.md](MACRO_TOOL_GEN_PLAN.md)
+
+**Status:** 🟡 Phase 1 In Progress
+
+**Description:** Seven-phase plan to eliminate plugin boilerplate via `ToolDescriptor`,
+`#[elicit_tool]`, `#[derive(ElicitPlugin)]`, and context injection. Phase 1 introduces
+`ToolDescriptor` + `make_descriptor` + `DescriptorPlugin` blanket impl; `SecureFetchPlugin`
+serves as the canary conversion.
+
+**Phase 1 Progress:**
+- ✅ `ToolDescriptor` + `make_descriptor` in `plugin/descriptor.rs`
+- ✅ `DescriptorPlugin` blanket impl in `plugin/descriptor_plugin.rs`
+- ✅ `SecureFetchPlugin` converted (canary validates design)
+

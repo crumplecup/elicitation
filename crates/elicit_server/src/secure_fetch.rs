@@ -17,19 +17,11 @@
 //! [`EmitCode`](elicitation::emit_code::EmitCode) impls so agent sessions can be
 //! recovered as standalone Rust binaries.
 
-use elicitation::ElicitPlugin;
-use futures::future::BoxFuture;
-use rmcp::{
-    ErrorData,
-    model::{CallToolRequestParams, CallToolResult, Tool},
-    service::RequestContext,
-};
+use elicitation::{DescriptorPlugin, ToolDescriptor, make_descriptor};
+use rmcp::{ErrorData, model::CallToolResult};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
-
-use crate::util::{parse_args, typed_tool};
-use elicitation::rmcp::RoleServer;
 
 // ── Param types ────────────────────────────────────────────────────────────────
 
@@ -75,55 +67,40 @@ fn default_get() -> String {
 /// Every tool in this plugin asserts HTTPS before making any network call —
 /// the typestate proof is embedded in the function signature, so the contract
 /// cannot be bypassed.
-pub struct SecureFetchPlugin;
+pub struct SecureFetchPlugin {
+    tools: Vec<ToolDescriptor>,
+}
 
-impl ElicitPlugin for SecureFetchPlugin {
+impl Default for SecureFetchPlugin {
+    fn default() -> Self {
+        Self {
+            tools: vec![
+                make_descriptor::<SecureFetchParams, _>(
+                    "secure_fetch",
+                    "Assert HTTPS and fetch a URL. Combines elicit_url typestate (parse → assert \
+                     HTTPS) with elicit_reqwest HTTP tooling. The proof chain \
+                     UrlParsed ∧ HttpsRequired is established before any network I/O.",
+                    |p| Box::pin(secure_fetch_impl(p)),
+                ),
+                make_descriptor::<ValidatedApiCallParams, _>(
+                    "validated_api_call",
+                    "Assert HTTPS then make an authenticated GET or POST request. Combines \
+                     URL validation, HTTPS enforcement, and bearer token authorization into \
+                     a single verified operation.",
+                    |p| Box::pin(validated_api_call_impl(p)),
+                ),
+            ],
+        }
+    }
+}
+
+impl DescriptorPlugin for SecureFetchPlugin {
     fn name(&self) -> &'static str {
         "secure_fetch"
     }
 
-    fn list_tools(&self) -> Vec<Tool> {
-        vec![
-            typed_tool::<SecureFetchParams>(
-                "secure_fetch",
-                "Assert HTTPS and fetch a URL. Combines elicit_url typestate (parse → assert \
-                 HTTPS) with elicit_reqwest HTTP tooling. The proof chain \
-                 UrlParsed ∧ HttpsRequired is established before any network I/O.",
-            ),
-            typed_tool::<ValidatedApiCallParams>(
-                "validated_api_call",
-                "Assert HTTPS then make an authenticated GET or POST request. Combines \
-                 URL validation, HTTPS enforcement, and bearer token authorization into \
-                 a single verified operation.",
-            ),
-        ]
-    }
-
-    fn call_tool<'a>(
-        &'a self,
-        params: CallToolRequestParams,
-        _cx: RequestContext<RoleServer>,
-    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
-        Box::pin(async move {
-            let bare = params
-                .name
-                .strip_prefix("secure_fetch__")
-                .unwrap_or(&params.name);
-            match bare {
-                "secure_fetch" => {
-                    let p: SecureFetchParams = parse_args(&params)?;
-                    secure_fetch_impl(p).await
-                }
-                "validated_api_call" => {
-                    let p: ValidatedApiCallParams = parse_args(&params)?;
-                    validated_api_call_impl(p).await
-                }
-                name => Err(ErrorData::invalid_params(
-                    format!("Unknown tool: {name}"),
-                    None,
-                )),
-            }
-        })
+    fn descriptors(&self) -> &[ToolDescriptor] {
+        &self.tools
     }
 }
 

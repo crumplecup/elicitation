@@ -63,7 +63,8 @@ elicit_router! {
 ```
 
 This generates MCP tools:
-- `elicit_checked_ServerConfig(peer)` 
+
+- `elicit_checked_ServerConfig(peer)`
 - `elicit_checked_UserProfile(peer)`
 
 All automatically registered and ready to use!

@@ -125,9 +125,9 @@ mod traits;
 
 mod elicit_json;
 pub use elicit_json::ElicitJson;
-mod plugin;
+pub mod plugin;
 mod plugin_registry;
-pub use plugin::ElicitPlugin;
+pub use plugin::{DescriptorPlugin, ElicitPlugin, ToolDescriptor, make_descriptor};
 pub use plugin_registry::{PluginRegistry, Toolchain};
 
 #[cfg(feature = "serde_json")]

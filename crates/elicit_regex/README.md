@@ -8,6 +8,7 @@ Elicitation-enabled wrapper around [`regex::Regex`](https://docs.rs/regex).
 This blocks its use as a field in `#[derive(Elicit)]` structs registered as MCP tools.
 
 `elicit_regex` provides a `Regex` newtype that:
+
 - Serializes to/from the pattern string (e.g. `"^\\d+$"`)
 - Implements `JsonSchema` as `{ "type": "string" }`
 - Exposes useful methods as MCP tools via `#[reflect_methods]`

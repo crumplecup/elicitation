@@ -5,6 +5,7 @@ This document describes the Creusot proof infrastructure for the elicitation pro
 ## Overview
 
 The Creusot verification system provides:
+
 - **456 trusted proofs** across 26 modules covering all user-derivable contract types AND internal trenchcoat wrappers
 - **Module-level tracking** - CLI runner tracks compilation status for each of 26 modules
 - **CSV output** - Verification results with timestamps and timing data
@@ -19,12 +20,14 @@ The Creusot verification system provides:
 Unlike Kani's symbolic execution or Verus's executable specifications, Creusot uses a pragmatic "cloud of assumptions" approach:
 
 ### What We Trust
+
 - **Rust stdlib**: String, Vec, HashMap, Duration, IpAddr, Path, etc.
 - **Validation libraries**: uuid crate, url crate, regex crate, chrono, time, jiff
 - **Contract constructors**: `new()` methods with validation logic
 - **Range checks**: Boundary validation, comparison operators
 
 ### What We Verify
+
 - **Wrapper structure**: Type is well-formed and correctly typed
 - **Contract enforcement**: Proof function signatures match type contracts
 - **Compositional correctness**: User types built from verified components at ALL layers
@@ -45,11 +48,13 @@ Stdlib Type (std::net::Ipv4Addr, std::path::Path, str)   ← Layer 3: Trusted (c
 ```
 
 **Why trenchcoat verification matters:**
+
 - Complete compositional story (no gaps in verification chain)
 - Users deriving Elicit on types containing IpAddr, PathBuf, Regex, Url, Uuid get full coverage
 - Validates the "put on trenchcoat → verify → take off trenchcoat" pattern
 
 ### Why This Works
+
 1. **Pragmatic**: We're not verifying the Rust stdlib or mature external crates (already battle-tested)
 2. **Focused**: Verification targets the contract + trenchcoat wrapper layers, not dependencies
 3. **Fast**: Zero verification time means proofs don't slow development
@@ -59,6 +64,7 @@ Stdlib Type (std::net::Ipv4Addr, std::path::Path, str)   ← Layer 3: Trusted (c
 ## Coverage Summary
 
 ### Core Contract Modules (10) - 127 Proofs
+
 Always available, no feature gates:
 
 | Module | Proofs | Types |
@@ -75,6 +81,7 @@ Always available, no feature gates:
 | **paths** | 8 | PathBufExists, IsDir, IsFile, Readable |
 
 ### Trenchcoat Wrapper Modules (7) - 241 Proofs
+
 Internal wrappers verifying the stdlib → contract bridge:
 
 | Module | Proofs | Types | Purpose |
@@ -88,6 +95,7 @@ Internal wrappers verifying the stdlib → contract bridge:
 | **urlbytes** | 46 | UrlBytes, SchemeBytes, AuthorityBytes, UrlAbsoluteBytes, UrlHttpBytes | URL byte validation |
 
 ### Feature-Gated Contract Modules (7) - 44 Proofs
+
 Require corresponding Cargo features:
 
 | Module | Proofs | Feature | Types |
@@ -101,6 +109,7 @@ Require corresponding Cargo features:
 | **datetimes_jiff** | 4 | `jiff` | TimestampAfter, TimestampBefore |
 
 ### Feature-Gated Trenchcoat Modules (3) - 124 Proofs
+
 Internal wrappers for feature-gated types:
 
 | Module | Proofs | Feature | Types |
@@ -110,6 +119,7 @@ Internal wrappers for feature-gated types:
 | **regexbytes** | 45 | `regex` | RegexBytes, syntax validators |
 
 **Total Coverage: 456 proofs across 26 modules**
+
 - Core contracts: 127 proofs (10 modules)
 - Core trenchcoats: 197 proofs (6 modules + mechanisms)
 - Feature-gated contracts: 44 proofs (7 modules)
@@ -330,18 +340,21 @@ cargo check -p elicitation_creusot --all-features
 ## Benefits of Cloud of Assumptions
 
 ### For Users
+
 1. **Fast**: Zero verification time means no waiting for proofs to complete
 2. **Simple**: Straightforward pattern, easy to understand what's being verified
 3. **Scalable**: Proven to work with 171 types, can easily add more
 4. **Compositional**: User types automatically inherit verification
 
 ### For the Project
+
 1. **Maintainable**: Simple proofs don't break when dependencies update
 2. **Comprehensive**: Easy to achieve 100% coverage of derivable types
 3. **Pragmatic**: Focuses verification effort on contract layer, not stdlib
 4. **Ecosystem Coverage**: Separate user base from Kani/Verus
 
 ### For Formal Methods Adoption
+
 1. **Practical**: Shows formal verification can be pragmatic and scalable
 2. **Bridges Gap**: Moves beyond "toy proofs" to production systems
 3. **Demonstrates Value**: Compositional verification without complexity explosion
@@ -350,16 +363,19 @@ cargo check -p elicitation_creusot --all-features
 ## Future Work
 
 ### Short Term
+
 - ✅ Complete trait integration (DONE)
 - ✅ Create compositional example (DONE)
 - ✅ Document cloud of assumptions (DONE)
 
 ### Medium Term
+
 - Add testing infrastructure for proof compilation
 - Create CI/CD integration for proof checking
 - Benchmark compilation time with all features
 
 ### Long Term
+
 - Explore hybrid approach: trusted wrappers + selected deep verification
 - Integration with Creusot's newer features
 - Performance profiling and optimization
@@ -370,7 +386,7 @@ cargo check -p elicitation_creusot --all-features
 - **Proof Crate**: `crates/elicitation_creusot/`
 - **Contract Types**: `crates/elicitation/src/verification/types/`
 - **Derive Macros**: `crates/elicitation_derive/`
-- **Creusot Documentation**: https://github.com/creusot-rs/creusot
+- **Creusot Documentation**: <https://github.com/creusot-rs/creusot>
 
 ## Summary
 

@@ -9,12 +9,14 @@ This crate enables agents to generate random data using the elicitation framewor
 ## Use Cases
 
 ### Testing & QA
+
 - Reproducible test failures with agent-controlled seeds
 - Property-based testing integration
 - Synthetic data generation at scale
 - Audit trails for test scenarios
 
 ### Gaming & Simulations
+
 - Agents as game masters with controlled randomness
 - Procedural generation under agent guidance
 - Dice rolls, loot tables, encounter generation
@@ -59,6 +61,7 @@ let value = generator.generate();
 🚧 **In Development** - See [RAND_INTEGRATION_PLAN.md](../../RAND_INTEGRATION_PLAN.md) for implementation plan.
 
 **Planned phases:**
+
 1. RNG elicitation (StdRng, SmallRng, ChaCha8Rng)
 2. Basic generators (primitives)
 3. Distribution generators (Uniform, Weighted, Normal)

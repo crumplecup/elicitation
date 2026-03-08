@@ -148,6 +148,7 @@ verus crates/elicitation_verus/src/lib.rs
 ```
 
 Verus writes intermediate files to a `.verus-log/` directory:
+
 - `.vir` / `-sst.vir` — Verus Intermediate Representation
 - `.air` / `-final.air` — Anvil IR passed to Z3
 - `.smt2` — SMT-LIB2 queries sent to the solver

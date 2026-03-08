@@ -30,6 +30,7 @@ claude "Run the simple_types example from elicitation"
    **Linux**: `~/.config/claude/claude_desktop_config.json`
 
 2. Add configuration:
+
    ```json
    {
      "mcpServers": {
@@ -50,7 +51,9 @@ claude "Run the simple_types example from elicitation"
 ### Basic Types
 
 #### `simple_types.rs`
+
 Demonstrates elicitation of primitive types:
+
 - Integers (`i32`, `u8`, etc.)
 - Strings
 - Booleans
@@ -60,6 +63,7 @@ Demonstrates elicitation of primitive types:
 **Run**: `cargo run --example simple_types`
 
 **Demonstrates**:
+
 - Basic type elicitation
 - Optional value handling
 - Collection building
@@ -67,7 +71,9 @@ Demonstrates elicitation of primitive types:
 ---
 
 #### `pathbuf.rs`
+
 Filesystem path elicitation with validation:
+
 - Absolute and relative paths
 - Optional paths
 - Collections of paths
@@ -75,6 +81,7 @@ Filesystem path elicitation with validation:
 **Run**: `cargo run --example pathbuf`
 
 **Demonstrates**:
+
 - `PathBuf` type support
 - Path validation
 - File system integration
@@ -82,7 +89,9 @@ Filesystem path elicitation with validation:
 ---
 
 #### `network.rs`
+
 Network type elicitation with parsing and validation:
+
 - IP addresses (IPv4/IPv6)
 - Socket addresses
 - Network configuration
@@ -90,6 +99,7 @@ Network type elicitation with parsing and validation:
 **Run**: `cargo run --example network`
 
 **Demonstrates**:
+
 - `IpAddr`, `Ipv4Addr`, `Ipv6Addr`
 - `SocketAddr`, `SocketAddrV4`, `SocketAddrV6`
 - Automatic parsing and validation
@@ -97,7 +107,9 @@ Network type elicitation with parsing and validation:
 ---
 
 #### `duration.rs`
+
 Time duration elicitation:
+
 - Duration from seconds (supports decimals)
 - Non-negative validation
 - Collections of durations
@@ -105,6 +117,7 @@ Time duration elicitation:
 **Run**: `cargo run --example duration`
 
 **Demonstrates**:
+
 - `std::time::Duration`
 - Decimal second input (e.g., 1.5 seconds)
 - Range validation
@@ -114,7 +127,9 @@ Time duration elicitation:
 ### Enum & Struct Patterns
 
 #### `enums.rs`
+
 Enum elicitation using the **Select** paradigm:
+
 - Unit variant enums
 - Custom prompts
 - Nested enum structures
@@ -122,6 +137,7 @@ Enum elicitation using the **Select** paradigm:
 **Run**: `cargo run --example enums`
 
 **Demonstrates**:
+
 - `#[derive(Elicit)]` for enums
 - Select pattern
 - `#[prompt("...")]` attribute
@@ -129,7 +145,9 @@ Enum elicitation using the **Select** paradigm:
 ---
 
 #### `structs.rs`
+
 Struct elicitation using the **Survey** paradigm:
+
 - Multi-field data collection
 - Field-level prompts
 - Nested struct composition
@@ -137,6 +155,7 @@ Struct elicitation using the **Survey** paradigm:
 **Run**: `cargo run --example structs`
 
 **Demonstrates**:
+
 - `#[derive(Elicit)]` for structs
 - Survey pattern
 - Field-level `#[prompt]`
@@ -145,7 +164,9 @@ Struct elicitation using the **Survey** paradigm:
 ---
 
 #### `complex_survey.rs`
+
 Advanced nested structure elicitation:
+
 - Deep nesting (structs containing structs)
 - Mixed types (enums + structs + collections)
 - Real-world application modeling
@@ -153,6 +174,7 @@ Advanced nested structure elicitation:
 **Run**: `cargo run --example complex_survey`
 
 **Demonstrates**:
+
 - Complex data hierarchies
 - Type composition
 - Real-world use cases
@@ -162,7 +184,9 @@ Advanced nested structure elicitation:
 ### Container Types
 
 #### `result.rs`
+
 Success/failure outcome elicitation:
+
 - `Result<T, E>` type support
 - Variant selection
 - Error handling patterns
@@ -170,6 +194,7 @@ Success/failure outcome elicitation:
 **Run**: `cargo run --example result`
 
 **Demonstrates**:
+
 - `Result` container
 - Discriminated unions
 - Error type elicitation
@@ -177,7 +202,9 @@ Success/failure outcome elicitation:
 ---
 
 #### `tuples.rs`
+
 Heterogeneous tuple elicitation:
+
 - 2-tuples through 12-tuples
 - Mixed types within tuples
 - Sequential elicitation
@@ -185,6 +212,7 @@ Heterogeneous tuple elicitation:
 **Run**: `cargo run --example tuples`
 
 **Demonstrates**:
+
 - Tuple types `(T1, T2, ...)`
 - Type heterogeneity
 - Ordered elicitation
@@ -192,7 +220,9 @@ Heterogeneous tuple elicitation:
 ---
 
 #### `arrays.rs`
+
 Fixed-size array elicitation:
+
 - Const generic arrays `[T; N]`
 - Any size N
 - Type safety with compile-time bounds
@@ -200,6 +230,7 @@ Fixed-size array elicitation:
 **Run**: `cargo run --example arrays`
 
 **Demonstrates**:
+
 - Array types `[T; N]`
 - Const generics
 - Fixed-size collections
@@ -209,7 +240,9 @@ Fixed-size array elicitation:
 ### Collections
 
 #### `collections.rs`
+
 Standard library collection types:
+
 - `HashMap<K, V>` - with duplicate key handling
 - `HashSet<T>` - with automatic deduplication
 - `BTreeMap<K, V>` - ordered maps
@@ -220,6 +253,7 @@ Standard library collection types:
 **Run**: `cargo run --example collections`
 
 **Demonstrates**:
+
 - All standard collection types
 - Duplicate handling
 - Ordering behavior
@@ -227,7 +261,9 @@ Standard library collection types:
 ---
 
 #### `dynamic_choices.rs`
+
 Dynamic choice set elicitation with `ChoiceSet`:
+
 - Runtime-generated option lists (e.g., game moves)
 - Conditional menu items based on state
 - Filtered selections
@@ -236,6 +272,7 @@ Dynamic choice set elicitation with `ChoiceSet`:
 **Run**: `cargo run --example dynamic_choices`
 
 **Demonstrates**:
+
 - `ChoiceSet<T>` wrapper for dynamic options
 - Tic-tac-toe move selection
 - State-based action menus
@@ -244,7 +281,9 @@ Dynamic choice set elicitation with `ChoiceSet`:
 ---
 
 #### `smart_pointers.rs`
+
 Heap allocation and reference counting:
+
 - `Box<T>` - heap allocation
 - `Rc<T>` - reference counting
 - `Arc<T>` - atomic reference counting
@@ -252,6 +291,7 @@ Heap allocation and reference counting:
 **Run**: `cargo run --example smart_pointers`
 
 **Demonstrates**:
+
 - Smart pointer types
 - Ownership patterns
 - Thread-safe sharing (`Arc`)
@@ -299,14 +339,17 @@ async fn main() -> ElicitResult<()> {
 ## Troubleshooting
 
 ### "No MCP client detected"
+
 **Cause**: Running example directly without MCP client
 **Solution**: Run through Claude CLI or Claude Desktop (see [Quick Start](#quick-start))
 
 ### "Tool not found: elicit_*"
+
 **Cause**: MCP client not providing elicitation tools
 **Solution**: Ensure your MCP setup includes elicitation tool definitions
 
 ### "Connection refused" or "Broken pipe"
+
 **Cause**: MCP transport misconfigured
 **Solution**: Check stdio transport configuration in your MCP client
 

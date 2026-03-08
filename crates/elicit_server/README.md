@@ -16,17 +16,21 @@ contracts that span multiple domains. The typestate proof chains here are not
 validation — they are compiler-enforced proofs that an agent cannot skip a step:
 
 **SecureFetchPlugin** (`elicit_url` + `elicit_reqwest`)
+
 ```text
 UnvalidatedUrl → UrlParsed → HttpsRequired → RequestCompleted ∧ StatusSuccess
 ```
+
 An agent cannot reach `RequestCompleted` without first passing through
 `HttpsRequired`. The HTTPS contract is not a runtime check — it is structurally
 unreachable to bypass.
 
 **FetchAndParsePlugin** (`elicit_reqwest` + `elicit_serde_json`)
+
 ```text
 RequestCompleted → JsonParsed → PointerResolved
 ```
+
 The JSON pointer is only resolvable against a value that was provably fetched and
 parsed. The agent builds the proof chain step by step.
 
