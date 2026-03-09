@@ -170,10 +170,8 @@ pub trait ToCodeLiteral {
 ///
 /// Implement this on a zero-sized type and annotate the handler with
 /// `#[elicit_tool(emit = MyType)]`. The macro generates an [`EmitCode`] impl
-/// that delegates to `MyType::emit_code` and `MyType::crate_deps`.
-///
-/// The implementor is responsible for declaring every crate the emitted code
-/// references in `crate_deps()` — there is no heuristic inference.
+/// that delegates `emit_code` to `MyType` and derives `crate_deps` automatically
+/// from the crate's `Cargo.toml`.
 ///
 /// # Example
 ///
@@ -184,17 +182,11 @@ pub trait ToCodeLiteral {
 ///         let url = params.url.to_code_literal();
 ///         quote::quote! { /* ... */ }
 ///     }
-///     fn crate_deps() -> Vec<CrateDep> {
-///         vec![CrateDep::new("reqwest", "0.12")]
-///     }
 /// }
 /// ```
 pub trait CustomEmit<P> {
     /// Emit the Rust token stream for this step, given concrete params.
     fn emit_code(params: &P) -> TokenStream;
-
-    /// Crate dependencies required by the emitted code.
-    fn crate_deps() -> Vec<CrateDep>;
 }
 
 /// A type that knows how to recover itself as Rust source code.

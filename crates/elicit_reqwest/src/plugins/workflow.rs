@@ -1215,12 +1215,4 @@ impl elicitation::emit_code::CustomEmit<FetchJsonParams> for FetchJsonEmit {
             println!("{__body}");
         }
     }
-
-    fn crate_deps() -> Vec<elicitation::emit_code::CrateDep> {
-        vec![
-            elicitation::emit_code::CrateDep::new("elicitation", "0.9"),
-            elicitation::emit_code::CrateDep::new("elicit_reqwest", "0.9"),
-            elicitation::emit_code::CrateDep::new("reqwest", "0.13"),
-        ]
-    }
 }

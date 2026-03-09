@@ -285,9 +285,9 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
     };
 
     // Phase 4: generate `impl EmitCode` — auto-derive or custom delegation.
+    use crate::emit_rewriter::EmitRewriter;
     match emit {
         EmitMode::Auto => {
-            use crate::emit_rewriter::EmitRewriter;
             use quote::ToTokens as _;
 
             // Collect and rewrite the function body tokens.
@@ -314,33 +314,14 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
                 })
                 .collect();
 
-            // Infer crate deps from path prefixes in the rewritten body AND from
-            // emit_ctx substitution values (e.g. "reqwest::Client::new()").
-            let sub_ts: TokenStream = rewriter
-                .ctx_subs
+            // Generate `crate_deps()` from the full list of direct deps in Cargo.toml.
+            let all_deps = EmitRewriter::all_crate_deps();
+            let crate_deps: Vec<_> = all_deps
                 .iter()
-                .flat_map(|(_, v)| v.clone())
+                .map(|(name, version)| {
+                    quote! { elicitation::emit_code::CrateDep::new(#name, #version) }
+                })
                 .collect();
-            let mut crate_names = EmitRewriter::infer_crate_names(&rewritten);
-            crate_names.extend(EmitRewriter::infer_crate_names(&sub_ts));
-            let elicitation_version = EmitRewriter::resolve_workspace_version("elicitation")
-                .unwrap_or_else(|| "0.0".to_string());
-            // The crate defining this handler — its types are used bare (without prefix),
-            // so infer_crate_names can't detect them; include it explicitly.
-            let own_crate = std::env::var("CARGO_PKG_NAME").unwrap_or_default();
-            let own_crate_version = EmitRewriter::resolve_workspace_version(&own_crate)
-                .unwrap_or_else(|| "0.0".to_string());
-            let mut crate_deps: Vec<_> = vec![
-                // Always required: ToCodeLiteral impls emit elicitation:: paths at runtime.
-                quote! { elicitation::emit_code::CrateDep::new("elicitation", #elicitation_version) },
-                // Own crate — handler uses its types unqualified.
-                quote! { elicitation::emit_code::CrateDep::new(#own_crate, #own_crate_version) },
-            ];
-            crate_deps.extend(crate_names.iter().map(|cname| {
-                let version = EmitRewriter::resolve_workspace_version(cname)
-                    .unwrap_or_else(|| "0.0".to_string());
-                quote! { elicitation::emit_code::CrateDep::new(#cname, #version) }
-            }));
 
             let emit_block = quote! {
                 #[cfg(feature = "emit")]
@@ -362,6 +343,13 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
             expanded = quote! { #expanded #emit_block };
         }
         EmitMode::Custom(custom_ty) => {
+            let all_deps = EmitRewriter::all_crate_deps();
+            let crate_deps: Vec<_> = all_deps
+                .iter()
+                .map(|(name, version)| {
+                    quote! { elicitation::emit_code::CrateDep::new(#name, #version) }
+                })
+                .collect();
             let emit_block = quote! {
                 #[cfg(feature = "emit")]
                 impl elicitation::emit_code::EmitCode for #params_ty {
@@ -370,7 +358,7 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
                     }
 
                     fn crate_deps(&self) -> ::std::vec::Vec<elicitation::emit_code::CrateDep> {
-                        <#custom_ty as elicitation::emit_code::CustomEmit<#params_ty>>::crate_deps()
+                        ::std::vec![ #(#crate_deps),* ]
                     }
                 }
 

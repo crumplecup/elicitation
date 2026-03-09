@@ -96,6 +96,7 @@ syn = { version = "2", features = ["full", "extra-traits"] }
 quote = "1"
 proc-macro2 = "1"
 prettyplease = "0.2"
+toml = "0.8"
 
 # Async utilities
 futures = "0.3"

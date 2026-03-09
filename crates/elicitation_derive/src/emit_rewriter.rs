@@ -9,6 +9,7 @@
 //! Unrecognised patterns pass through unchanged (fail-safe).
 
 use proc_macro2::{Delimiter, Group, Ident, Punct, Spacing, Span, TokenStream, TokenTree};
+use toml;
 
 /// Rewriter that transforms a handler body into an `EmitCode`-suitable body.
 pub(crate) struct EmitRewriter {
@@ -197,55 +198,97 @@ impl EmitRewriter {
         output.into_iter().collect()
     }
 
-    /// Scan a token stream for leading path-segment identifiers (`ident ::`).
+    /// Return all direct dependencies of the calling crate with resolved versions.
     ///
-    /// Returns unique crate names inferred from top-level path prefixes,
-    /// excluding `std`, `core`, `alloc`, `self`, `super`, `crate`,
-    /// `elicitation`, and CamelCase names (which are types, not crates).
-    pub(crate) fn infer_crate_names(ts: &TokenStream) -> Vec<String> {
-        const EXCLUDED: &[&str] = &[
-            "std",
-            "core",
-            "alloc",
-            "self",
-            "super",
-            "crate",
-            "elicitation",
-        ];
-        let mut names = std::collections::HashSet::new();
-        collect_path_prefixes(ts, &mut names);
-        names
-            .into_iter()
-            .filter(|n| {
-                !EXCLUDED.contains(&n.as_str())
-                    && n.len() > 1
-                    && !n.starts_with(|c: char| c.is_uppercase())
-            })
-            .collect()
-    }
-
-    /// Attempt to resolve a crate name to its version from the workspace
-    /// `Cargo.toml`.
+    /// Reads `$CARGO_MANIFEST_DIR/Cargo.toml` via the `toml` crate.  For each
+    /// `[dependencies]` entry:
+    /// - inline version string → used directly
+    /// - `{ version = "x" }` → used directly  
+    /// - `{ workspace = true }` → resolved from `[workspace.dependencies]`
+    /// - `{ path = "..." }` → workspace member; uses `[workspace.package].version`
     ///
-    /// Walks up from `CARGO_MANIFEST_DIR` looking for a `Cargo.toml` with a
-    /// `[workspace]` section, then line-scans `[workspace.dependencies]`.
-    pub(crate) fn resolve_workspace_version(crate_name: &str) -> Option<String> {
-        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").ok()?;
-        let mut dir = std::path::PathBuf::from(&manifest_dir);
+    /// Called at macro expansion time; returns a `Vec<(name, version)>` that the
+    /// macro embeds as a literal `crate_deps()` body.
+    pub(crate) fn all_crate_deps() -> Vec<(String, String)> {
+        let Ok(manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") else {
+            return vec![];
+        };
+        let manifest_path = std::path::Path::new(&manifest_dir).join("Cargo.toml");
+        let Ok(manifest_str) = std::fs::read_to_string(&manifest_path) else {
+            return vec![];
+        };
+        let Ok(manifest) = manifest_str.parse::<toml::Value>() else {
+            return vec![];
+        };
 
-        loop {
-            let candidate = dir.join("Cargo.toml");
-            if candidate.exists()
-                && let Ok(content) = std::fs::read_to_string(&candidate)
-                && content.contains("[workspace]")
-            {
-                return parse_workspace_dep_version(&content, crate_name);
-            }
-            match dir.parent() {
-                Some(parent) => dir = parent.to_path_buf(),
-                None => return None,
-            }
+        // Locate workspace root and parse it.
+        let workspace_val = find_workspace_root(&manifest_dir)
+            .and_then(|root| std::fs::read_to_string(root.join("Cargo.toml")).ok())
+            .and_then(|s| s.parse::<toml::Value>().ok());
+
+        let workspace_pkg_version = workspace_val
+            .as_ref()
+            .and_then(|w| w.get("workspace"))
+            .and_then(|ws| ws.get("package"))
+            .and_then(|pkg| pkg.get("version"))
+            .and_then(|v| v.as_str())
+            .unwrap_or("0")
+            .to_string();
+
+        let Some(dep_table) = manifest.get("dependencies").and_then(|d| d.as_table()) else {
+            return vec![];
+        };
+
+        let mut deps = Vec::new();
+
+        // Always include the crate defining these handlers — it contains the
+        // types referenced bare (without a `crate_name::` prefix) in the emitted
+        // code, and doesn't appear in its own `[dependencies]`.
+        let own_name = std::env::var("CARGO_PKG_NAME").unwrap_or_default();
+        let own_version =
+            std::env::var("CARGO_PKG_VERSION").unwrap_or_else(|_| workspace_pkg_version.clone());
+        if !own_name.is_empty() {
+            deps.push((own_name, own_version));
         }
+
+        for (name, value) in dep_table {
+            let version = match value {
+                toml::Value::String(v) => v.clone(),
+                toml::Value::Table(t) => {
+                    if t.get("workspace")
+                        .and_then(|v| v.as_bool())
+                        .unwrap_or(false)
+                    {
+                        // workspace = true: resolve from [workspace.dependencies]
+                        workspace_val
+                            .as_ref()
+                            .and_then(|w| w.get("workspace"))
+                            .and_then(|ws| ws.get("dependencies"))
+                            .and_then(|d| d.get(name.as_str()))
+                            .and_then(|entry| match entry {
+                                toml::Value::String(v) => Some(v.clone()),
+                                toml::Value::Table(t) => t
+                                    .get("version")
+                                    .and_then(|v| v.as_str())
+                                    .map(|s| s.to_string()),
+                                _ => None,
+                            })
+                            .unwrap_or_else(|| "0".to_string())
+                    } else if t.contains_key("path") {
+                        // path = workspace member — version is the workspace package version
+                        workspace_pkg_version.clone()
+                    } else {
+                        t.get("version")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("0")
+                            .to_string()
+                    }
+                }
+                _ => continue,
+            };
+            deps.push((name.clone(), version));
+        }
+        deps
     }
 }
 
@@ -388,72 +431,22 @@ fn extract_content_text(ts: &TokenStream) -> Option<TokenStream> {
 
 // ── Workspace dep resolution ──────────────────────────────────────────────────
 
-fn collect_path_prefixes(ts: &TokenStream, out: &mut std::collections::HashSet<String>) {
-    let tokens: Vec<TokenTree> = ts.clone().into_iter().collect();
-    let mut i = 0;
-    while i < tokens.len() {
-        match &tokens[i] {
-            TokenTree::Ident(id) => {
-                // Skip method calls: `.collect::<Vec<_>>()` has a preceding dot
-                let preceded_by_dot =
-                    i > 0 && matches!(&tokens[i - 1], TokenTree::Punct(p) if p.as_char() == '.');
-                if !preceded_by_dot
-                    && i + 2 < tokens.len()
-                    && let (TokenTree::Punct(c1), TokenTree::Punct(c2)) =
-                        (&tokens[i + 1], &tokens[i + 2])
-                    && c1.as_char() == ':'
-                    && c1.spacing() == Spacing::Joint
-                    && c2.as_char() == ':'
-                {
-                    out.insert(id.to_string());
-                }
-            }
-            TokenTree::Group(g) => {
-                collect_path_prefixes(&g.stream(), out);
-            }
-            _ => {}
+/// Walk up from `manifest_dir` to find the workspace root `Cargo.toml`.
+///
+/// Returns the directory containing it, or `None` if not found.
+fn find_workspace_root(manifest_dir: &str) -> Option<std::path::PathBuf> {
+    let mut dir = std::path::PathBuf::from(manifest_dir);
+    loop {
+        let candidate = dir.join("Cargo.toml");
+        if candidate.exists()
+            && let Ok(content) = std::fs::read_to_string(&candidate)
+            && content.contains("[workspace]")
+        {
+            return Some(dir);
         }
-        i += 1;
-    }
-}
-
-fn parse_workspace_dep_version(content: &str, crate_name: &str) -> Option<String> {
-    let mut in_ws_deps = false;
-    for line in content.lines() {
-        let trimmed = line.trim();
-        if trimmed == "[workspace.dependencies]" {
-            in_ws_deps = true;
-            continue;
-        }
-        if in_ws_deps {
-            if trimmed.starts_with('[') {
-                in_ws_deps = false;
-                continue;
-            }
-            if let Some(rest) = trimmed.strip_prefix(crate_name) {
-                let rest = rest.trim();
-                // Ensure exact name match (not a prefix of a longer name)
-                if !rest.starts_with('=') && !rest.starts_with(' ') {
-                    continue;
-                }
-                let rest = rest.trim_start_matches('=').trim();
-                if rest.starts_with('"') {
-                    // crate_name = "version"
-                    let inner = rest.trim_matches('"');
-                    if !inner.is_empty() {
-                        return Some(inner.to_string());
-                    }
-                } else if rest.starts_with('{') {
-                    // crate_name = { version = "v", features = [...] }
-                    if let Some(ver_start) = rest.find("version = \"") {
-                        let after = &rest[ver_start + 11..];
-                        if let Some(ver_end) = after.find('"') {
-                            return Some(after[..ver_end].to_string());
-                        }
-                    }
-                }
-            }
+        match dir.parent() {
+            Some(parent) => dir = parent.to_path_buf(),
+            None => return None,
         }
     }
-    None
 }
