@@ -36,6 +36,7 @@ use std::time::Duration;
 
 use elicitation::ElicitPlugin;
 use elicitation::contracts::{And, Established, Prop, both};
+use elicitation::{F64Positive, UrlValid as UrlValidType};
 use futures::future::BoxFuture;
 use reqwest::header::{HeaderMap, HeaderValue};
 use rmcp::{
@@ -124,60 +125,60 @@ impl ContentType {
 #[derive(Debug, Deserialize, JsonSchema)]
 struct FetchParams {
     /// Destination URL. Assumes: syntactically valid, host is reachable.
-    url: String,
-    /// Optional timeout in seconds (default: 30).
-    timeout_secs: Option<f64>,
+    url: UrlValidType,
+    /// Optional timeout in seconds (must be > 0; default: 30).
+    timeout_secs: Option<F64Positive>,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
 struct AuthFetchParams {
     /// Destination URL.
-    url: String,
+    url: UrlValidType,
     /// Authorization credential (token, base64-encoded "user:pass", or API key).
     /// Assumes: non-empty.
     token: String,
     /// Auth strategy. Constrains the credential format.
     auth_type: AuthType,
-    /// Optional timeout in seconds (default: 30).
-    timeout_secs: Option<f64>,
+    /// Optional timeout in seconds (must be > 0; default: 30).
+    timeout_secs: Option<F64Positive>,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
 struct PostParams {
     /// Destination URL.
-    url: String,
+    url: UrlValidType,
     /// Request body string.
     body: String,
     /// Content-Type for the body.
     content_type: ContentType,
-    /// Optional timeout in seconds (default: 30).
-    timeout_secs: Option<f64>,
+    /// Optional timeout in seconds (must be > 0; default: 30).
+    timeout_secs: Option<F64Positive>,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
 struct ApiCallParams {
     /// Destination URL.
-    url: String,
+    url: UrlValidType,
     /// Bearer token. Assumes: non-empty.
     token: String,
     /// JSON body string. Assumes: valid JSON.
     body: String,
-    /// Optional timeout in seconds (default: 30).
-    timeout_secs: Option<f64>,
+    /// Optional timeout in seconds (must be > 0; default: 30).
+    timeout_secs: Option<F64Positive>,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
 struct HealthCheckParams {
     /// URL to probe. Assumes: syntactically valid.
-    url: String,
-    /// Optional timeout in seconds (default: 10).
-    timeout_secs: Option<f64>,
+    url: UrlValidType,
+    /// Optional timeout in seconds (must be > 0; default: 10).
+    timeout_secs: Option<F64Positive>,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
 struct UrlBuildParams {
     /// Base URL. Assumes: syntactically valid URL string.
-    base: String,
+    base: UrlValidType,
     /// Optional path to append (e.g. `"/v1/users"`).
     path: Option<String>,
     /// Optional query parameters to append.
@@ -199,7 +200,7 @@ pub struct BuildRequestParams {
     /// HTTP method (e.g. `"GET"`, `"POST"`).
     pub method: String,
     /// Destination URL.
-    pub url: String,
+    pub url: UrlValidType,
     /// Authorization type.
     pub auth_type: AuthType,
     /// Credential for the chosen auth type. Required unless auth_type is `none`.
@@ -213,17 +214,17 @@ pub struct BuildRequestParams {
     pub content_type: Option<ContentType>,
     /// Optional timeout in seconds.
     #[builder(setter(into, strip_option), default)]
-    pub timeout_secs: Option<f64>,
+    pub timeout_secs: Option<F64Positive>,
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
 struct PaginatedGetParams {
     /// URL of the first (or current) page.
-    url: String,
+    url: UrlValidType,
     /// Optional bearer token.
     token: Option<String>,
-    /// Optional timeout in seconds (default: 30).
-    timeout_secs: Option<f64>,
+    /// Optional timeout in seconds (must be > 0; default: 30).
+    timeout_secs: Option<F64Positive>,
 }
 
 // ── Result types ─────────────────────────────────────────────────────────────
@@ -244,8 +245,8 @@ pub struct FetchResult {
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
-fn timeout(secs: Option<f64>) -> Duration {
-    Duration::from_secs_f64(secs.unwrap_or(30.0))
+fn timeout(secs: Option<F64Positive>) -> Duration {
+    Duration::from_secs_f64(secs.map(|t| t.get()).unwrap_or(30.0))
 }
 
 fn parse_url(s: &str) -> Result<(url::Url, Established<UrlValid>), CallToolResult> {
@@ -592,11 +593,10 @@ impl WorkflowPlugin {
         params: BuildRequestParams,
     ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
         let method = params.method.as_str();
-        let url = params.url.as_str();
-        let timeout = Duration::from_secs_f64(params.timeout_secs.unwrap_or(30.0));
+        let url = params.url.get().as_str();
+        let timeout = Duration::from_secs_f64(params.timeout_secs.map(|t| t.get()).unwrap_or(30.0));
 
-        let parsed_url =
-            url::Url::parse(url).map_err(|e| format!("UrlValid not established: '{url}' — {e}"))?;
+        let parsed_url = params.url.get().clone();
         let _url_proof: Established<UrlValid> = Established::assert();
 
         let method_val = reqwest::Method::from_bytes(method.as_bytes())
@@ -762,13 +762,7 @@ impl ElicitPlugin for WorkflowPlugin {
             match bare {
                 "url_build" => {
                     let p: UrlBuildParams = parse_args(&params)?;
-                    let (mut url, _proof) = parse_url(&p.base).map_err(|_| {
-                        // convert CallToolResult back to ErrorData for error path
-                        ErrorData::invalid_params(
-                            format!("UrlValid not established for base '{}'", p.base),
-                            None,
-                        )
-                    })?;
+                    let mut url = p.base.into_inner();
                     if let Some(path) = &p.path {
                         url.set_path(path);
                     }
@@ -795,7 +789,7 @@ impl ElicitPlugin for WorkflowPlugin {
                     let p: FetchParams = parse_args(&params)?;
                     match do_fetch(
                         &self.client,
-                        &p.url,
+                        p.url.get().as_str(),
                         HeaderMap::new(),
                         timeout(p.timeout_secs),
                     )
@@ -813,7 +807,14 @@ impl ElicitPlugin for WorkflowPlugin {
                     let p: FetchParams = parse_args(&params)?;
                     let mut headers = HeaderMap::new();
                     headers.insert("Accept", HeaderValue::from_static("application/json"));
-                    match do_fetch(&self.client, &p.url, headers, timeout(p.timeout_secs)).await {
+                    match do_fetch(
+                        &self.client,
+                        p.url.get().as_str(),
+                        headers,
+                        timeout(p.timeout_secs),
+                    )
+                    .await
+                    {
                         Ok((r, _proof)) => {
                             let json = serde_json::to_string(&r).unwrap_or_default();
                             Ok(CallToolResult::success(vec![Content::text(json)]))
@@ -824,14 +825,12 @@ impl ElicitPlugin for WorkflowPlugin {
 
                 "fetch_auth" => {
                     let p: AuthFetchParams = parse_args(&params)?;
-                    let (_, url_proof) = parse_url(&p.url).map_err(|_| {
-                        ErrorData::invalid_params(
-                            format!("UrlValid not established for '{}'", p.url),
-                            None,
-                        )
-                    })?;
+                    let url_proof: Established<UrlValid> = Established::assert();
 
-                    let rb = self.client.get(&p.url).timeout(timeout(p.timeout_secs));
+                    let rb = self
+                        .client
+                        .get(p.url.get().as_str())
+                        .timeout(timeout(p.timeout_secs));
                     let (rb, auth_proof_opt) = apply_auth(rb, &p.auth_type, Some(&p.token));
 
                     let resp = match rb.send().await {
@@ -879,7 +878,7 @@ impl ElicitPlugin for WorkflowPlugin {
                     let p: PostParams = parse_args(&params)?;
                     match do_post(
                         &self.client,
-                        &p.url,
+                        p.url.get().as_str(),
                         p.body,
                         p.content_type.as_mime(),
                         HeaderMap::new(),
@@ -897,12 +896,7 @@ impl ElicitPlugin for WorkflowPlugin {
 
                 "api_call" => {
                     let p: ApiCallParams = parse_args(&params)?;
-                    let (_, url_proof) = parse_url(&p.url).map_err(|_| {
-                        ErrorData::invalid_params(
-                            format!("UrlValid not established for '{}'", p.url),
-                            None,
-                        )
-                    })?;
+                    let url_proof: Established<UrlValid> = Established::assert();
 
                     let auth_proof: Established<Authorized> = if p.token.is_empty() {
                         return Ok(CallToolResult::error(vec![Content::text(
@@ -914,7 +908,7 @@ impl ElicitPlugin for WorkflowPlugin {
 
                     let resp = match self
                         .client
-                        .post(&p.url)
+                        .post(p.url.get().as_str())
                         .bearer_auth(&p.token)
                         .header("Content-Type", "application/json")
                         .timeout(timeout(p.timeout_secs))
@@ -958,15 +952,11 @@ impl ElicitPlugin for WorkflowPlugin {
 
                 "health_check" => {
                     let p: HealthCheckParams = parse_args(&params)?;
-                    if let Err(e) = url::Url::parse(&p.url) {
-                        return Ok(CallToolResult::error(vec![Content::text(format!(
-                            "UrlValid not established: {e}"
-                        ))]));
-                    }
+                    let url_str = p.url.get().as_str();
 
                     let resp = self
                         .client
-                        .head(&p.url)
+                        .head(url_str)
                         .timeout(timeout(p.timeout_secs))
                         .send()
                         .await;
@@ -977,13 +967,13 @@ impl ElicitPlugin for WorkflowPlugin {
                             serde_json::json!({
                                 "healthy": r.status().is_success(),
                                 "status": status,
-                                "url": p.url,
+                                "url": url_str,
                             })
                         }
                         Err(e) => serde_json::json!({
                             "healthy": false,
                             "status": null,
-                            "url": p.url,
+                            "url": url_str,
                             "error": e.to_string(),
                         }),
                     };
@@ -1022,10 +1012,10 @@ impl ElicitPlugin for WorkflowPlugin {
 
                     let spec = serde_json::json!({
                         "method": p.method.to_uppercase(),
-                        "url": p.url,
+                        "url": p.url.get().as_str(),
                         "headers": headers,
                         "body": p.body,
-                        "timeout_secs": p.timeout_secs,
+                        "timeout_secs": p.timeout_secs.map(|t| t.get()),
                     });
                     Ok(CallToolResult::success(vec![Content::text(
                         spec.to_string(),
@@ -1067,14 +1057,12 @@ impl ElicitPlugin for WorkflowPlugin {
 
                 "paginated_get" => {
                     let p: PaginatedGetParams = parse_args(&params)?;
-                    let (_, url_proof) = parse_url(&p.url).map_err(|_| {
-                        ErrorData::invalid_params(
-                            format!("UrlValid not established for '{}'", p.url),
-                            None,
-                        )
-                    })?;
+                    let _url_proof: Established<UrlValid> = Established::assert();
 
-                    let rb = self.client.get(&p.url).timeout(timeout(p.timeout_secs));
+                    let rb = self
+                        .client
+                        .get(p.url.get().as_str())
+                        .timeout(timeout(p.timeout_secs));
                     let rb = if let Some(t) = &p.token {
                         rb.bearer_auth(t)
                     } else {
@@ -1099,7 +1087,7 @@ impl ElicitPlugin for WorkflowPlugin {
                     }
                     let status_proof: Established<StatusSuccess> = Established::assert();
                     let _combined: Established<FetchSucceeded> =
-                        both(url_proof, both(req_proof, status_proof));
+                        both(_url_proof, both(req_proof, status_proof));
 
                     let next_url = extract_link_next(resp.headers());
                     let has_more = next_url.is_some();
@@ -1161,8 +1149,8 @@ const ELICITATION_DEP: CrateDep = CrateDep::new("elicitation", "0.8");
 #[cfg(feature = "emit")]
 impl EmitCode for FetchParams {
     fn emit_code(&self) -> TokenStream {
-        let url = &self.url;
-        let timeout = self.timeout_secs.unwrap_or(30.0);
+        let url = self.url.get().as_str();
+        let timeout = self.timeout_secs.map(|t| t.get()).unwrap_or(30.0);
         quote::quote! {
             let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
             let (_resp, _proof) = _plugin.fetch(
@@ -1182,9 +1170,9 @@ impl EmitCode for FetchParams {
 #[cfg(feature = "emit")]
 impl EmitCode for AuthFetchParams {
     fn emit_code(&self) -> TokenStream {
-        let url = &self.url;
+        let url = self.url.get().as_str();
         let token = &self.token;
-        let timeout = self.timeout_secs.unwrap_or(30.0);
+        let timeout = self.timeout_secs.map(|t| t.get()).unwrap_or(30.0);
         let auth_expr = match self.auth_type {
             AuthType::Bearer => quote::quote! { elicit_reqwest::AuthType::Bearer },
             AuthType::Basic => quote::quote! { elicit_reqwest::AuthType::Basic },
@@ -1212,9 +1200,9 @@ impl EmitCode for AuthFetchParams {
 #[cfg(feature = "emit")]
 impl EmitCode for PostParams {
     fn emit_code(&self) -> TokenStream {
-        let url = &self.url;
+        let url = self.url.get().as_str();
         let body = &self.body;
-        let timeout = self.timeout_secs.unwrap_or(30.0);
+        let timeout = self.timeout_secs.map(|t| t.get()).unwrap_or(30.0);
         let ct_expr = match self.content_type {
             ContentType::Json => quote::quote! { elicit_reqwest::ContentType::Json },
             ContentType::FormUrlEncoded => {
@@ -1244,10 +1232,10 @@ impl EmitCode for PostParams {
 #[cfg(feature = "emit")]
 impl EmitCode for ApiCallParams {
     fn emit_code(&self) -> TokenStream {
-        let url = &self.url;
+        let url = self.url.get().as_str();
         let token = &self.token;
         let body = &self.body;
-        let timeout = self.timeout_secs.unwrap_or(30.0);
+        let timeout = self.timeout_secs.map(|t| t.get()).unwrap_or(30.0);
         quote::quote! {
             let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
             let (_resp, _proof) = _plugin.api_call(
@@ -1269,8 +1257,8 @@ impl EmitCode for ApiCallParams {
 #[cfg(feature = "emit")]
 impl EmitCode for HealthCheckParams {
     fn emit_code(&self) -> TokenStream {
-        let url = &self.url;
-        let timeout = self.timeout_secs.unwrap_or(10.0);
+        let url = self.url.get().as_str();
+        let timeout = self.timeout_secs.map(|t| t.get()).unwrap_or(10.0);
         quote::quote! {
             let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
             let _healthy = _plugin.health_check(
@@ -1289,7 +1277,7 @@ impl EmitCode for HealthCheckParams {
 #[cfg(feature = "emit")]
 impl EmitCode for UrlBuildParams {
     fn emit_code(&self) -> TokenStream {
-        let base = &self.base;
+        let base = self.base.get().as_str();
         let path_expr = match &self.path {
             Some(p) => quote::quote! { Some(#p) },
             None => quote::quote! { None::<&str> },
@@ -1347,7 +1335,7 @@ impl EmitCode for StatusSummaryParams {
 impl EmitCode for BuildRequestParams {
     fn emit_code(&self) -> TokenStream {
         let method = &self.method;
-        let url = &self.url;
+        let url = self.url.get().as_str();
         let auth_expr = match self.auth_type {
             AuthType::Bearer => quote::quote! { elicit_reqwest::AuthType::Bearer },
             AuthType::Basic => quote::quote! { elicit_reqwest::AuthType::Basic },
@@ -1363,7 +1351,10 @@ impl EmitCode for BuildRequestParams {
             None => quote::quote! {},
         };
         let timeout_stmt = match self.timeout_secs {
-            Some(t) => quote::quote! { .timeout_secs(#t) },
+            Some(t) => {
+                let t = t.get();
+                quote::quote! { .timeout_secs(#t) }
+            }
             None => quote::quote! {},
         };
         let ct_stmt = match &self.content_type {
@@ -1408,12 +1399,12 @@ impl EmitCode for BuildRequestParams {
 #[cfg(feature = "emit")]
 impl EmitCode for PaginatedGetParams {
     fn emit_code(&self) -> TokenStream {
-        let url = &self.url;
+        let url = self.url.get().as_str();
         let token_expr = match &self.token {
             Some(t) => quote::quote! { Some(#t) },
             None => quote::quote! { None::<&str> },
         };
-        let timeout = self.timeout_secs.unwrap_or(30.0);
+        let timeout = self.timeout_secs.map(|t| t.get()).unwrap_or(30.0);
         quote::quote! {
             let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
             let _pages = _plugin.paginated_get(

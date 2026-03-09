@@ -8,6 +8,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use elicitation::ElicitPlugin;
+use elicitation::{F64Positive, UrlValid};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -71,7 +72,7 @@ impl Default for Plugin {
 #[derive(Debug, Deserialize, JsonSchema)]
 struct HttpParams {
     /// Destination URL.
-    url: String,
+    url: UrlValid,
 
     /// Request body string (used by `post`, `put`, `patch`).
     body: Option<String>,
@@ -79,8 +80,8 @@ struct HttpParams {
     /// `Content-Type` header value (e.g., `"application/json"`).
     content_type: Option<String>,
 
-    /// Request timeout in seconds.
-    timeout_secs: Option<f64>,
+    /// Request timeout in seconds (must be > 0).
+    timeout_secs: Option<F64Positive>,
 
     /// Bearer token for `Authorization: Bearer <token>` header.
     bearer_token: Option<String>,
@@ -92,7 +93,7 @@ struct HttpParams {
 /// Apply common [`HttpParams`] options to a request builder.
 fn apply_options(mut builder: reqwest::RequestBuilder, p: &HttpParams) -> reqwest::RequestBuilder {
     if let Some(t) = p.timeout_secs {
-        builder = builder.timeout(Duration::from_secs_f64(t));
+        builder = builder.timeout(Duration::from_secs_f64(t.get()));
     }
     if let Some(token) = &p.bearer_token {
         builder = builder.bearer_auth(token);
@@ -187,13 +188,13 @@ impl ElicitPlugin for Plugin {
             let client = Arc::clone(&self.client);
 
             let builder = match params.name.as_ref() {
-                "get" => client.get(&p.url),
-                "post" => client.post(&p.url),
-                "put" => client.put(&p.url),
-                "delete" => client.delete(&p.url),
-                "patch" => client.patch(&p.url),
+                "get" => client.get(p.url.get().as_str()),
+                "post" => client.post(p.url.get().as_str()),
+                "put" => client.put(p.url.get().as_str()),
+                "delete" => client.delete(p.url.get().as_str()),
+                "patch" => client.patch(p.url.get().as_str()),
                 "head" => {
-                    let b = apply_options(client.head(&p.url), &p);
+                    let b = apply_options(client.head(p.url.get().as_str()), &p);
                     return execute_head(b).await;
                 }
                 other => {
