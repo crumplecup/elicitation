@@ -926,9 +926,6 @@ fn generate_elicit_impl_styled(
     ty_generics: &syn::TypeGenerics,
     where_clause: &Option<&syn::WhereClause>,
 ) -> TokenStream2 {
-    // Extract field types for kani_proof generation
-    let elicited_types: Vec<_> = elicited_fields.iter().map(|info| &info.ty).collect();
-
     // Generate style enum name
     let style_enum_name = syn::Ident::new(&format!("{}ElicitStyle", name), name.span());
 
@@ -1107,6 +1104,8 @@ fn generate_elicit_impl_styled(
         }
     };
 
+    #[cfg(feature = "proofs")]
+    let elicited_types: Vec<_> = elicited_fields.iter().map(|info| &info.ty).collect();
     #[cfg(feature = "proofs")]
     let proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
