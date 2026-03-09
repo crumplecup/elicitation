@@ -1078,6 +1078,7 @@ dependencies = [
  "jiff",
  "kani-verifier",
  "regex",
+ "serde_json",
  "time",
  "url",
  "uuid",

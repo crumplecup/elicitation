@@ -11,8 +11,8 @@
 
 use creusot_std::prelude::*;
 use elicitation::{
-    F64Finite, F64NonNegative, F64Positive, I16NonNegative, I16NonZero, I16Positive, I8NonNegative,
-    I8NonZero, I8Positive, StringNonEmpty, U16NonZero, U16Positive, U8NonZero, U8Positive,
+    F64Finite, F64NonNegative, F64Positive, I8NonNegative, I8NonZero, I8Positive, I16NonNegative,
+    I16NonZero, I16Positive, StringNonEmpty, U8NonZero, U8Positive, U16NonZero, U16Positive,
     ValidationError,
 };
 use serde_json::Value;
@@ -41,9 +41,7 @@ pub fn verify_i8_positive_serde_invalid(value: i8) -> Result<I8Positive, serde_j
 #[requires(value@ >= 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_i8_non_negative_serde_valid(
-    value: i8,
-) -> Result<I8NonNegative, serde_json::Error> {
+pub fn verify_i8_non_negative_serde_valid(value: i8) -> Result<I8NonNegative, serde_json::Error> {
     serde_json::from_value(Value::Number(value.into()))
 }
 
@@ -51,9 +49,7 @@ pub fn verify_i8_non_negative_serde_valid(
 #[requires(value@ < 0)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_i8_non_negative_serde_invalid(
-    value: i8,
-) -> Result<I8NonNegative, serde_json::Error> {
+pub fn verify_i8_non_negative_serde_invalid(value: i8) -> Result<I8NonNegative, serde_json::Error> {
     serde_json::from_value(Value::Number(value.into()))
 }
 
@@ -89,9 +85,7 @@ pub fn verify_i16_positive_serde_valid(value: i16) -> Result<I16Positive, serde_
 #[requires(value@ <= 0)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_i16_positive_serde_invalid(
-    value: i16,
-) -> Result<I16Positive, serde_json::Error> {
+pub fn verify_i16_positive_serde_invalid(value: i16) -> Result<I16Positive, serde_json::Error> {
     serde_json::from_value(Value::Number(value.into()))
 }
 
@@ -127,9 +121,7 @@ pub fn verify_i16_non_zero_serde_valid(value: i16) -> Result<I16NonZero, serde_j
 #[requires(value@ == 0)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_i16_non_zero_serde_invalid(
-    value: i16,
-) -> Result<I16NonZero, serde_json::Error> {
+pub fn verify_i16_non_zero_serde_invalid(value: i16) -> Result<I16NonZero, serde_json::Error> {
     serde_json::from_value(Value::Number(value.into()))
 }
 
@@ -181,9 +173,7 @@ pub fn verify_u16_positive_serde_valid(value: u16) -> Result<U16Positive, serde_
 #[requires(value@ == 0)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_u16_positive_serde_invalid(
-    value: u16,
-) -> Result<U16Positive, serde_json::Error> {
+pub fn verify_u16_positive_serde_invalid(value: u16) -> Result<U16Positive, serde_json::Error> {
     serde_json::from_value(Value::Number(value.into()))
 }
 
@@ -199,9 +189,7 @@ pub fn verify_u16_non_zero_serde_valid(value: u16) -> Result<U16NonZero, serde_j
 #[requires(value@ == 0)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_u16_non_zero_serde_invalid(
-    value: u16,
-) -> Result<U16NonZero, serde_json::Error> {
+pub fn verify_u16_non_zero_serde_invalid(value: u16) -> Result<U16NonZero, serde_json::Error> {
     serde_json::from_value(Value::Number(value.into()))
 }
 
@@ -257,8 +245,7 @@ pub fn verify_f64_finite_serde_valid() -> Result<F64Finite, serde_json::Error> {
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
 #[trusted]
-pub fn verify_string_non_empty_serde_empty(
-) -> Result<StringNonEmpty<4096>, serde_json::Error> {
+pub fn verify_string_non_empty_serde_empty() -> Result<StringNonEmpty<4096>, serde_json::Error> {
     serde_json::from_value(serde_json::json!(""))
 }
 
@@ -266,8 +253,7 @@ pub fn verify_string_non_empty_serde_empty(
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 #[trusted]
-pub fn verify_string_non_empty_serde_valid(
-) -> Result<StringNonEmpty<4096>, serde_json::Error> {
+pub fn verify_string_non_empty_serde_valid() -> Result<StringNonEmpty<4096>, serde_json::Error> {
     serde_json::from_value(serde_json::json!("hello"))
 }
 
