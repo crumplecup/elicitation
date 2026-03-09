@@ -74,10 +74,7 @@ inventory::collect!(EmitEntry);
 ///
 /// This replaces the per-crate `dispatch_*_emit` chain that was previously
 /// required in [`EmitBinaryPlugin`](crate::plugin::ElicitPlugin).
-pub fn dispatch_emit(
-    tool: &str,
-    params: serde_json::Value,
-) -> Result<Box<dyn EmitCode>, String> {
+pub fn dispatch_emit(tool: &str, params: serde_json::Value) -> Result<Box<dyn EmitCode>, String> {
     inventory::iter::<EmitEntry>()
         .find(|e| e.tool == tool)
         .ok_or_else(|| format!("unknown emit tool: '{tool}'"))

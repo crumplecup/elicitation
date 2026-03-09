@@ -663,6 +663,54 @@ impl Elicitation for UrlCanBeBase {
 }
 
 // ============================================================================
+// Serde Bridge: URL Contract Types  (feature = "url")
+// ============================================================================
+
+#[cfg(feature = "url")]
+mod serde_bridge {
+    use super::*;
+    use schemars::JsonSchema;
+    use serde::{Deserialize, Serialize};
+
+    macro_rules! impl_url_serde_bridge {
+        ($ty:ident, $scheme_desc:expr) => {
+            impl Serialize for $ty {
+                fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+                    #[cfg(not(kani))]
+                    return self.get().as_str().serialize(s);
+                    #[cfg(kani)]
+                    return "".serialize(s);
+                }
+            }
+            impl<'de> Deserialize<'de> for $ty {
+                fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+                    let s = String::deserialize(d)?;
+                    Self::new(&s).map_err(serde::de::Error::custom)
+                }
+            }
+            impl JsonSchema for $ty {
+                fn schema_name() -> ::std::borrow::Cow<'static, str> {
+                    stringify!($ty).into()
+                }
+                fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+                    schemars::json_schema!({
+                        "type": "string",
+                        "format": "uri",
+                        "description": $scheme_desc
+                    })
+                }
+            }
+        };
+    }
+
+    impl_url_serde_bridge!(UrlValid, "A valid URL (any scheme).");
+    impl_url_serde_bridge!(UrlHttps, "An HTTPS URL. Must use the https:// scheme.");
+    impl_url_serde_bridge!(UrlHttp, "An HTTP URL. Must use the http:// scheme.");
+    impl_url_serde_bridge!(UrlWithHost, "A URL that must include a hostname.");
+    impl_url_serde_bridge!(UrlCanBeBase, "A URL that can be used as a base URL.");
+}
+
+// ============================================================================
 // Tests
 // ============================================================================
 

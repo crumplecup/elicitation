@@ -6,6 +6,7 @@ use anodized::spec;
 use elicitation_derive::contract_type;
 #[cfg(not(kani))]
 use elicitation_macros::instrumented_impl;
+use serde::{Deserialize, Serialize};
 
 // ============================================================================
 
@@ -85,6 +86,32 @@ impl<const MAX_LEN: usize> StringNonEmpty<MAX_LEN> {
 }
 
 crate::default_style!(StringNonEmpty<4096> => StringNonEmptyStyle);
+
+impl<const MAX_LEN: usize> Serialize for StringNonEmpty<MAX_LEN> {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        self.get().serialize(s)
+    }
+}
+
+impl<'de, const MAX_LEN: usize> Deserialize<'de> for StringNonEmpty<MAX_LEN> {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let s = String::deserialize(d)?;
+        Self::new(s).map_err(serde::de::Error::custom)
+    }
+}
+
+impl<const MAX_LEN: usize> schemars::JsonSchema for StringNonEmpty<MAX_LEN> {
+    fn schema_name() -> ::std::borrow::Cow<'static, str> {
+        format!("StringNonEmpty<{MAX_LEN}>").into()
+    }
+    fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "string",
+            "minLength": 1,
+            "description": "Non-empty string"
+        })
+    }
+}
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl<const MAX_LEN: usize> Prompt for StringNonEmpty<MAX_LEN> {

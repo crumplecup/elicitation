@@ -17,6 +17,7 @@
 //! [`EmitCode`](elicitation::emit_code::EmitCode) impls so agent sessions can be
 //! recovered as standalone Rust binaries.
 
+use elicitation::verification::types::UrlHttps;
 use elicitation::{ElicitPlugin, PluginContext, elicit_tool};
 use rmcp::{ErrorData, model::CallToolResult};
 use schemars::JsonSchema;
@@ -29,8 +30,8 @@ use tracing::instrument;
 /// Parameters for `secure_fetch`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct SecureFetchParams {
-    /// HTTPS URL to fetch.
-    pub url: String,
+    /// HTTPS URL to fetch. Must use the `https://` scheme.
+    pub url: UrlHttps,
     /// Request timeout in seconds (default: 30).
     #[serde(default = "default_timeout")]
     pub timeout_secs: f64,
@@ -43,8 +44,8 @@ fn default_timeout() -> f64 {
 /// Parameters for `validated_api_call`.
 #[derive(Debug, Clone, Deserialize, JsonSchema)]
 pub struct ValidatedApiCallParams {
-    /// HTTPS URL of the API endpoint.
-    pub url: String,
+    /// HTTPS URL of the API endpoint. Must use the `https://` scheme.
+    pub url: UrlHttps,
     /// Bearer token for authorization.
     pub token: String,
     /// HTTP method — `"GET"` or `"POST"` (default: `"GET"`).
@@ -100,24 +101,17 @@ impl Default for SecureFetchPlugin {
                    HTTPS) with elicit_reqwest HTTP tooling. The proof chain \
                    UrlParsed ∧ HttpsRequired is established before any network I/O."
 )]
-#[instrument(skip_all, fields(url = %p.url, timeout = p.timeout_secs))]
+#[instrument(skip_all, fields(timeout = p.timeout_secs))]
 async fn secure_fetch(
     ctx: Arc<PluginContext>,
     p: SecureFetchParams,
 ) -> Result<CallToolResult, ErrorData> {
-    // Phase 1: URL validation (elicit_url typestate)
-    let (parsed, url_proof) = elicit_url::UnvalidatedUrl::new(p.url.clone())
-        .parse()
-        .map_err(|e| ErrorData::invalid_params(format!("URL parse failed: {e}"), None))?;
+    // URL is validated as UrlHttps at deserialization — no ceremony needed.
+    let url_str = p.url.get().as_str().to_owned();
 
-    let (_secure, _https_proof) = parsed
-        .assert_https(url_proof)
-        .map_err(|e| ErrorData::invalid_params(format!("HTTPS required: {e}"), None))?;
-
-    // Phase 2: HTTP request — reuse the shared client from context
     let response = ctx
         .http
-        .get(p.url.as_str())
+        .get(&url_str)
         .timeout(std::time::Duration::from_secs_f64(p.timeout_secs))
         .send()
         .await
@@ -145,26 +139,20 @@ async fn secure_fetch(
                    URL validation, HTTPS enforcement, and bearer token authorization into \
                    a single verified operation."
 )]
-#[instrument(skip(ctx, p), fields(url = %p.url, method = %p.method, timeout = p.timeout_secs))]
+#[instrument(skip(ctx, p), fields(method = %p.method, timeout = p.timeout_secs))]
 async fn validated_api_call(
     ctx: Arc<PluginContext>,
     p: ValidatedApiCallParams,
 ) -> Result<CallToolResult, ErrorData> {
-    // Phase 1: URL validation
-    let (parsed, url_proof) = elicit_url::UnvalidatedUrl::new(p.url.clone())
-        .parse()
-        .map_err(|e| ErrorData::invalid_params(format!("URL parse failed: {e}"), None))?;
+    // URL is validated as UrlHttps at deserialization — no ceremony needed.
+    let url_str = p.url.get().as_str().to_owned();
 
-    let (_secure, _https_proof) = parsed
-        .assert_https(url_proof)
-        .map_err(|e| ErrorData::invalid_params(format!("HTTPS required: {e}"), None))?;
-
-    // Phase 2: Authenticated HTTP request — reuse the shared client from context
+    // Authenticated HTTP request — reuse the shared client from context
     let builder = match p.method.to_uppercase().as_str() {
         "POST" => {
             let mut b = ctx
                 .http
-                .post(p.url.as_str())
+                .post(&url_str)
                 .bearer_auth(&p.token)
                 .timeout(std::time::Duration::from_secs_f64(p.timeout_secs));
             if let Some(body) = &p.body {
@@ -176,7 +164,7 @@ async fn validated_api_call(
         }
         _ => ctx
             .http
-            .get(p.url.as_str())
+            .get(&url_str)
             .bearer_auth(&p.token)
             .timeout(std::time::Duration::from_secs_f64(p.timeout_secs)),
     };
@@ -210,23 +198,18 @@ mod emit {
     use proc_macro2::TokenStream;
     use quote::quote;
 
-    const ELICIT_URL_DEP: CrateDep = CrateDep::new("elicit_url", "0.8");
     const REQWEST_DEP: CrateDep = CrateDep::new("reqwest", "0.13");
 
     impl EmitCode for SecureFetchParams {
         fn emit_code(&self) -> TokenStream {
-            let url = &self.url;
+            let url = self.url.get().as_str().to_owned();
             let timeout = self.timeout_secs;
             quote! {
-                let (_parsed, _url_proof) = elicit_url::UnvalidatedUrl::new(#url.to_string())
-                    .parse()
-                    .map_err(|e| format!("URL parse failed: {e}"))?;
-                let (_secure, _https_proof) = _parsed
-                    .assert_https(_url_proof)
+                let _url = elicitation::verification::types::UrlHttps::new(#url)
                     .map_err(|e| format!("HTTPS required: {e}"))?;
                 let _client = reqwest::Client::new();
                 let _response = _client
-                    .get(_secure.as_str())
+                    .get(_url.get().as_str())
                     .timeout(std::time::Duration::from_secs_f64(#timeout))
                     .send()
                     .await
@@ -239,13 +222,13 @@ mod emit {
         }
 
         fn crate_deps(&self) -> Vec<CrateDep> {
-            vec![ELICIT_URL_DEP, REQWEST_DEP]
+            vec![REQWEST_DEP]
         }
     }
 
     impl EmitCode for ValidatedApiCallParams {
         fn emit_code(&self) -> TokenStream {
-            let url = &self.url;
+            let url = self.url.get().as_str().to_owned();
             let token = &self.token;
             let timeout = self.timeout_secs;
             let method = &self.method;
@@ -254,18 +237,14 @@ mod emit {
                 None => quote! { None::<String> },
             };
             quote! {
-                let (_parsed, _url_proof) = elicit_url::UnvalidatedUrl::new(#url.to_string())
-                    .parse()
-                    .map_err(|e| format!("URL parse failed: {e}"))?;
-                let (_secure, _https_proof) = _parsed
-                    .assert_https(_url_proof)
+                let _url = elicitation::verification::types::UrlHttps::new(#url)
                     .map_err(|e| format!("HTTPS required: {e}"))?;
                 let _client = reqwest::Client::new();
                 let _body_opt: Option<String> = #body_expr;
                 let _builder = match #method.to_uppercase().as_str() {
                     "POST" => {
                         let mut b = _client
-                            .post(_secure.as_str())
+                            .post(_url.get().as_str())
                             .bearer_auth(#token)
                             .timeout(std::time::Duration::from_secs_f64(#timeout));
                         if let Some(body) = &_body_opt {
@@ -274,7 +253,7 @@ mod emit {
                         b
                     }
                     _ => _client
-                        .get(_secure.as_str())
+                        .get(_url.get().as_str())
                         .bearer_auth(#token)
                         .timeout(std::time::Duration::from_secs_f64(#timeout)),
                 };
@@ -287,7 +266,7 @@ mod emit {
         }
 
         fn crate_deps(&self) -> Vec<CrateDep> {
-            vec![ELICIT_URL_DEP, REQWEST_DEP]
+            vec![REQWEST_DEP]
         }
     }
 }

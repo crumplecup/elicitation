@@ -200,11 +200,7 @@ fn first_param_is_context(func: &ItemFn) -> bool {
 /// Check whether any segment in a type path ends with `name`.
 fn type_path_ends_with(ty: &Type, name: &str) -> bool {
     match ty {
-        Type::Path(tp) => tp
-            .path
-            .segments
-            .iter()
-            .any(|seg| seg.ident == name),
+        Type::Path(tp) => tp.path.segments.iter().any(|seg| seg.ident == name),
         Type::Reference(r) => type_path_ends_with(&r.elem, name),
         _ => false,
     }

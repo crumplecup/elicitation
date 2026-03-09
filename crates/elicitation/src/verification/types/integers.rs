@@ -88,6 +88,95 @@ macro_rules! impl_integer_default_wrapper {
 }
 
 // ============================================================================
+// Serde Bridge: Constrained Integer Types
+// ============================================================================
+
+/// Add validated Deserialize + JsonSchema to constrained integer types that
+/// already have a plain `#[derive(Deserialize)]` (I8 variants).
+///
+/// Adds: `impl TryFrom<$prim> for $ty` delegating to `new()`.
+/// Combined with `#[serde(try_from = "$prim")]` on the struct, this makes
+/// Deserialize route through the validated constructor.
+macro_rules! impl_integer_tryfrom {
+    ($ty:ident, $prim:ty) => {
+        impl ::std::convert::TryFrom<$prim> for $ty {
+            type Error = super::ValidationError;
+            #[inline]
+            fn try_from(v: $prim) -> Result<Self, Self::Error> {
+                Self::new(v)
+            }
+        }
+    };
+}
+
+/// Generate Serialize + validated Deserialize + JsonSchema for constrained
+/// integer types that do NOT yet have serde derives.
+///
+/// * `$ty` — the constrained newtype (e.g. `U8Positive`)
+/// * `$prim` — the inner primitive (e.g. `u8`)
+/// * `$description` — human-readable description for JSON schema
+/// * extra JSON schema key/value pairs (e.g. `"minimum": 1`)
+macro_rules! impl_integer_serde_bridge {
+    ($ty:ident, $prim:ty, $description:expr, { $($key:literal: $val:tt),* $(,)? }) => {
+        impl serde::Serialize for $ty {
+            fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+                self.0.serialize(s)
+            }
+        }
+        impl<'de> serde::Deserialize<'de> for $ty {
+            fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+                let v = <$prim>::deserialize(d)?;
+                Self::new(v).map_err(serde::de::Error::custom)
+            }
+        }
+        impl schemars::JsonSchema for $ty {
+            fn schema_name() -> ::std::borrow::Cow<'static, str> {
+                stringify!($ty).into()
+            }
+            fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+                schemars::json_schema!({
+                    "type": "integer",
+                    "description": $description,
+                    $($key: $val),*
+                })
+            }
+        }
+    };
+}
+
+/// Generate Serialize + validated Deserialize + JsonSchema for const-generic
+/// Range integer types (e.g. `I8Range<MIN, MAX>`).
+macro_rules! impl_integer_range_serde_bridge {
+    ($ty:ident<$prim:ty>) => {
+        impl<const MIN: $prim, const MAX: $prim> serde::Serialize for $ty<MIN, MAX> {
+            fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+                self.0.serialize(s)
+            }
+        }
+        impl<'de, const MIN: $prim, const MAX: $prim> serde::Deserialize<'de> for $ty<MIN, MAX> {
+            fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+                let v = <$prim>::deserialize(d)?;
+                Self::new(v).map_err(serde::de::Error::custom)
+            }
+        }
+        impl<const MIN: $prim, const MAX: $prim> schemars::JsonSchema for $ty<MIN, MAX> {
+            fn schema_name() -> ::std::borrow::Cow<'static, str> {
+                format!(concat!(stringify!($ty), "<{},{}>"), MIN, MAX).into()
+            }
+            fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+                // MIN/MAX as i128/u128 for JSON — the json_schema! macro needs literals,
+                // so we build the schema value manually.
+                let mut obj = serde_json::Map::new();
+                obj.insert("type".into(), serde_json::Value::String("integer".into()));
+                obj.insert("minimum".into(), serde_json::json!(MIN as i128));
+                obj.insert("maximum".into(), serde_json::json!(MAX as i128));
+                schemars::Schema::from(obj)
+            }
+        }
+    };
+}
+
+// ============================================================================
 // Verification Types (Constrained)
 // ============================================================================
 
@@ -115,14 +204,14 @@ macro_rules! impl_integer_default_wrapper {
 /// assert_eq!(value, 42);
 /// ```
 #[contract_type(requires = "value > 0", ensures = "result.get() > 0")]
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
-)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, JsonSchema)]
+#[serde(try_from = "i8")]
 #[schemars(description = "Positive integer value (> 0)")]
 pub struct I8Positive(#[schemars(range(min = 1))] i8);
 
 // Mark as safe for MCP elicitation
 rmcp::elicit_safe!(I8Positive);
+impl_integer_tryfrom!(I8Positive, i8);
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl I8Positive {
@@ -243,13 +332,13 @@ mod tests {
 /// Contract type for non-negative i8 values (>= 0).
 ///
 /// Validates on construction, then can unwrap to stdlib i8 via `into_inner()`.
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
-)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, JsonSchema)]
+#[serde(try_from = "i8")]
 #[schemars(description = "Non-negative integer value (>= 0)")]
 pub struct I8NonNegative(#[schemars(range(min = 0))] i8);
 
 rmcp::elicit_safe!(I8NonNegative);
+impl_integer_tryfrom!(I8NonNegative, i8);
 
 #[cfg_attr(not(kani), instrumented_impl)]
 #[cfg_attr(not(kani), instrumented_impl)]
@@ -336,13 +425,13 @@ impl Elicitation for I8NonNegative {
 ///
 /// Validates on construction, unwraps to stdlib i8.
 #[contract_type(requires = "value != 0", ensures = "result.get() != 0")]
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
-)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, JsonSchema)]
+#[serde(try_from = "i8")]
 #[schemars(description = "Non-zero integer value (!= 0)")]
 pub struct I8NonZero(i8);
 
 rmcp::elicit_safe!(I8NonZero);
+impl_integer_tryfrom!(I8NonZero, i8);
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl I8NonZero {
@@ -483,6 +572,8 @@ impl crate::Elicitation for I8RangeStyle {
         Ok(Self::Default)
     }
 }
+
+impl_integer_range_serde_bridge!(I8Range<i8>);
 
 impl<const MIN: i8, const MAX: i8> Prompt for I8Range<MIN, MAX> {
     fn prompt() -> Option<&'static str> {
@@ -630,6 +721,7 @@ impl I16Positive {
 }
 
 crate::default_style!(I16Positive => I16PositiveStyle);
+impl_integer_serde_bridge!(I16Positive, i16, "Positive i16 value (> 0)", { "minimum": 1 });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for I16Positive {
@@ -716,6 +808,7 @@ impl I16NonNegative {
 }
 
 crate::default_style!(I16NonNegative => I16NonNegativeStyle);
+impl_integer_serde_bridge!(I16NonNegative, i16, "Non-negative i16 value (>= 0)", { "minimum": 0 });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for I16NonNegative {
@@ -800,6 +893,7 @@ impl I16NonZero {
 }
 
 crate::default_style!(I16NonZero => I16NonZeroStyle);
+impl_integer_serde_bridge!(I16NonZero, i16, "Non-zero i16 value (!= 0)", { "not": {"const": 0} });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for I16NonZero {
@@ -910,6 +1004,8 @@ impl crate::Elicitation for I16RangeStyle {
         Ok(Self::Default)
     }
 }
+
+impl_integer_range_serde_bridge!(I16Range<i16>);
 
 impl<const MIN: i16, const MAX: i16> Prompt for I16Range<MIN, MAX> {
     fn prompt() -> Option<&'static str> {
@@ -1087,6 +1183,7 @@ impl U8NonZero {
 }
 
 crate::default_style!(U8NonZero => U8NonZeroStyle);
+impl_integer_serde_bridge!(U8NonZero, u8, "Non-zero u8 value (!= 0)", { "minimum": 1 });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for U8NonZero {
@@ -1198,6 +1295,8 @@ impl crate::Elicitation for U8RangeStyle {
     }
 }
 
+impl_integer_range_serde_bridge!(U8Range<u8>);
+
 impl<const MIN: u8, const MAX: u8> Prompt for U8Range<MIN, MAX> {
     fn prompt() -> Option<&'static str> {
         Some("Please enter a number within the specified range:")
@@ -1266,6 +1365,7 @@ impl U16NonZero {
 }
 
 crate::default_style!(U16NonZero => U16NonZeroStyle);
+impl_integer_serde_bridge!(U16NonZero, u16, "Non-zero u16 value (!= 0)", { "minimum": 1 });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for U16NonZero {
@@ -1376,6 +1476,8 @@ impl crate::Elicitation for U16RangeStyle {
         Ok(Self::Default)
     }
 }
+
+impl_integer_range_serde_bridge!(U16Range<u16>);
 
 impl<const MIN: u16, const MAX: u16> Prompt for U16Range<MIN, MAX> {
     fn prompt() -> Option<&'static str> {
@@ -1573,6 +1675,7 @@ impl U8Positive {
 }
 
 crate::default_style!(U8Positive => U8PositiveStyle);
+impl_integer_serde_bridge!(U8Positive, u8, "Positive u8 value (> 0)", { "minimum": 1 });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for U8Positive {
@@ -1635,6 +1738,7 @@ impl U16Positive {
 }
 
 crate::default_style!(U16Positive => U16PositiveStyle);
+impl_integer_serde_bridge!(U16Positive, u16, "Positive u16 value (> 0)", { "minimum": 1 });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for U16Positive {

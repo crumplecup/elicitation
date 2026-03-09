@@ -87,6 +87,46 @@ macro_rules! impl_float_default_wrapper {
 }
 
 // ============================================================================
+// Serde Bridge: Constrained Float Types
+// ============================================================================
+
+/// Generate Serialize + Deserialize (validated) + JsonSchema for a constrained float type.
+///
+/// * `$ty` — the constrained newtype (e.g. `F64Positive`)
+/// * `$prim` — the inner primitive (`f32` or `f64`)
+/// * `$description` — human-readable constraint description for the JSON schema
+/// * `$schema_extra` — extra JSON schema key/value pairs (e.g. `"exclusiveMinimum": 0.0`)
+macro_rules! impl_float_serde_bridge {
+    ($ty:ident, $prim:ty, $description:expr, { $($key:literal: $val:tt),* $(,)? }) => {
+        impl serde::Serialize for $ty {
+            fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+                self.0.serialize(s)
+            }
+        }
+
+        impl<'de> serde::Deserialize<'de> for $ty {
+            fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+                let v = <$prim>::deserialize(d)?;
+                Self::new(v).map_err(serde::de::Error::custom)
+            }
+        }
+
+        impl schemars::JsonSchema for $ty {
+            fn schema_name() -> ::std::borrow::Cow<'static, str> {
+                stringify!($ty).into()
+            }
+            fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+                schemars::json_schema!({
+                    "type": "number",
+                    "description": $description,
+                    $($key: $val),*
+                })
+            }
+        }
+    };
+}
+
+// ============================================================================
 // Verification Types (Constrained)
 // ============================================================================
 
@@ -146,6 +186,7 @@ impl F32Positive {
 }
 
 crate::default_style!(F32Positive => F32PositiveStyle);
+impl_float_serde_bridge!(F32Positive, f32, "Positive f32 value (> 0.0 and finite)", { "exclusiveMinimum": 0.0 });
 
 impl Prompt for F32Positive {
     fn prompt() -> Option<&'static str> {
@@ -247,6 +288,7 @@ impl F32NonNegative {
 }
 
 crate::default_style!(F32NonNegative => F32NonNegativeStyle);
+impl_float_serde_bridge!(F32NonNegative, f32, "Non-negative f32 value (>= 0.0 and finite)", { "minimum": 0.0 });
 
 impl Prompt for F32NonNegative {
     fn prompt() -> Option<&'static str> {
@@ -342,6 +384,7 @@ impl F32Finite {
 }
 
 crate::default_style!(F32Finite => F32FiniteStyle);
+impl_float_serde_bridge!(F32Finite, f32, "Finite f32 value (not NaN or infinite)", {});
 
 impl Prompt for F32Finite {
     fn prompt() -> Option<&'static str> {
@@ -443,6 +486,7 @@ impl F64Positive {
 }
 
 crate::default_style!(F64Positive => F64PositiveStyle);
+impl_float_serde_bridge!(F64Positive, f64, "Positive f64 value (> 0.0 and finite)", { "exclusiveMinimum": 0.0 });
 
 impl Prompt for F64Positive {
     fn prompt() -> Option<&'static str> {
@@ -544,6 +588,7 @@ impl F64NonNegative {
 }
 
 crate::default_style!(F64NonNegative => F64NonNegativeStyle);
+impl_float_serde_bridge!(F64NonNegative, f64, "Non-negative f64 value (>= 0.0 and finite)", { "minimum": 0.0 });
 
 impl Prompt for F64NonNegative {
     fn prompt() -> Option<&'static str> {
@@ -624,6 +669,7 @@ impl F64Finite {
 }
 
 crate::default_style!(F64Finite => F64FiniteStyle);
+impl_float_serde_bridge!(F64Finite, f64, "Finite f64 value (not NaN or infinite)", {});
 
 impl Prompt for F64Finite {
     fn prompt() -> Option<&'static str> {

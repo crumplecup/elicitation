@@ -71,8 +71,10 @@ pub struct ToolDescriptor {
     pub(crate) tool: Tool,
     /// Async handler: receives context + raw params, returns result.
     pub(crate) handler: Arc<
-        dyn Fn(Arc<PluginContext>, CallToolRequestParams)
-                -> BoxFuture<'static, Result<CallToolResult, ErrorData>>
+        dyn Fn(
+                Arc<PluginContext>,
+                CallToolRequestParams,
+            ) -> BoxFuture<'static, Result<CallToolResult, ErrorData>>
             + Send
             + Sync,
     >,
@@ -146,7 +148,12 @@ where
             }
         },
     );
-    ToolDescriptor { name, description, tool, handler }
+    ToolDescriptor {
+        name,
+        description,
+        tool,
+        handler,
+    }
 }
 
 /// Build a [`ToolDescriptor`] from a context-aware handler.
@@ -198,7 +205,12 @@ where
             }
         },
     );
-    ToolDescriptor { name, description, tool, handler }
+    ToolDescriptor {
+        name,
+        description,
+        tool,
+        handler,
+    }
 }
 
 // ── PluginToolRegistration ─────────────────────────────────────────────────────
@@ -240,4 +252,3 @@ impl ToolDescriptor {
         (self.handler)(ctx, params)
     }
 }
-
