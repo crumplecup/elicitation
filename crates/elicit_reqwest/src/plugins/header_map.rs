@@ -103,7 +103,8 @@ struct EmptyParams {}
 #[elicit_tool(
     plugin = "header_map",
     name = "new",
-    description = "Return an empty header map as a JSON object."
+    description = "Return an empty header map as a JSON object.",
+    emit = false
 )]
 #[instrument(skip_all)]
 async fn hm_new(_p: EmptyParams) -> Result<CallToolResult, ErrorData> {
@@ -113,7 +114,8 @@ async fn hm_new(_p: EmptyParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "header_map",
     name = "get",
-    description = "Return the value of a header by name, or null if absent."
+    description = "Return the value of a header by name, or null if absent.",
+    emit = false
 )]
 #[instrument(skip_all, fields(key = %p.key))]
 async fn hm_get(p: GetParams) -> Result<CallToolResult, ErrorData> {
@@ -132,7 +134,8 @@ async fn hm_get(p: GetParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "header_map",
     name = "contains_key",
-    description = "Return true if the header map contains the given key."
+    description = "Return true if the header map contains the given key.",
+    emit = false
 )]
 #[instrument(skip_all, fields(key = %p.key))]
 async fn hm_contains_key(p: GetParams) -> Result<CallToolResult, ErrorData> {
@@ -148,7 +151,8 @@ async fn hm_contains_key(p: GetParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "header_map",
     name = "insert",
-    description = "Insert or replace a header; returns the updated header map and the previous value (or null)."
+    description = "Insert or replace a header; returns the updated header map and the previous value (or null).",
+    emit = false
 )]
 #[instrument(skip_all, fields(key = %p.key))]
 async fn hm_insert(p: InsertParams) -> Result<CallToolResult, ErrorData> {
@@ -179,7 +183,8 @@ async fn hm_insert(p: InsertParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "header_map",
     name = "append",
-    description = "Append a header (allows multiple values per key); returns the updated header map."
+    description = "Append a header (allows multiple values per key); returns the updated header map.",
+    emit = false
 )]
 #[instrument(skip_all, fields(key = %p.key))]
 async fn hm_append(p: InsertParams) -> Result<CallToolResult, ErrorData> {
@@ -203,7 +208,8 @@ async fn hm_append(p: InsertParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "header_map",
     name = "remove",
-    description = "Remove a header by name; returns the updated header map and the removed value (or null)."
+    description = "Remove a header by name; returns the updated header map and the removed value (or null).",
+    emit = false
 )]
 #[instrument(skip_all, fields(key = %p.key))]
 async fn hm_remove(p: RemoveParams) -> Result<CallToolResult, ErrorData> {
@@ -226,7 +232,8 @@ async fn hm_remove(p: RemoveParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "header_map",
     name = "len",
-    description = "Return the total number of header entries (counting multi-value headers separately)."
+    description = "Return the total number of header entries (counting multi-value headers separately).",
+    emit = false
 )]
 #[instrument(skip_all)]
 async fn hm_len(p: HeadersParams) -> Result<CallToolResult, ErrorData> {
@@ -242,7 +249,8 @@ async fn hm_len(p: HeadersParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "header_map",
     name = "keys_len",
-    description = "Return the number of distinct header names."
+    description = "Return the number of distinct header names.",
+    emit = false
 )]
 #[instrument(skip_all)]
 async fn hm_keys_len(p: HeadersParams) -> Result<CallToolResult, ErrorData> {
@@ -258,7 +266,8 @@ async fn hm_keys_len(p: HeadersParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "header_map",
     name = "is_empty",
-    description = "Return true if the header map contains no entries."
+    description = "Return true if the header map contains no entries.",
+    emit = false
 )]
 #[instrument(skip_all)]
 async fn hm_is_empty(p: HeadersParams) -> Result<CallToolResult, ErrorData> {
@@ -274,7 +283,8 @@ async fn hm_is_empty(p: HeadersParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "header_map",
     name = "keys",
-    description = "Return a list of all header names (may contain duplicates for multi-value headers)."
+    description = "Return a list of all header names (may contain duplicates for multi-value headers).",
+    emit = false
 )]
 #[instrument(skip_all)]
 async fn hm_keys(p: HeadersParams) -> Result<CallToolResult, ErrorData> {
@@ -290,7 +300,8 @@ async fn hm_keys(p: HeadersParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "header_map",
     name = "values",
-    description = "Return a list of all header values."
+    description = "Return a list of all header values.",
+    emit = false
 )]
 #[instrument(skip_all)]
 async fn hm_values(p: HeadersParams) -> Result<CallToolResult, ErrorData> {
@@ -306,7 +317,8 @@ async fn hm_values(p: HeadersParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "header_map",
     name = "clear",
-    description = "Return an empty header map (clears all entries)."
+    description = "Return an empty header map (clears all entries).",
+    emit = false
 )]
 #[instrument(skip_all)]
 async fn hm_clear(_p: EmptyParams) -> Result<CallToolResult, ErrorData> {

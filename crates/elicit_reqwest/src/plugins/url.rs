@@ -143,7 +143,8 @@ pub struct UrlPlugin;
 #[elicit_tool(
     plugin = "url",
     name = "parse",
-    description = "Parse a URL string into its components. Returns a JSON object with scheme, username, password, host, port, path, query, fragment, origin, and validation status."
+    description = "Parse a URL string into its components. Returns a JSON object with scheme, username, password, host, port, path, query, fragment, origin, and validation status.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_parse(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -177,7 +178,8 @@ async fn url_parse(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "parse_with_params",
-    description = "Parse a URL string and append query parameters. Returns the resulting URL string."
+    description = "Parse a URL string and append query parameters. Returns the resulting URL string.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_parse_with_params(p: ParseWithParamsInput) -> Result<CallToolResult, ErrorData> {
@@ -197,7 +199,8 @@ async fn url_parse_with_params(p: ParseWithParamsInput) -> Result<CallToolResult
 #[elicit_tool(
     plugin = "url",
     name = "scheme",
-    description = "Return the scheme of the URL (e.g. \"https\")."
+    description = "Return the scheme of the URL (e.g. \"https\").",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_scheme(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -207,7 +210,8 @@ async fn url_scheme(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "username",
-    description = "Return the username from the URL authority, or empty string."
+    description = "Return the username from the URL authority, or empty string.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_username(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -217,7 +221,8 @@ async fn url_username(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "password",
-    description = "Return the password from the URL authority, or null."
+    description = "Return the password from the URL authority, or null.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_password(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -227,7 +232,8 @@ async fn url_password(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "has_host",
-    description = "Return true if the URL has a host component."
+    description = "Return true if the URL has a host component.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_has_host(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -237,7 +243,8 @@ async fn url_has_host(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "host_str",
-    description = "Return the host as a string (e.g. \"example.com\"), or null."
+    description = "Return the host as a string (e.g. \"example.com\"), or null.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_host_str(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -247,7 +254,8 @@ async fn url_host_str(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "domain",
-    description = "Return the domain (host without port) if the URL uses a domain name, or null."
+    description = "Return the domain (host without port) if the URL uses a domain name, or null.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_domain(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -257,7 +265,8 @@ async fn url_domain(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "port",
-    description = "Return the explicit port number, or null if absent."
+    description = "Return the explicit port number, or null if absent.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_port(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -267,7 +276,8 @@ async fn url_port(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "port_or_known_default",
-    description = "Return the port or its scheme default (80 for http, 443 for https), or null."
+    description = "Return the port or its scheme default (80 for http, 443 for https), or null.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_port_or_known_default(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -277,7 +287,8 @@ async fn url_port_or_known_default(p: UrlParams) -> Result<CallToolResult, Error
 #[elicit_tool(
     plugin = "url",
     name = "path",
-    description = "Return the path component of the URL."
+    description = "Return the path component of the URL.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_path(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -287,7 +298,8 @@ async fn url_path(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "query",
-    description = "Return the query string (without leading `?`), or null."
+    description = "Return the query string (without leading `?`), or null.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_query(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -297,7 +309,8 @@ async fn url_query(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "fragment",
-    description = "Return the fragment identifier (without leading `#`), or null."
+    description = "Return the fragment identifier (without leading `#`), or null.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_fragment(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -307,7 +320,8 @@ async fn url_fragment(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "origin",
-    description = "Return the origin of the URL as a string (e.g. \"https://example.com:443\")."
+    description = "Return the origin of the URL as a string (e.g. \"https://example.com:443\").",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_origin(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -317,7 +331,8 @@ async fn url_origin(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "cannot_be_a_base",
-    description = "Return true if the URL cannot be used as a base for relative URLs."
+    description = "Return true if the URL cannot be used as a base for relative URLs.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_cannot_be_a_base(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -327,7 +342,8 @@ async fn url_cannot_be_a_base(p: UrlParams) -> Result<CallToolResult, ErrorData>
 #[elicit_tool(
     plugin = "url",
     name = "has_authority",
-    description = "Return true if the URL has an authority component."
+    description = "Return true if the URL has an authority component.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_has_authority(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -337,7 +353,8 @@ async fn url_has_authority(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "as_str",
-    description = "Return the serialized URL as a string."
+    description = "Return the serialized URL as a string.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_as_str(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -347,7 +364,8 @@ async fn url_as_str(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "join",
-    description = "Resolve a relative URL reference against a base URL; returns the resulting URL string."
+    description = "Resolve a relative URL reference against a base URL; returns the resulting URL string.",
+    emit = false
 )]
 #[instrument(skip_all, fields(base = %p.base, input = %p.input))]
 async fn url_join(p: JoinParams) -> Result<CallToolResult, ErrorData> {
@@ -365,7 +383,8 @@ async fn url_join(p: JoinParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "make_relative",
-    description = "Return a relative URL string from base to target, or null if base and target have different origins."
+    description = "Return a relative URL string from base to target, or null if base and target have different origins.",
+    emit = false
 )]
 #[instrument(skip_all, fields(base = %p.base, input = %p.input))]
 async fn url_make_relative(p: JoinParams) -> Result<CallToolResult, ErrorData> {
@@ -386,7 +405,8 @@ async fn url_make_relative(p: JoinParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "set_path",
-    description = "Return a copy of the URL with the path replaced."
+    description = "Return a copy of the URL with the path replaced.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url, path = %p.path))]
 async fn url_set_path(p: SetPathParams) -> Result<CallToolResult, ErrorData> {
@@ -404,7 +424,8 @@ async fn url_set_path(p: SetPathParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "set_query",
-    description = "Return a copy of the URL with the query string replaced (or cleared if null)."
+    description = "Return a copy of the URL with the query string replaced (or cleared if null).",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_set_query(p: SetQueryParams) -> Result<CallToolResult, ErrorData> {
@@ -422,7 +443,8 @@ async fn url_set_query(p: SetQueryParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "set_fragment",
-    description = "Return a copy of the URL with the fragment replaced (or cleared if null)."
+    description = "Return a copy of the URL with the fragment replaced (or cleared if null).",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_set_fragment(p: SetFragmentParams) -> Result<CallToolResult, ErrorData> {
@@ -440,7 +462,8 @@ async fn url_set_fragment(p: SetFragmentParams) -> Result<CallToolResult, ErrorD
 #[elicit_tool(
     plugin = "url",
     name = "set_host",
-    description = "Return a copy of the URL with the host replaced (or cleared if null)."
+    description = "Return a copy of the URL with the host replaced (or cleared if null).",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_set_host(p: SetHostParams) -> Result<CallToolResult, ErrorData> {
@@ -458,7 +481,8 @@ async fn url_set_host(p: SetHostParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "set_port",
-    description = "Return a copy of the URL with the port replaced (or cleared if null)."
+    description = "Return a copy of the URL with the port replaced (or cleared if null).",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_set_port(p: SetPortParams) -> Result<CallToolResult, ErrorData> {
@@ -478,7 +502,8 @@ async fn url_set_port(p: SetPortParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "set_scheme",
-    description = "Return a copy of the URL with the scheme replaced."
+    description = "Return a copy of the URL with the scheme replaced.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url, scheme = %p.scheme))]
 async fn url_set_scheme(p: SetSchemeParams) -> Result<CallToolResult, ErrorData> {
@@ -498,7 +523,8 @@ async fn url_set_scheme(p: SetSchemeParams) -> Result<CallToolResult, ErrorData>
 #[elicit_tool(
     plugin = "url",
     name = "set_username",
-    description = "Return a copy of the URL with the username replaced."
+    description = "Return a copy of the URL with the username replaced.",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_set_username(p: SetUsernameParams) -> Result<CallToolResult, ErrorData> {
@@ -518,7 +544,8 @@ async fn url_set_username(p: SetUsernameParams) -> Result<CallToolResult, ErrorD
 #[elicit_tool(
     plugin = "url",
     name = "set_password",
-    description = "Return a copy of the URL with the password replaced (or cleared if null)."
+    description = "Return a copy of the URL with the password replaced (or cleared if null).",
+    emit = false
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_set_password(p: SetPasswordParams) -> Result<CallToolResult, ErrorData> {

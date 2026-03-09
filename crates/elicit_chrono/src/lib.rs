@@ -14,6 +14,7 @@ mod date_time_utc;
 mod naive_date_time;
 pub mod workflow;
 
+pub use chrono::{Duration, Utc};
 pub use date_time_fixed::DateTimeFixed;
 pub use date_time_utc::DateTimeUtc;
 pub use naive_date_time::NaiveDateTime;
@@ -21,8 +22,5 @@ pub use workflow::{
     AddSecondsParams, AssertFutureParams, AssertInRangeParams, ChronoWorkflowPlugin,
     ComputeDurationParams, DateTimeFuture, DateTimeInRange, DateTimeParsed, FutureDateTimeProof,
     FutureDateTimeState, ParseDateTimeParams, ParsedDateTime, RangedDateTimeProof,
-    RangedDateTimeState, UnvalidatedDateStr,
+    RangedDateTimeState, UnvalidatedDateStr, parse_rfc3339,
 };
-
-#[cfg(feature = "emit")]
-pub use workflow::dispatch_emit as dispatch_chrono_emit;

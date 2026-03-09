@@ -12,7 +12,6 @@
 
 #[cfg(feature = "emit")]
 mod smoke {
-    use elicit_server;
     use elicitation::emit_code::BinaryScaffold;
     use std::path::PathBuf;
     use std::process::Command;
@@ -45,25 +44,8 @@ mod smoke {
         crate_name: &str,
         params: serde_json::Value,
     ) -> (PathBuf, PathBuf) {
-        let step = match crate_name {
-            "reqwest" => elicit_reqwest::dispatch_reqwest_emit(tool_name, params)
-                .unwrap_or_else(|e| panic!("dispatch_reqwest_emit({tool_name}): {e}")),
-            "serde_json" => elicit_serde_json::dispatch_serde_json_emit(tool_name, params)
-                .unwrap_or_else(|e| panic!("dispatch_serde_json_emit({tool_name}): {e}")),
-            "url" => elicit_url::dispatch_url_emit(tool_name, params)
-                .unwrap_or_else(|e| panic!("dispatch_url_emit({tool_name}): {e}")),
-            "chrono" => elicit_chrono::dispatch_chrono_emit(tool_name, params)
-                .unwrap_or_else(|e| panic!("dispatch_chrono_emit({tool_name}): {e}")),
-            "jiff" => elicit_jiff::dispatch_jiff_emit(tool_name, params)
-                .unwrap_or_else(|e| panic!("dispatch_jiff_emit({tool_name}): {e}")),
-            "time" => elicit_time::dispatch_time_emit(tool_name, params)
-                .unwrap_or_else(|e| panic!("dispatch_time_emit({tool_name}): {e}")),
-            "secure_fetch" => elicitation::emit_code::dispatch_emit(tool_name, params)
-                .unwrap_or_else(|e| panic!("dispatch_emit({tool_name}): {e}")),
-            "fetch_and_parse" => elicit_server::dispatch_fetch_and_parse_emit(tool_name, params)
-                .unwrap_or_else(|e| panic!("dispatch_fetch_and_parse_emit({tool_name}): {e}")),
-            other => panic!("Unknown crate: {other}"),
-        };
+        let step = elicit_server::emit_dispatch_crate(tool_name, crate_name, params)
+            .unwrap_or_else(|e| panic!("emit_dispatch({tool_name}): {e}"));
 
         let scaffold = BinaryScaffold::new(vec![step], false).with_workspace_root(workspace_root());
 
@@ -123,7 +105,7 @@ mod smoke {
     fn emit_status_summary_and_run() {
         assert_runs(
             "status_summary",
-            "reqwest",
+            "elicit_reqwest",
             serde_json::json!({ "status": 200 }),
         );
     }
@@ -132,7 +114,7 @@ mod smoke {
     fn emit_url_build_and_run() {
         assert_runs(
             "url_build",
-            "reqwest",
+            "elicit_reqwest",
             serde_json::json!({
                 "base": "https://api.example.com",
                 "path": "/v1/users",
@@ -147,7 +129,7 @@ mod smoke {
     fn emit_fetch_builds() {
         assert_builds(
             "fetch",
-            "reqwest",
+            "elicit_reqwest",
             serde_json::json!({
                 "url": "https://httpbin.org/get",
                 "timeout_secs": 30.0
@@ -158,8 +140,8 @@ mod smoke {
     #[test]
     fn emit_auth_fetch_builds() {
         assert_builds(
-            "auth_fetch",
-            "reqwest",
+            "fetch_auth",
+            "elicit_reqwest",
             serde_json::json!({
                 "url": "https://api.example.com/protected",
                 "token": "test-token",
@@ -171,8 +153,8 @@ mod smoke {
     #[test]
     fn emit_post_builds() {
         assert_builds(
-            "post",
-            "reqwest",
+            "post_json",
+            "elicit_reqwest",
             serde_json::json!({
                 "url": "https://httpbin.org/post",
                 "body": r#"{"key": "value"}"#,
@@ -185,7 +167,7 @@ mod smoke {
     fn emit_api_call_builds() {
         assert_builds(
             "api_call",
-            "reqwest",
+            "elicit_reqwest",
             serde_json::json!({
                 "url": "https://api.example.com/data",
                 "token": "test-bearer-token",
@@ -198,7 +180,7 @@ mod smoke {
     fn emit_health_check_builds() {
         assert_builds(
             "health_check",
-            "reqwest",
+            "elicit_reqwest",
             serde_json::json!({
                 "url": "https://api.example.com/health",
                 "timeout_secs": 10.0
@@ -210,7 +192,7 @@ mod smoke {
     fn emit_build_request_builds() {
         assert_builds(
             "build_request",
-            "reqwest",
+            "elicit_reqwest",
             serde_json::json!({
                 "method": "POST",
                 "url": "https://api.example.com/submit",
@@ -226,7 +208,7 @@ mod smoke {
     fn emit_paginated_get_builds() {
         assert_builds(
             "paginated_get",
-            "reqwest",
+            "elicit_reqwest",
             serde_json::json!({
                 "url": "https://api.example.com/items",
                 "token": "my-token"
@@ -240,7 +222,7 @@ mod smoke {
     fn emit_parse_and_focus_and_run() {
         assert_runs(
             "parse_and_focus",
-            "serde_json",
+            "elicit_serde_json",
             serde_json::json!({
                 "json": r#"{"user": {"name": "Alice", "age": 30}}"#,
                 "pointer": "/user/name"
@@ -252,7 +234,7 @@ mod smoke {
     fn emit_validate_object_and_run() {
         assert_runs(
             "validate_object",
-            "serde_json",
+            "elicit_serde_json",
             serde_json::json!({
                 "json": r#"{"id": 1, "name": "Alice", "email": "alice@example.com"}"#,
                 "required_keys": ["id", "name", "email"]
@@ -264,7 +246,7 @@ mod smoke {
     fn emit_safe_merge_and_run() {
         assert_runs(
             "safe_merge",
-            "serde_json",
+            "elicit_serde_json",
             serde_json::json!({
                 "base": {"name": "Alice", "role": "user"},
                 "patch": {"role": "admin", "verified": true},
@@ -277,7 +259,7 @@ mod smoke {
     fn emit_pointer_update_and_run() {
         assert_runs(
             "pointer_update",
-            "serde_json",
+            "elicit_serde_json",
             serde_json::json!({
                 "json": r#"{"user": {"status": "pending"}}"#,
                 "pointer": "/user/status",
@@ -291,7 +273,7 @@ mod smoke {
     fn emit_field_chain_and_run() {
         assert_runs(
             "field_chain",
-            "serde_json",
+            "elicit_serde_json",
             serde_json::json!({
                 "json": r#"{"org": {"team": {"lead": "Bob"}}}"#,
                 "path": ["org", "team", "lead"]
@@ -305,7 +287,7 @@ mod smoke {
     /// "code recovery" use case where an agent chains two verified tools.
     #[test]
     fn emit_multi_step_composition_and_run() {
-        let step1 = elicit_reqwest::dispatch_reqwest_emit(
+        let step1 = elicit_server::emit_dispatch(
             "url_build",
             serde_json::json!({
                 "base": "https://api.example.com",
@@ -314,11 +296,9 @@ mod smoke {
         )
         .expect("dispatch url_build");
 
-        let step2 = elicit_reqwest::dispatch_reqwest_emit(
-            "status_summary",
-            serde_json::json!({ "status": 404 }),
-        )
-        .expect("dispatch status_summary");
+        let step2 =
+            elicit_server::emit_dispatch("status_summary", serde_json::json!({ "status": 404 }))
+                .expect("dispatch status_summary");
 
         let ws = workspace_root();
         let scaffold = BinaryScaffold::new(vec![step1, step2], false).with_workspace_root(&ws);
@@ -343,7 +323,7 @@ mod smoke {
     fn emit_parse_url_and_run() {
         assert_runs(
             "parse_url",
-            "url",
+            "elicit_url",
             serde_json::json!({ "url": "https://api.example.com/v1/users?page=1" }),
         );
     }
@@ -352,7 +332,7 @@ mod smoke {
     fn emit_assert_https_and_run() {
         assert_runs(
             "assert_https",
-            "url",
+            "elicit_url",
             serde_json::json!({ "url": "https://api.example.com/secure" }),
         );
     }
@@ -361,7 +341,7 @@ mod smoke {
     fn emit_build_url_and_run() {
         assert_runs(
             "build_url",
-            "url",
+            "elicit_url",
             serde_json::json!({
                 "base": "https://api.example.com",
                 "path": "/v2/items",
@@ -374,7 +354,7 @@ mod smoke {
     fn emit_join_url_and_run() {
         assert_runs(
             "join_url",
-            "url",
+            "elicit_url",
             serde_json::json!({
                 "base": "https://api.example.com/v1/",
                 "relative": "users/42"
@@ -388,7 +368,7 @@ mod smoke {
     fn emit_parse_datetime_and_run() {
         assert_runs(
             "parse_datetime",
-            "chrono",
+            "elicit_chrono",
             serde_json::json!({ "datetime": "2099-06-15T12:00:00Z" }),
         );
     }
@@ -397,7 +377,7 @@ mod smoke {
     fn emit_assert_future_chrono_and_run() {
         assert_runs(
             "assert_future",
-            "chrono",
+            "elicit_chrono",
             serde_json::json!({ "datetime": "2099-06-15T12:00:00Z" }),
         );
     }
@@ -406,7 +386,7 @@ mod smoke {
     fn emit_assert_in_range_and_run() {
         assert_runs(
             "assert_in_range",
-            "chrono",
+            "elicit_chrono",
             serde_json::json!({
                 "datetime": "2099-06-15T12:00:00Z",
                 "start": "2099-01-01T00:00:00Z",
@@ -419,7 +399,7 @@ mod smoke {
     fn emit_compute_duration_chrono_and_run() {
         assert_runs(
             "compute_duration",
-            "chrono",
+            "elicit_chrono",
             serde_json::json!({
                 "from": "2024-01-01T00:00:00Z",
                 "to": "2024-06-01T00:00:00Z"
@@ -431,7 +411,7 @@ mod smoke {
     fn emit_add_seconds_chrono_and_run() {
         assert_runs(
             "add_seconds",
-            "chrono",
+            "elicit_chrono",
             serde_json::json!({
                 "datetime": "2099-06-15T12:00:00Z",
                 "seconds": 3600
@@ -445,7 +425,7 @@ mod smoke {
     fn emit_parse_timestamp_and_run() {
         assert_runs(
             "parse_timestamp",
-            "jiff",
+            "elicit_jiff",
             serde_json::json!({ "timestamp": "2099-06-15T12:00:00Z" }),
         );
     }
@@ -454,7 +434,7 @@ mod smoke {
     fn emit_parse_zoned_and_run() {
         assert_runs(
             "parse_zoned",
-            "jiff",
+            "elicit_jiff",
             serde_json::json!({ "zoned": "2099-06-15T12:00:00[America/New_York]" }),
         );
     }
@@ -463,7 +443,7 @@ mod smoke {
     fn emit_assert_future_jiff_and_run() {
         assert_runs(
             "assert_future",
-            "jiff",
+            "elicit_jiff",
             serde_json::json!({ "timestamp": "2099-06-15T12:00:00Z" }),
         );
     }
@@ -472,7 +452,7 @@ mod smoke {
     fn emit_convert_tz_and_run() {
         assert_runs(
             "convert_tz",
-            "jiff",
+            "elicit_jiff",
             serde_json::json!({
                 "zoned": "2099-06-15T12:00:00[America/New_York]",
                 "timezone": "UTC"
@@ -484,7 +464,7 @@ mod smoke {
     fn emit_compute_span_and_run() {
         assert_runs(
             "compute_span",
-            "jiff",
+            "elicit_jiff",
             serde_json::json!({
                 "from": "2024-01-01T00:00:00Z",
                 "to": "2024-06-01T00:00:00Z"
@@ -498,7 +478,7 @@ mod smoke {
     fn emit_parse_offset_datetime_and_run() {
         assert_runs(
             "parse_offset_datetime",
-            "time",
+            "elicit_time",
             serde_json::json!({ "datetime": "2099-06-15T12:00:00Z" }),
         );
     }
@@ -507,7 +487,7 @@ mod smoke {
     fn emit_parse_primitive_datetime_and_run() {
         assert_runs(
             "parse_primitive_datetime",
-            "time",
+            "elicit_time",
             serde_json::json!({ "datetime": "2099-06-15T12:00:00" }),
         );
     }
@@ -516,7 +496,7 @@ mod smoke {
     fn emit_assert_future_time_and_run() {
         assert_runs(
             "assert_future",
-            "time",
+            "elicit_time",
             serde_json::json!({ "datetime": "2099-06-15T12:00:00Z" }),
         );
     }
@@ -525,7 +505,7 @@ mod smoke {
     fn emit_compute_duration_time_and_run() {
         assert_runs(
             "compute_duration",
-            "time",
+            "elicit_time",
             serde_json::json!({
                 "from": "2024-01-01T00:00:00Z",
                 "to": "2024-06-01T00:00:00Z"
@@ -537,7 +517,7 @@ mod smoke {
     fn emit_add_seconds_time_and_run() {
         assert_runs(
             "add_seconds",
-            "time",
+            "elicit_time",
             serde_json::json!({
                 "datetime": "2099-06-15T12:00:00Z",
                 "seconds": 3600
@@ -548,10 +528,27 @@ mod smoke {
     // ── Cross-crate: secure_fetch (build only — network) ─────────────────────
 
     #[test]
+    fn emit_secure_fetch_tokens() {
+        let step = elicit_server::emit_dispatch(
+            "secure_fetch",
+            serde_json::json!({ "url": "https://httpbin.org/get", "timeout_secs": 30.0 }),
+        )
+        .expect("dispatch secure_fetch");
+        let ts = step.emit_code();
+        println!("secure_fetch tokens:\n{ts}");
+        // Wrap in render context to check full source
+        let scaffold = elicitation::emit_code::BinaryScaffold::new(vec![step], false);
+        match scaffold.to_source() {
+            Ok(src) => println!("source:\n{src}"),
+            Err(e) => panic!("syntax error: {e}\ntokens: {ts}"),
+        }
+    }
+
+    #[test]
     fn emit_secure_fetch_builds() {
         assert_builds(
             "secure_fetch",
-            "secure_fetch",
+            "elicit_server",
             serde_json::json!({
                 "url": "https://httpbin.org/get",
                 "timeout_secs": 30.0
@@ -563,7 +560,7 @@ mod smoke {
     fn emit_validated_api_call_builds() {
         assert_builds(
             "validated_api_call",
-            "secure_fetch",
+            "elicit_server",
             serde_json::json!({
                 "url": "https://api.example.com/data",
                 "token": "test-token",
@@ -578,7 +575,7 @@ mod smoke {
     fn emit_fetch_and_extract_builds() {
         assert_builds(
             "fetch_and_extract",
-            "fetch_and_parse",
+            "elicit_server",
             serde_json::json!({
                 "url": "https://httpbin.org/json",
                 "pointer": "/slideshow/title"
@@ -590,7 +587,7 @@ mod smoke {
     fn emit_fetch_and_validate_builds() {
         assert_builds(
             "fetch_and_validate",
-            "fetch_and_parse",
+            "elicit_server",
             serde_json::json!({
                 "url": "https://httpbin.org/json",
                 "required_keys": ["slideshow"]
@@ -602,13 +599,13 @@ mod smoke {
 
     #[test]
     fn emit_parse_url_then_secure_fetch_builds() {
-        let step1 = elicit_url::dispatch_url_emit(
+        let step1 = elicit_server::emit_dispatch(
             "parse_url",
             serde_json::json!({ "url": "https://api.example.com/health" }),
         )
         .expect("dispatch parse_url");
 
-        let step2 = elicitation::emit_code::dispatch_emit(
+        let step2 = elicit_server::emit_dispatch(
             "secure_fetch",
             serde_json::json!({
                 "url": "https://api.example.com/health",

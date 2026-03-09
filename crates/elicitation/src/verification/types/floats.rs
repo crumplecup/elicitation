@@ -999,6 +999,12 @@ mod emit_impls {
     macro_rules! impl_to_code_literal_float {
         ($T:ident) => {
             impl ToCodeLiteral for $T {
+                fn type_tokens() -> TokenStream {
+                    concat!("elicitation::", stringify!($T))
+                        .parse()
+                        .expect("valid type path")
+                }
+
                 fn to_code_literal(&self) -> TokenStream {
                     let v = self.get();
                     let msg = concat!("valid ", stringify!($T));

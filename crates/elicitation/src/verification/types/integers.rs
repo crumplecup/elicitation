@@ -2782,4 +2782,3 @@ mod emit_impls {
     impl_to_code_literal_int!(UsizePositive);
     impl_to_code_literal_range!(UsizeRange, usize);
 }
-

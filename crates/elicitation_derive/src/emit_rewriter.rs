@@ -15,7 +15,7 @@ pub(crate) struct EmitRewriter {
     /// Field names found by scanning for `p . <ident>` patterns.
     pub param_fields: Vec<String>,
     /// Declared substitutions: (ctx_field_name, replacement_tokens).
-    ctx_subs: Vec<(String, TokenStream)>,
+    pub(crate) ctx_subs: Vec<(String, TokenStream)>,
 }
 
 impl EmitRewriter {
@@ -28,7 +28,7 @@ impl EmitRewriter {
         let ctx_subs = ctx_subs
             .into_iter()
             .map(|(k, v)| {
-                let field = k.splitn(2, '.').nth(1).unwrap_or(&k).to_string();
+                let field = k.split_once('.').map_or(k.as_str(), |(_, r)| r).to_string();
                 let replacement: TokenStream = v.parse().unwrap_or_default();
                 (field, replacement)
             })
@@ -58,25 +58,20 @@ impl EmitRewriter {
             match tt {
                 // ── p . <ident> → # __<ident> ──────────────────────────────────
                 TokenTree::Ident(id) if id == "p" => {
-                    if i + 2 < tokens.len() {
-                        if let (TokenTree::Punct(dot), TokenTree::Ident(field)) =
+                    if i + 2 < tokens.len()
+                        && let (TokenTree::Punct(dot), TokenTree::Ident(field)) =
                             (&tokens[i + 1], &tokens[i + 2])
-                        {
-                            if dot.as_char() == '.' {
-                                let field_name = field.to_string();
-                                let mangled = format!("__{field_name}");
-                                output.push(TokenTree::Punct(Punct::new('#', Spacing::Alone)));
-                                output.push(TokenTree::Ident(Ident::new(
-                                    &mangled,
-                                    Span::call_site(),
-                                )));
-                                if !self.param_fields.contains(&field_name) {
-                                    self.param_fields.push(field_name);
-                                }
-                                i += 3;
-                                continue;
-                            }
+                        && dot.as_char() == '.'
+                    {
+                        let field_name = field.to_string();
+                        let mangled = format!("__{field_name}");
+                        output.push(TokenTree::Punct(Punct::new('#', Spacing::Alone)));
+                        output.push(TokenTree::Ident(Ident::new(&mangled, Span::call_site())));
+                        if !self.param_fields.contains(&field_name) {
+                            self.param_fields.push(field_name);
                         }
+                        i += 3;
+                        continue;
                     }
                     output.push(tt.clone());
                     i += 1;
@@ -84,26 +79,27 @@ impl EmitRewriter {
 
                 // ── ctx . <ident> → declared replacement ───────────────────────
                 TokenTree::Ident(id) if id == "ctx" => {
-                    if i + 2 < tokens.len() {
-                        if let (TokenTree::Punct(dot), TokenTree::Ident(field)) =
+                    if i + 2 < tokens.len()
+                        && let (TokenTree::Punct(dot), TokenTree::Ident(field)) =
                             (&tokens[i + 1], &tokens[i + 2])
-                        {
-                            if dot.as_char() == '.' {
-                                let field_name = field.to_string();
-                                let replacement = self
-                                    .ctx_subs
-                                    .iter()
-                                    .find(|(k, _)| k == &field_name)
-                                    .map(|(_, v)| v.clone());
-                                if let Some(rep) = replacement {
-                                    output.extend(rep);
-                                    i += 3;
-                                    continue;
-                                }
-                            }
+                        && dot.as_char() == '.'
+                    {
+                        let field_name = field.to_string();
+                        let replacement = self
+                            .ctx_subs
+                            .iter()
+                            .find(|(k, _)| k == &field_name)
+                            .map(|(_, v)| v.clone());
+                        if let Some(rep) = replacement {
+                            output.extend(rep);
+                            i += 3;
+                            continue;
                         }
                     }
-                    output.push(tt.clone());
+                    // Bare `ctx` (not `ctx.field`) has no meaning in a standalone
+                    // binary — substitute with `()` so surrounding expressions like
+                    // `let _ = &ctx;` compile cleanly.
+                    output.extend(quote::quote! { () });
                     i += 1;
                 }
 
@@ -125,15 +121,51 @@ impl EmitRewriter {
                     i += 1;
                 }
 
-                // ── Ok ( <CallToolResult_group> ) → println! ───────────────────
+                // ── return Ok ( <CallToolResult_group> ) → print+return ────────
+                //
+                // `return Ok(CallToolResult::error/success(...))` in an early-return
+                // position must become `{ println!("..."); return Ok(()); }` so the
+                // emitted main still compiles (return type is Result, not ()).
+                TokenTree::Ident(id) if id == "return" => {
+                    if i + 1 < tokens.len()
+                        && let TokenTree::Ident(next_id) = &tokens[i + 1]
+                        && next_id == "Ok"
+                        && let Some((println_ts, advance)) =
+                            try_extract_ok_call_tool_result(&tokens, i + 1)
+                    {
+                        let rewritten = self.rewrite(println_ts);
+                        // Emit: { println!(...); return Ok(()); }
+                        let inner: TokenStream = rewritten
+                            .into_iter()
+                            .chain(quote::quote! { ; return Ok(()) }.into_iter())
+                            .collect();
+                        let group = Group::new(Delimiter::Brace, inner);
+                        output.push(TokenTree::Group(group));
+                        i = advance + 1; // skip past the `return` we consumed
+                        continue;
+                    }
+                    // Fallback: `return Ok(single_ident)` — bare variable return.
+                    if i + 1 < tokens.len()
+                        && let TokenTree::Ident(next_id) = &tokens[i + 1]
+                        && next_id == "Ok"
+                        && try_extract_ok_variable(&tokens, i + 1).is_some()
+                    {
+                        // Emit `return Ok(())` — discard the variable value.
+                        output.extend(quote::quote! { return Ok(()) });
+                        i += 3; // skip `return`, `Ok`, `(ident)`
+                        continue;
+                    }
+                    output.push(tt.clone());
+                    i += 1;
+                }
+
                 //
                 // The final return of a handler is
                 //   `Ok(CallToolResult::success(vec![Content::text(X)]))`
                 // which must not appear in a standalone binary. We replace it
                 // with a `println!("{}", X)` so the output is still visible.
                 TokenTree::Ident(id) if id == "Ok" => {
-                    if let Some((println_ts, advance)) =
-                        try_extract_ok_call_tool_result(&tokens, i)
+                    if let Some((println_ts, advance)) = try_extract_ok_call_tool_result(&tokens, i)
                     {
                         let rewritten = self.rewrite(println_ts);
                         output.extend(rewritten);
@@ -172,7 +204,13 @@ impl EmitRewriter {
     /// `elicitation`, and CamelCase names (which are types, not crates).
     pub(crate) fn infer_crate_names(ts: &TokenStream) -> Vec<String> {
         const EXCLUDED: &[&str] = &[
-            "std", "core", "alloc", "self", "super", "crate", "elicitation",
+            "std",
+            "core",
+            "alloc",
+            "self",
+            "super",
+            "crate",
+            "elicitation",
         ];
         let mut names = std::collections::HashSet::new();
         collect_path_prefixes(ts, &mut names);
@@ -197,12 +235,11 @@ impl EmitRewriter {
 
         loop {
             let candidate = dir.join("Cargo.toml");
-            if candidate.exists() {
-                if let Ok(content) = std::fs::read_to_string(&candidate) {
-                    if content.contains("[workspace]") {
-                        return parse_workspace_dep_version(&content, crate_name);
-                    }
-                }
+            if candidate.exists()
+                && let Ok(content) = std::fs::read_to_string(&candidate)
+                && content.contains("[workspace]")
+            {
+                return parse_workspace_dep_version(&content, crate_name);
             }
             match dir.parent() {
                 Some(parent) => dir = parent.to_path_buf(),
@@ -256,10 +293,7 @@ fn try_extract_error_data_first_arg(
 /// content from the deepest `Content::text(X)` call.
 ///
 /// Returns `(println_stream, new_i)` on success.
-fn try_extract_ok_call_tool_result(
-    tokens: &[TokenTree],
-    i: usize,
-) -> Option<(TokenStream, usize)> {
+fn try_extract_ok_call_tool_result(tokens: &[TokenTree], i: usize) -> Option<(TokenStream, usize)> {
     // tokens[i]   = Ident("Ok")
     // tokens[i+1] = Group(Paren, inner)
     if i + 1 >= tokens.len() {
@@ -281,19 +315,44 @@ fn try_extract_ok_call_tool_result(
     let content_ts = extract_content_text(&inner_group.stream())?;
 
     // Emit: println!("{}", <content_ts>)
-    let println_stream: TokenStream =
-        quote::quote! { println!("{}", #content_ts) };
+    let println_stream: TokenStream = quote::quote! { println!("{}", #content_ts) };
     Some((println_stream, i + 2))
+}
+
+/// Match `Ok ( <single_ident> )` where the ident is a bare variable name
+/// (not a CallToolResult constructor). Emits `()` so the match arm is
+/// compatible with arms that were rewritten to `println!(...)`.
+///
+/// This handles error-propagation patterns like `Err(e) => Ok(e)` where
+/// `e: CallToolResult` — in the emitted binary there is no CallToolResult,
+/// so we simply discard the arm result.
+fn try_extract_ok_variable(tokens: &[TokenTree], i: usize) -> Option<(TokenStream, usize)> {
+    // tokens[i]   = Ident("Ok")
+    // tokens[i+1] = Group(Paren, single_ident)
+    if i + 1 >= tokens.len() {
+        return None;
+    }
+    let inner_group = match &tokens[i + 1] {
+        TokenTree::Group(g) if g.delimiter() == Delimiter::Parenthesis => g,
+        _ => return None,
+    };
+    let inner: Vec<TokenTree> = inner_group.stream().into_iter().collect();
+    // Only handle `Ok(single_ident)` — a single identifier and nothing else.
+    if inner.len() == 1 && matches!(&inner[0], TokenTree::Ident(_)) {
+        Some((quote::quote! { () }, i + 2))
+    } else {
+        None
+    }
 }
 
 /// Collect tokens before the first top-level `,` (the first call argument).
 fn extract_first_comma_arg(tokens: &[TokenTree]) -> TokenStream {
     let mut result: Vec<TokenTree> = Vec::new();
     for tt in tokens {
-        if let TokenTree::Punct(p) = tt {
-            if p.as_char() == ',' {
-                break;
-            }
+        if let TokenTree::Punct(p) = tt
+            && p.as_char() == ','
+        {
+            break;
         }
         result.push(tt.clone());
     }
@@ -309,10 +368,10 @@ fn extract_content_text(ts: &TokenStream) -> Option<TokenStream> {
     while i < tokens.len() {
         match &tokens[i] {
             TokenTree::Ident(id) if id == "text" => {
-                if let Some(TokenTree::Group(g)) = tokens.get(i + 1) {
-                    if g.delimiter() == Delimiter::Parenthesis {
-                        return Some(g.stream());
-                    }
+                if let Some(TokenTree::Group(g)) = tokens.get(i + 1)
+                    && g.delimiter() == Delimiter::Parenthesis
+                {
+                    return Some(g.stream());
                 }
             }
             TokenTree::Group(g) => {
@@ -335,16 +394,18 @@ fn collect_path_prefixes(ts: &TokenStream, out: &mut std::collections::HashSet<S
     while i < tokens.len() {
         match &tokens[i] {
             TokenTree::Ident(id) => {
-                if i + 2 < tokens.len() {
-                    if let (TokenTree::Punct(c1), TokenTree::Punct(c2)) =
+                // Skip method calls: `.collect::<Vec<_>>()` has a preceding dot
+                let preceded_by_dot =
+                    i > 0 && matches!(&tokens[i - 1], TokenTree::Punct(p) if p.as_char() == '.');
+                if !preceded_by_dot
+                    && i + 2 < tokens.len()
+                    && let (TokenTree::Punct(c1), TokenTree::Punct(c2)) =
                         (&tokens[i + 1], &tokens[i + 2])
-                    {
-                        if c1.as_char() == ':' && c1.spacing() == Spacing::Joint
-                            && c2.as_char() == ':'
-                        {
-                            out.insert(id.to_string());
-                        }
-                    }
+                    && c1.as_char() == ':'
+                    && c1.spacing() == Spacing::Joint
+                    && c2.as_char() == ':'
+                {
+                    out.insert(id.to_string());
                 }
             }
             TokenTree::Group(g) => {

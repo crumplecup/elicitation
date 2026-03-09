@@ -34,8 +34,8 @@ struct ElicitToolArgs {
     description: String,
     /// Optional owning plugin name. When set, emits `inventory::submit!`.
     plugin: Option<String>,
-    /// Whether to auto-generate `impl EmitCode`. Default `false`; set `emit = true`
-    /// explicitly, or presence of any `emit_ctx(...)` arg implies `true`.
+    /// Whether to auto-generate `impl EmitCode`. Default `true`; opt out with
+    /// `emit = false` for handlers the rewriter cannot handle automatically.
     emit: bool,
     /// Context substitutions: `("ctx.field", "replacement_expr_source")`.
     emit_ctx_subs: Vec<(String, String)>,
@@ -55,7 +55,11 @@ impl Parse for ElicitToolArgs {
         for meta in pairs {
             match &meta {
                 Meta::List(ml) => {
-                    let key = ml.path.get_ident().map(|i| i.to_string()).unwrap_or_default();
+                    let key = ml
+                        .path
+                        .get_ident()
+                        .map(|i| i.to_string())
+                        .unwrap_or_default();
                     if key == "emit_ctx" {
                         let pair: EmitCtxPair = syn::parse2(ml.tokens.clone())?;
                         emit_ctx_subs.push((pair.lhs.value(), pair.rhs.value()));
@@ -145,8 +149,9 @@ impl Parse for ElicitToolArgs {
                 )
             })?,
             plugin,
-            // emit_ctx(...) presence implies emit=true unless explicitly set to false.
-            emit: if emit_explicit { emit } else { !emit_ctx_subs.is_empty() },
+            // Default emit=true; opt out with `emit = false` for handlers the
+            // rewriter cannot handle.
+            emit: if emit_explicit { emit } else { true },
             emit_ctx_subs,
         })
     }
@@ -244,7 +249,12 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
         use quote::ToTokens as _;
 
         // Collect and rewrite the function body tokens.
-        let body_ts: TokenStream = func.block.stmts.iter().map(|s| s.to_token_stream()).collect();
+        let body_ts: TokenStream = func
+            .block
+            .stmts
+            .iter()
+            .map(|s| s.to_token_stream())
+            .collect();
         let mut rewriter = EmitRewriter::new(emit_ctx_subs);
         let rewritten = rewriter.rewrite(body_ts);
 
@@ -262,21 +272,38 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
             })
             .collect();
 
-        // Infer crate deps from path prefixes in the rewritten body.
-        let crate_names = EmitRewriter::infer_crate_names(&rewritten);
-        let crate_deps: Vec<_> = crate_names
+        // Infer crate deps from path prefixes in the rewritten body AND from
+        // emit_ctx substitution values (e.g. "reqwest::Client::new()").
+        let sub_ts: TokenStream = rewriter
+            .ctx_subs
             .iter()
-            .map(|cname| {
-                let version = EmitRewriter::resolve_workspace_version(cname)
-                    .unwrap_or_else(|| "0.0".to_string());
-                quote! { elicitation::emit_code::CrateDep::new(#cname, #version) }
-            })
+            .flat_map(|(_, v)| v.clone())
             .collect();
+        let mut crate_names = EmitRewriter::infer_crate_names(&rewritten);
+        crate_names.extend(EmitRewriter::infer_crate_names(&sub_ts));
+        let elicitation_version = EmitRewriter::resolve_workspace_version("elicitation")
+            .unwrap_or_else(|| "0.0".to_string());
+        // The crate defining this handler — its types are used bare (without prefix),
+        // so infer_crate_names can't detect them; include it explicitly.
+        let own_crate = std::env::var("CARGO_PKG_NAME").unwrap_or_default();
+        let own_crate_version = EmitRewriter::resolve_workspace_version(&own_crate)
+            .unwrap_or_else(|| "0.0".to_string());
+        let mut crate_deps: Vec<_> = vec![
+            // Always required: ToCodeLiteral impls emit elicitation:: paths at runtime.
+            quote! { elicitation::emit_code::CrateDep::new("elicitation", #elicitation_version) },
+            // Own crate — handler uses its types unqualified.
+            quote! { elicitation::emit_code::CrateDep::new(#own_crate, #own_crate_version) },
+        ];
+        crate_deps.extend(crate_names.iter().map(|cname| {
+            let version =
+                EmitRewriter::resolve_workspace_version(cname).unwrap_or_else(|| "0.0".to_string());
+            quote! { elicitation::emit_code::CrateDep::new(#cname, #version) }
+        }));
 
         let emit_block = quote! {
             #[cfg(feature = "emit")]
             impl elicitation::emit_code::EmitCode for #params_ty {
-                fn emit_code(&self) -> proc_macro2::TokenStream {
+                fn emit_code(&self) -> elicitation::proc_macro2::TokenStream {
                     #(#field_bindings)*
                     ::quote::quote! { #rewritten }
                 }

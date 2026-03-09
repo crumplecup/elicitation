@@ -61,6 +61,8 @@ use proc_macro2::TokenStream;
 pub struct EmitEntry {
     /// Bare tool name (no namespace prefix), e.g. `"parse_url"`.
     pub tool: &'static str,
+    /// Crate that registered this entry, e.g. `"elicit_chrono"`.
+    pub crate_name: &'static str,
     /// Deserialize params from JSON and box as [`EmitCode`].
     pub constructor: fn(serde_json::Value) -> Result<Box<dyn EmitCode>, String>,
 }
@@ -78,6 +80,21 @@ pub fn dispatch_emit(tool: &str, params: serde_json::Value) -> Result<Box<dyn Em
     inventory::iter::<EmitEntry>()
         .find(|e| e.tool == tool)
         .ok_or_else(|| format!("unknown emit tool: '{tool}'"))
+        .and_then(|e| (e.constructor)(params))
+}
+
+/// Look up a tool registered by a specific crate and deserialize its params.
+///
+/// Use this when multiple crates define a tool with the same name
+/// (e.g. `"assert_future"` in `elicit_chrono`, `elicit_jiff`, `elicit_time`).
+pub fn dispatch_emit_from(
+    tool: &str,
+    crate_name: &str,
+    params: serde_json::Value,
+) -> Result<Box<dyn EmitCode>, String> {
+    inventory::iter::<EmitEntry>()
+        .find(|e| e.tool == tool && e.crate_name == crate_name)
+        .ok_or_else(|| format!("unknown emit tool: '{crate_name}::{tool}'"))
         .and_then(|e| (e.constructor)(params))
 }
 
@@ -117,6 +134,7 @@ macro_rules! register_emit {
             elicitation::inventory::submit! {
                 elicitation::emit_code::EmitEntry {
                     tool: $tool,
+                    crate_name: env!("CARGO_PKG_NAME"),
                     constructor: __emit_constructor,
                 }
             }
@@ -134,6 +152,18 @@ pub trait ToCodeLiteral {
     /// Return a `TokenStream` containing a single Rust expression whose
     /// evaluation produces a value equal to `self`.
     fn to_code_literal(&self) -> TokenStream;
+
+    /// Token stream for the concrete type name (used to annotate `None::<T>`).
+    ///
+    /// The default returns `_`, which works when context provides enough
+    /// inference — but for `Option<T>` `None` cases, a concrete type avoids
+    /// "type annotations needed" errors.
+    fn type_tokens() -> TokenStream
+    where
+        Self: Sized,
+    {
+        quote::quote! { _ }
+    }
 }
 
 /// A type that knows how to recover itself as Rust source code.
@@ -355,11 +385,44 @@ impl BinaryScaffold {
             TokenStream::new()
         };
 
+        // Wildcard imports for workflow crates so their types (e.g. UnvalidatedUrl,
+        // both, Established) are in scope without fully-qualified paths.
+        // `elicitation` uses a sub-module import to avoid shadowing workflow
+        // crate prop structs that share names with elicitation verification types
+        // (e.g. `elicit_reqwest::UrlValid` vs `elicitation::UrlValid`).
+        let mut use_stmts: Vec<TokenStream> = self
+            .all_deps()
+            .into_iter()
+            .filter(|d| d.name.starts_with("elicit"))
+            .map(|d| {
+                let krate: TokenStream = d.name.parse().expect("valid ident");
+                if d.name == "elicitation" {
+                    quote::quote! { use #krate::contracts::*; }
+                } else {
+                    quote::quote! { use #krate::*; }
+                }
+            })
+            .collect();
+
+        // When `reqwest` is a direct dep (e.g. from emit_ctx substitutions that
+        // reference `reqwest::Client::new()`), bring `reqwest::header::HeaderMap`
+        // into scope so handler bodies that call `HeaderMap::new()` compile cleanly
+        // (the `elicit_reqwest::HeaderMap` newtype is a different type).
+        if self.all_deps().iter().any(|d| d.name == "reqwest") {
+            use_stmts.push(quote::quote! { use reqwest::header::HeaderMap; });
+        }
+
+        // `elicit_reqwest` handlers use `HashMap` for headers/query params.
+        if self.all_deps().iter().any(|d| d.name == "elicit_reqwest") {
+            use_stmts.push(quote::quote! { use std::collections::HashMap; });
+        }
+
         quote::quote! {
+            #( #use_stmts )*
             #[tokio::main]
             async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 #tracing_init
-                #( #step_tokens )*
+                #( { #step_tokens } )*
                 Ok(())
             }
         }
@@ -689,6 +752,9 @@ macro_rules! impl_to_code_literal_totokens {
                     quote::ToTokens::to_tokens(self, &mut ts);
                     ts
                 }
+                fn type_tokens() -> TokenStream {
+                    quote::quote! { $T }
+                }
             }
         )+
     };
@@ -703,6 +769,9 @@ impl ToCodeLiteral for String {
         let s = self.as_str();
         quote::quote! { #s.to_string() }
     }
+    fn type_tokens() -> TokenStream {
+        quote::quote! { String }
+    }
 }
 
 impl<T: ToCodeLiteral> ToCodeLiteral for Option<T> {
@@ -712,12 +781,20 @@ impl<T: ToCodeLiteral> ToCodeLiteral for Option<T> {
                 let inner = v.to_code_literal();
                 quote::quote! { ::std::option::Option::Some(#inner) }
             }
-            None => quote::quote! { ::std::option::Option::None },
+            None => {
+                let t = <T as ToCodeLiteral>::type_tokens();
+                quote::quote! { None::<#t> }
+            }
         }
     }
 }
 
 impl<T: ToCodeLiteral> ToCodeLiteral for Vec<T> {
+    fn type_tokens() -> TokenStream {
+        let t = <T as ToCodeLiteral>::type_tokens();
+        quote::quote! { ::std::vec::Vec<#t> }
+    }
+
     fn to_code_literal(&self) -> TokenStream {
         let elems: Vec<_> = self.iter().map(|v| v.to_code_literal()).collect();
         quote::quote! { ::std::vec![#(#elems),*] }
@@ -725,6 +802,11 @@ impl<T: ToCodeLiteral> ToCodeLiteral for Vec<T> {
 }
 
 impl<V: ToCodeLiteral> ToCodeLiteral for std::collections::HashMap<String, V> {
+    fn type_tokens() -> TokenStream {
+        let v = <V as ToCodeLiteral>::type_tokens();
+        quote::quote! { ::std::collections::HashMap<::std::string::String, #v> }
+    }
+
     fn to_code_literal(&self) -> TokenStream {
         let entries: Vec<_> = self
             .iter()

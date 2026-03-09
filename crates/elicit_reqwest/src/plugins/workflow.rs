@@ -107,7 +107,8 @@ pub enum ContentType {
 }
 
 impl ContentType {
-    fn as_mime(&self) -> &'static str {
+    /// Return the MIME type string for this content type.
+    pub fn as_mime(&self) -> &'static str {
         match self {
             ContentType::Json => "application/json",
             ContentType::FormUrlEncoded => "application/x-www-form-urlencoded",
@@ -506,9 +507,10 @@ impl WorkflowPlugin {
     }
 }
 
-// ── Internal helpers ──────────────────────────────────────────────────────────
+// ── Internal helpers (pub so emitted binaries can call them) ─────────────────
 
-fn timeout(secs: Option<F64Positive>) -> Duration {
+/// Convert an optional timeout in seconds to a `Duration` (default: 30s).
+pub fn timeout(secs: Option<F64Positive>) -> Duration {
     Duration::from_secs_f64(secs.map(|t| t.get()).unwrap_or(30.0))
 }
 
@@ -522,7 +524,7 @@ fn parse_url_inner(s: &str) -> Result<(url::Url, Established<UrlValid>), CallToo
 }
 
 /// Parse a `Link: <url>; rel="next"` header and extract the next-page URL.
-fn extract_link_next(headers: &reqwest::header::HeaderMap) -> Option<String> {
+pub fn extract_link_next(headers: &reqwest::header::HeaderMap) -> Option<String> {
     headers
         .get("link")
         .and_then(|v| v.to_str().ok())
@@ -537,7 +539,8 @@ fn extract_link_next(headers: &reqwest::header::HeaderMap) -> Option<String> {
         })
 }
 
-async fn do_fetch(
+/// GET a URL, validate status, and return the body with a `FetchSucceeded` proof.
+pub async fn do_fetch(
     client: &reqwest::Client,
     url_str: &str,
     extra_headers: HeaderMap,
@@ -583,7 +586,8 @@ async fn do_fetch(
     ))
 }
 
-async fn do_post(
+/// POST a URL with a body, validate status, and return the response with a `FetchSucceeded` proof.
+pub async fn do_post(
     client: &reqwest::Client,
     url_str: &str,
     body: String,
@@ -633,7 +637,8 @@ async fn do_post(
     ))
 }
 
-fn apply_auth(
+/// Apply authorization to a request builder based on the auth type and token.
+pub fn apply_auth(
     rb: reqwest::RequestBuilder,
     auth: &AuthType,
     token: Option<&str>,
@@ -669,7 +674,7 @@ fn apply_auth(
 }
 
 /// Minimal percent-encoding for query parameter keys and values.
-fn urlencoding_simple(s: &str) -> String {
+pub fn urlencoding_simple(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for b in s.bytes() {
         match b {
@@ -723,7 +728,8 @@ async fn wf_url_build(
     name = "fetch",
     description = "GET a URL and return the response body. \
                    Assumes: url is a valid URL; host is reachable; response is 2xx. \
-                   Establishes: UrlValid ∧ RequestCompleted ∧ StatusSuccess (FetchSucceeded)."
+                   Establishes: UrlValid ∧ RequestCompleted ∧ StatusSuccess (FetchSucceeded).",
+    emit_ctx("ctx.http" => "reqwest::Client::new()")
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn wf_fetch(ctx: Arc<PluginContext>, p: FetchParams) -> Result<CallToolResult, ErrorData> {
@@ -739,7 +745,7 @@ async fn wf_fetch(ctx: Arc<PluginContext>, p: FetchParams) -> Result<CallToolRes
             let json = serde_json::to_string(&r).unwrap_or_default();
             Ok(CallToolResult::success(vec![Content::text(json)]))
         }
-        Err(err_result) => Ok(err_result),
+        Err(err_result) => return Ok(err_result),
     }
 }
 
@@ -748,7 +754,8 @@ async fn wf_fetch(ctx: Arc<PluginContext>, p: FetchParams) -> Result<CallToolRes
     name = "fetch_json",
     description = "GET a URL with Accept: application/json and return the body. \
                    Assumes: url is valid; server returns a 2xx JSON response. \
-                   Establishes: FetchSucceeded."
+                   Establishes: FetchSucceeded.",
+    emit = false
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn wf_fetch_json(
@@ -769,7 +776,7 @@ async fn wf_fetch_json(
             let json = serde_json::to_string(&r).unwrap_or_default();
             Ok(CallToolResult::success(vec![Content::text(json)]))
         }
-        Err(err_result) => Ok(err_result),
+        Err(err_result) => return Ok(err_result),
     }
 }
 
@@ -778,7 +785,8 @@ async fn wf_fetch_json(
     name = "fetch_auth",
     description = "GET a URL with authorization (Bearer/Basic/ApiKey) and return the body. \
                    Assumes: url is valid; token is non-empty; response is 2xx. \
-                   Establishes: Authorized ∧ FetchSucceeded (AuthFetchSucceeded)."
+                   Establishes: Authorized ∧ FetchSucceeded (AuthFetchSucceeded).",
+    emit_ctx("ctx.http" => "reqwest::Client::new()")
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn wf_fetch_auth(
@@ -839,7 +847,8 @@ async fn wf_fetch_auth(
     description = "POST a body to a URL and return the response body. \
                    Content-Type is set from the content_type enum (Select pattern). \
                    Assumes: url is valid; response is 2xx. \
-                   Establishes: FetchSucceeded."
+                   Establishes: FetchSucceeded.",
+    emit_ctx("ctx.http" => "reqwest::Client::new()")
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn wf_post_json(ctx: Arc<PluginContext>, p: PostParams) -> Result<CallToolResult, ErrorData> {
@@ -857,7 +866,7 @@ async fn wf_post_json(ctx: Arc<PluginContext>, p: PostParams) -> Result<CallTool
             let json = serde_json::to_string(&r).unwrap_or_default();
             Ok(CallToolResult::success(vec![Content::text(json)]))
         }
-        Err(err_result) => Ok(err_result),
+        Err(err_result) => return Ok(err_result),
     }
 }
 
@@ -867,7 +876,8 @@ async fn wf_post_json(ctx: Arc<PluginContext>, p: PostParams) -> Result<CallTool
     description = "POST JSON with a Bearer token and return the response body. \
                    Convenience composition of fetch_auth + post_json for REST APIs. \
                    Assumes: url is valid; token is non-empty; body is valid JSON; response is 2xx. \
-                   Establishes: Authorized ∧ FetchSucceeded."
+                   Establishes: Authorized ∧ FetchSucceeded.",
+    emit_ctx("ctx.http" => "reqwest::Client::new()")
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn wf_api_call(
@@ -933,18 +943,19 @@ async fn wf_api_call(
     description = "Probe a URL with HEAD and report whether it is healthy. \
                    Returns { healthy, status, url }. Does not require 2xx — \
                    reports actual status so callers can branch on result. \
-                   Assumes: url is syntactically valid."
+                   Assumes: url is syntactically valid.",
+    emit_ctx("ctx.http" => "reqwest::Client::new()")
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn wf_health_check(
     ctx: Arc<PluginContext>,
     p: HealthCheckParams,
 ) -> Result<CallToolResult, ErrorData> {
-    let url_str = p.url.get().as_str();
+    let url_str = p.url.get().to_string();
 
     let resp = ctx
         .http
-        .head(url_str)
+        .head(url_str.as_str())
         .timeout(timeout(p.timeout_secs))
         .send()
         .await;
@@ -1072,7 +1083,8 @@ async fn wf_status_summary(
     description = "GET a URL and parse the RFC 5988 Link header for a next-page URL. \
                    Returns { body, next_url, has_more }. Optional bearer token. \
                    Assumes: url is valid; response is 2xx. \
-                   Establishes: FetchSucceeded. If has_more is true, call again with next_url."
+                   Establishes: FetchSucceeded. If has_more is true, call again with next_url.",
+    emit_ctx("ctx.http" => "reqwest::Client::new()")
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn wf_paginated_get(
@@ -1129,358 +1141,36 @@ async fn wf_paginated_get(
     )]))
 }
 
-// ── EmitCode impls ────────────────────────────────────────────────────────────
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 
 #[cfg(feature = "emit")]
-use elicitation::emit_code::{CrateDep, EmitCode};
-#[cfg(feature = "emit")]
-use elicitation::proc_macro2::TokenStream;
-
-#[cfg(feature = "emit")]
-const ELICIT_REQWEST_DEP: CrateDep = CrateDep::new("elicit_reqwest", "0.8");
-#[cfg(feature = "emit")]
-const ELICITATION_DEP: CrateDep = CrateDep::new("elicitation", "0.8");
-
-/// `fetch` → `WorkflowPlugin::default_client() → .fetch(url, timeout)`
-#[cfg(feature = "emit")]
-impl EmitCode for FetchParams {
-    fn emit_code(&self) -> TokenStream {
-        let url = self.url.get().as_str();
-        let timeout = self.timeout_secs.map(|t| t.get()).unwrap_or(30.0);
-        quote::quote! {
-            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
-            let (_resp, _proof) = _plugin.fetch(
-                #url,
-                std::time::Duration::from_secs_f64(#timeout),
-            ).await.map_err(|e| format!("Fetch failed: {}", e))?;
-            println!("Status: {}", _resp.status);
-            println!("{}", _resp.body);
+impl elicitation::emit_code::ToCodeLiteral for AuthType {
+    fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+        match self {
+            AuthType::Bearer => ::quote::quote! { elicit_reqwest::AuthType::Bearer },
+            AuthType::Basic => ::quote::quote! { elicit_reqwest::AuthType::Basic },
+            AuthType::ApiKey => ::quote::quote! { elicit_reqwest::AuthType::ApiKey },
+            AuthType::None => ::quote::quote! { elicit_reqwest::AuthType::None },
         }
-    }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
     }
 }
 
-/// `auth_fetch` → fetch with Authorization header
 #[cfg(feature = "emit")]
-impl EmitCode for AuthFetchParams {
-    fn emit_code(&self) -> TokenStream {
-        let url = self.url.get().as_str();
-        let token = &self.token;
-        let timeout = self.timeout_secs.map(|t| t.get()).unwrap_or(30.0);
-        let auth_expr = match self.auth_type {
-            AuthType::Bearer => quote::quote! { elicit_reqwest::AuthType::Bearer },
-            AuthType::Basic => quote::quote! { elicit_reqwest::AuthType::Basic },
-            AuthType::ApiKey => quote::quote! { elicit_reqwest::AuthType::ApiKey },
-            AuthType::None => quote::quote! { elicit_reqwest::AuthType::None },
-        };
-        quote::quote! {
-            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
-            let (_resp, _proof) = _plugin.auth_fetch(
-                #url,
-                #token,
-                #auth_expr,
-                std::time::Duration::from_secs_f64(#timeout),
-            ).await.map_err(|e| format!("Auth fetch failed: {}", e))?;
-            println!("Status: {}", _resp.status);
-            println!("{}", _resp.body);
-        }
+impl elicitation::emit_code::ToCodeLiteral for ContentType {
+    fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+        ::quote::quote! { elicit_reqwest::ContentType }
     }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
-    }
-}
 
-/// `post` → POST with body
-#[cfg(feature = "emit")]
-impl EmitCode for PostParams {
-    fn emit_code(&self) -> TokenStream {
-        let url = self.url.get().as_str();
-        let body = &self.body;
-        let timeout = self.timeout_secs.map(|t| t.get()).unwrap_or(30.0);
-        let ct_expr = match self.content_type {
-            ContentType::Json => quote::quote! { elicit_reqwest::ContentType::Json },
+    fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+        match self {
+            ContentType::Json => ::quote::quote! { elicit_reqwest::ContentType::Json },
             ContentType::FormUrlEncoded => {
-                quote::quote! { elicit_reqwest::ContentType::FormUrlEncoded }
+                ::quote::quote! { elicit_reqwest::ContentType::FormUrlEncoded }
             }
-            ContentType::PlainText => quote::quote! { elicit_reqwest::ContentType::PlainText },
-            ContentType::OctetStream => quote::quote! { elicit_reqwest::ContentType::OctetStream },
-        };
-        quote::quote! {
-            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
-            let (_resp, _proof) = _plugin.post(
-                #url,
-                #body,
-                #ct_expr,
-                std::time::Duration::from_secs_f64(#timeout),
-            ).await.map_err(|e| format!("POST failed: {}", e))?;
-            println!("Status: {}", _resp.status);
-            println!("{}", _resp.body);
-        }
-    }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
-    }
-}
-
-/// `api_call` → authenticated JSON POST
-#[cfg(feature = "emit")]
-impl EmitCode for ApiCallParams {
-    fn emit_code(&self) -> TokenStream {
-        let url = self.url.get().as_str();
-        let token = &self.token;
-        let body = &self.body;
-        let timeout = self.timeout_secs.map(|t| t.get()).unwrap_or(30.0);
-        quote::quote! {
-            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
-            let (_resp, _proof) = _plugin.api_call(
-                #url,
-                #token,
-                #body,
-                std::time::Duration::from_secs_f64(#timeout),
-            ).await.map_err(|e| format!("API call failed: {}", e))?;
-            println!("Status: {}", _resp.status);
-            println!("{}", _resp.body);
-        }
-    }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
-    }
-}
-
-/// `health_check` → probe URL, emit status
-#[cfg(feature = "emit")]
-impl EmitCode for HealthCheckParams {
-    fn emit_code(&self) -> TokenStream {
-        let url = self.url.get().as_str();
-        let timeout = self.timeout_secs.map(|t| t.get()).unwrap_or(10.0);
-        quote::quote! {
-            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
-            let _healthy = _plugin.health_check(
-                #url,
-                std::time::Duration::from_secs_f64(#timeout),
-            ).await;
-            println!("Healthy: {}", _healthy);
-        }
-    }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
-    }
-}
-
-/// `url_build` → construct URL from base + path + query
-#[cfg(feature = "emit")]
-impl EmitCode for UrlBuildParams {
-    fn emit_code(&self) -> TokenStream {
-        let base = self.base.get().as_str();
-        let path_expr = match &self.path {
-            Some(p) => quote::quote! { Some(#p) },
-            None => quote::quote! { None::<&str> },
-        };
-        let query_pairs: Vec<TokenStream> = self
-            .query
-            .as_ref()
-            .map(|q| q.iter().map(|(k, v)| quote::quote! { (#k, #v) }).collect())
-            .unwrap_or_default();
-        quote::quote! {
-            let _url = elicit_reqwest::WorkflowPlugin::build_url(
-                #base,
-                #path_expr,
-                &[ #( #query_pairs ),* ],
-            ).map_err(|e| format!("URL build failed: {}", e))?;
-            println!("{}", _url);
-        }
-    }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
-    }
-}
-
-/// `status_summary` → classify HTTP status code
-#[cfg(feature = "emit")]
-impl EmitCode for StatusSummaryParams {
-    fn emit_code(&self) -> TokenStream {
-        let status = self.status;
-        quote::quote! {
-            let _code = elicit_reqwest::StatusCode::from_u16(#status)
-                .map_err(|e| format!("Invalid status code: {}", e))?;
-            let _class = match #status {
-                100..=199 => "informational",
-                200..=299 => "success",
-                300..=399 => "redirection",
-                400..=499 => "client_error",
-                500..=599 => "server_error",
-                _ => "unknown",
-            };
-            println!(
-                "status={} reason={} class={}",
-                _code.as_u16(),
-                _code.canonical_reason().unwrap_or("Unknown"),
-                _class,
-            );
-        }
-    }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
-    }
-}
-
-/// `build_request` → construct a full request and send it
-#[cfg(feature = "emit")]
-impl EmitCode for BuildRequestParams {
-    fn emit_code(&self) -> TokenStream {
-        let method = &self.method;
-        let url = self.url.get().as_str();
-        let auth_expr = match self.auth_type {
-            AuthType::Bearer => quote::quote! { elicit_reqwest::AuthType::Bearer },
-            AuthType::Basic => quote::quote! { elicit_reqwest::AuthType::Basic },
-            AuthType::ApiKey => quote::quote! { elicit_reqwest::AuthType::ApiKey },
-            AuthType::None => quote::quote! { elicit_reqwest::AuthType::None },
-        };
-        let token_stmt = match &self.token {
-            Some(t) => quote::quote! { .token(#t) },
-            None => quote::quote! {},
-        };
-        let body_stmt = match &self.body {
-            Some(b) => quote::quote! { .body(#b) },
-            None => quote::quote! {},
-        };
-        let timeout_stmt = match self.timeout_secs {
-            Some(t) => {
-                let t = t.get();
-                quote::quote! { .timeout_secs(#t) }
-            }
-            None => quote::quote! {},
-        };
-        let ct_stmt = match &self.content_type {
-            Some(ContentType::Json) => {
-                quote::quote! { .content_type(elicit_reqwest::ContentType::Json) }
-            }
-            Some(ContentType::FormUrlEncoded) => {
-                quote::quote! { .content_type(elicit_reqwest::ContentType::FormUrlEncoded) }
-            }
-            Some(ContentType::PlainText) => {
-                quote::quote! { .content_type(elicit_reqwest::ContentType::PlainText) }
-            }
-            Some(ContentType::OctetStream) => {
-                quote::quote! { .content_type(elicit_reqwest::ContentType::OctetStream) }
-            }
-            None => quote::quote! {},
-        };
-        quote::quote! {
-            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
-            let _params = elicit_reqwest::BuildRequestParamsBuilder::default()
-                .method(#method)
-                .url(#url)
-                .auth_type(#auth_expr)
-                #token_stmt
-                #body_stmt
-                #ct_stmt
-                #timeout_stmt
-                .build()
-                .map_err(|e| format!("BuildRequestParams build error: {}", e))?;
-            let (_resp, _proof) = _plugin.build_request(_params)
-                .await.map_err(|e| format!("Request failed: {}", e))?;
-            println!("Status: {}", _resp.status);
-            println!("{}", _resp.body);
-        }
-    }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
-    }
-}
-
-/// `paginated_get` → follow next-page links
-#[cfg(feature = "emit")]
-impl EmitCode for PaginatedGetParams {
-    fn emit_code(&self) -> TokenStream {
-        let url = self.url.get().as_str();
-        let token_expr = match &self.token {
-            Some(t) => quote::quote! { Some(#t) },
-            None => quote::quote! { None::<&str> },
-        };
-        let timeout = self.timeout_secs.map(|t| t.get()).unwrap_or(30.0);
-        quote::quote! {
-            let _plugin = elicit_reqwest::WorkflowPlugin::default_client();
-            let _pages = _plugin.paginated_get(
-                #url,
-                #token_expr,
-                std::time::Duration::from_secs_f64(#timeout),
-            ).await.map_err(|e| format!("Paginated GET failed: {}", e))?;
-            for (_i, _page) in _pages.iter().enumerate() {
-                println!("--- Page {} ---", _i + 1);
-                println!("{}", _page);
+            ContentType::PlainText => ::quote::quote! { elicit_reqwest::ContentType::PlainText },
+            ContentType::OctetStream => {
+                ::quote::quote! { elicit_reqwest::ContentType::OctetStream }
             }
         }
     }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_REQWEST_DEP]
-    }
 }
-
-// ── Public dispatch for cross-crate EmitCode recovery ────────────────────────
-
-/// Deserialize a tool's params from JSON and return its [`EmitCode`] impl.
-///
-/// Used by `elicit_server` to recover reqwest workflow steps without
-/// exposing internal param structs.
-///
-/// Returns `Err` if `tool_name` is unknown or `params` fails to deserialize.
-#[cfg(feature = "emit")]
-pub fn dispatch_emit(
-    tool_name: &str,
-    params: serde_json::Value,
-) -> Result<Box<dyn EmitCode>, String> {
-    match tool_name {
-        "fetch" => serde_json::from_value::<FetchParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "auth_fetch" => serde_json::from_value::<AuthFetchParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "post" => serde_json::from_value::<PostParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "api_call" => serde_json::from_value::<ApiCallParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "health_check" => serde_json::from_value::<HealthCheckParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "url_build" => serde_json::from_value::<UrlBuildParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "status_summary" => serde_json::from_value::<StatusSummaryParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "build_request" => serde_json::from_value::<BuildRequestParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "paginated_get" => serde_json::from_value::<PaginatedGetParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        other => Err(format!("Unknown reqwest tool: '{other}'")),
-    }
-}
-
-// ── Global emit registry ──────────────────────────────────────────────────────
-
-#[cfg(feature = "emit")]
-elicitation::register_emit!("fetch", FetchParams);
-#[cfg(feature = "emit")]
-elicitation::register_emit!("auth_fetch", AuthFetchParams);
-#[cfg(feature = "emit")]
-elicitation::register_emit!("post", PostParams);
-#[cfg(feature = "emit")]
-elicitation::register_emit!("api_call", ApiCallParams);
-#[cfg(feature = "emit")]
-elicitation::register_emit!("health_check", HealthCheckParams);
-#[cfg(feature = "emit")]
-elicitation::register_emit!("url_build", UrlBuildParams);
-#[cfg(feature = "emit")]
-elicitation::register_emit!("status_summary", StatusSummaryParams);
-#[cfg(feature = "emit")]
-elicitation::register_emit!("build_request", BuildRequestParams);
-#[cfg(feature = "emit")]
-elicitation::register_emit!("paginated_get", PaginatedGetParams);

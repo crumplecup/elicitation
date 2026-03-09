@@ -140,7 +140,8 @@ async fn execute_head(builder: reqwest::RequestBuilder) -> Result<CallToolResult
 #[elicit_tool(
     plugin = "http",
     name = "get",
-    description = "Send an HTTP GET request; returns status, URL, and response body."
+    description = "Send an HTTP GET request; returns status, URL, and response body.",
+    emit = false
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn http_get(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
@@ -151,7 +152,8 @@ async fn http_get(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResu
 #[elicit_tool(
     plugin = "http",
     name = "post",
-    description = "Send an HTTP POST request with optional body; returns status, URL, and response body."
+    description = "Send an HTTP POST request with optional body; returns status, URL, and response body.",
+    emit = false
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn http_post(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
@@ -162,7 +164,8 @@ async fn http_post(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolRes
 #[elicit_tool(
     plugin = "http",
     name = "put",
-    description = "Send an HTTP PUT request with optional body; returns status, URL, and response body."
+    description = "Send an HTTP PUT request with optional body; returns status, URL, and response body.",
+    emit = false
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn http_put(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
@@ -173,7 +176,8 @@ async fn http_put(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResu
 #[elicit_tool(
     plugin = "http",
     name = "delete",
-    description = "Send an HTTP DELETE request; returns status, URL, and response body."
+    description = "Send an HTTP DELETE request; returns status, URL, and response body.",
+    emit = false
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn http_delete(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
@@ -184,7 +188,8 @@ async fn http_delete(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolR
 #[elicit_tool(
     plugin = "http",
     name = "patch",
-    description = "Send an HTTP PATCH request with optional body; returns status, URL, and response body."
+    description = "Send an HTTP PATCH request with optional body; returns status, URL, and response body.",
+    emit = false
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn http_patch(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
@@ -195,7 +200,8 @@ async fn http_patch(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolRe
 #[elicit_tool(
     plugin = "http",
     name = "head",
-    description = "Send an HTTP HEAD request; returns status and URL only (no body)."
+    description = "Send an HTTP HEAD request; returns status and URL only (no body).",
+    emit = false
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn http_head(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {

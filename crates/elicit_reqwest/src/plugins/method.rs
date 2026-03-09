@@ -38,7 +38,8 @@ pub struct MethodPlugin;
 #[elicit_tool(
     plugin = "method",
     name = "from_str",
-    description = "Parse and validate an HTTP method string. Returns the normalized uppercase method and its properties (is_safe, is_idempotent), or an error for invalid input."
+    description = "Parse and validate an HTTP method string. Returns the normalized uppercase method and its properties (is_safe, is_idempotent), or an error for invalid input.",
+    emit = false
 )]
 #[instrument(skip_all, fields(method = %p.method))]
 async fn method_from_str(p: MethodParams) -> Result<CallToolResult, ErrorData> {
@@ -60,7 +61,8 @@ async fn method_from_str(p: MethodParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "method",
     name = "as_str",
-    description = "Return the canonical uppercase string representation of the method (e.g. \"GET\")."
+    description = "Return the canonical uppercase string representation of the method (e.g. \"GET\").",
+    emit = false
 )]
 #[instrument(skip_all, fields(method = %p.method))]
 async fn method_as_str(p: MethodParams) -> Result<CallToolResult, ErrorData> {
@@ -73,7 +75,8 @@ async fn method_as_str(p: MethodParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "method",
     name = "is_safe",
-    description = "Return true if the method is safe (has no intended side effects): GET, HEAD, OPTIONS, TRACE."
+    description = "Return true if the method is safe (has no intended side effects): GET, HEAD, OPTIONS, TRACE.",
+    emit = false
 )]
 #[instrument(skip_all, fields(method = %p.method))]
 async fn method_is_safe(p: MethodParams) -> Result<CallToolResult, ErrorData> {
@@ -83,7 +86,8 @@ async fn method_is_safe(p: MethodParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "method",
     name = "is_idempotent",
-    description = "Return true if the method is idempotent (repeated requests have the same effect): GET, HEAD, PUT, DELETE, OPTIONS, TRACE."
+    description = "Return true if the method is idempotent (repeated requests have the same effect): GET, HEAD, PUT, DELETE, OPTIONS, TRACE.",
+    emit = false
 )]
 #[instrument(skip_all, fields(method = %p.method))]
 async fn method_is_idempotent(p: MethodParams) -> Result<CallToolResult, ErrorData> {

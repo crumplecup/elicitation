@@ -140,9 +140,12 @@ impl OffsetDateTime {
 }
 
 impl OffsetDateTime {
-    /// Returns the current time in UTC.
-    pub fn now_utc() -> Self {
-        time::OffsetDateTime::now_utc().into()
+    /// Returns the current time in UTC as the underlying [`time::OffsetDateTime`].
+    ///
+    /// Returns the inner type so emitted binaries can subtract two datetimes
+    /// without a type mismatch between the newtype and the inner type.
+    pub fn now_utc() -> time::OffsetDateTime {
+        time::OffsetDateTime::now_utc()
     }
 
     /// Parse an RFC 3339 string. Returns `None` if the string is invalid.

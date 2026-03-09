@@ -48,7 +48,8 @@ pub struct StatusCodePlugin;
 #[elicit_tool(
     plugin = "status_code",
     name = "from_u16",
-    description = "Parse an integer into a status code; returns its string form, canonical reason, and class booleans."
+    description = "Parse an integer into a status code; returns its string form, canonical reason, and class booleans.",
+    emit = false
 )]
 #[instrument(skip_all, fields(code = p.code))]
 async fn sc_from_u16(p: FromU16Params) -> Result<CallToolResult, ErrorData> {
@@ -75,7 +76,8 @@ async fn sc_from_u16(p: FromU16Params) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "status_code",
     name = "as_str",
-    description = "Return the three-digit ASCII representation of the status code (e.g. \"404\")."
+    description = "Return the three-digit ASCII representation of the status code (e.g. \"404\").",
+    emit = false
 )]
 #[instrument(skip_all, fields(status = p.status))]
 async fn sc_as_str(p: StatusParams) -> Result<CallToolResult, ErrorData> {
@@ -88,7 +90,8 @@ async fn sc_as_str(p: StatusParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "status_code",
     name = "canonical_reason",
-    description = "Return the canonical reason phrase for the status code (e.g. \"Not Found\"), or null if unknown."
+    description = "Return the canonical reason phrase for the status code (e.g. \"Not Found\"), or null if unknown.",
+    emit = false
 )]
 #[instrument(skip_all, fields(status = p.status))]
 async fn sc_canonical_reason(p: StatusParams) -> Result<CallToolResult, ErrorData> {
@@ -104,7 +107,8 @@ async fn sc_canonical_reason(p: StatusParams) -> Result<CallToolResult, ErrorDat
 #[elicit_tool(
     plugin = "status_code",
     name = "is_informational",
-    description = "Return true if the status code is 1xx Informational."
+    description = "Return true if the status code is 1xx Informational.",
+    emit = false
 )]
 #[instrument(skip_all, fields(status = p.status))]
 async fn sc_is_informational(p: StatusParams) -> Result<CallToolResult, ErrorData> {
@@ -114,7 +118,8 @@ async fn sc_is_informational(p: StatusParams) -> Result<CallToolResult, ErrorDat
 #[elicit_tool(
     plugin = "status_code",
     name = "is_success",
-    description = "Return true if the status code is 2xx Success."
+    description = "Return true if the status code is 2xx Success.",
+    emit = false
 )]
 #[instrument(skip_all, fields(status = p.status))]
 async fn sc_is_success(p: StatusParams) -> Result<CallToolResult, ErrorData> {
@@ -124,7 +129,8 @@ async fn sc_is_success(p: StatusParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "status_code",
     name = "is_redirection",
-    description = "Return true if the status code is 3xx Redirection."
+    description = "Return true if the status code is 3xx Redirection.",
+    emit = false
 )]
 #[instrument(skip_all, fields(status = p.status))]
 async fn sc_is_redirection(p: StatusParams) -> Result<CallToolResult, ErrorData> {
@@ -134,7 +140,8 @@ async fn sc_is_redirection(p: StatusParams) -> Result<CallToolResult, ErrorData>
 #[elicit_tool(
     plugin = "status_code",
     name = "is_client_error",
-    description = "Return true if the status code is 4xx Client Error."
+    description = "Return true if the status code is 4xx Client Error.",
+    emit = false
 )]
 #[instrument(skip_all, fields(status = p.status))]
 async fn sc_is_client_error(p: StatusParams) -> Result<CallToolResult, ErrorData> {
@@ -144,7 +151,8 @@ async fn sc_is_client_error(p: StatusParams) -> Result<CallToolResult, ErrorData
 #[elicit_tool(
     plugin = "status_code",
     name = "is_server_error",
-    description = "Return true if the status code is 5xx Server Error."
+    description = "Return true if the status code is 5xx Server Error.",
+    emit = false
 )]
 #[instrument(skip_all, fields(status = p.status))]
 async fn sc_is_server_error(p: StatusParams) -> Result<CallToolResult, ErrorData> {
