@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 env:
@@ -46,3 +48,30 @@ jobs:
 
       - name: Test elicit_server smoke suite
         run: cargo test -p elicit_server --features emit
+
+  feature-powerset:
+    name: Feature powerset (cargo-hack)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: feature-powerset-${{ hashFiles('Cargo.lock') }}
+
+      - name: Install cargo-hack
+        run: cargo install cargo-hack --locked
+
+      - name: Feature powerset check (depth 2)
+        run: |
+          cargo hack check \
+            --workspace \
+            --feature-powerset \
+            --depth 2 \
+            --exclude-features "full,dev,api,kani,proofs,verification,verify-verus,verify-all,cli,csv,tokio,unexpected_cfgs" \
+            --exclude elicitation_kani \
+            --exclude elicitation_creusot
