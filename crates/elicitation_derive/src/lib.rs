@@ -86,6 +86,7 @@ mod contract_type;
 mod derive_elicit;
 mod derive_elicit_plugin;
 mod elicit_tool;
+mod emit_rewriter;
 mod enum_impl;
 mod method_reflection;
 mod rand_contract_parser;
