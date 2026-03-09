@@ -2686,3 +2686,100 @@ impl_unsigned_positive!(usize, UsizePositive, 42);
 // ============================================================================
 // Float Contract Types (f32, f64)
 // ============================================================================
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    /// Generate a `ToCodeLiteral` impl for a simple (non-generic) constrained integer type.
+    macro_rules! impl_to_code_literal_int {
+        ($T:ident) => {
+            impl ToCodeLiteral for $T {
+                fn to_code_literal(&self) -> TokenStream {
+                    let v = self.get();
+                    let msg = concat!("valid ", stringify!($T));
+                    let type_path: TokenStream = concat!("elicitation::", stringify!($T))
+                        .parse()
+                        .expect("valid type path");
+                    quote::quote! { #type_path::new(#v).expect(#msg) }
+                }
+            }
+        };
+    }
+
+    /// Generate a `ToCodeLiteral` impl for a range type with two const generics.
+    macro_rules! impl_to_code_literal_range {
+        ($T:ident, $prim:ty) => {
+            impl<const MIN: $prim, const MAX: $prim> ToCodeLiteral for $T<MIN, MAX> {
+                fn to_code_literal(&self) -> TokenStream {
+                    let v = self.get();
+                    let msg = concat!("valid ", stringify!($T));
+                    let type_path: TokenStream = concat!("elicitation::", stringify!($T))
+                        .parse()
+                        .expect("valid type path");
+                    quote::quote! { #type_path::<#MIN, #MAX>::new(#v).expect(#msg) }
+                }
+            }
+        };
+    }
+
+    // i8 family
+    impl_to_code_literal_int!(I8Positive);
+    impl_to_code_literal_int!(I8NonNegative);
+    impl_to_code_literal_int!(I8NonZero);
+    impl_to_code_literal_range!(I8Range, i8);
+    // i16 family
+    impl_to_code_literal_int!(I16Positive);
+    impl_to_code_literal_int!(I16NonNegative);
+    impl_to_code_literal_int!(I16NonZero);
+    impl_to_code_literal_range!(I16Range, i16);
+    // i32 family
+    impl_to_code_literal_int!(I32Positive);
+    impl_to_code_literal_int!(I32NonNegative);
+    impl_to_code_literal_int!(I32NonZero);
+    impl_to_code_literal_range!(I32Range, i32);
+    // i64 family
+    impl_to_code_literal_int!(I64Positive);
+    impl_to_code_literal_int!(I64NonNegative);
+    impl_to_code_literal_int!(I64NonZero);
+    impl_to_code_literal_range!(I64Range, i64);
+    // i128 family
+    impl_to_code_literal_int!(I128Positive);
+    impl_to_code_literal_int!(I128NonNegative);
+    impl_to_code_literal_int!(I128NonZero);
+    impl_to_code_literal_range!(I128Range, i128);
+    // isize family
+    impl_to_code_literal_int!(IsizePositive);
+    impl_to_code_literal_int!(IsizeNonNegative);
+    impl_to_code_literal_int!(IsizeNonZero);
+    impl_to_code_literal_range!(IsizeRange, isize);
+    // u8 family
+    impl_to_code_literal_int!(U8NonZero);
+    impl_to_code_literal_int!(U8Positive);
+    impl_to_code_literal_range!(U8Range, u8);
+    // u16 family
+    impl_to_code_literal_int!(U16NonZero);
+    impl_to_code_literal_int!(U16Positive);
+    impl_to_code_literal_range!(U16Range, u16);
+    // u32 family
+    impl_to_code_literal_int!(U32NonZero);
+    impl_to_code_literal_int!(U32Positive);
+    impl_to_code_literal_range!(U32Range, u32);
+    // u64 family
+    impl_to_code_literal_int!(U64NonZero);
+    impl_to_code_literal_int!(U64Positive);
+    impl_to_code_literal_range!(U64Range, u64);
+    // u128 family
+    impl_to_code_literal_int!(U128NonZero);
+    impl_to_code_literal_int!(U128Positive);
+    impl_to_code_literal_range!(U128Range, u128);
+    // usize family
+    impl_to_code_literal_int!(UsizeNonZero);
+    impl_to_code_literal_int!(UsizePositive);
+    impl_to_code_literal_range!(UsizeRange, usize);
+}
+

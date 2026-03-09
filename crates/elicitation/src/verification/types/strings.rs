@@ -315,3 +315,22 @@ impl Elicitation for StringDefault {
         proc_macro2::TokenStream::new()
     }
 }
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl<const MAX_LEN: usize> ToCodeLiteral for StringNonEmpty<MAX_LEN> {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.get();
+            quote::quote! {
+                elicitation::StringNonEmpty::<#MAX_LEN>::new(#s.to_string())
+                    .expect("valid StringNonEmpty")
+            }
+        }
+    }
+}

@@ -987,3 +987,34 @@ mod f64_finite_tests {
 // Generate Default wrappers for all float types
 impl_float_default_wrapper!(f32, F32Default);
 impl_float_default_wrapper!(f64, F64Default);
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    macro_rules! impl_to_code_literal_float {
+        ($T:ident) => {
+            impl ToCodeLiteral for $T {
+                fn to_code_literal(&self) -> TokenStream {
+                    let v = self.get();
+                    let msg = concat!("valid ", stringify!($T));
+                    let type_path: TokenStream = concat!("elicitation::", stringify!($T))
+                        .parse()
+                        .expect("valid type path");
+                    quote::quote! { #type_path::new(#v).expect(#msg) }
+                }
+            }
+        };
+    }
+
+    impl_to_code_literal_float!(F32Positive);
+    impl_to_code_literal_float!(F32NonNegative);
+    impl_to_code_literal_float!(F32Finite);
+    impl_to_code_literal_float!(F64Positive);
+    impl_to_code_literal_float!(F64NonNegative);
+    impl_to_code_literal_float!(F64Finite);
+}

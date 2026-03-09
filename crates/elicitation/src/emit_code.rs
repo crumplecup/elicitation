@@ -124,6 +124,18 @@ macro_rules! register_emit {
     };
 }
 
+/// Convert a value to a Rust source expression that constructs it.
+///
+/// Unlike [`EmitCode`] which for workflow step types emits a full statement
+/// sequence, `ToCodeLiteral` emits a single *expression* that reproduces this
+/// value. Used by `#[elicit_tool]`-generated `impl EmitCode` blocks to bind
+/// field values.
+pub trait ToCodeLiteral {
+    /// Return a `TokenStream` containing a single Rust expression whose
+    /// evaluation produces a value equal to `self`.
+    fn to_code_literal(&self) -> TokenStream;
+}
+
 /// A type that knows how to recover itself as Rust source code.
 ///
 /// Two roles:
@@ -663,5 +675,154 @@ impl EmitCode for reqwest::StatusCode {
         quote::quote! {
             reqwest::StatusCode::from_u16(#n).expect("valid status code")
         }
+    }
+}
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+macro_rules! impl_to_code_literal_totokens {
+    ($($T:ty),+ $(,)?) => {
+        $(
+            impl ToCodeLiteral for $T {
+                fn to_code_literal(&self) -> TokenStream {
+                    let mut ts = TokenStream::new();
+                    quote::ToTokens::to_tokens(self, &mut ts);
+                    ts
+                }
+            }
+        )+
+    };
+}
+
+impl_to_code_literal_totokens!(
+    bool, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, usize, isize, f32, f64, char,
+);
+
+impl ToCodeLiteral for String {
+    fn to_code_literal(&self) -> TokenStream {
+        let s = self.as_str();
+        quote::quote! { #s.to_string() }
+    }
+}
+
+impl<T: ToCodeLiteral> ToCodeLiteral for Option<T> {
+    fn to_code_literal(&self) -> TokenStream {
+        match self {
+            Some(v) => {
+                let inner = v.to_code_literal();
+                quote::quote! { ::std::option::Option::Some(#inner) }
+            }
+            None => quote::quote! { ::std::option::Option::None },
+        }
+    }
+}
+
+impl<T: ToCodeLiteral> ToCodeLiteral for Vec<T> {
+    fn to_code_literal(&self) -> TokenStream {
+        let elems: Vec<_> = self.iter().map(|v| v.to_code_literal()).collect();
+        quote::quote! { ::std::vec![#(#elems),*] }
+    }
+}
+
+impl<V: ToCodeLiteral> ToCodeLiteral for std::collections::HashMap<String, V> {
+    fn to_code_literal(&self) -> TokenStream {
+        let entries: Vec<_> = self
+            .iter()
+            .map(|(k, v)| {
+                let v_ts = v.to_code_literal();
+                quote::quote! { (#k.to_string(), #v_ts) }
+            })
+            .collect();
+        quote::quote! {
+            [#(#entries),*].into_iter().collect::<::std::collections::HashMap<_, _>>()
+        }
+    }
+}
+
+// ToCodeLiteral for std types that already have EmitCode: delegate directly.
+
+impl ToCodeLiteral for std::net::IpAddr {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+impl ToCodeLiteral for std::net::Ipv4Addr {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+impl ToCodeLiteral for std::net::Ipv6Addr {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+impl ToCodeLiteral for std::path::PathBuf {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+impl ToCodeLiteral for std::time::Duration {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "serde_json")]
+impl ToCodeLiteral for serde_json::Value {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "url")]
+impl ToCodeLiteral for url::Url {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "uuid")]
+impl ToCodeLiteral for uuid::Uuid {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "chrono")]
+impl ToCodeLiteral for chrono::DateTime<chrono::Utc> {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "chrono")]
+impl ToCodeLiteral for chrono::NaiveDateTime {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::OffsetDateTime {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "jiff")]
+impl ToCodeLiteral for jiff::Timestamp {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "reqwest")]
+impl ToCodeLiteral for reqwest::StatusCode {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
     }
 }

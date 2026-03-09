@@ -778,3 +778,33 @@ mod tests {
         assert_eq!(inner.as_str(), "https://example.com/path");
     }
 }
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+#[cfg(all(feature = "emit", feature = "url", not(kani)))]
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    macro_rules! impl_to_code_literal_url {
+        ($T:ident) => {
+            impl ToCodeLiteral for $T {
+                fn to_code_literal(&self) -> TokenStream {
+                    let s = self.get().as_str();
+                    let msg = concat!("valid ", stringify!($T));
+                    let type_path: TokenStream = concat!("elicitation::", stringify!($T))
+                        .parse()
+                        .expect("valid type path");
+                    quote::quote! { #type_path::new(#s).expect(#msg) }
+                }
+            }
+        };
+    }
+
+    impl_to_code_literal_url!(UrlValid);
+    impl_to_code_literal_url!(UrlHttps);
+    impl_to_code_literal_url!(UrlHttp);
+    impl_to_code_literal_url!(UrlWithHost);
+    impl_to_code_literal_url!(UrlCanBeBase);
+}
