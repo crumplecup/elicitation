@@ -36,5 +36,3 @@ pub use secure_fetch::SecureFetchPlugin;
 pub use emit_plugin::{EmitBinaryParams, EmitBinaryPlugin, WorkflowStep};
 #[cfg(feature = "emit")]
 pub use fetch_and_parse::dispatch_fetch_and_parse_emit;
-#[cfg(feature = "emit")]
-pub use secure_fetch::dispatch_secure_fetch_emit;

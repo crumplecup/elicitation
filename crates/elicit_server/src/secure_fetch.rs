@@ -13,9 +13,10 @@
 //!
 //! # Emit support
 //!
-//! With the `emit` feature, `dispatch_secure_fetch_emit` maps tool names to
-//! [`EmitCode`](elicitation::emit_code::EmitCode) impls so agent sessions can be
-//! recovered as standalone Rust binaries.
+//! With the `emit` feature, `#[elicit_tool]` auto-generates
+//! [`EmitCode`](elicitation::emit_code::EmitCode) impls for each handler and
+//! registers them in the global inventory so agent sessions can be recovered as
+//! standalone Rust binaries.
 
 use elicitation::verification::types::UrlHttps;
 use elicitation::{ElicitPlugin, PluginContext, elicit_tool};
@@ -99,7 +100,8 @@ impl Default for SecureFetchPlugin {
     name = "secure_fetch",
     description = "Assert HTTPS and fetch a URL. Combines elicit_url typestate (parse → assert \
                    HTTPS) with elicit_reqwest HTTP tooling. The proof chain \
-                   UrlParsed ∧ HttpsRequired is established before any network I/O."
+                   UrlParsed ∧ HttpsRequired is established before any network I/O.",
+    emit_ctx("ctx.http" => "reqwest::Client::new()")
 )]
 #[instrument(skip_all, fields(timeout = p.timeout_secs))]
 async fn secure_fetch(
@@ -137,7 +139,8 @@ async fn secure_fetch(
     name = "validated_api_call",
     description = "Assert HTTPS then make an authenticated GET or POST request. Combines \
                    URL validation, HTTPS enforcement, and bearer token authorization into \
-                   a single verified operation."
+                   a single verified operation.",
+    emit_ctx("ctx.http" => "reqwest::Client::new()")
 )]
 #[instrument(skip(ctx, p), fields(method = %p.method, timeout = p.timeout_secs))]
 async fn validated_api_call(
@@ -188,116 +191,3 @@ async fn validated_api_call(
         ),
     )]))
 }
-
-// ── Emit support ───────────────────────────────────────────────────────────────
-
-#[cfg(feature = "emit")]
-mod emit {
-    use super::{SecureFetchParams, ValidatedApiCallParams};
-    use elicitation::emit_code::{CrateDep, EmitCode};
-    use proc_macro2::TokenStream;
-    use quote::quote;
-
-    const REQWEST_DEP: CrateDep = CrateDep::new("reqwest", "0.13");
-
-    impl EmitCode for SecureFetchParams {
-        fn emit_code(&self) -> TokenStream {
-            let url = self.url.get().as_str().to_owned();
-            let timeout = self.timeout_secs;
-            quote! {
-                let _url = elicitation::verification::types::UrlHttps::new(#url)
-                    .map_err(|e| format!("HTTPS required: {e}"))?;
-                let _client = reqwest::Client::new();
-                let _response = _client
-                    .get(_url.get().as_str())
-                    .timeout(std::time::Duration::from_secs_f64(#timeout))
-                    .send()
-                    .await
-                    .map_err(|e| format!("HTTP request failed: {e}"))?;
-                let _status = _response.status();
-                let _body = _response.text().await.map_err(|e| format!("Body error: {e}"))?;
-                println!("status={_status}");
-                println!("body_len={}", _body.len());
-            }
-        }
-
-        fn crate_deps(&self) -> Vec<CrateDep> {
-            vec![REQWEST_DEP]
-        }
-    }
-
-    impl EmitCode for ValidatedApiCallParams {
-        fn emit_code(&self) -> TokenStream {
-            let url = self.url.get().as_str().to_owned();
-            let token = &self.token;
-            let timeout = self.timeout_secs;
-            let method = &self.method;
-            let body_expr = match &self.body {
-                Some(b) => quote! { Some(#b.to_string()) },
-                None => quote! { None::<String> },
-            };
-            quote! {
-                let _url = elicitation::verification::types::UrlHttps::new(#url)
-                    .map_err(|e| format!("HTTPS required: {e}"))?;
-                let _client = reqwest::Client::new();
-                let _body_opt: Option<String> = #body_expr;
-                let _builder = match #method.to_uppercase().as_str() {
-                    "POST" => {
-                        let mut b = _client
-                            .post(_url.get().as_str())
-                            .bearer_auth(#token)
-                            .timeout(std::time::Duration::from_secs_f64(#timeout));
-                        if let Some(body) = &_body_opt {
-                            b = b.header("Content-Type", "application/json").body(body.clone());
-                        }
-                        b
-                    }
-                    _ => _client
-                        .get(_url.get().as_str())
-                        .bearer_auth(#token)
-                        .timeout(std::time::Duration::from_secs_f64(#timeout)),
-                };
-                let _response = _builder.send().await.map_err(|e| format!("Request failed: {e}"))?;
-                let _status = _response.status();
-                let _body = _response.text().await.map_err(|e| format!("Body error: {e}"))?;
-                println!("status={_status}");
-                println!("body_len={}", _body.len());
-            }
-        }
-
-        fn crate_deps(&self) -> Vec<CrateDep> {
-            vec![REQWEST_DEP]
-        }
-    }
-}
-
-/// Dispatch a `secure_fetch` tool name + JSON params to an [`EmitCode`] boxed impl.
-///
-/// [`EmitCode`]: elicitation::emit_code::EmitCode
-#[cfg(feature = "emit")]
-pub fn dispatch_secure_fetch_emit(
-    tool: &str,
-    params: serde_json::Value,
-) -> Result<Box<dyn elicitation::emit_code::EmitCode>, String> {
-    use elicitation::emit_code::EmitCode;
-    let bare = tool.strip_prefix("secure_fetch__").unwrap_or(tool);
-    match bare {
-        "secure_fetch" => {
-            let p: SecureFetchParams = serde_json::from_value(params).map_err(|e| e.to_string())?;
-            Ok(Box::new(p) as Box<dyn EmitCode>)
-        }
-        "validated_api_call" => {
-            let p: ValidatedApiCallParams =
-                serde_json::from_value(params).map_err(|e| e.to_string())?;
-            Ok(Box::new(p) as Box<dyn EmitCode>)
-        }
-        other => Err(format!("Unknown secure_fetch tool: {other}")),
-    }
-}
-
-// ── Global emit registry ──────────────────────────────────────────────────────
-
-#[cfg(feature = "emit")]
-elicitation::register_emit!("secure_fetch", SecureFetchParams);
-#[cfg(feature = "emit")]
-elicitation::register_emit!("validated_api_call", ValidatedApiCallParams);

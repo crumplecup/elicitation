@@ -58,8 +58,8 @@ mod smoke {
                 .unwrap_or_else(|e| panic!("dispatch_jiff_emit({tool_name}): {e}")),
             "time" => elicit_time::dispatch_time_emit(tool_name, params)
                 .unwrap_or_else(|e| panic!("dispatch_time_emit({tool_name}): {e}")),
-            "secure_fetch" => elicit_server::dispatch_secure_fetch_emit(tool_name, params)
-                .unwrap_or_else(|e| panic!("dispatch_secure_fetch_emit({tool_name}): {e}")),
+            "secure_fetch" => elicitation::emit_code::dispatch_emit(tool_name, params)
+                .unwrap_or_else(|e| panic!("dispatch_emit({tool_name}): {e}")),
             "fetch_and_parse" => elicit_server::dispatch_fetch_and_parse_emit(tool_name, params)
                 .unwrap_or_else(|e| panic!("dispatch_fetch_and_parse_emit({tool_name}): {e}")),
             other => panic!("Unknown crate: {other}"),
@@ -608,7 +608,7 @@ mod smoke {
         )
         .expect("dispatch parse_url");
 
-        let step2 = elicit_server::dispatch_secure_fetch_emit(
+        let step2 = elicitation::emit_code::dispatch_emit(
             "secure_fetch",
             serde_json::json!({
                 "url": "https://api.example.com/health",
