@@ -82,7 +82,7 @@ PHASE 2 — #[elicit_tool] attribute macro
 
 Goal
 Derive ToolDescriptor from a function signature. The attribute name is
-#[elicit_tool] (not #[tool]) to avoid shadowing rmcp's existing #[tool]
+# [elicit_tool] (not #[tool]) to avoid shadowing rmcp's existing #[tool]
 macro which already appears throughout this codebase.
 
     #[elicit_tool(
@@ -247,7 +247,7 @@ inventory::submit! registers each param type's EmitCode constructor:
 
     inventory::collect!(EmitEntry);
 
-#[derive(EmitCode)] or #[elicit_tool] submits the entry automatically.
+# [derive(EmitCode)] or #[elicit_tool] submits the entry automatically.
 
 Global dispatcher in elicitation::emit_code:
 
@@ -288,7 +288,7 @@ See CONTRACT_PARAMS_PLAN.md for the replacement plan.
         ...
     }
 
-#[requires_https(url)] expands to the UnvalidatedUrl → UrlParsed →
+# [requires_https(url)] expands to the UnvalidatedUrl → UrlParsed →
 HttpsRequired proof chain before the function body executes. The tool
 author sees a constraint, not a procedure.
 
@@ -376,4 +376,3 @@ where the function signature IS the contract. The compiler emits:
   • Typestate proof chain
 
 A "tool" becomes a formally constrained executable program.
-

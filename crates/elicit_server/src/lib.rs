@@ -34,6 +34,8 @@ pub use secure_fetch::SecureFetchPlugin;
 
 #[cfg(feature = "emit")]
 pub use emit_plugin::{EmitBinaryParams, EmitBinaryPlugin, WorkflowStep};
+#[cfg(feature = "emit")]
+pub use fetch_and_parse::dispatch_fetch_and_parse_emit;
 
 /// Look up a tool by name and deserialize its params, drawing from all
 /// `elicit_server` handlers and its dep crates registered via `#[elicit_tool]`.

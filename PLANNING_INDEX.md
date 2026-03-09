@@ -86,16 +86,19 @@ New plans can be added here as needed for future development.
 serves as the canary conversion.
 
 **Phase 1 Progress:**
+
 - ✅ `ToolDescriptor` + `make_descriptor` in `plugin/descriptor.rs`
 - ✅ `DescriptorPlugin` blanket impl in `plugin/descriptor_plugin.rs`
 - ✅ `SecureFetchPlugin` converted (canary validates design)
 
 **Phase 2 Progress:**
+
 - ✅ `#[elicit_tool]` attribute macro in `elicitation_derive/src/elicit_tool.rs`
 - ✅ Re-exported as `elicitation::elicit_tool`
 - ✅ `SecureFetchPlugin` canary updated: `#[elicit_tool]` on both handlers, `make_descriptor` calls eliminated
 
 **Phase 3 Progress:**
+
 - ✅ `PluginToolRegistration` + `inventory::collect!` in `plugin/descriptor.rs`
 - ✅ `#[elicit_tool]` updated: optional `plugin = "..."` emits `inventory::submit!`
 - ✅ `#[derive(ElicitPlugin)]` in `elicitation_derive/src/derive_elicit_plugin.rs`
@@ -103,6 +106,7 @@ serves as the canary conversion.
 - ✅ `SecureFetchPlugin` is now a plain unit struct — 332 lines → ~75 lines of non-boilerplate
 
 **Phase 4 Progress:**
+
 - ✅ `PluginContext` in `plugin/context.rs` — feature-gated `http: reqwest::Client`
 - ✅ `ToolDescriptor` handler type updated to `Arc<dyn Fn(Arc<PluginContext>, ...) -> ...>`
 - ✅ `make_descriptor` (ctx-free) + `make_descriptor_ctx` (ctx-aware) constructors
@@ -111,6 +115,7 @@ serves as the canary conversion.
 - ✅ `SecureFetchPlugin(Arc<PluginContext>)` newtype; handlers use `ctx.http`; connection pool shared
 
 **Phase 6 Progress (global emit registry):**
+
 - ✅ `EmitEntry { tool, constructor }` + `inventory::collect!` in `elicitation::emit_code`
 - ✅ `emit_code::dispatch_emit()` global lookup via inventory
 - ✅ `register_emit!` macro using `elicitation::serde_json` and `elicitation::inventory`
@@ -132,6 +137,7 @@ or macros required. Tool bodies lose their validation ceremony; the JSON schema 
 machine-readable constraint metadata.
 
 **Phases:**
+
 - A: `elicitation::params` — `PositiveF64`, `NonNegativeF64`, `PositiveU32`, `NonEmptyString`, `BoundedUsize<MIN, MAX>`
 - B: `elicit_url` contract types — `HttpsUrl` (wraps `SecureUrlState`), `ParsedUrl`
 - C: Canary — `SecureFetchParams.url: HttpsUrl`; proof ceremony removed from handlers

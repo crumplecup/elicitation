@@ -3,6 +3,7 @@
 //! This module provides contract types for URL validation using the `url` crate.
 
 use crate::verification::types::ValidationError;
+#[cfg(feature = "url")]
 use anodized::spec;
 #[cfg(feature = "url")]
 use url::Url;

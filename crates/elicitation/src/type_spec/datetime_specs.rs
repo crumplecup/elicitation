@@ -2,11 +2,13 @@
 //!
 //! Available with the `chrono` or `jiff` features.
 
+#[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
 use crate::{
     ElicitSpec, SpecCategoryBuilder, SpecEntryBuilder, TypeSpec, TypeSpecBuilder,
     TypeSpecInventoryKey,
 };
 
+#[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
 macro_rules! impl_datetime_spec {
     (
         type     = $ty:ty,

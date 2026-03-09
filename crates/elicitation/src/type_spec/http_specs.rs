@@ -2,6 +2,7 @@
 //!
 //! Available with the `reqwest` feature.
 
+#[cfg(feature = "reqwest")]
 use crate::{
     ElicitSpec, SpecCategoryBuilder, SpecEntryBuilder, TypeSpec, TypeSpecBuilder,
     TypeSpecInventoryKey,

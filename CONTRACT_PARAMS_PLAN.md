@@ -110,7 +110,7 @@ StringNonEmpty<const MAX_LEN: usize = 4096>   — len > 0, len <= MAX_LEN
 StringDefault                                  — unconstrained (already has Deserialize)
 ```
 
-### `verification/types/urls.rs`  _(feature = "url")_
+### `verification/types/urls.rs`  *(feature = "url")*
 
 ```
 UrlValid         — any parseable URL
@@ -218,7 +218,7 @@ Nothing changes for the formal verification story — it improves:
 
 ## Phases
 
-### Phase A — Serde bridge for existing constrained types  _(was: new primitives)_
+### Phase A — Serde bridge for existing constrained types  *(was: new primitives)*
 
 > **Revised:** no new types. The constrained types already exist. Add the missing
 > serde/schema bridge to `verification/types/floats.rs`, `integers.rs`, `strings.rs`,
@@ -285,7 +285,6 @@ Each conversion is independent and can be a separate small commit.
 Add targeted Kani harnesses in `crates/elicitation/tests/`
 proving constructor correctness:
 
-
 ```rust
 #[cfg(kani)]
 #[kani::proof]
@@ -311,11 +310,13 @@ fn url_https_only_from_https() {
 ## Success Criteria
 
 After Phase A:
+
 - All constrained types in `verification/types/` have `Serialize + Deserialize + JsonSchema`
 - Deserialization of an out-of-range value fails with a descriptive error at the serde boundary
 - JsonSchema includes `minimum`/`maximum`/`exclusiveMinimum` or `description` per type family
 
 After Phase C:
+
 - `SecureFetchParams.url` is `UrlHttps`
 - The proof ceremony is gone from both `secure_fetch` and `validated_api_call`
 - Compilation still passes with all features
@@ -324,6 +325,7 @@ After Phase C:
   (this is now testable without running the HTTP stack)
 
 After Phase D:
+
 - No `timeout_secs: f64` in any public params struct
 - `F64Positive` or `USizeRange` used for all bounded numeric params
 - `JsonSchema` for those params includes `minimum`/`exclusiveMinimum`

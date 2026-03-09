@@ -37,6 +37,7 @@ pub trait ToCodeLiteral {
 ```
 
 Impls cover:
+
 - All Rust primitives (`f64`, `String`, `bool`, integers, `char`) — via `quote!(#self)`
 - `Option<T: ToCodeLiteral>` — `None` or `Some(#inner_literal)`
 - `Vec<T: ToCodeLiteral>` — `vec![#(#items),*]`
@@ -173,6 +174,7 @@ it's the designed escape hatch.
 **File**: `crates/elicitation_derive/src/elicit_tool.rs`
 
 Add to `ElicitToolArgs`:
+
 ```rust
 emit: bool,                             // default true; false = opt-out
 emit_ctx_subs: Vec<(String, String)>,   // ("ctx.http", "reqwest::Client::new()")
@@ -182,6 +184,7 @@ Parse `emit_ctx("ctx.http" => "reqwest::Client::new()")` using a custom
 `Parse` impl for the new list-style attribute form.
 
 **No `emit_crate` attribute.** Crate dependencies are inferred automatically:
+
 1. After the token rewriter produces the final body `TokenStream`, scan it for
    top-level path prefixes — any `<ident> ::` where the leading ident is not
    `std`, `core`, `alloc`, `self`, `super`, `crate`.
@@ -250,6 +253,7 @@ if args.emit {
 ### Phase 6 — Ecosystem rollout
 
 Apply to remaining workflow crates that have manual EmitCode:
+
 - `elicit_url/src/workflow.rs` — 5 tools, stateless
 - `elicit_chrono/src/workflow.rs` — 5 tools, stateless
 - `elicit_jiff/src/workflow.rs` — 5 tools, stateless
@@ -277,6 +281,7 @@ impl EmitCode for ComplexParams { ... }
 ```
 
 Cases that require `emit = false`:
+
 - `let client = ctx.http.clone()` — aliased context field
 - Multiple `return Ok(CallToolResult::error(...))` mid-body
 - Handlers that build params dynamically from other params
@@ -285,11 +290,13 @@ Cases that require `emit = false`:
 ## Expected Outcome
 
 After Phase 5 (canary):
+
 - `secure_fetch.rs` loses ~80 lines of manual EmitCode
 - Handler body and emitted binary are provably in sync (same source)
 - Any future edit to `secure_fetch` automatically propagates to the emitted binary
 
 After Phase 6 (full rollout):
+
 - ~600 lines of manual EmitCode deleted across all workflow crates
 - `dispatch_*_emit` free functions all deleted
 - Zero drift possible: you cannot update a handler without updating the emit output
