@@ -138,3 +138,4 @@ machine-readable constraint metadata.
 - D: Propagation — apply contract types across all workflow params structs
 - E: Kani harnesses for constructor correctness
 
+EMIT_AUTODERIVE_PLAN.md
