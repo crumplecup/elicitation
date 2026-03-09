@@ -7,19 +7,15 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use elicitation::ElicitPlugin;
+use elicitation::{ElicitPlugin, PluginContext, elicit_tool};
 use elicitation::{F64Positive, UrlValid};
-use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
-    model::{CallToolRequestParams, CallToolResult, Content, Tool},
-    service::RequestContext,
+    model::{CallToolResult, Content},
 };
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
-
-use crate::plugins::util::{parse_args, typed_tool};
 
 /// MCP plugin for reqwest HTTP operations.
 ///
@@ -42,23 +38,19 @@ use crate::plugins::util::{parse_args, typed_tool};
 /// # Ok(())
 /// # }
 /// ```
-pub struct Plugin {
-    client: Arc<reqwest::Client>,
-}
+#[derive(ElicitPlugin)]
+#[plugin(name = "http")]
+pub struct Plugin(pub Arc<PluginContext>);
 
 impl Plugin {
     /// Create a plugin wrapping a new default HTTP client.
     pub fn new() -> Self {
-        Self {
-            client: Arc::new(reqwest::Client::new()),
-        }
+        Self(PluginContext::new())
     }
 
     /// Create a plugin wrapping a pre-configured [`reqwest::Client`].
     pub fn with_client(client: reqwest::Client) -> Self {
-        Self {
-            client: Arc::new(client),
-        }
+        Self(Arc::new(PluginContext { http: client }))
     }
 }
 
@@ -143,69 +135,70 @@ async fn execute_head(builder: reqwest::RequestBuilder) -> Result<CallToolResult
     }
 }
 
-impl ElicitPlugin for Plugin {
-    fn name(&self) -> &'static str {
-        "http"
-    }
+// ── Tool handlers ─────────────────────────────────────────────────────────────
 
-    fn list_tools(&self) -> Vec<Tool> {
-        vec![
-            typed_tool::<HttpParams>(
-                "get",
-                "Send an HTTP GET request; returns status, URL, and response body.",
-            ),
-            typed_tool::<HttpParams>(
-                "post",
-                "Send an HTTP POST request with optional body; returns status, URL, and response body.",
-            ),
-            typed_tool::<HttpParams>(
-                "put",
-                "Send an HTTP PUT request with optional body; returns status, URL, and response body.",
-            ),
-            typed_tool::<HttpParams>(
-                "delete",
-                "Send an HTTP DELETE request; returns status, URL, and response body.",
-            ),
-            typed_tool::<HttpParams>(
-                "patch",
-                "Send an HTTP PATCH request with optional body; returns status, URL, and response body.",
-            ),
-            typed_tool::<HttpParams>(
-                "head",
-                "Send an HTTP HEAD request; returns status and URL only (no body).",
-            ),
-        ]
-    }
+#[elicit_tool(
+    plugin = "http",
+    name = "get",
+    description = "Send an HTTP GET request; returns status, URL, and response body."
+)]
+#[instrument(skip(ctx, p), fields(url = %p.url.get()))]
+async fn http_get(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
+    let builder = ctx.http.get(p.url.get().as_str());
+    execute(apply_options(builder, &p)).await
+}
 
-    #[instrument(skip(self, _ctx), fields(tool = %params.name))]
-    fn call_tool<'a>(
-        &'a self,
-        params: CallToolRequestParams,
-        _ctx: RequestContext<rmcp::RoleServer>,
-    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
-        Box::pin(async move {
-            let p: HttpParams = parse_args(&params)?;
-            let client = Arc::clone(&self.client);
+#[elicit_tool(
+    plugin = "http",
+    name = "post",
+    description = "Send an HTTP POST request with optional body; returns status, URL, and response body."
+)]
+#[instrument(skip(ctx, p), fields(url = %p.url.get()))]
+async fn http_post(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
+    let builder = ctx.http.post(p.url.get().as_str());
+    execute(apply_options(builder, &p)).await
+}
 
-            let builder = match params.name.as_ref() {
-                "get" => client.get(p.url.get().as_str()),
-                "post" => client.post(p.url.get().as_str()),
-                "put" => client.put(p.url.get().as_str()),
-                "delete" => client.delete(p.url.get().as_str()),
-                "patch" => client.patch(p.url.get().as_str()),
-                "head" => {
-                    let b = apply_options(client.head(p.url.get().as_str()), &p);
-                    return execute_head(b).await;
-                }
-                other => {
-                    return Err(ErrorData::invalid_params(
-                        format!("unknown tool: {other}"),
-                        None,
-                    ));
-                }
-            };
+#[elicit_tool(
+    plugin = "http",
+    name = "put",
+    description = "Send an HTTP PUT request with optional body; returns status, URL, and response body."
+)]
+#[instrument(skip(ctx, p), fields(url = %p.url.get()))]
+async fn http_put(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
+    let builder = ctx.http.put(p.url.get().as_str());
+    execute(apply_options(builder, &p)).await
+}
 
-            execute(apply_options(builder, &p)).await
-        })
-    }
+#[elicit_tool(
+    plugin = "http",
+    name = "delete",
+    description = "Send an HTTP DELETE request; returns status, URL, and response body."
+)]
+#[instrument(skip(ctx, p), fields(url = %p.url.get()))]
+async fn http_delete(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
+    let builder = ctx.http.delete(p.url.get().as_str());
+    execute(apply_options(builder, &p)).await
+}
+
+#[elicit_tool(
+    plugin = "http",
+    name = "patch",
+    description = "Send an HTTP PATCH request with optional body; returns status, URL, and response body."
+)]
+#[instrument(skip(ctx, p), fields(url = %p.url.get()))]
+async fn http_patch(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
+    let builder = ctx.http.patch(p.url.get().as_str());
+    execute(apply_options(builder, &p)).await
+}
+
+#[elicit_tool(
+    plugin = "http",
+    name = "head",
+    description = "Send an HTTP HEAD request; returns status and URL only (no body)."
+)]
+#[instrument(skip(ctx, p), fields(url = %p.url.get()))]
+async fn http_head(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
+    let builder = ctx.http.head(p.url.get().as_str());
+    execute_head(apply_options(builder, &p)).await
 }

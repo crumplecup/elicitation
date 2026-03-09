@@ -34,21 +34,18 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
-use elicitation::ElicitPlugin;
 use elicitation::contracts::{And, Established, Prop, both};
-use elicitation::{F64Positive, UrlValid as UrlValidType};
-use futures::future::BoxFuture;
+use elicitation::{
+    ElicitPlugin, F64Positive, PluginContext, UrlValid as UrlValidType, elicit_tool,
+};
 use reqwest::header::{HeaderMap, HeaderValue};
 use rmcp::{
     ErrorData,
-    model::{CallToolRequestParams, CallToolResult, Content, Tool},
-    service::RequestContext,
+    model::{CallToolResult, Content},
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
-
-use crate::plugins::util::{parse_args, typed_tool};
 
 // ── Propositions ─────────────────────────────────────────────────────────────
 
@@ -243,13 +240,279 @@ pub struct FetchResult {
     pub contract: String,
 }
 
+// ── Plugin ────────────────────────────────────────────────────────────────────
+
+/// MCP plugin for phrase-level HTTP workflow compositions.
+///
+/// Registers under the `"workflow"` namespace and exposes ten tools that compose
+/// 2-4 primitives each, with documented contract invariants and enum-constrained
+/// parameters (the [`Select`][elicitation::Select] pattern).
+///
+/// | Tool | Word analogy | Establishes |
+/// |---|---|---|
+/// | `url_build` | "construct" | `UrlValid` |
+/// | `fetch` | "get-and-check" | `FetchSucceeded` |
+/// | `fetch_json` | "get-as-json" | `FetchSucceeded` |
+/// | `fetch_auth` | "authenticated-get" | `AuthFetchSucceeded` |
+/// | `post_json` | "post-and-check" | `FetchSucceeded` |
+/// | `api_call` | "bearer-post" | `AuthFetchSucceeded` |
+/// | `health_check` | "probe" | _(none — returns bool)_ |
+/// | `build_request` | "compose-spec" | _(pure, no side-effects)_ |
+/// | `status_summary` | "classify" | _(none — pure)_ |
+/// | `paginated_get` | "page-and-link" | `FetchSucceeded` + next URL |
+#[derive(ElicitPlugin)]
+#[plugin(name = "workflow")]
+pub struct WorkflowPlugin(pub Arc<PluginContext>);
+
+impl WorkflowPlugin {
+    /// Create a new `WorkflowPlugin` backed by a shared reqwest client.
+    pub fn new(client: reqwest::Client) -> Self {
+        Self(Arc::new(PluginContext { http: client }))
+    }
+
+    /// Create a `WorkflowPlugin` with a default client.
+    pub fn default_client() -> Self {
+        Self(PluginContext::new())
+    }
+
+    /// Construct and validate a URL from base, optional path, and query pairs.
+    ///
+    /// Returns the validated URL string. Errors if `base` is not a valid URL.
+    pub fn build_url(
+        base: &str,
+        path: Option<&str>,
+        query: &[(&str, &str)],
+    ) -> Result<String, String> {
+        let mut url = url::Url::parse(base)
+            .map_err(|e| format!("UrlValid not established: '{base}' — {e}"))?;
+        if let Some(p) = path {
+            url.set_path(p);
+        }
+        if !query.is_empty() {
+            let qs: String = query
+                .iter()
+                .map(|(k, v)| format!("{k}={v}"))
+                .collect::<Vec<_>>()
+                .join("&");
+            url.set_query(Some(&qs));
+        }
+        Ok(url.to_string())
+    }
+
+    /// GET `url`, verify the response is successful, and return the result.
+    pub async fn fetch(
+        &self,
+        url: &str,
+        timeout: Duration,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        do_fetch(&self.0.http, url, HeaderMap::new(), timeout)
+            .await
+            .map_err(|r| {
+                r.content
+                    .first()
+                    .and_then(|c| c.as_text().map(|t| t.text.to_string()))
+                    .unwrap_or_else(|| "fetch failed".to_string())
+            })
+    }
+
+    /// GET `url` with an Authorization header, verify success.
+    pub async fn auth_fetch(
+        &self,
+        url: &str,
+        token: &str,
+        auth_type: AuthType,
+        timeout: Duration,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        let parsed_url =
+            url::Url::parse(url).map_err(|e| format!("UrlValid not established: '{url}' — {e}"))?;
+        let url_proof: Established<UrlValid> = Established::assert();
+
+        let rb = self.0.http.get(parsed_url.as_str()).timeout(timeout);
+        let (rb, _auth_proof) = apply_auth(rb, &auth_type, Some(token));
+
+        let resp = rb
+            .send()
+            .await
+            .map_err(|e| format!("Request failed: {e}"))?;
+        let req_proof: Established<RequestCompleted> = Established::assert();
+
+        if !resp.status().is_success() {
+            return Err(format!(
+                "StatusSuccess not established: got {}",
+                resp.status().as_u16()
+            ));
+        }
+        let status_proof: Established<StatusSuccess> = Established::assert();
+        let combined = both(url_proof, both(req_proof, status_proof));
+
+        let status = resp.status().as_u16();
+        let final_url = resp.url().to_string();
+        let body = resp.text().await.unwrap_or_default();
+        Ok((
+            FetchResult {
+                status,
+                url: final_url,
+                body,
+                contract: "UrlValid ∧ RequestCompleted ∧ StatusSuccess".to_string(),
+            },
+            combined,
+        ))
+    }
+
+    /// POST `url` with `body` and `content_type`, verify success.
+    pub async fn post(
+        &self,
+        url: &str,
+        body: &str,
+        content_type: ContentType,
+        timeout: Duration,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        do_post(
+            &self.0.http,
+            url,
+            body.to_string(),
+            content_type.as_mime(),
+            HeaderMap::new(),
+            timeout,
+        )
+        .await
+        .map_err(|r| {
+            r.content
+                .first()
+                .and_then(|c| c.as_text().map(|t| t.text.to_string()))
+                .unwrap_or_else(|| "post failed".to_string())
+        })
+    }
+
+    /// Authenticated JSON POST with Bearer token.
+    pub async fn api_call(
+        &self,
+        url: &str,
+        token: &str,
+        body: &str,
+        timeout: Duration,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        let mut headers = HeaderMap::new();
+        headers.insert("Authorization", format!("Bearer {token}").parse().unwrap());
+        do_post(
+            &self.0.http,
+            url,
+            body.to_string(),
+            ContentType::Json.as_mime(),
+            headers,
+            timeout,
+        )
+        .await
+        .map_err(|r| {
+            r.content
+                .first()
+                .and_then(|c| c.as_text().map(|t| t.text.to_string()))
+                .unwrap_or_else(|| "api_call failed".to_string())
+        })
+    }
+
+    /// Probe `url` and return `true` if it responds with 2xx within `timeout`.
+    pub async fn health_check(&self, url: &str, timeout: Duration) -> bool {
+        do_fetch(&self.0.http, url, HeaderMap::new(), timeout)
+            .await
+            .is_ok()
+    }
+
+    /// Build and send an HTTP request with full control over method, auth, body.
+    pub async fn build_request(
+        &self,
+        params: BuildRequestParams,
+    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
+        let method = params.method.as_str();
+        let timeout = Duration::from_secs_f64(params.timeout_secs.map(|t| t.get()).unwrap_or(30.0));
+
+        let parsed_url = params.url.get().clone();
+        let _url_proof: Established<UrlValid> = Established::assert();
+
+        let method_val = reqwest::Method::from_bytes(method.as_bytes())
+            .map_err(|e| format!("Invalid HTTP method '{method}': {e}"))?;
+
+        let rb = self
+            .0
+            .http
+            .request(method_val, parsed_url.as_str())
+            .timeout(timeout);
+        let (rb, _auth_proof) = apply_auth(rb, &params.auth_type, params.token.as_deref());
+
+        let rb = if let (Some(b), Some(ct)) = (params.body.as_deref(), &params.content_type) {
+            rb.header("Content-Type", ct.as_mime()).body(b.to_string())
+        } else {
+            rb
+        };
+
+        let resp = rb
+            .send()
+            .await
+            .map_err(|e| format!("Request failed: {e}"))?;
+        let _req_proof: Established<RequestCompleted> = Established::assert();
+
+        if !resp.status().is_success() {
+            return Err(format!(
+                "StatusSuccess not established: got {}",
+                resp.status().as_u16()
+            ));
+        }
+        let _status_proof: Established<StatusSuccess> = Established::assert();
+        let combined = both(_url_proof, both(_req_proof, _status_proof));
+
+        let status = resp.status().as_u16();
+        let final_url = resp.url().to_string();
+        let resp_body = resp.text().await.unwrap_or_default();
+        Ok((
+            FetchResult {
+                status,
+                url: final_url,
+                body: resp_body,
+                contract: "UrlValid ∧ RequestCompleted ∧ StatusSuccess".to_string(),
+            },
+            combined,
+        ))
+    }
+
+    /// GET paginated resources, following `Link: rel="next"` headers.
+    ///
+    /// Returns response bodies for all pages (stops when no next-page link).
+    pub async fn paginated_get(
+        &self,
+        url: &str,
+        token: Option<&str>,
+        timeout: Duration,
+    ) -> Result<Vec<String>, String> {
+        let mut pages = Vec::new();
+        let mut next = Some(url.to_string());
+        while let Some(current_url) = next {
+            let mut headers = HeaderMap::new();
+            if let Some(t) = token {
+                headers.insert("Authorization", format!("Bearer {t}").parse().unwrap());
+            }
+            let resp = self
+                .0
+                .http
+                .get(&current_url)
+                .timeout(timeout)
+                .headers(headers)
+                .send()
+                .await
+                .map_err(|e| format!("Paginated GET failed: {e}"))?;
+            next = extract_link_next(resp.headers());
+            pages.push(resp.text().await.unwrap_or_default());
+        }
+        Ok(pages)
+    }
+}
+
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
 fn timeout(secs: Option<F64Positive>) -> Duration {
     Duration::from_secs_f64(secs.map(|t| t.get()).unwrap_or(30.0))
 }
 
-fn parse_url(s: &str) -> Result<(url::Url, Established<UrlValid>), CallToolResult> {
+fn parse_url_inner(s: &str) -> Result<(url::Url, Established<UrlValid>), CallToolResult> {
     match url::Url::parse(s) {
         Ok(u) => Ok((u, Established::assert())),
         Err(e) => Err(CallToolResult::error(vec![Content::text(format!(
@@ -274,15 +537,13 @@ fn extract_link_next(headers: &reqwest::header::HeaderMap) -> Option<String> {
         })
 }
 
-// ── Core async implementations ────────────────────────────────────────────────
-
 async fn do_fetch(
     client: &reqwest::Client,
     url_str: &str,
     extra_headers: HeaderMap,
     timeout_dur: Duration,
 ) -> Result<(FetchResult, Established<FetchSucceeded>), CallToolResult> {
-    let (parsed_url, url_proof) = parse_url(url_str)?;
+    let (parsed_url, url_proof) = parse_url_inner(url_str)?;
 
     let resp = client
         .get(parsed_url.as_str())
@@ -330,7 +591,7 @@ async fn do_post(
     extra_headers: HeaderMap,
     timeout_dur: Duration,
 ) -> Result<(FetchResult, Established<FetchSucceeded>), CallToolResult> {
-    let (parsed_url, url_proof) = parse_url(url_str)?;
+    let (parsed_url, url_proof) = parse_url_inner(url_str)?;
 
     let resp = client
         .post(parsed_url.as_str())
@@ -407,718 +668,7 @@ fn apply_auth(
     }
 }
 
-// ── Plugin ────────────────────────────────────────────────────────────────────
-
-/// MCP plugin for phrase-level HTTP workflow compositions.
-///
-/// Registers under the `"workflow"` namespace and exposes ten tools that compose
-/// 2-4 primitives each, with documented contract invariants and enum-constrained
-/// parameters (the [`Select`][elicitation::Select] pattern).
-///
-/// | Tool | Word analogy | Establishes |
-/// |---|---|---|
-/// | `url_build` | "construct" | `UrlValid` |
-/// | `fetch` | "get-and-check" | `FetchSucceeded` |
-/// | `fetch_json` | "get-as-json" | `FetchSucceeded` |
-/// | `fetch_auth` | "authenticated-get" | `AuthFetchSucceeded` |
-/// | `post_json` | "post-and-check" | `FetchSucceeded` |
-/// | `api_call` | "bearer-post" | `AuthFetchSucceeded` |
-/// | `health_check` | "probe" | _(none — returns bool)_ |
-/// | `build_request` | "compose-spec" | _(pure, no side-effects)_ |
-/// | `status_summary` | "classify" | _(pure)_ |
-/// | `paginated_get` | "page-and-link" | `FetchSucceeded` + next URL |
-pub struct WorkflowPlugin {
-    client: Arc<reqwest::Client>,
-}
-
-impl WorkflowPlugin {
-    /// Create a new `WorkflowPlugin` backed by a shared reqwest client.
-    pub fn new(client: reqwest::Client) -> Self {
-        Self {
-            client: Arc::new(client),
-        }
-    }
-
-    /// Create a `WorkflowPlugin` with a default client.
-    pub fn default_client() -> Self {
-        Self::new(reqwest::Client::new())
-    }
-
-    /// Construct and validate a URL from base, optional path, and query pairs.
-    ///
-    /// Returns the validated URL string. Errors if `base` is not a valid URL.
-    pub fn build_url(
-        base: &str,
-        path: Option<&str>,
-        query: &[(&str, &str)],
-    ) -> Result<String, String> {
-        let mut url = url::Url::parse(base)
-            .map_err(|e| format!("UrlValid not established: '{base}' — {e}"))?;
-        if let Some(p) = path {
-            url.set_path(p);
-        }
-        if !query.is_empty() {
-            let qs: String = query
-                .iter()
-                .map(|(k, v)| format!("{k}={v}"))
-                .collect::<Vec<_>>()
-                .join("&");
-            url.set_query(Some(&qs));
-        }
-        Ok(url.to_string())
-    }
-
-    /// GET `url`, verify the response is successful, and return the result.
-    pub async fn fetch(
-        &self,
-        url: &str,
-        timeout: Duration,
-    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
-        do_fetch(&self.client, url, HeaderMap::new(), timeout)
-            .await
-            .map_err(|r| {
-                r.content
-                    .first()
-                    .and_then(|c| c.as_text().map(|t| t.text.to_string()))
-                    .unwrap_or_else(|| "fetch failed".to_string())
-            })
-    }
-
-    /// GET `url` with an Authorization header, verify success.
-    pub async fn auth_fetch(
-        &self,
-        url: &str,
-        token: &str,
-        auth_type: AuthType,
-        timeout: Duration,
-    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
-        let parsed_url =
-            url::Url::parse(url).map_err(|e| format!("UrlValid not established: '{url}' — {e}"))?;
-        let url_proof: Established<UrlValid> = Established::assert();
-
-        let rb = self.client.get(parsed_url.as_str()).timeout(timeout);
-        let (rb, _auth_proof) = apply_auth(rb, &auth_type, Some(token));
-
-        let resp = rb
-            .send()
-            .await
-            .map_err(|e| format!("Request failed: {e}"))?;
-        let req_proof: Established<RequestCompleted> = Established::assert();
-
-        if !resp.status().is_success() {
-            return Err(format!(
-                "StatusSuccess not established: got {}",
-                resp.status().as_u16()
-            ));
-        }
-        let status_proof: Established<StatusSuccess> = Established::assert();
-        let combined = both(url_proof, both(req_proof, status_proof));
-
-        let status = resp.status().as_u16();
-        let final_url = resp.url().to_string();
-        let body = resp.text().await.unwrap_or_default();
-        Ok((
-            FetchResult {
-                status,
-                url: final_url,
-                body,
-                contract: "UrlValid ∧ RequestCompleted ∧ StatusSuccess".to_string(),
-            },
-            combined,
-        ))
-    }
-
-    /// POST `url` with `body` and `content_type`, verify success.
-    pub async fn post(
-        &self,
-        url: &str,
-        body: &str,
-        content_type: ContentType,
-        timeout: Duration,
-    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
-        do_post(
-            &self.client,
-            url,
-            body.to_string(),
-            content_type.as_mime(),
-            HeaderMap::new(),
-            timeout,
-        )
-        .await
-        .map_err(|r| {
-            r.content
-                .first()
-                .and_then(|c| c.as_text().map(|t| t.text.to_string()))
-                .unwrap_or_else(|| "post failed".to_string())
-        })
-    }
-
-    /// Authenticated JSON POST with Bearer token.
-    pub async fn api_call(
-        &self,
-        url: &str,
-        token: &str,
-        body: &str,
-        timeout: Duration,
-    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
-        let mut headers = HeaderMap::new();
-        headers.insert("Authorization", format!("Bearer {token}").parse().unwrap());
-        do_post(
-            &self.client,
-            url,
-            body.to_string(),
-            ContentType::Json.as_mime(),
-            headers,
-            timeout,
-        )
-        .await
-        .map_err(|r| {
-            r.content
-                .first()
-                .and_then(|c| c.as_text().map(|t| t.text.to_string()))
-                .unwrap_or_else(|| "api_call failed".to_string())
-        })
-    }
-
-    /// Probe `url` and return `true` if it responds with 2xx within `timeout`.
-    pub async fn health_check(&self, url: &str, timeout: Duration) -> bool {
-        do_fetch(&self.client, url, HeaderMap::new(), timeout)
-            .await
-            .is_ok()
-    }
-
-    /// Build and send an HTTP request with full control over method, auth, body.
-    pub async fn build_request(
-        &self,
-        params: BuildRequestParams,
-    ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
-        let method = params.method.as_str();
-        let timeout = Duration::from_secs_f64(params.timeout_secs.map(|t| t.get()).unwrap_or(30.0));
-
-        let parsed_url = params.url.get().clone();
-        let _url_proof: Established<UrlValid> = Established::assert();
-
-        let method_val = reqwest::Method::from_bytes(method.as_bytes())
-            .map_err(|e| format!("Invalid HTTP method '{method}': {e}"))?;
-
-        let rb = self
-            .client
-            .request(method_val, parsed_url.as_str())
-            .timeout(timeout);
-        let (rb, _auth_proof) = apply_auth(rb, &params.auth_type, params.token.as_deref());
-
-        let rb = if let (Some(b), Some(ct)) = (params.body.as_deref(), &params.content_type) {
-            rb.header("Content-Type", ct.as_mime()).body(b.to_string())
-        } else {
-            rb
-        };
-
-        let resp = rb
-            .send()
-            .await
-            .map_err(|e| format!("Request failed: {e}"))?;
-        let _req_proof: Established<RequestCompleted> = Established::assert();
-
-        if !resp.status().is_success() {
-            return Err(format!(
-                "StatusSuccess not established: got {}",
-                resp.status().as_u16()
-            ));
-        }
-        let _status_proof: Established<StatusSuccess> = Established::assert();
-        let combined = both(_url_proof, both(_req_proof, _status_proof));
-
-        let status = resp.status().as_u16();
-        let final_url = resp.url().to_string();
-        let resp_body = resp.text().await.unwrap_or_default();
-        Ok((
-            FetchResult {
-                status,
-                url: final_url,
-                body: resp_body,
-                contract: "UrlValid ∧ RequestCompleted ∧ StatusSuccess".to_string(),
-            },
-            combined,
-        ))
-    }
-
-    /// GET paginated resources, following `Link: rel="next"` headers.
-    ///
-    /// Returns response bodies for all pages (stops when no next-page link).
-    pub async fn paginated_get(
-        &self,
-        url: &str,
-        token: Option<&str>,
-        timeout: Duration,
-    ) -> Result<Vec<String>, String> {
-        let mut pages = Vec::new();
-        let mut next = Some(url.to_string());
-        while let Some(current_url) = next {
-            let mut headers = HeaderMap::new();
-            if let Some(t) = token {
-                headers.insert("Authorization", format!("Bearer {t}").parse().unwrap());
-            }
-            let resp = self
-                .client
-                .get(&current_url)
-                .timeout(timeout)
-                .headers(headers)
-                .send()
-                .await
-                .map_err(|e| format!("Paginated GET failed: {e}"))?;
-            next = extract_link_next(resp.headers());
-            pages.push(resp.text().await.unwrap_or_default());
-        }
-        Ok(pages)
-    }
-}
-
-impl ElicitPlugin for WorkflowPlugin {
-    fn name(&self) -> &'static str {
-        "workflow"
-    }
-
-    #[instrument(skip(self))]
-    fn list_tools(&self) -> Vec<Tool> {
-        vec![
-            typed_tool::<UrlBuildParams>(
-                "url_build",
-                "Build a validated URL from base, optional path, and query parameters. \
-                 Assumes: base is a well-formed URL string. \
-                 Establishes: UrlValid — the result parses without error.",
-            ),
-            typed_tool::<FetchParams>(
-                "fetch",
-                "GET a URL and return the response body. \
-                 Assumes: url is a valid URL; host is reachable; response is 2xx. \
-                 Establishes: UrlValid ∧ RequestCompleted ∧ StatusSuccess (FetchSucceeded).",
-            ),
-            typed_tool::<FetchParams>(
-                "fetch_json",
-                "GET a URL with Accept: application/json and return the body. \
-                 Assumes: url is valid; server returns a 2xx JSON response. \
-                 Establishes: FetchSucceeded.",
-            ),
-            typed_tool::<AuthFetchParams>(
-                "fetch_auth",
-                "GET a URL with authorization (Bearer/Basic/ApiKey) and return the body. \
-                 Assumes: url is valid; token is non-empty; response is 2xx. \
-                 Establishes: Authorized ∧ FetchSucceeded (AuthFetchSucceeded).",
-            ),
-            typed_tool::<PostParams>(
-                "post_json",
-                "POST a body to a URL and return the response body. \
-                 Content-Type is set from the content_type enum (Select pattern). \
-                 Assumes: url is valid; response is 2xx. \
-                 Establishes: FetchSucceeded.",
-            ),
-            typed_tool::<ApiCallParams>(
-                "api_call",
-                "POST JSON with a Bearer token and return the response body. \
-                 Convenience composition of fetch_auth + post_json for REST APIs. \
-                 Assumes: url is valid; token is non-empty; body is valid JSON; response is 2xx. \
-                 Establishes: Authorized ∧ FetchSucceeded.",
-            ),
-            typed_tool::<HealthCheckParams>(
-                "health_check",
-                "Probe a URL with HEAD and report whether it is healthy. \
-                 Returns { healthy, status, url }. Does not require 2xx — \
-                 reports actual status so callers can branch on result. \
-                 Assumes: url is syntactically valid.",
-            ),
-            typed_tool::<BuildRequestParams>(
-                "build_request",
-                "Pure tool: compose a request spec from method, url, auth_type enum, credential, \
-                 and optional body. AuthType constrains credential format (Select pattern). \
-                 Returns a RequestSpec JSON object ready for request_builder__send. \
-                 No network call is made; no propositions established.",
-            ),
-            typed_tool::<StatusSummaryParams>(
-                "status_summary",
-                "Convert a status code into a rich classification object: \
-                 { code, reason, class, is_success, is_redirect, is_client_error, is_server_error }. \
-                 Assumes: status is in range 100–599. \
-                 Composes status_code__from_u16 + canonical_reason + all is_* checks in one call.",
-            ),
-            typed_tool::<PaginatedGetParams>(
-                "paginated_get",
-                "GET a URL and parse the RFC 5988 Link header for a next-page URL. \
-                 Returns { body, next_url, has_more }. Optional bearer token. \
-                 Assumes: url is valid; response is 2xx. \
-                 Establishes: FetchSucceeded. If has_more is true, call again with next_url.",
-            ),
-        ]
-    }
-
-    #[instrument(skip(self, params, _ctx))]
-    fn call_tool<'a>(
-        &'a self,
-        params: CallToolRequestParams,
-        _ctx: RequestContext<rmcp::RoleServer>,
-    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
-        Box::pin(async move {
-            let bare = params.name.trim_start_matches("workflow__");
-            match bare {
-                "url_build" => {
-                    let p: UrlBuildParams = parse_args(&params)?;
-                    let mut url = p.base.into_inner();
-                    if let Some(path) = &p.path {
-                        url.set_path(path);
-                    }
-                    if let Some(query) = &p.query {
-                        let qs: String = query
-                            .iter()
-                            .map(|(k, v)| {
-                                format!("{}={}", urlencoding_simple(k), urlencoding_simple(v))
-                            })
-                            .collect::<Vec<_>>()
-                            .join("&");
-                        url.set_query(if qs.is_empty() { None } else { Some(&qs) });
-                    }
-                    let result = serde_json::json!({
-                        "url": url.to_string(),
-                        "contract": "UrlValid",
-                    });
-                    Ok(CallToolResult::success(vec![Content::text(
-                        result.to_string(),
-                    )]))
-                }
-
-                "fetch" => {
-                    let p: FetchParams = parse_args(&params)?;
-                    match do_fetch(
-                        &self.client,
-                        p.url.get().as_str(),
-                        HeaderMap::new(),
-                        timeout(p.timeout_secs),
-                    )
-                    .await
-                    {
-                        Ok((r, _proof)) => {
-                            let json = serde_json::to_string(&r).unwrap_or_default();
-                            Ok(CallToolResult::success(vec![Content::text(json)]))
-                        }
-                        Err(err_result) => Ok(err_result),
-                    }
-                }
-
-                "fetch_json" => {
-                    let p: FetchParams = parse_args(&params)?;
-                    let mut headers = HeaderMap::new();
-                    headers.insert("Accept", HeaderValue::from_static("application/json"));
-                    match do_fetch(
-                        &self.client,
-                        p.url.get().as_str(),
-                        headers,
-                        timeout(p.timeout_secs),
-                    )
-                    .await
-                    {
-                        Ok((r, _proof)) => {
-                            let json = serde_json::to_string(&r).unwrap_or_default();
-                            Ok(CallToolResult::success(vec![Content::text(json)]))
-                        }
-                        Err(err_result) => Ok(err_result),
-                    }
-                }
-
-                "fetch_auth" => {
-                    let p: AuthFetchParams = parse_args(&params)?;
-                    let url_proof: Established<UrlValid> = Established::assert();
-
-                    let rb = self
-                        .client
-                        .get(p.url.get().as_str())
-                        .timeout(timeout(p.timeout_secs));
-                    let (rb, auth_proof_opt) = apply_auth(rb, &p.auth_type, Some(&p.token));
-
-                    let resp = match rb.send().await {
-                        Ok(r) => r,
-                        Err(e) => {
-                            return Ok(CallToolResult::error(vec![Content::text(format!(
-                                "RequestCompleted not established: {e}"
-                            ))]));
-                        }
-                    };
-                    let req_proof: Established<RequestCompleted> = Established::assert();
-
-                    if !resp.status().is_success() {
-                        let s = resp.status().as_u16();
-                        return Ok(CallToolResult::error(vec![Content::text(format!(
-                            "StatusSuccess not established: got {s}"
-                        ))]));
-                    }
-                    let status_proof: Established<StatusSuccess> = Established::assert();
-                    let fetch_proof: Established<FetchSucceeded> =
-                        both(url_proof, both(req_proof, status_proof));
-
-                    let contract = if let Some(auth_proof) = auth_proof_opt {
-                        let _: Established<AuthFetchSucceeded> = both(auth_proof, fetch_proof);
-                        "Authorized ∧ UrlValid ∧ RequestCompleted ∧ StatusSuccess"
-                    } else {
-                        "UrlValid ∧ RequestCompleted ∧ StatusSuccess (no auth credential provided)"
-                    };
-
-                    let status = resp.status().as_u16();
-                    let final_url = resp.url().to_string();
-                    let body = resp.text().await.unwrap_or_default();
-                    let result = serde_json::json!({
-                        "status": status,
-                        "url": final_url,
-                        "body": body,
-                        "contract": contract,
-                    });
-                    Ok(CallToolResult::success(vec![Content::text(
-                        result.to_string(),
-                    )]))
-                }
-
-                "post_json" => {
-                    let p: PostParams = parse_args(&params)?;
-                    match do_post(
-                        &self.client,
-                        p.url.get().as_str(),
-                        p.body,
-                        p.content_type.as_mime(),
-                        HeaderMap::new(),
-                        timeout(p.timeout_secs),
-                    )
-                    .await
-                    {
-                        Ok((r, _proof)) => {
-                            let json = serde_json::to_string(&r).unwrap_or_default();
-                            Ok(CallToolResult::success(vec![Content::text(json)]))
-                        }
-                        Err(err_result) => Ok(err_result),
-                    }
-                }
-
-                "api_call" => {
-                    let p: ApiCallParams = parse_args(&params)?;
-                    let url_proof: Established<UrlValid> = Established::assert();
-
-                    let auth_proof: Established<Authorized> = if p.token.is_empty() {
-                        return Ok(CallToolResult::error(vec![Content::text(
-                            "Authorized not established: token is empty",
-                        )]));
-                    } else {
-                        Established::assert()
-                    };
-
-                    let resp = match self
-                        .client
-                        .post(p.url.get().as_str())
-                        .bearer_auth(&p.token)
-                        .header("Content-Type", "application/json")
-                        .timeout(timeout(p.timeout_secs))
-                        .body(p.body)
-                        .send()
-                        .await
-                    {
-                        Ok(r) => r,
-                        Err(e) => {
-                            return Ok(CallToolResult::error(vec![Content::text(format!(
-                                "RequestCompleted not established: {e}"
-                            ))]));
-                        }
-                    };
-                    let req_proof: Established<RequestCompleted> = Established::assert();
-
-                    if !resp.status().is_success() {
-                        let s = resp.status().as_u16();
-                        return Ok(CallToolResult::error(vec![Content::text(format!(
-                            "StatusSuccess not established: got {s}"
-                        ))]));
-                    }
-                    let status_proof: Established<StatusSuccess> = Established::assert();
-                    let fetch_proof: Established<FetchSucceeded> =
-                        both(url_proof, both(req_proof, status_proof));
-                    let _combined: Established<AuthFetchSucceeded> = both(auth_proof, fetch_proof);
-
-                    let status = resp.status().as_u16();
-                    let final_url = resp.url().to_string();
-                    let body = resp.text().await.unwrap_or_default();
-                    let result = serde_json::json!({
-                        "status": status,
-                        "url": final_url,
-                        "body": body,
-                        "contract": "Authorized ∧ UrlValid ∧ RequestCompleted ∧ StatusSuccess",
-                    });
-                    Ok(CallToolResult::success(vec![Content::text(
-                        result.to_string(),
-                    )]))
-                }
-
-                "health_check" => {
-                    let p: HealthCheckParams = parse_args(&params)?;
-                    let url_str = p.url.get().as_str();
-
-                    let resp = self
-                        .client
-                        .head(url_str)
-                        .timeout(timeout(p.timeout_secs))
-                        .send()
-                        .await;
-
-                    let result = match resp {
-                        Ok(r) => {
-                            let status = r.status().as_u16();
-                            serde_json::json!({
-                                "healthy": r.status().is_success(),
-                                "status": status,
-                                "url": url_str,
-                            })
-                        }
-                        Err(e) => serde_json::json!({
-                            "healthy": false,
-                            "status": null,
-                            "url": url_str,
-                            "error": e.to_string(),
-                        }),
-                    };
-                    Ok(CallToolResult::success(vec![Content::text(
-                        result.to_string(),
-                    )]))
-                }
-
-                "build_request" => {
-                    let p: BuildRequestParams = parse_args(&params)?;
-                    let mut headers: HashMap<String, String> = HashMap::new();
-
-                    // Apply auth to headers map (pure — no network)
-                    match &p.auth_type {
-                        AuthType::None => {}
-                        AuthType::Bearer => {
-                            if let Some(t) = &p.token {
-                                headers.insert("Authorization".to_string(), format!("Bearer {t}"));
-                            }
-                        }
-                        AuthType::Basic => {
-                            if let Some(t) = &p.token {
-                                headers.insert("Authorization".to_string(), format!("Basic {t}"));
-                            }
-                        }
-                        AuthType::ApiKey => {
-                            if let Some(t) = &p.token {
-                                headers.insert("X-Api-Key".to_string(), t.clone());
-                            }
-                        }
-                    }
-
-                    if let Some(ct) = &p.content_type {
-                        headers.insert("Content-Type".to_string(), ct.as_mime().to_string());
-                    }
-
-                    let spec = serde_json::json!({
-                        "method": p.method.to_uppercase(),
-                        "url": p.url.get().as_str(),
-                        "headers": headers,
-                        "body": p.body,
-                        "timeout_secs": p.timeout_secs.map(|t| t.get()),
-                    });
-                    Ok(CallToolResult::success(vec![Content::text(
-                        spec.to_string(),
-                    )]))
-                }
-
-                "status_summary" => {
-                    let p: StatusSummaryParams = parse_args(&params)?;
-                    match reqwest::StatusCode::from_u16(p.status) {
-                        Err(_) => Ok(CallToolResult::error(vec![Content::text(format!(
-                            "StatusClassified not established: {} is not a valid status code",
-                            p.status
-                        ))])),
-                        Ok(sc) => {
-                            let class = match p.status {
-                                100..=199 => "informational",
-                                200..=299 => "success",
-                                300..=399 => "redirection",
-                                400..=499 => "client_error",
-                                500..=599 => "server_error",
-                                _ => "unknown",
-                            };
-                            let result = serde_json::json!({
-                                "code": p.status,
-                                "reason": sc.canonical_reason().unwrap_or("Unknown"),
-                                "class": class,
-                                "is_success": sc.is_success(),
-                                "is_redirect": sc.is_redirection(),
-                                "is_client_error": sc.is_client_error(),
-                                "is_server_error": sc.is_server_error(),
-                                "is_informational": sc.is_informational(),
-                            });
-                            Ok(CallToolResult::success(vec![Content::text(
-                                result.to_string(),
-                            )]))
-                        }
-                    }
-                }
-
-                "paginated_get" => {
-                    let p: PaginatedGetParams = parse_args(&params)?;
-                    let _url_proof: Established<UrlValid> = Established::assert();
-
-                    let rb = self
-                        .client
-                        .get(p.url.get().as_str())
-                        .timeout(timeout(p.timeout_secs));
-                    let rb = if let Some(t) = &p.token {
-                        rb.bearer_auth(t)
-                    } else {
-                        rb
-                    };
-
-                    let resp = match rb.send().await {
-                        Ok(r) => r,
-                        Err(e) => {
-                            return Ok(CallToolResult::error(vec![Content::text(format!(
-                                "RequestCompleted not established: {e}"
-                            ))]));
-                        }
-                    };
-                    let req_proof: Established<RequestCompleted> = Established::assert();
-
-                    if !resp.status().is_success() {
-                        let s = resp.status().as_u16();
-                        return Ok(CallToolResult::error(vec![Content::text(format!(
-                            "StatusSuccess not established: got {s}"
-                        ))]));
-                    }
-                    let status_proof: Established<StatusSuccess> = Established::assert();
-                    let _combined: Established<FetchSucceeded> =
-                        both(_url_proof, both(req_proof, status_proof));
-
-                    let next_url = extract_link_next(resp.headers());
-                    let has_more = next_url.is_some();
-                    let status = resp.status().as_u16();
-                    let final_url = resp.url().to_string();
-                    let body = resp.text().await.unwrap_or_default();
-
-                    let result = serde_json::json!({
-                        "status": status,
-                        "url": final_url,
-                        "body": body,
-                        "next_url": next_url,
-                        "has_more": has_more,
-                        "contract": "UrlValid ∧ RequestCompleted ∧ StatusSuccess",
-                    });
-                    Ok(CallToolResult::success(vec![Content::text(
-                        result.to_string(),
-                    )]))
-                }
-
-                other => Err(ErrorData::invalid_params(
-                    format!("unknown tool: {other}"),
-                    None,
-                )),
-            }
-        })
-    }
-}
-
 /// Minimal percent-encoding for query parameter keys and values.
-///
-/// Only encodes characters that are illegal in query strings.
 fn urlencoding_simple(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for b in s.bytes() {
@@ -1130,6 +680,453 @@ fn urlencoding_simple(s: &str) -> String {
         }
     }
     out
+}
+
+// ── Tool handlers ─────────────────────────────────────────────────────────────
+
+#[elicit_tool(
+    plugin = "workflow",
+    name = "url_build",
+    description = "Build a validated URL from base, optional path, and query parameters. \
+                   Assumes: base is a well-formed URL string. \
+                   Establishes: UrlValid — the result parses without error."
+)]
+#[instrument(skip_all, fields(base = %p.base.get()))]
+async fn wf_url_build(
+    ctx: Arc<PluginContext>,
+    p: UrlBuildParams,
+) -> Result<CallToolResult, ErrorData> {
+    let _ = &ctx; // stateless — no HTTP call
+    let mut url = p.base.into_inner();
+    if let Some(path) = &p.path {
+        url.set_path(path);
+    }
+    if let Some(query) = &p.query {
+        let qs: String = query
+            .iter()
+            .map(|(k, v)| format!("{}={}", urlencoding_simple(k), urlencoding_simple(v)))
+            .collect::<Vec<_>>()
+            .join("&");
+        url.set_query(if qs.is_empty() { None } else { Some(&qs) });
+    }
+    let result = serde_json::json!({
+        "url": url.to_string(),
+        "contract": "UrlValid",
+    });
+    Ok(CallToolResult::success(vec![Content::text(
+        result.to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "workflow",
+    name = "fetch",
+    description = "GET a URL and return the response body. \
+                   Assumes: url is a valid URL; host is reachable; response is 2xx. \
+                   Establishes: UrlValid ∧ RequestCompleted ∧ StatusSuccess (FetchSucceeded)."
+)]
+#[instrument(skip(ctx, p), fields(url = %p.url.get()))]
+async fn wf_fetch(ctx: Arc<PluginContext>, p: FetchParams) -> Result<CallToolResult, ErrorData> {
+    match do_fetch(
+        &ctx.http,
+        p.url.get().as_str(),
+        HeaderMap::new(),
+        timeout(p.timeout_secs),
+    )
+    .await
+    {
+        Ok((r, _proof)) => {
+            let json = serde_json::to_string(&r).unwrap_or_default();
+            Ok(CallToolResult::success(vec![Content::text(json)]))
+        }
+        Err(err_result) => Ok(err_result),
+    }
+}
+
+#[elicit_tool(
+    plugin = "workflow",
+    name = "fetch_json",
+    description = "GET a URL with Accept: application/json and return the body. \
+                   Assumes: url is valid; server returns a 2xx JSON response. \
+                   Establishes: FetchSucceeded."
+)]
+#[instrument(skip(ctx, p), fields(url = %p.url.get()))]
+async fn wf_fetch_json(
+    ctx: Arc<PluginContext>,
+    p: FetchParams,
+) -> Result<CallToolResult, ErrorData> {
+    let mut headers = HeaderMap::new();
+    headers.insert("Accept", HeaderValue::from_static("application/json"));
+    match do_fetch(
+        &ctx.http,
+        p.url.get().as_str(),
+        headers,
+        timeout(p.timeout_secs),
+    )
+    .await
+    {
+        Ok((r, _proof)) => {
+            let json = serde_json::to_string(&r).unwrap_or_default();
+            Ok(CallToolResult::success(vec![Content::text(json)]))
+        }
+        Err(err_result) => Ok(err_result),
+    }
+}
+
+#[elicit_tool(
+    plugin = "workflow",
+    name = "fetch_auth",
+    description = "GET a URL with authorization (Bearer/Basic/ApiKey) and return the body. \
+                   Assumes: url is valid; token is non-empty; response is 2xx. \
+                   Establishes: Authorized ∧ FetchSucceeded (AuthFetchSucceeded)."
+)]
+#[instrument(skip(ctx, p), fields(url = %p.url.get()))]
+async fn wf_fetch_auth(
+    ctx: Arc<PluginContext>,
+    p: AuthFetchParams,
+) -> Result<CallToolResult, ErrorData> {
+    let url_proof: Established<UrlValid> = Established::assert();
+
+    let rb = ctx
+        .http
+        .get(p.url.get().as_str())
+        .timeout(timeout(p.timeout_secs));
+    let (rb, auth_proof_opt) = apply_auth(rb, &p.auth_type, Some(&p.token));
+
+    let resp = match rb.send().await {
+        Ok(r) => r,
+        Err(e) => {
+            return Ok(CallToolResult::error(vec![Content::text(format!(
+                "RequestCompleted not established: {e}"
+            ))]));
+        }
+    };
+    let req_proof: Established<RequestCompleted> = Established::assert();
+
+    if !resp.status().is_success() {
+        let s = resp.status().as_u16();
+        return Ok(CallToolResult::error(vec![Content::text(format!(
+            "StatusSuccess not established: got {s}"
+        ))]));
+    }
+    let status_proof: Established<StatusSuccess> = Established::assert();
+    let fetch_proof: Established<FetchSucceeded> = both(url_proof, both(req_proof, status_proof));
+
+    let contract = if let Some(auth_proof) = auth_proof_opt {
+        let _: Established<AuthFetchSucceeded> = both(auth_proof, fetch_proof);
+        "Authorized ∧ UrlValid ∧ RequestCompleted ∧ StatusSuccess"
+    } else {
+        "UrlValid ∧ RequestCompleted ∧ StatusSuccess (no auth credential provided)"
+    };
+
+    let status = resp.status().as_u16();
+    let final_url = resp.url().to_string();
+    let body = resp.text().await.unwrap_or_default();
+    let result = serde_json::json!({
+        "status": status,
+        "url": final_url,
+        "body": body,
+        "contract": contract,
+    });
+    Ok(CallToolResult::success(vec![Content::text(
+        result.to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "workflow",
+    name = "post_json",
+    description = "POST a body to a URL and return the response body. \
+                   Content-Type is set from the content_type enum (Select pattern). \
+                   Assumes: url is valid; response is 2xx. \
+                   Establishes: FetchSucceeded."
+)]
+#[instrument(skip(ctx, p), fields(url = %p.url.get()))]
+async fn wf_post_json(ctx: Arc<PluginContext>, p: PostParams) -> Result<CallToolResult, ErrorData> {
+    match do_post(
+        &ctx.http,
+        p.url.get().as_str(),
+        p.body,
+        p.content_type.as_mime(),
+        HeaderMap::new(),
+        timeout(p.timeout_secs),
+    )
+    .await
+    {
+        Ok((r, _proof)) => {
+            let json = serde_json::to_string(&r).unwrap_or_default();
+            Ok(CallToolResult::success(vec![Content::text(json)]))
+        }
+        Err(err_result) => Ok(err_result),
+    }
+}
+
+#[elicit_tool(
+    plugin = "workflow",
+    name = "api_call",
+    description = "POST JSON with a Bearer token and return the response body. \
+                   Convenience composition of fetch_auth + post_json for REST APIs. \
+                   Assumes: url is valid; token is non-empty; body is valid JSON; response is 2xx. \
+                   Establishes: Authorized ∧ FetchSucceeded."
+)]
+#[instrument(skip(ctx, p), fields(url = %p.url.get()))]
+async fn wf_api_call(
+    ctx: Arc<PluginContext>,
+    p: ApiCallParams,
+) -> Result<CallToolResult, ErrorData> {
+    let url_proof: Established<UrlValid> = Established::assert();
+
+    let auth_proof: Established<Authorized> = if p.token.is_empty() {
+        return Ok(CallToolResult::error(vec![Content::text(
+            "Authorized not established: token is empty",
+        )]));
+    } else {
+        Established::assert()
+    };
+
+    let resp = match ctx
+        .http
+        .post(p.url.get().as_str())
+        .bearer_auth(&p.token)
+        .header("Content-Type", "application/json")
+        .timeout(timeout(p.timeout_secs))
+        .body(p.body)
+        .send()
+        .await
+    {
+        Ok(r) => r,
+        Err(e) => {
+            return Ok(CallToolResult::error(vec![Content::text(format!(
+                "RequestCompleted not established: {e}"
+            ))]));
+        }
+    };
+    let req_proof: Established<RequestCompleted> = Established::assert();
+
+    if !resp.status().is_success() {
+        let s = resp.status().as_u16();
+        return Ok(CallToolResult::error(vec![Content::text(format!(
+            "StatusSuccess not established: got {s}"
+        ))]));
+    }
+    let status_proof: Established<StatusSuccess> = Established::assert();
+    let fetch_proof: Established<FetchSucceeded> = both(url_proof, both(req_proof, status_proof));
+    let _combined: Established<AuthFetchSucceeded> = both(auth_proof, fetch_proof);
+
+    let status = resp.status().as_u16();
+    let final_url = resp.url().to_string();
+    let body = resp.text().await.unwrap_or_default();
+    let result = serde_json::json!({
+        "status": status,
+        "url": final_url,
+        "body": body,
+        "contract": "Authorized ∧ UrlValid ∧ RequestCompleted ∧ StatusSuccess",
+    });
+    Ok(CallToolResult::success(vec![Content::text(
+        result.to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "workflow",
+    name = "health_check",
+    description = "Probe a URL with HEAD and report whether it is healthy. \
+                   Returns { healthy, status, url }. Does not require 2xx — \
+                   reports actual status so callers can branch on result. \
+                   Assumes: url is syntactically valid."
+)]
+#[instrument(skip(ctx, p), fields(url = %p.url.get()))]
+async fn wf_health_check(
+    ctx: Arc<PluginContext>,
+    p: HealthCheckParams,
+) -> Result<CallToolResult, ErrorData> {
+    let url_str = p.url.get().as_str();
+
+    let resp = ctx
+        .http
+        .head(url_str)
+        .timeout(timeout(p.timeout_secs))
+        .send()
+        .await;
+
+    let result = match resp {
+        Ok(r) => {
+            let status = r.status().as_u16();
+            serde_json::json!({
+                "healthy": r.status().is_success(),
+                "status": status,
+                "url": url_str,
+            })
+        }
+        Err(e) => serde_json::json!({
+            "healthy": false,
+            "status": null,
+            "url": url_str,
+            "error": e.to_string(),
+        }),
+    };
+    Ok(CallToolResult::success(vec![Content::text(
+        result.to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "workflow",
+    name = "build_request",
+    description = "Pure tool: compose a request spec from method, url, auth_type enum, credential, \
+                   and optional body. AuthType constrains credential format (Select pattern). \
+                   Returns a RequestSpec JSON object ready for request_builder__send. \
+                   No network call is made; no propositions established."
+)]
+#[instrument(skip(ctx, p), fields(method = %p.method, url = %p.url.get()))]
+async fn wf_build_request(
+    ctx: Arc<PluginContext>,
+    p: BuildRequestParams,
+) -> Result<CallToolResult, ErrorData> {
+    let _ = &ctx; // pure — no HTTP call
+    let mut headers: HashMap<String, String> = HashMap::new();
+
+    match &p.auth_type {
+        AuthType::None => {}
+        AuthType::Bearer => {
+            if let Some(t) = &p.token {
+                headers.insert("Authorization".to_string(), format!("Bearer {t}"));
+            }
+        }
+        AuthType::Basic => {
+            if let Some(t) = &p.token {
+                headers.insert("Authorization".to_string(), format!("Basic {t}"));
+            }
+        }
+        AuthType::ApiKey => {
+            if let Some(t) = &p.token {
+                headers.insert("X-Api-Key".to_string(), t.clone());
+            }
+        }
+    }
+
+    if let Some(ct) = &p.content_type {
+        headers.insert("Content-Type".to_string(), ct.as_mime().to_string());
+    }
+
+    let spec = serde_json::json!({
+        "method": p.method.to_uppercase(),
+        "url": p.url.get().as_str(),
+        "headers": headers,
+        "body": p.body,
+        "timeout_secs": p.timeout_secs.map(|t| t.get()),
+    });
+    Ok(CallToolResult::success(vec![Content::text(
+        spec.to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "workflow",
+    name = "status_summary",
+    description = "Convert a status code into a rich classification object: \
+                   { code, reason, class, is_success, is_redirect, is_client_error, is_server_error }. \
+                   Assumes: status is in range 100–599. \
+                   Composes status_code__from_u16 + canonical_reason + all is_* checks in one call."
+)]
+#[instrument(skip(ctx, p), fields(status = p.status))]
+async fn wf_status_summary(
+    ctx: Arc<PluginContext>,
+    p: StatusSummaryParams,
+) -> Result<CallToolResult, ErrorData> {
+    let _ = &ctx; // pure — no HTTP call
+    match reqwest::StatusCode::from_u16(p.status) {
+        Err(_) => Ok(CallToolResult::error(vec![Content::text(format!(
+            "StatusClassified not established: {} is not a valid status code",
+            p.status
+        ))])),
+        Ok(sc) => {
+            let class = match p.status {
+                100..=199 => "informational",
+                200..=299 => "success",
+                300..=399 => "redirection",
+                400..=499 => "client_error",
+                500..=599 => "server_error",
+                _ => "unknown",
+            };
+            let result = serde_json::json!({
+                "code": p.status,
+                "reason": sc.canonical_reason().unwrap_or("Unknown"),
+                "class": class,
+                "is_success": sc.is_success(),
+                "is_redirect": sc.is_redirection(),
+                "is_client_error": sc.is_client_error(),
+                "is_server_error": sc.is_server_error(),
+                "is_informational": sc.is_informational(),
+            });
+            Ok(CallToolResult::success(vec![Content::text(
+                result.to_string(),
+            )]))
+        }
+    }
+}
+
+#[elicit_tool(
+    plugin = "workflow",
+    name = "paginated_get",
+    description = "GET a URL and parse the RFC 5988 Link header for a next-page URL. \
+                   Returns { body, next_url, has_more }. Optional bearer token. \
+                   Assumes: url is valid; response is 2xx. \
+                   Establishes: FetchSucceeded. If has_more is true, call again with next_url."
+)]
+#[instrument(skip(ctx, p), fields(url = %p.url.get()))]
+async fn wf_paginated_get(
+    ctx: Arc<PluginContext>,
+    p: PaginatedGetParams,
+) -> Result<CallToolResult, ErrorData> {
+    let _url_proof: Established<UrlValid> = Established::assert();
+
+    let rb = ctx
+        .http
+        .get(p.url.get().as_str())
+        .timeout(timeout(p.timeout_secs));
+    let rb = if let Some(t) = &p.token {
+        rb.bearer_auth(t)
+    } else {
+        rb
+    };
+
+    let resp = match rb.send().await {
+        Ok(r) => r,
+        Err(e) => {
+            return Ok(CallToolResult::error(vec![Content::text(format!(
+                "RequestCompleted not established: {e}"
+            ))]));
+        }
+    };
+    let req_proof: Established<RequestCompleted> = Established::assert();
+
+    if !resp.status().is_success() {
+        let s = resp.status().as_u16();
+        return Ok(CallToolResult::error(vec![Content::text(format!(
+            "StatusSuccess not established: got {s}"
+        ))]));
+    }
+    let status_proof: Established<StatusSuccess> = Established::assert();
+    let _combined: Established<FetchSucceeded> = both(_url_proof, both(req_proof, status_proof));
+
+    let next_url = extract_link_next(resp.headers());
+    let has_more = next_url.is_some();
+    let status = resp.status().as_u16();
+    let final_url = resp.url().to_string();
+    let body = resp.text().await.unwrap_or_default();
+
+    let result = serde_json::json!({
+        "status": status,
+        "url": final_url,
+        "body": body,
+        "next_url": next_url,
+        "has_more": has_more,
+        "contract": "UrlValid ∧ RequestCompleted ∧ StatusSuccess",
+    });
+    Ok(CallToolResult::success(vec![Content::text(
+        result.to_string(),
+    )]))
 }
 
 // ── EmitCode impls ────────────────────────────────────────────────────────────
