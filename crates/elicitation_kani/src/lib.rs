@@ -91,6 +91,10 @@ mod urlbytes;
 #[cfg(all(kani, feature = "url"))]
 mod urls;
 
+// Serde boundary consistency proofs (require verification + serde_json)
+#[cfg(kani)]
+mod serde_boundary;
+
 #[cfg(all(kani, feature = "regex"))]
 mod regexbytes;
 #[cfg(all(kani, feature = "regex"))]

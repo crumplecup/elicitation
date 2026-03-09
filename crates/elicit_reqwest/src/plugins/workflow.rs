@@ -593,7 +593,6 @@ impl WorkflowPlugin {
         params: BuildRequestParams,
     ) -> Result<(FetchResult, Established<FetchSucceeded>), String> {
         let method = params.method.as_str();
-        let url = params.url.get().as_str();
         let timeout = Duration::from_secs_f64(params.timeout_secs.map(|t| t.get()).unwrap_or(30.0));
 
         let parsed_url = params.url.get().clone();
