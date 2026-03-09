@@ -31,18 +31,15 @@
 //!
 //! Registered under the `"url_workflow"` namespace.
 
-use elicitation::ElicitPlugin;
 use elicitation::contracts::{And, Established, Prop};
-use futures::future::BoxFuture;
+use elicitation::{ElicitPlugin, elicit_tool};
 use rmcp::{
     ErrorData,
-    model::{CallToolRequestParams, CallToolResult, Content, Tool},
-    service::RequestContext,
+    model::{CallToolResult, Content},
 };
 use schemars::JsonSchema;
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::sync::Arc;
 use tracing::instrument;
 
 // ── Propositions ──────────────────────────────────────────────────────────────
@@ -203,19 +200,6 @@ pub struct JoinUrlParams {
     pub relative: String,
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-fn typed_tool<T: JsonSchema + 'static>(name: &'static str, description: &'static str) -> Tool {
-    Tool::new(name, description, Arc::new(Default::default())).with_input_schema::<T>()
-}
-
-fn parse_args<T: serde::de::DeserializeOwned>(
-    params: &CallToolRequestParams,
-) -> Result<T, ErrorData> {
-    let value = serde_json::Value::Object(params.arguments.clone().unwrap_or_default());
-    serde_json::from_value(value).map_err(|e| ErrorData::invalid_params(e.to_string(), None))
-}
-
 // ── Plugin ────────────────────────────────────────────────────────────────────
 
 /// MCP plugin exposing contract-verified URL composition tools.
@@ -233,197 +217,178 @@ fn parse_args<T: serde::de::DeserializeOwned>(
 /// let registry = PluginRegistry::new()
 ///     .register("url_workflow", UrlWorkflowPlugin);
 /// ```
-#[derive(Debug)]
+#[derive(Debug, ElicitPlugin)]
+#[plugin(name = "url_workflow")]
 pub struct UrlWorkflowPlugin;
 
-impl ElicitPlugin for UrlWorkflowPlugin {
-    fn name(&self) -> &'static str {
-        "url_workflow"
-    }
+// ── Tool handlers ─────────────────────────────────────────────────────────────
 
-    fn list_tools(&self) -> Vec<Tool> {
-        vec![
-            typed_tool::<ParseUrlParams>(
-                "parse_url",
-                "Parse a raw URL string and validate its syntax. \
-                 Establishes: UrlParsed. \
-                 Returns scheme, host, port, path, query, and fragment.",
-            ),
-            typed_tool::<AssertHttpsParams>(
-                "assert_https",
-                "Parse a URL and assert that its scheme is 'https'. \
-                 Establishes: UrlParsed ∧ HttpsRequired. \
-                 Fails if the URL is invalid OR the scheme is not https.",
-            ),
-            typed_tool::<ValidateSchemeParams>(
-                "validate_scheme",
-                "Parse a URL and assert that its scheme is in the supplied allow-list. \
-                 Establishes: UrlParsed ∧ SchemeAllowed. \
-                 Useful for restricting to ['https', 'wss'] or similar safe sets.",
-            ),
-            typed_tool::<BuildUrlParams>(
-                "build_url",
-                "Build a canonical URL from a base, optional path, and optional query params. \
-                 Establishes: UrlParsed on the resulting URL. \
-                 The result is percent-encoded and normalized.",
-            ),
-            typed_tool::<JoinUrlParams>(
-                "join_url",
-                "Resolve a relative URL or path against a base URL (RFC 3986). \
-                 Establishes: UrlParsed(base) ∧ UrlParsed(result). \
-                 Handles `../`, query strings, and fragment identifiers correctly.",
-            ),
-        ]
-    }
+#[elicit_tool(
+    plugin = "url_workflow",
+    name = "parse_url",
+    description = "Parse a raw URL string and validate its syntax. \
+                   Establishes: UrlParsed. \
+                   Returns scheme, host, port, path, query, and fragment."
+)]
+#[instrument(skip_all)]
+async fn parse_url(p: ParseUrlParams) -> Result<CallToolResult, ErrorData> {
+    let (parsed, _proof) = match UnvalidatedUrl::new(p.url).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let inner = &parsed.inner;
+    let summary = format!(
+        "UrlParsed established.\n\
+         url:      {}\n\
+         scheme:   {}\n\
+         host:     {}\n\
+         port:     {}\n\
+         path:     {}\n\
+         query:    {}\n\
+         fragment: {}",
+        inner.as_str(),
+        inner.scheme(),
+        inner.host_str().unwrap_or(""),
+        inner.port().map(|p| p.to_string()).unwrap_or_default(),
+        inner.path(),
+        inner.query().unwrap_or(""),
+        inner.fragment().unwrap_or(""),
+    );
+    Ok(CallToolResult::success(vec![Content::text(summary)]))
+}
 
-    #[instrument(skip(self, _ctx), fields(tool = %params.name))]
-    fn call_tool<'a>(
-        &'a self,
-        params: CallToolRequestParams,
-        _ctx: RequestContext<rmcp::RoleServer>,
-    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
-        Box::pin(async move {
-            let bare = params.name.trim_start_matches("url_workflow__");
-            match bare {
-                "parse_url" => {
-                    let p: ParseUrlParams = parse_args(&params)?;
-                    let (parsed, _proof) = match UnvalidatedUrl::new(p.url).parse() {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let inner = &parsed.inner;
-                    let summary = format!(
-                        "UrlParsed established.\n\
-                         url:      {}\n\
-                         scheme:   {}\n\
-                         host:     {}\n\
-                         port:     {}\n\
-                         path:     {}\n\
-                         query:    {}\n\
-                         fragment: {}",
-                        inner.as_str(),
-                        inner.scheme(),
-                        inner.host_str().unwrap_or(""),
-                        inner.port().map(|p| p.to_string()).unwrap_or_default(),
-                        inner.path(),
-                        inner.query().unwrap_or(""),
-                        inner.fragment().unwrap_or(""),
-                    );
-                    Ok(CallToolResult::success(vec![Content::text(summary)]))
-                }
+#[elicit_tool(
+    plugin = "url_workflow",
+    name = "assert_https",
+    description = "Parse a URL and assert that its scheme is 'https'. \
+                   Establishes: UrlParsed ∧ HttpsRequired. \
+                   Fails if the URL is invalid OR the scheme is not https."
+)]
+#[instrument(skip_all)]
+async fn assert_https(p: AssertHttpsParams) -> Result<CallToolResult, ErrorData> {
+    let (parsed, parsed_proof) = match UnvalidatedUrl::new(p.url).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let (secure, _proof) = match parsed.assert_https(parsed_proof) {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    Ok(CallToolResult::success(vec![Content::text(format!(
+        "UrlParsed ∧ HttpsRequired established.\nurl: {}",
+        secure.as_str()
+    ))]))
+}
 
-                "assert_https" => {
-                    let p: AssertHttpsParams = parse_args(&params)?;
-                    let (parsed, parsed_proof) = match UnvalidatedUrl::new(p.url).parse() {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let (secure, _proof) = match parsed.assert_https(parsed_proof) {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    Ok(CallToolResult::success(vec![Content::text(format!(
-                        "UrlParsed ∧ HttpsRequired established.\nurl: {}",
-                        secure.as_str()
-                    ))]))
-                }
+#[elicit_tool(
+    plugin = "url_workflow",
+    name = "validate_scheme",
+    description = "Parse a URL and assert that its scheme is in the supplied allow-list. \
+                   Establishes: UrlParsed ∧ SchemeAllowed. \
+                   Useful for restricting to ['https', 'wss'] or similar safe sets."
+)]
+#[instrument(skip_all)]
+async fn validate_scheme(p: ValidateSchemeParams) -> Result<CallToolResult, ErrorData> {
+    let allowed: Vec<&str> = p.allowed_schemes.iter().map(String::as_str).collect();
+    let (parsed, parsed_proof) = match UnvalidatedUrl::new(p.url).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let (validated, _proof) = match parsed.validate_scheme(&allowed, parsed_proof) {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    Ok(CallToolResult::success(vec![Content::text(format!(
+        "UrlParsed ∧ SchemeAllowed established.\nscheme: {}\nurl: {}",
+        validated.inner.scheme(),
+        validated.inner.as_str()
+    ))]))
+}
 
-                "validate_scheme" => {
-                    let p: ValidateSchemeParams = parse_args(&params)?;
-                    let allowed: Vec<&str> = p.allowed_schemes.iter().map(String::as_str).collect();
-                    let (parsed, parsed_proof) = match UnvalidatedUrl::new(p.url).parse() {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let (validated, _proof) = match parsed.validate_scheme(&allowed, parsed_proof) {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    Ok(CallToolResult::success(vec![Content::text(format!(
-                        "UrlParsed ∧ SchemeAllowed established.\nscheme: {}\nurl: {}",
-                        validated.inner.scheme(),
-                        validated.inner.as_str()
-                    ))]))
-                }
-
-                "build_url" => {
-                    let p: BuildUrlParams = parse_args(&params)?;
-                    let mut url = match url::Url::parse(&p.base) {
-                        Ok(u) => u,
-                        Err(e) => {
-                            return Ok(CallToolResult::error(vec![Content::text(format!(
-                                "UrlParsed not established for base: {e}"
-                            ))]));
-                        }
-                    };
-                    if let Some(path) = p.path {
-                        // Merge path: ensure base has trailing slash then join
-                        let base_str = url.as_str().trim_end_matches('/').to_string() + "/";
-                        let base = url::Url::parse(&base_str).unwrap_or(url.clone());
-                        let path_clean = path.trim_start_matches('/');
-                        url = match base.join(path_clean) {
-                            Ok(u) => u,
-                            Err(e) => {
-                                return Ok(CallToolResult::error(vec![Content::text(format!(
-                                    "Path join failed: {e}"
-                                ))]));
-                            }
-                        };
-                    }
-                    if let Some(qp) = p.params {
-                        let mut pairs: Vec<(String, String)> = url
-                            .query_pairs()
-                            .map(|(k, v)| (k.into_owned(), v.into_owned()))
-                            .collect();
-                        for (k, v) in qp {
-                            pairs.push((k, v));
-                        }
-                        let mut new_url = url.clone();
-                        new_url.set_query(None);
-                        {
-                            let mut serializer = new_url.query_pairs_mut();
-                            for (k, v) in &pairs {
-                                serializer.append_pair(k, v);
-                            }
-                        }
-                        url = new_url;
-                    }
-                    Ok(CallToolResult::success(vec![Content::text(format!(
-                        "UrlParsed established.\nurl: {}",
-                        url.as_str()
-                    ))]))
-                }
-
-                "join_url" => {
-                    let p: JoinUrlParams = parse_args(&params)?;
-                    let base = match url::Url::parse(&p.base) {
-                        Ok(u) => u,
-                        Err(e) => {
-                            return Ok(CallToolResult::error(vec![Content::text(format!(
-                                "UrlParsed not established for base: {e}"
-                            ))]));
-                        }
-                    };
-                    let result = match base.join(&p.relative) {
-                        Ok(u) => u,
-                        Err(e) => {
-                            return Ok(CallToolResult::error(vec![Content::text(format!(
-                                "Join failed: {e}"
-                            ))]));
-                        }
-                    };
-                    Ok(CallToolResult::success(vec![Content::text(format!(
-                        "UrlParsed(base) ∧ UrlParsed(result) established.\nresult: {}",
-                        result.as_str()
-                    ))]))
-                }
-
-                other => Ok(CallToolResult::error(vec![Content::text(format!(
-                    "Unknown tool: {other}"
-                ))])),
+#[elicit_tool(
+    plugin = "url_workflow",
+    name = "build_url",
+    description = "Build a canonical URL from a base, optional path, and optional query params. \
+                   Establishes: UrlParsed on the resulting URL. \
+                   The result is percent-encoded and normalized."
+)]
+#[instrument(skip_all)]
+async fn build_url(p: BuildUrlParams) -> Result<CallToolResult, ErrorData> {
+    let mut url = match url::Url::parse(&p.base) {
+        Ok(u) => u,
+        Err(e) => {
+            return Ok(CallToolResult::error(vec![Content::text(format!(
+                "UrlParsed not established for base: {e}"
+            ))]));
+        }
+    };
+    if let Some(path) = p.path {
+        // Merge path: ensure base has trailing slash then join
+        let base_str = url.as_str().trim_end_matches('/').to_string() + "/";
+        let base = url::Url::parse(&base_str).unwrap_or(url.clone());
+        let path_clean = path.trim_start_matches('/');
+        url = match base.join(path_clean) {
+            Ok(u) => u,
+            Err(e) => {
+                return Ok(CallToolResult::error(vec![Content::text(format!(
+                    "Path join failed: {e}"
+                ))]));
             }
-        })
+        };
     }
+    if let Some(qp) = p.params {
+        let mut pairs: Vec<(String, String)> = url
+            .query_pairs()
+            .map(|(k, v)| (k.into_owned(), v.into_owned()))
+            .collect();
+        for (k, v) in qp {
+            pairs.push((k, v));
+        }
+        let mut new_url = url.clone();
+        new_url.set_query(None);
+        {
+            let mut serializer = new_url.query_pairs_mut();
+            for (k, v) in &pairs {
+                serializer.append_pair(k, v);
+            }
+        }
+        url = new_url;
+    }
+    Ok(CallToolResult::success(vec![Content::text(format!(
+        "UrlParsed established.\nurl: {}",
+        url.as_str()
+    ))]))
+}
+
+#[elicit_tool(
+    plugin = "url_workflow",
+    name = "join_url",
+    description = "Resolve a relative URL or path against a base URL (RFC 3986). \
+                   Establishes: UrlParsed(base) ∧ UrlParsed(result). \
+                   Handles `../`, query strings, and fragment identifiers correctly."
+)]
+#[instrument(skip_all)]
+async fn join_url(p: JoinUrlParams) -> Result<CallToolResult, ErrorData> {
+    let base = match url::Url::parse(&p.base) {
+        Ok(u) => u,
+        Err(e) => {
+            return Ok(CallToolResult::error(vec![Content::text(format!(
+                "UrlParsed not established for base: {e}"
+            ))]));
+        }
+    };
+    let result = match base.join(&p.relative) {
+        Ok(u) => u,
+        Err(e) => {
+            return Ok(CallToolResult::error(vec![Content::text(format!(
+                "Join failed: {e}"
+            ))]));
+        }
+    };
+    Ok(CallToolResult::success(vec![Content::text(format!(
+        "UrlParsed(base) ∧ UrlParsed(result) established.\nresult: {}",
+        result.as_str()
+    ))]))
 }
 
 // ── EmitCode ──────────────────────────────────────────────────────────────────

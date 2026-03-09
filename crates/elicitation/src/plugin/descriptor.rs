@@ -53,6 +53,16 @@ use serde::de::DeserializeOwned;
 
 use super::PluginContext;
 
+/// Type alias for the async handler stored inside a [`ToolDescriptor`].
+pub(crate) type ToolHandler = Arc<
+    dyn Fn(
+            Arc<PluginContext>,
+            CallToolRequestParams,
+        ) -> BoxFuture<'static, Result<CallToolResult, ErrorData>>
+        + Send
+        + Sync,
+>;
+
 /// A fully self-contained MCP tool definition.
 ///
 /// Carries the tool's name, description, JSON schema, and an async handler
@@ -70,14 +80,7 @@ pub struct ToolDescriptor {
     /// rmcp [`Tool`] built from the param type's JSON schema.
     pub(crate) tool: Tool,
     /// Async handler: receives context + raw params, returns result.
-    pub(crate) handler: Arc<
-        dyn Fn(
-                Arc<PluginContext>,
-                CallToolRequestParams,
-            ) -> BoxFuture<'static, Result<CallToolResult, ErrorData>>
-            + Send
-            + Sync,
-    >,
+    pub(crate) handler: ToolHandler,
 }
 
 impl std::fmt::Debug for ToolDescriptor {

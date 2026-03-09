@@ -174,12 +174,11 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
 /// for a segment ending in `PluginContext`.
 fn first_param_is_context(func: &ItemFn) -> bool {
     let Some(first) = func.sig.inputs.iter().find_map(|arg| {
-        if let FnArg::Typed(pt) = arg {
-            if let Pat::Ident(p) = pt.pat.as_ref() {
-                if p.ident != "self" {
-                    return Some(pt);
-                }
-            }
+        if let FnArg::Typed(pt) = arg
+            && let Pat::Ident(p) = pt.pat.as_ref()
+            && p.ident != "self"
+        {
+            return Some(pt);
         }
         None
     }) else {
@@ -187,10 +186,10 @@ fn first_param_is_context(func: &ItemFn) -> bool {
     };
 
     // Name heuristic: parameter named `ctx`
-    if let Pat::Ident(p) = first.pat.as_ref() {
-        if p.ident == "ctx" {
-            return true;
-        }
+    if let Pat::Ident(p) = first.pat.as_ref()
+        && p.ident == "ctx"
+    {
+        return true;
     }
 
     // Type heuristic: last path segment is `PluginContext`
@@ -212,12 +211,11 @@ fn nth_params_type(func: &ItemFn, n: usize) -> Option<&Type> {
         .inputs
         .iter()
         .filter_map(|arg| {
-            if let FnArg::Typed(PatType { pat, ty, .. }) = arg {
-                if let Pat::Ident(p) = pat.as_ref() {
-                    if p.ident != "self" {
-                        return Some(ty.as_ref());
-                    }
-                }
+            if let FnArg::Typed(PatType { pat, ty, .. }) = arg
+                && let Pat::Ident(p) = pat.as_ref()
+                && p.ident != "self"
+            {
+                return Some(ty.as_ref());
             }
             None
         })
