@@ -29,17 +29,14 @@
 //!
 //! Registered under the `"time_workflow"` namespace.
 
-use elicitation::ElicitPlugin;
 use elicitation::contracts::{And, Established, Prop};
-use futures::future::BoxFuture;
+use elicitation::{ElicitPlugin, elicit_tool};
 use rmcp::{
     ErrorData,
-    model::{CallToolRequestParams, CallToolResult, Content, Tool},
-    service::RequestContext,
+    model::{CallToolResult, Content},
 };
 use schemars::JsonSchema;
 use serde::Deserialize;
-use std::sync::Arc;
 use time::{Duration, OffsetDateTime, PrimitiveDateTime, format_description::well_known::Rfc3339};
 use tracing::instrument;
 
@@ -213,17 +210,6 @@ pub struct AddSecondsParams {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-fn typed_tool<T: JsonSchema + 'static>(name: &'static str, description: &'static str) -> Tool {
-    Tool::new(name, description, Arc::new(Default::default())).with_input_schema::<T>()
-}
-
-fn parse_args<T: serde::de::DeserializeOwned>(
-    params: &CallToolRequestParams,
-) -> Result<T, ErrorData> {
-    let value = serde_json::Value::Object(params.arguments.clone().unwrap_or_default());
-    serde_json::from_value(value).map_err(|e| ErrorData::invalid_params(e.to_string(), None))
-}
-
 fn parse_rfc3339(s: &str) -> Result<OffsetDateTime, String> {
     OffsetDateTime::parse(s, &Rfc3339)
         .map_err(|e| format!("OffsetDateTimeParsed not established: {e}"))
@@ -242,200 +228,180 @@ fn parse_rfc3339(s: &str) -> Result<OffsetDateTime, String> {
 /// let registry = PluginRegistry::new()
 ///     .register("time_workflow", TimeWorkflowPlugin);
 /// ```
-#[derive(Debug)]
+#[derive(Debug, ElicitPlugin)]
+#[plugin(name = "time_workflow")]
 pub struct TimeWorkflowPlugin;
 
-impl ElicitPlugin for TimeWorkflowPlugin {
-    fn name(&self) -> &'static str {
-        "time_workflow"
-    }
+// ── Tool handlers ─────────────────────────────────────────────────────────────
 
-    fn list_tools(&self) -> Vec<Tool> {
-        vec![
-            typed_tool::<ParseOffsetParams>(
-                "parse_offset_datetime",
-                "Parse an RFC 3339 string as a `time::OffsetDateTime`. \
-                 Establishes: OffsetDateTimeParsed. \
-                 Returns year, month, day, hour, minute, second, UTC offset, and Unix timestamp.",
-            ),
-            typed_tool::<ParsePrimitiveParams>(
-                "parse_primitive_datetime",
-                "Parse an ISO 8601 local datetime string (no timezone) as `time::PrimitiveDateTime`. \
-                 Establishes: PrimitiveDateTimeParsed. \
-                 Returns year, month, day, hour, minute, second.",
-            ),
-            typed_tool::<AssertFutureParams>(
-                "assert_future",
-                "Parse an RFC 3339 datetime and assert it is strictly after the current UTC time. \
-                 Establishes: OffsetDateTimeParsed ∧ OffsetDateTimeFuture. \
-                 Returns the datetime and seconds-from-now.",
-            ),
-            typed_tool::<ComputeDurationParams>(
-                "compute_duration",
-                "Compute the signed duration between two RFC 3339 datetimes. \
-                 Establishes: OffsetDateTimeParsed(from) ∧ OffsetDateTimeParsed(to). \
-                 Returns duration in seconds, minutes, hours, and days.",
-            ),
-            typed_tool::<AddSecondsParams>(
-                "add_seconds",
-                "Add (or subtract) a number of seconds to an RFC 3339 datetime. \
-                 Establishes: OffsetDateTimeParsed ⟹ OffsetDateTimeParsed(result). \
-                 Returns the resulting datetime as RFC 3339.",
-            ),
-        ]
-    }
+#[elicit_tool(
+    plugin = "time_workflow",
+    name = "parse_offset_datetime",
+    description = "Parse an RFC 3339 string as a `time::OffsetDateTime`. \
+                   Establishes: OffsetDateTimeParsed. \
+                   Returns year, month, day, hour, minute, second, UTC offset, and Unix timestamp."
+)]
+#[instrument(skip_all)]
+async fn parse_offset(p: ParseOffsetParams) -> Result<CallToolResult, ErrorData> {
+    let (parsed, _proof) = match UnvalidatedOffsetStr::new(p.datetime).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let dt = parsed.inner;
+    let rfc = dt
+        .format(&Rfc3339)
+        .unwrap_or_else(|_| "(format error)".to_string());
+    let offset = dt.offset();
+    let summary = format!(
+        "OffsetDateTimeParsed established.\n\
+         rfc3339:   {rfc}\n\
+         year:      {}\n\
+         month:     {}\n\
+         day:       {}\n\
+         hour:      {}\n\
+         minute:    {}\n\
+         second:    {}\n\
+         utc_offset: {}h {}m\n\
+         unix_timestamp: {}",
+        dt.year(),
+        dt.month() as u8,
+        dt.day(),
+        dt.hour(),
+        dt.minute(),
+        dt.second(),
+        offset.whole_hours(),
+        offset.minutes_past_hour(),
+        dt.unix_timestamp(),
+    );
+    Ok(CallToolResult::success(vec![Content::text(summary)]))
+}
 
-    #[instrument(skip(self, _ctx), fields(tool = %params.name))]
-    fn call_tool<'a>(
-        &'a self,
-        params: CallToolRequestParams,
-        _ctx: RequestContext<rmcp::RoleServer>,
-    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
-        Box::pin(async move {
-            let bare = params.name.trim_start_matches("time_workflow__");
-            match bare {
-                "parse_offset_datetime" => {
-                    let p: ParseOffsetParams = parse_args(&params)?;
-                    let (parsed, _proof) = match UnvalidatedOffsetStr::new(p.datetime).parse() {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let dt = parsed.inner;
-                    let rfc = dt
-                        .format(&Rfc3339)
-                        .unwrap_or_else(|_| "(format error)".to_string());
-                    let offset = dt.offset();
-                    let summary = format!(
-                        "OffsetDateTimeParsed established.\n\
-                         rfc3339:   {rfc}\n\
-                         year:      {}\n\
-                         month:     {}\n\
-                         day:       {}\n\
-                         hour:      {}\n\
-                         minute:    {}\n\
-                         second:    {}\n\
-                         utc_offset: {}h {}m\n\
-                         unix_timestamp: {}",
-                        dt.year(),
-                        dt.month() as u8,
-                        dt.day(),
-                        dt.hour(),
-                        dt.minute(),
-                        dt.second(),
-                        offset.whole_hours(),
-                        offset.minutes_past_hour(),
-                        dt.unix_timestamp(),
-                    );
-                    Ok(CallToolResult::success(vec![Content::text(summary)]))
-                }
+#[elicit_tool(
+    plugin = "time_workflow",
+    name = "parse_primitive_datetime",
+    description = "Parse an ISO 8601 local datetime string (no timezone) as `time::PrimitiveDateTime`. \
+                   Establishes: PrimitiveDateTimeParsed. \
+                   Returns year, month, day, hour, minute, second."
+)]
+#[instrument(skip_all)]
+async fn parse_primitive(p: ParsePrimitiveParams) -> Result<CallToolResult, ErrorData> {
+    let (parsed, _proof) = match UnvalidatedPrimitiveStr::new(p.datetime).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let dt = parsed.inner;
+    let summary = format!(
+        "PrimitiveDateTimeParsed established.\n\
+         year:   {}\n\
+         month:  {}\n\
+         day:    {}\n\
+         hour:   {}\n\
+         minute: {}\n\
+         second: {}",
+        dt.year(),
+        dt.month() as u8,
+        dt.day(),
+        dt.hour(),
+        dt.minute(),
+        dt.second(),
+    );
+    Ok(CallToolResult::success(vec![Content::text(summary)]))
+}
 
-                "parse_primitive_datetime" => {
-                    let p: ParsePrimitiveParams = parse_args(&params)?;
-                    let (parsed, _proof) = match UnvalidatedPrimitiveStr::new(p.datetime).parse() {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let dt = parsed.inner;
-                    let summary = format!(
-                        "PrimitiveDateTimeParsed established.\n\
-                         year:   {}\n\
-                         month:  {}\n\
-                         day:    {}\n\
-                         hour:   {}\n\
-                         minute: {}\n\
-                         second: {}",
-                        dt.year(),
-                        dt.month() as u8,
-                        dt.day(),
-                        dt.hour(),
-                        dt.minute(),
-                        dt.second(),
-                    );
-                    Ok(CallToolResult::success(vec![Content::text(summary)]))
-                }
+#[elicit_tool(
+    plugin = "time_workflow",
+    name = "assert_future",
+    description = "Parse an RFC 3339 datetime and assert it is strictly after the current UTC time. \
+                   Establishes: OffsetDateTimeParsed ∧ OffsetDateTimeFuture. \
+                   Returns the datetime and seconds-from-now."
+)]
+#[instrument(skip_all)]
+async fn assert_future(p: AssertFutureParams) -> Result<CallToolResult, ErrorData> {
+    let (parsed, parsed_proof) = match UnvalidatedOffsetStr::new(p.datetime).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let (future, _proof) = match parsed.assert_future(parsed_proof) {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let now = OffsetDateTime::now_utc();
+    let diff = (future.inner - now).whole_seconds();
+    let rfc = future
+        .inner
+        .format(&Rfc3339)
+        .unwrap_or_else(|_| "(format error)".to_string());
+    Ok(CallToolResult::success(vec![Content::text(format!(
+        "OffsetDateTimeParsed ∧ OffsetDateTimeFuture established.\n\
+         datetime:         {rfc}\n\
+         seconds_from_now: {diff}"
+    ))]))
+}
 
-                "assert_future" => {
-                    let p: AssertFutureParams = parse_args(&params)?;
-                    let (parsed, parsed_proof) = match UnvalidatedOffsetStr::new(p.datetime).parse()
-                    {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let (future, _proof) = match parsed.assert_future(parsed_proof) {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let now = OffsetDateTime::now_utc();
-                    let diff = (future.inner - now).whole_seconds();
-                    let rfc = future
-                        .inner
-                        .format(&Rfc3339)
-                        .unwrap_or_else(|_| "(format error)".to_string());
-                    Ok(CallToolResult::success(vec![Content::text(format!(
-                        "OffsetDateTimeParsed ∧ OffsetDateTimeFuture established.\n\
-                         datetime:         {rfc}\n\
-                         seconds_from_now: {diff}"
-                    ))]))
-                }
+#[elicit_tool(
+    plugin = "time_workflow",
+    name = "compute_duration",
+    description = "Compute the signed duration between two RFC 3339 datetimes. \
+                   Establishes: OffsetDateTimeParsed(from) ∧ OffsetDateTimeParsed(to). \
+                   Returns duration in seconds, minutes, hours, and days."
+)]
+#[instrument(skip_all)]
+async fn compute_duration(p: ComputeDurationParams) -> Result<CallToolResult, ErrorData> {
+    let from = match parse_rfc3339(&p.from) {
+        Ok(d) => d,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let to = match parse_rfc3339(&p.to) {
+        Ok(d) => d,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let dur = to - from;
+    let secs = dur.whole_seconds();
+    let summary = format!(
+        "OffsetDateTimeParsed(from) ∧ OffsetDateTimeParsed(to) established.\n\
+         from:    {}\n\
+         to:      {}\n\
+         seconds: {secs}\n\
+         minutes: {}\n\
+         hours:   {}\n\
+         days:    {}",
+        from.format(&Rfc3339)
+            .unwrap_or_else(|_| "(format error)".to_string()),
+        to.format(&Rfc3339)
+            .unwrap_or_else(|_| "(format error)".to_string()),
+        dur.whole_minutes(),
+        dur.whole_hours(),
+        dur.whole_days(),
+    );
+    Ok(CallToolResult::success(vec![Content::text(summary)]))
+}
 
-                "compute_duration" => {
-                    let p: ComputeDurationParams = parse_args(&params)?;
-                    let from = match parse_rfc3339(&p.from) {
-                        Ok(d) => d,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let to = match parse_rfc3339(&p.to) {
-                        Ok(d) => d,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let dur = to - from;
-                    let secs = dur.whole_seconds();
-                    let summary = format!(
-                        "OffsetDateTimeParsed(from) ∧ OffsetDateTimeParsed(to) established.\n\
-                         from:    {}\n\
-                         to:      {}\n\
-                         seconds: {secs}\n\
-                         minutes: {}\n\
-                         hours:   {}\n\
-                         days:    {}",
-                        from.format(&Rfc3339)
-                            .unwrap_or_else(|_| "(format error)".to_string()),
-                        to.format(&Rfc3339)
-                            .unwrap_or_else(|_| "(format error)".to_string()),
-                        dur.whole_minutes(),
-                        dur.whole_hours(),
-                        dur.whole_days(),
-                    );
-                    Ok(CallToolResult::success(vec![Content::text(summary)]))
-                }
-
-                "add_seconds" => {
-                    let p: AddSecondsParams = parse_args(&params)?;
-                    let dt = match parse_rfc3339(&p.datetime) {
-                        Ok(d) => d,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let result = dt + Duration::seconds(p.seconds);
-                    Ok(CallToolResult::success(vec![Content::text(format!(
-                        "OffsetDateTimeParsed ⟹ OffsetDateTimeParsed(result) established.\n\
-                         original: {}\n\
-                         delta_s:  {}\n\
-                         result:   {}",
-                        dt.format(&Rfc3339)
-                            .unwrap_or_else(|_| "(format error)".to_string()),
-                        p.seconds,
-                        result
-                            .format(&Rfc3339)
-                            .unwrap_or_else(|_| "(format error)".to_string()),
-                    ))]))
-                }
-
-                other => Ok(CallToolResult::error(vec![Content::text(format!(
-                    "Unknown tool: {other}"
-                ))])),
-            }
-        })
-    }
+#[elicit_tool(
+    plugin = "time_workflow",
+    name = "add_seconds",
+    description = "Add (or subtract) a number of seconds to an RFC 3339 datetime. \
+                   Establishes: OffsetDateTimeParsed ⟹ OffsetDateTimeParsed(result). \
+                   Returns the resulting datetime as RFC 3339."
+)]
+#[instrument(skip_all)]
+async fn add_seconds(p: AddSecondsParams) -> Result<CallToolResult, ErrorData> {
+    let dt = match parse_rfc3339(&p.datetime) {
+        Ok(d) => d,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let result = dt + Duration::seconds(p.seconds);
+    Ok(CallToolResult::success(vec![Content::text(format!(
+        "OffsetDateTimeParsed ⟹ OffsetDateTimeParsed(result) established.\n\
+         original: {}\n\
+         delta_s:  {}\n\
+         result:   {}",
+        dt.format(&Rfc3339)
+            .unwrap_or_else(|_| "(format error)".to_string()),
+        p.seconds,
+        result
+            .format(&Rfc3339)
+            .unwrap_or_else(|_| "(format error)".to_string()),
+    ))]))
 }
 
 // ── EmitCode ──────────────────────────────────────────────────────────────────
