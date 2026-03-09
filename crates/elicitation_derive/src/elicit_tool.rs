@@ -5,19 +5,40 @@
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::{
-    Error, Expr, FnArg, ItemFn, Lit, Meta, Pat, PatType, Result, Token, Type,
+    Error, Expr, FnArg, ItemFn, Lit, LitStr, Meta, Pat, PatType, Result, Token, Type,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
 
 // ── Attribute args ─────────────────────────────────────────────────────────────
 
-/// Parsed arguments from `#[elicit_tool(name = "...", description = "...", plugin = "...")]`.
+/// Helper to parse the inner tokens of `emit_ctx("lhs" => "rhs")`.
+struct EmitCtxPair {
+    lhs: LitStr,
+    rhs: LitStr,
+}
+
+impl Parse for EmitCtxPair {
+    fn parse(input: ParseStream) -> Result<Self> {
+        let lhs: LitStr = input.parse()?;
+        let _: Token![=>] = input.parse()?;
+        let rhs: LitStr = input.parse()?;
+        Ok(EmitCtxPair { lhs, rhs })
+    }
+}
+
+/// Parsed arguments from `#[elicit_tool(name = "...", description = "...", plugin = "...",
+/// emit = true, emit_ctx("ctx.field" => "replacement_expr"))]`.
 struct ElicitToolArgs {
     name: String,
     description: String,
     /// Optional owning plugin name. When set, emits `inventory::submit!`.
     plugin: Option<String>,
+    /// Whether to auto-generate `impl EmitCode`. Default `false`; set `emit = true`
+    /// explicitly, or presence of any `emit_ctx(...)` arg implies `true`.
+    emit: bool,
+    /// Context substitutions: `("ctx.field", "replacement_expr_source")`.
+    emit_ctx_subs: Vec<(String, String)>,
 }
 
 impl Parse for ElicitToolArgs {
@@ -27,40 +48,87 @@ impl Parse for ElicitToolArgs {
         let mut name = None;
         let mut description = None;
         let mut plugin = None;
+        let mut emit = false;
+        let mut emit_explicit = false;
+        let mut emit_ctx_subs = Vec::new();
 
         for meta in pairs {
-            let Meta::NameValue(nv) = meta else {
-                return Err(Error::new_spanned(
-                    meta,
-                    "expected `name = \"...\"` or `description = \"...\"`",
-                ));
-            };
+            match &meta {
+                Meta::List(ml) => {
+                    let key = ml.path.get_ident().map(|i| i.to_string()).unwrap_or_default();
+                    if key == "emit_ctx" {
+                        let pair: EmitCtxPair = syn::parse2(ml.tokens.clone())?;
+                        emit_ctx_subs.push((pair.lhs.value(), pair.rhs.value()));
+                    } else {
+                        return Err(Error::new_spanned(
+                            &ml.path,
+                            format!("unknown list attribute `{key}`; expected `emit_ctx(...)`"),
+                        ));
+                    }
+                }
+                Meta::NameValue(nv) => {
+                    let key = nv
+                        .path
+                        .get_ident()
+                        .map(|i| i.to_string())
+                        .unwrap_or_default();
+                    let Expr::Lit(expr_lit) = &nv.value else {
+                        return Err(Error::new_spanned(&nv.value, "expected a literal"));
+                    };
 
-            let key = nv
-                .path
-                .get_ident()
-                .map(|i| i.to_string())
-                .unwrap_or_default();
-            let Expr::Lit(expr_lit) = &nv.value else {
-                return Err(Error::new_spanned(&nv.value, "expected a string literal"));
-            };
-            let Lit::Str(s) = &expr_lit.lit else {
-                return Err(Error::new_spanned(
-                    &expr_lit.lit,
-                    "expected a string literal",
-                ));
-            };
-
-            match key.as_str() {
-                "name" => name = Some(s.value()),
-                "description" => description = Some(s.value()),
-                "plugin" => plugin = Some(s.value()),
+                    match key.as_str() {
+                        "name" => {
+                            let Lit::Str(s) = &expr_lit.lit else {
+                                return Err(Error::new_spanned(
+                                    &expr_lit.lit,
+                                    "expected a string literal",
+                                ));
+                            };
+                            name = Some(s.value());
+                        }
+                        "description" => {
+                            let Lit::Str(s) = &expr_lit.lit else {
+                                return Err(Error::new_spanned(
+                                    &expr_lit.lit,
+                                    "expected a string literal",
+                                ));
+                            };
+                            description = Some(s.value());
+                        }
+                        "plugin" => {
+                            let Lit::Str(s) = &expr_lit.lit else {
+                                return Err(Error::new_spanned(
+                                    &expr_lit.lit,
+                                    "expected a string literal",
+                                ));
+                            };
+                            plugin = Some(s.value());
+                        }
+                        "emit" => {
+                            let Lit::Bool(b) = &expr_lit.lit else {
+                                return Err(Error::new_spanned(
+                                    &expr_lit.lit,
+                                    "expected a bool literal for `emit`",
+                                ));
+                            };
+                            emit = b.value();
+                            emit_explicit = true;
+                        }
+                        other => {
+                            return Err(Error::new_spanned(
+                                &nv.path,
+                                format!(
+                                    "unknown key `{other}`; expected `name`, `description`, \
+                                     `plugin`, `emit`, or `emit_ctx(...)`"
+                                ),
+                            ));
+                        }
+                    }
+                }
                 other => {
                     return Err(Error::new_spanned(
-                        &nv.path,
-                        format!(
-                            "unknown key `{other}`; expected `name`, `description`, or `plugin`"
-                        ),
+                        other,
+                        "expected `name = \"...\"`, `description = \"...\"`, or `emit_ctx(...)`",
                     ));
                 }
             }
@@ -77,6 +145,9 @@ impl Parse for ElicitToolArgs {
                 )
             })?,
             plugin,
+            // emit_ctx(...) presence implies emit=true unless explicitly set to false.
+            emit: if emit_explicit { emit } else { !emit_ctx_subs.is_empty() },
+            emit_ctx_subs,
         })
     }
 }
@@ -103,6 +174,8 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
         name,
         description,
         plugin,
+        emit,
+        emit_ctx_subs,
     } = syn::parse2(args)?;
     let func: ItemFn = syn::parse2(item.clone())?;
 
@@ -152,7 +225,7 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
         }
     };
 
-    let expanded = quote! {
+    let mut expanded = quote! {
         #func
 
         /// Auto-generated [`ToolDescriptor`] constructor for [`#fn_ident`].
@@ -164,6 +237,61 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
 
         #inventory_submit
     };
+
+    // Phase 4: auto-generate `impl EmitCode` when `emit = true` (the default).
+    if emit {
+        use crate::emit_rewriter::EmitRewriter;
+        use quote::ToTokens as _;
+
+        // Collect and rewrite the function body tokens.
+        let body_ts: TokenStream = func.block.stmts.iter().map(|s| s.to_token_stream()).collect();
+        let mut rewriter = EmitRewriter::new(emit_ctx_subs);
+        let rewritten = rewriter.rewrite(body_ts);
+
+        // Generate `let __field = ToCodeLiteral::to_code_literal(&self.field);` bindings.
+        let field_bindings: Vec<_> = rewriter
+            .param_fields
+            .iter()
+            .map(|f| {
+                let local = format_ident!("__{f}");
+                let field = format_ident!("{f}");
+                quote! {
+                    let #local =
+                        elicitation::emit_code::ToCodeLiteral::to_code_literal(&self.#field);
+                }
+            })
+            .collect();
+
+        // Infer crate deps from path prefixes in the rewritten body.
+        let crate_names = EmitRewriter::infer_crate_names(&rewritten);
+        let crate_deps: Vec<_> = crate_names
+            .iter()
+            .map(|cname| {
+                let version = EmitRewriter::resolve_workspace_version(cname)
+                    .unwrap_or_else(|| "0.0".to_string());
+                quote! { elicitation::emit_code::CrateDep::new(#cname, #version) }
+            })
+            .collect();
+
+        let emit_block = quote! {
+            #[cfg(feature = "emit")]
+            impl elicitation::emit_code::EmitCode for #params_ty {
+                fn emit_code(&self) -> proc_macro2::TokenStream {
+                    #(#field_bindings)*
+                    ::quote::quote! { #rewritten }
+                }
+
+                fn crate_deps(&self) -> ::std::vec::Vec<elicitation::emit_code::CrateDep> {
+                    ::std::vec![ #(#crate_deps),* ]
+                }
+            }
+
+            #[cfg(feature = "emit")]
+            elicitation::register_emit!(#name, #params_ty);
+        };
+
+        expanded = quote! { #expanded #emit_block };
+    }
 
     Ok(expanded)
 }
