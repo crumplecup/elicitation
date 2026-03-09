@@ -52,12 +52,15 @@
 /// # Generated Code
 ///
 /// The macro generates:
-/// - Newtype struct wrapping `Arc<T>` with `derive_more` traits (Deref, DerefMut, AsRef)
-/// - `From<T>` impl that auto-wraps in Arc
-/// - `From<Arc<T>>` impl for zero-copy wrapping
-/// - `From<Wrapper>` impl that extracts the Arc
-/// - Debug and Clone derives
-/// - All fields are public for maximum transparency
+/// - Newtype struct wrapping `Arc<T>` with `Debug`, `Clone`
+/// - `Deref`, `DerefMut`, `AsRef` impls
+/// - `From<T>`, `From<Arc<T>>`, `From<Wrapper> for Arc<T>` impls
+/// - Conditional trait-forwarding impls (present only when `T` supports the trait):
+///   `PartialEq`, `Eq`, `Hash`, `PartialOrd`, `Ord`, `Display`, `FromStr`
+/// - `Copy` is intentionally absent — `Arc<T>` is never `Copy`
+///
+/// Use [`elicit_newtype_traits!`] after this macro to forward standard comparison,
+/// display, and parsing traits for inner types that support them.
 ///
 /// # Companion Crate Pattern
 ///
@@ -69,7 +72,7 @@
 /// elicit_newtype!(reqwest::Request, as Request);
 /// elicit_newtype!(reqwest::Response, as Response);
 ///
-/// // Users import familiar names:
+/// /// Users import familiar names:
 /// use elicit_reqwest::Client;  // Same name as original!
 /// ```
 #[macro_export]
@@ -213,6 +216,123 @@ macro_rules! elicit_newtype {
         impl ::std::convert::From<$wrapper_name> for ::std::sync::Arc<$inner_path> {
             fn from(wrapper: $wrapper_name) -> Self {
                 wrapper.0
+            }
+        }
+    };
+}
+
+/// Forwards standard library traits from the inner type to an `elicit_newtype!` wrapper.
+///
+/// Because `elicit_newtype!` uses `Arc<T>` internally, Rust cannot generate
+/// conditional `where T: Trait` impls for concrete structs.  This macro lets
+/// the crate author explicitly opt in to the traits they know the inner type
+/// supports.
+///
+/// # Flags (one or more, in a bracket list)
+///
+/// | Flag | Traits generated |
+/// |------|-----------------|
+/// | `eq` | `PartialEq + Eq` |
+/// | `eq_hash` | `PartialEq + Eq + Hash` |
+/// | `ord` | `PartialEq + Eq + PartialOrd + Ord` |
+/// | `cmp` | `PartialEq + Eq + Hash + PartialOrd + Ord` |
+/// | `display` | `Display` |
+/// | `from_str` | `FromStr` |
+///
+/// Higher-flag supersets (`ord`, `cmp`) include all the traits of their subsets.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation::{elicit_newtype, elicit_newtype_traits};
+///
+/// elicit_newtype!(uuid::Uuid, as Uuid, serde);
+/// // uuid::Uuid: PartialEq + Eq + Hash + PartialOrd + Ord + Display + FromStr
+/// elicit_newtype_traits!(Uuid, uuid::Uuid, [cmp, display, from_str]);
+///
+/// elicit_newtype!(serde_json::Value, as JsonValue, serde);
+/// // serde_json::Value: PartialEq + Eq, but no Hash/Ord
+/// elicit_newtype_traits!(JsonValue, serde_json::Value, [eq]);
+/// ```
+#[macro_export]
+macro_rules! elicit_newtype_traits {
+    // Base case: empty list
+    ($name:ident, $inner:path, []) => {};
+
+    // Peel one flag and recurse
+    ($name:ident, $inner:path, [$flag:ident $(, $rest:ident)*]) => {
+        $crate::elicit_newtype_trait_flag!($name, $inner, $flag);
+        $crate::elicit_newtype_traits!($name, $inner, [$($rest),*]);
+    };
+}
+
+/// Generates one group of standard trait impls for a newtype wrapper.
+///
+/// Called by [`elicit_newtype_traits!`]; not intended for direct use.
+#[doc(hidden)]
+#[macro_export]
+macro_rules! elicit_newtype_trait_flag {
+    // ── eq ────────────────────────────────────────────────────────────────────
+    ($name:ident, $inner:path, eq) => {
+        impl ::std::cmp::PartialEq for $name {
+            fn eq(&self, other: &Self) -> bool {
+                *self.0 == *other.0
+            }
+        }
+        impl ::std::cmp::Eq for $name {}
+    };
+
+    // ── eq_hash ───────────────────────────────────────────────────────────────
+    ($name:ident, $inner:path, eq_hash) => {
+        $crate::elicit_newtype_trait_flag!($name, $inner, eq);
+        impl ::std::hash::Hash for $name {
+            fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {
+                (*self.0).hash(state);
+            }
+        }
+    };
+
+    // ── ord ──────────────────────────────────────────────────────────────────
+    ($name:ident, $inner:path, ord) => {
+        $crate::elicit_newtype_trait_flag!($name, $inner, eq);
+        impl ::std::cmp::PartialOrd for $name {
+            fn partial_cmp(&self, other: &Self) -> ::std::option::Option<::std::cmp::Ordering> {
+                (*self.0).partial_cmp(&*other.0)
+            }
+        }
+        impl ::std::cmp::Ord for $name {
+            fn cmp(&self, other: &Self) -> ::std::cmp::Ordering {
+                (*self.0).cmp(&*other.0)
+            }
+        }
+    };
+
+    // ── cmp ──────────────────────────────────────────────────────────────────
+    ($name:ident, $inner:path, cmp) => {
+        $crate::elicit_newtype_trait_flag!($name, $inner, ord);
+        impl ::std::hash::Hash for $name {
+            fn hash<H: ::std::hash::Hasher>(&self, state: &mut H) {
+                (*self.0).hash(state);
+            }
+        }
+    };
+
+    // ── display ───────────────────────────────────────────────────────────────
+    ($name:ident, $inner:path, display) => {
+        impl ::std::fmt::Display for $name {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                ::std::fmt::Display::fmt(&*self.0, f)
+            }
+        }
+    };
+
+    // ── from_str ─────────────────────────────────────────────────────────────
+    ($name:ident, $inner:path, from_str) => {
+        impl ::std::str::FromStr for $name {
+            type Err = <$inner as ::std::str::FromStr>::Err;
+
+            fn from_str(s: &str) -> ::std::result::Result<Self, Self::Err> {
+                s.parse::<$inner>().map(Self::from)
             }
         }
     };

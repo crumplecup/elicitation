@@ -1,11 +1,12 @@
 //! `JsonValue` — elicitation-enabled wrapper around `serde_json::Value`.
 
-use elicitation::elicit_newtype;
+use elicitation::{elicit_newtype, elicit_newtype_traits};
 use elicitation_derive::reflect_methods;
 
 use crate::JsonNumber;
 
 elicit_newtype!(serde_json::Value, as JsonValue, serde);
+elicit_newtype_traits!(JsonValue, serde_json::Value, [eq, display]);
 
 #[reflect_methods]
 impl JsonValue {
