@@ -82,6 +82,84 @@ struct HttpParams {
     headers: Option<Vec<String>>,
 }
 
+#[derive(Debug, Deserialize, JsonSchema)]
+struct HttpPostParams {
+    url: UrlValid,
+    body: Option<String>,
+    content_type: Option<String>,
+    timeout_secs: Option<F64Positive>,
+    bearer_token: Option<String>,
+    headers: Option<Vec<String>>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct HttpPutParams {
+    url: UrlValid,
+    body: Option<String>,
+    content_type: Option<String>,
+    timeout_secs: Option<F64Positive>,
+    bearer_token: Option<String>,
+    headers: Option<Vec<String>>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct HttpDeleteParams {
+    url: UrlValid,
+    body: Option<String>,
+    content_type: Option<String>,
+    timeout_secs: Option<F64Positive>,
+    bearer_token: Option<String>,
+    headers: Option<Vec<String>>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct HttpPatchParams {
+    url: UrlValid,
+    body: Option<String>,
+    content_type: Option<String>,
+    timeout_secs: Option<F64Positive>,
+    bearer_token: Option<String>,
+    headers: Option<Vec<String>>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct HttpHeadParams {
+    url: UrlValid,
+    body: Option<String>,
+    content_type: Option<String>,
+    timeout_secs: Option<F64Positive>,
+    bearer_token: Option<String>,
+    headers: Option<Vec<String>>,
+}
+
+/// Apply common HTTP options to a request builder.
+///
+/// Works on any params type that has `timeout_secs`, `bearer_token`,
+/// `content_type`, `headers`, and `body` fields.
+macro_rules! apply_http_opts {
+    ($builder:expr, $p:expr) => {{
+        let mut builder = $builder;
+        if let Some(t) = $p.timeout_secs {
+            builder = builder.timeout(::std::time::Duration::from_secs_f64(t.get()));
+        }
+        if let Some(token) = &$p.bearer_token {
+            builder = builder.bearer_auth(token);
+        }
+        if let Some(ct) = &$p.content_type {
+            builder = builder.header(reqwest::header::CONTENT_TYPE, ct.as_str());
+        }
+        for h in $p.headers.iter().flatten() {
+            if let Some((k, v)) = h.split_once(':') {
+                builder = builder.header(k.trim(), v.trim());
+            }
+        }
+        if let Some(body) = &$p.body {
+            builder = builder.body(body.clone());
+        }
+        builder
+    }};
+}
+
 /// Apply common [`HttpParams`] options to a request builder.
 fn apply_options(mut builder: reqwest::RequestBuilder, p: &HttpParams) -> reqwest::RequestBuilder {
     if let Some(t) = p.timeout_secs {
@@ -140,8 +218,7 @@ async fn execute_head(builder: reqwest::RequestBuilder) -> Result<CallToolResult
 #[elicit_tool(
     plugin = "http",
     name = "get",
-    description = "Send an HTTP GET request; returns status, URL, and response body.",
-    emit = false
+    description = "Send an HTTP GET request; returns status, URL, and response body."
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn http_get(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
@@ -152,59 +229,66 @@ async fn http_get(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResu
 #[elicit_tool(
     plugin = "http",
     name = "post",
-    description = "Send an HTTP POST request with optional body; returns status, URL, and response body.",
-    emit = false
+    description = "Send an HTTP POST request with optional body; returns status, URL, and response body."
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
-async fn http_post(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
+async fn http_post(
+    ctx: Arc<PluginContext>,
+    p: HttpPostParams,
+) -> Result<CallToolResult, ErrorData> {
     let builder = ctx.http.post(p.url.get().as_str());
-    execute(apply_options(builder, &p)).await
+    execute(apply_http_opts!(builder, p)).await
 }
 
 #[elicit_tool(
     plugin = "http",
     name = "put",
-    description = "Send an HTTP PUT request with optional body; returns status, URL, and response body.",
-    emit = false
+    description = "Send an HTTP PUT request with optional body; returns status, URL, and response body."
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
-async fn http_put(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
+async fn http_put(ctx: Arc<PluginContext>, p: HttpPutParams) -> Result<CallToolResult, ErrorData> {
     let builder = ctx.http.put(p.url.get().as_str());
-    execute(apply_options(builder, &p)).await
+    execute(apply_http_opts!(builder, p)).await
 }
 
 #[elicit_tool(
     plugin = "http",
     name = "delete",
-    description = "Send an HTTP DELETE request; returns status, URL, and response body.",
-    emit = false
+    description = "Send an HTTP DELETE request; returns status, URL, and response body."
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
-async fn http_delete(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
+async fn http_delete(
+    ctx: Arc<PluginContext>,
+    p: HttpDeleteParams,
+) -> Result<CallToolResult, ErrorData> {
     let builder = ctx.http.delete(p.url.get().as_str());
-    execute(apply_options(builder, &p)).await
+    execute(apply_http_opts!(builder, p)).await
 }
 
 #[elicit_tool(
     plugin = "http",
     name = "patch",
-    description = "Send an HTTP PATCH request with optional body; returns status, URL, and response body.",
-    emit = false
+    description = "Send an HTTP PATCH request with optional body; returns status, URL, and response body."
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
-async fn http_patch(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
+async fn http_patch(
+    ctx: Arc<PluginContext>,
+    p: HttpPatchParams,
+) -> Result<CallToolResult, ErrorData> {
     let builder = ctx.http.patch(p.url.get().as_str());
-    execute(apply_options(builder, &p)).await
+    execute(apply_http_opts!(builder, p)).await
 }
 
 #[elicit_tool(
     plugin = "http",
     name = "head",
-    description = "Send an HTTP HEAD request; returns status and URL only (no body).",
-    emit = false
+    description = "Send an HTTP HEAD request; returns status and URL only (no body)."
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
-async fn http_head(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
+async fn http_head(
+    ctx: Arc<PluginContext>,
+    p: HttpHeadParams,
+) -> Result<CallToolResult, ErrorData> {
     let builder = ctx.http.head(p.url.get().as_str());
-    execute_head(apply_options(builder, &p)).await
+    execute_head(apply_http_opts!(builder, p)).await
 }

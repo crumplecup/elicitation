@@ -129,6 +129,12 @@ struct FetchParams {
 }
 
 #[derive(Debug, Deserialize, JsonSchema)]
+struct FetchJsonParams {
+    url: UrlValidType,
+    timeout_secs: Option<F64Positive>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
 struct AuthFetchParams {
     /// Destination URL.
     url: UrlValidType,
@@ -755,12 +761,12 @@ async fn wf_fetch(ctx: Arc<PluginContext>, p: FetchParams) -> Result<CallToolRes
     description = "GET a URL with Accept: application/json and return the body. \
                    Assumes: url is valid; server returns a 2xx JSON response. \
                    Establishes: FetchSucceeded.",
-    emit = false
+    emit = FetchJsonEmit
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn wf_fetch_json(
     ctx: Arc<PluginContext>,
-    p: FetchParams,
+    p: FetchJsonParams,
 ) -> Result<CallToolResult, ErrorData> {
     let mut headers = HeaderMap::new();
     headers.insert("Accept", HeaderValue::from_static("application/json"));
@@ -1172,5 +1178,49 @@ impl elicitation::emit_code::ToCodeLiteral for ContentType {
                 ::quote::quote! { elicit_reqwest::ContentType::OctetStream }
             }
         }
+    }
+}
+
+// ── CustomEmit impls ──────────────────────────────────────────────────────────
+
+/// ZST for custom emit of `wf_fetch_json`.
+#[cfg(feature = "emit")]
+pub(crate) struct FetchJsonEmit;
+
+#[cfg(feature = "emit")]
+impl elicitation::emit_code::CustomEmit<FetchJsonParams> for FetchJsonEmit {
+    fn emit_code(params: &FetchJsonParams) -> elicitation::proc_macro2::TokenStream {
+        let url = elicitation::emit_code::ToCodeLiteral::to_code_literal(&params.url);
+        let timeout = elicitation::emit_code::ToCodeLiteral::to_code_literal(&params.timeout_secs);
+        ::quote::quote! {
+            let mut __headers = reqwest::header::HeaderMap::new();
+            __headers.insert(
+                reqwest::header::ACCEPT,
+                reqwest::header::HeaderValue::from_static("application/json"),
+            );
+            let __response = reqwest::Client::new()
+                .get(#url.get().as_str())
+                .headers(__headers)
+                .timeout(::std::time::Duration::from_secs_f64(
+                    #timeout.unwrap_or_else(|| elicitation::F64Positive::new(30.0).unwrap()).get()
+                ))
+                .send()
+                .await
+                .map_err(|e| format!("HTTP request failed: {e}"))?;
+            if !__response.status().is_success() {
+                let s = __response.status().as_u16();
+                return Err(format!("StatusSuccess not established: got {s}"));
+            }
+            let __body = __response.text().await.map_err(|e| format!("Body error: {e}"))?;
+            println!("{__body}");
+        }
+    }
+
+    fn crate_deps() -> Vec<elicitation::emit_code::CrateDep> {
+        vec![
+            elicitation::emit_code::CrateDep::new("elicitation", "0.9"),
+            elicitation::emit_code::CrateDep::new("elicit_reqwest", "0.9"),
+            elicitation::emit_code::CrateDep::new("reqwest", "0.13"),
+        ]
     }
 }

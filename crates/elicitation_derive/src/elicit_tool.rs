@@ -5,7 +5,7 @@
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::{
-    Error, Expr, FnArg, ItemFn, Lit, LitStr, Meta, Pat, PatType, Result, Token, Type,
+    Error, Expr, FnArg, ItemFn, Lit, LitStr, Meta, Pat, PatType, Path, Result, Token, Type,
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
@@ -28,17 +28,24 @@ impl Parse for EmitCtxPair {
 }
 
 /// Parsed arguments from `#[elicit_tool(name = "...", description = "...", plugin = "...",
-/// emit = true, emit_ctx("ctx.field" => "replacement_expr"))]`.
+/// emit_ctx("ctx.field" => "replacement_expr"))]`.
 struct ElicitToolArgs {
     name: String,
     description: String,
     /// Optional owning plugin name. When set, emits `inventory::submit!`.
     plugin: Option<String>,
-    /// Whether to auto-generate `impl EmitCode`. Default `true`; opt out with
-    /// `emit = false` for handlers the rewriter cannot handle automatically.
-    emit: bool,
+    /// How to generate `impl EmitCode`. Default: auto-derive from handler body.
+    emit: EmitMode,
     /// Context substitutions: `("ctx.field", "replacement_expr_source")`.
     emit_ctx_subs: Vec<(String, String)>,
+}
+
+/// Controls how `impl EmitCode` is generated for a handler.
+enum EmitMode {
+    /// Auto-derive by rewriting the handler body (default).
+    Auto,
+    /// Delegate to a user-supplied type implementing `CustomEmit<Params>`.
+    Custom(Path),
 }
 
 impl Parse for ElicitToolArgs {
@@ -48,8 +55,7 @@ impl Parse for ElicitToolArgs {
         let mut name = None;
         let mut description = None;
         let mut plugin = None;
-        let mut emit = false;
-        let mut emit_explicit = false;
+        let mut emit: EmitMode = EmitMode::Auto;
         let mut emit_ctx_subs = Vec::new();
 
         for meta in pairs {
@@ -76,12 +82,15 @@ impl Parse for ElicitToolArgs {
                         .get_ident()
                         .map(|i| i.to_string())
                         .unwrap_or_default();
-                    let Expr::Lit(expr_lit) = &nv.value else {
-                        return Err(Error::new_spanned(&nv.value, "expected a literal"));
-                    };
 
                     match key.as_str() {
                         "name" => {
+                            let Expr::Lit(expr_lit) = &nv.value else {
+                                return Err(Error::new_spanned(
+                                    &nv.value,
+                                    "expected a string literal",
+                                ));
+                            };
                             let Lit::Str(s) = &expr_lit.lit else {
                                 return Err(Error::new_spanned(
                                     &expr_lit.lit,
@@ -91,6 +100,12 @@ impl Parse for ElicitToolArgs {
                             name = Some(s.value());
                         }
                         "description" => {
+                            let Expr::Lit(expr_lit) = &nv.value else {
+                                return Err(Error::new_spanned(
+                                    &nv.value,
+                                    "expected a string literal",
+                                ));
+                            };
                             let Lit::Str(s) = &expr_lit.lit else {
                                 return Err(Error::new_spanned(
                                     &expr_lit.lit,
@@ -100,6 +115,12 @@ impl Parse for ElicitToolArgs {
                             description = Some(s.value());
                         }
                         "plugin" => {
+                            let Expr::Lit(expr_lit) = &nv.value else {
+                                return Err(Error::new_spanned(
+                                    &nv.value,
+                                    "expected a string literal",
+                                ));
+                            };
                             let Lit::Str(s) = &expr_lit.lit else {
                                 return Err(Error::new_spanned(
                                     &expr_lit.lit,
@@ -109,14 +130,36 @@ impl Parse for ElicitToolArgs {
                             plugin = Some(s.value());
                         }
                         "emit" => {
-                            let Lit::Bool(b) = &expr_lit.lit else {
-                                return Err(Error::new_spanned(
-                                    &expr_lit.lit,
-                                    "expected a bool literal for `emit`",
-                                ));
-                            };
-                            emit = b.value();
-                            emit_explicit = true;
+                            match &nv.value {
+                                // emit = false / emit = true → both rejected
+                                Expr::Lit(expr_lit) => {
+                                    let msg = match &expr_lit.lit {
+                                        Lit::Bool(b) if !b.value() => {
+                                            "cannot opt out with `emit = false`; \
+                                             provide `emit = T` where T: CustomEmit<Params>, \
+                                             or fix the handler body so auto-derive works"
+                                        }
+                                        Lit::Bool(_) => {
+                                            "redundant `emit = true`; auto-derive is the default, \
+                                             just remove the `emit` attribute"
+                                        }
+                                        _ => {
+                                            "expected a type path for `emit`, e.g. `emit = MyEmit`"
+                                        }
+                                    };
+                                    return Err(Error::new_spanned(&nv.value, msg));
+                                }
+                                // emit = some::Type
+                                Expr::Path(p) => {
+                                    emit = EmitMode::Custom(p.path.clone());
+                                }
+                                other => {
+                                    return Err(Error::new_spanned(
+                                        other,
+                                        "expected a type path for `emit`, e.g. `emit = MyEmit`",
+                                    ));
+                                }
+                            }
                         }
                         other => {
                             return Err(Error::new_spanned(
@@ -149,9 +192,7 @@ impl Parse for ElicitToolArgs {
                 )
             })?,
             plugin,
-            // Default emit=true; opt out with `emit = false` for handlers the
-            // rewriter cannot handle.
-            emit: if emit_explicit { emit } else { true },
+            emit,
             emit_ctx_subs,
         })
     }
@@ -243,81 +284,102 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
         #inventory_submit
     };
 
-    // Phase 4: auto-generate `impl EmitCode` when `emit = true` (the default).
-    if emit {
-        use crate::emit_rewriter::EmitRewriter;
-        use quote::ToTokens as _;
+    // Phase 4: generate `impl EmitCode` — auto-derive or custom delegation.
+    match emit {
+        EmitMode::Auto => {
+            use crate::emit_rewriter::EmitRewriter;
+            use quote::ToTokens as _;
 
-        // Collect and rewrite the function body tokens.
-        let body_ts: TokenStream = func
-            .block
-            .stmts
-            .iter()
-            .map(|s| s.to_token_stream())
-            .collect();
-        let mut rewriter = EmitRewriter::new(emit_ctx_subs);
-        let rewritten = rewriter.rewrite(body_ts);
+            // Collect and rewrite the function body tokens.
+            let body_ts: TokenStream = func
+                .block
+                .stmts
+                .iter()
+                .map(|s| s.to_token_stream())
+                .collect();
+            let mut rewriter = EmitRewriter::new(emit_ctx_subs);
+            let rewritten = rewriter.rewrite(body_ts);
 
-        // Generate `let __field = ToCodeLiteral::to_code_literal(&self.field);` bindings.
-        let field_bindings: Vec<_> = rewriter
-            .param_fields
-            .iter()
-            .map(|f| {
-                let local = format_ident!("__{f}");
-                let field = format_ident!("{f}");
-                quote! {
-                    let #local =
-                        elicitation::emit_code::ToCodeLiteral::to_code_literal(&self.#field);
+            // Generate `let __field = ToCodeLiteral::to_code_literal(&self.field);` bindings.
+            let field_bindings: Vec<_> = rewriter
+                .param_fields
+                .iter()
+                .map(|f| {
+                    let local = format_ident!("__{f}");
+                    let field = format_ident!("{f}");
+                    quote! {
+                        let #local =
+                            elicitation::emit_code::ToCodeLiteral::to_code_literal(&self.#field);
+                    }
+                })
+                .collect();
+
+            // Infer crate deps from path prefixes in the rewritten body AND from
+            // emit_ctx substitution values (e.g. "reqwest::Client::new()").
+            let sub_ts: TokenStream = rewriter
+                .ctx_subs
+                .iter()
+                .flat_map(|(_, v)| v.clone())
+                .collect();
+            let mut crate_names = EmitRewriter::infer_crate_names(&rewritten);
+            crate_names.extend(EmitRewriter::infer_crate_names(&sub_ts));
+            let elicitation_version = EmitRewriter::resolve_workspace_version("elicitation")
+                .unwrap_or_else(|| "0.0".to_string());
+            // The crate defining this handler — its types are used bare (without prefix),
+            // so infer_crate_names can't detect them; include it explicitly.
+            let own_crate = std::env::var("CARGO_PKG_NAME").unwrap_or_default();
+            let own_crate_version = EmitRewriter::resolve_workspace_version(&own_crate)
+                .unwrap_or_else(|| "0.0".to_string());
+            let mut crate_deps: Vec<_> = vec![
+                // Always required: ToCodeLiteral impls emit elicitation:: paths at runtime.
+                quote! { elicitation::emit_code::CrateDep::new("elicitation", #elicitation_version) },
+                // Own crate — handler uses its types unqualified.
+                quote! { elicitation::emit_code::CrateDep::new(#own_crate, #own_crate_version) },
+            ];
+            crate_deps.extend(crate_names.iter().map(|cname| {
+                let version = EmitRewriter::resolve_workspace_version(cname)
+                    .unwrap_or_else(|| "0.0".to_string());
+                quote! { elicitation::emit_code::CrateDep::new(#cname, #version) }
+            }));
+
+            let emit_block = quote! {
+                #[cfg(feature = "emit")]
+                impl elicitation::emit_code::EmitCode for #params_ty {
+                    fn emit_code(&self) -> elicitation::proc_macro2::TokenStream {
+                        #(#field_bindings)*
+                        ::quote::quote! { #rewritten }
+                    }
+
+                    fn crate_deps(&self) -> ::std::vec::Vec<elicitation::emit_code::CrateDep> {
+                        ::std::vec![ #(#crate_deps),* ]
+                    }
                 }
-            })
-            .collect();
 
-        // Infer crate deps from path prefixes in the rewritten body AND from
-        // emit_ctx substitution values (e.g. "reqwest::Client::new()").
-        let sub_ts: TokenStream = rewriter
-            .ctx_subs
-            .iter()
-            .flat_map(|(_, v)| v.clone())
-            .collect();
-        let mut crate_names = EmitRewriter::infer_crate_names(&rewritten);
-        crate_names.extend(EmitRewriter::infer_crate_names(&sub_ts));
-        let elicitation_version = EmitRewriter::resolve_workspace_version("elicitation")
-            .unwrap_or_else(|| "0.0".to_string());
-        // The crate defining this handler — its types are used bare (without prefix),
-        // so infer_crate_names can't detect them; include it explicitly.
-        let own_crate = std::env::var("CARGO_PKG_NAME").unwrap_or_default();
-        let own_crate_version = EmitRewriter::resolve_workspace_version(&own_crate)
-            .unwrap_or_else(|| "0.0".to_string());
-        let mut crate_deps: Vec<_> = vec![
-            // Always required: ToCodeLiteral impls emit elicitation:: paths at runtime.
-            quote! { elicitation::emit_code::CrateDep::new("elicitation", #elicitation_version) },
-            // Own crate — handler uses its types unqualified.
-            quote! { elicitation::emit_code::CrateDep::new(#own_crate, #own_crate_version) },
-        ];
-        crate_deps.extend(crate_names.iter().map(|cname| {
-            let version =
-                EmitRewriter::resolve_workspace_version(cname).unwrap_or_else(|| "0.0".to_string());
-            quote! { elicitation::emit_code::CrateDep::new(#cname, #version) }
-        }));
+                #[cfg(feature = "emit")]
+                elicitation::register_emit!(#name, #params_ty);
+            };
 
-        let emit_block = quote! {
-            #[cfg(feature = "emit")]
-            impl elicitation::emit_code::EmitCode for #params_ty {
-                fn emit_code(&self) -> elicitation::proc_macro2::TokenStream {
-                    #(#field_bindings)*
-                    ::quote::quote! { #rewritten }
+            expanded = quote! { #expanded #emit_block };
+        }
+        EmitMode::Custom(custom_ty) => {
+            let emit_block = quote! {
+                #[cfg(feature = "emit")]
+                impl elicitation::emit_code::EmitCode for #params_ty {
+                    fn emit_code(&self) -> elicitation::proc_macro2::TokenStream {
+                        <#custom_ty as elicitation::emit_code::CustomEmit<#params_ty>>::emit_code(self)
+                    }
+
+                    fn crate_deps(&self) -> ::std::vec::Vec<elicitation::emit_code::CrateDep> {
+                        <#custom_ty as elicitation::emit_code::CustomEmit<#params_ty>>::crate_deps()
+                    }
                 }
 
-                fn crate_deps(&self) -> ::std::vec::Vec<elicitation::emit_code::CrateDep> {
-                    ::std::vec![ #(#crate_deps),* ]
-                }
-            }
+                #[cfg(feature = "emit")]
+                elicitation::register_emit!(#name, #params_ty);
+            };
 
-            #[cfg(feature = "emit")]
-            elicitation::register_emit!(#name, #params_ty);
-        };
-
-        expanded = quote! { #expanded #emit_block };
+            expanded = quote! { #expanded #emit_block };
+        }
     }
 
     Ok(expanded)

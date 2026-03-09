@@ -20,12 +20,94 @@ struct UrlParams {
     url: String,
 }
 
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlSchemeParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlUsernameParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlPasswordParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlHasHostParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlHostStrParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlDomainParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlPortParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlPortOrKnownDefaultParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlPathParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlQueryParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlFragmentParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlOriginParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlCannotBeABaseParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlHasAuthorityParams {
+    url: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlAsStrParams {
+    url: String,
+}
+
 /// Input for `join` — a base URL and a relative reference.
 #[derive(Debug, Deserialize, JsonSchema)]
 struct JoinParams {
     /// Base URL.
     base: String,
     /// Relative URL or path to resolve against the base.
+    input: String,
+}
+
+/// Input for `make_relative` — two absolute URLs.
+#[derive(Debug, Deserialize, JsonSchema)]
+struct UrlMakeRelativeParams {
+    base: String,
     input: String,
 }
 
@@ -119,11 +201,6 @@ struct ParseWithParamsInput {
     params: Vec<ParseWithParamsEntry>,
 }
 
-/// Parse a URL string, returning an error result on failure.
-fn parse_url(s: &str) -> Result<url::Url, CallToolResult> {
-    url::Url::parse(s).map_err(|e| CallToolResult::error(vec![Content::text(e.to_string())]))
-}
-
 /// MCP plugin exposing all `url::Url` methods as tools.
 ///
 /// Register under the `"url"` namespace:
@@ -143,8 +220,7 @@ pub struct UrlPlugin;
 #[elicit_tool(
     plugin = "url",
     name = "parse",
-    description = "Parse a URL string into its components. Returns a JSON object with scheme, username, password, host, port, path, query, fragment, origin, and validation status.",
-    emit = false
+    description = "Parse a URL string into its components. Returns a JSON object with scheme, username, password, host, port, path, query, fragment, origin, and validation status."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_parse(p: UrlParams) -> Result<CallToolResult, ErrorData> {
@@ -178,8 +254,7 @@ async fn url_parse(p: UrlParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "parse_with_params",
-    description = "Parse a URL string and append query parameters. Returns the resulting URL string.",
-    emit = false
+    description = "Parse a URL string and append query parameters. Returns the resulting URL string."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_parse_with_params(p: ParseWithParamsInput) -> Result<CallToolResult, ErrorData> {
@@ -199,173 +274,262 @@ async fn url_parse_with_params(p: ParseWithParamsInput) -> Result<CallToolResult
 #[elicit_tool(
     plugin = "url",
     name = "scheme",
-    description = "Return the scheme of the URL (e.g. \"https\").",
-    emit = false
+    description = "Return the scheme of the URL (e.g. \"https\")."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_scheme(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_str(p, |u| u.scheme().to_string())
+async fn url_scheme(p: UrlSchemeParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => Ok(CallToolResult::success(vec![Content::text(
+            u.scheme().to_string(),
+        )])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "username",
-    description = "Return the username from the URL authority, or empty string.",
-    emit = false
+    description = "Return the username from the URL authority, or empty string."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_username(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_str(p, |u| u.username().to_string())
+async fn url_username(p: UrlUsernameParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => Ok(CallToolResult::success(vec![Content::text(
+            u.username().to_string(),
+        )])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "password",
-    description = "Return the password from the URL authority, or null.",
-    emit = false
+    description = "Return the password from the URL authority, or null."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_password(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_opt_str(p, |u| u.password().map(|s| s.to_string()))
+async fn url_password(p: UrlPasswordParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => {
+            let val = u
+                .password()
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| "null".to_string());
+            Ok(CallToolResult::success(vec![Content::text(val)]))
+        }
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "has_host",
-    description = "Return true if the URL has a host component.",
-    emit = false
+    description = "Return true if the URL has a host component."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_has_host(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_bool(p, |u| u.has_host())
+async fn url_has_host(p: UrlHasHostParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => Ok(CallToolResult::success(vec![Content::text(
+            u.has_host().to_string(),
+        )])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "host_str",
-    description = "Return the host as a string (e.g. \"example.com\"), or null.",
-    emit = false
+    description = "Return the host as a string (e.g. \"example.com\"), or null."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_host_str(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_opt_str(p, |u| u.host_str().map(|s| s.to_string()))
+async fn url_host_str(p: UrlHostStrParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => {
+            let val = u
+                .host_str()
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| "null".to_string());
+            Ok(CallToolResult::success(vec![Content::text(val)]))
+        }
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "domain",
-    description = "Return the domain (host without port) if the URL uses a domain name, or null.",
-    emit = false
+    description = "Return the domain (host without port) if the URL uses a domain name, or null."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_domain(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_opt_str(p, |u| u.domain().map(|s| s.to_string()))
+async fn url_domain(p: UrlDomainParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => {
+            let val = u
+                .domain()
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| "null".to_string());
+            Ok(CallToolResult::success(vec![Content::text(val)]))
+        }
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "port",
-    description = "Return the explicit port number, or null if absent.",
-    emit = false
+    description = "Return the explicit port number, or null if absent."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_port(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_opt_u16(p, |u| u.port())
+async fn url_port(p: UrlPortParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => {
+            let val = match u.port() {
+                Some(n) => n.to_string(),
+                None => "null".to_string(),
+            };
+            Ok(CallToolResult::success(vec![Content::text(val)]))
+        }
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "port_or_known_default",
-    description = "Return the port or its scheme default (80 for http, 443 for https), or null.",
-    emit = false
+    description = "Return the port or its scheme default (80 for http, 443 for https), or null."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_port_or_known_default(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_opt_u16(p, |u| u.port_or_known_default())
+async fn url_port_or_known_default(
+    p: UrlPortOrKnownDefaultParams,
+) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => {
+            let val = match u.port_or_known_default() {
+                Some(n) => n.to_string(),
+                None => "null".to_string(),
+            };
+            Ok(CallToolResult::success(vec![Content::text(val)]))
+        }
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "path",
-    description = "Return the path component of the URL.",
-    emit = false
+    description = "Return the path component of the URL."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_path(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_str(p, |u| u.path().to_string())
+async fn url_path(p: UrlPathParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => Ok(CallToolResult::success(vec![Content::text(
+            u.path().to_string(),
+        )])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "query",
-    description = "Return the query string (without leading `?`), or null.",
-    emit = false
+    description = "Return the query string (without leading `?`), or null."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_query(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_opt_str(p, |u| u.query().map(|s| s.to_string()))
+async fn url_query(p: UrlQueryParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => {
+            let val = u
+                .query()
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| "null".to_string());
+            Ok(CallToolResult::success(vec![Content::text(val)]))
+        }
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "fragment",
-    description = "Return the fragment identifier (without leading `#`), or null.",
-    emit = false
+    description = "Return the fragment identifier (without leading `#`), or null."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_fragment(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_opt_str(p, |u| u.fragment().map(|s| s.to_string()))
+async fn url_fragment(p: UrlFragmentParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => {
+            let val = u
+                .fragment()
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| "null".to_string());
+            Ok(CallToolResult::success(vec![Content::text(val)]))
+        }
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "origin",
-    description = "Return the origin of the URL as a string (e.g. \"https://example.com:443\").",
-    emit = false
+    description = "Return the origin of the URL as a string (e.g. \"https://example.com:443\")."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_origin(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_str(p, |u| u.origin().ascii_serialization())
+async fn url_origin(p: UrlOriginParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => Ok(CallToolResult::success(vec![Content::text(
+            u.origin().ascii_serialization(),
+        )])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "cannot_be_a_base",
-    description = "Return true if the URL cannot be used as a base for relative URLs.",
-    emit = false
+    description = "Return true if the URL cannot be used as a base for relative URLs."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_cannot_be_a_base(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_bool(p, |u| u.cannot_be_a_base())
+async fn url_cannot_be_a_base(p: UrlCannotBeABaseParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => Ok(CallToolResult::success(vec![Content::text(
+            u.cannot_be_a_base().to_string(),
+        )])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "has_authority",
-    description = "Return true if the URL has an authority component.",
-    emit = false
+    description = "Return true if the URL has an authority component."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_has_authority(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_bool(p, |u| u.has_authority())
+async fn url_has_authority(p: UrlHasAuthorityParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => Ok(CallToolResult::success(vec![Content::text(
+            u.has_authority().to_string(),
+        )])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "as_str",
-    description = "Return the serialized URL as a string.",
-    emit = false
+    description = "Return the serialized URL as a string."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
-async fn url_as_str(p: UrlParams) -> Result<CallToolResult, ErrorData> {
-    url_str(p, |u| u.as_str().to_string())
+async fn url_as_str(p: UrlAsStrParams) -> Result<CallToolResult, ErrorData> {
+    match url::Url::parse(p.url.as_str()) {
+        Ok(u) => Ok(CallToolResult::success(vec![Content::text(
+            u.as_str().to_string(),
+        )])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "url",
     name = "join",
-    description = "Resolve a relative URL reference against a base URL; returns the resulting URL string.",
-    emit = false
+    description = "Resolve a relative URL reference against a base URL; returns the resulting URL string."
 )]
 #[instrument(skip_all, fields(base = %p.base, input = %p.input))]
 async fn url_join(p: JoinParams) -> Result<CallToolResult, ErrorData> {
@@ -383,11 +547,10 @@ async fn url_join(p: JoinParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "make_relative",
-    description = "Return a relative URL string from base to target, or null if base and target have different origins.",
-    emit = false
+    description = "Return a relative URL string from base to target, or null if base and target have different origins."
 )]
 #[instrument(skip_all, fields(base = %p.base, input = %p.input))]
-async fn url_make_relative(p: JoinParams) -> Result<CallToolResult, ErrorData> {
+async fn url_make_relative(p: UrlMakeRelativeParams) -> Result<CallToolResult, ErrorData> {
     let base = match url::Url::parse(&p.base) {
         Ok(u) => u,
         Err(e) => return Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
@@ -405,8 +568,7 @@ async fn url_make_relative(p: JoinParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "set_path",
-    description = "Return a copy of the URL with the path replaced.",
-    emit = false
+    description = "Return a copy of the URL with the path replaced."
 )]
 #[instrument(skip_all, fields(url = %p.url, path = %p.path))]
 async fn url_set_path(p: SetPathParams) -> Result<CallToolResult, ErrorData> {
@@ -424,8 +586,7 @@ async fn url_set_path(p: SetPathParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "set_query",
-    description = "Return a copy of the URL with the query string replaced (or cleared if null).",
-    emit = false
+    description = "Return a copy of the URL with the query string replaced (or cleared if null)."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_set_query(p: SetQueryParams) -> Result<CallToolResult, ErrorData> {
@@ -443,8 +604,7 @@ async fn url_set_query(p: SetQueryParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "set_fragment",
-    description = "Return a copy of the URL with the fragment replaced (or cleared if null).",
-    emit = false
+    description = "Return a copy of the URL with the fragment replaced (or cleared if null)."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_set_fragment(p: SetFragmentParams) -> Result<CallToolResult, ErrorData> {
@@ -462,8 +622,7 @@ async fn url_set_fragment(p: SetFragmentParams) -> Result<CallToolResult, ErrorD
 #[elicit_tool(
     plugin = "url",
     name = "set_host",
-    description = "Return a copy of the URL with the host replaced (or cleared if null).",
-    emit = false
+    description = "Return a copy of the URL with the host replaced (or cleared if null)."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_set_host(p: SetHostParams) -> Result<CallToolResult, ErrorData> {
@@ -481,8 +640,7 @@ async fn url_set_host(p: SetHostParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "set_port",
-    description = "Return a copy of the URL with the port replaced (or cleared if null).",
-    emit = false
+    description = "Return a copy of the URL with the port replaced (or cleared if null)."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_set_port(p: SetPortParams) -> Result<CallToolResult, ErrorData> {
@@ -502,8 +660,7 @@ async fn url_set_port(p: SetPortParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "url",
     name = "set_scheme",
-    description = "Return a copy of the URL with the scheme replaced.",
-    emit = false
+    description = "Return a copy of the URL with the scheme replaced."
 )]
 #[instrument(skip_all, fields(url = %p.url, scheme = %p.scheme))]
 async fn url_set_scheme(p: SetSchemeParams) -> Result<CallToolResult, ErrorData> {
@@ -523,8 +680,7 @@ async fn url_set_scheme(p: SetSchemeParams) -> Result<CallToolResult, ErrorData>
 #[elicit_tool(
     plugin = "url",
     name = "set_username",
-    description = "Return a copy of the URL with the username replaced.",
-    emit = false
+    description = "Return a copy of the URL with the username replaced."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_set_username(p: SetUsernameParams) -> Result<CallToolResult, ErrorData> {
@@ -544,8 +700,7 @@ async fn url_set_username(p: SetUsernameParams) -> Result<CallToolResult, ErrorD
 #[elicit_tool(
     plugin = "url",
     name = "set_password",
-    description = "Return a copy of the URL with the password replaced (or cleared if null).",
-    emit = false
+    description = "Return a copy of the URL with the password replaced (or cleared if null)."
 )]
 #[instrument(skip_all, fields(url = %p.url))]
 async fn url_set_password(p: SetPasswordParams) -> Result<CallToolResult, ErrorData> {
@@ -562,49 +717,18 @@ async fn url_set_password(p: SetPasswordParams) -> Result<CallToolResult, ErrorD
     }
 }
 
-// ── Shared helpers ────────────────────────────────────────────────────────────
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 
-fn url_str(p: UrlParams, f: impl Fn(url::Url) -> String) -> Result<CallToolResult, ErrorData> {
-    match parse_url(&p.url) {
-        Ok(u) => Ok(CallToolResult::success(vec![Content::text(f(u))])),
-        Err(r) => Ok(r),
-    }
-}
-
-fn url_opt_str(
-    p: UrlParams,
-    f: impl Fn(url::Url) -> Option<String>,
-) -> Result<CallToolResult, ErrorData> {
-    match parse_url(&p.url) {
-        Ok(u) => {
-            let val = f(u).unwrap_or_else(|| "null".to_string());
-            Ok(CallToolResult::success(vec![Content::text(val)]))
+#[cfg(feature = "emit")]
+impl elicitation::emit_code::ToCodeLiteral for ParseWithParamsEntry {
+    fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+        let key = &self.key;
+        let value = &self.value;
+        ::quote::quote! {
+            ParseWithParamsEntry {
+                key: #key.to_string(),
+                value: #value.to_string(),
+            }
         }
-        Err(r) => Ok(r),
-    }
-}
-
-fn url_bool(p: UrlParams, f: impl Fn(url::Url) -> bool) -> Result<CallToolResult, ErrorData> {
-    match parse_url(&p.url) {
-        Ok(u) => Ok(CallToolResult::success(vec![Content::text(
-            f(u).to_string(),
-        )])),
-        Err(r) => Ok(r),
-    }
-}
-
-fn url_opt_u16(
-    p: UrlParams,
-    f: impl Fn(&url::Url) -> Option<u16>,
-) -> Result<CallToolResult, ErrorData> {
-    match parse_url(&p.url) {
-        Ok(u) => {
-            let val = match f(&u) {
-                Some(n) => n.to_string(),
-                None => "null".to_string(),
-            };
-            Ok(CallToolResult::success(vec![Content::text(val)]))
-        }
-        Err(r) => Ok(r),
     }
 }

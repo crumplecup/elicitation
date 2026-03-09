@@ -19,6 +19,21 @@ struct MethodParams {
     method: String,
 }
 
+#[derive(Debug, Deserialize, JsonSchema)]
+struct MethodAsStrParams {
+    method: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct MethodIsSafeParams {
+    method: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct MethodIsIdempotentParams {
+    method: String,
+}
+
 /// MCP plugin exposing all `reqwest::Method` methods as tools.
 ///
 /// Register under the `"method"` namespace:
@@ -38,8 +53,7 @@ pub struct MethodPlugin;
 #[elicit_tool(
     plugin = "method",
     name = "from_str",
-    description = "Parse and validate an HTTP method string. Returns the normalized uppercase method and its properties (is_safe, is_idempotent), or an error for invalid input.",
-    emit = false
+    description = "Parse and validate an HTTP method string. Returns the normalized uppercase method and its properties (is_safe, is_idempotent), or an error for invalid input."
 )]
 #[instrument(skip_all, fields(method = %p.method))]
 async fn method_from_str(p: MethodParams) -> Result<CallToolResult, ErrorData> {
@@ -61,11 +75,10 @@ async fn method_from_str(p: MethodParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "method",
     name = "as_str",
-    description = "Return the canonical uppercase string representation of the method (e.g. \"GET\").",
-    emit = false
+    description = "Return the canonical uppercase string representation of the method (e.g. \"GET\")."
 )]
 #[instrument(skip_all, fields(method = %p.method))]
-async fn method_as_str(p: MethodParams) -> Result<CallToolResult, ErrorData> {
+async fn method_as_str(p: MethodAsStrParams) -> Result<CallToolResult, ErrorData> {
     match reqwest::Method::from_bytes(p.method.as_bytes()) {
         Ok(m) => Ok(CallToolResult::success(vec![Content::text(m.as_str())])),
         Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
@@ -75,32 +88,28 @@ async fn method_as_str(p: MethodParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "method",
     name = "is_safe",
-    description = "Return true if the method is safe (has no intended side effects): GET, HEAD, OPTIONS, TRACE.",
-    emit = false
+    description = "Return true if the method is safe (has no intended side effects): GET, HEAD, OPTIONS, TRACE."
 )]
 #[instrument(skip_all, fields(method = %p.method))]
-async fn method_is_safe(p: MethodParams) -> Result<CallToolResult, ErrorData> {
-    method_bool(p, |m| m.is_safe())
+async fn method_is_safe(p: MethodIsSafeParams) -> Result<CallToolResult, ErrorData> {
+    match reqwest::Method::from_bytes(p.method.as_bytes()) {
+        Ok(m) => Ok(CallToolResult::success(vec![Content::text(
+            m.is_safe().to_string(),
+        )])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "method",
     name = "is_idempotent",
-    description = "Return true if the method is idempotent (repeated requests have the same effect): GET, HEAD, PUT, DELETE, OPTIONS, TRACE.",
-    emit = false
+    description = "Return true if the method is idempotent (repeated requests have the same effect): GET, HEAD, PUT, DELETE, OPTIONS, TRACE."
 )]
 #[instrument(skip_all, fields(method = %p.method))]
-async fn method_is_idempotent(p: MethodParams) -> Result<CallToolResult, ErrorData> {
-    method_bool(p, |m| m.is_idempotent())
-}
-
-fn method_bool(
-    p: MethodParams,
-    f: impl Fn(reqwest::Method) -> bool,
-) -> Result<CallToolResult, ErrorData> {
+async fn method_is_idempotent(p: MethodIsIdempotentParams) -> Result<CallToolResult, ErrorData> {
     match reqwest::Method::from_bytes(p.method.as_bytes()) {
         Ok(m) => Ok(CallToolResult::success(vec![Content::text(
-            f(m).to_string(),
+            m.is_idempotent().to_string(),
         )])),
         Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
     }

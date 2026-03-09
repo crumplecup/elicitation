@@ -22,6 +22,36 @@ struct StatusParams {
     status: u16,
 }
 
+#[derive(Debug, Deserialize, JsonSchema)]
+struct ScCanonicalReasonParams {
+    status: u16,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct ScIsInformationalParams {
+    status: u16,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct ScIsSuccessParams {
+    status: u16,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct ScIsRedirectionParams {
+    status: u16,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct ScIsClientErrorParams {
+    status: u16,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct ScIsServerErrorParams {
+    status: u16,
+}
+
 /// Parameters for tools that construct a status code.
 #[derive(Debug, Deserialize, JsonSchema)]
 struct FromU16Params {
@@ -48,8 +78,7 @@ pub struct StatusCodePlugin;
 #[elicit_tool(
     plugin = "status_code",
     name = "from_u16",
-    description = "Parse an integer into a status code; returns its string form, canonical reason, and class booleans.",
-    emit = false
+    description = "Parse an integer into a status code; returns its string form, canonical reason, and class booleans."
 )]
 #[instrument(skip_all, fields(code = p.code))]
 async fn sc_from_u16(p: FromU16Params) -> Result<CallToolResult, ErrorData> {
@@ -76,8 +105,7 @@ async fn sc_from_u16(p: FromU16Params) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "status_code",
     name = "as_str",
-    description = "Return the three-digit ASCII representation of the status code (e.g. \"404\").",
-    emit = false
+    description = "Return the three-digit ASCII representation of the status code (e.g. \"404\")."
 )]
 #[instrument(skip_all, fields(status = p.status))]
 async fn sc_as_str(p: StatusParams) -> Result<CallToolResult, ErrorData> {
@@ -90,11 +118,10 @@ async fn sc_as_str(p: StatusParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "status_code",
     name = "canonical_reason",
-    description = "Return the canonical reason phrase for the status code (e.g. \"Not Found\"), or null if unknown.",
-    emit = false
+    description = "Return the canonical reason phrase for the status code (e.g. \"Not Found\"), or null if unknown."
 )]
 #[instrument(skip_all, fields(status = p.status))]
-async fn sc_canonical_reason(p: StatusParams) -> Result<CallToolResult, ErrorData> {
+async fn sc_canonical_reason(p: ScCanonicalReasonParams) -> Result<CallToolResult, ErrorData> {
     match reqwest::StatusCode::from_u16(p.status) {
         Ok(sc) => {
             let reason = sc.canonical_reason().unwrap_or("(unknown)");
@@ -107,65 +134,73 @@ async fn sc_canonical_reason(p: StatusParams) -> Result<CallToolResult, ErrorDat
 #[elicit_tool(
     plugin = "status_code",
     name = "is_informational",
-    description = "Return true if the status code is 1xx Informational.",
-    emit = false
+    description = "Return true if the status code is 1xx Informational."
 )]
 #[instrument(skip_all, fields(status = p.status))]
-async fn sc_is_informational(p: StatusParams) -> Result<CallToolResult, ErrorData> {
-    sc_bool(p, |sc| sc.is_informational())
+async fn sc_is_informational(p: ScIsInformationalParams) -> Result<CallToolResult, ErrorData> {
+    match reqwest::StatusCode::from_u16(p.status) {
+        Ok(sc) => Ok(CallToolResult::success(vec![Content::text(
+            sc.is_informational().to_string(),
+        )])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "status_code",
     name = "is_success",
-    description = "Return true if the status code is 2xx Success.",
-    emit = false
+    description = "Return true if the status code is 2xx Success."
 )]
 #[instrument(skip_all, fields(status = p.status))]
-async fn sc_is_success(p: StatusParams) -> Result<CallToolResult, ErrorData> {
-    sc_bool(p, |sc| sc.is_success())
+async fn sc_is_success(p: ScIsSuccessParams) -> Result<CallToolResult, ErrorData> {
+    match reqwest::StatusCode::from_u16(p.status) {
+        Ok(sc) => Ok(CallToolResult::success(vec![Content::text(
+            sc.is_success().to_string(),
+        )])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "status_code",
     name = "is_redirection",
-    description = "Return true if the status code is 3xx Redirection.",
-    emit = false
+    description = "Return true if the status code is 3xx Redirection."
 )]
 #[instrument(skip_all, fields(status = p.status))]
-async fn sc_is_redirection(p: StatusParams) -> Result<CallToolResult, ErrorData> {
-    sc_bool(p, |sc| sc.is_redirection())
+async fn sc_is_redirection(p: ScIsRedirectionParams) -> Result<CallToolResult, ErrorData> {
+    match reqwest::StatusCode::from_u16(p.status) {
+        Ok(sc) => Ok(CallToolResult::success(vec![Content::text(
+            sc.is_redirection().to_string(),
+        )])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "status_code",
     name = "is_client_error",
-    description = "Return true if the status code is 4xx Client Error.",
-    emit = false
+    description = "Return true if the status code is 4xx Client Error."
 )]
 #[instrument(skip_all, fields(status = p.status))]
-async fn sc_is_client_error(p: StatusParams) -> Result<CallToolResult, ErrorData> {
-    sc_bool(p, |sc| sc.is_client_error())
+async fn sc_is_client_error(p: ScIsClientErrorParams) -> Result<CallToolResult, ErrorData> {
+    match reqwest::StatusCode::from_u16(p.status) {
+        Ok(sc) => Ok(CallToolResult::success(vec![Content::text(
+            sc.is_client_error().to_string(),
+        )])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    }
 }
 
 #[elicit_tool(
     plugin = "status_code",
     name = "is_server_error",
-    description = "Return true if the status code is 5xx Server Error.",
-    emit = false
+    description = "Return true if the status code is 5xx Server Error."
 )]
 #[instrument(skip_all, fields(status = p.status))]
-async fn sc_is_server_error(p: StatusParams) -> Result<CallToolResult, ErrorData> {
-    sc_bool(p, |sc| sc.is_server_error())
-}
-
-fn sc_bool(
-    p: StatusParams,
-    f: impl Fn(reqwest::StatusCode) -> bool,
-) -> Result<CallToolResult, ErrorData> {
+async fn sc_is_server_error(p: ScIsServerErrorParams) -> Result<CallToolResult, ErrorData> {
     match reqwest::StatusCode::from_u16(p.status) {
         Ok(sc) => Ok(CallToolResult::success(vec![Content::text(
-            f(sc).to_string(),
+            sc.is_server_error().to_string(),
         )])),
         Err(e) => Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
     }
