@@ -204,7 +204,9 @@ macro_rules! impl_integer_range_serde_bridge {
 /// assert_eq!(value, 42);
 /// ```
 #[contract_type(requires = "value > 0", ensures = "result.get() > 0")]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(try_from = "i8")]
 #[schemars(description = "Positive integer value (> 0)")]
 pub struct I8Positive(#[schemars(range(min = 1))] i8);
@@ -332,7 +334,9 @@ mod tests {
 /// Contract type for non-negative i8 values (>= 0).
 ///
 /// Validates on construction, then can unwrap to stdlib i8 via `into_inner()`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(try_from = "i8")]
 #[schemars(description = "Non-negative integer value (>= 0)")]
 pub struct I8NonNegative(#[schemars(range(min = 0))] i8);
@@ -425,7 +429,9 @@ impl Elicitation for I8NonNegative {
 ///
 /// Validates on construction, unwraps to stdlib i8.
 #[contract_type(requires = "value != 0", ensures = "result.get() != 0")]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
+)]
 #[serde(try_from = "i8")]
 #[schemars(description = "Non-zero integer value (!= 0)")]
 pub struct I8NonZero(i8);
