@@ -349,15 +349,15 @@ security: audit omnibor
 # ====================
 
 # Run the complete CI pipeline locally
-ci: fmt-check lint check-features test-full audit
+ci: fmt-check lint test-full audit
     @echo "✅ CI pipeline completed successfully!"
 
 # Prepare for commit (format, lint, tests, feature checks)
-pre-commit: fix-all check-features test-full
+pre-commit: fix-all test-full
     @echo "✅ Ready to commit!"
 
 # Prepare for merge (all checks including API tests)
-pre-merge: pre-commit test-api
+pre-merge: pre-commit check-features test-api
     @echo "✅ Ready to merge!"
 
 # Prepare for release (all checks + security + changelog update + release build)
