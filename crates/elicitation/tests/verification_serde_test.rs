@@ -40,7 +40,7 @@ mod float_serde {
 
     #[test]
     fn f64_positive_round_trip() {
-        let v = F64Positive::new(3.14).unwrap();
+        let v = F64Positive::new(std::f64::consts::PI).unwrap();
         let s = serde_json::to_string(&v).unwrap();
         let v2: F64Positive = serde_json::from_str(&s).unwrap();
         assert_eq!(v.get(), v2.get());
