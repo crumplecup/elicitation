@@ -8,6 +8,7 @@ verified Rust program without knowing it. `EmitCode` recovers that program —
 losslessly, ceremony intact.
 
 The emitted binary:
+
 - Calls our library's verified API directly (not reimplementing logic)
 - Preserves full typestate: `RawJson`, `ParsedJson`, `Established<P>`, all of it
 - Compiles against our workspace crates as dependencies
@@ -272,6 +273,7 @@ Each behind matching `#[cfg(feature = "...")]`:
 ### Phase 5 — `EmitCode` impls for workflow params (in each crate)
 
 **`elicit_serde_json/src/workflow.rs`** (5 impls):
+
 - [ ] `ParseFocusParams` → emits `RawJson::new → .parse() → .focus() → .extract()`
 - [ ] `ValidateObjectParams` → emits `RawJson → .parse() → .assert_object() → .validate_required()`
 - [ ] `MergeParams` → emits two `RawJson` parse chains + `ObjectJson::merge(both(...))`
@@ -279,6 +281,7 @@ Each behind matching `#[cfg(feature = "...")]`:
 - [ ] `FieldChainParams` → emits the iterative focus loop
 
 **`elicit_reqwest/src/plugins/workflow.rs`** (8 impls):
+
 - [ ] `FetchParams` → emits `WorkflowPlugin::client → .fetch() typestate chain`
 - [ ] `AuthFetchParams` → emits bearer/basic/api-key auth chain
 - [ ] `PostParams` → emits POST body chain

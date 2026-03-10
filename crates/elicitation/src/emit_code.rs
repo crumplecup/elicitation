@@ -36,6 +36,159 @@
 
 use proc_macro2::TokenStream;
 
+// ── Global emit registry ──────────────────────────────────────────────────────
+
+/// An inventory entry connecting a tool name to an [`EmitCode`] constructor.
+///
+/// Register via `inventory::submit!(EmitEntry { ... })` in each crate that
+/// exposes tools with code-recovery support.  The global [`dispatch_emit`]
+/// function collects all registered entries at runtime.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// # use elicitation::emit_code::{EmitEntry, EmitCode};
+/// fn make_my_emit(v: serde_json::Value) -> Result<Box<dyn EmitCode>, String> {
+///     serde_json::from_value::<MyParams>(v)
+///         .map(|p| Box::new(p) as Box<dyn EmitCode>)
+///         .map_err(|e| e.to_string())
+/// }
+///
+/// inventory::submit! {
+///     EmitEntry { tool: "my_tool", constructor: make_my_emit }
+/// }
+/// ```
+pub struct EmitEntry {
+    /// Bare tool name (no namespace prefix), e.g. `"parse_url"`.
+    pub tool: &'static str,
+    /// Crate that registered this entry, e.g. `"elicit_chrono"`.
+    pub crate_name: &'static str,
+    /// Deserialize params from JSON and box as [`EmitCode`].
+    pub constructor: fn(serde_json::Value) -> Result<Box<dyn EmitCode>, String>,
+}
+
+inventory::collect!(EmitEntry);
+
+/// Look up a tool name in the global emit registry and deserialize its params.
+///
+/// Returns a boxed [`EmitCode`] ready to pass to [`BinaryScaffold`], or an
+/// error string if the tool is not registered or params fail to deserialize.
+///
+/// This replaces the per-crate `dispatch_*_emit` chain that was previously
+/// required in [`EmitBinaryPlugin`](crate::plugin::ElicitPlugin).
+pub fn dispatch_emit(tool: &str, params: serde_json::Value) -> Result<Box<dyn EmitCode>, String> {
+    inventory::iter::<EmitEntry>()
+        .find(|e| e.tool == tool)
+        .ok_or_else(|| format!("unknown emit tool: '{tool}'"))
+        .and_then(|e| (e.constructor)(params))
+}
+
+/// Look up a tool registered by a specific crate and deserialize its params.
+///
+/// Use this when multiple crates define a tool with the same name
+/// (e.g. `"assert_future"` in `elicit_chrono`, `elicit_jiff`, `elicit_time`).
+pub fn dispatch_emit_from(
+    tool: &str,
+    crate_name: &str,
+    params: serde_json::Value,
+) -> Result<Box<dyn EmitCode>, String> {
+    inventory::iter::<EmitEntry>()
+        .find(|e| e.tool == tool && e.crate_name == crate_name)
+        .ok_or_else(|| format!("unknown emit tool: '{crate_name}::{tool}'"))
+        .and_then(|e| (e.constructor)(params))
+}
+
+// ── Registration helper macro ─────────────────────────────────────────────────
+
+/// Register a params type with the global emit registry under a tool name.
+///
+/// Generates a named constructor function (to satisfy `inventory`'s requirement
+/// for `'static` function pointers) and submits an [`EmitEntry`].
+///
+/// Only active when the `emit` feature is enabled.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// // In workflow.rs, under #[cfg(feature = "emit")]:
+/// register_emit!("parse_url", ParseUrlParams);
+/// register_emit!("assert_https", AssertHttpsParams);
+/// ```
+#[macro_export]
+macro_rules! register_emit {
+    ($tool:literal, $T:ty) => {
+        const _: () = {
+            fn __emit_constructor(
+                v: elicitation::serde_json::Value,
+            ) -> ::std::result::Result<
+                ::std::boxed::Box<dyn elicitation::emit_code::EmitCode>,
+                ::std::string::String,
+            > {
+                elicitation::serde_json::from_value::<$T>(v)
+                    .map(|p| {
+                        ::std::boxed::Box::new(p)
+                            as ::std::boxed::Box<dyn elicitation::emit_code::EmitCode>
+                    })
+                    .map_err(|e| e.to_string())
+            }
+            elicitation::inventory::submit! {
+                elicitation::emit_code::EmitEntry {
+                    tool: $tool,
+                    crate_name: env!("CARGO_PKG_NAME"),
+                    constructor: __emit_constructor,
+                }
+            }
+        };
+    };
+}
+
+/// Convert a value to a Rust source expression that constructs it.
+///
+/// Unlike [`EmitCode`] which for workflow step types emits a full statement
+/// sequence, `ToCodeLiteral` emits a single *expression* that reproduces this
+/// value. Used by `#[elicit_tool]`-generated `impl EmitCode` blocks to bind
+/// field values.
+pub trait ToCodeLiteral {
+    /// Return a `TokenStream` containing a single Rust expression whose
+    /// evaluation produces a value equal to `self`.
+    fn to_code_literal(&self) -> TokenStream;
+
+    /// Token stream for the concrete type name (used to annotate `None::<T>`).
+    ///
+    /// The default returns `_`, which works when context provides enough
+    /// inference — but for `Option<T>` `None` cases, a concrete type avoids
+    /// "type annotations needed" errors.
+    fn type_tokens() -> TokenStream
+    where
+        Self: Sized,
+    {
+        quote::quote! { _ }
+    }
+}
+
+/// Trait-based escape hatch for handlers the rewriter cannot auto-derive.
+///
+/// Implement this on a zero-sized type and annotate the handler with
+/// `#[elicit_tool(emit = MyType)]`. The macro generates an [`EmitCode`] impl
+/// that delegates `emit_code` to `MyType` and derives `crate_deps` automatically
+/// from the crate's `Cargo.toml`.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// struct FetchJsonEmit;
+/// impl CustomEmit<FetchJsonParams> for FetchJsonEmit {
+///     fn emit_code(params: &FetchJsonParams) -> proc_macro2::TokenStream {
+///         let url = params.url.to_code_literal();
+///         quote::quote! { /* ... */ }
+///     }
+/// }
+/// ```
+pub trait CustomEmit<P> {
+    /// Emit the Rust token stream for this step, given concrete params.
+    fn emit_code(params: &P) -> TokenStream;
+}
+
 /// A type that knows how to recover itself as Rust source code.
 ///
 /// Two roles:
@@ -255,11 +408,44 @@ impl BinaryScaffold {
             TokenStream::new()
         };
 
+        // Wildcard imports for workflow crates so their types (e.g. UnvalidatedUrl,
+        // both, Established) are in scope without fully-qualified paths.
+        // `elicitation` uses a sub-module import to avoid shadowing workflow
+        // crate prop structs that share names with elicitation verification types
+        // (e.g. `elicit_reqwest::UrlValid` vs `elicitation::UrlValid`).
+        let mut use_stmts: Vec<TokenStream> = self
+            .all_deps()
+            .into_iter()
+            .filter(|d| d.name.starts_with("elicit"))
+            .map(|d| {
+                let krate: TokenStream = d.name.parse().expect("valid ident");
+                if d.name == "elicitation" {
+                    quote::quote! { use #krate::contracts::*; }
+                } else {
+                    quote::quote! { use #krate::*; }
+                }
+            })
+            .collect();
+
+        // When `reqwest` is a direct dep (e.g. from emit_ctx substitutions that
+        // reference `reqwest::Client::new()`), bring `reqwest::header::HeaderMap`
+        // into scope so handler bodies that call `HeaderMap::new()` compile cleanly
+        // (the `elicit_reqwest::HeaderMap` newtype is a different type).
+        if self.all_deps().iter().any(|d| d.name == "reqwest") {
+            use_stmts.push(quote::quote! { use reqwest::header::HeaderMap; });
+        }
+
+        // `elicit_reqwest` handlers use `HashMap` for headers/query params.
+        if self.all_deps().iter().any(|d| d.name == "elicit_reqwest") {
+            use_stmts.push(quote::quote! { use std::collections::HashMap; });
+        }
+
         quote::quote! {
+            #( #use_stmts )*
             #[tokio::main]
             async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 #tracing_init
-                #( #step_tokens )*
+                #( { #step_tokens } )*
                 Ok(())
             }
         }
@@ -575,5 +761,173 @@ impl EmitCode for reqwest::StatusCode {
         quote::quote! {
             reqwest::StatusCode::from_u16(#n).expect("valid status code")
         }
+    }
+}
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+macro_rules! impl_to_code_literal_totokens {
+    ($($T:ty),+ $(,)?) => {
+        $(
+            impl ToCodeLiteral for $T {
+                fn to_code_literal(&self) -> TokenStream {
+                    let mut ts = TokenStream::new();
+                    quote::ToTokens::to_tokens(self, &mut ts);
+                    ts
+                }
+                fn type_tokens() -> TokenStream {
+                    quote::quote! { $T }
+                }
+            }
+        )+
+    };
+}
+
+impl_to_code_literal_totokens!(
+    bool, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, usize, isize, f32, f64, char,
+);
+
+impl ToCodeLiteral for String {
+    fn to_code_literal(&self) -> TokenStream {
+        let s = self.as_str();
+        quote::quote! { #s.to_string() }
+    }
+    fn type_tokens() -> TokenStream {
+        quote::quote! { String }
+    }
+}
+
+impl<T: ToCodeLiteral> ToCodeLiteral for Option<T> {
+    fn to_code_literal(&self) -> TokenStream {
+        match self {
+            Some(v) => {
+                let inner = v.to_code_literal();
+                quote::quote! { ::std::option::Option::Some(#inner) }
+            }
+            None => {
+                let t = <T as ToCodeLiteral>::type_tokens();
+                quote::quote! { None::<#t> }
+            }
+        }
+    }
+}
+
+impl<T: ToCodeLiteral> ToCodeLiteral for Vec<T> {
+    fn type_tokens() -> TokenStream {
+        let t = <T as ToCodeLiteral>::type_tokens();
+        quote::quote! { ::std::vec::Vec<#t> }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let elems: Vec<_> = self.iter().map(|v| v.to_code_literal()).collect();
+        quote::quote! { ::std::vec![#(#elems),*] }
+    }
+}
+
+impl<V: ToCodeLiteral> ToCodeLiteral for std::collections::HashMap<String, V> {
+    fn type_tokens() -> TokenStream {
+        let v = <V as ToCodeLiteral>::type_tokens();
+        quote::quote! { ::std::collections::HashMap<::std::string::String, #v> }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let entries: Vec<_> = self
+            .iter()
+            .map(|(k, v)| {
+                let v_ts = v.to_code_literal();
+                quote::quote! { (#k.to_string(), #v_ts) }
+            })
+            .collect();
+        quote::quote! {
+            [#(#entries),*].into_iter().collect::<::std::collections::HashMap<_, _>>()
+        }
+    }
+}
+
+// ToCodeLiteral for std types that already have EmitCode: delegate directly.
+
+impl ToCodeLiteral for std::net::IpAddr {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+impl ToCodeLiteral for std::net::Ipv4Addr {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+impl ToCodeLiteral for std::net::Ipv6Addr {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+impl ToCodeLiteral for std::path::PathBuf {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+impl ToCodeLiteral for std::time::Duration {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "serde_json")]
+impl ToCodeLiteral for serde_json::Value {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "url")]
+impl ToCodeLiteral for url::Url {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "uuid")]
+impl ToCodeLiteral for uuid::Uuid {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "chrono")]
+impl ToCodeLiteral for chrono::DateTime<chrono::Utc> {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "chrono")]
+impl ToCodeLiteral for chrono::NaiveDateTime {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "time")]
+impl ToCodeLiteral for time::OffsetDateTime {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "jiff")]
+impl ToCodeLiteral for jiff::Timestamp {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
+    }
+}
+
+#[cfg(feature = "reqwest")]
+impl ToCodeLiteral for reqwest::StatusCode {
+    fn to_code_literal(&self) -> TokenStream {
+        EmitCode::emit_code(self)
     }
 }

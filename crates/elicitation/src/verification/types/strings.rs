@@ -6,6 +6,7 @@ use anodized::spec;
 use elicitation_derive::contract_type;
 #[cfg(not(kani))]
 use elicitation_macros::instrumented_impl;
+use serde::{Deserialize, Serialize};
 
 // ============================================================================
 
@@ -86,6 +87,32 @@ impl<const MAX_LEN: usize> StringNonEmpty<MAX_LEN> {
 
 crate::default_style!(StringNonEmpty<4096> => StringNonEmptyStyle);
 
+impl<const MAX_LEN: usize> Serialize for StringNonEmpty<MAX_LEN> {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        self.get().serialize(s)
+    }
+}
+
+impl<'de, const MAX_LEN: usize> Deserialize<'de> for StringNonEmpty<MAX_LEN> {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let s = String::deserialize(d)?;
+        Self::new(s).map_err(serde::de::Error::custom)
+    }
+}
+
+impl<const MAX_LEN: usize> schemars::JsonSchema for StringNonEmpty<MAX_LEN> {
+    fn schema_name() -> ::std::borrow::Cow<'static, str> {
+        format!("StringNonEmpty<{MAX_LEN}>").into()
+    }
+    fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "type": "string",
+            "minLength": 1,
+            "description": "Non-empty string"
+        })
+    }
+}
+
 #[cfg_attr(not(kani), instrumented_impl)]
 impl<const MAX_LEN: usize> Prompt for StringNonEmpty<MAX_LEN> {
     fn prompt() -> Option<&'static str> {
@@ -124,14 +151,17 @@ impl<const MAX_LEN: usize> Elicitation for StringNonEmpty<MAX_LEN> {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_string_non_empty()
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -270,15 +300,37 @@ impl Elicitation for StringDefault {
         Ok(serde_json::from_value(value)?)
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
+    }
+}
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl<const MAX_LEN: usize> ToCodeLiteral for StringNonEmpty<MAX_LEN> {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.get();
+            quote::quote! {
+                elicitation::StringNonEmpty::<#MAX_LEN>::new(#s.to_string())
+                    .expect("valid StringNonEmpty")
+            }
+        }
     }
 }

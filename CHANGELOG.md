@@ -5,6 +5,114 @@ All notable changes to the `elicitation` project will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] - 2026-03-09
+
+### Added
+
+- Gate proof emission methods behind opt-in `proofs` feature
+- Phase 1 ToolDescriptor + DescriptorPlugin with SecureFetchPlugin canary
+- Phase 2 #[elicit_tool] attribute macro
+- Phase 3 #[derive(ElicitPlugin)] + inventory registration
+- Phase 4 PluginContext injection + shared reqwest::Client
+- Phase 6 global emit registry via inventory
+- Serde bridge for constrained types + UrlHttps canary
+- Propagate UrlValid + F64Positive to all HTTP params
+- Add serde boundary consistency proofs (Phase E)
+- Serde boundary coverage for Creusot and Verus
+- Phase 1 — ToCodeLiteral trait + impls for primitives and constrained types
+- Phase 2 — extend #[elicit_tool] to parse emit / emit_ctx attrs
+- Phase 3 — emit_rewriter token rewriter
+- Phase 5 — canary migration of secure_fetch to #[elicit_tool] emit
+- Phase 6 — all 40 smoke tests passing
+- Replace emit=false with CustomEmit<P> trait escape hatch
+- Replace heuristic dep inference with toml-based cargo metadata
+- Add elicit_newtype_traits! for explicit trait forwarding
+
+### Documentation
+
+- CONTRACT_PARAMS_PLAN — contract-carrying param types (replaces Phase 7)
+- Add EMIT_AUTODERIVE_PLAN.md to planning index
+
+### Fixed
+
+- Move elicited_types binding inside cfg(proofs) scope
+- Gate feature-conditional code and exports; rewrite check-features to use cargo-hack powerset
+
+### Miscellaneous
+
+- Rustfmt serde_boundary.rs + update Cargo.lock
+
+### Refactor
+
+- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
+- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
+- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
+- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
+- Migrate all plugins to #[elicit_tool] + #[derive(ElicitPlugin)]
+
+### Testing
+
+- Serde boundary tests for constrained types
+
+### Ci
+
+- Add pull_request trigger and feature-powerset job
+- Move check-features to pre-merge only; remove from CI pipe
+
+## [0.9.1] - 2026-03-09
+
+### Added
+
+- Gate proof emission methods behind opt-in `proofs` feature
+- Phase 1 ToolDescriptor + DescriptorPlugin with SecureFetchPlugin canary
+- Phase 2 #[elicit_tool] attribute macro
+- Phase 3 #[derive(ElicitPlugin)] + inventory registration
+- Phase 4 PluginContext injection + shared reqwest::Client
+- Phase 6 global emit registry via inventory
+- Serde bridge for constrained types + UrlHttps canary
+- Propagate UrlValid + F64Positive to all HTTP params
+- Add serde boundary consistency proofs (Phase E)
+- Serde boundary coverage for Creusot and Verus
+- Phase 1 — ToCodeLiteral trait + impls for primitives and constrained types
+- Phase 2 — extend #[elicit_tool] to parse emit / emit_ctx attrs
+- Phase 3 — emit_rewriter token rewriter
+- Phase 5 — canary migration of secure_fetch to #[elicit_tool] emit
+- Phase 6 — all 40 smoke tests passing
+- Replace emit=false with CustomEmit<P> trait escape hatch
+- Replace heuristic dep inference with toml-based cargo metadata
+- Add elicit_newtype_traits! for explicit trait forwarding
+
+### Documentation
+
+- CONTRACT_PARAMS_PLAN — contract-carrying param types (replaces Phase 7)
+- Add EMIT_AUTODERIVE_PLAN.md to planning index
+
+### Fixed
+
+- Move elicited_types binding inside cfg(proofs) scope
+- Gate feature-conditional code and exports; rewrite check-features to use cargo-hack powerset
+
+### Miscellaneous
+
+- Rustfmt serde_boundary.rs + update Cargo.lock
+
+### Refactor
+
+- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
+- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
+- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
+- Migrate workflow to #[elicit_tool] + #[derive(ElicitPlugin)]
+- Migrate all plugins to #[elicit_tool] + #[derive(ElicitPlugin)]
+
+### Testing
+
+- Serde boundary tests for constrained types
+
+### Ci
+
+- Add pull_request trigger and feature-powerset job
+- Move check-features to pre-merge only; remove from CI pipe
+
 ## [Unreleased]
 
 ### Added

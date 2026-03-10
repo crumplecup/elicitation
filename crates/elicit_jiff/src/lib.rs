@@ -19,8 +19,6 @@ pub use workflow::{
     ConvertedZonedState, FutureTimestampProof, FutureTimestampState, JiffWorkflowPlugin,
     ParseTimestampParams, ParseZonedParams, ParsedTimestamp, ParsedZoned, TimestampFuture,
     TimestampParsed, TimezoneConverted, UnvalidatedTimestampStr, UnvalidatedZonedStr, ZonedParsed,
+    parse_ts,
 };
 pub use zoned::Zoned;
-
-#[cfg(feature = "emit")]
-pub use workflow::dispatch_emit as dispatch_jiff_emit;

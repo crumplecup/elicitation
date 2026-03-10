@@ -11,19 +11,15 @@
 
 use std::collections::HashMap;
 
-use elicitation::ElicitPlugin;
-use futures::future::BoxFuture;
+use elicitation::{ElicitPlugin, elicit_tool};
 use http::{HeaderName, HeaderValue};
 use rmcp::{
     ErrorData,
-    model::{CallToolRequestParams, CallToolResult, Content, Tool},
-    service::RequestContext,
+    model::{CallToolResult, Content},
 };
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
-
-use crate::plugins::util::{parse_args, typed_tool};
 
 /// A header map represented as a JSON object.
 type Headers = HashMap<String, String>;
@@ -44,6 +40,12 @@ struct GetParams {
     key: String,
 }
 
+#[derive(Debug, Deserialize, JsonSchema)]
+struct HmContainsKeyParams {
+    headers: Headers,
+    key: String,
+}
+
 /// Parameters for insert/replace operations.
 #[derive(Debug, Deserialize, JsonSchema)]
 struct InsertParams {
@@ -52,6 +54,13 @@ struct InsertParams {
     /// Header name.
     key: String,
     /// Header value.
+    value: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct HmAppendParams {
+    headers: Headers,
+    key: String,
     value: String,
 }
 
@@ -94,214 +103,248 @@ fn from_header_map(map: &http::HeaderMap) -> Headers {
 /// let registry = PluginRegistry::new()
 ///     .register("header_map", HeaderMapPlugin);
 /// ```
+#[derive(ElicitPlugin)]
+#[plugin(name = "header_map")]
 pub struct HeaderMapPlugin;
 
-impl ElicitPlugin for HeaderMapPlugin {
-    fn name(&self) -> &'static str {
-        "header_map"
-    }
+// ── Tool handlers ─────────────────────────────────────────────────────────────
 
-    fn list_tools(&self) -> Vec<Tool> {
-        vec![
-            typed_tool::<serde_json::Value>("new", "Return an empty header map as a JSON object."),
-            typed_tool::<GetParams>(
-                "get",
-                "Return the value of a header by name, or null if absent.",
-            ),
-            typed_tool::<GetParams>(
-                "contains_key",
-                "Return true if the header map contains the given key.",
-            ),
-            typed_tool::<InsertParams>(
-                "insert",
-                "Insert or replace a header; returns the updated header map and the previous value (or null).",
-            ),
-            typed_tool::<InsertParams>(
-                "append",
-                "Append a header (allows multiple values per key); returns the updated header map.",
-            ),
-            typed_tool::<RemoveParams>(
-                "remove",
-                "Remove a header by name; returns the updated header map and the removed value (or null).",
-            ),
-            typed_tool::<HeadersParams>(
-                "len",
-                "Return the total number of header entries (counting multi-value headers separately).",
-            ),
-            typed_tool::<HeadersParams>("keys_len", "Return the number of distinct header names."),
-            typed_tool::<HeadersParams>(
-                "is_empty",
-                "Return true if the header map contains no entries.",
-            ),
-            typed_tool::<HeadersParams>(
-                "keys",
-                "Return a list of all header names (may contain duplicates for multi-value headers).",
-            ),
-            typed_tool::<HeadersParams>("values", "Return a list of all header values."),
-            typed_tool::<HeadersParams>(
-                "clear",
-                "Return an empty header map (clears all entries).",
-            ),
-        ]
-    }
+/// Empty params for `new` and `clear` which take no meaningful input.
+#[derive(Debug, Deserialize, JsonSchema)]
+struct EmptyParams {}
 
-    #[instrument(skip(self, _ctx), fields(tool = %params.name))]
-    fn call_tool<'a>(
-        &'a self,
-        params: CallToolRequestParams,
-        _ctx: RequestContext<rmcp::RoleServer>,
-    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
-        Box::pin(async move {
-            match params.name.as_ref() {
-                "new" => Ok(CallToolResult::success(vec![Content::text("{}")])),
-                "get" => {
-                    let p: GetParams = parse_args(&params)?;
-                    let map = match to_header_map(&p.headers) {
-                        Ok(m) => m,
-                        Err(r) => return Ok(r),
-                    };
-                    let result = map
-                        .get(p.key.as_str())
-                        .and_then(|v| v.to_str().ok())
-                        .map(|s| s.to_string())
-                        .unwrap_or_else(|| "null".to_string());
-                    Ok(CallToolResult::success(vec![Content::text(result)]))
-                }
-                "contains_key" => {
-                    let p: GetParams = parse_args(&params)?;
-                    let map = match to_header_map(&p.headers) {
-                        Ok(m) => m,
-                        Err(r) => return Ok(r),
-                    };
-                    Ok(CallToolResult::success(vec![Content::text(
-                        map.contains_key(p.key.as_str()).to_string(),
-                    )]))
-                }
-                "insert" => {
-                    let p: InsertParams = parse_args(&params)?;
-                    let mut map = match to_header_map(&p.headers) {
-                        Ok(m) => m,
-                        Err(r) => return Ok(r),
-                    };
-                    let name = match HeaderName::from_bytes(p.key.as_bytes()) {
-                        Ok(n) => n,
-                        Err(e) => {
-                            return Ok(CallToolResult::error(vec![Content::text(e.to_string())]));
-                        }
-                    };
-                    let value = match HeaderValue::from_str(&p.value) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            return Ok(CallToolResult::error(vec![Content::text(e.to_string())]));
-                        }
-                    };
-                    let previous = map
-                        .insert(name, value)
-                        .and_then(|v| v.to_str().ok().map(|s| s.to_string()));
-                    let result = serde_json::json!({
-                        "headers": from_header_map(&map),
-                        "previous": previous,
-                    });
-                    Ok(CallToolResult::success(vec![Content::text(
-                        result.to_string(),
-                    )]))
-                }
-                "append" => {
-                    let p: InsertParams = parse_args(&params)?;
-                    let mut map = match to_header_map(&p.headers) {
-                        Ok(m) => m,
-                        Err(r) => return Ok(r),
-                    };
-                    let name = match HeaderName::from_bytes(p.key.as_bytes()) {
-                        Ok(n) => n,
-                        Err(e) => {
-                            return Ok(CallToolResult::error(vec![Content::text(e.to_string())]));
-                        }
-                    };
-                    let value = match HeaderValue::from_str(&p.value) {
-                        Ok(v) => v,
-                        Err(e) => {
-                            return Ok(CallToolResult::error(vec![Content::text(e.to_string())]));
-                        }
-                    };
-                    map.append(name, value);
-                    let json = serde_json::to_string(&from_header_map(&map))
-                        .unwrap_or_else(|_| "{}".to_string());
-                    Ok(CallToolResult::success(vec![Content::text(json)]))
-                }
-                "remove" => {
-                    let p: RemoveParams = parse_args(&params)?;
-                    let mut map = match to_header_map(&p.headers) {
-                        Ok(m) => m,
-                        Err(r) => return Ok(r),
-                    };
-                    let removed = map
-                        .remove(p.key.as_str())
-                        .and_then(|v| v.to_str().ok().map(|s| s.to_string()));
-                    let result = serde_json::json!({
-                        "headers": from_header_map(&map),
-                        "removed": removed,
-                    });
-                    Ok(CallToolResult::success(vec![Content::text(
-                        result.to_string(),
-                    )]))
-                }
-                "len" => {
-                    let p: HeadersParams = parse_args(&params)?;
-                    let map = match to_header_map(&p.headers) {
-                        Ok(m) => m,
-                        Err(r) => return Ok(r),
-                    };
-                    Ok(CallToolResult::success(vec![Content::text(
-                        map.len().to_string(),
-                    )]))
-                }
-                "keys_len" => {
-                    let p: HeadersParams = parse_args(&params)?;
-                    let map = match to_header_map(&p.headers) {
-                        Ok(m) => m,
-                        Err(r) => return Ok(r),
-                    };
-                    Ok(CallToolResult::success(vec![Content::text(
-                        map.keys_len().to_string(),
-                    )]))
-                }
-                "is_empty" => {
-                    let p: HeadersParams = parse_args(&params)?;
-                    let map = match to_header_map(&p.headers) {
-                        Ok(m) => m,
-                        Err(r) => return Ok(r),
-                    };
-                    Ok(CallToolResult::success(vec![Content::text(
-                        map.is_empty().to_string(),
-                    )]))
-                }
-                "keys" => {
-                    let p: HeadersParams = parse_args(&params)?;
-                    let map = match to_header_map(&p.headers) {
-                        Ok(m) => m,
-                        Err(r) => return Ok(r),
-                    };
-                    let keys: Vec<&str> = map.keys().map(|k| k.as_str()).collect();
-                    let json = serde_json::to_string(&keys).unwrap_or_else(|_| "[]".to_string());
-                    Ok(CallToolResult::success(vec![Content::text(json)]))
-                }
-                "values" => {
-                    let p: HeadersParams = parse_args(&params)?;
-                    let map = match to_header_map(&p.headers) {
-                        Ok(m) => m,
-                        Err(r) => return Ok(r),
-                    };
-                    let values: Vec<&str> = map.values().filter_map(|v| v.to_str().ok()).collect();
-                    let json = serde_json::to_string(&values).unwrap_or_else(|_| "[]".to_string());
-                    Ok(CallToolResult::success(vec![Content::text(json)]))
-                }
-                "clear" => Ok(CallToolResult::success(vec![Content::text("{}")])),
-                other => Err(ErrorData::invalid_params(
-                    format!("unknown tool: {other}"),
-                    None,
-                )),
-            }
-        })
-    }
+#[derive(Debug, Deserialize, JsonSchema)]
+struct HmClearParams {}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct HmKeysLenParams {
+    headers: Headers,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct HmIsEmptyParams {
+    headers: Headers,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct HmKeysParams {
+    headers: Headers,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+struct HmValuesParams {
+    headers: Headers,
+}
+
+#[elicit_tool(
+    plugin = "header_map",
+    name = "new",
+    description = "Return an empty header map as a JSON object."
+)]
+#[instrument(skip_all)]
+async fn hm_new(_p: EmptyParams) -> Result<CallToolResult, ErrorData> {
+    Ok(CallToolResult::success(vec![Content::text("{}")]))
+}
+
+#[elicit_tool(
+    plugin = "header_map",
+    name = "get",
+    description = "Return the value of a header by name, or null if absent."
+)]
+#[instrument(skip_all, fields(key = %p.key))]
+async fn hm_get(p: GetParams) -> Result<CallToolResult, ErrorData> {
+    let map = match to_header_map(&p.headers) {
+        Ok(m) => m,
+        Err(r) => return Ok(r),
+    };
+    let result = map
+        .get(p.key.as_str())
+        .and_then(|v| v.to_str().ok())
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| "null".to_string());
+    Ok(CallToolResult::success(vec![Content::text(result)]))
+}
+
+#[elicit_tool(
+    plugin = "header_map",
+    name = "contains_key",
+    description = "Return true if the header map contains the given key."
+)]
+#[instrument(skip_all, fields(key = %p.key))]
+async fn hm_contains_key(p: HmContainsKeyParams) -> Result<CallToolResult, ErrorData> {
+    let map = match to_header_map(&p.headers) {
+        Ok(m) => m,
+        Err(r) => return Ok(r),
+    };
+    Ok(CallToolResult::success(vec![Content::text(
+        map.contains_key(p.key.as_str()).to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "header_map",
+    name = "insert",
+    description = "Insert or replace a header; returns the updated header map and the previous value (or null)."
+)]
+#[instrument(skip_all, fields(key = %p.key))]
+async fn hm_insert(p: InsertParams) -> Result<CallToolResult, ErrorData> {
+    let mut map = match to_header_map(&p.headers) {
+        Ok(m) => m,
+        Err(r) => return Ok(r),
+    };
+    let name = match HeaderName::from_bytes(p.key.as_bytes()) {
+        Ok(n) => n,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    };
+    let value = match HeaderValue::from_str(&p.value) {
+        Ok(v) => v,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    };
+    let previous = map
+        .insert(name, value)
+        .and_then(|v| v.to_str().ok().map(|s| s.to_string()));
+    let result = serde_json::json!({
+        "headers": from_header_map(&map),
+        "previous": previous,
+    });
+    Ok(CallToolResult::success(vec![Content::text(
+        result.to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "header_map",
+    name = "append",
+    description = "Append a header (allows multiple values per key); returns the updated header map."
+)]
+#[instrument(skip_all, fields(key = %p.key))]
+async fn hm_append(p: HmAppendParams) -> Result<CallToolResult, ErrorData> {
+    let mut map = match to_header_map(&p.headers) {
+        Ok(m) => m,
+        Err(r) => return Ok(r),
+    };
+    let name = match HeaderName::from_bytes(p.key.as_bytes()) {
+        Ok(n) => n,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    };
+    let value = match HeaderValue::from_str(&p.value) {
+        Ok(v) => v,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e.to_string())])),
+    };
+    map.append(name, value);
+    let json = serde_json::to_string(&from_header_map(&map)).unwrap_or_else(|_| "{}".to_string());
+    Ok(CallToolResult::success(vec![Content::text(json)]))
+}
+
+#[elicit_tool(
+    plugin = "header_map",
+    name = "remove",
+    description = "Remove a header by name; returns the updated header map and the removed value (or null)."
+)]
+#[instrument(skip_all, fields(key = %p.key))]
+async fn hm_remove(p: RemoveParams) -> Result<CallToolResult, ErrorData> {
+    let mut map = match to_header_map(&p.headers) {
+        Ok(m) => m,
+        Err(r) => return Ok(r),
+    };
+    let removed = map
+        .remove(p.key.as_str())
+        .and_then(|v| v.to_str().ok().map(|s| s.to_string()));
+    let result = serde_json::json!({
+        "headers": from_header_map(&map),
+        "removed": removed,
+    });
+    Ok(CallToolResult::success(vec![Content::text(
+        result.to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "header_map",
+    name = "len",
+    description = "Return the total number of header entries (counting multi-value headers separately)."
+)]
+#[instrument(skip_all)]
+async fn hm_len(p: HeadersParams) -> Result<CallToolResult, ErrorData> {
+    let map = match to_header_map(&p.headers) {
+        Ok(m) => m,
+        Err(r) => return Ok(r),
+    };
+    Ok(CallToolResult::success(vec![Content::text(
+        map.len().to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "header_map",
+    name = "keys_len",
+    description = "Return the number of distinct header names."
+)]
+#[instrument(skip_all)]
+async fn hm_keys_len(p: HmKeysLenParams) -> Result<CallToolResult, ErrorData> {
+    let map = match to_header_map(&p.headers) {
+        Ok(m) => m,
+        Err(r) => return Ok(r),
+    };
+    Ok(CallToolResult::success(vec![Content::text(
+        map.keys_len().to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "header_map",
+    name = "is_empty",
+    description = "Return true if the header map contains no entries."
+)]
+#[instrument(skip_all)]
+async fn hm_is_empty(p: HmIsEmptyParams) -> Result<CallToolResult, ErrorData> {
+    let map = match to_header_map(&p.headers) {
+        Ok(m) => m,
+        Err(r) => return Ok(r),
+    };
+    Ok(CallToolResult::success(vec![Content::text(
+        map.is_empty().to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "header_map",
+    name = "keys",
+    description = "Return a list of all header names (may contain duplicates for multi-value headers)."
+)]
+#[instrument(skip_all)]
+async fn hm_keys(p: HmKeysParams) -> Result<CallToolResult, ErrorData> {
+    let map = match to_header_map(&p.headers) {
+        Ok(m) => m,
+        Err(r) => return Ok(r),
+    };
+    let keys: Vec<&str> = map.keys().map(|k| k.as_str()).collect();
+    let json = serde_json::to_string(&keys).unwrap_or_else(|_| "[]".to_string());
+    Ok(CallToolResult::success(vec![Content::text(json)]))
+}
+
+#[elicit_tool(
+    plugin = "header_map",
+    name = "values",
+    description = "Return a list of all header values."
+)]
+#[instrument(skip_all)]
+async fn hm_values(p: HmValuesParams) -> Result<CallToolResult, ErrorData> {
+    let map = match to_header_map(&p.headers) {
+        Ok(m) => m,
+        Err(r) => return Ok(r),
+    };
+    let values: Vec<&str> = map.values().filter_map(|v| v.to_str().ok()).collect();
+    let json = serde_json::to_string(&values).unwrap_or_else(|_| "[]".to_string());
+    Ok(CallToolResult::success(vec![Content::text(json)]))
+}
+
+#[elicit_tool(
+    plugin = "header_map",
+    name = "clear",
+    description = "Return an empty header map (clears all entries)."
+)]
+#[instrument(skip_all)]
+async fn hm_clear(_p: HmClearParams) -> Result<CallToolResult, ErrorData> {
+    Ok(CallToolResult::success(vec![Content::text("{}")]))
 }

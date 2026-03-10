@@ -15,7 +15,10 @@ categories = ["development-tools", "mathematics"]
 
 [dependencies]
 # Core dependency - verification framework only
-elicitation = { workspace = true }
+elicitation = { workspace = true, features = ["verification"] }
+
+# Serialization (for serde boundary proofs)
+serde_json = { workspace = true }
 
 # Kani verifier
 kani-verifier = { version = "0.67", optional = true }

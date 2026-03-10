@@ -14,7 +14,7 @@ categories = ["web-programming::http-client", "development-tools", "asynchronous
 
 [dependencies]
 # Elicitation framework with reqwest + url support
-elicitation = { workspace = true, features = ["reqwest"] }
+elicitation = { workspace = true, features = ["reqwest", "verification"] }
 elicitation_derive.workspace = true
 
 # HTTP client
@@ -48,7 +48,6 @@ derive_builder.workspace = true
 tracing.workspace = true
 
 # Code recovery (optional)
-proc-macro2 = { workspace = true }
 quote = { workspace = true, optional = true }
 
 [features]

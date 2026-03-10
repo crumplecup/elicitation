@@ -18,6 +18,3 @@ pub use workflow::{
     SchemeAllowed, SecureUrl, SecureUrlState, UnvalidatedUrl, UrlParsed, UrlWorkflowPlugin,
     ValidateSchemeParams,
 };
-
-#[cfg(feature = "emit")]
-pub use workflow::dispatch_emit as dispatch_url_emit;

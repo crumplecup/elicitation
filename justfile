@@ -237,29 +237,40 @@ lint-md:
 # Test various feature gate combinations (requires cargo-hack)
 check-features:
     #!/usr/bin/env bash
-    set -e
+    set -eo pipefail
     command -v cargo-hack >/dev/null 2>&1 || (echo "❌ cargo-hack not installed. Run: cargo install cargo-hack" && exit 1)
 
     LOG_FILE="/tmp/elicitation-check-features.log"
     rm -f "$LOG_FILE"
 
-    echo "🔍 Checking no-default-features..."
-    if ! cargo check --workspace --no-default-features 2>&1 | tee -a "$LOG_FILE"; then
-        echo "❌ No-default-features check failed. See: $LOG_FILE"
+    echo "🔍 Running cargo-hack feature powerset (depth 2)..."
+    echo "   Log: $LOG_FILE"
+    echo ""
+
+    # Excluded features: bundle aliases, test markers, tool-specific flags
+    EXCLUDE_FEATURES="full,dev,api,kani,proofs,verification,verify-verus,verify-all,cli,csv,tokio,unexpected_cfgs"
+
+    # Excluded packages: require special toolchains (kani, creusot) or are workspace-excluded (verus)
+    if ! cargo hack check \
+        --workspace \
+        --feature-powerset \
+        --depth 2 \
+        --exclude-features "$EXCLUDE_FEATURES" \
+        --exclude elicitation_kani \
+        --exclude elicitation_creusot \
+        2>&1 | tee "$LOG_FILE"; then
+        echo ""
+        echo "❌ Feature powerset check failed. See: $LOG_FILE"
         exit 1
     fi
 
-    echo "🔍 Checking all-features..."
-    if ! cargo check --workspace --all-features 2>&1 | tee -a "$LOG_FILE"; then
-        echo "❌ All-features check failed. See: $LOG_FILE"
-        exit 1
-    fi
-
-    if [ -s "$LOG_FILE" ] && grep -qE "^(warning:|error:|\s+\^|error\[)" "$LOG_FILE"; then
-        echo "⚠️  Feature gate checks completed with warnings/errors. See: $LOG_FILE"
+    if grep -qE "^warning:" "$LOG_FILE"; then
+        echo ""
+        echo "⚠️  Feature powerset completed with warnings. See: $LOG_FILE"
         exit 1
     else
-        echo "✅ All feature gate checks passed!"
+        echo ""
+        echo "✅ All feature combinations pass!"
         rm -f "$LOG_FILE"
     fi
 
@@ -338,15 +349,15 @@ security: audit omnibor
 # ====================
 
 # Run the complete CI pipeline locally
-ci: fmt-check lint check-features test-full audit
+ci: fmt-check lint test-full audit
     @echo "✅ CI pipeline completed successfully!"
 
 # Prepare for commit (format, lint, tests, feature checks)
-pre-commit: fix-all check-features test-full
+pre-commit: fix-all test-full
     @echo "✅ Ready to commit!"
 
 # Prepare for merge (all checks including API tests)
-pre-merge: pre-commit test-api
+pre-merge: pre-commit check-features test-api
     @echo "✅ Ready to merge!"
 
 # Prepare for release (all checks + security + changelog update + release build)

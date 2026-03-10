@@ -65,8 +65,8 @@ http = { workspace = true, optional = true }
 bytes = { workspace = true, optional = true }
 
 # Code recovery / emission (optional)
-proc-macro2 = { workspace = true }
-quote = { workspace = true }
+proc-macro2 = { workspace = true, optional = true }
+quote = { workspace = true, optional = true }
 prettyplease = { workspace = true, optional = true }
 syn = { workspace = true, optional = true }
 
@@ -90,7 +90,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "proofs", "verification"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -116,7 +116,10 @@ regex = ["dep:regex"]
 reqwest = ["dep:reqwest", "dep:http", "dep:bytes", "url"]
 
 # Code recovery — emit verified workflows as Rust source
-emit = ["dep:prettyplease", "dep:syn"]
+emit = ["dep:prettyplease", "dep:syn", "proofs"]
+
+# Proof emission — proc_macro2/quote for kani/verus/creusot/prusti proof methods
+proofs = ["dep:proc-macro2", "dep:quote", "elicitation_derive/proofs"]
 
 # Formal verification support
 verification = [] # Core Contract trait only

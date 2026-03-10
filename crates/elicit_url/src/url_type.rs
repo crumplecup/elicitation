@@ -1,10 +1,11 @@
 //! `Url` — elicitation-enabled wrapper around `url::Url`.
 
-use elicitation::elicit_newtype;
+use elicitation::{elicit_newtype, elicit_newtype_traits};
 use elicitation_derive::reflect_methods;
 use tracing::instrument;
 
 elicit_newtype!(url::Url, as Url, serde);
+elicit_newtype_traits!(Url, url::Url, [cmp, display, from_str]);
 
 #[reflect_methods]
 impl Url {

@@ -1,9 +1,10 @@
 //! `JsonNumber` — elicitation-enabled wrapper around `serde_json::Number`.
 
-use elicitation::elicit_newtype;
+use elicitation::{elicit_newtype, elicit_newtype_traits};
 use elicitation_derive::reflect_methods;
 
 elicit_newtype!(serde_json::Number, as JsonNumber, serde);
+elicit_newtype_traits!(JsonNumber, serde_json::Number, [eq, display]);
 
 #[reflect_methods]
 impl JsonNumber {

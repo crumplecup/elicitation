@@ -751,7 +751,7 @@ impl ElicitPlugin for JsonWorkflowPlugin {
 #[cfg(feature = "emit")]
 use elicitation::emit_code::{CrateDep, EmitCode};
 #[cfg(feature = "emit")]
-use proc_macro2::TokenStream;
+use elicitation::proc_macro2::TokenStream;
 
 #[cfg(feature = "emit")]
 const ELICIT_SERDE_JSON_DEP: CrateDep = CrateDep::new("elicit_serde_json", "0.8");
@@ -905,33 +905,15 @@ impl EmitCode for FieldChainParams {
 
 // ── Public dispatch for cross-crate EmitCode recovery ────────────────────────
 
-/// Deserialize a tool's params from JSON and return its [`EmitCode`] impl.
-///
-/// Used by `elicit_server` to recover serde_json workflow steps without
-/// exposing internal param structs.
-///
-/// Returns `Err` if `tool_name` is unknown or `params` fails to deserialize.
+// ── Global emit registry ──────────────────────────────────────────────────────
+
 #[cfg(feature = "emit")]
-pub fn dispatch_emit(
-    tool_name: &str,
-    params: serde_json::Value,
-) -> Result<Box<dyn EmitCode>, String> {
-    match tool_name {
-        "parse_and_focus" => serde_json::from_value::<ParseFocusParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "validate_object" => serde_json::from_value::<ValidateObjectParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "safe_merge" => serde_json::from_value::<MergeParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "pointer_update" => serde_json::from_value::<PointerUpdateParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "field_chain" => serde_json::from_value::<FieldChainParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        other => Err(format!("Unknown serde_json tool: '{other}'")),
-    }
-}
+elicitation::register_emit!("parse_and_focus", ParseFocusParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("validate_object", ValidateObjectParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("safe_merge", MergeParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("pointer_update", PointerUpdateParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("field_chain", FieldChainParams);

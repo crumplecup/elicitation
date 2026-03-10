@@ -34,13 +34,11 @@ pub use error::Error;
 pub use plugin::Plugin;
 pub use plugins::Plugin as HttpPlugin;
 pub use plugins::{
-    AuthType, BuildRequestParams, BuildRequestParamsBuilder, ContentType, FetchResult,
-    HeaderMapPlugin, MethodPlugin, RequestBuilderPlugin, RequestSpec, StatusCodePlugin, UrlPlugin,
-    WorkflowPlugin,
+    AuthFetchSucceeded, AuthType, Authorized, BuildRequestParams, BuildRequestParamsBuilder,
+    ContentType, FetchResult, FetchSucceeded, HeaderMapPlugin, MethodPlugin, RequestBuilderPlugin,
+    RequestCompleted, RequestSpec, StatusCodePlugin, StatusSuccess, UrlPlugin, UrlValid,
+    WorkflowPlugin, apply_auth, do_fetch, do_post, extract_link_next, timeout, urlencoding_simple,
 };
-
-#[cfg(feature = "emit")]
-pub use plugins::dispatch_reqwest_emit;
 pub use request_builder::RequestBuilder;
 pub use response::Response;
 pub use types::{HeaderMap, Method, StatusCode, Url, Version};

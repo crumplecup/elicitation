@@ -43,6 +43,9 @@ mod uuid_bytes;
 #[cfg(feature = "serde_json")]
 mod values;
 
+#[cfg(feature = "serde_json")]
+mod serde_boundary;
+
 #[cfg(feature = "url")]
 mod urls;
 
@@ -102,6 +105,9 @@ pub use uuid_bytes::*;
 
 #[cfg(feature = "serde_json")]
 pub use values::*;
+
+#[cfg(feature = "serde_json")]
+pub use serde_boundary::*;
 
 #[cfg(feature = "url")]
 pub use urls::*;

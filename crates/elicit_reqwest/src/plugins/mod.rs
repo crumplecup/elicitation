@@ -51,8 +51,7 @@ pub use status_code::StatusCodePlugin;
 pub use url::UrlPlugin;
 pub use workflow::WorkflowPlugin;
 pub use workflow::{
-    AuthType, BuildRequestParams, BuildRequestParamsBuilder, ContentType, FetchResult,
+    AuthFetchSucceeded, AuthType, Authorized, BuildRequestParams, BuildRequestParamsBuilder,
+    ContentType, FetchResult, FetchSucceeded, RequestCompleted, StatusSuccess, UrlValid,
+    apply_auth, do_fetch, do_post, extract_link_next, timeout, urlencoding_simple,
 };
-
-#[cfg(feature = "emit")]
-pub use workflow::dispatch_emit as dispatch_reqwest_emit;

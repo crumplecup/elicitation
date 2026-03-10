@@ -24,7 +24,7 @@ tracing = { workspace = true }
 futures = { workspace = true }
 
 # Code recovery (optional)
-proc-macro2 = { workspace = true }
+
 quote = { workspace = true, optional = true }
 
 [features]

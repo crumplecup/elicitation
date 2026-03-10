@@ -4,7 +4,7 @@
 
 #[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
 use super::ValidationError;
-#[cfg(any(feature = "chrono", feature = "jiff", feature = "time"))]
+#[cfg(any(feature = "chrono", feature = "time"))]
 use anodized::spec;
 
 #[cfg(all(not(kani), any(feature = "chrono", feature = "jiff", feature = "time")))]

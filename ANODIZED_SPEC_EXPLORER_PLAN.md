@@ -108,11 +108,13 @@ clone for reads. The struct owns the data; the application works with references
 ### Phase 2 — Anodized + TypeSpec per type family
 
 #### 2.1 Setup
+
 - [x] Add `anodized = "0.3"` to `[workspace.dependencies]` in root `Cargo.toml`
 - [x] Add `anodized` to `[dependencies]` in `crates/elicitation/Cargo.toml`
 - [x] Verify clean build
 
 #### 2.2 Primitives — integers
+
 - [x] `#[spec]` on `new()` for all signed integer contract types (I8/I16/I32/I64/I128/Isize × Positive/NonNegative/NonZero/Range)
 - [x] `#[spec]` on `new()` for all unsigned integer contract types (U8/U16/U32/U64/U128/Usize × Positive/NonZero/Range)
 - [x] `impl ElicitSpec` + `inventory::submit!` for primitive integer types (i8..isize, u8..usize); `TypeSpec` entries mirror bounds
@@ -120,6 +122,7 @@ clone for reads. The struct owns the data; the application works with references
 - [ ] Tests: panic on violation for representative sample
 
 #### 2.3 Primitives — floats, bool, char, String
+
 - [x] `#[spec]` + `impl ElicitSpec` for float contract types (F32/F64 × Positive/NonNegative/Finite)
 - [x] `#[spec]` + `impl ElicitSpec` for bool (`BoolTrue`, `BoolFalse`)
 - [x] `#[spec]` + `impl ElicitSpec` for char contract types (Alphabetic, Alphanumeric, Numeric)
@@ -128,6 +131,7 @@ clone for reads. The struct owns the data; the application works with references
 - [x] Tests: lookup, category structure verified
 
 #### 2.4 Collections
+
 - [x] `impl ElicitSpec` for `Vec<T>`, `HashMap<K,V>`, `HashSet<T>`, `Option<T>`, `Result<T,E>` (primitives)
 - [ ] `#[spec]` + `impl ElicitSpec` for `VecNonEmpty`, `VecAllSatisfy`
 - [ ] `#[spec]` + `impl ElicitSpec` for HashMap/HashSet/BTreeMap/BTreeSet non-empty variants
@@ -137,6 +141,7 @@ clone for reads. The struct owns the data; the application works with references
 - [ ] Tests
 
 #### 2.5 Containers
+
 - [ ] `#[spec]` + `impl ElicitSpec` for `OptionSome`
 - [ ] `#[spec]` + `impl ElicitSpec` for `ResultOk`
 - [ ] `#[spec]` + `impl ElicitSpec` for `BoxNonNull`, `BoxSatisfies`
@@ -145,44 +150,54 @@ clone for reads. The struct owns the data; the application works with references
 - [ ] Tests
 
 #### 2.6 Std extras
+
 - [ ] `#[spec]` + `impl ElicitSpec` for `DurationPositive`, `DurationNonZero`
 - [ ] `#[spec]` + `impl ElicitSpec` for SystemTime types
 - [ ] `#[spec]` + `impl ElicitSpec` for `PathBufExists`, `PathBufIsFile`, `PathBufIsDir`, `PathBufReadable`
 - [ ] Tests
 
 #### 2.7 Feature: `chrono`
+
 - [ ] `#[spec]` + `impl ElicitSpec` for `DateTimeUtcBefore`, `DateTimeUtcAfter`, `NaiveDateTimeAfter`
 - [ ] Tests
 
 #### 2.8 Feature: `time`
+
 - [ ] `#[spec]` + `impl ElicitSpec` for `OffsetDateTimeBefore`, `OffsetDateTimeAfter`
 - [ ] Tests
 
 #### 2.9 Feature: `jiff`
+
 - [ ] `#[spec]` + `impl ElicitSpec` for `TimestampBefore`, `TimestampAfter`
 - [ ] Tests
 
 #### 2.10 Feature: `uuid`
+
 - [ ] `#[spec]` + `impl ElicitSpec` for `UuidNonNil`, `UuidV4`
 - [ ] Tests
 
 #### 2.11 Feature: `url`
+
 - [ ] `#[spec]` + `impl ElicitSpec` for `UrlValid`, `UrlHttp`, `UrlHttps`, `UrlWithHost`, `UrlCanBeBase`
 - [ ] Tests
 
 #### 2.12 Feature: `regex`
+
 - [ ] `#[spec]` + `impl ElicitSpec` for `RegexValid`, `RegexCaseInsensitive`, `RegexMultiline`, `RegexSetValid`, `RegexSetNonEmpty`
 - [ ] Tests
 
 #### 2.13 Feature: `reqwest`
+
 - [ ] `#[spec]` + `impl ElicitSpec` for `StatusCodeValid` and HTTP style types
 - [ ] Tests
 
 #### 2.14 Feature: `serde_json`
+
 - [ ] `#[spec]` + `impl ElicitSpec` for `ValueNonNull`, `ValueArray`, `ValueObject`
 - [ ] Tests
 
 #### 2.15 Network types
+
 - [ ] `#[spec]` + `impl ElicitSpec` for `IpV4`, `IpV6`, `IpPublic`, `IpPrivate`, `Ipv4Loopback`, `Ipv6Loopback`
 - [ ] Tests
 
@@ -253,5 +268,5 @@ PLANNING_INDEX.md                      # add this document
    should field constraints be folded into `requires`? Leaning toward separate `fields`
    since agents often want structure independently of contracts.
 
-3. **Fuzzy match on type names**: Low priority — if agent types `I32Posiive`, suggest
+2. **Fuzzy match on type names**: Low priority — if agent types `I32Posiive`, suggest
    `I32Positive`. Could use `strsim` crate for edit-distance suggestions.

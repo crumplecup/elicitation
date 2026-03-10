@@ -100,6 +100,7 @@ impl MyServer {
 ```
 
 For each method `foo`, the macro generates:
+
 - A `FooParams` struct (deriving `Elicit` and `JsonSchema`)
 - A `foo_tool` method decorated with `#[tool]`
 - Delegation: `self.client.foo(params.into())`
@@ -137,6 +138,7 @@ elicit_newtype!(pub struct Response(reqwest::Response));
 ```
 
 Generated code:
+
 - `struct RequestBuilder(Arc<reqwest::RequestBuilder>)`
 - `impl Clone for RequestBuilder` — clones the `Arc`
 - `impl Deref / DerefMut` — transparent access to the inner type
@@ -184,6 +186,7 @@ pub async fn foo_tool(
 ```
 
 Type conversions applied automatically:
+
 - `&str` → `String`
 - `&[T]` → `Vec<T>`
 - `&T` → `T` (requires `Clone`)
@@ -207,6 +210,7 @@ pub struct I32Positive(i32);
 ```
 
 Generates:
+
 ```rust
 impl I32Positive {
     pub const fn __contract_requires() -> &'static str { "value > 0" }

@@ -4,6 +4,7 @@
 
 use crate::verification::types::ValidationError;
 use crate::{ElicitCommunicator, ElicitResult, Elicitation, Prompt};
+#[cfg(feature = "regex")]
 use anodized::spec;
 use elicitation_macros::instrumented_impl;
 #[cfg(feature = "regex")]

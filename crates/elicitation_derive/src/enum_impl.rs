@@ -392,6 +392,35 @@ fn generate_elicit_impl(
     // Phase 2: Field elicitation based on variant
     let match_arms = variants.iter().map(|v| generate_variant_match_arm(v, name));
 
+    #[cfg(feature = "proofs")]
+    let proof_methods = quote! {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            #(
+                ts.extend(<#all_field_types as elicitation::Elicitation>::kani_proof());
+            )*
+            ts
+        }
+
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            #(
+                ts.extend(<#all_field_types as elicitation::Elicitation>::verus_proof());
+            )*
+            ts
+        }
+
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            #(
+                ts.extend(<#all_field_types as elicitation::Elicitation>::creusot_proof());
+            )*
+            ts
+        }
+    };
+    #[cfg(not(feature = "proofs"))]
+    let proof_methods = quote! {};
+
     quote! {
         #[automatically_derived]
         #[allow(unexpected_cfgs)]
@@ -433,29 +462,7 @@ fn generate_elicit_impl(
                 }
             }
 
-            fn kani_proof() -> proc_macro2::TokenStream {
-                let mut ts = proc_macro2::TokenStream::new();
-                #(
-                    ts.extend(<#all_field_types as elicitation::Elicitation>::kani_proof());
-                )*
-                ts
-            }
-
-            fn verus_proof() -> proc_macro2::TokenStream {
-                let mut ts = proc_macro2::TokenStream::new();
-                #(
-                    ts.extend(<#all_field_types as elicitation::Elicitation>::verus_proof());
-                )*
-                ts
-            }
-
-            fn creusot_proof() -> proc_macro2::TokenStream {
-                let mut ts = proc_macro2::TokenStream::new();
-                #(
-                    ts.extend(<#all_field_types as elicitation::Elicitation>::creusot_proof());
-                )*
-                ts
-            }
+            #proof_methods
         }
     }
 }

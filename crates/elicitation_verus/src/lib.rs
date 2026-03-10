@@ -16,6 +16,9 @@
 //! Run with: `verus crates/elicitation_verus/src/lib.rs`
 
 
+// Serde boundary consistency theorems
+pub mod serde_boundary;
+
 // Contract type proofs (newtypes/wrappers)
 pub mod bools;
 pub mod chars;

@@ -15,7 +15,7 @@ categories = ["development-tools", "asynchronous"]
 
 [dependencies]
 # Elicitation core
-elicitation = { workspace = true }
+elicitation = { workspace = true, features = ["url"] }
 
 # Workflow crates (cross-crate composition)
 elicit_reqwest = { workspace = true }

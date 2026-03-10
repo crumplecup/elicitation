@@ -438,6 +438,7 @@ pub fn kani_string_non_empty() -> TokenStream {
 // ============================================================================
 
 /// Generate a Kani proof for UrlValid wrapper logic.
+#[cfg(all(feature = "proofs", feature = "url"))]
 pub fn kani_url_valid() -> TokenStream {
     quote! {
         #[cfg(feature = "url")]
@@ -455,6 +456,7 @@ pub fn kani_url_valid() -> TokenStream {
 }
 
 /// Generate a Kani proof for UrlHttps wrapper logic.
+#[cfg(all(feature = "proofs", feature = "url"))]
 pub fn kani_url_https() -> TokenStream {
     quote! {
         #[cfg(feature = "url")]
@@ -475,6 +477,7 @@ pub fn kani_url_https() -> TokenStream {
 }
 
 /// Generate a Kani proof for UrlWithHost wrapper logic.
+#[cfg(all(feature = "proofs", feature = "url"))]
 pub fn kani_url_with_host() -> TokenStream {
     quote! {
         #[cfg(feature = "url")]
@@ -495,6 +498,7 @@ pub fn kani_url_with_host() -> TokenStream {
 }
 
 /// Generate a Kani proof for UrlCanBeBase wrapper logic.
+#[cfg(all(feature = "proofs", feature = "url"))]
 pub fn kani_url_can_be_base() -> TokenStream {
     quote! {
         #[cfg(feature = "url")]
@@ -614,6 +618,7 @@ pub fn kani_ipv6_loopback() -> TokenStream {
 // ============================================================================
 
 /// Generate a Kani proof for UuidV4 wrapper logic.
+#[cfg(all(feature = "proofs", feature = "uuid"))]
 pub fn kani_uuid_v4() -> TokenStream {
     quote! {
         #[cfg(feature = "uuid")]
@@ -631,6 +636,7 @@ pub fn kani_uuid_v4() -> TokenStream {
 }
 
 /// Generate a Kani proof for UuidNonNil wrapper logic.
+#[cfg(all(feature = "proofs", feature = "uuid"))]
 pub fn kani_uuid_non_nil() -> TokenStream {
     quote! {
         #[cfg(feature = "uuid")]

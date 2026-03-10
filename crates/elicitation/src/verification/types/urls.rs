@@ -3,6 +3,7 @@
 //! This module provides contract types for URL validation using the `url` crate.
 
 use crate::verification::types::ValidationError;
+#[cfg(feature = "url")]
 use anodized::spec;
 #[cfg(feature = "url")]
 use url::Url;
@@ -522,14 +523,17 @@ impl Elicitation for UrlValid {
         Ok(Self::from_url(url))
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_url_valid()
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -550,14 +554,17 @@ impl Elicitation for UrlHttps {
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_url_https()
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -578,14 +585,17 @@ impl Elicitation for UrlHttp {
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -606,14 +616,17 @@ impl Elicitation for UrlWithHost {
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_url_with_host()
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -634,17 +647,68 @@ impl Elicitation for UrlCanBeBase {
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_url_can_be_base()
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
+}
+
+// ============================================================================
+// Serde Bridge: URL Contract Types  (feature = "url")
+// ============================================================================
+
+#[cfg(feature = "url")]
+mod serde_bridge {
+    use super::*;
+    use schemars::JsonSchema;
+    use serde::{Deserialize, Serialize};
+
+    macro_rules! impl_url_serde_bridge {
+        ($ty:ident, $scheme_desc:expr) => {
+            impl Serialize for $ty {
+                fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+                    #[cfg(not(kani))]
+                    return self.get().as_str().serialize(s);
+                    #[cfg(kani)]
+                    return "".serialize(s);
+                }
+            }
+            impl<'de> Deserialize<'de> for $ty {
+                fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+                    let s = String::deserialize(d)?;
+                    Self::new(&s).map_err(serde::de::Error::custom)
+                }
+            }
+            impl JsonSchema for $ty {
+                fn schema_name() -> ::std::borrow::Cow<'static, str> {
+                    stringify!($ty).into()
+                }
+                fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+                    schemars::json_schema!({
+                        "type": "string",
+                        "format": "uri",
+                        "description": $scheme_desc
+                    })
+                }
+            }
+        };
+    }
+
+    impl_url_serde_bridge!(UrlValid, "A valid URL (any scheme).");
+    impl_url_serde_bridge!(UrlHttps, "An HTTPS URL. Must use the https:// scheme.");
+    impl_url_serde_bridge!(UrlHttp, "An HTTP URL. Must use the http:// scheme.");
+    impl_url_serde_bridge!(UrlWithHost, "A URL that must include a hostname.");
+    impl_url_serde_bridge!(UrlCanBeBase, "A URL that can be used as a base URL.");
 }
 
 // ============================================================================
@@ -714,4 +778,34 @@ mod tests {
         let inner = url.into_inner();
         assert_eq!(inner.as_str(), "https://example.com/path");
     }
+}
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+#[cfg(all(feature = "emit", feature = "url", not(kani)))]
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    macro_rules! impl_to_code_literal_url {
+        ($T:ident) => {
+            impl ToCodeLiteral for $T {
+                fn to_code_literal(&self) -> TokenStream {
+                    let s = self.get().as_str();
+                    let msg = concat!("valid ", stringify!($T));
+                    let type_path: TokenStream = concat!("elicitation::", stringify!($T))
+                        .parse()
+                        .expect("valid type path");
+                    quote::quote! { #type_path::new(#s).expect(#msg) }
+                }
+            }
+        };
+    }
+
+    impl_to_code_literal_url!(UrlValid);
+    impl_to_code_literal_url!(UrlHttps);
+    impl_to_code_literal_url!(UrlHttp);
+    impl_to_code_literal_url!(UrlWithHost);
+    impl_to_code_literal_url!(UrlCanBeBase);
 }

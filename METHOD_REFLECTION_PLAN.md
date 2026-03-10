@@ -3,6 +3,7 @@
 ## ✅ Implementation Progress (2026-02-28)
 
 ### Milestone 1: Newtype Infrastructure - COMPLETE
+
 - ✅ Implemented `elicit_newtype!` declarative macro in `elicitation/src/newtype_macro.rs`
 - ✅ Implemented `elicit_newtypes!` bulk generation macro
 - ✅ Type conversions via derive_more (Deref, DerefMut, From, AsRef)
@@ -12,6 +13,7 @@
 - ✅ Committed: feat(macros) commit on method-reflection-macros branch
 
 ### Milestone 2: Method Discovery & Parameter Generation - COMPLETE
+
 - ✅ Module structure in `elicitation_derive/src/method_reflection/`
   - `mod.rs` - Pipeline orchestration
   - `discovery.rs` - Method extraction from impl blocks
@@ -27,17 +29,21 @@
 - ✅ Committed: feat(derive) commits
 
 ### Current State
+
 The `#[reflect_methods]` macro currently:
+
 1. Discovers public methods from impl blocks
 2. Generates parameter structs with type conversions
 3. Preserves original impl block (methods work via Deref)
 
 Wrapper method generation logic is **implemented and tested** but **not yet integrated** into the pipeline. This allows us to:
+
 - Keep original methods functional (via Deref)
 - Generate parameter structs for type safety
 - Defer MCP tool wrapper integration to next phase
 
 ### Next Steps
+
 1. **Integrate wrapper generation** - Make it opt-in or default
 2. **Reference conversion warnings** - Emit warnings for large clones
 3. **Generic support** - Add JsonSchema bounds
@@ -58,12 +64,14 @@ Automatically generate MCP tool wrappers for third-party crate methods through *
 ### Existing Infrastructure (Strong Foundation)
 
 #### elicitation_derive Crate
+
 - `#[derive(Elicit)]` - Generates `Elicitation` trait impls for enums/structs
 - `#[contract_type]` - Verification contract metadata
 - `#[derive(Rand)]` - Contract-aware random generation
 - Generates both trait implementations AND MCP tool functions
 
 #### elicitation_macros Crate
+
 - `#[instrumented_impl]` - Automatic tracing for impl blocks
 - `#[elicit_tools(Type1, Type2)]` - Generates elicitation wrapper methods
   - Creates async methods calling `Type::elicit_checked(peer)`
@@ -73,6 +81,7 @@ Automatically generate MCP tool wrappers for third-party crate methods through *
 ### Key Architectural Patterns
 
 **Pattern 1: Type-Level Tool Generation**
+
 ```rust
 // Existing pattern
 #[elicit_tools(Config, User)]
@@ -90,6 +99,7 @@ pub async fn elicit_config(peer: Peer<RoleServer>)
 ```
 
 **Pattern 2: Trait Method Delegation**
+
 ```rust
 // Existing pattern
 #[elicit_trait_tools_router(Calculator, calc, [add, subtract])]
@@ -108,6 +118,7 @@ impl<C: Calculator> Server<C> { }
 **Primary Use Case:** Create companion crates (e.g., `elicit_reqwest`) that shadow original types with same-name wrappers.
 
 **Why Same-Name Wrappers?**
+
 ```rust
 // In elicit_reqwest crate:
 elicit_newtype!(reqwest::Client);  // Creates: pub struct Client(reqwest::Client)
@@ -123,12 +134,14 @@ let response = client.get("https://example.com").await?;
 ```
 
 **Benefits:**
+
 1. **Familiarity:** Users see `Client`, `Request`, `Response` - same as original
 2. **No Name Collisions:** `elicit_reqwest::Client` vs `reqwest::Client` are distinct namespaces
 3. **Drop-in Feel:** Wrapper is transparent via Deref/DerefMut
 4. **Ecosystem Pattern:** Mirrors `tokio::fs::File` vs `std::fs::File`
 
 **Optional Rename:** For edge cases where both types needed in same scope:
+
 ```rust
 use reqwest::Client as HttpClient;
 use elicit_reqwest::Client;  // Wrapper with original name
@@ -144,6 +157,7 @@ elicit_newtype!(reqwest::Client, as ElicitClient);
 **Purpose:** Generate a newtype wrapper around third-party types to satisfy orphan rule
 
 **Primary Use Case:** Same-name wrapper (shadows original in elicit_* crate)
+
 ```rust
 // User writes (in elicit_reqwest crate):
 elicit_newtype!(reqwest::Client);
@@ -167,6 +181,7 @@ impl From<Client> for reqwest::Client {
 ```
 
 **Secondary Use Case:** Custom rename (when both types needed in same scope)
+
 ```rust
 // Optional rename for edge cases:
 elicit_newtype!(reqwest::Client, as HttpClient);
@@ -175,6 +190,7 @@ elicit_newtype!(reqwest::Client, as HttpClient);
 ```
 
 **Macro Syntax:**
+
 ```rust
 // Primary: Same-name wrapper (extracts "Client" from path)
 elicit_newtype!(reqwest::Client);
@@ -199,6 +215,7 @@ elicit_newtypes! {
 ```
 
 **Generated Code Features:**
+
 - Uses `derive_more::Deref` and `derive_more::DerefMut` (per CLAUDE.md standards)
 - Uses `derive_more::From` for wrapping direction
 - Optional: `derive_more::AsRef` and `derive_more::AsMut` for maximum transparency
@@ -209,6 +226,7 @@ elicit_newtypes! {
 - Optional rename for edge cases
 
 **Implementation Note:**
+
 ```rust
 // Full derive set for transparent newtype:
 #[derive(
@@ -246,6 +264,7 @@ impl Client {
 **Implementation Steps:**
 
 #### Step 2a: Method Discovery
+
 - Use `syn` to parse target type path
 - Introspect public methods via rustdoc JSON or trait bounds
 - Classify methods by support level:
@@ -260,6 +279,7 @@ impl Client {
 **Philosophy:** Generate methods whenever possible, warn about potential issues, let users make informed decisions.
 
 #### Step 2b: Parameter Struct Generation
+
 For each supported method, generate parameter struct:
 
 ```rust
@@ -277,10 +297,12 @@ pub struct ClientGetParams {
 ```
 
 **Naming Convention:** `{TypeName}{MethodName}Params` in PascalCase
+
 - Type name is the **wrapper** name (Client, not reqwest::Client)
 - Keeps parameter struct names familiar and concise
 
 #### Step 2c: Tool Wrapper Generation
+
 ```rust
 #[tool(description = "HTTP GET request")]
 pub async fn get(
@@ -296,6 +318,7 @@ pub async fn get(
 ```
 
 **Key Features:**
+
 - Automatic &T → T conversion where T: Clone
 - Error mapping to rmcp::ErrorData
 - Integration with rmcp's Parameters wrapper
@@ -318,6 +341,7 @@ impl Client { }
 ```
 
 **Conversion Rules:**
+
 - `&str` → `String` (always, no warning - common pattern)
 - `&[T]` → `Vec<T>` (if T: Clone, warn if element is large)
 - `&T` → `T` (if T: Clone, warn if T is large)
@@ -326,6 +350,7 @@ impl Client { }
 - Only skip methods that are **truly unsupported** (complex lifetimes, non-Clone types)
 
 **Implementation:**
+
 ```rust
 fn should_convert_to_owned(ty: &syn::Type, config: &ConversionConfig) -> ConversionDecision {
     match ty {
@@ -382,6 +407,7 @@ pub async fn process_data(&self, params: ProcessDataParams) -> Result<...> {
 ```
 
 **Example User Workflow:**
+
 1. Generate methods with `#[reflect_methods]`
 2. See warning about large clone in `process_data`
 3. User evaluates: "Is this method I/O-bound or CPU-bound?"
@@ -428,6 +454,7 @@ where
 **Key Insight:** JsonSchema provides the "concreteness" needed for MCP tools while maintaining genericity
 
 **Automatic Discovery:**
+
 - Scan method signatures for generic type parameters
 - Check existing trait bounds
 - Add `+ JsonSchema` bound if not present
@@ -480,6 +507,7 @@ impl HttpClient { }
 ```
 
 **Macro Expansion Flow:**
+
 ```text
 elicit_newtype!(Type)
   ↓ Generates newtype wrapper
@@ -498,17 +526,21 @@ elicit_newtype!(Type)
 ## Implementation Roadmap
 
 ### Milestone 1: Core Infrastructure (Week 1-2)
+
 **Files to Create:**
+
 - `crates/elicitation_derive/src/method_reflection/mod.rs`
 - `crates/elicitation_derive/src/method_reflection/discovery.rs`
 - `crates/elicitation_derive/src/method_reflection/params.rs`
 - `crates/elicitation_derive/src/method_reflection/wrapper.rs`
 
 **Deliverables:**
+
 1. Basic method discovery (public methods only)
 2. Simple parameter struct generation (primitives + String)
 3. Wrapper method generation (non-generic, sync methods)
 4. Add to `elicitation_derive/src/lib.rs`:
+
 ```rust
 mod method_reflection;
 
@@ -519,6 +551,7 @@ pub fn reflect_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
 ```
 
 **Tests:**
+
 - Newtype wrapper generation with derive_more
 - Deref/DerefMut/AsRef/AsMut trait verification
 - Method discovery on std::fs::File
@@ -526,10 +559,13 @@ pub fn reflect_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
 - Basic tool wrapper compilation
 
 ### Milestone 2: Reference Conversion (Week 3)
+
 **Files to Modify:**
+
 - `crates/elicitation_derive/src/method_reflection/conversion.rs` (new)
 
 **Deliverables:**
+
 1. &str → String conversion (no warnings)
 2. &[T] → Vec<T> conversion (warn if large)
 3. &T → T conversion with size detection
@@ -538,12 +574,14 @@ pub fn reflect_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
 6. Diagnostic messages for truly unsupported methods (non-Clone types)
 
 **Warning System:**
+
 - Emit `#[warn(large_clone)]` on generated methods when applicable
 - Provide clear warning message: "Converting &LargeType to LargeType requires cloning X bytes"
 - User can suppress with `#[allow(large_clone)]` or global `allow_large_clones = true`
 - Document performance implications in generated docs
 
 **Tests:**
+
 - reqwest::Client basic methods (get, post)
 - Conversion correctness
 - Warning emission for large clones
@@ -551,43 +589,54 @@ pub fn reflect_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
 - Skip diagnostics for unsupported types only
 
 ### Milestone 3: Generic Support (Week 4)
+
 **Files to Create:**
+
 - `crates/elicitation_derive/src/method_reflection/generics.rs`
 
 **Deliverables:**
+
 1. Generic type parameter detection
 2. JsonSchema bound injection
 3. Generic parameter struct generation
 4. Generic tool wrapper generation
 
 **Tests:**
+
 - serde_json serialization methods
 - Generic collection methods
 - Bound propagation correctness
 
 ### Milestone 4: Integration & Ergonomics (Week 5)
+
 **Files to Create:**
+
 - `crates/elicitation_macros/src/newtype_macro.rs` (declarative macro)
 
 **Deliverables:**
+
 1. `elicit_newtype!` macro
 2. `elicit_newtypes!` bulk macro
 3. Integration with `#[derive(Elicit)]` for parameters
 4. Documentation and examples
 
 **Tests:**
+
 - End-to-end reqwest integration
 - Multiple types bulk generation
 - Real-world use case examples
 
 ### Milestone 5: Documentation & Examples (Week 6)
+
 **Files to Create:**
+
 - `examples/elicit_reqwest_companion_crate/` (full companion crate example)
 - `examples/method_reflection_tokio_fs.rs`
 - `docs/METHOD_REFLECTION_GUIDE.md`
 - `docs/COMPANION_CRATE_PATTERN.md`
 
 **Deliverables:**
+
 1. Comprehensive usage guide
 2. Companion crate creation guide (e.g., how to build `elicit_reqwest`)
 3. Migration guide from manual wrappers
@@ -595,6 +644,7 @@ pub fn reflect_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
 5. Coverage metrics for popular crates
 
 **Example Companion Crate Structure:**
+
 ```
 elicit_reqwest/
 ├── Cargo.toml          # Depends on: elicitation, reqwest
@@ -630,13 +680,17 @@ Users then: `cargo add elicit_reqwest` and use familiar types with MCP superpowe
 ## Technical Considerations
 
 ### Orphan Rule Compliance
+
 Newtype pattern satisfies orphan rule:
+
 - We own `HttpClient` (defined in our crate)
 - We can implement `Elicitation` for `HttpClient`
 - We delegate to `reqwest::Client` methods via Deref
 
 ### MCP Schema Requirements
+
 All parameter structs must be objects:
+
 ```rust
 // ✅ GOOD: Object schema
 #[derive(JsonSchema)]
@@ -651,7 +705,9 @@ String  // type: "string" not allowed at tool level
 Solution: Always generate wrapper structs, even for single parameters
 
 ### Verification Compatibility
+
 Generated tools remain verifiable:
+
 ```rust
 #[cfg_attr(kani, kani::requires(params.url.len() > 0))]
 pub async fn get(&self, params: GetParams) -> Result<Response, Error> {
@@ -662,6 +718,7 @@ pub async fn get(&self, params: GetParams) -> Result<Response, Error> {
 Users can add contracts to generated methods via manual impl extension.
 
 ### Performance Impact
+
 - **Clone overhead:**
   - Typically negligible for I/O-bound operations (network/disk dwarfs clone cost)
   - Large clones emit warnings, user decides trade-off
@@ -674,12 +731,14 @@ Users can add contracts to generated methods via manual impl extension.
 ## Success Metrics
 
 ### Quantitative Goals
+
 - ✅ 70%+ automatic coverage for reqwest::Client methods
 - ✅ 80%+ automatic coverage for serde_json::Value methods
 - ✅ <100ms compile time overhead per reflected type
 - ✅ Zero runtime overhead vs. manual wrappers
 
 ### Qualitative Goals
+
 - ✅ One-line integration for any third-party crate
 - ✅ Clear diagnostics for unsupported methods
 - ✅ **Warnings, not restrictions:** Generate when possible, warn about trade-offs
@@ -690,7 +749,9 @@ Users can add contracts to generated methods via manual impl extension.
 ## Migration Strategy
 
 ### From Manual Wrappers
+
 **Before (Manual):**
+
 ```rust
 // In elicit_reqwest crate
 pub struct Client(pub reqwest::Client);
@@ -711,6 +772,7 @@ impl Client {
 ```
 
 **After (Generated):**
+
 ```rust
 // In elicit_reqwest crate
 elicit_newtype!(reqwest::Client);
@@ -721,6 +783,7 @@ impl Client { }
 ```
 
 **Benefits:**
+
 - 90% reduction in boilerplate
 - Automatic synchronization with upstream changes
 - Consistent error handling
@@ -729,19 +792,24 @@ impl Client { }
 ## Alternative Approaches Considered
 
 ### ❌ Blanket Trait Implementation
+
 ```rust
 impl<T> Elicitation for T where T: SomeTrait { }
 ```
+
 **Rejected:** Violates orphan rule for third-party types
 
 ### ❌ Derive Macro on Third-Party Types
+
 ```rust
 #[derive(Elicit)]
 struct reqwest::Client;  // Can't derive on external types
 ```
+
 **Rejected:** Can't derive on types we don't own
 
 ### ✅ Newtype + Method Reflection (Chosen)
+
 - Satisfies orphan rule
 - Preserves type safety
 - Enables automatic generation
@@ -750,14 +818,18 @@ struct reqwest::Client;  // Can't derive on external types
 ## Future Enhancements (Post-MVP)
 
 ### Phase 6: Trait Method Reflection
+
 Extend to trait methods (not just concrete types):
+
 ```rust
 #[reflect_trait_methods(Serialize)]
 impl<T: Serialize> JsonValue { }
 ```
 
 ### Phase 7: Custom Conversions
+
 User-defined conversion rules:
+
 ```rust
 #[reflect_methods(
     convert(Url => String, via = "to_string"),
@@ -767,7 +839,9 @@ impl HttpClient { }
 ```
 
 ### Phase 8: Batch Type Generation
+
 Crate-level configuration:
+
 ```rust
 // Cargo.toml
 [package.metadata.elicitation]
@@ -782,19 +856,25 @@ Auto-generates at build time via build.rs
 ## Risks and Mitigations
 
 ### Risk: Compilation Complexity
+
 **Mitigation:**
+
 - Incremental development with clear milestones
 - Extensive unit tests for each component
 - Feature flags for gradual rollout
 
 ### Risk: Breaking Changes in Third-Party Crates
+
 **Mitigation:**
+
 - Version pinning in examples
 - Clear documentation on version compatibility
 - Graceful degradation (skip changed methods)
 
 ### Risk: Performance Regression
+
 **Mitigation:**
+
 - Benchmark suite comparing to manual wrappers
 - Warning system for potentially expensive clones (not restrictions)
 - Clear performance documentation with trade-offs
@@ -802,6 +882,7 @@ Auto-generates at build time via build.rs
 
 **Philosophy on Large Clones:**
 We emit warnings but still generate methods for large clones. Rationale:
+
 1. User knows their use case better than we do
 2. Many applications are I/O-bound (clone cost irrelevant)
 3. Warnings educate users about potential costs

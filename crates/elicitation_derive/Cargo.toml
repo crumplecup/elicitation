@@ -23,6 +23,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'c
 syn = { workspace = true }
 quote = { workspace = true }
 proc-macro2 = { workspace = true }
+toml = { workspace = true }
 
 [dev-dependencies]
 elicitation = { path = "../elicitation" }
@@ -42,6 +43,8 @@ tokio = { workspace = true }
 async-trait = { workspace = true }
 
 [features]
+# Proof emission support — gate proof method generation
+proofs = []
 # Passthrough features for testing (library users don't pay for these)
 chrono = ["elicitation_rand/chrono"]
 time = ["elicitation_rand/time"]

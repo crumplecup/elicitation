@@ -5,6 +5,7 @@ This document describes the Verus proof tracking system for the elicitation proj
 ## Overview
 
 The Verus tracking system provides:
+
 - **CSV-based tracking** of verification results
 - **Resume capability** to skip already-passed proofs
 - **Summary statistics** for verification coverage
@@ -66,23 +67,28 @@ cargo run --features cli --release -- verus <subcommand>
 ### Available Subcommands
 
 #### `verus list`
+
 Lists all available Verus proofs grouped by module.
 
 **Example:**
+
 ```bash
 cargo run --features cli --release -- verus list
 ```
 
 #### `verus run`
+
 Runs all Verus proofs and tracks results in CSV.
 
 **Options:**
+
 - `-o, --output <FILE>` - CSV output file (default: `verus_verification_results.csv`)
 - `-t, --timeout <SECS>` - Timeout per proof in seconds (default: 600)
 - `-r, --resume` - Skip already-passed proofs from previous run
 - `--verus-path <PATH>` - Path to Verus binary (overrides VERUS_PATH env var)
 
 **Examples:**
+
 ```bash
 # Basic run with defaults
 cargo run --features cli --release -- verus run
@@ -98,17 +104,21 @@ cargo run --features cli --release -- verus run --verus-path ~/custom/verus
 ```
 
 #### `verus summary`
+
 Shows summary statistics from a CSV results file.
 
 **Options:**
+
 - `-f, --file <FILE>` - CSV file to analyze (default: `verus_verification_results.csv`)
 
 **Example:**
+
 ```bash
 cargo run --features cli --release -- verus summary --file my_results.csv
 ```
 
 **Output:**
+
 ```
 📊 Verus Verification Summary
 ============================
@@ -122,17 +132,21 @@ cargo run --features cli --release -- verus summary --file my_results.csv
 ```
 
 #### `verus failed`
+
 Shows detailed information about failed proofs.
 
 **Options:**
+
 - `-f, --file <FILE>` - CSV file to analyze (default: `verus_verification_results.csv`)
 
 **Example:**
+
 ```bash
 cargo run --features cli --release -- verus failed
 ```
 
 **Output:**
+
 ```
 ❌ Failed Verus Proofs (2 total):
 
@@ -151,49 +165,62 @@ cargo run --features cli --release -- verus failed
 The justfile provides convenient recipes that wrap the CLI commands:
 
 ### `just verify-verus-list`
+
 List all available Verus proofs.
 
 ### `just verify-verus-tracked [csv] [timeout]`
+
 Run all proofs with CSV tracking.
 
 **Parameters:**
+
 - `csv` - CSV output file (default: `verus_verification_results.csv`)
 - `timeout` - Timeout per proof in seconds (default: 600)
 
 **Example:**
+
 ```bash
 just verify-verus-tracked my_results.csv 900
 ```
 
 ### `just verify-verus-resume [csv]`
+
 Resume verification, skipping already-passed proofs.
 
 **Parameters:**
+
 - `csv` - CSV file to resume from (default: `verus_verification_results.csv`)
 
 **Example:**
+
 ```bash
 just verify-verus-resume my_results.csv
 ```
 
 ### `just verify-verus-summary [csv]`
+
 Show summary statistics.
 
 **Parameters:**
+
 - `csv` - CSV file to analyze (default: `verus_verification_results.csv`)
 
 **Example:**
+
 ```bash
 just verify-verus-summary my_results.csv
 ```
 
 ### `just verify-verus-failed [csv]`
+
 Show failed proofs.
 
 **Parameters:**
+
 - `csv` - CSV file to analyze (default: `verus_verification_results.csv`)
 
 **Example:**
+
 ```bash
 just verify-verus-failed my_results.csv
 ```
@@ -341,6 +368,7 @@ The Verus tracking system mirrors the Kani tracking infrastructure:
 | Progress display | ✅ | ✅ |
 
 **Key Differences:**
+
 - **Kani** uses harness-based proofs with `#[kani::proof]` attributes
 - **Verus** uses module-level functions with SMT-based verification
 - **Kani** timeout per harness, **Verus** timeout per proof module
@@ -351,12 +379,14 @@ The Verus tracking system mirrors the Kani tracking infrastructure:
 ### "Verus not found" Error
 
 **Problem:**
+
 ```
 ❌ Verus not found at: ~/repos/verus/source/target-verus/release/verus
    Set VERUS_PATH environment variable or use --verus-path
 ```
 
 **Solution:**
+
 1. Verify Verus is installed: `verus --version`
 2. Set VERUS_PATH in `.env` file or environment
 3. Or use `--verus-path` flag explicitly
@@ -366,6 +396,7 @@ The Verus tracking system mirrors the Kani tracking infrastructure:
 **Problem:** Proofs timing out frequently
 
 **Solutions:**
+
 1. Increase timeout: `just verify-verus-tracked results.csv 1800`
 2. Run proofs individually to identify slow ones
 3. Check system resources (CPU, memory)
@@ -375,6 +406,7 @@ The Verus tracking system mirrors the Kani tracking infrastructure:
 **Problem:** Resume mode re-runs passed proofs
 
 **Solution:**
+
 1. Ensure CSV file exists and is readable
 2. Check CSV format matches expected schema
 3. Verify STATUS column contains "SUCCESS" for passed proofs
@@ -384,6 +416,7 @@ The Verus tracking system mirrors the Kani tracking infrastructure:
 **Problem:** CLI commands fail to compile
 
 **Solution:**
+
 1. Ensure `cli` feature is enabled: `cargo build --features cli`
 2. Update dependencies: `cargo update`
 3. Clean build: `cargo clean && cargo build --features cli`
@@ -413,6 +446,7 @@ The tracking system consists of:
 ### Verification Process
 
 For each proof:
+
 1. Create temporary Rust source file importing the proof function
 2. Run Verus binary on the temp file
 3. Parse stdout/stderr for verification results

@@ -261,6 +261,7 @@ let instant2 = Instant::elicit_with_generator(&ctx, "now").await?;
 ```
 
 **Why this matters:** Some types have natural "smart constructors" that don't require user input:
+
 - `Instant::now()` - Current timestamp
 - `SystemTime::now()` - Current system time  
 - `Uuid::new_v4()` - Random UUID
@@ -283,6 +284,7 @@ struct Config {
 ```
 
 **Use cases:**
+
 - Smart constructors (now(), random(), default())
 - Environment-based initialization
 - Template expansion
@@ -365,6 +367,7 @@ struct Player {
 #### Use Cases
 
 **Testing:**
+
 ```rust
 // Property-based testing
 for _ in 0..1000 {
@@ -374,6 +377,7 @@ for _ in 0..1000 {
 ```
 
 **Gaming:**
+
 ```rust
 // Agent as game master
 let encounter = Encounter::random_generator(seed).generate();
@@ -381,6 +385,7 @@ let loot = LootTable::random_generator(seed).generate();
 ```
 
 **Simulation:**
+
 ```rust
 // Generate realistic test data
 let users: Vec<User> = (0..100)
@@ -389,6 +394,7 @@ let users: Vec<User> = (0..100)
 ```
 
 **Supported types:**
+
 - Primitives: u8-u128, i8-i128, f32, f64, bool, char
 - Stdlib: String, PathBuf, Duration, SystemTime
 - Third-party: DateTime (chrono), Timestamp (jiff), Uuid, Url
@@ -550,6 +556,7 @@ pub struct Task {
 - **`Elicit`** - Generate the elicitation logic (our derive macro)
 
 **Optional but recommended:**
+
 - **`Debug`** - For printing/logging during development
 - **`Clone`** - Many async patterns need cloneable values
 
@@ -785,6 +792,7 @@ impl ServerHandler for MyServer {
 ```
 
 **Result:** Server exposes 3 tools:
+
 - `status` - Regular tool
 - `restart` - Regular tool  
 - `elicit_config` - Elicitation tool (auto-generated)
@@ -862,6 +870,7 @@ impl MyServer { }
 ```
 
 **Why?** Each macro expands before the next one runs:
+
 1. `#[elicit_tools]` adds methods with `#[tool]` attributes
 2. `#[elicit_trait_tools_router]` adds more methods with `#[tool]` attributes
 3. `#[tool_router]` discovers all methods marked with `#[tool]`
@@ -955,6 +964,7 @@ impl ServerHandler for AppServer {
 ### Benefits of Composition
 
 **Unified API:** Agents see one consistent interface:
+
 ```json
 {
   "tools": [
@@ -966,11 +976,13 @@ impl ServerHandler for AppServer {
 ```
 
 **Type Safety:** All tools share the same type system:
+
 - Regular tools: explicit implementations
 - Elicitation tools: derived from domain types
 - Trait tools: derived from trait methods
 
 **Composability:** Mix and match freely:
+
 - Add elicitation to existing servers
 - Add regular tools to elicitation-focused servers
 - Expose trait-based APIs alongside utilities
@@ -978,6 +990,7 @@ impl ServerHandler for AppServer {
 ### Common Patterns
 
 **Pattern 1: Configuration + Operations**
+
 ```rust
 #[elicit_tools(Config)]    // Let agents configure
 #[tool_router]
@@ -988,6 +1001,7 @@ impl Server {
 ```
 
 **Pattern 2: CRUD + Construction**
+
 ```rust
 #[elicit_tools(User, Task)]        // Construct entities
 #[tool_router]
@@ -999,6 +1013,7 @@ impl Server {
 ```
 
 **Pattern 3: Trait API + Utilities**
+
 ```rust
 #[elicit_trait_tools_router(Api, api, [method1, method2])]  // Core API
 #[tool_router]
@@ -1249,8 +1264,6 @@ The result: agents get a browsable, token-efficient interface to type invariants
 and library authors get a documentation layer that stays in sync with the code.
 
 ---
-
-
 
 - **[API Docs](https://docs.rs/elicitation)** - Complete API reference
 - **[ELICIT_TRAIT_TOOLS_ROUTER.md](ELICIT_TRAIT_TOOLS_ROUTER.md)** - Trait-based tool generation guide

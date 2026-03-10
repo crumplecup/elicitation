@@ -88,6 +88,95 @@ macro_rules! impl_integer_default_wrapper {
 }
 
 // ============================================================================
+// Serde Bridge: Constrained Integer Types
+// ============================================================================
+
+/// Add validated Deserialize + JsonSchema to constrained integer types that
+/// already have a plain `#[derive(Deserialize)]` (I8 variants).
+///
+/// Adds: `impl TryFrom<$prim> for $ty` delegating to `new()`.
+/// Combined with `#[serde(try_from = "$prim")]` on the struct, this makes
+/// Deserialize route through the validated constructor.
+macro_rules! impl_integer_tryfrom {
+    ($ty:ident, $prim:ty) => {
+        impl ::std::convert::TryFrom<$prim> for $ty {
+            type Error = super::ValidationError;
+            #[inline]
+            fn try_from(v: $prim) -> Result<Self, Self::Error> {
+                Self::new(v)
+            }
+        }
+    };
+}
+
+/// Generate Serialize + validated Deserialize + JsonSchema for constrained
+/// integer types that do NOT yet have serde derives.
+///
+/// * `$ty` — the constrained newtype (e.g. `U8Positive`)
+/// * `$prim` — the inner primitive (e.g. `u8`)
+/// * `$description` — human-readable description for JSON schema
+/// * extra JSON schema key/value pairs (e.g. `"minimum": 1`)
+macro_rules! impl_integer_serde_bridge {
+    ($ty:ident, $prim:ty, $description:expr, { $($key:literal: $val:tt),* $(,)? }) => {
+        impl serde::Serialize for $ty {
+            fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+                self.0.serialize(s)
+            }
+        }
+        impl<'de> serde::Deserialize<'de> for $ty {
+            fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+                let v = <$prim>::deserialize(d)?;
+                Self::new(v).map_err(serde::de::Error::custom)
+            }
+        }
+        impl schemars::JsonSchema for $ty {
+            fn schema_name() -> ::std::borrow::Cow<'static, str> {
+                stringify!($ty).into()
+            }
+            fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+                schemars::json_schema!({
+                    "type": "integer",
+                    "description": $description,
+                    $($key: $val),*
+                })
+            }
+        }
+    };
+}
+
+/// Generate Serialize + validated Deserialize + JsonSchema for const-generic
+/// Range integer types (e.g. `I8Range<MIN, MAX>`).
+macro_rules! impl_integer_range_serde_bridge {
+    ($ty:ident<$prim:ty>) => {
+        impl<const MIN: $prim, const MAX: $prim> serde::Serialize for $ty<MIN, MAX> {
+            fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+                self.0.serialize(s)
+            }
+        }
+        impl<'de, const MIN: $prim, const MAX: $prim> serde::Deserialize<'de> for $ty<MIN, MAX> {
+            fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+                let v = <$prim>::deserialize(d)?;
+                Self::new(v).map_err(serde::de::Error::custom)
+            }
+        }
+        impl<const MIN: $prim, const MAX: $prim> schemars::JsonSchema for $ty<MIN, MAX> {
+            fn schema_name() -> ::std::borrow::Cow<'static, str> {
+                format!(concat!(stringify!($ty), "<{},{}>"), MIN, MAX).into()
+            }
+            fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+                // MIN/MAX as i128/u128 for JSON — the json_schema! macro needs literals,
+                // so we build the schema value manually.
+                let mut obj = serde_json::Map::new();
+                obj.insert("type".into(), serde_json::Value::String("integer".into()));
+                obj.insert("minimum".into(), serde_json::json!(MIN as i128));
+                obj.insert("maximum".into(), serde_json::json!(MAX as i128));
+                schemars::Schema::from(obj)
+            }
+        }
+    };
+}
+
+// ============================================================================
 // Verification Types (Constrained)
 // ============================================================================
 
@@ -118,11 +207,13 @@ macro_rules! impl_integer_default_wrapper {
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
 )]
+#[serde(try_from = "i8")]
 #[schemars(description = "Positive integer value (> 0)")]
 pub struct I8Positive(#[schemars(range(min = 1))] i8);
 
 // Mark as safe for MCP elicitation
 rmcp::elicit_safe!(I8Positive);
+impl_integer_tryfrom!(I8Positive, i8);
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl I8Positive {
@@ -189,14 +280,17 @@ impl Elicitation for I8Positive {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_positive("I8Positive", "i8")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_positive("I8Positive", "i8")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_positive("I8Positive", "i8")
     }
@@ -243,10 +337,12 @@ mod tests {
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
 )]
+#[serde(try_from = "i8")]
 #[schemars(description = "Non-negative integer value (>= 0)")]
 pub struct I8NonNegative(#[schemars(range(min = 0))] i8);
 
 rmcp::elicit_safe!(I8NonNegative);
+impl_integer_tryfrom!(I8NonNegative, i8);
 
 #[cfg_attr(not(kani), instrumented_impl)]
 #[cfg_attr(not(kani), instrumented_impl)]
@@ -309,14 +405,17 @@ impl Elicitation for I8NonNegative {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_nonneg("I8NonNegative", "i8")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_positive("I8NonNegative", "i8")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_positive("I8NonNegative", "i8")
     }
@@ -333,10 +432,12 @@ impl Elicitation for I8NonNegative {
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize, JsonSchema,
 )]
+#[serde(try_from = "i8")]
 #[schemars(description = "Non-zero integer value (!= 0)")]
 pub struct I8NonZero(i8);
 
 rmcp::elicit_safe!(I8NonZero);
+impl_integer_tryfrom!(I8NonZero, i8);
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl I8NonZero {
@@ -397,14 +498,17 @@ impl Elicitation for I8NonZero {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_nonzero("I8NonZero", "i8")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_nonzero("I8NonZero", "i8")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_nonzero("I8NonZero", "i8")
     }
@@ -474,6 +578,8 @@ impl crate::Elicitation for I8RangeStyle {
         Ok(Self::Default)
     }
 }
+
+impl_integer_range_serde_bridge!(I8Range<i8>);
 
 impl<const MIN: i8, const MAX: i8> Prompt for I8Range<MIN, MAX> {
     fn prompt() -> Option<&'static str> {
@@ -621,6 +727,7 @@ impl I16Positive {
 }
 
 crate::default_style!(I16Positive => I16PositiveStyle);
+impl_integer_serde_bridge!(I16Positive, i16, "Positive i16 value (> 0)", { "minimum": 1 });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for I16Positive {
@@ -652,14 +759,17 @@ impl Elicitation for I16Positive {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_positive("I16Positive", "i16")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_positive("I16Positive", "i16")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_positive("I16Positive", "i16")
     }
@@ -704,6 +814,7 @@ impl I16NonNegative {
 }
 
 crate::default_style!(I16NonNegative => I16NonNegativeStyle);
+impl_integer_serde_bridge!(I16NonNegative, i16, "Non-negative i16 value (>= 0)", { "minimum": 0 });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for I16NonNegative {
@@ -735,14 +846,17 @@ impl Elicitation for I16NonNegative {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_nonneg("I16NonNegative", "i16")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_positive("I16NonNegative", "i16")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_positive("I16NonNegative", "i16")
     }
@@ -785,6 +899,7 @@ impl I16NonZero {
 }
 
 crate::default_style!(I16NonZero => I16NonZeroStyle);
+impl_integer_serde_bridge!(I16NonZero, i16, "Non-zero i16 value (!= 0)", { "not": {"const": 0} });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for I16NonZero {
@@ -816,14 +931,17 @@ impl Elicitation for I16NonZero {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_nonzero("I16NonZero", "i16")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_nonzero("I16NonZero", "i16")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_nonzero("I16NonZero", "i16")
     }
@@ -892,6 +1010,8 @@ impl crate::Elicitation for I16RangeStyle {
         Ok(Self::Default)
     }
 }
+
+impl_integer_range_serde_bridge!(I16Range<i16>);
 
 impl<const MIN: i16, const MAX: i16> Prompt for I16Range<MIN, MAX> {
     fn prompt() -> Option<&'static str> {
@@ -1069,6 +1189,7 @@ impl U8NonZero {
 }
 
 crate::default_style!(U8NonZero => U8NonZeroStyle);
+impl_integer_serde_bridge!(U8NonZero, u8, "Non-zero u8 value (!= 0)", { "minimum": 1 });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for U8NonZero {
@@ -1100,14 +1221,17 @@ impl Elicitation for U8NonZero {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_nonzero("U8NonZero", "u8")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_nonzero("U8NonZero", "u8")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_nonzero("U8NonZero", "u8")
     }
@@ -1177,6 +1301,8 @@ impl crate::Elicitation for U8RangeStyle {
     }
 }
 
+impl_integer_range_serde_bridge!(U8Range<u8>);
+
 impl<const MIN: u8, const MAX: u8> Prompt for U8Range<MIN, MAX> {
     fn prompt() -> Option<&'static str> {
         Some("Please enter a number within the specified range:")
@@ -1245,6 +1371,7 @@ impl U16NonZero {
 }
 
 crate::default_style!(U16NonZero => U16NonZeroStyle);
+impl_integer_serde_bridge!(U16NonZero, u16, "Non-zero u16 value (!= 0)", { "minimum": 1 });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for U16NonZero {
@@ -1276,14 +1403,17 @@ impl Elicitation for U16NonZero {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_nonzero("U16NonZero", "u16")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_nonzero("U16NonZero", "u16")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_nonzero("U16NonZero", "u16")
     }
@@ -1352,6 +1482,8 @@ impl crate::Elicitation for U16RangeStyle {
         Ok(Self::Default)
     }
 }
+
+impl_integer_range_serde_bridge!(U16Range<u16>);
 
 impl<const MIN: u16, const MAX: u16> Prompt for U16Range<MIN, MAX> {
     fn prompt() -> Option<&'static str> {
@@ -1549,6 +1681,7 @@ impl U8Positive {
 }
 
 crate::default_style!(U8Positive => U8PositiveStyle);
+impl_integer_serde_bridge!(U8Positive, u8, "Positive u8 value (> 0)", { "minimum": 1 });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for U8Positive {
@@ -1568,14 +1701,17 @@ impl Elicitation for U8Positive {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_positive("U8Positive", "u8")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_positive("U8Positive", "u8")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_positive("U8Positive", "u8")
     }
@@ -1608,6 +1744,7 @@ impl U16Positive {
 }
 
 crate::default_style!(U16Positive => U16PositiveStyle);
+impl_integer_serde_bridge!(U16Positive, u16, "Positive u16 value (> 0)", { "minimum": 1 });
 
 #[cfg_attr(not(kani), instrumented_impl)]
 impl Prompt for U16Positive {
@@ -1627,14 +1764,17 @@ impl Elicitation for U16Positive {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_numeric_positive("U16Positive", "u16")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_numeric_positive("U16Positive", "u16")
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_numeric_positive("U16Positive", "u16")
     }
@@ -1710,14 +1850,17 @@ macro_rules! impl_signed_contracts {
                     }
                 }
 
+                #[cfg(feature = "proofs")]
                 fn kani_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::kani_numeric_positive(stringify!($positive), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn verus_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::verus_numeric_positive(stringify!($positive), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_positive(stringify!($positive), stringify!($base))
                 }
@@ -1788,14 +1931,17 @@ macro_rules! impl_signed_contracts {
                     }
                 }
 
+                #[cfg(feature = "proofs")]
                 fn kani_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::kani_numeric_nonneg(stringify!($nonnegative), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn verus_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::verus_numeric_positive(stringify!($nonnegative), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_positive(stringify!($nonnegative), stringify!($base))
                 }
@@ -2073,14 +2219,17 @@ macro_rules! impl_unsigned_contracts {
                     }
                 }
 
+                #[cfg(feature = "proofs")]
                 fn kani_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::kani_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn verus_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::verus_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
@@ -2424,14 +2573,17 @@ macro_rules! impl_signed_nonzero {
                     }
                 }
 
+                #[cfg(feature = "proofs")]
                 fn kani_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::kani_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn verus_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::verus_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
@@ -2506,14 +2658,17 @@ macro_rules! impl_unsigned_positive {
                     }
                 }
 
+                #[cfg(feature = "proofs")]
                 fn kani_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::kani_numeric_positive(stringify!($positive), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn verus_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::verus_numeric_positive(stringify!($positive), stringify!($base))
                 }
 
+                #[cfg(feature = "proofs")]
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_positive(stringify!($positive), stringify!($base))
                 }
@@ -2531,3 +2686,99 @@ impl_unsigned_positive!(usize, UsizePositive, 42);
 // ============================================================================
 // Float Contract Types (f32, f64)
 // ============================================================================
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    /// Generate a `ToCodeLiteral` impl for a simple (non-generic) constrained integer type.
+    macro_rules! impl_to_code_literal_int {
+        ($T:ident) => {
+            impl ToCodeLiteral for $T {
+                fn to_code_literal(&self) -> TokenStream {
+                    let v = self.get();
+                    let msg = concat!("valid ", stringify!($T));
+                    let type_path: TokenStream = concat!("elicitation::", stringify!($T))
+                        .parse()
+                        .expect("valid type path");
+                    quote::quote! { #type_path::new(#v).expect(#msg) }
+                }
+            }
+        };
+    }
+
+    /// Generate a `ToCodeLiteral` impl for a range type with two const generics.
+    macro_rules! impl_to_code_literal_range {
+        ($T:ident, $prim:ty) => {
+            impl<const MIN: $prim, const MAX: $prim> ToCodeLiteral for $T<MIN, MAX> {
+                fn to_code_literal(&self) -> TokenStream {
+                    let v = self.get();
+                    let msg = concat!("valid ", stringify!($T));
+                    let type_path: TokenStream = concat!("elicitation::", stringify!($T))
+                        .parse()
+                        .expect("valid type path");
+                    quote::quote! { #type_path::<#MIN, #MAX>::new(#v).expect(#msg) }
+                }
+            }
+        };
+    }
+
+    // i8 family
+    impl_to_code_literal_int!(I8Positive);
+    impl_to_code_literal_int!(I8NonNegative);
+    impl_to_code_literal_int!(I8NonZero);
+    impl_to_code_literal_range!(I8Range, i8);
+    // i16 family
+    impl_to_code_literal_int!(I16Positive);
+    impl_to_code_literal_int!(I16NonNegative);
+    impl_to_code_literal_int!(I16NonZero);
+    impl_to_code_literal_range!(I16Range, i16);
+    // i32 family
+    impl_to_code_literal_int!(I32Positive);
+    impl_to_code_literal_int!(I32NonNegative);
+    impl_to_code_literal_int!(I32NonZero);
+    impl_to_code_literal_range!(I32Range, i32);
+    // i64 family
+    impl_to_code_literal_int!(I64Positive);
+    impl_to_code_literal_int!(I64NonNegative);
+    impl_to_code_literal_int!(I64NonZero);
+    impl_to_code_literal_range!(I64Range, i64);
+    // i128 family
+    impl_to_code_literal_int!(I128Positive);
+    impl_to_code_literal_int!(I128NonNegative);
+    impl_to_code_literal_int!(I128NonZero);
+    impl_to_code_literal_range!(I128Range, i128);
+    // isize family
+    impl_to_code_literal_int!(IsizePositive);
+    impl_to_code_literal_int!(IsizeNonNegative);
+    impl_to_code_literal_int!(IsizeNonZero);
+    impl_to_code_literal_range!(IsizeRange, isize);
+    // u8 family
+    impl_to_code_literal_int!(U8NonZero);
+    impl_to_code_literal_int!(U8Positive);
+    impl_to_code_literal_range!(U8Range, u8);
+    // u16 family
+    impl_to_code_literal_int!(U16NonZero);
+    impl_to_code_literal_int!(U16Positive);
+    impl_to_code_literal_range!(U16Range, u16);
+    // u32 family
+    impl_to_code_literal_int!(U32NonZero);
+    impl_to_code_literal_int!(U32Positive);
+    impl_to_code_literal_range!(U32Range, u32);
+    // u64 family
+    impl_to_code_literal_int!(U64NonZero);
+    impl_to_code_literal_int!(U64Positive);
+    impl_to_code_literal_range!(U64Range, u64);
+    // u128 family
+    impl_to_code_literal_int!(U128NonZero);
+    impl_to_code_literal_int!(U128Positive);
+    impl_to_code_literal_range!(U128Range, u128);
+    // usize family
+    impl_to_code_literal_int!(UsizeNonZero);
+    impl_to_code_literal_int!(UsizePositive);
+    impl_to_code_literal_range!(UsizeRange, usize);
+}

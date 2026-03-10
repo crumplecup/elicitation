@@ -1,9 +1,10 @@
 //! `Uuid` — elicitation-enabled wrapper around `uuid::Uuid`.
 
-use elicitation::elicit_newtype;
+use elicitation::{elicit_newtype, elicit_newtype_traits};
 use elicitation_derive::reflect_methods;
 
 elicit_newtype!(uuid::Uuid, as Uuid, serde);
+elicit_newtype_traits!(Uuid, uuid::Uuid, [cmp, display, from_str]);
 
 #[reflect_methods]
 impl Uuid {

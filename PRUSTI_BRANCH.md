@@ -45,6 +45,7 @@ This isn't a configuration issue - it's ecosystem incompatibility.
 ## When Prusti Returns
 
 Test compatibility:
+
 ```bash
 git checkout prusti-verification
 cargo install cargo-prusti  # When updated

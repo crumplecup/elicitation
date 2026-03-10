@@ -71,14 +71,17 @@ impl Elicitation for BoolTrue {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_bool_true("BoolTrue")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -146,14 +149,17 @@ impl Elicitation for BoolFalse {
         }
     }
 
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_bool_false("BoolFalse")
     }
 
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }

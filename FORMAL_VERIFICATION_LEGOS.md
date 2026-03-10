@@ -29,6 +29,7 @@ fn kani_proof() {
 ```
 
 **Key Properties:**
+
 - Zero-cost abstraction (`#[cfg(kani)]` - compile-time only)
 - Default implementation for all types
 - Overridden by derives and feature-gated types
@@ -153,6 +154,7 @@ impl Elicitation for jiff::Timestamp {
 The verification is **tautological** (proof by construction):
 
 ### Base Case
+
 Primitive types have manual Kani proofs using symbolic execution:
 
 ```rust
@@ -167,6 +169,7 @@ fn verify_i8_positive() {
 ```
 
 ### Inductive Case
+
 Derived types inherit verification by calling field-level `kani_proof()`:
 
 ```rust
@@ -202,6 +205,7 @@ The verification creates a non-bypassable "cage" for LLMs:
 ```
 
 **The cage cannot be escaped because:**
+
 - Type system enforces `Elicitation` trait bounds (compile-time)
 - Kani proofs verify primitives for all inputs (symbolic execution)
 - Composition inherits verification (transitivity)
@@ -210,6 +214,7 @@ The verification creates a non-bypassable "cage" for LLMs:
 ## Verification Coverage
 
 ### Core Primitives (Always Available)
+
 - Integers: i8, i16, i32, i64, u8, u16, u32, u64
 - Floats: f32, f64
 - bool, char, String
@@ -218,6 +223,7 @@ The verification creates a non-bypassable "cage" for LLMs:
 - Duration, SystemTime, PathBuf
 
 ### Feature-Gated Third-Party Types (Verification)
+
 | Feature | Types | kani_proof() | ElicitIntrospect |
 |---------|-------|--------------|------------------|
 | `url` | url::Url | ✅ Via UrlValid wrapper | ✅ Primitive pattern |
@@ -242,7 +248,9 @@ The verification creates a non-bypassable "cage" for LLMs:
 **Key:** All feature-gated types now have complete dual coverage - both compile-time verification (`kani_proof()`) and runtime introspection (`ElicitIntrospect`).
 
 ### Contract Types (verification feature)
+
 Located in `verification/types/`:
+
 - Strings: StringNonEmpty, StringMaxLength, etc.
 - Integers: I8Positive, U8NonZero, etc.
 - URLs: UrlValid, UrlHttps, UrlHttp, etc.
@@ -305,6 +313,7 @@ struct Application {
 ## Running Verification
 
 ### Compile-Time Check
+
 ```bash
 # Verification happens during compilation
 cargo check --features verification
@@ -313,6 +322,7 @@ cargo check --features verification
 ```
 
 ### Symbolic Execution
+
 ```bash
 # Run Kani on specific proofs
 cargo kani --harness verify_i8_positive
@@ -322,6 +332,7 @@ cargo kani --harness verify_compositional_legos
 ```
 
 ### Example
+
 ```bash
 # Check the compositional verification example
 cargo check --example compositional_verification --features verification
@@ -368,6 +379,7 @@ match meta.details {
 ### Coverage
 
 `ElicitIntrospect` is implemented for:
+
 - **All primitive types**: bool, integers (i8-i128, u8-u128), floats (f32, f64), String, char
 - **All collection types**: Vec, HashMap, BTreeMap, HashSet, BTreeSet
 - **All derived types**: Structs and enums via `#[derive(Elicit)]`
@@ -437,6 +449,7 @@ cargo run --example observability_introspection
 ```
 
 See `examples/observability_introspection.rs` for patterns showing:
+
 - Structured tracing
 - Prometheus-style metrics
 - Agent planning
@@ -461,12 +474,14 @@ See `examples/observability_introspection.rs` for patterns showing:
 ## Benefits
 
 ### For Users
+
 1. **Zero boilerplate** - Just `#[derive(Elicit)]`
 2. **Automatic verification** - Types snap together like legos
 3. **Compile-time guarantees** - No runtime overhead
 4. **Composable** - Build complex verified types from simple ones
 
 ### For the Ecosystem
+
 1. **Type-safe** - Invalid states unrepresentable
 2. **Formally verified** - Mathematical proofs, not tests
 3. **Non-bypassable** - LLMs cannot escape the cage
@@ -475,6 +490,7 @@ See `examples/observability_introspection.rs` for patterns showing:
 ## The Vision: Caged Agents
 
 When an LLM is asked to elicit a type `T: Elicitation`:
+
 - The type system enforces that T is verified (compile-time)
 - The verification is non-bypassable (enforced by type system)
 - Invalid states are unrepresentable (cannot be constructed)

@@ -34,18 +34,15 @@
 //!
 //! Registered under the `"jiff_workflow"` namespace.
 
-use elicitation::ElicitPlugin;
 use elicitation::contracts::{And, Established, Prop};
-use futures::future::BoxFuture;
+use elicitation::{ElicitPlugin, elicit_tool};
 use jiff::Timestamp;
 use rmcp::{
     ErrorData,
-    model::{CallToolRequestParams, CallToolResult, Content, Tool},
-    service::RequestContext,
+    model::{CallToolResult, Content},
 };
 use schemars::JsonSchema;
 use serde::Deserialize;
-use std::sync::Arc;
 use tracing::instrument;
 
 // ── Propositions ──────────────────────────────────────────────────────────────
@@ -81,12 +78,14 @@ pub struct UnvalidatedTimestampStr {
 
 /// A successfully parsed jiff `Timestamp`.
 pub struct ParsedTimestamp {
-    inner: Timestamp,
+    /// The inner value carried by this typestate wrapper.
+    pub inner: Timestamp,
 }
 
 /// A parsed timestamp proven to be strictly in the future.
 pub struct FutureTimestampState {
-    inner: Timestamp,
+    /// The inner value carried by this typestate wrapper.
+    pub inner: Timestamp,
 }
 
 impl FutureTimestampState {
@@ -103,12 +102,14 @@ pub struct UnvalidatedZonedStr {
 
 /// A successfully parsed jiff `Zoned` datetime.
 pub struct ParsedZoned {
-    inner: jiff::Zoned,
+    /// The inner value carried by this typestate wrapper.
+    pub inner: jiff::Zoned,
 }
 
 /// A zoned datetime successfully converted to a new timezone.
 pub struct ConvertedZonedState {
-    inner: jiff::Zoned,
+    /// The inner value carried by this typestate wrapper.
+    pub inner: jiff::Zoned,
 }
 
 impl ConvertedZonedState {
@@ -243,18 +244,8 @@ pub struct ComputeSpanParams {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-fn typed_tool<T: JsonSchema + 'static>(name: &'static str, description: &'static str) -> Tool {
-    Tool::new(name, description, Arc::new(Default::default())).with_input_schema::<T>()
-}
-
-fn parse_args<T: serde::de::DeserializeOwned>(
-    params: &CallToolRequestParams,
-) -> Result<T, ErrorData> {
-    let value = serde_json::Value::Object(params.arguments.clone().unwrap_or_default());
-    serde_json::from_value(value).map_err(|e| ErrorData::invalid_params(e.to_string(), None))
-}
-
-fn parse_ts(s: &str) -> Result<Timestamp, String> {
+/// Parse a datetime string. Returns an error string on failure.
+pub fn parse_ts(s: &str) -> Result<Timestamp, String> {
     s.parse::<Timestamp>()
         .map_err(|e| format!("TimestampParsed not established: {e}"))
 }
@@ -272,323 +263,165 @@ fn parse_ts(s: &str) -> Result<Timestamp, String> {
 /// let registry = PluginRegistry::new()
 ///     .register("jiff_workflow", JiffWorkflowPlugin);
 /// ```
-#[derive(Debug)]
+#[derive(Debug, ElicitPlugin)]
+#[plugin(name = "jiff_workflow")]
 pub struct JiffWorkflowPlugin;
 
-impl ElicitPlugin for JiffWorkflowPlugin {
-    fn name(&self) -> &'static str {
-        "jiff_workflow"
-    }
+// ── Tool handlers ─────────────────────────────────────────────────────────────
 
-    fn list_tools(&self) -> Vec<Tool> {
-        vec![
-            typed_tool::<ParseTimestampParams>(
-                "parse_timestamp",
-                "Parse an ISO 8601 timestamp string using jiff. \
-                 Establishes: TimestampParsed. \
-                 Returns seconds, milliseconds, nanoseconds, and human-readable form.",
-            ),
-            typed_tool::<ParseZonedParams>(
-                "parse_zoned",
-                "Parse a jiff zoned datetime string (e.g. '2025-03-05T12:00:00[America/New_York]'). \
-                 Establishes: ZonedParsed. \
-                 Returns year/month/day/hour/minute/second and timezone name.",
-            ),
-            typed_tool::<AssertFutureParams>(
-                "assert_future",
-                "Parse an ISO 8601 timestamp and assert it is strictly after now. \
-                 Establishes: TimestampParsed ∧ TimestampFuture. \
-                 Returns the timestamp and seconds-from-now.",
-            ),
-            typed_tool::<ConvertTzParams>(
-                "convert_tz",
-                "Parse a jiff zoned datetime and convert it to the named IANA timezone. \
-                 Establishes: ZonedParsed ∧ TimezoneConverted. \
-                 The resulting datetime preserves the same instant in time.",
-            ),
-            typed_tool::<ComputeSpanParams>(
-                "compute_span",
-                "Compute the signed duration between two ISO 8601 timestamps. \
-                 Establishes: TimestampParsed(from) ∧ TimestampParsed(to). \
-                 Returns span in seconds, minutes, hours, and days.",
-            ),
-        ]
-    }
-
-    #[instrument(skip(self, _ctx), fields(tool = %params.name))]
-    fn call_tool<'a>(
-        &'a self,
-        params: CallToolRequestParams,
-        _ctx: RequestContext<rmcp::RoleServer>,
-    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
-        Box::pin(async move {
-            let bare = params.name.trim_start_matches("jiff_workflow__");
-            match bare {
-                "parse_timestamp" => {
-                    let p: ParseTimestampParams = parse_args(&params)?;
-                    let (parsed, _proof) = match UnvalidatedTimestampStr::new(p.timestamp).parse() {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let ts = parsed.inner;
-                    let summary = format!(
-                        "TimestampParsed established.\n\
-                         timestamp:    {}\n\
-                         as_second:    {}\n\
-                         as_millis:    {}\n\
-                         subsec_nanos: {}",
-                        ts,
-                        ts.as_second(),
-                        ts.as_millisecond(),
-                        ts.subsec_nanosecond(),
-                    );
-                    Ok(CallToolResult::success(vec![Content::text(summary)]))
-                }
-
-                "parse_zoned" => {
-                    let p: ParseZonedParams = parse_args(&params)?;
-                    let (parsed, _proof) = match UnvalidatedZonedStr::new(p.zoned).parse() {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let z = parsed.inner;
-                    let summary = format!(
-                        "ZonedParsed established.\n\
-                         zoned:    {}\n\
-                         year:     {}\n\
-                         month:    {}\n\
-                         day:      {}\n\
-                         hour:     {}\n\
-                         minute:   {}\n\
-                         second:   {}\n\
-                         timezone: {}",
-                        z,
-                        z.year(),
-                        z.month(),
-                        z.day(),
-                        z.hour(),
-                        z.minute(),
-                        z.second(),
-                        z.time_zone().iana_name().unwrap_or("(fixed offset)"),
-                    );
-                    Ok(CallToolResult::success(vec![Content::text(summary)]))
-                }
-
-                "assert_future" => {
-                    let p: AssertFutureParams = parse_args(&params)?;
-                    let (parsed, parsed_proof) =
-                        match UnvalidatedTimestampStr::new(p.timestamp).parse() {
-                            Ok(r) => r,
-                            Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                        };
-                    let (future, _proof) = match parsed.assert_future(parsed_proof) {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let now = Timestamp::now();
-                    let diff_secs = (future.inner.as_second()) - (now.as_second());
-                    Ok(CallToolResult::success(vec![Content::text(format!(
-                        "TimestampParsed ∧ TimestampFuture established.\n\
-                         timestamp:       {}\n\
-                         seconds_from_now: {}",
-                        future.inner, diff_secs,
-                    ))]))
-                }
-
-                "convert_tz" => {
-                    let p: ConvertTzParams = parse_args(&params)?;
-                    let (parsed, parsed_proof) = match UnvalidatedZonedStr::new(p.zoned).parse() {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let (converted, _proof) = match parsed.convert_tz(&p.timezone, parsed_proof) {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    Ok(CallToolResult::success(vec![Content::text(format!(
-                        "ZonedParsed ∧ TimezoneConverted established.\n\
-                         result:   {}\n\
-                         timezone: {}",
-                        converted.inner,
-                        converted
-                            .inner
-                            .time_zone()
-                            .iana_name()
-                            .unwrap_or("(fixed offset)"),
-                    ))]))
-                }
-
-                "compute_span" => {
-                    let p: ComputeSpanParams = parse_args(&params)?;
-                    let from = match parse_ts(&p.from) {
-                        Ok(t) => t,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let to = match parse_ts(&p.to) {
-                        Ok(t) => t,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let secs = to.as_second() - from.as_second();
-                    let summary = format!(
-                        "TimestampParsed(from) ∧ TimestampParsed(to) established.\n\
-                         from:    {}\n\
-                         to:      {}\n\
-                         seconds: {}\n\
-                         minutes: {}\n\
-                         hours:   {}\n\
-                         days:    {}",
-                        from,
-                        to,
-                        secs,
-                        secs / 60,
-                        secs / 3600,
-                        secs / 86400,
-                    );
-                    Ok(CallToolResult::success(vec![Content::text(summary)]))
-                }
-
-                other => Ok(CallToolResult::error(vec![Content::text(format!(
-                    "Unknown tool: {other}"
-                ))])),
-            }
-        })
-    }
+#[elicit_tool(
+    plugin = "jiff_workflow",
+    name = "parse_timestamp",
+    description = "Parse an ISO 8601 timestamp string using jiff. \
+                   Establishes: TimestampParsed. \
+                   Returns seconds, milliseconds, nanoseconds, and human-readable form."
+)]
+#[instrument(skip_all)]
+async fn parse_timestamp(p: ParseTimestampParams) -> Result<CallToolResult, ErrorData> {
+    let (parsed, _proof) = match UnvalidatedTimestampStr::new(p.timestamp).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let ts = parsed.inner;
+    let summary = format!(
+        "TimestampParsed established.\n\
+         timestamp:    {}\n\
+         as_second:    {}\n\
+         as_millis:    {}\n\
+         subsec_nanos: {}",
+        ts,
+        ts.as_second(),
+        ts.as_millisecond(),
+        ts.subsec_nanosecond(),
+    );
+    Ok(CallToolResult::success(vec![Content::text(summary)]))
 }
 
-// ── EmitCode ──────────────────────────────────────────────────────────────────
-
-#[cfg(feature = "emit")]
-use elicitation::emit_code::{CrateDep, EmitCode};
-#[cfg(feature = "emit")]
-use proc_macro2::TokenStream;
-
-#[cfg(feature = "emit")]
-const ELICIT_JIFF_DEP: CrateDep = CrateDep::new("elicit_jiff", "0.8");
-#[cfg(feature = "emit")]
-const ELICITATION_DEP_J: CrateDep = CrateDep::new("elicitation", "0.8");
-#[cfg(feature = "emit")]
-const JIFF_DEP: CrateDep = CrateDep::new("jiff", "0.2");
-
-/// `parse_timestamp` → `UnvalidatedTimestampStr::new → .parse()`
-#[cfg(feature = "emit")]
-impl EmitCode for ParseTimestampParams {
-    fn emit_code(&self) -> TokenStream {
-        let ts = &self.timestamp;
-        quote::quote! {
-            let (_ts, _ts_proof) = elicit_jiff::UnvalidatedTimestampStr::new(#ts.to_string())
-                .parse()
-                .map_err(|e| format!("Timestamp parse failed: {}", e))?;
-            let _inner = _ts.into_inner();
-            println!("TimestampParsed: {} ({}s)", _inner, _inner.as_second());
-        }
-    }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP_J, ELICIT_JIFF_DEP]
-    }
+#[elicit_tool(
+    plugin = "jiff_workflow",
+    name = "parse_zoned",
+    description = "Parse a jiff zoned datetime string (e.g. '2025-03-05T12:00:00[America/New_York]'). \
+                   Establishes: ZonedParsed. \
+                   Returns year/month/day/hour/minute/second and timezone name."
+)]
+#[instrument(skip_all)]
+async fn parse_zoned(p: ParseZonedParams) -> Result<CallToolResult, ErrorData> {
+    let (parsed, _proof) = match UnvalidatedZonedStr::new(p.zoned).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let z = parsed.inner;
+    let summary = format!(
+        "ZonedParsed established.\n\
+         zoned:    {}\n\
+         year:     {}\n\
+         month:    {}\n\
+         day:      {}\n\
+         hour:     {}\n\
+         minute:   {}\n\
+         second:   {}\n\
+         timezone: {}",
+        z,
+        z.year(),
+        z.month(),
+        z.day(),
+        z.hour(),
+        z.minute(),
+        z.second(),
+        z.time_zone().iana_name().unwrap_or("(fixed offset)"),
+    );
+    Ok(CallToolResult::success(vec![Content::text(summary)]))
 }
 
-/// `parse_zoned` → `UnvalidatedZonedStr::new → .parse()`
-#[cfg(feature = "emit")]
-impl EmitCode for ParseZonedParams {
-    fn emit_code(&self) -> TokenStream {
-        let z = &self.zoned;
-        quote::quote! {
-            let (_zoned, _zoned_proof) = elicit_jiff::UnvalidatedZonedStr::new(#z.to_string())
-                .parse()
-                .map_err(|e| format!("Zoned parse failed: {}", e))?;
-            let _inner = _zoned.into_inner();
-            println!("ZonedParsed: {}", _inner);
-        }
-    }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP_J, ELICIT_JIFF_DEP]
-    }
+#[elicit_tool(
+    plugin = "jiff_workflow",
+    name = "assert_future",
+    description = "Parse an ISO 8601 timestamp and assert it is strictly after now. \
+                   Establishes: TimestampParsed ∧ TimestampFuture. \
+                   Returns the timestamp and seconds-from-now."
+)]
+#[instrument(skip_all)]
+async fn assert_future(p: AssertFutureParams) -> Result<CallToolResult, ErrorData> {
+    let (parsed, parsed_proof) = match UnvalidatedTimestampStr::new(p.timestamp).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let (future, _proof) = match parsed.assert_future(parsed_proof) {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let now = Timestamp::now();
+    let diff_secs = (future.inner.as_second()) - (now.as_second());
+    Ok(CallToolResult::success(vec![Content::text(format!(
+        "TimestampParsed ∧ TimestampFuture established.\n\
+         timestamp:       {}\n\
+         seconds_from_now: {}",
+        future.inner, diff_secs,
+    ))]))
 }
 
-/// `assert_future` → `UnvalidatedTimestampStr → ParsedTimestamp → FutureTimestampState`
-#[cfg(feature = "emit")]
-impl EmitCode for AssertFutureParams {
-    fn emit_code(&self) -> TokenStream {
-        let ts = &self.timestamp;
-        quote::quote! {
-            let (_ts, _ts_proof) = elicit_jiff::UnvalidatedTimestampStr::new(#ts.to_string())
-                .parse()
-                .map_err(|e| format!("Timestamp parse failed: {}", e))?;
-            let (_future, _future_proof) = _ts.assert_future(_ts_proof)
-                .map_err(|e| format!("TimestampFuture not established: {}", e))?;
-            println!("TimestampParsed \u{2227} TimestampFuture: {}", _future.into_inner());
-        }
-    }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP_J, ELICIT_JIFF_DEP]
-    }
+#[elicit_tool(
+    plugin = "jiff_workflow",
+    name = "convert_tz",
+    description = "Parse a jiff zoned datetime and convert it to the named IANA timezone. \
+                   Establishes: ZonedParsed ∧ TimezoneConverted. \
+                   The resulting datetime preserves the same instant in time."
+)]
+#[instrument(skip_all)]
+async fn convert_tz(p: ConvertTzParams) -> Result<CallToolResult, ErrorData> {
+    let (parsed, parsed_proof) = match UnvalidatedZonedStr::new(p.zoned).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let (converted, _proof) = match parsed.convert_tz(&p.timezone, parsed_proof) {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    Ok(CallToolResult::success(vec![Content::text(format!(
+        "ZonedParsed ∧ TimezoneConverted established.\n\
+         result:   {}\n\
+         timezone: {}",
+        converted.inner,
+        converted
+            .inner
+            .time_zone()
+            .iana_name()
+            .unwrap_or("(fixed offset)"),
+    ))]))
 }
 
-/// `convert_tz` → `UnvalidatedZonedStr → ParsedZoned → ConvertedZonedState`
-#[cfg(feature = "emit")]
-impl EmitCode for ConvertTzParams {
-    fn emit_code(&self) -> TokenStream {
-        let z = &self.zoned;
-        let tz = &self.timezone;
-        quote::quote! {
-            let (_zoned, _zoned_proof) = elicit_jiff::UnvalidatedZonedStr::new(#z.to_string())
-                .parse()
-                .map_err(|e| format!("Zoned parse failed: {}", e))?;
-            let (_converted, _tz_proof) = _zoned.convert_tz(#tz, _zoned_proof)
-                .map_err(|e| format!("TimezoneConverted not established: {}", e))?;
-            println!("ZonedParsed \u{2227} TimezoneConverted: {}", _converted.into_inner());
-        }
-    }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP_J, ELICIT_JIFF_DEP]
-    }
-}
-
-/// `compute_span` → parse two timestamps and compute span
-#[cfg(feature = "emit")]
-impl EmitCode for ComputeSpanParams {
-    fn emit_code(&self) -> TokenStream {
-        let from = &self.from;
-        let to = &self.to;
-        quote::quote! {
-            let _from: jiff::Timestamp = #from.parse()
-                .map_err(|e| format!("From parse failed: {}", e))?;
-            let _to: jiff::Timestamp = #to.parse()
-                .map_err(|e| format!("To parse failed: {}", e))?;
-            let _secs = _to.as_second() - _from.as_second();
-            println!("Span: {}s / {}m / {}h / {}d",
-                _secs, _secs / 60, _secs / 3600, _secs / 86400);
-        }
-    }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP_J, ELICIT_JIFF_DEP, JIFF_DEP]
-    }
-}
-
-// ── dispatch_emit ─────────────────────────────────────────────────────────────
-
-/// Deserialize a jiff_workflow tool's params from JSON and return its [`EmitCode`] impl.
-#[cfg(feature = "emit")]
-pub fn dispatch_emit(
-    tool_name: &str,
-    params: serde_json::Value,
-) -> Result<Box<dyn EmitCode>, String> {
-    match tool_name {
-        "parse_timestamp" => serde_json::from_value::<ParseTimestampParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "parse_zoned" => serde_json::from_value::<ParseZonedParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "assert_future" => serde_json::from_value::<AssertFutureParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "convert_tz" => serde_json::from_value::<ConvertTzParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        "compute_span" => serde_json::from_value::<ComputeSpanParams>(params)
-            .map(|p| Box::new(p) as Box<dyn EmitCode>)
-            .map_err(|e| format!("{e}")),
-        other => Err(format!("Unknown jiff_workflow tool: '{other}'")),
-    }
+#[elicit_tool(
+    plugin = "jiff_workflow",
+    name = "compute_span",
+    description = "Compute the signed duration between two ISO 8601 timestamps. \
+                   Establishes: TimestampParsed(from) ∧ TimestampParsed(to). \
+                   Returns span in seconds, minutes, hours, and days."
+)]
+#[instrument(skip_all)]
+async fn compute_span(p: ComputeSpanParams) -> Result<CallToolResult, ErrorData> {
+    let from = match parse_ts(&p.from) {
+        Ok(t) => t,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let to = match parse_ts(&p.to) {
+        Ok(t) => t,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let secs = to.as_second() - from.as_second();
+    let summary = format!(
+        "TimestampParsed(from) ∧ TimestampParsed(to) established.\n\
+         from:    {}\n\
+         to:      {}\n\
+         seconds: {}\n\
+         minutes: {}\n\
+         hours:   {}\n\
+         days:    {}",
+        from,
+        to,
+        secs,
+        secs / 60,
+        secs / 3600,
+        secs / 86400,
+    );
+    Ok(CallToolResult::success(vec![Content::text(summary)]))
 }

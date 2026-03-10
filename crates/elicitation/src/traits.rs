@@ -225,6 +225,9 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// # Returns
     ///
     /// An empty token stream if no proof is implemented for this type.
+    ///
+    /// Available with the `proofs` feature.
+    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -240,6 +243,9 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// # Returns
     ///
     /// An empty token stream if no Verus proof is implemented for this type.
+    ///
+    /// Available with the `proofs` feature.
+    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -255,6 +261,9 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// # Returns
     ///
     /// An empty token stream if no Creusot proof is implemented for this type.
+    ///
+    /// Available with the `proofs` feature.
+    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -267,6 +276,9 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// # Returns
     ///
     /// An empty token stream if no Prusti proof is implemented for this type.
+    ///
+    /// Available with the `proofs` feature.
+    #[cfg(feature = "proofs")]
     fn prusti_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }

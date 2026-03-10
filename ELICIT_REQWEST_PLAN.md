@@ -35,10 +35,12 @@ crates/elicit_reqwest/
 ### 1. Client Wrapper (`client.rs`)
 
 **Macro Strategy:**
+
 - Use `elicit_newtype!(reqwest::Client, as Client)` for the wrapper
 - Use `#[reflect_methods]` for ALL methods (all are generic over `U: IntoUrl`)
 
 **Methods to Wrap (all generic):**
+
 ```rust
 #[reflect_methods]
 impl Client {
@@ -59,6 +61,7 @@ impl Client {
 ```
 
 **Rationale:**
+
 - All HTTP convenience methods are generic over `IntoUrl`
 - This perfectly tests our new generic method support in `#[reflect_methods]`
 - Cannot use `elicit_newtype_methods!` because all methods are generic
@@ -66,12 +69,14 @@ impl Client {
 ### 2. RequestBuilder Wrapper (`request_builder.rs`)
 
 **Macro Strategy:**
+
 - Use `elicit_newtype!(reqwest::RequestBuilder, as RequestBuilder)` for wrapper
 - **Mixed approach:**
   - Use `elicit_newtype_methods!` for non-generic methods
   - Use `#[reflect_methods]` for generic methods
 
 **Non-Generic Methods (use `elicit_newtype_methods!`):**
+
 ```rust
 elicit_newtype_methods! {
     RequestBuilder => [
@@ -86,6 +91,7 @@ elicit_newtype_methods! {
 ```
 
 **Generic Methods (use `#[reflect_methods]`):**
+
 ```rust
 #[reflect_methods]
 impl RequestBuilder {
@@ -109,6 +115,7 @@ impl RequestBuilder {
 ```
 
 **Rationale:**
+
 - Tests both macro systems on same type
 - Demonstrates when to use each approach
 - `elicit_newtype_methods!` for simple delegation
@@ -117,10 +124,12 @@ impl RequestBuilder {
 ### 3. Response Wrapper (`response.rs`)
 
 **Macro Strategy:**
+
 - Use `elicit_newtype!(reqwest::Response, as Response)` for wrapper
 - **Mixed approach:**
 
 **Non-Generic Methods (use `elicit_newtype_methods!`):**
+
 ```rust
 elicit_newtype_methods! {
     Response => [
@@ -139,6 +148,7 @@ elicit_newtype_methods! {
 ```
 
 **Generic Method (use `#[reflect_methods]`):**
+
 ```rust
 #[reflect_methods]
 impl Response {
@@ -148,6 +158,7 @@ impl Response {
 ```
 
 **Rationale:**
+
 - Most Response methods are non-generic
 - Only `json<T>()` requires generic support
 - Demonstrates predominant use of `elicit_newtype_methods!` with selective generic support
@@ -155,6 +166,7 @@ impl Response {
 ### 4. Supporting Types (`types.rs`)
 
 **Macro Strategy:**
+
 - Use `elicit_newtype!` for simple wrappers of re-exported types
 - No method wrappers needed (these are just type aliases)
 
@@ -169,6 +181,7 @@ elicit_newtype!(http::HeaderMap, as HeaderMap);
 ```
 
 **Rationale:**
+
 - Provides type-safe elicitation for complete HTTP workflows
 - Tests newtype wrapper generation for external types
 - No methods to wrap, just type identity
@@ -178,6 +191,7 @@ elicit_newtype!(http::HeaderMap, as HeaderMap);
 ### For Generic Methods
 
 All generic type parameters must satisfy:
+
 ```rust
 where
     T: Elicitation + JsonSchema + [OriginalBound],
@@ -199,6 +213,7 @@ where
 ```
 
 **Key Points:**
+
 - Preserve original bounds (`Serialize`, `Display`, etc.)
 - Add elicitation bounds (`Elicitation + JsonSchema`)
 - Use reference types (`&T`) in parameter structs (auto-converted by macro)
@@ -308,22 +323,26 @@ fn test_json_generic() {
 ## Implementation Phases
 
 ### Phase 1: Core Structure
+
 1. Create crate skeleton
 2. Add dependencies
 3. Create basic newtype wrappers
 
 ### Phase 2: Non-Generic Methods
+
 1. Implement `elicit_newtype_methods!` for RequestBuilder
 2. Implement `elicit_newtype_methods!` for Response
 3. Write basic tests
 
 ### Phase 3: Generic Methods
+
 1. Implement `#[reflect_methods]` for Client
 2. Implement `#[reflect_methods]` for RequestBuilder generic methods
 3. Implement `#[reflect_methods]` for Response::json
 4. Write generic-specific tests
 
 ### Phase 4: Integration
+
 1. End-to-end workflow tests
 2. Documentation with examples
 3. Benchmark macro expansion times
@@ -351,6 +370,7 @@ fn test_json_generic() {
 ## Documentation Strategy
 
 Each wrapper type should include:
+
 - Module-level docs explaining wrapping strategy
 - Examples showing MCP tool usage
 - Notes on when to use each macro type
@@ -359,6 +379,7 @@ Each wrapper type should include:
 ## Future Enhancements
 
 After initial implementation:
+
 1. Add more reqwest features (multipart, cookies, redirects)
 2. Create example MCP server using elicit_reqwest
 3. Benchmark against hand-written wrappers

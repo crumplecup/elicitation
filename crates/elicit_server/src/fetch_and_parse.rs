@@ -287,3 +287,10 @@ pub fn dispatch_fetch_and_parse_emit(
         other => Err(format!("Unknown fetch_and_parse tool: {other}")),
     }
 }
+
+// ── Global emit registry ──────────────────────────────────────────────────────
+
+#[cfg(feature = "emit")]
+elicitation::register_emit!("fetch_and_extract", FetchAndExtractParams);
+#[cfg(feature = "emit")]
+elicitation::register_emit!("fetch_and_validate", FetchAndValidateParams);
