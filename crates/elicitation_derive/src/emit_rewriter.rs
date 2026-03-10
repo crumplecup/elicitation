@@ -216,14 +216,14 @@ impl EmitRewriter {
         let Ok(manifest_str) = std::fs::read_to_string(&manifest_path) else {
             return vec![];
         };
-        let Ok(manifest) = manifest_str.parse::<toml::Value>() else {
+        let Ok(manifest) = toml::from_str::<toml::Value>(&manifest_str) else {
             return vec![];
         };
 
         // Locate workspace root and parse it.
         let workspace_val = find_workspace_root(&manifest_dir)
             .and_then(|root| std::fs::read_to_string(root.join("Cargo.toml")).ok())
-            .and_then(|s| s.parse::<toml::Value>().ok());
+            .and_then(|s| toml::from_str::<toml::Value>(&s).ok());
 
         let workspace_pkg_version = workspace_val
             .as_ref()
