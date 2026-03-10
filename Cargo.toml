@@ -23,7 +23,7 @@ exclude = ["crates/elicitation_verus"]
 resolver = "2"
 
 [workspace.package]
-version = "0.9.0"
+version = "0.9.1"
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/crumplecup/elicitation"
@@ -38,20 +38,20 @@ unexpected_cfgs = { level = "warn", check-cfg = [
 ] }
 
 [workspace.dependencies]
-elicitation = { path = "crates/elicitation", version = "0.9.0" }
-elicitation_derive = { path = "crates/elicitation_derive", version = "0.9.0" }
-elicitation_macros = { path = "crates/elicitation_macros", version = "0.9.0" }
-elicitation_rand = { path = "crates/elicitation_rand", version = "0.9.0" }
-elicitation_kani = { path = "crates/elicitation_kani", version = "0.9.0" }
-elicit_chrono = { path = "crates/elicit_chrono", version = "0.9.0" }
-elicit_jiff = { path = "crates/elicit_jiff", version = "0.9.0" }
-elicit_url = { path = "crates/elicit_url", version = "0.9.0" }
-elicit_time = { path = "crates/elicit_time", version = "0.9.0" }
-elicit_reqwest = { path = "crates/elicit_reqwest", version = "0.9.0" }
-elicit_serde_json = { path = "crates/elicit_serde_json", version = "0.9.0" }
-elicit_regex = { path = "crates/elicit_regex", version = "0.9.0" }
-elicit_uuid = { path = "crates/elicit_uuid", version = "0.9.0" }
-elicit_serde = { path = "crates/elicit_serde", version = "0.9.0" }
+elicitation = { path = "crates/elicitation", version = "0.9.1" }
+elicitation_derive = { path = "crates/elicitation_derive", version = "0.9.1" }
+elicitation_macros = { path = "crates/elicitation_macros", version = "0.9.1" }
+elicitation_rand = { path = "crates/elicitation_rand", version = "0.9.1" }
+elicitation_kani = { path = "crates/elicitation_kani", version = "0.9.1" }
+elicit_chrono = { path = "crates/elicit_chrono", version = "0.9.1" }
+elicit_jiff = { path = "crates/elicit_jiff", version = "0.9.1" }
+elicit_url = { path = "crates/elicit_url", version = "0.9.1" }
+elicit_time = { path = "crates/elicit_time", version = "0.9.1" }
+elicit_reqwest = { path = "crates/elicit_reqwest", version = "0.9.1" }
+elicit_serde_json = { path = "crates/elicit_serde_json", version = "0.9.1" }
+elicit_regex = { path = "crates/elicit_regex", version = "0.9.1" }
+elicit_uuid = { path = "crates/elicit_uuid", version = "0.9.1" }
+elicit_serde = { path = "crates/elicit_serde", version = "0.9.1" }
 
 
 # MCP client
@@ -96,7 +96,7 @@ syn = { version = "2", features = ["full", "extra-traits"] }
 quote = "1"
 proc-macro2 = "1"
 prettyplease = "0.2"
-toml = "0.8"
+toml = "1.0"
 
 # Async utilities
 futures = "0.3"
