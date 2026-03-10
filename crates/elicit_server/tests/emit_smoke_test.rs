@@ -525,6 +525,161 @@ mod smoke {
         );
     }
 
+    // ── crate_deps pipeline tests ─────────────────────────────────────────────
+    //
+    // These test each stage of the dep-inference pipeline independently so a
+    // failure points directly at the broken layer:
+    //
+    //   1. `crate_deps()` on a dispatched step (macro-generated list)
+    //   2. `BinaryScaffold::all_deps()` (dedup + scaffold deps merged in)
+    //   3. `BinaryScaffold::to_cargo_toml()` (rendered TOML string)
+    //
+    // A gap here is what allowed the elicit_server tools to silently emit an
+    // empty dependency list despite the generated code referencing `elicitation`
+    // and `reqwest` directly.
+
+    /// Step 1 — `crate_deps()` must be non-empty and include the crates the
+    /// emitted code actually references.
+    #[test]
+    fn elicit_server_secure_fetch_crate_deps_non_empty() {
+        let step = elicit_server::emit_dispatch(
+            "secure_fetch",
+            serde_json::json!({ "url": "https://httpbin.org/get", "timeout_secs": 30.0 }),
+        )
+        .expect("dispatch secure_fetch");
+
+        let deps = step.crate_deps();
+        let names: Vec<&str> = deps.iter().map(|d| d.name).collect();
+        println!("secure_fetch crate_deps: {names:?}");
+
+        assert!(
+            !deps.is_empty(),
+            "crate_deps() returned empty — macro failed to read Cargo.toml at build time"
+        );
+        assert!(
+            names.contains(&"elicitation"),
+            "missing `elicitation` dep; got: {names:?}"
+        );
+        assert!(
+            names.contains(&"reqwest"),
+            "missing `reqwest` dep; got: {names:?}"
+        );
+        assert!(
+            names.contains(&"elicit_server"),
+            "missing own crate `elicit_server` dep; got: {names:?}"
+        );
+    }
+
+    /// Step 1 (variant) — validated_api_call has the same dep requirements.
+    #[test]
+    fn elicit_server_validated_api_call_crate_deps_non_empty() {
+        let step = elicit_server::emit_dispatch(
+            "validated_api_call",
+            serde_json::json!({
+                "url": "https://api.example.com/data",
+                "token": "test-token",
+                "method": "GET"
+            }),
+        )
+        .expect("dispatch validated_api_call");
+
+        let deps = step.crate_deps();
+        let names: Vec<&str> = deps.iter().map(|d| d.name).collect();
+        println!("validated_api_call crate_deps: {names:?}");
+
+        assert!(!deps.is_empty(), "crate_deps() returned empty");
+        assert!(
+            names.contains(&"elicitation"),
+            "missing `elicitation`; got: {names:?}"
+        );
+        assert!(
+            names.contains(&"reqwest"),
+            "missing `reqwest`; got: {names:?}"
+        );
+    }
+
+    /// Step 1 (passing baseline) — a tool from elicit_url that already passes,
+    /// to confirm the pipeline works for non-elicit_server tools.
+    #[test]
+    fn elicit_url_parse_url_crate_deps_non_empty() {
+        let step = elicit_server::emit_dispatch(
+            "parse_url",
+            serde_json::json!({ "url": "https://example.com" }),
+        )
+        .expect("dispatch parse_url");
+
+        let deps = step.crate_deps();
+        let names: Vec<&str> = deps.iter().map(|d| d.name).collect();
+        println!("parse_url crate_deps: {names:?}");
+
+        assert!(
+            !deps.is_empty(),
+            "crate_deps() returned empty for parse_url"
+        );
+        assert!(
+            names.contains(&"elicit_url"),
+            "missing `elicit_url` dep; got: {names:?}"
+        );
+    }
+
+    /// Step 2 — `BinaryScaffold::all_deps()` merges scaffold defaults with step
+    /// deps; the result must include both `tokio` (scaffold) and `elicitation`.
+    #[test]
+    fn elicit_server_secure_fetch_scaffold_all_deps() {
+        let step = elicit_server::emit_dispatch(
+            "secure_fetch",
+            serde_json::json!({ "url": "https://httpbin.org/get", "timeout_secs": 30.0 }),
+        )
+        .expect("dispatch secure_fetch");
+
+        let scaffold = elicitation::emit_code::BinaryScaffold::new(vec![step], false);
+        let all = scaffold.all_deps();
+        let names: Vec<&str> = all.iter().map(|d| d.name).collect();
+        println!("scaffold all_deps: {names:?}");
+
+        assert!(
+            names.contains(&"tokio"),
+            "missing scaffold dep `tokio`; got: {names:?}"
+        );
+        assert!(
+            names.contains(&"elicitation"),
+            "missing `elicitation` in scaffold all_deps; got: {names:?}"
+        );
+        assert!(
+            names.contains(&"reqwest"),
+            "missing `reqwest` in scaffold all_deps; got: {names:?}"
+        );
+    }
+
+    /// Step 3 — the rendered `Cargo.toml` string must contain the required dep
+    /// entries so the generated crate actually compiles.
+    #[test]
+    fn elicit_server_secure_fetch_cargo_toml_contains_deps() {
+        let step = elicit_server::emit_dispatch(
+            "secure_fetch",
+            serde_json::json!({ "url": "https://httpbin.org/get", "timeout_secs": 30.0 }),
+        )
+        .expect("dispatch secure_fetch");
+
+        let scaffold = elicitation::emit_code::BinaryScaffold::new(vec![step], false)
+            .with_workspace_root(workspace_root());
+        let toml = scaffold.to_cargo_toml("test_secure_fetch");
+        println!("generated Cargo.toml:\n{toml}");
+
+        assert!(
+            toml.contains("elicitation"),
+            "Cargo.toml missing `elicitation`:\n{toml}"
+        );
+        assert!(
+            toml.contains("reqwest"),
+            "Cargo.toml missing `reqwest`:\n{toml}"
+        );
+        assert!(
+            toml.contains("elicit_server"),
+            "Cargo.toml missing `elicit_server`:\n{toml}"
+        );
+    }
+
     // ── Cross-crate: secure_fetch (build only — network) ─────────────────────
 
     #[test]
