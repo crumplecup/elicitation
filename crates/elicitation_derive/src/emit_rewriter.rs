@@ -9,7 +9,6 @@
 //! Unrecognised patterns pass through unchanged (fail-safe).
 
 use proc_macro2::{Delimiter, Group, Ident, Punct, Spacing, Span, TokenStream, TokenTree};
-use toml;
 
 /// Rewriter that transforms a handler body into an `EmitCode`-suitable body.
 pub(crate) struct EmitRewriter {
