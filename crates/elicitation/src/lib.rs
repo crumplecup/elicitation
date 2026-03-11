@@ -177,7 +177,8 @@ pub use traits::{
 #[cfg(feature = "graph")]
 pub use type_graph::{
     DotRenderer, GraphEdge, GraphNode, GraphRenderer, MermaidDirection, MermaidRenderer, NodeKind,
-    TypeGraph, TypeGraphError, TypeGraphKey, all_graphable_types, lookup_type_graph,
+    TypeGraph, TypeGraphError, TypeGraphKey, TypeGraphPlugin, all_graphable_types,
+    lookup_type_graph,
 };
 
 // Type spec layer (agent-browsable contracts)

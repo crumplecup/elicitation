@@ -29,9 +29,11 @@
 //! ```
 
 pub mod builder;
+pub mod plugin;
 pub mod registry;
 pub mod render;
 
 pub use builder::{GraphEdge, GraphNode, NodeKind, TypeGraph, TypeGraphError};
+pub use plugin::TypeGraphPlugin;
 pub use registry::{TypeGraphKey, all_graphable_types, lookup_type_graph};
 pub use render::{DotRenderer, GraphRenderer, MermaidDirection, MermaidRenderer};
