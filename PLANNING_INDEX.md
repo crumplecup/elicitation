@@ -150,20 +150,20 @@ EMIT_AUTODERIVE_PLAN.md
 
 **Document:** [TYPE_GRAPH_PLAN.md](TYPE_GRAPH_PLAN.md)
 
-**Status:** 🔴 Not Started
+**Status:** ✅ Complete
+
+**Guide:** [TYPE_GRAPH_GUIDE.md](TYPE_GRAPH_GUIDE.md)
 
 **Description:** Framework-level workflow visualization via an inventory-based
-`TypeGraphKey` registry and Mermaid/DOT renderers. Includes an upgrade to
-`PatternDetails::Select` to carry full variant field structure (making
-`ElicitIntrospect` a complete structural description), a CLI `graph` subcommand,
-and a `TypeGraphPlugin` MCP tool that lets agents query the graph of any
-registered type mid-session.
+`TypeGraphKey` registry and Mermaid/DOT renderers. Upgraded
+`PatternDetails::Select` to carry full variant field structure.
+CLI `graph` subcommand and `TypeGraphPlugin` MCP tool ship in the `graph` feature.
 
 **Phases:**
 
-- A-0: Upgrade `PatternDetails::Select` to `variants: Vec<VariantMetadata>`
-- A-1: `TypeGraphKey` registry + `#[derive(Elicit)]` emission
-- B: `TypeGraph` builder (recursive walk, cycle detection)
-- C: Mermaid + DOT renderers
-- D: `elicitation graph` CLI subcommand
-- E: `TypeGraphPlugin` MCP tool
+- ✅ A-0: Upgrade `PatternDetails::Select` to `variants: Vec<VariantMetadata>`
+- ✅ A-1: `TypeGraphKey` registry + `#[derive(Elicit)]` emission
+- ✅ B: `TypeGraph` builder (BFS, cycle detection, qualified variant nodes)
+- ✅ C: Mermaid + DOT renderers behind `GraphRenderer` trait
+- ✅ D: `elicitation graph` CLI subcommand
+- ✅ E: `TypeGraphPlugin` MCP tool (3 tools: list, graph, describe_edges)
