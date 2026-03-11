@@ -39,6 +39,14 @@ pub enum Commands {
         #[command(subcommand)]
         action: CreusotAction,
     },
+
+    /// Visualize elicitation type structure as a graph
+    #[cfg(feature = "graph")]
+    Graph {
+        /// Action to perform
+        #[command(subcommand)]
+        action: GraphAction,
+    },
 }
 
 /// Verification actions
@@ -142,6 +150,33 @@ pub enum CreusotAction {
     },
 }
 
+/// Graph visualization actions
+#[cfg(feature = "graph")]
+#[derive(Debug, Clone, Subcommand)]
+pub enum GraphAction {
+    /// List all registered graphable types
+    List,
+
+    /// Render a type's structural graph
+    Render {
+        /// Root type name to render (e.g. `ApplicationConfig`)
+        #[arg(short, long)]
+        root: String,
+
+        /// Output format
+        #[arg(short, long, default_value = "mermaid", value_parser = ["mermaid", "dot"])]
+        format: String,
+
+        /// Include primitive/generic leaf nodes in output
+        #[arg(long)]
+        include_primitives: bool,
+
+        /// Write output to file instead of stdout
+        #[arg(short, long)]
+        output: Option<PathBuf>,
+    },
+}
+
 /// Execute the CLI command.
 #[tracing::instrument(skip(cli))]
 pub fn execute(cli: Cli) -> anyhow::Result<()> {
@@ -151,6 +186,8 @@ pub fn execute(cli: Cli) -> anyhow::Result<()> {
         Commands::Verify { action } => crate::verification::runner::handle(action),
         Commands::Verus { action } => handle_verus(action),
         Commands::Creusot { action } => handle_creusot(action),
+        #[cfg(feature = "graph")]
+        Commands::Graph { action } => handle_graph(action),
     }
 }
 
@@ -300,4 +337,69 @@ fn show_verus_failed(file: &std::path::Path) -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+/// Handle graph visualization commands.
+#[cfg(feature = "graph")]
+#[tracing::instrument(skip(action))]
+fn handle_graph(action: &GraphAction) -> anyhow::Result<()> {
+    use crate::type_graph::{
+        DotRenderer, GraphRenderer, MermaidDirection, MermaidRenderer, TypeGraph,
+    };
+    use std::io::Write;
+
+    tracing::debug!(action = ?action, "Handling graph command");
+
+    match action {
+        GraphAction::List => {
+            let types = TypeGraph::registered_types();
+            if types.is_empty() {
+                println!("No graphable types registered.");
+                println!("Enable the `graph` feature and use `#[derive(Elicit)]` on your types.");
+            } else {
+                println!("{} registered graphable type(s):\n", types.len());
+                for name in types {
+                    println!("  {name}");
+                }
+            }
+            Ok(())
+        }
+
+        GraphAction::Render {
+            root,
+            format,
+            include_primitives,
+            output,
+        } => {
+            tracing::debug!(root, format, "Rendering type graph");
+
+            let graph = TypeGraph::from_root(root).map_err(|e| anyhow::anyhow!("{e}"))?;
+
+            let rendered = match format.as_str() {
+                "dot" => DotRenderer {
+                    include_primitives: *include_primitives,
+                    ..Default::default()
+                }
+                .render(&graph),
+                _ => MermaidRenderer {
+                    direction: MermaidDirection::TopDown,
+                    include_primitives: *include_primitives,
+                }
+                .render(&graph),
+            };
+
+            match output {
+                Some(path) => {
+                    let mut file = std::fs::File::create(path)
+                        .map_err(|e| anyhow::anyhow!("Cannot write to {}: {e}", path.display()))?;
+                    file.write_all(rendered.as_bytes())?;
+                    println!("Written to {}", path.display());
+                    tracing::info!(path = %path.display(), format, "Graph written to file");
+                }
+                None => print!("{rendered}"),
+            }
+
+            Ok(())
+        }
+    }
 }
