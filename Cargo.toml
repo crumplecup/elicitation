@@ -55,7 +55,7 @@ elicit_serde = { path = "crates/elicit_serde", version = "0.9.1" }
 
 
 # MCP client
-rmcp = { version = "1.1.0", features = [
+rmcp = { version = "1.2", features = [
   "client",
   "transport-io",
   "schemars",

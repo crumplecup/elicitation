@@ -1,7 +1,5 @@
 //! Tests for the TypeGraphKey structural registry.
 
-#![cfg(feature = "graph")]
-
 use elicitation::{
     Elicit, ElicitIntrospect, PatternDetails, Prompt, Select, TypeGraphKey, VariantMetadata,
     all_graphable_types, lookup_type_graph,

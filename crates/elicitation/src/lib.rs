@@ -95,7 +95,6 @@ mod error;
 pub mod type_spec;
 pub mod verification;
 
-#[cfg(feature = "graph")]
 pub mod type_graph;
 
 #[cfg(feature = "cli")]
@@ -174,7 +173,6 @@ pub use traits::{
 };
 
 // Type graph visualization (structural registry + renderers)
-#[cfg(feature = "graph")]
 pub use type_graph::{
     DotRenderer, GraphEdge, GraphNode, GraphRenderer, MermaidDirection, MermaidRenderer, NodeKind,
     TypeGraph, TypeGraphError, TypeGraphKey, TypeGraphPlugin, all_graphable_types,

@@ -103,7 +103,6 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
     let graph_key_emission = if generics.params.is_empty() {
         let name_str = name.to_string();
         quote! {
-            #[cfg(feature = "graph")]
             elicitation::inventory::submit!(elicitation::TypeGraphKey::new(
                 #name_str,
                 <#name as elicitation::ElicitIntrospect>::metadata,

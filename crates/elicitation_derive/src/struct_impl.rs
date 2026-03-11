@@ -1459,13 +1459,12 @@ fn generate_elicit_spec_impl(
 }
 
 /// Emit an `inventory::submit!` call registering this struct in the
-/// `TypeGraphKey` structural registry. Gated on `cfg(feature = "graph")`.
+/// `TypeGraphKey` structural registry.
 ///
 /// Called for all non-generic structs (named, tuple, unit).
 fn generate_graph_key_emission(name: &syn::Ident) -> TokenStream2 {
     let name_str = name.to_string();
     quote! {
-        #[cfg(feature = "graph")]
         elicitation::inventory::submit!(elicitation::TypeGraphKey::new(
             #name_str,
             <#name as elicitation::ElicitIntrospect>::metadata,

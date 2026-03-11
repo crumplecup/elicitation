@@ -41,7 +41,6 @@ pub enum Commands {
     },
 
     /// Visualize elicitation type structure as a graph
-    #[cfg(feature = "graph")]
     Graph {
         /// Action to perform
         #[command(subcommand)]
@@ -151,7 +150,6 @@ pub enum CreusotAction {
 }
 
 /// Graph visualization actions
-#[cfg(feature = "graph")]
 #[derive(Debug, Clone, Subcommand)]
 pub enum GraphAction {
     /// List all registered graphable types
@@ -186,7 +184,6 @@ pub fn execute(cli: Cli) -> anyhow::Result<()> {
         Commands::Verify { action } => crate::verification::runner::handle(action),
         Commands::Verus { action } => handle_verus(action),
         Commands::Creusot { action } => handle_creusot(action),
-        #[cfg(feature = "graph")]
         Commands::Graph { action } => handle_graph(action),
     }
 }
@@ -340,7 +337,6 @@ fn show_verus_failed(file: &std::path::Path) -> anyhow::Result<()> {
 }
 
 /// Handle graph visualization commands.
-#[cfg(feature = "graph")]
 #[tracing::instrument(skip(action))]
 fn handle_graph(action: &GraphAction) -> anyhow::Result<()> {
     use crate::type_graph::{
