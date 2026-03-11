@@ -145,3 +145,25 @@ machine-readable constraint metadata.
 - E: Kani harnesses for constructor correctness
 
 EMIT_AUTODERIVE_PLAN.md
+
+### Type Graph Visualization
+
+**Document:** [TYPE_GRAPH_PLAN.md](TYPE_GRAPH_PLAN.md)
+
+**Status:** 🔴 Not Started
+
+**Description:** Framework-level workflow visualization via an inventory-based
+`TypeGraphKey` registry and Mermaid/DOT renderers. Includes an upgrade to
+`PatternDetails::Select` to carry full variant field structure (making
+`ElicitIntrospect` a complete structural description), a CLI `graph` subcommand,
+and a `TypeGraphPlugin` MCP tool that lets agents query the graph of any
+registered type mid-session.
+
+**Phases:**
+
+- A-0: Upgrade `PatternDetails::Select` to `variants: Vec<VariantMetadata>`
+- A-1: `TypeGraphKey` registry + `#[derive(Elicit)]` emission
+- B: `TypeGraph` builder (recursive walk, cycle detection)
+- C: Mermaid + DOT renderers
+- D: `elicitation graph` CLI subcommand
+- E: `TypeGraphPlugin` MCP tool

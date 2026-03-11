@@ -95,6 +95,9 @@ mod error;
 pub mod type_spec;
 pub mod verification;
 
+#[cfg(feature = "graph")]
+pub mod type_graph;
+
 #[cfg(feature = "cli")]
 pub mod cli;
 
@@ -167,7 +170,14 @@ pub use server::ElicitServer;
 pub use elicitation_style::ElicitationStyle;
 pub use traits::{
     ElicitBuilder, ElicitIntrospect, Elicitation, ElicitationPattern, Generator, PatternDetails,
-    Prompt, TypeMetadata,
+    Prompt, TypeMetadata, VariantMetadata,
+};
+
+// Type graph visualization (structural registry + renderers)
+#[cfg(feature = "graph")]
+pub use type_graph::{
+    DotRenderer, GraphEdge, GraphNode, GraphRenderer, MermaidDirection, MermaidRenderer, NodeKind,
+    TypeGraph, TypeGraphError, TypeGraphKey, all_graphable_types, lookup_type_graph,
 };
 
 // Type spec layer (agent-browsable contracts)

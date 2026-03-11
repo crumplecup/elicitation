@@ -146,6 +146,14 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
         quote! {}
     };
 
+    // Generate TypeGraphKey submission for the structural registry.
+    // Skip for generic structs (same reason as ElicitSpec).
+    let graph_key_emission = if generics.params.is_empty() {
+        generate_graph_key_emission(name)
+    } else {
+        quote! {}
+    };
+
     // Note: Verification code is NOT generated for user types.
     // Users can write verification harnesses manually if needed.
     // Verification is primarily for elicitation's own contract types.
@@ -156,6 +164,7 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
         #elicit_impl
         #introspect_impl
         #elicit_spec_impl
+        #graph_key_emission
     };
 
     TokenStream::from(expanded)
@@ -326,6 +335,12 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
         quote! {}
     };
 
+    let graph_key_emission = if generics.params.is_empty() {
+        generate_graph_key_emission(name)
+    } else {
+        quote! {}
+    };
+
     #[cfg(feature = "proofs")]
     let proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -416,6 +431,7 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
         }
 
         #elicit_spec_impl
+        #graph_key_emission
     };
 
     TokenStream::from(expanded)
@@ -493,6 +509,12 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
                 std::any::TypeId::of::<#name>
             ));
         }
+    } else {
+        quote! {}
+    };
+
+    let graph_key_emission = if generics.params.is_empty() {
+        generate_graph_key_emission(name)
     } else {
         quote! {}
     };
@@ -580,6 +602,7 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
         }
 
         #elicit_spec_impl
+        #graph_key_emission
     };
 
     TokenStream::from(expanded)
@@ -1431,6 +1454,21 @@ fn generate_elicit_spec_impl(
             #name_str,
             <#name #ty_generics as elicitation::ElicitSpec>::type_spec,
             std::any::TypeId::of::<#name #ty_generics>
+        ));
+    }
+}
+
+/// Emit an `inventory::submit!` call registering this struct in the
+/// `TypeGraphKey` structural registry. Gated on `cfg(feature = "graph")`.
+///
+/// Called for all non-generic structs (named, tuple, unit).
+fn generate_graph_key_emission(name: &syn::Ident) -> TokenStream2 {
+    let name_str = name.to_string();
+    quote! {
+        #[cfg(feature = "graph")]
+        elicitation::inventory::submit!(elicitation::TypeGraphKey::new(
+            #name_str,
+            <#name as elicitation::ElicitIntrospect>::metadata,
         ));
     }
 }

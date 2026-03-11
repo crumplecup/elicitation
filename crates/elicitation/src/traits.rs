@@ -508,6 +508,20 @@ impl TypeMetadata {
     }
 }
 
+/// Metadata for one variant of a Select-pattern enum.
+///
+/// Unit variants have `fields: vec![]`. Tuple and struct variants carry
+/// `FieldInfo` for each associated field, enabling graph traversal and
+/// complete structural introspection.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct VariantMetadata {
+    /// Variant label shown to the agent (e.g., `"Fast"`, `"Production"`).
+    pub label: String,
+    /// Field edges for this variant. Empty for unit variants.
+    pub fields: Vec<crate::FieldInfo>,
+}
+
 /// Pattern-specific structural details.
 ///
 /// Each variant corresponds to an `ElicitationPattern` and provides
@@ -524,9 +538,12 @@ pub enum PatternDetails {
     },
 
     /// Select pattern (enums).
+    ///
+    /// Each [`VariantMetadata`] carries the variant label and any associated
+    /// field types, enabling full structural traversal of enums with data variants.
     Select {
-        /// Option labels from the `Select` trait.
-        options: Vec<String>,
+        /// Variant metadata including per-variant field types.
+        variants: Vec<VariantMetadata>,
     },
 
     /// Affirm pattern (booleans).
@@ -534,4 +551,17 @@ pub enum PatternDetails {
 
     /// Primitive pattern (direct value).
     Primitive,
+}
+
+impl PatternDetails {
+    /// For Select patterns: the variant labels in order.
+    ///
+    /// Convenience method for callers that only need labels (e.g. rendering
+    /// option lists) without traversing variant field structure.
+    pub fn variant_labels(&self) -> Vec<&str> {
+        match self {
+            Self::Select { variants } => variants.iter().map(|v| v.label.as_str()).collect(),
+            _ => vec![],
+        }
+    }
 }
