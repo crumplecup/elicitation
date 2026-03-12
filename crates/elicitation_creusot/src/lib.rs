@@ -11,6 +11,11 @@
 // Creusot attributes
 pub use creusot_std::prelude::*;
 
+// Trusted logic functions for elicitation types (logic-callable in contracts)
+mod logic_fns;
+#[cfg(creusot)]
+pub use logic_fns::*;
+
 // Module declarations
 mod bools;
 mod chars;

@@ -8,9 +8,12 @@
 //! This is compositional verification: stdlib_ip_correct → socket_wrapper_correct.
 
 #[cfg(creusot)]
+use crate::*;
+
+#[cfg(creusot)]
 use elicitation::verification::types::{
-    Ipv4Bytes, Ipv6Bytes, SocketAddrV4Bytes, SocketAddrV6Bytes, ValidationError, is_dynamic_port,
-    is_nonzero_port, is_privileged_port, is_registered_port, is_well_known_port,
+    SocketAddrV4Bytes, SocketAddrV6Bytes, is_dynamic_port, is_nonzero_port, is_privileged_port,
+    is_registered_port, is_well_known_port,
 };
 
 // SocketAddrV4Bytes Validation Proofs
@@ -35,7 +38,7 @@ pub fn verify_socket_v4_ip_accessor(ip: [u8; 4], port: u16) -> SocketAddrV4Bytes
 /// Verify: port() accessor returns the port
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.port() == port)]
+#[ensures(v4_port(result) == port)]
 pub fn verify_socket_v4_port_accessor(ip: [u8; 4], port: u16) -> SocketAddrV4Bytes {
     SocketAddrV4Bytes::from_octets(ip, port)
 }
@@ -52,7 +55,7 @@ pub fn verify_socket_v4_into_parts(ip: [u8; 4], port: u16) -> SocketAddrV4Bytes 
 /// Verify: Common socket address (HTTP on localhost)
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.port() == 80)]
+#[ensures(v4_port(result) == 80u16)]
 pub fn verify_socket_v4_localhost_http() -> SocketAddrV4Bytes {
     SocketAddrV4Bytes::from_octets([127, 0, 0, 1], 80)
 }
@@ -60,7 +63,7 @@ pub fn verify_socket_v4_localhost_http() -> SocketAddrV4Bytes {
 /// Verify: Common socket address (HTTPS on localhost)
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.port() == 443)]
+#[ensures(v4_port(result) == 443u16)]
 pub fn verify_socket_v4_localhost_https() -> SocketAddrV4Bytes {
     SocketAddrV4Bytes::from_octets([127, 0, 0, 1], 443)
 }
@@ -68,7 +71,7 @@ pub fn verify_socket_v4_localhost_https() -> SocketAddrV4Bytes {
 /// Verify: Common socket address (SSH)
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.port() == 22)]
+#[ensures(v4_port(result) == 22u16)]
 pub fn verify_socket_v4_ssh() -> SocketAddrV4Bytes {
     SocketAddrV4Bytes::from_octets([192, 168, 1, 1], 22)
 }
@@ -76,7 +79,7 @@ pub fn verify_socket_v4_ssh() -> SocketAddrV4Bytes {
 /// Verify: Development server port
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.port() == 3000)]
+#[ensures(v4_port(result) == 3000u16)]
 pub fn verify_socket_v4_dev_server() -> SocketAddrV4Bytes {
     SocketAddrV4Bytes::from_octets([127, 0, 0, 1], 3000)
 }
@@ -103,7 +106,7 @@ pub fn verify_socket_v6_ip_accessor(ip: [u8; 16], port: u16) -> SocketAddrV6Byte
 /// Verify: port() accessor returns the port
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.port() == port)]
+#[ensures(v6_port(result) == port)]
 pub fn verify_socket_v6_port_accessor(ip: [u8; 16], port: u16) -> SocketAddrV6Bytes {
     SocketAddrV6Bytes::from_octets(ip, port)
 }
@@ -120,7 +123,7 @@ pub fn verify_socket_v6_into_parts(ip: [u8; 16], port: u16) -> SocketAddrV6Bytes
 /// Verify: IPv6 localhost HTTP
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.port() == 80)]
+#[ensures(v6_port(result) == 80u16)]
 pub fn verify_socket_v6_localhost_http() -> SocketAddrV6Bytes {
     SocketAddrV6Bytes::from_octets([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 80)
 }
@@ -128,7 +131,7 @@ pub fn verify_socket_v6_localhost_http() -> SocketAddrV6Bytes {
 /// Verify: IPv6 localhost HTTPS
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.port() == 443)]
+#[ensures(v6_port(result) == 443u16)]
 pub fn verify_socket_v6_localhost_https() -> SocketAddrV6Bytes {
     SocketAddrV6Bytes::from_octets([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], 443)
 }
@@ -270,7 +273,7 @@ pub fn verify_port_80_nonzero() -> bool {
 /// Verify: Zero IP with zero port
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.port() == 0)]
+#[ensures(v4_port(result) == 0u16)]
 pub fn verify_socket_v4_zero_zero() -> SocketAddrV4Bytes {
     SocketAddrV4Bytes::from_octets([0, 0, 0, 0], 0)
 }
@@ -278,7 +281,7 @@ pub fn verify_socket_v4_zero_zero() -> SocketAddrV4Bytes {
 /// Verify: Max IP with max port
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.port() == 65535)]
+#[ensures(v4_port(result) == 65535u16)]
 pub fn verify_socket_v4_max_max() -> SocketAddrV4Bytes {
     SocketAddrV4Bytes::from_octets([255, 255, 255, 255], 65535)
 }
@@ -286,7 +289,7 @@ pub fn verify_socket_v4_max_max() -> SocketAddrV4Bytes {
 /// Verify: IPv6 zero IP with zero port
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.port() == 0)]
+#[ensures(v6_port(result) == 0u16)]
 pub fn verify_socket_v6_zero_zero() -> SocketAddrV6Bytes {
     SocketAddrV6Bytes::from_octets([0; 16], 0)
 }
@@ -294,7 +297,7 @@ pub fn verify_socket_v6_zero_zero() -> SocketAddrV6Bytes {
 /// Verify: IPv6 max IP with max port
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.port() == 65535)]
+#[ensures(v6_port(result) == 65535u16)]
 pub fn verify_socket_v6_max_max() -> SocketAddrV6Bytes {
     SocketAddrV6Bytes::from_octets([0xff; 16], 65535)
 }

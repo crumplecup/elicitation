@@ -90,7 +90,7 @@ impl<const MAX_LEN: usize> Utf8Bytes<MAX_LEN> {
 
     /// Check if the UTF-8 content is empty.
     pub fn is_empty(&self) -> bool {
-        self.len == 0
+        self.len == 0usize
     }
 
     /// Get the underlying byte array.

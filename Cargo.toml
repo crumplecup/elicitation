@@ -143,9 +143,12 @@ reqwest = { version = "0.13", features = ["json", "cookies", "stream"] }
 regex = "1.12"
 
 # Verification libraries
-creusot-std = { version = "0.10.0" }
+creusot-std = { path = "/home/erik/repos/creusot/creusot-std" }
 kani-verifier = { version = "0.67" }
 # prusti-contracts lives on prusti-verification branch
+
+# Home directory resolution (used by creusot runner to find rustup toolchain libs)
+dirs = "6"
 
 # Spec annotations (core, not optional — powers the agent prompt strategy)
 # runtime-no-check: specs are purely documentation/static-analysis hooks.

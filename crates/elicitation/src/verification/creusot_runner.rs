@@ -167,6 +167,55 @@ impl CreusotModuleResult {
     }
 }
 
+/// Resolve the `LD_LIBRARY_PATH` needed for `creusot-rustc` to load its rustc
+/// shared libraries. `cargo creusot` sets `RUSTC=creusot-rustc` but does not set
+/// `LD_LIBRARY_PATH`, so the binary fails with "cannot open shared object file"
+/// unless the nightly toolchain's lib directory is on the path.
+///
+/// We discover the path by querying `cargo creusot version`, extracting the
+/// toolchain channel (e.g. `nightly-2026-02-27`), and appending the host target
+/// triple suffix from `RUSTUP_HOME`.
+fn creusot_lib_path() -> Option<std::path::PathBuf> {
+    // Get toolchain channel from `cargo creusot version`
+    let version_out = Command::new("cargo")
+        .args(["creusot", "version"])
+        .output()
+        .ok()?;
+    let version_str = String::from_utf8_lossy(&version_out.stdout);
+    let channel = version_str
+        .lines()
+        .find(|l| l.starts_with("Rust toolchain"))?
+        .split_whitespace()
+        .last()?
+        .to_owned();
+
+    // Locate RUSTUP_HOME
+    let rustup_home = std::env::var("RUSTUP_HOME")
+        .ok()
+        .map(std::path::PathBuf::from)
+        .or_else(|| dirs::home_dir().map(|h| h.join(".rustup")))?;
+
+    // Find the installed toolchain directory matching this channel
+    let toolchains_dir = rustup_home.join("toolchains");
+    let entry = std::fs::read_dir(&toolchains_dir).ok()?.find_map(|e| {
+        let e = e.ok()?;
+        let name = e.file_name();
+        let name = name.to_string_lossy();
+        if name.starts_with(&channel) {
+            Some(e.path())
+        } else {
+            None
+        }
+    })?;
+
+    let lib_dir = entry.join("lib");
+    if lib_dir.exists() {
+        Some(lib_dir)
+    } else {
+        None
+    }
+}
+
 /// Run a Creusot module compilation check.
 pub fn run_creusot_module(module: &CreusotModule) -> Result<CreusotModuleResult> {
     let start = Instant::now();
@@ -185,18 +234,37 @@ pub fn run_creusot_module(module: &CreusotModule) -> Result<CreusotModuleResult>
     // `cargo creusot` invokes the Creusot toolchain rather than plain rustc,
     // which is required to actually check the #[logic] and #[requires] contracts.
     let mut cmd = Command::new("cargo");
-    cmd.arg("creusot").arg("--").arg("-p").arg("elicitation_creusot");
+    cmd.arg("creusot")
+        .arg("--")
+        .arg("-p")
+        .arg("elicitation_creusot");
 
     // Add feature flag if needed
     if let Some(feature) = module.feature() {
         cmd.arg("--features").arg(feature);
     }
 
+    // cargo creusot sets RUSTC=creusot-rustc but does not set LD_LIBRARY_PATH,
+    // so creusot-rustc fails to load its rustc shared libraries. Resolve and
+    // inject the nightly toolchain lib directory so the binary can start.
+    if let Some(lib_path) = creusot_lib_path() {
+        let existing = std::env::var("LD_LIBRARY_PATH").unwrap_or_default();
+        let new_path = if existing.is_empty() {
+            lib_path.to_string_lossy().into_owned()
+        } else {
+            format!("{}:{}", lib_path.display(), existing)
+        };
+        cmd.env("LD_LIBRARY_PATH", new_path);
+    }
+
     cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
 
-    let output = cmd
-        .output()
-        .with_context(|| format!("Failed to execute cargo creusot for module {}", module.name()))?;
+    let output = cmd.output().with_context(|| {
+        format!(
+            "Failed to execute cargo creusot for module {}",
+            module.name()
+        )
+    })?;
 
     let elapsed = start.elapsed().as_secs();
     let stderr = String::from_utf8_lossy(&output.stderr);

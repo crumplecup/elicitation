@@ -1,0 +1,56 @@
+thread 'rustc' panicked at creusot/src/translation/traits.rs:356:17:
+not implemented: Cannot handle builtin implementation of `futures::Future` for `{async block@crates/elicitation/src/client.rs:145:5: 145:39}`
+stack backtrace:
+   0:     0x7f2b6b98308b - <std[a42f3b87e642314d]::backtrace::Backtrace>::create
+   1:     0x7f2b6b982fd5 - <std[a42f3b87e642314d]::backtrace::Backtrace>::force_capture
+   2:     0x7f2b6a97c3b4 - std[a42f3b87e642314d]::panicking::update_hook::<alloc[bf50147f3a277199]::boxed::Box<rustc_driver_impl[b2dff6da787942eb]::install_ice_hook::{closure#1}>>::{closure#0}
+   3:     0x7f2b6b995602 - std[a42f3b87e642314d]::panicking::panic_with_hook
+   4:     0x7f2b6b978058 - std[a42f3b87e642314d]::panicking::panic_handler::{closure#0}
+   5:     0x7f2b6b96c5a9 - std[a42f3b87e642314d]::sys::backtrace::__rust_end_short_backtrace::<std[a42f3b87e642314d]::panicking::panic_handler::{closure#0}, !>
+   6:     0x7f2b6b979abd - __rustc[12c998373637a003]::rust_begin_unwind
+   7:     0x7f2b68746f9c - core[fe7c17ffc1da903f]::panicking::panic_fmt
+   8:     0x559fda076a11 - <creusot[a5e2339628f8697e]::translation::traits::TraitResolved>::resolve_item
+   9:     0x559fd9f593f7 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  10:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  11:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  12:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  13:     0x559fd9f42859 - rustc_middle[11b273479f5b7c30]::thir::visit::walk_expr::<creusot[a5e2339628f8697e]::validate::purity::PurityVisitor>
+  14:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  15:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  16:     0x559fd9f3f121 - rustc_middle[11b273479f5b7c30]::thir::visit::walk_block::<creusot[a5e2339628f8697e]::validate::purity::PurityVisitor>
+  17:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  18:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  19:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  20:     0x559fd9f428fe - rustc_middle[11b273479f5b7c30]::thir::visit::walk_expr::<creusot[a5e2339628f8697e]::validate::purity::PurityVisitor>
+  21:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  22:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  23:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  24:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  25:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  26:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  27:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  28:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  29:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  30:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  31:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  32:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  33:     0x559fd9f5919f - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  34:     0x559fd9f59379 - <creusot[a5e2339628f8697e]::validate::purity::PurityVisitor as rustc_middle[11b273479f5b7c30]::thir::visit::Visitor>::visit_expr
+  35:     0x559fd9f56a05 - creusot[a5e2339628f8697e]::validate::purity::validate_purity
+  36:     0x559fda0d2131 - creusot[a5e2339628f8697e]::validate::validate
+  37:     0x559fda076f6f - creusot[a5e2339628f8697e]::translation::after_analysis
+  38:     0x559fd9de1040 - <creusot[a5e2339628f8697e]::callbacks::ToWhy as rustc_driver_impl[b2dff6da787942eb]::Callbacks>::after_expansion
+  39:     0x7f2b6d24bff1 - rustc_interface[454e58b8a783baef]::interface::run_compiler::<(), rustc_driver_impl[b2dff6da787942eb]::run_compiler::{closure#0}>::{closure#1}
+  40:     0x7f2b6d21d4fe - std[a42f3b87e642314d]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[454e58b8a783baef]::util::run_in_thread_with_globals<rustc_interface[454e58b8a783baef]::util::run_in_thread_pool_with_globals<rustc_interface[454e58b8a783baef]::interface::run_compiler<(), rustc_driver_impl[b2dff6da787942eb]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  41:     0x7f2b6d21db60 - <std[a42f3b87e642314d]::thread::lifecycle::spawn_unchecked<rustc_interface[454e58b8a783baef]::util::run_in_thread_with_globals<rustc_interface[454e58b8a783baef]::util::run_in_thread_pool_with_globals<rustc_interface[454e58b8a783baef]::interface::run_compiler<(), rustc_driver_impl[b2dff6da787942eb]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[fe7c17ffc1da903f]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  42:     0x7f2b6d21e9ec - <std[a42f3b87e642314d]::sys::thread::unix::Thread>::new::thread_start
+  43:     0x7f2b66ca597a - <unknown>
+  44:     0x7f2b66d292bc - <unknown>
+  45:                0x0 - <unknown>
+
+
+rustc version: 1.95.0-nightly (6a979b3e3 2026-02-26)
+platform: x86_64-unknown-linux-gnu
+
+query stack during panic:
+end of query stack

@@ -75,22 +75,28 @@ impl Ipv4Bytes {
 
     /// Check if this is a loopback address (127.0.0.0/8).
     pub fn is_loopback(&self) -> bool {
-        self.octets[0] == 127
+        self.octets[0] == 127u8
     }
 
     /// Check if this is multicast (224.0.0.0/4).
     pub fn is_multicast(&self) -> bool {
-        self.octets[0] >= 224 && self.octets[0] <= 239
+        self.octets[0] >= 224u8 && self.octets[0] <= 239u8
     }
 
     /// Check if this is the unspecified address (0.0.0.0).
     pub fn is_unspecified(&self) -> bool {
-        self.octets == [0, 0, 0, 0]
+        self.octets[0] == 0u8
+            && self.octets[1] == 0u8
+            && self.octets[2] == 0u8
+            && self.octets[3] == 0u8
     }
 
     /// Check if this is the broadcast address (255.255.255.255).
     pub fn is_broadcast(&self) -> bool {
-        self.octets == [255, 255, 255, 255]
+        self.octets[0] == 255u8
+            && self.octets[1] == 255u8
+            && self.octets[2] == 255u8
+            && self.octets[3] == 255u8
     }
 }
 
@@ -222,17 +228,47 @@ impl Ipv6Bytes {
 
     /// Check if this is the loopback address (::1).
     pub fn is_loopback(&self) -> bool {
-        self.octets[..15] == [0; 15] && self.octets[15] == 1
+        self.octets[0] == 0u8
+            && self.octets[1] == 0u8
+            && self.octets[2] == 0u8
+            && self.octets[3] == 0u8
+            && self.octets[4] == 0u8
+            && self.octets[5] == 0u8
+            && self.octets[6] == 0u8
+            && self.octets[7] == 0u8
+            && self.octets[8] == 0u8
+            && self.octets[9] == 0u8
+            && self.octets[10] == 0u8
+            && self.octets[11] == 0u8
+            && self.octets[12] == 0u8
+            && self.octets[13] == 0u8
+            && self.octets[14] == 0u8
+            && self.octets[15] == 1u8
     }
 
     /// Check if this is multicast (ff00::/8).
     pub fn is_multicast(&self) -> bool {
-        self.octets[0] == 0xff
+        self.octets[0] == 0xffu8
     }
 
     /// Check if this is the unspecified address (::).
     pub fn is_unspecified(&self) -> bool {
-        self.octets == [0; 16]
+        self.octets[0] == 0u8
+            && self.octets[1] == 0u8
+            && self.octets[2] == 0u8
+            && self.octets[3] == 0u8
+            && self.octets[4] == 0u8
+            && self.octets[5] == 0u8
+            && self.octets[6] == 0u8
+            && self.octets[7] == 0u8
+            && self.octets[8] == 0u8
+            && self.octets[9] == 0u8
+            && self.octets[10] == 0u8
+            && self.octets[11] == 0u8
+            && self.octets[12] == 0u8
+            && self.octets[13] == 0u8
+            && self.octets[14] == 0u8
+            && self.octets[15] == 0u8
     }
 }
 

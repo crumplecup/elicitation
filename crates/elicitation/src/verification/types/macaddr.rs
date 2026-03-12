@@ -50,32 +50,42 @@ impl MacAddr {
 
     /// Check if this is a unicast address (bit 0 of byte 0 is 0).
     pub fn is_unicast(&self) -> bool {
-        (self.octets[0] & 0x01) == 0
+        (self.octets[0] & 0x01u8) == 0u8
     }
 
     /// Check if this is a multicast address (bit 0 of byte 0 is 1).
     pub fn is_multicast(&self) -> bool {
-        (self.octets[0] & 0x01) == 1
+        (self.octets[0] & 0x01u8) == 1u8
     }
 
     /// Check if this is a universal address (bit 1 of byte 0 is 0).
     pub fn is_universal(&self) -> bool {
-        (self.octets[0] & 0x02) == 0
+        (self.octets[0] & 0x02u8) == 0u8
     }
 
     /// Check if this is a locally administered address (bit 1 of byte 0 is 1).
     pub fn is_local(&self) -> bool {
-        (self.octets[0] & 0x02) == 2
+        (self.octets[0] & 0x02u8) == 2u8
     }
 
     /// Check if this is the broadcast address (FF:FF:FF:FF:FF:FF).
     pub fn is_broadcast(&self) -> bool {
-        self.octets == [0xFF; 6]
+        self.octets[0] == 0xFFu8
+            && self.octets[1] == 0xFFu8
+            && self.octets[2] == 0xFFu8
+            && self.octets[3] == 0xFFu8
+            && self.octets[4] == 0xFFu8
+            && self.octets[5] == 0xFFu8
     }
 
     /// Check if this is a null address (00:00:00:00:00:00).
     pub fn is_null(&self) -> bool {
-        self.octets == [0x00; 6]
+        self.octets[0] == 0x00u8
+            && self.octets[1] == 0x00u8
+            && self.octets[2] == 0x00u8
+            && self.octets[3] == 0x00u8
+            && self.octets[4] == 0x00u8
+            && self.octets[5] == 0x00u8
     }
 }
 
@@ -85,22 +95,22 @@ impl MacAddr {
 
 /// Check if MAC address is unicast (bit 0 of byte 0 is 0).
 pub fn is_unicast(octets: &[u8; 6]) -> bool {
-    (octets[0] & 0x01) == 0
+    (octets[0] & 0x01u8) == 0u8
 }
 
 /// Check if MAC address is multicast (bit 0 of byte 0 is 1).
 pub fn is_multicast(octets: &[u8; 6]) -> bool {
-    (octets[0] & 0x01) == 1
+    (octets[0] & 0x01u8) == 1u8
 }
 
 /// Check if MAC address is universal (bit 1 of byte 0 is 0).
 pub fn is_universal(octets: &[u8; 6]) -> bool {
-    (octets[0] & 0x02) == 0
+    (octets[0] & 0x02u8) == 0u8
 }
 
 /// Check if MAC address is locally administered (bit 1 of byte 0 is 1).
 pub fn is_local(octets: &[u8; 6]) -> bool {
-    (octets[0] & 0x02) == 2
+    (octets[0] & 0x02u8) == 2u8
 }
 
 // ============================================================================

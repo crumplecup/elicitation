@@ -9,7 +9,7 @@
 //! and Rust's numeric conversions.  We verify the combined accept/reject
 //! behaviour at the boundary.
 
-use creusot_std::prelude::*;
+use crate::*;
 use elicitation::{
     F64Finite, F64NonNegative, F64Positive, I8NonNegative, I8NonZero, I8Positive, I16NonNegative,
     I16NonZero, I16Positive, StringNonEmpty, U8NonZero, U8Positive, U16NonZero, U16Positive,
@@ -334,7 +334,7 @@ pub fn verify_url_with_host_serde_valid() -> Result<UrlWithHost, serde_json::Err
 /// Prove: I8Positive round-trips through serde preserving its value.
 #[requires(value@ > 0)]
 #[ensures(match result {
-    Ok(v) => v.get()@ == value@,
+    Ok(v) => i8pos_get(&v)@ == value@,
     Err(_) => false,
 })]
 #[trusted]

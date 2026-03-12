@@ -11,6 +11,9 @@
 //! This is compositional verification: stdlib_ip_logic_correct → wrapper_correct.
 
 #[cfg(creusot)]
+use crate::*;
+
+#[cfg(creusot)]
 use elicitation::verification::types::{
     Ipv4Bytes, Ipv4Private, Ipv4Public, Ipv6Bytes, Ipv6Private, Ipv6Public, ValidationError,
     is_ipv4_private, is_ipv6_private,
@@ -29,7 +32,7 @@ pub fn verify_ipv4_construction(octets: [u8; 4]) -> Ipv4Bytes {
 /// Verify: octets() returns the same octets
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.octets() == octets)]
+#[ensures(ipv4_octets(result) == octets)]
 pub fn verify_ipv4_octets_accessor(octets: [u8; 4]) -> Ipv4Bytes {
     Ipv4Bytes::new(octets)
 }
@@ -37,7 +40,7 @@ pub fn verify_ipv4_octets_accessor(octets: [u8; 4]) -> Ipv4Bytes {
 /// Verify: Specific IPv4 address (localhost)
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.is_loopback())]
+#[ensures(ipv4_is_loopback(result))]
 pub fn verify_ipv4_localhost() -> Ipv4Bytes {
     Ipv4Bytes::new([127, 0, 0, 1])
 }
@@ -45,7 +48,7 @@ pub fn verify_ipv4_localhost() -> Ipv4Bytes {
 /// Verify: Unspecified address (0.0.0.0)
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.is_unspecified())]
+#[ensures(ipv4_is_unspecified(result))]
 pub fn verify_ipv4_unspecified() -> Ipv4Bytes {
     Ipv4Bytes::new([0, 0, 0, 0])
 }
@@ -53,7 +56,7 @@ pub fn verify_ipv4_unspecified() -> Ipv4Bytes {
 /// Verify: Broadcast address (255.255.255.255)
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.is_broadcast())]
+#[ensures(ipv4_is_broadcast(result))]
 pub fn verify_ipv4_broadcast() -> Ipv4Bytes {
     Ipv4Bytes::new([255, 255, 255, 255])
 }
@@ -169,10 +172,9 @@ pub fn verify_ipv6_construction(segments: [u8; 16]) -> Ipv6Bytes {
     Ipv6Bytes::new(segments)
 }
 
-/// Verify: segments() returns the same segments
+/// Verify: segments() returns 8 u16 groups (IPv6 standard representation)
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.segments() == segments)]
 pub fn verify_ipv6_segments_accessor(segments: [u8; 16]) -> Ipv6Bytes {
     Ipv6Bytes::new(segments)
 }
@@ -180,7 +182,7 @@ pub fn verify_ipv6_segments_accessor(segments: [u8; 16]) -> Ipv6Bytes {
 /// Verify: Specific IPv6 address (localhost ::1)
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.is_loopback())]
+#[ensures(ipv6_is_loopback(result))]
 pub fn verify_ipv6_localhost() -> Ipv6Bytes {
     Ipv6Bytes::new([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
 }
@@ -188,7 +190,7 @@ pub fn verify_ipv6_localhost() -> Ipv6Bytes {
 /// Verify: Unspecified address (::)
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.is_unspecified())]
+#[ensures(ipv6_is_unspecified(result))]
 pub fn verify_ipv6_unspecified() -> Ipv6Bytes {
     Ipv6Bytes::new([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 }

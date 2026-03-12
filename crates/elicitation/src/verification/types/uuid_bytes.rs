@@ -3,7 +3,7 @@
 //! This module provides validated UUID byte sequences following RFC 4122.
 //! It forms the foundation for version-specific UUID contract types.
 
-#[cfg(kani)]
+#[cfg(any(kani, creusot))]
 use super::ValidationError;
 
 // ============================================================================
@@ -41,12 +41,12 @@ use super::ValidationError;
 ///
 /// Does NOT guarantee version-specific constraints (use `UuidV4Bytes`, `UuidV7Bytes`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[cfg(kani)]
+#[cfg(any(kani, creusot))]
 pub struct UuidBytes {
     bytes: [u8; 16],
 }
 
-#[cfg(kani)]
+#[cfg(any(kani, creusot))]
 impl UuidBytes {
     /// Create a new UuidBytes, validating RFC 4122 variant.
     ///
@@ -86,27 +86,27 @@ impl UuidBytes {
 // ============================================================================
 
 /// Check if bytes have valid RFC 4122 variant (10xx pattern in byte 8 bits 6-7).
-#[cfg(kani)]
+#[cfg(any(kani, creusot))]
 pub fn has_valid_variant(bytes: &[u8; 16]) -> bool {
     // Byte 8, bits 6-7 must be 10
     (bytes[8] & 0xC0) == 0x80
 }
 
 /// Check if bytes have a specific version (bits 4-7 of byte 6).
-#[cfg(kani)]
+#[cfg(any(kani, creusot))]
 pub fn has_version(bytes: &[u8; 16], expected: u8) -> bool {
     let version = (bytes[6] & 0xF0) >> 4;
     version == expected
 }
 
 /// Check if bytes have valid V4 structure (version 4, valid variant).
-#[cfg(kani)]
+#[cfg(any(kani, creusot))]
 pub fn is_valid_v4(bytes: &[u8; 16]) -> bool {
     has_version(bytes, 4) && has_valid_variant(bytes)
 }
 
 /// Check if bytes have valid V7 structure (version 7, valid variant).
-#[cfg(kani)]
+#[cfg(any(kani, creusot))]
 pub fn is_valid_v7(bytes: &[u8; 16]) -> bool {
     has_version(bytes, 7) && has_valid_variant(bytes)
 }
@@ -122,10 +122,10 @@ pub fn is_valid_v7(bytes: &[u8; 16]) -> bool {
 /// - Variant bits = 10xx (RFC 4122)
 /// - All other bits SHOULD be random
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[cfg(kani)]
+#[cfg(any(kani, creusot))]
 pub struct UuidV4Bytes(UuidBytes);
 
-#[cfg(kani)]
+#[cfg(any(kani, creusot))]
 impl UuidV4Bytes {
     /// Create a new UuidV4Bytes, validating version and variant.
     ///
@@ -172,10 +172,10 @@ impl UuidV4Bytes {
 /// - Bytes 0-5: Unix timestamp in milliseconds (48 bits)
 /// - Remaining bits: Random
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-#[cfg(kani)]
+#[cfg(any(kani, creusot))]
 pub struct UuidV7Bytes(UuidBytes);
 
-#[cfg(kani)]
+#[cfg(any(kani, creusot))]
 impl UuidV7Bytes {
     /// Create a new UuidV7Bytes, validating version and variant.
     ///
@@ -234,7 +234,7 @@ impl UuidV7Bytes {
 mod tests {
 
     #[test]
-    #[cfg(kani)]
+    #[cfg(any(kani, creusot))]
     fn test_valid_variant() {
         // 10xx pattern in byte 8 bits 6-7
         let mut bytes = [0u8; 16];
@@ -246,7 +246,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(kani)]
+    #[cfg(any(kani, creusot))]
     fn test_invalid_variant() {
         let mut bytes = [0u8; 16];
 
@@ -264,7 +264,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(kani)]
+    #[cfg(any(kani, creusot))]
     fn test_version_extraction() {
         let mut bytes = [0u8; 16];
         bytes[8] = 0x80; // Valid variant
@@ -279,7 +279,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(kani)]
+    #[cfg(any(kani, creusot))]
     fn test_uuid_v4_bytes_valid() {
         let mut bytes = [0u8; 16];
         bytes[6] = 0x40; // Version 4
@@ -290,7 +290,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(kani)]
+    #[cfg(any(kani, creusot))]
     fn test_uuid_v4_bytes_wrong_version() {
         let mut bytes = [0u8; 16];
         bytes[6] = 0x70; // Version 7 (not 4)
@@ -301,7 +301,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(kani)]
+    #[cfg(any(kani, creusot))]
     fn test_uuid_v7_timestamp_extraction() {
         let mut bytes = [0u8; 16];
         bytes[6] = 0x70; // Version 7

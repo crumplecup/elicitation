@@ -1,6 +1,9 @@
 //! Creusot proofs for mechanism contracts.
 
 #[cfg(creusot)]
+use crate::*;
+
+#[cfg(creusot)]
 use elicitation::{I8Positive, Tuple2, ValidationError};
 
 // Mechanism Contract Proofs
@@ -18,7 +21,6 @@ pub fn verify_affirm_returns_boolean() -> bool {
 /// Prove that Survey mechanism returns a valid enum variant.
 #[trusted]
 #[cfg(creusot)]
-#[pure]
 #[ensures(true)] // Exists a variant such that result equals that variant
 pub fn verify_survey_returns_valid_variant<E>() -> E
 where
@@ -31,8 +33,8 @@ where
 /// Prove that Select mechanism returns one of the provided options.
 #[trusted]
 #[cfg(creusot)]
-#[requires(!options.is_empty())]
-#[ensures(exists(|i: usize| i < options.len() && options[i] == result))]
+#[requires(options@.len() > 0)]
+#[ensures(exists<i: usize> i@ < options@.len() && options@[i@] == result)]
 pub fn verify_select_returns_from_options<T>(options: Vec<T>) -> T
 where
     T: Clone + PartialEq,
@@ -44,8 +46,8 @@ where
 /// Prove mechanism + type composition maintains contracts.
 #[trusted]
 #[cfg(creusot)]
-#[requires(value > 0)]
-#[ensures(result.is_ok())]
+#[requires(value > 0i8)]
+#[ensures(match result { Ok(_) => true, Err(_) => false })]
 pub fn verify_mechanism_type_composition(value: i8) -> Result<I8Positive, ValidationError> {
     // Mechanisms compose with type contracts
     I8Positive::new(value)
@@ -54,9 +56,9 @@ pub fn verify_mechanism_type_composition(value: i8) -> Result<I8Positive, Valida
 /// Prove mechanisms preserve trenchcoat pattern.
 #[trusted]
 #[cfg(creusot)]
-#[requires(value > 0)]
+#[requires(value > 0i8)]
 #[ensures(match result {
-    Ok(ref wrapped) => wrapped.into_inner() == value,
+    Ok(ref wrapped) => i8pos_inner(*wrapped) == value,
     Err(_) => false,
 })]
 pub fn verify_mechanism_trenchcoat_preservation(value: i8) -> Result<I8Positive, ValidationError> {
@@ -75,9 +77,9 @@ pub fn verify_mechanism_trenchcoat_preservation(value: i8) -> Result<I8Positive,
 /// when validation succeeds. This property enables zero-cost abstraction.
 #[trusted]
 #[cfg(creusot)]
-#[requires(value > 0)]
+#[requires(value > 0i8)]
 #[ensures(match result {
-    Ok(ref wrapped) => wrapped.into_inner() == value,
+    Ok(ref wrapped) => i8pos_inner(*wrapped) == value,
     Err(_) => false,
 })]
 pub fn verify_trenchcoat_identity_preservation(value: i8) -> Result<I8Positive, ValidationError> {
@@ -89,7 +91,7 @@ pub fn verify_trenchcoat_identity_preservation(value: i8) -> Result<I8Positive, 
 #[trusted]
 #[cfg(creusot)]
 #[requires(true)]
-#[ensures(result.is_ok())]
+#[ensures(match result { Ok(_) => true, Err(_) => false })]
 pub fn verify_compositional_correctness(
     a: I8Positive,
     b: I8Positive,

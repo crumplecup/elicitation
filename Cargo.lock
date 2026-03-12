@@ -421,8 +421,6 @@ dependencies = [
 [[package]]
 name = "creusot-std"
 version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6496cade7c540734f2db0e40c7a0be29c2fe3a056efdc67b3b7770b56baca4ff"
 dependencies = [
  "creusot-std-proc",
  "num-rational",
@@ -431,8 +429,6 @@ dependencies = [
 [[package]]
 name = "creusot-std-proc"
 version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a617b331f778b6e199b66057395f63b9d977573e4ca0856a33b8d169d0f0a640"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -993,6 +989,7 @@ dependencies = [
  "derive_builder",
  "derive_more",
  "derive_setters",
+ "dirs",
  "elicit_chrono",
  "elicit_jiff",
  "elicit_regex",

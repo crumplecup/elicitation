@@ -422,9 +422,7 @@ impl<P: Prop + crate::Elicitation> crate::Elicitation for Established<P> {
     type Style = <P as crate::Elicitation>::Style;
 
     #[tracing::instrument(skip(communicator))]
-    async fn elicit<C: crate::ElicitCommunicator>(
-        communicator: &C,
-    ) -> crate::ElicitResult<Self> {
+    async fn elicit<C: crate::ElicitCommunicator>(communicator: &C) -> crate::ElicitResult<Self> {
         tracing::debug!("Eliciting proof proposition for Established");
         let _p = P::elicit(communicator).await?;
         Ok(Established::assert())

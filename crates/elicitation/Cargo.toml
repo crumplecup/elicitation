@@ -40,6 +40,7 @@ anyhow = { workspace = true }
 clap = { workspace = true, optional = true }
 csv = { workspace = true, optional = true }
 shellexpand = { workspace = true, optional = true }
+dirs = { workspace = true, optional = true }
 
 # DateTime libraries (optional)
 chrono = { workspace = true, optional = true }
@@ -130,7 +131,7 @@ verify-verus = ["verification"] # Verus SMT verifier
 verify-all = ["verify-verus"]
 
 # CLI and verification runner
-cli = ["clap", "csv", "chrono", "shellexpand"]
+cli = ["clap", "csv", "chrono", "shellexpand", "dirs"]
 
 # Development (all optional features + CLI)
 dev = ["full", "cli"]

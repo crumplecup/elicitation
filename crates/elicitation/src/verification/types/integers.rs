@@ -1659,7 +1659,7 @@ mod u16_range_tests {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct U8Positive(u8);
 
-#[elicitation_macros::instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl U8Positive {
     /// Create a new U8Positive, validating value is positive (> 0).
     #[spec(requires: [value > 0])]
@@ -1722,7 +1722,7 @@ impl Elicitation for U8Positive {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct U16Positive(u16);
 
-#[elicitation_macros::instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl U16Positive {
     /// Create a new U16Positive, validating value is positive (> 0).
     #[spec(requires: [value > 0])]

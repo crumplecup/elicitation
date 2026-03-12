@@ -4,6 +4,9 @@
 //! This is compositional verification: (utf8_correct ∧ no_null_correct) → wrapper_correct.
 
 #[cfg(creusot)]
+use crate::*;
+
+#[cfg(creusot)]
 use elicitation::verification::types::{
     PathAbsolute, PathBytes, PathNonEmpty, PathRelative, ValidationError,
 };
@@ -14,8 +17,8 @@ use elicitation::verification::types::{
 /// Verify: PathBytes correctly rejects length exceeding MAX_LEN
 #[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() > MAX_LEN)]
-#[ensures(result.is_err())]
+#[requires(bytes@.len() > MAX_LEN@)]
+#[ensures(match result { Err(_) => true, Ok(_) => false })]
 pub fn verify_path_length_check<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<PathBytes<MAX_LEN>, ValidationError> {
@@ -25,7 +28,7 @@ pub fn verify_path_length_check<const MAX_LEN: usize>(
 /// Verify: PathBytes accepts valid length
 #[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= MAX_LEN)]
+#[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_path_length_valid<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<PathBytes<MAX_LEN>, ValidationError> {
@@ -80,7 +83,7 @@ pub fn verify_path_parent_dir() -> Result<PathBytes<2>, ValidationError> {
 /// Verify: PathBytes as_str() returns valid string
 #[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= MAX_LEN)]
+#[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_path_as_str_valid<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<PathBytes<MAX_LEN>, ValidationError> {
@@ -92,9 +95,9 @@ pub fn verify_path_as_str_valid<const MAX_LEN: usize>(
 /// Verify: PathBytes len() returns correct value
 #[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= MAX_LEN)]
+#[requires(bytes@.len() <= MAX_LEN@)]
 #[ensures(match result {
-    Ok(ref path) => path.len() == bytes.len(),
+    Ok(ref path) => path_len(path)@ == bytes@.len(),
     Err(_) => true,
 })]
 pub fn verify_path_len_accessor<const MAX_LEN: usize>(
@@ -107,7 +110,7 @@ pub fn verify_path_len_accessor<const MAX_LEN: usize>(
 #[trusted]
 #[cfg(creusot)]
 #[ensures(match result {
-    Ok(ref path) => path.is_empty(),
+    Ok(ref path) => path_is_empty(path),
     Err(_) => true,
 })]
 pub fn verify_path_empty_predicate() -> Result<PathBytes<10>, ValidationError> {
@@ -118,7 +121,7 @@ pub fn verify_path_empty_predicate() -> Result<PathBytes<10>, ValidationError> {
 #[trusted]
 #[cfg(creusot)]
 #[ensures(match result {
-    Ok(ref path) => !path.is_empty(),
+    Ok(ref path) => !path_is_empty(path),
     Err(_) => true,
 })]
 pub fn verify_path_non_empty_predicate() -> Result<PathBytes<10>, ValidationError> {
@@ -145,8 +148,8 @@ pub fn verify_absolute_root() -> Result<PathAbsolute<1>, ValidationError> {
 /// Verify: PathAbsolute length check propagates
 #[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() > MAX_LEN)]
-#[ensures(result.is_err())]
+#[requires(bytes@.len() > MAX_LEN@)]
+#[ensures(match result { Err(_) => true, Ok(_) => false })]
 pub fn verify_absolute_length_check<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<PathAbsolute<MAX_LEN>, ValidationError> {
@@ -205,8 +208,8 @@ pub fn verify_relative_filename() -> Result<PathRelative<10>, ValidationError> {
 /// Verify: PathRelative length check propagates
 #[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() > MAX_LEN)]
-#[ensures(result.is_err())]
+#[requires(bytes@.len() > MAX_LEN@)]
+#[ensures(match result { Err(_) => true, Ok(_) => false })]
 pub fn verify_relative_length_check<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<PathRelative<MAX_LEN>, ValidationError> {
@@ -237,7 +240,7 @@ pub fn verify_relative_as_str() -> Result<PathRelative<10>, ValidationError> {
 /// Verify: PathNonEmpty rejects empty path
 #[trusted]
 #[cfg(creusot)]
-#[ensures(result.is_err())]
+#[ensures(match result { Err(_) => true, Ok(_) => false })]
 pub fn verify_non_empty_rejects_empty() -> Result<PathNonEmpty<10>, ValidationError> {
     PathNonEmpty::from_slice(&[])
 }
@@ -259,8 +262,8 @@ pub fn verify_non_empty_multi_char() -> Result<PathNonEmpty<10>, ValidationError
 /// Verify: PathNonEmpty length check propagates
 #[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() > MAX_LEN)]
-#[ensures(result.is_err())]
+#[requires(bytes@.len() > MAX_LEN@)]
+#[ensures(match result { Err(_) => true, Ok(_) => false })]
 pub fn verify_non_empty_length_check<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<PathNonEmpty<MAX_LEN>, ValidationError> {
@@ -291,7 +294,7 @@ pub fn verify_non_empty_as_str() -> Result<PathNonEmpty<10>, ValidationError> {
 /// Verify: Small buffer (2 bytes) works correctly
 #[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= 2)]
+#[requires(bytes@.len() <= 2)]
 pub fn verify_path_small_buffer(bytes: &[u8]) -> Result<PathBytes<2>, ValidationError> {
     PathBytes::from_slice(bytes)
 }
@@ -299,7 +302,7 @@ pub fn verify_path_small_buffer(bytes: &[u8]) -> Result<PathBytes<2>, Validation
 /// Verify: Medium buffer (64 bytes) works correctly
 #[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= 64)]
+#[requires(bytes@.len() <= 64)]
 pub fn verify_path_medium_buffer(bytes: &[u8]) -> Result<PathBytes<64>, ValidationError> {
     PathBytes::from_slice(bytes)
 }
@@ -307,7 +310,7 @@ pub fn verify_path_medium_buffer(bytes: &[u8]) -> Result<PathBytes<64>, Validati
 /// Verify: Large buffer (4096 bytes) works correctly
 #[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= 4096)]
+#[requires(bytes@.len() <= 4096)]
 pub fn verify_path_large_buffer(bytes: &[u8]) -> Result<PathBytes<4096>, ValidationError> {
     PathBytes::from_slice(bytes)
 }

@@ -72,8 +72,8 @@ mod verus_proofs;
 // UTF-8 Foundation
 pub use utf8::{Utf8Bytes, is_valid_utf8};
 
-// UUID Foundation (Kani proofs only)
-#[cfg(kani)]
+// UUID Foundation (Kani and Creusot proofs)
+#[cfg(any(kani, creusot))]
 pub use uuid_bytes::{
     UuidBytes, UuidV4Bytes, UuidV7Bytes, has_valid_variant, has_version, is_valid_v4, is_valid_v7,
 };

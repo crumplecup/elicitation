@@ -7,8 +7,10 @@
 //!
 //! This is compositional verification: rfc4122_correct → wrapper_correct.
 
+use crate::*;
+
 #[cfg(creusot)]
-use elicitation::{
+use elicitation::verification::types::{
     UuidBytes, UuidV4Bytes, UuidV7Bytes, ValidationError, has_valid_variant, has_version,
     is_valid_v4, is_valid_v7,
 };
@@ -48,7 +50,7 @@ pub fn verify_uuid_version_extraction() -> Result<UuidBytes, ValidationError> {
 
 /// Verify: has_version() correctly identifies version
 #[cfg(creusot)]
-#[ensures(result.is_ok())]
+#[ensures(match result { Ok(_) => true, Err(_) => false })]
 pub fn verify_uuid_has_version() -> Result<UuidBytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x40; // Version 4
@@ -112,13 +114,13 @@ pub fn verify_uuid_v4_bytes() -> Result<UuidV4Bytes, ValidationError> {
 
 /// Verify: version() returns 4
 #[cfg(creusot)]
-#[ensures(result.is_ok())]
+#[ensures(match result { Ok(_) => true, Err(_) => false })]
 pub fn verify_uuid_v4_version() -> Result<UuidV4Bytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x40;
     bytes[8] = 0x80;
     let v4 = UuidV4Bytes::new(bytes)?;
-    let _version = v4.version();
+    let _version = v4.get().version();
     Ok(v4)
 }
 
@@ -169,13 +171,13 @@ pub fn verify_uuid_v7_bytes() -> Result<UuidV7Bytes, ValidationError> {
 
 /// Verify: version() returns 7
 #[cfg(creusot)]
-#[ensures(result.is_ok())]
+#[ensures(match result { Ok(_) => true, Err(_) => false })]
 pub fn verify_uuid_v7_version() -> Result<UuidV7Bytes, ValidationError> {
     let mut bytes = [0u8; 16];
     bytes[6] = 0x70;
     bytes[8] = 0x80;
     let v7 = UuidV7Bytes::new(bytes)?;
-    let _version = v7.version();
+    let _version = v7.get().version();
     Ok(v7)
 }
 
