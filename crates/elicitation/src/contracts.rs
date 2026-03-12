@@ -406,6 +406,31 @@ impl<P: Prop> Clone for Established<P> {
     }
 }
 
+impl<P: Prop> std::fmt::Debug for Established<P> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Established")
+    }
+}
+
+impl<P: Prop + crate::Elicitation> crate::Prompt for Established<P> {
+    fn prompt() -> Option<&'static str> {
+        P::prompt()
+    }
+}
+
+impl<P: Prop + crate::Elicitation> crate::Elicitation for Established<P> {
+    type Style = <P as crate::Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: crate::ElicitCommunicator>(
+        communicator: &C,
+    ) -> crate::ElicitResult<Self> {
+        tracing::debug!("Eliciting proof proposition for Established");
+        let _p = P::elicit(communicator).await?;
+        Ok(Established::assert())
+    }
+}
+
 /// Proposition: value inhabits type T with its invariants.
 ///
 /// `Is<T>` represents the statement "a value of type T exists and
