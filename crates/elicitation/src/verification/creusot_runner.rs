@@ -1,8 +1,9 @@
 //! Creusot proof orchestration and tracking.
 //!
-//! This module provides functionality to track Creusot proof compilation status.
-//! Unlike Kani/Verus which run actual proofs, Creusot proofs are marked #[trusted]
-//! and verification happens at compile time. This runner tracks module compilation.
+//! This module provides functionality to run and track Creusot proof verification.
+//! Each module in `elicitation_creusot` is verified via `cargo creusot`, which
+//! invokes the Creusot toolchain to check `#[logic]` and `#[requires]` contracts.
+//! Results are tracked per-module in a CSV for incremental re-verification.
 
 use anyhow::{Context, Result};
 use chrono::Utc;
@@ -180,12 +181,11 @@ pub fn run_creusot_module(module: &CreusotModule) -> Result<CreusotModuleResult>
         ));
     }
 
-    // Build cargo check command for elicitation_creusot crate
+    // Run cargo creusot for the elicitation_creusot crate.
+    // `cargo creusot` invokes the Creusot toolchain rather than plain rustc,
+    // which is required to actually check the #[logic] and #[requires] contracts.
     let mut cmd = Command::new("cargo");
-    cmd.arg("check")
-        .arg("-p")
-        .arg("elicitation_creusot")
-        .arg("--lib");
+    cmd.arg("creusot").arg("--").arg("-p").arg("elicitation_creusot");
 
     // Add feature flag if needed
     if let Some(feature) = module.feature() {
@@ -196,7 +196,7 @@ pub fn run_creusot_module(module: &CreusotModule) -> Result<CreusotModuleResult>
 
     let output = cmd
         .output()
-        .with_context(|| format!("Failed to execute cargo check for module {}", module.name()))?;
+        .with_context(|| format!("Failed to execute cargo creusot for module {}", module.name()))?;
 
     let elapsed = start.elapsed().as_secs();
     let stderr = String::from_utf8_lossy(&output.stderr);
