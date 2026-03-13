@@ -1,0 +1,12 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_new": { "prover": "cvc5@1.3.1", "time": 0.02 },
+      "vc_verify_i128_positive_valid": {
+        "prover": "cvc5@1.3.1",
+        "time": 0.026
+      }
+    }
+  }
+}

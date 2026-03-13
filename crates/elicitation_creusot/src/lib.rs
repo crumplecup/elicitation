@@ -16,6 +16,10 @@ mod logic_fns;
 #[cfg(creusot)]
 pub use logic_fns::*;
 
+// Extern spec axioms for elicitation constructors (enables non-trusted proofs)
+#[cfg(creusot)]
+mod extern_specs;
+
 // Module declarations
 mod bools;
 mod chars;
