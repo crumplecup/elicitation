@@ -5,8 +5,8 @@ let%span sbools'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src
 let%span sbools'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/bools.rs" 16 46 16 79
 let%span sbools'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/bools.rs" 15 10 15 57
 let%span sbools'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/bools.rs" 24 4 24 30
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 23 18 23 75
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 24 18 24 76
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 25 18 25 75
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 26 18 26 76
 
 use creusot.int.Int128
 use creusot.float.Float64

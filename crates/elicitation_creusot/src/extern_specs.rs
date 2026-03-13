@@ -6,12 +6,14 @@
 
 use crate::*;
 use elicitation::{
-    BoolFalse, BoolTrue, I128NonNegative, I128NonZero, I128Positive, I16NonNegative, I16NonZero,
+    BoolFalse, BoolTrue, CharAlphabetic, CharAlphanumeric, CharNumeric, DurationPositive,
+    I128NonNegative, I128NonZero, I128Positive, I16NonNegative, I16NonZero,
     I16Positive, I32NonNegative, I32NonZero, I32Positive, I64NonNegative, I64NonZero, I64Positive,
     I8NonNegative, I8NonZero, I8Positive, I8Range, IsizeNonNegative, IsizeNonZero, IsizePositive,
     IsizeRange, U128NonZero, U128Positive, U16NonZero, U16Positive, U16Range, U32NonZero,
     U32Positive, U32Range, U64NonZero, U64Positive, U64Range, U8NonZero, U8Positive, U8Range,
     UsizeNonZero, UsizePositive, UsizeRange, ValidationError,
+    verification::types::Utf8Bytes,
 };
 
 // ============================================================================
@@ -40,7 +42,7 @@ extern_spec! {
 
 extern_spec! {
     impl I8Positive {
-        #[ensures(value@ > 0 ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(value@ > 0 ==> match result { Ok(ref w) => i8pos_inner(*w) == value, Err(_) => false })]
         #[ensures(value@ <= 0 ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(value: i8) -> Result<I8Positive, ValidationError>;
     }
@@ -65,7 +67,7 @@ extern_spec! {
 extern_spec! {
     impl<const MIN: i8, const MAX: i8> I8Range<MIN, MAX> {
         #[ensures(MIN@ <= value@ && value@ <= MAX@ ==> match result { Ok(_) => true, Err(_) => false })]
-        #[ensures((value@ < MIN@ || value@ > MAX@) ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(value@ < MIN@ || value@ > MAX@ ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(value: i8) -> Result<I8Range<MIN, MAX>, ValidationError>;
     }
 }
@@ -93,7 +95,7 @@ extern_spec! {
 extern_spec! {
     impl<const MIN: u8, const MAX: u8> U8Range<MIN, MAX> {
         #[ensures(MIN@ <= value@ && value@ <= MAX@ ==> match result { Ok(_) => true, Err(_) => false })]
-        #[ensures((value@ < MIN@ || value@ > MAX@) ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(value@ < MIN@ || value@ > MAX@ ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(value: u8) -> Result<U8Range<MIN, MAX>, ValidationError>;
     }
 }
@@ -129,7 +131,7 @@ extern_spec! {
 extern_spec! {
     impl<const MIN: i16, const MAX: i16> elicitation::I16Range<MIN, MAX> {
         #[ensures(MIN@ <= value@ && value@ <= MAX@ ==> match result { Ok(_) => true, Err(_) => false })]
-        #[ensures((value@ < MIN@ || value@ > MAX@) ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(value@ < MIN@ || value@ > MAX@ ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(value: i16) -> Result<elicitation::I16Range<MIN, MAX>, ValidationError>;
     }
 }
@@ -157,7 +159,7 @@ extern_spec! {
 extern_spec! {
     impl<const MIN: u16, const MAX: u16> U16Range<MIN, MAX> {
         #[ensures(MIN@ <= value@ && value@ <= MAX@ ==> match result { Ok(_) => true, Err(_) => false })]
-        #[ensures((value@ < MIN@ || value@ > MAX@) ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(value@ < MIN@ || value@ > MAX@ ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(value: u16) -> Result<U16Range<MIN, MAX>, ValidationError>;
     }
 }
@@ -193,7 +195,7 @@ extern_spec! {
 extern_spec! {
     impl<const MIN: i32, const MAX: i32> elicitation::I32Range<MIN, MAX> {
         #[ensures(MIN@ <= value@ && value@ <= MAX@ ==> match result { Ok(_) => true, Err(_) => false })]
-        #[ensures((value@ < MIN@ || value@ > MAX@) ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(value@ < MIN@ || value@ > MAX@ ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(value: i32) -> Result<elicitation::I32Range<MIN, MAX>, ValidationError>;
     }
 }
@@ -221,7 +223,7 @@ extern_spec! {
 extern_spec! {
     impl<const MIN: u32, const MAX: u32> U32Range<MIN, MAX> {
         #[ensures(MIN@ <= value@ && value@ <= MAX@ ==> match result { Ok(_) => true, Err(_) => false })]
-        #[ensures((value@ < MIN@ || value@ > MAX@) ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(value@ < MIN@ || value@ > MAX@ ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(value: u32) -> Result<U32Range<MIN, MAX>, ValidationError>;
     }
 }
@@ -257,7 +259,7 @@ extern_spec! {
 extern_spec! {
     impl<const MIN: i64, const MAX: i64> elicitation::I64Range<MIN, MAX> {
         #[ensures(MIN@ <= value@ && value@ <= MAX@ ==> match result { Ok(_) => true, Err(_) => false })]
-        #[ensures((value@ < MIN@ || value@ > MAX@) ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(value@ < MIN@ || value@ > MAX@ ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(value: i64) -> Result<elicitation::I64Range<MIN, MAX>, ValidationError>;
     }
 }
@@ -285,7 +287,7 @@ extern_spec! {
 extern_spec! {
     impl<const MIN: u64, const MAX: u64> U64Range<MIN, MAX> {
         #[ensures(MIN@ <= value@ && value@ <= MAX@ ==> match result { Ok(_) => true, Err(_) => false })]
-        #[ensures((value@ < MIN@ || value@ > MAX@) ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(value@ < MIN@ || value@ > MAX@ ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(value: u64) -> Result<U64Range<MIN, MAX>, ValidationError>;
     }
 }
@@ -369,7 +371,7 @@ extern_spec! {
 extern_spec! {
     impl<const MIN: isize, const MAX: isize> IsizeRange<MIN, MAX> {
         #[ensures(MIN@ <= value@ && value@ <= MAX@ ==> match result { Ok(_) => true, Err(_) => false })]
-        #[ensures((value@ < MIN@ || value@ > MAX@) ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(value@ < MIN@ || value@ > MAX@ ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(value: isize) -> Result<IsizeRange<MIN, MAX>, ValidationError>;
     }
 }
@@ -397,7 +399,59 @@ extern_spec! {
 extern_spec! {
     impl<const MIN: usize, const MAX: usize> UsizeRange<MIN, MAX> {
         #[ensures(MIN@ <= value@ && value@ <= MAX@ ==> match result { Ok(_) => true, Err(_) => false })]
-        #[ensures((value@ < MIN@ || value@ > MAX@) ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(value@ < MIN@ || value@ > MAX@ ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(value: usize) -> Result<UsizeRange<MIN, MAX>, ValidationError>;
+    }
+}
+
+// ============================================================================
+// Char constructors
+// ============================================================================
+
+extern_spec! {
+    impl CharAlphabetic {
+        #[ensures(char_is_alphabetic(value) ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(!char_is_alphabetic(value) ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(value: char) -> Result<CharAlphabetic, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl CharNumeric {
+        #[ensures(char_is_numeric(value) ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(!char_is_numeric(value) ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(value: char) -> Result<CharNumeric, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl CharAlphanumeric {
+        #[ensures(char_is_alphanumeric(value) ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(!char_is_alphanumeric(value) ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(value: char) -> Result<CharAlphanumeric, ValidationError>;
+    }
+}
+
+// ============================================================================
+// Duration constructors
+// ============================================================================
+
+extern_spec! {
+    impl DurationPositive {
+        #[ensures(duration_is_positive(duration) ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(!duration_is_positive(duration) ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(duration: std::time::Duration) -> Result<DurationPositive, ValidationError>;
+    }
+}
+
+// ============================================================================
+// Utf8Bytes constructors
+// ============================================================================
+
+extern_spec! {
+    impl<const MAX_LEN: usize> Utf8Bytes<MAX_LEN> {
+        #[ensures(len@ > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(len@ <= MAX_LEN@ ==> match result { Ok(ref u) => utf8_len(u) == len, Err(_) => true })]
+        fn new(bytes: [u8; MAX_LEN], len: usize) -> Result<Utf8Bytes<MAX_LEN>, ValidationError>;
     }
 }

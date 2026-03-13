@@ -1,0 +1,223 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 59 0 61 48 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 455 15 455 20
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 453 18 453 85
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 454 18 454 103
+let%span sutf8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 62 26 62 33
+let%span sutf8'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 62 4 62 34
+let%span sutf8'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 60 4 60 9
+let%span sutf8'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 61 5 61 48
+let%span sutf8'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 55 10 58 1
+let%span sutf8'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/utf8.rs" 49 4 49 81
+let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
+
+use creusot.slice.Slice64
+use creusot.int.UInt8
+use creusot.int.UInt64
+use creusot.int.Int128
+use creusot.float.Float64
+use creusot.prelude.Char
+use creusot.int.UInt16
+use seq.Seq
+use creusot.prelude.Any
+use int.Int
+
+constant const_MAX_LEN [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 59 34 59 54] : UInt64.t
+
+type t_Utf8Bytes
+
+type t_String
+
+type t_ValidationError =
+  | NotPositive Int128.t
+  | Negative Int128.t
+  | Zero
+  | NotFinite t_String
+  | FloatNotPositive Float64.t
+  | FloatNegative Float64.t
+  | FloatOutOfRange Float64.t Float64.t Float64.t
+  | OutOfRange Int128.t Int128.t Int128.t
+  | EmptyString
+  | StringTooLong UInt64.t UInt64.t
+  | StringTooShort UInt64.t UInt64.t
+  | NotTrue
+  | NotFalse
+  | NotAlphabetic Char.t
+  | NotNumeric Char.t
+  | NotAlphanumeric Char.t
+  | WrongUuidVersion UInt8.t UInt8.t
+  | NilUuid
+  | DurationNotPositive
+  | NotPrivateIp
+  | NotPublicIp
+  | ExpectedIpv4GotIpv6
+  | ExpectedIpv6GotIpv4
+  | NotLoopback
+  | PathDoesNotExist t_String
+  | PathNotReadable t_String
+  | PathNotDirectory t_String
+  | PathNotFile t_String
+  | DateTimeTooEarly t_String t_String
+  | DateTimeTooLate t_String t_String
+  | EmptyCollection
+  | OptionIsNone
+  | ResultIsErr
+  | WrongJsonType t_String t_String
+  | JsonIsNull
+  | UrlInvalid
+  | InvalidUrlSyntax
+  | UrlMissingAuthority
+  | UrlNotAbsolute
+  | UrlNotHttps
+  | UrlNotHttp
+  | InvalidRegexSyntax
+  | UrlNoHost
+  | UrlCannotBeBase
+  | RegexInvalid
+  | InvalidUuidVariant
+  | NotUnicastMac
+  | NotMulticastMac
+  | NotUniversalMac
+  | NotLocalMac
+  | PortIsZero
+  | PortNotPrivileged UInt16.t
+  | PortIsPrivileged UInt16.t
+  | PathContainsNull
+  | PathNotAbsolute t_String
+  | PathNotRelative t_String
+  | InvalidUtf8
+  | TooLong UInt64.t UInt64.t
+  | StatusCodeInvalid UInt16.t
+  | HeaderInvalid t_String
+
+type t_Result_Utf8Bytes_ValidationError = Ok t_Utf8Bytes | Err t_ValidationError
+
+predicate inv_Seq_u8 [@inline:trivial] (_1: Seq.seq UInt8.t) = true
+
+meta "rewrite_def" predicate inv_Seq_u8
+
+predicate invariant_array_u8_n (self: Slice64.array UInt8.t) =
+  [%#sarray] inv_Seq_u8 (Slice64.view self) /\ Seq.length (Slice64.view self) = UInt64.t'int const_MAX_LEN
+
+predicate inv_array_u8_n [@inline:trivial] (_1: Slice64.array UInt8.t) = invariant_array_u8_n _1
+
+meta "rewrite_def" predicate inv_array_u8_n
+
+predicate inv_Utf8Bytes (_1: t_Utf8Bytes)
+
+predicate inv_String (_1: t_String)
+
+predicate inv_ValidationError (_1: t_ValidationError)
+
+axiom inv_axiom [@rewrite]: forall x: t_ValidationError [inv_ValidationError x]. inv_ValidationError x
+    = match x with
+      | NotPositive f0 -> true
+      | Negative f0 -> true
+      | Zero -> true
+      | NotFinite f0 -> inv_String f0
+      | FloatNotPositive f0 -> true
+      | FloatNegative f0 -> true
+      | FloatOutOfRange value min max -> true
+      | OutOfRange value min max -> true
+      | EmptyString -> true
+      | StringTooLong actual max -> true
+      | StringTooShort actual min -> true
+      | NotTrue -> true
+      | NotFalse -> true
+      | NotAlphabetic f0 -> true
+      | NotNumeric f0 -> true
+      | NotAlphanumeric f0 -> true
+      | WrongUuidVersion expected got -> true
+      | NilUuid -> true
+      | DurationNotPositive -> true
+      | NotPrivateIp -> true
+      | NotPublicIp -> true
+      | ExpectedIpv4GotIpv6 -> true
+      | ExpectedIpv6GotIpv4 -> true
+      | NotLoopback -> true
+      | PathDoesNotExist f0 -> inv_String f0
+      | PathNotReadable f0 -> inv_String f0
+      | PathNotDirectory f0 -> inv_String f0
+      | PathNotFile f0 -> inv_String f0
+      | DateTimeTooEarly value threshold -> inv_String value /\ inv_String threshold
+      | DateTimeTooLate value threshold -> inv_String value /\ inv_String threshold
+      | EmptyCollection -> true
+      | OptionIsNone -> true
+      | ResultIsErr -> true
+      | WrongJsonType expected got -> inv_String expected /\ inv_String got
+      | JsonIsNull -> true
+      | UrlInvalid -> true
+      | InvalidUrlSyntax -> true
+      | UrlMissingAuthority -> true
+      | UrlNotAbsolute -> true
+      | UrlNotHttps -> true
+      | UrlNotHttp -> true
+      | InvalidRegexSyntax -> true
+      | UrlNoHost -> true
+      | UrlCannotBeBase -> true
+      | RegexInvalid -> true
+      | InvalidUuidVariant -> true
+      | NotUnicastMac -> true
+      | NotMulticastMac -> true
+      | NotUniversalMac -> true
+      | NotLocalMac -> true
+      | PortIsZero -> true
+      | PortNotPrivileged f0 -> true
+      | PortIsPrivileged f0 -> true
+      | PathContainsNull -> true
+      | PathNotAbsolute f0 -> inv_String f0
+      | PathNotRelative f0 -> inv_String f0
+      | InvalidUtf8 -> true
+      | TooLong max actual -> true
+      | StatusCodeInvalid f0 -> true
+      | HeaderInvalid f0 -> inv_String f0
+      end
+
+predicate inv_Result_Utf8Bytes_ValidationError (_1: t_Result_Utf8Bytes_ValidationError)
+
+axiom inv_axiom'0 [@rewrite]:
+  forall x: t_Result_Utf8Bytes_ValidationError [inv_Result_Utf8Bytes_ValidationError x]. inv_Result_Utf8Bytes_ValidationError x
+    = match x with
+      | Ok f0 -> inv_Utf8Bytes f0
+      | Err f0 -> inv_ValidationError f0
+      end
+
+function utf8_len [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 166 0 166 59] (_u: t_Utf8Bytes) : UInt64.t
+
+let rec new (bytes: Slice64.array UInt8.t) (len: UInt64.t) (return (x: t_Result_Utf8Bytes_ValidationError)) =
+  {[@stop_split] [@expl:new 'bytes' type invariant] [%#sextern_specs] inv_array_u8_n bytes}
+  any
+  [ return (result: t_Result_Utf8Bytes_ValidationError) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#sutf8'4] inv_Result_Utf8Bytes_ValidationError result)
+    /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs'0] UInt64.t'int len > UInt64.t'int const_MAX_LEN
+      -> match result with
+        | Err _ -> true
+        | Ok _ -> false
+        end)
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'1] UInt64.t'int len <= UInt64.t'int const_MAX_LEN
+    -> match result with
+      | Ok u -> utf8_len u = len
+      | Err _ -> true
+      end)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_max_length_boundary [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 59 0 61 48]
+  (bytes: Slice64.array UInt8.t) (return (x: t_Result_Utf8Bytes_ValidationError)) =
+  {[@stop_split] [@expl:verify_max_length_boundary 'bytes' type invariant] [%#sutf8'1] inv_array_u8_n bytes}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = new [%#sutf8'0] {bytes} {[%#sutf8] const_MAX_LEN}
+        (fun (_x: t_Result_Utf8Bytes_ValidationError) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ]
+  [ & _ret: t_Result_Utf8Bytes_ValidationError = Any.any_l () | & bytes: Slice64.array UInt8.t = bytes ])
+  [ return (result: t_Result_Utf8Bytes_ValidationError) ->
+  {[@stop_split] [@expl:verify_max_length_boundary ensures] ([@stop_split] [@expl:verify_max_length_boundary result type invariant] [%#sutf8'2] inv_Result_Utf8Bytes_ValidationError result)
+    /\ ([@stop_split] [@expl:verify_max_length_boundary ensures] [%#sutf8'3] match result with
+      | Ok utf8 -> utf8_len utf8 = const_MAX_LEN
+      | Err _ -> true
+      end)}
+    (! return {result}) ]

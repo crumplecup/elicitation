@@ -1,7 +1,7 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 31 0 31 83 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 43 18 43 80
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 44 18 44 81
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 45 18 45 104
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 46 18 46 81
 let%span sintegers = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 32 4 32 26
 let%span sintegers'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 29 11 29 22
 let%span sintegers'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 31 48 31 83
@@ -165,12 +165,14 @@ axiom inv_axiom'0 [@rewrite]:
       | Err f0 -> inv_ValidationError f0
       end
 
+function i8pos_inner [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 202 0 202 40] (_p: t_I8Positive) : Int8.t
+
 let rec new (value: Int8.t) (return (x: t_Result_I8Positive_ValidationError)) = any
   [ return (result: t_Result_I8Positive_ValidationError) ->
   {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#sintegers'3] inv_Result_I8Positive_ValidationError result)
     /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs] Int8.to_int value > 0
       -> match result with
-        | Ok _ -> true
+        | Ok w -> i8pos_inner w = value
         | Err _ -> false
         end)
     /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'0] Int8.to_int value <= 0

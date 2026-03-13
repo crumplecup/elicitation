@@ -1,20 +1,19 @@
 //! Creusot proofs for UTF-8 validation types.
 //!
-//! These proofs verify the UTF-8 wrapper logic assuming correct stdlib validation.
-//! This is compositional verification: stdlib_correct → wrapper_correct.
+//! Proves: length bound enforcement is correct.
+//! Trusts: stdlib UTF-8 validation (content correctness).
 
 #[cfg(creusot)]
 use crate::*;
 #[cfg(creusot)]
 use elicitation::verification::types::{Utf8Bytes, ValidationError};
 
-// UTF-8 Validation Proofs
+// Length bound proofs (proven from extern_spec)
 // ============================================================================
 
-/// Verify: Utf8Bytes correctly rejects length exceeding MAX_LEN
-#[trusted]
+/// Verify: length exceeding MAX_LEN is rejected.
 #[cfg(creusot)]
-#[requires(len > MAX_LEN)]
+#[requires(len@ > MAX_LEN@)]
 #[ensures(match result { Err(_) => true, Ok(_) => false })]
 pub fn verify_utf8_length_check<const MAX_LEN: usize>(
     bytes: [u8; MAX_LEN],
@@ -23,10 +22,13 @@ pub fn verify_utf8_length_check<const MAX_LEN: usize>(
     Utf8Bytes::new(bytes, len)
 }
 
-/// Verify: Utf8Bytes correctly accepts valid length
-#[trusted]
+/// Verify: valid length is accepted (UTF-8 validity trusted to stdlib).
 #[cfg(creusot)]
-#[requires(len <= MAX_LEN)]
+#[requires(len@ <= MAX_LEN@)]
+#[ensures(match result {
+    Ok(ref utf8) => utf8_len(utf8) == len,
+    Err(_) => true,
+})]
 pub fn verify_utf8_length_valid<const MAX_LEN: usize>(
     bytes: [u8; MAX_LEN],
     len: usize,
@@ -34,10 +36,9 @@ pub fn verify_utf8_length_valid<const MAX_LEN: usize>(
     Utf8Bytes::new(bytes, len)
 }
 
-/// Verify: Utf8Bytes accessor returns correct length
-#[trusted]
+/// Verify: accessor returns the same length that was provided.
 #[cfg(creusot)]
-#[requires(len <= MAX_LEN)]
+#[requires(len@ <= MAX_LEN@)]
 #[ensures(match result {
     Ok(ref utf8) => utf8_len(utf8) == len,
     Err(_) => true,
@@ -49,129 +50,7 @@ pub fn verify_utf8_len_accessor<const MAX_LEN: usize>(
     Utf8Bytes::new(bytes, len)
 }
 
-/// Verify: Utf8Bytes is_empty predicate for zero length
-#[trusted]
-#[cfg(creusot)]
-#[ensures(match result {
-    Ok(ref utf8) => utf8_is_empty(utf8),
-    Err(_) => true,
-})]
-pub fn verify_utf8_empty<const MAX_LEN: usize>(
-    bytes: [u8; MAX_LEN],
-) -> Result<Utf8Bytes<MAX_LEN>, ValidationError> {
-    Utf8Bytes::new(bytes, 0)
-}
-
-/// Verify: Utf8Bytes is_empty predicate for non-zero length
-#[trusted]
-#[cfg(creusot)]
-#[requires(len > 0usize && len <= MAX_LEN)]
-#[ensures(match result {
-    Ok(ref utf8) => !utf8_is_empty(utf8),
-    Err(_) => true,
-})]
-pub fn verify_utf8_non_empty<const MAX_LEN: usize>(
-    bytes: [u8; MAX_LEN],
-    len: usize,
-) -> Result<Utf8Bytes<MAX_LEN>, ValidationError> {
-    Utf8Bytes::new(bytes, len)
-}
-
-// ASCII Validation (Compositional - trusts stdlib ASCII validation)
-// ============================================================================
-
-/// Verify: ASCII bytes (< 0x80) construct valid UTF-8
-/// Compositional proof: if stdlib accepts ASCII, wrapper accepts it
-#[trusted]
-#[cfg(creusot)]
-pub fn verify_ascii_valid() -> Result<Utf8Bytes<5>, ValidationError> {
-    let bytes = [b'h', b'e', b'l', b'l', b'o'];
-    Utf8Bytes::new(bytes, 5)
-}
-
-/// Verify: Single ASCII byte is valid UTF-8
-#[trusted]
-#[cfg(creusot)]
-pub fn verify_single_ascii() -> Result<Utf8Bytes<1>, ValidationError> {
-    let bytes = [b'x'];
-    Utf8Bytes::new(bytes, 1)
-}
-
-/// Verify: Empty UTF-8 sequence is valid
-#[trusted]
-#[cfg(creusot)]
-#[ensures(match result { Ok(_) => true, Err(_) => false })]
-pub fn verify_empty_utf8() -> Result<Utf8Bytes<10>, ValidationError> {
-    let bytes = [0u8; 10];
-    Utf8Bytes::new(bytes, 0)
-}
-
-// Bounded Length Validation
-// ============================================================================
-
-/// Verify: Small buffer (2 bytes) works correctly
-#[trusted]
-#[cfg(creusot)]
-#[requires(len <= 2usize)]
-pub fn verify_small_buffer(bytes: [u8; 2], len: usize) -> Result<Utf8Bytes<2>, ValidationError> {
-    Utf8Bytes::new(bytes, len)
-}
-
-/// Verify: Medium buffer (16 bytes) works correctly
-#[trusted]
-#[cfg(creusot)]
-#[requires(len <= 16usize)]
-pub fn verify_medium_buffer(bytes: [u8; 16], len: usize) -> Result<Utf8Bytes<16>, ValidationError> {
-    Utf8Bytes::new(bytes, len)
-}
-
-/// Verify: Large buffer (256 bytes) works correctly
-#[trusted]
-#[cfg(creusot)]
-#[requires(len <= 256usize)]
-pub fn verify_large_buffer(
-    bytes: [u8; 256],
-    len: usize,
-) -> Result<Utf8Bytes<256>, ValidationError> {
-    Utf8Bytes::new(bytes, len)
-}
-
-// Compositional Validation (Trust stdlib UTF-8 correctness)
-// ============================================================================
-
-/// Verify: Two-byte composition
-/// If stdlib validates each byte sequence, composition is valid
-#[trusted]
-#[cfg(creusot)]
-pub fn verify_two_byte_composition() -> Result<Utf8Bytes<4>, ValidationError> {
-    let bytes = [b'a', b'b', 0, 0];
-    Utf8Bytes::new(bytes, 2)
-}
-
-/// Verify: Four-byte composition
-#[trusted]
-#[cfg(creusot)]
-pub fn verify_four_byte_composition() -> Result<Utf8Bytes<8>, ValidationError> {
-    let bytes = [b't', b'e', b's', b't', 0, 0, 0, 0];
-    Utf8Bytes::new(bytes, 4)
-}
-
-/// Verify: Construction does not panic on any valid length
-#[trusted]
-#[cfg(creusot)]
-#[requires(len <= MAX_LEN)]
-pub fn verify_no_panic_valid_length<const MAX_LEN: usize>(
-    bytes: [u8; MAX_LEN],
-    len: usize,
-) -> Result<Utf8Bytes<MAX_LEN>, ValidationError> {
-    Utf8Bytes::new(bytes, len)
-}
-
-// Edge Cases
-// ============================================================================
-
-/// Verify: Maximum length boundary (len == MAX_LEN)
-#[trusted]
+/// Verify: maximum length boundary (len == MAX_LEN) is accepted.
 #[cfg(creusot)]
 #[ensures(match result {
     Ok(ref utf8) => utf8_len(utf8) == MAX_LEN,
@@ -183,10 +62,9 @@ pub fn verify_max_length_boundary<const MAX_LEN: usize>(
     Utf8Bytes::new(bytes, MAX_LEN)
 }
 
-/// Verify: Length overflow detection (len = MAX_LEN + 1)
-#[trusted]
+/// Verify: len = MAX_LEN + 1 is rejected.
 #[cfg(creusot)]
-#[requires(MAX_LEN < usize::MAX)]
+#[requires(MAX_LEN@ < usize::MAX@)]
 #[ensures(match result { Err(_) => true, Ok(_) => false })]
 pub fn verify_length_overflow<const MAX_LEN: usize>(
     bytes: [u8; MAX_LEN],
@@ -194,17 +72,22 @@ pub fn verify_length_overflow<const MAX_LEN: usize>(
     Utf8Bytes::new(bytes, MAX_LEN + 1)
 }
 
-/// Verify: as_str() returns valid UTF-8 string slice
+// Content proofs (trust stdlib UTF-8 validation)
+// ============================================================================
+
+/// Verify: empty byte sequence (len = 0) is valid UTF-8.
 #[trusted]
 #[cfg(creusot)]
-#[requires(len <= MAX_LEN)]
-pub fn verify_as_str_valid<const MAX_LEN: usize>(
-    bytes: [u8; MAX_LEN],
-    len: usize,
-) -> Result<Utf8Bytes<MAX_LEN>, ValidationError> {
-    let utf8 = Utf8Bytes::new(bytes, len)?;
-    let _s = utf8.as_str(); // Should not panic
-    Ok(utf8)
+#[ensures(match result { Ok(_) => true, Err(_) => false })]
+pub fn verify_empty_utf8() -> Result<Utf8Bytes<10>, ValidationError> {
+    let bytes = [0u8; 10];
+    Utf8Bytes::new(bytes, 0)
 }
 
-// ============================================================================
+/// Verify: ASCII bytes construct valid UTF-8.
+#[trusted]
+#[cfg(creusot)]
+pub fn verify_ascii_valid() -> Result<Utf8Bytes<5>, ValidationError> {
+    let bytes = [b'h', b'e', b'l', b'l', b'o'];
+    Utf8Bytes::new(bytes, 5)
+}

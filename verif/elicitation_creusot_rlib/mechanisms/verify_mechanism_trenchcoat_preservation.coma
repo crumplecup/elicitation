@@ -1,0 +1,384 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 24 0 24 97 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 45 18 45 104
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 46 18 46 81
+let%span sintegers = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/integers.rs" 225 4 225 34
+let%span smechanisms = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 25 18 25 40
+let%span smechanisms'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 25 18 25 41
+let%span smechanisms'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 19 11 19 21
+let%span smechanisms'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 24 62 24 97
+let%span smechanisms'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 20 10 23 1
+let%span sops = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 662 18 662 22
+let%span sops'0 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 658 18 661 9
+let%span sops'1 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 675 25 675 33
+let%span sops'2 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 671 18 674 9
+let%span sops'3 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 160 14 160 114
+let%span sops'4 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 165 14 165 100
+let%span sops'5 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 170 14 170 61
+let%span sops'6 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 126 15 126 59
+let%span sops'7 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 127 14 127 38
+let%span sops'8 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 132 14 132 33
+let%span sops'9 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 137 15 137 31
+let%span sops'10 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 138 15 138 28
+let%span sops'11 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 139 14 139 30
+let%span sops'12 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 144 14 145 104
+let%span sconvert = "/home/erik/repos/creusot/creusot-std/src/std/convert.rs" 14 18 14 32
+let%span sconvert'0 = "/home/erik/repos/creusot/creusot-std/src/std/convert.rs" 15 16 15 20
+
+use creusot.int.Int8
+use creusot.int.Int128
+use creusot.float.Float64
+use creusot.int.UInt64
+use creusot.prelude.Char
+use creusot.int.UInt8
+use creusot.int.UInt16
+use creusot.prelude.Any
+use int.Int
+
+type t_I8Positive
+
+type t_String
+
+type t_ValidationError =
+  | NotPositive Int128.t
+  | Negative Int128.t
+  | Zero
+  | NotFinite t_String
+  | FloatNotPositive Float64.t
+  | FloatNegative Float64.t
+  | FloatOutOfRange Float64.t Float64.t Float64.t
+  | OutOfRange Int128.t Int128.t Int128.t
+  | EmptyString
+  | StringTooLong UInt64.t UInt64.t
+  | StringTooShort UInt64.t UInt64.t
+  | NotTrue
+  | NotFalse
+  | NotAlphabetic Char.t
+  | NotNumeric Char.t
+  | NotAlphanumeric Char.t
+  | WrongUuidVersion UInt8.t UInt8.t
+  | NilUuid
+  | DurationNotPositive
+  | NotPrivateIp
+  | NotPublicIp
+  | ExpectedIpv4GotIpv6
+  | ExpectedIpv6GotIpv4
+  | NotLoopback
+  | PathDoesNotExist t_String
+  | PathNotReadable t_String
+  | PathNotDirectory t_String
+  | PathNotFile t_String
+  | DateTimeTooEarly t_String t_String
+  | DateTimeTooLate t_String t_String
+  | EmptyCollection
+  | OptionIsNone
+  | ResultIsErr
+  | WrongJsonType t_String t_String
+  | JsonIsNull
+  | UrlInvalid
+  | InvalidUrlSyntax
+  | UrlMissingAuthority
+  | UrlNotAbsolute
+  | UrlNotHttps
+  | UrlNotHttp
+  | InvalidRegexSyntax
+  | UrlNoHost
+  | UrlCannotBeBase
+  | RegexInvalid
+  | InvalidUuidVariant
+  | NotUnicastMac
+  | NotMulticastMac
+  | NotUniversalMac
+  | NotLocalMac
+  | PortIsZero
+  | PortNotPrivileged UInt16.t
+  | PortIsPrivileged UInt16.t
+  | PathContainsNull
+  | PathNotAbsolute t_String
+  | PathNotRelative t_String
+  | InvalidUtf8
+  | TooLong UInt64.t UInt64.t
+  | StatusCodeInvalid UInt16.t
+  | HeaderInvalid t_String
+
+type t_Result_I8Positive_ValidationError = Ok t_I8Positive | Err t_ValidationError
+
+predicate inv_I8Positive (_1: t_I8Positive)
+
+predicate inv_String (_1: t_String)
+
+predicate inv_ValidationError (_1: t_ValidationError)
+
+axiom inv_axiom [@rewrite]: forall x: t_ValidationError [inv_ValidationError x]. inv_ValidationError x
+    = match x with
+      | NotPositive f0 -> true
+      | Negative f0 -> true
+      | Zero -> true
+      | NotFinite f0 -> inv_String f0
+      | FloatNotPositive f0 -> true
+      | FloatNegative f0 -> true
+      | FloatOutOfRange value min max -> true
+      | OutOfRange value min max -> true
+      | EmptyString -> true
+      | StringTooLong actual max -> true
+      | StringTooShort actual min -> true
+      | NotTrue -> true
+      | NotFalse -> true
+      | NotAlphabetic f0 -> true
+      | NotNumeric f0 -> true
+      | NotAlphanumeric f0 -> true
+      | WrongUuidVersion expected got -> true
+      | NilUuid -> true
+      | DurationNotPositive -> true
+      | NotPrivateIp -> true
+      | NotPublicIp -> true
+      | ExpectedIpv4GotIpv6 -> true
+      | ExpectedIpv6GotIpv4 -> true
+      | NotLoopback -> true
+      | PathDoesNotExist f0 -> inv_String f0
+      | PathNotReadable f0 -> inv_String f0
+      | PathNotDirectory f0 -> inv_String f0
+      | PathNotFile f0 -> inv_String f0
+      | DateTimeTooEarly value threshold -> inv_String value /\ inv_String threshold
+      | DateTimeTooLate value threshold -> inv_String value /\ inv_String threshold
+      | EmptyCollection -> true
+      | OptionIsNone -> true
+      | ResultIsErr -> true
+      | WrongJsonType expected got -> inv_String expected /\ inv_String got
+      | JsonIsNull -> true
+      | UrlInvalid -> true
+      | InvalidUrlSyntax -> true
+      | UrlMissingAuthority -> true
+      | UrlNotAbsolute -> true
+      | UrlNotHttps -> true
+      | UrlNotHttp -> true
+      | InvalidRegexSyntax -> true
+      | UrlNoHost -> true
+      | UrlCannotBeBase -> true
+      | RegexInvalid -> true
+      | InvalidUuidVariant -> true
+      | NotUnicastMac -> true
+      | NotMulticastMac -> true
+      | NotUniversalMac -> true
+      | NotLocalMac -> true
+      | PortIsZero -> true
+      | PortNotPrivileged f0 -> true
+      | PortIsPrivileged f0 -> true
+      | PathContainsNull -> true
+      | PathNotAbsolute f0 -> inv_String f0
+      | PathNotRelative f0 -> inv_String f0
+      | InvalidUtf8 -> true
+      | TooLong max actual -> true
+      | StatusCodeInvalid f0 -> true
+      | HeaderInvalid f0 -> inv_String f0
+      end
+
+predicate inv_Result_I8Positive_ValidationError (_1: t_Result_I8Positive_ValidationError)
+
+axiom inv_axiom'0 [@rewrite]:
+  forall x: t_Result_I8Positive_ValidationError [inv_Result_I8Positive_ValidationError x]. inv_Result_I8Positive_ValidationError x
+    = match x with
+      | Ok f0 -> inv_I8Positive f0
+      | Err f0 -> inv_ValidationError f0
+      end
+
+function i8pos_inner [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 202 0 202 40] (_p: t_I8Positive) : Int8.t
+
+let rec new (value: Int8.t) (return (x: t_Result_I8Positive_ValidationError)) = any
+  [ return (result: t_Result_I8Positive_ValidationError) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#sintegers] inv_Result_I8Positive_ValidationError result)
+    /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs] Int8.to_int value > 0
+      -> match result with
+        | Ok w -> i8pos_inner w = value
+        | Err _ -> false
+        end)
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'0] Int8.to_int value <= 0
+    -> match result with
+      | Err _ -> true
+      | Ok _ -> false
+      end)}
+    (! return {result}) ]
+
+type t_Result_Infallible_ValidationError = Ok'0 () | Err'0 t_ValidationError
+
+type t_ControlFlow_Result_Infallible_ValidationError_I8Positive =
+  | Continue t_I8Positive
+  | Break t_Result_Infallible_ValidationError
+
+predicate inv_Infallible [@inline:trivial] (_1: ()) = false
+
+meta "rewrite_def" predicate inv_Infallible
+
+predicate inv_Result_Infallible_ValidationError (_1: t_Result_Infallible_ValidationError)
+
+axiom inv_axiom'1 [@rewrite]:
+  forall x: t_Result_Infallible_ValidationError [inv_Result_Infallible_ValidationError x]. inv_Result_Infallible_ValidationError x
+    = match x with
+      | Ok'0 f0 -> inv_Infallible f0
+      | Err'0 f0 -> inv_ValidationError f0
+      end
+
+predicate inv_ControlFlow_Result_Infallible_ValidationError_I8Positive (_1: t_ControlFlow_Result_Infallible_ValidationError_I8Positive)
+
+axiom inv_axiom'2 [@rewrite]:
+  forall x: t_ControlFlow_Result_Infallible_ValidationError_I8Positive [inv_ControlFlow_Result_Infallible_ValidationError_I8Positive x]. inv_ControlFlow_Result_Infallible_ValidationError_I8Positive x
+    = match x with
+      | Continue f0 -> inv_I8Positive f0
+      | Break f0 -> inv_Result_Infallible_ValidationError f0
+      end
+
+let rec branch_Result_I8Positive_ValidationError (self_: t_Result_I8Positive_ValidationError)
+  (return (x: t_ControlFlow_Result_Infallible_ValidationError_I8Positive)) =
+  {[@stop_split] [@expl:branch 'self_' type invariant] [%#sops] inv_Result_I8Positive_ValidationError self_}
+  any
+  [ return (result: t_ControlFlow_Result_Infallible_ValidationError_I8Positive) ->
+  {[@stop_split] [@expl:branch_Result_I8Positive_ValidationError ensures] ([@stop_split] [@expl:branch result type invariant] inv_ControlFlow_Result_Infallible_ValidationError_I8Positive result)
+    /\ ([@stop_split] [@expl:branch ensures] [%#sops'0] match self_ with
+      | Ok v -> result = Continue v
+      | Err e -> result = Break (Err'0 e)
+      end)}
+    (! return {result}) ]
+
+let rec elim_Break (_x: t_ControlFlow_Result_Infallible_ValidationError_I8Positive)
+  (return (f0: t_Result_Infallible_ValidationError)) = any
+  [ _k (f0: t_Result_Infallible_ValidationError) -> {Break f0 = _x} (! return {f0})
+  | _chk -> (! {[@expl:elim Break] match _x with
+      | Break _ -> true
+      | _ -> false
+      end}
+    any) ]
+
+type tup2_Result_I8Positive_ValidationError_Result_Infallible_ValidationError = {
+  f0: t_Result_I8Positive_ValidationError;
+  f1: t_Result_Infallible_ValidationError }
+
+predicate postcondition_once_from [@inline:trivial] (self: ()) (args: t_ValidationError) (result: t_ValidationError) =
+  let self_ = args in inv_ValidationError result /\ ([%#sconvert] result = self_)
+
+meta "rewrite_def" predicate postcondition_once_from
+
+predicate resolve_from [@inline:trivial] (_1: ()) = true
+
+meta "rewrite_def" predicate resolve_from
+
+predicate postcondition_mut_from [@inline:trivial] (self: ()) (args: t_ValidationError) (result_state: ()) (result: t_ValidationError) =
+  let self_ = args in inv_ValidationError result /\ ([%#sconvert] result = self_)
+
+meta "rewrite_def" predicate postcondition_mut_from
+
+function fn_mut_once_from (self: ()) (args: t_ValidationError) (res: t_ValidationError) : ()
+
+axiom fn_mut_once_from_spec:
+  forall self: (), args: t_ValidationError, res: t_ValidationError. [%#sops'12] postcondition_once_from self args res
+    = (exists res_state: (). postcondition_mut_from self args res_state res /\ resolve_from res_state)
+
+predicate hist_inv_from [@inline:trivial] (self: ()) (result_state: ()) = true
+
+meta "rewrite_def" predicate hist_inv_from
+
+function hist_inv_trans_from (self: ()) (b: ()) (c: ()) : ()
+
+axiom hist_inv_trans_from_spec: forall self: (), b: (), c: (). ([%#sops'9] hist_inv_from self b)
+    -> ([%#sops'10] hist_inv_from b c) -> ([%#sops'11] hist_inv_from self c)
+
+function hist_inv_refl_from (self: ()) : ()
+
+axiom hist_inv_refl_from_spec: forall self: (). [%#sops'8] hist_inv_from self self
+
+function postcondition_mut_hist_inv_from (self: ()) (args: t_ValidationError) (res_state: ()) (res: t_ValidationError) : ()
+
+axiom postcondition_mut_hist_inv_from_spec:
+  forall self: (), args: t_ValidationError, res_state: (), res: t_ValidationError. ([%#sops'6] postcondition_mut_from self args res_state res)
+    -> ([%#sops'7] hist_inv_from self res_state)
+
+function fn_hist_inv_from (self: ()) (res_state: ()) : ()
+
+axiom fn_hist_inv_from_spec: forall self: (), res_state: (). [%#sops'5] hist_inv_from self res_state
+    = (self = res_state)
+
+predicate postcondition_from [@inline:trivial] (self: ()) (args: t_ValidationError) (result: t_ValidationError) =
+  let self_ = args in inv_ValidationError result /\ ([%#sconvert] result = self_)
+
+meta "rewrite_def" predicate postcondition_from
+
+function fn_once_from (self: ()) (args: t_ValidationError) (res: t_ValidationError) : ()
+
+axiom fn_once_from_spec:
+  forall self: (), args: t_ValidationError, res: t_ValidationError. [%#sops'4] postcondition_once_from self args res
+    = (postcondition_from self args res /\ resolve_from self)
+
+function fn_mut_from (self: ()) (args: t_ValidationError) (res_state: ()) (res: t_ValidationError) : ()
+
+axiom fn_mut_from_spec:
+  forall self: (), args: t_ValidationError, res_state: (), res: t_ValidationError. [%#sops'3] postcondition_mut_from self args res_state res
+    = (postcondition_from self args res /\ self = res_state)
+
+let rec from_ValidationError (self_: t_ValidationError) (return (x: t_ValidationError)) =
+  {[@stop_split] [@expl:from 'self_' type invariant] [%#sconvert'0] inv_ValidationError self_}
+  any
+  [ return (result: t_ValidationError) ->
+  {[@stop_split] [@expl:from_ValidationError ensures] ([@stop_split] [@expl:from result type invariant] inv_ValidationError result)
+    /\ ([@stop_split] [@expl:from ensures] [%#sconvert] result = self_)}
+    (! return {result}) ]
+
+let rec from_residual_Result_I8Positive_ValidationError (residual: t_Result_Infallible_ValidationError)
+  (return (x: t_Result_I8Positive_ValidationError)) =
+  {[@stop_split] [@expl:from_residual 'residual' type invariant] [%#sops'1] inv_Result_Infallible_ValidationError residual}
+  any
+  [ return (result: t_Result_I8Positive_ValidationError) ->
+  {[@stop_split] [@expl:from_residual_Result_I8Positive_ValidationError ensures] ([@stop_split] [@expl:from_residual result type invariant] inv_Result_I8Positive_ValidationError result)
+    /\ ([@stop_split] [@expl:from_residual ensures] [%#sops'2] match { f0 = result; f1 = residual } with
+      | {f0 = Err result'0; f1 = Err'0 residual'0} -> postcondition_from () residual'0 result'0
+      | _ -> false
+      end)}
+    (! return {result}) ]
+
+let rec elim_Continue (_x: t_ControlFlow_Result_Infallible_ValidationError_I8Positive) (return (f0'0: t_I8Positive)) =
+  any
+  [ _k (f0'0: t_I8Positive) -> {Continue f0'0 = _x} (! return {f0'0})
+  | _chk -> (! {[@expl:elim Continue] match _x with
+      | Continue _ -> true
+      | _ -> false
+      end}
+    any) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_mechanism_trenchcoat_preservation
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 24 0 24 97] (value: Int8.t)
+  (return (x: t_Result_I8Positive_ValidationError)) =
+  {[@stop_split] [@expl:verify_mechanism_trenchcoat_preservation requires] [%#smechanisms'1] Int8.to_int value > 0}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = new [%#smechanisms] {value} (fun (_x: t_Result_I8Positive_ValidationError) -> [ &_8 <- _x ] s1)
+    | s1 = branch_Result_I8Positive_ValidationError [%#smechanisms'0] {_8}
+        (fun (_x: t_ControlFlow_Result_Infallible_ValidationError_I8Positive) -> [ &_7 <- _x ] s2)
+    | s2 = any
+      [ br0 (x0: t_I8Positive) -> {_7 = Continue x0} (! bb5)
+      | br1 (x0: t_Result_Infallible_ValidationError) -> {_7 = Break x0} (! bb6) ] ]
+  | bb6 = s0
+    [ s0 = elim_Break {_7} (fun (r0: t_Result_Infallible_ValidationError) -> [ &residual <- r0 ] s1)
+    | s1 = from_residual_Result_I8Positive_ValidationError [%#smechanisms'0] {residual}
+        (fun (_x: t_Result_I8Positive_ValidationError) -> [ &_ret <- _x ] s2)
+    | s2 = return {_ret} ]
+  | bb5 = s0
+    [ s0 = elim_Continue {_7} (fun (r0: t_I8Positive) -> [ &val' <- r0 ] s1)
+    | s1 = [ &wrapped <- val' ] s2
+    | s2 = [ &_ret <- Ok wrapped ] s3
+    | s3 = return {_ret} ] ]
+  [ & _ret: t_Result_I8Positive_ValidationError = Any.any_l ()
+  | & value: Int8.t = value
+  | & wrapped: t_I8Positive = Any.any_l ()
+  | & _7: t_ControlFlow_Result_Infallible_ValidationError_I8Positive = Any.any_l ()
+  | & _8: t_Result_I8Positive_ValidationError = Any.any_l ()
+  | & residual: t_Result_Infallible_ValidationError = Any.any_l ()
+  | & val': t_I8Positive = Any.any_l () ])
+  [ return (result: t_Result_I8Positive_ValidationError) ->
+  {[@stop_split] [@expl:verify_mechanism_trenchcoat_preservation ensures] ([@stop_split] [@expl:verify_mechanism_trenchcoat_preservation result type invariant] [%#smechanisms'2] inv_Result_I8Positive_ValidationError result)
+    /\ ([@stop_split] [@expl:verify_mechanism_trenchcoat_preservation ensures] [%#smechanisms'3] match result with
+      | Ok wrapped -> i8pos_inner wrapped = value
+      | Err _ -> false
+      end)}
+    (! return {result}) ]

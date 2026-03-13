@@ -1,0 +1,211 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 19 0 19 104 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 443 15 443 23
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 441 18 441 100
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 442 18 442 101
+let%span sdurations = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 20 4 20 35
+let%span sdurations'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 19 40 19 48
+let%span sdurations'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 17 11 17 42
+let%span sdurations'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 19 63 19 104
+let%span sdurations'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 18 10 18 57
+let%span sdurations'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/durations.rs" 18 4 18 48
+
+use creusot.int.Int128
+use creusot.float.Float64
+use creusot.int.UInt64
+use creusot.prelude.Char
+use creusot.int.UInt8
+use creusot.int.UInt16
+use creusot.prelude.Any
+
+type t_Duration
+
+type t_DurationPositive
+
+type t_String
+
+type t_ValidationError =
+  | NotPositive Int128.t
+  | Negative Int128.t
+  | Zero
+  | NotFinite t_String
+  | FloatNotPositive Float64.t
+  | FloatNegative Float64.t
+  | FloatOutOfRange Float64.t Float64.t Float64.t
+  | OutOfRange Int128.t Int128.t Int128.t
+  | EmptyString
+  | StringTooLong UInt64.t UInt64.t
+  | StringTooShort UInt64.t UInt64.t
+  | NotTrue
+  | NotFalse
+  | NotAlphabetic Char.t
+  | NotNumeric Char.t
+  | NotAlphanumeric Char.t
+  | WrongUuidVersion UInt8.t UInt8.t
+  | NilUuid
+  | DurationNotPositive
+  | NotPrivateIp
+  | NotPublicIp
+  | ExpectedIpv4GotIpv6
+  | ExpectedIpv6GotIpv4
+  | NotLoopback
+  | PathDoesNotExist t_String
+  | PathNotReadable t_String
+  | PathNotDirectory t_String
+  | PathNotFile t_String
+  | DateTimeTooEarly t_String t_String
+  | DateTimeTooLate t_String t_String
+  | EmptyCollection
+  | OptionIsNone
+  | ResultIsErr
+  | WrongJsonType t_String t_String
+  | JsonIsNull
+  | UrlInvalid
+  | InvalidUrlSyntax
+  | UrlMissingAuthority
+  | UrlNotAbsolute
+  | UrlNotHttps
+  | UrlNotHttp
+  | InvalidRegexSyntax
+  | UrlNoHost
+  | UrlCannotBeBase
+  | RegexInvalid
+  | InvalidUuidVariant
+  | NotUnicastMac
+  | NotMulticastMac
+  | NotUniversalMac
+  | NotLocalMac
+  | PortIsZero
+  | PortNotPrivileged UInt16.t
+  | PortIsPrivileged UInt16.t
+  | PathContainsNull
+  | PathNotAbsolute t_String
+  | PathNotRelative t_String
+  | InvalidUtf8
+  | TooLong UInt64.t UInt64.t
+  | StatusCodeInvalid UInt16.t
+  | HeaderInvalid t_String
+
+type t_Result_DurationPositive_ValidationError = Ok t_DurationPositive | Err t_ValidationError
+
+predicate inv_Duration (_1: t_Duration)
+
+predicate inv_DurationPositive (_1: t_DurationPositive)
+
+predicate inv_String (_1: t_String)
+
+predicate inv_ValidationError (_1: t_ValidationError)
+
+axiom inv_axiom [@rewrite]: forall x: t_ValidationError [inv_ValidationError x]. inv_ValidationError x
+    = match x with
+      | NotPositive f0 -> true
+      | Negative f0 -> true
+      | Zero -> true
+      | NotFinite f0 -> inv_String f0
+      | FloatNotPositive f0 -> true
+      | FloatNegative f0 -> true
+      | FloatOutOfRange value min max -> true
+      | OutOfRange value min max -> true
+      | EmptyString -> true
+      | StringTooLong actual max -> true
+      | StringTooShort actual min -> true
+      | NotTrue -> true
+      | NotFalse -> true
+      | NotAlphabetic f0 -> true
+      | NotNumeric f0 -> true
+      | NotAlphanumeric f0 -> true
+      | WrongUuidVersion expected got -> true
+      | NilUuid -> true
+      | DurationNotPositive -> true
+      | NotPrivateIp -> true
+      | NotPublicIp -> true
+      | ExpectedIpv4GotIpv6 -> true
+      | ExpectedIpv6GotIpv4 -> true
+      | NotLoopback -> true
+      | PathDoesNotExist f0 -> inv_String f0
+      | PathNotReadable f0 -> inv_String f0
+      | PathNotDirectory f0 -> inv_String f0
+      | PathNotFile f0 -> inv_String f0
+      | DateTimeTooEarly value threshold -> inv_String value /\ inv_String threshold
+      | DateTimeTooLate value threshold -> inv_String value /\ inv_String threshold
+      | EmptyCollection -> true
+      | OptionIsNone -> true
+      | ResultIsErr -> true
+      | WrongJsonType expected got -> inv_String expected /\ inv_String got
+      | JsonIsNull -> true
+      | UrlInvalid -> true
+      | InvalidUrlSyntax -> true
+      | UrlMissingAuthority -> true
+      | UrlNotAbsolute -> true
+      | UrlNotHttps -> true
+      | UrlNotHttp -> true
+      | InvalidRegexSyntax -> true
+      | UrlNoHost -> true
+      | UrlCannotBeBase -> true
+      | RegexInvalid -> true
+      | InvalidUuidVariant -> true
+      | NotUnicastMac -> true
+      | NotMulticastMac -> true
+      | NotUniversalMac -> true
+      | NotLocalMac -> true
+      | PortIsZero -> true
+      | PortNotPrivileged f0 -> true
+      | PortIsPrivileged f0 -> true
+      | PathContainsNull -> true
+      | PathNotAbsolute f0 -> inv_String f0
+      | PathNotRelative f0 -> inv_String f0
+      | InvalidUtf8 -> true
+      | TooLong max actual -> true
+      | StatusCodeInvalid f0 -> true
+      | HeaderInvalid f0 -> inv_String f0
+      end
+
+predicate inv_Result_DurationPositive_ValidationError (_1: t_Result_DurationPositive_ValidationError)
+
+axiom inv_axiom'0 [@rewrite]:
+  forall x: t_Result_DurationPositive_ValidationError [inv_Result_DurationPositive_ValidationError x]. inv_Result_DurationPositive_ValidationError x
+    = match x with
+      | Ok f0 -> inv_DurationPositive f0
+      | Err f0 -> inv_ValidationError f0
+      end
+
+predicate duration_is_positive [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 249 0 249 49] (_d: t_Duration)
+
+let rec new (duration: t_Duration) (return (x: t_Result_DurationPositive_ValidationError)) =
+  {[@stop_split] [@expl:new 'duration' type invariant] [%#sextern_specs] inv_Duration duration}
+  any
+  [ return (result: t_Result_DurationPositive_ValidationError) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#sdurations'4] inv_Result_DurationPositive_ValidationError result)
+    /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs'0] duration_is_positive duration
+      -> match result with
+        | Ok _ -> true
+        | Err _ -> false
+        end)
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'1] not duration_is_positive duration
+    -> match result with
+      | Err _ -> true
+      | Ok _ -> false
+      end)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_duration_positive_invalid
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 19 0 19 104] (duration: t_Duration)
+  (return (x: t_Result_DurationPositive_ValidationError)) =
+  {[@stop_split] [@expl:verify_duration_positive_invalid requires] ([@stop_split] [@expl:verify_duration_positive_invalid 'duration' type invariant] [%#sdurations'0] inv_Duration duration)
+  /\ ([@stop_split] [@expl:verify_duration_positive_invalid requires] [%#sdurations'1] not duration_is_positive duration)}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = new [%#sdurations] {duration} (fun (_x: t_Result_DurationPositive_ValidationError) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ]
+  [ & _ret: t_Result_DurationPositive_ValidationError = Any.any_l () | & duration: t_Duration = duration ])
+  [ return (result: t_Result_DurationPositive_ValidationError) ->
+  {[@stop_split] [@expl:verify_duration_positive_invalid ensures] ([@stop_split] [@expl:verify_duration_positive_invalid result type invariant] [%#sdurations'2] inv_Result_DurationPositive_ValidationError result)
+    /\ ([@stop_split] [@expl:verify_duration_positive_invalid ensures] [%#sdurations'3] match result with
+      | Err _ -> true
+      | Ok _ -> false
+      end)}
+    (! return {result}) ]

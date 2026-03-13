@@ -1,0 +1,202 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 42 0 42 95 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 429 18 429 97
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 430 18 430 98
+let%span schars = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 43 4 43 32
+let%span schars'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 40 11 40 38
+let%span schars'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 42 54 42 95
+let%span schars'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 41 10 41 57
+let%span schars'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/chars.rs" 208 4 208 48
+
+use creusot.prelude.Char
+use creusot.int.Int128
+use creusot.float.Float64
+use creusot.int.UInt64
+use creusot.int.UInt8
+use creusot.int.UInt16
+use creusot.prelude.Any
+
+type t_CharAlphanumeric
+
+type t_String
+
+type t_ValidationError =
+  | NotPositive Int128.t
+  | Negative Int128.t
+  | Zero
+  | NotFinite t_String
+  | FloatNotPositive Float64.t
+  | FloatNegative Float64.t
+  | FloatOutOfRange Float64.t Float64.t Float64.t
+  | OutOfRange Int128.t Int128.t Int128.t
+  | EmptyString
+  | StringTooLong UInt64.t UInt64.t
+  | StringTooShort UInt64.t UInt64.t
+  | NotTrue
+  | NotFalse
+  | NotAlphabetic Char.t
+  | NotNumeric Char.t
+  | NotAlphanumeric Char.t
+  | WrongUuidVersion UInt8.t UInt8.t
+  | NilUuid
+  | DurationNotPositive
+  | NotPrivateIp
+  | NotPublicIp
+  | ExpectedIpv4GotIpv6
+  | ExpectedIpv6GotIpv4
+  | NotLoopback
+  | PathDoesNotExist t_String
+  | PathNotReadable t_String
+  | PathNotDirectory t_String
+  | PathNotFile t_String
+  | DateTimeTooEarly t_String t_String
+  | DateTimeTooLate t_String t_String
+  | EmptyCollection
+  | OptionIsNone
+  | ResultIsErr
+  | WrongJsonType t_String t_String
+  | JsonIsNull
+  | UrlInvalid
+  | InvalidUrlSyntax
+  | UrlMissingAuthority
+  | UrlNotAbsolute
+  | UrlNotHttps
+  | UrlNotHttp
+  | InvalidRegexSyntax
+  | UrlNoHost
+  | UrlCannotBeBase
+  | RegexInvalid
+  | InvalidUuidVariant
+  | NotUnicastMac
+  | NotMulticastMac
+  | NotUniversalMac
+  | NotLocalMac
+  | PortIsZero
+  | PortNotPrivileged UInt16.t
+  | PortIsPrivileged UInt16.t
+  | PathContainsNull
+  | PathNotAbsolute t_String
+  | PathNotRelative t_String
+  | InvalidUtf8
+  | TooLong UInt64.t UInt64.t
+  | StatusCodeInvalid UInt16.t
+  | HeaderInvalid t_String
+
+type t_Result_CharAlphanumeric_ValidationError = Ok t_CharAlphanumeric | Err t_ValidationError
+
+predicate inv_CharAlphanumeric (_1: t_CharAlphanumeric)
+
+predicate inv_String (_1: t_String)
+
+predicate inv_ValidationError (_1: t_ValidationError)
+
+axiom inv_axiom [@rewrite]: forall x: t_ValidationError [inv_ValidationError x]. inv_ValidationError x
+    = match x with
+      | NotPositive f0 -> true
+      | Negative f0 -> true
+      | Zero -> true
+      | NotFinite f0 -> inv_String f0
+      | FloatNotPositive f0 -> true
+      | FloatNegative f0 -> true
+      | FloatOutOfRange value min max -> true
+      | OutOfRange value min max -> true
+      | EmptyString -> true
+      | StringTooLong actual max -> true
+      | StringTooShort actual min -> true
+      | NotTrue -> true
+      | NotFalse -> true
+      | NotAlphabetic f0 -> true
+      | NotNumeric f0 -> true
+      | NotAlphanumeric f0 -> true
+      | WrongUuidVersion expected got -> true
+      | NilUuid -> true
+      | DurationNotPositive -> true
+      | NotPrivateIp -> true
+      | NotPublicIp -> true
+      | ExpectedIpv4GotIpv6 -> true
+      | ExpectedIpv6GotIpv4 -> true
+      | NotLoopback -> true
+      | PathDoesNotExist f0 -> inv_String f0
+      | PathNotReadable f0 -> inv_String f0
+      | PathNotDirectory f0 -> inv_String f0
+      | PathNotFile f0 -> inv_String f0
+      | DateTimeTooEarly value threshold -> inv_String value /\ inv_String threshold
+      | DateTimeTooLate value threshold -> inv_String value /\ inv_String threshold
+      | EmptyCollection -> true
+      | OptionIsNone -> true
+      | ResultIsErr -> true
+      | WrongJsonType expected got -> inv_String expected /\ inv_String got
+      | JsonIsNull -> true
+      | UrlInvalid -> true
+      | InvalidUrlSyntax -> true
+      | UrlMissingAuthority -> true
+      | UrlNotAbsolute -> true
+      | UrlNotHttps -> true
+      | UrlNotHttp -> true
+      | InvalidRegexSyntax -> true
+      | UrlNoHost -> true
+      | UrlCannotBeBase -> true
+      | RegexInvalid -> true
+      | InvalidUuidVariant -> true
+      | NotUnicastMac -> true
+      | NotMulticastMac -> true
+      | NotUniversalMac -> true
+      | NotLocalMac -> true
+      | PortIsZero -> true
+      | PortNotPrivileged f0 -> true
+      | PortIsPrivileged f0 -> true
+      | PathContainsNull -> true
+      | PathNotAbsolute f0 -> inv_String f0
+      | PathNotRelative f0 -> inv_String f0
+      | InvalidUtf8 -> true
+      | TooLong max actual -> true
+      | StatusCodeInvalid f0 -> true
+      | HeaderInvalid f0 -> inv_String f0
+      end
+
+predicate inv_Result_CharAlphanumeric_ValidationError (_1: t_Result_CharAlphanumeric_ValidationError)
+
+axiom inv_axiom'0 [@rewrite]:
+  forall x: t_Result_CharAlphanumeric_ValidationError [inv_Result_CharAlphanumeric_ValidationError x]. inv_Result_CharAlphanumeric_ValidationError x
+    = match x with
+      | Ok f0 -> inv_CharAlphanumeric f0
+      | Err f0 -> inv_ValidationError f0
+      end
+
+predicate char_is_alphanumeric [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 238 0 238 45] (_c: Char.t)
+
+let rec new (value: Char.t) (return (x: t_Result_CharAlphanumeric_ValidationError)) = any
+  [ return (result: t_Result_CharAlphanumeric_ValidationError) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#schars'3] inv_Result_CharAlphanumeric_ValidationError result)
+    /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs] char_is_alphanumeric value
+      -> match result with
+        | Ok _ -> true
+        | Err _ -> false
+        end)
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'0] not char_is_alphanumeric value
+    -> match result with
+      | Err _ -> true
+      | Ok _ -> false
+      end)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_char_alphanumeric_valid
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 42 0 42 95] (value: Char.t)
+  (return (x: t_Result_CharAlphanumeric_ValidationError)) =
+  {[@stop_split] [@expl:verify_char_alphanumeric_valid requires] [%#schars'0] char_is_alphanumeric value}
+  (! bb0
+  [ bb0 = s0
+    [ s0 = new [%#schars] {value} (fun (_x: t_Result_CharAlphanumeric_ValidationError) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ]
+  [ & _ret: t_Result_CharAlphanumeric_ValidationError = Any.any_l () | & value: Char.t = value ])
+  [ return (result: t_Result_CharAlphanumeric_ValidationError) ->
+  {[@stop_split] [@expl:verify_char_alphanumeric_valid ensures] ([@stop_split] [@expl:verify_char_alphanumeric_valid result type invariant] [%#schars'1] inv_Result_CharAlphanumeric_ValidationError result)
+    /\ ([@stop_split] [@expl:verify_char_alphanumeric_valid ensures] [%#schars'2] match result with
+      | Ok _ -> true
+      | Err _ -> false
+      end)}
+    (! return {result}) ]

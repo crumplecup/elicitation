@@ -18,6 +18,9 @@ use elicitation::{
     },
 };
 
+#[cfg(creusot)]
+use std::time::Duration;
+
 // ============================================================================
 // Ipv4Bytes logic accessors
 // ============================================================================
@@ -207,6 +210,42 @@ pub fn i8pos_inner(_p: I8Positive) -> i8 {
 #[cfg(creusot)]
 #[trusted]
 #[logic(opaque)]
-pub fn i8pos_get(p: &I8Positive) -> i8 {
+pub fn i8pos_get(_p: &I8Positive) -> i8 {
+    dead
+}
+
+// ============================================================================
+// char logic predicates
+// ============================================================================
+
+#[cfg(creusot)]
+#[trusted]
+#[logic(opaque)]
+pub fn char_is_alphabetic(_c: char) -> bool {
+    dead
+}
+
+#[cfg(creusot)]
+#[trusted]
+#[logic(opaque)]
+pub fn char_is_numeric(_c: char) -> bool {
+    dead
+}
+
+#[cfg(creusot)]
+#[trusted]
+#[logic(opaque)]
+pub fn char_is_alphanumeric(_c: char) -> bool {
+    dead
+}
+
+// ============================================================================
+// Duration logic predicates
+// ============================================================================
+
+#[cfg(creusot)]
+#[trusted]
+#[logic(opaque)]
+pub fn duration_is_positive(_d: Duration) -> bool {
     dead
 }

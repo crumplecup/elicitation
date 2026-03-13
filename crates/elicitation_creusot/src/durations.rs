@@ -1,29 +1,21 @@
 //! Creusot proofs for duration contract types.
-//!
-//! Cloud of assumptions: We trust Rust std::time::Duration and our
-//! positivity check. We verify wrapper structure.
 
-use creusot_std::prelude::*;
-use elicitation::DurationPositive;
+use crate::*;
+use elicitation::{DurationPositive, ValidationError};
 use std::time::Duration;
 
-// ============================================================================
-// DurationPositive Proofs
-// ============================================================================
-
-/// Verify DurationPositive construction with valid positive duration.
-#[requires(true)]
+/// Verify DurationPositive construction succeeds for positive durations.
+#[cfg(creusot)]
+#[requires(duration_is_positive(duration))]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
-pub fn verify_duration_positive_valid() -> Result<DurationPositive, elicitation::ValidationError> {
-    DurationPositive::new(Duration::from_secs(1))
+pub fn verify_duration_positive_valid(duration: Duration) -> Result<DurationPositive, ValidationError> {
+    DurationPositive::new(duration)
 }
 
-/// Verify DurationPositive rejects zero duration.
-#[requires(true)]
-#[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
-pub fn verify_duration_positive_invalid() -> Result<DurationPositive, elicitation::ValidationError>
-{
-    DurationPositive::new(Duration::from_secs(0))
+/// Verify DurationPositive rejects zero / non-positive durations.
+#[cfg(creusot)]
+#[requires(!duration_is_positive(duration))]
+#[ensures(match result { Err(_) => true, Ok(_) => false })]
+pub fn verify_duration_positive_invalid(duration: Duration) -> Result<DurationPositive, ValidationError> {
+    DurationPositive::new(duration)
 }
