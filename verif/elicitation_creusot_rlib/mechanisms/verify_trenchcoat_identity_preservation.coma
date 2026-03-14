@@ -1,7 +1,7 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 39 0 39 96 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 58 18 58 104
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 59 18 59 81
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 61 18 61 104
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 62 18 62 81
 let%span sintegers = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/integers.rs" 225 4 225 34
 let%span sops = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 662 18 662 22
 let%span sops'0 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 658 18 661 9

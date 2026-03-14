@@ -1,6 +1,6 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 236 0 236 39 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 524 14 524 36
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 527 14 527 36
 let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 237 20 237 22
 let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 237 4 237 23
 let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 235 10 235 16

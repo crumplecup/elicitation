@@ -1,7 +1,9 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 21 0 23 48 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 534 18 534 93
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 535 18 535 121
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 537 18 537 93
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 538 18 538 121
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 539 18 539 102
+let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 540 18 540 130
 let%span spathbytes = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 24 4 24 32
 let%span spathbytes'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 19 11 19 34
 let%span spathbytes'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 23 5 23 48
@@ -170,6 +172,8 @@ constant const_MAX_LEN [#"/home/erik/repos/elicitation/crates/elicitation_creuso
 
 function path_len [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 184 0 184 59] (_p: t_PathBytes) : UInt64.t
 
+predicate path_is_empty [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 191 0 191 63] (_p: t_PathBytes)
+
 let rec from_slice (bytes: Slice64.slice UInt8.t) (return (x: t_Result_PathBytes_ValidationError)) = any
   [ return (result: t_Result_PathBytes_ValidationError) ->
   {[@stop_split] [@expl:from_slice ensures] ([@stop_split] [@expl:from_slice result type invariant] [%#spathbytes'3] inv_Result_PathBytes_ValidationError result)
@@ -180,9 +184,20 @@ let rec from_slice (bytes: Slice64.slice UInt8.t) (return (x: t_Result_PathBytes
         | Ok _ -> false
         end)
     /\ ([@stop_split] [@expl:from_slice ensures #1] [%#sextern_specs'0] Seq.length (Slice64.view bytes)
-      <= UInt64.t'int const_MAX_LEN
+        <= UInt64.t'int const_MAX_LEN
+      -> match result with
+        | Ok p -> UInt64.t'int (path_len p) = Seq.length (Slice64.view bytes)
+        | Err _ -> true
+        end)
+    /\ ([@stop_split] [@expl:from_slice ensures #2] [%#sextern_specs'1] Seq.length (Slice64.view bytes) = 0
+      -> match result with
+        | Ok p -> path_is_empty p
+        | Err _ -> true
+        end)
+    /\ ([@stop_split] [@expl:from_slice ensures #3] [%#sextern_specs'2] Seq.length (Slice64.view bytes) > 0
+      /\ Seq.length (Slice64.view bytes) <= UInt64.t'int const_MAX_LEN
     -> match result with
-      | Ok p -> UInt64.t'int (path_len p) = Seq.length (Slice64.view bytes)
+      | Ok p -> not path_is_empty p
       | Err _ -> true
       end)}
     (! return {result}) ]

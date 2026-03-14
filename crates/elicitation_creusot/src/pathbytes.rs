@@ -83,7 +83,6 @@ pub fn verify_path_parent_dir() -> Result<PathBytes<2>, ValidationError> {
 // ============================================================================
 
 /// Verify: PathBytes as_str() returns valid string
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_path_as_str_valid<const MAX_LEN: usize>(
@@ -147,7 +146,6 @@ pub fn verify_absolute_root() -> Result<PathAbsolute<1>, ValidationError> {
 }
 
 /// Verify: PathAbsolute length check propagates
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() > MAX_LEN@)]
 #[ensures(match result { Err(_) => true, Ok(_) => false })]
@@ -207,7 +205,6 @@ pub fn verify_relative_filename() -> Result<PathRelative<10>, ValidationError> {
 }
 
 /// Verify: PathRelative length check propagates
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() > MAX_LEN@)]
 #[ensures(match result { Err(_) => true, Ok(_) => false })]
@@ -261,7 +258,6 @@ pub fn verify_non_empty_multi_char() -> Result<PathNonEmpty<10>, ValidationError
 }
 
 /// Verify: PathNonEmpty length check propagates
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() > MAX_LEN@)]
 #[ensures(match result { Err(_) => true, Ok(_) => false })]
@@ -293,7 +289,6 @@ pub fn verify_non_empty_as_str() -> Result<PathNonEmpty<10>, ValidationError> {
 // ============================================================================
 
 /// Verify: Small buffer (2 bytes) works correctly
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= 2)]
 pub fn verify_path_small_buffer(bytes: &[u8]) -> Result<PathBytes<2>, ValidationError> {
@@ -301,7 +296,6 @@ pub fn verify_path_small_buffer(bytes: &[u8]) -> Result<PathBytes<2>, Validation
 }
 
 /// Verify: Medium buffer (64 bytes) works correctly
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= 64)]
 pub fn verify_path_medium_buffer(bytes: &[u8]) -> Result<PathBytes<64>, ValidationError> {
@@ -309,7 +303,6 @@ pub fn verify_path_medium_buffer(bytes: &[u8]) -> Result<PathBytes<64>, Validati
 }
 
 /// Verify: Large buffer (4096 bytes) works correctly
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= 4096)]
 pub fn verify_path_large_buffer(bytes: &[u8]) -> Result<PathBytes<4096>, ValidationError> {

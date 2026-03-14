@@ -20,7 +20,6 @@ use elicitation::verification::types::{
 // ============================================================================
 
 /// Verify: SchemeBytes rejects length exceeding MAX_LEN
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() > MAX_LEN@)]
 #[ensures(match result { Err(_) => true, Ok(_) => false })]
@@ -31,7 +30,6 @@ pub fn verify_scheme_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: SchemeBytes accepts valid length
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() > 0 && bytes@.len() <= MAX_LEN@)]
 pub fn verify_scheme_length_valid<const MAX_LEN: usize>(
@@ -98,7 +96,6 @@ pub fn verify_scheme_with_dot() -> Result<SchemeBytes<16>, ValidationError> {
 }
 
 /// Verify: as_str() returns valid string
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() > 0 && bytes@.len() <= MAX_LEN@)]
 pub fn verify_scheme_as_str<const MAX_LEN: usize>(
@@ -110,7 +107,6 @@ pub fn verify_scheme_as_str<const MAX_LEN: usize>(
 }
 
 /// Verify: is_http() doesn't panic
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() > 0 && bytes@.len() <= MAX_LEN@)]
 pub fn verify_scheme_is_http<const MAX_LEN: usize>(
@@ -125,7 +121,6 @@ pub fn verify_scheme_is_http<const MAX_LEN: usize>(
 // ============================================================================
 
 /// Verify: AuthorityBytes rejects length exceeding MAX_LEN
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() > MAX_LEN@)]
 #[ensures(match result { Err(_) => true, Ok(_) => false })]
@@ -136,7 +131,6 @@ pub fn verify_authority_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: AuthorityBytes accepts valid length
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_authority_length_valid<const MAX_LEN: usize>(
@@ -188,7 +182,6 @@ pub fn verify_authority_ip_port() -> Result<AuthorityBytes<32>, ValidationError>
 }
 
 /// Verify: as_str() returns valid string
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_authority_as_str<const MAX_LEN: usize>(
@@ -203,7 +196,6 @@ pub fn verify_authority_as_str<const MAX_LEN: usize>(
 // ============================================================================
 
 /// Verify: UrlBytes rejects length exceeding MAX_LEN
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() > MAX_LEN@)]
 #[ensures(match result { Err(_) => true, Ok(_) => false })]
@@ -218,7 +210,6 @@ pub fn verify_url_length_check<
 }
 
 /// Verify: UrlBytes accepts valid length
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_url_length_valid<
@@ -288,7 +279,6 @@ pub fn verify_url_with_fragment() -> Result<UrlBytes<8, 16, 64>, ValidationError
 }
 
 /// Verify: as_str() returns valid string
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_url_as_str<
@@ -307,7 +297,6 @@ pub fn verify_url_as_str<
 // ============================================================================
 
 /// Verify: UrlWithAuthority rejects length exceeding MAX_LEN
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() > MAX_LEN@)]
 #[ensures(match result { Err(_) => true, Ok(_) => false })]
@@ -338,7 +327,6 @@ pub fn verify_url_with_authority_port() -> Result<UrlWithAuthorityBytes<8, 32, 6
 }
 
 /// Verify: url() returns underlying UrlBytes
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_url_with_authority_get<
@@ -357,7 +345,6 @@ pub fn verify_url_with_authority_get<
 // ============================================================================
 
 /// Verify: UrlAbsolute rejects length exceeding MAX_LEN
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() > MAX_LEN@)]
 #[ensures(match result { Err(_) => true, Ok(_) => false })]
@@ -379,7 +366,6 @@ pub fn verify_url_absolute_http() -> Result<UrlAbsoluteBytes<8, 16, 32>, Validat
 }
 
 /// Verify: url() returns underlying UrlBytes
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_url_absolute_get<
@@ -398,7 +384,6 @@ pub fn verify_url_absolute_get<
 // ============================================================================
 
 /// Verify: UrlHttpBytes rejects length exceeding MAX_LEN
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() > MAX_LEN@)]
 #[ensures(match result { Err(_) => true, Ok(_) => false })]
@@ -427,7 +412,6 @@ pub fn verify_url_http_https() -> Result<UrlHttpBytes<8, 16, 32>, ValidationErro
 }
 
 /// Verify: url() returns underlying UrlBytes
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_url_http_get<
@@ -446,7 +430,6 @@ pub fn verify_url_http_get<
 // ============================================================================
 
 /// Verify: Small buffer (8 bytes)
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= 8)]
 pub fn verify_url_small_buffer(bytes: &[u8]) -> Result<UrlBytes<4, 4, 8>, ValidationError> {
@@ -454,7 +437,6 @@ pub fn verify_url_small_buffer(bytes: &[u8]) -> Result<UrlBytes<4, 4, 8>, Valida
 }
 
 /// Verify: Medium buffer (128 bytes)
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= 128)]
 pub fn verify_url_medium_buffer(bytes: &[u8]) -> Result<UrlBytes<16, 64, 128>, ValidationError> {
@@ -462,7 +444,6 @@ pub fn verify_url_medium_buffer(bytes: &[u8]) -> Result<UrlBytes<16, 64, 128>, V
 }
 
 /// Verify: Large buffer (2048 bytes)
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= 2048)]
 pub fn verify_url_large_buffer(bytes: &[u8]) -> Result<UrlBytes<32, 256, 2048>, ValidationError> {

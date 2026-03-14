@@ -19,7 +19,10 @@ use elicitation::{
     UsizePositive, UsizeRange, VecAllSatisfy, VecDequeNonEmpty, VecNonEmpty, ValidationError,
     verification::types::{
         Ipv4Bytes, Ipv4Private, Ipv4Public, Ipv6Bytes, Ipv6Private, Ipv6Public,
-        MacAddr, PathBytes, SocketAddrV4Bytes, SocketAddrV6Bytes, Utf8Bytes,
+        MacAddr, PathAbsolute, PathBytes, PathNonEmpty, PathRelative,
+        SocketAddrV4Bytes, SocketAddrV6Bytes, Utf8Bytes,
+        SchemeBytes, AuthorityBytes, UrlAbsoluteBytes, UrlBytes, UrlHttpBytes, UrlWithAuthorityBytes,
+        BalancedDelimiters, RegexBytes, ValidCharClass, ValidEscapes, ValidQuantifiers,
         is_dynamic_port, is_ipv4_private, is_ipv6_private, is_local, is_multicast, is_nonzero_port,
         is_privileged_port, is_registered_port, is_unicast, is_universal, is_well_known_port,
     },
@@ -533,7 +536,11 @@ extern_spec! {
     impl<const MAX_LEN: usize> PathBytes<MAX_LEN> {
         #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
         #[ensures(bytes@.len() <= MAX_LEN@ ==> match result { Ok(ref p) => path_len(p)@ == bytes@.len(), Err(_) => true })]
+        #[ensures(bytes@.len() == 0 ==> match result { Ok(ref p) => path_is_empty(p), Err(_) => true })]
+        #[ensures(bytes@.len() > 0 && bytes@.len() <= MAX_LEN@ ==> match result { Ok(ref p) => !path_is_empty(p), Err(_) => true })]
         fn from_slice(bytes: &[u8]) -> Result<PathBytes<MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn as_str(&self) -> &str;
     }
 }
 
@@ -849,5 +856,166 @@ extern_spec! {
     impl<const MAX_LEN: usize> StringNonEmpty<MAX_LEN> {
         #[ensures(true)]
         fn new(value: String) -> Result<StringNonEmpty<MAX_LEN>, ValidationError>;
+    }
+}
+
+
+// ============================================================================
+// PathAbsolute / PathRelative / PathNonEmpty constructors
+// ============================================================================
+
+extern_spec! {
+    impl<const MAX_LEN: usize> PathAbsolute<MAX_LEN> {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<PathAbsolute<MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn get(&self) -> &PathBytes<MAX_LEN>;
+        #[ensures(true)]
+        fn as_str(&self) -> &str;
+    }
+}
+
+extern_spec! {
+    impl<const MAX_LEN: usize> PathRelative<MAX_LEN> {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<PathRelative<MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn get(&self) -> &PathBytes<MAX_LEN>;
+        #[ensures(true)]
+        fn as_str(&self) -> &str;
+    }
+}
+
+extern_spec! {
+    impl<const MAX_LEN: usize> PathNonEmpty<MAX_LEN> {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(bytes@.len() == 0 ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<PathNonEmpty<MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn get(&self) -> &PathBytes<MAX_LEN>;
+        #[ensures(true)]
+        fn as_str(&self) -> &str;
+    }
+}
+
+// ============================================================================
+// SchemeBytes / AuthorityBytes constructors
+// ============================================================================
+
+extern_spec! {
+    impl<const MAX_LEN: usize> SchemeBytes<MAX_LEN> {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(bytes@.len() == 0 ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<SchemeBytes<MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn as_str(&self) -> &str;
+        #[ensures(true)]
+        fn is_http(&self) -> bool;
+    }
+}
+
+extern_spec! {
+    impl<const MAX_LEN: usize> AuthorityBytes<MAX_LEN> {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<AuthorityBytes<MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn as_str(&self) -> &str;
+    }
+}
+
+// ============================================================================
+// UrlBytes / UrlWithAuthorityBytes / UrlAbsoluteBytes / UrlHttpBytes constructors
+// ============================================================================
+
+extern_spec! {
+    impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
+        UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+    {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn as_str(&self) -> &str;
+    }
+}
+
+extern_spec! {
+    impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
+        UrlWithAuthorityBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+    {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<UrlWithAuthorityBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn url(&self) -> &UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>;
+    }
+}
+
+extern_spec! {
+    impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
+        UrlAbsoluteBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+    {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<UrlAbsoluteBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn url(&self) -> &UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>;
+    }
+}
+
+extern_spec! {
+    impl<const SCHEME_MAX: usize, const AUTHORITY_MAX: usize, const MAX_LEN: usize>
+        UrlHttpBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>
+    {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<UrlHttpBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn url(&self) -> &UrlBytes<SCHEME_MAX, AUTHORITY_MAX, MAX_LEN>;
+    }
+}
+
+// ============================================================================
+// BalancedDelimiters / ValidEscapes / ValidQuantifiers / ValidCharClass / RegexBytes constructors
+// ============================================================================
+
+extern_spec! {
+    impl<const MAX_LEN: usize> BalancedDelimiters<MAX_LEN> {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<BalancedDelimiters<MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn as_str(&self) -> &str;
+    }
+}
+
+extern_spec! {
+    impl<const MAX_LEN: usize> ValidEscapes<MAX_LEN> {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<ValidEscapes<MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn as_str(&self) -> &str;
+    }
+}
+
+extern_spec! {
+    impl<const MAX_LEN: usize> ValidQuantifiers<MAX_LEN> {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<ValidQuantifiers<MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn as_str(&self) -> &str;
+    }
+}
+
+extern_spec! {
+    impl<const MAX_LEN: usize> ValidCharClass<MAX_LEN> {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<ValidCharClass<MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn as_str(&self) -> &str;
+    }
+}
+
+extern_spec! {
+    impl<const MAX_LEN: usize> RegexBytes<MAX_LEN> {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<RegexBytes<MAX_LEN>, ValidationError>;
+        #[ensures(true)]
+        fn as_str(&self) -> &str;
     }
 }
