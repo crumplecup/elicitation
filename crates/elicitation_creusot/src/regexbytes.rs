@@ -334,14 +334,19 @@ pub fn verify_regex_charclass() -> Result<RegexBytes<16>, ValidationError> {
 /// Verify: Regex with escapes
 #[cfg(creusot)]
 pub fn verify_regex_escapes() -> Result<RegexBytes<16>, ValidationError> {
-    let bytes = [b'\\', b'd', b'{', b'3', b'}', b'-', b'\\', b'd', b'{', b'4', b'}'];
+    let bytes = [
+        b'\\', b'd', b'{', b'3', b'}', b'-', b'\\', b'd', b'{', b'4', b'}',
+    ];
     RegexBytes::from_slice(&bytes)
 }
 
 /// Verify: Complex regex (email-like)
 #[cfg(creusot)]
 pub fn verify_regex_complex() -> Result<RegexBytes<32>, ValidationError> {
-    let bytes = [b'[', b'a', b'-', b'z', b']', b'+', b'@', b'[', b'a', b'-', b'z', b']', b'+', b'\\', b'.', b'[', b'a', b'-', b'z', b']', b'+'];
+    let bytes = [
+        b'[', b'a', b'-', b'z', b']', b'+', b'@', b'[', b'a', b'-', b'z', b']', b'+', b'\\', b'.',
+        b'[', b'a', b'-', b'z', b']', b'+',
+    ];
     RegexBytes::from_slice(&bytes)
 }
 

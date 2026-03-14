@@ -76,21 +76,27 @@ pub fn verify_scheme_file() -> Result<SchemeBytes<4>, ValidationError> {
 /// Verify: SchemeBytes accepts scheme with plus
 #[cfg(creusot)]
 pub fn verify_scheme_with_plus() -> Result<SchemeBytes<16>, ValidationError> {
-    let bytes = [b'c', b'u', b's', b't', b'o', b'm', b'+', b's', b'c', b'h', b'e', b'm', b'e'];
+    let bytes = [
+        b'c', b'u', b's', b't', b'o', b'm', b'+', b's', b'c', b'h', b'e', b'm', b'e',
+    ];
     SchemeBytes::from_slice(&bytes)
 }
 
 /// Verify: SchemeBytes accepts scheme with dash
 #[cfg(creusot)]
 pub fn verify_scheme_with_dash() -> Result<SchemeBytes<16>, ValidationError> {
-    let bytes = [b'c', b'u', b's', b't', b'o', b'm', b'-', b's', b'c', b'h', b'e', b'm', b'e'];
+    let bytes = [
+        b'c', b'u', b's', b't', b'o', b'm', b'-', b's', b'c', b'h', b'e', b'm', b'e',
+    ];
     SchemeBytes::from_slice(&bytes)
 }
 
 /// Verify: SchemeBytes accepts scheme with dot
 #[cfg(creusot)]
 pub fn verify_scheme_with_dot() -> Result<SchemeBytes<16>, ValidationError> {
-    let bytes = [b'c', b'u', b's', b't', b'o', b'm', b'.', b's', b'c', b'h', b'e', b'm', b'e'];
+    let bytes = [
+        b'c', b'u', b's', b't', b'o', b'm', b'.', b's', b'c', b'h', b'e', b'm', b'e',
+    ];
     SchemeBytes::from_slice(&bytes)
 }
 
@@ -147,14 +153,19 @@ pub fn verify_authority_empty() -> Result<AuthorityBytes<64>, ValidationError> {
 /// Verify: AuthorityBytes accepts simple domain
 #[cfg(creusot)]
 pub fn verify_authority_simple() -> Result<AuthorityBytes<16>, ValidationError> {
-    let bytes = [b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm'];
+    let bytes = [
+        b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm',
+    ];
     AuthorityBytes::from_slice(&bytes)
 }
 
 /// Verify: AuthorityBytes accepts domain with port
 #[cfg(creusot)]
 pub fn verify_authority_with_port() -> Result<AuthorityBytes<32>, ValidationError> {
-    let bytes = [b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm', b':', b'8', b'0', b'8', b'0'];
+    let bytes = [
+        b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm', b':', b'8', b'0', b'8',
+        b'0',
+    ];
     AuthorityBytes::from_slice(&bytes)
 }
 
@@ -175,7 +186,10 @@ pub fn verify_authority_ip() -> Result<AuthorityBytes<16>, ValidationError> {
 /// Verify: AuthorityBytes accepts IP with port
 #[cfg(creusot)]
 pub fn verify_authority_ip_port() -> Result<AuthorityBytes<32>, ValidationError> {
-    let bytes = [b'1', b'9', b'2', b'.', b'1', b'6', b'8', b'.', b'1', b'.', b'1', b':', b'3', b'0', b'0', b'0'];
+    let bytes = [
+        b'1', b'9', b'2', b'.', b'1', b'6', b'8', b'.', b'1', b'.', b'1', b':', b'3', b'0', b'0',
+        b'0',
+    ];
     AuthorityBytes::from_slice(&bytes)
 }
 
@@ -223,56 +237,80 @@ pub fn verify_url_length_valid<
 /// Verify: Simple HTTP URL
 #[cfg(creusot)]
 pub fn verify_http_url() -> Result<UrlBytes<8, 16, 32>, ValidationError> {
-    let bytes = [b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm'];
+    let bytes = [
+        b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.',
+        b'c', b'o', b'm',
+    ];
     UrlBytes::from_slice(&bytes)
 }
 
 /// Verify: HTTPS URL
 #[cfg(creusot)]
 pub fn verify_https_url() -> Result<UrlBytes<8, 16, 32>, ValidationError> {
-    let bytes = [b'h', b't', b't', b'p', b's', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm'];
+    let bytes = [
+        b'h', b't', b't', b'p', b's', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e',
+        b'.', b'c', b'o', b'm',
+    ];
     UrlBytes::from_slice(&bytes)
 }
 
 /// Verify: URL with port
 #[cfg(creusot)]
 pub fn verify_url_with_port() -> Result<UrlBytes<8, 32, 64>, ValidationError> {
-    let bytes = [b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm', b':', b'8', b'0', b'8', b'0'];
+    let bytes = [
+        b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.',
+        b'c', b'o', b'm', b':', b'8', b'0', b'8', b'0',
+    ];
     UrlBytes::from_slice(&bytes)
 }
 
 /// Verify: URL with path
 #[cfg(creusot)]
 pub fn verify_url_with_path() -> Result<UrlBytes<8, 16, 64>, ValidationError> {
-    let bytes = [b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm', b'/', b'p', b'a', b't', b'h'];
+    let bytes = [
+        b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.',
+        b'c', b'o', b'm', b'/', b'p', b'a', b't', b'h',
+    ];
     UrlBytes::from_slice(&bytes)
 }
 
 /// Verify: File URL
 #[cfg(creusot)]
 pub fn verify_file_url() -> Result<UrlBytes<8, 16, 32>, ValidationError> {
-    let bytes = [b'f', b'i', b'l', b'e', b':', b'/', b'/', b'/', b'h', b'o', b'm', b'e', b'/', b'u', b's', b'e', b'r', b'/', b'f', b'i', b'l', b'e'];
+    let bytes = [
+        b'f', b'i', b'l', b'e', b':', b'/', b'/', b'/', b'h', b'o', b'm', b'e', b'/', b'u', b's',
+        b'e', b'r', b'/', b'f', b'i', b'l', b'e',
+    ];
     UrlBytes::from_slice(&bytes)
 }
 
 /// Verify: FTP URL
 #[cfg(creusot)]
 pub fn verify_ftp_url() -> Result<UrlBytes<8, 16, 32>, ValidationError> {
-    let bytes = [b'f', b't', b'p', b':', b'/', b'/', b'f', b't', b'p', b'.', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm'];
+    let bytes = [
+        b'f', b't', b'p', b':', b'/', b'/', b'f', b't', b'p', b'.', b'e', b'x', b'a', b'm', b'p',
+        b'l', b'e', b'.', b'c', b'o', b'm',
+    ];
     UrlBytes::from_slice(&bytes)
 }
 
 /// Verify: URL with query string
 #[cfg(creusot)]
 pub fn verify_url_with_query() -> Result<UrlBytes<8, 16, 64>, ValidationError> {
-    let bytes = [b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm', b'?', b'q', b'=', b't', b'e', b's', b't'];
+    let bytes = [
+        b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.',
+        b'c', b'o', b'm', b'?', b'q', b'=', b't', b'e', b's', b't',
+    ];
     UrlBytes::from_slice(&bytes)
 }
 
 /// Verify: URL with fragment
 #[cfg(creusot)]
 pub fn verify_url_with_fragment() -> Result<UrlBytes<8, 16, 64>, ValidationError> {
-    let bytes = [b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm', b'#', b's', b'e', b'c', b't', b'i', b'o', b'n'];
+    let bytes = [
+        b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.',
+        b'c', b'o', b'm', b'#', b's', b'e', b'c', b't', b'i', b'o', b'n',
+    ];
     UrlBytes::from_slice(&bytes)
 }
 
@@ -312,7 +350,10 @@ pub fn verify_url_with_authority_length_check<
 #[cfg(creusot)]
 pub fn verify_url_with_authority_http() -> Result<UrlWithAuthorityBytes<8, 16, 32>, ValidationError>
 {
-    let bytes = [b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm'];
+    let bytes = [
+        b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.',
+        b'c', b'o', b'm',
+    ];
     UrlWithAuthorityBytes::from_slice(&bytes)
 }
 
@@ -320,7 +361,10 @@ pub fn verify_url_with_authority_http() -> Result<UrlWithAuthorityBytes<8, 16, 3
 #[cfg(creusot)]
 pub fn verify_url_with_authority_port() -> Result<UrlWithAuthorityBytes<8, 32, 64>, ValidationError>
 {
-    let bytes = [b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm', b':', b'8', b'0', b'8', b'0'];
+    let bytes = [
+        b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.',
+        b'c', b'o', b'm', b':', b'8', b'0', b'8', b'0',
+    ];
     UrlWithAuthorityBytes::from_slice(&bytes)
 }
 
@@ -359,7 +403,10 @@ pub fn verify_url_absolute_length_check<
 /// Verify: UrlAbsolute accepts absolute URL
 #[cfg(creusot)]
 pub fn verify_url_absolute_http() -> Result<UrlAbsoluteBytes<8, 16, 32>, ValidationError> {
-    let bytes = [b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm'];
+    let bytes = [
+        b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.',
+        b'c', b'o', b'm',
+    ];
     UrlAbsoluteBytes::from_slice(&bytes)
 }
 
@@ -398,14 +445,20 @@ pub fn verify_url_http_length_check<
 /// Verify: UrlHttpBytes accepts HTTP URL
 #[cfg(creusot)]
 pub fn verify_url_http_http() -> Result<UrlHttpBytes<8, 16, 32>, ValidationError> {
-    let bytes = [b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm'];
+    let bytes = [
+        b'h', b't', b't', b'p', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.',
+        b'c', b'o', b'm',
+    ];
     UrlHttpBytes::from_slice(&bytes)
 }
 
 /// Verify: UrlHttpBytes accepts HTTPS URL
 #[cfg(creusot)]
 pub fn verify_url_http_https() -> Result<UrlHttpBytes<8, 16, 32>, ValidationError> {
-    let bytes = [b'h', b't', b't', b'p', b's', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e', b'.', b'c', b'o', b'm'];
+    let bytes = [
+        b'h', b't', b't', b'p', b's', b':', b'/', b'/', b'e', b'x', b'a', b'm', b'p', b'l', b'e',
+        b'.', b'c', b'o', b'm',
+    ];
     UrlHttpBytes::from_slice(&bytes)
 }
 

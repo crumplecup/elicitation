@@ -11,7 +11,9 @@ use std::time::Duration;
 #[cfg(creusot)]
 #[requires(duration_is_positive(duration))]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-pub fn verify_duration_positive_valid(duration: Duration) -> Result<DurationPositive, ValidationError> {
+pub fn verify_duration_positive_valid(
+    duration: Duration,
+) -> Result<DurationPositive, ValidationError> {
     DurationPositive::new(duration)
 }
 
@@ -19,6 +21,8 @@ pub fn verify_duration_positive_valid(duration: Duration) -> Result<DurationPosi
 #[cfg(creusot)]
 #[requires(!duration_is_positive(duration))]
 #[ensures(match result { Err(_) => true, Ok(_) => false })]
-pub fn verify_duration_positive_invalid(duration: Duration) -> Result<DurationPositive, ValidationError> {
+pub fn verify_duration_positive_invalid(
+    duration: Duration,
+) -> Result<DurationPositive, ValidationError> {
     DurationPositive::new(duration)
 }

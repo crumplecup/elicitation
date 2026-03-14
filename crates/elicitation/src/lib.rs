@@ -173,12 +173,12 @@ pub use traits::{
 };
 
 // Type graph visualization — registry always available; builder/renderers gated on `graph`
-pub use type_graph::{TypeGraphKey, all_graphable_types, lookup_type_graph};
 #[cfg(feature = "graph")]
 pub use type_graph::{
     DotRenderer, GraphEdge, GraphNode, GraphRenderer, MermaidDirection, MermaidRenderer, NodeKind,
     TypeGraph, TypeGraphError, TypeGraphPlugin,
 };
+pub use type_graph::{TypeGraphKey, all_graphable_types, lookup_type_graph};
 
 // Type spec layer (agent-browsable contracts)
 pub use type_spec::{
