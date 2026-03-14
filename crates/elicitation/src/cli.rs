@@ -141,6 +141,21 @@ pub enum CreusotAction {
         resume: bool,
     },
 
+    /// Run SMT provers and track per-goal results with timestamps
+    Prove {
+        /// Module-level CSV output file
+        #[arg(long, default_value = "creusot_module_results.csv")]
+        output: PathBuf,
+
+        /// Per-goal CSV output file
+        #[arg(long, default_value = "creusot_goal_results.csv")]
+        goals: PathBuf,
+
+        /// Resume mode: skip already-passed modules
+        #[arg(long)]
+        resume: bool,
+    },
+
     /// Show summary statistics from CSV
     Summary {
         /// CSV file to analyze
@@ -217,6 +232,25 @@ fn handle_creusot(action: &CreusotAction) -> anyhow::Result<()> {
             let summary = crate::verification::creusot_runner::run_all_modules(output, *resume)?;
             println!();
             println!("✅ Creusot verification complete!");
+            println!("   Total: {}", summary.total());
+            println!("   Passed: {}", summary.passed());
+            println!("   Failed: {}", summary.failed());
+            Ok(())
+        }
+        CreusotAction::Prove {
+            output,
+            goals,
+            resume,
+        } => {
+            let workspace_root = std::env::current_dir()?;
+            let summary = crate::verification::creusot_runner::run_all_modules_prove(
+                output,
+                goals,
+                &workspace_root,
+                *resume,
+            )?;
+            println!();
+            println!("✅ Creusot prove complete!");
             println!("   Total: {}", summary.total());
             println!("   Passed: {}", summary.passed());
             println!("   Failed: {}", summary.failed());

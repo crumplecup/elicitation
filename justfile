@@ -715,6 +715,24 @@ verify-creusot-summary csv="creusot_verification_results.csv":
 verify-creusot-list:
     cargo run --manifest-path crates/elicitation/Cargo.toml --features cli --bin elicitation -- creusot list
 
+# Run SMT provers and track per-goal results with timestamps
+verify-creusot-prove csv="creusot_module_results.csv" goals="creusot_goal_results.csv":
+    cargo run --manifest-path crates/elicitation/Cargo.toml --features cli --bin elicitation -- creusot prove --output "{{csv}}" --goals "{{goals}}"
+
+# Show goal-level summary
+verify-creusot-goal-summary goals="creusot_goal_results.csv":
+    #!/usr/bin/env python3
+    import csv
+    rows = list(csv.DictReader(open('{{goals}}')))
+    proved = sum(1 for r in rows if r['status'] == 'Valid')
+    total = len(rows)
+    modules = sorted(set(r['module'] for r in rows))
+    print(f'Goals: {proved}/{total} proved across {len(modules)} modules')
+    for m in modules:
+        mr = [r for r in rows if r['module'] == m]
+        mp = sum(1 for r in mr if r['status'] == 'Valid')
+        print(f'  {m}: {mp}/{len(mr)}')
+
 # Run all formal verification tools
 verify-all: verify-kani verify-creusot verify-verus
     @echo "✅ All verification completed!"

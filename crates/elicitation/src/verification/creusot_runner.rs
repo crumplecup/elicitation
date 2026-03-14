@@ -4,6 +4,7 @@
 //! Each module in `elicitation_creusot` is verified via `cargo creusot`, which
 //! invokes the Creusot toolchain to check `#[logic]` and `#[requires]` contracts.
 //! Results are tracked per-module in a CSV for incremental re-verification.
+//! Per-goal results (one row per SMT goal) are tracked in a separate goals CSV.
 
 use anyhow::{Context, Result};
 use chrono::Utc;
@@ -491,4 +492,363 @@ pub fn list_modules() -> Result<()> {
     }
 
     Ok(())
+}
+
+/// Status of a proof goal.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, derive_more::Display)]
+pub enum GoalStatus {
+    /// Goal was proved by an SMT solver.
+    Valid,
+    /// Goal was not proved.
+    Unproved,
+}
+
+/// One CSV row: a single proof goal's result at a point in time.
+#[derive(Debug, Clone, Serialize, Deserialize, Getters)]
+pub struct ProofGoalRecord {
+    /// Creusot module (e.g. "bools")
+    module: String,
+    /// Rust function name (e.g. "verify_bool_true_valid")
+    function: String,
+    /// Why3 goal name (e.g. "vc_verify_bool_true_valid")
+    goal: String,
+    /// Prover that discharged it (e.g. "cvc5@1.3.1"), empty if unproved
+    prover: String,
+    /// Prover wall-clock time in seconds (0.0 if unproved)
+    proof_time_secs: f64,
+    /// Valid (proved) or Unproved
+    status: GoalStatus,
+    /// When this record was written
+    recorded_at: chrono::DateTime<chrono::Utc>,
+}
+
+/// Parse all proof goal results for a module from `verif/elicitation_creusot_rlib/<module>/`.
+///
+/// The `verif_root` is the workspace root (where `verif/` lives).
+/// Returns one `ProofGoalRecord` per goal across all functions in the module.
+pub fn parse_proof_goals(module: &str, verif_root: &Path) -> Vec<ProofGoalRecord> {
+    let module_dir = verif_root
+        .join("verif")
+        .join("elicitation_creusot_rlib")
+        .join(module);
+
+    if !module_dir.exists() {
+        tracing::warn!(
+            "Verification directory not found: {}",
+            module_dir.display()
+        );
+        return Vec::new();
+    }
+
+    let mut records = Vec::new();
+    let now = chrono::Utc::now();
+
+    let entries = match std::fs::read_dir(&module_dir) {
+        Ok(e) => e,
+        Err(e) => {
+            tracing::warn!(
+                "Failed to read module directory {}: {}",
+                module_dir.display(),
+                e
+            );
+            return Vec::new();
+        }
+    };
+
+    for entry in entries.flatten() {
+        let fn_dir = entry.path();
+        if !fn_dir.is_dir() {
+            continue;
+        }
+
+        let function = fn_dir
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .into_owned();
+
+        let proof_json = fn_dir.join("proof.json");
+        if !proof_json.exists() {
+            continue;
+        }
+
+        let contents = match std::fs::read_to_string(&proof_json) {
+            Ok(c) => c,
+            Err(e) => {
+                tracing::warn!("Failed to read {}: {}", proof_json.display(), e);
+                continue;
+            }
+        };
+
+        let parsed: serde_json::Value = match serde_json::from_str(&contents) {
+            Ok(v) => v,
+            Err(e) => {
+                tracing::warn!("Failed to parse {}: {}", proof_json.display(), e);
+                continue;
+            }
+        };
+
+        let proofs = match parsed.get("proofs").and_then(|v| v.as_object()) {
+            Some(p) => p,
+            None => continue,
+        };
+
+        for (_theory_name, goals_map) in proofs {
+            let goals = match goals_map.as_object() {
+                Some(g) => g,
+                None => continue,
+            };
+
+            for (goal_name, goal_val) in goals {
+                let prover = goal_val
+                    .get("prover")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                let proof_time_secs = goal_val
+                    .get("time")
+                    .and_then(|v| v.as_f64())
+                    .unwrap_or(0.0);
+                let status = if prover.is_empty() {
+                    GoalStatus::Unproved
+                } else {
+                    GoalStatus::Valid
+                };
+
+                records.push(ProofGoalRecord {
+                    module: module.to_string(),
+                    function: function.clone(),
+                    goal: goal_name.clone(),
+                    prover,
+                    proof_time_secs,
+                    status,
+                    recorded_at: now,
+                });
+            }
+        }
+    }
+
+    records
+}
+
+/// Run `cargo creusot prove` for a single module and collect goal results.
+///
+/// Returns the module-level compilation result and per-goal proof records parsed
+/// from the `verif/` directory after the prover finishes.
+pub fn run_creusot_module_prove(
+    module: &CreusotModule,
+    verif_root: &Path,
+) -> Result<(CreusotModuleResult, Vec<ProofGoalRecord>)> {
+    let start = Instant::now();
+
+    if !module.is_available() {
+        return Ok((
+            CreusotModuleResult::new(
+                module.name(),
+                CompilationStatus::Skipped,
+                0,
+                "Module not available on this platform",
+            ),
+            Vec::new(),
+        ));
+    }
+
+    // `cargo creusot prove` inserts `prove` before `--`
+    let mut cmd = Command::new("cargo");
+    cmd.arg("creusot")
+        .arg("prove")
+        .arg("--")
+        .arg("-p")
+        .arg("elicitation_creusot");
+
+    if let Some(feature) = module.feature() {
+        cmd.arg("--features").arg(feature);
+    }
+
+    // Inject nightly toolchain lib dir so creusot-rustc can load its shared libraries.
+    if let Some(lib_path) = creusot_lib_path() {
+        let existing = std::env::var("LD_LIBRARY_PATH").unwrap_or_default();
+        let new_path = if existing.is_empty() {
+            lib_path.to_string_lossy().into_owned()
+        } else {
+            format!("{}:{}", lib_path.display(), existing)
+        };
+        cmd.env("LD_LIBRARY_PATH", new_path);
+    }
+
+    // Add opam bin directory to PATH so why3find is available.
+    let home = std::env::var("HOME").unwrap_or_default();
+    let opam_bin = format!("{home}/.opam/default/bin");
+    let existing_path = std::env::var("PATH").unwrap_or_default();
+    let new_path = if existing_path.is_empty() {
+        opam_bin
+    } else {
+        format!("{opam_bin}:{existing_path}")
+    };
+    cmd.env("PATH", new_path);
+
+    cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
+
+    let output = cmd.output().with_context(|| {
+        format!(
+            "Failed to execute cargo creusot prove for module {}",
+            module.name()
+        )
+    })?;
+
+    let elapsed = start.elapsed().as_secs();
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    let (status, error_message) = if output.status.success() {
+        (CompilationStatus::Success, String::new())
+    } else {
+        (
+            CompilationStatus::Failed,
+            format!("Prove failed:\n{stderr}"),
+        )
+    };
+
+    let module_result = CreusotModuleResult::new(module.name(), status, elapsed, error_message);
+    let goals = parse_proof_goals(module.name(), verif_root);
+
+    Ok((module_result, goals))
+}
+
+/// Run `cargo creusot prove` for all modules and write per-goal results to a CSV.
+///
+/// Module-level results are written to `module_csv` (same format as `run_all_modules`).
+/// Per-goal proof records are appended to `goals_csv` with a UTC timestamp per row.
+pub fn run_all_modules_prove(
+    module_csv: &Path,
+    goals_csv: &Path,
+    verif_root: &Path,
+    resume: bool,
+) -> Result<CreusotSummary> {
+    println!("🔬 Running Creusot prove checks...");
+    println!("   Module CSV: {}", module_csv.display());
+    println!("   Goals CSV:  {}", goals_csv.display());
+    println!();
+
+    // Load existing results if resuming
+    let mut completed_modules = std::collections::HashSet::new();
+    if resume && module_csv.exists() {
+        println!("📂 Loading existing results...");
+        let mut reader = Reader::from_path(module_csv)
+            .with_context(|| format!("Failed to read CSV: {}", module_csv.display()))?;
+        for result in reader.deserialize::<CreusotModuleResult>() {
+            if let Ok(result) = result {
+                if result.is_success() {
+                    completed_modules.insert(result.module().clone());
+                }
+            }
+        }
+        println!("   Found {} completed modules", completed_modules.len());
+        println!();
+    }
+
+    let mut module_writer = Writer::from_path(module_csv)
+        .with_context(|| format!("Failed to create module CSV: {}", module_csv.display()))?;
+
+    // Append to goals CSV if it already exists so historical runs are preserved.
+    let goals_file_exists = goals_csv.exists();
+    let goals_file = std::fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .append(true)
+        .open(goals_csv)
+        .with_context(|| format!("Failed to open goals CSV: {}", goals_csv.display()))?;
+    let mut goals_writer = csv::WriterBuilder::new()
+        .has_headers(!goals_file_exists)
+        .from_writer(goals_file);
+
+    let modules = CreusotModule::all();
+    let total = modules.len();
+    let mut passed = 0;
+    let mut failed = 0;
+    let mut skipped = 0;
+
+    for (i, module) in modules.iter().enumerate() {
+        if completed_modules.contains(module.name()) {
+            println!(
+                "[{:2}/{:2}] ⏭️  Skipping {} (already passed)",
+                i + 1,
+                total,
+                module
+            );
+            skipped += 1;
+            continue;
+        }
+
+        print!("[{:2}/{:2}] 🔬 Proving {}... ", i + 1, total, module);
+        std::io::stdout().flush().ok();
+
+        match run_creusot_module_prove(module, verif_root) {
+            Ok((result, goals)) => {
+                let n_proved = goals
+                    .iter()
+                    .filter(|g| g.status() == &GoalStatus::Valid)
+                    .count();
+
+                match result.status() {
+                    CompilationStatus::Success => {
+                        println!(
+                            "✅ PASS ({}s) — {} goals proved",
+                            result.time_seconds(),
+                            n_proved
+                        );
+                        passed += 1;
+                    }
+                    CompilationStatus::Failed => {
+                        println!("❌ FAIL ({}s)", result.time_seconds());
+                        if !result.error_message().is_empty() {
+                            println!("   Error: {}", result.error_message());
+                        }
+                        failed += 1;
+                    }
+                    CompilationStatus::Skipped => {
+                        println!("⏭️  SKIPPED");
+                        skipped += 1;
+                    }
+                }
+
+                module_writer
+                    .serialize(&result)
+                    .context("Failed to write module result to CSV")?;
+                module_writer
+                    .flush()
+                    .context("Failed to flush module CSV writer")?;
+
+                for goal in &goals {
+                    goals_writer
+                        .serialize(goal)
+                        .context("Failed to write goal record to CSV")?;
+                }
+                goals_writer
+                    .flush()
+                    .context("Failed to flush goals CSV writer")?;
+            }
+            Err(e) => {
+                println!("🔥 ERROR");
+                println!("   {:#}", e);
+                failed += 1;
+            }
+        }
+    }
+
+    module_writer.flush().context("Failed to flush module CSV")?;
+    goals_writer.flush().context("Failed to flush goals CSV")?;
+
+    println!();
+    println!("📊 Prove Summary:");
+    println!("   Total:   {}", total);
+    println!("   Passed:  {} ✅", passed);
+    println!("   Failed:  {} ❌", failed);
+    println!("   Skipped: {} ⏭️", skipped);
+
+    Ok(CreusotSummary {
+        total,
+        passed,
+        failed,
+        skipped,
+    })
 }
