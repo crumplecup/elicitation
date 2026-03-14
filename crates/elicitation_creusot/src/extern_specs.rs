@@ -6,19 +6,21 @@
 
 use crate::*;
 use elicitation::{
-    BoolFalse, BoolTrue, CharAlphabetic, CharAlphanumeric, CharNumeric, DurationPositive,
-    I128NonNegative, I128NonZero, I128Positive, I16NonNegative, I16NonZero,
-    I16Positive, I32NonNegative, I32NonZero, I32Positive, I64NonNegative, I64NonZero, I64Positive,
-    I8NonNegative, I8NonZero, I8Positive, I8Range, IsizeNonNegative, IsizeNonZero, IsizePositive,
-    IsizeRange, U128NonZero, U128Positive, U16NonZero, U16Positive, U16Range, U32NonZero,
-    U32Positive, U32Range, U64NonZero, U64Positive, U64Range, U8NonZero, U8Positive, U8Range,
-    UsizeNonZero, UsizePositive, UsizeRange, ValidationError,
+    ArcNonNull, BoolFalse, BoolTrue, BoxNonNull, CharAlphabetic, CharAlphanumeric, CharNumeric,
+    DurationPositive, HashMapNonEmpty, HashSetNonEmpty, I128NonNegative, I128NonZero,
+    I128Positive, I16NonNegative, I16NonZero, I16Positive, I32NonNegative, I32NonZero, I32Positive,
+    I64NonNegative, I64NonZero, I64Positive, I8NonNegative, I8NonZero, I8Positive, I8Range,
+    IsizeNonNegative, IsizeNonZero, IsizePositive, IsizeRange, OptionSome, RcNonNull, ResultOk,
+    U128NonZero, U128Positive, U16NonZero, U16Positive, U16Range, U32NonZero, U32Positive,
+    U32Range, U64NonZero, U64Positive, U64Range, U8NonZero, U8Positive, U8Range, UsizeNonZero,
+    UsizePositive, UsizeRange, VecDequeNonEmpty, VecNonEmpty, ValidationError,
     verification::types::{
         MacAddr, PathBytes, SocketAddrV4Bytes, SocketAddrV6Bytes, Utf8Bytes,
         is_dynamic_port, is_local, is_multicast, is_nonzero_port, is_privileged_port,
         is_registered_port, is_unicast, is_universal, is_well_known_port,
     },
 };
+use std::collections::{HashMap, HashSet, VecDeque};
 
 // ============================================================================
 // Bool constructors
@@ -555,3 +557,76 @@ extern_spec! {
     #[ensures(result == (octets[0]@ % 4 >= 2))]
     fn is_local(octets: &[u8; 6]) -> bool;
 }
+
+// ============================================================================
+// Collection constructors (Vec, Option, Result, Box/Arc/Rc, VecDeque)
+// ============================================================================
+
+extern_spec! {
+    impl<T> VecNonEmpty<T> {
+        #[ensures(vec@.len() > 0 ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(vec@.len() == 0 ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(vec: Vec<T>) -> Result<VecNonEmpty<T>, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl<T> OptionSome<T> {
+        #[ensures(match value { Some(_) => match result { Ok(_) => true, Err(_) => false }, None => match result { Err(_) => true, Ok(_) => false } })]
+        fn new(value: Option<T>) -> Result<OptionSome<T>, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl<T> ResultOk<T> {
+        #[ensures(match value { Ok(_) => match result { Ok(_) => true, Err(_) => false }, Err(_) => match result { Err(_) => true, Ok(_) => false } })]
+        fn new<E>(value: Result<T, E>) -> Result<ResultOk<T>, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl<T> BoxNonNull<T> {
+        #[ensures(match result { Ok(_) => true, Err(_) => false })]
+        fn new(b: Box<T>) -> Result<BoxNonNull<T>, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl<T> ArcNonNull<T> {
+        #[ensures(match result { Ok(_) => true, Err(_) => false })]
+        fn new(a: std::sync::Arc<T>) -> Result<ArcNonNull<T>, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl<T> RcNonNull<T> {
+        #[ensures(match result { Ok(_) => true, Err(_) => false })]
+        fn new(r: std::rc::Rc<T>) -> Result<RcNonNull<T>, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl<T> VecDequeNonEmpty<T> {
+        #[ensures(deque@.len() > 0 ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(deque@.len() == 0 ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(deque: VecDeque<T>) -> Result<VecDequeNonEmpty<T>, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl<K: Eq + std::hash::Hash + DeepModel, V> HashMapNonEmpty<K, V> {
+        #[ensures(map@.len() > 0 ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(map@.len() == 0 ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(map: HashMap<K, V>) -> Result<HashMapNonEmpty<K, V>, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl<T: Eq + std::hash::Hash + DeepModel> HashSetNonEmpty<T> {
+        #[ensures(set@.len() > 0 ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(set@.len() == 0 ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(set: HashSet<T>) -> Result<HashSetNonEmpty<T>, ValidationError>;
+    }
+}
+
+

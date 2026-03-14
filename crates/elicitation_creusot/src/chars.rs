@@ -1,6 +1,8 @@
 //! Creusot proofs for char contract types.
 
+#[cfg(creusot)]
 use crate::*;
+#[cfg(creusot)]
 use elicitation::{CharAlphabetic, CharAlphanumeric, CharNumeric, ValidationError};
 
 /// Prove that CharAlphabetic construction succeeds for alphabetic chars.

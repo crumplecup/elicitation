@@ -1,7 +1,7 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 104 0 104 37 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 541 18 541 24
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 540 14 540 45
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 543 18 543 24
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 542 14 542 45
 let%span smacaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 105 17 105 21
 let%span smacaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 105 23 105 27
 let%span smacaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 105 29 105 33

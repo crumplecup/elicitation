@@ -81,8 +81,10 @@ mod http;
 
 // Re-export all proof functions for discoverability
 pub use bools::*;
+#[cfg(creusot)]
 pub use chars::*;
 pub use collections::*;
+#[cfg(creusot)]
 pub use durations::*;
 pub use floats::*;
 pub use integers::*;

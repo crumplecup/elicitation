@@ -1,7 +1,10 @@
 //! Creusot proofs for duration contract types.
 
+#[cfg(creusot)]
 use crate::*;
+#[cfg(creusot)]
 use elicitation::{DurationPositive, ValidationError};
+#[cfg(creusot)]
 use std::time::Duration;
 
 /// Verify DurationPositive construction succeeds for positive durations.

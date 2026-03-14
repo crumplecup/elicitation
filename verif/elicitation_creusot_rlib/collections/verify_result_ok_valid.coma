@@ -1,0 +1,213 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 70 0 70 86 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 583 18 583 23
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 582 18 582 149
+let%span scollections = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 71 36 71 38
+let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 71 4 71 40
+let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 68 11 68 15
+let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 70 35 70 86
+let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 69 10 69 57
+let%span scollections'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/collections.rs" 232 4 232 39
+
+use creusot.int.Int32
+use creusot.int.Int128
+use creusot.float.Float64
+use creusot.int.UInt64
+use creusot.prelude.Char
+use creusot.int.UInt8
+use creusot.int.UInt16
+use creusot.prelude.Any
+
+type t_String
+
+type t_Result_i32_String = Ok Int32.t | Err t_String
+
+type t_ResultOk_i32
+
+type t_ValidationError =
+  | NotPositive Int128.t
+  | Negative Int128.t
+  | Zero
+  | NotFinite t_String
+  | FloatNotPositive Float64.t
+  | FloatNegative Float64.t
+  | FloatOutOfRange Float64.t Float64.t Float64.t
+  | OutOfRange Int128.t Int128.t Int128.t
+  | EmptyString
+  | StringTooLong UInt64.t UInt64.t
+  | StringTooShort UInt64.t UInt64.t
+  | NotTrue
+  | NotFalse
+  | NotAlphabetic Char.t
+  | NotNumeric Char.t
+  | NotAlphanumeric Char.t
+  | WrongUuidVersion UInt8.t UInt8.t
+  | NilUuid
+  | DurationNotPositive
+  | NotPrivateIp
+  | NotPublicIp
+  | ExpectedIpv4GotIpv6
+  | ExpectedIpv6GotIpv4
+  | NotLoopback
+  | PathDoesNotExist t_String
+  | PathNotReadable t_String
+  | PathNotDirectory t_String
+  | PathNotFile t_String
+  | DateTimeTooEarly t_String t_String
+  | DateTimeTooLate t_String t_String
+  | EmptyCollection
+  | OptionIsNone
+  | ResultIsErr
+  | WrongJsonType t_String t_String
+  | JsonIsNull
+  | UrlInvalid
+  | InvalidUrlSyntax
+  | UrlMissingAuthority
+  | UrlNotAbsolute
+  | UrlNotHttps
+  | UrlNotHttp
+  | InvalidRegexSyntax
+  | UrlNoHost
+  | UrlCannotBeBase
+  | RegexInvalid
+  | InvalidUuidVariant
+  | NotUnicastMac
+  | NotMulticastMac
+  | NotUniversalMac
+  | NotLocalMac
+  | PortIsZero
+  | PortNotPrivileged UInt16.t
+  | PortIsPrivileged UInt16.t
+  | PathContainsNull
+  | PathNotAbsolute t_String
+  | PathNotRelative t_String
+  | InvalidUtf8
+  | TooLong UInt64.t UInt64.t
+  | StatusCodeInvalid UInt16.t
+  | HeaderInvalid t_String
+
+type t_Result_ResultOk_i32_ValidationError = Ok'0 t_ResultOk_i32 | Err'0 t_ValidationError
+
+predicate inv_String (_1: t_String)
+
+predicate inv_Result_i32_String (_1: t_Result_i32_String)
+
+axiom inv_axiom [@rewrite]: forall x: t_Result_i32_String [inv_Result_i32_String x]. inv_Result_i32_String x
+    = match x with
+      | Ok f0 -> true
+      | Err f0 -> inv_String f0
+      end
+
+predicate inv_ResultOk_i32 (_1: t_ResultOk_i32)
+
+predicate inv_ValidationError (_1: t_ValidationError)
+
+axiom inv_axiom'0 [@rewrite]: forall x: t_ValidationError [inv_ValidationError x]. inv_ValidationError x
+    = match x with
+      | NotPositive f0 -> true
+      | Negative f0 -> true
+      | Zero -> true
+      | NotFinite f0 -> inv_String f0
+      | FloatNotPositive f0 -> true
+      | FloatNegative f0 -> true
+      | FloatOutOfRange value min max -> true
+      | OutOfRange value min max -> true
+      | EmptyString -> true
+      | StringTooLong actual max -> true
+      | StringTooShort actual min -> true
+      | NotTrue -> true
+      | NotFalse -> true
+      | NotAlphabetic f0 -> true
+      | NotNumeric f0 -> true
+      | NotAlphanumeric f0 -> true
+      | WrongUuidVersion expected got -> true
+      | NilUuid -> true
+      | DurationNotPositive -> true
+      | NotPrivateIp -> true
+      | NotPublicIp -> true
+      | ExpectedIpv4GotIpv6 -> true
+      | ExpectedIpv6GotIpv4 -> true
+      | NotLoopback -> true
+      | PathDoesNotExist f0 -> inv_String f0
+      | PathNotReadable f0 -> inv_String f0
+      | PathNotDirectory f0 -> inv_String f0
+      | PathNotFile f0 -> inv_String f0
+      | DateTimeTooEarly value threshold -> inv_String value /\ inv_String threshold
+      | DateTimeTooLate value threshold -> inv_String value /\ inv_String threshold
+      | EmptyCollection -> true
+      | OptionIsNone -> true
+      | ResultIsErr -> true
+      | WrongJsonType expected got -> inv_String expected /\ inv_String got
+      | JsonIsNull -> true
+      | UrlInvalid -> true
+      | InvalidUrlSyntax -> true
+      | UrlMissingAuthority -> true
+      | UrlNotAbsolute -> true
+      | UrlNotHttps -> true
+      | UrlNotHttp -> true
+      | InvalidRegexSyntax -> true
+      | UrlNoHost -> true
+      | UrlCannotBeBase -> true
+      | RegexInvalid -> true
+      | InvalidUuidVariant -> true
+      | NotUnicastMac -> true
+      | NotMulticastMac -> true
+      | NotUniversalMac -> true
+      | NotLocalMac -> true
+      | PortIsZero -> true
+      | PortNotPrivileged f0 -> true
+      | PortIsPrivileged f0 -> true
+      | PathContainsNull -> true
+      | PathNotAbsolute f0 -> inv_String f0
+      | PathNotRelative f0 -> inv_String f0
+      | InvalidUtf8 -> true
+      | TooLong max actual -> true
+      | StatusCodeInvalid f0 -> true
+      | HeaderInvalid f0 -> inv_String f0
+      end
+
+predicate inv_Result_ResultOk_i32_ValidationError (_1: t_Result_ResultOk_i32_ValidationError)
+
+axiom inv_axiom'1 [@rewrite]:
+  forall x: t_Result_ResultOk_i32_ValidationError [inv_Result_ResultOk_i32_ValidationError x]. inv_Result_ResultOk_i32_ValidationError x
+    = match x with
+      | Ok'0 f0 -> inv_ResultOk_i32 f0
+      | Err'0 f0 -> inv_ValidationError f0
+      end
+
+let rec new_i32 (value: t_Result_i32_String) (return (x: t_Result_ResultOk_i32_ValidationError)) =
+  {[@stop_split] [@expl:new 'value' type invariant] [%#sextern_specs] inv_Result_i32_String value}
+  any
+  [ return (result: t_Result_ResultOk_i32_ValidationError) ->
+  {[@stop_split] [@expl:new_i32 ensures] ([@stop_split] [@expl:new result type invariant] [%#scollections'4] inv_Result_ResultOk_i32_ValidationError result)
+    /\ ([@stop_split] [@expl:new ensures] [%#sextern_specs'0] match value with
+      | Ok _ -> match result with
+        | Ok'0 _ -> true
+        | Err'0 _ -> false
+        end
+      | Err _ -> match result with
+        | Err'0 _ -> true
+        | Ok'0 _ -> false
+        end
+      end)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_result_ok_valid
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 70 0 70 86]
+  (return (x: t_Result_ResultOk_i32_ValidationError)) = (! bb0
+  [ bb0 = s0
+    [ s0 = [ &_3 <- Ok ([%#scollections] (42: Int32.t)) ] s1
+    | s1 = new_i32 [%#scollections'0] {_3} (fun (_x: t_Result_ResultOk_i32_ValidationError) -> [ &_ret <- _x ] s2)
+    | s2 = return {_ret} ] ]
+  [ & _ret: t_Result_ResultOk_i32_ValidationError = Any.any_l () | & _3: t_Result_i32_String = Any.any_l () ])
+  [ return (result: t_Result_ResultOk_i32_ValidationError) ->
+  {[@stop_split] [@expl:verify_result_ok_valid ensures] ([@stop_split] [@expl:verify_result_ok_valid result type invariant] [%#scollections'2] inv_Result_ResultOk_i32_ValidationError result)
+    /\ ([@stop_split] [@expl:verify_result_ok_valid ensures] [%#scollections'3] match result with
+      | Ok'0 _ -> true
+      | Err'0 _ -> false
+      end)}
+    (! return {result}) ]

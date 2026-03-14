@@ -19,16 +19,17 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, LinkedList, VecDequ
 /// Verify VecNonEmpty construction with valid non-empty vec.
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_vec_non_empty_valid() -> Result<VecNonEmpty<i32>, elicitation::ValidationError> {
-    let v = std::vec![1, 2, 3];
+    let mut v = Vec::new();
+    v.push(1);
+    v.push(2);
+    v.push(3);
     VecNonEmpty::new(v)
 }
 
 /// Verify VecNonEmpty rejects empty vec.
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_vec_non_empty_invalid() -> Result<VecNonEmpty<i32>, elicitation::ValidationError> {
     let v: Vec<i32> = Vec::new();
     VecNonEmpty::new(v)
@@ -52,7 +53,6 @@ pub fn verify_vec_all_satisfy_valid() -> VecAllSatisfy<I32Positive> {
 /// Verify OptionSome construction with Some value.
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_option_some_valid() -> Result<OptionSome<i32>, elicitation::ValidationError> {
     OptionSome::new(Some(42))
 }
@@ -60,7 +60,6 @@ pub fn verify_option_some_valid() -> Result<OptionSome<i32>, elicitation::Valida
 /// Verify OptionSome rejects None.
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_option_some_invalid() -> Result<OptionSome<i32>, elicitation::ValidationError> {
     OptionSome::new(None)
 }
@@ -68,7 +67,6 @@ pub fn verify_option_some_invalid() -> Result<OptionSome<i32>, elicitation::Vali
 /// Verify ResultOk construction with Ok value.
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_result_ok_valid() -> Result<ResultOk<i32>, elicitation::ValidationError> {
     ResultOk::new(Ok::<i32, String>(42))
 }
@@ -76,9 +74,8 @@ pub fn verify_result_ok_valid() -> Result<ResultOk<i32>, elicitation::Validation
 /// Verify ResultOk rejects Err.
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_result_ok_invalid() -> Result<ResultOk<i32>, elicitation::ValidationError> {
-    ResultOk::new(Err::<i32, String>("error".to_string()))
+    ResultOk::new(Err::<i32, i32>(0))
 }
 
 // ============================================================================
@@ -207,7 +204,6 @@ pub fn verify_btreeset_non_empty_invalid()
 /// Verify VecDequeNonEmpty construction with non-empty deque.
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_vecdeque_non_empty_valid()
 -> Result<VecDequeNonEmpty<i32>, elicitation::ValidationError> {
     let mut deque = VecDeque::new();
@@ -218,7 +214,6 @@ pub fn verify_vecdeque_non_empty_valid()
 /// Verify VecDequeNonEmpty rejects empty deque.
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_vecdeque_non_empty_invalid()
 -> Result<VecDequeNonEmpty<i32>, elicitation::ValidationError> {
     VecDequeNonEmpty::new(VecDeque::new())
@@ -262,7 +257,6 @@ pub fn verify_array_all_satisfy_valid() -> ArrayAllSatisfy<I32Positive, 3> {
 /// Verify BoxNonNull with value (Box is always non-null in safe Rust).
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_box_non_null_valid() -> Result<BoxNonNull<i32>, elicitation::ValidationError> {
     BoxNonNull::new(Box::new(42))
 }
@@ -270,7 +264,6 @@ pub fn verify_box_non_null_valid() -> Result<BoxNonNull<i32>, elicitation::Valid
 /// Verify ArcNonNull with value (Arc is always non-null in safe Rust).
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_arc_non_null_valid() -> Result<ArcNonNull<i32>, elicitation::ValidationError> {
     ArcNonNull::new(std::sync::Arc::new(42))
 }
@@ -278,7 +271,6 @@ pub fn verify_arc_non_null_valid() -> Result<ArcNonNull<i32>, elicitation::Valid
 /// Verify RcNonNull with value (Rc is always non-null in safe Rust).
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_rc_non_null_valid() -> Result<RcNonNull<i32>, elicitation::ValidationError> {
     RcNonNull::new(std::rc::Rc::new(42))
 }
