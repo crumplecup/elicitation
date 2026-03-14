@@ -1,15 +1,15 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/tuples.rs" 65 0 65 87 *)
 
 let%span sbools = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/bools.rs" 24 4 24 30
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 189 18 189 80
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 190 18 190 81
-let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 41 18 41 75
-let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 42 18 42 76
-let%span sextern_specs'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 1059 15 1059 20
-let%span sextern_specs'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 1059 26 1059 32
-let%span sextern_specs'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 1059 38 1059 43
-let%span sextern_specs'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 1059 49 1059 55
-let%span sextern_specs'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 1058 18 1058 22
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 192 18 192 80
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 193 18 193 81
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 44 18 44 75
+let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 45 18 45 76
+let%span sextern_specs'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 1062 15 1062 20
+let%span sextern_specs'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 1062 26 1062 32
+let%span sextern_specs'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 1062 38 1062 43
+let%span sextern_specs'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 1062 49 1062 55
+let%span sextern_specs'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 1061 18 1061 22
 let%span sintegers = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/integers.rs" 1803 12 1803 69
 let%span sresult = "/home/erik/repos/creusot/creusot-std/src/std/result.rs" 52 18 52 22
 let%span sresult'0 = "/home/erik/repos/creusot/creusot-std/src/std/result.rs" 50 19 50 45

@@ -533,10 +533,7 @@ pub fn parse_proof_goals(module: &str, verif_root: &Path) -> Vec<ProofGoalRecord
         .join(module);
 
     if !module_dir.exists() {
-        tracing::warn!(
-            "Verification directory not found: {}",
-            module_dir.display()
-        );
+        tracing::warn!("Verification directory not found: {}", module_dir.display());
         return Vec::new();
     }
 
@@ -605,10 +602,7 @@ pub fn parse_proof_goals(module: &str, verif_root: &Path) -> Vec<ProofGoalRecord
                     .and_then(|v| v.as_str())
                     .unwrap_or("")
                     .to_string();
-                let proof_time_secs = goal_val
-                    .get("time")
-                    .and_then(|v| v.as_f64())
-                    .unwrap_or(0.0);
+                let proof_time_secs = goal_val.get("time").and_then(|v| v.as_f64()).unwrap_or(0.0);
                 let status = if prover.is_empty() {
                     GoalStatus::Unproved
                 } else {
@@ -835,7 +829,9 @@ pub fn run_all_modules_prove(
         }
     }
 
-    module_writer.flush().context("Failed to flush module CSV")?;
+    module_writer
+        .flush()
+        .context("Failed to flush module CSV")?;
     goals_writer.flush().context("Failed to flush goals CSV")?;
 
     println!();

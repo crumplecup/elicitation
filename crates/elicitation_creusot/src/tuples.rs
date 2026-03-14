@@ -81,4 +81,3 @@ pub fn verify_tuple4_into_inner() {
     let tuple = Tuple4::new(first, second, third, fourth);
     let (_a, _b, _c, _d) = tuple.into_inner();
 }
-
