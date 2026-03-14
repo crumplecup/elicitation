@@ -1,16 +1,16 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 63 0 63 62 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 61 0 61 62 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 480 23 480 25
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 479 18 479 41
 let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
-let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 64 36 64 39
-let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 64 41 64 42
-let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 64 44 64 45
-let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 64 47 64 48
-let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 64 51 64 54
-let%span ssocketaddr'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 64 4 64 55
-let%span ssocketaddr'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 63 45 63 62
-let%span ssocketaddr'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 62 10 62 35
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 62 36 62 39
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 62 41 62 42
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 62 44 62 45
+let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 62 47 62 48
+let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 62 51 62 54
+let%span ssocketaddr'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 62 4 62 55
+let%span ssocketaddr'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 61 45 61 62
+let%span ssocketaddr'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 60 10 60 35
 let%span ssocketaddr'7 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 76 4 76 61
 
 use creusot.slice.Slice64
@@ -50,7 +50,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_socket_v4_localhost_https
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 63 0 63 62]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 61 0 61 62]
   (return (x: t_SocketAddrV4Bytes)) = (! bb0
   [ bb0 = s0
     [ s0 = any

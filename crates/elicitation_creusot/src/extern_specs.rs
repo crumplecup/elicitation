@@ -478,6 +478,10 @@ extern_spec! {
     impl SocketAddrV4Bytes {
         #[ensures(v4_port(result) == port)]
         fn from_octets(ip: [u8; 4], port: u16) -> SocketAddrV4Bytes;
+        #[ensures(true)]
+        fn ip(&self) -> &Ipv4Bytes;
+        #[ensures(true)]
+        fn into_parts(self) -> (Ipv4Bytes, u16);
     }
 }
 
@@ -485,6 +489,10 @@ extern_spec! {
     impl SocketAddrV6Bytes {
         #[ensures(v6_port(result) == port)]
         fn from_octets(ip: [u8; 16], port: u16) -> SocketAddrV6Bytes;
+        #[ensures(true)]
+        fn ip(&self) -> &Ipv6Bytes;
+        #[ensures(true)]
+        fn into_parts(self) -> (Ipv6Bytes, u16);
     }
 }
 

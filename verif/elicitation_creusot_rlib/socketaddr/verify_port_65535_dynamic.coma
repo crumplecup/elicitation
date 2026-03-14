@@ -1,9 +1,9 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 198 0 198 42 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 194 0 194 42 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 506 14 506 40
-let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 199 20 199 25
-let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 199 4 199 26
-let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 197 10 197 16
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 514 14 514 40
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 195 20 195 25
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 195 4 195 26
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 193 10 193 16
 
 use creusot.int.UInt16
 use creusot.prelude.Any
@@ -19,7 +19,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_port_65535_dynamic
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 198 0 198 42] (return (x: bool)) =
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 194 0 194 42] (return (x: bool)) =
   (! bb0
   [ bb0 = s0
     [ s0 = is_dynamic_port [%#ssocketaddr'0] {[%#ssocketaddr] (65535: UInt16.t)} (fun (_x: bool) -> [ &_ret <- _x ] s1)

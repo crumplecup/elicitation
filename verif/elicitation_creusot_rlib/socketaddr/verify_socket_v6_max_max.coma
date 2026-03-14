@@ -1,14 +1,14 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 271 0 271 54 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 267 0 267 54 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 487 23 487 25
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 486 18 486 41
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 491 23 491 25
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 490 18 490 41
 let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
-let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 272 35 272 45
-let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 272 36 272 40
-let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 272 47 272 52
-let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 272 4 272 53
-let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 271 37 271 54
-let%span ssocketaddr'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 270 10 270 37
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 268 35 268 45
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 268 36 268 40
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 268 47 268 52
+let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 268 4 268 53
+let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 267 37 267 54
+let%span ssocketaddr'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 266 10 266 37
 let%span ssocketaddr'5 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 116 4 116 62
 
 use creusot.int.UInt8
@@ -48,7 +48,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_socket_v6_max_max
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 271 0 271 54]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 267 0 267 54]
   (return (x: t_SocketAddrV6Bytes)) = (! bb0
   [ bb0 = s0
     [ s0 = Slice64.create <UInt8.t> {[%#ssocketaddr] (16: UInt64.t)} {fun (_: int) -> [%#ssocketaddr'0] (255: UInt8.t)}

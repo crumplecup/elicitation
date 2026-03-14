@@ -1,12 +1,12 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 40 0 40 82 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 39 0 39 82 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 480 23 480 25
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 479 18 479 41
 let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
-let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 41 4 41 44
-let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 40 38 40 40
-let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 40 65 40 82
-let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 39 10 39 33
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 40 4 40 44
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 39 38 39 40
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 39 65 39 82
+let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 38 10 38 33
 let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 76 4 76 61
 
 use creusot.slice.Slice64
@@ -46,7 +46,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_socket_v4_port_accessor
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 40 0 40 82] (ip: Slice64.array UInt8.t)
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 39 0 39 82] (ip: Slice64.array UInt8.t)
   (port: UInt16.t) (return (x: t_SocketAddrV4Bytes)) =
   {[@stop_split] [@expl:verify_socket_v4_port_accessor 'ip' type invariant] [%#ssocketaddr'0] inv_array_u8_4 ip}
   (! bb0

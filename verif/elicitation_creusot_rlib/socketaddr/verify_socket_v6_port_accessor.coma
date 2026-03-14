@@ -1,12 +1,12 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 102 0 102 83 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 99 0 99 83 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 487 23 487 25
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 486 18 486 41
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 491 23 491 25
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 490 18 490 41
 let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
-let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 103 4 103 44
-let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 102 38 102 40
-let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 102 66 102 83
-let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 101 10 101 33
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 100 4 100 44
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 99 38 99 40
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 99 66 99 83
+let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 98 10 98 33
 let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 116 4 116 62
 
 use creusot.slice.Slice64
@@ -46,8 +46,8 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_socket_v6_port_accessor
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 102 0 102 83]
-  (ip: Slice64.array UInt8.t) (port: UInt16.t) (return (x: t_SocketAddrV6Bytes)) =
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 99 0 99 83] (ip: Slice64.array UInt8.t)
+  (port: UInt16.t) (return (x: t_SocketAddrV6Bytes)) =
   {[@stop_split] [@expl:verify_socket_v6_port_accessor 'ip' type invariant] [%#ssocketaddr'0] inv_array_u8_16 ip}
   (! bb0
   [ bb0 = s0

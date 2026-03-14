@@ -1,6 +1,6 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 63 0 63 92 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 583 18 583 149
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 591 18 591 149
 let%span scollections = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 64 4 64 25
 let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 61 11 61 15
 let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 63 39 63 92

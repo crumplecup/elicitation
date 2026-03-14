@@ -1,11 +1,11 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 86 0 86 82 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 84 0 84 82 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 487 23 487 25
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 486 18 486 41
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 491 23 491 25
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 490 18 490 41
 let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
-let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 87 4 87 44
-let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 86 37 86 39
-let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 86 65 86 82
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 85 4 85 44
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 84 37 84 39
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 84 65 84 82
 let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 116 4 116 62
 
 use creusot.slice.Slice64
@@ -45,7 +45,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_socket_v6_construction
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 86 0 86 82] (ip: Slice64.array UInt8.t)
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 84 0 84 82] (ip: Slice64.array UInt8.t)
   (port: UInt16.t) (return (x: t_SocketAddrV6Bytes)) =
   {[@stop_split] [@expl:verify_socket_v6_construction 'ip' type invariant] [%#ssocketaddr'0] inv_array_u8_16 ip}
   (! bb0

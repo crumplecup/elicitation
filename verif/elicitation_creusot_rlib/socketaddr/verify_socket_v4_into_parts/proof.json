@@ -3,12 +3,17 @@
   "proofs": {
     "Coma": {
       "vc_from_octets": { "prover": "cvc5@1.3.1", "time": 0.018 },
+      "vc_into_parts": { "prover": "cvc5@1.3.1", "time": 0.012 },
       "vc_verify_socket_v4_into_parts": {
         "tactic": "compute_specified",
         "children": [
           {
             "tactic": "split_vc",
-            "children": [ { "prover": "cvc5@1.3.1", "time": 0.022 }, null ]
+            "children": [
+              { "prover": "cvc5@1.3.1", "time": 0.012 },
+              { "prover": "cvc5@1.3.1", "time": 0.013 },
+              { "prover": "cvc5@1.3.1", "time": 0.014 }
+            ]
           }
         ]
       }
