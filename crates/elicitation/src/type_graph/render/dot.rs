@@ -72,9 +72,8 @@ impl GraphRenderer for DotRenderer {
         // Edges.
         for edge in &graph.edges {
             let target_node = graph.nodes.get(&edge.to);
-            let target_is_leaf = target_node.map_or(true, |n| {
-                matches!(n.kind, NodeKind::Primitive | NodeKind::Generic)
-            });
+            let target_is_leaf = target_node
+                .is_none_or(|n| matches!(n.kind, NodeKind::Primitive | NodeKind::Generic));
             if target_is_leaf && !self.include_primitives {
                 continue;
             }
