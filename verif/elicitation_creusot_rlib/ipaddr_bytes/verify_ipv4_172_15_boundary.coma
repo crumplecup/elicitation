@@ -1,0 +1,90 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 309 0 309 49 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 643 15 643 21
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 639 18 639 47
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 640 18 640 66
+let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 641 18 641 127
+let%span sextern_specs'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 642 18 642 133
+let%span sipaddr_bytes = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 310 20 310 23
+let%span sipaddr_bytes'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 310 25 310 27
+let%span sipaddr_bytes'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 310 29 310 32
+let%span sipaddr_bytes'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 310 34 310 37
+let%span sipaddr_bytes'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 310 4 310 39
+let%span sipaddr_bytes'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 309 40 309 49
+let%span sipaddr_bytes'5 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/ipaddr_bytes.rs" 53 4 53 39
+let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 56 20 56 29
+let%span sarray'0 = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
+
+use creusot.slice.Slice64
+use creusot.int.UInt8
+use seq.Seq
+use creusot.int.UInt64
+use creusot.prelude.Any
+
+type t_Ipv4Bytes
+
+predicate inv_Seq_u8 [@inline:trivial] (_1: Seq.seq UInt8.t) = true
+
+meta "rewrite_def" predicate inv_Seq_u8
+
+predicate invariant_array_u8_4 (self: Slice64.array UInt8.t) =
+  [%#sarray'0] inv_Seq_u8 (Slice64.view self) /\ Seq.length (Slice64.view self) = UInt64.t'int (4: UInt64.t)
+
+predicate inv_array_u8_4 [@inline:trivial] (_1: Slice64.array UInt8.t) = invariant_array_u8_4 _1
+
+meta "rewrite_def" predicate inv_array_u8_4
+
+predicate inv_Ipv4Bytes (_1: t_Ipv4Bytes)
+
+function ipv4_octets [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 31 0 31 47] (_addr: t_Ipv4Bytes) : Slice64.array UInt8.t
+
+predicate ipv4_is_loopback [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 38 0 38 49] (_addr: t_Ipv4Bytes)
+
+function index_array_u8_4 [@inline:trivial] (self: Slice64.array UInt8.t) (ix: int) : UInt8.t =
+  [%#sarray] Seq.get (Slice64.view self) ix
+
+meta "rewrite_def" function index_array_u8_4
+
+predicate ipv4_is_unspecified [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 45 0 45 52] (_addr: t_Ipv4Bytes)
+
+predicate ipv4_is_broadcast [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 52 0 52 50] (_addr: t_Ipv4Bytes)
+
+let rec new (octets: Slice64.array UInt8.t) (return (x: t_Ipv4Bytes)) =
+  {[@stop_split] [@expl:new 'octets' type invariant] [%#sextern_specs] inv_array_u8_4 octets}
+  any
+  [ return (result: t_Ipv4Bytes) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#sipaddr_bytes'5] inv_Ipv4Bytes result)
+    /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs'0] ipv4_octets result = octets)
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'1] ipv4_is_loopback result
+      = (index_array_u8_4 octets 0 = (127: UInt8.t)))
+    /\ ([@stop_split] [@expl:new ensures #2] [%#sextern_specs'2] ipv4_is_unspecified result
+      = (index_array_u8_4 octets 0 = (0: UInt8.t)
+      /\ index_array_u8_4 octets 1 = (0: UInt8.t)
+      /\ index_array_u8_4 octets 2 = (0: UInt8.t) /\ index_array_u8_4 octets 3 = (0: UInt8.t)))
+    /\ ([@stop_split] [@expl:new ensures #3] [%#sextern_specs'3] ipv4_is_broadcast result
+    = (index_array_u8_4 octets 0 = (255: UInt8.t)
+    /\ index_array_u8_4 octets 1 = (255: UInt8.t)
+    /\ index_array_u8_4 octets 2 = (255: UInt8.t) /\ index_array_u8_4 octets 3 = (255: UInt8.t)))}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_ipv4_172_15_boundary
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 309 0 309 49]
+  (return (x: t_Ipv4Bytes)) = (! bb0
+  [ bb0 = s0
+    [ s0 = any
+      [ any_ (__arr_temp: Slice64.array UInt8.t) -> (! -{Seq.get __arr_temp.Slice64.elts 0
+          = ([%#sipaddr_bytes] (172: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 1 = ([%#sipaddr_bytes'0] (15: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 2 = ([%#sipaddr_bytes'1] (255: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 3 = ([%#sipaddr_bytes'2] (255: UInt8.t))
+        /\ Seq.length __arr_temp.Slice64.elts = 4}-
+        [ &_1 <- __arr_temp ] s1) ]
+    | s1 = new [%#sipaddr_bytes'3] {_1} (fun (_x: t_Ipv4Bytes) -> [ &_ret <- _x ] s2)
+    | s2 = return {_ret} ] ] [ & _ret: t_Ipv4Bytes = Any.any_l () | & _1: Slice64.array UInt8.t = Any.any_l () ])
+  [ return (result: t_Ipv4Bytes) ->
+  {[@stop_split] [@expl:verify_ipv4_172_15_boundary result type invariant] [%#sipaddr_bytes'4] inv_Ipv4Bytes result}
+    (! return {result}) ]

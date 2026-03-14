@@ -1,0 +1,234 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 100 0 100 81 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 678 15 678 21
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 676 18 676 195
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 677 18 677 196
+let%span sipaddr_bytes = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 101 22 101 25
+let%span sipaddr_bytes'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 101 27 101 29
+let%span sipaddr_bytes'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 101 31 101 32
+let%span sipaddr_bytes'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 101 34 101 35
+let%span sipaddr_bytes'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 101 4 101 37
+let%span sipaddr_bytes'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 100 45 100 81
+let%span sipaddr_bytes'5 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/ipaddr_bytes.rs" 127 4 127 64
+let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 56 20 56 29
+let%span sarray'0 = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
+
+use creusot.slice.Slice64
+use creusot.int.UInt8
+use creusot.int.Int128
+use creusot.float.Float64
+use creusot.int.UInt64
+use creusot.prelude.Char
+use creusot.int.UInt16
+use seq.Seq
+use creusot.prelude.Any
+use int.Int
+
+type t_Ipv4Private
+
+type t_String
+
+type t_ValidationError =
+  | NotPositive Int128.t
+  | Negative Int128.t
+  | Zero
+  | NotFinite t_String
+  | FloatNotPositive Float64.t
+  | FloatNegative Float64.t
+  | FloatOutOfRange Float64.t Float64.t Float64.t
+  | OutOfRange Int128.t Int128.t Int128.t
+  | EmptyString
+  | StringTooLong UInt64.t UInt64.t
+  | StringTooShort UInt64.t UInt64.t
+  | NotTrue
+  | NotFalse
+  | NotAlphabetic Char.t
+  | NotNumeric Char.t
+  | NotAlphanumeric Char.t
+  | WrongUuidVersion UInt8.t UInt8.t
+  | NilUuid
+  | DurationNotPositive
+  | NotPrivateIp
+  | NotPublicIp
+  | ExpectedIpv4GotIpv6
+  | ExpectedIpv6GotIpv4
+  | NotLoopback
+  | PathDoesNotExist t_String
+  | PathNotReadable t_String
+  | PathNotDirectory t_String
+  | PathNotFile t_String
+  | DateTimeTooEarly t_String t_String
+  | DateTimeTooLate t_String t_String
+  | EmptyCollection
+  | OptionIsNone
+  | ResultIsErr
+  | WrongJsonType t_String t_String
+  | JsonIsNull
+  | UrlInvalid
+  | InvalidUrlSyntax
+  | UrlMissingAuthority
+  | UrlNotAbsolute
+  | UrlNotHttps
+  | UrlNotHttp
+  | InvalidRegexSyntax
+  | UrlNoHost
+  | UrlCannotBeBase
+  | RegexInvalid
+  | InvalidUuidVariant
+  | NotUnicastMac
+  | NotMulticastMac
+  | NotUniversalMac
+  | NotLocalMac
+  | PortIsZero
+  | PortNotPrivileged UInt16.t
+  | PortIsPrivileged UInt16.t
+  | PathContainsNull
+  | PathNotAbsolute t_String
+  | PathNotRelative t_String
+  | InvalidUtf8
+  | TooLong UInt64.t UInt64.t
+  | StatusCodeInvalid UInt16.t
+  | HeaderInvalid t_String
+
+type t_Result_Ipv4Private_ValidationError = Ok t_Ipv4Private | Err t_ValidationError
+
+predicate inv_Seq_u8 [@inline:trivial] (_1: Seq.seq UInt8.t) = true
+
+meta "rewrite_def" predicate inv_Seq_u8
+
+predicate invariant_array_u8_4 (self: Slice64.array UInt8.t) =
+  [%#sarray'0] inv_Seq_u8 (Slice64.view self) /\ Seq.length (Slice64.view self) = UInt64.t'int (4: UInt64.t)
+
+predicate inv_array_u8_4 [@inline:trivial] (_1: Slice64.array UInt8.t) = invariant_array_u8_4 _1
+
+meta "rewrite_def" predicate inv_array_u8_4
+
+predicate inv_Ipv4Private (_1: t_Ipv4Private)
+
+predicate inv_String (_1: t_String)
+
+predicate inv_ValidationError (_1: t_ValidationError)
+
+axiom inv_axiom [@rewrite]: forall x: t_ValidationError [inv_ValidationError x]. inv_ValidationError x
+    = match x with
+      | NotPositive f0 -> true
+      | Negative f0 -> true
+      | Zero -> true
+      | NotFinite f0 -> inv_String f0
+      | FloatNotPositive f0 -> true
+      | FloatNegative f0 -> true
+      | FloatOutOfRange value min max -> true
+      | OutOfRange value min max -> true
+      | EmptyString -> true
+      | StringTooLong actual max -> true
+      | StringTooShort actual min -> true
+      | NotTrue -> true
+      | NotFalse -> true
+      | NotAlphabetic f0 -> true
+      | NotNumeric f0 -> true
+      | NotAlphanumeric f0 -> true
+      | WrongUuidVersion expected got -> true
+      | NilUuid -> true
+      | DurationNotPositive -> true
+      | NotPrivateIp -> true
+      | NotPublicIp -> true
+      | ExpectedIpv4GotIpv6 -> true
+      | ExpectedIpv6GotIpv4 -> true
+      | NotLoopback -> true
+      | PathDoesNotExist f0 -> inv_String f0
+      | PathNotReadable f0 -> inv_String f0
+      | PathNotDirectory f0 -> inv_String f0
+      | PathNotFile f0 -> inv_String f0
+      | DateTimeTooEarly value threshold -> inv_String value /\ inv_String threshold
+      | DateTimeTooLate value threshold -> inv_String value /\ inv_String threshold
+      | EmptyCollection -> true
+      | OptionIsNone -> true
+      | ResultIsErr -> true
+      | WrongJsonType expected got -> inv_String expected /\ inv_String got
+      | JsonIsNull -> true
+      | UrlInvalid -> true
+      | InvalidUrlSyntax -> true
+      | UrlMissingAuthority -> true
+      | UrlNotAbsolute -> true
+      | UrlNotHttps -> true
+      | UrlNotHttp -> true
+      | InvalidRegexSyntax -> true
+      | UrlNoHost -> true
+      | UrlCannotBeBase -> true
+      | RegexInvalid -> true
+      | InvalidUuidVariant -> true
+      | NotUnicastMac -> true
+      | NotMulticastMac -> true
+      | NotUniversalMac -> true
+      | NotLocalMac -> true
+      | PortIsZero -> true
+      | PortNotPrivileged f0 -> true
+      | PortIsPrivileged f0 -> true
+      | PathContainsNull -> true
+      | PathNotAbsolute f0 -> inv_String f0
+      | PathNotRelative f0 -> inv_String f0
+      | InvalidUtf8 -> true
+      | TooLong max actual -> true
+      | StatusCodeInvalid f0 -> true
+      | HeaderInvalid f0 -> inv_String f0
+      end
+
+predicate inv_Result_Ipv4Private_ValidationError (_1: t_Result_Ipv4Private_ValidationError)
+
+axiom inv_axiom'0 [@rewrite]:
+  forall x: t_Result_Ipv4Private_ValidationError [inv_Result_Ipv4Private_ValidationError x]. inv_Result_Ipv4Private_ValidationError x
+    = match x with
+      | Ok f0 -> inv_Ipv4Private f0
+      | Err f0 -> inv_ValidationError f0
+      end
+
+function index_array_u8_4 [@inline:trivial] (self: Slice64.array UInt8.t) (ix: int) : UInt8.t =
+  [%#sarray] Seq.get (Slice64.view self) ix
+
+meta "rewrite_def" function index_array_u8_4
+
+let rec new (octets: Slice64.array UInt8.t) (return (x: t_Result_Ipv4Private_ValidationError)) =
+  {[@stop_split] [@expl:new 'octets' type invariant] [%#sextern_specs] inv_array_u8_4 octets}
+  any
+  [ return (result: t_Result_Ipv4Private_ValidationError) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#sipaddr_bytes'5] inv_Result_Ipv4Private_ValidationError result)
+    /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs'0] UInt8.t'int (index_array_u8_4 octets 0) = 10
+        \/ UInt8.t'int (index_array_u8_4 octets 0) = 172
+          /\ UInt8.t'int (index_array_u8_4 octets 1) >= 16 /\ UInt8.t'int (index_array_u8_4 octets 1) <= 31
+        \/ UInt8.t'int (index_array_u8_4 octets 0) = 192 /\ UInt8.t'int (index_array_u8_4 octets 1) = 168
+      -> match result with
+        | Ok _ -> true
+        | Err _ -> false
+        end)
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'1] not (UInt8.t'int (index_array_u8_4 octets 0) = 10
+      \/ UInt8.t'int (index_array_u8_4 octets 0) = 172
+        /\ UInt8.t'int (index_array_u8_4 octets 1) >= 16 /\ UInt8.t'int (index_array_u8_4 octets 1) <= 31
+      \/ UInt8.t'int (index_array_u8_4 octets 0) = 192 /\ UInt8.t'int (index_array_u8_4 octets 1) = 168)
+    -> match result with
+      | Err _ -> true
+      | Ok _ -> false
+      end)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_ipv4_private_172_16_valid
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 100 0 100 81]
+  (return (x: t_Result_Ipv4Private_ValidationError)) = (! bb0
+  [ bb0 = s0
+    [ s0 = any
+      [ any_ (__arr_temp: Slice64.array UInt8.t) -> (! -{Seq.get __arr_temp.Slice64.elts 0
+          = ([%#sipaddr_bytes] (172: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 1 = ([%#sipaddr_bytes'0] (16: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 2 = ([%#sipaddr_bytes'1] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 3 = ([%#sipaddr_bytes'2] (1: UInt8.t))
+        /\ Seq.length __arr_temp.Slice64.elts = 4}-
+        [ &_1 <- __arr_temp ] s1) ]
+    | s1 = new [%#sipaddr_bytes'3] {_1} (fun (_x: t_Result_Ipv4Private_ValidationError) -> [ &_ret <- _x ] s2)
+    | s2 = return {_ret} ] ]
+  [ & _ret: t_Result_Ipv4Private_ValidationError = Any.any_l () | & _1: Slice64.array UInt8.t = Any.any_l () ])
+  [ return (result: t_Result_Ipv4Private_ValidationError) ->
+  {[@stop_split] [@expl:verify_ipv4_private_172_16_valid result type invariant] [%#sipaddr_bytes'4] inv_Result_Ipv4Private_ValidationError result}
+    (! return {result}) ]

@@ -1,11 +1,11 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 34 0 34 87 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 36 0 36 87 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 427 18 427 92
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 428 18 428 93
-let%span schars = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 35 4 35 27
-let%span schars'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 32 11 32 34
-let%span schars'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 34 51 34 87
-let%span schars'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 33 10 33 57
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 428 18 428 92
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 429 18 429 93
+let%span schars = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 37 4 37 27
+let%span schars'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 34 11 34 34
+let%span schars'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 36 51 36 87
+let%span schars'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 35 10 35 57
 let%span schars'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/chars.rs" 117 4 117 43
 
 use creusot.prelude.Char
@@ -184,7 +184,7 @@ meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec verify_char_numeric_invalid [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 34 0 34 87]
+let rec verify_char_numeric_invalid [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 36 0 36 87]
   (value: Char.t) (return (x: t_Result_CharNumeric_ValidationError)) =
   {[@stop_split] [@expl:verify_char_numeric_invalid requires] [%#schars'0] not char_is_numeric value}
   (! bb0

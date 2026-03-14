@@ -1,13 +1,8 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 39 0 39 96 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 51 18 51 104
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 52 18 52 81
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 52 18 52 104
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 53 18 53 81
 let%span sintegers = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/integers.rs" 225 4 225 34
-let%span smechanisms = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 40 18 40 40
-let%span smechanisms'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 40 18 40 41
-let%span smechanisms'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 34 11 34 21
-let%span smechanisms'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 39 61 39 96
-let%span smechanisms'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 35 10 38 1
 let%span sops = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 662 18 662 22
 let%span sops'0 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 658 18 661 9
 let%span sops'1 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 675 25 675 33
@@ -24,6 +19,11 @@ let%span sops'11 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 139 14 
 let%span sops'12 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 144 14 145 104
 let%span sconvert = "/home/erik/repos/creusot/creusot-std/src/std/convert.rs" 14 18 14 32
 let%span sconvert'0 = "/home/erik/repos/creusot/creusot-std/src/std/convert.rs" 15 16 15 20
+let%span smechanisms = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 40 18 40 40
+let%span smechanisms'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 40 18 40 41
+let%span smechanisms'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 34 11 34 21
+let%span smechanisms'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 39 61 39 96
+let%span smechanisms'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/mechanisms.rs" 35 10 38 1
 
 use creusot.int.Int8
 use creusot.int.Int128

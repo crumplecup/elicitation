@@ -1,13 +1,13 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 19 0 19 104 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 22 0 22 104 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 449 15 449 23
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 447 18 447 100
-let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 448 18 448 101
-let%span sdurations = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 20 4 20 35
-let%span sdurations'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 19 40 19 48
-let%span sdurations'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 17 11 17 42
-let%span sdurations'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 19 63 19 104
-let%span sdurations'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 18 10 18 57
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 450 15 450 23
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 448 18 448 100
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 449 18 449 101
+let%span sdurations = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 23 4 23 35
+let%span sdurations'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 22 40 22 48
+let%span sdurations'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 20 11 20 42
+let%span sdurations'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 22 63 22 104
+let%span sdurations'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 21 10 21 57
 let%span sdurations'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/durations.rs" 18 4 18 48
 
 use creusot.int.Int128
@@ -193,7 +193,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_duration_positive_invalid
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 19 0 19 104] (duration: t_Duration)
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/durations.rs" 22 0 22 104] (duration: t_Duration)
   (return (x: t_Result_DurationPositive_ValidationError)) =
   {[@stop_split] [@expl:verify_duration_positive_invalid requires] ([@stop_split] [@expl:verify_duration_positive_invalid 'duration' type invariant] [%#sdurations'0] inv_Duration duration)
   /\ ([@stop_split] [@expl:verify_duration_positive_invalid requires] [%#sdurations'1] not duration_is_positive duration)}

@@ -1,11 +1,11 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 10 0 10 91 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 12 0 12 91 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 419 18 419 95
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 420 18 420 96
-let%span schars = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 11 4 11 30
-let%span schars'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 8 11 8 36
-let%span schars'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 10 52 10 91
-let%span schars'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 9 10 9 57
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 420 18 420 95
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 421 18 421 96
+let%span schars = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 13 4 13 30
+let%span schars'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 10 11 10 36
+let%span schars'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 12 52 12 91
+let%span schars'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 11 10 11 57
 let%span schars'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/chars.rs" 25 4 25 46
 
 use creusot.prelude.Char
@@ -185,7 +185,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_char_alphabetic_valid
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 10 0 10 91] (value: Char.t)
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 12 0 12 91] (value: Char.t)
   (return (x: t_Result_CharAlphabetic_ValidationError)) =
   {[@stop_split] [@expl:verify_char_alphabetic_valid requires] [%#schars'0] char_is_alphabetic value}
   (! bb0

@@ -15,9 +15,10 @@ use elicitation::{
     U32Range, U64NonZero, U64Positive, U64Range, U8NonZero, U8Positive, U8Range, UsizeNonZero,
     UsizePositive, UsizeRange, VecDequeNonEmpty, VecNonEmpty, ValidationError,
     verification::types::{
+        Ipv4Bytes, Ipv4Private, Ipv4Public, Ipv6Bytes, Ipv6Private, Ipv6Public,
         MacAddr, PathBytes, SocketAddrV4Bytes, SocketAddrV6Bytes, Utf8Bytes,
-        is_dynamic_port, is_local, is_multicast, is_nonzero_port, is_privileged_port,
-        is_registered_port, is_unicast, is_universal, is_well_known_port,
+        is_dynamic_port, is_ipv4_private, is_ipv6_private, is_local, is_multicast, is_nonzero_port,
+        is_privileged_port, is_registered_port, is_unicast, is_universal, is_well_known_port,
     },
 };
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -626,6 +627,77 @@ extern_spec! {
         #[ensures(set@.len() > 0 ==> match result { Ok(_) => true, Err(_) => false })]
         #[ensures(set@.len() == 0 ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(set: HashSet<T>) -> Result<HashSetNonEmpty<T>, ValidationError>;
+    }
+}
+
+// ============================================================================
+// Ipv4Bytes / Ipv6Bytes constructors
+// ============================================================================
+
+extern_spec! {
+    impl Ipv4Bytes {
+        #[ensures(ipv4_octets(result) == octets)]
+        #[ensures(ipv4_is_loopback(result) == (octets[0] == 127u8))]
+        #[ensures(ipv4_is_unspecified(result) == (octets[0] == 0u8 && octets[1] == 0u8 && octets[2] == 0u8 && octets[3] == 0u8))]
+        #[ensures(ipv4_is_broadcast(result) == (octets[0] == 255u8 && octets[1] == 255u8 && octets[2] == 255u8 && octets[3] == 255u8))]
+        fn new(octets: [u8; 4]) -> Ipv4Bytes;
+    }
+}
+
+extern_spec! {
+    impl Ipv6Bytes {
+        #[ensures(ipv6_octets(result) == octets)]
+        #[ensures(ipv6_is_loopback(result) == (octets[0] == 0u8 && octets[1] == 0u8 && octets[2] == 0u8 && octets[3] == 0u8 && octets[4] == 0u8 && octets[5] == 0u8 && octets[6] == 0u8 && octets[7] == 0u8 && octets[8] == 0u8 && octets[9] == 0u8 && octets[10] == 0u8 && octets[11] == 0u8 && octets[12] == 0u8 && octets[13] == 0u8 && octets[14] == 0u8 && octets[15] == 1u8))]
+        #[ensures(ipv6_is_unspecified(result) == (octets[0] == 0u8 && octets[1] == 0u8 && octets[2] == 0u8 && octets[3] == 0u8 && octets[4] == 0u8 && octets[5] == 0u8 && octets[6] == 0u8 && octets[7] == 0u8 && octets[8] == 0u8 && octets[9] == 0u8 && octets[10] == 0u8 && octets[11] == 0u8 && octets[12] == 0u8 && octets[13] == 0u8 && octets[14] == 0u8 && octets[15] == 0u8))]
+        fn new(octets: [u8; 16]) -> Ipv6Bytes;
+    }
+}
+
+// ============================================================================
+// is_ipv4_private / is_ipv6_private free functions
+// ============================================================================
+
+extern_spec! {
+    #[ensures(result == (octets[0]@ == 10 || (octets[0]@ == 172 && octets[1]@ >= 16 && octets[1]@ <= 31) || (octets[0]@ == 192 && octets[1]@ == 168)))]
+    fn is_ipv4_private(octets: &[u8; 4]) -> bool;
+}
+
+extern_spec! {
+    #[ensures(result == (octets[0]@ / 2 == 126))]
+    fn is_ipv6_private(octets: &[u8; 16]) -> bool;
+}
+
+// ============================================================================
+// Ipv4Private / Ipv4Public / Ipv6Private / Ipv6Public constructors
+// ============================================================================
+
+extern_spec! {
+    impl Ipv4Private {
+        #[ensures((octets[0]@ == 10 || (octets[0]@ == 172 && octets[1]@ >= 16 && octets[1]@ <= 31) || (octets[0]@ == 192 && octets[1]@ == 168)) ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(!(octets[0]@ == 10 || (octets[0]@ == 172 && octets[1]@ >= 16 && octets[1]@ <= 31) || (octets[0]@ == 192 && octets[1]@ == 168)) ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(octets: [u8; 4]) -> Result<Ipv4Private, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl Ipv4Public {
+        #[ensures(match result { Ok(_) => true, Err(_) => true })]
+        fn new(octets: [u8; 4]) -> Result<Ipv4Public, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl Ipv6Private {
+        #[ensures((octets[0]@ / 2 == 126) ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(octets[0]@ / 2 != 126 ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(octets: [u8; 16]) -> Result<Ipv6Private, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl Ipv6Public {
+        #[ensures(match result { Ok(_) => true, Err(_) => true })]
+        fn new(octets: [u8; 16]) -> Result<Ipv6Public, ValidationError>;
     }
 }
 

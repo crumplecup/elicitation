@@ -1,11 +1,11 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 50 0 50 97 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 52 0 52 97 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 435 18 435 97
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 436 18 436 98
-let%span schars = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 51 4 51 32
-let%span schars'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 48 11 48 39
-let%span schars'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 50 56 50 97
-let%span schars'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 49 10 49 57
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 436 18 436 97
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 437 18 437 98
+let%span schars = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 53 4 53 32
+let%span schars'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 50 11 50 39
+let%span schars'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 52 56 52 97
+let%span schars'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 51 10 51 57
 let%span schars'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/chars.rs" 208 4 208 48
 
 use creusot.prelude.Char
@@ -185,7 +185,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_char_alphanumeric_invalid
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 50 0 50 97] (value: Char.t)
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/chars.rs" 52 0 52 97] (value: Char.t)
   (return (x: t_Result_CharAlphanumeric_ValidationError)) =
   {[@stop_split] [@expl:verify_char_alphanumeric_invalid requires] [%#schars'0] not char_is_alphanumeric value}
   (! bb0

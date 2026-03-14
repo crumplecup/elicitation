@@ -1,0 +1,85 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 270 0 270 43 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 662 23 662 29
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 661 14 661 149
+let%span sipaddr_bytes = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 271 22 271 25
+let%span sipaddr_bytes'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 271 27 271 30
+let%span sipaddr_bytes'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 271 32 271 33
+let%span sipaddr_bytes'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 271 35 271 36
+let%span sipaddr_bytes'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 271 4 271 38
+let%span sipaddr_bytes'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 269 10 269 16
+let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 56 20 56 29
+let%span sarray'0 = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
+let%span sinvariant = "/home/erik/repos/creusot/creusot-std/src/invariant.rs" 85 8 85 18
+
+use creusot.slice.Slice64
+use creusot.int.UInt8
+use creusot.prelude.Any
+use seq.Seq
+use creusot.int.UInt64
+use int.Int
+
+predicate inv_Seq_u8 [@inline:trivial] (_1: Seq.seq UInt8.t) = true
+
+meta "rewrite_def" predicate inv_Seq_u8
+
+predicate invariant_array_u8_4 (self: Slice64.array UInt8.t) =
+  [%#sarray'0] inv_Seq_u8 (Slice64.view self) /\ Seq.length (Slice64.view self) = UInt64.t'int (4: UInt64.t)
+
+predicate inv_array_u8_4 [@inline:trivial] (_1: Slice64.array UInt8.t) = invariant_array_u8_4 _1
+
+meta "rewrite_def" predicate inv_array_u8_4
+
+predicate invariant_ref_array_u8_4 [@inline:trivial] (self: Slice64.array UInt8.t) = [%#sinvariant] inv_array_u8_4 self
+
+meta "rewrite_def" predicate invariant_ref_array_u8_4
+
+predicate inv_ref_array_u8_4 [@inline:trivial] (_1: Slice64.array UInt8.t) = invariant_ref_array_u8_4 _1
+
+meta "rewrite_def" predicate inv_ref_array_u8_4
+
+function index_array_u8_4 [@inline:trivial] (self: Slice64.array UInt8.t) (ix: int) : UInt8.t =
+  [%#sarray] Seq.get (Slice64.view self) ix
+
+meta "rewrite_def" function index_array_u8_4
+
+let rec is_ipv4_private (octets: Slice64.array UInt8.t) (return (x: bool)) =
+  {[@stop_split] [@expl:is_ipv4_private 'octets' type invariant] [%#sextern_specs] inv_ref_array_u8_4 octets}
+  any
+  [ return (result: bool) -> {[@stop_split] [@expl:is_ipv4_private ensures] [%#sextern_specs'0] result
+    = (UInt8.t'int (index_array_u8_4 octets 0) = 10
+    \/ UInt8.t'int (index_array_u8_4 octets 0) = 172
+      /\ UInt8.t'int (index_array_u8_4 octets 1) >= 16 /\ UInt8.t'int (index_array_u8_4 octets 1) <= 31
+    \/ UInt8.t'int (index_array_u8_4 octets 0) = 192 /\ UInt8.t'int (index_array_u8_4 octets 1) = 168)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_is_ipv4_private_192
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 270 0 270 43] (return (x: bool)) =
+  (! bb0
+  [ bb0 = s0
+    [ s0 = bb0'0
+      [ bb0'0 = s0'0
+        [ s0'0 = any
+          [ any_ (__arr_temp: Slice64.array UInt8.t) -> (! -{Seq.get __arr_temp.Slice64.elts 0
+              = ([%#sipaddr_bytes] (192: UInt8.t))
+            /\ Seq.get __arr_temp.Slice64.elts 1 = ([%#sipaddr_bytes'0] (168: UInt8.t))
+            /\ Seq.get __arr_temp.Slice64.elts 2 = ([%#sipaddr_bytes'1] (0: UInt8.t))
+            /\ Seq.get __arr_temp.Slice64.elts 3 = ([%#sipaddr_bytes'2] (1: UInt8.t))
+            /\ Seq.length __arr_temp.Slice64.elts = 4}-
+            [ &_1 <- __arr_temp ] s1'0) ]
+        | s1'0 = [ &_ret'0 <- _1 ] s2'0
+        | s2'0 = _const_ret {_ret'0} ] ]
+      [ & _ret'0: Slice64.array UInt8.t = Any.any_l () | & _1: Slice64.array UInt8.t = Any.any_l () ]
+      [ _const_ret (_const: Slice64.array UInt8.t) -> [ &_5 <- _const ] s1 ]
+    | s1 = [ &_3 <- _5 ] s2
+    | s2 = is_ipv4_private [%#sipaddr_bytes'3] {_3} (fun (_x: bool) -> [ &_ret <- _x ] s3)
+    | s3 = return {_ret} ] ]
+  [ & _ret: bool = Any.any_l ()
+  | & _3: Slice64.array UInt8.t = Any.any_l ()
+  | & _5: Slice64.array UInt8.t = Any.any_l () ])
+  [ return (result: bool) -> {[@stop_split] [@expl:verify_is_ipv4_private_192 ensures] [%#sipaddr_bytes'4] result}
+    (! return {result}) ]
