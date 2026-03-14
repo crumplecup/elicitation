@@ -5,33 +5,33 @@ use elicitation::{Elicit, NodeKind, Prompt, Select, TypeGraph, TypeGraphError};
 // --- Test type hierarchy ---
 
 #[derive(Debug, Clone, Elicit)]
-struct Leaf {
-    value: String,
+pub struct Leaf {
+    pub value: String,
 }
 
 #[derive(Debug, Clone, Elicit)]
-struct Parent {
-    leaf: Leaf,
-    count: u32,
+pub struct Parent {
+    pub leaf: Leaf,
+    pub count: u32,
 }
 
 #[derive(Debug, Clone, Elicit)]
-struct GrandParent {
-    parent: Parent,
-    label: String,
+pub struct GrandParent {
+    pub parent: Parent,
+    pub label: String,
 }
 
 #[derive(Debug, Clone, Elicit)]
-enum Color {
+pub enum Color {
     Red,
     Green,
     Blue,
 }
 
 #[derive(Debug, Clone, Elicit)]
-struct WithEnum {
-    color: Color,
-    name: String,
+pub struct WithEnum {
+    pub color: Color,
+    pub name: String,
 }
 
 // --- Basic graph construction ---

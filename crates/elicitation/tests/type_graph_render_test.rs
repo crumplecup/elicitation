@@ -8,7 +8,7 @@ use elicitation::{
 // --- Simple stable type for snapshot tests ---
 
 #[derive(Debug, Clone, Elicit)]
-enum Direction {
+pub enum Direction {
     North,
     South,
     East,
@@ -16,9 +16,9 @@ enum Direction {
 }
 
 #[derive(Debug, Clone, Elicit)]
-struct Location {
-    label: String,
-    direction: Direction,
+pub struct Location {
+    pub label: String,
+    pub direction: Direction,
 }
 
 // --- Mermaid renderer ---

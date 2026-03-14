@@ -91,7 +91,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "proofs", "verification"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "proofs", "verification", "graph"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -123,6 +123,7 @@ emit = ["dep:prettyplease", "dep:syn", "proofs"]
 proofs = ["dep:proc-macro2", "dep:quote", "elicitation_derive/proofs"]
 
 # Type graph visualization — inventory-based structural registry + renderers
+graph = []
 
 # Formal verification support
 verification = [] # Core Contract trait only
@@ -134,7 +135,7 @@ verify-all = ["verify-verus"]
 cli = ["clap", "csv", "chrono", "shellexpand", "dirs"]
 
 # Development (all optional features + CLI)
-dev = ["full", "cli"]
+dev = ["full", "cli", "graph"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [

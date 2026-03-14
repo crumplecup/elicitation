@@ -1,27 +1,27 @@
 //! Tests for the TypeGraphKey structural registry.
 
 use elicitation::{
-    Elicit, ElicitIntrospect, PatternDetails, Prompt, Select, TypeGraphKey, VariantMetadata,
+    Elicit, ElicitIntrospect, PatternDetails, Prompt, Select, TypeGraphKey,
     all_graphable_types, lookup_type_graph,
 };
 
 // --- Test types ---
 
 #[derive(Debug, Clone, Elicit)]
-struct SimpleStruct {
-    name: String,
-    count: u32,
+pub struct SimpleStruct {
+    pub name: String,
+    pub count: u32,
 }
 
 #[derive(Debug, Clone, Elicit)]
-enum SimpleEnum {
+pub enum SimpleEnum {
     Alpha,
     Beta,
     Gamma,
 }
 
 #[derive(Debug, Clone, Elicit)]
-enum MixedEnum {
+pub enum MixedEnum {
     Unit,
     WithData(String),
 }
@@ -142,4 +142,12 @@ fn type_graph_key_build_returns_metadata() {
     assert_eq!(key.type_name(), "TestKey");
     let meta = key.build();
     assert_eq!(meta.type_name, "SimpleStruct");
+}
+
+#[test]
+fn mixed_enum_with_data_variant_is_constructible() {
+    let variant = MixedEnum::WithData("hello".to_string());
+    if let MixedEnum::WithData(inner) = variant {
+        assert!(!inner.is_empty());
+    }
 }

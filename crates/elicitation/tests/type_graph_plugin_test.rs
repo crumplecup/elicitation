@@ -6,7 +6,7 @@ use elicitation::{Elicit, Prompt, Select, TypeGraphPlugin};
 // --- Test types ---
 
 #[derive(Debug, Clone, Elicit)]
-enum Suit {
+pub enum Suit {
     Hearts,
     Diamonds,
     Clubs,
@@ -14,9 +14,9 @@ enum Suit {
 }
 
 #[derive(Debug, Clone, Elicit)]
-struct Card {
-    suit: Suit,
-    value: u8,
+pub struct Card {
+    pub suit: Suit,
+    pub value: u8,
 }
 
 fn plugin() -> TypeGraphPlugin {

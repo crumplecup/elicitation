@@ -17,8 +17,8 @@
 //!
 //! # Registry
 //!
-//! Types register themselves automatically via `#[derive(Elicit)]` when the
-//! `graph` feature is enabled. To query the registry directly:
+//! Types register themselves automatically via `#[derive(Elicit)]`. To query
+//! the registry directly:
 //!
 //! ```rust,ignore
 //! use elicitation::type_graph::{lookup_type_graph, all_graphable_types};
@@ -28,12 +28,20 @@
 //! }
 //! ```
 
-pub mod builder;
-pub mod plugin;
 pub mod registry;
+
+#[cfg(feature = "graph")]
+pub mod builder;
+#[cfg(feature = "graph")]
+pub mod plugin;
+#[cfg(feature = "graph")]
 pub mod render;
 
-pub use builder::{GraphEdge, GraphNode, NodeKind, TypeGraph, TypeGraphError};
-pub use plugin::TypeGraphPlugin;
 pub use registry::{TypeGraphKey, all_graphable_types, lookup_type_graph};
+
+#[cfg(feature = "graph")]
+pub use builder::{GraphEdge, GraphNode, NodeKind, TypeGraph, TypeGraphError};
+#[cfg(feature = "graph")]
+pub use plugin::TypeGraphPlugin;
+#[cfg(feature = "graph")]
 pub use render::{DotRenderer, GraphRenderer, MermaidDirection, MermaidRenderer};
