@@ -1,10 +1,12 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 48 0 48 45 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 643 15 643 21
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 639 18 639 47
-let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 640 18 640 66
-let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 641 18 641 127
-let%span sextern_specs'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 642 18 642 133
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 650 15 650 21
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 646 18 646 47
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 647 18 647 66
+let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 648 18 648 127
+let%span sextern_specs'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 649 18 649 133
+let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 56 20 56 29
+let%span sarray'0 = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
 let%span sipaddr_bytes = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 49 20 49 21
 let%span sipaddr_bytes'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 49 23 49 24
 let%span sipaddr_bytes'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 49 26 49 27
@@ -13,8 +15,6 @@ let%span sipaddr_bytes'3 = "/home/erik/repos/elicitation/crates/elicitation_creu
 let%span sipaddr_bytes'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 48 36 48 45
 let%span sipaddr_bytes'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 47 10 47 37
 let%span sipaddr_bytes'6 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/ipaddr_bytes.rs" 53 4 53 39
-let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 56 20 56 29
-let%span sarray'0 = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
 
 use creusot.slice.Slice64
 use creusot.int.UInt8

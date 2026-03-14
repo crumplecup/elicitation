@@ -1,14 +1,14 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 207 0 208 62 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 204 0 205 62 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 611 18 611 86
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 612 18 612 87
-let%span scollections = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 209 20 209 35
-let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 210 20 210 21
-let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 210 4 210 22
-let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 211 4 211 32
-let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 205 11 205 15
-let%span scollections'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 208 3 208 62
-let%span scollections'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 206 10 206 57
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 618 18 618 86
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 619 18 619 87
+let%span scollections = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 206 20 206 35
+let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 207 20 207 21
+let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 207 4 207 22
+let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 208 4 208 32
+let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 202 11 202 15
+let%span scollections'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 205 3 205 62
+let%span scollections'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 203 10 203 57
 let%span scollections'6 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/collections.rs" 1094 4 1094 42
 let%span sdeque = "/home/erik/repos/creusot/creusot-std/src/std/deque.rs" 88 18 88 36
 let%span sdeque'0 = "/home/erik/repos/creusot/creusot-std/src/std/deque.rs" 133 18 133 52
@@ -212,7 +212,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_vecdeque_non_empty_valid
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 207 0 208 62]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 204 0 205 62]
   (return (x: t_Result_VecDequeNonEmpty_i32_ValidationError)) = (! bb0
   [ bb0 = s0
     [ s0 = new_i32 [%#scollections] (fun (_x: t_VecDeque_i32_Global) -> [ &deque <- _x ] s1)

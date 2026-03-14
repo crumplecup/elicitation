@@ -1,8 +1,10 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 217 0 217 72 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 693 15 693 21
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 691 18 691 93
-let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 692 18 692 91
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 700 15 700 21
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 698 18 698 93
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 699 18 699 91
+let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 56 20 56 29
+let%span sarray'0 = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
 let%span sipaddr_bytes = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 218 36 218 40
 let%span sipaddr_bytes'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 218 42 218 43
 let%span sipaddr_bytes'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 218 45 218 46
@@ -23,8 +25,6 @@ let%span sipaddr_bytes'15 = "/home/erik/repos/elicitation/crates/elicitation_cre
 let%span sipaddr_bytes'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 218 18 218 88
 let%span sipaddr_bytes'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 217 36 217 72
 let%span sipaddr_bytes'18 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/ipaddr_bytes.rs" 296 4 296 65
-let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 56 20 56 29
-let%span sarray'0 = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
 let%span sops = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 662 18 662 22
 let%span sops'0 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 658 18 661 9
 let%span sops'1 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 675 25 675 33

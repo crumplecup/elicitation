@@ -6,15 +6,17 @@
 
 use crate::*;
 use elicitation::{
-    ArcNonNull, BoolFalse, BoolTrue, BoxNonNull, CharAlphabetic, CharAlphanumeric, CharNumeric,
+    ArcNonNull, ArcSatisfies, ArrayAllSatisfy, BoolFalse, BoolTrue, BoxNonNull, BoxSatisfies,
+    CharAlphabetic, CharAlphanumeric, CharNumeric,
     DurationPositive, HashMapNonEmpty, HashSetNonEmpty, I128NonNegative, I128NonZero,
     I128Positive, I16NonNegative, I16NonZero, I16Positive, I32NonNegative, I32NonZero, I32Positive,
     I64NonNegative, I64NonZero, I64Positive, I8NonNegative, I8NonZero, I8Positive, I8Range,
     IpPrivate, IpPublic, IpV4, IpV6, Ipv4Loopback, Ipv6Loopback,
-    IsizeNonNegative, IsizeNonZero, IsizePositive, IsizeRange, OptionSome, RcNonNull, ResultOk,
+    IsizeNonNegative, IsizeNonZero, IsizePositive, IsizeRange, OptionSome,
+    RcNonNull, RcSatisfies, ResultOk, StringNonEmpty,
     U128NonZero, U128Positive, U16NonZero, U16Positive, U16Range, U32NonZero, U32Positive,
     U32Range, U64NonZero, U64Positive, U64Range, U8NonZero, U8Positive, U8Range, UsizeNonZero,
-    UsizePositive, UsizeRange, VecDequeNonEmpty, VecNonEmpty, ValidationError,
+    UsizePositive, UsizeRange, VecAllSatisfy, VecDequeNonEmpty, VecNonEmpty, ValidationError,
     verification::types::{
         Ipv4Bytes, Ipv4Private, Ipv4Public, Ipv6Bytes, Ipv6Private, Ipv6Public,
         MacAddr, PathBytes, SocketAddrV4Bytes, SocketAddrV6Bytes, Utf8Bytes,
@@ -788,5 +790,56 @@ extern_spec! {
         #[ensures(value@ >= 100 && value@ <= 999 ==> match result { Ok(_) => true, Err(_) => false })]
         #[ensures(value@ < 100 || value@ > 999 ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(value: u16) -> Result<StatusCodeValid, ValidationError>;
+    }
+}
+
+// ============================================================================
+// Collection satisfy/wrapper constructors (infallible)
+// ============================================================================
+
+extern_spec! {
+    impl<C> VecAllSatisfy<C> {
+        #[ensures(true)]
+        fn new(elements: Vec<C>) -> VecAllSatisfy<C>;
+    }
+}
+
+extern_spec! {
+    impl<C, const N: usize> ArrayAllSatisfy<C, N> {
+        #[ensures(true)]
+        fn new(elements: [C; N]) -> ArrayAllSatisfy<C, N>;
+    }
+}
+
+extern_spec! {
+    impl<T> BoxSatisfies<T> {
+        #[ensures(true)]
+        fn new(value: T) -> BoxSatisfies<T>;
+    }
+}
+
+extern_spec! {
+    impl<T> ArcSatisfies<T> {
+        #[ensures(true)]
+        fn new(value: T) -> ArcSatisfies<T>;
+    }
+}
+
+extern_spec! {
+    impl<T> RcSatisfies<T> {
+        #[ensures(true)]
+        fn new(value: T) -> RcSatisfies<T>;
+    }
+}
+
+
+// ============================================================================
+// StringNonEmpty constructor
+// ============================================================================
+
+extern_spec! {
+    impl<const MAX_LEN: usize> StringNonEmpty<MAX_LEN> {
+        #[ensures(true)]
+        fn new(value: String) -> Result<StringNonEmpty<MAX_LEN>, ValidationError>;
     }
 }

@@ -1,0 +1,238 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 95 0 95 89 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 727 18 727 152
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 728 18 728 66
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 763 15 763 17
+let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 761 18 761 94
+let%span sextern_specs'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 762 18 762 95
+let%span snetworks = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 96 36 96 37
+let%span snetworks'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 96 39 96 40
+let%span snetworks'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 96 42 96 43
+let%span snetworks'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 96 45 96 46
+let%span snetworks'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 96 48 96 49
+let%span snetworks'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 96 51 96 52
+let%span snetworks'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 96 54 96 55
+let%span snetworks'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 96 57 96 58
+let%span snetworks'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 96 22 96 59
+let%span snetworks'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 96 4 96 60
+let%span snetworks'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 93 11 93 15
+let%span snetworks'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 95 39 95 89
+let%span snetworks'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 94 10 94 57
+let%span snetworks'12 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/networks.rs" 394 4 394 41
+
+use creusot.int.UInt16
+use int.ComputerDivision
+use creusot.int.Int128
+use creusot.float.Float64
+use creusot.int.UInt64
+use creusot.prelude.Char
+use creusot.int.UInt8
+use creusot.prelude.Any
+
+type t_Ipv6Addr
+
+predicate inv_Ipv6Addr (_1: t_Ipv6Addr)
+
+predicate ipv6addr_is_loopback [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 274 0 274 62] (_addr: t_Ipv6Addr)
+
+predicate ipv6addr_is_private [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 281 0 281 61] (_addr: t_Ipv6Addr)
+
+let rec new (a: UInt16.t) (b: UInt16.t) (c: UInt16.t) (d: UInt16.t) (e: UInt16.t) (f: UInt16.t) (g: UInt16.t)
+  (h: UInt16.t) (return (x: t_Ipv6Addr)) = any
+  [ return (result: t_Ipv6Addr) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] inv_Ipv6Addr result)
+    /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs] ipv6addr_is_loopback result
+      = (a = (0: UInt16.t)
+      /\ b = (0: UInt16.t)
+      /\ c = (0: UInt16.t)
+      /\ d = (0: UInt16.t) /\ e = (0: UInt16.t) /\ f = (0: UInt16.t) /\ g = (0: UInt16.t) /\ h = (1: UInt16.t)))
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'0] ipv6addr_is_private result
+    = (ComputerDivision.div (UInt16.t'int a) 512 = 126))}
+    (! return {result}) ]
+
+type t_Ipv6Loopback
+
+type t_String
+
+type t_ValidationError =
+  | NotPositive Int128.t
+  | Negative Int128.t
+  | Zero
+  | NotFinite t_String
+  | FloatNotPositive Float64.t
+  | FloatNegative Float64.t
+  | FloatOutOfRange Float64.t Float64.t Float64.t
+  | OutOfRange Int128.t Int128.t Int128.t
+  | EmptyString
+  | StringTooLong UInt64.t UInt64.t
+  | StringTooShort UInt64.t UInt64.t
+  | NotTrue
+  | NotFalse
+  | NotAlphabetic Char.t
+  | NotNumeric Char.t
+  | NotAlphanumeric Char.t
+  | WrongUuidVersion UInt8.t UInt8.t
+  | NilUuid
+  | DurationNotPositive
+  | NotPrivateIp
+  | NotPublicIp
+  | ExpectedIpv4GotIpv6
+  | ExpectedIpv6GotIpv4
+  | NotLoopback
+  | PathDoesNotExist t_String
+  | PathNotReadable t_String
+  | PathNotDirectory t_String
+  | PathNotFile t_String
+  | DateTimeTooEarly t_String t_String
+  | DateTimeTooLate t_String t_String
+  | EmptyCollection
+  | OptionIsNone
+  | ResultIsErr
+  | WrongJsonType t_String t_String
+  | JsonIsNull
+  | UrlInvalid
+  | InvalidUrlSyntax
+  | UrlMissingAuthority
+  | UrlNotAbsolute
+  | UrlNotHttps
+  | UrlNotHttp
+  | InvalidRegexSyntax
+  | UrlNoHost
+  | UrlCannotBeBase
+  | RegexInvalid
+  | InvalidUuidVariant
+  | NotUnicastMac
+  | NotMulticastMac
+  | NotUniversalMac
+  | NotLocalMac
+  | PortIsZero
+  | PortNotPrivileged UInt16.t
+  | PortIsPrivileged UInt16.t
+  | PathContainsNull
+  | PathNotAbsolute t_String
+  | PathNotRelative t_String
+  | InvalidUtf8
+  | TooLong UInt64.t UInt64.t
+  | StatusCodeInvalid UInt16.t
+  | HeaderInvalid t_String
+
+type t_Result_Ipv6Loopback_ValidationError = Ok t_Ipv6Loopback | Err t_ValidationError
+
+predicate inv_Ipv6Loopback (_1: t_Ipv6Loopback)
+
+predicate inv_String (_1: t_String)
+
+predicate inv_ValidationError (_1: t_ValidationError)
+
+axiom inv_axiom [@rewrite]: forall x: t_ValidationError [inv_ValidationError x]. inv_ValidationError x
+    = match x with
+      | NotPositive f0 -> true
+      | Negative f0 -> true
+      | Zero -> true
+      | NotFinite f0 -> inv_String f0
+      | FloatNotPositive f0 -> true
+      | FloatNegative f0 -> true
+      | FloatOutOfRange value min max -> true
+      | OutOfRange value min max -> true
+      | EmptyString -> true
+      | StringTooLong actual max -> true
+      | StringTooShort actual min -> true
+      | NotTrue -> true
+      | NotFalse -> true
+      | NotAlphabetic f0 -> true
+      | NotNumeric f0 -> true
+      | NotAlphanumeric f0 -> true
+      | WrongUuidVersion expected got -> true
+      | NilUuid -> true
+      | DurationNotPositive -> true
+      | NotPrivateIp -> true
+      | NotPublicIp -> true
+      | ExpectedIpv4GotIpv6 -> true
+      | ExpectedIpv6GotIpv4 -> true
+      | NotLoopback -> true
+      | PathDoesNotExist f0 -> inv_String f0
+      | PathNotReadable f0 -> inv_String f0
+      | PathNotDirectory f0 -> inv_String f0
+      | PathNotFile f0 -> inv_String f0
+      | DateTimeTooEarly value threshold -> inv_String value /\ inv_String threshold
+      | DateTimeTooLate value threshold -> inv_String value /\ inv_String threshold
+      | EmptyCollection -> true
+      | OptionIsNone -> true
+      | ResultIsErr -> true
+      | WrongJsonType expected got -> inv_String expected /\ inv_String got
+      | JsonIsNull -> true
+      | UrlInvalid -> true
+      | InvalidUrlSyntax -> true
+      | UrlMissingAuthority -> true
+      | UrlNotAbsolute -> true
+      | UrlNotHttps -> true
+      | UrlNotHttp -> true
+      | InvalidRegexSyntax -> true
+      | UrlNoHost -> true
+      | UrlCannotBeBase -> true
+      | RegexInvalid -> true
+      | InvalidUuidVariant -> true
+      | NotUnicastMac -> true
+      | NotMulticastMac -> true
+      | NotUniversalMac -> true
+      | NotLocalMac -> true
+      | PortIsZero -> true
+      | PortNotPrivileged f0 -> true
+      | PortIsPrivileged f0 -> true
+      | PathContainsNull -> true
+      | PathNotAbsolute f0 -> inv_String f0
+      | PathNotRelative f0 -> inv_String f0
+      | InvalidUtf8 -> true
+      | TooLong max actual -> true
+      | StatusCodeInvalid f0 -> true
+      | HeaderInvalid f0 -> inv_String f0
+      end
+
+predicate inv_Result_Ipv6Loopback_ValidationError (_1: t_Result_Ipv6Loopback_ValidationError)
+
+axiom inv_axiom'0 [@rewrite]:
+  forall x: t_Result_Ipv6Loopback_ValidationError [inv_Result_Ipv6Loopback_ValidationError x]. inv_Result_Ipv6Loopback_ValidationError x
+    = match x with
+      | Ok f0 -> inv_Ipv6Loopback f0
+      | Err f0 -> inv_ValidationError f0
+      end
+
+let rec new'0 (ip: t_Ipv6Addr) (return (x: t_Result_Ipv6Loopback_ValidationError)) =
+  {[@stop_split] [@expl:new 'ip' type invariant] [%#sextern_specs'1] inv_Ipv6Addr ip}
+  any
+  [ return (result: t_Result_Ipv6Loopback_ValidationError) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#snetworks'12] inv_Result_Ipv6Loopback_ValidationError result)
+    /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs'2] ipv6addr_is_loopback ip
+      -> match result with
+        | Ok _ -> true
+        | Err _ -> false
+        end)
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'3] not ipv6addr_is_loopback ip
+    -> match result with
+      | Err _ -> true
+      | Ok _ -> false
+      end)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_ipv6_loopback_valid
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 95 0 95 89]
+  (return (x: t_Result_Ipv6Loopback_ValidationError)) = (! bb0
+  [ bb0 = s0
+    [ s0 = new [%#snetworks'7] {[%#snetworks] (0: UInt16.t)} {[%#snetworks'0] (0: UInt16.t)}
+        {[%#snetworks'1] (0: UInt16.t)} {[%#snetworks'2] (0: UInt16.t)} {[%#snetworks'3] (0: UInt16.t)}
+        {[%#snetworks'4] (0: UInt16.t)} {[%#snetworks'5] (0: UInt16.t)} {[%#snetworks'6] (1: UInt16.t)}
+        (fun (_x: t_Ipv6Addr) -> [ &_3 <- _x ] s1)
+    | s1 = new'0 [%#snetworks'8] {_3} (fun (_x: t_Result_Ipv6Loopback_ValidationError) -> [ &_ret <- _x ] s2)
+    | s2 = return {_ret} ] ]
+  [ & _ret: t_Result_Ipv6Loopback_ValidationError = Any.any_l () | & _3: t_Ipv6Addr = Any.any_l () ])
+  [ return (result: t_Result_Ipv6Loopback_ValidationError) ->
+  {[@stop_split] [@expl:verify_ipv6_loopback_valid ensures] ([@stop_split] [@expl:verify_ipv6_loopback_valid result type invariant] [%#snetworks'10] inv_Result_Ipv6Loopback_ValidationError result)
+    /\ ([@stop_split] [@expl:verify_ipv6_loopback_valid ensures] [%#snetworks'11] match result with
+      | Ok _ -> true
+      | Err _ -> false
+      end)}
+    (! return {result}) ]

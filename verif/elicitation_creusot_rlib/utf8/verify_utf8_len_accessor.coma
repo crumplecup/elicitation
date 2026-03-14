@@ -1,8 +1,9 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 46 0 49 48 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 462 15 462 20
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 460 18 460 85
-let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 461 18 461 103
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 469 15 469 20
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 466 18 466 85
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 467 18 467 103
+let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 468 18 468 99
 let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
 let%span sutf8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 50 4 50 30
 let%span sutf8'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 47 4 47 9
@@ -195,9 +196,15 @@ let rec new (bytes: Slice64.array UInt8.t) (len: UInt64.t) (return (x: t_Result_
         | Ok _ -> false
         end)
     /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'1] UInt64.t'int len <= UInt64.t'int const_MAX_LEN
+      -> match result with
+        | Ok u -> utf8_len u = len
+        | Err _ -> true
+        end)
+    /\ ([@stop_split] [@expl:new ensures #2] [%#sextern_specs'2] UInt64.t'int len = 0
+      /\ UInt64.t'int len <= UInt64.t'int const_MAX_LEN
     -> match result with
-      | Ok u -> utf8_len u = len
-      | Err _ -> true
+      | Ok _ -> true
+      | Err _ -> false
       end)}
     (! return {result}) ]
 

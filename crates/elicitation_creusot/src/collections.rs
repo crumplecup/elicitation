@@ -85,7 +85,6 @@ pub fn verify_result_ok_invalid() -> Result<ResultOk<i32>, elicitation::Validati
 /// Verify BoxSatisfies with contract type.
 #[requires(true)]
 #[ensures(true)]
-#[trusted]
 pub fn verify_box_satisfies_valid() -> BoxSatisfies<I32Positive> {
     let value = I32Positive::new(100).unwrap();
     BoxSatisfies::new(value)
@@ -94,7 +93,6 @@ pub fn verify_box_satisfies_valid() -> BoxSatisfies<I32Positive> {
 /// Verify ArcSatisfies with contract type.
 #[requires(true)]
 #[ensures(true)]
-#[trusted]
 pub fn verify_arc_satisfies_valid() -> ArcSatisfies<I32Positive> {
     let value = I32Positive::new(200).unwrap();
     ArcSatisfies::new(value)
@@ -103,7 +101,6 @@ pub fn verify_arc_satisfies_valid() -> ArcSatisfies<I32Positive> {
 /// Verify RcSatisfies with contract type.
 #[requires(true)]
 #[ensures(true)]
-#[trusted]
 pub fn verify_rc_satisfies_valid() -> RcSatisfies<I32Positive> {
     let value = I32Positive::new(300).unwrap();
     RcSatisfies::new(value)
@@ -246,7 +243,6 @@ pub fn verify_linkedlist_non_empty_invalid()
 /// Verify ArrayAllSatisfy with contract types.
 #[requires(true)]
 #[ensures(true)]
-#[trusted]
 pub fn verify_array_all_satisfy_valid() -> ArrayAllSatisfy<I32Positive, 3> {
     let v1 = I32Positive::new(1).unwrap();
     let v2 = I32Positive::new(2).unwrap();

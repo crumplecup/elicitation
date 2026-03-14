@@ -1,14 +1,14 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 274 0 274 89 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 270 0 270 89 *)
 
 let%span src = "/home/erik/repos/creusot/creusot-std/src/std/rc.rs" 52 18 52 35
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 605 15 605 16
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 604 18 604 65
-let%span scollections = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 275 36 275 38
-let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 275 19 275 39
-let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 275 4 275 40
-let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 272 11 272 15
-let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 274 37 274 89
-let%span scollections'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 273 10 273 57
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 612 15 612 16
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 611 18 611 65
+let%span scollections = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 271 36 271 38
+let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 271 19 271 39
+let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 271 4 271 40
+let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 268 11 268 15
+let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 270 37 270 89
+let%span scollections'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 269 10 269 57
 let%span scollections'5 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/collections.rs" 1527 4 1527 77
 
 use creusot.int.Int32
@@ -195,7 +195,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_rc_non_null_valid
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 274 0 274 89]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 270 0 270 89]
   (return (x: t_Result_RcNonNull_i32_ValidationError)) = (! bb0
   [ bb0 = s0
     [ s0 = new_i32 [%#scollections'0] {[%#scollections] (42: Int32.t)} (fun (_x: t_Rc_i32_Global) -> [ &_3 <- _x ] s1)

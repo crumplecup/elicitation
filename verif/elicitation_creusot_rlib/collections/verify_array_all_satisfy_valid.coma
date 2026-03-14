@@ -1,0 +1,281 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 246 0 246 74 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 186 18 186 80
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 187 18 187 81
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 810 15 810 23
+let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 809 18 809 22
+let%span scollections = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 247 30 247 31
+let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 247 13 247 32
+let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 247 13 247 41
+let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 248 30 248 31
+let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 248 13 248 32
+let%span scollections'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 248 13 248 41
+let%span scollections'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 249 30 249 31
+let%span scollections'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 249 13 249 32
+let%span scollections'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 249 13 249 41
+let%span scollections'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 250 4 250 38
+let%span scollections'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 244 11 244 15
+let%span scollections'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 246 43 246 74
+let%span scollections'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 245 10 245 14
+let%span scollections'12 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/collections.rs" 1348 4 1348 40
+let%span sintegers = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/integers.rs" 1803 12 1803 69
+let%span sresult = "/home/erik/repos/creusot/creusot-std/src/std/result.rs" 52 18 52 22
+let%span sresult'0 = "/home/erik/repos/creusot/creusot-std/src/std/result.rs" 50 19 50 45
+let%span sresult'1 = "/home/erik/repos/creusot/creusot-std/src/std/result.rs" 51 18 51 36
+let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
+let%span sseq = "/home/erik/repos/creusot/creusot-std/src/logic/seq.rs" 921 20 921 91
+let%span sinvariant = "/home/erik/repos/creusot/creusot-std/src/invariant.rs" 85 8 85 18
+
+use creusot.int.Int32
+use creusot.int.Int128
+use creusot.float.Float64
+use creusot.int.UInt64
+use creusot.prelude.Char
+use creusot.int.UInt8
+use creusot.int.UInt16
+use creusot.slice.Slice64
+use seq.Seq
+use creusot.prelude.Any
+use int.Int
+
+type t_I32Positive
+
+type t_String
+
+type t_ValidationError =
+  | NotPositive Int128.t
+  | Negative Int128.t
+  | Zero
+  | NotFinite t_String
+  | FloatNotPositive Float64.t
+  | FloatNegative Float64.t
+  | FloatOutOfRange Float64.t Float64.t Float64.t
+  | OutOfRange Int128.t Int128.t Int128.t
+  | EmptyString
+  | StringTooLong UInt64.t UInt64.t
+  | StringTooShort UInt64.t UInt64.t
+  | NotTrue
+  | NotFalse
+  | NotAlphabetic Char.t
+  | NotNumeric Char.t
+  | NotAlphanumeric Char.t
+  | WrongUuidVersion UInt8.t UInt8.t
+  | NilUuid
+  | DurationNotPositive
+  | NotPrivateIp
+  | NotPublicIp
+  | ExpectedIpv4GotIpv6
+  | ExpectedIpv6GotIpv4
+  | NotLoopback
+  | PathDoesNotExist t_String
+  | PathNotReadable t_String
+  | PathNotDirectory t_String
+  | PathNotFile t_String
+  | DateTimeTooEarly t_String t_String
+  | DateTimeTooLate t_String t_String
+  | EmptyCollection
+  | OptionIsNone
+  | ResultIsErr
+  | WrongJsonType t_String t_String
+  | JsonIsNull
+  | UrlInvalid
+  | InvalidUrlSyntax
+  | UrlMissingAuthority
+  | UrlNotAbsolute
+  | UrlNotHttps
+  | UrlNotHttp
+  | InvalidRegexSyntax
+  | UrlNoHost
+  | UrlCannotBeBase
+  | RegexInvalid
+  | InvalidUuidVariant
+  | NotUnicastMac
+  | NotMulticastMac
+  | NotUniversalMac
+  | NotLocalMac
+  | PortIsZero
+  | PortNotPrivileged UInt16.t
+  | PortIsPrivileged UInt16.t
+  | PathContainsNull
+  | PathNotAbsolute t_String
+  | PathNotRelative t_String
+  | InvalidUtf8
+  | TooLong UInt64.t UInt64.t
+  | StatusCodeInvalid UInt16.t
+  | HeaderInvalid t_String
+
+type t_Result_I32Positive_ValidationError = Ok t_I32Positive | Err t_ValidationError
+
+predicate inv_I32Positive (_1: t_I32Positive)
+
+predicate inv_String (_1: t_String)
+
+predicate inv_ValidationError (_1: t_ValidationError)
+
+axiom inv_axiom [@rewrite]: forall x: t_ValidationError [inv_ValidationError x]. inv_ValidationError x
+    = match x with
+      | NotPositive f0 -> true
+      | Negative f0 -> true
+      | Zero -> true
+      | NotFinite f0 -> inv_String f0
+      | FloatNotPositive f0 -> true
+      | FloatNegative f0 -> true
+      | FloatOutOfRange value min max -> true
+      | OutOfRange value min max -> true
+      | EmptyString -> true
+      | StringTooLong actual max -> true
+      | StringTooShort actual min -> true
+      | NotTrue -> true
+      | NotFalse -> true
+      | NotAlphabetic f0 -> true
+      | NotNumeric f0 -> true
+      | NotAlphanumeric f0 -> true
+      | WrongUuidVersion expected got -> true
+      | NilUuid -> true
+      | DurationNotPositive -> true
+      | NotPrivateIp -> true
+      | NotPublicIp -> true
+      | ExpectedIpv4GotIpv6 -> true
+      | ExpectedIpv6GotIpv4 -> true
+      | NotLoopback -> true
+      | PathDoesNotExist f0 -> inv_String f0
+      | PathNotReadable f0 -> inv_String f0
+      | PathNotDirectory f0 -> inv_String f0
+      | PathNotFile f0 -> inv_String f0
+      | DateTimeTooEarly value threshold -> inv_String value /\ inv_String threshold
+      | DateTimeTooLate value threshold -> inv_String value /\ inv_String threshold
+      | EmptyCollection -> true
+      | OptionIsNone -> true
+      | ResultIsErr -> true
+      | WrongJsonType expected got -> inv_String expected /\ inv_String got
+      | JsonIsNull -> true
+      | UrlInvalid -> true
+      | InvalidUrlSyntax -> true
+      | UrlMissingAuthority -> true
+      | UrlNotAbsolute -> true
+      | UrlNotHttps -> true
+      | UrlNotHttp -> true
+      | InvalidRegexSyntax -> true
+      | UrlNoHost -> true
+      | UrlCannotBeBase -> true
+      | RegexInvalid -> true
+      | InvalidUuidVariant -> true
+      | NotUnicastMac -> true
+      | NotMulticastMac -> true
+      | NotUniversalMac -> true
+      | NotLocalMac -> true
+      | PortIsZero -> true
+      | PortNotPrivileged f0 -> true
+      | PortIsPrivileged f0 -> true
+      | PathContainsNull -> true
+      | PathNotAbsolute f0 -> inv_String f0
+      | PathNotRelative f0 -> inv_String f0
+      | InvalidUtf8 -> true
+      | TooLong max actual -> true
+      | StatusCodeInvalid f0 -> true
+      | HeaderInvalid f0 -> inv_String f0
+      end
+
+predicate inv_Result_I32Positive_ValidationError (_1: t_Result_I32Positive_ValidationError)
+
+axiom inv_axiom'0 [@rewrite]:
+  forall x: t_Result_I32Positive_ValidationError [inv_Result_I32Positive_ValidationError x]. inv_Result_I32Positive_ValidationError x
+    = match x with
+      | Ok f0 -> inv_I32Positive f0
+      | Err f0 -> inv_ValidationError f0
+      end
+
+let rec new (value: Int32.t) (return (x: t_Result_I32Positive_ValidationError)) = any
+  [ return (result: t_Result_I32Positive_ValidationError) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#sintegers] inv_Result_I32Positive_ValidationError result)
+    /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs] Int32.to_int value > 0
+      -> match result with
+        | Ok _ -> true
+        | Err _ -> false
+        end)
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'0] Int32.to_int value <= 0
+    -> match result with
+      | Err _ -> true
+      | Ok _ -> false
+      end)}
+    (! return {result}) ]
+
+let rec unwrap_I32Positive (self_: t_Result_I32Positive_ValidationError) (return (x: t_I32Positive)) =
+  {[@stop_split] [@expl:unwrap_I32Positive requires] ([@stop_split] [@expl:unwrap 'self_' type invariant] [%#sresult] inv_Result_I32Positive_ValidationError self_)
+  /\ ([@stop_split] [@expl:unwrap requires] [%#sresult'0] exists t: t_I32Positive. self_ = Ok t)}
+  any
+  [ return (result: t_I32Positive) ->
+  {[@stop_split] [@expl:unwrap_I32Positive ensures] ([@stop_split] [@expl:unwrap result type invariant] inv_I32Positive result)
+    /\ ([@stop_split] [@expl:unwrap ensures] [%#sresult'1] Ok result = self_)}
+    (! return {result}) ]
+
+type t_ArrayAllSatisfy_I32Positive
+
+predicate invariant_ref_I32Positive [@inline:trivial] (self: t_I32Positive) = [%#sinvariant] inv_I32Positive self
+
+meta "rewrite_def" predicate invariant_ref_I32Positive
+
+predicate inv_ref_I32Positive [@inline:trivial] (_1: t_I32Positive) = invariant_ref_I32Positive _1
+
+meta "rewrite_def" predicate inv_ref_I32Positive
+
+predicate invariant_Seq_I32Positive [@inline:trivial] (self: Seq.seq t_I32Positive) =
+  [%#sseq] forall i: int. 0 <= i /\ i < Seq.length self -> inv_ref_I32Positive (Seq.get self i)
+
+meta "rewrite_def" predicate invariant_Seq_I32Positive
+
+predicate inv_Seq_I32Positive [@inline:trivial] (_1: Seq.seq t_I32Positive) = invariant_Seq_I32Positive _1
+
+meta "rewrite_def" predicate inv_Seq_I32Positive
+
+predicate invariant_array_I32Positive_3 (self: Slice64.array t_I32Positive) =
+  [%#sarray] inv_Seq_I32Positive (Slice64.view self) /\ Seq.length (Slice64.view self) = UInt64.t'int (3: UInt64.t)
+
+predicate inv_array_I32Positive_3 [@inline:trivial] (_1: Slice64.array t_I32Positive) = invariant_array_I32Positive_3 _1
+
+meta "rewrite_def" predicate inv_array_I32Positive_3
+
+predicate inv_ArrayAllSatisfy_I32Positive (_1: t_ArrayAllSatisfy_I32Positive)
+
+let rec new_I32Positive (elements: Slice64.array t_I32Positive) (return (x: t_ArrayAllSatisfy_I32Positive)) =
+  {[@stop_split] [@expl:new 'elements' type invariant] [%#sextern_specs'1] inv_array_I32Positive_3 elements}
+  any
+  [ return (result: t_ArrayAllSatisfy_I32Positive) ->
+  {[@stop_split] [@expl:new result type invariant] [%#scollections'12] inv_ArrayAllSatisfy_I32Positive result}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_array_all_satisfy_valid
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 246 0 246 74]
+  (return (x: t_ArrayAllSatisfy_I32Positive)) = (! bb0
+  [ bb0 = s0
+    [ s0 = new [%#scollections'0] {[%#scollections] (1: Int32.t)}
+        (fun (_x: t_Result_I32Positive_ValidationError) -> [ &_4 <- _x ] s1)
+    | s1 = unwrap_I32Positive [%#scollections'1] {_4} (fun (_x: t_I32Positive) -> [ &v1 <- _x ] s2)
+    | s2 = new [%#scollections'3] {[%#scollections'2] (2: Int32.t)}
+        (fun (_x: t_Result_I32Positive_ValidationError) -> [ &_6 <- _x ] s3)
+    | s3 = unwrap_I32Positive [%#scollections'4] {_6} (fun (_x: t_I32Positive) -> [ &v2 <- _x ] s4)
+    | s4 = new [%#scollections'6] {[%#scollections'5] (3: Int32.t)}
+        (fun (_x: t_Result_I32Positive_ValidationError) -> [ &_8 <- _x ] s5)
+    | s5 = unwrap_I32Positive [%#scollections'7] {_8} (fun (_x: t_I32Positive) -> [ &v3 <- _x ] s6)
+    | s6 = any
+      [ any_ (__arr_temp: Slice64.array t_I32Positive) -> (! -{Seq.get __arr_temp.Slice64.elts 0 = v1
+        /\ Seq.get __arr_temp.Slice64.elts 1 = v2
+        /\ Seq.get __arr_temp.Slice64.elts 2 = v3 /\ Seq.length __arr_temp.Slice64.elts = 3}-
+        [ &_9 <- __arr_temp ] s7) ]
+    | s7 = new_I32Positive [%#scollections'8] {_9} (fun (_x: t_ArrayAllSatisfy_I32Positive) -> [ &_ret <- _x ] s8)
+    | s8 = return {_ret} ] ]
+  [ & _ret: t_ArrayAllSatisfy_I32Positive = Any.any_l ()
+  | & v1: t_I32Positive = Any.any_l ()
+  | & _4: t_Result_I32Positive_ValidationError = Any.any_l ()
+  | & v2: t_I32Positive = Any.any_l ()
+  | & _6: t_Result_I32Positive_ValidationError = Any.any_l ()
+  | & v3: t_I32Positive = Any.any_l ()
+  | & _8: t_Result_I32Positive_ValidationError = Any.any_l ()
+  | & _9: Slice64.array t_I32Positive = Any.any_l () ])
+  [ return (result: t_ArrayAllSatisfy_I32Positive) ->
+  {[@stop_split] [@expl:verify_array_all_satisfy_valid result type invariant] [%#scollections'10] inv_ArrayAllSatisfy_I32Positive result}
+    (! return {result}) ]

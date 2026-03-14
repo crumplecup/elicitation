@@ -1,7 +1,8 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 140 0 140 70 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 685 15 685 21
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 684 18 684 64
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 692 15 692 21
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 691 18 691 64
+let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
 let%span sipaddr_bytes = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 141 34 141 35
 let%span sipaddr_bytes'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 141 37 141 38
 let%span sipaddr_bytes'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 141 40 141 41
@@ -10,7 +11,6 @@ let%span sipaddr_bytes'3 = "/home/erik/repos/elicitation/crates/elicitation_creu
 let%span sipaddr_bytes'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 141 17 141 47
 let%span sipaddr_bytes'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ipaddr_bytes.rs" 140 35 140 70
 let%span sipaddr_bytes'6 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/ipaddr_bytes.rs" 162 4 162 64
-let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
 let%span sops = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 662 18 662 22
 let%span sops'0 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 658 18 661 9
 let%span sops'1 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 675 25 675 33
