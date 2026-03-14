@@ -176,8 +176,6 @@ fn serde_u16_non_zero_consistency() {
 // Integer range serde boundary proofs
 // ============================================================================
 
-use elicitation::I8Range;
-
 /// Prove: I8Range<0,100> serde and constructor agree on every symbolic i8.
 #[kani::proof]
 fn serde_i8_range_consistency() {

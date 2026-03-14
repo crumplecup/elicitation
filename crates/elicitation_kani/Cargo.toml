@@ -18,7 +18,7 @@ categories = ["development-tools", "mathematics"]
 elicitation = { workspace = true, features = ["verification"] }
 
 # Serialization (for serde boundary proofs)
-serde_json = { workspace = true }
+serde_json = { workspace = true, optional = true }
 
 # Kani verifier
 kani-verifier = { version = "0.67", optional = true }
@@ -40,6 +40,7 @@ jiff = ["dep:jiff", "elicitation/jiff"]
 uuid = ["dep:uuid", "elicitation/uuid"]
 url = ["dep:url", "elicitation/url"]
 regex = ["dep:regex", "elicitation/regex"]
+serde_json = ["dep:serde_json", "elicitation/serde_json"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
