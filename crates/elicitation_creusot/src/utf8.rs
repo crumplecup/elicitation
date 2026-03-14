@@ -76,7 +76,6 @@ pub fn verify_length_overflow<const MAX_LEN: usize>(
 // ============================================================================
 
 /// Verify: empty byte sequence (len = 0) is valid UTF-8.
-#[trusted]
 #[cfg(creusot)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 pub fn verify_empty_utf8() -> Result<Utf8Bytes<10>, ValidationError> {
@@ -85,7 +84,6 @@ pub fn verify_empty_utf8() -> Result<Utf8Bytes<10>, ValidationError> {
 }
 
 /// Verify: ASCII bytes construct valid UTF-8.
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_ascii_valid() -> Result<Utf8Bytes<5>, ValidationError> {
     let bytes = [b'h', b'e', b'l', b'l', b'o'];

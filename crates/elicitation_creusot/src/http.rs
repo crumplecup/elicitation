@@ -11,7 +11,6 @@ use elicitation::{StatusCodeValid, ValidationError};
 /// Verify StatusCodeValid accepts HTTP 200 OK.
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_status_code_valid_200() -> Result<StatusCodeValid, ValidationError> {
     StatusCodeValid::new(200)
 }
@@ -19,7 +18,6 @@ pub fn verify_status_code_valid_200() -> Result<StatusCodeValid, ValidationError
 /// Verify StatusCodeValid accepts HTTP 404 Not Found.
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_status_code_valid_404() -> Result<StatusCodeValid, ValidationError> {
     StatusCodeValid::new(404)
 }
@@ -27,7 +25,6 @@ pub fn verify_status_code_valid_404() -> Result<StatusCodeValid, ValidationError
 /// Verify StatusCodeValid rejects code 99 (below minimum).
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_status_code_invalid_99() -> Result<StatusCodeValid, ValidationError> {
     StatusCodeValid::new(99)
 }
@@ -35,7 +32,6 @@ pub fn verify_status_code_invalid_99() -> Result<StatusCodeValid, ValidationErro
 /// Verify StatusCodeValid rejects code 1000 (above maximum).
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_status_code_invalid_1000() -> Result<StatusCodeValid, ValidationError> {
     StatusCodeValid::new(1000)
 }

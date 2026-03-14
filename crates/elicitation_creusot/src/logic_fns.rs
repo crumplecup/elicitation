@@ -249,3 +249,35 @@ pub fn char_is_alphanumeric(_c: char) -> bool {
 pub fn duration_is_positive(_d: Duration) -> bool {
     dead
 }
+
+// ============================================================================
+// Ipv4Addr / Ipv6Addr logic accessors (for std::net types)
+// ============================================================================
+
+#[cfg(creusot)]
+#[trusted]
+#[logic(opaque)]
+pub fn ipv4addr_first_octet(_addr: std::net::Ipv4Addr) -> u8 {
+    dead
+}
+
+#[cfg(creusot)]
+#[trusted]
+#[logic(opaque)]
+pub fn ipv4addr_second_octet(_addr: std::net::Ipv4Addr) -> u8 {
+    dead
+}
+
+#[cfg(creusot)]
+#[trusted]
+#[logic(opaque)]
+pub fn ipv6addr_is_loopback(_addr: std::net::Ipv6Addr) -> bool {
+    dead
+}
+
+#[cfg(creusot)]
+#[trusted]
+#[logic(opaque)]
+pub fn ipv6addr_is_private(_addr: std::net::Ipv6Addr) -> bool {
+    dead
+}

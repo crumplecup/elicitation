@@ -14,7 +14,6 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 /// Verify IpPrivate construction with private IP.
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_ip_private_valid() -> Result<IpPrivate, elicitation::ValidationError> {
     IpPrivate::new(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1)))
 }
@@ -22,7 +21,6 @@ pub fn verify_ip_private_valid() -> Result<IpPrivate, elicitation::ValidationErr
 /// Verify IpPrivate rejects public IP.
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_ip_private_invalid() -> Result<IpPrivate, elicitation::ValidationError> {
     IpPrivate::new(IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8)))
 }
@@ -30,7 +28,6 @@ pub fn verify_ip_private_invalid() -> Result<IpPrivate, elicitation::ValidationE
 /// Verify IpPublic construction with public IP.
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_ip_public_valid() -> Result<IpPublic, elicitation::ValidationError> {
     IpPublic::new(IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8)))
 }
@@ -38,7 +35,6 @@ pub fn verify_ip_public_valid() -> Result<IpPublic, elicitation::ValidationError
 /// Verify IpPublic rejects private IP.
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_ip_public_invalid() -> Result<IpPublic, elicitation::ValidationError> {
     IpPublic::new(IpAddr::V4(Ipv4Addr::new(192, 168, 1, 1)))
 }
@@ -50,7 +46,6 @@ pub fn verify_ip_public_invalid() -> Result<IpPublic, elicitation::ValidationErr
 /// Verify IpV4 construction with IPv4 address.
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_ipv4_valid() -> Result<IpV4, elicitation::ValidationError> {
     IpV4::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)))
 }
@@ -58,7 +53,6 @@ pub fn verify_ipv4_valid() -> Result<IpV4, elicitation::ValidationError> {
 /// Verify IpV4 rejects IPv6 address.
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_ipv4_invalid() -> Result<IpV4, elicitation::ValidationError> {
     IpV4::new(IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1)))
 }
@@ -66,7 +60,6 @@ pub fn verify_ipv4_invalid() -> Result<IpV4, elicitation::ValidationError> {
 /// Verify IpV6 construction with IPv6 address.
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_ipv6_valid() -> Result<IpV6, elicitation::ValidationError> {
     IpV6::new(IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1)))
 }
@@ -74,7 +67,6 @@ pub fn verify_ipv6_valid() -> Result<IpV6, elicitation::ValidationError> {
 /// Verify IpV6 rejects IPv4 address.
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_ipv6_invalid() -> Result<IpV6, elicitation::ValidationError> {
     IpV6::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)))
 }
@@ -86,7 +78,6 @@ pub fn verify_ipv6_invalid() -> Result<IpV6, elicitation::ValidationError> {
 /// Verify Ipv4Loopback construction with loopback address.
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_ipv4_loopback_valid() -> Result<Ipv4Loopback, elicitation::ValidationError> {
     Ipv4Loopback::new(Ipv4Addr::new(127, 0, 0, 1))
 }
@@ -94,7 +85,6 @@ pub fn verify_ipv4_loopback_valid() -> Result<Ipv4Loopback, elicitation::Validat
 /// Verify Ipv4Loopback rejects non-loopback.
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_ipv4_loopback_invalid() -> Result<Ipv4Loopback, elicitation::ValidationError> {
     Ipv4Loopback::new(Ipv4Addr::new(192, 168, 1, 1))
 }
@@ -102,7 +92,6 @@ pub fn verify_ipv4_loopback_invalid() -> Result<Ipv4Loopback, elicitation::Valid
 /// Verify Ipv6Loopback construction with loopback address.
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_ipv6_loopback_valid() -> Result<Ipv6Loopback, elicitation::ValidationError> {
     Ipv6Loopback::new(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1))
 }
@@ -110,7 +99,6 @@ pub fn verify_ipv6_loopback_valid() -> Result<Ipv6Loopback, elicitation::Validat
 /// Verify Ipv6Loopback rejects non-loopback.
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_ipv6_loopback_invalid() -> Result<Ipv6Loopback, elicitation::ValidationError> {
     Ipv6Loopback::new(Ipv6Addr::new(0x2001, 0xdb8, 0, 0, 0, 0, 0, 1))
 }

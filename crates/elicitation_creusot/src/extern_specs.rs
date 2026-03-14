@@ -10,6 +10,7 @@ use elicitation::{
     DurationPositive, HashMapNonEmpty, HashSetNonEmpty, I128NonNegative, I128NonZero,
     I128Positive, I16NonNegative, I16NonZero, I16Positive, I32NonNegative, I32NonZero, I32Positive,
     I64NonNegative, I64NonZero, I64Positive, I8NonNegative, I8NonZero, I8Positive, I8Range,
+    IpPrivate, IpPublic, IpV4, IpV6, Ipv4Loopback, Ipv6Loopback,
     IsizeNonNegative, IsizeNonZero, IsizePositive, IsizeRange, OptionSome, RcNonNull, ResultOk,
     U128NonZero, U128Positive, U16NonZero, U16Positive, U16Range, U32NonZero, U32Positive,
     U32Range, U64NonZero, U64Positive, U64Range, U8NonZero, U8Positive, U8Range, UsizeNonZero,
@@ -21,7 +22,10 @@ use elicitation::{
         is_privileged_port, is_registered_port, is_unicast, is_universal, is_well_known_port,
     },
 };
+#[cfg(feature = "reqwest")]
+use elicitation::StatusCodeValid;
 use std::collections::{HashMap, HashSet, VecDeque};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 // ============================================================================
 // Bool constructors
@@ -459,6 +463,7 @@ extern_spec! {
     impl<const MAX_LEN: usize> Utf8Bytes<MAX_LEN> {
         #[ensures(len@ > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
         #[ensures(len@ <= MAX_LEN@ ==> match result { Ok(ref u) => utf8_len(u) == len, Err(_) => true })]
+        #[ensures(len@ == 0 && len@ <= MAX_LEN@ ==> match result { Ok(_) => true, Err(_) => false })]
         fn new(bytes: [u8; MAX_LEN], len: usize) -> Result<Utf8Bytes<MAX_LEN>, ValidationError>;
     }
 }
@@ -702,3 +707,86 @@ extern_spec! {
 }
 
 
+
+// ============================================================================
+// std::net::Ipv4Addr / Ipv6Addr constructors (for network type proofs)
+// ============================================================================
+
+extern_spec! {
+    impl Ipv4Addr {
+        #[ensures(ipv4addr_first_octet(result) == a)]
+        #[ensures(ipv4addr_second_octet(result) == b)]
+        fn new(a: u8, b: u8, c: u8, d: u8) -> Ipv4Addr;
+    }
+}
+
+extern_spec! {
+    impl Ipv6Addr {
+        #[ensures(ipv6addr_is_loopback(result) == (a == 0u16 && b == 0u16 && c == 0u16 && d == 0u16 && e == 0u16 && f == 0u16 && g == 0u16 && h == 1u16))]
+        #[ensures(ipv6addr_is_private(result) == (a@ / 512 == 126))]
+        fn new(a: u16, b: u16, c: u16, d: u16, e: u16, f: u16, g: u16, h: u16) -> Ipv6Addr;
+    }
+}
+
+// ============================================================================
+// IpV4 / IpV6 / IpPrivate / IpPublic / Ipv4Loopback / Ipv6Loopback constructors
+// ============================================================================
+
+extern_spec! {
+    impl IpV4 {
+        #[ensures(match ip { IpAddr::V4(_) => match result { Ok(_) => true, Err(_) => false }, IpAddr::V6(_) => match result { Err(_) => true, Ok(_) => false } })]
+        fn new(ip: IpAddr) -> Result<IpV4, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl IpV6 {
+        #[ensures(match ip { IpAddr::V6(_) => match result { Ok(_) => true, Err(_) => false }, IpAddr::V4(_) => match result { Err(_) => true, Ok(_) => false } })]
+        fn new(ip: IpAddr) -> Result<IpV6, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl Ipv4Loopback {
+        #[ensures(ipv4addr_first_octet(ip) == 127u8 ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(ipv4addr_first_octet(ip) != 127u8 ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(ip: Ipv4Addr) -> Result<Ipv4Loopback, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl Ipv6Loopback {
+        #[ensures(ipv6addr_is_loopback(ip) ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(!ipv6addr_is_loopback(ip) ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(ip: Ipv6Addr) -> Result<Ipv6Loopback, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl IpPrivate {
+        #[ensures((match ip { IpAddr::V4(v4) => ipv4addr_first_octet(v4)@ == 10 || (ipv4addr_first_octet(v4)@ == 172 && ipv4addr_second_octet(v4)@ >= 16 && ipv4addr_second_octet(v4)@ <= 31) || (ipv4addr_first_octet(v4)@ == 192 && ipv4addr_second_octet(v4)@ == 168), IpAddr::V6(v6) => ipv6addr_is_private(v6) }) ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(!(match ip { IpAddr::V4(v4) => ipv4addr_first_octet(v4)@ == 10 || (ipv4addr_first_octet(v4)@ == 172 && ipv4addr_second_octet(v4)@ >= 16 && ipv4addr_second_octet(v4)@ <= 31) || (ipv4addr_first_octet(v4)@ == 192 && ipv4addr_second_octet(v4)@ == 168), IpAddr::V6(v6) => ipv6addr_is_private(v6) }) ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(ip: IpAddr) -> Result<IpPrivate, ValidationError>;
+    }
+}
+
+extern_spec! {
+    impl IpPublic {
+        #[ensures(!(match ip { IpAddr::V4(v4) => ipv4addr_first_octet(v4)@ == 10 || (ipv4addr_first_octet(v4)@ == 172 && ipv4addr_second_octet(v4)@ >= 16 && ipv4addr_second_octet(v4)@ <= 31) || (ipv4addr_first_octet(v4)@ == 192 && ipv4addr_second_octet(v4)@ == 168), IpAddr::V6(v6) => ipv6addr_is_private(v6) }) ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures((match ip { IpAddr::V4(v4) => ipv4addr_first_octet(v4)@ == 10 || (ipv4addr_first_octet(v4)@ == 172 && ipv4addr_second_octet(v4)@ >= 16 && ipv4addr_second_octet(v4)@ <= 31) || (ipv4addr_first_octet(v4)@ == 192 && ipv4addr_second_octet(v4)@ == 168), IpAddr::V6(v6) => ipv6addr_is_private(v6) }) ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(ip: IpAddr) -> Result<IpPublic, ValidationError>;
+    }
+}
+
+// ============================================================================
+// StatusCodeValid constructor (reqwest feature)
+// ============================================================================
+
+#[cfg(feature = "reqwest")]
+extern_spec! {
+    impl StatusCodeValid {
+        #[ensures(value@ >= 100 && value@ <= 999 ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(value@ < 100 || value@ > 999 ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(value: u16) -> Result<StatusCodeValid, ValidationError>;
+    }
+}
