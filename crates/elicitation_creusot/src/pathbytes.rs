@@ -15,7 +15,6 @@ use elicitation::verification::types::{
 // ============================================================================
 
 /// Verify: PathBytes correctly rejects length exceeding MAX_LEN
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() > MAX_LEN@)]
 #[ensures(match result { Err(_) => true, Ok(_) => false })]
@@ -26,9 +25,12 @@ pub fn verify_path_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: PathBytes accepts valid length
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= MAX_LEN@)]
+#[ensures(match result {
+    Ok(ref path) => path_len(path)@ == bytes@.len(),
+    Err(_) => true,
+})]
 pub fn verify_path_length_valid<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<PathBytes<MAX_LEN>, ValidationError> {
@@ -93,7 +95,6 @@ pub fn verify_path_as_str_valid<const MAX_LEN: usize>(
 }
 
 /// Verify: PathBytes len() returns correct value
-#[trusted]
 #[cfg(creusot)]
 #[requires(bytes@.len() <= MAX_LEN@)]
 #[ensures(match result {

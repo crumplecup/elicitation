@@ -20,7 +20,6 @@ use elicitation::verification::types::{
 // ============================================================================
 
 /// Verify: SocketAddrV4Bytes construction always succeeds
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_socket_v4_construction(ip: [u8; 4], port: u16) -> SocketAddrV4Bytes {
     SocketAddrV4Bytes::from_octets(ip, port)
@@ -36,7 +35,6 @@ pub fn verify_socket_v4_ip_accessor(ip: [u8; 4], port: u16) -> SocketAddrV4Bytes
 }
 
 /// Verify: port() accessor returns the port
-#[trusted]
 #[cfg(creusot)]
 #[ensures(v4_port(result) == port)]
 pub fn verify_socket_v4_port_accessor(ip: [u8; 4], port: u16) -> SocketAddrV4Bytes {
@@ -53,7 +51,6 @@ pub fn verify_socket_v4_into_parts(ip: [u8; 4], port: u16) -> SocketAddrV4Bytes 
 }
 
 /// Verify: Common socket address (HTTP on localhost)
-#[trusted]
 #[cfg(creusot)]
 #[ensures(v4_port(result) == 80u16)]
 pub fn verify_socket_v4_localhost_http() -> SocketAddrV4Bytes {
@@ -61,7 +58,6 @@ pub fn verify_socket_v4_localhost_http() -> SocketAddrV4Bytes {
 }
 
 /// Verify: Common socket address (HTTPS on localhost)
-#[trusted]
 #[cfg(creusot)]
 #[ensures(v4_port(result) == 443u16)]
 pub fn verify_socket_v4_localhost_https() -> SocketAddrV4Bytes {
@@ -69,7 +65,6 @@ pub fn verify_socket_v4_localhost_https() -> SocketAddrV4Bytes {
 }
 
 /// Verify: Common socket address (SSH)
-#[trusted]
 #[cfg(creusot)]
 #[ensures(v4_port(result) == 22u16)]
 pub fn verify_socket_v4_ssh() -> SocketAddrV4Bytes {
@@ -77,7 +72,6 @@ pub fn verify_socket_v4_ssh() -> SocketAddrV4Bytes {
 }
 
 /// Verify: Development server port
-#[trusted]
 #[cfg(creusot)]
 #[ensures(v4_port(result) == 3000u16)]
 pub fn verify_socket_v4_dev_server() -> SocketAddrV4Bytes {
@@ -88,7 +82,6 @@ pub fn verify_socket_v4_dev_server() -> SocketAddrV4Bytes {
 // ============================================================================
 
 /// Verify: SocketAddrV6Bytes construction always succeeds
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_socket_v6_construction(ip: [u8; 16], port: u16) -> SocketAddrV6Bytes {
     SocketAddrV6Bytes::from_octets(ip, port)
@@ -104,7 +97,6 @@ pub fn verify_socket_v6_ip_accessor(ip: [u8; 16], port: u16) -> SocketAddrV6Byte
 }
 
 /// Verify: port() accessor returns the port
-#[trusted]
 #[cfg(creusot)]
 #[ensures(v6_port(result) == port)]
 pub fn verify_socket_v6_port_accessor(ip: [u8; 16], port: u16) -> SocketAddrV6Bytes {
@@ -121,7 +113,6 @@ pub fn verify_socket_v6_into_parts(ip: [u8; 16], port: u16) -> SocketAddrV6Bytes
 }
 
 /// Verify: IPv6 localhost HTTP
-#[trusted]
 #[cfg(creusot)]
 #[ensures(v6_port(result) == 80u16)]
 pub fn verify_socket_v6_localhost_http() -> SocketAddrV6Bytes {
@@ -129,7 +120,6 @@ pub fn verify_socket_v6_localhost_http() -> SocketAddrV6Bytes {
 }
 
 /// Verify: IPv6 localhost HTTPS
-#[trusted]
 #[cfg(creusot)]
 #[ensures(v6_port(result) == 443u16)]
 pub fn verify_socket_v6_localhost_https() -> SocketAddrV6Bytes {
@@ -140,7 +130,6 @@ pub fn verify_socket_v6_localhost_https() -> SocketAddrV6Bytes {
 // ============================================================================
 
 /// Verify: Port 0 is well-known
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_0_well_known() -> bool {
@@ -148,7 +137,6 @@ pub fn verify_port_0_well_known() -> bool {
 }
 
 /// Verify: Port 80 (HTTP) is well-known
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_80_well_known() -> bool {
@@ -156,7 +144,6 @@ pub fn verify_port_80_well_known() -> bool {
 }
 
 /// Verify: Port 443 (HTTPS) is well-known
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_443_well_known() -> bool {
@@ -164,7 +151,6 @@ pub fn verify_port_443_well_known() -> bool {
 }
 
 /// Verify: Port 1023 is well-known (boundary)
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_1023_well_known() -> bool {
@@ -172,7 +158,6 @@ pub fn verify_port_1023_well_known() -> bool {
 }
 
 /// Verify: Port 1024 is registered (boundary)
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_1024_registered() -> bool {
@@ -180,7 +165,6 @@ pub fn verify_port_1024_registered() -> bool {
 }
 
 /// Verify: Port 3000 (dev server) is registered
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_3000_registered() -> bool {
@@ -188,7 +172,6 @@ pub fn verify_port_3000_registered() -> bool {
 }
 
 /// Verify: Port 5432 (PostgreSQL) is registered
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_5432_registered() -> bool {
@@ -196,7 +179,6 @@ pub fn verify_port_5432_registered() -> bool {
 }
 
 /// Verify: Port 49151 is registered (boundary)
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_49151_registered() -> bool {
@@ -204,7 +186,6 @@ pub fn verify_port_49151_registered() -> bool {
 }
 
 /// Verify: Port 49152 is dynamic (boundary)
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_49152_dynamic() -> bool {
@@ -212,7 +193,6 @@ pub fn verify_port_49152_dynamic() -> bool {
 }
 
 /// Verify: Port 65535 is dynamic (max port)
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_65535_dynamic() -> bool {
@@ -220,7 +200,6 @@ pub fn verify_port_65535_dynamic() -> bool {
 }
 
 /// Verify: Port 0 is privileged
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_0_privileged() -> bool {
@@ -228,7 +207,6 @@ pub fn verify_port_0_privileged() -> bool {
 }
 
 /// Verify: Port 1023 is privileged (boundary)
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_1023_privileged() -> bool {
@@ -236,7 +214,6 @@ pub fn verify_port_1023_privileged() -> bool {
 }
 
 /// Verify: Port 1024 is not privileged
-#[trusted]
 #[cfg(creusot)]
 #[ensures(!result)]
 pub fn verify_port_1024_not_privileged() -> bool {
@@ -244,7 +221,6 @@ pub fn verify_port_1024_not_privileged() -> bool {
 }
 
 /// Verify: Port 0 is not nonzero
-#[trusted]
 #[cfg(creusot)]
 #[ensures(!result)]
 pub fn verify_port_0_not_nonzero() -> bool {
@@ -252,7 +228,6 @@ pub fn verify_port_0_not_nonzero() -> bool {
 }
 
 /// Verify: Port 1 is nonzero
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_1_nonzero() -> bool {
@@ -260,7 +235,6 @@ pub fn verify_port_1_nonzero() -> bool {
 }
 
 /// Verify: Port 80 is nonzero
-#[trusted]
 #[cfg(creusot)]
 #[ensures(result)]
 pub fn verify_port_80_nonzero() -> bool {
@@ -271,7 +245,6 @@ pub fn verify_port_80_nonzero() -> bool {
 // ============================================================================
 
 /// Verify: Zero IP with zero port
-#[trusted]
 #[cfg(creusot)]
 #[ensures(v4_port(result) == 0u16)]
 pub fn verify_socket_v4_zero_zero() -> SocketAddrV4Bytes {
@@ -279,7 +252,6 @@ pub fn verify_socket_v4_zero_zero() -> SocketAddrV4Bytes {
 }
 
 /// Verify: Max IP with max port
-#[trusted]
 #[cfg(creusot)]
 #[ensures(v4_port(result) == 65535u16)]
 pub fn verify_socket_v4_max_max() -> SocketAddrV4Bytes {
@@ -287,7 +259,6 @@ pub fn verify_socket_v4_max_max() -> SocketAddrV4Bytes {
 }
 
 /// Verify: IPv6 zero IP with zero port
-#[trusted]
 #[cfg(creusot)]
 #[ensures(v6_port(result) == 0u16)]
 pub fn verify_socket_v6_zero_zero() -> SocketAddrV6Bytes {
@@ -295,7 +266,6 @@ pub fn verify_socket_v6_zero_zero() -> SocketAddrV6Bytes {
 }
 
 /// Verify: IPv6 max IP with max port
-#[trusted]
 #[cfg(creusot)]
 #[ensures(v6_port(result) == 65535u16)]
 pub fn verify_socket_v6_max_max() -> SocketAddrV6Bytes {

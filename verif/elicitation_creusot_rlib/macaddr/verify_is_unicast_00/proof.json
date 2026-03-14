@@ -1,0 +1,9 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_is_unicast": { "prover": "cvc5@1.3.1", "time": 0.012 },
+      "vc_verify_is_unicast_00": { "prover": "cvc5@1.3.1", "time": 0.022 }
+    }
+  }
+}

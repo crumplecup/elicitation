@@ -1,0 +1,73 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 132 0 132 46 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 546 20 546 26
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 545 14 545 45
+let%span smacaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 133 18 133 27
+let%span smacaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 133 19 133 23
+let%span smacaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 133 4 133 28
+let%span smacaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 131 10 131 16
+let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 56 20 56 29
+let%span sarray'0 = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
+let%span sinvariant = "/home/erik/repos/creusot/creusot-std/src/invariant.rs" 85 8 85 18
+
+use creusot.int.UInt8
+use creusot.int.UInt64
+use creusot.slice.Slice64
+use creusot.prelude.Any
+use seq.Seq
+use int.ComputerDivision
+
+predicate inv_Seq_u8 [@inline:trivial] (_1: Seq.seq UInt8.t) = true
+
+meta "rewrite_def" predicate inv_Seq_u8
+
+predicate invariant_array_u8_6 (self: Slice64.array UInt8.t) =
+  [%#sarray'0] inv_Seq_u8 (Slice64.view self) /\ Seq.length (Slice64.view self) = UInt64.t'int (6: UInt64.t)
+
+predicate inv_array_u8_6 [@inline:trivial] (_1: Slice64.array UInt8.t) = invariant_array_u8_6 _1
+
+meta "rewrite_def" predicate inv_array_u8_6
+
+predicate invariant_ref_array_u8_6 [@inline:trivial] (self: Slice64.array UInt8.t) = [%#sinvariant] inv_array_u8_6 self
+
+meta "rewrite_def" predicate invariant_ref_array_u8_6
+
+predicate inv_ref_array_u8_6 [@inline:trivial] (_1: Slice64.array UInt8.t) = invariant_ref_array_u8_6 _1
+
+meta "rewrite_def" predicate inv_ref_array_u8_6
+
+function index_array_u8_6 [@inline:trivial] (self: Slice64.array UInt8.t) (ix: int) : UInt8.t =
+  [%#sarray] Seq.get (Slice64.view self) ix
+
+meta "rewrite_def" function index_array_u8_6
+
+let rec is_multicast (octets: Slice64.array UInt8.t) (return (x: bool)) =
+  {[@stop_split] [@expl:is_multicast 'octets' type invariant] [%#sextern_specs] inv_ref_array_u8_6 octets}
+  any
+  [ return (result: bool) -> {[@stop_split] [@expl:is_multicast ensures] [%#sextern_specs'0] result
+    = (ComputerDivision.mod (UInt8.t'int (index_array_u8_6 octets 0)) 2 <> 0)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_is_multicast_broadcast
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 132 0 132 46] (return (x: bool)) = (! bb0
+  [ bb0 = s0
+    [ s0 = bb0'0
+      [ bb0'0 = s0'0
+        [ s0'0 = Slice64.create <UInt8.t> {[%#smacaddr] (6: UInt64.t)} {fun (_: int) -> [%#smacaddr'0] (255: UInt8.t)}
+            (fun (_res: Slice64.array UInt8.t) -> [ &_1 <- _res ] s1'0)
+        | s1'0 = [ &_ret'0 <- _1 ] s2'0
+        | s2'0 = _const_ret {_ret'0} ] ]
+      [ & _ret'0: Slice64.array UInt8.t = Any.any_l () | & _1: Slice64.array UInt8.t = Any.any_l () ]
+      [ _const_ret (_const: Slice64.array UInt8.t) -> [ &_5 <- _const ] s1 ]
+    | s1 = [ &_3 <- _5 ] s2
+    | s2 = is_multicast [%#smacaddr'1] {_3} (fun (_x: bool) -> [ &_ret <- _x ] s3)
+    | s3 = return {_ret} ] ]
+  [ & _ret: bool = Any.any_l ()
+  | & _3: Slice64.array UInt8.t = Any.any_l ()
+  | & _5: Slice64.array UInt8.t = Any.any_l () ])
+  [ return (result: bool) -> {[@stop_split] [@expl:verify_is_multicast_broadcast ensures] [%#smacaddr'2] result}
+    (! return {result}) ]

@@ -1,0 +1,28 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 142 0 142 42 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 486 14 486 39
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 143 23 143 25
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 143 4 143 26
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 141 10 141 16
+
+use creusot.int.UInt16
+use creusot.prelude.Any
+use int.Int
+
+let rec is_well_known_port (port: UInt16.t) (return (x: bool)) = any
+  [ return (result: bool) -> {[@stop_split] [@expl:is_well_known_port ensures] [%#sextern_specs] result
+    = (UInt16.t'int port <= 1023)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_port_80_well_known
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 142 0 142 42] (return (x: bool)) =
+  (! bb0
+  [ bb0 = s0
+    [ s0 = is_well_known_port [%#ssocketaddr'0] {[%#ssocketaddr] (80: UInt16.t)} (fun (_x: bool) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ] [ & _ret: bool = Any.any_l () ])
+  [ return (result: bool) -> {[@stop_split] [@expl:verify_port_80_well_known ensures] [%#ssocketaddr'1] result}
+    (! return {result}) ]

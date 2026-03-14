@@ -1,8 +1,9 @@
 (* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 69 0 71 48 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 455 15 455 20
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 453 18 453 85
-let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 454 18 454 103
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 459 15 459 20
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 457 18 457 85
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 458 18 458 103
+let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
 let%span sutf8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 72 36 72 37
 let%span sutf8'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 72 26 72 33
 let%span sutf8'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 72 26 72 37
@@ -12,7 +13,6 @@ let%span sutf8'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/
 let%span sutf8'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 71 5 71 48
 let%span sutf8'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 68 10 68 57
 let%span sutf8'7 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/utf8.rs" 49 4 49 81
-let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
 
 use creusot.int.UInt64
 use creusot.slice.Slice64

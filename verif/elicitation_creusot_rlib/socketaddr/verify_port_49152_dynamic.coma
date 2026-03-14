@@ -1,0 +1,28 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 191 0 191 42 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 496 14 496 40
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 192 20 192 25
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 192 4 192 26
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 190 10 190 16
+
+use creusot.int.UInt16
+use creusot.prelude.Any
+use int.Int
+
+let rec is_dynamic_port (port: UInt16.t) (return (x: bool)) = any
+  [ return (result: bool) -> {[@stop_split] [@expl:is_dynamic_port ensures] [%#sextern_specs] result
+    = (UInt16.t'int port >= 49152)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_port_49152_dynamic
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 191 0 191 42] (return (x: bool)) =
+  (! bb0
+  [ bb0 = s0
+    [ s0 = is_dynamic_port [%#ssocketaddr'0] {[%#ssocketaddr] (49152: UInt16.t)} (fun (_x: bool) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ] [ & _ret: bool = Any.any_l () ])
+  [ return (result: bool) -> {[@stop_split] [@expl:verify_port_49152_dynamic ensures] [%#ssocketaddr'1] result}
+    (! return {result}) ]

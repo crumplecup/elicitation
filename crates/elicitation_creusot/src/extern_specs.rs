@@ -13,7 +13,11 @@ use elicitation::{
     IsizeRange, U128NonZero, U128Positive, U16NonZero, U16Positive, U16Range, U32NonZero,
     U32Positive, U32Range, U64NonZero, U64Positive, U64Range, U8NonZero, U8Positive, U8Range,
     UsizeNonZero, UsizePositive, UsizeRange, ValidationError,
-    verification::types::Utf8Bytes,
+    verification::types::{
+        MacAddr, PathBytes, SocketAddrV4Bytes, SocketAddrV6Bytes, Utf8Bytes,
+        is_dynamic_port, is_local, is_multicast, is_nonzero_port, is_privileged_port,
+        is_registered_port, is_unicast, is_universal, is_well_known_port,
+    },
 };
 
 // ============================================================================
@@ -454,4 +458,100 @@ extern_spec! {
         #[ensures(len@ <= MAX_LEN@ ==> match result { Ok(ref u) => utf8_len(u) == len, Err(_) => true })]
         fn new(bytes: [u8; MAX_LEN], len: usize) -> Result<Utf8Bytes<MAX_LEN>, ValidationError>;
     }
+}
+
+// ============================================================================
+// SocketAddrV4Bytes / SocketAddrV6Bytes constructors
+// ============================================================================
+
+extern_spec! {
+    impl SocketAddrV4Bytes {
+        #[ensures(v4_port(result) == port)]
+        fn from_octets(ip: [u8; 4], port: u16) -> SocketAddrV4Bytes;
+    }
+}
+
+extern_spec! {
+    impl SocketAddrV6Bytes {
+        #[ensures(v6_port(result) == port)]
+        fn from_octets(ip: [u8; 16], port: u16) -> SocketAddrV6Bytes;
+    }
+}
+
+// ============================================================================
+// Port classification free functions
+// ============================================================================
+
+extern_spec! {
+    #[ensures(result == (port@ <= 1023))]
+    fn is_well_known_port(port: u16) -> bool;
+}
+
+extern_spec! {
+    #[ensures(result == (1024 <= port@ && port@ <= 49151))]
+    fn is_registered_port(port: u16) -> bool;
+}
+
+extern_spec! {
+    #[ensures(result == (port@ >= 49152))]
+    fn is_dynamic_port(port: u16) -> bool;
+}
+
+extern_spec! {
+    #[ensures(result == (port@ < 1024))]
+    fn is_privileged_port(port: u16) -> bool;
+}
+
+extern_spec! {
+    #[ensures(result == (port@ != 0))]
+    fn is_nonzero_port(port: u16) -> bool;
+}
+
+// ============================================================================
+// PathBytes constructors
+// ============================================================================
+
+extern_spec! {
+    impl<const MAX_LEN: usize> PathBytes<MAX_LEN> {
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(bytes@.len() <= MAX_LEN@ ==> match result { Ok(ref p) => path_len(p)@ == bytes@.len(), Err(_) => true })]
+        fn from_slice(bytes: &[u8]) -> Result<PathBytes<MAX_LEN>, ValidationError>;
+    }
+}
+
+// ============================================================================
+// MacAddr constructors and free predicates
+// ============================================================================
+
+extern_spec! {
+    impl MacAddr {
+        #[ensures(mac_octets(result) == octets)]
+        #[ensures(mac_is_unicast(result) == (octets[0]@ % 2 == 0))]
+        #[ensures(mac_is_multicast(result) == (octets[0]@ % 2 != 0))]
+        #[ensures(mac_is_universal(result) == (octets[0]@ % 4 < 2))]
+        #[ensures(mac_is_local(result) == (octets[0]@ % 4 >= 2))]
+        #[ensures(mac_is_broadcast(result) == (octets[0] == 0xFFu8 && octets[1] == 0xFFu8 && octets[2] == 0xFFu8 && octets[3] == 0xFFu8 && octets[4] == 0xFFu8 && octets[5] == 0xFFu8))]
+        #[ensures(mac_is_null(result) == (octets[0] == 0u8 && octets[1] == 0u8 && octets[2] == 0u8 && octets[3] == 0u8 && octets[4] == 0u8 && octets[5] == 0u8))]
+        fn new(octets: [u8; 6]) -> MacAddr;
+    }
+}
+
+extern_spec! {
+    #[ensures(result == (octets[0]@ % 2 == 0))]
+    fn is_unicast(octets: &[u8; 6]) -> bool;
+}
+
+extern_spec! {
+    #[ensures(result == (octets[0]@ % 2 != 0))]
+    fn is_multicast(octets: &[u8; 6]) -> bool;
+}
+
+extern_spec! {
+    #[ensures(result == (octets[0]@ % 4 < 2))]
+    fn is_universal(octets: &[u8; 6]) -> bool;
+}
+
+extern_spec! {
+    #[ensures(result == (octets[0]@ % 4 >= 2))]
+    fn is_local(octets: &[u8; 6]) -> bool;
 }

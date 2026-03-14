@@ -1,0 +1,117 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 179 0 179 53 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 535 15 535 21
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 528 18 528 46
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 529 18 529 65
+let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 530 18 530 67
+let%span sextern_specs'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 531 18 531 66
+let%span sextern_specs'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 532 18 532 63
+let%span sextern_specs'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 533 18 533 182
+let%span sextern_specs'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 534 18 534 159
+let%span smacaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 180 18 180 22
+let%span smacaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 180 24 180 28
+let%span smacaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 180 30 180 34
+let%span smacaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 180 36 180 40
+let%span smacaddr'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 180 42 180 46
+let%span smacaddr'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 180 48 180 52
+let%span smacaddr'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 180 4 180 54
+let%span smacaddr'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 179 46 179 53
+let%span smacaddr'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 177 10 177 34
+let%span smacaddr'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 178 10 178 34
+let%span smacaddr'9 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/macaddr.rs" 42 4 42 39
+let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 56 20 56 29
+let%span sarray'0 = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
+
+use creusot.slice.Slice64
+use creusot.int.UInt8
+use seq.Seq
+use creusot.int.UInt64
+use int.ComputerDivision
+use creusot.prelude.Any
+use int.Int
+
+type t_MacAddr
+
+predicate inv_Seq_u8 [@inline:trivial] (_1: Seq.seq UInt8.t) = true
+
+meta "rewrite_def" predicate inv_Seq_u8
+
+predicate invariant_array_u8_6 (self: Slice64.array UInt8.t) =
+  [%#sarray'0] inv_Seq_u8 (Slice64.view self) /\ Seq.length (Slice64.view self) = UInt64.t'int (6: UInt64.t)
+
+predicate inv_array_u8_6 [@inline:trivial] (_1: Slice64.array UInt8.t) = invariant_array_u8_6 _1
+
+meta "rewrite_def" predicate inv_array_u8_6
+
+predicate inv_MacAddr (_1: t_MacAddr)
+
+function mac_octets [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 95 0 95 44] (_addr: t_MacAddr) : Slice64.array UInt8.t
+
+predicate mac_is_unicast [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 102 0 102 45] (_addr: t_MacAddr)
+
+function index_array_u8_6 [@inline:trivial] (self: Slice64.array UInt8.t) (ix: int) : UInt8.t =
+  [%#sarray] Seq.get (Slice64.view self) ix
+
+meta "rewrite_def" function index_array_u8_6
+
+predicate mac_is_multicast [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 109 0 109 47] (_addr: t_MacAddr)
+
+predicate mac_is_universal [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 116 0 116 47] (_addr: t_MacAddr)
+
+predicate mac_is_local [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 123 0 123 43] (_addr: t_MacAddr)
+
+predicate mac_is_broadcast [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 130 0 130 47] (_addr: t_MacAddr)
+
+predicate mac_is_null [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 137 0 137 42] (_addr: t_MacAddr)
+
+let rec new (octets: Slice64.array UInt8.t) (return (x: t_MacAddr)) =
+  {[@stop_split] [@expl:new 'octets' type invariant] [%#sextern_specs] inv_array_u8_6 octets}
+  any
+  [ return (result: t_MacAddr) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#smacaddr'9] inv_MacAddr result)
+    /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs'0] mac_octets result = octets)
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'1] mac_is_unicast result
+      = (ComputerDivision.mod (UInt8.t'int (index_array_u8_6 octets 0)) 2 = 0))
+    /\ ([@stop_split] [@expl:new ensures #2] [%#sextern_specs'2] mac_is_multicast result
+      = (ComputerDivision.mod (UInt8.t'int (index_array_u8_6 octets 0)) 2 <> 0))
+    /\ ([@stop_split] [@expl:new ensures #3] [%#sextern_specs'3] mac_is_universal result
+      = (ComputerDivision.mod (UInt8.t'int (index_array_u8_6 octets 0)) 4 < 2))
+    /\ ([@stop_split] [@expl:new ensures #4] [%#sextern_specs'4] mac_is_local result
+      = (ComputerDivision.mod (UInt8.t'int (index_array_u8_6 octets 0)) 4 >= 2))
+    /\ ([@stop_split] [@expl:new ensures #5] [%#sextern_specs'5] mac_is_broadcast result
+      = (index_array_u8_6 octets 0 = (255: UInt8.t)
+      /\ index_array_u8_6 octets 1 = (255: UInt8.t)
+      /\ index_array_u8_6 octets 2 = (255: UInt8.t)
+      /\ index_array_u8_6 octets 3 = (255: UInt8.t)
+      /\ index_array_u8_6 octets 4 = (255: UInt8.t) /\ index_array_u8_6 octets 5 = (255: UInt8.t)))
+    /\ ([@stop_split] [@expl:new ensures #6] [%#sextern_specs'6] mac_is_null result
+    = (index_array_u8_6 octets 0 = (0: UInt8.t)
+    /\ index_array_u8_6 octets 1 = (0: UInt8.t)
+    /\ index_array_u8_6 octets 2 = (0: UInt8.t)
+    /\ index_array_u8_6 octets 3 = (0: UInt8.t)
+    /\ index_array_u8_6 octets 4 = (0: UInt8.t) /\ index_array_u8_6 octets 5 = (0: UInt8.t)))}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_mac_01_multicast_universal
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 179 0 179 53] (return (x: t_MacAddr)) =
+  (! bb0
+  [ bb0 = s0
+    [ s0 = any
+      [ any_ (__arr_temp: Slice64.array UInt8.t) -> (! -{Seq.get __arr_temp.Slice64.elts 0 = ([%#smacaddr] (1: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 1 = ([%#smacaddr'0] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 2 = ([%#smacaddr'1] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 3 = ([%#smacaddr'2] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 4 = ([%#smacaddr'3] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 5 = ([%#smacaddr'4] (0: UInt8.t)) /\ Seq.length __arr_temp.Slice64.elts = 6}-
+        [ &_3 <- __arr_temp ] s1) ]
+    | s1 = new [%#smacaddr'5] {_3} (fun (_x: t_MacAddr) -> [ &_ret <- _x ] s2)
+    | s2 = return {_ret} ] ] [ & _ret: t_MacAddr = Any.any_l () | & _3: Slice64.array UInt8.t = Any.any_l () ])
+  [ return (result: t_MacAddr) ->
+  {[@stop_split] [@expl:verify_mac_01_multicast_universal ensures] ([@stop_split] [@expl:verify_mac_01_multicast_universal result type invariant] [%#smacaddr'6] inv_MacAddr result)
+    /\ ([@stop_split] [@expl:verify_mac_01_multicast_universal ensures #0] [%#smacaddr'7] mac_is_multicast result)
+    /\ ([@stop_split] [@expl:verify_mac_01_multicast_universal ensures #1] [%#smacaddr'8] mac_is_universal result)}
+    (! return {result}) ]

@@ -1,0 +1,27 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 226 0 226 42 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 506 14 506 36
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 227 20 227 21
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 227 4 227 22
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 225 10 225 17
+
+use creusot.int.UInt16
+use creusot.prelude.Any
+
+let rec is_nonzero_port (port: UInt16.t) (return (x: bool)) = any
+  [ return (result: bool) -> {[@stop_split] [@expl:is_nonzero_port ensures] [%#sextern_specs] result
+    = (UInt16.t'int port <> 0)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_port_0_not_nonzero
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 226 0 226 42] (return (x: bool)) =
+  (! bb0
+  [ bb0 = s0
+    [ s0 = is_nonzero_port [%#ssocketaddr'0] {[%#ssocketaddr] (0: UInt16.t)} (fun (_x: bool) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ] [ & _ret: bool = Any.any_l () ])
+  [ return (result: bool) -> {[@stop_split] [@expl:verify_port_0_not_nonzero ensures] [%#ssocketaddr'1] not result}
+    (! return {result}) ]

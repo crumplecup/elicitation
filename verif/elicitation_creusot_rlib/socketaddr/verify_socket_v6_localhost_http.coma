@@ -1,0 +1,96 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 0 118 61 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 477 23 477 25
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 476 18 476 41
+let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 36 119 37
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 39 119 40
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 42 119 43
+let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 45 119 46
+let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 48 119 49
+let%span ssocketaddr'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 51 119 52
+let%span ssocketaddr'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 54 119 55
+let%span ssocketaddr'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 57 119 58
+let%span ssocketaddr'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 60 119 61
+let%span ssocketaddr'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 63 119 64
+let%span ssocketaddr'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 66 119 67
+let%span ssocketaddr'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 69 119 70
+let%span ssocketaddr'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 72 119 73
+let%span ssocketaddr'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 75 119 76
+let%span ssocketaddr'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 78 119 79
+let%span ssocketaddr'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 81 119 82
+let%span ssocketaddr'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 85 119 87
+let%span ssocketaddr'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 119 4 119 88
+let%span ssocketaddr'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 44 118 61
+let%span ssocketaddr'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 117 10 117 34
+let%span ssocketaddr'19 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 116 4 116 62
+
+use creusot.slice.Slice64
+use creusot.int.UInt8
+use creusot.int.UInt16
+use seq.Seq
+use creusot.int.UInt64
+use creusot.prelude.Any
+
+type t_SocketAddrV6Bytes
+
+predicate inv_Seq_u8 [@inline:trivial] (_1: Seq.seq UInt8.t) = true
+
+meta "rewrite_def" predicate inv_Seq_u8
+
+predicate invariant_array_u8_16 (self: Slice64.array UInt8.t) =
+  [%#sarray] inv_Seq_u8 (Slice64.view self) /\ Seq.length (Slice64.view self) = UInt64.t'int (16: UInt64.t)
+
+predicate inv_array_u8_16 [@inline:trivial] (_1: Slice64.array UInt8.t) = invariant_array_u8_16 _1
+
+meta "rewrite_def" predicate inv_array_u8_16
+
+predicate inv_SocketAddrV6Bytes (_1: t_SocketAddrV6Bytes)
+
+function v6_port [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 155 0 155 47] (_addr: t_SocketAddrV6Bytes) : UInt16.t
+
+let rec from_octets (ip: Slice64.array UInt8.t) (port: UInt16.t) (return (x: t_SocketAddrV6Bytes)) =
+  {[@stop_split] [@expl:from_octets 'ip' type invariant] [%#sextern_specs] inv_array_u8_16 ip}
+  any
+  [ return (result: t_SocketAddrV6Bytes) ->
+  {[@stop_split] [@expl:from_octets ensures] ([@stop_split] [@expl:from_octets result type invariant] [%#ssocketaddr'19] inv_SocketAddrV6Bytes result)
+    /\ ([@stop_split] [@expl:from_octets ensures] [%#sextern_specs'0] v6_port result = port)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_socket_v6_localhost_http
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 0 118 61]
+  (return (x: t_SocketAddrV6Bytes)) = (! bb0
+  [ bb0 = s0
+    [ s0 = any
+      [ any_ (__arr_temp: Slice64.array UInt8.t) -> (! -{Seq.get __arr_temp.Slice64.elts 0
+          = ([%#ssocketaddr] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 1 = ([%#ssocketaddr'0] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 2 = ([%#ssocketaddr'1] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 3 = ([%#ssocketaddr'2] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 4 = ([%#ssocketaddr'3] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 5 = ([%#ssocketaddr'4] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 6 = ([%#ssocketaddr'5] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 7 = ([%#ssocketaddr'6] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 8 = ([%#ssocketaddr'7] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 9 = ([%#ssocketaddr'8] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 10 = ([%#ssocketaddr'9] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 11 = ([%#ssocketaddr'10] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 12 = ([%#ssocketaddr'11] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 13 = ([%#ssocketaddr'12] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 14 = ([%#ssocketaddr'13] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 15 = ([%#ssocketaddr'14] (1: UInt8.t))
+        /\ Seq.length __arr_temp.Slice64.elts = 16}-
+        [ &_2 <- __arr_temp ] s1) ]
+    | s1 = from_octets [%#ssocketaddr'16] {_2} {[%#ssocketaddr'15] (80: UInt16.t)}
+        (fun (_x: t_SocketAddrV6Bytes) -> [ &_ret <- _x ] s2)
+    | s2 = return {_ret} ] ]
+  [ & _ret: t_SocketAddrV6Bytes = Any.any_l () | & _2: Slice64.array UInt8.t = Any.any_l () ])
+  [ return (result: t_SocketAddrV6Bytes) ->
+  {[@stop_split] [@expl:verify_socket_v6_localhost_http ensures] ([@stop_split] [@expl:verify_socket_v6_localhost_http result type invariant] [%#ssocketaddr'17] inv_SocketAddrV6Bytes result)
+    /\ ([@stop_split] [@expl:verify_socket_v6_localhost_http ensures] [%#ssocketaddr'18] v6_port result
+    = (80: UInt16.t))}
+    (! return {result}) ]

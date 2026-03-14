@@ -1,0 +1,29 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 212 0 212 44 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 501 14 501 38
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 213 23 213 27
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 213 4 213 28
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 211 10 211 16
+
+use creusot.int.UInt16
+use creusot.prelude.Any
+use int.Int
+
+let rec is_privileged_port (port: UInt16.t) (return (x: bool)) = any
+  [ return (result: bool) -> {[@stop_split] [@expl:is_privileged_port ensures] [%#sextern_specs] result
+    = (UInt16.t'int port < 1024)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_port_1023_privileged
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 212 0 212 44] (return (x: bool)) =
+  (! bb0
+  [ bb0 = s0
+    [ s0 = is_privileged_port [%#ssocketaddr'0] {[%#ssocketaddr] (1023: UInt16.t)}
+        (fun (_x: bool) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ] [ & _ret: bool = Any.any_l () ])
+  [ return (result: bool) -> {[@stop_split] [@expl:verify_port_1023_privileged ensures] [%#ssocketaddr'1] result}
+    (! return {result}) ]

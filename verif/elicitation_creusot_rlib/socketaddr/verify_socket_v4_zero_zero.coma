@@ -1,0 +1,71 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 250 0 250 56 *)
+
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 470 23 470 25
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 469 18 469 41
+let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 251 36 251 37
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 251 39 251 40
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 251 42 251 43
+let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 251 45 251 46
+let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 251 49 251 50
+let%span ssocketaddr'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 251 4 251 51
+let%span ssocketaddr'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 250 39 250 56
+let%span ssocketaddr'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 249 10 249 33
+let%span ssocketaddr'7 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 76 4 76 61
+
+use creusot.slice.Slice64
+use creusot.int.UInt8
+use creusot.int.UInt16
+use seq.Seq
+use creusot.int.UInt64
+use creusot.prelude.Any
+
+type t_SocketAddrV4Bytes
+
+predicate inv_Seq_u8 [@inline:trivial] (_1: Seq.seq UInt8.t) = true
+
+meta "rewrite_def" predicate inv_Seq_u8
+
+predicate invariant_array_u8_4 (self: Slice64.array UInt8.t) =
+  [%#sarray] inv_Seq_u8 (Slice64.view self) /\ Seq.length (Slice64.view self) = UInt64.t'int (4: UInt64.t)
+
+predicate inv_array_u8_4 [@inline:trivial] (_1: Slice64.array UInt8.t) = invariant_array_u8_4 _1
+
+meta "rewrite_def" predicate inv_array_u8_4
+
+predicate inv_SocketAddrV4Bytes (_1: t_SocketAddrV4Bytes)
+
+function v4_port [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 148 0 148 47] (_addr: t_SocketAddrV4Bytes) : UInt16.t
+
+let rec from_octets (ip: Slice64.array UInt8.t) (port: UInt16.t) (return (x: t_SocketAddrV4Bytes)) =
+  {[@stop_split] [@expl:from_octets 'ip' type invariant] [%#sextern_specs] inv_array_u8_4 ip}
+  any
+  [ return (result: t_SocketAddrV4Bytes) ->
+  {[@stop_split] [@expl:from_octets ensures] ([@stop_split] [@expl:from_octets result type invariant] [%#ssocketaddr'7] inv_SocketAddrV4Bytes result)
+    /\ ([@stop_split] [@expl:from_octets ensures] [%#sextern_specs'0] v4_port result = port)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_socket_v4_zero_zero
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 250 0 250 56]
+  (return (x: t_SocketAddrV4Bytes)) = (! bb0
+  [ bb0 = s0
+    [ s0 = any
+      [ any_ (__arr_temp: Slice64.array UInt8.t) -> (! -{Seq.get __arr_temp.Slice64.elts 0
+          = ([%#ssocketaddr] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 1 = ([%#ssocketaddr'0] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 2 = ([%#ssocketaddr'1] (0: UInt8.t))
+        /\ Seq.get __arr_temp.Slice64.elts 3 = ([%#ssocketaddr'2] (0: UInt8.t))
+        /\ Seq.length __arr_temp.Slice64.elts = 4}-
+        [ &_2 <- __arr_temp ] s1) ]
+    | s1 = from_octets [%#ssocketaddr'4] {_2} {[%#ssocketaddr'3] (0: UInt16.t)}
+        (fun (_x: t_SocketAddrV4Bytes) -> [ &_ret <- _x ] s2)
+    | s2 = return {_ret} ] ]
+  [ & _ret: t_SocketAddrV4Bytes = Any.any_l () | & _2: Slice64.array UInt8.t = Any.any_l () ])
+  [ return (result: t_SocketAddrV4Bytes) ->
+  {[@stop_split] [@expl:verify_socket_v4_zero_zero ensures] ([@stop_split] [@expl:verify_socket_v4_zero_zero result type invariant] [%#ssocketaddr'5] inv_SocketAddrV4Bytes result)
+    /\ ([@stop_split] [@expl:verify_socket_v4_zero_zero ensures] [%#ssocketaddr'6] v4_port result = (0: UInt16.t))}
+    (! return {result}) ]
