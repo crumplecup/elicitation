@@ -1,4 +1,4 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 88 0 90 48 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 87 0 89 48 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 537 18 537 93
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 538 18 538 121
@@ -23,11 +23,11 @@ let%span sops'11 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 139 14 
 let%span sops'12 = "/home/erik/repos/creusot/creusot-std/src/std/ops.rs" 144 14 145 104
 let%span sconvert = "/home/erik/repos/creusot/creusot-std/src/std/convert.rs" 14 18 14 32
 let%span sconvert'0 = "/home/erik/repos/creusot/creusot-std/src/std/convert.rs" 15 16 15 20
-let%span spathbytes = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 91 15 91 43
-let%span spathbytes'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 91 15 91 44
-let%span spathbytes'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 92 13 92 26
-let%span spathbytes'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 87 11 87 35
-let%span spathbytes'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 90 5 90 48
+let%span spathbytes = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 90 15 90 43
+let%span spathbytes'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 90 15 90 44
+let%span spathbytes'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 91 13 91 26
+let%span spathbytes'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 86 11 86 35
+let%span spathbytes'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 89 5 89 48
 let%span spathbytes'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/pathbytes.rs" 52 4 52 68
 
 use creusot.slice.Slice64
@@ -188,7 +188,7 @@ axiom inv_axiom'0 [@rewrite]:
       | Err f0 -> inv_ValidationError f0
       end
 
-constant const_MAX_LEN [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 88 32 88 52] : UInt64.t
+constant const_MAX_LEN [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 87 32 87 52] : UInt64.t
 
 function path_len [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/logic_fns.rs" 184 0 184 59] (_p: t_PathBytes) : UInt64.t
 
@@ -381,7 +381,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_path_as_str_valid
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 88 0 90 48]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 87 0 89 48]
   (bytes: Slice64.slice UInt8.t) (return (x: t_Result_PathBytes_ValidationError)) =
   {[@stop_split] [@expl:verify_path_as_str_valid requires] [%#spathbytes'2] Seq.length (Slice64.view bytes)
   <= UInt64.t'int const_MAX_LEN}

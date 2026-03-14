@@ -1,12 +1,12 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 308 0 308 89 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 305 0 305 89 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 537 18 537 93
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 538 18 538 121
 let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 539 18 539 102
 let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 540 18 540 130
-let%span spathbytes = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 309 4 309 32
-let%span spathbytes'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 307 11 307 31
-let%span spathbytes'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 308 49 308 89
+let%span spathbytes = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 306 4 306 32
+let%span spathbytes'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 304 11 304 31
+let%span spathbytes'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 305 49 305 89
 let%span spathbytes'2 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/pathbytes.rs" 52 4 52 68
 
 use creusot.slice.Slice64
@@ -204,7 +204,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_path_large_buffer
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 308 0 308 89]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 305 0 305 89]
   (bytes: Slice64.slice UInt8.t) (return (x: t_Result_PathBytes_ValidationError)) =
   {[@stop_split] [@expl:verify_path_large_buffer requires] [%#spathbytes'0] Seq.length (Slice64.view bytes) <= 4096}
   (! bb0

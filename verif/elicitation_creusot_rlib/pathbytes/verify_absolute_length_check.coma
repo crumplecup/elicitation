@@ -1,10 +1,10 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 152 0 154 51 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 150 0 152 51 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 869 18 869 93
-let%span spathbytes = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 155 4 155 35
-let%span spathbytes'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 150 11 150 34
-let%span spathbytes'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 154 5 154 51
-let%span spathbytes'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 151 10 151 57
+let%span spathbytes = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 153 4 153 35
+let%span spathbytes'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 148 11 148 34
+let%span spathbytes'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 152 5 152 51
+let%span spathbytes'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 149 10 149 57
 let%span spathbytes'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/pathbytes.rs" 194 4 194 68
 
 use creusot.slice.Slice64
@@ -165,7 +165,7 @@ axiom inv_axiom'0 [@rewrite]:
       | Err f0 -> inv_ValidationError f0
       end
 
-constant const_MAX_LEN [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 152 36 152 56] : UInt64.t
+constant const_MAX_LEN [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 150 36 150 56] : UInt64.t
 
 let rec from_slice (bytes: Slice64.slice UInt8.t) (return (x: t_Result_PathAbsolute_ValidationError)) = any
   [ return (result: t_Result_PathAbsolute_ValidationError) ->
@@ -183,7 +183,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_absolute_length_check
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 152 0 154 51]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/pathbytes.rs" 150 0 152 51]
   (bytes: Slice64.slice UInt8.t) (return (x: t_Result_PathAbsolute_ValidationError)) =
   {[@stop_split] [@expl:verify_absolute_length_check requires] [%#spathbytes'0] Seq.length (Slice64.view bytes)
   > UInt64.t'int const_MAX_LEN}
