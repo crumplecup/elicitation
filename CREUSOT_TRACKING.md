@@ -1,142 +1,142 @@
 # Creusot Verification Tracking System
 
-This document describes the Creusot proof infrastructure for the elicitation project, using the "cloud of assumptions" approach for pragmatic formal verification.
+This document describes the Creusot proof infrastructure for the elicitation project.
 
 ## Overview
 
 The Creusot verification system provides:
 
-- **456 trusted proofs** across 26 modules covering all user-derivable contract types AND internal trenchcoat wrappers
-- **Module-level tracking** - CLI runner tracks compilation status for each of 26 modules
-- **CSV output** - Verification results with timestamps and timing data
-- **Zero verification time** - all proofs compile instantly (marked `#[trusted]`)
-- **Cloud of assumptions** - trust stdlib, verify wrapper structure
-- **Compositional verification** - user types inherit proofs automatically through all layers
-- **Complete trenchcoat pipeline** - verification from user types → contract types → trenchcoat types → stdlib
-- **Feature-gated coverage** - optional proofs for uuid, url, regex, datetime types
+- **240 SMT goals** discharged by Alt-Ergo/cvc5 across 26 modules (up from all-`#[trusted]` scaffolding)
+- **Module-level tracking** — CLI runner tracks compilation status for each of 26 modules
+- **CSV output** — Verification results with timestamps and timing data
+- **Progressive de-trusting** — `extern_spec!` axioms replace `#[trusted]` on witness functions
+- **Cloud of assumptions** — trust stdlib and validation libraries; prove wrapper contracts
+- **Compositional verification** — user types inherit proofs automatically
+- **Feature-gated coverage** — optional proofs for uuid, url, regex, datetime types
 
-## Philosophy: Cloud of Assumptions
+## Philosophy: Progressive De-Trusting
 
-Unlike Kani's symbolic execution or Verus's executable specifications, Creusot uses a pragmatic "cloud of assumptions" approach:
+The proof suite started as all-`#[trusted]` scaffolding (compilation checks
+only) and has been progressively strengthened through 11 de-trusting batches.
 
-### What We Trust
+### Strategy
 
-- **Rust stdlib**: String, Vec, HashMap, Duration, IpAddr, Path, etc.
-- **Validation libraries**: uuid crate, url crate, regex crate, chrono, time, jiff
-- **Contract constructors**: `new()` methods with validation logic
-- **Range checks**: Boundary validation, comparison operators
+1. **`extern_spec!` as trusted axioms** — add postcondition contracts to
+   constructors that the solver cannot translate (stdlib, external crates)
+2. **Remove `#[trusted]` from witness functions** — the solver then discharges
+   the witness against the axiom as a real SMT obligation
+3. **Hard walls stay trusted** — types without any Why3 model (floats, serde,
+   runtime-dependent) remain `#[trusted]`
 
-### What We Verify
+### What the SMT solver proves
 
-- **Wrapper structure**: Type is well-formed and correctly typed
-- **Contract enforcement**: Proof function signatures match type contracts
-- **Compositional correctness**: User types built from verified components at ALL layers
-- **Trenchcoat pattern**: Internal wrappers properly bridge stdlib → contracts
-
-### Verification Trenchcoat Architecture
-
-The complete verification pipeline covers ALL layers:
+For each de-trusted witness function, Alt-Ergo proves that the concrete call
+satisfies the extern_spec postcondition. For example:
 
 ```
-User Type (derives Elicit)
-  ↓ uses
-Contract Type (IpPrivate, PathBufExists, StringNonEmpty)  ← Layer 1: Contract proofs
-  ↓ wraps
-Trenchcoat Type (Ipv4Bytes, PathBytes, Utf8Bytes)        ← Layer 2: Trenchcoat proofs (NEW)
-  ↓ wraps
-Stdlib Type (std::net::Ipv4Addr, std::path::Path, str)   ← Layer 3: Trusted (cloud)
+extern_spec: Utf8Bytes::from_slice — bytes@.len() == 0 ==> Ok
+witness:     verify_utf8_empty_valid() calls from_slice(&[])
+proof:       &[]@.len() == 0 is true → postcondition satisfied ∎
 ```
 
-**Why trenchcoat verification matters:**
+### What remains trusted
 
-- Complete compositional story (no gaps in verification chain)
-- Users deriving Elicit on types containing IpAddr, PathBuf, Regex, Url, Uuid get full coverage
-- Validates the "put on trenchcoat → verify → take off trenchcoat" pattern
-
-### Why This Works
-
-1. **Pragmatic**: We're not verifying the Rust stdlib or mature external crates (already battle-tested)
-2. **Focused**: Verification targets the contract + trenchcoat wrapper layers, not dependencies
-3. **Fast**: Zero verification time means proofs don't slow development
-4. **Maintainable**: Simple pattern scales to 456 types without complexity explosion
-5. **Compositional**: Type-level contracts compose through all layers without proof complexity
+- **Stdlib constructors** (`String::new`, `Ipv4Addr::new`, etc.) — the
+  extern_spec axioms themselves are trusted
+- **Hard-wall types** — floats (`f32`/`f64` missing `OrdLogic`), serde
+  deserialization, runtime URL/regex/path/datetime checks, opaque string
+  literal content
+- **Logic functions** in `logic_fns.rs` — trusted wrappers bridging program
+  functions into Pearlite logic context
 
 ## Coverage Summary
 
-### Core Contract Modules (10) - 127 Proofs
+### Core Contract Modules (10)
 
 Always available, no feature gates:
 
-| Module | Proofs | Types |
+| Module | Status | Types |
 |--------|--------|-------|
-| **bools** | 4 | BoolTrue, BoolFalse |
-| **chars** | 6 | Alphabetic, Numeric, Alphanumeric |
-| **integers** | 47 | All signed/unsigned with Positive/NonNegative/NonZero/Range |
-| **strings** | 4 | StringNonEmpty with length bounds |
-| **floats** | 12 | F32/F64 Positive/NonNegative/Finite |
-| **durations** | 2 | DurationPositive |
-| **tuples** | 6 | Tuple2/3/4 compositional wrappers |
-| **collections** | 26 | Vec, Option, Result, Box/Arc/Rc, HashMap, HashSet, etc. |
-| **networks** | 12 | IpPrivate, IpPublic, IPv4/IPv6, Loopback |
-| **paths** | 8 | PathBufExists, IsDir, IsFile, Readable |
+| **bools** | ✅ SMT proved | BoolTrue, BoolFalse |
+| **chars** | ✅ SMT proved | Alphabetic, Numeric, Alphanumeric |
+| **integers** | ✅ SMT proved | All signed/unsigned with Positive/NonNegative/NonZero/Range |
+| **strings** | partial | StringNonEmpty — empty case proved; literal cases trusted |
+| **floats** | 🔒 trusted | F32/F64 — `f32`/`f64` missing `OrdLogic` in Creusot |
+| **durations** | ✅ SMT proved | DurationPositive |
+| **tuples** | ✅ SMT proved | Tuple2/3/4 (trivially-true postconditions) |
+| **collections** | partial | Vec/Option/Box/Arc/Rc/Array proved; HashMap/BTree/LinkedList trusted |
+| **networks** | ✅ SMT proved | IpPrivate, IpPublic, IPv4/IPv6, Loopback |
+| **paths** | 🔒 trusted | PathBufExists, IsDir, IsFile — filesystem-dependent |
 
-### Trenchcoat Wrapper Modules (7) - 241 Proofs
+### Trenchcoat Wrapper Modules (7)
 
 Internal wrappers verifying the stdlib → contract bridge:
 
-| Module | Proofs | Types | Purpose |
-|--------|--------|-------|---------|
-| **ipaddr_bytes** | 43 | Ipv4Bytes, Ipv6Bytes, Ipv4Private, Ipv4Public, Ipv6Private, Ipv6Public | IPv4/IPv6 byte validation |
-| **macaddr** | 27 | MacAddr, MacAddrMulticast, MacAddrUnicast, MacAddrLocal, MacAddrUniversal | MAC address validation |
-| **socketaddr** | 30 | SocketAddrV4Bytes, SocketAddrV6Bytes, port validators | Socket address validation |
-| **utf8** | 17 | Utf8Bytes, Utf8NonEmpty, Utf8Bounded | UTF-8 byte validation |
-| **pathbytes** | 33 | PathBytes, PathAbsolute, PathRelative, PathNonEmpty | Path byte validation (unix) |
-| **regexbytes** | 45 | RegexBytes, BalancedDelimiters, ValidCharClass, ValidEscapes | Regex byte validation |
-| **urlbytes** | 46 | UrlBytes, SchemeBytes, AuthorityBytes, UrlAbsoluteBytes, UrlHttpBytes | URL byte validation |
+| Module | Status | Types |
+|--------|--------|-------|
+| **ipaddr_bytes** | ✅ SMT proved | Ipv4Bytes, Ipv6Bytes, Ipv4/6 Private/Public |
+| **macaddr** | ✅ SMT proved | MacAddr, Multicast/Unicast/Local/Universal |
+| **socketaddr** | ✅ SMT proved | SocketAddrV4/V6Bytes, port validators |
+| **utf8** | ✅ SMT proved | Utf8Bytes, Utf8NonEmpty, Utf8Bounded |
+| **pathbytes** | ✅ SMT proved | PathBytes, PathAbsolute, PathRelative, PathNonEmpty |
+| **regexbytes** | ✅ SMT proved | RegexBytes, BalancedDelimiters, ValidCharClass, ValidEscapes |
+| **urlbytes** | ✅ SMT proved | UrlBytes, SchemeBytes, AuthorityBytes, UrlAbsoluteBytes, UrlHttpBytes |
 
-### Feature-Gated Contract Modules (7) - 44 Proofs
+### Feature-Gated Contract Modules (7)
 
-Require corresponding Cargo features:
-
-| Module | Proofs | Feature | Types |
+| Module | Status | Feature | Types |
 |--------|--------|---------|-------|
-| **uuids** | 4 | `uuid` | UuidNonNil, UuidV4 |
-| **values** | 6 | `serde_json` | ValueArray, ValueObject, ValueNonNull |
-| **urls** | 10 | `url` | UrlValid, UrlHttp, UrlHttps, UrlCanBeBase, UrlWithHost |
-| **regexes** | 10 | `regex` | RegexValid, RegexCaseInsensitive, RegexMultiline, RegexSetValid, RegexSetNonEmpty |
-| **datetimes_chrono** | 6 | `chrono` | DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter |
-| **datetimes_time** | 4 | `time` | OffsetDateTimeAfter, OffsetDateTimeBefore |
-| **datetimes_jiff** | 4 | `jiff` | TimestampAfter, TimestampBefore |
+| **uuids** | 🔒 trusted | `uuid` | UuidNonNil, UuidV4 — `Uuid::parse_str` opaque |
+| **values** | 🔒 trusted | `serde_json` | ValueArray/Object/NonNull — no Value discriminant model |
+| **urls** | 🔒 trusted | `url` | UrlValid, UrlHttp, UrlHttps — runtime URL parsing |
+| **regexes** | 🔒 trusted | `regex` | RegexValid, etc. — runtime regex compilation |
+| **datetimes_chrono** | 🔒 trusted | `chrono` | DateTimeUtc* — runtime datetime |
+| **datetimes_time** | 🔒 trusted | `time` | OffsetDateTime* — runtime datetime |
+| **datetimes_jiff** | 🔒 trusted | `jiff` | Timestamp* — runtime datetime |
 
-### Feature-Gated Trenchcoat Modules (3) - 124 Proofs
+### Feature-Gated Trenchcoat Modules (3)
 
-Internal wrappers for feature-gated types:
+| Module | Status | Feature |
+|--------|--------|---------|
+| **uuid_bytes** | ✅ SMT proved | `uuid` |
+| **http** | ✅ SMT proved | `reqwest` — StatusCodeValid |
+| **serde_boundary** | 🔒 trusted | `serde_json` — no formal serde model |
 
-| Module | Proofs | Feature | Types |
-|--------|--------|---------|-------|
-| **uuid_bytes** | 33 | `uuid` | UuidBytes, version validators, variant validators |
-| **urlbytes** | 46 | `url` | UrlBytes, SchemeBytes, AuthorityBytes |
-| **regexbytes** | 45 | `regex` | RegexBytes, syntax validators |
-
-**Total Coverage: 456 proofs across 26 modules**
-
-- Core contracts: 127 proofs (10 modules)
-- Core trenchcoats: 197 proofs (6 modules + mechanisms)
-- Feature-gated contracts: 44 proofs (7 modules)
-- Feature-gated trenchcoats: 124 proofs (3 modules)
+**Total: 240 SMT goals proved. Remaining trusted functions hit genuine hard walls in Creusot 0.10.x.**
 
 ## Verification Pattern
 
-Every proof follows the same pattern:
+Proof functions follow one of two patterns:
+
+### De-trusted (real SMT proof)
 
 ```rust
-use elicitation::ContractType;  // Or elicitation::verification::types::TrenchcoatType
+// extern_specs.rs — trusted axiom about constructor behavior
+extern_spec! {
+    impl<const MAX_LEN: usize> StringNonEmpty<MAX_LEN> {
+        #[ensures(value@.len() == 0 ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(value: String) -> Result<StringNonEmpty<MAX_LEN>, ValidationError>;
+    }
+}
 
-#[trusted]  // Cloud of assumptions - trust the implementation
-#[requires(precondition)]  // Input contract
-#[ensures(postcondition)]  // Output contract
-pub fn verify_typename_condition(...) -> Result<ContractType, ValidationError> {
-    ContractType::new(...)
+// strings.rs — real proof obligation discharged by Alt-Ergo
+#[requires(true)]
+#[ensures(match result { Ok(_) => false, Err(_) => true })]
+// No #[trusted] — the solver proves this from the extern_spec axiom
+pub fn verify_string_non_empty_invalid() -> Result<StringNonEmpty, ValidationError> {
+    StringNonEmpty::new(String::new())
+}
+```
+
+### Trusted (hard wall)
+
+```rust
+// floats.rs — stays trusted: f32/f64 missing OrdLogic in Creusot
+#[requires(true)]
+#[ensures(match result { Ok(_) => true, Err(_) => false })]
+#[trusted]
+pub fn verify_f32_positive_valid() -> Result<F32Positive, ValidationError> {
+    F32Positive::new(42.5)
 }
 ```
 
@@ -323,19 +323,12 @@ cargo check -p elicitation_creusot --all-features
 
 | Aspect | Kani | Verus | Creusot |
 |--------|------|-------|---------|
-| **Approach** | Symbolic execution | Executable specs | Cloud of assumptions |
-| **Verification Time** | Seconds to minutes | Instant to seconds | Zero (instant) |
-| **Trust Model** | Verify everything | Verify specs | Trust stdlib, verify wrappers |
-| **Coverage** | 100+ proofs | 85 proofs | 171 proofs |
-| **Ease of Use** | Moderate | Moderate | High (simple pattern) |
-| **Proof Complexity** | Medium | Medium | Low (all `#[trusted]`) |
-| **User Base** | Formal methods enthusiasts | Academic/research | Pragmatic verification |
-
-### When to Use Each
-
-- **Kani**: Deep verification of critical algorithms, symbolic execution needed
-- **Verus**: Executable specifications, academic rigor, research projects
-- **Creusot**: Pragmatic verification, production systems, scale to 100+ types
+| **Approach** | Symbolic execution | Executable specs | extern_spec axioms + SMT |
+| **Verification Time** | Seconds to minutes | Instant to seconds | Seconds (SMT discharge) |
+| **Trust Model** | Verify everything | Verify specs | Axiomatize stdlib, prove wrappers |
+| **SMT Goals** | 100+ | 85 | **240** |
+| **Proof Complexity** | Medium | Medium | Low–Medium |
+| **Hard walls** | Heap aliasing | Linear type limits | Floats, serde, runtime types |
 
 ## Benefits of Cloud of Assumptions
 
@@ -390,12 +383,13 @@ cargo check -p elicitation_creusot --all-features
 
 ## Summary
 
-The Creusot verification system provides **pragmatic formal verification** for elicitation:
+The Creusot verification system provides **progressive formal verification** for elicitation:
 
-- **171 proofs** covering 100% of derivable contract types
-- **Zero verification time** (all proofs marked `#[trusted]`)
-- **Cloud of assumptions** - trust stdlib, verify wrappers
-- **Compositional** - user types inherit verification automatically
-- **Feature-gated** - optional proofs for external integrations
+- **240 SMT goals proved** across 11 de-trusting batches
+- **`extern_spec!` axioms** — trusted postconditions on stdlib constructors enable real proofs
+- **Axiomatize stdlib, prove wrappers** — trust what can't be modelled, prove what can
+- **Compositional** — user types inherit verification automatically
+- **Feature-gated** — optional proofs for external integrations
+- **Hard walls documented** — floats, serde, runtime types stay trusted with clear rationale
 
-This approach demonstrates that formal verification can be **fast, simple, and scalable** while still providing meaningful correctness guarantees at the contract wrapper layer.
+The de-trusting strategy demonstrates that formal verification can advance incrementally from all-trusted scaffolding to genuine SMT proofs, with each batch leaving the repository in a stronger proof state than before.

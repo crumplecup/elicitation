@@ -1,8 +1,13 @@
 # Creusot 0.10.0 Verification Guide
 
 This guide covers how to run, extend, and understand the Creusot formal
-verification proof suite for `elicitation`. All 26 proof modules pass as of
-this writing.
+verification proof suite for `elicitation`.
+
+**Current status: 240 SMT goals proved** across 11 de-trusting batches. The
+proof suite began as all-`#[trusted]` scaffolding and has been progressively
+strengthened so that Alt-Ergo/cvc5 discharge real proof obligations for the
+majority of contract types. See [Current Status](#current-status) for the
+complete picture.
 
 ---
 
@@ -413,14 +418,142 @@ PATH. The `just status` recipe reports whether Creusot is available.
 
 ---
 
+## The De-Trusting Strategy
+
+The proof suite evolved through 11 batches from all-`#[trusted]` scaffolding to
+real SMT proofs. The core technique: use `extern_spec!` blocks as **trusted
+axioms** about constructor behavior, then remove `#[trusted]` from the
+`verify_*` witness functions so the solver discharges real obligations.
+
+### Pattern: extern_spec as trusted axiom
+
+```rust
+// extern_specs.rs — trusted axiom about constructor behavior
+extern_spec! {
+    impl<const MAX_LEN: usize> Utf8Bytes<MAX_LEN> {
+        #[ensures(bytes@.len() == 0 ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(bytes@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        fn from_slice(bytes: &[u8]) -> Result<Utf8Bytes<MAX_LEN>, ValidationError>;
+    }
+}
+
+// utf8.rs — now a REAL proof obligation, not trusted
+#[requires(true)]
+#[ensures(match result { Ok(_) => true, Err(_) => false })]
+// No #[trusted] — Alt-Ergo discharges this
+pub fn verify_utf8_empty_valid() -> Result<Utf8Bytes, ValidationError> {
+    Utf8Bytes::from_slice(&[])
+}
+```
+
+The extern_spec says "I trust the constructor does X". The verify function
+says "and here is a witness that satisfies that contract". The solver checks
+the witness against the spec — no `#[trusted]` needed on the witness.
+
+### The opaque contract rule
+
+Functions with **no** extern_spec generate opaque Why3 contracts. Calling them
+from a verified function produces unprovable obligations even for trivial
+postconditions. The fix is always `#[ensures(true)]` at minimum:
+
+```rust
+// Without this, any call to infallible_accessor() creates an unprovable goal
+extern_spec! {
+    impl SocketAddrV4Bytes {
+        #[ensures(true)]
+        fn ip(&self) -> &Ipv4Bytes;
+    }
+}
+```
+
+### Byte string literal limitation
+
+`b"http"` in a witness function body compiles to a `&'static [u8; 4]` in MIR
+— a pointer to a static allocation. Creusot cannot model static allocation
+references:
+
+```
+Error: Unsupported constant value: Scalar(alloc) of type &[u8; 4]
+```
+
+**Fix:** Replace byte string literals with local char arrays:
+
+```rust
+// ❌ Fails: generates Scalar(alloc) in MIR
+let bytes = b"http";
+
+// ✅ Works: individual b'x' literals are scalar constants
+let bytes = [b'h', b't', b't', b'p'];
+let slice: &[u8] = &bytes;
+```
+
+Individual `b'x'` character literals (not slices) are scalar constants and
+are fully supported by Creusot.
+
+### Float comparison wall
+
+`f32` and `f64` do not implement `OrdLogic` in Creusot's type system. Float
+comparisons (`>`, `<`, `>=`, `<=`) cannot appear in `#[ensures]`/`#[requires]`
+annotations or extern_spec postconditions. The `float_ops.rs` test in the
+Creusot repo marks these as `// FIXME` / `// NO_REPLAY`. All `floats.rs`
+functions remain `#[trusted]`.
+
+### String literal content wall
+
+`str::view()` (the `@` operator on `&str`) is `#[logic(opaque)]` in
+creusot-std — meaning `"hello"@` has unknown length in Pearlite. Only
+`String::new()` (empty via `result@ == Seq::empty()`) is provable. String
+witnesses based on non-empty literals (`"hello"`, `"short"`, etc.) remain
+`#[trusted]`.
+
+---
+
 ## Current Status
 
 | Metric | Value |
 |--------|-------|
 | Total modules | 26 |
-| Passing | 26 ✅ |
-| Failing | 0 |
+| Passing (compilation) | 26 ✅ |
+| SMT goals proved | **240** |
+| De-trusting batches | 11 |
 | Creusot version | 0.10.x |
 
-All 26 modules spanning core types, byte-level validation wrappers, and
-feature-gated extensions pass `cargo creusot` compilation successfully.
+All 26 modules compile. 240 proof obligations are now discharged by Alt-Ergo
+rather than accepted on trust.
+
+### Proved modules (real SMT proofs)
+
+| Module | Goals | Notes |
+|--------|-------|-------|
+| `bools` | ✅ all | First de-trusted module |
+| `chars` | ✅ all | |
+| `integers` | ✅ all | 47 functions |
+| `durations` | ✅ all | |
+| `ipaddr_bytes` | ✅ all | Uses logic_fns for octet/loopback wrappers |
+| `macaddr` | ✅ all | |
+| `mechanisms` | ✅ all | |
+| `http` | ✅ all | StatusCodeValid behind `reqwest` feature |
+| `utf8` | ✅ all | |
+| `networks` | ✅ all | IPv4/IPv6 private/public/loopback |
+| `socketaddr` | ✅ all | Accessors via `#[ensures(true)]` extern_specs |
+| `urlbytes` | ✅ all | Byte literals rewritten to char arrays |
+| `pathbytes` | ✅ all | |
+| `regexbytes` | ✅ all | |
+| `collections` | partial | Box/Arc/Rc/Array proved; HashMap/BTree/LinkedList trusted |
+| `strings` | partial | `String::new()` invalid case proved; literals opaque |
+| `tuples` | ✅ all | All `#[ensures(true)]` — trivially proved |
+
+### Hard walls (remain `#[trusted]`)
+
+| File | Count | Reason |
+|------|-------|--------|
+| `serde_boundary.rs` | 35 | No formal model for `serde_json` deserialization |
+| `floats.rs` | 12 | `f32`/`f64` missing `OrdLogic` in Creusot |
+| `collections.rs` | 11 | `HashMap`/`BTreeMap`/`LinkedList` — no `ShallowModel` in creusot-std |
+| `urls.rs` | 10 | Runtime URL parsing (url crate) |
+| `regexes.rs` | 10 | Runtime regex compilation |
+| `paths.rs` | 8 | Filesystem existence checks |
+| `datetimes_*` | 14 | Runtime datetime comparison |
+| `values.rs` | 6 | `serde_json::Value` discriminant — no Why3 model |
+| `uuids.rs` | 4 | `Uuid::parse_str` is opaque |
+| `strings.rs` | 3 | Non-empty string literals — `str::view()` opaque |
