@@ -7,6 +7,10 @@
 use crate::*;
 #[cfg(feature = "reqwest")]
 use elicitation::StatusCodeValid;
+#[cfg(feature = "uuid")]
+use elicitation::verification::types::{
+    UuidBytes, UuidV4Bytes, UuidV7Bytes, has_valid_variant, has_version, is_valid_v4, is_valid_v7,
+};
 use elicitation::{
     ArcNonNull, ArcSatisfies, ArrayAllSatisfy, BoolFalse, BoolTrue, BoxNonNull, BoxSatisfies,
     CharAlphabetic, CharAlphanumeric, CharNumeric, DurationPositive, HashMapNonEmpty,
@@ -15,10 +19,9 @@ use elicitation::{
     I128NonNegative, I128NonZero, I128Positive, IpPrivate, IpPublic, IpV4, IpV6, Ipv4Loopback,
     Ipv6Loopback, IsizeNonNegative, IsizeNonZero, IsizePositive, IsizeRange, OptionSome, RcNonNull,
     RcSatisfies, ResultOk, StringNonEmpty, Tuple2, Tuple3, Tuple4, U8NonZero, U8Positive, U8Range,
-    U16NonZero, U16Positive,
-    U16Range, U32NonZero, U32Positive, U32Range, U64NonZero, U64Positive, U64Range, U128NonZero,
-    U128Positive, UsizeNonZero, UsizePositive, UsizeRange, ValidationError, VecAllSatisfy,
-    VecDequeNonEmpty, VecNonEmpty,
+    U16NonZero, U16Positive, U16Range, U32NonZero, U32Positive, U32Range, U64NonZero, U64Positive,
+    U64Range, U128NonZero, U128Positive, UsizeNonZero, UsizePositive, UsizeRange, ValidationError,
+    VecAllSatisfy, VecDequeNonEmpty, VecNonEmpty,
     verification::types::{
         AuthorityBytes, BalancedDelimiters, Ipv4Bytes, Ipv4Private, Ipv4Public, Ipv6Bytes,
         Ipv6Private, Ipv6Public, MacAddr, PathAbsolute, PathBytes, PathNonEmpty, PathRelative,
@@ -1059,5 +1062,86 @@ extern_spec! {
         fn new(first: C1, second: C2, third: C3, fourth: C4) -> Tuple4<C1, C2, C3, C4>;
         #[ensures(true)]
         fn into_inner(self) -> (C1, C2, C3, C4);
+    }
+}
+
+// ============================================================================
+// UuidBytes / UuidV4Bytes / UuidV7Bytes constructors and accessors
+// ============================================================================
+//
+// Bitwise arithmetic equivalences used in specs:
+//   `bytes[8]@ / 64 == 2`  ↔  `(bytes[8] & 0xC0) == 0x80`  (variant 10xx)
+//   `bytes[6]@ / 16 == n`  ↔  `(bytes[6] & 0xF0) >> 4 == n` (version nibble)
+
+#[cfg(feature = "uuid")]
+extern_spec! {
+    #[ensures(result == (bytes[8usize]@ / 64 == 2))]
+    fn has_valid_variant(bytes: &[u8; 16]) -> bool;
+}
+
+#[cfg(feature = "uuid")]
+extern_spec! {
+    #[ensures(result == (bytes[6usize]@ / 16 == expected@))]
+    fn has_version(bytes: &[u8; 16], expected: u8) -> bool;
+}
+
+#[cfg(feature = "uuid")]
+extern_spec! {
+    #[ensures(result == (bytes[8usize]@ / 64 == 2 && bytes[6usize]@ / 16 == 4))]
+    fn is_valid_v4(bytes: &[u8; 16]) -> bool;
+}
+
+#[cfg(feature = "uuid")]
+extern_spec! {
+    #[ensures(result == (bytes[8usize]@ / 64 == 2 && bytes[6usize]@ / 16 == 7))]
+    fn is_valid_v7(bytes: &[u8; 16]) -> bool;
+}
+
+#[cfg(feature = "uuid")]
+extern_spec! {
+    impl UuidBytes {
+        #[ensures(bytes[8usize]@ / 64 == 2 ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(bytes[8usize]@ / 64 != 2 ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(bytes: [u8; 16]) -> Result<UuidBytes, ValidationError>;
+        #[ensures(true)]
+        fn get(&self) -> &[u8; 16];
+        #[ensures(true)]
+        fn bytes(&self) -> [u8; 16];
+        #[ensures(true)]
+        fn version(&self) -> u8;
+        #[ensures(true)]
+        fn has_version(&self, expected: u8) -> bool;
+    }
+}
+
+#[cfg(feature = "uuid")]
+extern_spec! {
+    impl UuidV4Bytes {
+        #[ensures(bytes[8usize]@ / 64 == 2 && bytes[6usize]@ / 16 == 4 ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(!(bytes[8usize]@ / 64 == 2 && bytes[6usize]@ / 16 == 4) ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(bytes: [u8; 16]) -> Result<UuidV4Bytes, ValidationError>;
+        #[ensures(true)]
+        fn get(&self) -> &UuidBytes;
+        #[ensures(true)]
+        fn bytes(&self) -> [u8; 16];
+        #[ensures(true)]
+        fn into_inner(self) -> UuidBytes;
+    }
+}
+
+#[cfg(feature = "uuid")]
+extern_spec! {
+    impl UuidV7Bytes {
+        #[ensures(bytes[8usize]@ / 64 == 2 && bytes[6usize]@ / 16 == 7 ==> match result { Ok(_) => true, Err(_) => false })]
+        #[ensures(!(bytes[8usize]@ / 64 == 2 && bytes[6usize]@ / 16 == 7) ==> match result { Err(_) => true, Ok(_) => false })]
+        fn new(bytes: [u8; 16]) -> Result<UuidV7Bytes, ValidationError>;
+        #[ensures(true)]
+        fn get(&self) -> &UuidBytes;
+        #[ensures(true)]
+        fn bytes(&self) -> [u8; 16];
+        #[ensures(true)]
+        fn timestamp_ms(&self) -> u64;
+        #[ensures(true)]
+        fn into_inner(self) -> UuidBytes;
     }
 }
