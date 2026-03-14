@@ -21,7 +21,6 @@ pub fn verify_string_non_empty_valid() -> Result<StringNonEmpty, elicitation::Va
 /// Verify StringNonEmpty rejects empty string.
 #[requires(true)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_string_non_empty_invalid() -> Result<StringNonEmpty, elicitation::ValidationError> {
     StringNonEmpty::new(String::new())
 }

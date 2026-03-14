@@ -5,30 +5,30 @@
 //! verified without being marked `#[trusted]`.
 
 use crate::*;
-use elicitation::{
-    ArcNonNull, ArcSatisfies, ArrayAllSatisfy, BoolFalse, BoolTrue, BoxNonNull, BoxSatisfies,
-    CharAlphabetic, CharAlphanumeric, CharNumeric,
-    DurationPositive, HashMapNonEmpty, HashSetNonEmpty, I128NonNegative, I128NonZero,
-    I128Positive, I16NonNegative, I16NonZero, I16Positive, I32NonNegative, I32NonZero, I32Positive,
-    I64NonNegative, I64NonZero, I64Positive, I8NonNegative, I8NonZero, I8Positive, I8Range,
-    IpPrivate, IpPublic, IpV4, IpV6, Ipv4Loopback, Ipv6Loopback,
-    IsizeNonNegative, IsizeNonZero, IsizePositive, IsizeRange, OptionSome,
-    RcNonNull, RcSatisfies, ResultOk, StringNonEmpty,
-    U128NonZero, U128Positive, U16NonZero, U16Positive, U16Range, U32NonZero, U32Positive,
-    U32Range, U64NonZero, U64Positive, U64Range, U8NonZero, U8Positive, U8Range, UsizeNonZero,
-    UsizePositive, UsizeRange, VecAllSatisfy, VecDequeNonEmpty, VecNonEmpty, ValidationError,
-    verification::types::{
-        Ipv4Bytes, Ipv4Private, Ipv4Public, Ipv6Bytes, Ipv6Private, Ipv6Public,
-        MacAddr, PathAbsolute, PathBytes, PathNonEmpty, PathRelative,
-        SocketAddrV4Bytes, SocketAddrV6Bytes, Utf8Bytes,
-        SchemeBytes, AuthorityBytes, UrlAbsoluteBytes, UrlBytes, UrlHttpBytes, UrlWithAuthorityBytes,
-        BalancedDelimiters, RegexBytes, ValidCharClass, ValidEscapes, ValidQuantifiers,
-        is_dynamic_port, is_ipv4_private, is_ipv6_private, is_local, is_multicast, is_nonzero_port,
-        is_privileged_port, is_registered_port, is_unicast, is_universal, is_well_known_port,
-    },
-};
 #[cfg(feature = "reqwest")]
 use elicitation::StatusCodeValid;
+use elicitation::{
+    ArcNonNull, ArcSatisfies, ArrayAllSatisfy, BoolFalse, BoolTrue, BoxNonNull, BoxSatisfies,
+    CharAlphabetic, CharAlphanumeric, CharNumeric, DurationPositive, HashMapNonEmpty,
+    HashSetNonEmpty, I8NonNegative, I8NonZero, I8Positive, I8Range, I16NonNegative, I16NonZero,
+    I16Positive, I32NonNegative, I32NonZero, I32Positive, I64NonNegative, I64NonZero, I64Positive,
+    I128NonNegative, I128NonZero, I128Positive, IpPrivate, IpPublic, IpV4, IpV6, Ipv4Loopback,
+    Ipv6Loopback, IsizeNonNegative, IsizeNonZero, IsizePositive, IsizeRange, OptionSome, RcNonNull,
+    RcSatisfies, ResultOk, StringNonEmpty, Tuple2, Tuple3, Tuple4, U8NonZero, U8Positive, U8Range,
+    U16NonZero, U16Positive,
+    U16Range, U32NonZero, U32Positive, U32Range, U64NonZero, U64Positive, U64Range, U128NonZero,
+    U128Positive, UsizeNonZero, UsizePositive, UsizeRange, ValidationError, VecAllSatisfy,
+    VecDequeNonEmpty, VecNonEmpty,
+    verification::types::{
+        AuthorityBytes, BalancedDelimiters, Ipv4Bytes, Ipv4Private, Ipv4Public, Ipv6Bytes,
+        Ipv6Private, Ipv6Public, MacAddr, PathAbsolute, PathBytes, PathNonEmpty, PathRelative,
+        RegexBytes, SchemeBytes, SocketAddrV4Bytes, SocketAddrV6Bytes, UrlAbsoluteBytes, UrlBytes,
+        UrlHttpBytes, UrlWithAuthorityBytes, Utf8Bytes, ValidCharClass, ValidEscapes,
+        ValidQuantifiers, is_dynamic_port, is_ipv4_private, is_ipv6_private, is_local,
+        is_multicast, is_nonzero_port, is_privileged_port, is_registered_port, is_unicast,
+        is_universal, is_well_known_port,
+    },
+};
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
@@ -723,8 +723,6 @@ extern_spec! {
     }
 }
 
-
-
 // ============================================================================
 // std::net::Ipv4Addr / Ipv6Addr constructors (for network type proofs)
 // ============================================================================
@@ -847,6 +845,16 @@ extern_spec! {
     }
 }
 
+// ============================================================================
+// String::new constructor
+// ============================================================================
+
+extern_spec! {
+    impl String {
+        #[ensures(result@ == Seq::empty())]
+        fn new() -> String;
+    }
+}
 
 // ============================================================================
 // StringNonEmpty constructor
@@ -854,11 +862,10 @@ extern_spec! {
 
 extern_spec! {
     impl<const MAX_LEN: usize> StringNonEmpty<MAX_LEN> {
-        #[ensures(true)]
+        #[ensures(value@.len() == 0 ==> match result { Err(_) => true, Ok(_) => false })]
         fn new(value: String) -> Result<StringNonEmpty<MAX_LEN>, ValidationError>;
     }
 }
-
 
 // ============================================================================
 // PathAbsolute / PathRelative / PathNonEmpty constructors
@@ -1017,5 +1024,40 @@ extern_spec! {
         fn from_slice(bytes: &[u8]) -> Result<RegexBytes<MAX_LEN>, ValidationError>;
         #[ensures(true)]
         fn as_str(&self) -> &str;
+    }
+}
+
+// ============================================================================
+// Tuple2 / Tuple3 / Tuple4 constructors and accessors
+// ============================================================================
+
+extern_spec! {
+    impl<C1, C2> Tuple2<C1, C2> {
+        #[ensures(true)]
+        fn new(first: C1, second: C2) -> Tuple2<C1, C2>;
+        #[ensures(true)]
+        fn first(&self) -> &C1;
+        #[ensures(true)]
+        fn second(&self) -> &C2;
+        #[ensures(true)]
+        fn into_inner(self) -> (C1, C2);
+    }
+}
+
+extern_spec! {
+    impl<C1, C2, C3> Tuple3<C1, C2, C3> {
+        #[ensures(true)]
+        fn new(first: C1, second: C2, third: C3) -> Tuple3<C1, C2, C3>;
+        #[ensures(true)]
+        fn into_inner(self) -> (C1, C2, C3);
+    }
+}
+
+extern_spec! {
+    impl<C1, C2, C3, C4> Tuple4<C1, C2, C3, C4> {
+        #[ensures(true)]
+        fn new(first: C1, second: C2, third: C3, fourth: C4) -> Tuple4<C1, C2, C3, C4>;
+        #[ensures(true)]
+        fn into_inner(self) -> (C1, C2, C3, C4);
     }
 }
