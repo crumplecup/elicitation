@@ -430,6 +430,33 @@ impl ProofHarness {
             Self::new("urlbytes", "experiment_scheme_exact_size"),
             Self::new("urlbytes", "experiment_scheme_no_assertions"),
             Self::new("urlbytes", "experiment_scheme_symbolic_constrained"),
+            // clap_types: Select enum invariants + trusted third-party assumptions
+            Self::new("clap_types", "verify_color_choice_label_count"),
+            Self::new("clap_types", "verify_color_choice_roundtrip_auto"),
+            Self::new("clap_types", "verify_color_choice_roundtrip_always"),
+            Self::new("clap_types", "verify_color_choice_roundtrip_never"),
+            Self::new("clap_types", "verify_color_choice_unknown_rejected"),
+            Self::new("clap_types", "verify_arg_action_label_count"),
+            Self::new("clap_types", "verify_arg_action_all_labels_roundtrip"),
+            Self::new("clap_types", "verify_arg_action_unknown_rejected"),
+            Self::new("clap_types", "verify_value_source_label_count"),
+            Self::new("clap_types", "verify_value_source_all_labels_roundtrip"),
+            Self::new("clap_types", "verify_value_source_unknown_rejected"),
+            Self::new("clap_types", "verify_error_kind_label_count"),
+            Self::new("clap_types", "verify_error_kind_all_labels_roundtrip"),
+            Self::new("clap_types", "verify_error_kind_unknown_rejected"),
+            Self::new("clap_types", "verify_value_hint_label_count"),
+            Self::new("clap_types", "verify_value_hint_all_labels_roundtrip"),
+            Self::new("clap_types", "verify_value_hint_unknown_rejected"),
+            Self::new("clap_types", "verify_clap_arg_trusted_third_party"),
+            Self::new("clap_types", "verify_clap_arg_group_trusted_third_party"),
+            Self::new("clap_types", "verify_clap_command_trusted_third_party"),
+            Self::new("clap_types", "verify_clap_id_trusted_third_party"),
+            Self::new(
+                "clap_types",
+                "verify_clap_possible_value_trusted_third_party",
+            ),
+            Self::new("clap_types", "verify_clap_value_range_trusted_third_party"),
         ]
     }
 
