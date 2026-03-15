@@ -135,6 +135,12 @@ pub use plugin::{
 };
 pub use plugin_registry::{PluginRegistry, Toolchain};
 
+pub mod dynamic;
+pub use dynamic::{
+    AnyToolFactory, AnyToolSlot, DynamicToolDescriptor, DynamicToolRegistry,
+    ToolFactoryRegistration, TypedSlot,
+};
+
 #[cfg(feature = "serde_json")]
 mod value_impl;
 
