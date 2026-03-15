@@ -205,6 +205,166 @@ In `src/lib.rs`:
 pub use primitives::foo_types::{MyEnum, MyType, /* ... */};
 ```
 
+### 2.4 TypeSpec (`ElicitSpec`) in `src/type_spec/`
+
+Create `src/type_spec/foo_specs.rs`. This adds agent-browsable contract
+descriptions to the global inventory, complementing the structural metadata
+from `ElicitIntrospect`. Agents use this via the `describe_type` / `explore_type`
+MCP tools.
+
+Two macros handle the boilerplate:
+
+```rust
+//! ElicitSpec impls for foo types. Available with the `foo-types` feature.
+
+#[cfg(feature = "foo-types")]
+mod foo_impls {
+    use crate::{
+        ElicitSpec, SpecCategoryBuilder, SpecEntryBuilder, TypeSpec, TypeSpecBuilder,
+        TypeSpecInventoryKey,
+    };
+
+    // For Select enums — list each variant with a description
+    macro_rules! impl_select_spec {
+        (
+            type    = $ty:ty,
+            name    = $name:literal,
+            summary = $summary:literal,
+            variants = [$(($label:literal, $desc:literal)),+ $(,)?]
+        ) => {
+            impl ElicitSpec for $ty {
+                fn type_spec() -> TypeSpec {
+                    let variants = SpecCategoryBuilder::default()
+                        .name("variants".to_string())
+                        .entries(vec![
+                            $(
+                                SpecEntryBuilder::default()
+                                    .label($label.to_string())
+                                    .description($desc.to_string())
+                                    .build()
+                                    .expect("valid SpecEntry"),
+                            )+
+                        ])
+                        .build()
+                        .expect("valid SpecCategory");
+                    let source = SpecCategoryBuilder::default()
+                        .name("source".to_string())
+                        .entries(vec![
+                            SpecEntryBuilder::default()
+                                .label("crate".to_string())
+                                .description("foo — third-party crate".to_string())
+                                .build()
+                                .expect("valid SpecEntry"),
+                            SpecEntryBuilder::default()
+                                .label("pattern".to_string())
+                                .description("Select — choose one variant from the list".to_string())
+                                .build()
+                                .expect("valid SpecEntry"),
+                        ])
+                        .build()
+                        .expect("valid SpecCategory");
+                    TypeSpecBuilder::default()
+                        .type_name($name.to_string())
+                        .summary($summary.to_string())
+                        .categories(vec![variants, source])
+                        .build()
+                        .expect("valid TypeSpec")
+                }
+            }
+            inventory::submit!(TypeSpecInventoryKey::new(
+                $name,
+                <$ty as ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$ty>
+            ));
+        };
+    }
+
+    // For builder/struct types — list key fields
+    macro_rules! impl_builder_spec {
+        (
+            type    = $ty:ty,
+            name    = $name:literal,
+            summary = $summary:literal,
+            fields  = [$(($label:literal, $desc:literal)),+ $(,)?]
+        ) => {
+            impl ElicitSpec for $ty {
+                fn type_spec() -> TypeSpec {
+                    let fields = SpecCategoryBuilder::default()
+                        .name("fields".to_string())
+                        .entries(vec![
+                            $(
+                                SpecEntryBuilder::default()
+                                    .label($label.to_string())
+                                    .description($desc.to_string())
+                                    .build()
+                                    .expect("valid SpecEntry"),
+                            )+
+                        ])
+                        .build()
+                        .expect("valid SpecCategory");
+                    let source = SpecCategoryBuilder::default()
+                        .name("source".to_string())
+                        .entries(vec![
+                            SpecEntryBuilder::default()
+                                .label("crate".to_string())
+                                .description("foo — third-party crate".to_string())
+                                .build()
+                                .expect("valid SpecEntry"),
+                            SpecEntryBuilder::default()
+                                .label("pattern".to_string())
+                                .description("Survey — builder type elicited field by field".to_string())
+                                .build()
+                                .expect("valid SpecEntry"),
+                        ])
+                        .build()
+                        .expect("valid SpecCategory");
+                    TypeSpecBuilder::default()
+                        .type_name($name.to_string())
+                        .summary($summary.to_string())
+                        .categories(vec![fields, source])
+                        .build()
+                        .expect("valid TypeSpec")
+                }
+            }
+            inventory::submit!(TypeSpecInventoryKey::new(
+                $name,
+                <$ty as ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$ty>
+            ));
+        };
+    }
+
+    impl_select_spec!(
+        type    = foo::MyEnum,
+        name    = "foo::MyEnum",
+        summary = "One-line description of what MyEnum controls.",
+        variants = [
+            ("VariantA", "Description of what VariantA does"),
+            ("VariantB", "Description of what VariantB does"),
+        ]
+    );
+
+    impl_builder_spec!(
+        type    = foo::MyBuilder,
+        name    = "foo::MyBuilder",
+        summary = "One-line description of the builder type.",
+        fields = [
+            ("field_one", "What field_one controls"),
+            ("field_two", "What field_two controls"),
+        ]
+    );
+}
+```
+
+Then wire the new file in `src/type_spec/mod.rs`:
+
+```rust
+mod foo_specs;
+```
+
+The module declaration is unconditional — the `#[cfg(feature = "foo-types")]`
+lives inside the file. This matches the pattern of all other `*_specs.rs` files.
+
 ---
 
 ## Phase 3 — Wrapper Crate `crates/elicit_foo/`
@@ -502,6 +662,8 @@ Feature flag: foo-types
 [ ] Each type file: Prompt + Select (or text) + Elicitation + ElicitIntrospect
 [ ] primitives/mod.rs: mod foo_types gated
 [ ] lib.rs: pub use exports gated
+[ ] type_spec/foo_specs.rs: ElicitSpec impls (impl_select_spec! / impl_builder_spec!)
+[ ] type_spec/mod.rs: mod foo_specs added
 [ ] just check-all elicitation passes clean
 
 [ ] elicit_foo/Cargo.toml created
