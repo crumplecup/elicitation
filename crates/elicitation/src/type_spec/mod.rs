@@ -21,6 +21,7 @@
 
 mod bool_contracts;
 mod char_contracts;
+mod clap_specs;
 mod collection_contracts;
 mod collections;
 mod datetime_specs;
