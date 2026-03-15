@@ -75,6 +75,12 @@
 /// /// Users import familiar names:
 /// use elicit_reqwest::Client;  // Same name as original!
 /// ```
+/// # Variants
+///
+/// | Syntax | `JsonSchema` | `Serialize`/`Deserialize` |
+/// |--------|-------------|--------------------------|
+/// | `elicit_newtype!(T, as Name)` | Generic object schema | No |
+/// | `elicit_newtype!(T, as Name, serde)` | Delegated to `T` | Yes (`T: Serialize`) |
 #[macro_export]
 macro_rules! elicit_newtype {
     // Syntax: elicit_newtype!(path::to::Type, as WrapperName);

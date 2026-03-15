@@ -811,6 +811,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_clap"
+version = "0.9.1"
+dependencies = [
+ "clap",
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "rmcp",
+ "schemars",
+ "serde",
+ "tracing",
+]
+
+[[package]]
 name = "elicit_jiff"
 version = "0.9.1"
 dependencies = [

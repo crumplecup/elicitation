@@ -16,6 +16,7 @@ members = [
   "crates/elicit_chrono",
   "crates/elicit_url",
   "crates/elicit_jiff",
+  "crates/elicit_clap",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
@@ -44,6 +45,7 @@ elicitation_macros = { path = "crates/elicitation_macros", version = "0.9.1" }
 elicitation_rand = { path = "crates/elicitation_rand", version = "0.9.1" }
 elicitation_kani = { path = "crates/elicitation_kani", version = "0.9.1" }
 elicit_chrono = { path = "crates/elicit_chrono", version = "0.9.1" }
+elicit_clap = { path = "crates/elicit_clap", version = "0.9.1" }
 elicit_jiff = { path = "crates/elicit_jiff", version = "0.9.1" }
 elicit_url = { path = "crates/elicit_url", version = "0.9.1" }
 elicit_time = { path = "crates/elicit_time", version = "0.9.1" }
