@@ -1,230 +1,405 @@
-# `#[reflect_trait]` Implementation Plan
+# `#[reflect_trait]` — Trait Wrapping and Dynamic Tool Factories
 
-## Problem
+## What We Are Actually Building
 
-The current `elicit_*` newtype approach requires one file per wrapped type.
-For trait families (like `Select`) where many types share the same interface,
-wrapping each type independently means duplicating the same method signatures
-N times. A `#[reflect_trait]` attribute macro lets you write one impl block
-per type and have the macro generate both the delegation bodies and MCP tool
-registrations.
+Third-party crates define traits like `diesel::Insertable`, `serde::Serialize`,
+or `clap::ValueEnum`. Types implementing those traits get the trait's methods
+for free — but those methods are invisible to MCP because they live in the
+upstream crate's impl, not in any `impl` block we own.
 
----
+**Goal:** capture a third-party trait's methods as MCP tools, available to
+agents for any concrete type that implements the trait, without requiring the
+user to write per-type boilerplate.
 
-## Core Design
-
-### Where it lives
-
-`#[reflect_trait]` is an **attribute macro** (not a derive). Per project
-convention: `_macros` for attribute macros, `_derive` for derive macros.
-Goes in **`crates/elicitation_macros/src/`**.
-
-> Note: `#[reflect_methods]` is an attribute macro that lives in
-> `elicitation_derive` — a historical inconsistency. We follow the stated
-> rule here.
-
-### Syntax
-
-```rust
-// 1. Define the wrapper trait by hand (no macro on the definition)
-pub trait SelectTools: elicitation::Select {}
-
-// 2. For each concrete type, use #[reflect_trait] on the impl
-#[reflect_trait(elicitation::Select)]
-impl SelectTools for clap::ColorChoice {
-    fn labels() -> Vec<String>;
-    fn from_label(label: String) -> Option<clap::ColorChoice>;
-    fn options() -> Vec<clap::ColorChoice>;
-}
-```
-
-The macro argument `elicitation::Select` is the **source trait** whose methods
-we delegate to. This is required because without it, calling `Self::labels()`
-inside `SelectTools::labels()` would recurse infinitely.
-
-### Name derivation
-
-Tool names are derived from the `for T` type path, stripped of namespace and
-lowercased. `clap::ColorChoice` → `color_choice`. Method name appended:
-`color_choice_labels`, `color_choice_from_label`, `color_choice_options`.
-
-If the type name contains ambiguity (e.g. `clap::builder::ValueHint`), only
-the last segment is used: `value_hint`. An optional `as Name` argument
-overrides the derived name:
-
-```rust
-#[reflect_trait(elicitation::Select, as = ValueHint)]
-impl SelectTools for clap::builder::ValueHint { ... }
-```
+This is fundamentally different from `#[reflect_methods]`, which wraps methods
+the user writes. Here we wrap methods that already exist upstream.
 
 ---
 
-## What the Macro Generates
+## The Three-Time Model
 
-Given:
+```
+COMPILE TIME    inventory::submit! → ToolFactoryRegistration
+                    (macro generates factory struct + submission)
+
+STARTUP TIME    server.register_type::<diesel::User>("user")
+                    (user tells registry which concrete types exist)
+                    (monomorphization happens here — closures capture T)
+
+REQUEST TIME    agent calls "instantiate_insertable" { prefix: "user" }
+                    (factory creates DynamicToolDescriptors for T="user")
+                    (notify_tool_list_changed fires)
+                    (agent re-calls list_tools, sees user_insert etc.)
+```
+
+The agent is oblivious to which time any tool was created. From its perspective:
+it sees a factory meta-tool, calls it, gets new tools. No redeployment needed.
+
+---
+
+## MCP Protocol Support — Already There
+
+rmcp 0.15 already has everything we need:
 
 ```rust
-#[reflect_trait(elicitation::Select)]
-impl SelectTools for clap::ColorChoice {
-    fn labels() -> Vec<String>;
-    fn from_label(label: String) -> Option<clap::ColorChoice>;
+// In rmcp::service::server.rs — already exists:
+method!(peer_not notify_tool_list_changed ToolListChangedNotification);
+
+// In our capabilities builder — already exists:
+ServerCapabilitiesBuilder::default()
+    .enable_tool_list_changed()  // sets listChanged: true in capabilities
+```
+
+Clients that see `listChanged: true` in server capabilities know to refresh
+their tool list when `notifications/tools/list_changed` arrives. Claude Desktop,
+Cursor, and the official MCP Inspector all support this.
+
+---
+
+## Core Types
+
+### `DynamicToolDescriptor`
+
+Like a static `ToolDescriptor` but with a runtime dispatch handler:
+
+```rust
+/// A tool whose handler was created at runtime via a factory.
+pub struct DynamicToolDescriptor {
+    /// MCP tool name (e.g. "user__insert")
+    pub name: String,
+    /// Description shown to the agent
+    pub description: String,
+    /// JSON Schema for the tool's parameters, generated at registration time
+    pub schema: schemars::Schema,
+    /// Type-erased handler — all type safety is enforced at registration via bounds
+    pub handler: Arc<dyn Fn(serde_json::Value) -> BoxFuture<'static, Result<CallToolResult, ErrorData>> + Send + Sync>,
 }
 ```
 
-The macro emits:
+The bounds (`T: Serialize + Deserialize + JsonSchema + Elicit + Send + Sync + 'static`)
+are enforced when the closure is *created* inside `register_type::<T>()`.
+By the time it reaches `DynamicToolDescriptor`, it's already type-safe — no
+`Box<dyn Any>` anywhere in the hot path.
+
+### `AnyToolSlot`
+
+A type-erased but bounds-checked container for a concrete type `T`.
+Created at startup inside `register_type::<T>()`, holds the vtable for
+calling trait methods on `T`.
 
 ```rust
-// 1. The impl block with generated delegation bodies
-impl SelectTools for clap::ColorChoice {
-    fn labels() -> Vec<String> {
-        <clap::ColorChoice as elicitation::Select>::labels()
-    }
-    fn from_label(label: String) -> Option<clap::ColorChoice> {
-        <clap::ColorChoice as elicitation::Select>::from_label(&label)
-    }
+/// Object-safe wrapper holding the dispatch vtable for one registered type.
+///
+/// Created once per `register_type::<T>()` call. The factory uses it to
+/// generate DynamicToolDescriptors without knowing T at factory-definition time.
+pub trait AnyToolSlot: Send + Sync + 'static {
+    /// Type name as provided by the user (e.g. "user", "post")
+    fn prefix(&self) -> &str;
+    /// Rust type name for diagnostics
+    fn type_name(&self) -> &'static str;
+    /// JSON schema for the type's fields (from JsonSchema bound)
+    fn schema(&self) -> schemars::Schema;
 }
 
-// 2. A param struct for methods with arguments
-#[derive(Debug, Clone, elicitation::Elicit, schemars::JsonSchema)]
-pub struct ColorChoiceFromLabelParams {
-    pub label: String,
+/// Concrete slot for a known T — only constructable when bounds are satisfied
+pub struct TypedSlot<T>
+where
+    T: Serialize + DeserializeOwned + JsonSchema + Elicit + Send + Sync + 'static,
+{
+    prefix: String,
+    _phantom: PhantomData<T>,
 }
+```
 
-// 3. MCP tool wrappers in a separate inherent impl
-impl clap::ColorChoice {
-    #[tool(description = "labels — list all ColorChoice labels")]
-    pub fn color_choice_labels_tool(
+### `AnyToolFactory`
+
+Object-safe trait submitted to inventory. Each factory knows the method
+shapes of one third-party trait and can produce tools for any `AnyToolSlot`.
+
+```rust
+/// Object-safe factory — no generics, works as a trait object in inventory.
+pub trait AnyToolFactory: Send + Sync + 'static {
+    /// The third-party trait this factory wraps (for display and meta-tool naming)
+    fn trait_name(&self) -> &'static str;
+
+    /// Human-readable description for the factory meta-tool
+    fn factory_description(&self) -> &'static str;
+
+    /// Names of methods this factory can produce tools for
+    fn method_names(&self) -> &'static [&'static str];
+
+    /// Produce DynamicToolDescriptors for one registered slot.
+    ///
+    /// Called when an agent requests tool instantiation.
+    /// The factory downcasts the slot to its expected concrete type.
+    fn instantiate(
         &self,
-        _params: rmcp::Parameters<()>,
-    ) -> Result<rmcp::Json<Vec<String>>, rmcp::ErrorData> {
-        Ok(rmcp::Json(<clap::ColorChoice as elicitation::Select>::labels()))
+        slot: &dyn AnyToolSlot,
+    ) -> Result<Vec<DynamicToolDescriptor>, ErrorData>;
+}
+
+/// Inventory key for factory discovery at runtime
+pub struct ToolFactoryRegistration {
+    pub trait_name: &'static str,
+    pub factory: &'static dyn AnyToolFactory,
+}
+inventory::collect!(ToolFactoryRegistration);
+```
+
+### `DynamicToolRegistry`
+
+The middleware layer. Sits between inventory and `PluginRegistry`.
+Implements `ElicitPlugin` so it drops into the existing plugin system.
+
+```rust
+pub struct DynamicToolRegistry {
+    /// Factories discovered from inventory at construction
+    factories: Vec<&'static dyn AnyToolFactory>,
+
+    /// Type slots registered at startup — keyed by prefix
+    /// Arc<RwLock> because register_type can be called concurrently at startup
+    slots: Arc<RwLock<HashMap<String, Box<dyn AnyToolSlot>>>>,
+
+    /// Live dynamic tools — populated when agent calls a factory meta-tool
+    dynamic_tools: Arc<RwLock<Vec<DynamicToolDescriptor>>>,
+
+    /// rmcp peer handle for sending notify_tool_list_changed
+    /// Set when the registry is attached to a server
+    peer: Arc<OnceLock<rmcp::service::Peer<RoleServer>>>,
+}
+
+impl DynamicToolRegistry {
+    /// Collect all factories from inventory
+    pub fn new() -> Self { ... }
+
+    /// Called at server startup — registers a concrete type T with a prefix.
+    /// Monomorphization happens here: closures are generated capturing T's vtable.
+    pub fn register_type<T>(&self, prefix: impl Into<String>) -> &Self
+    where
+        T: Serialize + DeserializeOwned + JsonSchema + Elicit + Send + Sync + 'static,
+    { ... }
+
+    /// Called by a factory meta-tool at request time.
+    /// Creates DynamicToolDescriptors for the given prefix and fires list_changed.
+    async fn instantiate(&self, trait_name: &str, prefix: &str) -> Result<CallToolResult, ErrorData>
+    { ... }
+}
+
+impl ElicitPlugin for DynamicToolRegistry {
+    fn name(&self) -> &'static str { "dynamic" }
+
+    fn list_tools(&self) -> Vec<Tool> {
+        // factory meta-tools (always present) + instantiated dynamic tools
+        self.factory_meta_tools()
+            .chain(self.dynamic_tools.read().iter().map(|d| d.as_tool()))
+            .collect()
     }
 
-    #[tool(description = "from_label — get ColorChoice from label string")]
-    pub fn color_choice_from_label_tool(
-        &self,
-        params: rmcp::Parameters<ColorChoiceFromLabelParams>,
-    ) -> Result<rmcp::Json<Option<clap::ColorChoice>>, rmcp::ErrorData> {
-        Ok(rmcp::Json(<clap::ColorChoice as elicitation::Select>::from_label(&params.label)))
+    fn call_tool(&self, params, ctx) -> BoxFuture<...> {
+        // Route to: factory meta-tool handler, or dynamic tool handler
     }
 }
 ```
 
-### Differences from `#[reflect_methods]`
+---
 
-| | `#[reflect_methods]` | `#[reflect_trait]` |
-|---|---|---|
-| Applied to | `impl Type { fn bodies; }` | `impl Trait for Type { fn sigs; }` |
-| Method bodies | Written by caller | Generated (delegate to source trait) |
-| Delegation | `self.0.method()` (via Deref) | `<Type as SourceTrait>::method()` |
-| Type context | Inherent impl, self is known | `for Type` clause gives the type |
-| Param source | From existing body | From bare signature |
+## The Factory Meta-Tool
+
+For each factory submitted to inventory, one meta-tool is automatically
+registered in `DynamicToolRegistry::list_tools()`. Example for an
+`InsertableToolFactory`:
+
+```
+Tool name:    "dynamic__instantiate_insertable"
+Description:  "Create insert/batch_insert tools for a registered type.
+               Call register_type::<T>(prefix) at startup to make T available."
+Parameters:   { "prefix": "string — the name used in register_type::<T>(prefix)" }
+```
+
+When the agent calls this tool:
+1. `instantiate("diesel::Insertable", "user")` runs
+2. Finds the `TypedSlot<User>` registered under prefix `"user"`
+3. Calls `InsertableToolFactory::instantiate(slot)` → Vec<DynamicToolDescriptor>
+4. Adds descriptors to `dynamic_tools`
+5. Calls `peer.notify_tool_list_changed()`
+6. Agent re-calls `list_tools`, sees `user__insert`, `user__batch_insert`, etc.
 
 ---
 
-## Argument signature type adaptation
+## The `#[reflect_trait]` Macro
 
-Bare signatures in the impl block may use references that aren't owned.
-The macro applies the same conversions as `#[reflect_methods]`:
+Lives in `elicitation_macros` (attribute macro, per project convention).
+Applied to an impl block that names the third-party trait and lists the
+method signatures to capture:
 
-| Input param type | Param struct field type | Conversion |
-|---|---|---|
-| `&str` | `String` | `param.as_str()` |
-| `&T` | `T` (requires `T: Clone`) | `&param` |
-| `String` | `String` | pass-through |
-| Owned `T` | `T` | pass-through |
+```rust
+#[reflect_trait(diesel::Insertable)]
+impl InsertableTools {
+    fn insert(&self) -> QueryResult<usize>;
+    fn batch_insert(items: Vec<Self>) -> QueryResult<usize>;
+}
+```
 
-Static methods (no `self`/`&self`) get a unit `()` params type.
+**What the macro generates:**
+
+```rust
+// 1. The AnyToolFactory implementation
+pub struct InsertableToolFactory;
+
+impl AnyToolFactory for InsertableToolFactory {
+    fn trait_name(&self) -> &'static str { "diesel::Insertable" }
+    fn factory_description(&self) -> &'static str {
+        "Tools for types implementing diesel::Insertable"
+    }
+    fn method_names(&self) -> &'static [&'static str] {
+        &["insert", "batch_insert"]
+    }
+
+    fn instantiate(&self, slot: &dyn AnyToolSlot) -> Result<Vec<DynamicToolDescriptor>, ErrorData> {
+        // Downcast to get the concrete type's dispatch — via a registered vtable
+        let vtable = slot.vtable::<InsertableVTable>()
+            .ok_or_else(|| ErrorData::invalid_params("type not registered for Insertable", None))?;
+
+        let prefix = slot.prefix().to_string();
+
+        Ok(vec![
+            DynamicToolDescriptor {
+                name: format!("{prefix}__insert"),
+                description: "Insert one record".to_string(),
+                schema: vtable.insert_schema.clone(),
+                handler: Arc::new({
+                    let dispatch = vtable.insert.clone();
+                    move |params| {
+                        let dispatch = dispatch.clone();
+                        Box::pin(async move { dispatch(params).await })
+                    }
+                }),
+            },
+            // ... one per method
+        ])
+    }
+}
+
+// 2. A vtable struct that captures T's method impls as boxed closures
+struct InsertableVTable {
+    insert_schema: schemars::Schema,
+    insert: Arc<dyn Fn(serde_json::Value) -> BoxFuture<...> + Send + Sync>,
+    batch_insert_schema: schemars::Schema,
+    batch_insert: Arc<dyn Fn(serde_json::Value) -> BoxFuture<...> + Send + Sync>,
+}
+
+impl InsertableVTable {
+    // Called inside register_type::<T>() — monomorphization happens here
+    fn for_type<T>() -> Self
+    where
+        T: diesel::Insertable + Serialize + DeserializeOwned + JsonSchema + Send + Sync + 'static,
+    {
+        Self {
+            insert_schema: schema_for::<InsertParams>(),
+            insert: Arc::new(|params| Box::pin(async move {
+                // T is captured in monomorphized code
+                let result = T::insert(/* deserialize params */)?;
+                Ok(CallToolResult::success(vec![Content::text(
+                    serde_json::to_string(&result)?
+                )]))
+            })),
+            // ...
+        }
+    }
+}
+
+// 3. inventory submission
+inventory::submit!(ToolFactoryRegistration {
+    trait_name: "diesel::Insertable",
+    factory: &InsertableToolFactory,
+});
+```
 
 ---
 
-## Module layout
+## Integration with PluginRegistry
+
+`DynamicToolRegistry` implements `ElicitPlugin`, so it registers like any other plugin:
+
+```rust
+// Server setup (user code)
+let dynamic = DynamicToolRegistry::new()
+    .register_type::<diesel::User>("user")
+    .register_type::<diesel::Post>("post");
+
+let registry = PluginRegistry::new()
+    .register("http",    elicit_reqwest::Plugin::new(client))
+    .register("db",      elicit_diesel::Plugin::new(pool))
+    .register("dynamic", dynamic);  // ← drops in here
+
+registry.serve(rmcp::transport::stdio()).await?;
+```
+
+The agent sees `dynamic__instantiate_insertable` in `list_tools` immediately.
+After calling it with `{ "prefix": "user" }`, it sees `dynamic__user__insert`.
+
+---
+
+## Module Layout
+
+### New in `crates/elicitation/src/`
 
 ```
-crates/elicitation_macros/src/
-├── lib.rs                      ← add pub fn reflect_trait()
-└── trait_reflection/
-    ├── mod.rs                  ← expand() entry point
-    ├── delegation.rs           ← generate delegation bodies
-    ├── naming.rs               ← derive tool prefix from type path
-    ├── params.rs               ← reuse / adapt from method_reflection::params
-    └── wrapper.rs              ← reuse / adapt from method_reflection::wrapper
+dynamic/
+├── mod.rs                  ← DynamicToolRegistry, DynamicToolDescriptor
+├── slot.rs                 ← AnyToolSlot, TypedSlot<T>
+├── factory.rs              ← AnyToolFactory, ToolFactoryRegistration
+└── meta_tool.rs            ← factory meta-tool generation
 ```
 
-The `params.rs` and `wrapper.rs` from `method_reflection` in `elicitation_derive`
-are good references but live in the wrong crate. Either copy and adapt, or
-factor the shared logic into a utility crate (see Milestone 3 below).
+Exported from `lib.rs`:
+```rust
+pub use dynamic::{
+    AnyToolFactory, AnyToolSlot, DynamicToolDescriptor,
+    DynamicToolRegistry, ToolFactoryRegistration,
+};
+```
+
+### New in `crates/elicitation_macros/src/`
+
+```
+trait_reflection/
+├── mod.rs          ← expand() entry point, parses impl block
+├── vtable.rs       ← VTable struct generation per method
+├── factory.rs      ← AnyToolFactory impl generation
+├── naming.rs       ← type path → snake_case tool prefix
+└── params.rs       ← param struct generation (adapt from method_reflection)
+```
 
 ---
 
 ## Milestones
 
-### Milestone 1 — Core delegation + param structs (no tools)
+### Milestone 1 — `DynamicToolRegistry` (no macro)
+
+Build the runtime layer independently. Manually construct a
+`DynamicToolDescriptor` in a test to prove the wiring works end-to-end:
+`register_type::<T>()` → `instantiate()` → `notify_tool_list_changed` → tools visible.
 
 Deliverables:
-- `trait_reflection/mod.rs` — parses `impl Trait for Type { fn sigs; }`
-- `trait_reflection/delegation.rs` — generates `impl Trait for Type` with bodies
-- `trait_reflection/naming.rs` — type path → snake_case prefix
-- `trait_reflection/params.rs` — param struct generation for sigs with args
-- `lib.rs` — wire up `pub fn reflect_trait()`
-- Tests in `crates/elicitation/tests/reflect_trait_basic_test.rs`
+- `crates/elicitation/src/dynamic/` module (4 files)
+- `DynamicToolRegistry` implements `ElicitPlugin`
+- `PluginRegistry::register` accepts it
+- `enable_tool_list_changed()` set in server capabilities
+- Integration test: manually register a fake type, call meta-tool, verify new tools appear
 
-Test shape (Milestone 1):
-
-```rust
-use elicitation_macros::reflect_trait;
-
-trait Greet {
-    fn hello(name: String) -> String;
-    fn bye() -> String;
-}
-
-struct Foo;
-impl Greet for Foo {
-    fn hello(name: String) -> String { format!("hello {name}") }
-    fn bye() -> String { "bye".to_string() }
-}
-
-trait GreetWrapper: Greet {}
-
-#[reflect_trait(Greet)]
-impl GreetWrapper for Foo {
-    fn hello(name: String) -> String;
-    fn bye() -> String;
-}
-
-// verify delegation works
-assert_eq!(Foo::hello("world".to_string()), "hello world");
-assert_eq!(Foo::bye(), "bye");
-```
-
-### Milestone 2 — MCP tool wrappers
+### Milestone 2 — `#[reflect_trait]` macro
 
 Deliverables:
-- `trait_reflection/wrapper.rs` — generate `#[tool]` methods
-- Tool name derivation from type path + method name
-- Unit tests verifying generated tool names
-- Integration with `#[tool]` attribute (from `rmcp`)
+- `crates/elicitation_macros/src/trait_reflection/` module
+- `pub fn reflect_trait(attr, item)` in `lib.rs`
+- Unit tests for generated factory struct and vtable
+- Integration test: `#[reflect_trait(SomeTrait)]` on a local trait, tools appear correctly
 
-### Milestone 3 — Apply to `elicit_clap` Select types
+### Milestone 3 — Apply to elicit_clap Select types
 
-Replace the 5 `elicit_clap` newtype files that wrap Select enums with
-`#[reflect_trait]` impls. Each file goes from ~50 lines to ~10 lines.
+Replace the 5 `elicit_clap` newtype files for Select enums. Each becomes:
 
-Before (in `elicit_clap/src/color_choice.rs`):
-```rust
-elicit_newtype!(clap::ColorChoice, as ColorChoice);
-elicit_newtype_traits!(ColorChoice);
-
-#[reflect_methods]
-impl ColorChoice {
-    pub fn labels() -> Vec<String> { clap::ColorChoice::labels() }
-    pub fn from_label(&self, label: String) -> Option<clap::ColorChoice> { ... }
-    pub fn options() -> Vec<clap::ColorChoice> { clap::ColorChoice::options() }
-}
-```
-
-After:
 ```rust
 #[reflect_trait(elicitation::Select)]
 impl SelectTools for clap::ColorChoice {
@@ -234,57 +409,43 @@ impl SelectTools for clap::ColorChoice {
 }
 ```
 
-### Milestone 4 — Generic method support
+Verify: `just check-all elicit_clap` passes, tools still appear in list_tools.
 
-Add bounds propagation for methods with generic type parameters, matching
-the `#[reflect_methods]` generic support:
+### Milestone 4 — Update guides
 
-```rust
-#[reflect_trait(elicitation::Filter)]
-impl FilterTools for MyCollection {
-    fn find<T: Serialize + Deserialize + JsonSchema>(&self, item: T) -> Option<T>;
-}
-```
-
----
-
-## Open questions for review
-
-1. **Source trait path syntax** — `#[reflect_trait(elicitation::Select)]` uses
-   a path. Should it accept `Select` (unqualified, with a `use` in scope) or
-   require the full path? Full path is safer for macro expansion context.
-
-2. **Wrapper trait required?** — The design requires a hand-written
-   `trait SelectTools: Select {}` before the impl. We could instead have the
-   macro generate a single-method trait per delegation or skip the trait
-   entirely and add the methods as inherent impls only. The trait-based
-   approach is cleaner for type system expressiveness. Confirm?
-
-3. **Static-only methods** — All `Select` methods are static (`fn`, not `fn(&self)`).
-   The MCP tool wrappers currently assume `&self`. We need either unit `()` receivers
-   or a different registration strategy. `#[reflect_methods]` already handles this
-   (see `is_consuming()` path) — confirm the trait version should follow the same rule.
-
-4. **Reuse vs copy of `params.rs` / `wrapper.rs`** — Since the logic is nearly
-   identical to `method_reflection`, should we extract a shared `elicitation_macro_utils`
-   crate, or keep a copy in `trait_reflection/`? Copying is simpler initially.
-
-5. **`as = Name` vs positional** — Should the tool name override be
-   `#[reflect_trait(Select, as = ColorChoice)]` or `#[reflect_trait(Select, ColorChoice)]`?
-   Named arg is clearer.
+- `THIRD_PARTY_SUPPORT_GUIDE.md`: add `#[reflect_trait]` as Phase 3b (trait wrapping)
+- `REFLECT_TRAIT_PLAN.md` (this file): mark milestones complete as work progresses
 
 ---
 
 ## Checklist
 
+**Milestone 1 — DynamicToolRegistry**
+- [ ] `crates/elicitation/src/dynamic/mod.rs` — `DynamicToolRegistry`, `DynamicToolDescriptor`
+- [ ] `crates/elicitation/src/dynamic/slot.rs` — `AnyToolSlot`, `TypedSlot<T>`
+- [ ] `crates/elicitation/src/dynamic/factory.rs` — `AnyToolFactory`, `ToolFactoryRegistration`
+- [ ] `crates/elicitation/src/dynamic/meta_tool.rs` — factory meta-tool generation
+- [ ] `lib.rs` exports wired
+- [ ] `enable_tool_list_changed()` in server capabilities
+- [ ] Integration test: manual factory → instantiate → list_tools shows new tools
+- [ ] `just check-all elicitation` passes
+
+**Milestone 2 — `#[reflect_trait]` macro**
 - [ ] `crates/elicitation_macros/src/trait_reflection/mod.rs`
-- [ ] `crates/elicitation_macros/src/trait_reflection/delegation.rs`
+- [ ] `crates/elicitation_macros/src/trait_reflection/vtable.rs`
+- [ ] `crates/elicitation_macros/src/trait_reflection/factory.rs`
 - [ ] `crates/elicitation_macros/src/trait_reflection/naming.rs`
 - [ ] `crates/elicitation_macros/src/trait_reflection/params.rs`
-- [ ] `crates/elicitation_macros/src/trait_reflection/wrapper.rs`
-- [ ] `crates/elicitation_macros/src/lib.rs` — `pub fn reflect_trait()`
-- [ ] `crates/elicitation/tests/reflect_trait_basic_test.rs`
-- [ ] `crates/elicitation/tests/reflect_trait_tools_test.rs`
-- [ ] Apply to `elicit_clap` Select types (5 files)
-- [ ] Update `THIRD_PARTY_SUPPORT_GUIDE.md` — add `#[reflect_trait]` as
-      alternative to `#[reflect_methods]` for trait-family types
+- [ ] `lib.rs`: `pub fn reflect_trait()`
+- [ ] Unit tests for generated code
+- [ ] Integration test
+- [ ] `just check-all elicitation_macros` passes
+
+**Milestone 3 — elicit_clap**
+- [ ] Replace 5 Select enum files with `#[reflect_trait]` impls
+- [ ] `just check-all elicit_clap` passes
+- [ ] Tools still appear correctly in list_tools
+
+**Milestone 4 — Docs**
+- [ ] `THIRD_PARTY_SUPPORT_GUIDE.md` updated
+- [ ] This plan marked complete
