@@ -557,3 +557,68 @@ rather than accepted on trust.
 | `values.rs` | 6 | `serde_json::Value` discriminant — no Why3 model |
 | `uuids.rs` | 4 | `Uuid::parse_str` is opaque |
 | `strings.rs` | 3 | Non-empty string literals — `str::view()` opaque |
+| `clap_types.rs` | 16 | String literal opacity + third-party builder types (see below) |
+
+---
+
+## clap Type Proofs — De-Trusting Opportunities
+
+The `clap_types.rs` module contains 22 proof functions, all currently `#[trusted]`.
+There is a partial de-trusting path available for the label count invariants.
+
+### What CAN be de-trusted: label count
+
+Each Select enum proves `labels().len() == options().len()`. This is a pure
+length comparison on two `Vec<T>` values. `Vec` has a `ShallowModel` as `Seq<T>`
+in creusot-std, so length proofs are tractable.
+
+**De-trusting path:**
+
+Write `extern_spec!` blocks in `extern_specs.rs` specifying the lengths of
+`labels()` and `options()` for each type:
+
+```rust
+extern_spec! {
+    impl elicitation::Select for clap::ColorChoice {
+        #[ensures(result@.len() == 3)]
+        fn labels() -> Vec<String>;
+
+        #[ensures(result@.len() == 3)]
+        fn options() -> Vec<clap::ColorChoice>;
+    }
+}
+```
+
+Then remove `#[trusted]` from `verify_color_choice_label_count()` — Alt-Ergo
+will discharge the goal `3 == 3` trivially.
+
+This approach works for all 5 Select enums (ColorChoice=3, ArgAction=8,
+ValueSource=3, ErrorKind=17, ValueHint=9 variants) — up to 5 de-trusted goals.
+
+**Caution:** Requires `clap-types` feature in `elicitation_creusot` and the
+`extern_spec!` macro to accept trait impls on foreign types. Verify the syntax
+compiles before removing `#[trusted]`.
+
+### What CANNOT be de-trusted: string roundtrips
+
+The `from_label` roundtrip and unknown rejection proofs all depend on string
+literal matching. This hits the **string literal content wall**:
+
+> `str::view()` is `#[logic(opaque)]` in creusot-std — the solver cannot
+> know what `"Auto (detect terminal)"` contains.
+
+Even with an `extern_spec` for `from_label`, you cannot write:
+```rust
+#[ensures(result.is_some())]  // ❌ Cannot prove — string content opaque
+fn from_label(label: &str) -> Option<Self>;
+```
+
+These 16 proof functions remain `#[trusted]` until creusot-std provides a
+`ShallowModel` for `&str` that exposes character content to the solver.
+
+### Trusted builder type axioms
+
+The 6 `verify_clap_*_trusted()` functions are explicit architectural decisions
+that clap builder types (`Arg`, `ArgGroup`, `Command`, `Id`, `PossibleValue`,
+`ValueRange`) are trusted third-party types. These will never be de-trusted —
+they are axioms by design, not implementation gaps.

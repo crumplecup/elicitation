@@ -7,8 +7,30 @@
 //! We trust that the clap crate correctly defines its enum variants and builder
 //! invariants. We verify only our own business logic: that every label produced
 //! by `labels()` is accepted by `from_label()` (roundtrip completeness), and
-//! that unknown labels are rejected. All functions are `#[trusted]` because
-//! clap types cannot be symbolically executed by Creusot.
+//! that unknown labels are rejected.
+//!
+//! # Why all functions are `#[trusted]`
+//!
+//! Two distinct barriers prevent de-trusting:
+//!
+//! **String literal opacity wall** (blocks roundtrip + rejection proofs):
+//! `str::view()` is `#[logic(opaque)]` in creusot-std — the SMT solver cannot
+//! inspect the content of string literals like `"Auto (detect terminal)"`.
+//! Even with `extern_spec!` contracts on `from_label`, the solver cannot prove
+//! that a specific string literal is accepted or rejected.
+//!
+//! **Third-party builder types** (blocks builder trust axioms by design):
+//! The 6 `verify_clap_*_trusted()` functions are architectural axioms declaring
+//! clap's builder types trusted. They should never be de-trusted.
+//!
+//! # Partial de-trusting opportunity
+//!
+//! The `label_count` proofs (`labels().len() == options().len()`) are candidates
+//! for de-trusting. `Vec` has a `ShallowModel` as `Seq<T>` in creusot-std, so
+//! length comparisons are tractable. An `extern_spec!` block in `extern_specs.rs`
+//! specifying `#[ensures(result@.len() == N)]` for `labels()` and `options()`
+//! would let Alt-Ergo discharge `N == N` without `#[trusted]`. See
+//! `CREUSOT_GUIDE.md § clap Type Proofs` for the full de-trusting plan.
 
 #![cfg(feature = "clap-types")]
 
