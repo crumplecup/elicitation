@@ -1045,6 +1045,7 @@ name = "elicitation_creusot"
 version = "0.9.1"
 dependencies = [
  "chrono",
+ "clap",
  "creusot-std",
  "elicitation",
  "jiff",

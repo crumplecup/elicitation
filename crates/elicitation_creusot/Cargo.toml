@@ -29,6 +29,7 @@ regex = { workspace = true, optional = true }
 chrono = { workspace = true, optional = true }
 time = { workspace = true, optional = true }
 jiff = { workspace = true, optional = true }
+clap = { workspace = true, optional = true }
 
 [features]
 default = []
@@ -42,3 +43,4 @@ time = ["dep:time", "elicitation/time"]
 jiff = ["dep:jiff", "elicitation/jiff"]
 verify-kani = []                                                       # Dummy feature for Kani compatibility
 reqwest = ["elicitation/reqwest"]
+clap-types = ["dep:clap", "elicitation/clap-types"]
