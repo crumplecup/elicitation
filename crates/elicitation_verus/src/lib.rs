@@ -50,3 +50,4 @@ pub mod uuid_bytes;
 pub mod external_types;
 pub mod primitives;
 pub mod stdlib_collections;
+pub mod clap_types;
