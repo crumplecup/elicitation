@@ -30,6 +30,7 @@ jiff = { workspace = true, optional = true }
 uuid = { workspace = true, optional = true }
 url = { workspace = true, optional = true }
 regex = { workspace = true, optional = true }
+clap = { workspace = true, optional = true }
 
 [features]
 default = []
@@ -41,6 +42,7 @@ uuid = ["dep:uuid", "elicitation/uuid"]
 url = ["dep:url", "elicitation/url"]
 regex = ["dep:regex", "elicitation/regex"]
 serde_json = ["dep:serde_json", "elicitation/serde_json"]
+clap-types = ["dep:clap", "elicitation/clap-types"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }

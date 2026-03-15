@@ -1085,6 +1085,7 @@ name = "elicitation_kani"
 version = "0.9.1"
 dependencies = [
  "chrono",
+ "clap",
  "elicitation",
  "jiff",
  "kani-verifier",

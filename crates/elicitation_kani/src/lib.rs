@@ -108,3 +108,6 @@ mod datetimes_time;
 
 #[cfg(all(kani, feature = "jiff"))]
 mod datetimes_jiff;
+
+#[cfg(all(kani, feature = "clap-types"))]
+mod clap_types;
