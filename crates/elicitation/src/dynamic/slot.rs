@@ -27,7 +27,7 @@ pub trait AnyToolSlot: Any + Send + Sync + 'static {
     fn schema(&self) -> schemars::Schema;
 
     /// `std::any::TypeId` of the concrete `T`, for safe downcasting.
-    fn type_id(&self) -> std::any::TypeId;
+    fn slot_type_id(&self) -> std::any::TypeId;
 
     /// Upcast to `&dyn Any` for safe downcasting via `Any::downcast_ref`.
     fn as_any(&self) -> &dyn Any;
@@ -83,7 +83,7 @@ where
         schemars::schema_for!(T)
     }
 
-    fn type_id(&self) -> std::any::TypeId {
+    fn slot_type_id(&self) -> std::any::TypeId {
         std::any::TypeId::of::<T>()
     }
 

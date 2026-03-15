@@ -2,6 +2,8 @@
 //!
 //! This crate provides attribute macros for automatic instrumentation of contract types.
 
+mod trait_reflection;
+
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{ImplItem, ItemImpl, parse_macro_input};
@@ -468,4 +470,40 @@ fn to_pascal_case(s: &str) -> String {
             }
         })
         .collect()
+}
+
+/// Capture a third-party trait's methods as MCP tools.
+///
+/// Apply to an `impl` block that names the factory struct and lists the
+/// method signatures of the third-party trait you want to wrap.  The macro
+/// generates a [`AnyToolFactory`](elicitation::AnyToolFactory) implementation,
+/// a vtable, param structs, and an inventory submission so the factory is
+/// automatically discovered by [`DynamicToolRegistry`](elicitation::DynamicToolRegistry).
+///
+/// # Syntax
+///
+/// ```rust,ignore
+/// use elicitation_macros::reflect_trait;
+///
+/// #[reflect_trait(serde::Serialize)]
+/// pub impl SerializeTools {
+///     fn to_json(&self) -> String;
+/// }
+/// ```
+///
+/// # Generated items
+///
+/// - `SerializeFactory` — implements `AnyToolFactory`
+/// - `SerializeVTable` — holds boxed closures capturing `T`
+/// - `ToJsonParams` — param struct for each method
+/// - Inventory submission for `ToolFactoryRegistration`
+/// - `prime_serde__serialize::<T>()` — call at startup alongside `register_type`
+#[proc_macro_attribute]
+pub fn reflect_trait(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let attr2 = proc_macro2::TokenStream::from(attr);
+    let item2 = proc_macro2::TokenStream::from(item);
+    match trait_reflection::expand(attr2, item2) {
+        Ok(ts) => ts.into(),
+        Err(e) => e.to_compile_error().into(),
+    }
 }
