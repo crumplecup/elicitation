@@ -56,6 +56,28 @@ pattern, and a copy-paste checklist. The `clap` integration is the canonical ref
 
 **Completed:** Generic method support fully implemented across all derive macros.
 
+---
+
+### Trait Reflection (`#[reflect_trait]`)
+
+**Document:** [REFLECT_TRAIT_PLAN.md](REFLECT_TRAIT_PLAN.md)
+
+**Status:** 🔲 Planning / Review
+
+**Description:** A `#[reflect_trait(SourceTrait)]` attribute macro complementing
+`#[reflect_methods]`. Where `#[reflect_methods]` works on `impl Type { fn bodies; }`,
+`#[reflect_trait]` works on `impl WrapperTrait for Type { fn sigs; }` with bare
+method signatures — the macro generates delegation bodies and MCP tool wrappers.
+
+**Key features:**
+
+- One impl block per concrete type instead of a full newtype file per type
+- Delegation via `<Type as SourceTrait>::method()` — no recursive dispatch
+- Tool names derived from `for T` type path (e.g. `clap::ColorChoice` → `color_choice_labels`)
+- `as = Name` override for namespaced types
+- Lives in `elicitation_macros` (attribute macro, per project convention)
+- Target application: `elicit_clap` Select enums (5 files → 5 one-liner impls)
+
 ### elicit_reqwest Shadow Crate (Integration Test)
 
 **Document:** [ELICIT_REQWEST_PLAN.md](ELICIT_REQWEST_PLAN.md)
