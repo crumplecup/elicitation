@@ -24,6 +24,20 @@ git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:elicitation_vision.md
 
 ## Current Active Plans
 
+### Third-Party Crate Support Guide
+
+**Document:** [THIRD_PARTY_SUPPORT_GUIDE.md](THIRD_PARTY_SUPPORT_GUIDE.md)
+
+**Status:** ✅ Active Reference
+
+**Description:** Step-by-step checklist covering all six locations that must be updated
+when adding elicitation support for a third-party crate: workspace wiring, core trait
+impls (feature-gated), `elicit_*` newtype wrapper crate, Kani proofs, Creusot proofs,
+and Verus proofs. Includes a per-type-category table, full code templates for each
+pattern, and a copy-paste checklist. The `clap` integration is the canonical reference.
+
+---
+
 ### Method Reflection (v0.9.0+)
 
 **Document:** [METHOD_REFLECTION_PLAN.md](METHOD_REFLECTION_PLAN.md)
