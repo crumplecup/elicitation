@@ -6,6 +6,29 @@ canonical reference implementation for all patterns described here.
 
 ---
 
+## Core Verification Principle
+
+> **Trust the source. Verify the wrapper.**
+
+This principle applies uniformly across all three verifiers (Kani, Creusot, Verus)
+and to all type origins (std lib, third-party crates, our own contract types):
+
+- **Trust the source** — assume the stdlib and third-party crates uphold their own
+  invariants. We do not re-verify that `clap::ColorChoice` has exactly three variants,
+  or that `std::collections::HashMap` correctly stores keys. That is the responsibility
+  of the upstream library and its own test suite.
+
+- **Verify the wrapper** — prove that *our* business logic is correct: that every label
+  produced by `labels()` is accepted by `from_label()`, that the roundtrip is complete,
+  that unknown inputs are rejected, that our `Elicitation` impl delegates correctly.
+
+This keeps proofs focused, tractable, and meaningful. A `kani::assume(true)` for a
+third-party builder type is not a cop-out — it is an explicit, documented architectural
+decision that we have placed that type in the "trusted" category and are not claiming
+to verify its internals.
+
+---
+
 ## Overview
 
 Adding full support for a third-party crate `foo` involves work across **six locations**:
@@ -512,15 +535,17 @@ Feature flag: foo-types
 
 ## Type Category Reference
 
-When deciding which pattern to use for a type:
+The decision of what to verify follows directly from the core principle:
+**we own the `from_label`/`Elicitation` logic — verify that. We don't own the
+variant definitions — trust those.**
 
-| Type shape | Elicitation pattern | Kani proof | Creusot/Verus |
+| Type shape | Elicitation pattern | What we verify | What we trust |
 |---|---|---|---|
-| `#[non_exhaustive]` enum with known variants | `Select` | label_count + roundtrip + rejection | `#[trusted]` |
-| Simple enum with all variants stable | `Select` | label_count + roundtrip + rejection | `#[trusted]` |
-| Newtype around `String`/primitive | text + `T::new(s)` | construction success/failure | `#[trusted]` |
-| Builder struct | text prompt + builder API | `kani::assume(true)` (trusted) | trusted axiom |
-| Complex owned struct | Survey (multi-field) | `kani::assume(true)` (trusted) | trusted axiom |
+| Enum with known variants | `Select` | `from_label` roundtrip + unknown rejection | Variant definitions from upstream |
+| `#[non_exhaustive]` enum | `Select` + wildcard `_ =>` | Same roundtrip invariants on our labels | Any new variants added by upstream |
+| Newtype around `String`/primitive | text + `T::new(s)` | Our parse/construction path | Inner type's own invariants |
+| Builder struct | text prompt + builder API | `kani::assume(true)` — trust upstream entirely | All builder invariants |
+| Complex owned struct | Survey (multi-field) | `kani::assume(true)` — trust upstream entirely | All struct invariants |
 
 ---
 
