@@ -40,3 +40,6 @@ pub mod uuid;
 
 #[cfg(feature = "reqwest")]
 pub mod http;
+
+#[cfg(feature = "clap-types")]
+pub mod clap_types;

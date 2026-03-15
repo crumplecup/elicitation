@@ -91,7 +91,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "proofs", "verification", "graph"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "proofs", "verification", "graph", "clap-types"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -131,8 +131,11 @@ verification = [] # Core Contract trait only
 verify-verus = ["verification"] # Verus SMT verifier
 verify-all = ["verify-verus"]
 
+# Enable clap type elicitation (ColorChoice, ArgAction, ValueHint, etc.)
+clap-types = ["dep:clap"]
+
 # CLI and verification runner
-cli = ["clap", "csv", "chrono", "shellexpand", "dirs"]
+cli = ["dep:clap", "clap-types", "csv", "chrono", "shellexpand", "dirs"]
 
 # Development (all optional features + CLI)
 dev = ["full", "cli", "graph"]

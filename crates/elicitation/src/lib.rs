@@ -446,3 +446,10 @@ pub use primitives::http::{
 
 #[cfg(all(any(feature = "verification", kani), feature = "reqwest"))]
 pub use verification::types::StatusCodeValid;
+
+// clap types (feature-gated on clap-types)
+#[cfg(feature = "clap-types")]
+pub use primitives::clap_types::{
+    ArgActionStyle, ArgGroupStyle, ArgStyle, ColorChoiceStyle, CommandStyle, ErrorKindStyle,
+    IdStyle, PossibleValueStyle, ValueHintStyle, ValueRangeStyle, ValueSourceStyle,
+};
