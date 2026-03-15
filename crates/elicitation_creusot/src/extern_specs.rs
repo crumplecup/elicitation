@@ -1145,3 +1145,68 @@ extern_spec! {
         fn into_inner(self) -> UuidBytes;
     }
 }
+
+// ============================================================================
+// clap Select trait impls — label count axioms
+//
+// These are trusted axioms stating how many labels/options each clap Select
+// enum exposes. The label_count verify functions can then be discharged by
+// Alt-Ergo as N == N without needing #[trusted].
+//
+// Roundtrip and rejection proofs remain #[trusted] — str::view() is opaque.
+// ============================================================================
+
+#[cfg(feature = "clap-types")]
+extern_spec! {
+    impl elicitation::Select for clap::ColorChoice {
+        #[ensures(result@.len() == 3)]
+        fn labels() -> Vec<String>;
+
+        #[ensures(result@.len() == 3)]
+        fn options() -> Vec<clap::ColorChoice>;
+    }
+}
+
+#[cfg(feature = "clap-types")]
+extern_spec! {
+    impl elicitation::Select for clap::ArgAction {
+        #[ensures(result@.len() == 8)]
+        fn labels() -> Vec<String>;
+
+        #[ensures(result@.len() == 8)]
+        fn options() -> Vec<clap::ArgAction>;
+    }
+}
+
+#[cfg(feature = "clap-types")]
+extern_spec! {
+    impl elicitation::Select for clap::parser::ValueSource {
+        #[ensures(result@.len() == 3)]
+        fn labels() -> Vec<String>;
+
+        #[ensures(result@.len() == 3)]
+        fn options() -> Vec<clap::parser::ValueSource>;
+    }
+}
+
+#[cfg(feature = "clap-types")]
+extern_spec! {
+    impl elicitation::Select for clap::error::ErrorKind {
+        #[ensures(result@.len() == 17)]
+        fn labels() -> Vec<String>;
+
+        #[ensures(result@.len() == 17)]
+        fn options() -> Vec<clap::error::ErrorKind>;
+    }
+}
+
+#[cfg(feature = "clap-types")]
+extern_spec! {
+    impl elicitation::Select for clap::builder::ValueHint {
+        #[ensures(result@.len() == 13)]
+        fn labels() -> Vec<String>;
+
+        #[ensures(result@.len() == 13)]
+        fn options() -> Vec<clap::builder::ValueHint>;
+    }
+}

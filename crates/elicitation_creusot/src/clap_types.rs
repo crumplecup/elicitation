@@ -70,7 +70,6 @@ pub fn verify_color_choice_unknown_rejected() -> bool {
 /// Verify ColorChoice label count equals option count.
 #[requires(true)]
 #[ensures(result == true)]
-#[trusted]
 pub fn verify_color_choice_label_count() -> bool {
     clap::ColorChoice::labels().len() == clap::ColorChoice::options().len()
 }
@@ -108,7 +107,6 @@ pub fn verify_arg_action_unknown_rejected() -> bool {
 /// Verify ArgAction label count equals option count.
 #[requires(true)]
 #[ensures(result == true)]
-#[trusted]
 pub fn verify_arg_action_label_count() -> bool {
     clap::ArgAction::labels().len() == clap::ArgAction::options().len()
 }
@@ -146,7 +144,6 @@ pub fn verify_value_source_unknown_rejected() -> bool {
 /// Verify ValueSource label count equals option count.
 #[requires(true)]
 #[ensures(result == true)]
-#[trusted]
 pub fn verify_value_source_label_count() -> bool {
     clap::parser::ValueSource::labels().len() == clap::parser::ValueSource::options().len()
 }
@@ -184,7 +181,6 @@ pub fn verify_error_kind_unknown_rejected() -> bool {
 /// Verify ErrorKind label count equals option count.
 #[requires(true)]
 #[ensures(result == true)]
-#[trusted]
 pub fn verify_error_kind_label_count() -> bool {
     clap::error::ErrorKind::labels().len() == clap::error::ErrorKind::options().len()
 }
@@ -225,7 +221,6 @@ pub fn verify_value_hint_unknown_rejected() -> bool {
 /// Verify ValueHint label count equals option count.
 #[requires(true)]
 #[ensures(result == true)]
-#[trusted]
 pub fn verify_value_hint_label_count() -> bool {
     clap::builder::ValueHint::labels().len() == clap::builder::ValueHint::options().len()
 }
