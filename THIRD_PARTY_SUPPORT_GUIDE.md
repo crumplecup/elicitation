@@ -37,10 +37,19 @@ Adding full support for a third-party crate `foo` involves work across **six loc
 |---|---|
 | `Cargo.toml` (workspace root) | Optional dep + `elicit_foo` workspace member |
 | `crates/elicitation/` | `Elicitation` trait impls (feature-gated `foo-types`) |
-| `crates/elicit_foo/` | New wrapper crate with newtypes + MCP `reflect_methods` |
+| `crates/elicit_foo/` | Newtypes + `reflect_methods` + (optionally) trait factories |
 | `crates/elicitation_kani/` | Kani proof harnesses |
 | `crates/elicitation_creusot/` | Creusot `#[requires]`/`#[ensures]`/`#[trusted]` proofs |
 | `crates/elicitation_verus/` | Verus `ensures`/`requires` proofs |
+
+There are **two distinct mechanisms** for exposing types as MCP tools:
+
+| Mechanism | Use when | Macro |
+|---|---|---|
+| `#[reflect_methods]` | Your newtype has methods you want to expose | `elicitation_derive` |
+| `#[reflect_trait]` | A *third-party trait* has methods worth calling on any `T: FooTrait` | `elicitation_macros` |
+
+Both can be used together in the same `elicit_foo` crate.
 
 Never skip a section. Never add an `#[allow]` attribute. Fix root causes.
 
@@ -452,6 +461,281 @@ Never add `no_schema` — that variant was removed because the object schema is 
 
 ---
 
+## Phase 3B — Trait Factories (`#[reflect_trait]`)
+
+Use this phase when the third-party crate exposes *derive traits* (like `clap::ValueEnum`,
+`clap::CommandFactory`) whose methods are worth calling as standalone MCP tools — independently
+of any particular instance of the newtype wrapper.
+
+Skip this phase if no derive traits are worth exposing.
+
+### 3B.1 When to use `#[reflect_trait]` vs `#[reflect_methods]`
+
+| Situation | Use |
+|---|---|
+| You own a newtype and want to expose its methods | `#[reflect_methods]` on `impl MyType` |
+| A third-party trait has static or instance methods you want callable for *any* `T: FooTrait` | `#[reflect_trait(foo::FooTrait)]` |
+| Both | Both — they compose |
+
+`#[reflect_trait]` generates a **factory**: a struct that implements `AnyToolFactory` and is
+submitted to `inventory` at link time. At runtime, the `DynamicToolRegistry` discovers all
+factories, and the agent can instantiate tools for any registered concrete type.
+
+### 3B.2 The orphan rule and `type_map`
+
+The orphan rule prevents writing `impl ElicitProxy for foo::ForeignType` in `elicit_foo`
+(neither trait nor type is local). The `type_map` attribute solves this by substituting
+foreign types with your `elicit_foo` newtype wrappers that already have the right `From` impls:
+
+```rust
+// WRONG — orphan rule violation, won't compile:
+impl ElicitProxy for foo::Command { ... }
+
+// CORRECT — use type_map to declare the substitution:
+#[reflect_trait(foo::CommandFactory,
+    type_map(foo::Command => crate::Command))]
+pub trait CommandFactoryTools {
+    fn command() -> foo::Command;
+}
+// The macro uses crate::Command in the param struct and generates
+// foo::Command::from(crate_command) / crate::Command::from(foo_command) conversions.
+```
+
+**Requirements for a mapped type:**
+- The proxy type must implement `Serialize + Deserialize + JsonSchema`
+- `From<ProxyType> for OriginalType` must exist (for params going *in*)
+- `From<OriginalType> for ProxyType` must exist (for return values coming *out*)
+
+`elicit_newtype!` already provides `From<Original> for Wrapper` (wraps in Arc) and
+`From<Wrapper> for Arc<Original>`. You must manually add `From<Wrapper> for Original`
+for the param direction — see the `command.rs`, `id.rs`, `possible_value.rs` files in
+`elicit_clap` for the pattern (use `Arc::try_unwrap` with `clone` fallback).
+
+### 3B.3 `ElicitProxy` for stdlib and user-owned types
+
+For types that don't need `type_map` — stdlib types and types you own — implement
+`ElicitProxy` instead:
+
+```rust
+// For types you own — use the derive macro:
+use elicitation_derive::ElicitProxy;
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit, ElicitProxy)]
+pub struct MyConfig { pub name: String }
+```
+
+`ElicitProxy` is already implemented for all stdlib primitives, `String`, `Vec<T>`,
+`Option<T>`, `Result<T, E>`, and common types. You only need to implement it for your
+own domain types.
+
+**Do not** implement `ElicitProxy` for foreign types — use `type_map` instead.
+
+### 3B.4 Macro syntax
+
+```rust
+use elicitation_macros::reflect_trait;
+
+// Simplest form — no type substitution needed:
+#[reflect_trait(foo::MyTrait)]
+pub trait MyTraitTools {
+    fn static_method(arg: String) -> bool;
+    fn instance_method(&self, arg: i32) -> String;
+}
+
+// With type substitution (orphan-rule workaround):
+#[reflect_trait(foo::MyTrait,
+    type_map(foo::TypeA => crate::TypeA, foo::TypeB => crate::TypeB))]
+pub trait MyTraitTools {
+    fn method_a(input: foo::TypeA) -> foo::TypeB;
+}
+```
+
+**Syntax notes:**
+- The marker trait block is *consumed* by the macro — it is not emitted as a real trait
+- Method signatures must match the real trait exactly (same names, same types)
+- `&self` receivers are supported — the agent passes `{"target": <serialized T>}` in the params
+- `&str` params are automatically handled: the param struct stores `String`, the vtable calls `.as_str()`
+- `&[T]` return types are automatically handled: `.to_vec()` is called to make them owned
+- Multiple `type_map` entries are comma-separated
+
+**What the macro generates:**
+- One param struct per method (implements `Deserialize + JsonSchema`)
+- A vtable struct with one `Arc<dyn Fn(Value) -> BoxFuture<...>>` per method
+- A factory struct implementing `AnyToolFactory`
+- An `inventory::submit!` call registering the factory at link time
+- A free `pub fn prime_foo__mytrait::<T>()` function for startup registration
+
+### 3B.5 Naming conventions
+
+The generated names are derived from the fully-qualified trait path:
+
+| Input | Generated name |
+|---|---|
+| `foo::MyTrait` | Factory: `MyTraitFactory`, prime fn: `prime_foo__my_trait::<T>()` |
+| `clap::ValueEnum` | Factory: `ValueEnumFactory`, prime fn: `prime_clap__value_enum::<T>()` |
+| `clap::CommandFactory` | Factory: `CommandFactoryFactory`, prime fn: `prime_clap__command_factory::<T>()` |
+
+Tool names at runtime: `{prefix}__{method_name}` — e.g. `myapp__value_variants`.
+
+### 3B.6 Startup registration (prime + register_type)
+
+At server startup, for each concrete type `T` implementing the trait:
+
+```rust
+use elicit_foo::trait_factories::prime_foo__my_trait;
+use elicitation::DynamicToolRegistry;
+
+// Prime each factory for each type (monomorphizes the vtable closures)
+prime_foo__my_trait::<MyConcreteType>();
+
+// Register each type under a prefix
+let registry = DynamicToolRegistry::new()
+    .register_type::<MyConcreteType>("mytype");
+
+// The agent calls the factory meta-tool to instantiate tools at runtime:
+// registry.instantiate("foo::MyTrait", "mytype").await?;
+// → creates "mytype__method_one", "mytype__method_two", etc.
+```
+
+The agent sees factory meta-tools in `list_tools` immediately. After calling a meta-tool
+(or `registry.instantiate(...)` programmatically), the method tools appear in `list_tools`.
+
+### 3B.7 `Cargo.toml` additions for trait factories
+
+```toml
+[dependencies]
+elicitation_macros = { workspace = true }
+inventory = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+serde_json = { workspace = true }
+```
+
+### 3B.8 Testing trait factories
+
+Each trait factory must be tested at three levels (see `crates/elicit_clap/tests/trait_factories_test.rs`):
+
+```rust
+use elicit_foo::trait_factories::prime_foo__my_trait;
+use elicitation::{DynamicToolRegistry, Elicit, ElicitPlugin, ToolFactoryRegistration};
+
+// 1. Inventory registration
+#[test]
+fn my_trait_factory_in_inventory() {
+    let found = inventory::iter::<ToolFactoryRegistration>
+        .into_iter()
+        .any(|r| r.trait_name == "foo::MyTrait");
+    assert!(found);
+}
+
+// 2. Prime + instantiate lifecycle
+#[tokio::test]
+async fn my_trait_instantiate_creates_tools() {
+    prime_foo__my_trait::<MyConcreteType>();
+    let registry = DynamicToolRegistry::new()
+        .register_type::<MyConcreteType>("t");
+    registry.instantiate("foo::MyTrait", "t").await.unwrap();
+    let names: Vec<_> = registry.list_tools().iter()
+        .map(|t| t.name.to_string()).collect();
+    assert!(names.contains(&"t__method_name".to_string()));
+}
+
+// 3. Handler invocation
+#[tokio::test]
+async fn my_trait_method_returns_expected_value() {
+    prime_foo__my_trait::<MyConcreteType>();
+    let registry = DynamicToolRegistry::new()
+        .register_type::<MyConcreteType>("t");
+    registry.instantiate("foo::MyTrait", "t").await.unwrap();
+    let result = registry
+        .invoke_dynamic("t__method_name", serde_json::json!({"arg": "value"}))
+        .await.expect("tool exists").expect("tool succeeds");
+    // check result content...
+}
+```
+
+Use `DynamicToolRegistry::invoke_dynamic(name, args)` to call tools directly without
+an MCP connection.
+
+### 3B.9 Deferred traits
+
+Some traits cannot be exposed as MCP tools because their method signatures are
+fundamentally incompatible:
+
+| Trait | Blocker |
+|---|---|
+| `clap::FromArgMatches` | Takes `&ArgMatches` — not `Serialize`, not `Clone` |
+| `clap::Parser` | Extends `FromArgMatches` — same blocker |
+| Any trait with `&mut self` methods that borrow internal state | Mutable borrows conflict with `Arc<T>` wrapper |
+
+For these, document the deferral in a comment at the top of `trait_factories.rs`.
+
+### 3B.10 clap reference implementation
+
+```rust
+// crates/elicit_clap/src/trait_factories.rs
+
+use elicitation_macros::reflect_trait;
+
+#[reflect_trait(clap::CommandFactory,
+    type_map(clap::Command => crate::Command))]
+pub trait CommandFactoryTools {
+    fn command() -> clap::Command;
+    fn command_for_update() -> clap::Command;
+}
+
+#[reflect_trait(clap::Subcommand,
+    type_map(clap::Command => crate::Command))]
+pub trait SubcommandTools {
+    fn augment_subcommands(cmd: clap::Command) -> clap::Command;
+    fn augment_subcommands_for_update(cmd: clap::Command) -> clap::Command;
+    fn has_subcommand(name: &str) -> bool;
+}
+
+#[reflect_trait(clap::ValueEnum,
+    type_map(clap::builder::PossibleValue => crate::PossibleValue))]
+pub trait ValueEnumTools {
+    fn value_variants() -> &'static [Self];
+    fn to_possible_value(&self) -> Option<clap::builder::PossibleValue>;
+    fn from_str(input: &str, ignore_case: bool) -> Result<Self, String>;
+}
+
+#[reflect_trait(clap::Args,
+    type_map(clap::Command => crate::Command, clap::Id => crate::Id))]
+pub trait ArgsTools {
+    fn augment_args(cmd: clap::Command) -> clap::Command;
+    fn augment_args_for_update(cmd: clap::Command) -> clap::Command;
+    fn group_id() -> Option<clap::Id>;
+}
+```
+
+User-side startup:
+
+```rust
+use elicit_clap::trait_factories::{
+    prime_clap__command_factory,
+    prime_clap__value_enum,
+    prime_clap__args,
+    prime_clap__subcommand,
+};
+
+// Call once per type at startup:
+prime_clap__command_factory::<MyCli>();
+prime_clap__value_enum::<MyOutputFormat>();
+prime_clap__args::<MyArgs>();
+prime_clap__subcommand::<MySubcmd>();
+
+let registry = DynamicToolRegistry::new()
+    .register_type::<MyCli>("cli")
+    .register_type::<MyOutputFormat>("fmt")
+    .register_type::<MyArgs>("args")
+    .register_type::<MySubcmd>("cmd");
+```
+
+---
+
 ## Phase 4 — Kani Verification (`crates/elicitation_kani/`)
 
 ### 4.1 `Cargo.toml`
@@ -672,6 +956,13 @@ Feature flag: foo-types
 [ ] Workspace wired (members + workspace.dependencies)
 [ ] just check-all elicit_foo passes clean
 
+(Optional — if the crate exposes derive traits worth wrapping as MCP tools:)
+[ ] elicit_foo/Cargo.toml: add elicitation_macros + inventory + serde_json deps
+[ ] For each foreign type used as a param/return: add From<Wrapper> for Original impl
+[ ] elicit_foo/src/trait_factories.rs: #[reflect_trait] for each trait
+[ ] Startup docs updated with prime_foo__trait_name::<T>() + register_type::<T>() pattern
+[ ] elicit_foo/tests/trait_factories_test.rs: inventory + lifecycle + invocation tests
+
 [ ] elicitation_kani/Cargo.toml: dep + feature
 [ ] elicitation_kani/src/foo_types.rs: proof harnesses
 [ ] elicitation_kani/src/lib.rs: mod foo_types gated
@@ -708,6 +999,7 @@ variant definitions — trust those.**
 | Newtype around `String`/primitive | text + `T::new(s)` | Our parse/construction path | Inner type's own invariants |
 | Builder struct | text prompt + builder API | `kani::assume(true)` — trust upstream entirely | All builder invariants |
 | Complex owned struct | Survey (multi-field) | `kani::assume(true)` — trust upstream entirely | All struct invariants |
+| Third-party derive trait | `#[reflect_trait]` factory | Inventory registration + prime/instantiate lifecycle | Trait method implementations in upstream |
 
 ---
 
@@ -715,9 +1007,23 @@ variant definitions — trust those.**
 
 The complete `clap` integration is the canonical example:
 
+**Elicitation core:**
 - `crates/elicitation/src/primitives/clap_types/` — 11 type files
-- `crates/elicit_clap/src/` — 11 newtype wrapper files
+- Feature flag: `clap-types`
+
+**Wrapper crate (newtypes + trait factories):**
+- `crates/elicit_clap/src/` — 11 newtype wrapper files + `trait_factories.rs`
+- `crates/elicit_clap/tests/trait_factories_test.rs` — 20 integration tests
+- Traits covered: `CommandFactory`, `Subcommand`, `ValueEnum`, `Args`
+- Traits deferred (incompatible signatures): `FromArgMatches`, `Parser`
+
+**Verification:**
 - `crates/elicitation_kani/src/clap_types.rs` — 24 proof harnesses
 - `crates/elicitation/src/verification/runner.rs` — harness registration
-- Feature flag: `clap-types`
-- Commit: `feat(elicit_clap): add newtype wrappers for clap types with MCP reflect methods`
+
+**Key commits:**
+- `feat(elicit_clap): add newtype wrappers for clap types with MCP reflect methods`
+- `feat(elicitation_macros): #[reflect_trait] macro + DynamicToolRegistry`
+- `feat(elicit_clap): clap trait factories with type_map bridging`
+- `test(elicit_clap): 20 integration tests for all clap trait factories`
+
