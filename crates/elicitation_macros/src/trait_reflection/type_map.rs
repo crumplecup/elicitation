@@ -147,10 +147,17 @@ impl TypeMap {
     /// - `Option<Mapped>`:      `(expr).map(ProxyType::from)`
     /// - `Vec<Mapped>`:         `(expr).into_iter().map(ProxyType::from).collect()`
     /// - `Result<Mapped, E>`:   `(expr).map(ProxyType::from)`
-    /// - No mapping:            `::elicitation::ElicitProxy::into_proxy(expr)`
+    /// - `&[T]` (slice ref):    `(expr).to_vec()` — makes the slice owned for async moves
+    /// - No mapping:            identity (T is Serialize via factory bounds)
     pub fn into_proxy_expr(&self, expr: TokenStream, ty: &Type) -> TokenStream {
         if let Some(proxy) = self.find_proxy(ty) {
             return quote! { #proxy::from(#expr) };
+        }
+        // &[T] → .to_vec() so the value can be moved into a 'static async block
+        if let Type::Reference(r) = ty {
+            if matches!(r.elem.as_ref(), Type::Slice(_)) {
+                return quote! { (#expr).to_vec() };
+            }
         }
         // Check generic wrappers
         if let Type::Path(type_path) = ty {

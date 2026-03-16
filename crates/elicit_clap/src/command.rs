@@ -33,6 +33,32 @@ impl serde::Serialize for Command {
     }
 }
 
+impl<'de> serde::Deserialize<'de> for Command {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::{self, MapAccess, Visitor};
+        struct CommandVisitor;
+        impl<'de> Visitor<'de> for CommandVisitor {
+            type Value = Command;
+            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, r#"a command object with at least a "name" field"#)
+            }
+            fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Command, A::Error> {
+                let mut name: Option<String> = None;
+                while let Some(key) = map.next_key::<String>()? {
+                    if key == "name" {
+                        name = Some(map.next_value()?);
+                    } else {
+                        map.next_value::<serde::de::IgnoredAny>()?;
+                    }
+                }
+                let name = name.ok_or_else(|| de::Error::missing_field("name"))?;
+                Ok(Command(std::sync::Arc::new(clap::Command::new(name))))
+            }
+        }
+        deserializer.deserialize_map(CommandVisitor)
+    }
+}
+
 #[reflect_methods]
 impl Command {
     /// Returns the command's name.
