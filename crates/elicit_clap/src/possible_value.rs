@@ -6,6 +6,26 @@ use elicitation_derive::reflect_methods;
 elicit_newtype!(clap::builder::PossibleValue, as PossibleValue);
 elicit_newtype_traits!(PossibleValue, clap::builder::PossibleValue, [eq]);
 
+/// Unwrap the Arc back to an owned `clap::builder::PossibleValue`.
+impl From<PossibleValue> for clap::builder::PossibleValue {
+    fn from(val: PossibleValue) -> Self {
+        std::sync::Arc::try_unwrap(val.0).unwrap_or_else(|arc| (*arc).clone())
+    }
+}
+
+impl serde::Serialize for PossibleValue {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap;
+        let pv = &*self.0;
+        let mut map = serializer.serialize_map(Some(2))?;
+        map.serialize_entry("name", pv.get_name())?;
+        if let Some(help) = pv.get_help() {
+            map.serialize_entry("help", &help.to_string())?;
+        }
+        map.end()
+    }
+}
+
 #[reflect_methods]
 impl PossibleValue {
     /// Returns the name of this possible value.

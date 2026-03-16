@@ -35,6 +35,7 @@ mod command;
 mod error_kind;
 mod id;
 mod possible_value;
+pub mod trait_factories;
 mod value_hint;
 mod value_range;
 mod value_source;

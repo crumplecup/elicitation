@@ -107,6 +107,7 @@ pub mod emit_code;
 pub mod mcp;
 mod paradigm;
 mod primitives;
+mod proxy;
 pub mod style;
 pub mod tool;
 mod tool_registry;
@@ -206,6 +207,7 @@ pub use tool_registry::{ElicitToolDescriptor, collect_all_elicit_tools};
 
 // Interaction paradigm traits
 pub use paradigm::{Affirm, Authorize, FieldInfo, Filter, Select, Survey};
+pub use proxy::ElicitProxy;
 
 // Dynamic collections
 pub use collections::ChoiceSet;

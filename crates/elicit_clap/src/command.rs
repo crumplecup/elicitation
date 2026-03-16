@@ -6,6 +6,33 @@ use elicitation_derive::reflect_methods;
 elicit_newtype!(clap::Command, as Command);
 elicit_newtype_traits!(Command, clap::Command, []);
 
+/// Unwrap the Arc back to an owned `clap::Command`.
+///
+/// Used by `#[reflect_trait]` factories when `clap::Command` appears as
+/// a method parameter and must be reconstructed from an agent-supplied
+/// `Command` JSON value.
+impl From<Command> for clap::Command {
+    fn from(val: Command) -> Self {
+        std::sync::Arc::try_unwrap(val.0).unwrap_or_else(|arc| (*arc).clone())
+    }
+}
+
+impl serde::Serialize for Command {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap;
+        let cmd = &*self.0;
+        let mut map = serializer.serialize_map(None)?;
+        map.serialize_entry("name", cmd.get_name())?;
+        if let Some(about) = cmd.get_about() {
+            map.serialize_entry("about", &about.to_string())?;
+        }
+        if let Some(version) = cmd.get_version() {
+            map.serialize_entry("version", version)?;
+        }
+        map.end()
+    }
+}
+
 #[reflect_methods]
 impl Command {
     /// Returns the command's name.

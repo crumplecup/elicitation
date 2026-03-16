@@ -24,27 +24,50 @@
 
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{ItemImpl, ItemTrait, Path, parse::Parse, parse::ParseStream};
+use syn::{ItemImpl, ItemTrait, Path, Token, parse::Parse, parse::ParseStream};
 
 pub mod factory;
 pub mod naming;
 pub mod params;
+pub mod type_map;
 pub mod vtable;
 
 use naming::factory_struct_name;
 use params::MethodInfo;
+use type_map::TypeMap;
 
 // ── Attribute argument parsing ────────────────────────────────────────────────
 
-/// The trait path supplied as the attribute argument: `#[reflect_trait(diesel::Insertable)]`
+/// Parsed attribute argument: trait path + optional type_map entries.
+///
+/// Syntax: `#[reflect_trait(diesel::Insertable)]`
+/// or:     `#[reflect_trait(clap::CommandFactory, type_map(clap::Command => crate::Command))]`
 struct ReflectTraitAttr {
     trait_path: Path,
+    type_map: TypeMap,
 }
 
 impl Parse for ReflectTraitAttr {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
         let trait_path: Path = input.parse()?;
-        Ok(ReflectTraitAttr { trait_path })
+        let mut type_map = TypeMap::default();
+        // Optionally parse `, type_map(...)`
+        if input.peek(Token![,]) {
+            let _: Token![,] = input.parse()?;
+            // Expect the keyword `type_map`
+            let kw: syn::Ident = input.parse()?;
+            if kw != "type_map" {
+                return Err(syn::Error::new_spanned(
+                    kw,
+                    "#[reflect_trait]: expected `type_map(...)` after trait path",
+                ));
+            }
+            type_map = input.parse::<TypeMap>()?;
+        }
+        Ok(ReflectTraitAttr {
+            trait_path,
+            type_map,
+        })
     }
 }
 
@@ -76,7 +99,10 @@ impl Parse for ReflectTraitAttr {
 /// }
 /// ```
 pub fn expand(attr: TokenStream, item: TokenStream) -> syn::Result<TokenStream> {
-    let ReflectTraitAttr { trait_path } = syn::parse2::<ReflectTraitAttr>(attr)?;
+    let ReflectTraitAttr {
+        trait_path,
+        type_map,
+    } = syn::parse2::<ReflectTraitAttr>(attr)?;
     let trait_path_str = path_to_string(&trait_path);
 
     // Try parsing as ItemTrait first (preferred — allows bodyless methods),
@@ -106,10 +132,11 @@ pub fn expand(attr: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
     // Generate each piece
     let param_structs: Vec<TokenStream> = methods
         .iter()
-        .map(|m| m.param_struct_tokens(&gen_vis))
+        .map(|m| m.param_struct_tokens(&gen_vis, &type_map))
         .collect();
 
-    let vtable_ts = vtable::vtable_tokens(&trait_path, &trait_path_str, &methods, &gen_vis);
+    let vtable_ts =
+        vtable::vtable_tokens(&trait_path, &trait_path_str, &methods, &gen_vis, &type_map);
 
     let factory_ts = factory::factory_tokens(
         &trait_path,

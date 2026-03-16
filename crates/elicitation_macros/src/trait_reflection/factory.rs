@@ -88,6 +88,7 @@ pub fn factory_tokens(
 
         // ── Factory struct ───────────────────────────────────────────────────
 
+        #[doc = #factory_description]
         #vis struct #factory_name;
 
         impl #factory_name {

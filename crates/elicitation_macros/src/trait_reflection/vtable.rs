@@ -34,12 +34,13 @@
 //! ```
 
 use proc_macro2::TokenStream;
-use quote::quote;
-use syn::Path;
+use quote::{ToTokens, quote};
+use syn::{Path, ReturnType};
 
 use super::{
     naming::{param_struct_name, vtable_struct_name},
     params::MethodInfo,
+    type_map::TypeMap,
 };
 
 /// Generate the vtable struct definition and `for_type::<T>()` constructor.
@@ -48,6 +49,7 @@ pub fn vtable_tokens(
     trait_path_str: &str,
     methods: &[MethodInfo],
     vis: &syn::Visibility,
+    type_map: &TypeMap,
 ) -> TokenStream {
     let vtable_name = vtable_struct_name(trait_path_str);
 
@@ -73,72 +75,122 @@ pub fn vtable_tokens(
         .collect();
 
     // for_type::<T>() constructor — one closure per method
-    let closure_fields: Vec<TokenStream> = methods
-        .iter()
-        .map(|m| {
-            let method_name = &m.name;
-            let param_struct = param_struct_name(&method_name.to_string());
-            let param_names: Vec<&syn::Ident> = m.params.iter().map(|p| &p.name).collect();
+    let closure_fields: Vec<TokenStream> =
+        methods
+            .iter()
+            .map(|m| {
+                let method_name = &m.name;
+                let param_struct = param_struct_name(&method_name.to_string());
+                let param_names: Vec<&syn::Ident> = m.params.iter().map(|p| &p.name).collect();
+                let param_types: Vec<&syn::Type> = m.params.iter().map(|p| p.ty.as_ref()).collect();
 
-            let call = if m.has_self {
-                // For &self methods the param struct contains `target: serde_json::Value`.
-                // Deserialize T from that value inside the closure.
-                quote! {
-                    #method_name: ::std::sync::Arc::new(|params| {
-                        ::std::boxed::Box::pin(async move {
-                            let p: #param_struct = ::serde_json::from_value(params)
-                                .map_err(|e| ::rmcp::ErrorData::invalid_params(
-                                    e.to_string(), None
-                                ))?;
-                            let target: T = ::serde_json::from_value(p.target)
-                                .map_err(|e| ::rmcp::ErrorData::invalid_params(
-                                    format!("failed to deserialize target: {e}"), None
-                                ))?;
-                            let result = <T as #trait_path>::#method_name(
-                                &target,
-                                #(p.#param_names,)*
-                            );
-                            let text = ::serde_json::to_string(&result)
-                                .map_err(|e| ::rmcp::ErrorData::internal_error(
-                                    e.to_string(), None
-                                ))?;
-                            Ok(::rmcp::model::CallToolResult::success(vec![
-                                ::rmcp::model::Content::new(
-                                    ::rmcp::model::RawContent::text(text),
-                                    None,
-                                )
-                            ]))
-                        })
-                    }),
+                // Convert each param from its proxy/substituted form back to the original type.
+                let param_conversions: Vec<TokenStream> = m.params.iter().map(|p| {
+                let name = &p.name;
+                let ty = &p.ty;
+                // &str params: the struct holds a String, convert with .as_str()
+                if super::params::is_str_ref(ty) {
+                    return quote! { let #name = p.#name.as_str(); };
                 }
-            } else {
-                quote! {
-                    #method_name: ::std::sync::Arc::new(|params| {
-                        ::std::boxed::Box::pin(async move {
-                            let p: #param_struct = ::serde_json::from_value(params)
-                                .map_err(|e| ::rmcp::ErrorData::invalid_params(
-                                    e.to_string(), None
-                                ))?;
-                            let result = <T as #trait_path>::#method_name(#(p.#param_names,)*);
-                            let text = ::serde_json::to_string(&result)
-                                .map_err(|e| ::rmcp::ErrorData::internal_error(
-                                    e.to_string(), None
-                                ))?;
-                            Ok(::rmcp::model::CallToolResult::success(vec![
-                                ::rmcp::model::Content::new(
-                                    ::rmcp::model::RawContent::text(text),
-                                    None,
-                                )
-                            ]))
-                        })
-                    }),
+                let substituted = type_map.apply_to_type(ty);
+                if substituted.to_token_stream().to_string() != ty.to_token_stream().to_string() {
+                    // type_map handled this: use from_proxy_expr for the substituted type
+                    let field_access = quote! { p.#name };
+                    let conversion = type_map.from_proxy_expr(field_access, &substituted);
+                    quote! { let #name = #conversion; }
+                } else {
+                    quote! {
+                        let #name = <#ty as ::elicitation::ElicitProxy>::from_proxy(p.#name);
+                    }
                 }
-            };
-            call
-        })
-        .collect();
+            }).collect();
+
+                // Return type: extract the actual type (strip the `->`)
+                let ret_ty = match &m.return_type {
+                    ReturnType::Default => None,
+                    ReturnType::Type(_, ty) => Some(ty.as_ref()),
+                };
+
+                // Generate the return value conversion expression.
+                let result_conversion = if let Some(ret) = ret_ty {
+                    type_map.into_proxy_expr(quote! { result }, ret)
+                } else {
+                    // Unit return: serialize as `null`
+                    quote! { ::elicitation::ElicitProxy::into_proxy(result) }
+                };
+
+                let call = if m.has_self {
+                    // For &self methods the param struct contains `target: serde_json::Value`.
+                    // Deserialize T from that value, then convert other params via from_proxy.
+                    quote! {
+                        #method_name: ::std::sync::Arc::new(|params| {
+                            ::std::boxed::Box::pin(async move {
+                                let p: #param_struct = ::serde_json::from_value(params)
+                                    .map_err(|e| ::rmcp::ErrorData::invalid_params(
+                                        e.to_string(), None
+                                    ))?;
+                                let target: T = ::serde_json::from_value(p.target)
+                                    .map_err(|e| ::rmcp::ErrorData::invalid_params(
+                                        format!("failed to deserialize target: {e}"), None
+                                    ))?;
+                                // Convert proxy params to their original types
+                                #(#param_conversions)*
+                                let result = <T as #trait_path>::#method_name(
+                                    &target,
+                                    #(#param_names,)*
+                                );
+                                // Convert return value to its serializable proxy
+                                let proxied = #result_conversion;
+                                let text = ::serde_json::to_string(&proxied)
+                                    .map_err(|e| ::rmcp::ErrorData::internal_error(
+                                        e.to_string(), None
+                                    ))?;
+                                Ok(::rmcp::model::CallToolResult::success(vec![
+                                    ::rmcp::model::Content::new(
+                                        ::rmcp::model::RawContent::text(text),
+                                        None,
+                                    )
+                                ]))
+                            })
+                        }),
+                    }
+                } else {
+                    quote! {
+                        #method_name: ::std::sync::Arc::new(|params| {
+                            ::std::boxed::Box::pin(async move {
+                                let p: #param_struct = ::serde_json::from_value(params)
+                                    .map_err(|e| ::rmcp::ErrorData::invalid_params(
+                                        e.to_string(), None
+                                    ))?;
+                                // Convert proxy params to their original types
+                                #(#param_conversions)*
+                                let result = <T as #trait_path>::#method_name(#(#param_names,)*);
+                                // Convert return value to its serializable proxy
+                                let proxied = #result_conversion;
+                                let text = ::serde_json::to_string(&proxied)
+                                    .map_err(|e| ::rmcp::ErrorData::internal_error(
+                                        e.to_string(), None
+                                    ))?;
+                                Ok(::rmcp::model::CallToolResult::success(vec![
+                                    ::rmcp::model::Content::new(
+                                        ::rmcp::model::RawContent::text(text),
+                                        None,
+                                    )
+                                ]))
+                            })
+                        }),
+                    }
+                };
+                // Suppress unused variable warning for param_types (used for future bounds)
+                let _ = param_types;
+                call
+            })
+            .collect();
+
+    let vtable_doc = format!("Vtable holding dispatch closures for `{trait_path_str}` tools.");
 
     quote! {
+        #[doc = #vtable_doc]
         #vis struct #vtable_name {
             #(#fields)*
         }

@@ -14,10 +14,11 @@
 //! Methods with no receiver (associated functions) include all parameters.
 
 use proc_macro2::TokenStream;
-use quote::quote;
+use quote::{ToTokens, quote};
 use syn::{FnArg, ReturnType, Signature, Type};
 
 use super::naming::param_struct_name;
+use super::type_map::TypeMap;
 
 /// A parsed method extracted from the `#[reflect_trait]` impl block.
 pub struct MethodInfo {
@@ -119,13 +120,16 @@ impl MethodInfo {
     ///     name: String,
     /// }
     /// ```
-    pub fn param_struct_tokens(&self, vis: &syn::Visibility) -> TokenStream {
+    pub fn param_struct_tokens(&self, vis: &syn::Visibility, type_map: &TypeMap) -> TokenStream {
         let struct_name = param_struct_name(&self.name.to_string());
+        let method_name_str = self.name.to_string();
+        let struct_doc = format!("Parameters for the `{method_name_str}` tool method.");
 
-        // For &self methods, prepend an opaque `target` field so the agent
-        // can pass the serialized T value.  The vtable closure deserializes it.
         let target_field = if self.has_self {
-            quote! { pub target: ::serde_json::Value, }
+            quote! {
+                /// Serialized target instance (the `Self` value to call this method on).
+                pub target: ::serde_json::Value,
+            }
         } else {
             quote! {}
         };
@@ -136,11 +140,34 @@ impl MethodInfo {
             .map(|p| {
                 let field_name = &p.name;
                 let field_ty = &p.ty;
-                quote! { pub #field_name: #field_ty, }
+                // &str params: the agent sends a String
+                if is_str_ref(field_ty) {
+                    let doc = format!("`{field_name}` parameter (as owned String).");
+                    return quote! {
+                        #[doc = #doc]
+                        pub #field_name: String,
+                    };
+                }
+                let substituted = type_map.apply_to_type(field_ty);
+                let doc = format!("`{field_name}` parameter.");
+                if substituted.to_token_stream().to_string()
+                    != field_ty.to_token_stream().to_string()
+                {
+                    quote! {
+                        #[doc = #doc]
+                        pub #field_name: #substituted,
+                    }
+                } else {
+                    quote! {
+                        #[doc = #doc]
+                        pub #field_name: <#field_ty as ::elicitation::ElicitProxy>::Proxy,
+                    }
+                }
             })
             .collect();
 
         quote! {
+            #[doc = #struct_doc]
             #[derive(Debug, Clone, ::serde::Deserialize, ::schemars::JsonSchema)]
             #vis struct #struct_name {
                 #target_field
@@ -148,4 +175,18 @@ impl MethodInfo {
             }
         }
     }
+}
+
+/// Returns `true` if the type is `&str` or `&'_ str`.
+pub fn is_str_ref(ty: &Type) -> bool {
+    if let Type::Reference(r) = ty {
+        if let Type::Path(tp) = r.elem.as_ref() {
+            if tp.qself.is_none() {
+                if let Some(seg) = tp.path.segments.last() {
+                    return seg.ident == "str" && seg.arguments.is_none();
+                }
+            }
+        }
+    }
+    false
 }

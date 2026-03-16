@@ -817,10 +817,13 @@ dependencies = [
  "clap",
  "elicitation",
  "elicitation_derive",
+ "elicitation_macros",
  "futures",
+ "inventory",
  "rmcp",
  "schemars",
  "serde",
+ "serde_json",
  "tracing",
 ]
 

@@ -461,3 +461,47 @@ pub fn derive_elicit_plugin(input: TokenStream) -> TokenStream {
 pub fn elicit_tool(args: TokenStream, item: TokenStream) -> TokenStream {
     elicit_tool::expand(args.into(), item.into()).into()
 }
+
+/// Derive the identity [`ElicitProxy`](elicitation::ElicitProxy) implementation.
+///
+/// This generates a trivial impl where `type Proxy = Self`, meaning the type
+/// is its own proxy — no conversion needed.  Use this on any type that already
+/// satisfies `Serialize + DeserializeOwned + JsonSchema`.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation_derive::ElicitProxy;
+///
+/// #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit, ElicitProxy)]
+/// pub struct MyConfig {
+///     pub name: String,
+///     pub value: i32,
+/// }
+/// ```
+///
+/// The generated code is equivalent to:
+///
+/// ```rust,ignore
+/// impl ::elicitation::ElicitProxy for MyConfig {
+///     type Proxy = MyConfig;
+///     fn into_proxy(self) -> MyConfig { self }
+///     fn from_proxy(proxy: MyConfig) -> MyConfig { proxy }
+/// }
+/// ```
+#[proc_macro_derive(ElicitProxy)]
+pub fn derive_elicit_proxy(input: TokenStream) -> TokenStream {
+    let input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let name = &input.ident;
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+    quote::quote! {
+        impl #impl_generics ::elicitation::ElicitProxy for #name #ty_generics
+        #where_clause
+        {
+            type Proxy = #name #ty_generics;
+            fn into_proxy(self) -> #name #ty_generics { self }
+            fn from_proxy(proxy: #name #ty_generics) -> #name #ty_generics { proxy }
+        }
+    }
+    .into()
+}
