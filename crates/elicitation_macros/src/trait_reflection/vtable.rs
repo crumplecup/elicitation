@@ -94,9 +94,9 @@ pub fn vtable_tokens(
                 }
                 let substituted = type_map.apply_to_type(ty);
                 if substituted.to_token_stream().to_string() != ty.to_token_stream().to_string() {
-                    // type_map handled this: use from_proxy_expr for the substituted type
+                    // type_map handled this: use proxy_decode for the substituted type
                     let field_access = quote! { p.#name };
-                    let conversion = type_map.from_proxy_expr(field_access, &substituted);
+                    let conversion = type_map.proxy_decode(field_access, &substituted);
                     quote! { let #name = #conversion; }
                 } else {
                     quote! {
@@ -113,7 +113,7 @@ pub fn vtable_tokens(
 
                 // Generate the return value conversion expression.
                 let result_conversion = if let Some(ret) = ret_ty {
-                    type_map.into_proxy_expr(quote! { result }, ret)
+                    type_map.proxy_encode(quote! { result }, ret)
                 } else {
                     // Unit return: serialize as `null`
                     quote! { ::elicitation::ElicitProxy::into_proxy(result) }

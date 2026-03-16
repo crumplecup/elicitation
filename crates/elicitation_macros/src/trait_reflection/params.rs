@@ -179,14 +179,12 @@ impl MethodInfo {
 
 /// Returns `true` if the type is `&str` or `&'_ str`.
 pub fn is_str_ref(ty: &Type) -> bool {
-    if let Type::Reference(r) = ty {
-        if let Type::Path(tp) = r.elem.as_ref() {
-            if tp.qself.is_none() {
-                if let Some(seg) = tp.path.segments.last() {
-                    return seg.ident == "str" && seg.arguments.is_none();
-                }
-            }
-        }
+    if let Type::Reference(r) = ty
+        && let Type::Path(tp) = r.elem.as_ref()
+        && tp.qself.is_none()
+        && let Some(seg) = tp.path.segments.last()
+    {
+        return seg.ident == "str" && seg.arguments.is_none();
     }
     false
 }

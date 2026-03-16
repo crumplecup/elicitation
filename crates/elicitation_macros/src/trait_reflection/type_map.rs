@@ -105,43 +105,42 @@ impl TypeMap {
             return proxy.clone();
         }
         // Recurse into generic wrappers (Option<T>, Vec<T>, Result<T,E>)
-        if let Type::Path(type_path) = ty {
-            if let Some(last) = type_path.path.segments.last() {
-                let name = last.ident.to_string();
-                if matches!(name.as_str(), "Option" | "Vec" | "Result") {
-                    if let syn::PathArguments::AngleBracketed(ref ab) = last.arguments {
-                        let new_args: Vec<syn::GenericArgument> = ab
-                            .args
-                            .iter()
-                            .map(|arg| {
-                                if let syn::GenericArgument::Type(inner) = arg {
-                                    syn::GenericArgument::Type(self.apply_to_type(inner))
-                                } else {
-                                    arg.clone()
-                                }
-                            })
-                            .collect();
-
-                        let mut new_path = type_path.clone();
-                        if let Some(last_seg) = new_path.path.segments.last_mut() {
-                            last_seg.arguments = syn::PathArguments::AngleBracketed(
-                                syn::AngleBracketedGenericArguments {
-                                    colon2_token: ab.colon2_token,
-                                    lt_token: ab.lt_token,
-                                    args: new_args.into_iter().collect(),
-                                    gt_token: ab.gt_token,
-                                },
-                            );
+        if let Type::Path(type_path) = ty
+            && let Some(last) = type_path.path.segments.last()
+        {
+            let name = last.ident.to_string();
+            if matches!(name.as_str(), "Option" | "Vec" | "Result")
+                && let syn::PathArguments::AngleBracketed(ref ab) = last.arguments
+            {
+                let new_args: Vec<syn::GenericArgument> = ab
+                    .args
+                    .iter()
+                    .map(|arg| {
+                        if let syn::GenericArgument::Type(inner) = arg {
+                            syn::GenericArgument::Type(self.apply_to_type(inner))
+                        } else {
+                            arg.clone()
                         }
-                        return Type::Path(new_path);
-                    }
+                    })
+                    .collect();
+
+                let mut new_path = type_path.clone();
+                if let Some(last_seg) = new_path.path.segments.last_mut() {
+                    last_seg.arguments =
+                        syn::PathArguments::AngleBracketed(syn::AngleBracketedGenericArguments {
+                            colon2_token: ab.colon2_token,
+                            lt_token: ab.lt_token,
+                            args: new_args.into_iter().collect(),
+                            gt_token: ab.gt_token,
+                        });
                 }
+                return Type::Path(new_path);
             }
         }
         ty.clone()
     }
 
-    /// Generate a conversion expression from `original_ty` to `proxy_ty`.
+    /// Generate a conversion expression from `original_ty` to its serializable proxy form.
     ///
     /// - Direct mapping:        `ProxyType::from(expr)`
     /// - `Option<Mapped>`:      `(expr).map(ProxyType::from)`
@@ -149,50 +148,50 @@ impl TypeMap {
     /// - `Result<Mapped, E>`:   `(expr).map(ProxyType::from)`
     /// - `&[T]` (slice ref):    `(expr).to_vec()` — makes the slice owned for async moves
     /// - No mapping:            identity (T is Serialize via factory bounds)
-    pub fn into_proxy_expr(&self, expr: TokenStream, ty: &Type) -> TokenStream {
+    pub fn proxy_encode(&self, expr: TokenStream, ty: &Type) -> TokenStream {
         if let Some(proxy) = self.find_proxy(ty) {
             return quote! { #proxy::from(#expr) };
         }
         // &[T] → .to_vec() so the value can be moved into a 'static async block
-        if let Type::Reference(r) = ty {
-            if matches!(r.elem.as_ref(), Type::Slice(_)) {
-                return quote! { (#expr).to_vec() };
-            }
+        if let Type::Reference(r) = ty
+            && matches!(r.elem.as_ref(), Type::Slice(_))
+        {
+            return quote! { (#expr).to_vec() };
         }
         // Check generic wrappers
-        if let Type::Path(type_path) = ty {
-            if let Some(last) = type_path.path.segments.last() {
-                let name = last.ident.to_string();
-                if let syn::PathArguments::AngleBracketed(ref ab) = last.arguments {
-                    let inner_types: Vec<&Type> = ab
-                        .args
-                        .iter()
-                        .filter_map(|arg| {
-                            if let syn::GenericArgument::Type(t) = arg {
-                                Some(t)
-                            } else {
-                                None
-                            }
-                        })
-                        .collect();
-
-                    if !inner_types.is_empty() {
-                        if let Some(proxy_inner) = self.find_proxy(inner_types[0]) {
-                            match name.as_str() {
-                                "Option" => {
-                                    return quote! { (#expr).map(#proxy_inner::from) };
-                                }
-                                "Vec" => {
-                                    return quote! {
-                                        (#expr).into_iter().map(#proxy_inner::from).collect()
-                                    };
-                                }
-                                "Result" => {
-                                    return quote! { (#expr).map(#proxy_inner::from) };
-                                }
-                                _ => {}
-                            }
+        if let Type::Path(type_path) = ty
+            && let Some(last) = type_path.path.segments.last()
+        {
+            let name = last.ident.to_string();
+            if let syn::PathArguments::AngleBracketed(ref ab) = last.arguments {
+                let inner_types: Vec<&Type> = ab
+                    .args
+                    .iter()
+                    .filter_map(|arg| {
+                        if let syn::GenericArgument::Type(t) = arg {
+                            Some(t)
+                        } else {
+                            None
                         }
+                    })
+                    .collect();
+
+                if !inner_types.is_empty()
+                    && let Some(proxy_inner) = self.find_proxy(inner_types[0])
+                {
+                    match name.as_str() {
+                        "Option" => {
+                            return quote! { (#expr).map(#proxy_inner::from) };
+                        }
+                        "Vec" => {
+                            return quote! {
+                                (#expr).into_iter().map(#proxy_inner::from).collect()
+                            };
+                        }
+                        "Result" => {
+                            return quote! { (#expr).map(#proxy_inner::from) };
+                        }
+                        _ => {}
                     }
                 }
             }
@@ -202,50 +201,50 @@ impl TypeMap {
         quote! { #expr }
     }
 
-    /// Generate a conversion expression from `proxy_ty` back to `original_ty`.
+    /// Generate a conversion expression from `proxy_ty` back to the original type.
     ///
     /// - Direct mapping:        `OriginalType::from(expr)`
     /// - `Option<Mapped>`:      `(expr).map(OriginalType::from)`
     /// - etc.
     /// - No mapping:            `::elicitation::ElicitProxy::from_proxy(expr)`
-    pub fn from_proxy_expr(&self, expr: TokenStream, proxy_ty: &Type) -> TokenStream {
+    pub fn proxy_decode(&self, expr: TokenStream, proxy_ty: &Type) -> TokenStream {
         if let Some(orig) = self.find_original(proxy_ty) {
             return quote! { #orig::from(#expr) };
         }
         // Check generic wrappers
-        if let Type::Path(type_path) = proxy_ty {
-            if let Some(last) = type_path.path.segments.last() {
-                let name = last.ident.to_string();
-                if let syn::PathArguments::AngleBracketed(ref ab) = last.arguments {
-                    let inner_types: Vec<&Type> = ab
-                        .args
-                        .iter()
-                        .filter_map(|arg| {
-                            if let syn::GenericArgument::Type(t) = arg {
-                                Some(t)
-                            } else {
-                                None
-                            }
-                        })
-                        .collect();
-
-                    if !inner_types.is_empty() {
-                        if let Some(orig_inner) = self.find_original(inner_types[0]) {
-                            match name.as_str() {
-                                "Option" => {
-                                    return quote! { (#expr).map(#orig_inner::from) };
-                                }
-                                "Vec" => {
-                                    return quote! {
-                                        (#expr).into_iter().map(#orig_inner::from).collect()
-                                    };
-                                }
-                                "Result" => {
-                                    return quote! { (#expr).map(#orig_inner::from) };
-                                }
-                                _ => {}
-                            }
+        if let Type::Path(type_path) = proxy_ty
+            && let Some(last) = type_path.path.segments.last()
+        {
+            let name = last.ident.to_string();
+            if let syn::PathArguments::AngleBracketed(ref ab) = last.arguments {
+                let inner_types: Vec<&Type> = ab
+                    .args
+                    .iter()
+                    .filter_map(|arg| {
+                        if let syn::GenericArgument::Type(t) = arg {
+                            Some(t)
+                        } else {
+                            None
                         }
+                    })
+                    .collect();
+
+                if !inner_types.is_empty()
+                    && let Some(orig_inner) = self.find_original(inner_types[0])
+                {
+                    match name.as_str() {
+                        "Option" => {
+                            return quote! { (#expr).map(#orig_inner::from) };
+                        }
+                        "Vec" => {
+                            return quote! {
+                                (#expr).into_iter().map(#orig_inner::from).collect()
+                            };
+                        }
+                        "Result" => {
+                            return quote! { (#expr).map(#orig_inner::from) };
+                        }
+                        _ => {}
                     }
                 }
             }

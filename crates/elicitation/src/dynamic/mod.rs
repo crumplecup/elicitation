@@ -287,6 +287,28 @@ impl DynamicToolRegistry {
         Ok(CallToolResult::success(vec![Content::text(summary)]))
     }
 
+    /// Invoke a named dynamic tool with the given JSON argument object.
+    ///
+    /// Returns `None` if no tool with that name has been instantiated yet.
+    /// Returns `Some(Err(...))` if the tool handler returns an error.
+    ///
+    /// Useful for testing and for programmatic invocation without a live MCP
+    /// connection (no [`rmcp::RequestContext`] required).
+    pub async fn invoke_dynamic(
+        &self,
+        name: &str,
+        args: serde_json::Value,
+    ) -> Option<Result<CallToolResult, ErrorData>> {
+        let handler = {
+            let tools = self
+                .dynamic_tools
+                .read()
+                .expect("dynamic_tools lock poisoned");
+            tools.iter().find(|d| d.name == name)?.handler.clone()
+        };
+        Some(handler(args).await)
+    }
+
     /// Return all factory meta-tools as [`Tool`] entries.
     fn factory_meta_tools(&self) -> Vec<Tool> {
         self.factories
