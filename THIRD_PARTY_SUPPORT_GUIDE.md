@@ -1003,6 +1003,117 @@ variant definitions — trust those.**
 
 ---
 
+## Emit-Only Tools (Macros)
+
+Some Rust APIs are macros that execute at **compile time** and cannot be called
+through an MCP boundary at runtime.  Use the **emit-only tool** pattern for
+these.
+
+### When to use emit-only tools
+
+Use this pattern when:
+- The API is a Rust macro (`format!`, `query!`, `include_str!`, etc.)
+- The API is proc-macro based and generates code, not data
+- There is no meaningful runtime value to return — only source code
+
+### Pattern
+
+An emit-only tool takes JSON params, validates them, and returns a Rust source
+fragment.  The fragment is assembled into a `BinaryScaffold` for compilation.
+
+```
+Agent → std__format { template: "x={}", args: ["val"] }
+                ↓
+Handler calls p.emit_code().to_string()
+                ↓
+Returns: format!("x={}", val)
+                ↓
+BinaryScaffold compiles the fragment → running binary
+```
+
+### Implementation checklist
+
+**1. Params struct** (in `crates/elicit_foo/src/my_macro.rs`):
+
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+pub struct MyMacroParams {
+    pub arg: String,
+}
+
+impl EmitCode for MyMacroParams {
+    fn emit_code(&self) -> TokenStream {
+        let arg = &self.arg;
+        quote! { my_macro!(#arg) }
+    }
+
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        // Return any non-std crates needed in the emitted binary's Cargo.toml
+        vec![CrateDep { name: "my_crate", version: "1" }]
+    }
+}
+
+inventory::submit! {
+    EmitEntry {
+        tool: "my_macro",
+        crate_name: "elicit_foo",
+        constructor: |v| {
+            serde_json::from_value::<MyMacroParams>(v)
+                .map(|p| Box::new(p) as Box<dyn EmitCode>)
+                .map_err(|e| e.to_string())
+        },
+    }
+}
+```
+
+**2. Handler** (in `crates/elicit_foo/src/plugin.rs`):
+
+```rust
+#[elicit_tool(
+    plugin = "foo",
+    name = "my_macro",
+    description = "Emit a my_macro!(…) expression. Returns Rust source — no runtime execution."
+)]
+#[instrument(skip_all)]
+async fn emit_my_macro(p: MyMacroParams) -> Result<CallToolResult, ErrorData> {
+    let source = p.emit_code().to_string();
+    Ok(CallToolResult::success(vec![Content::text(source)]))
+}
+```
+
+Note: the handler body is always just `p.emit_code().to_string()`.  There is
+no runtime execution path.
+
+**3. Cargo.toml** — add `emit` feature to `elicitation` dep:
+
+```toml
+elicitation = { workspace = true, features = ["emit"] }
+proc-macro2.workspace = true
+quote.workspace = true
+inventory.workspace = true
+```
+
+**4. No Phase 2 (elicitation core)** — emit-only tools do not need `Elicit`
+impls in `crates/elicitation/src/primitives/`.  Skip Phase 2 entirely.
+
+**5. No Kani/Creusot verification** — emit-only tools return `TokenStream`; the
+verification story is handled when the emitted program is verified, not here.
+
+### Reference implementation
+
+`crates/elicit_std` — four `std` macros as emit-only tools:
+
+| Tool | Macro | Params |
+|---|---|---|
+| `std__format` | `format!` | `{ template, args[] }` |
+| `std__include_str` | `include_str!` | `{ path }` |
+| `std__env` | `env!` | `{ var, error_message? }` |
+| `std__concat` | `concat!` | `{ parts[] }` |
+
+Tests: `crates/elicit_std/tests/macro_tools_test.rs` (23 tests)
+
+---
+
 ## Reference Implementation
 
 The complete `clap` integration is the canonical example:

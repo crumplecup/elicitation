@@ -943,6 +943,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_std"
+version = "0.9.1"
+dependencies = [
+ "elicitation",
+ "elicitation_derive",
+ "inventory",
+ "proc-macro2",
+ "quote",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "elicit_time"
 version = "0.9.1"
 dependencies = [
