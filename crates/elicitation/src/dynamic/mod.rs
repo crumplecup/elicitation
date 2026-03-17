@@ -187,6 +187,85 @@ impl DynamicToolRegistry {
         self
     }
 
+    /// Register a serde-mediated type-to-type conversion tool.
+    ///
+    /// Creates a concrete `DynamicToolDescriptor` whose input schema is `T`'s
+    /// JSON Schema and whose handler deserializes the params as `T`, re-encodes
+    /// via `serde_json`, then deserializes as `U`.  This works whenever `T` and
+    /// `U` are structurally compatible in serde's data model (e.g. schema
+    /// migration, newtype unwrapping, field renaming via `#[serde]` attributes).
+    ///
+    /// The tool is named `convert__{t}__to__{u}` where `t` / `u` are the
+    /// [`type_name`](std::any::type_name) leaf segments converted to snake_case.
+    /// These names are intentionally back-of-house; use them as building blocks
+    /// when constructing agent workflows.
+    ///
+    /// # Panics
+    ///
+    /// Panics if a conversion tool with the same auto-generated name is already
+    /// registered.
+    #[instrument(skip(self), fields(tool_name))]
+    pub fn register_convert<T, U>(self) -> Self
+    where
+        T: Serialize + DeserializeOwned + JsonSchema + Send + Sync + 'static,
+        U: Serialize + DeserializeOwned + JsonSchema + Send + Sync + 'static,
+    {
+        let t_seg = type_leaf_snake::<T>();
+        let u_seg = type_leaf_snake::<U>();
+        let tool_name = format!("convert__{t_seg}__to__{u_seg}");
+        tracing::Span::current().record("tool_name", tool_name.as_str());
+
+        let schema = serde_json::to_value(schemars::schema_for!(T)).unwrap_or_default();
+        let t_name = std::any::type_name::<T>();
+        let u_name = std::any::type_name::<U>();
+        let description =
+            format!("Convert a `{t_name}` value to `{u_name}` via serde structural mapping.");
+
+        let handler: Arc<
+            dyn Fn(serde_json::Value) -> BoxFuture<'static, Result<CallToolResult, ErrorData>>
+                + Send
+                + Sync,
+        > = Arc::new(move |params| {
+            Box::pin(async move {
+                let t: T = serde_json::from_value(params).map_err(|e| {
+                    ErrorData::invalid_params(format!("failed to deserialize {t_name}: {e}"), None)
+                })?;
+                let intermediate = serde_json::to_value(&t).map_err(|e| {
+                    ErrorData::internal_error(format!("failed to serialize {t_name}: {e}"), None)
+                })?;
+                let u: U = serde_json::from_value(intermediate).map_err(|e| {
+                    ErrorData::invalid_params(
+                        format!("conversion from {t_name} to {u_name} failed: {e}"),
+                        None,
+                    )
+                })?;
+                let text = serde_json::to_string(&u).map_err(|e| {
+                    ErrorData::internal_error(format!("failed to serialize {u_name}: {e}"), None)
+                })?;
+                Ok(CallToolResult::success(vec![Content::text(text)]))
+            })
+        });
+
+        let descriptor = DynamicToolDescriptor {
+            name: tool_name.clone(),
+            description,
+            schema,
+            handler,
+        };
+        let mut tools = self
+            .dynamic_tools
+            .write()
+            .expect("dynamic_tools lock poisoned");
+        assert!(
+            !tools.iter().any(|d| d.name == tool_name),
+            "convert tool `{tool_name}` already registered"
+        );
+        tools.push(descriptor);
+        debug!(tool_name, "Registered convert tool");
+        drop(tools);
+        self
+    }
+
     /// Inject the rmcp peer so `notify_tool_list_changed` can be sent.
     ///
     /// Called by the server setup after the connection is established.
@@ -389,4 +468,33 @@ impl ElicitPlugin for DynamicToolRegistry {
             handler(value).await
         })
     }
+}
+
+// ── Naming helpers ─────────────────────────────────────────────────────────────
+
+/// Returns the last path segment of `type_name::<T>()` converted to snake_case.
+///
+/// `type_name::<MyStruct>()` → `"my_struct"`.
+/// For generics like `Vec<T>`, angle brackets are stripped: `"vec"`.
+fn type_leaf_snake<T: 'static>() -> String {
+    let full = std::any::type_name::<T>();
+    // Strip any generic angle-bracket suffix: "Vec<T>" → "Vec"
+    let without_generics = full.split('<').next().unwrap_or(full);
+    let leaf = without_generics
+        .rsplit("::")
+        .next()
+        .unwrap_or(without_generics);
+    camel_to_snake_rt(leaf)
+}
+
+/// Runtime CamelCase → snake_case conversion (mirrors the proc-macro version).
+fn camel_to_snake_rt(s: &str) -> String {
+    let mut out = String::with_capacity(s.len() + 4);
+    for (i, ch) in s.chars().enumerate() {
+        if ch.is_uppercase() && i != 0 {
+            out.push('_');
+        }
+        out.extend(ch.to_lowercase());
+    }
+    out
 }

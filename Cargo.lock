@@ -887,8 +887,10 @@ name = "elicit_serde"
 version = "0.9.1"
 dependencies = [
  "elicitation",
- "erased-serde",
+ "elicitation_derive",
+ "elicitation_macros",
  "futures",
+ "inventory",
  "rmcp",
  "schemars",
  "serde",
