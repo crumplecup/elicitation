@@ -42,14 +42,16 @@ Adding full support for a third-party crate `foo` involves work across **six loc
 | `crates/elicitation_creusot/` | Creusot `#[requires]`/`#[ensures]`/`#[trusted]` proofs |
 | `crates/elicitation_verus/` | Verus `ensures`/`requires` proofs |
 
-There are **two distinct mechanisms** for exposing types as MCP tools:
+There are **three distinct mechanisms** for exposing types as MCP tools:
 
-| Mechanism | Use when | Macro |
+| Mechanism | Use when | Location |
 |---|---|---|
 | `#[reflect_methods]` | Your newtype has methods you want to expose | `elicitation_derive` |
 | `#[reflect_trait]` | A *third-party trait* has methods worth calling on any `T: FooTrait` | `elicitation_macros` |
+| Fragment tool + `EmitCode` | A *Rust macro* that runs at compile time, not at runtime | `elicitation::emit_code` |
 
-Both can be used together in the same `elicit_foo` crate.
+The fragment tool mechanism bypasses Phases 2, 4, 5, and 6 — no `Elicitation`
+trait impls, no Kani/Creusot/Verus verification.  See the [Fragment Tools](#fragment-tools-macros) section.
 
 Never skip a section. Never add an `#[allow]` attribute. Fix root causes.
 
@@ -981,6 +983,31 @@ Feature flag: foo-types
 [ ] cargo check -p elicitation_verus passes clean
 
 [ ] git commit -m "feat(foo-types): add Elicitation + verification support for foo crate"
+[ ] git push
+```
+
+For **macro / fragment-only crates** (skip Phases 2, 4, 5, 6):
+
+```
+Crate: foo_macros
+(no feature flag needed — no elicitation primitives)
+
+[ ] Workspace Cargo.toml: member added
+[ ] elicit_foo/Cargo.toml: elicitation (features=["emit"]), proc-macro2, quote, inventory
+[ ] For each macro:
+    [ ] src/my_macro.rs: params struct (Deserialize + JsonSchema)
+    [ ] impl EmitCode: emit_code() with quote!, crate_deps()
+    [ ] inventory::submit!(EmitEntry { tool, crate_name, constructor })
+[ ] src/plugin.rs: #[derive(ElicitPlugin)] + #[elicit_tool] handlers calling p.emit_code().to_string()
+[ ] src/lib.rs: mod + pub use only
+[ ] just check-all elicit_foo passes clean
+
+[ ] Assemble: use shared std__assemble or add domain-specific terminal tool
+    (see Fragment Tools section — no separate assemble needed for most crates)
+
+[ ] tests/macro_tools_test.rs: EmitCode output, serde roundtrip, dispatch_emit_from, fragment composition
+
+[ ] git commit -m "feat(elicit_foo): fragment tools for foo macros"
 [ ] git push
 ```
 
