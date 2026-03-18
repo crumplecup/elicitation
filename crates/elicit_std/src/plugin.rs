@@ -6,14 +6,15 @@ use rmcp::ErrorData;
 use rmcp::model::{CallToolResult, Content};
 use tracing::instrument;
 
-use crate::{ConcatParams, EnvParams, FormatParams, IncludeStrParams};
+use crate::{AssembleParams, ConcatParams, EnvParams, FormatParams, IncludeStrParams};
 
-/// MCP plugin that exposes Rust standard library macros as emit-only tools.
+/// MCP plugin that exposes Rust standard library macros as fragment tools,
+/// plus the terminal `std__assemble` tool.
 ///
-/// Each tool takes macro parameters as JSON and returns the equivalent Rust
-/// source fragment.  The returned string is ready to embed in a
-/// [`BinaryScaffold`](elicitation::emit_code::BinaryScaffold) or inspect
-/// directly.
+/// Fragment tools take macro parameters as JSON and return a Rust source
+/// fragment.  Fragments are composable: pass a fragment string as an
+/// expression argument to another tool.  The final step is `std__assemble`,
+/// which wraps statement-level fragments in a `#[tokio::main]` binary.
 ///
 /// # Registration
 ///
@@ -90,4 +91,29 @@ async fn emit_env(p: EnvParams) -> Result<CallToolResult, ErrorData> {
 async fn emit_concat(p: ConcatParams) -> Result<CallToolResult, ErrorData> {
     let source = p.emit_code().to_string();
     Ok(CallToolResult::success(vec![Content::text(source)]))
+}
+
+// ── assemble (terminal) ───────────────────────────────────────────────────────
+
+#[elicit_tool(
+    plugin = "std",
+    name = "assemble",
+    description = "Assemble statement-level fragment strings into a compilable \
+                   Rust binary. Each string in `steps` is a Rust fragment \
+                   previously returned by an emit tool. Returns a JSON object \
+                   with `main_rs` (pretty-printed source) and `cargo_toml` \
+                   (generated dependency manifest)."
+)]
+#[instrument(skip_all)]
+async fn assemble_binary(p: AssembleParams) -> Result<CallToolResult, ErrorData> {
+    let output = p
+        .assemble()
+        .map_err(|e| ErrorData::internal_error(e, None))?;
+    let json = serde_json::json!({
+        "main_rs": output.main_rs,
+        "cargo_toml": output.cargo_toml,
+    });
+    Ok(CallToolResult::success(vec![Content::text(
+        json.to_string(),
+    )]))
 }

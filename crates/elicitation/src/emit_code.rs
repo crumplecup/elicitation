@@ -219,6 +219,38 @@ pub trait EmitCode {
     }
 }
 
+/// A pre-rendered token stream fragment received across an MCP boundary.
+///
+/// Emit tools return source fragments as plain strings.  When an agent passes
+/// those strings to an [`AssembleParams`](crate::emit_code) step (or nests
+/// one fragment inside another tool's parameters), this wrapper parses the
+/// string back into a live [`TokenStream`] so it can participate in
+/// [`BinaryScaffold`] assembly.
+///
+/// # Example
+///
+/// ```rust
+/// use elicitation::emit_code::{EmitCode, RawFragment};
+///
+/// let fragment = RawFragment("format!(\"x = {}\", value)".into());
+/// let ts = fragment.emit_code();
+/// assert!(!ts.is_empty());
+/// ```
+#[derive(Debug, Clone)]
+pub struct RawFragment(pub String);
+
+impl EmitCode for RawFragment {
+    fn emit_code(&self) -> TokenStream {
+        self.0
+            .parse()
+            .unwrap_or_else(|_| quote::quote!(/* fragment parse error */))
+    }
+
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![]
+    }
+}
+
 /// A Cargo dependency descriptor with pinned version.
 ///
 /// Each `EmitCode` impl that calls into a workspace crate returns `CrateDep`

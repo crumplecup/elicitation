@@ -1,6 +1,6 @@
 //! Integration tests for `elicit_std` emit-only macro tools.
 
-use elicit_std::{ConcatParams, EnvParams, FormatParams, IncludeStrParams};
+use elicit_std::{AssembleParams, ConcatParams, EnvParams, FormatParams, IncludeStrParams};
 use elicitation::emit_code::{EmitCode, dispatch_emit_from};
 use schemars::schema_for;
 use serde_json::json;
@@ -225,7 +225,176 @@ fn dispatch_emit_bad_params_errors() {
     assert!(result.is_err(), "expected error for missing required field");
 }
 
-// ── CrateDeps ────────────────────────────────────────────────────────────────
+// ── Fragment composition ──────────────────────────────────────────────────────
+
+#[test]
+fn format_accepts_fragment_string_as_arg() {
+    // Simulate: agent calls std__env → gets env!("USER"), passes as arg to std__format
+    let env_fragment = EnvParams {
+        var: "USER".into(),
+        error_message: None,
+    }
+    .emit_code()
+    .to_string();
+    // env_fragment is something like: env ! ("USER")
+
+    let p = FormatParams {
+        template: "Hello, {}!".into(),
+        args: vec![env_fragment],
+    };
+    let src = p.emit_code().to_string();
+    assert!(src.contains("format !"), "expected format! macro: {src}");
+    assert!(
+        src.contains("env !"),
+        "expected nested env! in output: {src}"
+    );
+}
+
+// ── AssembleParams ────────────────────────────────────────────────────────────
+
+#[test]
+fn assemble_single_step_produces_valid_source() {
+    let p = AssembleParams {
+        steps: vec!["let x = 42i32 ;".into()],
+        with_tracing: false,
+        package_name: "test-output".into(),
+    };
+    let out = p.assemble().expect("assemble should succeed");
+    assert!(
+        out.main_rs.contains("async fn main"),
+        "expected main fn: {}",
+        out.main_rs
+    );
+    assert!(
+        out.main_rs.contains("42"),
+        "expected step content: {}",
+        out.main_rs
+    );
+}
+
+#[test]
+fn assemble_multiple_steps_in_order() {
+    let p = AssembleParams {
+        steps: vec![
+            "let a = 1i32 ;".into(),
+            "let b = 2i32 ;".into(),
+            "let _c = a + b ;".into(),
+        ],
+        with_tracing: false,
+        package_name: "multi-step".into(),
+    };
+    let out = p.assemble().expect("assemble should succeed");
+    assert!(
+        out.main_rs.contains("let a"),
+        "expected step a: {}",
+        out.main_rs
+    );
+    assert!(
+        out.main_rs.contains("let b"),
+        "expected step b: {}",
+        out.main_rs
+    );
+    assert!(
+        out.main_rs.contains("_c"),
+        "expected step c: {}",
+        out.main_rs
+    );
+}
+
+#[test]
+fn assemble_with_tracing_includes_init() {
+    let p = AssembleParams {
+        steps: vec!["let _ = () ;".into()],
+        with_tracing: true,
+        package_name: "traced".into(),
+    };
+    let out = p.assemble().expect("assemble should succeed");
+    assert!(
+        out.main_rs.contains("tracing_subscriber"),
+        "expected tracing init: {}",
+        out.main_rs
+    );
+}
+
+#[test]
+fn assemble_cargo_toml_includes_package_name() {
+    let p = AssembleParams {
+        steps: vec!["let _ = () ;".into()],
+        with_tracing: false,
+        package_name: "my-cool-binary".into(),
+    };
+    let out = p.assemble().expect("assemble should succeed");
+    assert!(
+        out.cargo_toml.contains("my-cool-binary"),
+        "expected package name: {}",
+        out.cargo_toml
+    );
+    assert!(
+        out.cargo_toml.contains("tokio"),
+        "expected tokio dep: {}",
+        out.cargo_toml
+    );
+}
+
+#[test]
+fn assemble_default_package_name() {
+    let p: AssembleParams = serde_json::from_value(json!({ "steps": ["let _ = () ;"] })).unwrap();
+    assert_eq!(p.package_name, "elicit-output");
+    assert!(!p.with_tracing);
+}
+
+#[test]
+fn assemble_empty_steps_produces_empty_main() {
+    let p = AssembleParams {
+        steps: vec![],
+        with_tracing: false,
+        package_name: "empty".into(),
+    };
+    let out = p.assemble().expect("assemble should succeed");
+    assert!(out.main_rs.contains("async fn main"), "expected main fn");
+}
+
+#[test]
+fn assemble_fragment_pipeline_end_to_end() {
+    // Simulate the documented fragment pipeline:
+    // 1. env! fragment
+    // 2. format! fragment using env! as arg
+    // 3. let binding + println as final step
+    let env_frag = EnvParams {
+        var: "CARGO_PKG_VERSION".into(),
+        error_message: None,
+    }
+    .emit_code()
+    .to_string();
+
+    let fmt_frag = FormatParams {
+        template: "version: {}".into(),
+        args: vec![env_frag],
+    }
+    .emit_code()
+    .to_string();
+
+    // fmt_frag is an expression; wrap it into a statement
+    let step = format!("let _msg = {fmt_frag} ;");
+
+    let p = AssembleParams {
+        steps: vec![step],
+        with_tracing: false,
+        package_name: "pipeline-test".into(),
+    };
+    let out = p.assemble().expect("assemble should succeed");
+    // prettyplease formats macro calls as `format!` (no space), unlike TokenStream::to_string
+    assert!(
+        out.main_rs.contains("format!"),
+        "expected format! in assembled source: {}",
+        out.main_rs
+    );
+    assert!(
+        out.main_rs.contains("env!"),
+        "expected env! in assembled source: {}",
+        out.main_rs
+    );
+}
 
 #[test]
 fn std_macros_have_no_crate_deps() {

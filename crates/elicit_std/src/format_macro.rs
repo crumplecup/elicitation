@@ -16,6 +16,9 @@ pub struct FormatParams {
     /// Rust expressions to interpolate, in order (e.g. `["name", "count"]`).
     ///
     /// Each element is treated as a raw Rust expression in the emitted source.
+    /// You can pass a previously emitted fragment string here — for example,
+    /// `env!("USER")` returned by a prior `std__env` tool call — to compose
+    /// fragments at expression level.
     #[serde(default)]
     pub args: Vec<String>,
 }

@@ -1003,35 +1003,44 @@ variant definitions — trust those.**
 
 ---
 
-## Emit-Only Tools (Macros)
+## Fragment Tools (Macros)
 
 Some Rust APIs are macros that execute at **compile time** and cannot be called
-through an MCP boundary at runtime.  Use the **emit-only tool** pattern for
+through an MCP boundary at runtime.  Use the **fragment tool** pattern for
 these.
 
-### When to use emit-only tools
+### Two tool kinds
+
+| Kind | Returns | Composable? | EmitEntry? |
+|---|---|---|---|
+| **Fragment tool** | TokenStream as string | ✅ Pass to other tools | ✅ Yes |
+| **Terminal tool** (assemble) | `{ main_rs, cargo_toml }` | ❌ Final step only | ❌ No |
+
+### When to use fragment tools
 
 Use this pattern when:
 - The API is a Rust macro (`format!`, `query!`, `include_str!`, etc.)
-- The API is proc-macro based and generates code, not data
-- There is no meaningful runtime value to return — only source code
+- The API generates code, not runtime data
+- The fragment may be composed with other fragments before assembly
 
-### Pattern
+### Fragment composition model
 
-An emit-only tool takes JSON params, validates them, and returns a Rust source
-fragment.  The fragment is assembled into a `BinaryScaffold` for compilation.
+Fragment tools produce TokenStream strings that can be chained:
+
+- **Expression-level nesting**: pass a fragment as an arg/field to another tool
+- **Statement-level assembly**: collect fragments as steps in `std__assemble`
 
 ```
-Agent → std__format { template: "x={}", args: ["val"] }
-                ↓
-Handler calls p.emit_code().to_string()
-                ↓
-Returns: format!("x={}", val)
-                ↓
-BinaryScaffold compiles the fragment → running binary
+std__env { var: "USER" }               →  env!("USER")
+                                              ↓ pass as arg
+std__format { template: "Hi, {}!", args: ["env!(\"USER\")"] }
+                                       →  format!("Hi, {}!", env!("USER"))
+                                              ↓ wrap as statement + pass to
+std__assemble { steps: ["let msg = format!(...); println!(\"{}\", msg);"] }
+                                       →  { main_rs, cargo_toml }
 ```
 
-### Implementation checklist
+### Implementation checklist — Fragment tool
 
 **1. Params struct** (in `crates/elicit_foo/src/my_macro.rs`):
 
@@ -1072,7 +1081,9 @@ inventory::submit! {
 #[elicit_tool(
     plugin = "foo",
     name = "my_macro",
-    description = "Emit a my_macro!(…) expression. Returns Rust source — no runtime execution."
+    description = "Emit a my_macro!(…) expression as a Rust source fragment. \
+                   Pass the returned string as an expression to another tool, \
+                   or collect as a step for std__assemble."
 )]
 #[instrument(skip_all)]
 async fn emit_my_macro(p: MyMacroParams) -> Result<CallToolResult, ErrorData> {
@@ -1080,9 +1091,6 @@ async fn emit_my_macro(p: MyMacroParams) -> Result<CallToolResult, ErrorData> {
     Ok(CallToolResult::success(vec![Content::text(source)]))
 }
 ```
-
-Note: the handler body is always just `p.emit_code().to_string()`.  There is
-no runtime execution path.
 
 **3. Cargo.toml** — add `emit` feature to `elicitation` dep:
 
@@ -1093,30 +1101,54 @@ quote.workspace = true
 inventory.workspace = true
 ```
 
-**4. No Phase 2 (elicitation core)** — emit-only tools do not need `Elicit`
+**4. No Phase 2 (elicitation core)** — fragment tools do not need `Elicit`
 impls in `crates/elicitation/src/primitives/`.  Skip Phase 2 entirely.
 
-**5. No Kani/Creusot verification** — emit-only tools return `TokenStream`; the
+**5. No Kani/Creusot verification** — fragment tools return `TokenStream`; the
 verification story is handled when the emitted program is verified, not here.
+
+### Implementation checklist — Terminal tool (`assemble`)
+
+Each macro crate does **not** need its own assemble tool.  The shared
+`std__assemble` in `elicit_std` works for any fragments because it uses
+`RawFragment` to re-parse pre-rendered strings:
+
+```rust
+// AssembleParams wraps each step in RawFragment and passes to BinaryScaffold
+let steps: Vec<Box<dyn EmitCode>> = self.steps.iter()
+    .map(|s| Box::new(RawFragment(s.clone())) as Box<dyn EmitCode>)
+    .collect();
+let scaffold = BinaryScaffold::new(steps, self.with_tracing);
+let main_rs = scaffold.to_source()?;
+let cargo_toml = scaffold.to_cargo_toml(&self.package_name);
+```
+
+If a crate needs a domain-specific assembly tool (e.g. pre-wired `use`
+statements or custom error handling), use the same `RawFragment` pattern.
+Note: crate deps from raw fragments are NOT automatically detected — callers
+must ensure the assembled source only uses crates already in the generated
+`Cargo.toml`.
 
 ### Reference implementation
 
-`crates/elicit_std` — four `std` macros as emit-only tools:
+`crates/elicit_std` — five tools (four fragment, one terminal):
 
-| Tool | Macro | Params |
+| Tool | Kind | Params |
 |---|---|---|
-| `std__format` | `format!` | `{ template, args[] }` |
-| `std__include_str` | `include_str!` | `{ path }` |
-| `std__env` | `env!` | `{ var, error_message? }` |
-| `std__concat` | `concat!` | `{ parts[] }` |
+| `std__format` | fragment | `{ template, args[] }` |
+| `std__include_str` | fragment | `{ path }` |
+| `std__env` | fragment | `{ var, error_message? }` |
+| `std__concat` | fragment | `{ parts[] }` |
+| `std__assemble` | terminal | `{ steps[], with_tracing?, package_name? }` |
 
-Tests: `crates/elicit_std/tests/macro_tools_test.rs` (23 tests)
+Tests: `crates/elicit_std/tests/macro_tools_test.rs` (31 tests)
 
 ---
 
 ## Reference Implementation
 
 The complete `clap` integration is the canonical example:
+
 
 **Elicitation core:**
 - `crates/elicitation/src/primitives/clap_types/` — 11 type files
