@@ -110,6 +110,49 @@ composite harnesses. A new `ProofPlugin` exposes these as MCP tools.
 
 New plans can be added here as needed for future development.
 
+### PluginContext Refactor
+
+**Document:** [PLUGIN_CONTEXT_REFACTOR_PLAN.md](PLUGIN_CONTEXT_REFACTOR_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Replace the monolithic concrete `PluginContext` struct (which accumulates
+feature-gated fields from every shadow crate) with a `PluginContext` **trait**. Each shadow
+crate defines its own context type. `ToolDescriptor<Ctx>` becomes generic, `ElicitPlugin`
+gains `type Context: PluginContext`, and a new object-safe `ErasedElicitPlugin` blanket
+impl handles type erasure at the registry boundary. `elicit_reqwest` migrates first as the
+canonical example (`HttpContext { http: reqwest::Client }`); all context-free plugins get
+`type Context = NoContext`.
+
+**Phases:**
+- Phase A: Core refactor in `crates/elicitation/` — trait, `NoContext`, generic `ToolDescriptor`, `ErasedElicitPlugin`
+- Phase B: `elicit_reqwest` migration — `HttpContext`, typed handler signatures
+- Phase C: Derive macro updates — `#[elicit_tool]` heuristic, `#[derive(ElicitPlugin)]`
+- Phase D: Mechanical update of all other `elicit_*` crates to `type Context = NoContext`
+- Phase E: Update `ELICIT_SQLX_PLAN.md` (SqlxContext was already the motivation)
+
+### elicit_sqlx Shadow Crate
+
+**Document:** [ELICIT_SQLX_PLAN.md](ELICIT_SQLX_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Shadow crate exposing sqlx as MCP tools for agent-driven database
+programming. Mirrors sqlx's own vocabulary exactly (`AnyPool`, `AnyRow`, `AnyColumn`,
+`AnyQueryResult`). Backend-agnostic via `sqlx::Any` — the connection URL selects Postgres,
+SQLite, or MySQL at runtime. Covers runtime tools (5 pool methods), fragment tools (4
+macros: `query!`, `query_as!`, `query_scalar!`, `migrate!`), a `FromRow` trait factory,
+and Kani + Creusot verification harnesses.
+
+**Phases:**
+
+- Phase 1: Workspace wiring (sqlx dep + elicit_sqlx member)
+- Phase 2: Elicitation primitives under `sqlx-types` feature flag
+- Phase 3: `crates/elicit_sqlx/` — types, runtime workflow plugin, fragment tools
+- Phase 3B: `FromRow` trait factory
+- Phase 4: Kani harnesses
+- Phase 5: Creusot proofs
+
 ### Macro-Driven MCP Tool System
 
 **Document:** [MACRO_TOOL_GEN_PLAN.md](MACRO_TOOL_GEN_PLAN.md)
