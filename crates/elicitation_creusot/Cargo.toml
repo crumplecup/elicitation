@@ -30,6 +30,7 @@ chrono = { workspace = true, optional = true }
 time = { workspace = true, optional = true }
 jiff = { workspace = true, optional = true }
 clap = { workspace = true, optional = true }
+sqlx = { workspace = true, optional = true }
 
 [features]
 default = []
@@ -44,3 +45,4 @@ jiff = ["dep:jiff", "elicitation/jiff"]
 verify-kani = []                                                       # Dummy feature for Kani compatibility
 reqwest = ["elicitation/reqwest"]
 clap-types = ["dep:clap", "elicitation/clap-types"]
+sqlx-types = ["dep:sqlx", "elicitation/sqlx-types"]

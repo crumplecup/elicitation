@@ -111,3 +111,6 @@ mod datetimes_jiff;
 
 #[cfg(all(kani, feature = "clap-types"))]
 mod clap_types;
+
+#[cfg(all(kani, feature = "sqlx-types"))]
+mod sqlx_types;

@@ -18,6 +18,7 @@ members = [
   "crates/elicit_jiff",
   "crates/elicit_clap",
   "crates/elicit_std",
+  "crates/elicit_sqlx",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
@@ -48,6 +49,18 @@ elicitation_kani = { path = "crates/elicitation_kani", version = "0.9.1" }
 elicit_chrono = { path = "crates/elicit_chrono", version = "0.9.1" }
 elicit_clap = { path = "crates/elicit_clap", version = "0.9.1" }
 elicit_std = { path = "crates/elicit_std", version = "0.9.1" }
+elicit_sqlx = { path = "crates/elicit_sqlx", version = "0.9.1" }
+
+# sqlx - database interaction library
+sqlx = { version = "0.8", features = [
+  "runtime-tokio",
+  "tls-native-tls",
+  "any",
+  "postgres",
+  "sqlite",
+  "mysql",
+  "macros",
+] }
 elicit_jiff = { path = "crates/elicit_jiff", version = "0.9.1" }
 elicit_url = { path = "crates/elicit_url", version = "0.9.1" }
 elicit_time = { path = "crates/elicit_time", version = "0.9.1" }

@@ -43,6 +43,7 @@ url = ["dep:url", "elicitation/url"]
 regex = ["dep:regex", "elicitation/regex"]
 serde_json = ["dep:serde_json", "elicitation/serde_json"]
 clap-types = ["dep:clap", "elicitation/clap-types"]
+sqlx-types = ["elicitation/sqlx-types"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }

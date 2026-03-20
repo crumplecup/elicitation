@@ -34,6 +34,7 @@ mod network_specs;
 mod regex_specs;
 mod registry;
 mod scalars;
+mod sqlx_specs;
 mod std_extras;
 mod string_contracts;
 mod strings;

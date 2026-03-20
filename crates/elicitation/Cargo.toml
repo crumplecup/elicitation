@@ -65,6 +65,9 @@ reqwest = { workspace = true, optional = true }
 http = { workspace = true, optional = true }
 bytes = { workspace = true, optional = true }
 
+# sqlx database types (optional)
+sqlx = { workspace = true, optional = true }
+
 # Code recovery / emission (optional)
 proc-macro2 = { workspace = true, optional = true }
 quote = { workspace = true, optional = true }
@@ -91,7 +94,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "proofs", "verification", "graph", "clap-types"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "proofs", "verification", "graph", "clap-types", "sqlx-types"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -133,6 +136,9 @@ verify-all = ["verify-verus"]
 
 # Enable clap type elicitation (ColorChoice, ArgAction, ValueHint, etc.)
 clap-types = ["dep:clap"]
+
+# Enable sqlx type elicitation (AnyTypeInfoKind, ErrorKind, ColumnValue, etc.)
+sqlx-types = ["dep:sqlx"]
 
 # CLI and verification runner
 cli = ["dep:clap", "clap-types", "csv", "chrono", "shellexpand", "dirs"]

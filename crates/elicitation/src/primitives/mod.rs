@@ -43,3 +43,6 @@ pub mod http;
 
 #[cfg(feature = "clap-types")]
 pub mod clap_types;
+
+#[cfg(feature = "sqlx-types")]
+pub mod sqlx_types;

@@ -461,3 +461,17 @@ pub use primitives::clap_types::{
     ArgActionStyle, ArgGroupStyle, ArgStyle, ColorChoiceStyle, CommandStyle, ErrorKindStyle,
     IdStyle, PossibleValueStyle, ValueHintStyle, ValueRangeStyle, ValueSourceStyle,
 };
+
+// sqlx types (feature-gated on sqlx-types)
+#[cfg(feature = "sqlx-types")]
+pub use primitives::sqlx_types::{
+    AnyQueryResultStyle, AnyTypeInfoStyle, ColumnDescriptorStyle, ColumnEntryStyle, RowDataStyle,
+};
+#[cfg(feature = "sqlx-types")]
+pub use primitives::sqlx_types::{
+    AnyTypeInfoKindStyle, ColumnValueStyle, SqlTypeKindStyle, SqlxErrorKindStyle,
+};
+#[cfg(feature = "sqlx-types")]
+pub use primitives::sqlx_types::{
+    ColumnDescriptor, ColumnEntry, ColumnValue, RowData, SqlTypeKind,
+};
