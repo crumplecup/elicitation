@@ -22,26 +22,44 @@ All runtime tools accept `database_url: String` and operate through `AnyPool`.
 No Postgres-specific types appear in the tool API. Cargo.toml includes all
 three driver features; the URL picks the backend.
 
-### Opaque handles live in PluginContext
+### Opaque handles live in SqlxContext
 
-`Pool`, `Connection`, `Transaction` are async runtime handles — not
-serializable across the MCP boundary. They live server-side in `PluginContext`,
-exactly as `reqwest::Client` does today.
-
-`PluginContext` gains two fields gated behind a `sqlx` feature:
+`Pool`, `Connection`, and `Transaction` are async runtime handles — not
+serializable across the MCP boundary. They live server-side in a dedicated
+`SqlxContext` struct that implements `PluginContext`, exactly as `HttpContext`
+does in `elicit_reqwest`.
 
 ```rust
-#[cfg(feature = "sqlx")]
-pub db: sqlx::any::AnyPool,
+/// Plugin context carrying a shared database pool and transaction registry.
+pub struct SqlxContext {
+    /// Shared connection pool (AnyPool is Arc-backed, cheap to clone).
+    pub db: sqlx::AnyPool,
 
-#[cfg(feature = "sqlx")]
-pub transactions: std::sync::Mutex<
-    std::collections::HashMap<uuid::Uuid, sqlx::Transaction<'static, sqlx::Any>>
->,
+    /// In-flight transaction registry: begin → id, commit/rollback ← id.
+    pub transactions: std::sync::Mutex<
+        std::collections::HashMap<uuid::Uuid, sqlx::Transaction<'static, sqlx::Any>>
+    >,
+}
+
+impl elicitation::PluginContext for SqlxContext {}
 ```
 
-`AnyPool` is `Clone + Send + Sync` (Arc-backed internally) — it shares the
+`AnyPool` is `Clone + Send + Sync` (Arc-backed internally), so it shares the
 connection pool across every tool invocation on the same server instance.
+
+`SqlxPlugin` wraps `Arc<SqlxContext>` and implements `StatefulPlugin`:
+
+```rust
+pub struct SqlxPlugin(pub Arc<SqlxContext>);
+
+impl StatefulPlugin for SqlxPlugin {
+    type Context = SqlxContext;
+    // ...
+}
+```
+
+Each tool handler receives `ctx: Arc<SqlxContext>` and accesses `ctx.db` for
+the pool and `ctx.transactions` for the transaction registry.
 
 Transactions use a registry pattern: `sqlx__begin` returns a `transaction_id:
 Uuid`; `sqlx__commit` / `sqlx__rollback` accept that ID and remove the entry.
@@ -183,8 +201,9 @@ pub struct RowsReturned; impl Prop for RowsReturned {}
 pub struct InTransaction; impl Prop for InTransaction {}
 ```
 
-`SqlxPlugin(Arc<PluginContext>)` — newtype wrapping the shared context (same
-pattern as `SecureFetchPlugin`). Handlers receive `ctx.db` for the pool and
+`SqlxPlugin(Arc<SqlxContext>)` — newtype wrapping the shared context, implementing
+`StatefulPlugin<Context = SqlxContext>` (same pattern as `elicit_reqwest::Plugin`).
+Handlers receive `ctx: Arc<SqlxContext>`, use `ctx.db` for the pool and
 `ctx.transactions` for the registry.
 
 Tools:
