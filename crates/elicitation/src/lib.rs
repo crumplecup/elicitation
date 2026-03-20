@@ -131,8 +131,8 @@ pub use elicit_json::ElicitJson;
 pub mod plugin;
 mod plugin_registry;
 pub use plugin::{
-    DescriptorPlugin, ElicitPlugin, PluginContext, PluginToolRegistration, ToolDescriptor,
-    make_descriptor, make_descriptor_ctx,
+    DescriptorPlugin, ElicitPlugin, NoContext, PluginContext, PluginToolRegistration,
+    StatefulPlugin, ToolDescriptor, make_descriptor, make_descriptor_ctx,
 };
 pub use plugin_registry::{PluginRegistry, Toolchain};
 

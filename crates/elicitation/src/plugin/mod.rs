@@ -16,11 +16,12 @@ pub mod context;
 pub mod descriptor;
 pub mod descriptor_plugin;
 
-pub use context::PluginContext;
+pub use context::{NoContext, PluginContext};
 pub use descriptor::{
     PluginToolRegistration, ToolDescriptor, make_descriptor, make_descriptor_ctx,
 };
 pub use descriptor_plugin::DescriptorPlugin;
+// StatefulPlugin is defined in this module; re-exported at crate level from lib.rs.
 
 use std::borrow::Cow;
 use std::sync::Arc;
@@ -62,10 +63,90 @@ pub trait ElicitPlugin: Send + Sync + 'static {
     ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>>;
 }
 
+/// A stateful plugin with a typed context.
+///
+/// Implement this trait (instead of [`ElicitPlugin`] directly) when your
+/// plugin needs server-side state — a DB pool, HTTP client, etc.  The context
+/// lives in an `Arc<Self::Context>` that is cloned into each tool handler.
+///
+/// A blanket impl of [`ElicitPlugin`] is provided for all `StatefulPlugin`
+/// types.  The context is type-erased at dispatch time using `Arc<dyn Any>`.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// # use std::sync::Arc;
+/// # use elicitation::plugin::{StatefulPlugin, PluginContext, ToolDescriptor};
+/// # use rmcp::model::Tool;
+/// pub struct MyCtx { pub client: String }
+/// impl PluginContext for MyCtx {}
+///
+/// pub struct MyPlugin(Arc<MyCtx>);
+///
+/// impl StatefulPlugin for MyPlugin {
+///     type Context = MyCtx;
+///     fn name(&self) -> &'static str { "my" }
+///     fn list_tools(&self) -> Vec<Tool> { vec![] }
+///     fn tool_descriptors(&self) -> Vec<ToolDescriptor> { vec![] }
+///     fn context(&self) -> Arc<MyCtx> { self.0.clone() }
+/// }
+/// ```
+pub trait StatefulPlugin: Send + Sync + 'static {
+    /// The plugin's context type.
+    type Context: PluginContext;
+
+    /// Human-readable plugin name (namespace prefix).
+    fn name(&self) -> &'static str;
+
+    /// All tools provided by this plugin (MCP schema layer).
+    fn list_tools(&self) -> Vec<Tool>;
+
+    /// All descriptors provided by this plugin (handler layer).
+    ///
+    /// Named `tool_descriptors` to avoid collision with [`DescriptorPlugin::descriptors`].
+    fn tool_descriptors(&self) -> Vec<ToolDescriptor>;
+
+    /// Return a clone of the shared context `Arc`.
+    fn context(&self) -> Arc<Self::Context>;
+}
+
+impl<P: StatefulPlugin> ElicitPlugin for P {
+    fn name(&self) -> &'static str {
+        StatefulPlugin::name(self)
+    }
+
+    fn list_tools(&self) -> Vec<Tool> {
+        StatefulPlugin::list_tools(self)
+    }
+
+    fn call_tool<'a>(
+        &'a self,
+        params: CallToolRequestParams,
+        _ctx: RequestContext<RoleServer>,
+    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
+        let bare = params
+            .name
+            .strip_prefix(&format!("{name}__", name = self.name()))
+            .map(|s| s.to_owned())
+            .unwrap_or_else(|| params.name.to_string());
+
+        let ctx: Arc<dyn std::any::Any + Send + Sync> = self.context();
+        let descriptors = self.tool_descriptors();
+
+        Box::pin(async move {
+            match descriptors.iter().find(|d| d.name == bare.as_str()) {
+                Some(descriptor) => descriptor.dispatch(ctx, params).await,
+                None => Err(ErrorData::invalid_params(
+                    format!("unknown tool: {bare}"),
+                    None,
+                )),
+            }
+        })
+    }
+}
+
 /// A type-erased, cheaply-cloneable plugin reference.
 pub type ArcPlugin = Arc<dyn ElicitPlugin>;
-
-/// Apply the namespace prefix to a tool name.
 ///
 /// `"http"` + `"get"` → `"http__get"`.
 pub(crate) fn prefixed_name(prefix: &str, name: &str) -> Cow<'static, str> {

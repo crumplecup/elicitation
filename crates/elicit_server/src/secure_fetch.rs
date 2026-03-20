@@ -26,6 +26,26 @@ use serde::Deserialize;
 use std::sync::Arc;
 use tracing::instrument;
 
+// ── Context ───────────────────────────────────────────────────────────────────
+
+/// Plugin context for the secure fetch plugin.
+#[derive(Debug)]
+pub struct SecureFetchContext {
+    /// Shared HTTP client.
+    pub http: reqwest::Client,
+}
+
+impl PluginContext for SecureFetchContext {}
+
+impl SecureFetchContext {
+    /// Create a new context with a default HTTP client.
+    pub fn new() -> Arc<Self> {
+        Arc::new(Self {
+            http: reqwest::Client::new(),
+        })
+    }
+}
+
 // ── Param types ────────────────────────────────────────────────────────────────
 
 /// Parameters for `secure_fetch`.
@@ -74,16 +94,16 @@ fn default_get() -> String {
 /// Tools are registered at link time via `#[elicit_tool(plugin = "secure_fetch")]`
 /// on each handler; no manual wiring required.
 ///
-/// The shared `reqwest::Client` inside the [`PluginContext`] is reused across
+/// The shared `reqwest::Client` inside the [`SecureFetchContext`] is reused across
 /// all tool calls, keeping the connection pool alive for the plugin's lifetime.
 #[derive(ElicitPlugin)]
 #[plugin(name = "secure_fetch")]
-pub struct SecureFetchPlugin(pub Arc<PluginContext>);
+pub struct SecureFetchPlugin(pub Arc<SecureFetchContext>);
 
 impl SecureFetchPlugin {
     /// Create a new plugin with a fresh shared context.
     pub fn new() -> Self {
-        Self(PluginContext::new())
+        Self(SecureFetchContext::new())
     }
 }
 
@@ -105,7 +125,7 @@ impl Default for SecureFetchPlugin {
 )]
 #[instrument(skip_all, fields(timeout = p.timeout_secs))]
 async fn secure_fetch(
-    ctx: Arc<PluginContext>,
+    ctx: Arc<SecureFetchContext>,
     p: SecureFetchParams,
 ) -> Result<CallToolResult, ErrorData> {
     // URL is validated as UrlHttps at deserialization — no ceremony needed.
@@ -144,7 +164,7 @@ async fn secure_fetch(
 )]
 #[instrument(skip(ctx, p), fields(method = %p.method, timeout = p.timeout_secs))]
 async fn validated_api_call(
-    ctx: Arc<PluginContext>,
+    ctx: Arc<SecureFetchContext>,
     p: ValidatedApiCallParams,
 ) -> Result<CallToolResult, ErrorData> {
     // URL is validated as UrlHttps at deserialization — no ceremony needed.

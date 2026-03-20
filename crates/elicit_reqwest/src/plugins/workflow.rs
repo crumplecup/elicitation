@@ -34,10 +34,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
+use crate::HttpContext;
 use elicitation::contracts::{And, Established, Prop, both};
-use elicitation::{
-    ElicitPlugin, F64Positive, PluginContext, UrlValid as UrlValidType, elicit_tool,
-};
+use elicitation::{ElicitPlugin, F64Positive, UrlValid as UrlValidType, elicit_tool};
 use reqwest::header::{HeaderMap, HeaderValue};
 use rmcp::{
     ErrorData,
@@ -269,17 +268,17 @@ pub struct FetchResult {
 /// | `paginated_get` | "page-and-link" | `FetchSucceeded` + next URL |
 #[derive(ElicitPlugin)]
 #[plugin(name = "workflow")]
-pub struct WorkflowPlugin(pub Arc<PluginContext>);
+pub struct WorkflowPlugin(pub Arc<HttpContext>);
 
 impl WorkflowPlugin {
     /// Create a new `WorkflowPlugin` backed by a shared reqwest client.
     pub fn new(client: reqwest::Client) -> Self {
-        Self(Arc::new(PluginContext { http: client }))
+        Self(Arc::new(HttpContext { http: client }))
     }
 
     /// Create a `WorkflowPlugin` with a default client.
     pub fn default_client() -> Self {
-        Self(PluginContext::new())
+        Self(HttpContext::new())
     }
 
     /// Construct and validate a URL from base, optional path, and query pairs.
@@ -704,7 +703,7 @@ pub fn urlencoding_simple(s: &str) -> String {
 )]
 #[instrument(skip_all, fields(base = %p.base.get()))]
 async fn wf_url_build(
-    ctx: Arc<PluginContext>,
+    ctx: Arc<HttpContext>,
     p: UrlBuildParams,
 ) -> Result<CallToolResult, ErrorData> {
     let _ = &ctx; // stateless — no HTTP call
@@ -738,7 +737,7 @@ async fn wf_url_build(
     emit_ctx("ctx.http" => "reqwest::Client::new()")
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
-async fn wf_fetch(ctx: Arc<PluginContext>, p: FetchParams) -> Result<CallToolResult, ErrorData> {
+async fn wf_fetch(ctx: Arc<HttpContext>, p: FetchParams) -> Result<CallToolResult, ErrorData> {
     match do_fetch(
         &ctx.http,
         p.url.get().as_str(),
@@ -765,7 +764,7 @@ async fn wf_fetch(ctx: Arc<PluginContext>, p: FetchParams) -> Result<CallToolRes
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn wf_fetch_json(
-    ctx: Arc<PluginContext>,
+    ctx: Arc<HttpContext>,
     p: FetchJsonParams,
 ) -> Result<CallToolResult, ErrorData> {
     let mut headers = HeaderMap::new();
@@ -796,7 +795,7 @@ async fn wf_fetch_json(
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn wf_fetch_auth(
-    ctx: Arc<PluginContext>,
+    ctx: Arc<HttpContext>,
     p: AuthFetchParams,
 ) -> Result<CallToolResult, ErrorData> {
     let url_proof: Established<UrlValid> = Established::assert();
@@ -857,7 +856,7 @@ async fn wf_fetch_auth(
     emit_ctx("ctx.http" => "reqwest::Client::new()")
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
-async fn wf_post_json(ctx: Arc<PluginContext>, p: PostParams) -> Result<CallToolResult, ErrorData> {
+async fn wf_post_json(ctx: Arc<HttpContext>, p: PostParams) -> Result<CallToolResult, ErrorData> {
     match do_post(
         &ctx.http,
         p.url.get().as_str(),
@@ -886,10 +885,7 @@ async fn wf_post_json(ctx: Arc<PluginContext>, p: PostParams) -> Result<CallTool
     emit_ctx("ctx.http" => "reqwest::Client::new()")
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
-async fn wf_api_call(
-    ctx: Arc<PluginContext>,
-    p: ApiCallParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn wf_api_call(ctx: Arc<HttpContext>, p: ApiCallParams) -> Result<CallToolResult, ErrorData> {
     let url_proof: Established<UrlValid> = Established::assert();
 
     let auth_proof: Established<Authorized> = if p.token.is_empty() {
@@ -954,7 +950,7 @@ async fn wf_api_call(
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn wf_health_check(
-    ctx: Arc<PluginContext>,
+    ctx: Arc<HttpContext>,
     p: HealthCheckParams,
 ) -> Result<CallToolResult, ErrorData> {
     let url_str = p.url.get().to_string();
@@ -997,7 +993,7 @@ async fn wf_health_check(
 )]
 #[instrument(skip(ctx, p), fields(method = %p.method, url = %p.url.get()))]
 async fn wf_build_request(
-    ctx: Arc<PluginContext>,
+    ctx: Arc<HttpContext>,
     p: BuildRequestParams,
 ) -> Result<CallToolResult, ErrorData> {
     let _ = &ctx; // pure — no HTTP call
@@ -1048,7 +1044,7 @@ async fn wf_build_request(
 )]
 #[instrument(skip(ctx, p), fields(status = p.status))]
 async fn wf_status_summary(
-    ctx: Arc<PluginContext>,
+    ctx: Arc<HttpContext>,
     p: StatusSummaryParams,
 ) -> Result<CallToolResult, ErrorData> {
     let _ = &ctx; // pure — no HTTP call
@@ -1094,7 +1090,7 @@ async fn wf_status_summary(
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn wf_paginated_get(
-    ctx: Arc<PluginContext>,
+    ctx: Arc<HttpContext>,
     p: PaginatedGetParams,
 ) -> Result<CallToolResult, ErrorData> {
     let _url_proof: Established<UrlValid> = Established::assert();

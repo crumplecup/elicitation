@@ -1,20 +1,18 @@
 //! [`ToolDescriptor`] — a self-contained tool definition.
 //!
 //! A `ToolDescriptor` bundles a tool's name, description, JSON schema, and
-//! async handler into one value.  The handler always receives a
-//! [`Arc<PluginContext>`](super::PluginContext) so plugins can share resources
-//! (e.g., `reqwest::Client`) across calls.
+//! async handler into one value.
 //!
 //! # Constructors
 //!
 //! - [`make_descriptor`] — for handlers that ignore the context
-//! - [`make_descriptor_ctx`] — for handlers that use `Arc<PluginContext>`
+//! - [`make_descriptor_ctx`] — for handlers that use `Arc<Ctx>` where `Ctx: PluginContext`
 //!
 //! # Example
 //!
 //! ```rust,no_run
 //! use std::sync::Arc;
-//! use elicitation::plugin::{PluginContext, make_descriptor, make_descriptor_ctx};
+//! use elicitation::plugin::{make_descriptor, make_descriptor_ctx, NoContext};
 //! use rmcp::model::{CallToolResult, Content};
 //! use schemars::JsonSchema;
 //! use serde::Deserialize;
@@ -32,10 +30,13 @@
 //! );
 //!
 //! // Context-aware (e.g. uses ctx.http)
-//! let ctx_aware = make_descriptor_ctx::<PingParams, _>(
+//! struct MyCtx { value: u32 }
+//! impl elicitation::plugin::PluginContext for MyCtx {}
+//!
+//! let ctx_aware = make_descriptor_ctx::<MyCtx, PingParams, _>(
 //!     "ping_ctx",
-//!     "Echo via HTTP client",
-//!     |_ctx: Arc<PluginContext>, p| Box::pin(async move {
+//!     "Echo with context",
+//!     |_ctx: Arc<MyCtx>, p| Box::pin(async move {
 //!         Ok(CallToolResult::success(vec![Content::text(p.message)]))
 //!     }),
 //! );
@@ -54,9 +55,13 @@ use serde::de::DeserializeOwned;
 use super::PluginContext;
 
 /// Type alias for the async handler stored inside a [`ToolDescriptor`].
+///
+/// The context is passed as a type-erased `Arc<dyn Any + Send + Sync>`.
+/// Context-free handlers ignore it; context-aware handlers downcast it to
+/// their concrete `Ctx` type inside the closure created by [`make_descriptor_ctx`].
 pub(crate) type ToolHandler = Arc<
     dyn Fn(
-            Arc<PluginContext>,
+            Arc<dyn std::any::Any + Send + Sync>,
             CallToolRequestParams,
         ) -> BoxFuture<'static, Result<CallToolResult, ErrorData>>
         + Send
@@ -66,9 +71,7 @@ pub(crate) type ToolHandler = Arc<
 /// A fully self-contained MCP tool definition.
 ///
 /// Carries the tool's name, description, JSON schema, and an async handler
-/// that parses its own params from [`CallToolRequestParams`].  The handler
-/// always receives an [`Arc<PluginContext>`] so long-lived resources can be
-/// shared across calls.
+/// that parses its own params from [`CallToolRequestParams`].
 ///
 /// Create via [`make_descriptor`] (context-free) or [`make_descriptor_ctx`]
 /// (context-aware).
@@ -92,6 +95,17 @@ impl std::fmt::Debug for ToolDescriptor {
     }
 }
 
+impl Clone for ToolDescriptor {
+    fn clone(&self) -> Self {
+        Self {
+            name: self.name,
+            description: self.description,
+            tool: self.tool.clone(),
+            handler: Arc::clone(&self.handler),
+        }
+    }
+}
+
 // ── Schema helper ──────────────────────────────────────────────────────────────
 
 fn build_tool<T: JsonSchema>(name: &'static str, description: &'static str) -> Tool {
@@ -108,9 +122,8 @@ fn build_tool<T: JsonSchema>(name: &'static str, description: &'static str) -> T
 
 /// Build a [`ToolDescriptor`] from a context-free handler.
 ///
-/// The context parameter is ignored; use this when the handler does not need
-/// shared resources.  For handlers that require `Arc<PluginContext>`, use
-/// [`make_descriptor_ctx`] instead.
+/// Use this when the handler does not need shared resources.  For handlers
+/// that require a typed context, use [`make_descriptor_ctx`] instead.
 ///
 /// # Example
 ///
@@ -141,7 +154,7 @@ where
 {
     let tool = build_tool::<T>(name, description);
     let handler = Arc::new(
-        move |_ctx: Arc<PluginContext>, params: CallToolRequestParams| {
+        move |_ctx: Arc<dyn std::any::Any + Send + Sync>, params: CallToolRequestParams| {
             let value = serde_json::Value::Object(params.arguments.clone().unwrap_or_default());
             match serde_json::from_value::<T>(value) {
                 Ok(typed) => handler(typed),
@@ -161,8 +174,11 @@ where
 
 /// Build a [`ToolDescriptor`] from a context-aware handler.
 ///
-/// The handler receives `Arc<PluginContext>` as its first argument, giving
-/// access to shared resources such as `ctx.http` (the `reqwest::Client`).
+/// The handler receives `Arc<Ctx>` as its first argument, giving access to
+/// plugin-specific shared resources (e.g. an HTTP client, a DB pool).
+///
+/// `Ctx` must implement [`PluginContext`]. The type is inferred from the
+/// handler's first argument in most cases.
 ///
 /// # Example
 ///
@@ -172,33 +188,43 @@ where
 /// # use rmcp::model::{CallToolResult, Content};
 /// # use schemars::JsonSchema;
 /// # use serde::Deserialize;
-/// #[derive(Deserialize, JsonSchema)]
-/// struct FetchParams { url: String }
+/// pub struct MyCtx { pub value: u32 }
+/// impl PluginContext for MyCtx {}
 ///
-/// let d = make_descriptor_ctx::<FetchParams, _>(
-///     "fetch",
-///     "Fetch a URL using the shared client",
-///     |ctx: Arc<PluginContext>, p| Box::pin(async move {
-///         let _resp = ctx.http.get(&p.url).send().await;
-///         Ok(CallToolResult::success(vec![]))
+/// #[derive(Deserialize, JsonSchema)]
+/// struct Params { input: String }
+///
+/// let d = make_descriptor_ctx::<MyCtx, Params, _>(
+///     "my_tool",
+///     "Uses context",
+///     |ctx: Arc<MyCtx>, p| Box::pin(async move {
+///         let _ = ctx.value;
+///         Ok(CallToolResult::success(vec![Content::text(p.input)]))
 ///     }),
 /// );
 /// ```
-pub fn make_descriptor_ctx<T, F>(
+pub fn make_descriptor_ctx<Ctx, T, F>(
     name: &'static str,
     description: &'static str,
     handler: F,
 ) -> ToolDescriptor
 where
+    Ctx: PluginContext,
     T: DeserializeOwned + JsonSchema + 'static,
-    F: Fn(Arc<PluginContext>, T) -> BoxFuture<'static, Result<CallToolResult, ErrorData>>
+    F: Fn(Arc<Ctx>, T) -> BoxFuture<'static, Result<CallToolResult, ErrorData>>
         + Send
         + Sync
         + 'static,
 {
     let tool = build_tool::<T>(name, description);
     let handler = Arc::new(
-        move |ctx: Arc<PluginContext>, params: CallToolRequestParams| {
+        move |ctx: Arc<dyn std::any::Any + Send + Sync>, params: CallToolRequestParams| {
+            let ctx = ctx.downcast::<Ctx>().unwrap_or_else(|_| {
+                panic!(
+                    "context type mismatch: expected {}",
+                    std::any::type_name::<Ctx>()
+                )
+            });
             let value = serde_json::Value::Object(params.arguments.clone().unwrap_or_default());
             match serde_json::from_value::<T>(value) {
                 Ok(typed) => handler(ctx, typed),
@@ -247,9 +273,13 @@ impl ToolDescriptor {
     }
 
     /// Invoke the handler with the given context and params.
+    ///
+    /// The context is passed as a type-erased `Arc<dyn Any + Send + Sync>`.
+    /// Context-aware handlers (built with [`make_descriptor_ctx`]) downcast it
+    /// to their concrete `Ctx` type internally.
     pub fn dispatch(
         &self,
-        ctx: Arc<PluginContext>,
+        ctx: Arc<dyn std::any::Any + Send + Sync>,
         params: CallToolRequestParams,
     ) -> BoxFuture<'static, Result<CallToolResult, ErrorData>> {
         (self.handler)(ctx, params)

@@ -255,7 +255,7 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
     // Generate the descriptor constructor, using the context-aware variant if needed.
     let descriptor_body = if is_ctx_aware {
         quote! {
-            elicitation::make_descriptor_ctx::<#params_ty, _>(
+            elicitation::make_descriptor_ctx::<_, #params_ty, _>(
                 #name,
                 #description,
                 |ctx, p| ::std::boxed::Box::pin(#fn_ident(ctx, p)),
@@ -397,8 +397,8 @@ fn first_param_is_context(func: &ItemFn) -> bool {
         return true;
     }
 
-    // Type heuristic: last path segment is `PluginContext`
-    type_path_ends_with(first.ty.as_ref(), "PluginContext")
+    // Type heuristic: last path segment ends with `Context`
+    type_path_ends_with(first.ty.as_ref(), "Context")
 }
 
 /// Check whether any segment in a type path ends with `name`.
