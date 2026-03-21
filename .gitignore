@@ -1,6 +1,9 @@
 target/
 **/target/
 
+# Local environment — never commit secrets
+.env
+
 # Verification artifacts
 *.log
 *.csv

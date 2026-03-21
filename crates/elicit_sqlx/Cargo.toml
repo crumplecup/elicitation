@@ -12,6 +12,10 @@ description = "Elicitation-enabled sqlx type wrappers — newtypes with JsonSche
 keywords = ["mcp", "sqlx", "database", "elicitation", "jsonschema"]
 categories = ["database", "development-tools"]
 
+[features]
+# Enable to run live-database integration tests (requires DATABASE_URL set).
+api = []
+
 [dependencies]
 elicitation = { workspace = true, features = ["sqlx-types", "emit"] }
 elicitation_derive.workspace = true
@@ -38,6 +42,7 @@ derive-getters = { workspace = true }
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }
 serde_json = { workspace = true }
+dotenvy = "0.15"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)', 'cfg(feature, values("emit"))'] }
