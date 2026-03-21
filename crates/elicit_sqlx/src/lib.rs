@@ -6,6 +6,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod column;
 mod context;
 mod error;
 mod frag_plugin;
@@ -15,6 +16,7 @@ mod query_result;
 mod row;
 mod type_info;
 
+pub use column::AnyColumn;
 pub use context::{SqlxContext, connect};
 pub use error::SqlxError;
 pub use frag_plugin::SqlxFragPlugin;

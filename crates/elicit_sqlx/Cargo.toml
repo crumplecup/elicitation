@@ -17,6 +17,10 @@ elicitation = { workspace = true, features = ["sqlx-types", "emit"] }
 elicitation_derive.workspace = true
 elicitation_macros.workspace = true
 sqlx = { workspace = true }
+# Direct dep for types not re-exported by the `sqlx` facade crate
+# (AnyColumn, AnyValueKind). Fields accessed are pub but #[doc(hidden)],
+# meaning they are semver-exempt — acceptable at our version pin.
+sqlx-core = "0.8"
 inventory.workspace = true
 rmcp.workspace = true
 schemars.workspace = true
