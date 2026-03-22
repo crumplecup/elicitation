@@ -22,6 +22,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use elicitation::PluginContext;
+use elicitation::contracts::{Established, Prop};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -34,6 +35,20 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::process::{Child, ChildStderr, ChildStdin, ChildStdout, Command};
 use tokio::sync::Mutex;
 use uuid::Uuid;
+
+// ── Propositions ─────────────────────────────────────────────────────────────
+
+/// Proposition: `Command::spawn()` succeeded — the child process is running.
+pub struct ProcessSpawned {}
+impl Prop for ProcessSpawned {}
+
+/// Proposition: `child.wait()` completed — the child process has exited.
+pub struct ProcessExited {}
+impl Prop for ProcessExited {}
+
+/// Proposition: bytes were written to a child process's stdin pipe.
+pub struct StdinWritten {}
+impl Prop for StdinWritten {}
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 
@@ -325,7 +340,7 @@ async fn process_spawn(
     });
     let child_id = Uuid::new_v4();
     ctx.children.lock().await.insert(child_id, entry);
-
+    let _proof: Established<ProcessSpawned> = Established::assert();
     Ok(json_result(&ProcessSpawnResult { child_id, pid }))
 }
 
@@ -357,6 +372,7 @@ async fn process_stdin_write(
         .write_all(&p.data)
         .await
         .map_err(|e| ErrorData::invalid_params(format!("stdin write failed: {e}"), None))?;
+    let _proof: Established<StdinWritten> = Established::assert();
     Ok(json_result(&ProcessStdinWriteResult { bytes_written }))
 }
 
@@ -461,6 +477,7 @@ async fn process_wait(
         .wait()
         .await
         .map_err(|e| ErrorData::invalid_params(format!("wait failed: {e}"), None))?;
+    let _proof: Established<ProcessExited> = Established::assert();
     Ok(json_result(&ProcessExitResult {
         exit_code: status.code(),
         success: status.success(),

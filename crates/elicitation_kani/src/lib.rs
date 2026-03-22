@@ -114,3 +114,6 @@ mod clap_types;
 
 #[cfg(all(kani, feature = "sqlx-types"))]
 mod sqlx_types;
+
+#[cfg(all(kani, feature = "tokio-types"))]
+mod tokio_types;

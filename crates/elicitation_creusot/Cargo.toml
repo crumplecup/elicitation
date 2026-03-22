@@ -46,3 +46,4 @@ verify-kani = []                                                       # Dummy f
 reqwest = ["elicitation/reqwest"]
 clap-types = ["dep:clap", "elicitation/clap-types"]
 sqlx-types = ["dep:sqlx", "elicitation/sqlx-types"]
+tokio-types = []

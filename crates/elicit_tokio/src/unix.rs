@@ -45,6 +45,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use elicitation::PluginContext;
+use elicitation::contracts::{Established, Prop};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -57,6 +58,24 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{UnixDatagram, UnixListener, UnixStream};
 use tokio::sync::Mutex;
 use uuid::Uuid;
+
+// ── Propositions ─────────────────────────────────────────────────────────────
+
+/// Proposition: a Unix domain socket listener was bound to a path.
+pub struct UnixListenerBound {}
+impl Prop for UnixListenerBound {}
+
+/// Proposition: a Unix domain socket listener accepted an incoming connection.
+pub struct UnixConnectionAccepted {}
+impl Prop for UnixConnectionAccepted {}
+
+/// Proposition: a Unix domain stream socket connected to a listener.
+pub struct UnixStreamConnected {}
+impl Prop for UnixStreamConnected {}
+
+/// Proposition: data was received on a Unix domain socket (stream or datagram).
+pub struct UnixDataReceived {}
+impl Prop for UnixDataReceived {}
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 
@@ -296,6 +315,7 @@ async fn unix_listener_bind(
         .lock()
         .await
         .insert(listener_id, Arc::new(listener));
+    let _proof: Established<UnixListenerBound> = Established::assert();
     Ok(json_result(&UnixListenerBindResult {
         listener_id,
         local_path,
@@ -330,6 +350,7 @@ async fn unix_listener_accept(
         .lock()
         .await
         .insert(stream_id, Arc::new(Mutex::new(stream)));
+    let _proof: Established<UnixConnectionAccepted> = Established::assert();
     Ok(json_result(&UnixListenerAcceptResult {
         stream_id,
         peer_path: unix_addr_path(&addr),
@@ -403,6 +424,7 @@ async fn unix_stream_connect(
         .lock()
         .await
         .insert(stream_id, Arc::new(Mutex::new(stream)));
+    let _proof: Established<UnixStreamConnected> = Established::assert();
     Ok(json_result(&UnixStreamConnectResult {
         stream_id,
         local_path,
@@ -439,6 +461,7 @@ async fn unix_stream_read(
         .await
         .map_err(|e| ErrorData::invalid_params(format!("read failed: {e}"), None))?;
     buf.truncate(bytes_read);
+    let _proof: Established<UnixDataReceived> = Established::assert();
     Ok(json_result(&UnixStreamReadResult {
         data: buf,
         bytes_read,
@@ -626,6 +649,7 @@ async fn unix_datagram_recv_from(
         .await
         .map_err(|e| ErrorData::invalid_params(format!("recv_from failed: {e}"), None))?;
     buf.truncate(bytes_received);
+    let _proof: Established<UnixDataReceived> = Established::assert();
     Ok(json_result(&UnixDatagramRecvFromResult {
         data: buf,
         bytes_received,

@@ -47,23 +47,27 @@ mod unix;
 
 pub use channels::{
     BroadcastCreateParams, BroadcastReceiverCloseParams, BroadcastRecvParams, BroadcastSendParams,
-    BroadcastSenderCloseParams, BroadcastSubscribeParams, BroadcastTryRecvParams, MpscCreateParams,
-    MpscReceiverCloseParams, MpscRecvParams, MpscSendParams, MpscSenderCloseParams,
-    MpscTryRecvParams, MpscTrySendParams, MutexCloseParams, MutexCreateParams, MutexLockParams,
-    MutexTryLockParams, MutexUpdateParams, OneshotCreateParams, OneshotRecvParams,
-    OneshotSendParams, OneshotTryRecvParams, RwLockCloseParams, RwLockCreateParams,
-    RwLockReadParams, RwLockTryReadParams, RwLockTryWriteParams, RwLockWriteParams,
-    TokioChannelPlugin, WatchBorrowParams, WatchChangedParams, WatchCreateParams,
-    WatchReceiverCloseParams, WatchSendParams, WatchSenderCloseParams, WatchSubscribeParams,
+    BroadcastSenderCloseParams, BroadcastSubscribeParams, BroadcastTryRecvParams, ChannelClosed,
+    MessageReceived, MessageSent, MpscCreateParams, MpscReceiverCloseParams, MpscRecvParams,
+    MpscSendParams, MpscSenderCloseParams, MpscTryRecvParams, MpscTrySendParams, MutexCloseParams,
+    MutexCreateParams, MutexLockParams, MutexTryLockParams, MutexUpdateParams, OneshotCreateParams,
+    OneshotRecvParams, OneshotSendParams, OneshotTryRecvParams, RwLockCloseParams,
+    RwLockCreateParams, RwLockReadParams, RwLockTryReadParams, RwLockTryWriteParams,
+    RwLockWriteParams, TokioChannelPlugin, WatchBorrowParams, WatchChangedParams,
+    WatchCreateParams, WatchReceiverCloseParams, WatchSendParams, WatchSenderCloseParams,
+    WatchSubscribeParams,
 };
 pub use fs::{
-    FromToParams, PathParams, ReadBytesParams, ReadToStringParams, TokioFsPlugin, WriteBytesParams,
-    WriteTextParams,
+    DirCreated, FileRead, FileWritten, FromToParams, PathParams, ReadBytesParams,
+    ReadToStringParams, TokioFsPlugin, WriteBytesParams, WriteTextParams,
 };
 pub use io::{
-    DuplexCloseParams, DuplexCreateParams, DuplexReadParams, DuplexWriteParams, TokioIoPlugin,
+    DuplexCloseParams, DuplexCreateParams, DuplexCreated, DuplexReadParams, DuplexWriteParams,
+    TokioIoPlugin,
 };
-pub use io_copy::{HandleRegistry, IoCopyParams, IoCopyPluginBuilder, TokioIoCopyPlugin};
+pub use io_copy::{
+    BytesCopied, HandleRegistry, IoCopyParams, IoCopyPluginBuilder, TokioIoCopyPlugin,
+};
 pub use net::{
     ConnectionAccepted, DataReceived, ListenerBound, StreamConnected, TcpListenerAcceptParams,
     TcpListenerBindParams, TcpListenerCloseParams, TcpListenerLocalAddrParams,
@@ -73,20 +77,23 @@ pub use net::{
     UdpSocketSendToParams,
 };
 pub use process::{
-    ProcessIdParams, ProcessKillParams, ProcessRunParams, ProcessSpawnParams,
-    ProcessStderrReadParams, ProcessStdinWriteParams, ProcessStdoutReadParams,
-    ProcessTryWaitParams, ProcessWaitParams, TokioProcessPlugin,
+    ProcessExited, ProcessIdParams, ProcessKillParams, ProcessRunParams, ProcessSpawnParams,
+    ProcessSpawned, ProcessStderrReadParams, ProcessStdinWriteParams, ProcessStdoutReadParams,
+    ProcessTryWaitParams, ProcessWaitParams, StdinWritten, TokioProcessPlugin,
 };
 pub use runtime::{
     BlockOnParams as RuntimeBlockOnParams, BuildCurrentThreadParams, BuildMultiThreadParams,
-    InspectFlavorParams, RuntimeFlavorKind, TokioRuntimePlugin,
+    InspectFlavorParams, RuntimeFlavorKind, RuntimeFlavored, TokioRuntimePlugin,
 };
-pub use signal::{CtrlCParams, TokioSignalPlugin, UnixSignalKind};
+pub use signal::{CtrlCParams, CtrlCReceived, TokioSignalPlugin, UnixSignalKind};
 #[cfg(unix)]
-pub use signal::{UnixSignalCloseParams, UnixSignalCreateParams, UnixSignalRecvParams};
+pub use signal::{
+    SignalHandlerRegistered, SignalReceived, UnixSignalCloseParams, UnixSignalCreateParams,
+    UnixSignalRecvParams,
+};
 pub use spawn::{
-    AbortParams, AsyncWorkload, BlockingWorkload, JoinParams, SpawnPluginBuilder, TokioSpawnPlugin,
-    TryJoinParams,
+    AbortParams, AsyncWorkload, BlockingWorkload, JoinParams, SpawnPluginBuilder, TaskAborted,
+    TaskJoined, TaskSpawned, TokioSpawnPlugin, TryJoinParams,
 };
 pub use sync::{
     BarrierNewParams, BarrierReached, BarrierWaitParams, NotificationReceived, NotifiedParams,
@@ -95,7 +102,8 @@ pub use sync::{
     SemaphoreTryAcquireParams, TokioSyncPlugin,
 };
 pub use task::{
-    BlockInPlaceParams, SpawnBlockingParams, SpawnParams, TokioTaskPlugin, YieldNowParams,
+    BlockInPlaceParams, SpawnBlockingParams, SpawnParams, TaskYielded, TokioTaskPlugin,
+    YieldNowParams,
 };
 pub use time::{
     IntervalCreateParams, IntervalTickParams, SleepCompleted, SleepParams, SleepUntilParams,
@@ -103,9 +111,10 @@ pub use time::{
 };
 #[cfg(unix)]
 pub use unix::{
-    TokioUnixPlugin, UnixDatagramBindParams, UnixDatagramCloseParams, UnixDatagramLocalAddrParams,
-    UnixDatagramRecvFromParams, UnixDatagramSendToParams, UnixListenerAcceptParams,
-    UnixListenerBindParams, UnixListenerCloseParams, UnixListenerLocalAddrParams,
-    UnixStreamCloseParams, UnixStreamConnectParams, UnixStreamLocalAddrParams,
+    TokioUnixPlugin, UnixConnectionAccepted, UnixDataReceived, UnixDatagramBindParams,
+    UnixDatagramCloseParams, UnixDatagramLocalAddrParams, UnixDatagramRecvFromParams,
+    UnixDatagramSendToParams, UnixListenerAcceptParams, UnixListenerBindParams, UnixListenerBound,
+    UnixListenerCloseParams, UnixListenerLocalAddrParams, UnixStreamCloseParams,
+    UnixStreamConnectParams, UnixStreamConnected, UnixStreamLocalAddrParams,
     UnixStreamPeerAddrParams, UnixStreamReadParams, UnixStreamWriteParams,
 };

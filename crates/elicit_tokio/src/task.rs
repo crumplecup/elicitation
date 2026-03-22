@@ -17,12 +17,17 @@
 //! | `spawn_blocking` | `body` | error at runtime | emit-only |
 //! | `block_in_place` | `body` | error at runtime | emit-only |
 
+use elicitation::contracts::{Established, Prop};
 use elicitation_derive::ElicitPlugin;
 use rmcp::{ErrorData, model::CallToolResult};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 // ── Param / result types ──────────────────────────────────────────────────────
+
+/// Proposition: `tokio::task::yield_now()` returned — the task yielded to the scheduler.
+pub struct TaskYielded {}
+impl Prop for TaskYielded {}
 
 /// Parameters for `tokio_task__yield_now` (none required).
 #[derive(Debug, Deserialize, JsonSchema)]
@@ -159,6 +164,7 @@ mod emit_impls {
 )]
 async fn task_yield_now(_p: YieldNowParams) -> Result<CallToolResult, ErrorData> {
     tokio::task::yield_now().await;
+    let _proof: Established<TaskYielded> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
 }
 

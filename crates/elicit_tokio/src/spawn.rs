@@ -62,6 +62,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use elicitation::contracts::{Established, Prop};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -73,6 +74,20 @@ use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use tokio::sync::Mutex;
 use tokio::task::JoinHandle;
 use uuid::Uuid;
+
+// ── Propositions ─────────────────────────────────────────────────────────────
+
+/// Proposition: a task was successfully spawned and a `JoinHandle` is registered.
+pub struct TaskSpawned {}
+impl Prop for TaskSpawned {}
+
+/// Proposition: a spawned task completed and its output was retrieved.
+pub struct TaskJoined {}
+impl Prop for TaskJoined {}
+
+/// Proposition: a spawned task was cancelled via `JoinHandle::abort()`.
+pub struct TaskAborted {}
+impl Prop for TaskAborted {}
 
 // ── Workload traits ───────────────────────────────────────────────────────────
 
@@ -219,6 +234,7 @@ fn join_descriptor() -> elicitation::ToolDescriptor {
                 let output = handle
                     .await
                     .map_err(|e| ErrorData::internal_error(format!("task panicked: {e}"), None))?;
+                let _proof: Established<TaskJoined> = Established::assert();
                 Ok(json_result(&JoinResult { output }))
             })
         },
@@ -273,6 +289,7 @@ fn abort_descriptor() -> elicitation::ToolDescriptor {
                     .remove(&p.handle_id)
                     .ok_or_else(|| err_not_found(p.handle_id))?;
                 handle.abort();
+                let _proof: Established<TaskAborted> = Established::assert();
                 Ok(json_result(&OkResult { ok: true }))
             })
         },
@@ -305,6 +322,7 @@ fn blocking_descriptor<T: BlockingWorkload>(
                 serde_json::to_value(output).unwrap_or(serde_json::Value::Null)
             });
             let handle_id = ctx.insert(handle).await;
+            let _proof: Established<TaskSpawned> = Established::assert();
             Ok(json_result(&HandleResult { handle_id }))
         })
     });
@@ -336,6 +354,7 @@ fn async_descriptor<T: AsyncWorkload>(
                 serde_json::to_value(output).unwrap_or(serde_json::Value::Null)
             });
             let handle_id = ctx.insert(handle).await;
+            let _proof: Established<TaskSpawned> = Established::assert();
             Ok(json_result(&HandleResult { handle_id }))
         })
     });

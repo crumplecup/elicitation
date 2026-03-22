@@ -273,6 +273,91 @@ just data structure composition.
 
 **Timeline:** 6 weeks, 5 phases, ~100 MCP tools, ~8,000-10,000 LOC
 
+---
+
+### elicit_nalgebra Shadow Crate
+
+**Document:** [ELICIT_NALGEBRA_PLAN.md](ELICIT_NALGEBRA_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Completionist harvesting of nalgebra linear algebra library (480 MCP tools).
+Single-crate architecture exposing matrices, vectors, geometric types (rotations, transforms),
+and decompositions (SVD, QR, LU, Cholesky, eigenvalues) through dual-mode tools, fragment
+tools, and UUID-keyed handles.
+
+**Key Advantage:** "More straightforward" than other shadow crates - no macros to harvest (unlike
+Leptos), no trait-heavy API requiring factory pattern (unlike num-traits), no async abstractions
+(unlike Axum). Matrix/vector serialization is natural (nested JSON arrays), and ~73% of tools
+are dual-mode (both runtime execution and code emission).
+
+**Coverage:**
+- **Matrix Operations (120 dual-mode):** Creation, arithmetic, transformations, slicing, properties, solvers, norms
+- **Vector Operations (80 dual-mode):** Creation, arithmetic, geometric (dot, cross, normalize), properties
+- **Geometric Types (80 dual-mode):** Rotations (2D/3D, quaternions, Euler angles), translations, isometries, similarities, transforms, projections
+- **Decompositions (70 dual-mode):** SVD, QR, LU, Cholesky, Schur, symmetric eigenvalue
+- **Fragment Tools (70):** Generic dimension code (const generics), scalar type code (RealField/ComplexField), complete assembly
+- **Runtime Handles (60):** UUID registries for persistent matrices, vectors, decompositions, transforms
+
+**Strategy:**
+- Single shadow crate: `elicit_nalgebra`
+- Dual-mode dominance: 350/480 tools (73%) with `emit = Auto` + CustomEmit
+- Natural JSON serialization: matrices → nested arrays, vectors → arrays, rotations → quaternions
+- UUID-keyed handles for stateful workflows and decomposition chains
+- Fragment tools for generic const dimension code (`SMatrix<T, R, C>`)
+- Minimal factory pattern (deferred unless needed for RealField/ComplexField traits)
+
+**Timeline:** 7 phases, 480 MCP tools
+
+---
+
+### elicit_ndarray Shadow Crate
+
+**Document:** [ELICIT_NDARRAY_PLAN.md](ELICIT_NDARRAY_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Completionist harvesting of ndarray N-dimensional array library (520 MCP tools).
+Single-crate architecture exposing array creation, indexing, slicing, arithmetic, broadcasting,
+aggregations, linear algebra, and manipulation operations through dual-mode tools, fragment
+tools, and UUID-keyed handles.
+
+**Key Advantage:** "Similar but also widely used" — shares nalgebra's straightforward characteristics
+(natural JSON serialization, synchronous operations, concrete methods) but focuses on general
+N-dimensional arrays like NumPy rather than linear algebra. Wider adoption as the foundation of
+Rust's scientific computing ecosystem (ndarray-linalg, ndarray-stats, polars).
+
+**Coverage:**
+- **Array Creation (60 dual-mode):** From data, ranges, special values (zeros/ones/eye), random, iterators
+- **Indexing & Slicing (50 dual-mode):** Element access, slicing with s! macro, views, iteration
+- **Arithmetic (50 dual-mode):** Element-wise binary/unary ops, scalar ops, comparisons, logical
+- **Broadcasting (30 dual-mode):** Automatic broadcasting, manual broadcast, shape operations
+- **Aggregations (40 dual-mode):** Full reductions (sum, mean, var, std), axis reductions, cumulative
+- **Linear Algebra (40 dual-mode):** Matrix ops (dot, transpose), norms (references ndarray-linalg for SVD/QR)
+- **Manipulation (60 dual-mode):** Concatenation, splitting, reshape, axis ops, flipping, cloning
+- **I/O (30 dual-mode):** CSV, binary serialization, display formatting
+- **Fragment Tools (80):** Generic dimension code (Dimension trait), parallel operations (rayon), broadcasting, assembly
+- **Runtime Handles (40):** UUID registries for persistent arrays (ArcArray), views, iterators
+
+**Strategy:**
+- Single shadow crate: `elicit_ndarray`
+- Dual-mode dominance: 400/520 tools (77%) with `emit = Auto` + CustomEmit
+- Natural JSON serialization: arrays → nested arrays, shape metadata, row-major layout
+- Broadcasting semantics: Automatic shape alignment (like NumPy)
+- Zero-copy views: UUID handles for efficient slicing workflows
+- Parallel operations: Fragment tools generate rayon code
+- Generic dimensions: Support both static (Ix1, Ix2, Ix3) and dynamic (IxDyn)
+- NumPy compatibility: Familiar API for Python → Rust migrations
+
+**Comparison to nalgebra:**
+- nalgebra: Linear algebra focus, geometric types (rotations, quaternions), decompositions
+- ndarray: General N-D arrays, broadcasting, NumPy-style API, scientific computing foundation
+- Both "straightforward": Natural serialization, synchronous ops, concrete methods, clear taxonomy
+
+**Timeline:** 7 phases, 520 MCP tools
+
+---
+
 ### Macro-Driven MCP Tool System
 
 **Document:** [MACRO_TOOL_GEN_PLAN.md](MACRO_TOOL_GEN_PLAN.md)

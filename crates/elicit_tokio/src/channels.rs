@@ -76,6 +76,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use elicitation::PluginContext;
+use elicitation::contracts::{Established, Prop};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -88,6 +89,20 @@ use tokio::sync::{Mutex, RwLock, broadcast, mpsc, oneshot, watch};
 use uuid::Uuid;
 
 type Value = serde_json::Value;
+
+// ── Propositions ─────────────────────────────────────────────────────────────
+
+/// Proposition: a message was sent on a channel successfully.
+pub struct MessageSent {}
+impl Prop for MessageSent {}
+
+/// Proposition: a message was received from a channel.
+pub struct MessageReceived {}
+impl Prop for MessageReceived {}
+
+/// Proposition: a channel or end was closed.
+pub struct ChannelClosed {}
+impl Prop for ChannelClosed {}
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 
@@ -618,6 +633,7 @@ async fn channel_mpsc_send(
         .send(p.value)
         .await
         .map_err(|_| ErrorData::invalid_params("send failed: receiver closed", None))?;
+    let _proof: Established<MessageSent> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
 }
 
@@ -642,11 +658,14 @@ async fn channel_mpsc_try_send(
         .cloned()
         .ok_or_else(|| err_not_found("sender_id", p.sender_id))?;
     match sender.try_send(p.value) {
-        Ok(_) => Ok(json_result(&MpscTrySendResult {
-            ok: true,
-            full: false,
-            closed: false,
-        })),
+        Ok(_) => {
+            let _proof: Established<MessageSent> = Established::assert();
+            Ok(json_result(&MpscTrySendResult {
+                ok: true,
+                full: false,
+                closed: false,
+            }))
+        }
         Err(mpsc::error::TrySendError::Full(_)) => Ok(json_result(&MpscTrySendResult {
             ok: false,
             full: true,
@@ -678,6 +697,9 @@ async fn channel_mpsc_recv(
         .get(&p.receiver_id)
         .ok_or_else(|| err_not_found("receiver_id", p.receiver_id))?;
     let value = rx_mutex.lock().await.recv().await;
+    if value.is_some() {
+        let _proof: Established<MessageReceived> = Established::assert();
+    }
     Ok(json_result(&MpscRecvResult {
         closed: value.is_none(),
         value,
@@ -701,11 +723,14 @@ async fn channel_mpsc_try_recv(
         .get(&p.receiver_id)
         .ok_or_else(|| err_not_found("receiver_id", p.receiver_id))?;
     match rx_mutex.lock().await.try_recv() {
-        Ok(v) => Ok(json_result(&MpscTryRecvResult {
-            value: Some(v),
-            empty: false,
-            closed: false,
-        })),
+        Ok(v) => {
+            let _proof: Established<MessageReceived> = Established::assert();
+            Ok(json_result(&MpscTryRecvResult {
+                value: Some(v),
+                empty: false,
+                closed: false,
+            }))
+        }
         Err(mpsc::error::TryRecvError::Empty) => Ok(json_result(&MpscTryRecvResult {
             value: None,
             empty: true,
@@ -736,6 +761,7 @@ async fn channel_mpsc_sender_close(
         .await
         .remove(&p.sender_id)
         .ok_or_else(|| err_not_found("sender_id", p.sender_id))?;
+    let _proof: Established<ChannelClosed> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
 }
 
@@ -756,6 +782,7 @@ async fn channel_mpsc_receiver_close(
         .await
         .remove(&p.receiver_id)
         .ok_or_else(|| err_not_found("receiver_id", p.receiver_id))?;
+    let _proof: Established<ChannelClosed> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
 }
 
@@ -807,6 +834,7 @@ async fn channel_oneshot_send(
         .ok_or_else(|| ErrorData::invalid_params("oneshot sender already used", None))?;
     tx.send(p.value)
         .map_err(|_| ErrorData::invalid_params("send failed: receiver dropped", None))?;
+    let _proof: Established<MessageSent> = Established::assert();
     Ok(json_result(&OneshotSendResult { ok: true }))
 }
 
@@ -832,10 +860,13 @@ async fn channel_oneshot_recv(
         .take()
         .ok_or_else(|| ErrorData::invalid_params("oneshot receiver already consumed", None))?;
     match rx.await {
-        Ok(v) => Ok(json_result(&OneshotRecvResult {
-            value: Some(v),
-            closed: false,
-        })),
+        Ok(v) => {
+            let _proof: Established<MessageReceived> = Established::assert();
+            Ok(json_result(&OneshotRecvResult {
+                value: Some(v),
+                closed: false,
+            }))
+        }
         Err(_) => Ok(json_result(&OneshotRecvResult {
             value: None,
             closed: true,
@@ -866,6 +897,7 @@ async fn channel_oneshot_try_recv(
     match rx.try_recv() {
         Ok(v) => {
             *guard = None; // consumed
+            let _proof: Established<MessageReceived> = Established::assert();
             Ok(json_result(&OneshotTryRecvResult {
                 value: Some(v),
                 empty: false,
@@ -930,6 +962,7 @@ async fn channel_watch_send(
         .ok_or_else(|| err_not_found("sender_id", p.sender_id))?
         .send(p.value)
         .map_err(|_| ErrorData::invalid_params("send failed: all receivers closed", None))?;
+    let _proof: Established<MessageSent> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
 }
 
@@ -950,6 +983,7 @@ async fn channel_watch_borrow(
         .get(&p.receiver_id)
         .ok_or_else(|| err_not_found("receiver_id", p.receiver_id))?;
     let value = rx_mutex.lock().await.borrow().clone();
+    let _proof: Established<MessageReceived> = Established::assert();
     Ok(json_result(&WatchValueResult { value }))
 }
 
@@ -975,6 +1009,7 @@ async fn channel_watch_changed(
         .changed()
         .await
         .map_err(|_| ErrorData::invalid_params("watch sender closed", None))?;
+    let _proof: Established<MessageReceived> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
 }
 
@@ -1021,6 +1056,7 @@ async fn channel_watch_sender_close(
         .await
         .remove(&p.sender_id)
         .ok_or_else(|| err_not_found("sender_id", p.sender_id))?;
+    let _proof: Established<ChannelClosed> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
 }
 
@@ -1040,6 +1076,7 @@ async fn channel_watch_receiver_close(
         .await
         .remove(&p.receiver_id)
         .ok_or_else(|| err_not_found("receiver_id", p.receiver_id))?;
+    let _proof: Established<ChannelClosed> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
 }
 
@@ -1091,6 +1128,7 @@ async fn channel_broadcast_send(
         .ok_or_else(|| err_not_found("sender_id", p.sender_id))?
         .send(p.value)
         .map_err(|_| ErrorData::invalid_params("send failed: no active receivers", None))?;
+    let _proof: Established<MessageSent> = Established::assert();
     Ok(json_result(&BroadcastSendResult { receivers_count }))
 }
 
@@ -1112,10 +1150,13 @@ async fn channel_broadcast_recv(
         .get(&p.receiver_id)
         .ok_or_else(|| err_not_found("receiver_id", p.receiver_id))?;
     match rx_mutex.lock().await.recv().await {
-        Ok(v) => Ok(json_result(&BroadcastRecvResult {
-            value: Some(v),
-            closed: false,
-        })),
+        Ok(v) => {
+            let _proof: Established<MessageReceived> = Established::assert();
+            Ok(json_result(&BroadcastRecvResult {
+                value: Some(v),
+                closed: false,
+            }))
+        }
         Err(broadcast::error::RecvError::Closed) => Ok(json_result(&BroadcastRecvResult {
             value: None,
             closed: true,
@@ -1146,12 +1187,15 @@ async fn channel_broadcast_try_recv(
         .get(&p.receiver_id)
         .ok_or_else(|| err_not_found("receiver_id", p.receiver_id))?;
     match rx_mutex.lock().await.try_recv() {
-        Ok(v) => Ok(json_result(&BroadcastTryRecvResult {
-            value: Some(v),
-            empty: false,
-            lagged: false,
-            closed: false,
-        })),
+        Ok(v) => {
+            let _proof: Established<MessageReceived> = Established::assert();
+            Ok(json_result(&BroadcastTryRecvResult {
+                value: Some(v),
+                empty: false,
+                lagged: false,
+                closed: false,
+            }))
+        }
         Err(broadcast::error::TryRecvError::Empty) => Ok(json_result(&BroadcastTryRecvResult {
             value: None,
             empty: true,
@@ -1218,6 +1262,7 @@ async fn channel_broadcast_sender_close(
         .await
         .remove(&p.sender_id)
         .ok_or_else(|| err_not_found("sender_id", p.sender_id))?;
+    let _proof: Established<ChannelClosed> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
 }
 
@@ -1238,6 +1283,7 @@ async fn channel_broadcast_receiver_close(
         .await
         .remove(&p.receiver_id)
         .ok_or_else(|| err_not_found("receiver_id", p.receiver_id))?;
+    let _proof: Established<ChannelClosed> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
 }
 

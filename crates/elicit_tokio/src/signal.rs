@@ -22,6 +22,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use elicitation::PluginContext;
+use elicitation::contracts::{Established, Prop};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -32,6 +33,24 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 use uuid::Uuid;
+
+// ── Propositions ─────────────────────────────────────────────────────────────
+
+/// Proposition: `tokio::signal::ctrl_c()` returned — a Ctrl+C signal was received.
+pub struct CtrlCReceived {}
+impl Prop for CtrlCReceived {}
+
+/// Proposition: a Unix signal handler was registered successfully.
+#[cfg(unix)]
+pub struct SignalHandlerRegistered {}
+#[cfg(unix)]
+impl Prop for SignalHandlerRegistered {}
+
+/// Proposition: a registered Unix signal stream received a signal.
+#[cfg(unix)]
+pub struct SignalReceived {}
+#[cfg(unix)]
+impl Prop for SignalReceived {}
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 
@@ -142,6 +161,7 @@ async fn signal_ctrl_c(_ctx: Arc<SignalCtx>, _p: CtrlCParams) -> Result<CallTool
     tokio::signal::ctrl_c()
         .await
         .map_err(|e| ErrorData::invalid_params(format!("ctrl_c failed: {e}"), None))?;
+    let _proof: Established<CtrlCReceived> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
 }
 
@@ -179,6 +199,7 @@ async fn signal_unix_create(
         .lock()
         .await
         .insert(signal_id, Mutex::new(sig));
+    let _proof: Established<SignalHandlerRegistered> = Established::assert();
     Ok(json_result(&UnixSignalCreateResult { signal_id }))
 }
 
@@ -201,6 +222,7 @@ async fn signal_unix_recv(
     })?;
     let received = sig_mutex.lock().await.recv().await;
     if received.is_some() {
+        let _proof: Established<SignalReceived> = Established::assert();
         Ok(json_result(&OkResult { ok: true }))
     } else {
         Err(ErrorData::invalid_params("signal stream closed", None))

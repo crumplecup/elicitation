@@ -19,10 +19,17 @@
 //! | `build_multi_thread` | `worker_threads?, enable_all, max_blocking_threads?` | error at runtime | emit-only |
 //! | `block_on` | `runtime_var, body` | error at runtime | emit-only |
 
+use elicitation::contracts::{Established, Prop};
 use elicitation_derive::ElicitPlugin;
 use rmcp::{ErrorData, model::CallToolResult};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+
+// ── Propositions ─────────────────────────────────────────────────────────────
+
+/// Proposition: `tokio_runtime__inspect_flavor` returned successfully — the runtime flavor is known.
+pub struct RuntimeFlavored {}
+impl Prop for RuntimeFlavored {}
 
 // ── Runtime flavor mirror ─────────────────────────────────────────────────────
 
@@ -270,6 +277,7 @@ async fn runtime_inspect_flavor(p: InspectFlavorParams) -> Result<CallToolResult
     let flavor = RuntimeFlavorKind::from(tokio::runtime::Handle::current().runtime_flavor());
     let result = serde_json::to_string(&InspectFlavorResult { flavor })
         .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    let _proof: Established<RuntimeFlavored> = Established::assert();
     Ok(CallToolResult::success(vec![rmcp::model::Content::text(
         result,
     )]))

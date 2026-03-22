@@ -23,11 +23,26 @@
 //! | `read_dir` | `path` | `{ entries: [{name, is_file, is_dir, is_symlink}] }` |
 //! | `canonicalize` | `path` | `{ canonical_path }` |
 
+use elicitation::contracts::{Established, Prop};
 use elicitation_derive::ElicitPlugin;
 use rmcp::{ErrorData, model::CallToolResult, model::Content};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
+
+// ── Propositions ─────────────────────────────────────────────────────────────
+
+/// Proposition: a file was read successfully (content is available).
+pub struct FileRead {}
+impl Prop for FileRead {}
+
+/// Proposition: a file was written successfully (bytes are persisted).
+pub struct FileWritten {}
+impl Prop for FileWritten {}
+
+/// Proposition: a directory was created (path now exists as a directory).
+pub struct DirCreated {}
+impl Prop for DirCreated {}
 
 // ── Param structs ─────────────────────────────────────────────────────────────
 
@@ -180,6 +195,7 @@ pub struct TokioFsPlugin;
 )]
 async fn fs_read_to_string(p: ReadToStringParams) -> Result<CallToolResult, ErrorData> {
     let content = tokio::fs::read_to_string(&p.path).await.map_err(io_err)?;
+    let _proof: Established<FileRead> = Established::assert();
     Ok(json_result(&ReadToStringResult { content }))
 }
 
@@ -194,6 +210,7 @@ async fn fs_read_to_string(p: ReadToStringParams) -> Result<CallToolResult, Erro
 async fn fs_read_bytes(p: ReadBytesParams) -> Result<CallToolResult, ErrorData> {
     let bytes = tokio::fs::read(&p.path).await.map_err(io_err)?;
     let len = bytes.len();
+    let _proof: Established<FileRead> = Established::assert();
     Ok(json_result(&ReadBytesResult { bytes, len }))
 }
 
@@ -209,6 +226,7 @@ async fn fs_write_text(p: WriteTextParams) -> Result<CallToolResult, ErrorData> 
     let bytes = p.content.as_bytes();
     let bytes_written = bytes.len();
     tokio::fs::write(&p.path, bytes).await.map_err(io_err)?;
+    let _proof: Established<FileWritten> = Established::assert();
     Ok(json_result(&BytesWrittenResult { bytes_written }))
 }
 
@@ -224,6 +242,7 @@ async fn fs_write_text(p: WriteTextParams) -> Result<CallToolResult, ErrorData> 
 async fn fs_write_bytes(p: WriteBytesParams) -> Result<CallToolResult, ErrorData> {
     let bytes_written = p.bytes.len();
     tokio::fs::write(&p.path, &p.bytes).await.map_err(io_err)?;
+    let _proof: Established<FileWritten> = Established::assert();
     Ok(json_result(&BytesWrittenResult { bytes_written }))
 }
 
@@ -238,6 +257,7 @@ async fn fs_write_bytes(p: WriteBytesParams) -> Result<CallToolResult, ErrorData
 )]
 async fn fs_create_dir(p: PathParams) -> Result<CallToolResult, ErrorData> {
     tokio::fs::create_dir(&p.path).await.map_err(io_err)?;
+    let _proof: Established<DirCreated> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
 }
 
@@ -250,6 +270,7 @@ async fn fs_create_dir(p: PathParams) -> Result<CallToolResult, ErrorData> {
 )]
 async fn fs_create_dir_all(p: PathParams) -> Result<CallToolResult, ErrorData> {
     tokio::fs::create_dir_all(&p.path).await.map_err(io_err)?;
+    let _proof: Established<DirCreated> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
 }
 

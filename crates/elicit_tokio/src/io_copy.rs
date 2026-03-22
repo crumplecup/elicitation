@@ -42,6 +42,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use elicitation::contracts::{Established, Prop};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -53,6 +54,12 @@ use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncRead, AsyncWrite};
 use tokio::sync::Mutex;
 use uuid::Uuid;
+
+// ── Propositions ─────────────────────────────────────────────────────────────
+
+/// Proposition: `tokio::io::copy` completed — all readable bytes were written to the writer.
+pub struct BytesCopied {}
+impl Prop for BytesCopied {}
 
 // ── Param / result types ──────────────────────────────────────────────────────
 
@@ -149,7 +156,7 @@ where
             let bytes_copied = tokio::io::copy(&mut *reader, &mut *writer)
                 .await
                 .map_err(|e| ErrorData::internal_error(format!("io::copy failed: {e}"), None))?;
-
+            let _proof: Established<BytesCopied> = Established::assert();
             Ok(json_result(&IoCopyResult { bytes_copied }))
         })
     });

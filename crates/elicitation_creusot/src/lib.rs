@@ -155,3 +155,9 @@ mod sqlx_types;
 
 #[cfg(feature = "sqlx-types")]
 pub use sqlx_types::*;
+
+#[cfg(feature = "tokio-types")]
+mod tokio_types;
+
+#[cfg(feature = "tokio-types")]
+pub use tokio_types::*;

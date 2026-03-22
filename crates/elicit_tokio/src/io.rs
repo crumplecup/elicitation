@@ -30,6 +30,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use elicitation::PluginContext;
+use elicitation::contracts::{Established, Prop};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -41,6 +42,12 @@ use serde::{Deserialize, Serialize};
 use tokio::io::{AsyncReadExt, AsyncWriteExt, DuplexStream};
 use tokio::sync::Mutex;
 use uuid::Uuid;
+
+// ── Propositions ─────────────────────────────────────────────────────────────
+
+/// Proposition: a `tokio::io::duplex()` pair was created and both ends are registered.
+pub struct DuplexCreated {}
+impl Prop for DuplexCreated {}
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 
@@ -151,6 +158,7 @@ async fn io_duplex_create(
     let mut map = ctx.duplex_streams.lock().await;
     map.insert(a_id, Arc::new(Mutex::new(a)));
     map.insert(b_id, Arc::new(Mutex::new(b)));
+    let _proof: Established<DuplexCreated> = Established::assert();
     Ok(json_result(&DuplexCreateResult { a_id, b_id }))
 }
 
