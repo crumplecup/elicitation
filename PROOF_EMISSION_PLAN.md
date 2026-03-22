@@ -16,7 +16,7 @@ The existing `kani_proof()` / `verus_proof()` / `creusot_proof()` methods on the
 Replace the cfg-gated `() -> ()` stubs with `"emit"`-feature-gated methods that
 return `proc_macro2::TokenStream` — making each type a **proof code generator**.
 
-```
+```text
 emit_kani_proof()     -> TokenStream   // complete #[kani::proof] harness
 emit_verus_proof()    -> TokenStream   // complete Verus spec + proof
 emit_creusot_proof()  -> TokenStream   // complete Creusot contract function
@@ -119,7 +119,7 @@ fn emit_kani_proof() -> TokenStream {
 
 ---
 
-# Serde Integration Plan (prior — lower priority)
+## Serde Integration Plan (prior — lower priority)
 
 ## Problem
 
@@ -250,7 +250,7 @@ Two separate crates following the `elicit_reqwest` pattern:
 Wraps the *format-agnostic* serde interface. Tools operate on any registered type
 that implements `Serialize + Deserialize`, using JSON as the MCP wire format.
 
-```
+```text
 crates/elicit_serde/
 ├── Cargo.toml
 ├── README.md
@@ -277,7 +277,7 @@ The registry uses the same `inventory`-based type lookup already used by `TypeSp
 
 Wraps `serde_json`'s concrete types using `elicit_newtype!` + `reflect_methods!`:
 
-```
+```text
 crates/elicit_serde_json/
 ├── Cargo.toml
 ├── README.md

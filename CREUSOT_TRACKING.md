@@ -33,7 +33,7 @@ only) and has been progressively strengthened through 11 de-trusting batches.
 For each de-trusted witness function, Alt-Ergo proves that the concrete call
 satisfies the extern_spec postcondition. For example:
 
-```
+```text
 extern_spec: Utf8Bytes::from_slice — bytes@.len() == 0 ==> Ok
 witness:     verify_utf8_empty_valid() calls from_slice(&[])
 proof:       &[]@.len() == 0 is true → postcondition satisfied ∎
@@ -263,7 +263,7 @@ pub trait Elicitation {
 
 ## File Organization
 
-```
+```text
 crates/elicitation_creusot/
 ├── Cargo.toml          # Features: uuid, serde_json, url, regex, chrono, time, jiff
 ├── src/

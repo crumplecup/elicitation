@@ -200,6 +200,7 @@ pub type ArcPlugin = Arc<dyn ErasedElicitPlugin>;
 ## Phases
 
 ### Phase A — Core (`crates/elicitation/`)
+
 - `PluginContext` → trait
 - `StatefulToolDescriptor<Ctx>` alongside existing `ToolDescriptor`
 - `StatefulPlugin` trait + `ErasedElicitPlugin` + both blanket impls
@@ -207,19 +208,23 @@ pub type ArcPlugin = Arc<dyn ErasedElicitPlugin>;
 - `ArcPlugin = Arc<dyn ErasedElicitPlugin>`
 
 ### Phase B — `elicit_reqwest` migration
+
 - `HttpContext { http: reqwest::Client }` implements `PluginContext`
 - `Plugin(Arc<HttpContext>)` implements `StatefulPlugin`
 - Handler signatures: `ctx: Arc<HttpContext>`
 
 ### Phase C — Derive macro updates
+
 - `#[elicit_tool]`: detect `Arc<*Context>` first param → `make_descriptor_ctx`
 - `#[derive(ElicitPlugin)]`: detect `StatefulPlugin` (newtype) vs `Plugin` (unit/descriptor)
 
 ### Phase D — Verify all other `elicit_*` crates
+
 - Confirm they compile unchanged as stateless `Plugin` impls
 - No handler changes expected
 
 ### Phase E — Update `ELICIT_SQLX_PLAN.md`
+
 - Confirm `SqlxContext` / `StatefulPlugin` pattern matches
 
 ---

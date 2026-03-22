@@ -125,6 +125,7 @@ canonical example (`HttpContext { http: reqwest::Client }`); all context-free pl
 `type Context = NoContext`.
 
 **Phases:**
+
 - Phase A: Core refactor in `crates/elicitation/` — trait, `NoContext`, generic `ToolDescriptor`, `ErasedElicitPlugin`
 - Phase B: `elicit_reqwest` migration — `HttpContext`, typed handler signatures
 - Phase C: Derive macro updates — `#[elicit_tool]` heuristic, `#[derive(ElicitPlugin)]`

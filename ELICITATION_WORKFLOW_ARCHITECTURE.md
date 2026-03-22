@@ -14,7 +14,7 @@ The **elicitation** repository implements a sophisticated **agent-centric type s
 
 ### Crate Listing (from Cargo.toml)
 
-```
+```text
 crates/
 ├── elicitation/                    # Core library (traits, contracts, type graph)
 ├── elicitation_derive/             # Proc macros (#[derive(Elicit)], #[elicit_tool])
@@ -49,6 +49,7 @@ A **workflow in elicitation** is NOT a state machine or DAG executor. Instead, i
 **File:** `/home/erik/repos/elicitation/crates/elicitation/src/tool.rs` (lines 1-482)
 
 Core trait:
+
 ```rust
 pub trait Tool {
     type Input: Elicitation;
@@ -82,6 +83,7 @@ where
 ```
 
 **Example:**
+
 ```rust
 // Step 1: Validate email (pre=True, post=EmailValidated)
 let (validated_email, proof1) = validate_tool.execute(email, True::axiom()).await?;
@@ -111,9 +113,11 @@ pub async fn both_tools<T1, T2>(
 ## 3. ELICIT_REQWEST: THE MAJOR HTTP WORKFLOW PLUGIN
 
 ### File Location
+
 `/home/erik/repos/elicitation/crates/elicit_reqwest/src/plugins/workflow.rs` (1,200+ lines)
 
 ### Plugin Registration
+
 ```rust
 #[derive(ElicitPlugin)]
 #[plugin(name = "workflow")]
@@ -121,6 +125,7 @@ pub struct WorkflowPlugin(pub Arc<PluginContext>);
 ```
 
 Registers as namespace prefix `"workflow"`, exposing 10 tools:
+
 - `workflow__url_build`
 - `workflow__fetch`
 - `workflow__fetch_json`
@@ -160,6 +165,7 @@ pub type AuthFetchSucceeded = And<Authorized, FetchSucceeded>;
 ### Tool Implementations
 
 Each tool is defined with the `#[elicit_tool]` macro, which:
+
 1. Takes a `name`, `description`
 2. Emits contract documentation (what it assumes, what it establishes)
 3. May include `emit_ctx` for code recovery
@@ -240,16 +246,16 @@ async fn wf_fetch_auth(ctx: Arc<PluginContext>, p: AuthFetchParams) -> Result<Ca
     let url_proof: Established<UrlValid> = Established::assert();
     let rb = ctx.http.get(p.url.get().as_str()).timeout(timeout(p.timeout_secs));
     let (rb, auth_proof_opt) = apply_auth(rb, &p.auth_type, Some(&p.token));
-    
+
     let resp = rb.send().await.map_err(|e| format!("Request failed: {e}"))?;
     let req_proof: Established<RequestCompleted> = Established::assert();
-    
+
     if !resp.status().is_success() {
         return Err(format!("StatusSuccess not established: got {}", resp.status().as_u16()));
     }
     let status_proof: Established<StatusSuccess> = Established::assert();
     let combined = both(url_proof, both(req_proof, status_proof));
-    
+
     // Returns (FetchResult, proof of FetchSucceeded)
 }
 ```
@@ -280,15 +286,15 @@ async fn wf_fetch_auth(ctx: Arc<PluginContext>, p: AuthFetchParams) -> Result<Ca
 ```rust
 pub trait Elicitation: Sized + Prompt + 'static {
     type Style: Elicitation + Default + Clone + Send + Sync + 'static;
-    
+
     fn elicit<C: ElicitCommunicator>(
         communicator: &C,
     ) -> impl Future<Output = ElicitResult<Self>> + Send;
-    
+
     fn elicit_checked(
         peer: Peer<RoleServer>,
     ) -> impl Future<Output = ElicitResult<Self>> + Send { ... }
-    
+
     fn elicit_proven<C: ElicitCommunicator>(
         communicator: &C,
     ) -> impl Future<Output = ElicitResult<(Self, Established<Is<Self>>)>> + Send { ... }
@@ -401,7 +407,7 @@ The `#[derive(Elicit)]` macro expands to:
 
 The `emit_code` system captures these moves and **recovers Rust source** that would reproduce them:
 
-```
+```text
 Agent calls:
   workflow__fetch({ url: "https://api.example.com", timeout_secs: 30 })
 
@@ -418,11 +424,12 @@ Emitted Rust:
 **File:** `/home/erik/repos/elicitation/crates/elicitation/src/emit_code.rs` (lines 1-350)
 
 Core trait:
+
 ```rust
 pub trait EmitCode {
     /// Emit Rust source for this value (async context, ? available).
     fn emit_code(&self) -> TokenStream;
-    
+
     /// Crate dependencies required by emitted code.
     fn crate_deps(&self) -> Vec<CrateDep> { vec![] }
 }
@@ -485,7 +492,7 @@ The type graph system is **NOT workflow-specific** but is **crucial for agents t
 
 ### Architecture Layers
 
-```
+```text
 #[derive(Elicit)]                      (proc macro on types)
         ↓
 inventory::submit!(TypeGraphKey)      (zero-cost static registration)
@@ -509,6 +516,7 @@ let registry = PluginRegistry::new()
 ```
 
 Exposes three tools:
+
 - `type_graph__list_types` - List all registered types
 - `type_graph__graph_type` - Render graph for a type
 - `type_graph__describe_edges` - Text summary of type edges
@@ -517,7 +525,7 @@ Exposes three tools:
 
 For type `ApplicationConfig`:
 
-```
+```text
 type_graph__describe_edges({ type_name: "ApplicationConfig" })
 
 **ApplicationConfig** (survey, 3 connection(s))
@@ -536,6 +544,7 @@ type_graph__describe_edges({ type_name: "ApplicationConfig" })
 **Pattern:** All workflow tools use `#[instrument]` from the `tracing` crate.
 
 Example from `workflow.rs`:
+
 ```rust
 #[elicit_tool(name = "fetch", ...)]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
@@ -550,6 +559,7 @@ async fn wf_fetch(ctx: Arc<PluginContext>, p: FetchParams) -> Result<CallToolRes
 **Tracing Usage in Core Elicitation:**
 
 Collections (`btreemap.rs`, `btreeset.rs`, `hashmap.rs`, etc.) emit:
+
 ```rust
 tracing::debug!("Eliciting BTreeMap");
 tracing::debug!(count = map.len(), "Prompting for additional entry");
@@ -560,13 +570,15 @@ tracing::warn!("Key already exists in map");
 ### Workflow Metrics via Tracing
 
 Each tool execution emits:
+
 - **Entry event**: Tool name, input parameters (via span fields)
 - **Execution metrics**: Duration (automatic from `#[instrument]`)
 - **Exit event**: Success/error status
 - **Custom fields**: URL, status code, contract propositions
 
 **Example Trace**:
-```
+
+```text
 Elapsed time: 0.125s
 [DEBUG] elicit_reqwest::workflow: wf_fetch {url: "https://api.example.com"}
   [DEBUG] RequestCompleted proof established
@@ -578,6 +590,7 @@ Elapsed time: 0.125s
 ### No Custom Event Types
 
 The framework doesn't define custom `WorkflowEvent` structs. Instead:
+
 - **Contracts themselves are events** - establishing a proof is an event
 - **Tracing spans capture the timeline** - plug into any tracing subscriber
 - **Result types carry metadata** - FetchResult includes `contract: "UrlValid ∧ RequestCompleted ∧ StatusSuccess"`
@@ -633,11 +646,11 @@ let pipeline = then(tool1, tool2);
 
 ### Typestate + HTTP
 
-```
+```text
 UrlValid ∧ RequestCompleted ∧ StatusSuccess
              ↑
          FetchSucceeded
-         
+
 Can't use FetchResult until all three proofs held (type-checked)
 Can't proceed to next step without prior step's proof
 ```
@@ -649,6 +662,7 @@ Can't proceed to next step without prior step's proof
 ### File: `/home/erik/repos/elicitation/crates/elicitation/src/plugin/mod.rs`
 
 Core plugin trait:
+
 ```rust
 pub trait ElicitPlugin: Send + Sync + 'static {
     fn name(&self) -> &'static str;
@@ -672,6 +686,7 @@ let registry = PluginRegistry::new()
 ```
 
 All plugins expose tools with namespace prefix:
+
 - `workflow__fetch`
 - `workflow__url_build`
 - `type_graph__list_types`
@@ -696,7 +711,7 @@ Result carries proof metadata for downstream inspection.
 
 ### Pattern 2: Hierarchical Contracts
 
-```
+```text
 UrlValid                       (single proposition)
 RequestCompleted               (single proposition)
 StatusSuccess                  (single proposition)
@@ -720,7 +735,7 @@ let result = then(then(step1, step2), step3);
 
 ### Pattern 4: Code Recovery via Emission
 
-```
+```text
 MCP Tool Call (JSON)
   ↓
 dispatch_emit() lookup
@@ -738,7 +753,7 @@ Compiled binary
 
 ## 12. FILE STRUCTURE & KEY LOCATIONS
 
-```
+```text
 /home/erik/repos/elicitation/
 ├── crates/
 │   ├── elicitation/src/
@@ -779,21 +794,25 @@ Compiled binary
 ## 13. SUMMARY: FOUR WORKFLOW CONCEPTS
 
 ### 1. **Elicitation Workflows** (Type Construction)
+
 - Multi-step construction of domain types
 - Each step elicits one field or variant
 - Entirely client-driven (agent in charge)
 
 ### 2. **Contract Workflows** (Proof Composition)
+
 - Sequence of steps with formal preconditions/postconditions
 - Each step establishes a proposition
 - Composition checked at compile-time
 
 ### 3. **HTTP Workflows** (WorkflowPlugin)
+
 - 10 composable HTTP operations
 - Each establishes atomic propositions (UrlValid, RequestCompleted, StatusSuccess)
 - Results compose into FetchSucceeded guarantee
 
 ### 4. **Code Emission Workflows** (Tool → Rust)
+
 - Agent calls workflow tools
 - Each call captured as EmitCode params
 - BinaryScaffold assembles into compilable Rust source
@@ -810,13 +829,15 @@ Key quote from the guide:
 **Application to Workflows:**
 
 Agents use type graph to:
+
 1. **Discover composable types** - which types can be elicited?
 2. **Understand nestings** - does Config contain NetworkConfig?
 3. **Plan elicitation strategy** - what fields need what order?
 4. **Browse constraints** - what bounds/validators apply?
 
 Example:
-```
+
+```text
 Agent calls: type_graph__graph_type({ root: "ServerConfig" })
 Response shows: ServerConfig → String, u16, u32
 Agent now knows: Must elicit 3 fields, in order
@@ -834,7 +855,8 @@ The framework CAN feed a TUI with:
    - Contract establishment sequence
 
 2. **Contract state visualization**
-   ```
+
+   ```text
    Step 1: UrlValid → ✓
    Step 2: RequestCompleted → ✓
    Step 3: StatusSuccess → ✓
@@ -847,15 +869,16 @@ The framework CAN feed a TUI with:
    - Text edge descriptions
 
 4. **Error propagation**
-   ```
+
+   ```text
    Step 1: ✓ FetchSucceeded
    Step 2: ✗ StatusSuccess not established (got 404)
    Proof chain broken → rollback
    ```
 
 Implementation would:
+
 - Attach a custom tracing subscriber to capture spans
 - Render span fields (url, status, contract) in TUI
 - Show state machine progression (propositions established)
 - Display type graph as sidebar
-

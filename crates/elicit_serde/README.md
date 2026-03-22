@@ -106,7 +106,7 @@ let registry = DynamicToolRegistry::new()
 
 ### What it does
 
-```
+```text
 params (JSON object matching T's schema)
   └─► deserialize as T
         └─► serde_json::to_value(&t)
@@ -122,7 +122,7 @@ agent passes the source value as the entire arguments object.
 Tool names are derived from the last path segment of `std::any::type_name`,
 converted to snake_case, and joined with `__to__`:
 
-```
+```text
 ConfigV1 → config_v1
 ConfigV2 → config_v2
 tool name: convert__config_v1__to__config_v2
@@ -163,4 +163,3 @@ DynamicToolRegistry::new()
 [dependencies]
 elicit_serde = { path = "../elicit_serde" }
 ```
-

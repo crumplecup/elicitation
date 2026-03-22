@@ -4,7 +4,7 @@ This document describes a proposed **plugin architecture for the elicitation cli
 
 The guiding principle is:
 
-```
+```text
 elicitation runtime = deterministic workflow engine
 client plugins = optional capability layers
 ```
@@ -13,7 +13,7 @@ Plugins should **extend the client**, not replace the runtime or introduce compe
 
 ---
 
-# Design Goals
+## Design Goals
 
 The client-side architecture should:
 
@@ -27,11 +27,11 @@ This allows users to build highly customized agent environments without pulling 
 
 ---
 
-# Core Architecture
+## Core Architecture
 
 The client sits between the application and the `elicit_server` runtime.
 
-```
+```text
 application
      │
      ▼
@@ -46,7 +46,7 @@ elicit_server
 
 The client itself contains minimal functionality:
 
-```
+```text
 elicit_client_core
  ├── transport
  ├── session management
@@ -58,7 +58,7 @@ Plugins add additional capabilities to the client runtime.
 
 ---
 
-# Plugin Model
+## Plugin Model
 
 Plugins extend the client through a simple trait interface.
 
@@ -86,11 +86,11 @@ Plugins register their behavior during initialization.
 
 ---
 
-# Middleware Pipeline
+## Middleware Pipeline
 
 The client processes requests through a middleware pipeline.
 
-```
+```text
 prompt construction
        │
        ▼
@@ -117,7 +117,7 @@ Example middleware responsibilities:
 
 ---
 
-# Plugin Categories
+## Plugin Categories
 
 Plugins typically fall into three categories.
 
@@ -135,7 +135,7 @@ Examples:
 
 Example workflow:
 
-```
+```text
 client request
       │
       ▼
@@ -162,7 +162,7 @@ Examples:
 
 Example:
 
-```
+```text
 prompt
   │
   ▼
@@ -188,7 +188,7 @@ These plugins assist debugging and introspection but do not affect agent reasoni
 
 ---
 
-# Example Plugins
+## Example Plugins
 
 ## LLM Backend Plugin
 
@@ -202,7 +202,7 @@ Responsibilities:
 
 Architecture:
 
-```
+```text
 client
   │
   ▼
@@ -226,7 +226,7 @@ Responsibilities:
 
 Example:
 
-```
+```text
 prompt construction
        │
        ▼
@@ -244,7 +244,7 @@ Uses embedding and vector database libraries.
 
 Candidate stack:
 
-```
+```text
 fastembed
 qdrant-client
 ```
@@ -257,7 +257,7 @@ Capabilities:
 
 Example workflow:
 
-```
+```text
 agent request
       │
       ▼
@@ -284,7 +284,7 @@ Capabilities:
 
 Example flow:
 
-```
+```text
 agent question
       │
       ▼
@@ -311,7 +311,7 @@ Capabilities:
 
 Example:
 
-```
+```text
 cargo onefile
      │
      ▼
@@ -329,7 +329,7 @@ Generates visual representations of typestate workflows.
 
 Candidate crates:
 
-```
+```text
 petgraph
 graphviz
 ```
@@ -342,7 +342,7 @@ Capabilities:
 
 Example output:
 
-```
+```text
 StateA
   ├─ transition_1 → StateB
   └─ transition_2 → StateC
@@ -350,19 +350,19 @@ StateA
 
 Possible CLI command:
 
-```
+```bash
 cargo elicitation graph
 ```
 
 Output:
 
-```
+```text
 workflow.svg
 ```
 
 ---
 
-# Cargo Feature Integration
+## Cargo Feature Integration
 
 Plugins are enabled via Cargo features.
 
@@ -382,7 +382,7 @@ Users opt in to functionality as needed.
 
 Example installation:
 
-```
+```bash
 cargo add elicit_client --features semantic-retrieval
 ```
 
@@ -390,11 +390,11 @@ This ensures minimal dependency overhead.
 
 ---
 
-# Recommended Crate Layout
+## Recommended Crate Layout
 
 Instead of a single monolithic client crate, the ecosystem can be split into modular components.
 
-```
+```text
 elicit_client_core
 elicit_client_llm
 elicit_client_tokens
@@ -414,19 +414,19 @@ Benefits:
 
 ---
 
-# MCP Integration
+## MCP Integration
 
 Since elicitation is built on `rmcp`, plugins can optionally expose new **MCP tools**.
 
 Example:
 
-```
+```text
 workflow_graph_plugin
 ```
 
 Could expose:
 
-```
+```text
 generate_workflow_graph()
 ```
 
@@ -434,11 +434,11 @@ This allows agents to dynamically request visualization or diagnostics.
 
 ---
 
-# Key Architectural Principle
+## Key Architectural Principle
 
 Client plugins enhance agent capabilities but do **not control the runtime**.
 
-```
+```text
 LLM = reasoning advisor
 elicitation = deterministic state machine
 plugins = capability extensions
@@ -448,13 +448,13 @@ Maintaining this separation preserves the safety and predictability of elicitati
 
 ---
 
-# Future Direction
+## Future Direction
 
 An interesting long-term opportunity is **automatic artifact generation** from typestate workflows.
 
 Possible outputs:
 
-```
+```text
 typestate definitions
       │
       ├─ workflow graphs
@@ -467,7 +467,7 @@ This would allow elicitation workflows to become **self-describing agent systems
 
 ---
 
-# Summary
+## Summary
 
 The client plugin architecture enables:
 

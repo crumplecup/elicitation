@@ -24,7 +24,7 @@ The type graph system gives agents and developers a runtime mirror of your elici
 
 ## Architecture Overview
 
-```
+```text
 #[derive(Elicit)]            ←── proc-macro emits TypeGraphKey registration
       │
       ▼
@@ -247,6 +247,7 @@ let output = DotRenderer {
 ```
 
 Colour coding:
+
 - **Survey** nodes — `lightyellow`
 - **Select** nodes — `lightblue`
 - **Affirm** nodes — `lightgreen`
@@ -265,7 +266,7 @@ The `elicitation graph` subcommand requires both the `cli` and `graph` features
 elicitation graph list
 ```
 
-```
+```text
 14 registered graphable type(s):
 
   ApplicationConfig
@@ -317,7 +318,7 @@ exposed as `type_graph__list_types`, `type_graph__graph_type`, and
 
 No parameters. Returns a sorted list of all registered type names.
 
-```
+```text
 Agent → list_types()
 Server → "14 registered graphable type(s):
           ApplicationConfig
@@ -336,7 +337,7 @@ Server → "14 registered graphable type(s):
 Returns the rendered graph string. On unknown root: returns an error message
 with the registered type list, so agents can self-correct.
 
-```
+```text
 Agent → graph_type({ root: "ApplicationConfig" })
 Server → "graph TD\n    ApplicationConfig[\"ApplicationConfig (survey)\"]\n..."
 ```
@@ -351,7 +352,7 @@ Returns a plain-text edge summary — field names, target types, and variant
 detail for enum types. Designed for agent context windows where a diagram
 is not renderable.
 
-```
+```text
 Agent → describe_edges({ type_name: "ApplicationConfig" })
 Server → "**ApplicationConfig** (survey, 3 connection(s))
 
@@ -364,7 +365,7 @@ Server → "**ApplicationConfig** (survey, 3 connection(s))
 
 ### Recommended agent workflow
 
-```
+```text
 1. list_types()                          ← discover what's available
 2. graph_type({ root: "MyType" })        ← get the big picture
 3. describe_edges({ type_name: "..." })  ← drill into specifics
@@ -444,6 +445,7 @@ same pattern used by `TypeSpecInventoryKey`.
 ### Why a separate `TypeGraph` intermediate struct?
 
 Separating traversal from rendering means:
+
 - Cycle detection runs once (in the builder), not once per renderer
 - Multiple renderers share one traversal result
 - Tests can inspect the graph structure independently of output format
@@ -453,7 +455,7 @@ cycle detection.
 
 ### Why fully-qualified variant node names?
 
-```
+```text
 Role::Admin   ← not just Admin
 ```
 

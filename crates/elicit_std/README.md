@@ -17,7 +17,7 @@ before finally assembling them into a binary with `std__assemble`.
 
 ## Fragment pipeline
 
-```
+```text
 1. std__env { var: "USER" }
         ↓  returns fragment
    env!("USER")
@@ -59,33 +59,43 @@ async fn main() {
 ### Fragment tool examples
 
 **`std__format`** — emit a format expression:
+
 ```json
 { "template": "Hello, {}! You have {} messages.", "args": ["name", "count"] }
 ```
+
 Returns: `format!("Hello, {}! You have {} messages.", name, count)`
 
 Pass a prior fragment as an arg:
+
 ```json
 { "template": "Hello, {}!", "args": ["env!(\"USER\")"] }
 ```
+
 Returns: `format!("Hello, {}!", env!("USER"))`
 
 **`std__include_str`** — embed a file:
+
 ```json
 { "path": "data/config.toml" }
 ```
+
 Returns: `include_str!("data/config.toml")`
 
 **`std__env`** — read a compile-time env var:
+
 ```json
 { "var": "DATABASE_URL", "error_message": "DATABASE_URL must be set" }
 ```
+
 Returns: `env!("DATABASE_URL", "DATABASE_URL must be set")`
 
 **`std__concat`** — join string parts:
+
 ```json
 { "parts": ["Hello", ", ", "world", "!"] }
 ```
+
 Returns: `concat!("Hello", ", ", "world", "!")`
 
 ### Terminal tool: `std__assemble`
@@ -105,6 +115,7 @@ into a compilable binary using `BinaryScaffold`.
 ```
 
 Returns a JSON object:
+
 ```json
 {
   "main_rs": "/* pretty-printed main.rs */",
@@ -134,12 +145,14 @@ not a composable fragment.
 This crate is the reference implementation for macro fragment tools.
 
 **Fragment tool:**
+
 1. **Params struct** — `Deserialize + JsonSchema`, no `Elicit` required
 2. **`impl EmitCode`** — `emit_code()` returns a `TokenStream` via `quote!`
 3. **`inventory::submit!(EmitEntry { … })`** — registers for global dispatch
 4. **`#[elicit_tool]` handler** — `p.emit_code().to_string()` → `Content::text`
 
 **Terminal tool (`std__assemble`):**
+
 1. **Params struct** — `steps: Vec<String>` (fragment strings from prior calls)
 2. **`assemble()` method** — wraps each string in `RawFragment`, calls
    `BinaryScaffold::new(...).to_source()` + `to_cargo_toml()`

@@ -1,6 +1,7 @@
 # Style Associated Type System - Quick Reference
 
 ## ONE-LINER
+
 > Every type has a `type Style: Elicitation + Default` that controls HOW prompts are presented, enabling seamless switching between human TUI, CLI, and AI agent contexts.
 
 ---
@@ -8,8 +9,10 @@
 ## 5-MINUTE OVERVIEW
 
 ### The Problem
+
 Same struct needs different presentations:
-```
+
+```text
 Database Config
 ├─ Human TUI: "Enter server name: "
 ├─ AI Agent: JSON schema for tool params
@@ -17,6 +20,7 @@ Database Config
 ```
 
 ### The Solution: Style Enum
+
 ```rust
 #[derive(Elicit)]
 struct Config {
@@ -32,6 +36,7 @@ pub enum ConfigElicitStyle {
 ```
 
 ### Usage
+
 ```rust
 let client = ElicitClient::new(peer)
     .with_style::<Config, _>(ConfigElicitStyle::Compact);
@@ -43,20 +48,22 @@ let config = Config::elicit(&client).await?;
 ## TYPE SIGNATURES
 
 ### Core Trait
+
 ```rust
 pub trait Elicitation: Sized + Prompt + 'static {
     type Style: Elicitation + Default + Clone + Send + Sync + 'static;
-    async fn elicit<C: ElicitCommunicator>(comm: &C) 
+    async fn elicit<C: ElicitCommunicator>(comm: &C)
         -> impl Future<Output = ElicitResult<Self>> + Send;
 }
 ```
 
 ### Style Trait
+
 ```rust
 pub trait ElicitationStyle: Clone + Send + Sync + Default + 'static {
-    fn prompt_for_field(&self, field_name: &str, field_type: &str, 
+    fn prompt_for_field(&self, field_name: &str, field_type: &str,
                         context: &PromptContext) -> String;
-    fn help_text(&self, field_name: &str, field_type: &str) 
+    fn help_text(&self, field_name: &str, field_type: &str)
         -> Option<String>;
     fn validation_error(&self, field_name: &str, error: &str) -> String;
     fn show_type_hints(&self) -> bool;
@@ -67,11 +74,12 @@ pub trait ElicitationStyle: Clone + Send + Sync + Default + 'static {
 ```
 
 ### Communicator Methods
+
 ```rust
 pub trait ElicitCommunicator: Clone + Send + Sync {
     fn with_style<T: 'static, S: ElicitationStyle>(&self, style: S) -> Self;
     fn style_or_default<T: Elicitation + 'static>(&self) -> ElicitResult<T::Style>;
-    async fn style_or_elicit<T: Elicitation + 'static>(&self) 
+    async fn style_or_elicit<T: Elicitation + 'static>(&self)
         -> ElicitResult<T::Style>;
 }
 ```
@@ -108,6 +116,7 @@ pub trait ElicitCommunicator: Clone + Send + Sync {
 ## MACRO GENERATION
 
 ### Simple (No Styles)
+
 ```rust
 #[derive(Elicit)]
 struct Config { host: String }
@@ -119,6 +128,7 @@ impl Elicitation for Config { type Style = ConfigStyle; /* elicit fields */ }
 ```
 
 ### Styled (Multiple Styles)
+
 ```rust
 #[derive(Elicit)]
 struct Config {
@@ -146,7 +156,7 @@ impl Elicitation for Config {
 
 ## FLOW: SomeType::elicit(&client).await
 
-```
+```text
 1. STYLE RESOLUTION
    style = client.style_or_default::<SomeType>()?
    OR
@@ -154,20 +164,20 @@ impl Elicitation for Config {
 
 2. QUESTION GENERATION
    Use Prompt::prompt() + chosen Style to build question text
-   
+
 3. MCP COMMUNICATION
    Send via communicator.send_prompt() or call_tool()
-   
+
 4. RESPONSE PARSING
    Parse response according to type's pattern:
    - Primitive: Parse directly
    - Select: Match label to variant
    - Survey: Elicit each field
    - Affirm: Parse yes/no
-   
+
 5. RECURSIVE FIELD ELICITATION
    For each field: <FieldType>::elicit(communicator).await?
-   
+
 6. CONSTRUCT AND RETURN
    Build final value with elicited fields
 ```
@@ -183,6 +193,7 @@ pub struct StyleContext {
 ```
 
 **Why this design?**
+
 - ✅ Type-erased: Supports heterogeneous styles
 - ✅ O(1) lookup: `TypeId` key is simple hash
 - ✅ Cheap clone: `Arc` clone is instant
@@ -194,6 +205,7 @@ pub struct StyleContext {
 ## CONCRETE EXAMPLE: Blackjack PlayerAction
 
 ### Definition
+
 ```rust
 #[derive(Elicit)]
 enum PlayerAction {
@@ -204,16 +216,17 @@ enum PlayerAction {
 ```
 
 ### Generated Code (Simplified)
+
 ```rust
 pub enum PlayerActionStyle { #[default] Default }
 
 impl Elicitation for PlayerAction {
     type Style = PlayerActionStyle;
-    
+
     async fn elicit<C: ElicitCommunicator>(comm: &C) -> ElicitResult<Self> {
         let prompt = "Please select a PlayerAction:\n\nOptions:\n1. Hit\n2. Stand\n3. DoubleDown\n\nRespond with the number (1-3) or exact label:";
         let response = comm.send_prompt(prompt).await?;
-        
+
         match parse_label(&response, vec!["Hit", "Stand", "DoubleDown"])? {
             "Hit" => Ok(Self::Hit),
             "Stand" => Ok(Self::Stand),
@@ -227,11 +240,11 @@ impl Select for PlayerAction {
     fn options() -> Vec<Self> {
         vec![Self::Hit, Self::Stand, Self::DoubleDown]
     }
-    
+
     fn labels() -> Vec<String> {
         vec!["Hit".to_string(), "Stand".to_string(), "DoubleDown".to_string()]
     }
-    
+
     fn from_label(label: &str) -> Option<Self> {
         match label {
             "Hit" => Some(Self::Hit),
@@ -244,6 +257,7 @@ impl Select for PlayerAction {
 ```
 
 ### Usage
+
 ```rust
 // Human TUI context
 let action = PlayerAction::elicit(&client).await?;
@@ -261,7 +275,9 @@ impl GameServer {}
 ## DESIGN PRINCIPLES
 
 ### 1. **Trait-Based Extensibility**
+
 Users can implement custom styles without modifying library:
+
 ```rust
 #[derive(Clone, Default)]
 pub struct MyCompanyStyle;
@@ -276,7 +292,9 @@ let client = client.with_style::<Config, _>(MyCompanyStyle);
 ```
 
 ### 2. **Recursive Elegance**
+
 Style enums implement Elicitation, so users can select styles:
+
 ```rust
 pub enum ConfigElicitStyle { Default, Compact }
 
@@ -289,13 +307,16 @@ impl Elicitation for ConfigElicitStyle {
 ```
 
 ### 3. **Zero-Cost Abstraction**
+
 - No overhead if you don't use styles (single Default variant)
 - O(1) lookup in StyleContext
 - Cheap cloning (Arc)
 - No feature flags needed
 
 ### 4. **Context Agnosticism**
+
 Same code works for:
+
 - **Human CLI**: Text prompts
 - **TUI**: Styled prompts with colors/emojis
 - **AI Agent**: JSON schema for MCP tools
@@ -316,7 +337,7 @@ impl ElicitationStyle for TuiStyle {
         // Format for ratatui widget
         format!("┌─ {} ({}) ─┐", name, ty)
     }
-    
+
     fn use_decorations(&self) -> bool {
         true  // Enable borders/colors/icons
     }
@@ -348,4 +369,3 @@ let client = ElicitClient::new(peer).with_style::<Config, _>(TuiStyle);
 | **Context** | Works for human TUI, CLI, AI agents - same mechanism |
 | **Performance** | O(1) lookup, cheap cloning, zero overhead if unused |
 | **Safety** | Compiler ensures correct Style type for each Type |
-

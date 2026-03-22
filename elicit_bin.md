@@ -30,7 +30,7 @@ This is **not** code generation. It is **code recovery**.
 
 ## Architecture
 
-```
+```text
 elicitation
   └── EmitCode trait        ← new: the recovery contract
   └── CrateDep type         ← new: dependency descriptor

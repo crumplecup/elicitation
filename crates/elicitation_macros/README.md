@@ -227,7 +227,7 @@ to build the TypeSpec inventory entry for the type automatically.
 
 A typical newtype MCP plugin is built layer by layer:
 
-```
+```text
 elicit_newtype!(Client)          ← 1. Arc-wrap, Clone, Deref
     ↓
 #[reflect_methods] impl Client   ← 2. Generate param structs + tool wrappers
@@ -240,7 +240,7 @@ PluginRegistry::new()
 
 For user-defined types the flow is simpler:
 
-```
+```text
 #[derive(Elicit, JsonSchema)]    ← 1. Generate Prompt/Survey/Select + elicit_checked()
     ↓
 #[elicit_tools(MyType)]          ← 2. (optional) standalone tool endpoint

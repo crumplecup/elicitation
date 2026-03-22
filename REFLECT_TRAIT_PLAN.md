@@ -18,7 +18,7 @@ the user writes. Here we wrap methods that already exist upstream.
 
 ## The Three-Time Model
 
-```
+```text
 COMPILE TIME    inventory::submit! → ToolFactoryRegistration
                     (macro generates factory struct + submission)
 
@@ -209,7 +209,7 @@ For each factory submitted to inventory, one meta-tool is automatically
 registered in `DynamicToolRegistry::list_tools()`. Example for an
 `InsertableToolFactory`:
 
-```
+```text
 Tool name:    "dynamic__instantiate_insertable"
 Description:  "Create insert/batch_insert tools for a registered type.
                Call register_type::<T>(prefix) at startup to make T available."
@@ -217,6 +217,7 @@ Parameters:   { "prefix": "string — the name used in register_type::<T>(prefix
 ```
 
 When the agent calls this tool:
+
 1. `instantiate("diesel::Insertable", "user")` runs
 2. Finds the `TypedSlot<User>` registered under prefix `"user"`
 3. Calls `InsertableToolFactory::instantiate(slot)` → Vec<DynamicToolDescriptor>
@@ -344,7 +345,7 @@ After calling it with `{ "prefix": "user" }`, it sees `dynamic__user__insert`.
 
 ### New in `crates/elicitation/src/`
 
-```
+```text
 dynamic/
 ├── mod.rs                  ← DynamicToolRegistry, DynamicToolDescriptor
 ├── slot.rs                 ← AnyToolSlot, TypedSlot<T>
@@ -353,6 +354,7 @@ dynamic/
 ```
 
 Exported from `lib.rs`:
+
 ```rust
 pub use dynamic::{
     AnyToolFactory, AnyToolSlot, DynamicToolDescriptor,
@@ -362,7 +364,7 @@ pub use dynamic::{
 
 ### New in `crates/elicitation_macros/src/`
 
-```
+```text
 trait_reflection/
 ├── mod.rs          ← expand() entry point, parses impl block
 ├── vtable.rs       ← VTable struct generation per method
@@ -382,6 +384,7 @@ Build the runtime layer independently. Manually construct a
 `register_type::<T>()` → `instantiate()` → `notify_tool_list_changed` → tools visible.
 
 Deliverables:
+
 - `crates/elicitation/src/dynamic/` module (4 files)
 - `DynamicToolRegistry` implements `ElicitPlugin`
 - `PluginRegistry::register` accepts it
@@ -391,6 +394,7 @@ Deliverables:
 ### Milestone 2 — `#[reflect_trait]` macro
 
 Deliverables:
+
 - `crates/elicitation_macros/src/trait_reflection/` module
 - `pub fn reflect_trait(attr, item)` in `lib.rs`
 - Unit tests for generated factory struct and vtable
@@ -420,7 +424,8 @@ Verify: `just check-all elicit_clap` passes, tools still appear in list_tools.
 
 ## Checklist
 
-**Milestone 1 — DynamicToolRegistry**
+### Milestone 1 — DynamicToolRegistry
+
 - [ ] `crates/elicitation/src/dynamic/mod.rs` — `DynamicToolRegistry`, `DynamicToolDescriptor`
 - [ ] `crates/elicitation/src/dynamic/slot.rs` — `AnyToolSlot`, `TypedSlot<T>`
 - [ ] `crates/elicitation/src/dynamic/factory.rs` — `AnyToolFactory`, `ToolFactoryRegistration`
@@ -430,7 +435,8 @@ Verify: `just check-all elicit_clap` passes, tools still appear in list_tools.
 - [ ] Integration test: manual factory → instantiate → list_tools shows new tools
 - [ ] `just check-all elicitation` passes
 
-**Milestone 2 — `#[reflect_trait]` macro**
+### Milestone 2 — `#[reflect_trait]` macro
+
 - [ ] `crates/elicitation_macros/src/trait_reflection/mod.rs`
 - [ ] `crates/elicitation_macros/src/trait_reflection/vtable.rs`
 - [ ] `crates/elicitation_macros/src/trait_reflection/factory.rs`
@@ -441,11 +447,13 @@ Verify: `just check-all elicit_clap` passes, tools still appear in list_tools.
 - [ ] Integration test
 - [ ] `just check-all elicitation_macros` passes
 
-**Milestone 3 — elicit_clap**
+### Milestone 3 — elicit_clap
+
 - [ ] Replace 5 Select enum files with `#[reflect_trait]` impls
 - [ ] `just check-all elicit_clap` passes
 - [ ] Tools still appear correctly in list_tools
 
-**Milestone 4 — Docs**
+### Milestone 4 — Docs
+
 - [ ] `THIRD_PARTY_SUPPORT_GUIDE.md` updated
 - [ ] This plan marked complete

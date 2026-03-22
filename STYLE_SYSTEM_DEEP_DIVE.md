@@ -9,6 +9,7 @@ The `Style` associated type system is a **trait-based architecture** that **sepa
 ## 1. THE STYLE ASSOCIATED TYPE - Core Definition
 
 ### Location
+
 - **Primary trait definition**: `/crates/elicitation/src/traits.rs` (lines 75-84)
 - **Associated type bounds**: Lines 76-84
 
@@ -25,7 +26,7 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// The style enum itself implements `Elicitation` (using the Select pattern),
     /// enabling automatic style selection when no style is pre-set.
     type Style: Elicitation + Default + Clone + Send + Sync + 'static;
-    
+
     async fn elicit<C: ElicitCommunicator>(
         communicator: &C,
     ) -> impl std::future::Future<Output = ElicitResult<Self>> + Send;
@@ -34,7 +35,7 @@ pub trait Elicitation: Sized + Prompt + 'static {
 
 ### Key Constraints on `Style`
 
-```
+```text
 Style: Elicitation     // Style enum itself must be elicitable (recursively)
      + Default         // Provides fallback when no custom style set
      + Clone           // Must be cloneable for context storage
@@ -45,6 +46,7 @@ Style: Elicitation     // Style enum itself must be elicitable (recursively)
 ### Critical Design Insight
 
 > **The Style enum implements `Elicitation` itself**, which means:
+>
 > - Style enums can be elicited from users interactively
 > - Style selection is "lazy" - only elicited when needed
 > - Each Style enum has a corresponding `Style::Style` that points to itself (recursive)
@@ -55,6 +57,7 @@ Style: Elicitation     // Style enum itself must be elicitable (recursively)
 ## 2. ElicitCommunicator TRAIT - The Bridge to Style
 
 ### Location
+
 `/crates/elicitation/src/communicator.rs` (lines 15-190)
 
 ### Full Type Signature
@@ -62,7 +65,7 @@ Style: Elicitation     // Style enum itself must be elicitable (recursively)
 ```rust
 pub trait ElicitCommunicator: Clone + Send + Sync {
     /// Send a prompt and receive a text response.
-    fn send_prompt(&self, prompt: &str) 
+    fn send_prompt(&self, prompt: &str)
         -> impl std::future::Future<Output = ElicitResult<String>> + Send;
 
     /// Call an MCP tool directly with given parameters.
@@ -95,6 +98,7 @@ pub trait ElicitCommunicator: Clone + Send + Sync {
 ### Style Management Methods Breakdown
 
 #### `style_or_default<T: Elicitation>()`
+
 **Purpose**: Retrieve the style for type T, defaulting to `T::Style::default()` if none set
 
 ```rust
@@ -112,6 +116,7 @@ where
 **Use case**: When starting elicitation, check if user pre-set a style; if not, use the type's default.
 
 #### `style_or_elicit<T: Elicitation>()`
+
 **Purpose**: Retrieve the style for type T, eliciting from the user/agent if not pre-set
 
 ```rust
@@ -134,6 +139,7 @@ where
 **Use case**: Interactive style selection - if the user hasn't pre-selected a style, ask them which one they prefer.
 
 #### `with_style<T: 'static, S: ElicitationStyle>(&self, style: S) -> Self`
+
 **Purpose**: Create a new communicator with a custom style for type T
 
 ```rust
@@ -143,6 +149,7 @@ fn with_style<T: Elicitation + 'static, S: ElicitationStyle>(&self, style: S) ->
 **Returns**: A new communicator instance with the style added to the context.
 
 **Use case**: One-off style override:
+
 ```rust
 let client = base_client
     .with_style::<Config, _>(ConfigStyle::Curt)
@@ -159,6 +166,7 @@ pub struct StyleContext {
 ```
 
 **Key design**:
+
 - Uses `TypeId` as key, allowing each type to have its own style independently
 - Type-erased storage with `Box<dyn Any>` to support heterogeneous style types
 - `Arc<RwLock<_>>` enables cheap cloning and thread-safe access
@@ -169,6 +177,7 @@ pub struct StyleContext {
 ## 3. #[derive(Elicit)] MACRO - Style Code Generation
 
 ### Entry Point
+
 `/crates/elicitation_derive/src/derive_elicit.rs`
 
 ### For STRUCTS (Survey Pattern)
@@ -224,13 +233,14 @@ impl Elicitation for Config {
 When a struct has `#[prompt(..., style = "...")]` attributes, the macro generates a multi-variant Style enum:
 
 **Example input**:
+
 ```rust
 #[derive(Elicit)]
 struct GameConfig {
     #[prompt("Enter server name:")]
     #[prompt("Server:", style = "compact")]
     server: String,
-    
+
     #[prompt("Enter port (default 8080):")]
     #[prompt("Port:", style = "compact")]
     port: u16,
@@ -238,6 +248,7 @@ struct GameConfig {
 ```
 
 **Generated style enum** (from line 953-975):
+
 ```rust
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum GameConfigElicitStyle {
@@ -272,14 +283,14 @@ impl Elicitation for GameConfig {
     ) -> ElicitResult<Self> {
         // Get the style (or let user choose)
         let style = communicator.style_or_elicit::<Self>().await?;
-        
+
         // Elicit server field with style-aware prompt
         let prompt = match style {
             GameConfigElicitStyle::Default => "Enter server name:",
             GameConfigElicitStyle::Compact => "Server:",
         };
         let server = communicator.send_prompt(prompt).await?;
-        
+
         // Elicit port field with style-aware prompt
         let prompt = match style {
             GameConfigElicitStyle::Default => "Enter port (default 8080):",
@@ -290,7 +301,7 @@ impl Elicitation for GameConfig {
             .trim()
             .parse()
             .map_err(|_| ElicitError::new(ElicitErrorKind::ParseError(...)))?;
-        
+
         Ok(Self { server, port })
     }
 }
@@ -342,21 +353,21 @@ impl Elicitation for PlayerAction {
         // Phase 1: Variant selection
         let base_prompt = Self::prompt().unwrap();
         let labels = Self::labels();  // ["Hit", "Stand", "DoubleDown"]
-        
+
         let options_text = labels.iter()
             .enumerate()
             .map(|(i, label)| format!("{}. {}", i + 1, label))
             .collect::<Vec<_>>()
             .join("\n");
-        
+
         let full_prompt = format!(
             "{}\n\nOptions:\n{}\n\nRespond with the number (1-{}) or exact label:",
             base_prompt, options_text, labels.len()
         );
-        
+
         let response = communicator.send_prompt(&full_prompt).await?;
         let selected = parse_response(response, &labels)?;
-        
+
         // Phase 2: Field elicitation based on variant
         match selected.as_str() {
             "Hit" => Ok(PlayerAction::Hit),
@@ -427,6 +438,7 @@ pub trait ElicitationStyle: Send + Sync {
 #### Built-in Implementations
 
 ##### 1. **DefaultStyle** (Line 172-192)
+
 ```rust
 #[derive(Debug, Clone, Copy, Default)]
 pub struct DefaultStyle;
@@ -454,6 +466,7 @@ impl ElicitationStyle for DefaultStyle {
 **Output**: `"Enter host (String):"`
 
 ##### 2. **CompactStyle** (Line 201-225)
+
 ```rust
 #[derive(Debug, Clone, Copy, Default)]
 pub struct CompactStyle;
@@ -481,6 +494,7 @@ impl ElicitationStyle for CompactStyle {
 **Output**: `"> host:"`
 
 ##### 3. **VerboseStyle** (Line 234-278)
+
 ```rust
 #[derive(Debug, Clone, Copy, Default)]
 pub struct VerboseStyle;
@@ -521,6 +535,7 @@ impl ElicitationStyle for VerboseStyle {
 **Output**: `"? Please enter host (type: String, field 1/2)"`
 
 ##### 4. **WizardStyle** (Line 287-337)
+
 ```rust
 #[derive(Debug, Clone, Copy, Default)]
 pub struct WizardStyle;
@@ -590,6 +605,7 @@ impl Elicitation for i32 {
 ```
 
 Similarly for:
+
 - `bool` → `BoolStyle` (/crates/elicitation/src/primitives/boolean.rs)
 - `u8, u16, u32, u64, u128, usize` → `U8Style`, `U16Style`, etc.
 - `i8, i16, i32, i64, i128, isize` → `I8Style`, `I16Style`, etc.
@@ -625,14 +641,15 @@ pub trait Prompt {
 2. **Style** = HOW to present that question (the formatting/UX)
 
 **Example**:
-```
+
+```text
 Type Config {
     Prompt::prompt() -> "Let's create a Config:"
-    
+
     Then for each field during elicitation:
-        DefaultStyle::prompt_for_field("host", "String", ...) 
+        DefaultStyle::prompt_for_field("host", "String", ...)
             -> "Enter host (String):"
-        
+
         CompactStyle::prompt_for_field("host", "String", ...)
             -> "host:"
 }
@@ -668,6 +685,7 @@ pub trait Select: Prompt + Sized {
 ### How Select Relates to Style for Enums
 
 For an enum like:
+
 ```rust
 #[derive(Elicit)]
 enum PlayerAction {
@@ -678,6 +696,7 @@ enum PlayerAction {
 ```
 
 **Generated Select impl**:
+
 ```rust
 impl Select for PlayerAction {
     fn options() -> Vec<Self> {
@@ -700,6 +719,7 @@ impl Select for PlayerAction {
 ```
 
 **Style interaction**:
+
 - Style doesn't change the OPTIONS (always Hit/Stand/DoubleDown)
 - Style changes HOW they're presented:
   - `SelectStyle::Menu` → "1. Hit\n2. Stand\n3. DoubleDown"
@@ -713,6 +733,7 @@ impl Select for PlayerAction {
 ### Problem Statement
 
 A game action enum should present differently:
+
 - **Human TUI**: Pretty ratatui widget showing options with colors/icons
 - **AI Agent**: JSON schema for tool parameters
 
@@ -765,7 +786,7 @@ impl Elicitation for PlayerAction {
         let labels = vec!["Hit", "Stand", "DoubleDown"];
         let prompt = "Choose your action:\n\n1. Hit\n2. Stand\n3. DoubleDown";
         let response = communicator.send_prompt(prompt).await?;
-        
+
         match parse_selection(&response, &labels)? {
             0 => Ok(PlayerAction::Hit),
             1 => Ok(PlayerAction::Stand),
@@ -796,7 +817,7 @@ impl GameServer {}
 
 // When called via MCP:
 // The schema auto-generates from elicitation structure
-// Agent receives: 
+// Agent receives:
 // {
 //   "type": "Select",
 //   "options": ["Hit", "Stand", "DoubleDown"],
@@ -810,10 +831,10 @@ impl GameServer {}
 
 ### Complete Flow When `PlayerAction::elicit(&client).await` is Called
 
-```
+```text
 1. USER INITIATES
    PlayerAction::elicit(&client).await
-   
+
 2. STYLE RESOLUTION
    │
    ├─ client.style_context().get_style::<PlayerAction, PlayerActionStyle>()?
@@ -857,7 +878,7 @@ impl GameServer {}
 
 ### Architecture Diagram
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │ Application Code                                        │
 │ let action = PlayerAction::elicit(&client).await?       │
@@ -926,16 +947,17 @@ impl GameServer {}
 However, the architecture supports it:
 
 1. **Define a custom style for your TUI type**:
+
    ```rust
    #[derive(Clone, Default)]
    pub struct RatatuiStyle;
-   
+
    impl ElicitationStyle for RatatuiStyle {
        fn prompt_for_field(&self, name: &str, ty: &str, ctx: &PromptContext) -> String {
            // Generate styled prompt
            format!("┌─ {} ({}) ─┐", name, ty)
        }
-       
+
        fn use_decorations(&self) -> bool {
            true
        }
@@ -943,6 +965,7 @@ However, the architecture supports it:
    ```
 
 2. **Apply to struct**:
+
    ```rust
    #[derive(Elicit)]
    struct Config {
@@ -952,6 +975,7 @@ However, the architecture supports it:
    ```
 
 3. **Use with client**:
+
    ```rust
    let client = ElicitClient::new(peer)
        .with_style::<Config, _>(RatatuiStyle);
@@ -977,26 +1001,26 @@ pub trait Prompt {
 
 pub trait Elicitation: Sized + Prompt + 'static {
     type Style: Elicitation + Default + Clone + Send + Sync + 'static;
-    async fn elicit<C: ElicitCommunicator>(communicator: &C) 
+    async fn elicit<C: ElicitCommunicator>(communicator: &C)
         -> impl Future<Output = ElicitResult<Self>> + Send;
 }
 
 pub trait ElicitCommunicator: Clone + Send + Sync {
     async fn send_prompt(&self, prompt: &str) -> ElicitResult<String>;
-    async fn call_tool(&self, params: CallToolRequestParams) 
+    async fn call_tool(&self, params: CallToolRequestParams)
         -> Result<CallToolResult, ServiceError>;
     fn style_context(&self) -> &StyleContext;
     fn with_style<T: 'static, S: ElicitationStyle>(&self, style: S) -> Self;
     fn style_or_default<T: Elicitation + 'static>(&self) -> ElicitResult<T::Style>;
-    async fn style_or_elicit<T: Elicitation + 'static>(&self) 
+    async fn style_or_elicit<T: Elicitation + 'static>(&self)
         -> ElicitResult<T::Style>;
     fn elicitation_context(&self) -> &ElicitationContext;
 }
 
 pub trait ElicitationStyle: Clone + Send + Sync + Default + 'static {
-    fn prompt_for_field(&self, field_name: &str, field_type: &str, 
+    fn prompt_for_field(&self, field_name: &str, field_type: &str,
                         context: &PromptContext) -> String;
-    fn help_text(&self, field_name: &str, field_type: &str) 
+    fn help_text(&self, field_name: &str, field_type: &str)
         -> Option<String>;
     fn validation_error(&self, field_name: &str, error: &str) -> String;
     fn show_type_hints(&self) -> bool;
@@ -1047,29 +1071,35 @@ pub struct ElicitServer {
 ## 11. Key Design Principles
 
 ### 1. **Separation of Concerns**
+
 - **Behavior** (what to ask) vs. **Presentation** (how to ask)
 - Style is orthogonal to elicitation logic
 
 ### 2. **Type-Safe Style Selection**
+
 - `with_style::<T, S>()` ensures `S` is valid for `T`
 - Compiler prevents mixing styles across types
 
 ### 3. **Recursive Elegance**
+
 - Style enums implement `Elicitation`, enabling style selection
 - `T::Style::elicit()` allows interactive style negotiation
 - No special cases needed for style selection
 
 ### 4. **Lazy Evaluation**
+
 - Styles only elicited when needed (via `style_or_elicit`)
 - Pre-set styles used immediately (via `style_or_default`)
 - Minimizes user interaction
 
 ### 5. **Zero-Cost Abstractions**
+
 - Type-erased storage via `TypeId` key
 - O(1) style lookup, no allocation for unused styles
 - `StyleContext::clone()` is cheap (`Arc` clone)
 
 ### 6. **Context Agnosticism**
+
 - Same code works for:
   - Human CLI (text prompts)
   - TUI (styled text/widgets)

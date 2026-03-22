@@ -65,7 +65,7 @@ operations — parse a URL, inspect a status code, set a header. At the top
 layer, workflow tools compose these atoms into phrase-level operations with
 documented, machine-checkable properties.
 
-```
+```text
 Workflow tools  →  fetch_auth, post_json, paginated_get, api_call …
                          ↓  composed from
 Plugin tools    →  url_build, header_map.insert, request_builder.send …
@@ -130,7 +130,7 @@ attaches contract proofs to every result. Contracts are zero-cost
 `PhantomData` propositions assembled using the `And` combinator from the
 elicitation framework.
 
-```
+```text
 FetchSucceeded    = And<UrlValid, And<RequestCompleted, StatusSuccess>>
 AuthFetchSucceeded = And<Authorized, FetchSucceeded>
 ```
@@ -140,7 +140,7 @@ embeds it in the result under a `"contract"` field. Downstream tool calls can
 require a specific proof as a precondition, turning a sequence of tool
 invocations into a verified state machine — a *workflow*.
 
-```
+```text
 url_build ──→ Established<UrlValid>
      ↓
 fetch ─────→ Established<FetchSucceeded>

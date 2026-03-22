@@ -77,7 +77,7 @@ just verify-creusot-tracked
 This runs all 28 modules via `cargo creusot` and writes results to
 `creusot_verification_results.csv`. Output:
 
-```
+```text
 [1/28]  🔬 Checking bools...          ✅ PASS (1s)
 [2/28]  🔬 Checking chars...          ✅ PASS (0s)
 ...
@@ -118,7 +118,7 @@ passed through to the underlying build.
 
 ### Crate Layout
 
-```
+```text
 crates/
 ├── elicitation/                   # Main library (contract types)
 │   └── src/verification/
@@ -217,6 +217,7 @@ pub fn verify_loopback() -> Ipv4Bytes { ... }
 ```
 
 **Key rules for `logic_fns.rs`:**
+
 - Must use `#[logic(opaque)]` (NOT `#[logic]`) — `dead` requires opaque
 - Must use `#[trusted]` — there is no body to verify
 - Body must be `dead` (Pearlite's unreachable term)
@@ -472,7 +473,7 @@ extern_spec! {
 — a pointer to a static allocation. Creusot cannot model static allocation
 references:
 
-```
+```text
 Error: Unsupported constant value: Scalar(alloc) of type &[u8; 4]
 ```
 
@@ -609,6 +610,7 @@ literal matching. This hits the **string literal content wall**:
 > know what `"Auto (detect terminal)"` contains.
 
 Even with an `extern_spec` for `from_label`, you cannot write:
+
 ```rust
 #[ensures(result.is_some())]  // ❌ Cannot prove — string content opaque
 fn from_label(label: &str) -> Option<Self>;

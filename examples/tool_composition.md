@@ -60,7 +60,7 @@ impl MyServer {
     ) -> Result<Json<StatusResponse>, ErrorData> {
         // Use the elicited config to restart
         println!("Restarting with host={}, port={}", config.host, config.port);
-        
+
         Ok(Json(StatusResponse {
             status: "restarted".to_string(),
             uptime_seconds: 0,
@@ -85,10 +85,10 @@ fn main() {
     // - elicit_user: Interactive user elicitation
     // - status: Get server status
     // - restart: Restart with config
-    
+
     let router = MyServer::tool_router();
     let tools = router.list_all();
-    
+
     println!("Registered {} tools:", tools.len());
     for tool in &tools {
         println!("  - {}: {}", tool.name, tool.description.as_deref().unwrap_or(""));

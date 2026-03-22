@@ -14,6 +14,7 @@ human Rust developer would write them.
 
 sqlx is explicitly designed for backend-agnostic code. The connection URL
 selects the backend at runtime:
+
 - `postgres://...` → Postgres
 - `sqlite://...` → SQLite
 - `mysql://...` → MySQL
@@ -85,6 +86,7 @@ No deferred work — the full architecture is already in place.
 ### Methods to reflect (mirror sqlx exactly)
 
 **`AnyPool`** (created per-call; not serialized):
+
 - `execute(sql)` → `AnyQueryResult`
 - `fetch_all(sql)` → `Vec<AnyRow>`
 - `fetch_one(sql)` → `AnyRow`
@@ -93,21 +95,25 @@ No deferred work — the full architecture is already in place.
 - `is_closed()` → `bool`
 
 **`AnyRow`**:
+
 - `columns()` → `Vec<AnyColumn>`
 - `len()` → `usize`
 - `is_empty()` → `bool`
 - typed accessors: `try_get_string(col)`, `try_get_i64(col)`, `try_get_f64(col)`, `try_get_bool(col)`
 
 **`AnyColumn`**:
+
 - `name()` → `&str`
 - `ordinal()` → `usize`
 - `type_info()` → `AnyTypeInfo`
 
 **`AnyQueryResult`**:
+
 - `rows_affected()` → `u64`
 - `last_insert_id()` → `Option<i64>`
 
 **`Error`**:
+
 - `kind()` → `ErrorKind`
 - `message()` → `String`
 
@@ -139,6 +145,7 @@ Deferred: `Encode<DB>`, `Decode<DB>`, `Type<DB>`.
 ## Phase 1 — Workspace root
 
 Add to `Cargo.toml`:
+
 ```toml
 sqlx = { version = "0.8", features = [
     "runtime-tokio", "tls-native-tls",
@@ -146,6 +153,7 @@ sqlx = { version = "0.8", features = [
 ] }
 elicit_sqlx = { path = "crates/elicit_sqlx", version = "0.9.1" }
 ```
+
 Add `"crates/elicit_sqlx"` to `members`.
 
 ---
@@ -170,7 +178,7 @@ Wire: `primitives/mod.rs` + `lib.rs` + `type_spec/sqlx_specs.rs`.
 
 ### Structure
 
-```
+```text
 src/
   lib.rs
   error.rs             AnyPool, Error newtype + ErrorKind mapping
@@ -195,6 +203,7 @@ tests/
 ### Workflow plugin
 
 Propositions mirroring sqlx lifecycle:
+
 ```rust
 pub struct Executed;     impl Prop for Executed {}
 pub struct RowsReturned; impl Prop for RowsReturned {}
@@ -207,6 +216,7 @@ Handlers receive `ctx: Arc<SqlxContext>`, use `ctx.db` for the pool and
 `ctx.transactions` for the registry.
 
 Tools:
+
 | Tool | sqlx API mirrored | Notes |
 |---|---|---|
 | `sqlx__execute` | `pool.execute(sql)` | Uses `ctx.db` |
@@ -235,6 +245,7 @@ trait FromRow {
 ## Phase 4 — Kani harnesses
 
 `crates/elicitation_kani/src/sqlx_types.rs`:
+
 - `column_value_roundtrip`
 - `error_kind_labels_roundtrip`
 - `error_kind_unknown_rejected`
@@ -246,6 +257,7 @@ trait FromRow {
 ## Phase 5 — Creusot
 
 `crates/elicitation_creusot/src/sqlx_types.rs`:
+
 - `error_kind_from_label` requires/ensures
 - `column_value_is_null` logic predicate
 - `any_row_len_matches_columns` ensures

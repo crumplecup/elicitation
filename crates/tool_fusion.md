@@ -1,4 +1,5 @@
 # Fusion Semantics Implementation Plan
+
 ## Proof-Driven MCP Boundary Elision via Trait-Based Rewrites
 
 ---
@@ -7,24 +8,25 @@
 
 Enable **sound elimination of MCP boundaries** by fusing tool chains:
 
-```
+```text
 Tool₁: A → JSON
 Tool₂: JSON → B
 ```
 
 into:
 
-```
+```text
 f: A → B
 ```
 
 **Condition:** A machine-checked proof (Kani / Creusot / Verus) establishes:
 
-```
+```text
 ∀a: A, Tool₂(Tool₁(a)) ≡ f(a)
 ```
 
 This plan defines:
+
 - A **trait-based proof surface**
 - A **fusion registry**
 - A **typed IR rewrite pass**
@@ -35,16 +37,21 @@ This plan defines:
 ## 1. Core Design Principles
 
 ### 1.1 Proofs are Admission Tickets
+
 No proof → no fusion.
 
 ### 1.2 Traits as Proof Carriers
+
 Traits expose fusion opportunities in a **harvestable, macro-friendly form**.
 
 ### 1.3 IR is the Source of Truth
+
 All fusion occurs as a **verified rewrite pass over workflow IR**.
 
 ### 1.4 Boundaries are First-Class
+
 MCP is modeled explicitly and can only be removed if:
+
 - Semantics preserved
 - Effects preserved
 - Policy allows
@@ -216,7 +223,7 @@ struct Effects {
 
 ### 6.1 Pass Overview
 
-```
+```text
 Input: Workflow Graph
 Output: Optimized Workflow Graph
 ```
@@ -320,6 +327,7 @@ struct FusionProvenance {
 ```
 
 Attach to IR for:
+
 - debugging
 - audit logs
 - optional “de-optimization” (expansion back to MCP)
@@ -332,11 +340,12 @@ Attach to IR for:
 
 Allow chaining:
 
-```
+```text
 (A → JSON → B → JSON → C) ⇒ (A → C)
 ```
 
 Implementation:
+
 - iterate fusion pass to fixed point
 - or perform graph pattern matching of length N
 
@@ -346,11 +355,12 @@ Implementation:
 
 If:
 
-```
+```text
 ToolX ≡ ToolY
 ```
 
 Use proof to:
+
 - swap MCP tool for in-process equivalent
 - choose lower-latency implementation
 
@@ -360,7 +370,7 @@ Use proof to:
 
 If inputs are partially known:
 
-```
+```text
 f(a, const) ⇒ specialized_f(a)
 ```
 
@@ -371,17 +381,20 @@ Can be proven and fused similarly.
 ## 10. Testing Strategy
 
 ### 10.1 Proof Validation
+
 - Verus: full spec verification
 - Creusot: logical equivalence
 - Kani: bounded sanity checks
 
 ### 10.2 Differential Testing
+
 - Execute:
   - original chain
   - fused function
 - Assert equality over sampled domain
 
 ### 10.3 IR Roundtrip
+
 - Fuse → defuse → compare graphs
 
 ---
@@ -389,18 +402,22 @@ Can be proven and fused similarly.
 ## 11. Incremental Adoption Plan
 
 ### Phase 1
+
 - Manual `Fusable` impls
 - Simple pairwise fusion
 
 ### Phase 2
+
 - Macro harvesting
 - Registry automation
 
 ### Phase 3
+
 - Multi-step fusion
 - Proof strength policies
 
 ### Phase 4
+
 - Full compiler pipeline
 - Cost-based optimization (latency-aware)
 

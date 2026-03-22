@@ -80,7 +80,7 @@ Automatically generate MCP tool wrappers for third-party crate methods through *
 
 ### Key Architectural Patterns
 
-**Pattern 1: Type-Level Tool Generation**
+### Pattern 1: Type-Level Tool Generation
 
 ```rust
 // Existing pattern
@@ -98,7 +98,7 @@ pub async fn elicit_config(peer: Peer<RoleServer>)
 }
 ```
 
-**Pattern 2: Trait Method Delegation**
+### Pattern 2: Trait Method Delegation
 
 ```rust
 // Existing pattern
@@ -645,7 +645,7 @@ pub fn reflect_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
 
 **Example Companion Crate Structure:**
 
-```
+```text
 elicit_reqwest/
 ├── Cargo.toml          # Depends on: elicitation, reqwest
 ├── src/

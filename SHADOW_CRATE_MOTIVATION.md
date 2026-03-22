@@ -36,7 +36,7 @@ The agent is not generating arbitrary Rust code.  It is doing *proof search*:
 finding a sequence of verified steps that transforms the input types into the
 desired output types while satisfying all intermediate contracts.
 
-```
+```text
 Atomic operations (verified individually)
     ↓ composed by agent under type-theoretic constraints
 Tool chain (correct by construction)

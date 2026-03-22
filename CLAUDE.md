@@ -561,7 +561,7 @@ info!(table = %table_name, "Creating");          // Display format
 
 Without tracing:
 
-```
+```text
 Human: "Bot command failed"
 AI: "Run with RUST_LOG=debug"
 Human: <500 lines>
@@ -573,7 +573,7 @@ Result: 3+ messages, 10+ minutes
 
 With tracing:
 
-```
+```text
 Human: "Bot command failed"
 Human: <5 lines>
 ERROR discord.execute: Missing arg command="server.get_stats" missing_arg="guild_id"
@@ -692,7 +692,7 @@ Guideline: When file exceeds ~500-1000 lines
 
 Structure:
 
-```
+```text
 src/mymodule/
 ├── mod.rs           # ONLY mod + pub use
 ├── core.rs
@@ -753,7 +753,7 @@ lib.rs only contains `mod` declarations and `pub use` exports.
 
 Even small crates (100-200 lines) should separate into modules:
 
-```
+```text
 crates/my_crate/src/
 ├── lib.rs       # mod + pub use only
 ├── role.rs

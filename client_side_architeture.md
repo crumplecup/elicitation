@@ -6,7 +6,7 @@ The focus is **client-side tooling**, particularly components that enhance agent
 
 ---
 
-# Architectural Context
+## Architectural Context
 
 Elicitation provides:
 
@@ -19,7 +19,7 @@ Elicitation provides:
 
 In this architecture:
 
-```
+```text
 LLM = probabilistic reasoning oracle
 elicitation = deterministic runtime
 ```
@@ -36,7 +36,7 @@ without replacing the elicitation runtime itself.
 
 ---
 
-# 1. Multi-Provider LLM Backend
+## 1. Multi-Provider LLM Backend
 
 ## `llm` crate
 
@@ -54,7 +54,7 @@ Capabilities:
 
 Architectural role:
 
-```
+```text
 elicit_server
     ↓
 LLM adapter layer
@@ -74,7 +74,7 @@ Status: **strong candidate for elicitation client integration**
 
 ---
 
-# 2. Structured Output / Typed LLM Responses
+## 2. Structured Output / Typed LLM Responses
 
 ## `rstructor`
 
@@ -104,13 +104,13 @@ This crate represents **prior art worth examining**, but elicitation's compile-t
 
 Key question:
 
-```
+```text
 Does elicitation already solve this problem more rigorously?
 ```
 
 ---
 
-# 3. Tokenization and Prompt Budgeting
+## 3. Tokenization and Prompt Budgeting
 
 ## `tiktoken-rs`
 
@@ -126,7 +126,7 @@ Capabilities:
 
 Example use cases:
 
-```
+```text
 1. Prompt truncation
 2. Context budgeting
 3. Model selection based on token limits
@@ -134,7 +134,7 @@ Example use cases:
 
 Possible integration:
 
-```
+```text
 state transition
     ↓
 prompt construction
@@ -148,7 +148,7 @@ This prevents runtime failures due to token limits.
 
 ---
 
-# 4. Semantic Retrieval / Local RAG
+## 4. Semantic Retrieval / Local RAG
 
 ## Candidate crates
 
@@ -165,7 +165,7 @@ Potential uses in elicitation:
 
 ### Semantic State Lookup
 
-```
+```text
 workflow state history
         ↓
 embedding index
@@ -177,7 +177,7 @@ LLM reasoning context
 
 ### Tool Discovery
 
-```
+```text
 tool descriptions
         ↓
 embedding index
@@ -189,7 +189,7 @@ select tool candidates
 
 ### Knowledge Augmentation
 
-```
+```text
 external documents
         ↓
 vector store
@@ -203,7 +203,7 @@ This enables **local RAG without external services**.
 
 ---
 
-# 5. Research and Web Intelligence
+## 5. Research and Web Intelligence
 
 ## `exa_api_client`
 
@@ -219,7 +219,7 @@ Capabilities:
 
 Agent workflow:
 
-```
+```text
 agent reasoning
       ↓
 semantic web search
@@ -233,7 +233,7 @@ This is particularly useful for **research agents** and **knowledge acquisition 
 
 ---
 
-# 6. Codebase Ingestion for Agent Analysis
+## 6. Codebase Ingestion for Agent Analysis
 
 ## `cargo-onefile`
 
@@ -247,7 +247,7 @@ Feeding codebases into LLMs.
 
 Example workflow:
 
-```
+```bash
 cargo onefile
      ↓
 single source artifact
@@ -266,11 +266,11 @@ This enables **agent introspection over Rust projects**.
 
 ---
 
-# 7. MCP Integration
+## 7. MCP Integration
 
 Elicitation already builds on:
 
-```
+```text
 rmcp
 ```
 
@@ -280,7 +280,7 @@ Elicitation workflows can naturally integrate with the **Model Context Protocol 
 
 This provides:
 
-```
+```text
 agent runtime
      ↓
 MCP client
@@ -294,7 +294,7 @@ Some **vendor lock-in to the MCP tool protocol**, but the ecosystem benefits lik
 
 ---
 
-# 8. Workflow Visualization
+## 8. Workflow Visualization
 
 This is a particularly promising area.
 
@@ -310,7 +310,7 @@ Render **typestate workflows as graphs**.
 
 Example visualization:
 
-```
+```text
 State A
    ├── transition_1 → State B
    ├── transition_2 → State C
@@ -321,7 +321,7 @@ Applications:
 
 ### Agent Debugging
 
-```
+```text
 workflow graph
       ↓
 highlight current state
@@ -331,7 +331,7 @@ display allowed transitions
 
 ### Runtime Introspection
 
-```
+```text
 live agent execution
       ↓
 visualize state transitions
@@ -339,7 +339,7 @@ visualize state transitions
 
 ### Development Tools
 
-```
+```text
 compile workflow
       ↓
 generate graph visualization
@@ -349,23 +349,23 @@ This could become a **core developer experience feature**.
 
 ---
 
-# Potential Developer Tool
+## Potential Developer Tool
 
 A CLI command like:
 
-```
+```bash
 cargo elicitation graph
 ```
 
 could output:
 
-```
+```text
 workflow.dot
 ```
 
 Which renders as:
 
-```
+```text
 workflow.png
 workflow.svg
 ```
@@ -374,11 +374,11 @@ This would allow developers to **visually inspect agent workflows**.
 
 ---
 
-# Emerging Stack for Elicitation Clients
+## Emerging Stack for Elicitation Clients
 
 A potential ecosystem stack could look like:
 
-```
+```text
 elicitation
     │
     ├── llm                (multi-provider LLM backend)
@@ -401,11 +401,11 @@ while leaving **elicitation’s typestate runtime intact**.
 
 ---
 
-# Key Insight
+## Key Insight
 
 The most important architectural principle remains:
 
-```
+```text
 LLM = advisor
 elicitation = runtime
 ```
@@ -420,13 +420,13 @@ but **never replace the deterministic workflow engine**.
 
 ---
 
-# Future Opportunity
+## Future Opportunity
 
 One particularly powerful direction:
 
 Automatically generating:
 
-```
+```text
 typestate workflow
        ↓
 graph visualization
@@ -438,19 +438,19 @@ MCP tool exports
 
 This would allow elicitation workflows to become **self-describing, introspectable agent systems**.
 
-```
+```text
 Rust typestate → Agent runtime → MCP tools → Visualized workflows
 ```
 
 A compelling ecosystem direction.
 
-# Elicitation Client-Side Plugin Architecture
+## Elicitation Client-Side Plugin Architecture
 
 This document describes a proposed **plugin architecture for the elicitation client library**, designed to allow users to selectively enable advanced capabilities while keeping the core client lightweight and composable.
 
 The guiding principle is:
 
-```
+```text
 elicitation runtime = deterministic workflow engine
 client plugins = optional capability layers
 ```
@@ -459,7 +459,7 @@ Plugins should **extend the client**, not replace the runtime or introduce compe
 
 ---
 
-# Design Goals
+## Design Goals
 
 The client-side architecture should:
 
@@ -473,11 +473,11 @@ This allows users to build highly customized agent environments without pulling 
 
 ---
 
-# Core Architecture
+## Core Architecture
 
 The client sits between the application and the `elicit_server` runtime.
 
-```
+```text
 application
      │
      ▼
@@ -492,7 +492,7 @@ elicit_server
 
 The client itself contains minimal functionality:
 
-```
+```text
 elicit_client_core
  ├── transport
  ├── session management
@@ -504,7 +504,7 @@ Plugins add additional capabilities to the client runtime.
 
 ---
 
-# Plugin Model
+## Plugin Model
 
 Plugins extend the client through a simple trait interface.
 
@@ -532,11 +532,11 @@ Plugins register their behavior during initialization.
 
 ---
 
-# Middleware Pipeline
+## Middleware Pipeline
 
 The client processes requests through a middleware pipeline.
 
-```
+```text
 prompt construction
        │
        ▼
@@ -563,7 +563,7 @@ Example middleware responsibilities:
 
 ---
 
-# Plugin Categories
+## Plugin Categories
 
 Plugins typically fall into three categories.
 
@@ -581,7 +581,7 @@ Examples:
 
 Example workflow:
 
-```
+```text
 client request
       │
       ▼
@@ -608,7 +608,7 @@ Examples:
 
 Example:
 
-```
+```text
 prompt
   │
   ▼
@@ -634,7 +634,7 @@ These plugins assist debugging and introspection but do not affect agent reasoni
 
 ---
 
-# Example Plugins
+## Example Plugins
 
 ## LLM Backend Plugin
 
@@ -648,7 +648,7 @@ Responsibilities:
 
 Architecture:
 
-```
+```text
 client
   │
   ▼
@@ -672,7 +672,7 @@ Responsibilities:
 
 Example:
 
-```
+```text
 prompt construction
        │
        ▼
@@ -690,7 +690,7 @@ Uses embedding and vector database libraries.
 
 Candidate stack:
 
-```
+```text
 fastembed
 qdrant-client
 ```
@@ -703,7 +703,7 @@ Capabilities:
 
 Example workflow:
 
-```
+```text
 agent request
       │
       ▼
@@ -730,7 +730,7 @@ Capabilities:
 
 Example flow:
 
-```
+```text
 agent question
       │
       ▼
@@ -757,7 +757,7 @@ Capabilities:
 
 Example:
 
-```
+```bash
 cargo onefile
      │
      ▼
@@ -775,7 +775,7 @@ Generates visual representations of typestate workflows.
 
 Candidate crates:
 
-```
+```text
 petgraph
 graphviz
 ```
@@ -788,7 +788,7 @@ Capabilities:
 
 Example output:
 
-```
+```text
 StateA
   ├─ transition_1 → StateB
   └─ transition_2 → StateC
@@ -796,19 +796,19 @@ StateA
 
 Possible CLI command:
 
-```
+```bash
 cargo elicitation graph
 ```
 
 Output:
 
-```
+```text
 workflow.svg
 ```
 
 ---
 
-# Cargo Feature Integration
+## Cargo Feature Integration
 
 Plugins are enabled via Cargo features.
 
@@ -828,7 +828,7 @@ Users opt in to functionality as needed.
 
 Example installation:
 
-```
+```bash
 cargo add elicit_client --features semantic-retrieval
 ```
 
@@ -836,11 +836,11 @@ This ensures minimal dependency overhead.
 
 ---
 
-# Recommended Crate Layout
+## Recommended Crate Layout
 
 Instead of a single monolithic client crate, the ecosystem can be split into modular components.
 
-```
+```text
 elicit_client_core
 elicit_client_llm
 elicit_client_tokens
@@ -860,19 +860,19 @@ Benefits:
 
 ---
 
-# MCP Integration
+## MCP Integration
 
 Since elicitation is built on `rmcp`, plugins can optionally expose new **MCP tools**.
 
 Example:
 
-```
+```text
 workflow_graph_plugin
 ```
 
 Could expose:
 
-```
+```text
 generate_workflow_graph()
 ```
 
@@ -880,11 +880,11 @@ This allows agents to dynamically request visualization or diagnostics.
 
 ---
 
-# Key Architectural Principle
+## Key Architectural Principle
 
 Client plugins enhance agent capabilities but do **not control the runtime**.
 
-```
+```text
 LLM = reasoning advisor
 elicitation = deterministic state machine
 plugins = capability extensions
@@ -894,13 +894,13 @@ Maintaining this separation preserves the safety and predictability of elicitati
 
 ---
 
-# Future Direction
+## Future Direction
 
 An interesting long-term opportunity is **automatic artifact generation** from typestate workflows.
 
 Possible outputs:
 
-```
+```text
 typestate definitions
       │
       ├─ workflow graphs
@@ -913,7 +913,7 @@ This would allow elicitation workflows to become **self-describing agent systems
 
 ---
 
-# Summary
+## Summary
 
 The client plugin architecture enables:
 

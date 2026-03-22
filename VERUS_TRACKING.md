@@ -119,7 +119,7 @@ cargo run --features cli --release -- verus summary --file my_results.csv
 
 **Output:**
 
-```
+```text
 📊 Verus Verification Summary
 ============================
 
@@ -147,7 +147,7 @@ cargo run --features cli --release -- verus failed
 
 **Output:**
 
-```
+```text
 ❌ Failed Verus Proofs (2 total):
 
   integers::verify_i128_range
@@ -380,7 +380,7 @@ The Verus tracking system mirrors the Kani tracking infrastructure:
 
 **Problem:**
 
-```
+```text
 ❌ Verus not found at: ~/repos/verus/source/target-verus/release/verus
    Set VERUS_PATH environment variable or use --verus-path
 ```

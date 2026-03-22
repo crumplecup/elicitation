@@ -127,7 +127,7 @@ cleanly.  This is the exit point from sqlx's world into the agent's world.
 `RowData` holds `Vec<ColumnEntry>`, and each `ColumnEntry` carries a `ColumnValue`
 — our own enum that mirrors `AnyValueKind`:
 
-```
+```text
 AnyValueKind (sqlx, non_exhaustive, non-Serialize)
     ↓  decode_val()
 ColumnValue (ours, Serialize + JsonSchema + verified)
@@ -257,6 +257,7 @@ assert_eq!(k.feature_name(), "postgres");
 ```
 
 Formally verified properties:
+
 - Label count equals option count (3 variants, de-trusted in Creusot)
 - Known labels round-trip through `from_label()`
 - Unknown labels return `None`
@@ -440,7 +441,7 @@ registry.register_type::<CreateUser>("create_user");
 
 Three-step agent workflow:
 
-```
+```text
 1. pg__connect { url }
        → { pool_id: "abc" }
 
@@ -528,7 +529,7 @@ three drivers. The URL determines the backend: `postgres://…`, `sqlite:…`,
 
 ### Contract chain diagram
 
-```
+```text
 connect(url)
   └─ Established<DbConnected>           pool_id: Uuid
 
@@ -552,6 +553,7 @@ rollback(tx_id)
 ```
 
 Full proof of a committed transaction:
+
 ```rust
 let full_proof: Established<FullCommit> = full_commit(db_proof, tx_proof, committed_proof);
 ```
@@ -560,7 +562,7 @@ let full_proof: Established<FullCommit> = full_commit(db_proof, tx_proof, commit
 
 Agent-level (MCP tool calls):
 
-```
+```text
 1. sqlx_workflow__connect { database_url: "sqlite::memory:", max_connections: 1 }
    → { pool_id: "a1b2…" }          — DbConnected established
 
@@ -592,8 +594,6 @@ one connection (and one in-memory database):
 For Postgres and MySQL, `max_connections` defaults to the sqlx default (10).
 
 ---
-
-
 
 All sqlx `Select` enum types in the `elicitation` crate have Kani, Creusot, and
 Verus proofs covering:
