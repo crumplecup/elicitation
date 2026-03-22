@@ -228,6 +228,51 @@ with both **code generation tools** (emit Rust handlers/middleware) and **runtim
 
 **Timeline:** 6 weeks, 11 phases, 400-500 MCP tools, ~20,000-25,000 LOC
 
+---
+
+### elicit_polars Shadow Crate
+
+**Document:** [ELICIT_POLARS_PLAN.md](ELICIT_POLARS_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Pragmatic harvesting of polars DataFrame library (~70-80% of API is
+JSON-serializable). Four-plugin architecture: DataFrame operations (eager), LazyFrame
+query builder (lazy), Expr composition DSL, and SQL interface. Unlike closure-heavy
+libraries, polars was designed for serialization with full serde support.
+
+**Key Advantage:** Polars' `Expr` type is a **serializable AST** - agents can build
+complex queries by composing JSON-serializable expressions. No code generation needed,
+just data structure composition.
+
+**Coverage:**
+- **DataFrame (eager):** 40+ operations - select, filter, join, group_by, I/O (CSV/Parquet/JSON/IPC)
+- **LazyFrame (lazy):** 25+ operations - scan, transform, optimize, collect, streaming
+- **Expr DSL:** 30+ tools - col, lit, binary ops, aggregations, string/temporal/list methods
+- **SQL Interface:** 5 tools - context management, table registration, query execution
+- **Data Types:** Full dtype system (numeric, temporal, nested, categorical)
+
+**What's Serializable:**
+- ✅ All DataFrame/LazyFrame operations (params are primitives/structs)
+- ✅ Expr is `#[derive(Serialize, Deserialize)]` - full AST composition
+- ✅ ~200 built-in functions (sum, mean, string ops, temporal ops)
+- ✅ SQL interface (string → LazyFrame)
+- ✅ I/O operations (file paths + option structs)
+
+**What's NOT (closures):**
+- ❌ `df.apply(|series| custom(series))` - ~20% of API
+- ❌ `expr.map(|col| custom(col))` - custom UDFs
+- ❌ Object columns (require trait impls)
+
+**Strategy:**
+- UUID-keyed registries for DataFrame/LazyFrame handles
+- Direct Expr serialization (agents build JSON ASTs)
+- SQL as high-level escape hatch for complex queries
+- Built-in function dispatcher for ~200 operations
+- Arrow IPC for efficient data transfer
+
+**Timeline:** 6 weeks, 5 phases, ~100 MCP tools, ~8,000-10,000 LOC
+
 ### Macro-Driven MCP Tool System
 
 **Document:** [MACRO_TOOL_GEN_PLAN.md](MACRO_TOOL_GEN_PLAN.md)

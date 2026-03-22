@@ -15,6 +15,10 @@
 //! | [`TokioFsPlugin`] | `tokio_fs__*` | read_to_string, read_bytes, write_text, write_bytes, create_dir, create_dir_all, remove_dir, remove_dir_all, remove_file, rename, copy, metadata, read_dir, canonicalize |
 //! | [`TokioNetPlugin`] | `tokio_net__*` | tcp_listener_bind, tcp_listener_accept, tcp_listener_local_addr, tcp_listener_close, tcp_stream_connect, tcp_stream_read, tcp_stream_write, tcp_stream_local_addr, tcp_stream_peer_addr, tcp_stream_close, udp_socket_bind, udp_socket_send_to, udp_socket_recv_from, udp_socket_local_addr, udp_socket_close |
 //! | [`TokioProcessPlugin`] | `tokio_process__*` | process_run, process_spawn, process_stdin_write, process_stdout_read, process_stderr_read, process_wait, process_try_wait, process_kill, process_id |
+//! | [`TokioTaskPlugin`] | `tokio_task__*` | yield_now |
+//! | [`TokioChannelPlugin`] | `tokio_channel__*` | mpsc_create, mpsc_send, mpsc_try_send, mpsc_recv, mpsc_try_recv, mpsc_sender_close, mpsc_receiver_close, oneshot_create, oneshot_send, oneshot_recv, oneshot_try_recv, watch_create, watch_send, watch_borrow, watch_changed, watch_subscribe, watch_sender_close, watch_receiver_close, broadcast_create, broadcast_send, broadcast_recv, broadcast_try_recv, broadcast_subscribe, broadcast_sender_close, broadcast_receiver_close, mutex_create, mutex_lock, mutex_update, mutex_try_lock, mutex_close, rwlock_create, rwlock_read, rwlock_write, rwlock_try_read, rwlock_try_write, rwlock_close |
+//! | [`TokioSignalPlugin`] | `tokio_signal__*` | ctrl_c, unix_signal_create (unix), unix_signal_recv (unix), unix_signal_close (unix) |
+//! | [`TokioIoPlugin`] | `tokio_io__*` | duplex_create, duplex_read, duplex_write, duplex_close |
 //!
 //! # Feature flags
 //!
@@ -23,16 +27,34 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod channels;
 mod fs;
+mod io;
 mod net;
 mod process;
 mod runtime;
+mod signal;
 mod sync;
+mod task;
 mod time;
 
+pub use channels::{
+    BroadcastCreateParams, BroadcastReceiverCloseParams, BroadcastRecvParams, BroadcastSendParams,
+    BroadcastSenderCloseParams, BroadcastSubscribeParams, BroadcastTryRecvParams, MpscCreateParams,
+    MpscReceiverCloseParams, MpscRecvParams, MpscSendParams, MpscSenderCloseParams,
+    MpscTryRecvParams, MpscTrySendParams, MutexCloseParams, MutexCreateParams, MutexLockParams,
+    MutexTryLockParams, MutexUpdateParams, OneshotCreateParams, OneshotRecvParams,
+    OneshotSendParams, OneshotTryRecvParams, RwLockCloseParams, RwLockCreateParams,
+    RwLockReadParams, RwLockTryReadParams, RwLockTryWriteParams, RwLockWriteParams,
+    TokioChannelPlugin, WatchBorrowParams, WatchChangedParams, WatchCreateParams,
+    WatchReceiverCloseParams, WatchSendParams, WatchSenderCloseParams, WatchSubscribeParams,
+};
 pub use fs::{
     FromToParams, PathParams, ReadBytesParams, ReadToStringParams, TokioFsPlugin, WriteBytesParams,
     WriteTextParams,
+};
+pub use io::{
+    DuplexCloseParams, DuplexCreateParams, DuplexReadParams, DuplexWriteParams, TokioIoPlugin,
 };
 pub use net::{
     ConnectionAccepted, DataReceived, ListenerBound, StreamConnected, TcpListenerAcceptParams,
@@ -48,12 +70,16 @@ pub use process::{
     ProcessTryWaitParams, ProcessWaitParams, TokioProcessPlugin,
 };
 pub use runtime::{InspectFlavorParams, RuntimeFlavorKind, TokioRuntimePlugin};
+pub use signal::{CtrlCParams, TokioSignalPlugin, UnixSignalKind};
+#[cfg(unix)]
+pub use signal::{UnixSignalCloseParams, UnixSignalCreateParams, UnixSignalRecvParams};
 pub use sync::{
     BarrierNewParams, BarrierReached, BarrierWaitParams, NotificationReceived, NotifiedParams,
     NotifyNewParams, NotifyOneParams, NotifyWaitersParams, PermitAcquired, SemaphoreAcquireParams,
     SemaphoreAvailableParams, SemaphoreCloseParams, SemaphoreNewParams, SemaphoreReleaseParams,
     SemaphoreTryAcquireParams, TokioSyncPlugin,
 };
+pub use task::{TokioTaskPlugin, YieldNowParams};
 pub use time::{
     IntervalCreateParams, IntervalTickParams, SleepCompleted, SleepParams, SleepUntilParams,
     TimeoutAwaitParams, TimeoutCheckParams, TimeoutCreateParams, TimeoutResolved, TokioTimePlugin,

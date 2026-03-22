@@ -108,7 +108,7 @@ anyhow = "1.0"
 tracing = "0.1"
 
 # Async runtime
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "io-util", "time", "sync", "rt", "fs", "net", "process"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "io-util", "time", "sync", "rt", "fs", "net", "process", "signal"] }
 
 # Proc macros
 syn = { version = "2", features = ["full", "extra-traits"] }
