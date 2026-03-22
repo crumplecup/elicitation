@@ -17,6 +17,7 @@ mod plugin;
 mod query_result;
 mod row;
 mod type_info;
+pub mod workflow;
 
 pub use args::{ToSqlxArgs, ToSqlxArgsFactory};
 pub use column::AnyColumn;
@@ -29,3 +30,8 @@ pub use plugin::SqlxPlugin;
 pub use query_result::{AnyQueryResult, QueryResultData};
 pub use row::AnyRow;
 pub use type_info::AnyTypeInfo;
+pub use workflow::{
+    ConnectedAndExecuted, DbConnected, FullCommit, QueryExecuted, RowsFetched, SqlxWorkflowPlugin,
+    TransactionCommitted, TransactionOpen, TransactionRolledBack, connected_and_executed,
+    full_commit,
+};
