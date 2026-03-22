@@ -1210,3 +1210,46 @@ extern_spec! {
         fn options() -> Vec<clap::builder::ValueHint>;
     }
 }
+
+// ============================================================================
+// sqlx Select trait impls — label count axioms
+//
+// These are trusted axioms stating how many labels/options each sqlx Select
+// enum exposes. The label_count verify functions can then be discharged by
+// Alt-Ergo as N == N without needing #[trusted].
+//
+// Roundtrip and rejection proofs remain #[trusted] — str::view() is opaque.
+// ============================================================================
+
+#[cfg(feature = "sqlx-types")]
+extern_spec! {
+    impl elicitation::Select for sqlx::error::ErrorKind {
+        #[ensures(result@.len() == 5)]
+        fn labels() -> Vec<String>;
+
+        #[ensures(result@.len() == 5)]
+        fn options() -> Vec<sqlx::error::ErrorKind>;
+    }
+}
+
+#[cfg(feature = "sqlx-types")]
+extern_spec! {
+    impl elicitation::Select for sqlx::any::AnyTypeInfoKind {
+        #[ensures(result@.len() == 9)]
+        fn labels() -> Vec<String>;
+
+        #[ensures(result@.len() == 9)]
+        fn options() -> Vec<sqlx::any::AnyTypeInfoKind>;
+    }
+}
+
+#[cfg(feature = "sqlx-types")]
+extern_spec! {
+    impl elicitation::Select for elicitation::SqlTypeKind {
+        #[ensures(result@.len() == 9)]
+        fn labels() -> Vec<String>;
+
+        #[ensures(result@.len() == 9)]
+        fn options() -> Vec<elicitation::SqlTypeKind>;
+    }
+}
