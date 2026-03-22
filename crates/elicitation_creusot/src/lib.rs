@@ -147,5 +147,11 @@ pub use http::*;
 #[cfg(feature = "clap-types")]
 mod clap_types;
 
+#[cfg(feature = "clap-types")]
+pub use clap_types::*;
+
 #[cfg(feature = "sqlx-types")]
 mod sqlx_types;
+
+#[cfg(feature = "sqlx-types")]
+pub use sqlx_types::*;

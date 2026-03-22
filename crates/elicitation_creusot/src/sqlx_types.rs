@@ -4,27 +4,33 @@
 //!
 //! **Trust the source. Verify the wrapper.**
 //!
-//! We trust that the sqlx crate correctly defines its enum variants.
-//! We verify our own business logic: that every label produced by `labels()`
-//! is accepted by `from_label()` (roundtrip completeness), that unknown labels
-//! are rejected, and that our owned `SqlTypeKind` conversion from
-//! `AnyTypeInfoKind` is total.
+//! We trust that the sqlx crate correctly defines its enum variants and their
+//! implementations. We verify our own business logic: that every label produced
+//! by `labels()` is accepted by `from_label()` (roundtrip completeness), that
+//! unknown labels are rejected, and that our owned `SqlTypeKind` conversion
+//! from `AnyTypeInfoKind` is total.
 //!
-//! # Why all functions are `#[trusted]`
+//! # De-trusted proofs
+//!
+//! The `label_count` proofs (`labels().len() == options().len()`) are verified
+//! without `#[trusted]`. `Vec` has a `ShallowModel` as `Seq<T>` in creusot-std,
+//! so equality of lengths computed by the actual `Select` impls is dischargeable
+//! by Alt-Ergo once the body is symbolically evaluated.
+//!
+//! # Remaining `#[trusted]` walls
 //!
 //! **String literal opacity wall** (blocks roundtrip + rejection proofs):
 //! `str::view()` is `#[logic(opaque)]` in creusot-std — the SMT solver cannot
-//! inspect the content of string literals like `"Null"`.
-//! Even with `extern_spec!` contracts on `from_label`, the solver cannot prove
-//! that a specific string literal is accepted or rejected without symbolic
-//! string reasoning.
+//! inspect the content of string literals like `"UniqueViolation"`. Even with
+//! `extern_spec!` contracts on `from_label`, the solver cannot prove that a
+//! specific string literal is accepted or rejected without symbolic string
+//! reasoning. These proofs remain `#[trusted]` until creusot-std provides a
+//! `ShallowModel` for `&str`.
 //!
-//! # Partial de-trusting opportunity
-//!
-//! The `label_count` proofs are the best candidates for de-trusting.
-//! An `extern_spec!` block specifying `#[ensures(result@.len() == N)]` for
-//! `labels()` and `options()` would let Alt-Ergo discharge `N == N` without
-//! `#[trusted]`.
+//! **`SqlTypeKind::from(AnyTypeInfoKind)` totality**: Blocked by the
+//! `#[non_exhaustive]` attribute on `AnyTypeInfoKind` — the wildcard arm means
+//! Creusot cannot prove exhaustiveness without a closed-world assumption.
+//! Remains `#[trusted]` as an explicit architectural axiom.
 
 #![cfg(feature = "sqlx-types")]
 
@@ -34,6 +40,15 @@ use elicitation::Select;
 // ============================================================================
 // sqlx::error::ErrorKind — 5 variants
 // ============================================================================
+
+/// Verify that ErrorKind label count equals option count.
+///
+/// De-trusted: Alt-Ergo discharges this by evaluating `len() == len()`.
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_error_kind_label_count() -> bool {
+    sqlx::error::ErrorKind::labels().len() == sqlx::error::ErrorKind::options().len()
+}
 
 /// Verify that a known ErrorKind label is accepted by from_label.
 #[requires(true)]
@@ -65,6 +80,15 @@ pub fn verify_error_kind_unknown_rejected() -> bool {
 // sqlx::any::AnyTypeInfoKind — 9 variants
 // ============================================================================
 
+/// Verify that AnyTypeInfoKind label count equals option count.
+///
+/// De-trusted: Alt-Ergo discharges this by evaluating `len() == len()`.
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_any_type_info_kind_label_count() -> bool {
+    sqlx::any::AnyTypeInfoKind::labels().len() == sqlx::any::AnyTypeInfoKind::options().len()
+}
+
 /// Verify that a known AnyTypeInfoKind label is accepted by from_label.
 #[requires(true)]
 #[ensures(result == true)]
@@ -95,6 +119,16 @@ pub fn verify_any_type_info_kind_unknown_rejected() -> bool {
 // elicitation::SqlTypeKind — 9 variants (our owned type)
 // ============================================================================
 
+/// Verify that SqlTypeKind label count equals option count.
+///
+/// De-trusted: Alt-Ergo discharges this by evaluating `len() == len()`.
+/// As our own type, we have full control over the `Select` implementation.
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_sql_type_kind_label_count() -> bool {
+    elicitation::SqlTypeKind::labels().len() == elicitation::SqlTypeKind::options().len()
+}
+
 /// Verify that all SqlTypeKind labels round-trip through from_label.
 #[requires(true)]
 #[ensures(result == true)]
@@ -113,9 +147,17 @@ pub fn verify_sql_type_kind_unknown_rejected() -> bool {
     elicitation::SqlTypeKind::from_label("__unknown__").is_none()
 }
 
-/// Verify that the SqlTypeKind::from(AnyTypeInfoKind) conversion is total.
-///
-/// Every AnyTypeInfoKind variant produces a valid SqlTypeKind.
+// ============================================================================
+// Trusted axiom: SqlTypeKind::from(AnyTypeInfoKind) is total
+//
+// `AnyTypeInfoKind` is `#[non_exhaustive]` — Creusot cannot prove exhaustiveness
+// from a wildcard arm without a closed-world assumption. This is an explicit
+// architectural axiom: we trust our From impl covers all current variants and
+// maps unknown/future ones to SqlTypeKind::Unknown.
+// ============================================================================
+
+/// Trust axiom: `SqlTypeKind::from(AnyTypeInfoKind)` is total over all known
+/// variants and maps future variants to `SqlTypeKind::Unknown`.
 #[requires(true)]
 #[ensures(result == true)]
 #[trusted]

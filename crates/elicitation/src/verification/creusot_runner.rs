@@ -95,6 +95,9 @@ impl CreusotModule {
             Self::with_feature("datetimes_chrono", "chrono"),
             Self::with_feature("datetimes_time", "time"),
             Self::with_feature("datetimes_jiff", "jiff"),
+            // Third-party Select type proofs
+            Self::with_feature("clap_types", "clap-types"),
+            Self::with_feature("sqlx_types", "sqlx-types"),
         ]
     }
 

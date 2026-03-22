@@ -3,7 +3,7 @@
 This guide covers how to run, extend, and understand the Creusot formal
 verification proof suite for `elicitation`.
 
-**Current status: 240 SMT goals proved** across 11 de-trusting batches. The
+**Current status: 243 SMT goals proved** across 12 de-trusting batches. The
 proof suite began as all-`#[trusted]` scaffolding and has been progressively
 strengthened so that Alt-Ergo/cvc5 discharge real proof obligations for the
 majority of contract types. See [Current Status](#current-status) for the
@@ -74,18 +74,18 @@ If you clone creusot to a different location, update this path.
 just verify-creusot-tracked
 ```
 
-This runs all 26 modules via `cargo creusot` and writes results to
+This runs all 28 modules via `cargo creusot` and writes results to
 `creusot_verification_results.csv`. Output:
 
 ```
-[1/26]  🔬 Checking bools...          ✅ PASS (1s)
-[2/26]  🔬 Checking chars...          ✅ PASS (0s)
+[1/28]  🔬 Checking bools...          ✅ PASS (1s)
+[2/28]  🔬 Checking chars...          ✅ PASS (0s)
 ...
-[26/26] 🔬 Checking datetimes_jiff... ✅ PASS (19s)
+[28/28] 🔬 Checking datetimes_jiff... ✅ PASS (19s)
 
 📊 Compilation Summary:
-   Total:   26
-   Passed:  26 ✅
+   Total:   28
+   Passed:  28 ✅
    Failed:  0  ❌
 ```
 
@@ -512,13 +512,13 @@ witnesses based on non-empty literals (`"hello"`, `"short"`, etc.) remain
 
 | Metric | Value |
 |--------|-------|
-| Total modules | 26 |
-| Passing (compilation) | 26 ✅ |
-| SMT goals proved | **240** |
+| Total modules | 28 |
+| Passing (compilation) | 28 ✅ |
+| SMT goals proved | **243** |
 | De-trusting batches | 11 |
 | Creusot version | 0.10.x |
 
-All 26 modules compile. 240 proof obligations are now discharged by Alt-Ergo
+All 28 modules compile. 240 proof obligations are now discharged by Alt-Ergo
 rather than accepted on trust.
 
 ### Proved modules (real SMT proofs)
@@ -558,6 +558,7 @@ rather than accepted on trust.
 | `uuids.rs` | 4 | `Uuid::parse_str` is opaque |
 | `strings.rs` | 3 | Non-empty string literals — `str::view()` opaque |
 | `clap_types.rs` | 16 | String literal opacity + third-party builder types (see below) |
+| `sqlx_types.rs` | 9 | String literal opacity (roundtrips/rejection) + `#[non_exhaustive]` `From` totality; label_count proofs de-trusted |
 
 ---
 
