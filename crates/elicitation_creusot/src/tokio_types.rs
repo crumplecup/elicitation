@@ -20,9 +20,17 @@
 //!
 //! # De-trusted proofs
 //!
-//! Structural proofs that do NOT touch async execution can be de-trusted:
-//! - `Established<P>` size_of == 0 (pure type-level reasoning)
-//! - `And<P,Q>` size_of == 0 (pure type-level reasoning)
+//! There are **no de-trusted proofs** in this file. The guide's de-trusting
+//! mechanism (§5.4) applies only to `Select` enum label count proofs, which
+//! require `extern_spec!` blocks supplying concrete variant counts to Alt-Ergo.
+//! Tokio has no `Select` enum types — it exposes async operations and runtime
+//! machinery, not validated enum discriminants.
+//!
+//! All proofs here are `#[trusted]` for one of two reasons:
+//! - **Async operation contracts**: the async executor is opaque to Creusot;
+//!   no `extern_spec!` can model it.
+//! - **Structural size_of proofs**: `size_of` has no `ShallowModel` in
+//!   creusot-std, consistent with the same proofs in `sqlx_types.rs`.
 //!
 //! # Why `#[trusted]` is the right tool here
 //!
