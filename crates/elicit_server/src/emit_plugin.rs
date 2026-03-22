@@ -113,7 +113,13 @@ impl ElicitPlugin for EmitBinaryPlugin {
                  parse_offset_datetime, parse_primitive_datetime, assert_future, \
                  compute_duration, add_seconds (elicit_time); secure_fetch, \
                  validated_api_call (secure_fetch); fetch_and_extract, fetch_and_validate \
-                 (fetch_and_parse).",
+                 (fetch_and_parse); \
+                 sqlx_workflow__connect, sqlx_workflow__disconnect, sqlx_workflow__execute, \
+                 sqlx_workflow__fetch_all, sqlx_workflow__fetch_one, \
+                 sqlx_workflow__fetch_optional, sqlx_workflow__begin, sqlx_workflow__commit, \
+                 sqlx_workflow__rollback, sqlx_workflow__tx_execute, \
+                 sqlx_workflow__tx_fetch_all, sqlx_workflow__tx_fetch_one, \
+                 sqlx_workflow__tx_fetch_optional (elicit_sqlx).",
         )]
     }
 

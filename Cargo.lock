@@ -1052,6 +1052,7 @@ dependencies = [
  "elicit_jiff",
  "elicit_reqwest",
  "elicit_serde_json",
+ "elicit_sqlx",
  "elicit_time",
  "elicit_url",
  "elicitation",

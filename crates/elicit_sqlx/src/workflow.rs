@@ -52,9 +52,13 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use elicitation::PluginContext;
 use elicitation::contracts::{And, Established, Prop, both};
-use elicitation::{ColumnEntry, ColumnValue, RowData};
+use elicitation::emit_code::CustomEmit;
+use elicitation::{ColumnEntry, ColumnValue, RowData, elicit_tool};
 use futures::future::BoxFuture;
+use proc_macro2::TokenStream;
+use quote::quote;
 use rmcp::{
     ErrorData,
     model::{CallToolRequestParams, CallToolResult, Content, Tool},
@@ -65,7 +69,6 @@ use serde::{Deserialize, Serialize};
 use sqlx::any::AnyRow;
 use sqlx::{Column as _, Row as _, TypeInfo as _};
 use tokio::sync::Mutex;
-use tracing::instrument;
 use uuid::Uuid;
 
 use crate::QueryResultData;
@@ -102,12 +105,52 @@ pub type ConnectedAndExecuted = And<DbConnected, QueryExecuted>;
 /// Composite: a connection was made, a transaction was opened and committed.
 pub type FullCommit = And<DbConnected, And<TransactionOpen, TransactionCommitted>>;
 
-// ── Registry types ────────────────────────────────────────────────────────────
+// ── Internal type aliases ─────────────────────────────────────────────────────
 
 type AnyPool = sqlx::AnyPool;
 type AnyTransaction = sqlx::Transaction<'static, sqlx::Any>;
-type PoolRegistry = Arc<Mutex<HashMap<Uuid, AnyPool>>>;
-type TxRegistry = Arc<Mutex<HashMap<Uuid, AnyTransaction>>>;
+
+// ── Context types ─────────────────────────────────────────────────────────────
+
+/// Plugin-level context: pools and open transactions shared across all tool calls.
+pub struct SqlxCtx {
+    pools: Mutex<HashMap<Uuid, AnyPool>>,
+    txs: Mutex<HashMap<Uuid, Arc<SqlxTxCtx>>>,
+}
+
+impl SqlxCtx {
+    fn new() -> Self {
+        Self {
+            pools: Mutex::new(HashMap::new()),
+            txs: Mutex::new(HashMap::new()),
+        }
+    }
+}
+
+impl PluginContext for SqlxCtx {}
+
+/// Per-call context for tools that operate directly on a pool.
+pub struct SqlxPoolCtx {
+    /// The resolved connection pool for this call.
+    pub pool: AnyPool,
+}
+
+impl PluginContext for SqlxPoolCtx {}
+
+/// Per-call context for tools that operate inside a transaction.
+pub struct SqlxTxCtx {
+    tx: Mutex<Option<AnyTransaction>>,
+}
+
+impl SqlxTxCtx {
+    fn new(tx: AnyTransaction) -> Self {
+        Self {
+            tx: Mutex::new(Some(tx)),
+        }
+    }
+}
+
+impl PluginContext for SqlxTxCtx {}
 
 // ── Param structs ─────────────────────────────────────────────────────────────
 
@@ -168,6 +211,87 @@ pub struct WfBeginParams {
 pub struct WfTxIdParams {
     /// UUID returned by `sqlx_workflow__begin`.
     pub tx_id: Uuid,
+}
+
+// ── Per-tool param structs (same fields, distinct types for unique EmitCode impls) ──
+
+/// Parameters for `sqlx_workflow__fetch_all`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct WfFetchAllParams {
+    /// UUID returned by `sqlx_workflow__connect`.
+    pub pool_id: Uuid,
+    /// SQL SELECT statement.
+    pub sql: String,
+    /// Optional positional arguments.
+    #[serde(default)]
+    pub args: Vec<serde_json::Value>,
+}
+
+/// Parameters for `sqlx_workflow__fetch_one`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct WfFetchOneParams {
+    /// UUID returned by `sqlx_workflow__connect`.
+    pub pool_id: Uuid,
+    /// SQL SELECT statement.
+    pub sql: String,
+    /// Optional positional arguments.
+    #[serde(default)]
+    pub args: Vec<serde_json::Value>,
+}
+
+/// Parameters for `sqlx_workflow__fetch_optional`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct WfFetchOptionalParams {
+    /// UUID returned by `sqlx_workflow__connect`.
+    pub pool_id: Uuid,
+    /// SQL SELECT statement.
+    pub sql: String,
+    /// Optional positional arguments.
+    #[serde(default)]
+    pub args: Vec<serde_json::Value>,
+}
+
+/// Parameters for `sqlx_workflow__rollback`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct WfRollbackParams {
+    /// UUID returned by `sqlx_workflow__begin`.
+    pub tx_id: Uuid,
+}
+
+/// Parameters for `sqlx_workflow__tx_fetch_all`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct WfTxFetchAllParams {
+    /// UUID returned by `sqlx_workflow__begin`.
+    pub tx_id: Uuid,
+    /// SQL SELECT statement.
+    pub sql: String,
+    /// Optional positional arguments.
+    #[serde(default)]
+    pub args: Vec<serde_json::Value>,
+}
+
+/// Parameters for `sqlx_workflow__tx_fetch_one`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct WfTxFetchOneParams {
+    /// UUID returned by `sqlx_workflow__begin`.
+    pub tx_id: Uuid,
+    /// SQL SELECT statement.
+    pub sql: String,
+    /// Optional positional arguments.
+    #[serde(default)]
+    pub args: Vec<serde_json::Value>,
+}
+
+/// Parameters for `sqlx_workflow__tx_fetch_optional`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct WfTxFetchOptionalParams {
+    /// UUID returned by `sqlx_workflow__begin`.
+    pub tx_id: Uuid,
+    /// SQL SELECT statement.
+    pub sql: String,
+    /// Optional positional arguments.
+    #[serde(default)]
+    pub args: Vec<serde_json::Value>,
 }
 
 // ── Result structs ────────────────────────────────────────────────────────────
@@ -277,343 +401,816 @@ fn any_args_from_json(args: &[serde_json::Value]) -> sqlx::any::AnyArguments<'st
     out
 }
 
-// ── Internal contract-carrying helpers ───────────────────────────────────────
+/// Emit a `.bind(...)` chain for a slice of JSON values (used by custom emit impls).
+fn bind_chain(args: &[serde_json::Value]) -> TokenStream {
+    let binds: Vec<TokenStream> = args
+        .iter()
+        .map(|v| match v {
+            serde_json::Value::Bool(b) => quote! { .bind(#b) },
+            serde_json::Value::Number(n) => {
+                if let Some(i) = n.as_i64() {
+                    quote! { .bind(#i i64) }
+                } else if let Some(f) = n.as_f64() {
+                    quote! { .bind(#f f64) }
+                } else {
+                    quote! { .bind(Option::<String>::None) }
+                }
+            }
+            serde_json::Value::String(s) => quote! { .bind(#s) },
+            _ => quote! { .bind(Option::<String>::None) },
+        })
+        .collect();
+    quote! { #(#binds)* }
+}
 
-/// Connect to a database, store pool in registry.
-///
-/// Returns `(pool_id, Established<DbConnected>)` on success.
-async fn connect_inner(
-    url: &str,
-    max_connections: Option<u32>,
-    pools: &PoolRegistry,
-) -> Result<(Uuid, Established<DbConnected>), CallToolResult> {
+// ── Tool functions ────────────────────────────────────────────────────────────
+
+#[elicit_tool(
+    plugin = "sqlx_workflow",
+    name = "sqlx_workflow__connect",
+    description = "Connect to any SQL database (Postgres, SQLite, MySQL) via URL. \
+                   Assumes: URL is well-formed and the database is reachable. \
+                   Establishes: DbConnected — pool stored by returned pool_id.",
+    emit = WfConnectEmit
+)]
+async fn wf_connect(ctx: Arc<SqlxCtx>, p: WfConnectParams) -> Result<CallToolResult, ErrorData> {
     sqlx::any::install_default_drivers();
     let mut opts = sqlx::any::AnyPoolOptions::new();
-    if let Some(n) = max_connections {
+    if let Some(n) = p.max_connections {
         opts = opts.max_connections(n);
     }
-    let pool = opts.connect(url).await.map_err(|e| {
-        CallToolResult::error(vec![Content::text(format!(
-            "DbConnected not established: {e}"
-        ))])
-    })?;
-    let id = Uuid::new_v4();
-    pools.lock().await.insert(id, pool);
-    let proof: Established<DbConnected> = Established::assert();
-    Ok((id, proof))
+    let pool = opts
+        .connect(&p.database_url)
+        .await
+        .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    let pool_id = Uuid::new_v4();
+    ctx.pools.lock().await.insert(pool_id, pool);
+    Ok(json_result(&WfConnectResult {
+        pool_id,
+        contract: "DbConnected",
+    }))
 }
 
-/// Execute a SQL statement against a pool.
-///
-/// Returns `(QueryResultData, Established<QueryExecuted>)` on success.
-async fn execute_inner(
-    pool_id: Uuid,
-    sql: &str,
-    args: &[serde_json::Value],
-    pools: &PoolRegistry,
-) -> Result<(QueryResultData, Established<QueryExecuted>), CallToolResult> {
-    let result = {
-        let guard = pools.lock().await;
-        let pool = guard.get(&pool_id).ok_or_else(|| {
-            CallToolResult::error(vec![Content::text(
-                "QueryExecuted not established: pool_id not found",
-            )])
-        })?;
-        if args.is_empty() {
-            sqlx::query(sql).execute(pool).await
-        } else {
-            sqlx::query_with(sql, any_args_from_json(args))
-                .execute(pool)
-                .await
-        }
+#[elicit_tool(
+    plugin = "sqlx_workflow",
+    name = "sqlx_workflow__disconnect",
+    description = "Close and remove a named pool. \
+                   Assumes: pool_id was returned by sqlx_workflow__connect.",
+    emit = WfDisconnectEmit
+)]
+async fn wf_disconnect(ctx: Arc<SqlxCtx>, p: WfPoolIdParams) -> Result<CallToolResult, ErrorData> {
+    if let Some(pool) = ctx.pools.lock().await.remove(&p.pool_id) {
+        pool.close().await;
     }
-    .map_err(|e| {
-        CallToolResult::error(vec![Content::text(format!(
-            "QueryExecuted not established: {e}"
-        ))])
-    })?;
-    let proof: Established<QueryExecuted> = Established::assert();
-    Ok((
-        QueryResultData {
-            rows_affected: result.rows_affected(),
-            last_insert_id: result.last_insert_id(),
-        },
-        proof,
-    ))
+    Ok(CallToolResult::success(vec![Content::text(
+        r#"{"ok":true}"#,
+    )]))
 }
 
-/// Execute a SELECT against a pool; return all rows.
-///
-/// Returns `(Vec<RowData>, Established<RowsFetched>)` on success.
-async fn fetch_all_inner(
-    pool_id: Uuid,
-    sql: &str,
-    args: &[serde_json::Value],
-    pools: &PoolRegistry,
-) -> Result<(Vec<RowData>, Established<RowsFetched>), CallToolResult> {
-    let rows = {
-        let guard = pools.lock().await;
-        let pool = guard.get(&pool_id).ok_or_else(|| {
-            CallToolResult::error(vec![Content::text(
-                "RowsFetched not established: pool_id not found",
-            )])
-        })?;
-        if args.is_empty() {
-            sqlx::query(sql).fetch_all(pool).await
-        } else {
-            sqlx::query_with(sql, any_args_from_json(args))
-                .fetch_all(pool)
-                .await
-        }
-    }
-    .map_err(|e| {
-        CallToolResult::error(vec![Content::text(format!(
-            "RowsFetched not established: {e}"
-        ))])
-    })?;
-    let data: Vec<RowData> = rows.iter().map(decode_any_row).collect();
-    let proof: Established<RowsFetched> = Established::assert();
-    Ok((data, proof))
-}
-
-/// Execute a SELECT; return exactly one row or error.
-async fn fetch_one_inner(
-    pool_id: Uuid,
-    sql: &str,
-    args: &[serde_json::Value],
-    pools: &PoolRegistry,
-) -> Result<(RowData, Established<RowsFetched>), CallToolResult> {
-    let row = {
-        let guard = pools.lock().await;
-        let pool = guard.get(&pool_id).ok_or_else(|| {
-            CallToolResult::error(vec![Content::text(
-                "RowsFetched not established: pool_id not found",
-            )])
-        })?;
-        if args.is_empty() {
-            sqlx::query(sql).fetch_one(pool).await
-        } else {
-            sqlx::query_with(sql, any_args_from_json(args))
-                .fetch_one(pool)
-                .await
-        }
-    }
-    .map_err(|e| {
-        CallToolResult::error(vec![Content::text(format!(
-            "RowsFetched not established: {e}"
-        ))])
-    })?;
-    let proof: Established<RowsFetched> = Established::assert();
-    Ok((decode_any_row(&row), proof))
-}
-
-/// Execute a SELECT; return first row or None.
-async fn fetch_optional_inner(
-    pool_id: Uuid,
-    sql: &str,
-    args: &[serde_json::Value],
-    pools: &PoolRegistry,
-) -> Result<Option<RowData>, CallToolResult> {
-    let maybe = {
-        let guard = pools.lock().await;
-        let pool = guard
-            .get(&pool_id)
-            .ok_or_else(|| CallToolResult::error(vec![Content::text("pool_id not found")]))?;
-        if args.is_empty() {
-            sqlx::query(sql).fetch_optional(pool).await
-        } else {
-            sqlx::query_with(sql, any_args_from_json(args))
-                .fetch_optional(pool)
-                .await
-        }
-    }
-    .map_err(|e| {
-        CallToolResult::error(vec![Content::text(format!("fetch_optional failed: {e}"))])
-    })?;
-    Ok(maybe.as_ref().map(decode_any_row))
-}
-
-/// Begin a transaction against a pool.
-///
-/// Returns `(tx_id, Established<TransactionOpen>)` on success.
-async fn begin_inner(
-    pool_id: Uuid,
-    pools: &PoolRegistry,
-    txs: &TxRegistry,
-) -> Result<(Uuid, Established<TransactionOpen>), CallToolResult> {
-    let tx = {
-        let guard = pools.lock().await;
-        let pool = guard.get(&pool_id).ok_or_else(|| {
-            CallToolResult::error(vec![Content::text(
-                "TransactionOpen not established: pool_id not found",
-            )])
-        })?;
-        pool.begin().await.map_err(|e| {
-            CallToolResult::error(vec![Content::text(format!(
-                "TransactionOpen not established: {e}"
-            ))])
-        })?
-    };
-    let id = Uuid::new_v4();
-    txs.lock().await.insert(id, tx);
-    let proof: Established<TransactionOpen> = Established::assert();
-    Ok((id, proof))
-}
-
-/// Execute SQL within a transaction.
-async fn tx_execute_inner(
-    tx_id: Uuid,
-    sql: &str,
-    args: &[serde_json::Value],
-    txs: &TxRegistry,
-) -> Result<(QueryResultData, Established<QueryExecuted>), CallToolResult> {
-    let mut guard = txs.lock().await;
-    let tx = guard.get_mut(&tx_id).ok_or_else(|| {
-        CallToolResult::error(vec![Content::text(
-            "QueryExecuted not established: tx_id not found",
-        )])
-    })?;
-    let result = if args.is_empty() {
-        sqlx::query(sql).execute(&mut **tx).await
+#[elicit_tool(
+    plugin = "sqlx_workflow",
+    name = "sqlx_workflow__execute",
+    description = "Execute a non-returning SQL statement (INSERT, UPDATE, DELETE, DDL). \
+                   Assumes: DbConnected (pool_id valid). \
+                   Establishes: QueryExecuted — rows_affected is accurate.",
+    emit = WfExecuteEmit
+)]
+async fn wf_execute(
+    ctx: Arc<SqlxPoolCtx>,
+    p: WfPoolSqlParams,
+) -> Result<CallToolResult, ErrorData> {
+    let result = if p.args.is_empty() {
+        sqlx::query(&p.sql).execute(&ctx.pool).await
     } else {
-        sqlx::query_with(sql, any_args_from_json(args))
+        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
+            .execute(&ctx.pool)
+            .await
+    }
+    .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    let _proof: Established<QueryExecuted> = Established::assert();
+    Ok(json_result(&QueryResultData {
+        rows_affected: result.rows_affected(),
+        last_insert_id: result.last_insert_id(),
+    }))
+}
+
+#[elicit_tool(
+    plugin = "sqlx_workflow",
+    name = "sqlx_workflow__fetch_all",
+    description = "Execute a SELECT and return all rows. \
+                   Assumes: DbConnected (pool_id valid). \
+                   Establishes: RowsFetched — returned Vec contains every matching row.",
+    emit = WfFetchAllEmit
+)]
+async fn wf_fetch_all(
+    ctx: Arc<SqlxPoolCtx>,
+    p: WfFetchAllParams,
+) -> Result<CallToolResult, ErrorData> {
+    let rows = if p.args.is_empty() {
+        sqlx::query(&p.sql).fetch_all(&ctx.pool).await
+    } else {
+        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
+            .fetch_all(&ctx.pool)
+            .await
+    }
+    .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    let _proof: Established<RowsFetched> = Established::assert();
+    let data: Vec<RowData> = rows.iter().map(decode_any_row).collect();
+    Ok(json_result(&data))
+}
+
+#[elicit_tool(
+    plugin = "sqlx_workflow",
+    name = "sqlx_workflow__fetch_one",
+    description = "Execute a SELECT and return exactly the first row; errors if none found. \
+                   Assumes: DbConnected (pool_id valid); at least one row exists. \
+                   Establishes: RowsFetched.",
+    emit = WfFetchOneEmit
+)]
+async fn wf_fetch_one(
+    ctx: Arc<SqlxPoolCtx>,
+    p: WfFetchOneParams,
+) -> Result<CallToolResult, ErrorData> {
+    let row = if p.args.is_empty() {
+        sqlx::query(&p.sql).fetch_one(&ctx.pool).await
+    } else {
+        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
+            .fetch_one(&ctx.pool)
+            .await
+    }
+    .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    let _proof: Established<RowsFetched> = Established::assert();
+    Ok(json_result(&decode_any_row(&row)))
+}
+
+#[elicit_tool(
+    plugin = "sqlx_workflow",
+    name = "sqlx_workflow__fetch_optional",
+    description = "Execute a SELECT and return the first row or null. \
+                   Assumes: DbConnected (pool_id valid).",
+    emit = WfFetchOptionalEmit
+)]
+async fn wf_fetch_optional(
+    ctx: Arc<SqlxPoolCtx>,
+    p: WfFetchOptionalParams,
+) -> Result<CallToolResult, ErrorData> {
+    let maybe = if p.args.is_empty() {
+        sqlx::query(&p.sql).fetch_optional(&ctx.pool).await
+    } else {
+        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
+            .fetch_optional(&ctx.pool)
+            .await
+    }
+    .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    let data: Option<RowData> = maybe.as_ref().map(decode_any_row);
+    Ok(json_result(&data))
+}
+
+#[elicit_tool(
+    plugin = "sqlx_workflow",
+    name = "sqlx_workflow__begin",
+    description = "Start a database transaction. \
+                   Assumes: DbConnected (pool_id valid). \
+                   Establishes: TransactionOpen — tx stored by returned tx_id.",
+    emit = WfBeginEmit
+)]
+async fn wf_begin(ctx: Arc<SqlxCtx>, p: WfBeginParams) -> Result<CallToolResult, ErrorData> {
+    let pool = ctx
+        .pools
+        .lock()
+        .await
+        .get(&p.pool_id)
+        .cloned()
+        .ok_or_else(|| {
+            ErrorData::invalid_params(
+                "TransactionOpen not established: pool_id not found".to_string(),
+                None,
+            )
+        })?;
+    let tx = pool
+        .begin()
+        .await
+        .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    let tx_id = Uuid::new_v4();
+    ctx.txs
+        .lock()
+        .await
+        .insert(tx_id, Arc::new(SqlxTxCtx::new(tx)));
+    Ok(json_result(&WfBeginResult {
+        tx_id,
+        contract: "TransactionOpen",
+    }))
+}
+
+#[elicit_tool(
+    plugin = "sqlx_workflow",
+    name = "sqlx_workflow__commit",
+    description = "Commit an open transaction. \
+                   Assumes: TransactionOpen (tx_id valid). \
+                   Establishes: TransactionCommitted — all changes are durable.",
+    emit = WfCommitEmit
+)]
+async fn wf_commit(ctx: Arc<SqlxTxCtx>, p: WfTxIdParams) -> Result<CallToolResult, ErrorData> {
+    let _ = p; // tx_id resolved by call_tool before dispatch
+    let tx = ctx
+        .tx
+        .lock()
+        .await
+        .take()
+        .ok_or_else(|| ErrorData::internal_error("transaction already consumed", None))?;
+    tx.commit()
+        .await
+        .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    Ok(CallToolResult::success(vec![Content::text(
+        r#"{"ok":true,"contract":"TransactionCommitted"}"#,
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "sqlx_workflow",
+    name = "sqlx_workflow__rollback",
+    description = "Roll back an open transaction. \
+                   Assumes: TransactionOpen (tx_id valid). \
+                   Establishes: TransactionRolledBack — all changes since begin are undone.",
+    emit = WfRollbackEmit
+)]
+async fn wf_rollback(
+    ctx: Arc<SqlxTxCtx>,
+    p: WfRollbackParams,
+) -> Result<CallToolResult, ErrorData> {
+    let _ = p; // tx_id resolved by call_tool before dispatch
+    let tx = ctx
+        .tx
+        .lock()
+        .await
+        .take()
+        .ok_or_else(|| ErrorData::internal_error("transaction already consumed", None))?;
+    tx.rollback()
+        .await
+        .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    Ok(CallToolResult::success(vec![Content::text(
+        r#"{"ok":true,"contract":"TransactionRolledBack"}"#,
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "sqlx_workflow",
+    name = "sqlx_workflow__tx_execute",
+    description = "Execute a non-returning SQL statement within an open transaction. \
+                   Assumes: TransactionOpen (tx_id valid). \
+                   Establishes: QueryExecuted.",
+    emit = WfTxExecuteEmit
+)]
+async fn wf_tx_execute(ctx: Arc<SqlxTxCtx>, p: WfTxSqlParams) -> Result<CallToolResult, ErrorData> {
+    let mut guard = ctx.tx.lock().await;
+    let tx = guard
+        .as_mut()
+        .ok_or_else(|| ErrorData::internal_error("transaction not available", None))?;
+    let result = if p.args.is_empty() {
+        sqlx::query(&p.sql).execute(&mut **tx).await
+    } else {
+        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
             .execute(&mut **tx)
             .await
     }
-    .map_err(|e| {
-        CallToolResult::error(vec![Content::text(format!(
-            "QueryExecuted not established: {e}"
-        ))])
-    })?;
-    let proof: Established<QueryExecuted> = Established::assert();
-    Ok((
-        QueryResultData {
-            rows_affected: result.rows_affected(),
-            last_insert_id: result.last_insert_id(),
-        },
-        proof,
-    ))
+    .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    let _proof: Established<QueryExecuted> = Established::assert();
+    Ok(json_result(&QueryResultData {
+        rows_affected: result.rows_affected(),
+        last_insert_id: result.last_insert_id(),
+    }))
 }
 
-/// Fetch all rows within a transaction.
-async fn tx_fetch_all_inner(
-    tx_id: Uuid,
-    sql: &str,
-    args: &[serde_json::Value],
-    txs: &TxRegistry,
-) -> Result<(Vec<RowData>, Established<RowsFetched>), CallToolResult> {
-    let mut guard = txs.lock().await;
-    let tx = guard.get_mut(&tx_id).ok_or_else(|| {
-        CallToolResult::error(vec![Content::text(
-            "RowsFetched not established: tx_id not found",
-        )])
-    })?;
-    let rows = if args.is_empty() {
-        sqlx::query(sql).fetch_all(&mut **tx).await
+#[elicit_tool(
+    plugin = "sqlx_workflow",
+    name = "sqlx_workflow__tx_fetch_all",
+    description = "SELECT all rows within an open transaction. \
+                   Assumes: TransactionOpen (tx_id valid). \
+                   Establishes: RowsFetched.",
+    emit = WfTxFetchAllEmit
+)]
+async fn wf_tx_fetch_all(
+    ctx: Arc<SqlxTxCtx>,
+    p: WfTxFetchAllParams,
+) -> Result<CallToolResult, ErrorData> {
+    let mut guard = ctx.tx.lock().await;
+    let tx = guard
+        .as_mut()
+        .ok_or_else(|| ErrorData::internal_error("transaction not available", None))?;
+    let rows = if p.args.is_empty() {
+        sqlx::query(&p.sql).fetch_all(&mut **tx).await
     } else {
-        sqlx::query_with(sql, any_args_from_json(args))
+        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
             .fetch_all(&mut **tx)
             .await
     }
-    .map_err(|e| {
-        CallToolResult::error(vec![Content::text(format!(
-            "RowsFetched not established: {e}"
-        ))])
-    })?;
+    .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    let _proof: Established<RowsFetched> = Established::assert();
     let data: Vec<RowData> = rows.iter().map(decode_any_row).collect();
-    let proof: Established<RowsFetched> = Established::assert();
-    Ok((data, proof))
+    Ok(json_result(&data))
 }
 
-/// Fetch first row within a transaction.
-async fn tx_fetch_one_inner(
-    tx_id: Uuid,
-    sql: &str,
-    args: &[serde_json::Value],
-    txs: &TxRegistry,
-) -> Result<(RowData, Established<RowsFetched>), CallToolResult> {
-    let mut guard = txs.lock().await;
-    let tx = guard.get_mut(&tx_id).ok_or_else(|| {
-        CallToolResult::error(vec![Content::text(
-            "RowsFetched not established: tx_id not found",
-        )])
-    })?;
-    let row = if args.is_empty() {
-        sqlx::query(sql).fetch_one(&mut **tx).await
+#[elicit_tool(
+    plugin = "sqlx_workflow",
+    name = "sqlx_workflow__tx_fetch_one",
+    description = "SELECT first row within an open transaction; errors if none found. \
+                   Assumes: TransactionOpen (tx_id valid); at least one row exists. \
+                   Establishes: RowsFetched.",
+    emit = WfTxFetchOneEmit
+)]
+async fn wf_tx_fetch_one(
+    ctx: Arc<SqlxTxCtx>,
+    p: WfTxFetchOneParams,
+) -> Result<CallToolResult, ErrorData> {
+    let mut guard = ctx.tx.lock().await;
+    let tx = guard
+        .as_mut()
+        .ok_or_else(|| ErrorData::internal_error("transaction not available", None))?;
+    let row = if p.args.is_empty() {
+        sqlx::query(&p.sql).fetch_one(&mut **tx).await
     } else {
-        sqlx::query_with(sql, any_args_from_json(args))
+        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
             .fetch_one(&mut **tx)
             .await
     }
-    .map_err(|e| {
-        CallToolResult::error(vec![Content::text(format!(
-            "RowsFetched not established: {e}"
-        ))])
-    })?;
-    let proof: Established<RowsFetched> = Established::assert();
-    Ok((decode_any_row(&row), proof))
+    .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    let _proof: Established<RowsFetched> = Established::assert();
+    Ok(json_result(&decode_any_row(&row)))
 }
 
-/// Fetch optional row within a transaction.
-async fn tx_fetch_optional_inner(
-    tx_id: Uuid,
-    sql: &str,
-    args: &[serde_json::Value],
-    txs: &TxRegistry,
-) -> Result<Option<RowData>, CallToolResult> {
-    let mut guard = txs.lock().await;
+#[elicit_tool(
+    plugin = "sqlx_workflow",
+    name = "sqlx_workflow__tx_fetch_optional",
+    description = "SELECT first row (or null) within an open transaction. \
+                   Assumes: TransactionOpen (tx_id valid).",
+    emit = WfTxFetchOptionalEmit
+)]
+async fn wf_tx_fetch_optional(
+    ctx: Arc<SqlxTxCtx>,
+    p: WfTxFetchOptionalParams,
+) -> Result<CallToolResult, ErrorData> {
+    let mut guard = ctx.tx.lock().await;
     let tx = guard
-        .get_mut(&tx_id)
-        .ok_or_else(|| CallToolResult::error(vec![Content::text("tx_id not found")]))?;
-    let maybe = if args.is_empty() {
-        sqlx::query(sql).fetch_optional(&mut **tx).await
+        .as_mut()
+        .ok_or_else(|| ErrorData::internal_error("transaction not available", None))?;
+    let maybe = if p.args.is_empty() {
+        sqlx::query(&p.sql).fetch_optional(&mut **tx).await
     } else {
-        sqlx::query_with(sql, any_args_from_json(args))
+        sqlx::query_with(&p.sql, any_args_from_json(&p.args))
             .fetch_optional(&mut **tx)
             .await
     }
-    .map_err(|e| {
-        CallToolResult::error(vec![Content::text(format!(
-            "tx_fetch_optional failed: {e}"
-        ))])
-    })?;
-    Ok(maybe.as_ref().map(decode_any_row))
+    .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    let data: Option<RowData> = maybe.as_ref().map(decode_any_row);
+    Ok(json_result(&data))
 }
 
-/// Commit a transaction.
-async fn commit_inner(
-    tx_id: Uuid,
-    txs: &TxRegistry,
-) -> Result<Established<TransactionCommitted>, CallToolResult> {
-    let tx = txs.lock().await.remove(&tx_id).ok_or_else(|| {
-        CallToolResult::error(vec![Content::text(
-            "TransactionCommitted not established: tx_id not found",
-        )])
-    })?;
-    tx.commit().await.map_err(|e| {
-        CallToolResult::error(vec![Content::text(format!(
-            "TransactionCommitted not established: {e}"
-        ))])
-    })?;
-    Ok(Established::assert())
+// ── Custom emit types ─────────────────────────────────────────────────────────
+//
+// Zero-sized types implementing `CustomEmit<ParamsType>`, co-located with their
+// tool functions.  Each is also registered in the global `EmitEntry` inventory
+// under its full `sqlx_workflow__*` name so that `emit_dispatch_crate` finds it
+// when the `emit` feature is not necessarily enabled in the consuming crate.
+
+/// Emit: `sqlx_workflow__connect` — create a pool.
+pub struct WfConnectEmit;
+impl CustomEmit<WfConnectParams> for WfConnectEmit {
+    fn emit_code(p: &WfConnectParams) -> TokenStream {
+        let url = p.database_url.as_str();
+        let max_conn = p.max_connections.unwrap_or(10);
+        quote! {
+            let pool = sqlx::any::AnyPoolOptions::new()
+                .max_connections(#max_conn)
+                .connect(#url)
+                .await?;
+        }
+    }
 }
 
-/// Roll back a transaction.
-async fn rollback_inner(
-    tx_id: Uuid,
-    txs: &TxRegistry,
-) -> Result<Established<TransactionRolledBack>, CallToolResult> {
-    let tx = txs.lock().await.remove(&tx_id).ok_or_else(|| {
-        CallToolResult::error(vec![Content::text(
-            "TransactionRolledBack not established: tx_id not found",
-        )])
-    })?;
-    tx.rollback().await.map_err(|e| {
-        CallToolResult::error(vec![Content::text(format!(
-            "TransactionRolledBack not established: {e}"
-        ))])
-    })?;
-    Ok(Established::assert())
+/// Emit: `sqlx_workflow__disconnect` — drop pool.
+pub struct WfDisconnectEmit;
+impl CustomEmit<WfPoolIdParams> for WfDisconnectEmit {
+    fn emit_code(_p: &WfPoolIdParams) -> TokenStream {
+        quote! { drop(pool); }
+    }
+}
+
+/// Emit: `sqlx_workflow__execute` — non-returning statement on pool.
+pub struct WfExecuteEmit;
+impl CustomEmit<WfPoolSqlParams> for WfExecuteEmit {
+    fn emit_code(p: &WfPoolSqlParams) -> TokenStream {
+        let sql = p.sql.as_str();
+        let binds = bind_chain(&p.args);
+        quote! {
+            pool.execute(sqlx::query(#sql) #binds).await?;
+        }
+    }
+}
+
+/// Emit: `sqlx_workflow__fetch_all` — SELECT all rows from pool.
+pub struct WfFetchAllEmit;
+impl CustomEmit<WfFetchAllParams> for WfFetchAllEmit {
+    fn emit_code(p: &WfFetchAllParams) -> TokenStream {
+        let sql = p.sql.as_str();
+        let binds = bind_chain(&p.args);
+        quote! {
+            let rows = sqlx::query(#sql) #binds .fetch_all(&pool).await?;
+        }
+    }
+}
+
+/// Emit: `sqlx_workflow__fetch_one` — SELECT first row from pool.
+pub struct WfFetchOneEmit;
+impl CustomEmit<WfFetchOneParams> for WfFetchOneEmit {
+    fn emit_code(p: &WfFetchOneParams) -> TokenStream {
+        let sql = p.sql.as_str();
+        let binds = bind_chain(&p.args);
+        quote! {
+            let row = sqlx::query(#sql) #binds .fetch_one(&pool).await?;
+        }
+    }
+}
+
+/// Emit: `sqlx_workflow__fetch_optional` — SELECT optional row from pool.
+pub struct WfFetchOptionalEmit;
+impl CustomEmit<WfFetchOptionalParams> for WfFetchOptionalEmit {
+    fn emit_code(p: &WfFetchOptionalParams) -> TokenStream {
+        let sql = p.sql.as_str();
+        let binds = bind_chain(&p.args);
+        quote! {
+            let row = sqlx::query(#sql) #binds .fetch_optional(&pool).await?;
+        }
+    }
+}
+
+/// Emit: `sqlx_workflow__begin` — begin transaction.
+pub struct WfBeginEmit;
+impl CustomEmit<WfBeginParams> for WfBeginEmit {
+    fn emit_code(_p: &WfBeginParams) -> TokenStream {
+        quote! {
+            let mut tx = pool.begin().await?;
+        }
+    }
+}
+
+/// Emit: `sqlx_workflow__commit` — commit transaction.
+pub struct WfCommitEmit;
+impl CustomEmit<WfTxIdParams> for WfCommitEmit {
+    fn emit_code(_p: &WfTxIdParams) -> TokenStream {
+        quote! { tx.commit().await?; }
+    }
+}
+
+/// Emit: `sqlx_workflow__rollback` — rollback transaction.
+pub struct WfRollbackEmit;
+impl CustomEmit<WfRollbackParams> for WfRollbackEmit {
+    fn emit_code(_p: &WfRollbackParams) -> TokenStream {
+        quote! { tx.rollback().await?; }
+    }
+}
+
+/// Emit: `sqlx_workflow__tx_execute` — non-returning statement in transaction.
+pub struct WfTxExecuteEmit;
+impl CustomEmit<WfTxSqlParams> for WfTxExecuteEmit {
+    fn emit_code(p: &WfTxSqlParams) -> TokenStream {
+        let sql = p.sql.as_str();
+        let binds = bind_chain(&p.args);
+        quote! {
+            tx.execute(sqlx::query(#sql) #binds).await?;
+        }
+    }
+}
+
+/// Emit: `sqlx_workflow__tx_fetch_all` — SELECT all rows in transaction.
+pub struct WfTxFetchAllEmit;
+impl CustomEmit<WfTxFetchAllParams> for WfTxFetchAllEmit {
+    fn emit_code(p: &WfTxFetchAllParams) -> TokenStream {
+        let sql = p.sql.as_str();
+        let binds = bind_chain(&p.args);
+        quote! {
+            let rows = sqlx::query(#sql) #binds .fetch_all(&mut **tx).await?;
+        }
+    }
+}
+
+/// Emit: `sqlx_workflow__tx_fetch_one` — SELECT first row in transaction.
+pub struct WfTxFetchOneEmit;
+impl CustomEmit<WfTxFetchOneParams> for WfTxFetchOneEmit {
+    fn emit_code(p: &WfTxFetchOneParams) -> TokenStream {
+        let sql = p.sql.as_str();
+        let binds = bind_chain(&p.args);
+        quote! {
+            let row = sqlx::query(#sql) #binds .fetch_one(&mut **tx).await?;
+        }
+    }
+}
+
+/// Emit: `sqlx_workflow__tx_fetch_optional` — SELECT optional row in transaction.
+pub struct WfTxFetchOptionalEmit;
+impl CustomEmit<WfTxFetchOptionalParams> for WfTxFetchOptionalEmit {
+    fn emit_code(p: &WfTxFetchOptionalParams) -> TokenStream {
+        let sql = p.sql.as_str();
+        let binds = bind_chain(&p.args);
+        quote! {
+            let row = sqlx::query(#sql) #binds .fetch_optional(&mut **tx).await?;
+        }
+    }
+}
+
+// ── Inventory emit entries (full names for emit_dispatch_crate compatibility) ──
+//
+// These entries are registered WITHOUT a feature gate so they are always present
+// when `elicit_sqlx` is compiled, matching the tool names expected by
+// `emit_dispatch_crate("sqlx_workflow__*", "elicit_sqlx", ...)`.
+
+use elicitation::emit_code::{CrateDep, EmitCode};
+
+const SQLX_DEP: CrateDep = CrateDep {
+    name: "sqlx",
+    version: "0.8",
+    features: &["runtime-tokio", "any"],
+};
+
+struct WfConnectEmitEntry(WfConnectParams);
+impl EmitCode for WfConnectEmitEntry {
+    fn emit_code(&self) -> TokenStream {
+        WfConnectEmit::emit_code(&self.0)
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![SQLX_DEP]
+    }
+}
+
+struct WfDisconnectEmitEntry;
+impl EmitCode for WfDisconnectEmitEntry {
+    fn emit_code(&self) -> TokenStream {
+        quote! { drop(pool); }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![]
+    }
+}
+
+struct WfExecuteEmitEntry(WfPoolSqlParams);
+impl EmitCode for WfExecuteEmitEntry {
+    fn emit_code(&self) -> TokenStream {
+        WfExecuteEmit::emit_code(&self.0)
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![SQLX_DEP]
+    }
+}
+
+struct WfFetchAllEmitEntry(WfPoolSqlParams);
+impl EmitCode for WfFetchAllEmitEntry {
+    fn emit_code(&self) -> TokenStream {
+        let sql = self.0.sql.as_str();
+        let binds = bind_chain(&self.0.args);
+        quote! { let rows = sqlx::query(#sql) #binds .fetch_all(&pool).await?; }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![SQLX_DEP]
+    }
+}
+
+struct WfFetchOneEmitEntry(WfPoolSqlParams);
+impl EmitCode for WfFetchOneEmitEntry {
+    fn emit_code(&self) -> TokenStream {
+        let sql = self.0.sql.as_str();
+        let binds = bind_chain(&self.0.args);
+        quote! { let row = sqlx::query(#sql) #binds .fetch_one(&pool).await?; }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![SQLX_DEP]
+    }
+}
+
+struct WfFetchOptionalEmitEntry(WfPoolSqlParams);
+impl EmitCode for WfFetchOptionalEmitEntry {
+    fn emit_code(&self) -> TokenStream {
+        let sql = self.0.sql.as_str();
+        let binds = bind_chain(&self.0.args);
+        quote! { let row = sqlx::query(#sql) #binds .fetch_optional(&pool).await?; }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![SQLX_DEP]
+    }
+}
+
+struct WfBeginEmitEntry;
+impl EmitCode for WfBeginEmitEntry {
+    fn emit_code(&self) -> TokenStream {
+        quote! { let mut tx = pool.begin().await?; }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![SQLX_DEP]
+    }
+}
+
+struct WfCommitEmitEntry;
+impl EmitCode for WfCommitEmitEntry {
+    fn emit_code(&self) -> TokenStream {
+        quote! { tx.commit().await?; }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![SQLX_DEP]
+    }
+}
+
+struct WfRollbackEmitEntry;
+impl EmitCode for WfRollbackEmitEntry {
+    fn emit_code(&self) -> TokenStream {
+        quote! { tx.rollback().await?; }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![]
+    }
+}
+
+struct WfTxExecuteEmitEntry(WfTxSqlParams);
+impl EmitCode for WfTxExecuteEmitEntry {
+    fn emit_code(&self) -> TokenStream {
+        WfTxExecuteEmit::emit_code(&self.0)
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![SQLX_DEP]
+    }
+}
+
+struct WfTxFetchAllEmitEntry(WfTxSqlParams);
+impl EmitCode for WfTxFetchAllEmitEntry {
+    fn emit_code(&self) -> TokenStream {
+        let sql = self.0.sql.as_str();
+        let binds = bind_chain(&self.0.args);
+        quote! { let rows = sqlx::query(#sql) #binds .fetch_all(&mut **tx).await?; }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![SQLX_DEP]
+    }
+}
+
+struct WfTxFetchOneEmitEntry(WfTxSqlParams);
+impl EmitCode for WfTxFetchOneEmitEntry {
+    fn emit_code(&self) -> TokenStream {
+        let sql = self.0.sql.as_str();
+        let binds = bind_chain(&self.0.args);
+        quote! { let row = sqlx::query(#sql) #binds .fetch_one(&mut **tx).await?; }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![SQLX_DEP]
+    }
+}
+
+struct WfTxFetchOptionalEmitEntry(WfTxSqlParams);
+impl EmitCode for WfTxFetchOptionalEmitEntry {
+    fn emit_code(&self) -> TokenStream {
+        let sql = self.0.sql.as_str();
+        let binds = bind_chain(&self.0.args);
+        quote! { let row = sqlx::query(#sql) #binds .fetch_optional(&mut **tx).await?; }
+    }
+    fn crate_deps(&self) -> Vec<CrateDep> {
+        vec![SQLX_DEP]
+    }
+}
+
+inventory::submit! {
+    elicitation::emit_code::EmitEntry {
+        tool: "sqlx_workflow__connect",
+        crate_name: "elicit_sqlx",
+        constructor: |v| {
+            serde_json::from_value::<WfConnectParams>(v)
+                .map(|p| Box::new(WfConnectEmitEntry(p)) as Box<dyn EmitCode>)
+                .map_err(|e| e.to_string())
+        },
+    }
+}
+
+inventory::submit! {
+    elicitation::emit_code::EmitEntry {
+        tool: "sqlx_workflow__disconnect",
+        crate_name: "elicit_sqlx",
+        constructor: |_v| Ok(Box::new(WfDisconnectEmitEntry) as Box<dyn EmitCode>),
+    }
+}
+
+inventory::submit! {
+    elicitation::emit_code::EmitEntry {
+        tool: "sqlx_workflow__execute",
+        crate_name: "elicit_sqlx",
+        constructor: |v| {
+            serde_json::from_value::<WfPoolSqlParams>(v)
+                .map(|p| Box::new(WfExecuteEmitEntry(p)) as Box<dyn EmitCode>)
+                .map_err(|e| e.to_string())
+        },
+    }
+}
+
+inventory::submit! {
+    elicitation::emit_code::EmitEntry {
+        tool: "sqlx_workflow__fetch_all",
+        crate_name: "elicit_sqlx",
+        constructor: |v| {
+            serde_json::from_value::<WfPoolSqlParams>(v)
+                .map(|p| Box::new(WfFetchAllEmitEntry(p)) as Box<dyn EmitCode>)
+                .map_err(|e| e.to_string())
+        },
+    }
+}
+
+inventory::submit! {
+    elicitation::emit_code::EmitEntry {
+        tool: "sqlx_workflow__fetch_one",
+        crate_name: "elicit_sqlx",
+        constructor: |v| {
+            serde_json::from_value::<WfPoolSqlParams>(v)
+                .map(|p| Box::new(WfFetchOneEmitEntry(p)) as Box<dyn EmitCode>)
+                .map_err(|e| e.to_string())
+        },
+    }
+}
+
+inventory::submit! {
+    elicitation::emit_code::EmitEntry {
+        tool: "sqlx_workflow__fetch_optional",
+        crate_name: "elicit_sqlx",
+        constructor: |v| {
+            serde_json::from_value::<WfPoolSqlParams>(v)
+                .map(|p| Box::new(WfFetchOptionalEmitEntry(p)) as Box<dyn EmitCode>)
+                .map_err(|e| e.to_string())
+        },
+    }
+}
+
+inventory::submit! {
+    elicitation::emit_code::EmitEntry {
+        tool: "sqlx_workflow__begin",
+        crate_name: "elicit_sqlx",
+        constructor: |_v| Ok(Box::new(WfBeginEmitEntry) as Box<dyn EmitCode>),
+    }
+}
+
+inventory::submit! {
+    elicitation::emit_code::EmitEntry {
+        tool: "sqlx_workflow__commit",
+        crate_name: "elicit_sqlx",
+        constructor: |_v| Ok(Box::new(WfCommitEmitEntry) as Box<dyn EmitCode>),
+    }
+}
+
+inventory::submit! {
+    elicitation::emit_code::EmitEntry {
+        tool: "sqlx_workflow__rollback",
+        crate_name: "elicit_sqlx",
+        constructor: |_v| Ok(Box::new(WfRollbackEmitEntry) as Box<dyn EmitCode>),
+    }
+}
+
+inventory::submit! {
+    elicitation::emit_code::EmitEntry {
+        tool: "sqlx_workflow__tx_execute",
+        crate_name: "elicit_sqlx",
+        constructor: |v| {
+            serde_json::from_value::<WfTxSqlParams>(v)
+                .map(|p| Box::new(WfTxExecuteEmitEntry(p)) as Box<dyn EmitCode>)
+                .map_err(|e| e.to_string())
+        },
+    }
+}
+
+inventory::submit! {
+    elicitation::emit_code::EmitEntry {
+        tool: "sqlx_workflow__tx_fetch_all",
+        crate_name: "elicit_sqlx",
+        constructor: |v| {
+            serde_json::from_value::<WfTxSqlParams>(v)
+                .map(|p| Box::new(WfTxFetchAllEmitEntry(p)) as Box<dyn EmitCode>)
+                .map_err(|e| e.to_string())
+        },
+    }
+}
+
+inventory::submit! {
+    elicitation::emit_code::EmitEntry {
+        tool: "sqlx_workflow__tx_fetch_one",
+        crate_name: "elicit_sqlx",
+        constructor: |v| {
+            serde_json::from_value::<WfTxSqlParams>(v)
+                .map(|p| Box::new(WfTxFetchOneEmitEntry(p)) as Box<dyn EmitCode>)
+                .map_err(|e| e.to_string())
+        },
+    }
+}
+
+inventory::submit! {
+    elicitation::emit_code::EmitEntry {
+        tool: "sqlx_workflow__tx_fetch_optional",
+        crate_name: "elicit_sqlx",
+        constructor: |v| {
+            serde_json::from_value::<WfTxSqlParams>(v)
+                .map(|p| Box::new(WfTxFetchOptionalEmitEntry(p)) as Box<dyn EmitCode>)
+                .map_err(|e| e.to_string())
+        },
+    }
 }
 
 // ── Plugin struct ─────────────────────────────────────────────────────────────
@@ -627,18 +1224,13 @@ async fn rollback_inner(
 /// Every tool documents the propositions it establishes.  Internal helpers
 /// return `Established<P>` proof markers that compile away to nothing but
 /// machine-check the correctness of the implementation.
-pub struct SqlxWorkflowPlugin {
-    pools: PoolRegistry,
-    txs: TxRegistry,
-}
+pub struct SqlxWorkflowPlugin(Arc<SqlxCtx>);
 
 impl SqlxWorkflowPlugin {
     /// Create a new plugin with no open pools or transactions.
     pub fn new() -> Self {
-        Self {
-            pools: Arc::new(Mutex::new(HashMap::new())),
-            txs: Arc::new(Mutex::new(HashMap::new())),
-        }
+        sqlx::any::install_default_drivers();
+        Self(Arc::new(SqlxCtx::new()))
     }
 
     /// Open a new connection pool.  Returns `(pool_id, Established<DbConnected>)`.
@@ -652,14 +1244,20 @@ impl SqlxWorkflowPlugin {
         url: &str,
         max_connections: Option<u32>,
     ) -> Result<(Uuid, Established<DbConnected>), String> {
-        connect_inner(url, max_connections, &self.pools)
-            .await
-            .map_err(tool_result_to_string)
+        let mut opts = sqlx::any::AnyPoolOptions::new();
+        if let Some(n) = max_connections {
+            opts = opts.max_connections(n);
+        }
+        let pool = opts.connect(url).await.map_err(|e| e.to_string())?;
+        let pool_id = Uuid::new_v4();
+        self.0.pools.lock().await.insert(pool_id, pool);
+        Ok((pool_id, Established::assert()))
     }
 
     /// Close and remove a pool.
     pub async fn disconnect(&self, pool_id: Uuid) -> Result<(), String> {
         let pool = self
+            .0
             .pools
             .lock()
             .await
@@ -676,9 +1274,29 @@ impl SqlxWorkflowPlugin {
         sql: &str,
         args: &[serde_json::Value],
     ) -> Result<(QueryResultData, Established<QueryExecuted>), String> {
-        execute_inner(pool_id, sql, args, &self.pools)
+        let pool = self
+            .0
+            .pools
+            .lock()
             .await
-            .map_err(tool_result_to_string)
+            .get(&pool_id)
+            .cloned()
+            .ok_or_else(|| format!("pool_id not found: {pool_id}"))?;
+        let result = if args.is_empty() {
+            sqlx::query(sql).execute(&pool).await
+        } else {
+            sqlx::query_with(sql, any_args_from_json(args))
+                .execute(&pool)
+                .await
+        }
+        .map_err(|e| e.to_string())?;
+        Ok((
+            QueryResultData {
+                rows_affected: result.rows_affected(),
+                last_insert_id: result.last_insert_id(),
+            },
+            Established::assert(),
+        ))
     }
 
     /// Execute a SELECT and return all rows as [`RowData`].
@@ -688,9 +1306,26 @@ impl SqlxWorkflowPlugin {
         sql: &str,
         args: &[serde_json::Value],
     ) -> Result<(Vec<RowData>, Established<RowsFetched>), String> {
-        fetch_all_inner(pool_id, sql, args, &self.pools)
+        let pool = self
+            .0
+            .pools
+            .lock()
             .await
-            .map_err(tool_result_to_string)
+            .get(&pool_id)
+            .cloned()
+            .ok_or_else(|| format!("pool_id not found: {pool_id}"))?;
+        let rows = if args.is_empty() {
+            sqlx::query(sql).fetch_all(&pool).await
+        } else {
+            sqlx::query_with(sql, any_args_from_json(args))
+                .fetch_all(&pool)
+                .await
+        }
+        .map_err(|e| e.to_string())?;
+        Ok((
+            rows.iter().map(decode_any_row).collect(),
+            Established::assert(),
+        ))
     }
 
     /// Execute a SELECT and return the first row as [`RowData`].
@@ -700,9 +1335,23 @@ impl SqlxWorkflowPlugin {
         sql: &str,
         args: &[serde_json::Value],
     ) -> Result<(RowData, Established<RowsFetched>), String> {
-        fetch_one_inner(pool_id, sql, args, &self.pools)
+        let pool = self
+            .0
+            .pools
+            .lock()
             .await
-            .map_err(tool_result_to_string)
+            .get(&pool_id)
+            .cloned()
+            .ok_or_else(|| format!("pool_id not found: {pool_id}"))?;
+        let row = if args.is_empty() {
+            sqlx::query(sql).fetch_one(&pool).await
+        } else {
+            sqlx::query_with(sql, any_args_from_json(args))
+                .fetch_one(&pool)
+                .await
+        }
+        .map_err(|e| e.to_string())?;
+        Ok((decode_any_row(&row), Established::assert()))
     }
 
     /// Execute a SELECT and return the first row or `None`.
@@ -712,9 +1361,23 @@ impl SqlxWorkflowPlugin {
         sql: &str,
         args: &[serde_json::Value],
     ) -> Result<Option<RowData>, String> {
-        fetch_optional_inner(pool_id, sql, args, &self.pools)
+        let pool = self
+            .0
+            .pools
+            .lock()
             .await
-            .map_err(tool_result_to_string)
+            .get(&pool_id)
+            .cloned()
+            .ok_or_else(|| format!("pool_id not found: {pool_id}"))?;
+        let maybe = if args.is_empty() {
+            sqlx::query(sql).fetch_optional(&pool).await
+        } else {
+            sqlx::query_with(sql, any_args_from_json(args))
+                .fetch_optional(&pool)
+                .await
+        }
+        .map_err(|e| e.to_string())?;
+        Ok(maybe.as_ref().map(decode_any_row))
     }
 
     /// Begin a transaction.  Returns `(tx_id, Established<TransactionOpen>)`.
@@ -722,16 +1385,41 @@ impl SqlxWorkflowPlugin {
         &self,
         pool_id: Uuid,
     ) -> Result<(Uuid, Established<TransactionOpen>), String> {
-        begin_inner(pool_id, &self.pools, &self.txs)
+        let pool = self
+            .0
+            .pools
+            .lock()
             .await
-            .map_err(tool_result_to_string)
+            .get(&pool_id)
+            .cloned()
+            .ok_or_else(|| format!("pool_id not found: {pool_id}"))?;
+        let tx = pool.begin().await.map_err(|e| e.to_string())?;
+        let tx_id = Uuid::new_v4();
+        self.0
+            .txs
+            .lock()
+            .await
+            .insert(tx_id, Arc::new(SqlxTxCtx::new(tx)));
+        Ok((tx_id, Established::assert()))
     }
 
     /// Commit a transaction.
     pub async fn commit(&self, tx_id: Uuid) -> Result<Established<TransactionCommitted>, String> {
-        commit_inner(tx_id, &self.txs)
+        let tx_arc = self
+            .0
+            .txs
+            .lock()
             .await
-            .map_err(tool_result_to_string)
+            .remove(&tx_id)
+            .ok_or_else(|| format!("tx_id not found: {tx_id}"))?;
+        let tx = tx_arc
+            .tx
+            .lock()
+            .await
+            .take()
+            .ok_or_else(|| "transaction already consumed".to_string())?;
+        tx.commit().await.map_err(|e| e.to_string())?;
+        Ok(Established::assert())
     }
 
     /// Roll back a transaction.
@@ -739,9 +1427,21 @@ impl SqlxWorkflowPlugin {
         &self,
         tx_id: Uuid,
     ) -> Result<Established<TransactionRolledBack>, String> {
-        rollback_inner(tx_id, &self.txs)
+        let tx_arc = self
+            .0
+            .txs
+            .lock()
             .await
-            .map_err(tool_result_to_string)
+            .remove(&tx_id)
+            .ok_or_else(|| format!("tx_id not found: {tx_id}"))?;
+        let tx = tx_arc
+            .tx
+            .lock()
+            .await
+            .take()
+            .ok_or_else(|| "transaction already consumed".to_string())?;
+        tx.rollback().await.map_err(|e| e.to_string())?;
+        Ok(Established::assert())
     }
 
     /// Execute SQL within a transaction.
@@ -751,9 +1451,33 @@ impl SqlxWorkflowPlugin {
         sql: &str,
         args: &[serde_json::Value],
     ) -> Result<(QueryResultData, Established<QueryExecuted>), String> {
-        tx_execute_inner(tx_id, sql, args, &self.txs)
+        let tx_arc = self
+            .0
+            .txs
+            .lock()
             .await
-            .map_err(tool_result_to_string)
+            .get(&tx_id)
+            .cloned()
+            .ok_or_else(|| format!("tx_id not found: {tx_id}"))?;
+        let mut guard = tx_arc.tx.lock().await;
+        let tx = guard
+            .as_mut()
+            .ok_or_else(|| "transaction not available".to_string())?;
+        let result = if args.is_empty() {
+            sqlx::query(sql).execute(&mut **tx).await
+        } else {
+            sqlx::query_with(sql, any_args_from_json(args))
+                .execute(&mut **tx)
+                .await
+        }
+        .map_err(|e| e.to_string())?;
+        Ok((
+            QueryResultData {
+                rows_affected: result.rows_affected(),
+                last_insert_id: result.last_insert_id(),
+            },
+            Established::assert(),
+        ))
     }
 
     /// SELECT all rows within a transaction.
@@ -763,9 +1487,30 @@ impl SqlxWorkflowPlugin {
         sql: &str,
         args: &[serde_json::Value],
     ) -> Result<(Vec<RowData>, Established<RowsFetched>), String> {
-        tx_fetch_all_inner(tx_id, sql, args, &self.txs)
+        let tx_arc = self
+            .0
+            .txs
+            .lock()
             .await
-            .map_err(tool_result_to_string)
+            .get(&tx_id)
+            .cloned()
+            .ok_or_else(|| format!("tx_id not found: {tx_id}"))?;
+        let mut guard = tx_arc.tx.lock().await;
+        let tx = guard
+            .as_mut()
+            .ok_or_else(|| "transaction not available".to_string())?;
+        let rows = if args.is_empty() {
+            sqlx::query(sql).fetch_all(&mut **tx).await
+        } else {
+            sqlx::query_with(sql, any_args_from_json(args))
+                .fetch_all(&mut **tx)
+                .await
+        }
+        .map_err(|e| e.to_string())?;
+        Ok((
+            rows.iter().map(decode_any_row).collect(),
+            Established::assert(),
+        ))
     }
 
     /// SELECT first row within a transaction.
@@ -775,9 +1520,27 @@ impl SqlxWorkflowPlugin {
         sql: &str,
         args: &[serde_json::Value],
     ) -> Result<(RowData, Established<RowsFetched>), String> {
-        tx_fetch_one_inner(tx_id, sql, args, &self.txs)
+        let tx_arc = self
+            .0
+            .txs
+            .lock()
             .await
-            .map_err(tool_result_to_string)
+            .get(&tx_id)
+            .cloned()
+            .ok_or_else(|| format!("tx_id not found: {tx_id}"))?;
+        let mut guard = tx_arc.tx.lock().await;
+        let tx = guard
+            .as_mut()
+            .ok_or_else(|| "transaction not available".to_string())?;
+        let row = if args.is_empty() {
+            sqlx::query(sql).fetch_one(&mut **tx).await
+        } else {
+            sqlx::query_with(sql, any_args_from_json(args))
+                .fetch_one(&mut **tx)
+                .await
+        }
+        .map_err(|e| e.to_string())?;
+        Ok((decode_any_row(&row), Established::assert()))
     }
 
     /// SELECT optional first row within a transaction.
@@ -787,19 +1550,28 @@ impl SqlxWorkflowPlugin {
         sql: &str,
         args: &[serde_json::Value],
     ) -> Result<Option<RowData>, String> {
-        tx_fetch_optional_inner(tx_id, sql, args, &self.txs)
+        let tx_arc = self
+            .0
+            .txs
+            .lock()
             .await
-            .map_err(tool_result_to_string)
+            .get(&tx_id)
+            .cloned()
+            .ok_or_else(|| format!("tx_id not found: {tx_id}"))?;
+        let mut guard = tx_arc.tx.lock().await;
+        let tx = guard
+            .as_mut()
+            .ok_or_else(|| "transaction not available".to_string())?;
+        let maybe = if args.is_empty() {
+            sqlx::query(sql).fetch_optional(&mut **tx).await
+        } else {
+            sqlx::query_with(sql, any_args_from_json(args))
+                .fetch_optional(&mut **tx)
+                .await
+        }
+        .map_err(|e| e.to_string())?;
+        Ok(maybe.as_ref().map(decode_any_row))
     }
-}
-
-/// Extract a text message from a `CallToolResult` error variant.
-fn tool_result_to_string(r: CallToolResult) -> String {
-    r.content
-        .first()
-        .and_then(|c| c.as_text())
-        .map(|t| t.text.clone())
-        .unwrap_or_else(|| "tool error".to_string())
 }
 
 impl Default for SqlxWorkflowPlugin {
@@ -814,243 +1586,93 @@ impl elicitation::ElicitPlugin for SqlxWorkflowPlugin {
     }
 
     fn list_tools(&self) -> Vec<Tool> {
-        fn tool(name: &'static str, desc: &'static str) -> Tool {
-            Tool::new(name, desc, Arc::new(Default::default()))
-        }
-        vec![
-            tool(
-                "sqlx_workflow__connect",
-                "Connect to any SQL database (Postgres, SQLite, MySQL) via URL. \
-                 Assumes: URL is well-formed and the database is reachable. \
-                 Establishes: DbConnected — pool stored by returned pool_id.",
-            ),
-            tool(
-                "sqlx_workflow__disconnect",
-                "Close and remove a named pool. \
-                 Assumes: pool_id was returned by sqlx_workflow__connect.",
-            ),
-            tool(
-                "sqlx_workflow__execute",
-                "Execute a non-returning SQL statement (INSERT, UPDATE, DELETE, DDL). \
-                 Assumes: DbConnected (pool_id valid). \
-                 Establishes: QueryExecuted — rows_affected is accurate.",
-            ),
-            tool(
-                "sqlx_workflow__fetch_all",
-                "Execute a SELECT and return all rows. \
-                 Assumes: DbConnected (pool_id valid). \
-                 Establishes: RowsFetched — returned Vec contains every matching row.",
-            ),
-            tool(
-                "sqlx_workflow__fetch_one",
-                "Execute a SELECT and return exactly the first row; errors if none found. \
-                 Assumes: DbConnected (pool_id valid); at least one row exists. \
-                 Establishes: RowsFetched.",
-            ),
-            tool(
-                "sqlx_workflow__fetch_optional",
-                "Execute a SELECT and return the first row or null. \
-                 Assumes: DbConnected (pool_id valid).",
-            ),
-            tool(
-                "sqlx_workflow__begin",
-                "Start a database transaction. \
-                 Assumes: DbConnected (pool_id valid). \
-                 Establishes: TransactionOpen — tx stored by returned tx_id.",
-            ),
-            tool(
-                "sqlx_workflow__commit",
-                "Commit an open transaction. \
-                 Assumes: TransactionOpen (tx_id valid). \
-                 Establishes: TransactionCommitted — all changes are durable.",
-            ),
-            tool(
-                "sqlx_workflow__rollback",
-                "Roll back an open transaction. \
-                 Assumes: TransactionOpen (tx_id valid). \
-                 Establishes: TransactionRolledBack — all changes since begin are undone.",
-            ),
-            tool(
-                "sqlx_workflow__tx_execute",
-                "Execute a non-returning SQL statement within an open transaction. \
-                 Assumes: TransactionOpen (tx_id valid). \
-                 Establishes: QueryExecuted.",
-            ),
-            tool(
-                "sqlx_workflow__tx_fetch_all",
-                "SELECT all rows within an open transaction. \
-                 Assumes: TransactionOpen (tx_id valid). \
-                 Establishes: RowsFetched.",
-            ),
-            tool(
-                "sqlx_workflow__tx_fetch_one",
-                "SELECT first row within an open transaction; errors if none found. \
-                 Assumes: TransactionOpen (tx_id valid); at least one row exists. \
-                 Establishes: RowsFetched.",
-            ),
-            tool(
-                "sqlx_workflow__tx_fetch_optional",
-                "SELECT first row (or null) within an open transaction. \
-                 Assumes: TransactionOpen (tx_id valid).",
-            ),
-        ]
+        elicitation::inventory::iter::<elicitation::PluginToolRegistration>()
+            .filter(|r| r.plugin == "sqlx_workflow")
+            .map(|r| (r.constructor)().as_tool())
+            .collect()
     }
 
-    #[instrument(skip(self, _ctx), fields(tool = %params.name))]
+    #[tracing::instrument(skip(self, _ctx), fields(tool = %params.name))]
     fn call_tool<'a>(
         &'a self,
         params: CallToolRequestParams,
         _ctx: RequestContext<rmcp::RoleServer>,
     ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
+        let plugin_ctx = self.0.clone();
         Box::pin(async move {
-            let verb = params.name.strip_prefix("sqlx_workflow__").ok_or_else(|| {
-                ErrorData::invalid_params(format!("unknown tool: {}", params.name), None)
-            })?;
+            let name = params.name.as_ref();
+            // Accept both "sqlx_workflow__connect" and bare "connect"
+            let bare = name.strip_prefix("sqlx_workflow__").unwrap_or(name);
 
-            match verb {
-                // ── Pool management ───────────────────────────────────────────
-                "connect" => {
-                    let p: WfConnectParams = parse_args(&params)?;
-                    let (pool_id, _proof) =
-                        connect_inner(&p.database_url, p.max_connections, &self.pools)
-                            .await
-                            .map_err(err_from_result)?;
-                    Ok(json_result(&WfConnectResult {
-                        pool_id,
-                        contract: "DbConnected",
-                    }))
+            // Resolve the descriptor by name (full or bare) from the inventory.
+            let full_name = if name.starts_with("sqlx_workflow__") {
+                name.to_string()
+            } else {
+                format!("sqlx_workflow__{name}")
+            };
+            let descriptor = elicitation::inventory::iter::<elicitation::PluginToolRegistration>()
+                .filter(|r| r.plugin == "sqlx_workflow")
+                .find(|r| r.name == full_name)
+                .map(|r| (r.constructor)())
+                .ok_or_else(|| ErrorData::invalid_params(format!("unknown tool: {name}"), None))?;
+
+            // Resolve per-call context based on which tool group.
+            let tool_ctx: Arc<dyn std::any::Any + Send + Sync> = match bare {
+                "connect" | "disconnect" | "begin" => {
+                    plugin_ctx.clone() as Arc<dyn std::any::Any + Send + Sync>
                 }
-
-                "disconnect" => {
+                "execute" | "fetch_all" | "fetch_one" | "fetch_optional" => {
                     let p: WfPoolIdParams = parse_args(&params)?;
-                    let pool = self
+                    let pool = plugin_ctx
                         .pools
                         .lock()
                         .await
-                        .remove(&p.pool_id)
-                        .ok_or_else(|| ErrorData::invalid_params("pool_id not found", None))?;
-                    pool.close().await;
-                    Ok(CallToolResult::success(vec![Content::text(
-                        r#"{"ok":true}"#,
-                    )]))
+                        .get(&p.pool_id)
+                        .cloned()
+                        .ok_or_else(|| {
+                            ErrorData::invalid_params(
+                                format!("pool_id not found: {}", p.pool_id),
+                                None,
+                            )
+                        })?;
+                    Arc::new(SqlxPoolCtx { pool }) as Arc<dyn std::any::Any + Send + Sync>
                 }
-
-                // ── Direct pool queries ───────────────────────────────────────
-                "execute" => {
-                    let p: WfPoolSqlParams = parse_args(&params)?;
-                    let (result, _proof) = execute_inner(p.pool_id, &p.sql, &p.args, &self.pools)
-                        .await
-                        .map_err(err_from_result)?;
-                    Ok(json_result(&result))
-                }
-
-                "fetch_all" => {
-                    let p: WfPoolSqlParams = parse_args(&params)?;
-                    let (rows, _proof) = fetch_all_inner(p.pool_id, &p.sql, &p.args, &self.pools)
-                        .await
-                        .map_err(err_from_result)?;
-                    Ok(json_result(&rows))
-                }
-
-                "fetch_one" => {
-                    let p: WfPoolSqlParams = parse_args(&params)?;
-                    let (row, _proof) = fetch_one_inner(p.pool_id, &p.sql, &p.args, &self.pools)
-                        .await
-                        .map_err(err_from_result)?;
-                    Ok(json_result(&row))
-                }
-
-                "fetch_optional" => {
-                    let p: WfPoolSqlParams = parse_args(&params)?;
-                    let maybe = fetch_optional_inner(p.pool_id, &p.sql, &p.args, &self.pools)
-                        .await
-                        .map_err(err_from_result)?;
-                    Ok(json_result(&maybe))
-                }
-
-                // ── Transactions ──────────────────────────────────────────────
-                "begin" => {
-                    let p: WfBeginParams = parse_args(&params)?;
-                    let (tx_id, _proof) = begin_inner(p.pool_id, &self.pools, &self.txs)
-                        .await
-                        .map_err(err_from_result)?;
-                    Ok(json_result(&WfBeginResult {
-                        tx_id,
-                        contract: "TransactionOpen",
-                    }))
-                }
-
-                "commit" => {
+                "commit" | "rollback" => {
                     let p: WfTxIdParams = parse_args(&params)?;
-                    let _proof = commit_inner(p.tx_id, &self.txs)
+                    let tx_arc = plugin_ctx
+                        .txs
+                        .lock()
                         .await
-                        .map_err(err_from_result)?;
-                    Ok(CallToolResult::success(vec![Content::text(
-                        r#"{"ok":true,"contract":"TransactionCommitted"}"#,
-                    )]))
+                        .remove(&p.tx_id)
+                        .ok_or_else(|| {
+                            ErrorData::invalid_params(format!("tx_id not found: {}", p.tx_id), None)
+                        })?;
+                    tx_arc as Arc<dyn std::any::Any + Send + Sync>
                 }
-
-                "rollback" => {
+                "tx_execute" | "tx_fetch_all" | "tx_fetch_one" | "tx_fetch_optional" => {
                     let p: WfTxIdParams = parse_args(&params)?;
-                    let _proof = rollback_inner(p.tx_id, &self.txs)
+                    let tx_arc = plugin_ctx
+                        .txs
+                        .lock()
                         .await
-                        .map_err(err_from_result)?;
-                    Ok(CallToolResult::success(vec![Content::text(
-                        r#"{"ok":true,"contract":"TransactionRolledBack"}"#,
-                    )]))
+                        .get(&p.tx_id)
+                        .cloned()
+                        .ok_or_else(|| {
+                            ErrorData::invalid_params(format!("tx_id not found: {}", p.tx_id), None)
+                        })?;
+                    tx_arc as Arc<dyn std::any::Any + Send + Sync>
                 }
-
-                // ── Transaction queries ───────────────────────────────────────
-                "tx_execute" => {
-                    let p: WfTxSqlParams = parse_args(&params)?;
-                    let (result, _proof) = tx_execute_inner(p.tx_id, &p.sql, &p.args, &self.txs)
-                        .await
-                        .map_err(err_from_result)?;
-                    Ok(json_result(&result))
+                _ => {
+                    return Err(ErrorData::invalid_params(
+                        format!("unknown sqlx_workflow tool: {bare}"),
+                        None,
+                    ));
                 }
+            };
 
-                "tx_fetch_all" => {
-                    let p: WfTxSqlParams = parse_args(&params)?;
-                    let (rows, _proof) = tx_fetch_all_inner(p.tx_id, &p.sql, &p.args, &self.txs)
-                        .await
-                        .map_err(err_from_result)?;
-                    Ok(json_result(&rows))
-                }
-
-                "tx_fetch_one" => {
-                    let p: WfTxSqlParams = parse_args(&params)?;
-                    let (row, _proof) = tx_fetch_one_inner(p.tx_id, &p.sql, &p.args, &self.txs)
-                        .await
-                        .map_err(err_from_result)?;
-                    Ok(json_result(&row))
-                }
-
-                "tx_fetch_optional" => {
-                    let p: WfTxSqlParams = parse_args(&params)?;
-                    let maybe = tx_fetch_optional_inner(p.tx_id, &p.sql, &p.args, &self.txs)
-                        .await
-                        .map_err(err_from_result)?;
-                    Ok(json_result(&maybe))
-                }
-
-                other => Err(ErrorData::invalid_params(
-                    format!("unknown sqlx_workflow tool: {other}"),
-                    None,
-                )),
-            }
+            descriptor.dispatch(tool_ctx, params).await
         })
     }
-}
-
-/// Convert a `CallToolResult` (error variant) into `ErrorData` for propagation.
-fn err_from_result(r: CallToolResult) -> ErrorData {
-    let msg = r
-        .content
-        .first()
-        .and_then(|c| c.as_text())
-        .map(|t| t.text.clone())
-        .unwrap_or_else(|| "tool error".to_string());
-    ErrorData::internal_error(msg, None)
 }
 
 // ── Proposition combinators (re-exported for callers) ────────────────────────

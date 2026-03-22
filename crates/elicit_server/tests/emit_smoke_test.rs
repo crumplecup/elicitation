@@ -789,4 +789,126 @@ mod smoke {
             String::from_utf8_lossy(&output.stderr)
         );
     }
+
+    // ── elicit_sqlx workflow — individual tool dispatch ───────────────────────
+
+    #[test]
+    fn emit_sqlx_workflow_connect_dispatch() {
+        assert_builds(
+            "sqlx_workflow__connect",
+            "elicit_sqlx",
+            serde_json::json!({ "url": "sqlite::memory:", "max_connections": 1 }),
+        );
+    }
+
+    #[test]
+    fn emit_sqlx_workflow_execute_dispatch() {
+        assert_builds(
+            "sqlx_workflow__execute",
+            "elicit_sqlx",
+            serde_json::json!({ "sql": "CREATE TABLE t (id INTEGER)", "args": [] }),
+        );
+    }
+
+    #[test]
+    fn emit_sqlx_workflow_fetch_all_dispatch() {
+        assert_builds(
+            "sqlx_workflow__fetch_all",
+            "elicit_sqlx",
+            serde_json::json!({ "sql": "SELECT 1", "args": [] }),
+        );
+    }
+
+    #[test]
+    fn emit_sqlx_workflow_begin_dispatch() {
+        assert_builds("sqlx_workflow__begin", "elicit_sqlx", serde_json::json!({}));
+    }
+
+    #[test]
+    fn emit_sqlx_workflow_commit_dispatch() {
+        assert_builds(
+            "sqlx_workflow__commit",
+            "elicit_sqlx",
+            serde_json::json!({}),
+        );
+    }
+
+    #[test]
+    fn emit_sqlx_workflow_rollback_dispatch() {
+        assert_builds(
+            "sqlx_workflow__rollback",
+            "elicit_sqlx",
+            serde_json::json!({}),
+        );
+    }
+
+    // ── elicit_sqlx workflow — multi-step scaffold ────────────────────────────
+
+    /// Verifies that a connect → execute → begin → commit chain assembles into
+    /// a compilable Rust binary via `BinaryScaffold::to_source()`.
+    #[test]
+    fn emit_sqlx_workflow_chain_builds() {
+        let ws = workspace_root();
+
+        let step_connect = elicit_server::emit_dispatch(
+            "sqlx_workflow__connect",
+            serde_json::json!({ "url": "sqlite::memory:", "max_connections": 1 }),
+        )
+        .expect("dispatch sqlx_workflow__connect");
+
+        let step_execute = elicit_server::emit_dispatch(
+            "sqlx_workflow__execute",
+            serde_json::json!({ "sql": "CREATE TABLE items (id INTEGER PRIMARY KEY)", "args": [] }),
+        )
+        .expect("dispatch sqlx_workflow__execute");
+
+        let step_begin =
+            elicit_server::emit_dispatch("sqlx_workflow__begin", serde_json::json!({}))
+                .expect("dispatch sqlx_workflow__begin");
+
+        let step_tx_execute = elicit_server::emit_dispatch(
+            "sqlx_workflow__tx_execute",
+            serde_json::json!({ "sql": "INSERT INTO items VALUES (1)", "args": [] }),
+        )
+        .expect("dispatch sqlx_workflow__tx_execute");
+
+        let step_commit =
+            elicit_server::emit_dispatch("sqlx_workflow__commit", serde_json::json!({}))
+                .expect("dispatch sqlx_workflow__commit");
+
+        let scaffold = BinaryScaffold::new(
+            vec![
+                step_connect,
+                step_execute,
+                step_begin,
+                step_tx_execute,
+                step_commit,
+            ],
+            false,
+        )
+        .with_workspace_root(&ws);
+
+        let source = scaffold.to_source().expect("to_source");
+        assert!(source.contains("AnyPoolOptions"), "missing pool creation");
+        assert!(source.contains("sqlx::query"), "missing query call");
+        assert!(source.contains("pool.begin"), "missing begin");
+        assert!(source.contains("tx.commit"), "missing commit");
+
+        let (out_dir, target_dir) = emit_test_paths("sqlx_workflow_chain");
+        scaffold
+            .emit_to_disk(&out_dir, "sqlx_wf_chain")
+            .expect("emit_to_disk");
+
+        let output = Command::new("cargo")
+            .args(["build", "--quiet"])
+            .env("CARGO_TARGET_DIR", &target_dir)
+            .current_dir(&out_dir)
+            .output()
+            .expect("cargo build");
+        assert!(
+            output.status.success(),
+            "sqlx workflow chain build failed:\n{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
 }

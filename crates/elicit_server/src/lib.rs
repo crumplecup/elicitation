@@ -84,6 +84,8 @@ pub fn emit_dispatch_crate(
         std::mem::size_of::<elicit_time::ParseOffsetParams>(),
         // elicit_serde_json
         std::mem::size_of::<elicit_serde_json::RawJson>(),
+        // elicit_sqlx (workflow emit newtypes)
+        std::mem::size_of::<elicit_sqlx::workflow::WfConnectParams>(),
     ];
     if crate_name.is_empty() {
         elicitation::emit_code::dispatch_emit(tool, params)

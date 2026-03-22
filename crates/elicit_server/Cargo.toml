@@ -24,6 +24,7 @@ elicit_url = { workspace = true }
 elicit_chrono = { workspace = true }
 elicit_jiff = { workspace = true }
 elicit_time = { workspace = true }
+elicit_sqlx = { workspace = true }
 
 # Third-party types (needed in cross-crate workflows)
 reqwest = { workspace = true }
