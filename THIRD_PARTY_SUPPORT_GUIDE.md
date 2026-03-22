@@ -69,6 +69,7 @@ elicit_foo = { path = "crates/elicit_foo", version = "0.9" }
 ```
 
 **Notes:**
+
 - Match the version constraint convention: major-only for `>=1.0`, major.minor for `>=0.1.0`
 - Add all features the `Elicitation` impls will need (e.g. `"string"` for `clap::Id`)
 - Do not add `elicit_foo` to `default-members` unless it has its own binary
@@ -195,6 +196,7 @@ impl Elicitation for MyType {
 ```
 
 **Key rules for both patterns:**
+
 - `.trim().to_string()` before passing to constructors — `.trim()` returns `&str`,
   but constructors need `String` (no `From<&str>` without `'static`)
 - Use `mcp::select_params` + `elicit_select` for enums
@@ -205,12 +207,14 @@ impl Elicitation for MyType {
 ### 2.3 Module wiring
 
 In `src/primitives/mod.rs`:
+
 ```rust
 #[cfg(feature = "foo-types")]
 pub mod foo_types;
 ```
 
 In `src/lib.rs`:
+
 ```rust
 #[cfg(feature = "foo-types")]
 pub use primitives::foo_types::{MyEnum, MyType, /* ... */};
@@ -446,6 +450,7 @@ impl MyType {
 ```
 
 **Key rules:**
+
 - `elicit_newtype!` generates: `Arc<T>` wrapper struct + generic object `JsonSchema` + `Deref`/`DerefMut`/`AsRef`/`From` impls — do **not** add a custom `JsonSchema` impl; the macro's object schema is correct for MCP
 - `elicit_newtype_traits!` only lists traits the inner type actually implements — check the crate docs
 - All methods in `#[reflect_methods]` must be `pub`, `#[tracing::instrument(skip(self))]`, return owned types (not references into inner type — return `String` not `&str`, `Option<String>` not `Option<&str>`)
@@ -504,6 +509,7 @@ pub trait CommandFactoryTools {
 ```
 
 **Requirements for a mapped type:**
+
 - The proxy type must implement `Serialize + Deserialize + JsonSchema`
 - `From<ProxyType> for OriginalType` must exist (for params going *in*)
 - `From<OriginalType> for ProxyType` must exist (for return values coming *out*)
@@ -553,6 +559,7 @@ pub trait MyTraitTools {
 ```
 
 **Syntax notes:**
+
 - The marker trait block is *consumed* by the macro — it is not emitted as a real trait
 - Method signatures must match the real trait exactly (same names, same types)
 - `&self` receivers are supported — the agent passes `{"target": <serialized T>}` in the params
@@ -561,6 +568,7 @@ pub trait MyTraitTools {
 - Multiple `type_map` entries are comma-separated
 
 **What the macro generates:**
+
 - One param struct per method (implements `Deserialize + JsonSchema`)
 - A vtable struct with one `Arc<dyn Fn(Value) -> BoxFuture<...>>` per method
 - A factory struct implementing `AnyToolFactory`
@@ -1373,7 +1381,7 @@ Once all proofs pass, the tracker (`just verify-verus-tracked`) picks them up vi
 
 Use this to track progress when adding a new crate:
 
-```
+```text
 Crate: foo
 Feature flag: foo-types
 
@@ -1430,7 +1438,7 @@ Feature flag: foo-types
 
 For **macro / fragment-only crates** (skip Phases 2, 4, 5, 6):
 
-```
+```text
 Crate: foo_macros
 (no feature flag needed — no elicitation primitives)
 
@@ -1490,6 +1498,7 @@ these.
 ### When to use fragment tools
 
 Use this pattern when:
+
 - The API is a Rust macro (`format!`, `query!`, `include_str!`, etc.)
 - The API generates code, not runtime data
 - The fragment may be composed with other fragments before assembly
@@ -1501,7 +1510,7 @@ Fragment tools produce TokenStream strings that can be chained:
 - **Expression-level nesting**: pass a fragment as an arg/field to another tool
 - **Statement-level assembly**: collect fragments as steps in `std__assemble`
 
-```
+```text
 std__env { var: "USER" }               →  env!("USER")
                                               ↓ pass as arg
 std__format { template: "Hi, {}!", args: ["env!(\"USER\")"] }
@@ -1643,24 +1652,26 @@ Tests: `crates/elicit_std/tests/macro_tools_test.rs` (31 tests)
 
 The complete `clap` integration is the canonical example:
 
-
 **Elicitation core:**
+
 - `crates/elicitation/src/primitives/clap_types/` — 11 type files
 - Feature flag: `clap-types`
 
 **Wrapper crate (newtypes + trait factories):**
+
 - `crates/elicit_clap/src/` — 11 newtype wrapper files + `trait_factories.rs`
 - `crates/elicit_clap/tests/trait_factories_test.rs` — 20 integration tests
 - Traits covered: `CommandFactory`, `Subcommand`, `ValueEnum`, `Args`
 - Traits deferred (incompatible signatures): `FromArgMatches`, `Parser`
 
 **Verification:**
+
 - `crates/elicitation_kani/src/clap_types.rs` — 24 proof harnesses
 - `crates/elicitation/src/verification/runner.rs` — harness registration
 
 **Key commits:**
+
 - `feat(elicit_clap): add newtype wrappers for clap types with MCP reflect methods`
 - `feat(elicitation_macros): #[reflect_trait] macro + DynamicToolRegistry`
 - `feat(elicit_clap): clap trait factories with type_map bridging`
 - `test(elicit_clap): 20 integration tests for all clap trait factories`
-
