@@ -15,7 +15,7 @@
 //! | [`TokioFsPlugin`] | `tokio_fs__*` | read_to_string, read_bytes, write_text, write_bytes, create_dir, create_dir_all, remove_dir, remove_dir_all, remove_file, rename, copy, metadata, read_dir, canonicalize |
 //! | [`TokioNetPlugin`] | `tokio_net__*` | tcp_listener_bind, tcp_listener_accept, tcp_listener_local_addr, tcp_listener_close, tcp_stream_connect, tcp_stream_read, tcp_stream_write, tcp_stream_local_addr, tcp_stream_peer_addr, tcp_stream_close, udp_socket_bind, udp_socket_send_to, udp_socket_recv_from, udp_socket_local_addr, udp_socket_close |
 //! | [`TokioProcessPlugin`] | `tokio_process__*` | process_run, process_spawn, process_stdin_write, process_stdout_read, process_stderr_read, process_wait, process_try_wait, process_kill, process_id |
-//! | [`TokioTaskPlugin`] | `tokio_task__*` | yield_now |
+//! | [`TokioTaskPlugin`] | `tokio_task__*` | yield_now, spawn *(emit-only)*, spawn_blocking *(emit-only)*, block_in_place *(emit-only)* |
 //! | [`TokioChannelPlugin`] | `tokio_channel__*` | mpsc_create, mpsc_send, mpsc_try_send, mpsc_recv, mpsc_try_recv, mpsc_sender_close, mpsc_receiver_close, oneshot_create, oneshot_send, oneshot_recv, oneshot_try_recv, watch_create, watch_send, watch_borrow, watch_changed, watch_subscribe, watch_sender_close, watch_receiver_close, broadcast_create, broadcast_send, broadcast_recv, broadcast_try_recv, broadcast_subscribe, broadcast_sender_close, broadcast_receiver_close, mutex_create, mutex_lock, mutex_update, mutex_try_lock, mutex_close, rwlock_create, rwlock_read, rwlock_write, rwlock_try_read, rwlock_try_write, rwlock_close |
 //! | [`TokioSignalPlugin`] | `tokio_signal__*` | ctrl_c, unix_signal_create (unix), unix_signal_recv (unix), unix_signal_close (unix) |
 //! | [`TokioIoPlugin`] | `tokio_io__*` | duplex_create, duplex_read, duplex_write, duplex_close |
@@ -82,7 +82,9 @@ pub use sync::{
     SemaphoreAvailableParams, SemaphoreCloseParams, SemaphoreNewParams, SemaphoreReleaseParams,
     SemaphoreTryAcquireParams, TokioSyncPlugin,
 };
-pub use task::{TokioTaskPlugin, YieldNowParams};
+pub use task::{
+    BlockInPlaceParams, SpawnBlockingParams, SpawnParams, TokioTaskPlugin, YieldNowParams,
+};
 pub use time::{
     IntervalCreateParams, IntervalTickParams, SleepCompleted, SleepParams, SleepUntilParams,
     TimeoutAwaitParams, TimeoutCheckParams, TimeoutCreateParams, TimeoutResolved, TokioTimePlugin,

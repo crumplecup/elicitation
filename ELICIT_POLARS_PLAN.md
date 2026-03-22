@@ -1,69 +1,608 @@
-# elicit_polars — Implementation Plan
+# elicit_polars — Complete DataFrame Library Harvesting Plan
 
-> **Premise:** Expose polars' serializable DataFrame/LazyFrame operations as MCP tools.
-> Pragmatic approach: **~70-80% of the API is JSON-serializable**, while **~20-30% requires closures** and cannot cross the MCP boundary.
-
----
-
-## The Polars Advantage
-
-Unlike tokio (where futures/closures dominate the API), polars was **designed for serialization**:
-
-| Category | Examples | Viable as MCP tool? |
-|---|---|---|
-| DataFrame operations | `select`, `filter`, `join`, `group_by` | ✅ All serializable |
-| LazyFrame query building | `scan_csv`, `filter`, `with_column` | ✅ Builds logical plan |
-| Expr DSL | `col("a").gt(lit(5))`, aggregations | ✅ `#[derive(Serialize)]` |
-| I/O operations | CSV, Parquet, JSON, IPC | ✅ File paths + options structs |
-| SQL interface | `ctx.execute("SELECT ...")` | ✅ String → LazyFrame |
-| Built-in functions | ~200 functions (sum, mean, etc.) | ✅ Enum-based dispatch |
-| Custom UDFs | `expr.map(\|s\| custom(s))` | ❌ Closures |
-| Object columns | `df.with_object_column::<T>()` | ❌ Requires trait impl |
-
-**Key Insight:** Polars' `Expr` type is a **serializable AST**. Agents can build complex queries by composing JSON-serializable expressions.
+> **Completionist mandate:** Expose the entire polars DataFrame/LazyFrame API as MCP tools.
+> **Three-pronged approach:** Runtime tools (DataFrame handles) + Fragment tools (code generation) + Dual-mode tools (both).
+> **Polars advantage:** ~80% of API is JSON-serializable (better than most Rust libraries).
 
 ---
 
-## What Actually Makes Sense to Elicit
+## Executive Summary
 
-### Tier 1: DataFrame Handle Registry
+**Scope:** Polars 0.53+ complete public API
+**Strategy:** Harvest 100% using Runtime + Fragment + Dual patterns
+**Estimated tools:** 600-800 MCP tools
+**Key advantage:** Polars was designed for serialization - Expr is a serializable AST, DataFrame operations are data-driven.
 
-**Stateful plugin** managing DataFrame/LazyFrame handles via UUID:
+---
 
+## The Three Patterns Applied to Polars
+
+### Pattern 1: Runtime Tools (UUID Registry)
+
+**What works at runtime:**
+- DataFrame/LazyFrame handles (UUID-keyed)
+- All operations with serializable params (select, filter, join, group_by)
+- Expr AST composition (fully serializable)
+- I/O operations (CSV, Parquet, JSON, IPC)
+- SQL interface (string → LazyFrame)
+
+**Example:**
 ```rust
-pub struct PolarsDataPlugin {
+#[elicit_tool(plugin = "polars_dataframe", name = "filter")]
+async fn df_filter(
+    ctx: Arc<PluginContext>,
+    params: DfFilterParams,
+) -> Result<CallToolResult, ErrorData> {
+    let dfs = ctx.dataframes.lock().unwrap();
+    let df = dfs.get(&params.handle_id)?;
+
+    // params.predicate is serialized Expr
+    let filtered = df.filter(&params.predicate)?;
+
+    let new_id = Uuid::new_v4();
+    drop(dfs);
+    ctx.dataframes.lock().unwrap().insert(new_id, filtered);
+
+    Ok(CallToolResult::success(json!({ "df_id": new_id })))
+}
+```
+
+### Pattern 2: Fragment Tools (Code Generation)
+
+**What becomes fragments:**
+- DataFrame chain operations (emit "df.select().filter().group_by()")
+- LazyFrame query builders (emit logical plan code)
+- Expr composition (emit "col(a).gt(lit(5)).and(col(b).eq(lit('foo')))")
+- Complete data pipelines
+
+**Example:**
+```rust
+#[elicit_tool(
+    plugin = "polars_fragments",
+    name = "emit_filter",
+    description = "Emit polars filter code: df.filter(predicate)",
+    emit = Auto
+)]
+async fn emit_filter(p: EmitFilterParams) -> Result<CallToolResult, ErrorData> {
+    // Emits: .filter(col("age").gt(lit(18)))
+    let code = format!(".filter({})", emit_expr(&p.predicate));
+    Ok(CallToolResult::success(Content::text(code)))
+}
+```
+
+### Pattern 3: Dual-Mode Tools (Runtime + Code Generation)
+
+**Operations that do both:**
+- All DataFrame operations have runtime execution AND code generation
+- Agent chooses: execute now (get result handle) or emit code (get TokenStream)
+- Same tool, two outputs via `emit = Auto`
+
+**Example:**
+```rust
+#[elicit_tool(
+    plugin = "polars_dataframe",
+    name = "select",
+    description = "Select columns from DataFrame",
+    emit = Auto  // Generates both runtime AND code emit
+)]
+async fn df_select(p: DfSelectParams) -> Result<CallToolResult, ErrorData> {
+    // Runtime execution:
+    let df = get_dataframe(&p.df_id)?;
+    let selected = df.select(&p.exprs)?;
+    let new_id = register_dataframe(selected);
+    Ok(CallToolResult::success(json!({ "df_id": new_id })))
+}
+
+// Auto-generated CustomEmit impl:
+impl elicitation::emit_code::CustomEmit<DfSelectParams> for DfSelectEmit {
+    fn emit_code(params: &DfSelectParams) -> TokenStream {
+        let exprs = params.exprs.iter().map(emit_expr).collect::<Vec<_>>();
+        quote! {
+            .select(&[ #(#exprs),* ])
+        }
+    }
+}
+```
+
+---
+
+## Architecture: Single Shadow Crate
+
+### elicit_polars
+
+**Purpose:** Complete polars API exposure
+**Patterns:** All three (Runtime + Fragment + Dual)
+
+**Module structure:**
+```
+crates/elicit_polars/
+├── Cargo.toml
+└── src/
+    ├── lib.rs
+    ├── dataframe.rs          // DataFrame runtime plugin
+    ├── lazyframe.rs          // LazyFrame runtime plugin
+    ├── expr.rs               // Expr composition (runtime + fragment)
+    ├── series.rs             // Series operations
+    ├── io.rs                 // CSV/Parquet/JSON/IPC I/O
+    ├── sql.rs                // SQL interface plugin
+    ├── types.rs              // DataType, Schema, Field mirrors
+    ├── fragments/
+    │   ├── mod.rs
+    │   ├── dataframe.rs      // DataFrame code emission
+    │   ├── lazyframe.rs      // LazyFrame code emission
+    │   ├── expr.rs           // Expr code emission
+    │   └── pipeline.rs       // Complete pipeline assembly
+    └── workflow.rs           // Workflow tools with propositions
+```
+
+---
+
+## Phase 1: DataFrame Core (Runtime + Dual)
+
+### 1.1 DataFrame Runtime Plugin
+
+**UUID registry:**
+```rust
+pub struct PolarsDataFramePlugin {
     dataframes: Arc<Mutex<HashMap<Uuid, DataFrame>>>,
+}
+
+#[derive(ElicitPlugin)]
+#[plugin(name = "polars_dataframe")]
+impl PolarsDataFramePlugin { /* tools */ }
+```
+
+### 1.2 All DataFrame Operations (Dual-Mode)
+
+**Construction:**
+```rust
+#[elicit_tool(plugin = "polars_dataframe", name = "new", emit = Auto)]
+async fn df_new(p: DfNewParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "from_rows", emit = Auto)]
+async fn df_from_rows(p: DfFromRowsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "read_csv", emit = Auto)]
+async fn df_read_csv(p: ReadCsvParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "read_parquet", emit = Auto)]
+async fn df_read_parquet(p: ReadParquetParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "read_json", emit = Auto)]
+async fn df_read_json(p: ReadJsonParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "read_ipc", emit = Auto)]
+async fn df_read_ipc(p: ReadIpcParams) -> Result<CallToolResult, ErrorData>
+```
+
+**Selection & Projection (~15 tools):**
+```rust
+#[elicit_tool(plugin = "polars_dataframe", name = "select", emit = Auto)]
+async fn df_select(p: DfSelectParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "select_columns", emit = Auto)]
+async fn df_select_columns(p: DfSelectColumnsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "with_column", emit = Auto)]
+async fn df_with_column(p: DfWithColumnParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "with_columns", emit = Auto)]
+async fn df_with_columns(p: DfWithColumnsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "drop", emit = Auto)]
+async fn df_drop(p: DfDropParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "rename", emit = Auto)]
+async fn df_rename(p: DfRenameParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "get_column", emit = Auto)]
+async fn df_get_column(p: DfGetColumnParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "get_columns", emit = Auto)]
+async fn df_get_columns(p: DfGetColumnsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "column", emit = Auto)]
+async fn df_column(p: DfColumnParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "columns", emit = Auto)]
+async fn df_columns(p: DfColumnsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "dtypes", emit = Auto)]
+async fn df_dtypes(p: DfDtypesParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "schema", emit = Auto)]
+async fn df_schema(p: DfSchemaParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "fields", emit = Auto)]
+async fn df_fields(p: DfFieldsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "width", emit = Auto)]
+async fn df_width(p: DfWidthParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "height", emit = Auto)]
+async fn df_height(p: DfHeightParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "shape", emit = Auto)]
+async fn df_shape(p: DfShapeParams) -> Result<CallToolResult, ErrorData>
+```
+
+**Filtering (~10 tools):**
+```rust
+#[elicit_tool(plugin = "polars_dataframe", name = "filter", emit = Auto)]
+async fn df_filter(p: DfFilterParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "slice", emit = Auto)]
+async fn df_slice(p: DfSliceParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "head", emit = Auto)]
+async fn df_head(p: DfHeadParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "tail", emit = Auto)]
+async fn df_tail(p: DfTailParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "sample_n", emit = Auto)]
+async fn df_sample_n(p: DfSampleNParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "sample_frac", emit = Auto)]
+async fn df_sample_frac(p: DfSampleFracParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "drop_nulls", emit = Auto)]
+async fn df_drop_nulls(p: DfDropNullsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "fill_null", emit = Auto)]
+async fn df_fill_null(p: DfFillNullParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "fill_nan", emit = Auto)]
+async fn df_fill_nan(p: DfFillNanParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "unique", emit = Auto)]
+async fn df_unique(p: DfUniqueParams) -> Result<CallToolResult, ErrorData>
+```
+
+**Sorting (~5 tools):**
+```rust
+#[elicit_tool(plugin = "polars_dataframe", name = "sort", emit = Auto)]
+async fn df_sort(p: DfSortParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "sort_in_place", emit = Auto)]
+async fn df_sort_in_place(p: DfSortInPlaceParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "reverse", emit = Auto)]
+async fn df_reverse(p: DfReverseParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "top_k", emit = Auto)]
+async fn df_top_k(p: DfTopKParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "bottom_k", emit = Auto)]
+async fn df_bottom_k(p: DfBottomKParams) -> Result<CallToolResult, ErrorData>
+```
+
+**Joining (~10 tools):**
+```rust
+#[elicit_tool(plugin = "polars_dataframe", name = "join", emit = Auto)]
+async fn df_join(p: DfJoinParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "left_join", emit = Auto)]
+async fn df_left_join(p: DfLeftJoinParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "inner_join", emit = Auto)]
+async fn df_inner_join(p: DfInnerJoinParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "outer_join", emit = Auto)]
+async fn df_outer_join(p: DfOuterJoinParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "cross_join", emit = Auto)]
+async fn df_cross_join(p: DfCrossJoinParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "semi_join", emit = Auto)]
+async fn df_semi_join(p: DfSemiJoinParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "anti_join", emit = Auto)]
+async fn df_anti_join(p: DfAntiJoinParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "hstack", emit = Auto)]
+async fn df_hstack(p: DfHstackParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "vstack", emit = Auto)]
+async fn df_vstack(p: DfVstackParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "extend", emit = Auto)]
+async fn df_extend(p: DfExtendParams) -> Result<CallToolResult, ErrorData>
+```
+
+**Aggregation & GroupBy (~15 tools):**
+```rust
+#[elicit_tool(plugin = "polars_dataframe", name = "group_by", emit = Auto)]
+async fn df_group_by(p: DfGroupByParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "rolling", emit = Auto)]
+async fn df_rolling(p: DfRollingParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "group_by_dynamic", emit = Auto)]
+async fn df_group_by_dynamic(p: DfGroupByDynamicParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "sum", emit = Auto)]
+async fn df_sum(p: DfSumParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "mean", emit = Auto)]
+async fn df_mean(p: DfMeanParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "median", emit = Auto)]
+async fn df_median(p: DfMedianParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "std", emit = Auto)]
+async fn df_std(p: DfStdParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "var", emit = Auto)]
+async fn df_var(p: DfVarParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "min", emit = Auto)]
+async fn df_min(p: DfMinParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "max", emit = Auto)]
+async fn df_max(p: DfMaxParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "quantile", emit = Auto)]
+async fn df_quantile(p: DfQuantileParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "null_count", emit = Auto)]
+async fn df_null_count(p: DfNullCountParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "n_unique", emit = Auto)]
+async fn df_n_unique(p: DfNUniqueParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "describe", emit = Auto)]
+async fn df_describe(p: DfDescribeParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "pivot", emit = Auto)]
+async fn df_pivot(p: DfPivotParams) -> Result<CallToolResult, ErrorData>
+```
+
+**Reshaping (~10 tools):**
+```rust
+#[elicit_tool(plugin = "polars_dataframe", name = "melt", emit = Auto)]
+async fn df_melt(p: DfMeltParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "unpivot", emit = Auto)]
+async fn df_unpivot(p: DfUnpivotParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "transpose", emit = Auto)]
+async fn df_transpose(p: DfTransposeParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "explode", emit = Auto)]
+async fn df_explode(p: DfExplodeParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "unnest", emit = Auto)]
+async fn df_unnest(p: DfUnnestParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "to_dummies", emit = Auto)]
+async fn df_to_dummies(p: DfToDummiesParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "partition_by", emit = Auto)]
+async fn df_partition_by(p: DfPartitionByParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "shift", emit = Auto)]
+async fn df_shift(p: DfShiftParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "shift_and_fill", emit = Auto)]
+async fn df_shift_and_fill(p: DfShiftAndFillParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "rolling_map", emit = Auto)]
+async fn df_rolling_map(p: DfRollingMapParams) -> Result<CallToolResult, ErrorData>
+```
+
+**I/O (~10 tools):**
+```rust
+#[elicit_tool(plugin = "polars_dataframe", name = "write_csv", emit = Auto)]
+async fn df_write_csv(p: WriteCsvParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "write_parquet", emit = Auto)]
+async fn df_write_parquet(p: WriteParquetParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "write_json", emit = Auto)]
+async fn df_write_json(p: WriteJsonParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "write_ipc", emit = Auto)]
+async fn df_write_ipc(p: WriteIpcParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "write_avro", emit = Auto)]
+async fn df_write_avro(p: WriteAvroParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "to_json", emit = Auto)]
+async fn df_to_json(p: DfToJsonParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "to_csv", emit = Auto)]
+async fn df_to_csv(p: DfToCsvParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "to_struct", emit = Auto)]
+async fn df_to_struct(p: DfToStructParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "to_dicts", emit = Auto)]
+async fn df_to_dicts(p: DfToDictsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "to_rows", emit = Auto)]
+async fn df_to_rows(p: DfToRowsParams) -> Result<CallToolResult, ErrorData>
+```
+
+**Metadata & Inspection (~10 tools):**
+```rust
+#[elicit_tool(plugin = "polars_dataframe", name = "is_empty", emit = Auto)]
+async fn df_is_empty(p: DfIsEmptyParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "estimated_size", emit = Auto)]
+async fn df_estimated_size(p: DfEstimatedSizeParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "n_chunks", emit = Auto)]
+async fn df_n_chunks(p: DfNChunksParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "rechunk", emit = Auto)]
+async fn df_rechunk(p: DfRechunkParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "align_chunks", emit = Auto)]
+async fn df_align_chunks(p: DfAlignChunksParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "clone", emit = Auto)]
+async fn df_clone(p: DfCloneParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "equals", emit = Auto)]
+async fn df_equals(p: DfEqualsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "hash_rows", emit = Auto)]
+async fn df_hash_rows(p: DfHashRowsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "apply", emit = Auto)]
+async fn df_apply(p: DfApplyParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_dataframe", name = "with_row_index", emit = Auto)]
+async fn df_with_row_index(p: DfWithRowIndexParams) -> Result<CallToolResult, ErrorData>
+```
+
+**Total DataFrame tools:** ~100
+
+---
+
+## Phase 2: LazyFrame Query Builder (Runtime + Dual)
+
+### 2.1 LazyFrame Runtime Plugin
+
+**UUID registry:**
+```rust
+pub struct PolarsLazyFramePlugin {
     lazyframes: Arc<Mutex<HashMap<Uuid, LazyFrame>>>,
 }
 ```
 
-**Operations:**
-- Create: `df_new`, `df_from_json`, `df_read_csv`, etc.
-- Transform: `df_select`, `df_filter`, `df_sort`, etc.
-- Query: `df_shape`, `df_schema`, `df_describe`, `df_to_json`
-- Join/Combine: `df_join`, `df_hstack`, `df_vstack`
-- Export: `df_write_csv`, `df_write_parquet`, etc.
+### 2.2 All LazyFrame Operations (Dual-Mode)
 
-### Tier 2: LazyFrame Query Builder
-
-**Lazy operations build logical plans without executing:**
-
+**Scan operations (~10 tools):**
 ```rust
-// Agent workflow:
-1. lf_scan_csv(path) → uuid_1
-2. lf_filter(uuid_1, predicate_expr) → uuid_2
-3. lf_group_by(uuid_2, by_exprs, agg_exprs) → uuid_3
-4. lf_collect(uuid_3) → df_uuid
+#[elicit_tool(plugin = "polars_lazy", name = "scan_csv", emit = Auto)]
+async fn lf_scan_csv(p: ScanCsvParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "scan_parquet", emit = Auto)]
+async fn lf_scan_parquet(p: ScanParquetParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "scan_ipc", emit = Auto)]
+async fn lf_scan_ipc(p: ScanIpcParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "scan_ndjson", emit = Auto)]
+async fn lf_scan_ndjson(p: ScanNdjsonParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "from_dataframe", emit = Auto)]
+async fn lf_from_dataframe(p: LfFromDataframeParams) -> Result<CallToolResult, ErrorData>
+
+// ... 5 more scan variants
 ```
 
-**All operations return new LazyFrame UUIDs** (immutable transformations).
+**Query building (~40 tools):**
+```rust
+#[elicit_tool(plugin = "polars_lazy", name = "select", emit = Auto)]
+async fn lf_select(p: LfSelectParams) -> Result<CallToolResult, ErrorData>
 
-### Tier 3: Expr Composition Tools
+#[elicit_tool(plugin = "polars_lazy", name = "with_column", emit = Auto)]
+async fn lf_with_column(p: LfWithColumnParams) -> Result<CallToolResult, ErrorData>
 
-**Expressions are serializable ASTs:**
+#[elicit_tool(plugin = "polars_lazy", name = "with_columns", emit = Auto)]
+async fn lf_with_columns(p: LfWithColumnsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "filter", emit = Auto)]
+async fn lf_filter(p: LfFilterParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "group_by", emit = Auto)]
+async fn lf_group_by(p: LfGroupByParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "group_by_dynamic", emit = Auto)]
+async fn lf_group_by_dynamic(p: LfGroupByDynamicParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "rolling", emit = Auto)]
+async fn lf_rolling(p: LfRollingParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "join", emit = Auto)]
+async fn lf_join(p: LfJoinParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "sort", emit = Auto)]
+async fn lf_sort(p: LfSortParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "limit", emit = Auto)]
+async fn lf_limit(p: LfLimitParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "slice", emit = Auto)]
+async fn lf_slice(p: LfSliceParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "unique", emit = Auto)]
+async fn lf_unique(p: LfUniqueParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "drop_nulls", emit = Auto)]
+async fn lf_drop_nulls(p: LfDropNullsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "explode", emit = Auto)]
+async fn lf_explode(p: LfExplodeParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "melt", emit = Auto)]
+async fn lf_melt(p: LfMeltParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "rename", emit = Auto)]
+async fn lf_rename(p: LfRenameParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "drop", emit = Auto)]
+async fn lf_drop(p: LfDropParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "cast", emit = Auto)]
+async fn lf_cast(p: LfCastParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "with_streaming", emit = Auto)]
+async fn lf_with_streaming(p: LfWithStreamingParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "with_context", emit = Auto)]
+async fn lf_with_context(p: LfWithContextParams) -> Result<CallToolResult, ErrorData>
+
+// ... 20 more query building operations
+```
+
+**Execution & optimization (~10 tools):**
+```rust
+#[elicit_tool(plugin = "polars_lazy", name = "collect", emit = Auto)]
+async fn lf_collect(p: LfCollectParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "fetch", emit = Auto)]
+async fn lf_fetch(p: LfFetchParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "collect_async", emit = Auto)]
+async fn lf_collect_async(p: LfCollectAsyncParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "sink_parquet", emit = Auto)]
+async fn lf_sink_parquet(p: LfSinkParquetParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "sink_ipc", emit = Auto)]
+async fn lf_sink_ipc(p: LfSinkIpcParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "sink_csv", emit = Auto)]
+async fn lf_sink_csv(p: LfSinkCsvParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "explain", emit = Auto)]
+async fn lf_explain(p: LfExplainParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "describe_plan", emit = Auto)]
+async fn lf_describe_plan(p: LfDescribePlanParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "describe_optimized_plan", emit = Auto)]
+async fn lf_describe_optimized_plan(p: LfDescribeOptimizedPlanParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_lazy", name = "cache", emit = Auto)]
+async fn lf_cache(p: LfCacheParams) -> Result<CallToolResult, ErrorData>
+```
+
+**Total LazyFrame tools:** ~60
+
+---
+
+## Phase 3: Expr Composition (Runtime + Dual)
+
+### 3.1 Expr is Serializable AST
+
+**Key advantage:** Polars Expr derives `Serialize`/`Deserialize` out of the box!
 
 ```json
-// col("price") > lit(100)
 {
   "BinaryExpr": {
     "left": { "Column": "price" },
@@ -71,769 +610,552 @@ pub struct PolarsDataPlugin {
     "right": { "Literal": { "Int64": 100 } }
   }
 }
-
-// col("revenue").sum().alias("total")
-{
-  "Alias": [
-    {
-      "Agg": {
-        "Sum": [{ "Column": "revenue" }]
-      }
-    },
-    "total"
-  ]
-}
 ```
 
-**Tools:**
-- `expr_col(name)` → Expr
-- `expr_lit(value)` → Expr
-- `expr_binary(left, op, right)` → Expr
-- `expr_agg(input, agg_type)` → Expr (sum, mean, min, max, etc.)
-- `expr_function(name, args)` → Expr (dispatches to ~200 built-ins)
+### 3.2 All Expr Operations (Dual-Mode)
 
-### Tier 4: SQL Interface
+**Construction (~10 tools):**
+```rust
+#[elicit_tool(plugin = "polars_expr", name = "col", emit = Auto)]
+async fn expr_col(p: ExprColParams) -> Result<CallToolResult, ErrorData>
 
-**Highest-level abstraction:**
+#[elicit_tool(plugin = "polars_expr", name = "lit", emit = Auto)]
+async fn expr_lit(p: ExprLitParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "cols", emit = Auto)]
+async fn expr_cols(p: ExprColsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "all", emit = Auto)]
+async fn expr_all(p: ExprAllParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "dtype_cols", emit = Auto)]
+async fn expr_dtype_cols(p: ExprDtypeColsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "when", emit = Auto)]
+async fn expr_when(p: ExprWhenParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "concat_list", emit = Auto)]
+async fn expr_concat_list(p: ExprConcatListParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "concat_str", emit = Auto)]
+async fn expr_concat_str(p: ExprConcatStrParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "format", emit = Auto)]
+async fn expr_format(p: ExprFormatParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "nth", emit = Auto)]
+async fn expr_nth(p: ExprNthParams) -> Result<CallToolResult, ErrorData>
+```
+
+**Binary operations (~20 tools):**
+```rust
+#[elicit_tool(plugin = "polars_expr", name = "add", emit = Auto)]
+async fn expr_add(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "sub", emit = Auto)]
+async fn expr_sub(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "mul", emit = Auto)]
+async fn expr_mul(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "div", emit = Auto)]
+async fn expr_div(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "floor_div", emit = Auto)]
+async fn expr_floor_div(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "modulo", emit = Auto)]
+async fn expr_modulo(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "pow", emit = Auto)]
+async fn expr_pow(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "eq", emit = Auto)]
+async fn expr_eq(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "neq", emit = Auto)]
+async fn expr_neq(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "lt", emit = Auto)]
+async fn expr_lt(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "gt", emit = Auto)]
+async fn expr_gt(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "lt_eq", emit = Auto)]
+async fn expr_lt_eq(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "gt_eq", emit = Auto)]
+async fn expr_gt_eq(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "and", emit = Auto)]
+async fn expr_and(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "or", emit = Auto)]
+async fn expr_or(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "xor", emit = Auto)]
+async fn expr_xor(p: ExprBinaryParams) -> Result<CallToolResult, ErrorData>
+
+// ... bitwise operations
+```
+
+**Aggregations (~25 tools):**
+```rust
+#[elicit_tool(plugin = "polars_expr", name = "sum", emit = Auto)]
+async fn expr_sum(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "mean", emit = Auto)]
+async fn expr_mean(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "median", emit = Auto)]
+async fn expr_median(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "min", emit = Auto)]
+async fn expr_min(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "max", emit = Auto)]
+async fn expr_max(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "std", emit = Auto)]
+async fn expr_std(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "var", emit = Auto)]
+async fn expr_var(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "first", emit = Auto)]
+async fn expr_first(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "last", emit = Auto)]
+async fn expr_last(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "count", emit = Auto)]
+async fn expr_count(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "n_unique", emit = Auto)]
+async fn expr_n_unique(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "null_count", emit = Auto)]
+async fn expr_null_count(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "arg_min", emit = Auto)]
+async fn expr_arg_min(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "arg_max", emit = Auto)]
+async fn expr_arg_max(p: ExprAggParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "quantile", emit = Auto)]
+async fn expr_quantile(p: ExprQuantileParams) -> Result<CallToolResult, ErrorData>
+
+// ... 10 more aggregations
+```
+
+**String operations (~40 tools):**
+```rust
+#[elicit_tool(plugin = "polars_expr", name = "str_len", emit = Auto)]
+async fn expr_str_len(p: ExprStrParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "str_contains", emit = Auto)]
+async fn expr_str_contains(p: ExprStrContainsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "str_starts_with", emit = Auto)]
+async fn expr_str_starts_with(p: ExprStrStartsWithParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "str_ends_with", emit = Auto)]
+async fn expr_str_ends_with(p: ExprStrEndsWithParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "str_replace", emit = Auto)]
+async fn expr_str_replace(p: ExprStrReplaceParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "str_replace_all", emit = Auto)]
+async fn expr_str_replace_all(p: ExprStrReplaceAllParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "str_to_lowercase", emit = Auto)]
+async fn expr_str_to_lowercase(p: ExprStrParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "str_to_uppercase", emit = Auto)]
+async fn expr_str_to_uppercase(p: ExprStrParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "str_strip", emit = Auto)]
+async fn expr_str_strip(p: ExprStrStripParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "str_slice", emit = Auto)]
+async fn expr_str_slice(p: ExprStrSliceParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "str_split", emit = Auto)]
+async fn expr_str_split(p: ExprStrSplitParams) -> Result<CallToolResult, ErrorData>
+
+// ... 30 more string operations
+```
+
+**Temporal operations (~30 tools):**
+```rust
+#[elicit_tool(plugin = "polars_expr", name = "dt_year", emit = Auto)]
+async fn expr_dt_year(p: ExprDtParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "dt_month", emit = Auto)]
+async fn expr_dt_month(p: ExprDtParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "dt_day", emit = Auto)]
+async fn expr_dt_day(p: ExprDtParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "dt_hour", emit = Auto)]
+async fn expr_dt_hour(p: ExprDtParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "dt_strftime", emit = Auto)]
+async fn expr_dt_strftime(p: ExprDtStrftimeParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "dt_timestamp", emit = Auto)]
+async fn expr_dt_timestamp(p: ExprDtParams) -> Result<CallToolResult, ErrorData>
+
+// ... 24 more temporal operations
+```
+
+**List operations (~20 tools):**
+```rust
+#[elicit_tool(plugin = "polars_expr", name = "list_len", emit = Auto)]
+async fn expr_list_len(p: ExprListParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "list_get", emit = Auto)]
+async fn expr_list_get(p: ExprListGetParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "list_sum", emit = Auto)]
+async fn expr_list_sum(p: ExprListParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "list_mean", emit = Auto)]
+async fn expr_list_mean(p: ExprListParams) -> Result<CallToolResult, ErrorData>
+
+// ... 16 more list operations
+```
+
+**Mathematical (~30 tools):**
+```rust
+#[elicit_tool(plugin = "polars_expr", name = "abs", emit = Auto)]
+async fn expr_abs(p: ExprMathParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "sqrt", emit = Auto)]
+async fn expr_sqrt(p: ExprMathParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "cbrt", emit = Auto)]
+async fn expr_cbrt(p: ExprMathParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "sin", emit = Auto)]
+async fn expr_sin(p: ExprMathParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "cos", emit = Auto)]
+async fn expr_cos(p: ExprMathParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "tan", emit = Auto)]
+async fn expr_tan(p: ExprMathParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "arcsin", emit = Auto)]
+async fn expr_arcsin(p: ExprMathParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "arccos", emit = Auto)]
+async fn expr_arccos(p: ExprMathParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "arctan", emit = Auto)]
+async fn expr_arctan(p: ExprMathParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "log", emit = Auto)]
+async fn expr_log(p: ExprLogParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "log10", emit = Auto)]
+async fn expr_log10(p: ExprMathParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "exp", emit = Auto)]
+async fn expr_exp(p: ExprMathParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "ceil", emit = Auto)]
+async fn expr_ceil(p: ExprMathParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "floor", emit = Auto)]
+async fn expr_floor(p: ExprMathParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "round", emit = Auto)]
+async fn expr_round(p: ExprRoundParams) -> Result<CallToolResult, ErrorData>
+
+// ... 15 more math operations
+```
+
+**Other transformations (~40 tools):**
+```rust
+#[elicit_tool(plugin = "polars_expr", name = "alias", emit = Auto)]
+async fn expr_alias(p: ExprAliasParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "cast", emit = Auto)]
+async fn expr_cast(p: ExprCastParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "sort", emit = Auto)]
+async fn expr_sort(p: ExprSortParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "is_null", emit = Auto)]
+async fn expr_is_null(p: ExprIsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "is_not_null", emit = Auto)]
+async fn expr_is_not_null(p: ExprIsParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "fill_null", emit = Auto)]
+async fn expr_fill_null(p: ExprFillNullParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "forward_fill", emit = Auto)]
+async fn expr_forward_fill(p: ExprFillParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "backward_fill", emit = Auto)]
+async fn expr_backward_fill(p: ExprFillParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "interpolate", emit = Auto)]
+async fn expr_interpolate(p: ExprInterpolateParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "cumsum", emit = Auto)]
+async fn expr_cumsum(p: ExprCumParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "cummin", emit = Auto)]
+async fn expr_cummin(p: ExprCumParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "cummax", emit = Auto)]
+async fn expr_cummax(p: ExprCumParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "cumprod", emit = Auto)]
+async fn expr_cumprod(p: ExprCumParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "rank", emit = Auto)]
+async fn expr_rank(p: ExprRankParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "diff", emit = Auto)]
+async fn expr_diff(p: ExprDiffParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "shift", emit = Auto)]
+async fn expr_shift(p: ExprShiftParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "clip", emit = Auto)]
+async fn expr_clip(p: ExprClipParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_expr", name = "over", emit = Auto)]
+async fn expr_over(p: ExprOverParams) -> Result<CallToolResult, ErrorData>
+
+// ... 22 more transformations
+```
+
+**Total Expr tools:** ~250
+
+---
+
+## Phase 4: SQL Interface (Runtime Only)
+
+### 4.1 SQL Plugin
 
 ```rust
 pub struct PolarsSqlPlugin {
     contexts: Arc<Mutex<HashMap<Uuid, SQLContext>>>,
 }
 
-// Tools:
-sql_context_new() → uuid
-sql_register_dataframe(ctx_uuid, df_uuid, table_name)
-sql_execute(ctx_uuid, query_string) → lf_uuid or df_uuid
-```
-
-**Agent can write SQL queries, get back LazyFrame handles.**
-
----
-
-## Phase Breakdown
-
-### Phase 1: DataFrame Core (Eager Operations)
-
-**Crate structure:**
-```
-crates/elicit_polars/
-├── Cargo.toml
-└── src/
-    ├── lib.rs
-    ├── dataframe.rs          // DataFrame handle plugin
-    ├── expr.rs               // Expr serialization helpers
-    ├── io.rs                 // CSV/Parquet I/O
-    └── types.rs              // DataType, Schema mirrors
-```
-
-**Cargo.toml essentials:**
-```toml
-[dependencies]
-polars = { version = "0.53", features = [
-    "lazy",
-    "dtype-full",
-    "serde",
-    "csv",
-    "json",
-    "parquet",
-    "ipc",
-    "describe",
-    "strings",
-    "temporal",
-] }
-elicitation = { workspace = true }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-uuid = { version = "1", features = ["v4", "serde"] }
-```
-
-**PolarsDataFramePlugin:**
-```rust
-#[derive(Clone, ElicitPlugin)]
-pub struct PolarsDataFramePlugin(Arc<PluginContext>);
-
-struct PluginContext {
-    dataframes: Mutex<HashMap<Uuid, DataFrame>>,
-}
-
-#[elicit_tool(plugin = "polars_dataframe", name = "create_from_dict")]
-async fn df_create_from_dict(
-    ctx: Arc<PluginContext>,
-    params: DfCreateParams,
-) -> Result<CallToolResult, ErrorData> {
-    let df = DataFrame::new(params.columns)?;
-    let id = Uuid::new_v4();
-    ctx.dataframes.lock().unwrap().insert(id, df);
-    Ok(CallToolResult::success(json!({ "handle_id": id })))
-}
-
-#[elicit_tool(plugin = "polars_dataframe", name = "select")]
-async fn df_select(
-    ctx: Arc<PluginContext>,
-    params: DfSelectParams,
-) -> Result<CallToolResult, ErrorData> {
-    let dfs = ctx.dataframes.lock().unwrap();
-    let df = dfs.get(&params.handle_id)
-        .ok_or_else(|| ErrorData::new("DataFrame not found"))?;
-
-    let result = df.select(params.columns)?;
-
-    let new_id = Uuid::new_v4();
-    drop(dfs); // Release lock
-    ctx.dataframes.lock().unwrap().insert(new_id, result);
-
-    Ok(CallToolResult::success(json!({ "handle_id": new_id })))
-}
-
-#[elicit_tool(plugin = "polars_dataframe", name = "to_json")]
-async fn df_to_json(
-    ctx: Arc<PluginContext>,
-    params: DfToJsonParams,
-) -> Result<CallToolResult, ErrorData> {
-    let dfs = ctx.dataframes.lock().unwrap();
-    let df = dfs.get(&params.handle_id)
-        .ok_or_else(|| ErrorData::new("DataFrame not found"))?;
-
-    let json = serde_json::to_value(df)?;
-    Ok(CallToolResult::success(json))
-}
-```
-
-**Operations (Phase 1):**
-| Tool | Params | Returns | Contract |
-|---|---|---|---|
-| `df_create_from_dict` | `columns: HashMap<String, Vec<Value>>` | `{ handle_id }` | `DataFrameCreated` |
-| `df_read_csv` | `path, options: CsvReadOptions` | `{ handle_id }` | `DataFrameCreated` |
-| `df_read_parquet` | `path, options` | `{ handle_id }` | `DataFrameCreated` |
-| `df_select` | `handle_id, columns: Vec<String>` | `{ handle_id }` | — |
-| `df_filter` | `handle_id, mask_handle_id` | `{ handle_id }` | — |
-| `df_slice` | `handle_id, offset, length` | `{ handle_id }` | — |
-| `df_head` | `handle_id, n` | `{ handle_id }` | — |
-| `df_tail` | `handle_id, n` | `{ handle_id }` | — |
-| `df_sort` | `handle_id, by: Vec<String>, descending` | `{ handle_id }` | — |
-| `df_reverse` | `handle_id` | `{ handle_id }` | — |
-| `df_join` | `left_id, right_id, on, how: JoinType` | `{ handle_id }` | — |
-| `df_hstack` | `handle_id, other_id` | `{ handle_id }` | — |
-| `df_vstack` | `handle_id, other_id` | `{ handle_id }` | — |
-| `df_drop` | `handle_id, columns` | `{ handle_id }` | — |
-| `df_drop_nulls` | `handle_id, subset` | `{ handle_id }` | — |
-| `df_shape` | `handle_id` | `{ rows, cols }` | — |
-| `df_schema` | `handle_id` | `{ fields: [{ name, dtype }] }` | — |
-| `df_describe` | `handle_id` | `{ handle_id }` (summary stats) | — |
-| `df_to_json` | `handle_id` | `{ data: [...] }` | — |
-| `df_write_csv` | `handle_id, path, options` | `{ bytes_written }` | — |
-| `df_write_parquet` | `handle_id, path, options` | `{ bytes_written }` | — |
-
----
-
-### Phase 2: LazyFrame Query Builder
-
-**PolarsLazyFramePlugin:**
-```rust
-#[derive(Clone, ElicitPlugin)]
-pub struct PolarsLazyFramePlugin(Arc<PluginContext>);
-
-struct PluginContext {
-    lazyframes: Mutex<HashMap<Uuid, LazyFrame>>,
-}
-
-#[elicit_tool(plugin = "polars_lazy", name = "scan_csv")]
-async fn lf_scan_csv(
-    ctx: Arc<PluginContext>,
-    params: LfScanCsvParams,
-) -> Result<CallToolResult, ErrorData> {
-    let lf = LazyFrame::scan_csv(
-        params.path,
-        params.options.unwrap_or_default()
-    )?;
-
-    let id = Uuid::new_v4();
-    ctx.lazyframes.lock().unwrap().insert(id, lf);
-    Ok(CallToolResult::success(json!({ "handle_id": id })))
-}
-
-#[elicit_tool(plugin = "polars_lazy", name = "select")]
-async fn lf_select(
-    ctx: Arc<PluginContext>,
-    params: LfSelectParams,
-) -> Result<CallToolResult, ErrorData> {
-    let lfs = ctx.lazyframes.lock().unwrap();
-    let lf = lfs.get(&params.handle_id)
-        .ok_or_else(|| ErrorData::new("LazyFrame not found"))?;
-
-    // params.exprs is Vec<Expr> deserialized from JSON
-    let result = lf.clone().select(&params.exprs);
-
-    let new_id = Uuid::new_v4();
-    drop(lfs);
-    ctx.lazyframes.lock().unwrap().insert(new_id, result);
-
-    Ok(CallToolResult::success(json!({ "handle_id": new_id })))
-}
-
-#[elicit_tool(plugin = "polars_lazy", name = "collect")]
-async fn lf_collect(
-    ctx: Arc<PluginContext>,
-    params: LfCollectParams,
-) -> Result<CallToolResult, ErrorData> {
-    let lfs = ctx.lazyframes.lock().unwrap();
-    let lf = lfs.get(&params.handle_id)
-        .ok_or_else(|| ErrorData::new("LazyFrame not found"))?;
-
-    let df = lf.clone().collect()?;
-    drop(lfs);
-
-    // Register in DataFrame plugin
-    let df_plugin = /* get DF plugin from context */;
-    let df_id = Uuid::new_v4();
-    df_plugin.dataframes.lock().unwrap().insert(df_id, df);
-
-    Ok(CallToolResult::success(json!({
-        "handle_id": df_id,
-        "type": "dataframe"
-    })))
-}
-```
-
-**Operations (Phase 2):**
-| Tool | Params | Returns |
-|---|---|---|
-| `lf_from_df` | `df_handle_id` | `{ handle_id }` |
-| `lf_scan_csv` | `path, options` | `{ handle_id }` |
-| `lf_scan_parquet` | `path, options` | `{ handle_id }` |
-| `lf_scan_ipc` | `path, options` | `{ handle_id }` |
-| `lf_select` | `handle_id, exprs: Vec<Expr>` | `{ handle_id }` |
-| `lf_with_column` | `handle_id, expr: Expr` | `{ handle_id }` |
-| `lf_with_columns` | `handle_id, exprs: Vec<Expr>` | `{ handle_id }` |
-| `lf_filter` | `handle_id, predicate: Expr` | `{ handle_id }` |
-| `lf_group_by` | `handle_id, by: Vec<Expr>, agg: Vec<Expr>` | `{ handle_id }` |
-| `lf_join` | `left_id, right_id, left_on, right_on, how` | `{ handle_id }` |
-| `lf_sort` | `handle_id, by: Vec<Expr>, descending` | `{ handle_id }` |
-| `lf_limit` | `handle_id, n` | `{ handle_id }` |
-| `lf_slice` | `handle_id, offset, length` | `{ handle_id }` |
-| `lf_unique` | `handle_id, subset, keep` | `{ handle_id }` |
-| `lf_drop_nulls` | `handle_id, subset` | `{ handle_id }` |
-| `lf_explode` | `handle_id, columns` | `{ handle_id }` |
-| `lf_with_streaming` | `handle_id, enabled: bool` | `{ handle_id }` |
-| `lf_explain` | `handle_id, optimized: bool` | `{ plan: String }` |
-| `lf_collect` | `handle_id` | `{ handle_id }` (DataFrame) |
-
----
-
-### Phase 3: Expression Builder
-
-**Expr Serialization:**
-
-Polars' `Expr` already derives `Serialize`/`Deserialize`. We just need helper functions for construction:
-
-```rust
-#[elicit_tool(plugin = "polars_expr", name = "col")]
-async fn expr_col(params: ExprColParams) -> Result<CallToolResult, ErrorData> {
-    let expr = col(&params.name);
-    let json = serde_json::to_value(&expr)?;
-    Ok(CallToolResult::success(json))
-}
-
-#[elicit_tool(plugin = "polars_expr", name = "lit")]
-async fn expr_lit(params: ExprLitParams) -> Result<CallToolResult, ErrorData> {
-    let expr = lit(params.value); // value is serde_json::Value
-    let json = serde_json::to_value(&expr)?;
-    Ok(CallToolResult::success(json))
-}
-
-#[elicit_tool(plugin = "polars_expr", name = "binary_op")]
-async fn expr_binary_op(params: ExprBinaryParams) -> Result<CallToolResult, ErrorData> {
-    let left: Expr = serde_json::from_value(params.left)?;
-    let right: Expr = serde_json::from_value(params.right)?;
-
-    let expr = match params.op.as_str() {
-        "add" => left + right,
-        "sub" => left - right,
-        "mul" => left * right,
-        "div" => left / right,
-        "gt" => left.gt(right),
-        "lt" => left.lt(right),
-        "eq" => left.eq(right),
-        "and" => left.and(right),
-        "or" => left.or(right),
-        _ => return Err(ErrorData::new("Unknown operator")),
-    };
-
-    let json = serde_json::to_value(&expr)?;
-    Ok(CallToolResult::success(json))
-}
-
-#[elicit_tool(plugin = "polars_expr", name = "agg")]
-async fn expr_agg(params: ExprAggParams) -> Result<CallToolResult, ErrorData> {
-    let input: Expr = serde_json::from_value(params.input)?;
-
-    let expr = match params.agg_type.as_str() {
-        "sum" => input.sum(),
-        "mean" => input.mean(),
-        "median" => input.median(),
-        "min" => input.min(),
-        "max" => input.max(),
-        "std" => input.std(params.ddof.unwrap_or(1)),
-        "var" => input.var(params.ddof.unwrap_or(1)),
-        "count" => input.count(),
-        "first" => input.first(),
-        "last" => input.last(),
-        "n_unique" => input.n_unique(),
-        _ => return Err(ErrorData::new("Unknown aggregation")),
-    };
-
-    let json = serde_json::to_value(&expr)?;
-    Ok(CallToolResult::success(json))
-}
-
-#[elicit_tool(plugin = "polars_expr", name = "alias")]
-async fn expr_alias(params: ExprAliasParams) -> Result<CallToolResult, ErrorData> {
-    let expr: Expr = serde_json::from_value(params.expr)?;
-    let aliased = expr.alias(&params.name);
-    let json = serde_json::to_value(&aliased)?;
-    Ok(CallToolResult::success(json))
-}
-
-#[elicit_tool(plugin = "polars_expr", name = "when_then_otherwise")]
-async fn expr_when_then_otherwise(
-    params: ExprConditionalParams
-) -> Result<CallToolResult, ErrorData> {
-    let condition: Expr = serde_json::from_value(params.condition)?;
-    let then_val: Expr = serde_json::from_value(params.then_value)?;
-    let otherwise_val: Expr = serde_json::from_value(params.otherwise_value)?;
-
-    let expr = when(condition).then(then_val).otherwise(otherwise_val);
-    let json = serde_json::to_value(&expr)?;
-    Ok(CallToolResult::success(json))
-}
-```
-
-**Expression Namespace Tools:**
-- String ops: `expr.str().len()`, `expr.str().contains()`, etc.
-- Temporal ops: `expr.dt().year()`, `expr.dt().month()`, etc.
-- List ops: `expr.list().len()`, `expr.list().get()`, etc.
-- Math ops: `expr.abs()`, `expr.sqrt()`, `expr.round()`, etc.
-
-Each namespace gets its own set of tools.
-
----
-
-### Phase 4: SQL Interface
-
-**PolarsSqlPlugin:**
-```rust
-#[derive(Clone, ElicitPlugin)]
-pub struct PolarsSqlPlugin(Arc<PluginContext>);
-
-struct PluginContext {
-    contexts: Mutex<HashMap<Uuid, SQLContext>>,
-}
-
 #[elicit_tool(plugin = "polars_sql", name = "context_new")]
-async fn sql_context_new(
-    ctx: Arc<PluginContext>,
-    _: EmptyParams,
-) -> Result<CallToolResult, ErrorData> {
-    let sql_ctx = SQLContext::new();
-    let id = Uuid::new_v4();
-    ctx.contexts.lock().unwrap().insert(id, sql_ctx);
-    Ok(CallToolResult::success(json!({ "context_id": id })))
-}
+async fn sql_context_new() -> Result<CallToolResult, ErrorData>
 
 #[elicit_tool(plugin = "polars_sql", name = "register_df")]
-async fn sql_register_df(
-    ctx: Arc<PluginContext>,
-    params: SqlRegisterParams,
-) -> Result<CallToolResult, ErrorData> {
-    let mut contexts = ctx.contexts.lock().unwrap();
-    let sql_ctx = contexts.get_mut(&params.context_id)
-        .ok_or_else(|| ErrorData::new("SQL context not found"))?;
+async fn sql_register_df(p: SqlRegisterParams) -> Result<CallToolResult, ErrorData>
 
-    // Get DataFrame from DF plugin
-    let df = /* fetch from DF plugin via params.df_handle_id */;
-
-    sql_ctx.register(&params.table_name, df.lazy());
-
-    Ok(CallToolResult::success(json!({ "registered": true })))
-}
+#[elicit_tool(plugin = "polars_sql", name = "register_many")]
+async fn sql_register_many(p: SqlRegisterManyParams) -> Result<CallToolResult, ErrorData>
 
 #[elicit_tool(plugin = "polars_sql", name = "execute")]
-async fn sql_execute(
-    ctx: Arc<PluginContext>,
-    params: SqlExecuteParams,
-) -> Result<CallToolResult, ErrorData> {
-    let contexts = ctx.contexts.lock().unwrap();
-    let sql_ctx = contexts.get(&params.context_id)
-        .ok_or_else(|| ErrorData::new("SQL context not found"))?;
+async fn sql_execute(p: SqlExecuteParams) -> Result<CallToolResult, ErrorData>
 
-    let lf = sql_ctx.execute(&params.query)?;
+#[elicit_tool(plugin = "polars_sql", name = "execute_to_df")]
+async fn sql_execute_to_df(p: SqlExecuteParams) -> Result<CallToolResult, ErrorData>
 
-    // Register LazyFrame in LF plugin
-    let lf_id = Uuid::new_v4();
-    // ... insert into LF plugin
+#[elicit_tool(plugin = "polars_sql", name = "get_tables")]
+async fn sql_get_tables(p: SqlGetTablesParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_sql", name = "unregister")]
+async fn sql_unregister(p: SqlUnregisterParams) -> Result<CallToolResult, ErrorData>
+```
+
+**Total SQL tools:** ~10
+
+---
+
+## Phase 5: Series Operations (Runtime + Dual)
+
+### 5.1 Series Tools (~50 tools)
+
+```rust
+#[elicit_tool(plugin = "polars_series", name = "new", emit = Auto)]
+async fn series_new(p: SeriesNewParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_series", name = "name", emit = Auto)]
+async fn series_name(p: SeriesNameParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_series", name = "rename", emit = Auto)]
+async fn series_rename(p: SeriesRenameParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_series", name = "dtype", emit = Auto)]
+async fn series_dtype(p: SeriesDtypeParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_series", name = "len", emit = Auto)]
+async fn series_len(p: SeriesLenParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_series", name = "null_count", emit = Auto)]
+async fn series_null_count(p: SeriesNullCountParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_series", name = "sum", emit = Auto)]
+async fn series_sum(p: SeriesSumParams) -> Result<CallToolResult, ErrorData>
+
+#[elicit_tool(plugin = "polars_series", name = "mean", emit = Auto)]
+async fn series_mean(p: SeriesMeanParams) -> Result<CallToolResult, ErrorData>
+
+// ... 42 more Series operations
+```
+
+**Total Series tools:** ~50
+
+---
+
+## Phase 6: Fragment Tools (Code Generation Only)
+
+### 6.1 Pipeline Assembly
+
+**Emit complete data pipeline:**
+```rust
+#[derive(Serialize, Deserialize, JsonSchema)]
+pub struct AssemblePipelineParams {
+    pub package_name: String,
+    pub input_file: String,
+    pub input_format: String,  // "csv", "parquet", etc.
+    pub operations: Vec<PipelineOperation>,
+    pub output_file: String,
+    pub output_format: String,
+}
+
+#[derive(Serialize, Deserialize, JsonSchema)]
+pub struct PipelineOperation {
+    pub op_type: String,  // "select", "filter", "group_by", etc.
+    pub params: serde_json::Value,
+}
+
+#[elicit_tool(
+    plugin = "polars_fragments",
+    name = "assemble_pipeline",
+    description = "Generate complete polars data pipeline with main.rs and Cargo.toml",
+    emit = Auto
+)]
+async fn assemble_pipeline(p: AssemblePipelineParams) -> Result<CallToolResult, ErrorData> {
+    let main_rs = generate_pipeline_main(&p);
+    let cargo_toml = generate_pipeline_cargo(&p);
 
     Ok(CallToolResult::success(json!({
-        "handle_id": lf_id,
-        "type": "lazyframe"
+        "main_rs": main_rs,
+        "cargo_toml": cargo_toml
     })))
 }
+
+fn generate_pipeline_main(p: &AssemblePipelineParams) -> String {
+    format!(r#"
+use polars::prelude::*;
+
+fn main() -> PolarsResult<()> {{
+    let df = {}?;
+
+    let result = df
+        {};
+
+    {}
+
+    Ok(())
+}}
+"#,
+        generate_input_code(&p.input_file, &p.input_format),
+        generate_operations_chain(&p.operations),
+        generate_output_code(&p.output_file, &p.output_format)
+    )
+}
 ```
 
-**SQL Tools:**
-| Tool | Params | Returns |
-|---|---|---|
-| `sql_context_new` | — | `{ context_id }` |
-| `sql_register_df` | `context_id, df_handle_id, table_name` | `{ registered }` |
-| `sql_execute` | `context_id, query: String` | `{ handle_id }` (LazyFrame) |
-
----
-
-## Phase 5: Data Types & Schema
-
-**Mirror polars DataType as serializable enum:**
-
+**Example output:**
 ```rust
-#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
-pub enum DataTypeKind {
-    // Numeric
-    Int8, Int16, Int32, Int64, Int128,
-    UInt8, UInt16, UInt32, UInt64, UInt128,
-    Float32, Float64,
+// Generated main.rs
+use polars::prelude::*;
 
-    // Boolean
-    Boolean,
+fn main() -> PolarsResult<()> {
+    let df = CsvReader::from_path("data.csv")?
+        .has_header(true)
+        .finish()?;
 
-    // String
-    String,
-    Binary,
+    let result = df
+        .lazy()
+        .filter(col("age").gt(lit(18)))
+        .select(&[col("name"), col("email"), col("age")])
+        .group_by(&[col("country")])
+        .agg(&[col("age").mean().alias("avg_age")])
+        .sort("avg_age", SortOptions::default())
+        .collect()?;
 
-    // Temporal
-    Date,
-    Datetime { time_unit: TimeUnitKind, time_zone: Option<String> },
-    Duration { time_unit: TimeUnitKind },
-    Time,
+    result.write_parquet("output.parquet")?;
 
-    // Nested
-    List(Box<DataTypeKind>),
-    Struct(Vec<FieldKind>),
-
-    // Special
-    Null,
-}
-
-#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
-pub enum TimeUnitKind {
-    Nanoseconds,
-    Microseconds,
-    Milliseconds,
-}
-
-#[derive(Serialize, Deserialize, JsonSchema, Elicit)]
-pub struct FieldKind {
-    pub name: String,
-    pub dtype: DataTypeKind,
+    Ok(())
 }
 ```
 
-**Tools:**
-| Tool | Params | Returns |
-|---|---|---|
-| `df_dtypes` | `handle_id` | `{ dtypes: [DataTypeKind] }` |
-| `df_schema` | `handle_id` | `{ fields: [FieldKind] }` |
+**Total Fragment-only tools:** ~30
 
 ---
 
-## What We're NOT Exposing
+## Estimated Tool Count
 
-### 1. Closure-Based Operations
-**Cannot cross MCP boundary:**
-```rust
-// ❌ Not exposed
-df.apply("col", |series| series.pow(2))
-expr.map(|column| custom_transform(column), output_type)
-lf.map(|df| custom_function(df))
-```
+| Category | Runtime | Dual-Mode | Fragment | Total |
+|---|---|---|---|---|
+| DataFrame operations | 0 | 100 | 0 | 100 |
+| LazyFrame operations | 0 | 60 | 0 | 60 |
+| Expr operations | 0 | 250 | 0 | 250 |
+| Series operations | 0 | 50 | 0 | 50 |
+| SQL interface | 10 | 0 | 0 | 10 |
+| I/O operations | 0 | 20 | 0 | 20 |
+| Types/Schema | 30 | 0 | 0 | 30 |
+| Pipeline assembly | 0 | 0 | 30 | 30 |
+| Workflow tools | 20 | 0 | 0 | 20 |
+| **Total** | **60** | **480** | **30** | **570** |
 
-**Alternative:** Use built-in functions via `expr_function` tool with ~200 function names.
-
-### 2. Object Columns
-**Requires Rust trait impls:**
-```rust
-// ❌ Not exposed
-df.with_object_column::<MyCustomType>()
-```
-
-**Alternative:** Use Struct columns or serialize to Binary/String.
-
-### 3. FFI Plugins
-**Dynamic library loading:**
-```rust
-// ❌ Not exposed
-expr.plugin(library_path, symbol, args)
-```
-
-### 4. Direct Memory Access
-**Unsafe/internal:**
-```rust
-// ❌ Not exposed
-df.chunks_mut()
-unsafe { series.get_unchecked(idx) }
-```
-
-### 5. Iterators with Lifetimes
-**Non-'static references:**
-```rust
-// ❌ Not exposed
-series.iter() // returns SeriesIter<'a>
-```
-
-**Alternative:** Export to JSON/Arrow IPC, iterate on client side.
+**Dual-mode breakdown:**
+- Each dual-mode tool generates BOTH a runtime handler AND a CustomEmit impl
+- Actual implementation count: 570 runtime tools + 510 emit impls = 1,080 implementations
+- Exposed to agents as: 570 MCP tools (agent chooses runtime vs emit via context)
 
 ---
 
-## Propositions (Contract System)
+## Implementation Timeline
 
-```rust
-pub struct DataFrameCreated;     // df_create_*, df_read_*
-pub struct DataFrameWritten;     // df_write_*
-pub struct LazyFrameCreated;     // lf_*, sql_execute
-pub struct QueryCollected;       // lf_collect
-pub struct SqlContextCreated;    // sql_context_new
-pub struct TableRegistered;      // sql_register_df
-```
+**Week 1:** DataFrame operations (50 tools)
+**Week 2:** DataFrame operations (remaining 50 tools)
+**Week 3:** LazyFrame operations (60 tools)
+**Week 4:** Expr construction + binary ops (80 tools)
+**Week 5:** Expr aggregations + string ops (80 tools)
+**Week 6:** Expr temporal + list ops (50 tools)
+**Week 7:** Expr math + transformations (40 tools)
+**Week 8:** Series operations (50 tools)
+**Week 9:** SQL interface + I/O (30 tools)
+**Week 10:** Fragment assembly + testing (30 tools)
 
----
-
-## Implementation Order
-
-### Phase 1: DataFrame Core (Week 1-2)
-1. **Crate scaffold** - `Cargo.toml`, feature selection
-2. **DataType mirrors** - `types.rs` with Elicit derives
-3. **DataFrame plugin** - UUID registry, basic ops
-4. **I/O operations** - CSV/Parquet read/write
-5. **Tests** - Round-trip serialization, basic transforms
-
-### Phase 2: LazyFrame Builder (Week 2-3)
-1. **LazyFrame plugin** - UUID registry
-2. **Scan operations** - `lf_scan_csv`, `lf_scan_parquet`
-3. **Transform operations** - select, filter, with_column
-4. **Group/Join operations** - group_by, join variants
-5. **Collect/Explain** - lf_collect, lf_explain
-6. **Tests** - Query building, optimization flags
-
-### Phase 3: Expression DSL (Week 3-4)
-1. **Basic constructors** - col, lit
-2. **Binary operations** - arithmetic, comparison, logic
-3. **Aggregations** - sum, mean, min, max, etc.
-4. **Conditional** - when/then/otherwise
-5. **String namespace** - str() methods
-6. **Temporal namespace** - dt() methods
-7. **Tests** - Expression composition, serialization
-
-### Phase 4: SQL Interface (Week 4)
-1. **SQL plugin** - Context registry
-2. **Register/Execute** - table registration, query execution
-3. **Integration tests** - SQL → LazyFrame → DataFrame
-
-### Phase 5: Integration & Documentation (Week 5)
-1. **Cross-plugin coordination** - DF ↔ LF ↔ SQL
-2. **End-to-end workflows** - Complete data pipelines
-3. **Performance tests** - Large dataset handling
-4. **Documentation** - README, examples, cookbook
-5. **Wire into elicit_server emit chain**
+**Total:** 10 weeks for complete implementation
 
 ---
 
-## Dependencies & Feature Selection
+## Success Criteria
 
-**Cargo.toml:**
-```toml
-[dependencies]
-polars = { version = "0.53", features = [
-    # Core
-    "lazy",           # LazyFrame
-    "dtype-full",     # All data types
-    "serde",          # DataFrame/Series serialization
-    "serde-lazy",     # LazyFrame plan serialization
-
-    # I/O
-    "csv",
-    "json",
-    "parquet",
-    "ipc",
-
-    # SQL
-    "sql",
-
-    # Operations
-    "strings",        # String methods
-    "temporal",       # Date/time operations
-    "describe",       # df.describe()
-    "pivot",
-    "rank",
-    "diff",
-    "cum_agg",        # Cumulative aggregations
-    "rolling_window",
-
-    # Joins
-    "cross_join",
-    "asof_join",
-    "semi_anti_join",
-
-    # Performance
-    "performant",
-    "streaming",
-] }
-
-elicitation = { workspace = true, features = ["emit"] }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-uuid = { version = "1", features = ["v4", "serde"] }
-tokio = { workspace = true }
-```
-
-**Features to AVOID:**
-- `object` - Requires closures
-- `ffi_plugin` - FFI not viable over JSON
-- `python` - Python integration not needed
+1. ✅ 100% of polars public API exposed (DataFrame, LazyFrame, Expr, Series, SQL)
+2. ✅ All operations are dual-mode (runtime + code generation)
+3. ✅ Expr serialization works perfectly (test with complex nested expressions)
+4. ✅ Agent can build complete data pipelines from scratch
+5. ✅ All 570 tools registered and tested
+6. ✅ Runtime execution matches generated code output (equivalence testing)
+7. ✅ Comprehensive documentation with 30+ examples
 
 ---
 
-## Example Agent Workflow
+## Key Innovations
 
-**Scenario:** Load CSV, filter, aggregate, export
-
-```json
-// 1. Load CSV lazily
-{
-  "tool": "lf_scan_csv",
-  "params": {
-    "path": "/data/sales.csv",
-    "options": {
-      "has_header": true,
-      "infer_schema_length": 1000
-    }
-  }
-}
-// → { "handle_id": "lf_uuid_1" }
-
-// 2. Build filter expression: revenue > 1000
-{
-  "tool": "expr_binary_op",
-  "params": {
-    "left": { "Column": "revenue" },
-    "op": "gt",
-    "right": { "Literal": { "Int64": 1000 } }
-  }
-}
-// → { "expr": { "BinaryExpr": {...} } }
-
-// 3. Apply filter
-{
-  "tool": "lf_filter",
-  "params": {
-    "handle_id": "lf_uuid_1",
-    "predicate": { "BinaryExpr": {...} }
-  }
-}
-// → { "handle_id": "lf_uuid_2" }
-
-// 4. Build aggregation: sum(revenue).alias("total")
-{
-  "tool": "expr_agg",
-  "params": {
-    "input": { "Column": "revenue" },
-    "agg_type": "sum"
-  }
-}
-// → { "expr": { "Agg": { "Sum": [...] } } }
-
-{
-  "tool": "expr_alias",
-  "params": {
-    "expr": { "Agg": {...} },
-    "name": "total"
-  }
-}
-// → { "expr": { "Alias": [...] } }
-
-// 5. Group by category
-{
-  "tool": "lf_group_by",
-  "params": {
-    "handle_id": "lf_uuid_2",
-    "by": [{ "Column": "category" }],
-    "agg": [{ "Alias": [...] }]
-  }
-}
-// → { "handle_id": "lf_uuid_3" }
-
-// 6. Collect to DataFrame
-{
-  "tool": "lf_collect",
-  "params": {
-    "handle_id": "lf_uuid_3"
-  }
-}
-// → { "handle_id": "df_uuid_1", "type": "dataframe" }
-
-// 7. Export to Parquet
-{
-  "tool": "df_write_parquet",
-  "params": {
-    "handle_id": "df_uuid_1",
-    "path": "/output/results.parquet",
-    "options": {
-      "compression": "snappy"
-    }
-  }
-}
-// → { "bytes_written": 12345 }
-```
-
----
-
-## Success Metrics
-
-1. **API Coverage:** 70-80% of polars operations exposed
-2. **Serialization:** All Expr, DataFrame, LazyFrame serializable
-3. **Performance:** Lazy evaluation preserves polars' zero-copy optimizations
-4. **Workflows:** Complete data pipelines buildable via MCP tools
-5. **Documentation:** Cookbook with 10+ real-world examples
-6. **Testing:** >85% code coverage, integration tests for all plugins
-
----
-
-## Estimated Effort
-
-- **Phase 1 (DataFrame):** 2 weeks - ~40 tools
-- **Phase 2 (LazyFrame):** 1.5 weeks - ~25 tools
-- **Phase 3 (Expr DSL):** 1.5 weeks - ~30 tools
-- **Phase 4 (SQL):** 0.5 weeks - ~5 tools
-- **Phase 5 (Integration):** 1 week - documentation, testing
-
-**Total:** ~6 weeks, ~100 MCP tools
-
----
-
-## Key Advantages Over Other Shadow Crates
-
-1. **Built-in Serialization:** Polars was designed for serde, unlike tokio
-2. **AST-Based Expr:** Expressions are data, not closures
-3. **SQL Escape Hatch:** High-level abstraction for complex queries
-4. **Lazy Optimization:** Query optimization happens automatically
-5. **Arrow Integration:** Efficient data transfer via Arrow IPC format
-
----
-
-## Conclusion
-
-Polars is **exceptionally well-suited** for MCP integration:
-- ✅ ~200 built-in functions eliminate need for custom closures
-- ✅ Expr DSL is fully serializable (JSON-based AST)
-- ✅ SQL interface provides declarative query building
-- ✅ LazyFrame enables optimization without code generation
-- ✅ Comprehensive I/O support (CSV, Parquet, JSON, IPC)
-
-**Result:** Agents can build production-grade data pipelines entirely through MCP tools, with the full power of polars' query optimizer and execution engine.
+1. **Expr AST Advantage:** Polars Expr is already serializable - no custom encoding needed
+2. **Triple Harvest with Dual-Mode:** Most tools are dual-mode (both runtime + emit)
+3. **Code Recovery:** Agents execute at runtime, recover source for deployment
+4. **SQL Escape Hatch:** High-level interface for complex queries
+5. **Zero Compromise:** 100% of serializable API exposed, closures skipped (only ~10% of API)
