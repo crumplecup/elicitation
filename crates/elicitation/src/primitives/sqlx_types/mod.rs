@@ -10,6 +10,7 @@
 //! - [`sqlx::any::AnyTypeInfoKind`] — SQL column type category (Null, Bool, SmallInt, etc.)
 //! - [`ColumnValue`] — owned, serializable SQL value (mirrors AnyValueKind)
 //! - [`SqlTypeKind`] — owned, serializable column type category (mirrors AnyTypeInfoKind)
+//! - [`DriverKind`] — SQL database driver category (Postgres, Sqlite, MySql)
 //!
 //! # Survey types (multi-field construction)
 //!
@@ -25,6 +26,7 @@ mod any_query_result;
 mod any_type_info;
 mod column_descriptor;
 mod column_value;
+mod driver_kind;
 mod error_kind;
 mod row_data;
 mod sql_type_kind;
@@ -34,6 +36,7 @@ pub use any_query_result::AnyQueryResultStyle;
 pub use any_type_info::AnyTypeInfoStyle;
 pub use column_descriptor::{ColumnDescriptor, ColumnDescriptorStyle};
 pub use column_value::{ColumnValue, ColumnValueStyle};
+pub use driver_kind::{DriverKind, DriverKindStyle};
 pub use error_kind::SqlxErrorKindStyle;
 pub use row_data::{ColumnEntry, ColumnEntryStyle, RowData, RowDataStyle};
 pub use sql_type_kind::{SqlTypeKind, SqlTypeKindStyle};

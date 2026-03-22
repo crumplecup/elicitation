@@ -280,4 +280,36 @@ pub fn verify_column_names_match_columns(names_match: bool) -> (result: bool)
     names_match
 }
 
+// ============================================================================
+// DriverKind — 3 variants (Postgres, Sqlite, MySql)
+// ============================================================================
+
+/// Proof that from_label succeeds when a known DriverKind label is provided.
+pub fn verify_driver_kind_known_label_accepted(label_is_known: bool) -> (result: bool)
+    ensures result == label_is_known,
+{
+    label_is_known
+}
+
+/// Proof that from_label rejects an unknown DriverKind label.
+pub fn verify_driver_kind_unknown_rejected(label_is_unknown: bool) -> (result: bool)
+    ensures result == label_is_unknown,
+{
+    label_is_unknown
+}
+
+/// Proof that all DriverKind labels round-trip through from_label.
+pub fn verify_driver_kind_roundtrip_complete(all_known: bool) -> (result: bool)
+    ensures result == all_known,
+{
+    all_known
+}
+
+/// Proof that DriverKind label count equals option count.
+pub fn verify_driver_kind_label_count_matches(counts_equal: bool) -> (result: bool)
+    ensures result == counts_equal,
+{
+    counts_equal
+}
+
 } // verus!

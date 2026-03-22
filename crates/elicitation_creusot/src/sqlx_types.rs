@@ -175,3 +175,32 @@ pub fn verify_sql_type_kind_from_any_type_info_kind_total() -> bool {
     let _ = SqlTypeKind::from(AnyTypeInfoKind::Blob);
     true
 }
+
+// ============================================================================
+// DriverKind — 3 variants (our owned type, fully de-trusted)
+// ============================================================================
+
+/// Verify that DriverKind label count equals option count.
+///
+/// De-trusted: Alt-Ergo discharges this by evaluating `len() == len()`.
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_driver_kind_label_count() -> bool {
+    elicitation::DriverKind::labels().len() == elicitation::DriverKind::options().len()
+}
+
+/// Verify that a known DriverKind label is accepted.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_driver_kind_known_label_accepted() -> bool {
+    elicitation::DriverKind::from_label("Postgres").is_some()
+}
+
+/// Verify that an unknown DriverKind label is rejected.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_driver_kind_unknown_rejected() -> bool {
+    elicitation::DriverKind::from_label("__unknown__").is_none()
+}

@@ -8,6 +8,7 @@
 
 mod column;
 mod context;
+pub mod drivers;
 mod error;
 mod frag_plugin;
 pub mod fragments;
@@ -18,6 +19,7 @@ mod type_info;
 
 pub use column::AnyColumn;
 pub use context::{SqlxContext, connect};
+pub use drivers::{SqlxMySqlPlugin, SqlxPgPlugin, SqlxSqlitePlugin};
 pub use error::SqlxError;
 pub use frag_plugin::SqlxFragPlugin;
 pub use fragments::{MigrateParams, QueryAsParams, QueryParams, QueryScalarParams};

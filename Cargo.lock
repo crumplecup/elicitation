@@ -1271,6 +1271,7 @@ dependencies = [
  "kani-verifier",
  "regex",
  "serde_json",
+ "sqlx",
  "time",
  "url",
  "uuid",

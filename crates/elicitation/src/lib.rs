@@ -469,9 +469,9 @@ pub use primitives::sqlx_types::{
 };
 #[cfg(feature = "sqlx-types")]
 pub use primitives::sqlx_types::{
-    AnyTypeInfoKindStyle, ColumnValueStyle, SqlTypeKindStyle, SqlxErrorKindStyle,
+    AnyTypeInfoKindStyle, ColumnValueStyle, DriverKindStyle, SqlTypeKindStyle, SqlxErrorKindStyle,
 };
 #[cfg(feature = "sqlx-types")]
 pub use primitives::sqlx_types::{
-    ColumnDescriptor, ColumnEntry, ColumnValue, RowData, SqlTypeKind,
+    ColumnDescriptor, ColumnEntry, ColumnValue, DriverKind, RowData, SqlTypeKind,
 };

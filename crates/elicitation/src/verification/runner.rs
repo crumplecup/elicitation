@@ -460,17 +460,26 @@ impl ProofHarness {
             // sqlx_types: Select enum invariants + From<AnyTypeInfoKind> totality + ColumnValue
             Self::new("sqlx_types", "verify_sqlx_error_kind_label_count"),
             Self::new("sqlx_types", "verify_sqlx_error_kind_unknown_rejected"),
-            Self::new("sqlx_types", "verify_sqlx_error_kind_roundtrip_unique_violation"),
+            Self::new(
+                "sqlx_types",
+                "verify_sqlx_error_kind_roundtrip_unique_violation",
+            ),
             Self::new("sqlx_types", "verify_any_type_info_kind_label_count"),
             Self::new("sqlx_types", "verify_any_type_info_kind_unknown_rejected"),
             Self::new("sqlx_types", "verify_any_type_info_kind_roundtrip_null"),
             Self::new("sqlx_types", "verify_sql_type_kind_label_count"),
             Self::new("sqlx_types", "verify_sql_type_kind_unknown_rejected"),
             Self::new("sqlx_types", "verify_sql_type_kind_roundtrip_null"),
-            Self::new("sqlx_types", "verify_sql_type_kind_from_any_type_info_kind_total"),
+            Self::new(
+                "sqlx_types",
+                "verify_sql_type_kind_from_any_type_info_kind_total",
+            ),
             Self::new("sqlx_types", "verify_column_value_null"),
             Self::new("sqlx_types", "verify_column_value_bool_roundtrip"),
             Self::new("sqlx_types", "verify_column_value_big_int_roundtrip"),
+            Self::new("sqlx_types", "verify_driver_kind_label_count"),
+            Self::new("sqlx_types", "verify_driver_kind_unknown_rejected"),
+            Self::new("sqlx_types", "verify_driver_kind_roundtrip_postgres"),
         ]
     }
 

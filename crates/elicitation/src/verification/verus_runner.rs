@@ -124,10 +124,16 @@ impl VerusProof {
             Self::new("sqlx_types", "verify_error_kind_unknown_rejected"),
             Self::new("sqlx_types", "verify_error_kind_roundtrip_complete"),
             Self::new("sqlx_types", "verify_error_kind_label_count_matches"),
-            Self::new("sqlx_types", "verify_any_type_info_kind_known_label_accepted"),
+            Self::new(
+                "sqlx_types",
+                "verify_any_type_info_kind_known_label_accepted",
+            ),
             Self::new("sqlx_types", "verify_any_type_info_kind_unknown_rejected"),
             Self::new("sqlx_types", "verify_any_type_info_kind_roundtrip_complete"),
-            Self::new("sqlx_types", "verify_any_type_info_kind_label_count_matches"),
+            Self::new(
+                "sqlx_types",
+                "verify_any_type_info_kind_label_count_matches",
+            ),
             Self::new("sqlx_types", "verify_sql_type_kind_known_label_accepted"),
             Self::new("sqlx_types", "verify_sql_type_kind_unknown_rejected"),
             Self::new("sqlx_types", "verify_sql_type_kind_roundtrip_complete"),
@@ -152,6 +158,10 @@ impl VerusProof {
             Self::new("sqlx_types", "verify_any_row_len_equals_column_count"),
             Self::new("sqlx_types", "verify_to_row_data_preserves_column_count"),
             Self::new("sqlx_types", "verify_column_names_match_columns"),
+            Self::new("sqlx_types", "verify_driver_kind_known_label_accepted"),
+            Self::new("sqlx_types", "verify_driver_kind_unknown_rejected"),
+            Self::new("sqlx_types", "verify_driver_kind_roundtrip_complete"),
+            Self::new("sqlx_types", "verify_driver_kind_label_count_matches"),
         ]
     }
 }

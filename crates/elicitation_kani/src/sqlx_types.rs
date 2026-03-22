@@ -173,3 +173,40 @@ fn verify_column_value_big_int_roundtrip() {
         panic!("ColumnValue::BigInt did not match");
     }
 }
+
+// ============================================================================
+// DriverKind — 3 variants (Postgres, Sqlite, MySql)
+// ============================================================================
+
+#[cfg(feature = "sqlx-types")]
+#[kani::proof]
+fn verify_driver_kind_label_count() {
+    use elicitation::DriverKind;
+    let labels = DriverKind::labels();
+    let options = DriverKind::options();
+    assert!(
+        labels.len() == options.len(),
+        "DriverKind: labels and options have equal length"
+    );
+    assert!(labels.len() == 3, "DriverKind has 3 variants");
+}
+
+#[cfg(feature = "sqlx-types")]
+#[kani::proof]
+fn verify_driver_kind_unknown_rejected() {
+    use elicitation::DriverKind;
+    let result = DriverKind::from_label("__unknown__");
+    assert!(result.is_none(), "DriverKind: unknown label rejected");
+}
+
+#[cfg(feature = "sqlx-types")]
+#[kani::proof]
+fn verify_driver_kind_roundtrip_postgres() {
+    use elicitation::DriverKind;
+    let label = DriverKind::Postgres.to_label();
+    let roundtripped = DriverKind::from_label(label);
+    assert!(
+        roundtripped.is_some(),
+        "DriverKind::Postgres label roundtrips"
+    );
+}
