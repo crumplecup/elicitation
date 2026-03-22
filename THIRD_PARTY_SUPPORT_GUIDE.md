@@ -738,6 +738,322 @@ let registry = DynamicToolRegistry::new()
 
 ---
 
+## Phase 3C — Verified Workflow Plugin
+
+Use this phase when the third-party library is **stateful** — it requires connection
+pools, sessions, open transactions, or any other server-side state that persists across
+MCP tool calls.  Skip this phase for stateless libraries.
+
+The canonical example is `elicit_sqlx/src/workflow.rs` (`SqlxWorkflowPlugin`).
+
+### 3C.1 Propositions
+
+Each observable invariant that a tool can establish is a unit struct implementing `Prop`:
+
+```rust
+use elicitation::contracts::{And, Established, Prop, both};
+
+pub struct DbConnected;
+impl Prop for DbConnected {}
+
+pub struct QueryExecuted;
+impl Prop for QueryExecuted {}
+
+pub struct TransactionOpen;
+impl Prop for TransactionOpen {}
+
+// Composite propositions for multi-step proofs:
+pub type ConnectedAndExecuted = And<DbConnected, QueryExecuted>;
+```
+
+Tools signal that they have established a proposition by binding an
+`Established<P>` return value inside the function:
+
+```rust
+let _proof: Established<QueryExecuted> = Established::assert();
+```
+
+`Established<P>` is a zero-cost `PhantomData` marker — it disappears at
+compile time and carries no runtime cost.
+
+### 3C.2 Context types
+
+Define three layers:
+
+| Context type | Scope | Holds |
+|---|---|---|
+| `FooCtx` (plugin) | Entire plugin lifetime | Shared state maps — pools, sessions, etc. |
+| `FooPoolCtx` (per-call) | Resolved at call time | Single pre-resolved resource |
+| `FooTxCtx` (per-call) | Created by `begin`, consumed by `commit`/`rollback` | Open transaction |
+
+```rust
+use dashmap::DashMap;
+use tokio::sync::Mutex;
+
+pub struct FooCtx {
+    pools: Mutex<HashMap<Uuid, Pool>>,
+    txs:   Mutex<HashMap<Uuid, Arc<FooTxCtx>>>,
+}
+
+pub struct FooPoolCtx { pub pool: Pool }
+pub struct FooTxCtx   { tx: Mutex<Option<Transaction>> }
+```
+
+### 3C.3 Tool functions
+
+Write each tool as an individual `#[elicit_tool]`-annotated async function.
+**Do not write a monolithic dispatcher** — that prevents the macro from generating
+descriptors and `EmitCode`.
+
+```rust
+use elicitation::elicit_tool;
+
+#[elicit_tool(
+    plugin = "foo_workflow",
+    name   = "foo_workflow__connect",
+    description = "Open a connection pool.  Establishes: FooConnected."
+)]
+async fn wf_connect(ctx: Arc<FooCtx>, p: WfConnectParams) -> Result<CallToolResult, ErrorData> {
+    let pool = Pool::connect(&p.url).await
+        .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+    let pool_id = Uuid::new_v4();
+    ctx.pools.lock().await.insert(pool_id, pool);
+    Ok(json_result(&WfConnectResult { pool_id }))
+}
+```
+
+### 3C.4 Manual `impl ElicitPlugin`
+
+Use `#[derive(ElicitPlugin)]` only when every tool in the plugin takes the
+**same** context type.  For workflow plugins, different tools need different
+context objects — use a manual impl instead.
+
+```rust
+pub struct FooWorkflowPlugin(Arc<FooCtx>);
+
+impl elicitation::ElicitPlugin for FooWorkflowPlugin {
+    fn name(&self) -> &'static str { "foo_workflow" }
+
+    fn list_tools(&self) -> Vec<Tool> {
+        // inventory collects all #[elicit_tool(plugin = "foo_workflow", ...)] registrations
+        elicitation::inventory::iter::<elicitation::PluginToolRegistration>()
+            .filter(|r| r.plugin == "foo_workflow")
+            .map(|r| (r.constructor)().as_tool())
+            .collect()
+    }
+
+    fn call_tool<'a>(
+        &'a self,
+        params: CallToolRequestParams,
+        _ctx: RequestContext<rmcp::RoleServer>,
+    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
+        let plugin_ctx = self.0.clone();
+        Box::pin(async move {
+            let name  = params.name.as_ref();
+            let bare  = name.strip_prefix("foo_workflow__").unwrap_or(name);
+            let full  = format!("foo_workflow__{bare}");
+
+            // Resolve descriptor from inventory (full name lookup).
+            let descriptor = elicitation::inventory::iter::<elicitation::PluginToolRegistration>()
+                .filter(|r| r.plugin == "foo_workflow")
+                .find(|r| r.name == full)
+                .map(|r| (r.constructor)())
+                .ok_or_else(|| ErrorData::invalid_params(format!("unknown tool: {name}"), None))?;
+
+            // Resolve per-call context based on tool group.
+            let tool_ctx: Arc<dyn std::any::Any + Send + Sync> = match bare {
+                "connect" | "disconnect" => {
+                    plugin_ctx.clone() as Arc<dyn std::any::Any + Send + Sync>
+                }
+                "execute" | "fetch_all" => {
+                    let p: WfPoolIdParams = parse_args(&params)?;
+                    let pool = plugin_ctx.pools.lock().await
+                        .get(&p.pool_id).cloned()
+                        .ok_or_else(|| ErrorData::invalid_params("pool_id not found", None))?;
+                    Arc::new(FooPoolCtx { pool }) as Arc<dyn std::any::Any + Send + Sync>
+                }
+                "commit" | "rollback" => {
+                    let p: WfTxIdParams = parse_args(&params)?;
+                    plugin_ctx.txs.lock().await
+                        .remove(&p.tx_id)
+                        .ok_or_else(|| ErrorData::invalid_params("tx_id not found", None))?
+                        as Arc<dyn std::any::Any + Send + Sync>
+                }
+                _ => return Err(ErrorData::invalid_params(format!("unknown tool: {bare}"), None)),
+            };
+
+            descriptor.dispatch(tool_ctx, params).await
+        })
+    }
+}
+```
+
+**Key rules:**
+
+- `list_tools()` queries `inventory` — zero maintenance as tools are added
+- `call_tool()` only resolves which context type to pass — no tool logic lives here
+- Session-state tools (`connect`, `begin`): pass `Arc<FooCtx>` directly
+- Resource-using tools (`execute`, `tx_*`): look up and pass a narrowed `Arc<FooPoolCtx>` or `Arc<FooTxCtx>`
+- Consuming tools (`commit`, `rollback`): `remove` from map so the resource is dropped
+
+### 3C.5 Public API methods
+
+Add `pub async fn` methods to the plugin struct for use in tests and in Rust code
+that uses the plugin directly (not via MCP):
+
+```rust
+impl FooWorkflowPlugin {
+    pub async fn connect(&self, url: &str) -> Result<(Uuid, Established<FooConnected>), String> {
+        let pool = Pool::connect(url).await.map_err(|e| e.to_string())?;
+        let id = Uuid::new_v4();
+        self.0.pools.lock().await.insert(id, pool);
+        Ok((id, Established::assert()))
+    }
+}
+```
+
+### 3C.6 `Cargo.toml` additions
+
+```toml
+[dependencies]
+elicitation_derive = { workspace = true }
+futures            = { workspace = true }
+proc-macro2        = { workspace = true }
+quote              = { workspace = true }
+inventory          = { workspace = true }
+tokio              = { workspace = true, features = ["sync"] }
+uuid               = { workspace = true }
+```
+
+---
+
+## Phase 3D — EmitCode for Workflow Tools
+
+The `#[elicit_tool]` macro auto-generates `EmitCode` — **do not write
+`impl EmitCode` manually** for tool functions.
+
+### 3D.1 Two emit modes
+
+| Attribute | When to use |
+|---|---|
+| `emit = auto` (default) | Handler body translates cleanly to standalone binary code |
+| `emit = MyCustomType` | Tool creates/stores session state, or uses patterns the auto-rewriter can't handle |
+
+**Auto-emit** transforms the handler body:
+
+- `p.field` → binds the param value inline
+- `ctx.method()` → replaced by the `emit_ctx` expression
+- `ErrorData::method(msg, ...)` → `std::io::Error::new(std::io::ErrorKind::Other, msg)`
+- `Ok(CallToolResult::success(...))` → `println!(...)`
+
+**Custom emit** is required for tools whose MCP handler logic is fundamentally different
+from the code that makes sense in a standalone binary.  Examples:
+
+- `connect`: MCP handler stores the pool in a session map by UUID; the binary just holds a local variable `pool`
+- `begin`: MCP handler stores a transaction by UUID; the binary just does `let mut tx = pool.begin().await?`
+- `tx_fetch_*`: uses `&mut **tx` deref patterns that the auto-rewriter can't construct
+
+### 3D.2 `CustomEmit<P>` pattern
+
+For tools that need custom emit, write a zero-sized marker type co-located with the tool function:
+
+```rust
+pub struct WfConnectEmit;
+impl CustomEmit<WfConnectParams> for WfConnectEmit {
+    fn emit_code(p: &WfConnectParams) -> TokenStream {
+        let url      = p.database_url.as_str();
+        let max_conn = p.max_connections.unwrap_or(10);
+        quote! {
+            let pool = AnyPoolOptions::new()
+                .max_connections(#max_conn)
+                .connect(#url)
+                .await?;
+        }
+    }
+}
+
+#[elicit_tool(
+    plugin = "foo_workflow",
+    name   = "foo_workflow__connect",
+    description = "...",
+    emit = WfConnectEmit   // ← tell the macro which CustomEmit to use
+)]
+async fn wf_connect(ctx: Arc<FooCtx>, p: WfConnectParams) -> Result<CallToolResult, ErrorData> {
+    // ... runtime handler body (NOT code generation) ...
+}
+```
+
+`#[elicit_tool]` sees `emit = WfConnectEmit` and generates the `EmitCode` delegation
+automatically.  You never write `impl EmitCode` yourself.
+
+### 3D.3 `EmitEntry` inventory (for `emit_dispatch_crate`)
+
+The `PluginToolRegistration` inventory (managed by `#[elicit_tool]`) handles interactive
+tool calls.  The `EmitEntry` inventory is a **separate registry** used by
+`emit_dispatch_crate` in `elicit_server` to reconstruct a standalone binary from a recorded
+tool call log (the N→1 pipeline).
+
+Register each workflow tool manually:
+
+```rust
+use elicitation::emit_code::{CrateDep, EmitCode, EmitEntry};
+
+const FOO_DEP: CrateDep = CrateDep {
+    name: "foo",
+    version: "1",
+    features: &[],
+};
+
+// Thin newtype so EmitCode can be object-safe.
+struct WfConnectEmitEntry(WfConnectParams);
+impl EmitCode for WfConnectEmitEntry {
+    fn emit_code(&self) -> TokenStream { WfConnectEmit::emit_code(&self.0) }
+    fn crate_deps(&self) -> Vec<CrateDep> { vec![FOO_DEP] }
+}
+
+inventory::submit! {
+    EmitEntry {
+        tool:       "foo_workflow__connect",
+        crate_name: "elicit_foo",
+        constructor: |v| {
+            serde_json::from_value::<WfConnectParams>(v)
+                .map(|p| Box::new(WfConnectEmitEntry(p)) as Box<dyn EmitCode>)
+                .map_err(|e| e.to_string())
+        },
+    }
+}
+```
+
+**One `inventory::submit!` block per tool.**  Tools with no params use `|_v| Ok(Box::new(...))`.
+
+### 3D.4 Linkage anchor in `elicit_server`
+
+`emit_dispatch_crate` in `elicit_server` must link the `elicit_foo` CGUs or the
+inventory submissions will be dead-stripped.  Add a `size_of` anchor:
+
+```rust
+// In elicit_server/src/lib.rs, inside emit_dispatch_crate():
+let _ = std::mem::size_of::<elicit_foo::workflow::WfConnectParams>();
+```
+
+And add the dependency:
+
+```toml
+# elicit_server/Cargo.toml
+[dependencies]
+elicit_foo = { workspace = true }
+```
+
+### 3D.5 Reference implementation
+
+`crates/elicit_sqlx/src/workflow.rs` — 13 workflow tools:
+
+- 2 tools with `emit = auto` (disconnect, commit/rollback — trivial bodies)
+- 11 tools with `emit = WfXxxEmit` (custom — session state or deref patterns)
+- 13 `inventory::submit!(EmitEntry {...})` blocks
+
+---
+
 ## Phase 4 — Kani Verification (`crates/elicitation_kani/`)
 
 ### 4.1 `Cargo.toml`
@@ -1122,9 +1438,11 @@ Crate: foo_macros
 [ ] elicit_foo/Cargo.toml: elicitation (features=["emit"]), proc-macro2, quote, inventory
 [ ] For each macro:
     [ ] src/my_macro.rs: params struct (Deserialize + JsonSchema)
-    [ ] impl EmitCode: emit_code() with quote!, crate_deps()
+    [ ] CustomEmit<P> type: impl CustomEmit<MyMacroParams> with emit_code() + quote!
+    [ ] EmitEntry newtype + impl EmitCode (thin wrapper calling CustomEmit::emit_code)
     [ ] inventory::submit!(EmitEntry { tool, crate_name, constructor })
-[ ] src/plugin.rs: #[derive(ElicitPlugin)] + #[elicit_tool] handlers calling p.emit_code().to_string()
+[ ] src/plugin.rs: #[derive(ElicitPlugin)] + #[elicit_tool(emit = MyMacroEmit)] handlers
+    (handler returns MyMacroEmit::emit_code(&p).to_string() — does NOT call p.emit_code())
 [ ] src/lib.rs: mod + pub use only
 [ ] just check-all elicit_foo passes clean
 
@@ -1202,50 +1520,73 @@ std__assemble { steps: ["let msg = format!(...); println!(\"{}\", msg);"] }
 pub struct MyMacroParams {
     pub arg: String,
 }
+```
 
-impl EmitCode for MyMacroParams {
-    fn emit_code(&self) -> TokenStream {
-        let arg = &self.arg;
+Do **not** write `impl EmitCode for MyMacroParams` — the `#[elicit_tool]` macro
+generates `EmitCode` automatically from the `emit = MyMacroEmit` attribute.
+
+**2. Custom emit type** (co-located with the params struct):
+
+```rust
+use elicitation::emit_code::CustomEmit;
+
+pub struct MyMacroEmit;
+impl CustomEmit<MyMacroParams> for MyMacroEmit {
+    fn emit_code(p: &MyMacroParams) -> TokenStream {
+        let arg = &p.arg;
         quote! { my_macro!(#arg) }
     }
+}
+```
 
+**3. `EmitEntry` inventory** — still needed for N→1 binary recovery via `emit_dispatch_crate`:
+
+```rust
+use elicitation::emit_code::{CrateDep, EmitCode, EmitEntry};
+
+struct MyMacroEmitEntry(MyMacroParams);
+impl EmitCode for MyMacroEmitEntry {
+    fn emit_code(&self) -> TokenStream { MyMacroEmit::emit_code(&self.0) }
     fn crate_deps(&self) -> Vec<CrateDep> {
-        // Return any non-std crates needed in the emitted binary's Cargo.toml
-        vec![CrateDep { name: "my_crate", version: "1" }]
+        vec![CrateDep { name: "my_crate", version: "1", features: &[] }]
     }
 }
 
 inventory::submit! {
     EmitEntry {
-        tool: "my_macro",
+        tool: "foo__my_macro",
         crate_name: "elicit_foo",
         constructor: |v| {
             serde_json::from_value::<MyMacroParams>(v)
-                .map(|p| Box::new(p) as Box<dyn EmitCode>)
+                .map(|p| Box::new(MyMacroEmitEntry(p)) as Box<dyn EmitCode>)
                 .map_err(|e| e.to_string())
         },
     }
 }
 ```
 
-**2. Handler** (in `crates/elicit_foo/src/plugin.rs`):
+**4. Handler** (in `crates/elicit_foo/src/plugin.rs`) — performs the runtime work and
+returns the code fragment as text.  Do **not** call `p.emit_code()` inside the handler
+body; that is the macro's responsibility:
 
 ```rust
 #[elicit_tool(
     plugin = "foo",
-    name = "my_macro",
+    name = "foo__my_macro",
     description = "Emit a my_macro!(…) expression as a Rust source fragment. \
                    Pass the returned string as an expression to another tool, \
-                   or collect as a step for std__assemble."
+                   or collect as a step for std__assemble.",
+    emit = MyMacroEmit
 )]
 #[instrument(skip_all)]
 async fn emit_my_macro(p: MyMacroParams) -> Result<CallToolResult, ErrorData> {
-    let source = p.emit_code().to_string();
+    // Compute the fragment at runtime and return it as text to the agent.
+    let source = MyMacroEmit::emit_code(&p).to_string();
     Ok(CallToolResult::success(vec![Content::text(source)]))
 }
 ```
 
-**3. Cargo.toml** — add `emit` feature to `elicitation` dep:
+**5. Cargo.toml** — add `emit` feature to `elicitation` dep:
 
 ```toml
 elicitation = { workspace = true, features = ["emit"] }
