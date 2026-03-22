@@ -1,6 +1,6 @@
 //! Kani formal verification proofs for elicitation contracts.
 //!
-//! This crate contains 291 proof harnesses verifying contract invariants
+//! This crate contains 304 proof harnesses verifying contract invariants
 //! using the Kani model checker's symbolic execution engine.
 //!
 //! # Architecture
@@ -16,7 +16,7 @@
 //! # Running Proofs
 //!
 //! ```bash
-//! # All proofs (291 harnesses)
+//! # All proofs (304 harnesses)
 //! cargo kani -p elicitation_kani --all-features
 //!
 //! # Specific module

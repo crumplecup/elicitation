@@ -45,7 +45,7 @@ fn verify_sqlx_error_kind_unknown_rejected() {
 fn verify_sqlx_error_kind_roundtrip_unique_violation() {
     use sqlx::error::ErrorKind;
     let labels = ErrorKind::labels();
-    let result = ErrorKind::from_label(labels[0]);
+    let result = ErrorKind::from_label(&labels[0]);
     assert!(
         result.is_some(),
         "ErrorKind::UniqueViolation label roundtrips"
@@ -82,7 +82,7 @@ fn verify_any_type_info_kind_unknown_rejected() {
 fn verify_any_type_info_kind_roundtrip_null() {
     use sqlx::any::AnyTypeInfoKind;
     let labels = AnyTypeInfoKind::labels();
-    let result = AnyTypeInfoKind::from_label(labels[0]);
+    let result = AnyTypeInfoKind::from_label(&labels[0]);
     assert!(result.is_some(), "AnyTypeInfoKind::Null label roundtrips");
 }
 
@@ -116,7 +116,7 @@ fn verify_sql_type_kind_unknown_rejected() {
 fn verify_sql_type_kind_roundtrip_null() {
     use elicitation::SqlTypeKind;
     let labels = SqlTypeKind::labels();
-    let result = SqlTypeKind::from_label(labels[0]);
+    let result = SqlTypeKind::from_label(&labels[0]);
     assert!(result.is_some(), "SqlTypeKind::Null label roundtrips");
 }
 
