@@ -25,6 +25,7 @@ elicit_chrono = { workspace = true }
 elicit_jiff = { workspace = true }
 elicit_time = { workspace = true }
 elicit_sqlx = { workspace = true }
+elicit_regex = { workspace = true }
 
 # Third-party types (needed in cross-crate workflows)
 reqwest = { workspace = true }
@@ -63,6 +64,7 @@ emit = [
   "elicit_chrono/emit",
   "elicit_jiff/emit",
   "elicit_time/emit",
+  "elicit_regex/emit",
 ]
 
 [dev-dependencies]

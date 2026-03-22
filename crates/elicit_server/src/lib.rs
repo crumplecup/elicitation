@@ -86,6 +86,8 @@ pub fn emit_dispatch_crate(
         std::mem::size_of::<elicit_serde_json::RawJson>(),
         // elicit_sqlx (workflow emit newtypes)
         std::mem::size_of::<elicit_sqlx::workflow::WfConnectParams>(),
+        // elicit_regex
+        std::mem::size_of::<elicit_regex::CompileParams>(),
     ];
     if crate_name.is_empty() {
         elicitation::emit_code::dispatch_emit(tool, params)
