@@ -10,14 +10,18 @@ writing any Rust by hand.
 
 ## What this crate provides
 
-Three complementary layers:
+Four complementary layers:
 
 1. **Newtype wrappers** — `serde` + `JsonSchema`-enabled newtypes for sqlx types
    that lack those impls, so database values can cross the MCP boundary
-2. **Runtime tools** — five live `SqlxPlugin` tools that execute SQL against a real
-   database and return structured, serializable results
-3. **Fragment tools** — four `SqlxFragPlugin` tools that emit Rust source wrapping
-   sqlx's compile-time macros (`query!`, `query_as!`, `query_scalar!`, `migrate!`)
+2. **Any-driver runtime tools** — five `SqlxPlugin` tools that execute SQL
+   against a real database via the `Any` driver and return structured results
+3. **Driver-specific plugins** — three plugins (`SqlxPgPlugin`, `SqlxSqlitePlugin`,
+   `SqlxMySqlPlugin`) that expose stateful, UUID-keyed connection pools and
+   transactions for Postgres, SQLite, and MySQL respectively
+4. **Fragment tools** — four `SqlxFragPlugin` tools that emit Rust source
+   wrapping sqlx's compile-time macros (`query!`, `query_as!`, `query_scalar!`,
+   `migrate!`)
 
 ---
 
@@ -32,13 +36,17 @@ tokio = { version = "1", features = ["full"] }
 
 ```rust,no_run
 use elicitation::PluginRegistry;
-use elicit_sqlx::{SqlxPlugin, SqlxFragPlugin};
+use elicit_sqlx::{SqlxPlugin, SqlxFragPlugin, SqlxPgPlugin, SqlxSqlitePlugin};
 
 let registry = PluginRegistry::new()
     .register("sqlx",      SqlxPlugin::default())
-    .register("sqlx_frag", SqlxFragPlugin);
+    .register("sqlx_frag", SqlxFragPlugin)
+    .register("pg",        SqlxPgPlugin::new())
+    .register("sqlite",    SqlxSqlitePlugin::new());
 
-// Agent calls: sqlx__fetch_all, sqlx_frag__query, …
+// Any-driver tools: sqlx__fetch_all, sqlx_frag__query, …
+// Postgres tools:   pg__connect, pg__begin, pg__tx_execute, pg__commit, …
+// SQLite tools:     sqlite__connect, sqlite__execute, sqlite__fetch_all, …
 ```
 
 ---
@@ -178,17 +186,98 @@ Any driver and produces a context from a database URL.
 
 ---
 
+## Driver-specific plugins
+
+`Pool<Db>` and `Connection<Db>` are generic over the driver type, which makes
+them opaque to MCP tool schemas.  The solution is monomorphization: rather than
+trying to express the generic, we shadow the concrete type aliases that actually
+appear in user code — `PgPool`, `SqlitePool`, `MySqlPool` — and generate a full
+stateful plugin for each one via the `impl_driver_plugin!` macro.
+
+Each driver plugin (`SqlxPgPlugin`, `SqlxSqlitePlugin`, `SqlxMySqlPlugin`) holds:
+
+- `Arc<Mutex<HashMap<Uuid, Pool>>>` — named persistent pools
+- `Arc<Mutex<HashMap<Uuid, Transaction<'static, Db>>>>` — open transactions
+
+Pools are `Clone` (Arc-backed), so the lock is released before any async call.
+Transactions are `!Clone`, so they are removed from the registry, used, and
+re-inserted — ensuring the lock is never held across an `await` point.
+
+### The 14-tool surface
+
+All tool names follow the pattern `{prefix}__{verb}`, where the prefix is chosen
+at registration time (e.g. `pg`, `sqlite`, `mysql`).
+
+| Category | Tool | Description |
+|---|---|---|
+| Pool | `*__connect` | Establish pool from URL; returns `ConnectResult { pool_id }` |
+| Pool | `*__disconnect` | Remove and close a named pool |
+| Pool | `*__pool_stats` | Returns `{ size, num_idle, is_closed }` |
+| Direct | `*__execute` | Execute non-returning SQL; returns `QueryResultData` |
+| Direct | `*__fetch_all` | SELECT returning all rows as `Vec<RowData>` |
+| Direct | `*__fetch_one` | SELECT returning first row; errors if none |
+| Direct | `*__fetch_optional` | SELECT returning first row or `null` |
+| Transaction | `*__begin` | Begin transaction; returns `BeginResult { tx_id }` |
+| Transaction | `*__commit` | Commit and remove a transaction |
+| Transaction | `*__rollback` | Roll back and remove a transaction |
+| Tx SQL | `*__tx_execute` | Execute non-returning SQL inside a transaction |
+| Tx SQL | `*__tx_fetch_all` | SELECT inside a transaction |
+| Tx SQL | `*__tx_fetch_one` | SELECT one row inside a transaction |
+| Tx SQL | `*__tx_fetch_optional` | SELECT optional row inside a transaction |
+
+### Why not the `Any` driver here?
+
+`SqlxPlugin` uses `AnyPool`, which works with any backend but requires
+`sqlx::any::install_default_drivers()` at runtime and routes through a dynamic
+dispatch layer.  Driver-specific plugins bypass that layer, using the native
+`PgPool`/`SqlitePool`/`MySqlPool` API directly.  This also gives access to
+driver-specific result data — for example:
+
+| Driver | `last_insert_id` |
+|---|---|
+| Postgres | None (use `RETURNING id` in your SQL) |
+| SQLite | `last_insert_rowid() → i64` |
+| MySQL | `last_insert_id() → u64` (cast to i64) |
+
+Each driver's row decoder dispatches on `TypeInfo::name()` strings appropriate
+for that engine rather than the `AnyValueKind` enum.
+
+### `DriverKind` — the verification bridge for drivers
+
+The `DriverKind` Select enum in the `elicitation` crate (under the `sqlx-types`
+feature) names the three supported drivers with full Kani, Creusot, and Verus
+coverage:
+
+```rust
+use elicitation::DriverKind;
+
+let k = DriverKind::Postgres;
+assert_eq!(k.url_scheme(), "postgres");
+assert_eq!(k.feature_name(), "postgres");
+```
+
+Formally verified properties:
+- Label count equals option count (3 variants, de-trusted in Creusot)
+- Known labels round-trip through `from_label()`
+- Unknown labels return `None`
+
+---
+
 ## What we chose not to shadow, and why
 
-### Generic `Pool<Db>` and `Connection<Db>`
+### Generic `Pool<Db>` and `Connection<Db>` as open generics
 
-sqlx's primary API is `Pool<Postgres>`, `Pool<Sqlite>`, and so on.  These are
-generic over the driver, which means they cannot appear in MCP tool schemas
-without a concrete type argument — and that type argument belongs to a world
-(the user's binary) the MCP boundary cannot see.  We solve this entirely through
-`AnyPool`, which erases the driver at runtime.  Users who need driver-specific
-behaviour should use sqlx directly in their binary; the MCP vocabulary covers
-the common cross-database subset.
+The generic forms (`Pool<Postgres>`, `Pool<Sqlite>`, etc.) cannot appear in MCP
+tool schemas without a concrete type argument — and that argument belongs to the
+user's binary, invisible to the MCP server.  We solve this through two paths:
+
+- **`AnyPool`** (`SqlxPlugin`) — erases the driver at runtime; one tool set
+  covers all backends.
+- **Monomorphized plugins** (`SqlxPgPlugin`, `SqlxSqlitePlugin`, `SqlxMySqlPlugin`)
+  — each shadows the concrete type alias for one backend, giving full stateful
+  pool and transaction support with driver-specific fidelity.
+
+The open generic `Pool<DB>` itself is never surfaced at the MCP boundary.
 
 ### `Query<'q, DB, Args>` and the typed query family
 
@@ -246,13 +335,15 @@ Select enums (formally verified via Kani/Creusot/Verus):
 |---|---|---|
 | [`SqlTypeKind`] | `elicitation::SqlTypeKind` | Maps `AnyTypeInfoKind` |
 | [`ErrorKind`] (in `elicitation`) | `sqlx::error::ErrorKind` | Maps sqlx error categories |
+| [`DriverKind`] (in `elicitation`) | `elicitation::DriverKind` | Postgres, Sqlite, MySql |
 
 ---
 
-## Runtime tools (`SqlxPlugin`)
+## Any-driver runtime tools (`SqlxPlugin`)
 
 All five tools accept `{ database_url, sql? }` and open a short-lived pool
-per call — no persistent connection state is required.
+per call — no persistent connection state is required.  These use the `Any`
+driver, so one tool set works against Postgres, SQLite, and MySQL alike.
 
 | Tool | Description |
 |---|---|
@@ -261,6 +352,9 @@ per call — no persistent connection state is required.
 | `sqlx__fetch_all` | SELECT returning all rows as `Vec<RowData>` |
 | `sqlx__fetch_one` | SELECT returning first row; errors if none found |
 | `sqlx__fetch_optional` | SELECT returning first row or `null` |
+
+For persistent pools, transaction support, or driver-specific result data, use
+the [driver-specific plugins](#driver-specific-plugins) instead.
 
 ---
 
