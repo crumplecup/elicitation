@@ -171,6 +171,12 @@ impl VerusProof {
             Self::new("sqlx_types", "verify_established_is_zero_sized"),
             Self::new("sqlx_types", "verify_and_combinator_is_zero_sized"),
             Self::new("sqlx_types", "verify_both_result_is_zero_sized"),
+            // sqlx macro fragment Props (SqlxFragPlugin)
+            Self::new("sqlx_types", "verify_query_fragment_emitted"),
+            Self::new("sqlx_types", "verify_query_as_fragment_emitted"),
+            Self::new("sqlx_types", "verify_query_scalar_fragment_emitted"),
+            Self::new("sqlx_types", "verify_migrate_fragment_emitted"),
+            Self::new("sqlx_types", "verify_fragment_props_zero_sized"),
             // tokio_types: async operation contracts + Prop zero-cost proofs
             Self::new("tokio_types", "verify_sleep_completed"),
             Self::new("tokio_types", "verify_timeout_resolved"),

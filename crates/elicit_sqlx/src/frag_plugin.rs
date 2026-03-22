@@ -8,6 +8,7 @@
 //! in the build environment of the consuming binary.
 
 use elicitation::emit_code::EmitCode;
+use elicitation::contracts::{Established, Prop};
 use elicitation::{ElicitPlugin, elicit_tool};
 use rmcp::ErrorData;
 use rmcp::model::{CallToolResult, Content};
@@ -23,6 +24,35 @@ use crate::fragments::{MigrateParams, QueryAsParams, QueryParams, QueryScalarPar
 #[plugin(name = "sqlx_frag")]
 pub struct SqlxFragPlugin;
 
+// ── Propositions ──────────────────────────────────────────────────────────────
+
+/// Proposition: a `sqlx::query!(sql, params…)` source fragment was emitted.
+///
+/// Established by [`emit_query`] after [`EmitCode::emit_code`] succeeds.
+/// The fragment contains a valid macro invocation; it does NOT guarantee
+/// that the emitted binary will compile (requires `DATABASE_URL` at
+/// consumer build time).
+pub struct QueryFragmentEmitted;
+impl Prop for QueryFragmentEmitted {}
+
+/// Proposition: a `sqlx::query_as!(Type, sql, params…)` source fragment was emitted.
+///
+/// Established by [`emit_query_as`] after [`EmitCode::emit_code`] succeeds.
+pub struct QueryAsFragmentEmitted;
+impl Prop for QueryAsFragmentEmitted {}
+
+/// Proposition: a `sqlx::query_scalar!(sql, params…)` source fragment was emitted.
+///
+/// Established by [`emit_query_scalar`] after [`EmitCode::emit_code`] succeeds.
+pub struct QueryScalarFragmentEmitted;
+impl Prop for QueryScalarFragmentEmitted {}
+
+/// Proposition: a `sqlx::migrate!(path).run(&pool).await?` source fragment was emitted.
+///
+/// Established by [`emit_migrate`] after [`EmitCode::emit_code`] succeeds.
+pub struct MigrateFragmentEmitted;
+impl Prop for MigrateFragmentEmitted {}
+
 // ── query! ────────────────────────────────────────────────────────────────────
 
 #[elicit_tool(
@@ -35,6 +65,7 @@ pub struct SqlxFragPlugin;
 #[instrument(skip_all)]
 async fn emit_query(p: QueryParams) -> Result<CallToolResult, ErrorData> {
     let source = p.emit_code().to_string();
+    let _proof: Established<QueryFragmentEmitted> = Established::assert();
     Ok(CallToolResult::success(vec![Content::text(source)]))
 }
 
@@ -51,6 +82,7 @@ async fn emit_query(p: QueryParams) -> Result<CallToolResult, ErrorData> {
 #[instrument(skip_all)]
 async fn emit_query_as(p: QueryAsParams) -> Result<CallToolResult, ErrorData> {
     let source = p.emit_code().to_string();
+    let _proof: Established<QueryAsFragmentEmitted> = Established::assert();
     Ok(CallToolResult::success(vec![Content::text(source)]))
 }
 
@@ -67,6 +99,7 @@ async fn emit_query_as(p: QueryAsParams) -> Result<CallToolResult, ErrorData> {
 #[instrument(skip_all)]
 async fn emit_query_scalar(p: QueryScalarParams) -> Result<CallToolResult, ErrorData> {
     let source = p.emit_code().to_string();
+    let _proof: Established<QueryScalarFragmentEmitted> = Established::assert();
     Ok(CallToolResult::success(vec![Content::text(source)]))
 }
 
@@ -82,5 +115,6 @@ async fn emit_query_scalar(p: QueryScalarParams) -> Result<CallToolResult, Error
 #[instrument(skip_all)]
 async fn emit_migrate(p: MigrateParams) -> Result<CallToolResult, ErrorData> {
     let source = p.emit_code().to_string();
+    let _proof: Established<MigrateFragmentEmitted> = Established::assert();
     Ok(CallToolResult::success(vec![Content::text(source)]))
 }

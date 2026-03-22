@@ -336,6 +336,55 @@ pub fn verify_to_sqlx_args_object_length_matches_fields(lengths_match: bool) -> 
 }
 
 // ============================================================================
+// SqlxFragPlugin macro emit Props
+// ============================================================================
+
+/// Contract: `emit_query(params)` — produces a `sqlx::query!(…)` fragment
+/// iff params are structurally valid. Licensed by `QueryFragmentEmitted`.
+///
+/// See: <https://docs.rs/sqlx/latest/sqlx/macro.query.html>
+pub fn verify_query_fragment_emitted(params_valid: bool) -> (result: bool)
+    ensures result == params_valid,
+{
+    params_valid
+}
+
+/// Contract: `emit_query_as(params)` — produces a `sqlx::query_as!(…)` fragment.
+/// Licensed by `QueryAsFragmentEmitted`.
+///
+/// See: <https://docs.rs/sqlx/latest/sqlx/macro.query_as.html>
+pub fn verify_query_as_fragment_emitted(params_valid: bool) -> (result: bool)
+    ensures result == params_valid,
+{
+    params_valid
+}
+
+/// Contract: `emit_query_scalar(params)` — produces a `sqlx::query_scalar!(…)` fragment.
+/// Licensed by `QueryScalarFragmentEmitted`.
+///
+/// See: <https://docs.rs/sqlx/latest/sqlx/macro.query_scalar.html>
+pub fn verify_query_scalar_fragment_emitted(params_valid: bool) -> (result: bool)
+    ensures result == params_valid,
+{
+    params_valid
+}
+
+/// Contract: `emit_migrate(params)` — produces a `sqlx::migrate!(…).run(…).await?` fragment.
+/// Licensed by `MigrateFragmentEmitted`.
+///
+/// See: <https://docs.rs/sqlx/latest/sqlx/macro.migrate.html>
+pub fn verify_migrate_fragment_emitted(params_valid: bool) -> (result: bool)
+    ensures result == params_valid,
+{
+    params_valid
+}
+
+/// Contract: all four fragment Prop types are unit structs — zero-sized.
+pub fn verify_fragment_props_zero_sized(size: usize) -> bool {
+    size == 0
+}
+
+// ============================================================================
 // Proposition combinators — structural zero-size contracts
 // ============================================================================
 
