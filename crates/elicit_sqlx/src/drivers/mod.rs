@@ -72,6 +72,12 @@ pub struct PoolSqlParams {
     pub pool_id: Uuid,
     /// SQL statement to execute.
     pub sql: String,
+    /// Optional positional arguments for parameterized queries.
+    ///
+    /// Values are matched positionally to `$1`, `?` etc. in the SQL.
+    /// Supported JSON types: `bool`, `number` (→ i64 or f64), `string`, `null`.
+    #[serde(default)]
+    pub args: Vec<serde_json::Value>,
 }
 
 /// Parameters for transaction lifecycle tools.
@@ -88,6 +94,12 @@ pub struct TxSqlParams {
     pub tx_id: Uuid,
     /// SQL statement to execute within the transaction.
     pub sql: String,
+    /// Optional positional arguments for parameterized queries.
+    ///
+    /// Values are matched positionally to `$1`, `?` etc. in the SQL.
+    /// Supported JSON types: `bool`, `number` (→ i64 or f64), `string`, `null`.
+    #[serde(default)]
+    pub args: Vec<serde_json::Value>,
 }
 
 // ── Shared result structs ─────────────────────────────────────────────────────
@@ -311,6 +323,82 @@ pub fn mysql_query_result(r: sqlx::mysql::MySqlQueryResult) -> QueryResultData {
     }
 }
 
+// ── Per-driver JSON → Arguments converters ────────────────────────────────────
+
+/// Bind a slice of [`serde_json::Value`] into [`sqlx::postgres::PgArguments`].
+///
+/// - `Bool` → `bool`
+/// - `Number` → `i64`, fallback to `f64`
+/// - `String` → `String`
+/// - `Null` / unknown → `Option::<String>::None`
+pub fn pg_args_from_json(args: &[serde_json::Value]) -> sqlx::postgres::PgArguments {
+    use sqlx::Arguments as _;
+    let mut out = sqlx::postgres::PgArguments::default();
+    for v in args {
+        match v {
+            serde_json::Value::Bool(b) => out.add(*b).expect("pg bind bool"),
+            serde_json::Value::Number(n) => {
+                if let Some(i) = n.as_i64() {
+                    out.add(i).expect("pg bind i64");
+                } else if let Some(f) = n.as_f64() {
+                    out.add(f).expect("pg bind f64");
+                } else {
+                    out.add(Option::<String>::None).expect("pg bind null");
+                }
+            }
+            serde_json::Value::String(s) => out.add(s.clone()).expect("pg bind string"),
+            _ => out.add(Option::<String>::None).expect("pg bind null"),
+        }
+    }
+    out
+}
+
+/// Bind a slice of [`serde_json::Value`] into [`sqlx::sqlite::SqliteArguments`].
+pub fn sqlite_args_from_json(args: &[serde_json::Value]) -> sqlx::sqlite::SqliteArguments<'static> {
+    use sqlx::Arguments as _;
+    let mut out = sqlx::sqlite::SqliteArguments::default();
+    for v in args {
+        match v {
+            serde_json::Value::Bool(b) => out.add(*b).expect("sqlite bind bool"),
+            serde_json::Value::Number(n) => {
+                if let Some(i) = n.as_i64() {
+                    out.add(i).expect("sqlite bind i64");
+                } else if let Some(f) = n.as_f64() {
+                    out.add(f).expect("sqlite bind f64");
+                } else {
+                    out.add(Option::<String>::None).expect("sqlite bind null");
+                }
+            }
+            serde_json::Value::String(s) => out.add(s.clone()).expect("sqlite bind string"),
+            _ => out.add(Option::<String>::None).expect("sqlite bind null"),
+        }
+    }
+    out
+}
+
+/// Bind a slice of [`serde_json::Value`] into [`sqlx::mysql::MySqlArguments`].
+pub fn mysql_args_from_json(args: &[serde_json::Value]) -> sqlx::mysql::MySqlArguments {
+    use sqlx::Arguments as _;
+    let mut out = sqlx::mysql::MySqlArguments::default();
+    for v in args {
+        match v {
+            serde_json::Value::Bool(b) => out.add(*b).expect("mysql bind bool"),
+            serde_json::Value::Number(n) => {
+                if let Some(i) = n.as_i64() {
+                    out.add(i).expect("mysql bind i64");
+                } else if let Some(f) = n.as_f64() {
+                    out.add(f).expect("mysql bind f64");
+                } else {
+                    out.add(Option::<String>::None).expect("mysql bind null");
+                }
+            }
+            serde_json::Value::String(s) => out.add(s.clone()).expect("mysql bind string"),
+            _ => out.add(Option::<String>::None).expect("mysql bind null"),
+        }
+    }
+    out
+}
+
 // ── Macro ─────────────────────────────────────────────────────────────────────
 
 /// Generate a stateful driver-specific pool plugin.
@@ -334,6 +422,7 @@ macro_rules! impl_driver_plugin {
         db_type = $Db:ty,
         row_decoder = $decode_row:ident,
         result_converter = $build_result:ident,
+        args_converter = $args_from_json:ident,
         driver_label = $driver_label:literal
     ) => {
         #[doc = concat!("Stateful MCP plugin for `", $driver_label, "` database operations.")]
@@ -556,7 +645,14 @@ macro_rules! impl_driver_plugin {
                                     ErrorData::invalid_params("pool_id not found", None)
                                 })?
                             };
-                            match sqlx::query(&p.sql).execute(&pool).await {
+                            let result = if p.args.is_empty() {
+                                sqlx::query(&p.sql).execute(&pool).await
+                            } else {
+                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                    .execute(&pool)
+                                    .await
+                            };
+                            match result {
                                 Ok(r) => Ok(json_result(&$build_result(r))),
                                 Err(e) => {
                                     Ok(CallToolResult::error(vec![Content::text(e.to_string())]))
@@ -572,7 +668,14 @@ macro_rules! impl_driver_plugin {
                                     ErrorData::invalid_params("pool_id not found", None)
                                 })?
                             };
-                            match sqlx::query(&p.sql).fetch_all(&pool).await {
+                            let result = if p.args.is_empty() {
+                                sqlx::query(&p.sql).fetch_all(&pool).await
+                            } else {
+                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                    .fetch_all(&pool)
+                                    .await
+                            };
+                            match result {
                                 Ok(rows) => {
                                     let data: Vec<RowData> = rows.iter().map($decode_row).collect();
                                     Ok(json_result(&data))
@@ -591,7 +694,14 @@ macro_rules! impl_driver_plugin {
                                     ErrorData::invalid_params("pool_id not found", None)
                                 })?
                             };
-                            match sqlx::query(&p.sql).fetch_one(&pool).await {
+                            let result = if p.args.is_empty() {
+                                sqlx::query(&p.sql).fetch_one(&pool).await
+                            } else {
+                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                    .fetch_one(&pool)
+                                    .await
+                            };
+                            match result {
                                 Ok(row) => Ok(json_result(&$decode_row(&row))),
                                 Err(e) => {
                                     Ok(CallToolResult::error(vec![Content::text(e.to_string())]))
@@ -607,7 +717,14 @@ macro_rules! impl_driver_plugin {
                                     ErrorData::invalid_params("pool_id not found", None)
                                 })?
                             };
-                            match sqlx::query(&p.sql).fetch_optional(&pool).await {
+                            let result = if p.args.is_empty() {
+                                sqlx::query(&p.sql).fetch_optional(&pool).await
+                            } else {
+                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                    .fetch_optional(&pool)
+                                    .await
+                            };
+                            match result {
                                 Ok(maybe) => {
                                     let data = maybe.as_ref().map($decode_row);
                                     Ok(json_result(&data))
@@ -679,7 +796,13 @@ macro_rules! impl_driver_plugin {
                                 self.transactions.lock().await.remove(&p.tx_id).ok_or_else(
                                     || ErrorData::invalid_params("tx_id not found", None),
                                 )?;
-                            let result = sqlx::query(&p.sql).execute(&mut *tx).await;
+                            let result = if p.args.is_empty() {
+                                sqlx::query(&p.sql).execute(&mut *tx).await
+                            } else {
+                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                    .execute(&mut *tx)
+                                    .await
+                            };
                             self.transactions.lock().await.insert(p.tx_id, tx);
                             match result {
                                 Ok(r) => Ok(json_result(&$build_result(r))),
@@ -695,7 +818,13 @@ macro_rules! impl_driver_plugin {
                                 self.transactions.lock().await.remove(&p.tx_id).ok_or_else(
                                     || ErrorData::invalid_params("tx_id not found", None),
                                 )?;
-                            let result = sqlx::query(&p.sql).fetch_all(&mut *tx).await;
+                            let result = if p.args.is_empty() {
+                                sqlx::query(&p.sql).fetch_all(&mut *tx).await
+                            } else {
+                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                    .fetch_all(&mut *tx)
+                                    .await
+                            };
                             self.transactions.lock().await.insert(p.tx_id, tx);
                             match result {
                                 Ok(rows) => {
@@ -714,7 +843,13 @@ macro_rules! impl_driver_plugin {
                                 self.transactions.lock().await.remove(&p.tx_id).ok_or_else(
                                     || ErrorData::invalid_params("tx_id not found", None),
                                 )?;
-                            let result = sqlx::query(&p.sql).fetch_one(&mut *tx).await;
+                            let result = if p.args.is_empty() {
+                                sqlx::query(&p.sql).fetch_one(&mut *tx).await
+                            } else {
+                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                    .fetch_one(&mut *tx)
+                                    .await
+                            };
                             self.transactions.lock().await.insert(p.tx_id, tx);
                             match result {
                                 Ok(row) => Ok(json_result(&$decode_row(&row))),
@@ -730,7 +865,13 @@ macro_rules! impl_driver_plugin {
                                 self.transactions.lock().await.remove(&p.tx_id).ok_or_else(
                                     || ErrorData::invalid_params("tx_id not found", None),
                                 )?;
-                            let result = sqlx::query(&p.sql).fetch_optional(&mut *tx).await;
+                            let result = if p.args.is_empty() {
+                                sqlx::query(&p.sql).fetch_optional(&mut *tx).await
+                            } else {
+                                sqlx::query_with(&p.sql, $args_from_json(&p.args))
+                                    .fetch_optional(&mut *tx)
+                                    .await
+                            };
                             self.transactions.lock().await.insert(p.tx_id, tx);
                             match result {
                                 Ok(maybe) => {
@@ -763,6 +904,7 @@ impl_driver_plugin!(
     db_type = sqlx::Postgres,
     row_decoder = decode_pg_row,
     result_converter = pg_query_result,
+    args_converter = pg_args_from_json,
     driver_label = "PostgreSQL"
 );
 
@@ -773,6 +915,7 @@ impl_driver_plugin!(
     db_type = sqlx::Sqlite,
     row_decoder = decode_sqlite_row,
     result_converter = sqlite_query_result,
+    args_converter = sqlite_args_from_json,
     driver_label = "SQLite"
 );
 
@@ -783,5 +926,6 @@ impl_driver_plugin!(
     db_type = sqlx::MySql,
     row_decoder = decode_mysql_row,
     result_converter = mysql_query_result,
+    args_converter = mysql_args_from_json,
     driver_label = "MySQL"
 );

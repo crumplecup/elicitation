@@ -6,6 +6,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod args;
 mod column;
 mod context;
 pub mod drivers;
@@ -17,6 +18,7 @@ mod query_result;
 mod row;
 mod type_info;
 
+pub use args::{ToSqlxArgs, ToSqlxArgsFactory};
 pub use column::AnyColumn;
 pub use context::{SqlxContext, connect};
 pub use drivers::{SqlxMySqlPlugin, SqlxPgPlugin, SqlxSqlitePlugin};

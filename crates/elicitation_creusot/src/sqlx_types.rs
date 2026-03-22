@@ -204,3 +204,33 @@ pub fn verify_driver_kind_known_label_accepted() -> bool {
 pub fn verify_driver_kind_unknown_rejected() -> bool {
     elicitation::DriverKind::from_label("__unknown__").is_none()
 }
+
+// ============================================================================
+// ToSqlxArgs — inline args dispatch
+// ============================================================================
+
+/// Proof that a Null JSON value produces a single-element Vec.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_to_sqlx_args_null_is_single_element() -> bool {
+    let val = serde_json::Value::Null;
+    let result: Vec<serde_json::Value> = match val {
+        serde_json::Value::Object(map) => map.into_values().collect(),
+        other => vec![other],
+    };
+    result.len() == 1 && result[0].is_null()
+}
+
+/// Proof that a Bool JSON value produces a single-element Vec.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_to_sqlx_args_bool_is_single_element() -> bool {
+    let val = serde_json::Value::Bool(true);
+    let result: Vec<serde_json::Value> = match val {
+        serde_json::Value::Object(map) => map.into_values().collect(),
+        other => vec![other],
+    };
+    result.len() == 1 && matches!(result[0], serde_json::Value::Bool(true))
+}

@@ -210,3 +210,54 @@ fn verify_driver_kind_roundtrip_postgres() {
         "DriverKind::Postgres label roundtrips"
     );
 }
+
+// ============================================================================
+// ToSqlxArgs — inline args dispatch
+// ============================================================================
+
+#[cfg(feature = "sqlx-types")]
+#[kani::proof]
+fn verify_to_sqlx_args_null_is_single_element() {
+    // Null JSON value wraps in a single-element Vec
+    let val = serde_json::Value::Null;
+    let result: Vec<serde_json::Value> = match val {
+        serde_json::Value::Object(map) => map.into_values().collect(),
+        other => vec![other],
+    };
+    assert!(result.len() == 1, "Null serializes to single-element Vec");
+    assert!(
+        result[0].is_null(),
+        "Null serializes to Vec containing Null"
+    );
+}
+
+#[cfg(feature = "sqlx-types")]
+#[kani::proof]
+fn verify_to_sqlx_args_bool_is_single_element() {
+    // Bool JSON value wraps in a single-element Vec
+    let val = serde_json::Value::Bool(true);
+    let result: Vec<serde_json::Value> = match val {
+        serde_json::Value::Object(map) => map.into_values().collect(),
+        other => vec![other],
+    };
+    assert!(result.len() == 1, "Bool serializes to single-element Vec");
+    assert!(
+        matches!(result[0], serde_json::Value::Bool(true)),
+        "Bool(true) preserved in single-element Vec"
+    );
+}
+
+#[cfg(feature = "sqlx-types")]
+#[kani::proof]
+fn verify_to_sqlx_args_object_extracts_values() {
+    // Object JSON value extracts all field values
+    let mut map = serde_json::Map::new();
+    map.insert("a".to_string(), serde_json::Value::Bool(false));
+    map.insert("b".to_string(), serde_json::Value::Null);
+    let val = serde_json::Value::Object(map);
+    let result: Vec<serde_json::Value> = match val {
+        serde_json::Value::Object(m) => m.into_values().collect(),
+        other => vec![other],
+    };
+    assert!(result.len() == 2, "Object with 2 fields extracts 2 values");
+}

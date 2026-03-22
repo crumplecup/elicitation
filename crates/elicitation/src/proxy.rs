@@ -72,6 +72,16 @@ identity_proxy!(
     bool, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, isize, usize, f32, f64, char, String,
 );
 
+impl ElicitProxy for serde_json::Value {
+    type Proxy = serde_json::Value;
+    fn into_proxy(self) -> serde_json::Value {
+        self
+    }
+    fn from_proxy(proxy: serde_json::Value) -> serde_json::Value {
+        proxy
+    }
+}
+
 impl<T: ElicitProxy> ElicitProxy for Option<T>
 where
     Option<T::Proxy>: Serialize + DeserializeOwned + JsonSchema,

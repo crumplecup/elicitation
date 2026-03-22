@@ -162,6 +162,12 @@ impl VerusProof {
             Self::new("sqlx_types", "verify_driver_kind_unknown_rejected"),
             Self::new("sqlx_types", "verify_driver_kind_roundtrip_complete"),
             Self::new("sqlx_types", "verify_driver_kind_label_count_matches"),
+            Self::new("sqlx_types", "verify_to_sqlx_args_null_is_single_element"),
+            Self::new("sqlx_types", "verify_to_sqlx_args_bool_is_single_element"),
+            Self::new(
+                "sqlx_types",
+                "verify_to_sqlx_args_object_length_matches_fields",
+            ),
         ]
     }
 }
