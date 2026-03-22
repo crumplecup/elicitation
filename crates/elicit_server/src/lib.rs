@@ -39,6 +39,7 @@
 //! | `TokioSignalPlugin` | `elicit_tokio` | ctrl_c, unix_signal_create (unix), unix_signal_recv (unix), unix_signal_close (unix) |
 //! | `TokioIoPlugin` | `elicit_tokio` | duplex_create, duplex_read, duplex_write, duplex_close |
 //! | `TokioUnixPlugin` | `elicit_tokio` | unix_listener_bind, unix_listener_accept, unix_listener_local_addr, unix_listener_close, unix_stream_connect, unix_stream_read, unix_stream_write, unix_stream_local_addr, unix_stream_peer_addr, unix_stream_close, unix_datagram_bind, unix_datagram_send_to, unix_datagram_recv_from, unix_datagram_local_addr, unix_datagram_close (**unix only**) |
+//! | `TokioSpawnPlugin` | `elicit_tokio` | join, try_join, abort + one dynamic tool per registered workload type |
 //!
 //! # Feature flags
 //!
@@ -130,6 +131,7 @@ pub fn emit_dispatch_crate(
         // unix-only anchors compiled on all platforms via cfg
         #[cfg(unix)]
         std::mem::size_of::<elicit_tokio::UnixListenerBindParams>(),
+        std::mem::size_of::<elicit_tokio::JoinParams>(),
     ];
     if crate_name.is_empty() {
         elicitation::emit_code::dispatch_emit(tool, params)
