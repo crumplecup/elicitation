@@ -46,6 +46,12 @@ enum EmitMode {
     Auto,
     /// Delegate to a user-supplied type implementing `CustomEmit<Params>`.
     Custom(Path),
+    /// Skip all emit code generation — no `impl EmitCode`, no `register_emit!`.
+    ///
+    /// Use for tools whose params contain types without `ToCodeLiteral` (e.g.
+    /// `serde_json::Value`), or for meta-tools like `emit_binary` that should
+    /// not themselves participate in the recovery pipeline.
+    None,
 }
 
 impl Parse for ElicitToolArgs {
@@ -151,7 +157,12 @@ impl Parse for ElicitToolArgs {
                                 }
                                 // emit = some::Type
                                 Expr::Path(p) => {
-                                    emit = EmitMode::Custom(p.path.clone());
+                                    // Special case: emit = None → skip all emit generation
+                                    if p.path.is_ident("None") {
+                                        emit = EmitMode::None;
+                                    } else {
+                                        emit = EmitMode::Custom(p.path.clone());
+                                    }
                                 }
                                 other => {
                                     return Err(Error::new_spanned(
@@ -367,6 +378,10 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
             };
 
             expanded = quote! { #expanded #emit_block };
+        }
+        EmitMode::None => {
+            // No EmitCode impl, no register_emit! — this tool does not
+            // participate in the code recovery pipeline.
         }
     }
 
