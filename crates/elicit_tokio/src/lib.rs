@@ -19,6 +19,7 @@
 //! | [`TokioChannelPlugin`] | `tokio_channel__*` | mpsc_create, mpsc_send, mpsc_try_send, mpsc_recv, mpsc_try_recv, mpsc_sender_close, mpsc_receiver_close, oneshot_create, oneshot_send, oneshot_recv, oneshot_try_recv, watch_create, watch_send, watch_borrow, watch_changed, watch_subscribe, watch_sender_close, watch_receiver_close, broadcast_create, broadcast_send, broadcast_recv, broadcast_try_recv, broadcast_subscribe, broadcast_sender_close, broadcast_receiver_close, mutex_create, mutex_lock, mutex_update, mutex_try_lock, mutex_close, rwlock_create, rwlock_read, rwlock_write, rwlock_try_read, rwlock_try_write, rwlock_close |
 //! | [`TokioSignalPlugin`] | `tokio_signal__*` | ctrl_c, unix_signal_create (unix), unix_signal_recv (unix), unix_signal_close (unix) |
 //! | [`TokioIoPlugin`] | `tokio_io__*` | duplex_create, duplex_read, duplex_write, duplex_close |
+//! | [`TokioUnixPlugin`] | `tokio_unix__*` | unix_listener_bind, unix_listener_accept, unix_listener_local_addr, unix_listener_close, unix_stream_connect, unix_stream_read, unix_stream_write, unix_stream_local_addr, unix_stream_peer_addr, unix_stream_close, unix_datagram_bind, unix_datagram_send_to, unix_datagram_recv_from, unix_datagram_local_addr, unix_datagram_close (**unix only**) |
 //!
 //! # Feature flags
 //!
@@ -37,6 +38,8 @@ mod signal;
 mod sync;
 mod task;
 mod time;
+#[cfg(unix)]
+mod unix;
 
 pub use channels::{
     BroadcastCreateParams, BroadcastReceiverCloseParams, BroadcastRecvParams, BroadcastSendParams,
@@ -83,4 +86,12 @@ pub use task::{TokioTaskPlugin, YieldNowParams};
 pub use time::{
     IntervalCreateParams, IntervalTickParams, SleepCompleted, SleepParams, SleepUntilParams,
     TimeoutAwaitParams, TimeoutCheckParams, TimeoutCreateParams, TimeoutResolved, TokioTimePlugin,
+};
+#[cfg(unix)]
+pub use unix::{
+    TokioUnixPlugin, UnixDatagramBindParams, UnixDatagramCloseParams, UnixDatagramLocalAddrParams,
+    UnixDatagramRecvFromParams, UnixDatagramSendToParams, UnixListenerAcceptParams,
+    UnixListenerBindParams, UnixListenerCloseParams, UnixListenerLocalAddrParams,
+    UnixStreamCloseParams, UnixStreamConnectParams, UnixStreamLocalAddrParams,
+    UnixStreamPeerAddrParams, UnixStreamReadParams, UnixStreamWriteParams,
 };
