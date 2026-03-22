@@ -33,6 +33,7 @@
 //! | `TokioRuntimePlugin` | `elicit_tokio` | inspect_flavor |
 //! | `TokioFsPlugin` | `elicit_tokio` | read_to_string, read_bytes, write_text, write_bytes, create_dir, create_dir_all, remove_dir, remove_dir_all, remove_file, rename, copy, metadata, read_dir, canonicalize |
 //! | `TokioNetPlugin` | `elicit_tokio` | tcp_listener_bind, tcp_listener_accept, tcp_listener_local_addr, tcp_listener_close, tcp_stream_connect, tcp_stream_read, tcp_stream_write, tcp_stream_local_addr, tcp_stream_peer_addr, tcp_stream_close, udp_socket_bind, udp_socket_send_to, udp_socket_recv_from, udp_socket_local_addr, udp_socket_close |
+//! | `TokioProcessPlugin` | `elicit_tokio` | process_run, process_spawn, process_stdin_write, process_stdout_read, process_stderr_read, process_wait, process_try_wait, process_kill, process_id |
 //!
 //! # Feature flags
 //!
@@ -113,6 +114,7 @@ pub fn emit_dispatch_crate(
         std::mem::size_of::<elicit_tokio::InspectFlavorParams>(),
         std::mem::size_of::<elicit_tokio::ReadToStringParams>(),
         std::mem::size_of::<elicit_tokio::TcpListenerBindParams>(),
+        std::mem::size_of::<elicit_tokio::ProcessRunParams>(),
     ];
     if crate_name.is_empty() {
         elicitation::emit_code::dispatch_emit(tool, params)
