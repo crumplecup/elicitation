@@ -294,6 +294,24 @@ or passed as tool arguments.  We solve this in two complementary ways:
    query verification; the agent composes the fragment and hands it to
    `std__assemble`.
 
+Positional SQL arguments are handled separately — see
+[Parameterized queries](#parameterized-queries) below.
+
+### `PgArguments` and the `Encode` wall
+
+`PgArguments::add<T: Encode>` is generic — the Encode bound is monomorphic at
+compile time.  `elicit_newtype!` and `#[reflect_methods]` cannot reflect generic
+methods across the MCP boundary, so we cannot shadow `PgArguments` directly.
+
+Instead we provide two complementary mechanisms:
+
+- **Inline JSON args** — pass `args: [v1, v2, …]` directly on any driver plugin
+  tool.  JSON values are converted to native driver bindings at dispatch time.
+- **`ToSqlxArgsFactory`** — for user types that deserve schema-accurate tooling,
+  `prime_to_sqlx_args::<T>()` registers a `{prefix}__to_sqlx_args` tool that
+  converts the full JSON-serialized `T` into an ordered arg vector.  The output
+  can be passed directly as `args` to any execute/fetch tool.
+
 ### `sqlx::Row` as a trait object
 
 The `Row` trait is object-unsafe (it is generic over the column accessor), so
@@ -380,6 +398,69 @@ out the compile-time check.
 
 ---
 
+## Parameterized queries
+
+All driver plugin tools accept an optional `args` field for positional SQL
+parameters.  When present, the tool uses `sqlx::query_with(sql, bindings)`
+instead of bare `sqlx::query(sql)`.
+
+### Inline JSON args
+
+Pass values directly as a JSON array:
+
+```json
+{
+  "pool_id": "…",
+  "sql": "INSERT INTO users (name, age) VALUES ($1, $2)",
+  "args": ["Alice", 30]
+}
+```
+
+JSON values are converted to native driver bindings at dispatch time:
+
+| JSON value | Binding |
+|---|---|
+| `true` / `false` | `bool` |
+| integer number | `i64` |
+| floating-point number | `f64` |
+| string | `String` |
+| `null` | `Option::<String>::None` |
+
+### `ToSqlxArgsFactory` — typed arg conversion
+
+For user types that need schema-accurate tool input, register the type with the
+`ToSqlxArgsFactory`.  For each registered `T`, a `{prefix}__to_sqlx_args` tool
+is contributed with `T`'s full JSON Schema as its input schema.
+
+```rust
+prime_to_sqlx_args::<CreateUser>();
+registry.register_type::<CreateUser>("create_user");
+// Agent can now call: create_user__to_sqlx_args { target: { … } }
+```
+
+Three-step agent workflow:
+
+```
+1. pg__connect { url }
+       → { pool_id: "abc" }
+
+2. create_user__to_sqlx_args { target: { name: "Alice", age: 30 } }
+       → { result: ["Alice", 30] }
+
+3. pg__execute { pool_id: "abc",
+                 sql: "INSERT INTO users(name,age) VALUES($1,$2)",
+                 args: ["Alice", 30] }
+       → { rows_affected: 1 }
+```
+
+Field values are emitted in struct declaration order (serde_json preserves
+insertion order via `IndexMap`), so positional parameter alignment is reliable.
+
+Non-object JSON (e.g. a newtype wrapping a scalar) is wrapped in a
+single-element `Vec`, which works naturally with single-parameter queries.
+
+---
+
 ## Formal verification
 
 All sqlx `Select` enum types in the `elicitation` crate have Kani, Creusot, and
@@ -392,5 +473,12 @@ Verus proofs covering:
 
 The `ColumnValue` and `RowData` transport types have Verus proofs on their
 constructors, and `AnyQueryResult`'s field accessors are covered by Kani
-harnesses.  See `FORMAL_VERIFICATION_LEGOS.md` for the compositional proof
-strategy.
+harnesses.
+
+The `ToSqlxArgs` dispatch logic has three Kani harnesses
+(`verify_to_sqlx_args_null_is_single_element`,
+`verify_to_sqlx_args_bool_is_single_element`,
+`verify_to_sqlx_args_object_extracts_values`), two Creusot proofs, and three
+Verus structural contracts covering the null, bool, and object dispatch arms.
+
+See `FORMAL_VERIFICATION_LEGOS.md` for the compositional proof strategy.
