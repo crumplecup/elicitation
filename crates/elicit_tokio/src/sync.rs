@@ -24,8 +24,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use elicitation::PluginContext;
 use elicitation::contracts::{Established, Prop};
+use elicitation::{Elicit, PluginContext};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -40,16 +40,131 @@ use uuid::Uuid;
 // ── Propositions ──────────────────────────────────────────────────────────────
 
 /// Proposition: a semaphore permit was successfully acquired.
+#[derive(Elicit)]
 pub struct PermitAcquired;
-impl Prop for PermitAcquired {}
+impl Prop for PermitAcquired {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_permit_acquired_axiom() {
+                let permits_available: u32 = kani::any();
+                kani::assume(permits_available > 0);
+                let acquired = true;
+                assert!(acquired, "tokio::sync::Semaphore::acquire axiom: Ok => permit decremented");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_permit_acquired(acquire_returned_ok: bool) -> (result: bool)
+                ensures result == acquire_returned_ok,
+            {
+                acquire_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_permit_acquired_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a `notified()` await returned — a notification was received.
+#[derive(Elicit)]
 pub struct NotificationReceived;
-impl Prop for NotificationReceived {}
+impl Prop for NotificationReceived {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_notification_received_axiom() {
+                let notified: bool = kani::any();
+                kani::assume(notified);
+                assert!(notified, "tokio::sync::Notify::notified axiom: returns when notify_one/waiters called");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_notification_received(was_notified: bool) -> (result: bool)
+                ensures result == was_notified,
+            {
+                was_notified
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_notification_received_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: all parties have reached the barrier and it has released.
+#[derive(Elicit)]
 pub struct BarrierReached;
-impl Prop for BarrierReached {}
+impl Prop for BarrierReached {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_barrier_reached_axiom() {
+                let all_arrived: bool = kani::any();
+                kani::assume(all_arrived);
+                assert!(all_arrived, "tokio::sync::Barrier::wait axiom: returns when all parties arrive");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_barrier_reached(all_arrived: bool) -> (result: bool)
+                ensures result == all_arrived,
+            {
+                all_arrived
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_barrier_reached_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

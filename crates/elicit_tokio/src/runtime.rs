@@ -19,6 +19,7 @@
 //! | `build_multi_thread` | `worker_threads?, enable_all, max_blocking_threads?` | error at runtime | emit-only |
 //! | `block_on` | `runtime_var, body` | error at runtime | emit-only |
 
+use elicitation::Elicit;
 use elicitation::contracts::{Established, Prop};
 use elicitation_derive::ElicitPlugin;
 use rmcp::{ErrorData, model::CallToolResult};
@@ -28,8 +29,45 @@ use serde::{Deserialize, Serialize};
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: `tokio_runtime__inspect_flavor` returned successfully — the runtime flavor is known.
+#[derive(Elicit)]
 pub struct RuntimeFlavored {}
-impl Prop for RuntimeFlavored {}
+impl Prop for RuntimeFlavored {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_runtime_flavored_axiom() {
+                let flavor_known = true;
+                assert!(flavor_known, "Handle::runtime_flavor axiom: always returns when called inside runtime");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_runtime_flavored(inside_runtime: bool) -> (result: bool)
+                ensures result == inside_runtime,
+            {
+                inside_runtime
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_runtime_flavored_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 // ── Runtime flavor mirror ─────────────────────────────────────────────────────
 

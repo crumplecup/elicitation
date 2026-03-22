@@ -27,8 +27,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use elicitation::PluginContext;
 use elicitation::contracts::{Established, Prop};
+use elicitation::{Elicit, PluginContext};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -45,20 +45,172 @@ use uuid::Uuid;
 // ── Propositions ──────────────────────────────────────────────────────────────
 
 /// Proposition: a TCP listener was successfully bound to a local address.
+#[derive(Elicit)]
 pub struct ListenerBound;
-impl Prop for ListenerBound {}
+impl Prop for ListenerBound {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_listener_bound_axiom() {
+                let bind_ok: bool = kani::any();
+                kani::assume(bind_ok);
+                assert!(bind_ok, "tokio::net::TcpListener::bind axiom: Ok => socket bound");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_listener_bound(bind_returned_ok: bool) -> (result: bool)
+                ensures result == bind_returned_ok,
+            {
+                bind_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_listener_bound_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: an incoming TCP connection was accepted by a listener.
+#[derive(Elicit)]
 pub struct ConnectionAccepted;
-impl Prop for ConnectionAccepted {}
+impl Prop for ConnectionAccepted {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_connection_accepted_axiom() {
+                let accept_ok: bool = kani::any();
+                kani::assume(accept_ok);
+                assert!(accept_ok, "tokio::net::TcpListener::accept axiom: Ok => connection stream ready");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_connection_accepted(accept_returned_ok: bool) -> (result: bool)
+                ensures result == accept_returned_ok,
+            {
+                accept_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_connection_accepted_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a TCP stream was successfully connected to a remote address.
+#[derive(Elicit)]
 pub struct StreamConnected;
-impl Prop for StreamConnected {}
+impl Prop for StreamConnected {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_stream_connected_axiom() {
+                let connect_ok: bool = kani::any();
+                kani::assume(connect_ok);
+                assert!(connect_ok, "tokio::net::TcpStream::connect axiom: Ok => TCP handshake complete");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_stream_connected(connect_returned_ok: bool) -> (result: bool)
+                ensures result == connect_returned_ok,
+            {
+                connect_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_stream_connected_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: at least one byte was received from a stream or socket.
+#[derive(Elicit)]
 pub struct DataReceived;
-impl Prop for DataReceived {}
+impl Prop for DataReceived {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_data_received_axiom() {
+                let bytes: usize = kani::any();
+                kani::assume(bytes > 0);
+                assert!(bytes > 0, "AsyncReadExt::read axiom: Ok(n > 0) => bytes available");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_data_received(bytes_available: bool) -> (result: bool)
+                ensures result == bytes_available,
+            {
+                bytes_available
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_data_received_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

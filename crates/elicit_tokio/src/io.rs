@@ -29,8 +29,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use elicitation::PluginContext;
 use elicitation::contracts::{Established, Prop};
+use elicitation::{Elicit, PluginContext};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -46,8 +46,45 @@ use uuid::Uuid;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: a `tokio::io::duplex()` pair was created and both ends are registered.
+#[derive(Elicit)]
 pub struct DuplexCreated {}
-impl Prop for DuplexCreated {}
+impl Prop for DuplexCreated {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_duplex_created_axiom() {
+                let created = true;
+                assert!(created, "tokio::io::duplex axiom: always returns a connected (a, b) pair");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_duplex_created(call_completed: bool) -> (result: bool)
+                ensures result == call_completed,
+            {
+                call_completed
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_duplex_created_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

@@ -302,6 +302,8 @@
 //! - [Examples](../../examples): Complete working examples
 //! - [Kani verification](https://model-checking.github.io/kani/): How we verify properties
 
+#[cfg(feature = "proofs")]
+use proc_macro2;
 use std::marker::PhantomData;
 
 /// Marker trait: types that represent propositions.
@@ -318,7 +320,41 @@ use std::marker::PhantomData;
 /// // Built-in proposition: value inhabits type T
 /// type StringProp = Is<String>;
 /// ```
-pub trait Prop: 'static {}
+pub trait Prop: 'static {
+    /// Generate a Kani proof harness for this proposition.
+    ///
+    /// Returns a [`proc_macro2::TokenStream`] containing a `#[kani::proof]` harness
+    /// that encodes this proposition as a trusted axiom. An empty stream means
+    /// no proof has been implemented — coverage tests assert non-empty.
+    ///
+    /// Available with the `proofs` feature.
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    /// Generate a Verus proof for this proposition.
+    ///
+    /// Returns a [`proc_macro2::TokenStream`] containing a Verus-verified function
+    /// encoding this proposition's postcondition invariant.
+    ///
+    /// Available with the `proofs` feature.
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    /// Generate a Creusot contract proof for this proposition.
+    ///
+    /// Returns a [`proc_macro2::TokenStream`] containing a `#[trusted]` Creusot
+    /// contract function encoding this proposition's postcondition.
+    ///
+    /// Available with the `proofs` feature.
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
 
 /// Witness that proposition P has been established.
 ///

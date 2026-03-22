@@ -21,8 +21,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use elicitation::PluginContext;
 use elicitation::contracts::{Established, Prop};
+use elicitation::{Elicit, PluginContext};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -37,20 +37,134 @@ use uuid::Uuid;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: `tokio::signal::ctrl_c()` returned — a Ctrl+C signal was received.
+#[derive(Elicit)]
 pub struct CtrlCReceived {}
-impl Prop for CtrlCReceived {}
+impl Prop for CtrlCReceived {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_ctrl_c_received_axiom() {
+                let ctrl_c_ok: bool = kani::any();
+                kani::assume(ctrl_c_ok);
+                assert!(ctrl_c_ok, "tokio::signal::ctrl_c axiom: Ok => SIGINT received");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_ctrl_c_received(ctrl_c_returned_ok: bool) -> (result: bool)
+                ensures result == ctrl_c_returned_ok,
+            {
+                ctrl_c_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_ctrl_c_received_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a Unix signal handler was registered successfully.
 #[cfg(unix)]
+#[derive(Elicit)]
 pub struct SignalHandlerRegistered {}
 #[cfg(unix)]
-impl Prop for SignalHandlerRegistered {}
+impl Prop for SignalHandlerRegistered {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_signal_handler_registered_axiom() {
+                let register_ok: bool = kani::any();
+                kani::assume(register_ok);
+                assert!(register_ok, "tokio::signal::unix::signal axiom: Ok => OS handler registered");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_signal_handler_registered(handler_installed: bool) -> (result: bool)
+                ensures result == handler_installed,
+            {
+                handler_installed
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_signal_handler_registered_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a registered Unix signal stream received a signal.
 #[cfg(unix)]
+#[derive(Elicit)]
 pub struct SignalReceived {}
 #[cfg(unix)]
-impl Prop for SignalReceived {}
+impl Prop for SignalReceived {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_signal_received_axiom() {
+                let sig_some: bool = kani::any();
+                kani::assume(sig_some);
+                assert!(sig_some, "Signal::recv axiom: Some(()) => registered signal was delivered");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_signal_received(signal_delivered: bool) -> (result: bool)
+                ensures result == signal_delivered,
+            {
+                signal_delivered
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_signal_received_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

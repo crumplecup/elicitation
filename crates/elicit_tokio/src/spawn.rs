@@ -62,6 +62,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use elicitation::Elicit;
 use elicitation::contracts::{Established, Prop};
 use futures::future::BoxFuture;
 use rmcp::{
@@ -78,16 +79,128 @@ use uuid::Uuid;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: a task was successfully spawned and a `JoinHandle` is registered.
+#[derive(Elicit)]
 pub struct TaskSpawned {}
-impl Prop for TaskSpawned {}
+impl Prop for TaskSpawned {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_task_spawned_axiom() {
+                let spawn_ok = true;
+                assert!(spawn_ok, "tokio::spawn axiom: JoinHandle returned => task accepted by scheduler");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_task_spawned(spawn_returned_handle: bool) -> (result: bool)
+                ensures result == spawn_returned_handle,
+            {
+                spawn_returned_handle
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_task_spawned_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a spawned task completed and its output was retrieved.
+#[derive(Elicit)]
 pub struct TaskJoined {}
-impl Prop for TaskJoined {}
+impl Prop for TaskJoined {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_task_joined_axiom() {
+                let join_ok: bool = kani::any();
+                kani::assume(join_ok);
+                assert!(join_ok, "JoinHandle::await axiom: Ok => task completed without panic");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_task_joined(join_returned_ok: bool) -> (result: bool)
+                ensures result == join_returned_ok,
+            {
+                join_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_task_joined_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a spawned task was cancelled via `JoinHandle::abort()`.
+#[derive(Elicit)]
 pub struct TaskAborted {}
-impl Prop for TaskAborted {}
+impl Prop for TaskAborted {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_task_aborted_axiom() {
+                let abort_scheduled = true;
+                assert!(abort_scheduled, "JoinHandle::abort axiom: schedules cancellation (infallible)");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_task_aborted(abort_scheduled: bool) -> (result: bool)
+                ensures result == abort_scheduled,
+            {
+                abort_scheduled
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_task_aborted_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 // ── Workload traits ───────────────────────────────────────────────────────────
 

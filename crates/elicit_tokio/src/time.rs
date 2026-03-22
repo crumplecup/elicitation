@@ -20,8 +20,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use elicitation::PluginContext;
 use elicitation::contracts::{Established, Prop};
+use elicitation::{Elicit, PluginContext};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -37,12 +37,90 @@ use uuid::Uuid;
 // ── Propositions ──────────────────────────────────────────────────────────────
 
 /// Proposition: a `sleep` or `sleep_until` completed without interruption.
+#[derive(Elicit)]
 pub struct SleepCompleted;
-impl Prop for SleepCompleted {}
+impl Prop for SleepCompleted {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_sleep_completed_axiom() {
+                let duration_ms: u64 = kani::any();
+                let sleep_returned_ok: bool = kani::any();
+                kani::assume(sleep_returned_ok);
+                assert!(sleep_returned_ok, "tokio::time::sleep axiom: returns when duration elapsed");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_sleep_completed(sleep_returned_ok: bool) -> (result: bool)
+                ensures result == sleep_returned_ok,
+            {
+                sleep_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_sleep_completed_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a `timeout_await` call returned (either expired or checked).
+#[derive(Elicit)]
 pub struct TimeoutResolved;
-impl Prop for TimeoutResolved {}
+impl Prop for TimeoutResolved {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_timeout_resolved_axiom() {
+                let timed_out: bool = kani::any();
+                let resolved = true;
+                assert!(resolved, "tokio::time::timeout axiom: always resolves to Ok or Elapsed");
+                let _ = timed_out;
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_timeout_resolved(timeout_resolved: bool) -> (result: bool)
+                ensures result == timeout_resolved,
+            {
+                timeout_resolved
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_timeout_resolved_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 // ── Internal context entries ──────────────────────────────────────────────────
 

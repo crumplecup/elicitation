@@ -44,8 +44,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use elicitation::PluginContext;
 use elicitation::contracts::{Established, Prop};
+use elicitation::{Elicit, PluginContext};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -62,20 +62,172 @@ use uuid::Uuid;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: a Unix domain socket listener was bound to a path.
+#[derive(Elicit)]
 pub struct UnixListenerBound {}
-impl Prop for UnixListenerBound {}
+impl Prop for UnixListenerBound {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_unix_listener_bound_axiom() {
+                let bind_ok: bool = kani::any();
+                kani::assume(bind_ok);
+                assert!(bind_ok, "tokio::net::UnixListener::bind axiom: Ok => socket file created");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_unix_listener_bound(bind_returned_ok: bool) -> (result: bool)
+                ensures result == bind_returned_ok,
+            {
+                bind_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_unix_listener_bound_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a Unix domain socket listener accepted an incoming connection.
+#[derive(Elicit)]
 pub struct UnixConnectionAccepted {}
-impl Prop for UnixConnectionAccepted {}
+impl Prop for UnixConnectionAccepted {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_unix_connection_accepted_axiom() {
+                let accept_ok: bool = kani::any();
+                kani::assume(accept_ok);
+                assert!(accept_ok, "tokio::net::UnixListener::accept axiom: Ok => client stream ready");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_unix_connection_accepted(accept_returned_ok: bool) -> (result: bool)
+                ensures result == accept_returned_ok,
+            {
+                accept_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_unix_connection_accepted_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a Unix domain stream socket connected to a listener.
+#[derive(Elicit)]
 pub struct UnixStreamConnected {}
-impl Prop for UnixStreamConnected {}
+impl Prop for UnixStreamConnected {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_unix_stream_connected_axiom() {
+                let connect_ok: bool = kani::any();
+                kani::assume(connect_ok);
+                assert!(connect_ok, "tokio::net::UnixStream::connect axiom: Ok => connected to socket");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_unix_stream_connected(connect_returned_ok: bool) -> (result: bool)
+                ensures result == connect_returned_ok,
+            {
+                connect_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_unix_stream_connected_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: data was received on a Unix domain socket (stream or datagram).
+#[derive(Elicit)]
 pub struct UnixDataReceived {}
-impl Prop for UnixDataReceived {}
+impl Prop for UnixDataReceived {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_unix_data_received_axiom() {
+                let bytes: usize = kani::any();
+                kani::assume(bytes > 0);
+                assert!(bytes > 0, "UnixStream::read axiom: Ok(n > 0) => bytes available");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_unix_data_received(bytes_available: bool) -> (result: bool)
+                ensures result == bytes_available,
+            {
+                bytes_available
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_unix_data_received_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

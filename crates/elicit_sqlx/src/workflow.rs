@@ -55,7 +55,7 @@ use std::sync::Arc;
 use elicitation::PluginContext;
 use elicitation::contracts::{And, Established, Prop, both};
 use elicitation::emit_code::CustomEmit;
-use elicitation::{ColumnEntry, ColumnValue, RowData, elicit_tool};
+use elicitation::{ColumnEntry, ColumnValue, Elicit, RowData, elicit_tool};
 use futures::future::BoxFuture;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -76,28 +76,256 @@ use crate::QueryResultData;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: a named pool was successfully created and is ready to accept queries.
+#[derive(Elicit)]
 pub struct DbConnected;
-impl Prop for DbConnected {}
+impl Prop for DbConnected {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_db_connected_axiom() {
+                let connect_ok: bool = kani::any();
+                kani::assume(connect_ok);
+                assert!(connect_ok, "sqlx::AnyPool::connect axiom: Ok => pool created and ready");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_db_connected(connect_ok: bool) -> (result: bool)
+                ensures result == connect_ok,
+            {
+                connect_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_db_connected_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a SQL statement completed and `rows_affected` is known.
+#[derive(Elicit)]
 pub struct QueryExecuted;
-impl Prop for QueryExecuted {}
+impl Prop for QueryExecuted {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_query_executed_axiom() {
+                let execute_ok: bool = kani::any();
+                kani::assume(execute_ok);
+                assert!(execute_ok, "sqlx::query execute axiom: Ok => rows_affected is known");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_query_executed(execute_ok: bool) -> (result: bool)
+                ensures result == execute_ok,
+            {
+                execute_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_query_executed_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a SELECT returned ≥ 0 rows without error.
+#[derive(Elicit)]
 pub struct RowsFetched;
-impl Prop for RowsFetched {}
+impl Prop for RowsFetched {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_rows_fetched_axiom() {
+                let fetch_ok: bool = kani::any();
+                kani::assume(fetch_ok);
+                assert!(fetch_ok, "sqlx::query fetch axiom: Ok => rows returned without error");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_rows_fetched(fetch_ok: bool) -> (result: bool)
+                ensures result == fetch_ok,
+            {
+                fetch_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_rows_fetched_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a transaction was started and is uncommitted.
+#[derive(Elicit)]
 pub struct TransactionOpen;
-impl Prop for TransactionOpen {}
+impl Prop for TransactionOpen {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_transaction_open_axiom() {
+                let begin_ok: bool = kani::any();
+                kani::assume(begin_ok);
+                assert!(begin_ok, "sqlx::begin axiom: Ok => transaction started and uncommitted");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_transaction_open(begin_ok: bool) -> (result: bool)
+                ensures result == begin_ok,
+            {
+                begin_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_transaction_open_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a transaction was successfully committed.
+#[derive(Elicit)]
 pub struct TransactionCommitted;
-impl Prop for TransactionCommitted {}
+impl Prop for TransactionCommitted {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_transaction_committed_axiom() {
+                let commit_ok: bool = kani::any();
+                kani::assume(commit_ok);
+                assert!(commit_ok, "sqlx::commit axiom: Ok => transaction successfully committed");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_transaction_committed(commit_ok: bool) -> (result: bool)
+                ensures result == commit_ok,
+            {
+                commit_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_transaction_committed_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a transaction was successfully rolled back.
+#[derive(Elicit)]
 pub struct TransactionRolledBack;
-impl Prop for TransactionRolledBack {}
+impl Prop for TransactionRolledBack {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_transaction_rolled_back_axiom() {
+                let rollback_ok: bool = kani::any();
+                kani::assume(rollback_ok);
+                assert!(rollback_ok, "sqlx::rollback axiom: Ok => transaction successfully rolled back");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_transaction_rolled_back(rollback_ok: bool) -> (result: bool)
+                ensures result == rollback_ok,
+            {
+                rollback_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_transaction_rolled_back_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Composite: a connection was made and a query was executed.
 pub type ConnectedAndExecuted = And<DbConnected, QueryExecuted>;

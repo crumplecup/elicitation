@@ -281,7 +281,10 @@ use elicitation::contracts::{And, Established, both};
 fn verify_query_fragment_emitted_axiom() {
     let params_valid: bool = kani::any();
     kani::assume(params_valid);
-    assert!(params_valid, "sqlx::query! axiom: emit_code() always returns a non-empty TokenStream");
+    assert!(
+        params_valid,
+        "sqlx::query! axiom: emit_code() always returns a non-empty TokenStream"
+    );
 }
 
 /// Trusted axiom: `sqlx::query_as!(Type, sql, params…)` emit contract.
@@ -290,7 +293,10 @@ fn verify_query_fragment_emitted_axiom() {
 fn verify_query_as_fragment_emitted_axiom() {
     let params_valid: bool = kani::any();
     kani::assume(params_valid);
-    assert!(params_valid, "sqlx::query_as! axiom: emit_code() always returns a non-empty TokenStream");
+    assert!(
+        params_valid,
+        "sqlx::query_as! axiom: emit_code() always returns a non-empty TokenStream"
+    );
 }
 
 /// Trusted axiom: `sqlx::query_scalar!(sql, params…)` emit contract.
@@ -299,7 +305,10 @@ fn verify_query_as_fragment_emitted_axiom() {
 fn verify_query_scalar_fragment_emitted_axiom() {
     let params_valid: bool = kani::any();
     kani::assume(params_valid);
-    assert!(params_valid, "sqlx::query_scalar! axiom: emit_code() always returns a non-empty TokenStream");
+    assert!(
+        params_valid,
+        "sqlx::query_scalar! axiom: emit_code() always returns a non-empty TokenStream"
+    );
 }
 
 /// Trusted axiom: `sqlx::migrate!(path).run(&pool).await?` emit contract.
@@ -312,7 +321,10 @@ fn verify_query_scalar_fragment_emitted_axiom() {
 fn verify_migrate_fragment_emitted_axiom() {
     let params_valid: bool = kani::any();
     kani::assume(params_valid);
-    assert!(params_valid, "sqlx::migrate! axiom: emit_code() always returns a non-empty TokenStream");
+    assert!(
+        params_valid,
+        "sqlx::migrate! axiom: emit_code() always returns a non-empty TokenStream"
+    );
 }
 
 /// Zero-cost: all four fragment Prop types are unit structs — size == 0.

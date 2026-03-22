@@ -21,8 +21,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use elicitation::PluginContext;
 use elicitation::contracts::{Established, Prop};
+use elicitation::{Elicit, PluginContext};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -39,16 +39,130 @@ use uuid::Uuid;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: `Command::spawn()` succeeded — the child process is running.
+#[derive(Elicit)]
 pub struct ProcessSpawned {}
-impl Prop for ProcessSpawned {}
+impl Prop for ProcessSpawned {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_process_spawned_axiom() {
+                let spawn_ok: bool = kani::any();
+                kani::assume(spawn_ok);
+                assert!(spawn_ok, "tokio::process::Command::spawn axiom: Ok => OS process is running");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_process_spawned(spawn_returned_ok: bool) -> (result: bool)
+                ensures result == spawn_returned_ok,
+            {
+                spawn_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_process_spawned_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: `child.wait()` completed — the child process has exited.
+#[derive(Elicit)]
 pub struct ProcessExited {}
-impl Prop for ProcessExited {}
+impl Prop for ProcessExited {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_process_exited_axiom() {
+                let wait_ok: bool = kani::any();
+                kani::assume(wait_ok);
+                assert!(wait_ok, "tokio::process::Child::wait axiom: Ok => child process has exited");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_process_exited(wait_returned_ok: bool) -> (result: bool)
+                ensures result == wait_returned_ok,
+            {
+                wait_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_process_exited_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: bytes were written to a child process's stdin pipe.
+#[derive(Elicit)]
 pub struct StdinWritten {}
-impl Prop for StdinWritten {}
+impl Prop for StdinWritten {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_stdin_written_axiom() {
+                let write_ok: bool = kani::any();
+                kani::assume(write_ok);
+                assert!(write_ok, "AsyncWriteExt::write_all(stdin) axiom: Ok => all bytes written to pipe");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_stdin_written(write_returned_ok: bool) -> (result: bool)
+                ensures result == write_returned_ok,
+            {
+                write_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_stdin_written_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

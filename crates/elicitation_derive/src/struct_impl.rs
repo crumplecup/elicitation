@@ -69,14 +69,6 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
 
     let field_infos = elicited_fields;
 
-    if field_infos.is_empty() {
-        let error = syn::Error::new_spanned(
-            name,
-            "Elicit derive for structs requires at least one non-skipped field.",
-        );
-        return error.to_compile_error().into();
-    }
-
     // Collect all unique style names across all fields
     let mut all_styles = std::collections::HashSet::new();
     for field in &field_infos {

@@ -7,9 +7,9 @@
 //! **Build-time constraint**: all emitted code requires `DATABASE_URL` set
 //! in the build environment of the consuming binary.
 
-use elicitation::emit_code::EmitCode;
 use elicitation::contracts::{Established, Prop};
-use elicitation::{ElicitPlugin, elicit_tool};
+use elicitation::emit_code::EmitCode;
+use elicitation::{Elicit, ElicitPlugin, elicit_tool};
 use rmcp::ErrorData;
 use rmcp::model::{CallToolResult, Content};
 use tracing::instrument;
@@ -32,26 +32,178 @@ pub struct SqlxFragPlugin;
 /// The fragment contains a valid macro invocation; it does NOT guarantee
 /// that the emitted binary will compile (requires `DATABASE_URL` at
 /// consumer build time).
+#[derive(Elicit)]
 pub struct QueryFragmentEmitted;
-impl Prop for QueryFragmentEmitted {}
+impl Prop for QueryFragmentEmitted {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_query_fragment_emitted_axiom() {
+                let params_valid: bool = kani::any();
+                kani::assume(params_valid);
+                assert!(params_valid, "sqlx::query! axiom: emit_code() always returns a non-empty TokenStream");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_query_fragment_emitted(params_valid: bool) -> (result: bool)
+                ensures result == params_valid,
+            {
+                params_valid
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_query_fragment_emitted_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a `sqlx::query_as!(Type, sql, params…)` source fragment was emitted.
 ///
 /// Established by [`emit_query_as`] after [`EmitCode::emit_code`] succeeds.
+#[derive(Elicit)]
 pub struct QueryAsFragmentEmitted;
-impl Prop for QueryAsFragmentEmitted {}
+impl Prop for QueryAsFragmentEmitted {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_query_as_fragment_emitted_axiom() {
+                let params_valid: bool = kani::any();
+                kani::assume(params_valid);
+                assert!(params_valid, "sqlx::query_as! axiom: emit_code() always returns a non-empty TokenStream");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_query_as_fragment_emitted(params_valid: bool) -> (result: bool)
+                ensures result == params_valid,
+            {
+                params_valid
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_query_as_fragment_emitted_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a `sqlx::query_scalar!(sql, params…)` source fragment was emitted.
 ///
 /// Established by [`emit_query_scalar`] after [`EmitCode::emit_code`] succeeds.
+#[derive(Elicit)]
 pub struct QueryScalarFragmentEmitted;
-impl Prop for QueryScalarFragmentEmitted {}
+impl Prop for QueryScalarFragmentEmitted {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_query_scalar_fragment_emitted_axiom() {
+                let params_valid: bool = kani::any();
+                kani::assume(params_valid);
+                assert!(params_valid, "sqlx::query_scalar! axiom: emit_code() always returns a non-empty TokenStream");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_query_scalar_fragment_emitted(params_valid: bool) -> (result: bool)
+                ensures result == params_valid,
+            {
+                params_valid
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_query_scalar_fragment_emitted_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a `sqlx::migrate!(path).run(&pool).await?` source fragment was emitted.
 ///
 /// Established by [`emit_migrate`] after [`EmitCode::emit_code`] succeeds.
+#[derive(Elicit)]
 pub struct MigrateFragmentEmitted;
-impl Prop for MigrateFragmentEmitted {}
+impl Prop for MigrateFragmentEmitted {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_migrate_fragment_emitted_axiom() {
+                let params_valid: bool = kani::any();
+                kani::assume(params_valid);
+                assert!(params_valid, "sqlx::migrate! axiom: emit_code() always returns a non-empty TokenStream");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_migrate_fragment_emitted(params_valid: bool) -> (result: bool)
+                ensures result == params_valid,
+            {
+                params_valid
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_migrate_fragment_emitted_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 // ── query! ────────────────────────────────────────────────────────────────────
 

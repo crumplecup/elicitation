@@ -23,6 +23,7 @@
 //! | `read_dir` | `path` | `{ entries: [{name, is_file, is_dir, is_symlink}] }` |
 //! | `canonicalize` | `path` | `{ canonical_path }` |
 
+use elicitation::Elicit;
 use elicitation::contracts::{Established, Prop};
 use elicitation_derive::ElicitPlugin;
 use rmcp::{ErrorData, model::CallToolResult, model::Content};
@@ -33,16 +34,130 @@ use std::time::{SystemTime, UNIX_EPOCH};
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: a file was read successfully (content is available).
+#[derive(Elicit)]
 pub struct FileRead {}
-impl Prop for FileRead {}
+impl Prop for FileRead {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_file_read_axiom() {
+                let read_ok: bool = kani::any();
+                kani::assume(read_ok);
+                assert!(read_ok, "tokio::fs::read axiom: Ok => file contents available");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_file_read(read_returned_ok: bool) -> (result: bool)
+                ensures result == read_returned_ok,
+            {
+                read_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_file_read_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a file was written successfully (bytes are persisted).
+#[derive(Elicit)]
 pub struct FileWritten {}
-impl Prop for FileWritten {}
+impl Prop for FileWritten {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_file_written_axiom() {
+                let write_ok: bool = kani::any();
+                kani::assume(write_ok);
+                assert!(write_ok, "tokio::fs::write axiom: Ok => all bytes flushed to disk");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_file_written(write_returned_ok: bool) -> (result: bool)
+                ensures result == write_returned_ok,
+            {
+                write_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_file_written_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a directory was created (path now exists as a directory).
+#[derive(Elicit)]
 pub struct DirCreated {}
-impl Prop for DirCreated {}
+impl Prop for DirCreated {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_dir_created_axiom() {
+                let mkdir_ok: bool = kani::any();
+                kani::assume(mkdir_ok);
+                assert!(mkdir_ok, "tokio::fs::create_dir_all axiom: Ok => directory path exists");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_dir_created(mkdir_returned_ok: bool) -> (result: bool)
+                ensures result == mkdir_returned_ok,
+            {
+                mkdir_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_dir_created_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 // ── Param structs ─────────────────────────────────────────────────────────────
 

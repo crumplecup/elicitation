@@ -75,8 +75,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use elicitation::PluginContext;
 use elicitation::contracts::{Established, Prop};
+use elicitation::{Elicit, PluginContext};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -93,16 +93,130 @@ type Value = serde_json::Value;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: a message was sent on a channel successfully.
+#[derive(Elicit)]
 pub struct MessageSent {}
-impl Prop for MessageSent {}
+impl Prop for MessageSent {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_message_sent_axiom() {
+                let send_ok: bool = kani::any();
+                kani::assume(send_ok);
+                assert!(send_ok, "tokio channel send axiom: Ok => value enqueued for receiver(s)");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_message_sent(send_returned_ok: bool) -> (result: bool)
+                ensures result == send_returned_ok,
+            {
+                send_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_message_sent_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a message was received from a channel.
+#[derive(Elicit)]
 pub struct MessageReceived {}
-impl Prop for MessageReceived {}
+impl Prop for MessageReceived {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_message_received_axiom() {
+                let recv_some: bool = kani::any();
+                kani::assume(recv_some);
+                assert!(recv_some, "tokio channel recv axiom: Some(v)/Ok(v) => value was sent");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_message_received(recv_returned_some: bool) -> (result: bool)
+                ensures result == recv_returned_some,
+            {
+                recv_returned_some
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_message_received_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Proposition: a channel or end was closed.
+#[derive(Elicit)]
 pub struct ChannelClosed {}
-impl Prop for ChannelClosed {}
+impl Prop for ChannelClosed {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_channel_closed_axiom() {
+                let close_ok: bool = kani::any();
+                kani::assume(close_ok);
+                assert!(close_ok, "tokio channel close axiom: drop/remove => endpoint closed");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_channel_closed(endpoint_closed: bool) -> (result: bool)
+                ensures result == endpoint_closed,
+            {
+                endpoint_closed
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_channel_closed_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

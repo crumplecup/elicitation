@@ -17,6 +17,7 @@
 //! | `spawn_blocking` | `body` | error at runtime | emit-only |
 //! | `block_in_place` | `body` | error at runtime | emit-only |
 
+use elicitation::Elicit;
 use elicitation::contracts::{Established, Prop};
 use elicitation_derive::ElicitPlugin;
 use rmcp::{ErrorData, model::CallToolResult};
@@ -26,8 +27,45 @@ use serde::{Deserialize, Serialize};
 // ── Param / result types ──────────────────────────────────────────────────────
 
 /// Proposition: `tokio::task::yield_now()` returned — the task yielded to the scheduler.
+#[derive(Elicit)]
 pub struct TaskYielded {}
-impl Prop for TaskYielded {}
+impl Prop for TaskYielded {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_task_yielded_axiom() {
+                let yielded = true;
+                assert!(yielded, "tokio::task::yield_now axiom: always returns after yielding");
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_task_yielded(call_completed: bool) -> (result: bool)
+                ensures result == call_completed,
+            {
+                call_completed
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_task_yielded_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 /// Parameters for `tokio_task__yield_now` (none required).
 #[derive(Debug, Deserialize, JsonSchema)]

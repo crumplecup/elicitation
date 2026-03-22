@@ -42,6 +42,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use elicitation::Elicit;
 use elicitation::contracts::{Established, Prop};
 use futures::future::BoxFuture;
 use rmcp::{
@@ -58,8 +59,48 @@ use uuid::Uuid;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: `tokio::io::copy` completed — all readable bytes were written to the writer.
+#[derive(Elicit)]
 pub struct BytesCopied {}
-impl Prop for BytesCopied {}
+impl Prop for BytesCopied {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_bytes_copied_axiom() {
+                let copy_ok: bool = kani::any();
+                kani::assume(copy_ok);
+                let n: u64 = kani::any();
+                assert!(copy_ok, "tokio::io::copy axiom: Ok(n) => n bytes transferred reader->writer");
+                let _ = n;
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            verus! {
+            pub fn verify_bytes_copied(copy_returned_ok: bool) -> (result: bool)
+                ensures result == copy_returned_ok,
+            {
+                copy_returned_ok
+            }
+            }
+        }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[requires(true)]
+            #[ensures(result == true)]
+            #[trusted]
+            pub fn verify_bytes_copied_contract() -> bool {
+                true
+            }
+        }
+    }
+}
 
 // ── Param / result types ──────────────────────────────────────────────────────
 
