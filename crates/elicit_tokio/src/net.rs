@@ -68,7 +68,8 @@ pub struct NetCtx {
     listeners: Mutex<HashMap<Uuid, Arc<TcpListener>>>,
     /// `AsyncReadExt`/`AsyncWriteExt` require `&mut self`; inner `Mutex` lets
     /// us release the map lock before awaiting on the stream.
-    streams: Mutex<HashMap<Uuid, Arc<Mutex<TcpStream>>>>,
+    /// Wrapped in `Arc` so the registry can be shared with `TokioIoCopyPlugin`.
+    streams: Arc<Mutex<HashMap<Uuid, Arc<Mutex<TcpStream>>>>>,
     /// `UdpSocket::send_to`/`recv_from` take `&self`; `Arc` alone is enough.
     udp_sockets: Mutex<HashMap<Uuid, Arc<UdpSocket>>>,
 }
@@ -77,7 +78,7 @@ impl NetCtx {
     fn new() -> Self {
         Self {
             listeners: Mutex::new(HashMap::new()),
-            streams: Mutex::new(HashMap::new()),
+            streams: Arc::new(Mutex::new(HashMap::new())),
             udp_sockets: Mutex::new(HashMap::new()),
         }
     }
@@ -734,6 +735,14 @@ impl TokioNetPlugin {
     /// Create a new `TokioNetPlugin` with empty registries.
     pub fn new() -> Self {
         Self(Arc::new(NetCtx::new()))
+    }
+
+    /// Shared registry of live TCP streams, keyed by UUID.
+    ///
+    /// Pass a clone to [`TokioIoCopyPlugin`](crate::TokioIoCopyPlugin) to
+    /// enable `io::copy` between TCP streams and other handle types.
+    pub fn tcp_stream_registry(&self) -> Arc<Mutex<HashMap<Uuid, Arc<Mutex<TcpStream>>>>> {
+        Arc::clone(&self.0.streams)
     }
 }
 

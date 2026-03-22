@@ -63,7 +63,8 @@ use uuid::Uuid;
 /// Shared state for all `tokio_unix__*` tool calls.
 pub struct UnixCtx {
     listeners: Mutex<HashMap<Uuid, Arc<UnixListener>>>,
-    streams: Mutex<HashMap<Uuid, Arc<Mutex<UnixStream>>>>,
+    /// Wrapped in `Arc` so the registry can be shared with `TokioIoCopyPlugin`.
+    streams: Arc<Mutex<HashMap<Uuid, Arc<Mutex<UnixStream>>>>>,
     datagrams: Mutex<HashMap<Uuid, Arc<UnixDatagram>>>,
 }
 
@@ -71,7 +72,7 @@ impl UnixCtx {
     fn new() -> Self {
         Self {
             listeners: Mutex::new(HashMap::new()),
-            streams: Mutex::new(HashMap::new()),
+            streams: Arc::new(Mutex::new(HashMap::new())),
             datagrams: Mutex::new(HashMap::new()),
         }
     }
@@ -688,6 +689,14 @@ impl TokioUnixPlugin {
     /// Create a new `TokioUnixPlugin` with empty registries.
     pub fn new() -> Self {
         Self(Arc::new(UnixCtx::new()))
+    }
+
+    /// Shared registry of live Unix streams, keyed by UUID.
+    ///
+    /// Pass a clone to [`TokioIoCopyPlugin`](crate::TokioIoCopyPlugin) to
+    /// enable `io::copy` between Unix domain streams and other handle types.
+    pub fn unix_stream_registry(&self) -> Arc<Mutex<HashMap<Uuid, Arc<Mutex<UnixStream>>>>> {
+        Arc::clone(&self.0.streams)
     }
 }
 

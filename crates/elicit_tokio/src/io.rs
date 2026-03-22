@@ -46,13 +46,14 @@ use uuid::Uuid;
 
 /// Shared state for all `tokio_io__*` tool calls.
 pub struct IoCtx {
-    duplex_streams: Mutex<HashMap<Uuid, Arc<Mutex<DuplexStream>>>>,
+    /// Wrapped in `Arc` so the registry can be shared with `TokioIoCopyPlugin`.
+    duplex_streams: Arc<Mutex<HashMap<Uuid, Arc<Mutex<DuplexStream>>>>>,
 }
 
 impl IoCtx {
     fn new() -> Self {
         Self {
-            duplex_streams: Mutex::new(HashMap::new()),
+            duplex_streams: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 }
@@ -242,17 +243,23 @@ async fn io_duplex_close(
 /// Provides duplex (bidirectional) in-memory byte streams whose endpoints
 /// are stored in a UUID-keyed registry.
 ///
-/// # Cross-plugin I/O blocker
-///
-/// `tokio::io::copy` between handles from `TokioNetPlugin` or
-/// `TokioProcessPlugin` is not implemented — those handles live in separate
-/// plugin registries and cross-plugin coupling is an architectural blocker.
+/// Use [`TokioIoCopyPlugin`](crate::TokioIoCopyPlugin) with
+/// [`duplex_stream_registry`](TokioIoPlugin::duplex_stream_registry) to
+/// enable `io::copy` between duplex pipes and other handle types.
 pub struct TokioIoPlugin(Arc<IoCtx>);
 
 impl TokioIoPlugin {
     /// Create a new `TokioIoPlugin` with an empty duplex registry.
     pub fn new() -> Self {
         Self(Arc::new(IoCtx::new()))
+    }
+
+    /// Shared registry of live duplex stream halves, keyed by UUID.
+    ///
+    /// Pass a clone to [`TokioIoCopyPlugin`](crate::TokioIoCopyPlugin) to
+    /// enable `io::copy` between duplex pipes and other handle types.
+    pub fn duplex_stream_registry(&self) -> Arc<Mutex<HashMap<Uuid, Arc<Mutex<DuplexStream>>>>> {
+        Arc::clone(&self.0.duplex_streams)
     }
 }
 
