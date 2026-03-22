@@ -405,9 +405,9 @@ fn first_param_is_context(func: &ItemFn) -> bool {
         return false;
     };
 
-    // Name heuristic: parameter named `ctx`
+    // Name heuristic: parameter named `ctx` or `_ctx`
     if let Pat::Ident(p) = first.pat.as_ref()
-        && p.ident == "ctx"
+        && (p.ident == "ctx" || p.ident == "_ctx")
     {
         return true;
     }

@@ -154,6 +154,80 @@ and Kani + Creusot verification harnesses.
 - Phase 4: Kani harnesses
 - Phase 5: Creusot proofs
 
+---
+
+### elicit_tokio Shadow Crate
+
+**Document:** [ELICIT_TOKIO_PLAN.md](ELICIT_TOKIO_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Complete harvesting of the tokio 1.49.0 public API surface (100+ async
+functions, 80+ types, 10+ core traits, 6 macros, 9 primary modules) as MCP tools for
+agent composition. Full completionist approach exposing the entire library without filtering.
+
+**Coverage:**
+
+- **Runtime & Tasks:** Runtime, Builder, Handle, spawn, JoinHandle, JoinSet, LocalSet
+- **Sync Primitives:** Mutex, RwLock, Semaphore, Barrier, Notify, OnceCell, all channel types
+- **Channels:** oneshot, mpsc, broadcast, watch (all variants with permits/weak handles)
+- **Time:** sleep, interval, timeout, Instant, test utilities
+- **I/O Traits:** AsyncRead, AsyncWrite, AsyncSeek, AsyncBufRead + all extension methods
+- **I/O Utilities:** BufReader, BufWriter, BufStream, copy, split, duplex, simplex, etc.
+- **Filesystem:** File, OpenOptions, DirBuilder, ReadDir, all async fs functions
+- **Networking:** TCP, UDP, Unix domain sockets, Windows named pipes, DNS lookup
+- **Process:** Command, Child, stdio handles
+- **Signals:** ctrl_c, Unix signals (all variants), Windows events
+- **Platform-Specific:** Unix AsyncFd, Windows-specific APIs
+
+**Strategy:**
+- Single crate (`elicit_tokio`) with feature flags mirroring upstream
+- Newtype wrappers for all types (Arc for shared ownership)
+- Method reflection for all instance methods
+- Trait reflection for core async traits
+- Macro equivalents as runtime builders
+- Kani/Creusot verification for async contracts
+
+**Timeline:** 6 weeks, 10 phases, 300-400 MCP tools, ~15,000-20,000 LOC
+
+---
+
+### elicit_axum Shadow Crate
+
+**Document:** [ELICIT_AXUM_PLAN.md](ELICIT_AXUM_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Complete harvesting of the axum web framework (Router, 20+ extractors,
+responses, handlers, middleware, Tower integration) as MCP tools for agent composition of
+web services. Three-crate architecture: `elicit_tower` (Service/Layer + 20+ middleware),
+`elicit_axum_core` (FromRequest/IntoResponse traits), `elicit_axum` (Router, handlers, serve).
+
+**Key Challenge:** Axum is trait-heavy with type-level composition - handlers inferred from
+function signatures, extractors composed via type parameters. Solution: dual representation
+with both **code generation tools** (emit Rust handlers/middleware) and **runtime tools**
+(manipulate pre-compiled components).
+
+**Coverage:**
+- **Routing:** Router, MethodRouter, MethodFilter, nesting, merging, fallbacks
+- **Extractors:** Path, Query, Json, Form, Multipart, WebSocket, State, 20+ built-ins
+- **Responses:** Json, Html, Redirect, SSE, AppendHeaders, tuple responses
+- **Handlers:** Handler trait, HandlerService, code generation builder
+- **Middleware:** from_fn, from_extractor, map_request/response, Next, builder
+- **Tower:** Service/Layer traits, 20+ tower-http middleware (CORS, compression, tracing, etc.)
+- **Server:** serve(), Listener trait, graceful shutdown, IncomingStream
+- **HTTP:** Full http crate re-exports (StatusCode, HeaderMap, Method, Uri)
+
+**Strategy:**
+- Three shadow crates with clear separation of concerns
+- Trait reflection for FromRequest/IntoResponse/Handler/Service/Layer
+- Workflow-based tool design (create service, add endpoint, apply middleware)
+- Code generation for handlers and middleware (agents emit Rust code)
+- Runtime composition of pre-compiled handlers
+- Kani/Creusot verification for composition contracts
+
+**Timeline:** 6 weeks, 11 phases, 400-500 MCP tools, ~20,000-25,000 LOC
+
 ### Macro-Driven MCP Tool System
 
 **Document:** [MACRO_TOOL_GEN_PLAN.md](MACRO_TOOL_GEN_PLAN.md)

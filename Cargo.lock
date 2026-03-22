@@ -981,6 +981,7 @@ dependencies = [
  "elicitation",
  "elicitation_derive",
  "futures",
+ "quote",
  "regex",
  "rmcp",
  "schemars",
@@ -1050,10 +1051,12 @@ dependencies = [
  "chrono",
  "elicit_chrono",
  "elicit_jiff",
+ "elicit_regex",
  "elicit_reqwest",
  "elicit_serde_json",
  "elicit_sqlx",
  "elicit_time",
+ "elicit_tokio",
  "elicit_url",
  "elicitation",
  "futures",
@@ -1129,6 +1132,23 @@ dependencies = [
  "serde_json",
  "time",
  "tracing",
+]
+
+[[package]]
+name = "elicit_tokio"
+version = "0.9.1"
+dependencies = [
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "quote",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]

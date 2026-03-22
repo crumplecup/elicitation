@@ -19,6 +19,7 @@ members = [
   "crates/elicit_clap",
   "crates/elicit_std",
   "crates/elicit_sqlx",
+  "crates/elicit_tokio",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
@@ -50,6 +51,7 @@ elicit_chrono = { path = "crates/elicit_chrono", version = "0.9.1" }
 elicit_clap = { path = "crates/elicit_clap", version = "0.9.1" }
 elicit_std = { path = "crates/elicit_std", version = "0.9.1" }
 elicit_sqlx = { path = "crates/elicit_sqlx", version = "0.9.1" }
+elicit_tokio = { path = "crates/elicit_tokio", version = "0.9.1" }
 
 # sqlx - database interaction library
 sqlx = { version = "0.8", features = [
@@ -106,14 +108,14 @@ anyhow = "1.0"
 tracing = "0.1"
 
 # Async runtime
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "time", "sync", "rt"] }
 
 # Proc macros
 syn = { version = "2", features = ["full", "extra-traits"] }
 quote = "1"
 proc-macro2 = "1"
 prettyplease = "0.2"
-toml = "1.0"
+toml = "1"
 
 # Async utilities
 futures = "0.3"

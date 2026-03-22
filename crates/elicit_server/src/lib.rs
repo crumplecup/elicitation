@@ -28,6 +28,7 @@
 //! | `JsonWorkflowPlugin` | `elicit_serde_json` | parse_and_focus, validate_object, safe_merge, pointer_update, field_chain |
 //! | `RegexWorkflowPlugin` | `elicit_regex` | compile, is_match, find_all, replace_all, capture_groups |
 //! | `SqlxWorkflowPlugin` | `elicit_sqlx` | connect, query, execute, query_typed, transaction |
+//! | `TokioTimePlugin` | `elicit_tokio` | sleep, sleep_until, timeout_create, timeout_check, timeout_await, interval_create, interval_tick |
 //!
 //! # Feature flags
 //!
@@ -102,6 +103,8 @@ pub fn emit_dispatch_crate(
         std::mem::size_of::<elicit_sqlx::workflow::WfConnectParams>(),
         // elicit_regex
         std::mem::size_of::<elicit_regex::CompileParams>(),
+        // elicit_tokio
+        std::mem::size_of::<elicit_tokio::SleepParams>(),
     ];
     if crate_name.is_empty() {
         elicitation::emit_code::dispatch_emit(tool, params)
