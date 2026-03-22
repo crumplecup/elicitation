@@ -11,7 +11,7 @@
 //! |---|---|---|
 //! | [`TokioTimePlugin`] | `tokio_time__*` | sleep, sleep_until, timeout_create, timeout_check, timeout_await, interval_create, interval_tick |
 //! | [`TokioSyncPlugin`] | `tokio_sync__*` | semaphore_new, semaphore_acquire, semaphore_try_acquire, semaphore_release, semaphore_available, semaphore_close, notify_new, notify_one, notify_waiters, notified, barrier_new, barrier_wait |
-//! | [`TokioRuntimePlugin`] | `tokio_runtime__*` | inspect_flavor |
+//! | [`TokioRuntimePlugin`] | `tokio_runtime__*` | inspect_flavor, build_current_thread *(emit-only)*, build_multi_thread *(emit-only)*, block_on *(emit-only)* |
 //! | [`TokioFsPlugin`] | `tokio_fs__*` | read_to_string, read_bytes, write_text, write_bytes, create_dir, create_dir_all, remove_dir, remove_dir_all, remove_file, rename, copy, metadata, read_dir, canonicalize |
 //! | [`TokioNetPlugin`] | `tokio_net__*` | tcp_listener_bind, tcp_listener_accept, tcp_listener_local_addr, tcp_listener_close, tcp_stream_connect, tcp_stream_read, tcp_stream_write, tcp_stream_local_addr, tcp_stream_peer_addr, tcp_stream_close, udp_socket_bind, udp_socket_send_to, udp_socket_recv_from, udp_socket_local_addr, udp_socket_close |
 //! | [`TokioProcessPlugin`] | `tokio_process__*` | process_run, process_spawn, process_stdin_write, process_stdout_read, process_stderr_read, process_wait, process_try_wait, process_kill, process_id |
@@ -74,7 +74,10 @@ pub use process::{
     ProcessStderrReadParams, ProcessStdinWriteParams, ProcessStdoutReadParams,
     ProcessTryWaitParams, ProcessWaitParams, TokioProcessPlugin,
 };
-pub use runtime::{InspectFlavorParams, RuntimeFlavorKind, TokioRuntimePlugin};
+pub use runtime::{
+    BlockOnParams as RuntimeBlockOnParams, BuildCurrentThreadParams, BuildMultiThreadParams,
+    InspectFlavorParams, RuntimeFlavorKind, TokioRuntimePlugin,
+};
 pub use signal::{CtrlCParams, TokioSignalPlugin, UnixSignalKind};
 #[cfg(unix)]
 pub use signal::{UnixSignalCloseParams, UnixSignalCreateParams, UnixSignalRecvParams};
