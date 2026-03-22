@@ -13,6 +13,22 @@
 //! - [`FetchAndParsePlugin`] — HTTP fetch + JSON extraction
 //!   (`elicit_reqwest` + `elicit_serde_json`)
 //!
+//! # Shadow-crate workflow plugins (registered via emit inventory)
+//!
+//! The following plugins live in their own crates but are included in the emit
+//! dispatch pipeline when the `emit` feature is enabled:
+//!
+//! | Plugin | Crate | Tools |
+//! |---|---|---|
+//! | `ChronoWorkflowPlugin` | `elicit_chrono` | parse_datetime, assert_future, assert_in_range, compute_duration, add_seconds |
+//! | `JiffWorkflowPlugin` | `elicit_jiff` | parse_timestamp, assert_future, assert_in_range, add_seconds |
+//! | `TimeWorkflowPlugin` | `elicit_time` | parse_offset, assert_utc, format_offset |
+//! | `UrlWorkflowPlugin` | `elicit_url` | parse_url, assert_https, assert_host |
+//! | `ReqwestWorkflowPlugin` | `elicit_reqwest` | fetch_json, fetch_text, url_build, build_request, status_summary, assert_success, assert_json, head_request, fetch_bytes |
+//! | `JsonWorkflowPlugin` | `elicit_serde_json` | parse_and_focus, validate_object, safe_merge, pointer_update, field_chain |
+//! | `RegexWorkflowPlugin` | `elicit_regex` | compile, is_match, find_all, replace_all, capture_groups |
+//! | `SqlxWorkflowPlugin` | `elicit_sqlx` | connect, query, execute, query_typed, transaction |
+//!
 //! # Feature flags
 //!
 //! | Feature | Enables |
@@ -83,7 +99,7 @@ pub fn emit_dispatch_crate(
         // elicit_time
         std::mem::size_of::<elicit_time::ParseOffsetParams>(),
         // elicit_serde_json
-        std::mem::size_of::<elicit_serde_json::RawJson>(),
+        std::mem::size_of::<elicit_serde_json::ParseAndFocusEmit>(),
         // elicit_sqlx (workflow emit newtypes)
         std::mem::size_of::<elicit_sqlx::workflow::WfConnectParams>(),
         // elicit_regex
