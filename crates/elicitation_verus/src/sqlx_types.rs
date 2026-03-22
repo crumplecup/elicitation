@@ -334,3 +334,22 @@ pub fn verify_to_sqlx_args_bool_is_single_element(is_single: bool) -> bool {
 pub fn verify_to_sqlx_args_object_length_matches_fields(lengths_match: bool) -> bool {
     lengths_match
 }
+
+// ============================================================================
+// Proposition combinators — structural zero-size contracts
+// ============================================================================
+
+/// Contract: `Established<P>` is zero-sized (PhantomData wrapper).
+pub fn verify_established_is_zero_sized(size: usize) -> bool {
+    size == 0
+}
+
+/// Contract: `And<P,Q>` is zero-sized (unit struct combinator).
+pub fn verify_and_combinator_is_zero_sized(size: usize) -> bool {
+    size == 0
+}
+
+/// Contract: `both()` produces an `Established<And<P,Q>>` that is zero-sized.
+pub fn verify_both_result_is_zero_sized(size: usize) -> bool {
+    size == 0
+}

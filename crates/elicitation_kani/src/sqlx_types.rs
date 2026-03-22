@@ -261,3 +261,40 @@ fn verify_to_sqlx_args_object_extracts_values() {
     };
     assert!(result.len() == 2, "Object with 2 fields extracts 2 values");
 }
+
+// ============================================================================
+// Proposition combinators (And<P,Q>, Established<P>, both())
+// ============================================================================
+
+use elicitation::contracts::{And, Established, both};
+
+/// `Established<P>` is a zero-sized proof marker — must have size 0.
+#[kani::proof]
+fn verify_established_is_zero_sized() {
+    use std::mem::size_of;
+    // DbConnected, QueryExecuted, etc. are unit structs — zero-sized.
+    // Established<P> wraps PhantomData<P>, so also zero-sized.
+    struct Dummy;
+    assert!(size_of::<Established<Dummy>>() == 0);
+}
+
+/// `And<P,Q>` is a zero-sized struct, size == 0.
+#[kani::proof]
+fn verify_and_combinator_is_zero_sized() {
+    use std::mem::size_of;
+    struct P;
+    struct Q;
+    assert!(size_of::<And<P, Q>>() == 0);
+}
+
+/// `both(p, q)` produces `Established<And<P,Q>>` which is also zero-sized.
+#[kani::proof]
+fn verify_both_result_is_zero_sized() {
+    use std::mem::size_of;
+    struct P;
+    struct Q;
+    let p: Established<P> = Established::assert();
+    let q: Established<Q> = Established::assert();
+    let _both: Established<And<P, Q>> = both(p, q);
+    assert!(size_of::<Established<And<P, Q>>>() == 0);
+}

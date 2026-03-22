@@ -483,6 +483,9 @@ impl ProofHarness {
             Self::new("sqlx_types", "verify_to_sqlx_args_null_is_single_element"),
             Self::new("sqlx_types", "verify_to_sqlx_args_bool_is_single_element"),
             Self::new("sqlx_types", "verify_to_sqlx_args_object_extracts_values"),
+            Self::new("sqlx_types", "verify_established_is_zero_sized"),
+            Self::new("sqlx_types", "verify_and_combinator_is_zero_sized"),
+            Self::new("sqlx_types", "verify_both_result_is_zero_sized"),
         ]
     }
 

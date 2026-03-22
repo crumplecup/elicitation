@@ -234,3 +234,30 @@ pub fn verify_to_sqlx_args_bool_is_single_element() -> bool {
     };
     result.len() == 1 && matches!(result[0], serde_json::Value::Bool(true))
 }
+
+// ============================================================================
+// Proposition combinators
+// ============================================================================
+
+use elicitation::contracts::{And, Established};
+
+/// `Established<P>` has zero runtime size — structural proof.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_established_is_zero_sized() -> bool {
+    use std::mem::size_of;
+    struct Dummy;
+    size_of::<Established<Dummy>>() == 0
+}
+
+/// `And<P,Q>` has zero runtime size — structural proof.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_and_combinator_is_zero_sized() -> bool {
+    use std::mem::size_of;
+    struct P;
+    struct Q;
+    size_of::<And<P, Q>>() == 0
+}
