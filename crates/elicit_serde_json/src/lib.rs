@@ -22,14 +22,14 @@
 #![warn(missing_docs)]
 
 mod number;
-pub(crate) mod util;
 mod value;
 mod workflow;
 
 pub use number::JsonNumber;
 pub use value::JsonValue;
 pub use workflow::{
-    FocusedJson, IsObject, JsonParsed, JsonWorkflowPlugin, LocatedValue, MissingKeyPolicy,
-    ObjectJson, ObjectMergeMode, ParsedJson, ParsedObject, PointerResolved, RawJson,
-    RequiredKeysPresent, UpdateApplied, ValidatedObject,
+    FieldChainEmit, FocusedJson, IsObject, JsonParsed, JsonWorkflowPlugin, LocatedValue,
+    MissingKeyPolicy, ObjectJson, ObjectMergeMode, ParseAndFocusEmit, ParsedJson, ParsedObject,
+    PointerResolved, PointerUpdateEmit, RawJson, RequiredKeysPresent, SafeMergeEmit, UpdateApplied,
+    ValidateObjectEmit, ValidatedObject,
 };

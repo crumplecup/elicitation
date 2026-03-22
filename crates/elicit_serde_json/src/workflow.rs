@@ -39,19 +39,15 @@
 //!
 //! Registered under the `"json_workflow"` namespace.
 
-use elicitation::ElicitPlugin;
 use elicitation::contracts::{And, Established, Prop, both};
-use futures::future::BoxFuture;
+use elicitation::{ElicitPlugin, elicit_tool};
 use rmcp::{
     ErrorData,
-    model::{CallToolRequestParams, CallToolResult, Content, Tool},
-    service::RequestContext,
+    model::{CallToolResult, Content},
 };
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
-
-use crate::util::parse_args;
 
 // ── Propositions ──────────────────────────────────────────────────────────────
 
@@ -472,302 +468,214 @@ fn parse_as_object(
     parsed.assert_object(parsed_proof)
 }
 
-fn typed_tool<T: JsonSchema + 'static>(name: &'static str, description: &'static str) -> Tool {
-    use std::sync::Arc;
-    Tool::new(name, description, Arc::new(Default::default())).with_input_schema::<T>()
-}
-
-// ── Plugin ────────────────────────────────────────────────────────────────────
-
-/// MCP plugin exposing verified JSON composition workflows.
-///
-/// Each tool is a multi-step composition with explicit **assumptions** (what the
-/// caller must provide) and **propositions** established on success.
-/// The Rust implementation carries those proofs internally via
-/// [`elicitation::contracts::Established`] — they are zero-cost `PhantomData`
-/// markers that disappear at compile time.
-///
-/// # Example contract chain for `parse_and_focus`:
-///
-/// ```text
-/// RawJson ──parse()──→ (ParsedJson, Established<JsonParsed>)
-///                           │
-///                      .focus(ptr)
-///                           │
-///                           ↓
-///              (FocusedJson, Established<LocatedValue>)
-///                           │
-///                      .extract()  ← Value, not Option<Value>
-/// ```
-///
-/// Register under the `"json_workflow"` namespace:
-///
-/// ```ignore
-/// use elicitation::PluginRegistry;
-/// use elicit_serde_json::JsonWorkflowPlugin;
-///
-/// let registry = PluginRegistry::new()
-///     .register("json_workflow", JsonWorkflowPlugin);
-/// ```
-#[derive(Debug)]
+/// MCP plugin providing verified JSON workflow tools.
+#[derive(Debug, ElicitPlugin)]
+#[plugin(name = "json_workflow")]
 pub struct JsonWorkflowPlugin;
 
-impl ElicitPlugin for JsonWorkflowPlugin {
-    fn name(&self) -> &'static str {
-        "json_workflow"
-    }
+// ── Tool handlers ─────────────────────────────────────────────────────────────
 
-    fn list_tools(&self) -> Vec<Tool> {
-        vec![
-            typed_tool::<ParseFocusParams>(
-                "parse_and_focus",
-                "Parse a JSON string and resolve a RFC 6901 JSON Pointer path in one atomic step. \
-                 Establishes: JsonParsed ∧ PointerResolved. \
-                 The focused value is guaranteed to exist — no null check needed.",
-            ),
-            typed_tool::<ValidateObjectParams>(
-                "validate_object",
-                "Parse a JSON string, assert it is an object, and verify all required keys \
-                 are present. \
-                 Establishes: JsonParsed ∧ IsObject ∧ RequiredKeysPresent. \
-                 Returns the validated object with a contract summary.",
-            ),
-            typed_tool::<MergeParams>(
-                "safe_merge",
-                "Merge two JSON objects after proving BOTH are objects (not arrays or scalars). \
-                 Establishes: IsObject(base) ∧ IsObject(patch) ⟹ IsObject(result). \
-                 Choose merge_mode: 'merge_patch' (RFC 7396, nulls delete) or \
-                 'deep_merge' (recursive, nulls overwrite).",
-            ),
-            typed_tool::<PointerUpdateParams>(
-                "pointer_update",
-                "Parse a JSON document, resolve a pointer path to prove it exists, \
-                 then write a new value at that path. \
-                 Establishes: JsonParsed ∧ PointerResolved ⟹ UpdateApplied. \
-                 Use missing_key_policy to control behavior when the path is absent.",
-            ),
-            typed_tool::<FieldChainParams>(
-                "field_chain",
-                "Traverse a chain of object keys, proving each step exists before descending. \
-                 Fails at the first missing key with the path consumed so far. \
-                 Establishes: ∀ key ∈ path. PointerResolved(root, key). \
-                 Returns the leaf value and the resolved path.",
-            ),
-        ]
-    }
-
-    #[instrument(skip(self, _ctx), fields(tool = %params.name))]
-    fn call_tool<'a>(
-        &'a self,
-        params: CallToolRequestParams,
-        _ctx: RequestContext<rmcp::RoleServer>,
-    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
-        Box::pin(async move {
-            let bare = params.name.trim_start_matches("json_workflow__");
-            match bare {
-                "parse_and_focus" => {
-                    let p: ParseFocusParams = parse_args(&params)?;
-                    // Typestate: RawJson → ParsedJson → FocusedJson
-                    let (parsed, parsed_proof) = match RawJson::new(p.json).parse() {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let (focused, _located_proof) = match parsed.focus(&p.pointer, parsed_proof) {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-
-                    // FocusedJson::extract() returns Value, not Option<Value>.
-                    // The LocatedValue proof guarantees the pointer resolved.
-                    let value = focused.extract();
-                    let result = serde_json::json!({
-                        "value": value,
-                        "contract": "JsonParsed ∧ PointerResolved",
-                    });
-                    Ok(CallToolResult::success(vec![Content::text(
-                        result.to_string(),
-                    )]))
-                }
-
-                "validate_object" => {
-                    let p: ValidateObjectParams = parse_args(&params)?;
-                    let required: Vec<&str> = p.required_keys.iter().map(|s| s.as_str()).collect();
-
-                    // Typestate: RawJson → ParsedJson → ObjectJson → validated ObjectJson
-                    let (parsed, parsed_proof) = match RawJson::new(p.json).parse() {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let (obj, obj_proof) = match parsed.assert_object(parsed_proof) {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-                    let (validated, _validated_proof) =
-                        match obj.validate_required(&required, obj_proof) {
-                            Ok(r) => r,
-                            Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                        };
-
-                    let value = validated.into_value();
-                    let result = serde_json::json!({
-                        "value": value,
-                        "contract": "JsonParsed ∧ IsObject ∧ RequiredKeysPresent",
-                        "required_keys": p.required_keys,
-                    });
-                    Ok(CallToolResult::success(vec![Content::text(
-                        result.to_string(),
-                    )]))
-                }
-
-                "safe_merge" => {
-                    let p: MergeParams = parse_args(&params)?;
-
-                    // Must prove BOTH base and patch are objects before merging.
-                    // Two-precondition pattern from tic-tac-toe:
-                    //   validate_square_empty(…) ∧ validate_player_turn(…) → both(…)
-                    let (base_obj, base_proof) = match parse_as_object(p.base) {
-                        Ok(r) => r,
-                        Err(e) => {
-                            return Ok(CallToolResult::error(vec![Content::text(format!(
-                                "base: {e}"
-                            ))]));
-                        }
-                    };
-                    let (patch_obj, patch_proof) = match parse_as_object(p.patch) {
-                        Ok(r) => r,
-                        Err(e) => {
-                            return Ok(CallToolResult::error(vec![Content::text(format!(
-                                "patch: {e}"
-                            ))]));
-                        }
-                    };
-
-                    // Compose: both operands proven to be objects.
-                    let combined_proof = both(base_proof, patch_proof);
-                    let merged = base_obj.merge(patch_obj, combined_proof, &p.mode);
-                    let result = serde_json::json!({
-                        "value": merged,
-                        "contract": "IsObject(base) ∧ IsObject(patch) ⟹ IsObject(result)",
-                        "mode": format!("{:?}", p.mode),
-                    });
-                    Ok(CallToolResult::success(vec![Content::text(
-                        result.to_string(),
-                    )]))
-                }
-
-                "pointer_update" => {
-                    let p: PointerUpdateParams = parse_args(&params)?;
-
-                    let (parsed, parsed_proof) = match RawJson::new(&p.json).parse() {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-
-                    let result = match parsed.focus(&p.pointer, parsed_proof) {
-                        Ok((focused, _located_proof)) => {
-                            // Pointer resolved — safe to update.
-                            let update_proof: Established<UpdateApplied> = Established::assert();
-                            let updated = focused.update(p.new_value, &p.pointer, update_proof);
-                            serde_json::json!({
-                                "value": updated,
-                                "contract": "JsonParsed ∧ PointerResolved ⟹ UpdateApplied",
-                                "pointer": p.pointer,
-                            })
-                        }
-                        Err(focus_err) => match p.missing_key_policy {
-                            MissingKeyPolicy::Error => {
-                                return Ok(CallToolResult::error(vec![Content::text(focus_err)]));
-                            }
-                            MissingKeyPolicy::CreatePath => {
-                                let mut doc: serde_json::Value =
-                                    serde_json::from_str(&p.json).unwrap_or_default();
-                                set_pointer(&mut doc, &p.pointer, p.new_value);
-                                serde_json::json!({
-                                    "value": doc,
-                                    "contract": "JsonParsed ∧ UpdateApplied (path created)",
-                                    "pointer": p.pointer,
-                                })
-                            }
-                        },
-                    };
-                    Ok(CallToolResult::success(vec![Content::text(
-                        result.to_string(),
-                    )]))
-                }
-
-                "field_chain" => {
-                    let p: FieldChainParams = parse_args(&params)?;
-
-                    let (mut parsed, mut current_proof) = match RawJson::new(p.json).parse() {
-                        Ok(r) => r,
-                        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
-                    };
-
-                    // Walk each key in the path, proving each step resolves before descending.
-                    // Sequential-precondition pattern:
-                    //   ∀ key ∈ path. PointerResolved must be established before descending.
-                    let mut resolved_path = String::new();
-                    for key in &p.path {
-                        let ptr = format!("{resolved_path}/{key}");
-                        match parsed.focus(&ptr, current_proof) {
-                            Ok((focused, located_proof)) => {
-                                // Step resolved — descend into the focused value.
-                                resolved_path = ptr;
-                                let next_value = focused.extract(); // not Option!
-                                // Rebuild ParsedJson for the next step
-                                parsed = ParsedJson { value: next_value };
-                                current_proof = elicitation::contracts::fst(located_proof);
-                            }
-                            Err(e) => {
-                                return Ok(CallToolResult::error(vec![Content::text(format!(
-                                    "PointerResolved not established at '{ptr}': {e}"
-                                ))]));
-                            }
-                        }
-                    }
-
-                    let result = serde_json::json!({
-                        "value": parsed.value,
-                        "contract": format!("∀ key ∈ {:?}. PointerResolved", p.path),
-                        "resolved_path": resolved_path,
-                    });
-                    Ok(CallToolResult::success(vec![Content::text(
-                        result.to_string(),
-                    )]))
-                }
-
-                other => Err(ErrorData::invalid_params(
-                    format!("unknown workflow tool: {other}"),
-                    None,
-                )),
-            }
-        })
-    }
+#[elicit_tool(
+    plugin = "json_workflow",
+    name = "parse_and_focus",
+    description = "Parse a JSON string and resolve a RFC 6901 JSON Pointer path in one atomic \
+                   step. Establishes: JsonParsed ∧ PointerResolved. \
+                   The focused value is guaranteed to exist — no null check needed.",
+    emit = ParseAndFocusEmit
+)]
+#[instrument(skip_all)]
+async fn wf_parse_and_focus(p: ParseFocusParams) -> Result<CallToolResult, ErrorData> {
+    let (parsed, parsed_proof) = match RawJson::new(p.json).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let (focused, _located_proof) = match parsed.focus(&p.pointer, parsed_proof) {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let value = focused.extract();
+    let result = serde_json::json!({
+        "value": value,
+        "contract": "JsonParsed ∧ PointerResolved",
+    });
+    Ok(CallToolResult::success(vec![Content::text(
+        result.to_string(),
+    )]))
 }
 
-// ── EmitCode impls ────────────────────────────────────────────────────────────
-// Each params struct recovers the typestate sequence it drives as Rust source.
+#[elicit_tool(
+    plugin = "json_workflow",
+    name = "validate_object",
+    description = "Parse a JSON string, assert it is an object, and verify all required keys \
+                   are present. Establishes: JsonParsed ∧ IsObject ∧ RequiredKeysPresent. \
+                   Returns the validated object with a contract summary.",
+    emit = ValidateObjectEmit
+)]
+#[instrument(skip_all)]
+async fn wf_validate_object(p: ValidateObjectParams) -> Result<CallToolResult, ErrorData> {
+    let required: Vec<&str> = p.required_keys.iter().map(|s| s.as_str()).collect();
+    let (parsed, parsed_proof) = match RawJson::new(p.json).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let (obj, obj_proof) = match parsed.assert_object(parsed_proof) {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let (validated, _validated_proof) = match obj.validate_required(&required, obj_proof) {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let value = validated.into_value();
+    let result = serde_json::json!({
+        "value": value,
+        "contract": "JsonParsed ∧ IsObject ∧ RequiredKeysPresent",
+        "required_keys": p.required_keys,
+    });
+    Ok(CallToolResult::success(vec![Content::text(
+        result.to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "json_workflow",
+    name = "safe_merge",
+    description = "Merge two JSON objects after proving BOTH are objects (not arrays or scalars). \
+                   Establishes: IsObject(base) ∧ IsObject(patch) ⟹ IsObject(result). \
+                   Choose merge_mode: 'merge_patch' (RFC 7396, nulls delete) or \
+                   'deep_merge' (recursive, nulls overwrite).",
+    emit = SafeMergeEmit
+)]
+#[instrument(skip_all)]
+async fn wf_safe_merge(p: MergeParams) -> Result<CallToolResult, ErrorData> {
+    let (base_obj, base_proof) = match parse_as_object(p.base) {
+        Ok(r) => r,
+        Err(e) => {
+            return Ok(CallToolResult::error(vec![Content::text(format!(
+                "base: {e}"
+            ))]));
+        }
+    };
+    let (patch_obj, patch_proof) = match parse_as_object(p.patch) {
+        Ok(r) => r,
+        Err(e) => {
+            return Ok(CallToolResult::error(vec![Content::text(format!(
+                "patch: {e}"
+            ))]));
+        }
+    };
+    let combined_proof = both(base_proof, patch_proof);
+    let merged = base_obj.merge(patch_obj, combined_proof, &p.mode);
+    let result = serde_json::json!({
+        "value": merged,
+        "contract": "IsObject(base) ∧ IsObject(patch) ⟹ IsObject(result)",
+        "mode": format!("{:?}", p.mode),
+    });
+    Ok(CallToolResult::success(vec![Content::text(
+        result.to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "json_workflow",
+    name = "pointer_update",
+    description = "Parse a JSON document, resolve a pointer path to prove it exists, then write \
+                   a new value at that path. \
+                   Establishes: JsonParsed ∧ PointerResolved ⟹ UpdateApplied. \
+                   Use missing_key_policy to control behavior when the path is absent.",
+    emit = PointerUpdateEmit
+)]
+#[instrument(skip_all)]
+async fn wf_pointer_update(p: PointerUpdateParams) -> Result<CallToolResult, ErrorData> {
+    let (parsed, parsed_proof) = match RawJson::new(&p.json).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let result = match parsed.focus(&p.pointer, parsed_proof) {
+        Ok((focused, _located_proof)) => {
+            let update_proof: Established<UpdateApplied> = Established::assert();
+            let updated = focused.update(p.new_value, &p.pointer, update_proof);
+            serde_json::json!({
+                "value": updated,
+                "contract": "JsonParsed ∧ PointerResolved ⟹ UpdateApplied",
+                "pointer": p.pointer,
+            })
+        }
+        Err(focus_err) => match p.missing_key_policy {
+            MissingKeyPolicy::Error => {
+                return Ok(CallToolResult::error(vec![Content::text(focus_err)]));
+            }
+            MissingKeyPolicy::CreatePath => {
+                let mut doc: serde_json::Value = serde_json::from_str(&p.json).unwrap_or_default();
+                set_pointer(&mut doc, &p.pointer, p.new_value);
+                serde_json::json!({
+                    "value": doc,
+                    "contract": "JsonParsed ∧ UpdateApplied (path created)",
+                    "pointer": p.pointer,
+                })
+            }
+        },
+    };
+    Ok(CallToolResult::success(vec![Content::text(
+        result.to_string(),
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "json_workflow",
+    name = "field_chain",
+    description = "Traverse a chain of object keys, proving each step exists before descending. \
+                   Fails at the first missing key with the path consumed so far. \
+                   Establishes: ∀ key ∈ path. PointerResolved(root, key). \
+                   Returns the leaf value and the resolved path.",
+    emit = FieldChainEmit
+)]
+#[instrument(skip_all)]
+async fn wf_field_chain(p: FieldChainParams) -> Result<CallToolResult, ErrorData> {
+    let (mut parsed, mut current_proof) = match RawJson::new(p.json).parse() {
+        Ok(r) => r,
+        Err(e) => return Ok(CallToolResult::error(vec![Content::text(e)])),
+    };
+    let mut resolved_path = String::new();
+    for key in &p.path {
+        let ptr = format!("{resolved_path}/{key}");
+        match parsed.focus(&ptr, current_proof) {
+            Ok((focused, located_proof)) => {
+                resolved_path = ptr;
+                let next_value = focused.extract();
+                parsed = ParsedJson { value: next_value };
+                current_proof = elicitation::contracts::fst(located_proof);
+            }
+            Err(e) => {
+                return Ok(CallToolResult::error(vec![Content::text(format!(
+                    "PointerResolved not established at '{ptr}': {e}"
+                ))]));
+            }
+        }
+    }
+    let result = serde_json::json!({
+        "value": parsed.value,
+        "contract": format!("∀ key ∈ {:?}. PointerResolved", p.path),
+        "resolved_path": resolved_path,
+    });
+    Ok(CallToolResult::success(vec![Content::text(
+        result.to_string(),
+    )]))
+}
+
+// ── CustomEmit ZSTs ───────────────────────────────────────────────────────────
+// Each implements CustomEmit<P> to emit the full typestate sequence for its tool.
+// The #[elicit_tool(emit = XxxEmit)] macro generates impl EmitCode for XxxParams
+// delegating to these, plus register_emit! inventory submission.
+
+/// Custom emit for `parse_and_focus`.
+pub struct ParseAndFocusEmit;
 
 #[cfg(feature = "emit")]
-use elicitation::emit_code::{CrateDep, EmitCode};
-#[cfg(feature = "emit")]
-use elicitation::proc_macro2::TokenStream;
-
-#[cfg(feature = "emit")]
-const ELICIT_SERDE_JSON_DEP: CrateDep = CrateDep::new("elicit_serde_json", "0.8");
-
-#[cfg(feature = "emit")]
-const ELICITATION_DEP: CrateDep = CrateDep::new("elicitation", "0.8");
-
-#[cfg(feature = "emit")]
-const SERDE_JSON_DEP: CrateDep = CrateDep::new("serde_json", "1");
-
-/// `parse_and_focus` → `RawJson::new → .parse() → .focus() → .extract()`
-#[cfg(feature = "emit")]
-impl EmitCode for ParseFocusParams {
-    fn emit_code(&self) -> TokenStream {
-        let json = &self.json;
-        let pointer = &self.pointer;
+impl elicitation::emit_code::CustomEmit<ParseFocusParams> for ParseAndFocusEmit {
+    fn emit_code(params: &ParseFocusParams) -> elicitation::proc_macro2::TokenStream {
+        let json = &params.json;
+        let pointer = &params.pointer;
         quote::quote! {
             let _raw = elicit_serde_json::RawJson::new(#json.to_string());
             let (_parsed, _json_proof) = _raw.parse()
@@ -777,17 +685,16 @@ impl EmitCode for ParseFocusParams {
             let _value = _focused.extract();
         }
     }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP]
-    }
 }
 
-/// `validate_object` → `RawJson → .parse() → .assert_object() → .validate_required()`
+/// Custom emit for `validate_object`.
+pub struct ValidateObjectEmit;
+
 #[cfg(feature = "emit")]
-impl EmitCode for ValidateObjectParams {
-    fn emit_code(&self) -> TokenStream {
-        let json = &self.json;
-        let keys = &self.required_keys;
+impl elicitation::emit_code::CustomEmit<ValidateObjectParams> for ValidateObjectEmit {
+    fn emit_code(params: &ValidateObjectParams) -> elicitation::proc_macro2::TokenStream {
+        let json = &params.json;
+        let keys = &params.required_keys;
         quote::quote! {
             let _raw = elicit_serde_json::RawJson::new(#json.to_string());
             let (_parsed, _proof) = _raw.parse()
@@ -800,18 +707,17 @@ impl EmitCode for ValidateObjectParams {
             ).map_err(|e| format!("Missing required keys: {}", e))?;
         }
     }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP]
-    }
 }
 
-/// `safe_merge` → two independent parse+assert_object chains, then `both()` + merge
+/// Custom emit for `safe_merge`.
+pub struct SafeMergeEmit;
+
 #[cfg(feature = "emit")]
-impl EmitCode for MergeParams {
-    fn emit_code(&self) -> TokenStream {
-        let base = self.base.to_string();
-        let patch = self.patch.to_string();
-        let mode_expr = match self.mode {
+impl elicitation::emit_code::CustomEmit<MergeParams> for SafeMergeEmit {
+    fn emit_code(params: &MergeParams) -> elicitation::proc_macro2::TokenStream {
+        let base = params.base.to_string();
+        let patch = params.patch.to_string();
+        let mode_expr = match params.mode {
             ObjectMergeMode::MergePatch => {
                 quote::quote! { elicit_serde_json::ObjectMergeMode::MergePatch }
             }
@@ -837,20 +743,21 @@ impl EmitCode for MergeParams {
             println!("{}", serde_json::to_string_pretty(&_merged).unwrap_or_default());
         }
     }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP, SERDE_JSON_DEP]
-    }
 }
 
-/// `pointer_update` → `RawJson → .parse() → set_pointer()`
+/// Custom emit for `pointer_update`.
+pub struct PointerUpdateEmit;
+
 #[cfg(feature = "emit")]
-impl EmitCode for PointerUpdateParams {
-    fn emit_code(&self) -> TokenStream {
-        let json = &self.json;
-        let pointer = &self.pointer;
-        let new_value = self.new_value.to_string();
-        let policy_expr = match self.missing_key_policy {
-            MissingKeyPolicy::Error => quote::quote! { elicit_serde_json::MissingKeyPolicy::Error },
+impl elicitation::emit_code::CustomEmit<PointerUpdateParams> for PointerUpdateEmit {
+    fn emit_code(params: &PointerUpdateParams) -> elicitation::proc_macro2::TokenStream {
+        let json = &params.json;
+        let pointer = &params.pointer;
+        let new_value = params.new_value.to_string();
+        let policy_expr = match params.missing_key_policy {
+            MissingKeyPolicy::Error => {
+                quote::quote! { elicit_serde_json::MissingKeyPolicy::Error }
+            }
             MissingKeyPolicy::CreatePath => {
                 quote::quote! { elicit_serde_json::MissingKeyPolicy::CreatePath }
             }
@@ -870,17 +777,16 @@ impl EmitCode for PointerUpdateParams {
             println!("{}", serde_json::to_string_pretty(&_updated).unwrap_or_default());
         }
     }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP, SERDE_JSON_DEP]
-    }
 }
 
-/// `field_chain` → iterative focus loop over ordered keys
+/// Custom emit for `field_chain`.
+pub struct FieldChainEmit;
+
 #[cfg(feature = "emit")]
-impl EmitCode for FieldChainParams {
-    fn emit_code(&self) -> TokenStream {
-        let json = &self.json;
-        let keys = &self.path;
+impl elicitation::emit_code::CustomEmit<FieldChainParams> for FieldChainEmit {
+    fn emit_code(params: &FieldChainParams) -> elicitation::proc_macro2::TokenStream {
+        let json = &params.json;
+        let keys = &params.path;
         quote::quote! {
             let _raw = elicit_serde_json::RawJson::new(#json.to_string());
             let (_parsed, _proof) = _raw.parse()
@@ -898,22 +804,4 @@ impl EmitCode for FieldChainParams {
             println!("{}", serde_json::to_string_pretty(&_current).unwrap_or_default());
         }
     }
-    fn crate_deps(&self) -> Vec<CrateDep> {
-        vec![ELICITATION_DEP, ELICIT_SERDE_JSON_DEP, SERDE_JSON_DEP]
-    }
 }
-
-// ── Public dispatch for cross-crate EmitCode recovery ────────────────────────
-
-// ── Global emit registry ──────────────────────────────────────────────────────
-
-#[cfg(feature = "emit")]
-elicitation::register_emit!("parse_and_focus", ParseFocusParams);
-#[cfg(feature = "emit")]
-elicitation::register_emit!("validate_object", ValidateObjectParams);
-#[cfg(feature = "emit")]
-elicitation::register_emit!("safe_merge", MergeParams);
-#[cfg(feature = "emit")]
-elicitation::register_emit!("pointer_update", PointerUpdateParams);
-#[cfg(feature = "emit")]
-elicitation::register_emit!("field_chain", FieldChainParams);
