@@ -461,7 +461,139 @@ single-element `Vec`, which works naturally with single-parameter queries.
 
 ---
 
-## Formal verification
+## Verified workflows (`SqlxWorkflowPlugin`)
+
+The driver-specific plugins provide the **letters** of the alphabet (connect,
+execute, fetch). `SqlxWorkflowPlugin` arranges them into **words** — complete,
+contract-carrying workflows where each step proves it did what it claimed.
+
+### Propositions
+
+Each tool establishes a proposition — a zero-sized `PhantomData` proof marker
+that documents what the tool guarantees:
+
+| Proposition | Meaning |
+|---|---|
+| `DbConnected` | A named pool was successfully opened |
+| `QueryExecuted` | A SQL statement completed and `rows_affected` is known |
+| `RowsFetched` | A SELECT returned ≥0 rows |
+| `TransactionOpen` | A transaction was started and is not yet resolved |
+| `TransactionCommitted` | A transaction was committed |
+| `TransactionRolledBack` | A transaction was rolled back |
+
+Propositions compose with `And<P,Q>` and `both(p, q)`:
+
+```rust
+// Type aliases for common chains
+pub type ConnectedAndExecuted = And<DbConnected, QueryExecuted>;
+pub type FullCommit = And<DbConnected, And<TransactionOpen, TransactionCommitted>>;
+
+// Combinator functions
+pub fn connected_and_executed(
+    db: Established<DbConnected>,
+    qe: Established<QueryExecuted>,
+) -> Established<ConnectedAndExecuted>
+
+pub fn full_commit(
+    db: Established<DbConnected>,
+    tx: Established<TransactionOpen>,
+    committed: Established<TransactionCommitted>,
+) -> Established<FullCommit>
+```
+
+All proposition types and combinators are zero-sized — they vanish at compile
+time. An `Established<P>` costs nothing at runtime.
+
+### The 13-tool verified surface
+
+`SqlxWorkflowPlugin` uses `AnyPool` (driver-agnostic) so one plugin covers all
+three drivers. The URL determines the backend: `postgres://…`, `sqlite:…`,
+`mysql://…`.
+
+| Tool | Establishes | Description |
+|---|---|---|
+| `sqlx_workflow__connect` | `DbConnected` | Open pool, return `pool_id` |
+| `sqlx_workflow__disconnect` | — | Close and remove pool |
+| `sqlx_workflow__execute` | `QueryExecuted` | SQL + args → `QueryResultData` |
+| `sqlx_workflow__fetch_all` | `RowsFetched` | SELECT → `Vec<RowData>` |
+| `sqlx_workflow__fetch_one` | `RowsFetched` | SELECT → first `RowData` |
+| `sqlx_workflow__fetch_optional` | — | SELECT → `Option<RowData>` |
+| `sqlx_workflow__begin` | `TransactionOpen` | Start transaction → `tx_id` |
+| `sqlx_workflow__commit` | `TransactionCommitted` | Commit transaction |
+| `sqlx_workflow__rollback` | `TransactionRolledBack` | Rollback transaction |
+| `sqlx_workflow__tx_execute` | `QueryExecuted` | SQL within transaction |
+| `sqlx_workflow__tx_fetch_all` | `RowsFetched` | SELECT within transaction |
+| `sqlx_workflow__tx_fetch_one` | `RowsFetched` | SELECT (first) within transaction |
+| `sqlx_workflow__tx_fetch_optional` | — | SELECT (optional) within transaction |
+
+### Contract chain diagram
+
+```
+connect(url)
+  └─ Established<DbConnected>           pool_id: Uuid
+
+execute(pool_id, sql, args)
+  └─ Established<QueryExecuted>         QueryResultData { rows_affected, last_insert_id }
+
+fetch_all(pool_id, sql, args)
+  └─ Established<RowsFetched>           Vec<RowData>
+
+begin(pool_id)
+  └─ Established<TransactionOpen>       tx_id: Uuid
+
+tx_execute(tx_id, sql, args)
+  └─ Established<QueryExecuted>
+
+commit(tx_id)
+  └─ Established<TransactionCommitted>
+
+rollback(tx_id)
+  └─ Established<TransactionRolledBack>
+```
+
+Full proof of a committed transaction:
+```rust
+let full_proof: Established<FullCommit> = full_commit(db_proof, tx_proof, committed_proof);
+```
+
+### Example agent workflow
+
+Agent-level (MCP tool calls):
+
+```
+1. sqlx_workflow__connect { database_url: "sqlite::memory:", max_connections: 1 }
+   → { pool_id: "a1b2…" }          — DbConnected established
+
+2. sqlx_workflow__execute { pool_id: "a1b2…", sql: "CREATE TABLE …", args: [] }
+   → { rows_affected: 0 }           — QueryExecuted established
+
+3. sqlx_workflow__begin { pool_id: "a1b2…" }
+   → { tx_id: "c3d4…" }            — TransactionOpen established
+
+4. sqlx_workflow__tx_execute { tx_id: "c3d4…", sql: "INSERT …", args: [42] }
+   → { rows_affected: 1 }           — QueryExecuted established within tx
+
+5. sqlx_workflow__commit { tx_id: "c3d4…" }
+   → {}                             — TransactionCommitted established
+
+6. sqlx_workflow__disconnect { pool_id: "a1b2…" }
+```
+
+### `sqlite::memory:` note
+
+SQLite's `:memory:` backend creates a separate database per connection.
+When using a pool, pass `max_connections: 1` to ensure all operations share
+one connection (and one in-memory database):
+
+```json
+{ "database_url": "sqlite::memory:", "max_connections": 1 }
+```
+
+For Postgres and MySQL, `max_connections` defaults to the sqlx default (10).
+
+---
+
+
 
 All sqlx `Select` enum types in the `elicitation` crate have Kani, Creusot, and
 Verus proofs covering:
@@ -480,5 +612,10 @@ The `ToSqlxArgs` dispatch logic has three Kani harnesses
 `verify_to_sqlx_args_bool_is_single_element`,
 `verify_to_sqlx_args_object_extracts_values`), two Creusot proofs, and three
 Verus structural contracts covering the null, bool, and object dispatch arms.
+
+The `SqlxWorkflowPlugin` proposition combinators have three Kani harnesses,
+two Creusot proofs, and three Verus structural contracts proving that
+`Established<P>`, `And<P,Q>`, and `both()` are all zero-sized (compile-time
+only, zero runtime cost).
 
 See `FORMAL_VERIFICATION_LEGOS.md` for the compositional proof strategy.
