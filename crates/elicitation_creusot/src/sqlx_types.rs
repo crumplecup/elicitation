@@ -213,11 +213,12 @@ pub fn verify_driver_kind_unknown_rejected() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 #[trusted]
+#[cfg(feature = "serde_json")]
 pub fn verify_to_sqlx_args_null_is_single_element() -> bool {
     let val = serde_json::Value::Null;
     let result: Vec<serde_json::Value> = match val {
         serde_json::Value::Object(map) => map.into_values().collect(),
-        other => vec![other],
+        other => std::vec![other],
     };
     result.len() == 1 && result[0].is_null()
 }
@@ -226,11 +227,12 @@ pub fn verify_to_sqlx_args_null_is_single_element() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 #[trusted]
+#[cfg(feature = "serde_json")]
 pub fn verify_to_sqlx_args_bool_is_single_element() -> bool {
     let val = serde_json::Value::Bool(true);
     let result: Vec<serde_json::Value> = match val {
         serde_json::Value::Object(map) => map.into_values().collect(),
-        other => vec![other],
+        other => std::vec![other],
     };
     result.len() == 1 && matches!(result[0], serde_json::Value::Bool(true))
 }
@@ -239,7 +241,7 @@ pub fn verify_to_sqlx_args_bool_is_single_element() -> bool {
 // Proposition combinators
 // ============================================================================
 
-use elicitation::contracts::{And, Established};
+use elicitation::contracts::{And, Established, Prop};
 
 // ── SqlxFragPlugin macro emit Props ──────────────────────────────────────────
 
@@ -305,6 +307,10 @@ pub fn verify_fragment_props_zero_sized() -> bool {
     struct QueryAsFragmentEmitted;
     struct QueryScalarFragmentEmitted;
     struct MigrateFragmentEmitted;
+    impl Prop for QueryFragmentEmitted {}
+    impl Prop for QueryAsFragmentEmitted {}
+    impl Prop for QueryScalarFragmentEmitted {}
+    impl Prop for MigrateFragmentEmitted {}
     size_of::<QueryFragmentEmitted>() == 0
         && size_of::<QueryAsFragmentEmitted>() == 0
         && size_of::<QueryScalarFragmentEmitted>() == 0
@@ -320,6 +326,7 @@ pub fn verify_fragment_props_zero_sized() -> bool {
 pub fn verify_established_is_zero_sized() -> bool {
     use std::mem::size_of;
     struct Dummy;
+    impl Prop for Dummy {}
     size_of::<Established<Dummy>>() == 0
 }
 
@@ -331,5 +338,7 @@ pub fn verify_and_combinator_is_zero_sized() -> bool {
     use std::mem::size_of;
     struct P;
     struct Q;
+    impl Prop for P {}
+    impl Prop for Q {}
     size_of::<And<P, Q>>() == 0
 }

@@ -50,7 +50,7 @@
 #![cfg(feature = "tokio-types")]
 
 use creusot_std::prelude::*;
-use elicitation::contracts::{And, Established};
+use elicitation::contracts::{And, Established, Prop};
 
 // ============================================================================
 // tokio::time — sleep, timeout
@@ -487,6 +487,7 @@ pub fn verify_unix_data_received_contract() -> bool {
 pub fn verify_established_is_zero_sized() -> bool {
     use std::mem::size_of;
     struct Dummy;
+    impl Prop for Dummy {}
     size_of::<Established<Dummy>>() == 0
 }
 
@@ -500,5 +501,7 @@ pub fn verify_and_combinator_is_zero_sized() -> bool {
     use std::mem::size_of;
     struct P;
     struct Q;
+    impl Prop for P {}
+    impl Prop for Q {}
     size_of::<And<P, Q>>() == 0
 }
