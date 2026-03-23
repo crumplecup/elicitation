@@ -339,6 +339,8 @@ pub fn verify_to_sqlx_args_object_length_matches_fields(lengths_match: bool) -> 
 // SqlxFragPlugin macro emit Props
 // ============================================================================
 
+verus! {
+
 /// Contract: `emit_query(params)` — produces a `sqlx::query!(…)` fragment
 /// iff params are structurally valid. Licensed by `QueryFragmentEmitted`.
 ///
@@ -402,3 +404,5 @@ pub fn verify_and_combinator_is_zero_sized(size: usize) -> bool {
 pub fn verify_both_result_is_zero_sized(size: usize) -> bool {
     size == 0
 }
+
+} // verus!

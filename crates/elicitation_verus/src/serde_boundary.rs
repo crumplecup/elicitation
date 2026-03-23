@@ -37,13 +37,19 @@ impl SbI8Positive {
 }
 
 /// Theorem: SbI8Positive::new(v) succeeds iff v > 0.
-proof fn i8_positive_serde_iff(v: i8)
-    ensures (v > 0) <==> (SbI8Positive::new(v) matches Ok(_)),
+proof fn i8_positive_serde_iff(v: i8, r: Result<SbI8Positive, ()>)
+    requires
+        v > 0  ==> (r matches Ok(p) && p.value == v),
+        v <= 0 ==> (r matches Err(())),
+    ensures (v > 0) <==> (r matches Ok(_)),
 {}
 
 /// Corollary: any value produced via new() has value > 0.
-proof fn i8_positive_invariant(p: SbI8Positive, v: i8)
-    requires SbI8Positive::new(v) matches Ok(q) && q.value == p.value,
+proof fn i8_positive_invariant(p: SbI8Positive, v: i8, r: Result<SbI8Positive, ()>)
+    requires
+        v > 0  ==> (r matches Ok(q) && q.value == v),
+        v <= 0 ==> (r matches Err(())),
+        r matches Ok(q) && q.value == p.value,
     ensures  p.value > 0,
 {}
 
@@ -61,8 +67,11 @@ impl SbI8NonNegative {
 }
 
 /// Theorem: SbI8NonNegative::new(v) succeeds iff v >= 0.
-proof fn i8_non_negative_serde_iff(v: i8)
-    ensures (v >= 0) <==> (SbI8NonNegative::new(v) matches Ok(_)),
+proof fn i8_non_negative_serde_iff(v: i8, r: Result<SbI8NonNegative, ()>)
+    requires
+        v >= 0 ==> (r matches Ok(p) && p.value == v),
+        v < 0  ==> (r matches Err(())),
+    ensures (v >= 0) <==> (r matches Ok(_)),
 {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -79,8 +88,11 @@ impl SbI8NonZero {
 }
 
 /// Theorem: SbI8NonZero::new(v) succeeds iff v != 0.
-proof fn i8_non_zero_serde_iff(v: i8)
-    ensures (v != 0) <==> (SbI8NonZero::new(v) matches Ok(_)),
+proof fn i8_non_zero_serde_iff(v: i8, r: Result<SbI8NonZero, ()>)
+    requires
+        v != 0 ==> (r matches Ok(p) && p.value == v),
+        v == 0 ==> (r matches Err(())),
+    ensures (v != 0) <==> (r matches Ok(_)),
 {}
 
 // ============================================================================
@@ -101,8 +113,11 @@ impl SbI16Positive {
 }
 
 /// Theorem: SbI16Positive::new(v) succeeds iff v > 0.
-proof fn i16_positive_serde_iff(v: i16)
-    ensures (v > 0) <==> (SbI16Positive::new(v) matches Ok(_)),
+proof fn i16_positive_serde_iff(v: i16, r: Result<SbI16Positive, ()>)
+    requires
+        v > 0  ==> (r matches Ok(p) && p.value == v),
+        v <= 0 ==> (r matches Err(())),
+    ensures (v > 0) <==> (r matches Ok(_)),
 {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -119,8 +134,11 @@ impl SbI16NonNegative {
 }
 
 /// Theorem: SbI16NonNegative::new(v) succeeds iff v >= 0.
-proof fn i16_non_negative_serde_iff(v: i16)
-    ensures (v >= 0) <==> (SbI16NonNegative::new(v) matches Ok(_)),
+proof fn i16_non_negative_serde_iff(v: i16, r: Result<SbI16NonNegative, ()>)
+    requires
+        v >= 0 ==> (r matches Ok(p) && p.value == v),
+        v < 0  ==> (r matches Err(())),
+    ensures (v >= 0) <==> (r matches Ok(_)),
 {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -137,8 +155,11 @@ impl SbI16NonZero {
 }
 
 /// Theorem: SbI16NonZero::new(v) succeeds iff v != 0.
-proof fn i16_non_zero_serde_iff(v: i16)
-    ensures (v != 0) <==> (SbI16NonZero::new(v) matches Ok(_)),
+proof fn i16_non_zero_serde_iff(v: i16, r: Result<SbI16NonZero, ()>)
+    requires
+        v != 0 ==> (r matches Ok(p) && p.value == v),
+        v == 0 ==> (r matches Err(())),
+    ensures (v != 0) <==> (r matches Ok(_)),
 {}
 
 // ============================================================================
@@ -159,8 +180,11 @@ impl SbU8Positive {
 }
 
 /// Theorem: SbU8Positive::new(v) succeeds iff v > 0.
-proof fn u8_positive_serde_iff(v: u8)
-    ensures (v > 0) <==> (SbU8Positive::new(v) matches Ok(_)),
+proof fn u8_positive_serde_iff(v: u8, r: Result<SbU8Positive, ()>)
+    requires
+        v > 0  ==> (r matches Ok(p) && p.value == v),
+        v == 0 ==> (r matches Err(())),
+    ensures (v > 0) <==> (r matches Ok(_)),
 {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -177,8 +201,11 @@ impl SbU8NonZero {
 }
 
 /// Theorem: SbU8NonZero::new(v) succeeds iff v != 0.
-proof fn u8_non_zero_serde_iff(v: u8)
-    ensures (v != 0) <==> (SbU8NonZero::new(v) matches Ok(_)),
+proof fn u8_non_zero_serde_iff(v: u8, r: Result<SbU8NonZero, ()>)
+    requires
+        v != 0 ==> (r matches Ok(p) && p.value == v),
+        v == 0 ==> (r matches Err(())),
+    ensures (v != 0) <==> (r matches Ok(_)),
 {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -195,8 +222,11 @@ impl SbU16Positive {
 }
 
 /// Theorem: SbU16Positive::new(v) succeeds iff v > 0.
-proof fn u16_positive_serde_iff(v: u16)
-    ensures (v > 0) <==> (SbU16Positive::new(v) matches Ok(_)),
+proof fn u16_positive_serde_iff(v: u16, r: Result<SbU16Positive, ()>)
+    requires
+        v > 0  ==> (r matches Ok(p) && p.value == v),
+        v == 0 ==> (r matches Err(())),
+    ensures (v > 0) <==> (r matches Ok(_)),
 {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -213,8 +243,11 @@ impl SbU16NonZero {
 }
 
 /// Theorem: SbU16NonZero::new(v) succeeds iff v != 0.
-proof fn u16_non_zero_serde_iff(v: u16)
-    ensures (v != 0) <==> (SbU16NonZero::new(v) matches Ok(_)),
+proof fn u16_non_zero_serde_iff(v: u16, r: Result<SbU16NonZero, ()>)
+    requires
+        v != 0 ==> (r matches Ok(p) && p.value == v),
+        v == 0 ==> (r matches Err(())),
+    ensures (v != 0) <==> (r matches Ok(_)),
 {}
 
 // ============================================================================
@@ -235,10 +268,12 @@ impl SbF64Positive {
 }
 
 /// Theorem: SbF64Positive::new succeeds iff is_finite && is_positive.
-proof fn f64_positive_serde_iff(v: f64, is_finite: bool, is_positive: bool)
+proof fn f64_positive_serde_iff(v: f64, is_finite: bool, is_positive: bool, r: Result<SbF64Positive, ()>)
+    requires
+        (is_finite && is_positive)   ==> (r matches Ok(p) && p.value == v),
+        (!is_finite || !is_positive) ==> (r matches Err(())),
     ensures
-        (is_finite && is_positive) <==>
-            (SbF64Positive::new(v, is_finite, is_positive) matches Ok(_)),
+        (is_finite && is_positive) <==> (r matches Ok(_)),
 {}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -255,10 +290,12 @@ impl SbF64NonNegative {
 }
 
 /// Theorem: SbF64NonNegative::new succeeds iff is_finite && is_nn.
-proof fn f64_non_negative_serde_iff(v: f64, is_finite: bool, is_nn: bool)
+proof fn f64_non_negative_serde_iff(v: f64, is_finite: bool, is_nn: bool, r: Result<SbF64NonNegative, ()>)
+    requires
+        (is_finite && is_nn)   ==> (r matches Ok(p) && p.value == v),
+        (!is_finite || !is_nn) ==> (r matches Err(())),
     ensures
-        (is_finite && is_nn) <==>
-            (SbF64NonNegative::new(v, is_finite, is_nn) matches Ok(_)),
+        (is_finite && is_nn) <==> (r matches Ok(_)),
 {}
 
 // ============================================================================
@@ -279,13 +316,19 @@ impl SbStringNonEmpty {
 }
 
 /// Theorem: SbStringNonEmpty::new(is_empty) succeeds iff !is_empty.
-proof fn string_non_empty_serde_iff(is_empty: bool)
-    ensures (!is_empty) <==> (SbStringNonEmpty::new(is_empty) matches Ok(_)),
+proof fn string_non_empty_serde_iff(is_empty: bool, r: Result<SbStringNonEmpty, ()>)
+    requires
+        (!is_empty) ==> (r matches Ok(s) && s.validated == true),
+        is_empty    ==> (r matches Err(())),
+    ensures (!is_empty) <==> (r matches Ok(_)),
 {}
 
 /// Corollary: any SbStringNonEmpty produced via new() has validated == true.
-proof fn string_non_empty_invariant(s: SbStringNonEmpty, b: bool)
-    requires SbStringNonEmpty::new(b) matches Ok(q) && q.validated == s.validated,
+proof fn string_non_empty_invariant(s: SbStringNonEmpty, b: bool, r: Result<SbStringNonEmpty, ()>)
+    requires
+        (!b) ==> (r matches Ok(q) && q.validated == true),
+        b    ==> (r matches Err(())),
+        r matches Ok(q) && q.validated == s.validated,
     ensures  s.validated == true,
 {}
 
@@ -307,8 +350,11 @@ impl SbUrlValid {
 }
 
 /// Theorem: SbUrlValid::new(parses) succeeds iff parses.
-proof fn url_valid_serde_iff(parses: bool)
-    ensures parses <==> (SbUrlValid::new(parses) matches Ok(_)),
+proof fn url_valid_serde_iff(parses: bool, r: Result<SbUrlValid, ()>)
+    requires
+        parses  ==> (r matches Ok(u) && u.validated == true),
+        !parses ==> (r matches Err(())),
+    ensures parses <==> (r matches Ok(_)),
 {}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -325,14 +371,20 @@ impl SbUrlHttps {
 }
 
 /// Theorem: SbUrlHttps::new succeeds iff parses && is_https.
-proof fn url_https_serde_iff(parses: bool, is_https: bool)
+proof fn url_https_serde_iff(parses: bool, is_https: bool, r: Result<SbUrlHttps, ()>)
+    requires
+        (parses && is_https)   ==> (r matches Ok(u) && u.validated == true),
+        (!parses || !is_https) ==> (r matches Err(())),
     ensures
-        (parses && is_https) <==> (SbUrlHttps::new(parses, is_https) matches Ok(_)),
+        (parses && is_https) <==> (r matches Ok(_)),
 {}
 
 /// Corollary: any SbUrlHttps produced via new() was an HTTPS URL.
-proof fn url_https_requires_https(u: SbUrlHttps, parses: bool, is_https: bool)
-    requires SbUrlHttps::new(parses, is_https) matches Ok(q) && q.validated == u.validated,
+proof fn url_https_requires_https(u: SbUrlHttps, parses: bool, is_https: bool, r: Result<SbUrlHttps, ()>)
+    requires
+        (parses && is_https)   ==> (r matches Ok(q) && q.validated == true),
+        (!parses || !is_https) ==> (r matches Err(())),
+        r matches Ok(q) && q.validated == u.validated,
     ensures  is_https,
 {}
 
@@ -350,9 +402,12 @@ impl SbUrlHttp {
 }
 
 /// Theorem: SbUrlHttp::new succeeds iff parses && is_http.
-proof fn url_http_serde_iff(parses: bool, is_http: bool)
+proof fn url_http_serde_iff(parses: bool, is_http: bool, r: Result<SbUrlHttp, ()>)
+    requires
+        (parses && is_http)   ==> (r matches Ok(u) && u.validated == true),
+        (!parses || !is_http) ==> (r matches Err(())),
     ensures
-        (parses && is_http) <==> (SbUrlHttp::new(parses, is_http) matches Ok(_)),
+        (parses && is_http) <==> (r matches Ok(_)),
 {}
 
 } // verus!
