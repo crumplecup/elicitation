@@ -112,11 +112,11 @@ async fn fetch_and_validate(p: FetchAndValidateParams) -> Result<CallToolResult,
         ErrorData::invalid_params("Response body is not a JSON object".to_string(), None)
     })?;
 
-    let missing: Vec<&str> = p
+    let missing: Vec<String> = p
         .required_keys
         .iter()
         .filter(|k| !obj.contains_key(k.as_str()))
-        .map(String::as_str)
+        .cloned()
         .collect();
 
     if !missing.is_empty() {
@@ -133,7 +133,8 @@ async fn fetch_and_validate(p: FetchAndValidateParams) -> Result<CallToolResult,
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-async fn http_get(url: &str, timeout_secs: f64) -> Result<String, ErrorData> {
+/// Perform a GET request and return the response body as a string.
+pub async fn http_get(url: &str, timeout_secs: f64) -> Result<String, ErrorData> {
     let client = reqwest::Client::new();
     let response = client
         .get(url)

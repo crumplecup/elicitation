@@ -3,7 +3,7 @@
 //! Transforms a handler body [`TokenStream`] for use as an `EmitCode` body:
 //! - `p . <field>` → `# __<field>` (quote! interpolation point)
 //! - `ctx . <field>` → declared replacement expression
-//! - `ErrorData :: <method> ( msg_expr , .. )` → `std::io::Error::new(Other, msg_expr)` (converts to io error)
+//! - `ErrorData :: <method> ( msg_expr , .. )` → `Box::<dyn Error>::from(io::Error::new(Other, msg_expr))` (converts to Box<dyn Error>)
 //! - `Ok ( <group_containing_CallToolResult> )` → `println!("{}", <content>)` (strip MCP result)
 //!
 //! Unrecognised patterns pass through unchanged (fail-safe).
@@ -44,7 +44,7 @@ impl EmitRewriter {
     /// Applied rewrites (in priority order):
     /// 1. `p . <ident>` → `# __<ident>` — params field interpolation point
     /// 2. `ctx . <ident>` → declared replacement — context substitution
-    /// 3. `ErrorData :: <method> ( msg, .. )` → `std::io::Error::new(Other, msg)` — wrap as io error
+    /// 3. `ErrorData :: <method> ( msg, .. )` → `Box::<dyn Error>::from(io::Error::new(Other, msg))` — explicit `Box<dyn Error>`, no ambiguity
     /// 4. `Ok ( <CallToolResult_group> )` → `println!("{}", content)` — strip MCP success wrapper
     /// 5. Everything else passes through unchanged (groups are recursed into).
     pub(crate) fn rewrite(&mut self, body: TokenStream) -> TokenStream {
@@ -103,12 +103,13 @@ impl EmitRewriter {
                     i += 1;
                 }
 
-                // ── ErrorData :: <method> ( msg, .. ) → std::io::Error::new(…) ──
+                // ── ErrorData :: <method> ( msg, .. ) → std::io::Error::new(…).into() ──
                 //
-                // Wraps the first arg in `std::io::Error::new(Other, ...)` so that
-                // `map_err(|e| ErrorData::internal_error(e.to_string(), None))?`
-                // becomes a proper `Box<dyn Error>`-compatible error in emitted
-                // standalone binaries rather than an unconvertible `String`.
+                // Wraps the first arg in `std::io::Error::new(Other, ...).into()` so
+                // that the expression is compatible with `Box<dyn Error>` at all usage
+                // sites — including `return Err(ErrorData::...)` (without .into() the
+                // type would be inferred as `std::io::Error`, conflicting with the
+                // scaffold's `Result<(), Box<dyn Error>>` return type).
                 TokenTree::Ident(id) if id == "ErrorData" => {
                     if let Some((replacement, advance)) =
                         try_extract_error_data_first_arg(&tokens, i)
@@ -116,7 +117,9 @@ impl EmitRewriter {
                         // Recurse into the extracted arg in case it contains `p.field`
                         let rewritten = self.rewrite(replacement);
                         let wrapped = quote::quote! {
-                            ::std::io::Error::new(::std::io::ErrorKind::Other, #rewritten)
+                            ::std::boxed::Box::<dyn ::std::error::Error>::from(
+                                ::std::io::Error::new(::std::io::ErrorKind::Other, #rewritten)
+                            )
                         };
                         output.extend(wrapped);
                         i = advance;

@@ -460,6 +460,195 @@ Foundation for linebender ecosystem (xilem, masonry, vello).
 
 ---
 
+### elicit_accesskit Shadow Crate
+
+**Document:** [ELICIT_ACCESSKIT_PLAN.md](ELICIT_ACCESSKIT_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Completionist harvesting of accesskit UI accessibility infrastructure (450 MCP tools).
+Single-crate architecture exposing accessibility tree construction (182 semantic roles, 22 actions,
+50+ node properties) through dual-mode tools (primary), runtime-only tools (tree state), and
+fragment tools (accessibility code gen).
+
+**Key Advantage:** Unique among shadow crates — **pure data schema** with no computation (unlike
+nalgebra math, taffy/parley layout/shaping). Highest dual-mode ratio (87% vs 35-47% for others)
+because entire accessibility tree serializes to JSON. Platform abstraction for screen readers
+(VoiceOver, JAWS, NVDA, Narrator). Foundation for accessible UI frameworks (xilem, egui, dioxus).
+
+**Coverage:**
+- **Dual-Mode Tools (390 tools, 87%):** Node creation (30), node properties (215 across content/structure/states/relationships/text/table/list), actions (30), roles (182 variants - code generated), tree management (20), serialization (10)
+- **Runtime Tools (30 tools, 7%):** Tree registry (UUID → Tree/Node mapping), platform integration (screen reader bridges)
+- **Fragment Tools (30 tools, 7%):** Node construction code, tree construction code, complete assembly
+
+**Strategy:**
+- Single shadow crate: `elicit_accesskit`
+- Dual-mode dominated: 390/450 (87%) due to pure data schema (everything serializes)
+- Minimal runtime: 30/450 (7%) for optional tree state + platform bridges
+- Natural JSON serialization: Node/Tree/TreeUpdate → JSON, entire accessibility tree is data
+- 182 role tools (code generated): One tool per Role variant (Button, TextInput, Table, Grid, etc.)
+- Complete semantic vocabulary: 22 actions, 50+ properties, relationships, states
+
+**Accessibility Features:**
+- **182 Semantic Roles:** Button, TextInput, Checkbox, Slider, Table, Grid, List, Heading, Link, Image, etc.
+- **22 Actions:** Click, Focus, SetValue, ScrollIntoView, Increment, Decrement, etc.
+- **50+ Properties:** name, value, description, bounds, states (disabled/selected/expanded), relationships (labelled_by, described_by, controls), text (font, color, alignment), table (row/column indices)
+- **ARIA Support:** aria-current, aria-live, aria-invalid, aria-orientation
+- **Platform Integration:** Cross-platform (Windows/macOS/Linux) screen reader support
+
+**Comparison to taffy/parley:**
+- **Shared traits:** Natural JSON serialization, synchronous operations, visual domain
+- **Unique characteristic:** Pure data (no computation) vs computational (layout algorithms, text shaping)
+- **Tool distribution:** accesskit dual-mode 87% (highest), taffy 35%, parley 47%; accesskit runtime 7% (lowest), taffy 53%, parley 42%
+- **Purpose:** Semantic metadata (what UI means) vs layout/typography (how UI looks)
+
+**Use Cases:**
+- AI accessibility auditing (check for missing labels, WCAG compliance)
+- Automated testing (simulate screen reader navigation, verify keyboard support)
+- Semantic-first UI generation (describe intent → generate accessible structure)
+- Documentation generation (extract UI structure from accessibility tree)
+- Compliance checking (WCAG 2.1, Section 508)
+
+**Integration:**
+- xilem: AI-generated accessible UIs, automated audits
+- egui: Accessibility layer generation, screen reader testing
+- dioxus: Accessible component generation, semantic HTML mapping
+
+**Timeline:** 8 phases, 450 MCP tools
+
+---
+
+### elicit_egui Shadow Crate
+
+**Document:** [ELICIT_EGUI_PLAN.md](ELICIT_EGUI_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Completionist harvesting of egui immediate mode GUI framework (420 MCP tools).
+Single-crate architecture exposing widget creation (50+ widget types), containers (windows, panels,
+scroll areas), layout management, styling, response checking, and complete app generation through
+dual-mode tools (primary), runtime-only tools (UI display - feature-gated), and fragment tools
+(app code gen).
+
+**Key Advantage:** Unique as a **complete GUI framework** (not just one piece like layout/text/accessibility).
+**Immediate mode** pattern (stateless widgets recreated every frame, not retained mode). High dual-mode
+ratio (81%) because widget descriptions serialize well. Feature-gated runtime (can run headless for
+code gen, or with eframe for display). Cross-platform (native Windows/macOS/Linux + web WASM).
+
+**Coverage:**
+- **Dual-Mode Tools (340 tools, 81%):** Basic widgets (50: button, label, checkbox, link, image, separator, spinner), text input (20: singleline, multiline, code editor), numeric (30: slider, drag value, angle), color (15: sRGB, HSV, RGB pickers), progress (10: progress bar, spinner), containers (40: window, panel, scroll area, collapsing, group), layout (35: horizontal, vertical, grid, spacing, indent), grid (20: columns, striped, spacing), styling (40: visuals, text styles, colors, rounding), response (30: clicked, hovered, dragged, focus), menus/tooltips (20: context menu, hover text), input/events (10: key press, modifiers, pointer)
+- **Runtime Tools (50 tools, 12%):** Context management (15: create, begin/end frame, run), app state registry (20: persistent state between frames), platform integration (15: eframe native, egui_web, clipboard) — all feature-gated behind `runtime` feature
+- **Fragment Tools (30 tools, 7%):** Widget code generation (10), container code generation (10), complete app assembly (10: eframe native app, web app, app struct, update method)
+
+**Strategy:**
+- Single shadow crate: `elicit_egui`
+- Dual-mode dominated: 340/420 (81%) for widget/container/layout descriptions
+- Feature-gated runtime: 50/420 (12%) behind `runtime` feature (requires eframe for actual UI display)
+- Fragment tools for complete apps: Generate full eframe native/web applications from UI trees
+- Natural JSON serialization: Widget descriptions → JSON (button text, slider range, window size)
+- Immediate mode pattern: UI rebuilt every frame, user manages state between frames
+
+**Immediate Mode Characteristics:**
+- **Stateless widgets:** No persistent button objects, only `Response` output per frame
+- **User-managed state:** Application stores values (counters, text) between frames
+- **~60 FPS rebuild:** Entire UI recreated every frame
+- **Simple mental model:** Imperative API (function calls), not declarative markup
+- **Response-driven:** Every widget returns interaction state (clicked, hovered, dragged)
+
+**Comparison to Linebender Stack:**
+- **egui:** All-in-one immediate mode framework (complete UIs, tools, editors, dashboards)
+- **Linebender (taffy + parley + accesskit + vello):** Composable pieces (custom renderers, game engines, specialized UIs)
+- **Both support accesskit:** egui has built-in support, Linebender uses it directly
+- **Different philosophies:** egui immediate (rebuild every frame) vs linebender retained (update tree)
+
+**Comparison to Other Shadow Crates:**
+- **taffy:** Layout engine only (box positioning) vs egui complete framework (widgets + layout + rendering)
+- **accesskit:** Accessibility metadata only vs egui includes accessibility support
+- **Tool distribution:** egui dual-mode 81% (similar to accesskit 87%), runtime 12% (lower than taffy 53%)
+- **Purpose:** egui is end-to-end (complete apps) vs others are components (one piece of the stack)
+
+**Use Cases:**
+- AI-generated UIs from natural language (agent creates settings panel, dashboard, form)
+- Interactive tools (database query builder, log viewer, config editor, asset browser)
+- Dashboard generation (monitoring, metrics, system status, alerts)
+- Form builders (data entry UIs from schemas: registration, surveys, admin panels, CRUD)
+- Debug UIs (inspection panels, profilers, diagnostic tools)
+- Rapid prototyping (quick UI iteration without external dependencies)
+
+**Integration:**
+- Pure Rust, no external dependencies (no OS widgets required)
+- Cross-platform: Native (via eframe) + Web (via egui_web/eframe web)
+- Optional accesskit integration for screen reader support
+- Can combine with vello for custom graphics overlays
+
+**Timeline:** 8 phases, 420 MCP tools
+
+---
+
+### elicit_ratatui Shadow Crate
+
+**Document:** [ELICIT_RATATUI_PLAN.md](ELICIT_RATATUI_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Completionist harvesting of ratatui terminal UI framework (380 MCP tools).
+Single-crate architecture exposing widget creation (Block, Paragraph, List, Table, Chart, Gauge,
+BarChart, Sparkline, Calendar, Tabs, Scrollbar), constraint-based layout, styling (colors, modifiers),
+and complete TUI app generation through dual-mode tools (primary), runtime-only tools (TUI display -
+feature-gated), and fragment tools (TUI app code gen).
+
+**Key Advantage:** **Terminal-based immediate mode GUI** (similar to egui but outputs ANSI/text instead
+of pixels). High dual-mode ratio (84%) because widget descriptions serialize well. SSH-friendly,
+low bandwidth (~20 MB RAM), remote admin perfect. Feature-gated runtime (crossterm/termion/termwiz
+backends). Works in tmux/screen, over SSH, no X11 needed.
+
+**Coverage:**
+- **Dual-Mode Tools (320 tools, 84%):** Core widgets (30: Block, Paragraph, List, Table, Chart, BarChart, Sparkline, Gauge, Tabs, Scrollbar, Calendar), widget properties (190: Block borders/title/padding, Paragraph text/wrap/scroll, List items/highlight, Table rows/columns/widths, Chart datasets/axes, Gauge progress/label), layout (30: vertical/horizontal splits, constraints: Length/Percentage/Ratio/Min/Max/Fill), styling (30: foreground/background colors, modifiers: Bold/Italic/Underlined/Dim/Reversed), text types (20: spans, lines, styled text)
+- **Runtime Tools (40 tools, 11%):** Terminal management (15: create, draw, clear, cursor, size), app state registry (15: persistent TUI state, ListState, TableState, ScrollbarState), event handling (10: key press, mouse, resize) — all feature-gated behind `runtime` feature with backend choice (crossterm default, termion, termwiz)
+- **Fragment Tools (20 tools, 5%):** Widget code generation (10), complete TUI app assembly (10: generate main loop, event handler, app struct, draw method)
+
+**Strategy:**
+- Single shadow crate: `elicit_ratatui`
+- Dual-mode dominated: 320/380 (84%) for widget/layout descriptions
+- Feature-gated runtime: 40/380 (11%) behind `runtime` feature + backend selection
+- Backend abstraction: crossterm (default, cross-platform), termion (Unix-only), termwiz (alternative)
+- Fragment tools for complete TUIs: Generate full TUI apps with event loops from UI trees
+- Natural JSON serialization: Widget descriptions → JSON (table rows, chart data, constraint specs)
+- Immediate mode pattern: UI rebuilt every frame (~60 FPS), user manages state between frames
+
+**Terminal UI Characteristics:**
+- **Text/ANSI output:** 80×24 character grid (or larger), ANSI escape codes for colors/styles
+- **Low bandwidth:** SSH-friendly, works over slow connections
+- **No X11 required:** Pure terminal, runs in console, SSH sessions
+- **Immediate mode:** Like egui (rebuild every frame), not retained mode
+- **Constraint layout:** Responsive TUIs that adapt to terminal size (Layout with Percentage/Ratio/Fill)
+- **Rich widgets:** Tables with headers/selection, line charts, bar charts, gauges, calendars
+- **Backend agnostic:** crossterm (Linux/macOS/Windows), termion (Unix), termwiz
+
+**Comparison to egui:**
+- **Shared:** Both immediate mode, user-managed state, high dual-mode ratio (81% vs 84%), response checking
+- **Different output:** egui pixels (GUI windows, web canvas) vs ratatui chars (terminal, ANSI)
+- **Different widgets:** egui buttons/sliders/color pickers vs ratatui blocks/tables/charts/gauges
+- **Use cases:** egui desktop apps/tools vs ratatui CLI tools/SSH/remote admin
+
+**Use Cases:**
+- System monitors (htop-style CPU/memory, process tables, real-time charts)
+- Log viewers (tail -f with filters, search/highlight, level filtering)
+- Database clients (table browsers, query editors, result tables)
+- Development tools (test runners, build monitors, progress tracking)
+- SSH tools (remote server admin, configuration editors)
+- Interactive CLIs (setup wizards, TUI menus, selection UIs)
+
+**Terminal Integration:**
+- Works over SSH (no X11 forwarding needed)
+- Compatible with tmux/screen (multiple TUI apps in panes)
+- Shell integration (TUI apps as CLI commands with arguments)
+- Low resources (production apps <20 MB RAM even with complex UIs)
+
+**Timeline:** 7 phases, 380 MCP tools
+
+---
+
 ### Macro-Driven MCP Tool System
 
 **Document:** [MACRO_TOOL_GEN_PLAN.md](MACRO_TOOL_GEN_PLAN.md)

@@ -1030,7 +1030,7 @@ impl CustomEmit<WfPoolSqlParams> for WfExecuteEmit {
         let sql = p.sql.as_str();
         let binds = bind_chain(&p.args);
         quote! {
-            pool.execute(sqlx::query(#sql) #binds).await?;
+            sqlx::query(#sql) #binds .execute(&pool).await?;
         }
     }
 }
@@ -1159,6 +1159,29 @@ const SQLX_DEP: CrateDep = CrateDep {
     features: &["runtime-tokio", "any"],
 };
 
+/// Emit-only params for pool-level SQL tools.
+///
+/// Unlike `WfPoolSqlParams`, this struct omits `pool_id` because the emitted
+/// code references the `pool` variable by name (established by a preceding
+/// `connect` step) rather than looking it up by UUID at runtime.
+#[derive(Debug, Deserialize)]
+struct WfPoolSqlEmitParams {
+    sql: String,
+    #[serde(default)]
+    args: Vec<serde_json::Value>,
+}
+
+/// Emit-only params for transaction-level SQL tools.
+///
+/// Like `WfPoolSqlEmitParams`, omits the runtime UUID (`tx_id`) because the
+/// emitted code references the `tx` variable by name.
+#[derive(Debug, Deserialize)]
+struct WfTxSqlEmitParams {
+    sql: String,
+    #[serde(default)]
+    args: Vec<serde_json::Value>,
+}
+
 struct WfConnectEmitEntry(WfConnectParams);
 impl EmitCode for WfConnectEmitEntry {
     fn emit_code(&self) -> TokenStream {
@@ -1166,6 +1189,9 @@ impl EmitCode for WfConnectEmitEntry {
     }
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![SQLX_DEP]
+    }
+    fn shared_scope(&self) -> bool {
+        true
     }
 }
 
@@ -1177,19 +1203,27 @@ impl EmitCode for WfDisconnectEmitEntry {
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![]
     }
+    fn shared_scope(&self) -> bool {
+        true
+    }
 }
 
-struct WfExecuteEmitEntry(WfPoolSqlParams);
+struct WfExecuteEmitEntry(WfPoolSqlEmitParams);
 impl EmitCode for WfExecuteEmitEntry {
     fn emit_code(&self) -> TokenStream {
-        WfExecuteEmit::emit_code(&self.0)
+        let sql = self.0.sql.as_str();
+        let binds = bind_chain(&self.0.args);
+        quote! { sqlx::query(#sql) #binds .execute(&pool).await?; }
     }
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![SQLX_DEP]
     }
+    fn shared_scope(&self) -> bool {
+        true
+    }
 }
 
-struct WfFetchAllEmitEntry(WfPoolSqlParams);
+struct WfFetchAllEmitEntry(WfPoolSqlEmitParams);
 impl EmitCode for WfFetchAllEmitEntry {
     fn emit_code(&self) -> TokenStream {
         let sql = self.0.sql.as_str();
@@ -1199,9 +1233,12 @@ impl EmitCode for WfFetchAllEmitEntry {
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![SQLX_DEP]
     }
+    fn shared_scope(&self) -> bool {
+        true
+    }
 }
 
-struct WfFetchOneEmitEntry(WfPoolSqlParams);
+struct WfFetchOneEmitEntry(WfPoolSqlEmitParams);
 impl EmitCode for WfFetchOneEmitEntry {
     fn emit_code(&self) -> TokenStream {
         let sql = self.0.sql.as_str();
@@ -1211,9 +1248,12 @@ impl EmitCode for WfFetchOneEmitEntry {
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![SQLX_DEP]
     }
+    fn shared_scope(&self) -> bool {
+        true
+    }
 }
 
-struct WfFetchOptionalEmitEntry(WfPoolSqlParams);
+struct WfFetchOptionalEmitEntry(WfPoolSqlEmitParams);
 impl EmitCode for WfFetchOptionalEmitEntry {
     fn emit_code(&self) -> TokenStream {
         let sql = self.0.sql.as_str();
@@ -1222,6 +1262,9 @@ impl EmitCode for WfFetchOptionalEmitEntry {
     }
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![SQLX_DEP]
+    }
+    fn shared_scope(&self) -> bool {
+        true
     }
 }
 
@@ -1233,6 +1276,9 @@ impl EmitCode for WfBeginEmitEntry {
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![SQLX_DEP]
     }
+    fn shared_scope(&self) -> bool {
+        true
+    }
 }
 
 struct WfCommitEmitEntry;
@@ -1242,6 +1288,9 @@ impl EmitCode for WfCommitEmitEntry {
     }
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![SQLX_DEP]
+    }
+    fn shared_scope(&self) -> bool {
+        true
     }
 }
 
@@ -1253,19 +1302,27 @@ impl EmitCode for WfRollbackEmitEntry {
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![]
     }
+    fn shared_scope(&self) -> bool {
+        true
+    }
 }
 
-struct WfTxExecuteEmitEntry(WfTxSqlParams);
+struct WfTxExecuteEmitEntry(WfTxSqlEmitParams);
 impl EmitCode for WfTxExecuteEmitEntry {
     fn emit_code(&self) -> TokenStream {
-        WfTxExecuteEmit::emit_code(&self.0)
+        let sql = self.0.sql.as_str();
+        let binds = bind_chain(&self.0.args);
+        quote! { sqlx::query(#sql) #binds .execute(&mut *tx).await?; }
     }
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![SQLX_DEP]
     }
+    fn shared_scope(&self) -> bool {
+        true
+    }
 }
 
-struct WfTxFetchAllEmitEntry(WfTxSqlParams);
+struct WfTxFetchAllEmitEntry(WfTxSqlEmitParams);
 impl EmitCode for WfTxFetchAllEmitEntry {
     fn emit_code(&self) -> TokenStream {
         let sql = self.0.sql.as_str();
@@ -1275,9 +1332,12 @@ impl EmitCode for WfTxFetchAllEmitEntry {
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![SQLX_DEP]
     }
+    fn shared_scope(&self) -> bool {
+        true
+    }
 }
 
-struct WfTxFetchOneEmitEntry(WfTxSqlParams);
+struct WfTxFetchOneEmitEntry(WfTxSqlEmitParams);
 impl EmitCode for WfTxFetchOneEmitEntry {
     fn emit_code(&self) -> TokenStream {
         let sql = self.0.sql.as_str();
@@ -1287,9 +1347,12 @@ impl EmitCode for WfTxFetchOneEmitEntry {
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![SQLX_DEP]
     }
+    fn shared_scope(&self) -> bool {
+        true
+    }
 }
 
-struct WfTxFetchOptionalEmitEntry(WfTxSqlParams);
+struct WfTxFetchOptionalEmitEntry(WfTxSqlEmitParams);
 impl EmitCode for WfTxFetchOptionalEmitEntry {
     fn emit_code(&self) -> TokenStream {
         let sql = self.0.sql.as_str();
@@ -1298,6 +1361,9 @@ impl EmitCode for WfTxFetchOptionalEmitEntry {
     }
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![SQLX_DEP]
+    }
+    fn shared_scope(&self) -> bool {
+        true
     }
 }
 
@@ -1326,7 +1392,7 @@ inventory::submit! {
         tool: "sqlx_workflow__execute",
         crate_name: "elicit_sqlx",
         constructor: |v| {
-            serde_json::from_value::<WfPoolSqlParams>(v)
+            serde_json::from_value::<WfPoolSqlEmitParams>(v)
                 .map(|p| Box::new(WfExecuteEmitEntry(p)) as Box<dyn EmitCode>)
                 .map_err(|e| e.to_string())
         },
@@ -1338,7 +1404,7 @@ inventory::submit! {
         tool: "sqlx_workflow__fetch_all",
         crate_name: "elicit_sqlx",
         constructor: |v| {
-            serde_json::from_value::<WfPoolSqlParams>(v)
+            serde_json::from_value::<WfPoolSqlEmitParams>(v)
                 .map(|p| Box::new(WfFetchAllEmitEntry(p)) as Box<dyn EmitCode>)
                 .map_err(|e| e.to_string())
         },
@@ -1350,7 +1416,7 @@ inventory::submit! {
         tool: "sqlx_workflow__fetch_one",
         crate_name: "elicit_sqlx",
         constructor: |v| {
-            serde_json::from_value::<WfPoolSqlParams>(v)
+            serde_json::from_value::<WfPoolSqlEmitParams>(v)
                 .map(|p| Box::new(WfFetchOneEmitEntry(p)) as Box<dyn EmitCode>)
                 .map_err(|e| e.to_string())
         },
@@ -1362,7 +1428,7 @@ inventory::submit! {
         tool: "sqlx_workflow__fetch_optional",
         crate_name: "elicit_sqlx",
         constructor: |v| {
-            serde_json::from_value::<WfPoolSqlParams>(v)
+            serde_json::from_value::<WfPoolSqlEmitParams>(v)
                 .map(|p| Box::new(WfFetchOptionalEmitEntry(p)) as Box<dyn EmitCode>)
                 .map_err(|e| e.to_string())
         },
@@ -1398,7 +1464,7 @@ inventory::submit! {
         tool: "sqlx_workflow__tx_execute",
         crate_name: "elicit_sqlx",
         constructor: |v| {
-            serde_json::from_value::<WfTxSqlParams>(v)
+            serde_json::from_value::<WfTxSqlEmitParams>(v)
                 .map(|p| Box::new(WfTxExecuteEmitEntry(p)) as Box<dyn EmitCode>)
                 .map_err(|e| e.to_string())
         },
@@ -1410,7 +1476,7 @@ inventory::submit! {
         tool: "sqlx_workflow__tx_fetch_all",
         crate_name: "elicit_sqlx",
         constructor: |v| {
-            serde_json::from_value::<WfTxSqlParams>(v)
+            serde_json::from_value::<WfTxSqlEmitParams>(v)
                 .map(|p| Box::new(WfTxFetchAllEmitEntry(p)) as Box<dyn EmitCode>)
                 .map_err(|e| e.to_string())
         },
@@ -1422,7 +1488,7 @@ inventory::submit! {
         tool: "sqlx_workflow__tx_fetch_one",
         crate_name: "elicit_sqlx",
         constructor: |v| {
-            serde_json::from_value::<WfTxSqlParams>(v)
+            serde_json::from_value::<WfTxSqlEmitParams>(v)
                 .map(|p| Box::new(WfTxFetchOneEmitEntry(p)) as Box<dyn EmitCode>)
                 .map_err(|e| e.to_string())
         },
@@ -1434,7 +1500,7 @@ inventory::submit! {
         tool: "sqlx_workflow__tx_fetch_optional",
         crate_name: "elicit_sqlx",
         constructor: |v| {
-            serde_json::from_value::<WfTxSqlParams>(v)
+            serde_json::from_value::<WfTxSqlEmitParams>(v)
                 .map(|p| Box::new(WfTxFetchOptionalEmitEntry(p)) as Box<dyn EmitCode>)
                 .map_err(|e| e.to_string())
         },

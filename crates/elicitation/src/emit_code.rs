@@ -217,6 +217,20 @@ pub trait EmitCode {
     fn crate_deps(&self) -> Vec<CrateDep> {
         vec![]
     }
+
+    /// Whether this step's emitted code shares the outer function scope with
+    /// adjacent steps.
+    ///
+    /// When `false` (default), `BinaryScaffold` wraps the step in `{ }` so
+    /// local variables and type-inference contexts stay isolated.
+    ///
+    /// When `true`, the step is emitted directly into the function body — its
+    /// bindings (e.g. `let pool = ...`) are visible to subsequent steps.
+    /// Use this for workflow steps that intentionally pass state through
+    /// variable names (e.g. sqlx `connect` → `execute` → `begin` → `commit`).
+    fn shared_scope(&self) -> bool {
+        false
+    }
 }
 
 /// A pre-rendered token stream fragment received across an MCP boundary.
@@ -432,7 +446,23 @@ impl BinaryScaffold {
 
     /// Emit the raw token stream for the full `main.rs`.
     pub fn render(&self) -> TokenStream {
-        let step_tokens: Vec<TokenStream> = self.steps.iter().map(|s| s.emit_code()).collect();
+        let step_tokens: Vec<TokenStream> = self
+            .steps
+            .iter()
+            .map(|s| {
+                let code = s.emit_code();
+                if s.shared_scope() {
+                    // Steps that pass state (like `let pool`) to later steps
+                    // must be emitted directly into the function body. The
+                    // trailing `;` ensures a trailing expression is a statement.
+                    quote::quote! { #code ; }
+                } else {
+                    // Wrap in a block for scope + type-inference isolation.
+                    // This lets steps that end in `Ok(...)` work correctly.
+                    quote::quote! { { #code } }
+                }
+            })
+            .collect();
 
         let tracing_init = if self.with_tracing {
             quote::quote! { tracing_subscriber::fmt::init(); }
@@ -477,7 +507,7 @@ impl BinaryScaffold {
             #[tokio::main]
             async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 #tracing_init
-                #( { #step_tokens } )*
+                #( #step_tokens )*
                 Ok(())
             }
         }

@@ -56,7 +56,7 @@ mod secure_fetch;
 #[cfg(feature = "emit")]
 mod emit_plugin;
 
-pub use fetch_and_parse::FetchAndParsePlugin;
+pub use fetch_and_parse::{FetchAndParsePlugin, http_get};
 pub use secure_fetch::SecureFetchPlugin;
 
 #[cfg(feature = "emit")]

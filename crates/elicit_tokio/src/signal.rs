@@ -209,6 +209,7 @@ struct OkResult {
 pub struct CtrlCParams {}
 
 /// Unix signal kind for `tokio_signal__unix_signal_create`.
+#[cfg(unix)]
 #[derive(Debug, Deserialize, JsonSchema, Serialize, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 pub enum UnixSignalKind {
@@ -237,18 +238,21 @@ pub enum UnixSignalKind {
 }
 
 /// Parameters for `tokio_signal__unix_signal_create`.
+#[cfg(unix)]
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct UnixSignalCreateParams {
     /// The Unix signal to listen for.
     pub kind: UnixSignalKind,
 }
 
+#[cfg(unix)]
 #[derive(Serialize)]
 struct UnixSignalCreateResult {
     signal_id: Uuid,
 }
 
 /// Parameters for `tokio_signal__unix_signal_recv`.
+#[cfg(unix)]
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct UnixSignalRecvParams {
     /// Signal UUID returned by `unix_signal_create`.
@@ -256,6 +260,7 @@ pub struct UnixSignalRecvParams {
 }
 
 /// Parameters for `tokio_signal__unix_signal_close`.
+#[cfg(unix)]
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct UnixSignalCloseParams {
     /// Signal UUID to remove.

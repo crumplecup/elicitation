@@ -797,49 +797,64 @@ mod smoke {
         assert_builds(
             "sqlx_workflow__connect",
             "elicit_sqlx",
-            serde_json::json!({ "url": "sqlite::memory:", "max_connections": 1 }),
+            serde_json::json!({ "database_url": "sqlite::memory:", "max_connections": 1 }),
         );
     }
 
     #[test]
     fn emit_sqlx_workflow_execute_dispatch() {
-        assert_builds(
+        // execute emits `pool.execute(...)` — requires a preceding connect step.
+        // Only test that dispatch succeeds; full chain compilation is in chain_builds.
+        elicit_server::emit_dispatch_crate(
             "sqlx_workflow__execute",
             "elicit_sqlx",
             serde_json::json!({ "sql": "CREATE TABLE t (id INTEGER)", "args": [] }),
-        );
+        )
+        .expect("dispatch sqlx_workflow__execute");
     }
 
     #[test]
     fn emit_sqlx_workflow_fetch_all_dispatch() {
-        assert_builds(
+        // fetch_all emits `...fetch_all(&pool)` — requires a preceding connect step.
+        elicit_server::emit_dispatch_crate(
             "sqlx_workflow__fetch_all",
             "elicit_sqlx",
             serde_json::json!({ "sql": "SELECT 1", "args": [] }),
-        );
+        )
+        .expect("dispatch sqlx_workflow__fetch_all");
     }
 
     #[test]
     fn emit_sqlx_workflow_begin_dispatch() {
-        assert_builds("sqlx_workflow__begin", "elicit_sqlx", serde_json::json!({}));
+        // begin emits `pool.begin()` — requires a preceding connect step.
+        elicit_server::emit_dispatch_crate(
+            "sqlx_workflow__begin",
+            "elicit_sqlx",
+            serde_json::json!({}),
+        )
+        .expect("dispatch sqlx_workflow__begin");
     }
 
     #[test]
     fn emit_sqlx_workflow_commit_dispatch() {
-        assert_builds(
+        // commit emits `tx.commit()` — requires a preceding begin step.
+        elicit_server::emit_dispatch_crate(
             "sqlx_workflow__commit",
             "elicit_sqlx",
             serde_json::json!({}),
-        );
+        )
+        .expect("dispatch sqlx_workflow__commit");
     }
 
     #[test]
     fn emit_sqlx_workflow_rollback_dispatch() {
-        assert_builds(
+        // rollback emits `tx.rollback()` — requires a preceding begin step.
+        elicit_server::emit_dispatch_crate(
             "sqlx_workflow__rollback",
             "elicit_sqlx",
             serde_json::json!({}),
-        );
+        )
+        .expect("dispatch sqlx_workflow__rollback");
     }
 
     // ── elicit_sqlx workflow — multi-step scaffold ────────────────────────────
@@ -852,7 +867,7 @@ mod smoke {
 
         let step_connect = elicit_server::emit_dispatch(
             "sqlx_workflow__connect",
-            serde_json::json!({ "url": "sqlite::memory:", "max_connections": 1 }),
+            serde_json::json!({ "database_url": "sqlite::memory:", "max_connections": 1 }),
         )
         .expect("dispatch sqlx_workflow__connect");
 
