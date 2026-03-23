@@ -1,0 +1,54 @@
+use crate::{prelude::*, std::iter::Rev};
+
+pub trait RevExt<I> {
+    #[logic]
+    fn iter(self) -> I;
+
+    #[logic]
+    fn iter_mut(&mut self) -> &mut I;
+}
+
+impl<I> RevExt<I> for Rev<I> {
+    #[logic(opaque)]
+    fn iter(self) -> I {
+        dead
+    }
+
+    #[trusted]
+    #[logic(opaque)]
+    #[ensures((*self).iter() == *result && (^self).iter() == ^result)]
+    fn iter_mut(&mut self) -> &mut I {
+        dead
+    }
+}
+
+impl<I> Invariant for Rev<I> {
+    #[logic(prophetic, open, inline)]
+    fn invariant(self) -> bool {
+        inv(self.iter())
+    }
+}
+
+impl<I: DoubleEndedIteratorSpec> IteratorSpec for Rev<I> {
+    #[logic(open, prophetic)]
+    fn completed(&mut self) -> bool {
+        pearlite! { self.iter_mut().completed() }
+    }
+
+    #[logic(open, prophetic)]
+    fn produces(self, visited: Seq<Self::Item>, o: Self) -> bool {
+        pearlite! {
+            self.iter().produces_back(visited, o.iter())
+        }
+    }
+
+    #[logic(law)]
+    #[ensures(self.produces(Seq::empty(), self))]
+    fn produces_refl(self) {}
+
+    #[logic(law)]
+    #[requires(a.produces(ab, b))]
+    #[requires(b.produces(bc, c))]
+    #[ensures(a.produces(ab.concat(bc), c))]
+    fn produces_trans(a: Self, ab: Seq<Self::Item>, b: Self, bc: Seq<Self::Item>, c: Self) {}
+}

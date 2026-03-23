@@ -190,4 +190,5 @@ strip = true
 # canonical reference; this patch is only active locally and is ignored when
 # elicitation_creusot is resolved as a dependency by downstream users.
 [patch.crates-io]
-creusot-std = { path = "/home/erik/repos/creusot/creusot-std" }
+creusot-std = { path = "vendor/creusot-std" }
+pearlite-syn = { path = "vendor/pearlite-syn" }
