@@ -19,6 +19,8 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, LinkedList, VecDequ
 /// Verify VecNonEmpty construction with valid non-empty vec.
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
+// vec![] macro conflicts with creusot_std::prelude::vec! — must use explicit push
+#[allow(clippy::vec_init_then_push)]
 pub fn verify_vec_non_empty_valid() -> Result<VecNonEmpty<i32>, elicitation::ValidationError> {
     let mut v: Vec<i32> = Vec::new();
     v.push(1);

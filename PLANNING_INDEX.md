@@ -408,6 +408,58 @@ dioxus, xilem, cosmic).
 
 ---
 
+### elicit_parley Shadow Crate
+
+**Document:** [ELICIT_PARLEY_PLAN.md](ELICIT_PARLEY_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Completionist harvesting of parley rich text layout and shaping library (380 MCP tools).
+Single-crate architecture exposing font context, layout building, text shaping, line breaking,
+bidirectional text handling, and glyph positioning through runtime-only tools (stateful contexts),
+dual-mode tools (style/layout), and fragment tools (text layout code gen).
+
+**Key Advantage:** Straightforward like taffy (stateful, CSS-like properties, visual domain) but focuses
+on **text layout and typography** rather than box layout. Full typography stack: HarfBuzz shaping,
+OpenType features/variations, bidirectional text (RTL/LTR), Unicode line breaking, kerning, ligatures.
+Foundation for linebender ecosystem (xilem, masonry, vello).
+
+**Coverage:**
+- **Runtime Context Management (160 tools):** FontContext/LayoutContext creation, builder workflow (one-shot operations due to lifetimes), layout operations (break lines, align), line/run/glyph queries, font database inspection
+- **Dual-Mode Style Tools (180 tools):** 23 StyleProperty variants (font family, size, weight, style, variations, features, underline, strikethrough, line height, letter spacing, word spacing, locale, brush/color), text ranges, alignment types, line break rules, layout serialization (positioned glyphs with coordinates)
+- **Fragment Tools (40 tools):** Context construction code, builder code generation, layout computation code, complete assembly
+
+**Strategy:**
+- Single shadow crate: `elicit_parley`
+- Runtime-heavy: 160/380 tools (42%) due to stateful contexts + lifetime-bound builders
+- Dual-mode emphasis: 180/380 (47%) for style creation and layout serialization
+- UUID-keyed registry: FontContext/LayoutContext → UUIDs, builders are one-shot (create → use → build → delete)
+- Natural JSON serialization: StyleProperty → JSON, Layout output → positioned glyphs with XY coordinates
+- SimpleBrush: Fixed RGBA color type (avoids generic Brush trait complexity)
+
+**Typography Features:**
+- **Text Shaping:** HarfBuzz integration, glyph positioning, kerning, ligatures
+- **OpenType:** Font features (kern, liga, calt, etc.), variation axes (weight, width)
+- **Bidirectional:** RTL/LTR text, Arabic, Hebrew, Unicode normalization
+- **Line Breaking:** Unicode line break algorithm, word/character breaking, emergency breaking
+- **Font Control:** Font family stacks, weight (100-900), style (normal/italic/oblique), stretch
+
+**Comparison to taffy:**
+- **Shared traits:** Stateful by design, CSS-like properties, synchronous operations, natural JSON serialization, visual domains
+- **Different domains:** Box layout (flexbox/grid) vs text layout (shaping/breaking)
+- **Output:** Box positions (x/y/width/height) vs glyph positions (x/y/advance/cluster)
+- **Complexity:** CSS layout algorithms vs typography (HarfBuzz, OpenType, bidi)
+- **Tool distribution:** taffy runtime 53%, parley runtime 42%; taffy dual-mode 35%, parley dual-mode 47%
+
+**Integration:**
+- xilem/masonry: AI-generated rich text layouts, typography exploration
+- vello: GPU-rendered text generation, vector text for design tools
+- Custom renderers: PDF generation, canvas rendering, game engine text, terminal UI
+
+**Timeline:** 6 phases, 380 MCP tools
+
+---
+
 ### Macro-Driven MCP Tool System
 
 **Document:** [MACRO_TOOL_GEN_PLAN.md](MACRO_TOOL_GEN_PLAN.md)
