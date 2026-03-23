@@ -58,8 +58,8 @@ pub use channels::{
     WatchSubscribeParams,
 };
 pub use fs::{
-    CanonicalizeParams, CopyFileParams, CreateDirAllParams, CreateDirParams, DirCreated,
-    FileRead, FileWritten, MetadataParams, ReadBytesParams, ReadDirParams, ReadToStringParams,
+    CanonicalizeParams, CopyFileParams, CreateDirAllParams, CreateDirParams, DirCreated, FileRead,
+    FileWritten, MetadataParams, ReadBytesParams, ReadDirParams, ReadToStringParams,
     RemoveDirAllParams, RemoveDirParams, RemoveFileParams, RenameParams, TokioFsPlugin,
     WriteBytesParams, WriteTextParams,
 };
