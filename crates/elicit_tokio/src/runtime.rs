@@ -253,7 +253,7 @@ mod emit_impls {
         }
     }
 
-    inventory::submit! { EmitEntry {
+    elicitation::inventory::submit! { EmitEntry {
         tool: "tokio_runtime__build_current_thread",
         crate_name: "elicit_tokio",
         constructor: |v| serde_json::from_value::<BuildCurrentThreadParams>(v)
@@ -261,7 +261,7 @@ mod emit_impls {
             .map_err(|e| e.to_string()),
     }}
 
-    inventory::submit! { EmitEntry {
+    elicitation::inventory::submit! { EmitEntry {
         tool: "tokio_runtime__build_multi_thread",
         crate_name: "elicit_tokio",
         constructor: |v| serde_json::from_value::<BuildMultiThreadParams>(v)
@@ -269,7 +269,7 @@ mod emit_impls {
             .map_err(|e| e.to_string()),
     }}
 
-    inventory::submit! { EmitEntry {
+    elicitation::inventory::submit! { EmitEntry {
         tool: "tokio_runtime__block_on",
         crate_name: "elicit_tokio",
         constructor: |v| serde_json::from_value::<BlockOnParams>(v)
@@ -332,7 +332,8 @@ struct InspectFlavorResult {
     description = "EMIT-ONLY: generates `tokio::runtime::Builder::new_current_thread()…\
                    build().unwrap()` in an emitted Rust binary. Cannot execute inside an \
                    existing tokio runtime. Use via `emit_binary` to set up a single-threaded \
-                   tokio runtime at the start of `main`."
+                   tokio runtime at the start of `main`.",
+    emit = None
 )]
 async fn runtime_build_current_thread(
     _p: BuildCurrentThreadParams,
@@ -346,7 +347,8 @@ async fn runtime_build_current_thread(
     description = "EMIT-ONLY: generates `tokio::runtime::Builder::new_multi_thread()…\
                    build().unwrap()` in an emitted Rust binary. Cannot execute inside an \
                    existing tokio runtime. Use via `emit_binary` to set up a multi-threaded \
-                   work-stealing tokio runtime at the start of `main`."
+                   work-stealing tokio runtime at the start of `main`.",
+    emit = None
 )]
 async fn runtime_build_multi_thread(
     _p: BuildMultiThreadParams,
@@ -360,7 +362,8 @@ async fn runtime_build_multi_thread(
     description = "EMIT-ONLY: generates `<runtime_var>.block_on(async { <body> })` in an \
                    emitted Rust binary. Cannot execute inside an existing tokio runtime. \
                    Use via `emit_binary` after `build_current_thread` or `build_multi_thread` \
-                   to drive an async workload from synchronous `main`."
+                   to drive an async workload from synchronous `main`.",
+    emit = None
 )]
 async fn runtime_block_on(_p: BlockOnParams) -> Result<CallToolResult, ErrorData> {
     Err(emit_only_error("tokio_runtime__block_on"))

@@ -358,6 +358,56 @@ Rust's scientific computing ecosystem (ndarray-linalg, ndarray-stats, polars).
 
 ---
 
+### elicit_taffy Shadow Crate
+
+**Document:** [ELICIT_TAFFY_PLAN.md](ELICIT_TAFFY_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Completionist harvesting of taffy flexbox/grid/block layout engine (340 MCP tools).
+Single-crate architecture exposing tree management, style properties, layout computation, and code
+generation through runtime-only tools (stateful tree), dual-mode tools (style creation), and
+fragment tools (layout code gen).
+
+**Key Advantage:** Straightforward like nalgebra/ndarray (natural serialization, synchronous, no
+lifetimes) but unique in being **stateful by design** (tree of nodes, not pure functions). Smaller
+API surface (340 tools) focused on CSS layout algorithms. Foundation for UI libraries (bevy_ui,
+dioxus, xilem, cosmic).
+
+**Coverage:**
+- **Runtime Tree Management (180 tools):** Tree creation/deletion, node lifecycle, hierarchy manipulation, style setters, layout computation, context/measurement, tree traversal
+- **Dual-Mode Style Tools (120 tools):** Style builders (flexbox, grid, block), dimension types (length, percent, auto), spacing (margin, padding, border, gap), alignment/distribution, grid templates, layout serialization
+- **Fragment Tools (40 tools):** Style code generation, tree construction code, layout computation code, complete assembly
+
+**Strategy:**
+- Single shadow crate: `elicit_taffy`
+- Runtime-heavy: 180/340 tools (53%) are runtime-only due to stateful TaffyTree
+- UUID-keyed registry: TaffyTree instances mapped to UUIDs, internal NodeId ↔ external UUID translation
+- Dual-mode style tools: 120/340 (35%) with `emit = Auto` + CustomEmit for Style construction
+- Fragment tools: 40/340 (12%) for generating complete layout code
+- Natural JSON serialization: Style properties → JSON, Layout results → JSON, Tree structure → UUID handles
+
+**CSS Layout Algorithms:**
+- Flexbox: Single-axis flexible layouts (main/cross axis, wrapping, alignment)
+- CSS Grid: Two-dimensional grid systems (template rows/columns, auto-placement, grid areas)
+- Block: Traditional document flow layout (text alignment, inline-block)
+
+**Comparison to nalgebra/ndarray:**
+- **Shared "straightforward" traits:** Natural JSON serialization, synchronous operations, no async/lifetimes/closures, clear API flow
+- **Unique characteristic:** Stateful by design (tree mutations) vs stateless math (pure functions)
+- **Tool distribution:** Runtime 53% (vs 0% for nalgebra/ndarray), Dual-mode 35% (vs 73-77%), Fragment 12%
+- **API size:** 340 tools (smaller, domain-specific) vs 480-520 (general math)
+- **Use case:** UI layout for frameworks vs scientific/graphics computing
+
+**Integration:**
+- bevy_ui: AI-driven UI layout generation, responsive design composition
+- dioxus: Component layout optimization, pattern libraries
+- xilem: Declarative layout DSL generation, snapshot testing
+
+**Timeline:** 6 phases, 340 MCP tools
+
+---
+
 ### Macro-Driven MCP Tool System
 
 **Document:** [MACRO_TOOL_GEN_PLAN.md](MACRO_TOOL_GEN_PLAN.md)

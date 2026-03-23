@@ -730,7 +730,7 @@ async fn channel_mpsc_create(
     description = "Send a JSON value to an mpsc channel. Blocks if the channel is full until \
                    space is available. Errors if the receiver has been closed. \
                    Assumes: sender_id was returned by `mpsc_create`.",
-    emit = Auto
+    emit = None
 )]
 async fn channel_mpsc_send(
     ctx: Arc<ChannelCtx>,
@@ -758,7 +758,7 @@ async fn channel_mpsc_send(
                    `full = true` if the buffer is at capacity, or `closed = true` if the \
                    receiver is gone. \
                    Assumes: sender_id was returned by `mpsc_create`.",
-    emit = Auto
+    emit = None
 )]
 async fn channel_mpsc_try_send(
     ctx: Arc<ChannelCtx>,
@@ -933,7 +933,7 @@ async fn channel_oneshot_create(
     description = "Send a value through a oneshot channel. The sender is consumed — calling \
                    `oneshot_send` again on the same sender_id will fail. \
                    Assumes: sender_id was returned by `oneshot_create`.",
-    emit = Auto
+    emit = None
 )]
 async fn channel_oneshot_send(
     ctx: Arc<ChannelCtx>,
@@ -1038,7 +1038,7 @@ async fn channel_oneshot_try_recv(
     name = "tokio_channel__watch_create",
     description = "Create a watch channel with an initial value. All receivers always see the \
                    latest value sent. Returns sender_id and receiver_id UUIDs.",
-    emit = Auto
+    emit = None
 )]
 async fn channel_watch_create(
     ctx: Arc<ChannelCtx>,
@@ -1063,7 +1063,7 @@ async fn channel_watch_create(
     name = "tokio_channel__watch_send",
     description = "Broadcast a new value to all watch receivers. \
                    Assumes: sender_id was returned by `watch_create`.",
-    emit = Auto
+    emit = None
 )]
 async fn channel_watch_send(
     ctx: Arc<ChannelCtx>,
@@ -1228,7 +1228,7 @@ async fn channel_broadcast_create(
     description = "Broadcast a JSON value to all active receivers. Returns the number of \
                    receivers that will receive this message. \
                    Assumes: sender_id was returned by `broadcast_create`.",
-    emit = Auto
+    emit = None
 )]
 async fn channel_broadcast_send(
     ctx: Arc<ChannelCtx>,
@@ -1408,7 +1408,7 @@ async fn channel_broadcast_receiver_close(
     name = "tokio_channel__mutex_create",
     description = "Create a tokio async Mutex holding a JSON value (default: null). Returns a \
                    mutex_id UUID for subsequent lock/update/close calls.",
-    emit = Auto
+    emit = None
 )]
 async fn channel_mutex_create(
     ctx: Arc<ChannelCtx>,
@@ -1450,7 +1450,7 @@ async fn channel_mutex_lock(
     name = "tokio_channel__mutex_update",
     description = "Acquire the mutex, replace its value, and release. Returns the old value. \
                    Assumes: mutex_id was returned by `mutex_create`.",
-    emit = Auto
+    emit = None
 )]
 async fn channel_mutex_update(
     ctx: Arc<ChannelCtx>,
@@ -1526,7 +1526,7 @@ async fn channel_mutex_close(
     description = "Create a tokio async RwLock holding a JSON value (default: null). Multiple \
                    concurrent readers are allowed; writers get exclusive access. Returns a \
                    rwlock_id UUID.",
-    emit = Auto
+    emit = None
 )]
 async fn channel_rwlock_create(
     ctx: Arc<ChannelCtx>,
@@ -1569,7 +1569,7 @@ async fn channel_rwlock_read(
     description = "Acquire an exclusive write lock, replace the value, and release. Returns \
                    the old value. \
                    Assumes: rwlock_id was returned by `rwlock_create`.",
-    emit = Auto
+    emit = None
 )]
 async fn channel_rwlock_write(
     ctx: Arc<ChannelCtx>,
@@ -1624,7 +1624,7 @@ async fn channel_rwlock_try_read(
     description = "Attempt a non-blocking exclusive write. Returns `{ acquired: false }` if \
                    any reader or writer currently holds the lock. \
                    Assumes: rwlock_id was returned by `rwlock_create`.",
-    emit = Auto
+    emit = None
 )]
 async fn channel_rwlock_try_write(
     ctx: Arc<ChannelCtx>,

@@ -52,7 +52,6 @@
 
 mod fetch_and_parse;
 mod secure_fetch;
-mod util;
 
 #[cfg(feature = "emit")]
 mod emit_plugin;

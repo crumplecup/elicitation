@@ -160,6 +160,9 @@ impl Parse for ElicitToolArgs {
                                     // Special case: emit = None → skip all emit generation
                                     if p.path.is_ident("None") {
                                         emit = EmitMode::None;
+                                    // Special case: emit = Auto → explicit auto (same as default)
+                                    } else if p.path.is_ident("Auto") {
+                                        emit = EmitMode::Auto;
                                     } else {
                                         emit = EmitMode::Custom(p.path.clone());
                                     }

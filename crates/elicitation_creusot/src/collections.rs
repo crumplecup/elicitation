@@ -20,10 +20,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, LinkedList, VecDequ
 #[requires(true)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
 pub fn verify_vec_non_empty_valid() -> Result<VecNonEmpty<i32>, elicitation::ValidationError> {
-    let mut v = Vec::new();
-    v.push(1);
-    v.push(2);
-    v.push(3);
+    let v = std::vec![1, 2, 3];
     VecNonEmpty::new(v)
 }
 

@@ -203,7 +203,7 @@ async fn is_match(p: IsMatchParams) -> Result<CallToolResult, ErrorData> {
     let matched = compiled.inner.is_match(&p.text);
     let summary = if matched {
         let _proof = elicitation::contracts::both(valid, Established::<PatternMatched>::assert());
-        format!("RegexValid ∧ PatternMatched established.\nresult: true")
+        "RegexValid ∧ PatternMatched established.\nresult: true".to_string()
     } else {
         "RegexValid established.\nresult: false".to_string()
     };

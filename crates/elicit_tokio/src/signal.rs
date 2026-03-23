@@ -286,7 +286,7 @@ async fn signal_ctrl_c(_ctx: Arc<SignalCtx>, _p: CtrlCParams) -> Result<CallTool
     description = "Register a handler for a Unix signal. Returns a signal_id UUID that can be \
                    passed to `unix_signal_recv` to block until the signal arrives. \
                    Unix only.",
-    emit = Auto
+    emit = None
 )]
 async fn signal_unix_create(
     ctx: Arc<SignalCtx>,

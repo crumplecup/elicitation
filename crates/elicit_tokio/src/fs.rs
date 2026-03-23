@@ -193,16 +193,74 @@ pub struct WriteBytesParams {
     pub bytes: Vec<u8>,
 }
 
-/// Parameters for a single-path `tokio_fs__*` operation.
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct PathParams {
-    /// Target path.
+/// Parameters for `tokio_fs__create_dir`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct CreateDirParams {
+    /// Path to the directory to create.
     pub path: String,
 }
 
-/// Parameters for a two-path `tokio_fs__*` operation (rename, copy).
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct FromToParams {
+/// Parameters for `tokio_fs__create_dir_all`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct CreateDirAllParams {
+    /// Path to the directory to create (including all intermediate components).
+    pub path: String,
+}
+
+/// Parameters for `tokio_fs__remove_dir`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct RemoveDirParams {
+    /// Path to the empty directory to remove.
+    pub path: String,
+}
+
+/// Parameters for `tokio_fs__remove_dir_all`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct RemoveDirAllParams {
+    /// Path to the directory to remove recursively.
+    pub path: String,
+}
+
+/// Parameters for `tokio_fs__remove_file`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct RemoveFileParams {
+    /// Path to the file to remove.
+    pub path: String,
+}
+
+/// Parameters for `tokio_fs__metadata`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct MetadataParams {
+    /// Path to query metadata for.
+    pub path: String,
+}
+
+/// Parameters for `tokio_fs__read_dir`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct ReadDirParams {
+    /// Path to the directory to list.
+    pub path: String,
+}
+
+/// Parameters for `tokio_fs__canonicalize`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct CanonicalizeParams {
+    /// Path to resolve to its canonical form.
+    pub path: String,
+}
+
+/// Parameters for `tokio_fs__rename`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct RenameParams {
+    /// Source path.
+    pub from: String,
+    /// Destination path.
+    pub to: String,
+}
+
+/// Parameters for `tokio_fs__copy`.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct CopyFileParams {
     /// Source path.
     pub from: String,
     /// Destination path.
@@ -370,7 +428,7 @@ async fn fs_write_bytes(p: WriteBytesParams) -> Result<CallToolResult, ErrorData
                    Assumes: parent directory exists.",
     emit = Auto
 )]
-async fn fs_create_dir(p: PathParams) -> Result<CallToolResult, ErrorData> {
+async fn fs_create_dir(p: CreateDirParams) -> Result<CallToolResult, ErrorData> {
     tokio::fs::create_dir(&p.path).await.map_err(io_err)?;
     let _proof: Established<DirCreated> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
@@ -383,7 +441,7 @@ async fn fs_create_dir(p: PathParams) -> Result<CallToolResult, ErrorData> {
                    No-op if the directory already exists.",
     emit = Auto
 )]
-async fn fs_create_dir_all(p: PathParams) -> Result<CallToolResult, ErrorData> {
+async fn fs_create_dir_all(p: CreateDirAllParams) -> Result<CallToolResult, ErrorData> {
     tokio::fs::create_dir_all(&p.path).await.map_err(io_err)?;
     let _proof: Established<DirCreated> = Established::assert();
     Ok(json_result(&OkResult { ok: true }))
@@ -397,7 +455,7 @@ async fn fs_create_dir_all(p: PathParams) -> Result<CallToolResult, ErrorData> {
                    Assumes: path is an existing empty directory.",
     emit = Auto
 )]
-async fn fs_remove_dir(p: PathParams) -> Result<CallToolResult, ErrorData> {
+async fn fs_remove_dir(p: RemoveDirParams) -> Result<CallToolResult, ErrorData> {
     tokio::fs::remove_dir(&p.path).await.map_err(io_err)?;
     Ok(json_result(&OkResult { ok: true }))
 }
@@ -410,7 +468,7 @@ async fn fs_remove_dir(p: PathParams) -> Result<CallToolResult, ErrorData> {
                    Assumes: path is an existing directory.",
     emit = Auto
 )]
-async fn fs_remove_dir_all(p: PathParams) -> Result<CallToolResult, ErrorData> {
+async fn fs_remove_dir_all(p: RemoveDirAllParams) -> Result<CallToolResult, ErrorData> {
     tokio::fs::remove_dir_all(&p.path).await.map_err(io_err)?;
     Ok(json_result(&OkResult { ok: true }))
 }
@@ -422,7 +480,7 @@ async fn fs_remove_dir_all(p: PathParams) -> Result<CallToolResult, ErrorData> {
                    Assumes: path is an existing file (not a directory).",
     emit = Auto
 )]
-async fn fs_remove_file(p: PathParams) -> Result<CallToolResult, ErrorData> {
+async fn fs_remove_file(p: RemoveFileParams) -> Result<CallToolResult, ErrorData> {
     tokio::fs::remove_file(&p.path).await.map_err(io_err)?;
     Ok(json_result(&OkResult { ok: true }))
 }
@@ -435,7 +493,7 @@ async fn fs_remove_file(p: PathParams) -> Result<CallToolResult, ErrorData> {
                    Assumes: `from` exists; `to` parent directory exists.",
     emit = Auto
 )]
-async fn fs_rename(p: FromToParams) -> Result<CallToolResult, ErrorData> {
+async fn fs_rename(p: RenameParams) -> Result<CallToolResult, ErrorData> {
     tokio::fs::rename(&p.from, &p.to).await.map_err(io_err)?;
     Ok(json_result(&OkResult { ok: true }))
 }
@@ -448,7 +506,7 @@ async fn fs_rename(p: FromToParams) -> Result<CallToolResult, ErrorData> {
                    Assumes: `from` is an existing file; `to` parent directory exists.",
     emit = Auto
 )]
-async fn fs_copy(p: FromToParams) -> Result<CallToolResult, ErrorData> {
+async fn fs_copy(p: CopyFileParams) -> Result<CallToolResult, ErrorData> {
     let bytes_copied = tokio::fs::copy(&p.from, &p.to).await.map_err(io_err)?;
     Ok(json_result(&CopyResult { bytes_copied }))
 }
@@ -462,7 +520,7 @@ async fn fs_copy(p: FromToParams) -> Result<CallToolResult, ErrorData> {
                    Assumes: path exists.",
     emit = Auto
 )]
-async fn fs_metadata(p: PathParams) -> Result<CallToolResult, ErrorData> {
+async fn fs_metadata(p: MetadataParams) -> Result<CallToolResult, ErrorData> {
     let m = tokio::fs::metadata(&p.path).await.map_err(io_err)?;
     Ok(json_result(&MetadataResult {
         size: m.len(),
@@ -484,7 +542,7 @@ async fn fs_metadata(p: PathParams) -> Result<CallToolResult, ErrorData> {
                    Assumes: path is an existing directory.",
     emit = Auto
 )]
-async fn fs_read_dir(p: PathParams) -> Result<CallToolResult, ErrorData> {
+async fn fs_read_dir(p: ReadDirParams) -> Result<CallToolResult, ErrorData> {
     let mut reader = tokio::fs::read_dir(&p.path).await.map_err(io_err)?;
     let mut entries = Vec::new();
     while let Some(entry) = reader.next_entry().await.map_err(io_err)? {
@@ -507,7 +565,7 @@ async fn fs_read_dir(p: PathParams) -> Result<CallToolResult, ErrorData> {
                    Assumes: path exists.",
     emit = Auto
 )]
-async fn fs_canonicalize(p: PathParams) -> Result<CallToolResult, ErrorData> {
+async fn fs_canonicalize(p: CanonicalizeParams) -> Result<CallToolResult, ErrorData> {
     let canonical = tokio::fs::canonicalize(&p.path).await.map_err(io_err)?;
     Ok(json_result(&CanonicalizeResult {
         canonical_path: canonical.to_string_lossy().into_owned(),

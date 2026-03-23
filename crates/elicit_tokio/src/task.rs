@@ -165,7 +165,7 @@ mod emit_impls {
         }
     }
 
-    inventory::submit! { EmitEntry {
+    elicitation::inventory::submit! { EmitEntry {
         tool: "tokio_task__spawn",
         crate_name: "elicit_tokio",
         constructor: |v| serde_json::from_value::<SpawnParams>(v)
@@ -173,7 +173,7 @@ mod emit_impls {
             .map_err(|e| e.to_string()),
     }}
 
-    inventory::submit! { EmitEntry {
+    elicitation::inventory::submit! { EmitEntry {
         tool: "tokio_task__spawn_blocking",
         crate_name: "elicit_tokio",
         constructor: |v| serde_json::from_value::<SpawnBlockingParams>(v)
@@ -181,7 +181,7 @@ mod emit_impls {
             .map_err(|e| e.to_string()),
     }}
 
-    inventory::submit! { EmitEntry {
+    elicitation::inventory::submit! { EmitEntry {
         tool: "tokio_task__block_in_place",
         crate_name: "elicit_tokio",
         constructor: |v| serde_json::from_value::<BlockInPlaceParams>(v)
@@ -212,7 +212,8 @@ async fn task_yield_now(_p: YieldNowParams) -> Result<CallToolResult, ErrorData>
     description = "EMIT-ONLY: generates `tokio::spawn(async move { <body> })` in an emitted \
                    Rust binary. Cannot execute directly over MCP — calling this tool at runtime \
                    returns an error. Use via `emit_binary` to compose asynchronous task \
-                   spawning in generated code."
+                   spawning in generated code.",
+    emit = None
 )]
 async fn task_spawn(_p: SpawnParams) -> Result<CallToolResult, ErrorData> {
     Err(ErrorData::invalid_params(
@@ -228,7 +229,8 @@ async fn task_spawn(_p: SpawnParams) -> Result<CallToolResult, ErrorData> {
     description = "EMIT-ONLY: generates `tokio::task::spawn_blocking(move || { <body> })` in \
                    an emitted Rust binary. Cannot execute directly over MCP. Use via \
                    `emit_binary` to offload blocking work to a dedicated thread pool in \
-                   generated code."
+                   generated code.",
+    emit = None
 )]
 async fn task_spawn_blocking(_p: SpawnBlockingParams) -> Result<CallToolResult, ErrorData> {
     Err(ErrorData::invalid_params(
@@ -244,7 +246,8 @@ async fn task_spawn_blocking(_p: SpawnBlockingParams) -> Result<CallToolResult, 
     description = "EMIT-ONLY: generates `tokio::task::block_in_place(move || { <body> })` in \
                    an emitted Rust binary. Cannot execute directly over MCP. Use via \
                    `emit_binary` to run blocking code inside a multi-threaded tokio runtime \
-                   without starving async tasks."
+                   without starving async tasks.",
+    emit = None
 )]
 async fn task_block_in_place(_p: BlockInPlaceParams) -> Result<CallToolResult, ErrorData> {
     Err(ErrorData::invalid_params(

@@ -120,11 +120,11 @@ async fn reflect_trait_instantiate_creates_method_tools() {
     let names: Vec<&str> = tools.iter().map(|t| t.name.as_ref()).collect();
 
     assert!(
-        names.iter().any(|n| *n == "flag__greet"),
+        names.contains(&"flag__greet"),
         "expected flag__greet, got: {names:?}"
     );
     assert!(
-        names.iter().any(|n| *n == "flag__is_valid_name"),
+        names.contains(&"flag__is_valid_name"),
         "expected flag__is_valid_name, got: {names:?}"
     );
 }
