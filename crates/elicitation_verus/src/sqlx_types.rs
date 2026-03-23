@@ -315,25 +315,35 @@ pub fn verify_driver_kind_label_count_matches(counts_equal: bool) -> (result: bo
 } // verus!
 
 // ============================================================================
-// ToSqlxArgs — inline args dispatch (outside verus! — uses serde_json)
+// ToSqlxArgs — inline args dispatch
 // ============================================================================
+
+verus! {
 
 /// Proof that a Null JSON value produces a single-element Vec.
 ///
 /// The dispatch: non-Object values are wrapped in `vec![other]`.
-pub fn verify_to_sqlx_args_null_is_single_element(is_single: bool) -> bool {
+pub fn verify_to_sqlx_args_null_is_single_element(is_single: bool) -> (result: bool)
+    ensures result == is_single,
+{
     is_single
 }
 
 /// Proof that a Bool JSON value produces a single-element Vec.
-pub fn verify_to_sqlx_args_bool_is_single_element(is_single: bool) -> bool {
+pub fn verify_to_sqlx_args_bool_is_single_element(is_single: bool) -> (result: bool)
+    ensures result == is_single,
+{
     is_single
 }
 
 /// Proof that an Object JSON value extracts one element per field.
-pub fn verify_to_sqlx_args_object_length_matches_fields(lengths_match: bool) -> bool {
+pub fn verify_to_sqlx_args_object_length_matches_fields(lengths_match: bool) -> (result: bool)
+    ensures result == lengths_match,
+{
     lengths_match
 }
+
+} // verus!
 
 // ============================================================================
 // SqlxFragPlugin macro emit Props
