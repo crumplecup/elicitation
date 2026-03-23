@@ -203,8 +203,8 @@ fn verify_driver_kind_unknown_rejected() {
 #[kani::proof]
 fn verify_driver_kind_roundtrip_postgres() {
     use elicitation::DriverKind;
-    let label = DriverKind::Postgres.to_label();
-    let roundtripped = DriverKind::from_label(label);
+    let label = DriverKind::Postgres.to_string();
+    let roundtripped = DriverKind::from_label(&label);
     assert!(
         roundtripped.is_some(),
         "DriverKind::Postgres label roundtrips"
@@ -266,7 +266,7 @@ fn verify_to_sqlx_args_object_extracts_values() {
 // Proposition combinators (And<P,Q>, Established<P>, both())
 // ============================================================================
 
-use elicitation::contracts::{And, Established, both};
+use elicitation::contracts::{And, Established, Prop, both};
 
 // ── SqlxFragPlugin macro emit Props ──────────────────────────────────────────
 
@@ -335,6 +335,10 @@ fn verify_fragment_props_zero_sized() {
     struct QueryAsFragmentEmitted;
     struct QueryScalarFragmentEmitted;
     struct MigrateFragmentEmitted;
+    impl Prop for QueryFragmentEmitted {}
+    impl Prop for QueryAsFragmentEmitted {}
+    impl Prop for QueryScalarFragmentEmitted {}
+    impl Prop for MigrateFragmentEmitted {}
     assert!(size_of::<QueryFragmentEmitted>() == 0);
     assert!(size_of::<QueryAsFragmentEmitted>() == 0);
     assert!(size_of::<QueryScalarFragmentEmitted>() == 0);
@@ -350,6 +354,7 @@ fn verify_established_is_zero_sized() {
     // DbConnected, QueryExecuted, etc. are unit structs — zero-sized.
     // Established<P> wraps PhantomData<P>, so also zero-sized.
     struct Dummy;
+    impl Prop for Dummy {}
     assert!(size_of::<Established<Dummy>>() == 0);
 }
 
@@ -359,6 +364,8 @@ fn verify_and_combinator_is_zero_sized() {
     use std::mem::size_of;
     struct P;
     struct Q;
+    impl Prop for P {}
+    impl Prop for Q {}
     assert!(size_of::<And<P, Q>>() == 0);
 }
 
@@ -368,6 +375,8 @@ fn verify_both_result_is_zero_sized() {
     use std::mem::size_of;
     struct P;
     struct Q;
+    impl Prop for P {}
+    impl Prop for Q {}
     let p: Established<P> = Established::assert();
     let q: Established<Q> = Established::assert();
     let _both: Established<And<P, Q>> = both(p, q);

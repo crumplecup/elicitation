@@ -60,7 +60,7 @@
 //! | `UnixStreamConnected` | `tokio::net::UnixStream::connect` | `TokioUnixPlugin` |
 //! | `UnixDataReceived` | `UnixStream::read` / `UnixDatagram::recv_from` | `TokioUnixPlugin` |
 
-use elicitation::contracts::{And, Established, both};
+use elicitation::contracts::{And, Established, Prop, both};
 
 // ============================================================================
 // Helper: local Prop mirrors (unit structs — always zero-sized)
@@ -73,6 +73,7 @@ use elicitation::contracts::{And, Established, both};
 macro_rules! assert_prop_zero_sized {
     ($name:ident) => {
         struct $name;
+        impl Prop for $name {}
         assert!(
             std::mem::size_of::<$name>() == 0,
             "{} must be zero-sized",
@@ -729,6 +730,7 @@ fn verify_unix_data_received_axiom() {
 fn verify_established_zero_sized_general() {
     use std::mem::size_of;
     struct AnyProp;
+    impl Prop for AnyProp {}
     assert!(size_of::<Established<AnyProp>>() == 0);
 }
 
@@ -739,6 +741,8 @@ fn verify_and_combinator_zero_sized() {
     use std::mem::size_of;
     struct P;
     struct Q;
+    impl Prop for P {}
+    impl Prop for Q {}
     assert!(size_of::<And<P, Q>>() == 0);
 }
 
@@ -749,6 +753,8 @@ fn verify_both_composition_zero_sized() {
     use std::mem::size_of;
     struct P;
     struct Q;
+    impl Prop for P {}
+    impl Prop for Q {}
     let p: Established<P> = Established::assert();
     let q: Established<Q> = Established::assert();
     let _combined: Established<And<P, Q>> = both(p, q);
@@ -763,6 +769,9 @@ fn verify_three_way_composition_zero_sized() {
     struct Bound;
     struct Accepted;
     struct Connected;
+    impl Prop for Bound {}
+    impl Prop for Accepted {}
+    impl Prop for Connected {}
     let p: Established<Bound> = Established::assert();
     let q: Established<Accepted> = Established::assert();
     let r: Established<Connected> = Established::assert();

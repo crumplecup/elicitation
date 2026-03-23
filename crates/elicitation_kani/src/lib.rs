@@ -92,7 +92,7 @@ mod urlbytes;
 mod urls;
 
 // Serde boundary consistency proofs (require verification + serde_json)
-#[cfg(kani)]
+#[cfg(all(kani, feature = "serde_json"))]
 mod serde_boundary;
 
 #[cfg(all(kani, feature = "regex"))]
