@@ -18,7 +18,6 @@
 //! `hangup`, `interrupt`, `quit`, `terminate`, `user_defined1`, `user_defined2`,
 //! `pipe`, `alarm`, `child`, `io`, `window_change`
 
-use std::collections::HashMap;
 use std::sync::Arc;
 
 use elicitation::contracts::{Established, Prop};
@@ -31,7 +30,11 @@ use rmcp::{
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+#[cfg(unix)]
+use std::collections::HashMap;
+#[cfg(unix)]
 use tokio::sync::Mutex;
+#[cfg(unix)]
 use uuid::Uuid;
 
 // ── Propositions ─────────────────────────────────────────────────────────────

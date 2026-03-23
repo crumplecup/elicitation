@@ -87,11 +87,11 @@ pub use runtime::{
     BlockOnParams as RuntimeBlockOnParams, BuildCurrentThreadParams, BuildMultiThreadParams,
     InspectFlavorParams, RuntimeFlavorKind, RuntimeFlavored, TokioRuntimePlugin,
 };
-pub use signal::{CtrlCParams, CtrlCReceived, TokioSignalPlugin, UnixSignalKind};
+pub use signal::{CtrlCParams, CtrlCReceived, TokioSignalPlugin};
 #[cfg(unix)]
 pub use signal::{
     SignalHandlerRegistered, SignalReceived, UnixSignalCloseParams, UnixSignalCreateParams,
-    UnixSignalRecvParams,
+    UnixSignalKind, UnixSignalRecvParams,
 };
 pub use spawn::{
     AbortParams, AsyncWorkload, BlockingWorkload, JoinParams, SpawnPluginBuilder, TaskAborted,
