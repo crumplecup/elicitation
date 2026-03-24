@@ -572,11 +572,11 @@ _status-verus:
 verify-kani harness="":
     #!/usr/bin/env bash
     if [ -z "{{harness}}" ]; then
-        echo "🔬 Running all Kani verifications with default unwind bound..."
-        cargo kani -p elicitation_kani_kani --all-features --default-unwind 20
+        echo "🔬 Running all Kani verifications..."
+        cargo kani -p elicitation_kani --lib --all-features
     else
         echo "🔬 Running Kani harness: {{harness}}"
-        cargo kani --harness {{harness}} --features verify-kani --default-unwind 20
+        cargo kani -p elicitation_kani --lib --all-features --harness {{harness}}
     fi
 
 # Run Kani verification for rand integration
