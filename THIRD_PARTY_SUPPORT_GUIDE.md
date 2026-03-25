@@ -1377,6 +1377,86 @@ Once all proofs pass, the tracker (`just verify-verus-tracked`) picks them up vi
 
 ---
 
+## Phase 7 — ElicitComplete Registration and Proof Validation
+
+This is the **final phase** for every new type. It sews up the implementation,
+lets the compiler enforce the growing checklist of framework traits, and ensures
+the proof composition guarantee is upheld.
+
+### 7.1 Implement `ElicitComplete`
+
+Add a blanket or explicit `impl ElicitComplete` for your type. The compiler will
+reject it if any supertrait obligation is missing — this is the enforced checklist:
+
+```rust
+// In crates/elicitation/src/primitives/foo_types/bar.rs
+impl ElicitComplete for Bar {}
+```
+
+`ElicitComplete` requires:
+- `Elicitation` — with non-defaulted `kani_proof`, `verus_proof`, `creusot_proof`
+- `ElicitIntrospect` — structural metadata
+- `ElicitSpec` — agent-browsable contract spec
+- `serde::Serialize + for<'de> serde::Deserialize<'de>` — data interchange
+- `schemars::JsonSchema` — JSON schema generation
+
+If the compiler rejects the impl, you have missed something from the earlier phases.
+Use the error messages as your gap finder — do not paper over them with `#[allow]`.
+
+### 7.2 Add to `proof_non_empty_test.rs`
+
+Open `crates/elicitation/tests/proof_non_empty_test.rs` and add your type to the
+appropriate test. This verifies that none of the three proof methods return an empty
+`TokenStream`:
+
+```rust
+#[test]
+fn bar_proofs_non_empty() {
+    assert_proofs_non_empty::<Bar>("Bar");
+    assert_proofs_non_empty::<BarWrapper>("BarWrapper"); // add wrappers too
+}
+```
+
+The test uses `validate_proofs_non_empty()` from `ElicitComplete`, which checks all
+three systems at once.
+
+### 7.3 Add to `proof_composition_test.rs` (aggregate types only)
+
+If your type is an **aggregate** (has fields of other `Elicitation` types), add
+containment assertions to `crates/elicitation/tests/proof_composition_test.rs`:
+
+```rust
+#[test]
+fn bar_delegates_to_constituents() {
+    // Bar { inner: Baz, count: u32 }
+    assert_kani_contains::<Bar, Baz>("Bar contains Baz proof");
+    assert_kani_contains::<Bar, u32>("Bar contains u32 proof");
+}
+```
+
+This catches regressions where a refactor drops a delegation call from the
+manually-written proof body.
+
+> **Note:** Types derived with `#[derive(Elicit)]` do not need composition tests —
+> the macro generates delegation mechanically from the struct fields. Composition
+> tests are only needed for manual `impl Elicitation` blocks.
+
+### 7.4 Run tests
+
+```bash
+just test-package elicitation
+```
+
+All new tests must pass. Zero failures, zero compilation errors.
+
+### 7.5 Commit
+
+```bash
+git commit -m "feat(foo-types): register ElicitComplete and add proof validation tests"
+```
+
+---
+
 ## Checklist Summary
 
 Use this to track progress when adding a new crate:
@@ -1431,6 +1511,11 @@ Feature flag: foo-types
 [ ] elicitation_verus/src/lib.rs: pub mod foo_types
 [ ] verus_runner.rs: VerusProof::all() entries added (one per proof function)
 [ ] verus --crate-type=lib crates/elicitation_verus/src/foo_types.rs → N verified, 0 errors
+
+[ ] impl ElicitComplete for each new type (compiler enforces all supertrait gaps)
+[ ] proof_non_empty_test.rs: assert_proofs_non_empty::<Foo> for each new type + wrappers
+[ ] proof_composition_test.rs: assert_kani_contains for aggregate types with manual impls
+[ ] just test-package elicitation passes clean
 
 [ ] git commit -m "feat(foo-types): add Elicitation + verification support for foo crate"
 [ ] git push
