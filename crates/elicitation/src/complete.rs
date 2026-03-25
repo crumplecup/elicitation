@@ -55,7 +55,22 @@ pub trait ElicitComplete:
     + for<'de> serde::Deserialize<'de>
     + schemars::JsonSchema
 {
-    /// Runtime check: does this type's Kani proof contain `Inner`'s Kani proof?
+    /// Runtime check: all three proof methods return non-empty TokenStreams.
+    ///
+    /// Use in tests to catch any manual `impl Elicitation` that returns
+    /// `TokenStream::new()`. Call this for every type in your test suite.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// assert!(bool::validate_proofs_non_empty(), "bool proofs must be non-empty");
+    /// ```
+    #[cfg(feature = "proofs")]
+    fn validate_proofs_non_empty() -> bool {
+        !Self::kani_proof().is_empty()
+            && !Self::verus_proof().is_empty()
+            && !Self::creusot_proof().is_empty()
+    }
     ///
     /// Use this in tests to assert delegation — i.e., that an aggregate type's
     /// proof includes its constituent types' proofs. Catches regressions in
