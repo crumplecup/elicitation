@@ -602,146 +602,164 @@ planning, and nested introspection patterns in full.
 
 ```toml
 [dependencies]
-elicitation        = "0.9"
-elicitation_macros = "0.9"
-rmcp               = "1"
-schemars           = "0.8"
-serde              = { version = "1", features = ["derive"] }
-tokio              = { version = "1", features = ["full"] }
+elicitation = "0.9"
+rmcp        = "1"
+schemars    = "0.8"
+serde       = { version = "1", features = ["derive"] }
+tokio       = { version = "1", features = ["full"] }
 ```
 
-The whole pattern in one file:
+### Step 1 — derive `Elicit` on your domain types
+
+`#[derive(Elicit)]` is the entire declaration. It generates the MCP
+round-trip, schema, and the `elicit_checked()` method. Works on structs
+(Survey paradigm) and enums (Select paradigm) alike:
 
 ```rust
 use elicitation::Elicit;
-use elicitation_macros::elicit_tools;
-use rmcp::{tool, tool_router, ErrorData, ServerHandler};
-use rmcp::handler::server::wrapper::Json;
-use rmcp::model::{ServerCapabilities, ServerInfo};
+use serde::{Deserialize, Serialize};
+
+/// Finite choice — derives the Select paradigm
+#[derive(Debug, Clone, Serialize, Deserialize, Elicit)]
+pub enum Difficulty {
+    Easy,
+    Normal,
+    Hard,
+}
+
+/// Multi-field form — derives the Survey paradigm  
+#[derive(Debug, Clone, Serialize, Deserialize, Elicit)]
+pub struct PlayerProfile {
+    #[prompt("Enter your name:")]
+    pub name: String,
+    #[prompt("Pick a difficulty:")]
+    pub difficulty: Difficulty,
+    pub score: u32,
+}
+```
+
+### Step 2 — call `elicit_tools!` inside your server impl
+
+`elicitation::elicit_tools! { Type, ... }` expands inline inside your
+`#[tool_router]` impl block. It generates one interactive `elicit_*` tool
+per listed type — no extra attributes, no separate structs:
+
+```rust
+use elicitation::{ChoiceSet, ElicitServer, Elicitation};
+use rmcp::handler::server::wrapper::Parameters;
+use rmcp::model::{CallToolResult, Content, ServerCapabilities, ServerInfo};
 use rmcp::service::{Peer, RoleServer};
+use rmcp::{ErrorData, ServerHandler, tool, tool_handler, tool_router};
+use rmcp::handler::server::router::tool::ToolRouter;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-// ── 1. Derive Elicit on your input type ──────────────────────────────────────
-//
-// That's it. The derive generates the full MCP round-trip: prompts, schema,
-// validation, and the elicit_checked() method used by the generated tool.
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
-pub struct ServerConfig {
-    #[prompt("Hostname to bind (e.g. 0.0.0.0):")]
-    pub host: String,
-
-    #[prompt("Port number:")]
-    pub port: u16,
-
-    #[prompt("Maximum simultaneous connections:")]
-    pub max_connections: u32,
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct StartGameRequest {
+    pub session_id: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
-pub struct UserInfo {
-    #[prompt("Username:")]
-    pub username: String,
-
-    #[prompt("Email address:")]
-    pub email: String,
+pub struct GameServer {
+    tool_router: ToolRouter<Self>,
 }
 
-// ── 2. Response types (plain structs, no elicitation needed) ─────────────────
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct RestartResponse {
-    pub success: bool,
-    pub message: String,
-}
-
-// ── 3. Wire everything together ───────────────────────────────────────────────
-//
-// #[elicit_tools(ServerConfig, UserInfo)] generates two interactive tools:
-//
-//   elicit_server_config — prompts the user for host / port / max_connections
-//   elicit_user_info     — prompts the user for username / email
-//
-// #[tool_router] registers those generated tools alongside your own #[tool]
-// methods in a single router. The LLM calls elicit_server_config, receives
-// a validated ServerConfig, then calls restart with it — two tools, one flow.
-
-pub struct MyServer;
-
-#[elicit_tools(ServerConfig, UserInfo)]
 #[tool_router]
-impl MyServer {
-    #[tool(description = "Restart the server with a new configuration")]
-    pub async fn restart(
-        _peer: Peer<RoleServer>,
-        config: ServerConfig,
-    ) -> Result<Json<RestartResponse>, ErrorData> {
-        Ok(Json(RestartResponse {
-            success: true,
-            message: format!("Restarted on {}:{}", config.host, config.port),
-        }))
+impl GameServer {
+    pub fn new() -> Self {
+        Self { tool_router: Self::tool_router() }
     }
 
-    #[tool(description = "Create a new user account")]
-    pub async fn create_user(
-        _peer: Peer<RoleServer>,
-        user: UserInfo,
-    ) -> Result<Json<RestartResponse>, ErrorData> {
-        Ok(Json(RestartResponse {
-            success: true,
-            message: format!("User {} created", user.username),
-        }))
+    /// Regular tool — structured params, no interaction needed
+    #[tool(description = "Start a new game session")]
+    pub async fn start_game(
+        &self,
+        Parameters(req): Parameters<StartGameRequest>,
+    ) -> Result<CallToolResult, ErrorData> {
+        Ok(CallToolResult::success(vec![
+            Content::text(format!("Session {} started", req.session_id)),
+        ]))
+    }
+
+    /// Interactive tool — gate the LLM inside a walled garden of valid moves
+    #[tool(description = "Play a move. You will be prompted to choose a difficulty.")]
+    pub async fn play(
+        &self,
+        peer: Peer<RoleServer>,
+    ) -> Result<CallToolResult, ErrorData> {
+        // Wrap the peer in ElicitServer to drive the interactive round-trip
+        let server = ElicitServer::new(peer);
+
+        // Elicit a free-form struct from the LLM / user
+        let profile = PlayerProfile::elicit(&server).await
+            .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+
+        // Or: constrain to a runtime-computed set of valid options
+        let options = vec![1u32, 5, 10, 25];
+        let bet = ChoiceSet::new(options)
+            .with_prompt("Choose your bet:")
+            .elicit(&server)
+            .await
+            .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
+
+        Ok(CallToolResult::success(vec![
+            Content::text(format!("{} bets {} on {:?}", profile.name, bet, profile.difficulty)),
+        ]))
+    }
+
+    // Auto-generate elicit_difficulty and elicit_player_profile tools
+    elicitation::elicit_tools! {
+        Difficulty,
+        PlayerProfile,
     }
 }
 
-impl ServerHandler for MyServer {
+#[tool_handler(router = self.tool_router)]
+impl ServerHandler for GameServer {
     fn get_info(&self) -> ServerInfo {
-        ServerInfo {
-            name: Some("my-server".into()),
-            version: Some("0.1.0".into()),
-            capabilities: ServerCapabilities::builder().enable_tools().build(),
-            ..Default::default()
-        }
+        ServerInfo::new(ServerCapabilities::builder().enable_tools().build())
     }
 }
+```
 
-// ── 4. Serve ─────────────────────────────────────────────────────────────────
+### Step 3 — serve
+
+```rust
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let server = GameServer::new();
+    rmcp::service::serve_server(server, rmcp::transport::stdio()).await?;
+    Ok(())
+}
+```
+
+The registered tools: `start_game`, `play`, `elicit_difficulty`,
+`elicit_player_profile`. The LLM calls `elicit_difficulty` and gets back a
+validated `Difficulty` it can pass anywhere. `ChoiceSet` traps it inside
+only the options you allow at runtime — the walled garden pattern.
+
+### Adding shadow crate plugins
+
+Shadow crates expose third-party libraries as pre-built tool sets. Add them
+alongside your own server via `PluginRegistry`:
+
+```rust
+use elicitation::PluginRegistry;
+use rmcp::ServiceExt;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    use elicitation::PluginRegistry;
-    use rmcp::ServiceExt;
-
     PluginRegistry::new()
-        .register_flat(MyServer)
+        .register_flat(GameServer::new())
+        .register("http", elicit_reqwest::WorkflowPlugin::default_client())
+        .register("db",   elicit_sqlx::SqlxWorkflowPlugin::default())
         .serve(rmcp::transport::stdio())
         .await?;
     Ok(())
 }
 ```
 
-The four tools registered — `elicit_server_config`, `elicit_user_info`,
-`restart`, `create_user` — are all the agent needs. It calls
-`elicit_server_config`, the library opens an interactive dialogue with the
-user, and hands back a validated `ServerConfig` ready to pass straight into
-`restart`.
-
-### Adding shadow crate plugins
-
-Shadow crates wrap third-party libraries as ready-made namespaced plugins:
-
-```rust
-PluginRegistry::new()
-    .register_flat(MyServer)
-    .register("http", elicit_reqwest::WorkflowPlugin::default_client())
-    .register("db",   elicit_sqlx::SqlxWorkflowPlugin::default())
-    .serve(rmcp::transport::stdio())
-    .await?;
-```
-
-This exposes `http__get`, `http__post`, `db__connect`, `db__query` alongside
-your own tools — one registry, one transport, zero glue code.
+This exposes `http__get`, `db__connect`, `db__query` alongside your own
+tools — one registry, one transport, zero glue code.
 
 ---
 
