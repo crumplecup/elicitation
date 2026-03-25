@@ -600,8 +600,6 @@ planning, and nested introspection patterns in full.
 
 ## Getting Started
 
-Add the dependencies:
-
 ```toml
 [dependencies]
 elicitation        = "0.9"
@@ -612,41 +610,10 @@ serde              = { version = "1", features = ["derive"] }
 tokio              = { version = "1", features = ["full"] }
 ```
 
-### Step 1 — define your struct
-
-Derive `Elicit` on any struct. Use `#[prompt]` to give each field a
-human-readable label. Add `#[elicit(bounded(1, 65535))]` or
-`#[elicit(validator = "is_email")]` to attach inline constraints.
+The whole pattern in one file:
 
 ```rust
 use elicitation::Elicit;
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
-pub struct ServerConfig {
-    #[prompt("Hostname to bind (e.g. 0.0.0.0):")]
-    pub host: String,
-
-    #[prompt("Port number:")]
-    #[elicit(bounded(1, 65535))]
-    pub port: u16,
-
-    #[prompt("Maximum simultaneous connections:")]
-    pub max_connections: u32,
-}
-```
-
-That is the entire declaration. `#[derive(Elicit)]` generates the MCP
-round-trip, validation, and schema — nothing else to write.
-
-### Step 2 — expose it as an MCP tool
-
-`#[elicit_tools(T)]` generates one interactive `elicit_*` tool per listed
-type. Stack it with `#[tool_router]` to mix elicitation tools with your
-own hand-written tools in the same server:
-
-```rust
 use elicitation_macros::elicit_tools;
 use rmcp::{tool, tool_router, ErrorData, ServerHandler};
 use rmcp::handler::server::wrapper::Json;
@@ -655,28 +622,75 @@ use rmcp::service::{Peer, RoleServer};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+// ── 1. Derive Elicit on your input type ──────────────────────────────────────
+//
+// That's it. The derive generates the full MCP round-trip: prompts, schema,
+// validation, and the elicit_checked() method used by the generated tool.
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct ServerConfig {
+    #[prompt("Hostname to bind (e.g. 0.0.0.0):")]
+    pub host: String,
+
+    #[prompt("Port number:")]
+    pub port: u16,
+
+    #[prompt("Maximum simultaneous connections:")]
+    pub max_connections: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct UserInfo {
+    #[prompt("Username:")]
+    pub username: String,
+
+    #[prompt("Email address:")]
+    pub email: String,
+}
+
+// ── 2. Response types (plain structs, no elicitation needed) ─────────────────
+
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct RestartResult {
+pub struct RestartResponse {
     pub success: bool,
     pub message: String,
 }
 
+// ── 3. Wire everything together ───────────────────────────────────────────────
+//
+// #[elicit_tools(ServerConfig, UserInfo)] generates two interactive tools:
+//
+//   elicit_server_config — prompts the user for host / port / max_connections
+//   elicit_user_info     — prompts the user for username / email
+//
+// #[tool_router] registers those generated tools alongside your own #[tool]
+// methods in a single router. The LLM calls elicit_server_config, receives
+// a validated ServerConfig, then calls restart with it — two tools, one flow.
+
 pub struct MyServer;
 
-// 1. Generate `elicit_server_config` tool automatically
-// 2. Register all tools into a single tool_router
-#[elicit_tools(ServerConfig)]
+#[elicit_tools(ServerConfig, UserInfo)]
 #[tool_router]
 impl MyServer {
-    /// Restart the server using interactively gathered config
     #[tool(description = "Restart the server with a new configuration")]
     pub async fn restart(
         _peer: Peer<RoleServer>,
         config: ServerConfig,
-    ) -> Result<Json<RestartResult>, ErrorData> {
-        Ok(Json(RestartResult {
+    ) -> Result<Json<RestartResponse>, ErrorData> {
+        Ok(Json(RestartResponse {
             success: true,
             message: format!("Restarted on {}:{}", config.host, config.port),
+        }))
+    }
+
+    #[tool(description = "Create a new user account")]
+    pub async fn create_user(
+        _peer: Peer<RoleServer>,
+        user: UserInfo,
+    ) -> Result<Json<RestartResponse>, ErrorData> {
+        Ok(Json(RestartResponse {
+            success: true,
+            message: format!("User {} created", user.username),
         }))
     }
 }
@@ -691,62 +705,43 @@ impl ServerHandler for MyServer {
         }
     }
 }
-```
 
-`#[elicit_tools(ServerConfig)]` expands to an `elicit_server_config` tool
-that walks the connected LLM client through each field. The LLM receives a
-fully validated `ServerConfig` it can immediately pass to `restart`.
-
-### Step 3 — serve it as an rmcp plugin
-
-Register your server with `PluginRegistry` and wire it to an rmcp transport:
-
-```rust
-use elicitation::PluginRegistry;
-use rmcp::ServiceExt;
+// ── 4. Serve ─────────────────────────────────────────────────────────────────
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let registry = PluginRegistry::new()
-        .register_flat(MyServer);
+    use elicitation::PluginRegistry;
+    use rmcp::ServiceExt;
 
-    // Serve over stdio (connect Claude Desktop, Cursor, any MCP client)
-    registry.serve(rmcp::transport::stdio()).await?;
+    PluginRegistry::new()
+        .register_flat(MyServer)
+        .serve(rmcp::transport::stdio())
+        .await?;
     Ok(())
 }
 ```
 
-The agent workflow end-to-end:
+The four tools registered — `elicit_server_config`, `elicit_user_info`,
+`restart`, `create_user` — are all the agent needs. It calls
+`elicit_server_config`, the library opens an interactive dialogue with the
+user, and hands back a validated `ServerConfig` ready to pass straight into
+`restart`.
 
-1. LLM calls `elicit_server_config` → library opens a multi-turn dialogue with the user
-2. User answers each `#[prompt]` field; contract bounds are enforced
-3. LLM receives a validated `ServerConfig`
-4. LLM calls `restart` with the config
-5. `restart` runs; returns `RestartResult`
+### Adding shadow crate plugins
 
-### Mixing in shadow crate plugins
-
-Shadow crates wrap third-party libraries as ready-made plugin bundles. Register as many as you need under distinct namespace prefixes:
+Shadow crates wrap third-party libraries as ready-made namespaced plugins:
 
 ```rust
-use elicitation::PluginRegistry;
-use elicit_reqwest::WorkflowPlugin as HttpPlugin;
-use elicit_sqlx::SqlxWorkflowPlugin;
-use rmcp::ServiceExt;
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let registry = PluginRegistry::new()
-        .register_flat(MyServer)             // your tools
-        .register("http", HttpPlugin::default_client())  // fetch, post, …
-        .register("db",   SqlxWorkflowPlugin::default()); // connect, query, …
-
-    registry.serve(rmcp::transport::stdio()).await?;
-    Ok(())
-}
+PluginRegistry::new()
+    .register_flat(MyServer)
+    .register("http", elicit_reqwest::WorkflowPlugin::default_client())
+    .register("db",   elicit_sqlx::SqlxWorkflowPlugin::default())
+    .serve(rmcp::transport::stdio())
+    .await?;
 ```
 
-Tools are namespaced: `http__get`, `http__post`, `db__connect`, `db__query`, alongside your own `elicit_server_config` and `restart`.
+This exposes `http__get`, `http__post`, `db__connect`, `db__query` alongside
+your own tools — one registry, one transport, zero glue code.
 
 ---
 
