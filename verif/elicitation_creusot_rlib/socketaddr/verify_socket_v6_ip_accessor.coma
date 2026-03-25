@@ -1,17 +1,16 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 90 0 90 81 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 88 0 88 60 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 497 23 497 25
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 496 18 496 41
 let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 499 15 499 19
 let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 498 18 498 22
-let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
-let%span sinvariant = "/home/erik/repos/creusot/creusot-std/src/invariant.rs" 85 8 85 18
-let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 91 17 91 57
-let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 92 18 92 29
-let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 90 36 90 38
-let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 90 64 90 81
-let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 116 4 116 62
-let%span ssocketaddr'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 121 4 121 34
+let%span sarray = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/array.rs" 9 20 9 51
+let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 89 17 89 57
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 90 18 90 29
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 88 36 88 38
+let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 116 4 116 62
+let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 121 4 121 34
 
 use creusot.slice.Slice64
 use creusot.int.UInt8
@@ -41,7 +40,7 @@ let rec from_octets (ip: Slice64.array UInt8.t) (port: UInt16.t) (return (x: t_S
   {[@stop_split] [@expl:from_octets 'ip' type invariant] [%#sextern_specs] inv_array_u8_16 ip}
   any
   [ return (result: t_SocketAddrV6Bytes) ->
-  {[@stop_split] [@expl:from_octets ensures] ([@stop_split] [@expl:from_octets result type invariant] [%#ssocketaddr'3] inv_SocketAddrV6Bytes result)
+  {[@stop_split] [@expl:from_octets ensures] ([@stop_split] [@expl:from_octets result type invariant] [%#ssocketaddr'2] inv_SocketAddrV6Bytes result)
     /\ ([@stop_split] [@expl:from_octets ensures] [%#sextern_specs'0] v6_port result = port)}
     (! return {result}) ]
 
@@ -70,7 +69,7 @@ let rec ip (self_: t_SocketAddrV6Bytes) (return (x: t_Ipv6Bytes)) =
   {[@stop_split] [@expl:ip 'self_' type invariant] [%#sextern_specs'1] inv_ref_SocketAddrV6Bytes self_}
   any
   [ return (result: t_Ipv6Bytes) ->
-  {[@stop_split] [@expl:ip result type invariant] [%#ssocketaddr'4] inv_ref_Ipv6Bytes result}
+  {[@stop_split] [@expl:ip result type invariant] [%#ssocketaddr'3] inv_ref_Ipv6Bytes result}
     (! return {result}) ]
 
 meta "compute_max_steps" 1000000
@@ -78,20 +77,16 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_socket_v6_ip_accessor
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 90 0 90 81]
-  (ip'0: Slice64.array UInt8.t) (port: UInt16.t) (return (x: t_SocketAddrV6Bytes)) =
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 88 0 88 60]
+  (ip'0: Slice64.array UInt8.t) (port: UInt16.t) (return (x: ())) =
   {[@stop_split] [@expl:verify_socket_v6_ip_accessor 'ip' type invariant] [%#ssocketaddr'1] inv_array_u8_16 ip'0}
   (! bb0
   [ bb0 = s0
     [ s0 = from_octets [%#ssocketaddr] {ip'0} {port} (fun (_x: t_SocketAddrV6Bytes) -> [ &socket <- _x ] s1)
     | s1 = ip [%#ssocketaddr'0] {socket} (fun (_x: t_Ipv6Bytes) -> [ &_ip_ref <- _x ] s2)
-    | s2 = [ &_ret <- socket ] s3
-    | s3 = return {_ret} ] ]
-  [ & _ret: t_SocketAddrV6Bytes = Any.any_l ()
+    | s2 = return {_ret} ] ]
+  [ & _ret: () = Any.any_l ()
   | & ip'0: Slice64.array UInt8.t = ip'0
   | & port: UInt16.t = port
   | & socket: t_SocketAddrV6Bytes = Any.any_l ()
-  | & _ip_ref: t_Ipv6Bytes = Any.any_l () ])
-  [ return (result: t_SocketAddrV6Bytes) ->
-  {[@stop_split] [@expl:verify_socket_v6_ip_accessor result type invariant] [%#ssocketaddr'2] inv_SocketAddrV6Bytes result}
-    (! return {result}) ]
+  | & _ip_ref: t_Ipv6Bytes = Any.any_l () ]) [ return (result: ()) -> (! return {result}) ]

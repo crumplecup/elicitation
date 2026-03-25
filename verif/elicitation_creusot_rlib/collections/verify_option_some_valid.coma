@@ -1,11 +1,11 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 56 0 56 90 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 58 0 58 90 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 601 18 601 149
-let%span scollections = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 57 25 57 27
-let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 57 4 57 29
-let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 54 11 54 15
-let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 56 37 56 90
-let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 55 10 55 57
+let%span scollections = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 59 25 59 27
+let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 59 4 59 29
+let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 56 11 56 15
+let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 58 37 58 90
+let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 57 10 57 57
 let%span scollections'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/collections.rs" 158 4 158 38
 
 use creusot.int.Int32
@@ -186,7 +186,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_option_some_valid
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 56 0 56 90]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 58 0 58 90]
   (return (x: t_Result_OptionSome_i32_ValidationError)) = (! bb0
   [ bb0 = s0
     [ s0 = [ &_3 <- Some ([%#scollections] (42: Int32.t)) ] s1

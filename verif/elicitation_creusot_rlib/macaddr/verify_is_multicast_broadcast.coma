@@ -1,14 +1,14 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 132 0 132 46 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 140 0 140 46 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 574 20 574 26
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 573 14 573 45
-let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 56 20 56 29
-let%span sarray'0 = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
-let%span sinvariant = "/home/erik/repos/creusot/creusot-std/src/invariant.rs" 85 8 85 18
-let%span smacaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 133 18 133 27
-let%span smacaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 133 19 133 23
-let%span smacaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 133 4 133 28
-let%span smacaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 131 10 131 16
+let%span sarray = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/array.rs" 56 20 56 29
+let%span sarray'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/array.rs" 9 20 9 51
+let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
+let%span smacaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 141 18 141 27
+let%span smacaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 141 19 141 23
+let%span smacaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 141 4 141 28
+let%span smacaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 139 10 139 16
 
 use creusot.int.UInt8
 use creusot.int.UInt64
@@ -53,7 +53,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_is_multicast_broadcast
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 132 0 132 46] (return (x: bool)) = (! bb0
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 140 0 140 46] (return (x: bool)) = (! bb0
   [ bb0 = s0
     [ s0 = bb0'0
       [ bb0'0 = s0'0

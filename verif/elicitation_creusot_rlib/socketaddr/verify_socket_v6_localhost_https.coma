@@ -1,28 +1,28 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 121 0 121 62 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 117 0 117 62 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 497 23 497 25
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 496 18 496 41
-let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
-let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 36 122 37
-let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 39 122 40
-let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 42 122 43
-let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 45 122 46
-let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 48 122 49
-let%span ssocketaddr'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 51 122 52
-let%span ssocketaddr'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 54 122 55
-let%span ssocketaddr'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 57 122 58
-let%span ssocketaddr'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 60 122 61
-let%span ssocketaddr'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 63 122 64
-let%span ssocketaddr'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 66 122 67
-let%span ssocketaddr'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 69 122 70
-let%span ssocketaddr'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 72 122 73
-let%span ssocketaddr'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 75 122 76
-let%span ssocketaddr'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 78 122 79
-let%span ssocketaddr'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 81 122 82
-let%span ssocketaddr'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 85 122 88
-let%span ssocketaddr'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 122 4 122 89
-let%span ssocketaddr'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 121 45 121 62
-let%span ssocketaddr'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 120 10 120 35
+let%span sarray = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/array.rs" 9 20 9 51
+let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 36 118 37
+let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 39 118 40
+let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 42 118 43
+let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 45 118 46
+let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 48 118 49
+let%span ssocketaddr'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 51 118 52
+let%span ssocketaddr'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 54 118 55
+let%span ssocketaddr'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 57 118 58
+let%span ssocketaddr'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 60 118 61
+let%span ssocketaddr'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 63 118 64
+let%span ssocketaddr'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 66 118 67
+let%span ssocketaddr'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 69 118 70
+let%span ssocketaddr'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 72 118 73
+let%span ssocketaddr'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 75 118 76
+let%span ssocketaddr'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 78 118 79
+let%span ssocketaddr'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 81 118 82
+let%span ssocketaddr'15 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 85 118 88
+let%span ssocketaddr'16 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 118 4 118 89
+let%span ssocketaddr'17 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 117 45 117 62
+let%span ssocketaddr'18 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 116 10 116 35
 let%span ssocketaddr'19 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 116 4 116 62
 
 use creusot.slice.Slice64
@@ -62,7 +62,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_socket_v6_localhost_https
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 121 0 121 62]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 117 0 117 62]
   (return (x: t_SocketAddrV6Bytes)) = (! bb0
   [ bb0 = s0
     [ s0 = any

@@ -1,15 +1,15 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 33 0 33 95 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 35 0 35 95 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 593 18 593 84
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 594 18 594 85
-let%span scollections = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 34 22 34 32
-let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 35 4 35 23
-let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 31 11 31 15
-let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 33 41 33 95
-let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 32 10 32 57
+let%span scollections = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 36 22 36 32
+let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 37 4 37 23
+let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 33 11 33 15
+let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 35 41 35 95
+let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 34 10 34 57
 let%span scollections'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/collections.rs" 19 4 19 40
-let%span svec = "/home/erik/repos/creusot/creusot-std/src/std/vec.rs" 102 18 102 36
-let%span svec'0 = "/home/erik/repos/creusot/creusot-std/src/std/vec.rs" 16 14 16 41
+let%span svec = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 102 18 102 36
+let%span svec'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/vec.rs" 16 14 16 41
 
 use seq.Seq
 use creusot.int.Int32
@@ -203,7 +203,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_vec_non_empty_invalid
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 33 0 33 95]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 35 0 35 95]
   (return (x: t_Result_VecNonEmpty_i32_ValidationError)) = (! bb0
   [ bb0 = s0
     [ s0 = new_i32 [%#scollections] (fun (_x: t_Vec_i32_Global) -> [ &v <- _x ] s1)

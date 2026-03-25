@@ -1,17 +1,16 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 30 0 30 80 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 30 0 30 59 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 486 23 486 25
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 485 18 485 41
 let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 488 15 488 19
 let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 487 18 487 22
-let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
-let%span sinvariant = "/home/erik/repos/creusot/creusot-std/src/invariant.rs" 85 8 85 18
+let%span sarray = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/array.rs" 9 20 9 51
+let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
 let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 31 17 31 57
 let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 32 18 32 29
 let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 30 36 30 38
-let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 30 63 30 80
-let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 76 4 76 61
-let%span ssocketaddr'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 81 4 81 34
+let%span ssocketaddr'2 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 76 4 76 61
+let%span ssocketaddr'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/socketaddr.rs" 81 4 81 34
 
 use creusot.slice.Slice64
 use creusot.int.UInt8
@@ -41,7 +40,7 @@ let rec from_octets (ip: Slice64.array UInt8.t) (port: UInt16.t) (return (x: t_S
   {[@stop_split] [@expl:from_octets 'ip' type invariant] [%#sextern_specs] inv_array_u8_4 ip}
   any
   [ return (result: t_SocketAddrV4Bytes) ->
-  {[@stop_split] [@expl:from_octets ensures] ([@stop_split] [@expl:from_octets result type invariant] [%#ssocketaddr'3] inv_SocketAddrV4Bytes result)
+  {[@stop_split] [@expl:from_octets ensures] ([@stop_split] [@expl:from_octets result type invariant] [%#ssocketaddr'2] inv_SocketAddrV4Bytes result)
     /\ ([@stop_split] [@expl:from_octets ensures] [%#sextern_specs'0] v4_port result = port)}
     (! return {result}) ]
 
@@ -70,7 +69,7 @@ let rec ip (self_: t_SocketAddrV4Bytes) (return (x: t_Ipv4Bytes)) =
   {[@stop_split] [@expl:ip 'self_' type invariant] [%#sextern_specs'1] inv_ref_SocketAddrV4Bytes self_}
   any
   [ return (result: t_Ipv4Bytes) ->
-  {[@stop_split] [@expl:ip result type invariant] [%#ssocketaddr'4] inv_ref_Ipv4Bytes result}
+  {[@stop_split] [@expl:ip result type invariant] [%#ssocketaddr'3] inv_ref_Ipv4Bytes result}
     (! return {result}) ]
 
 meta "compute_max_steps" 1000000
@@ -78,20 +77,16 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_socket_v4_ip_accessor
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 30 0 30 80]
-  (ip'0: Slice64.array UInt8.t) (port: UInt16.t) (return (x: t_SocketAddrV4Bytes)) =
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 30 0 30 59]
+  (ip'0: Slice64.array UInt8.t) (port: UInt16.t) (return (x: ())) =
   {[@stop_split] [@expl:verify_socket_v4_ip_accessor 'ip' type invariant] [%#ssocketaddr'1] inv_array_u8_4 ip'0}
   (! bb0
   [ bb0 = s0
     [ s0 = from_octets [%#ssocketaddr] {ip'0} {port} (fun (_x: t_SocketAddrV4Bytes) -> [ &socket <- _x ] s1)
     | s1 = ip [%#ssocketaddr'0] {socket} (fun (_x: t_Ipv4Bytes) -> [ &_ip_ref <- _x ] s2)
-    | s2 = [ &_ret <- socket ] s3
-    | s3 = return {_ret} ] ]
-  [ & _ret: t_SocketAddrV4Bytes = Any.any_l ()
+    | s2 = return {_ret} ] ]
+  [ & _ret: () = Any.any_l ()
   | & ip'0: Slice64.array UInt8.t = ip'0
   | & port: UInt16.t = port
   | & socket: t_SocketAddrV4Bytes = Any.any_l ()
-  | & _ip_ref: t_Ipv4Bytes = Any.any_l () ])
-  [ return (result: t_SocketAddrV4Bytes) ->
-  {[@stop_split] [@expl:verify_socket_v4_ip_accessor result type invariant] [%#ssocketaddr'2] inv_SocketAddrV4Bytes result}
-    (! return {result}) ]
+  | & _ip_ref: t_Ipv4Bytes = Any.any_l () ]) [ return (result: ()) -> (! return {result}) ]

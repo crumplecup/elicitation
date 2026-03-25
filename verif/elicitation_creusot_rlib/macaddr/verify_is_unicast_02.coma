@@ -1,18 +1,18 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 111 0 111 37 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 119 0 119 37 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 569 18 569 24
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 568 14 568 45
-let%span sarray = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 56 20 56 29
-let%span sarray'0 = "/home/erik/repos/creusot/creusot-std/src/std/array.rs" 9 20 9 51
-let%span sinvariant = "/home/erik/repos/creusot/creusot-std/src/invariant.rs" 85 8 85 18
-let%span smacaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 112 17 112 21
-let%span smacaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 112 23 112 27
-let%span smacaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 112 29 112 33
-let%span smacaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 112 35 112 39
-let%span smacaddr'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 112 41 112 45
-let%span smacaddr'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 112 47 112 51
-let%span smacaddr'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 112 4 112 53
-let%span smacaddr'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 110 10 110 16
+let%span sarray = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/array.rs" 56 20 56 29
+let%span sarray'0 = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/array.rs" 9 20 9 51
+let%span sinvariant = "/home/erik/repos/elicitation/vendor/creusot-std/src/invariant.rs" 85 8 85 18
+let%span smacaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 120 17 120 21
+let%span smacaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 120 23 120 27
+let%span smacaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 120 29 120 33
+let%span smacaddr'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 120 35 120 39
+let%span smacaddr'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 120 41 120 45
+let%span smacaddr'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 120 47 120 51
+let%span smacaddr'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 120 4 120 53
+let%span smacaddr'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 118 10 118 16
 
 use creusot.slice.Slice64
 use creusot.int.UInt8
@@ -56,7 +56,7 @@ meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec verify_is_unicast_02 [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 111 0 111 37]
+let rec verify_is_unicast_02 [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/macaddr.rs" 119 0 119 37]
   (return (x: bool)) = (! bb0
   [ bb0 = s0
     [ s0 = bb0'0

@@ -1,10 +1,10 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 63 0 63 92 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 65 0 65 92 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 601 18 601 149
-let%span scollections = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 64 4 64 25
-let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 61 11 61 15
-let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 63 39 63 92
-let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 62 10 62 57
+let%span scollections = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 66 4 66 25
+let%span scollections'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 63 11 63 15
+let%span scollections'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 65 39 65 92
+let%span scollections'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 64 10 64 57
 let%span scollections'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/collections.rs" 158 4 158 38
 
 use creusot.int.Int32
@@ -185,7 +185,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_option_some_invalid
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 63 0 63 92]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/collections.rs" 65 0 65 92]
   (return (x: t_Result_OptionSome_i32_ValidationError)) = (! bb0
   [ bb0 = s0
     [ s0 = [ &_3 <- None ] s1
