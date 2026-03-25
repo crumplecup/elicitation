@@ -511,15 +511,21 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
             }
             #[cfg(feature = "proofs")]
             fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-                elicitation::proc_macro2::TokenStream::new()
+                elicitation::verification::proof_helpers::kani_single_variant_enum(
+                    stringify!(#style_name)
+                )
             }
             #[cfg(feature = "proofs")]
             fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-                elicitation::proc_macro2::TokenStream::new()
+                elicitation::verification::proof_helpers::verus_single_variant_enum(
+                    stringify!(#style_name)
+                )
             }
             #[cfg(feature = "proofs")]
             fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-                elicitation::proc_macro2::TokenStream::new()
+                elicitation::verification::proof_helpers::creusot_single_variant_enum(
+                    stringify!(#style_name)
+                )
             }
         }
     }

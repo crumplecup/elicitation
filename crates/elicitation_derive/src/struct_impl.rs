@@ -358,13 +358,19 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
     #[cfg(feature = "proofs")]
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::kani_single_variant_enum(
+                stringify!(#style_name)
+            )
         }
         fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::verus_single_variant_enum(
+                stringify!(#style_name)
+            )
         }
         fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::creusot_single_variant_enum(
+                stringify!(#style_name)
+            )
         }
     };
     #[cfg(not(feature = "proofs"))]
@@ -529,15 +535,15 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
     #[cfg(feature = "proofs")]
     let proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::kani_unit_struct(stringify!(#name))
         }
 
         fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::verus_unit_struct(stringify!(#name))
         }
 
         fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::creusot_unit_struct(stringify!(#name))
         }
     };
     #[cfg(not(feature = "proofs"))]
@@ -545,13 +551,19 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
     #[cfg(feature = "proofs")]
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::kani_single_variant_enum(
+                stringify!(#style_name)
+            )
         }
         fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::verus_single_variant_enum(
+                stringify!(#style_name)
+            )
         }
         fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::creusot_single_variant_enum(
+                stringify!(#style_name)
+            )
         }
     };
     #[cfg(not(feature = "proofs"))]
@@ -920,13 +932,19 @@ fn generate_elicit_impl_simple(
     #[cfg(feature = "proofs")]
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::kani_single_variant_enum(
+                stringify!(#style_name)
+            )
         }
         fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::verus_single_variant_enum(
+                stringify!(#style_name)
+            )
         }
         fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::creusot_single_variant_enum(
+                stringify!(#style_name)
+            )
         }
     };
     #[cfg(not(feature = "proofs"))]
@@ -1197,13 +1215,19 @@ fn generate_elicit_impl_styled(
     #[cfg(feature = "proofs")]
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::kani_single_variant_enum(
+                stringify!(#style_enum_name)
+            )
         }
         fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::verus_single_variant_enum(
+                stringify!(#style_enum_name)
+            )
         }
         fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-            elicitation::proc_macro2::TokenStream::new()
+            elicitation::verification::proof_helpers::creusot_single_variant_enum(
+                stringify!(#style_enum_name)
+            )
         }
     };
     #[cfg(not(feature = "proofs"))]
