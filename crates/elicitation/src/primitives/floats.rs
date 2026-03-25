@@ -37,7 +37,8 @@ macro_rules! impl_float_elicit_via_wrapper {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        use crate::verification::types::$wrapper;
+        <$wrapper as crate::Elicitation>::kani_proof()
     }
 
     #[cfg(feature = "proofs")]
@@ -98,7 +99,8 @@ impl Elicitation for f64 {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        use crate::verification::types::F64Default;
+        <F64Default as crate::Elicitation>::kani_proof()
     }
 
     #[cfg(feature = "proofs")]

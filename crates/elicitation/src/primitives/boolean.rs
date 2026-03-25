@@ -34,7 +34,8 @@ impl Elicitation for bool {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        use crate::verification::types::BoolDefault;
+        <BoolDefault as crate::Elicitation>::kani_proof()
     }
 
     #[cfg(feature = "proofs")]

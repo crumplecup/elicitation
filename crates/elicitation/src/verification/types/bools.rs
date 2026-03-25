@@ -291,7 +291,7 @@ impl Elicitation for BoolDefault {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::kani_bool_default()
     }
 
     #[cfg(feature = "proofs")]

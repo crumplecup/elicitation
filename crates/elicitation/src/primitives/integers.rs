@@ -45,7 +45,8 @@ macro_rules! impl_integer_elicit_via_wrapper {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        use crate::verification::types::$wrapper;
+        <$wrapper as crate::Elicitation>::kani_proof()
     }
 
     #[cfg(feature = "proofs")]

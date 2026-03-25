@@ -782,6 +782,73 @@ pub fn kani_set_non_empty(set_type: &str) -> TokenStream {
     }
 }
 
+// ============================================================================
+// Primitive Default Wrapper Proof Helpers
+// ============================================================================
+
+/// Generate a Kani proof for an integer Default wrapper (unconstrained, identity).
+///
+/// Proves that `$wrapper::new(value)` preserves the value unchanged through
+/// both `get()` and `into_inner()`. No constraint is enforced — any value in the
+/// primitive's range is accepted.
+pub fn kani_integer_default(wrapper_name: &str, seed_type: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!("verify_{}", wrapper_name.to_lowercase()),
+        Span::call_site(),
+    );
+    let wrapper_ident: TokenStream = wrapper_name.parse().expect("valid ident");
+    let seed_tok: TokenStream = seed_type.parse().expect("valid seed type");
+    quote! {
+        #[kani::proof]
+        fn #fn_ident() {
+            let value: #seed_tok = kani::any();
+            let wrapper = #wrapper_ident::new(value);
+            assert_eq!(wrapper.get(), value, concat!(stringify!(#wrapper_ident), " preserves value via get()"));
+            assert_eq!(wrapper.into_inner(), value, concat!(stringify!(#wrapper_ident), " preserves value via into_inner()"));
+        }
+    }
+}
+
+/// Generate a Kani proof for `BoolDefault` (unconstrained, identity wrapper).
+///
+/// Proves that any `bool` round-trips through `BoolDefault` unchanged.
+pub fn kani_bool_default() -> TokenStream {
+    quote! {
+        #[kani::proof]
+        fn verify_booldefault() {
+            let value: bool = kani::any();
+            let wrapper = BoolDefault::new(value);
+            assert_eq!(wrapper.get(), value, "BoolDefault preserves value via get()");
+            assert_eq!(wrapper.into_inner(), value, "BoolDefault preserves value via into_inner()");
+        }
+    }
+}
+
+/// Generate a Kani proof for a float Default wrapper (unconstrained, identity).
+///
+/// Proves that `$wrapper::new(value)` preserves the float value unchanged.
+/// Note: NaN comparisons always return false in IEEE 754; the proof uses
+/// `kani::assume(!value.is_nan())` to stay within meaningful equality.
+pub fn kani_float_default(wrapper_name: &str, seed_type: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!("verify_{}", wrapper_name.to_lowercase()),
+        Span::call_site(),
+    );
+    let wrapper_ident: TokenStream = wrapper_name.parse().expect("valid ident");
+    let seed_tok: TokenStream = seed_type.parse().expect("valid seed type");
+    quote! {
+        #[kani::proof]
+        fn #fn_ident() {
+            let value: #seed_tok = kani::any();
+            // NaN != NaN under IEEE 754; restrict to finite values for equality checks
+            kani::assume(!value.is_nan());
+            let wrapper = #wrapper_ident::new(value);
+            assert_eq!(wrapper.get(), value, concat!(stringify!(#wrapper_ident), " preserves value via get()"));
+            assert_eq!(wrapper.into_inner(), value, concat!(stringify!(#wrapper_ident), " preserves value via into_inner()"));
+        }
+    }
+}
+
 /// Generate a Kani proof for UuidNonNil wrapper logic.
 #[cfg(all(feature = "proofs", feature = "uuid"))]
 pub fn kani_uuid_non_nil() -> TokenStream {
