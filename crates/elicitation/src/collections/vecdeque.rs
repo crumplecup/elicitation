@@ -23,6 +23,21 @@ impl Elicitation for VecDequeStyle {
     async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl<T> Prompt for VecDeque<T>
@@ -65,5 +80,20 @@ where
         }
 
         Ok(deque)
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }

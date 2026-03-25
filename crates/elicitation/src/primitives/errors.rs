@@ -199,6 +199,21 @@ impl Elicitation for IoErrorGenerationMode {
 
         Ok(mode)
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 /// Generator for creating std::io::Error instances for testing.
@@ -251,6 +266,21 @@ impl Elicitation for io::Error {
         // Create generator and generate error
         let generator = IoErrorGenerator::new(mode);
         Ok(generator.generate())
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 
@@ -344,6 +374,21 @@ mod json_error {
                 ))
             })
         }
+
+        #[cfg(feature = "proofs")]
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+
+        #[cfg(feature = "proofs")]
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+
+        #[cfg(feature = "proofs")]
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
     }
 
     /// Generator for creating serde_json::Error instances for testing.
@@ -407,6 +452,21 @@ mod json_error {
             // Create generator and generate error
             let generator = JsonErrorGenerator::new(mode);
             Ok(generator.generate())
+        }
+
+        #[cfg(feature = "proofs")]
+        fn kani_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+
+        #[cfg(feature = "proofs")]
+        fn verus_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
+        }
+
+        #[cfg(feature = "proofs")]
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            proc_macro2::TokenStream::new()
         }
     }
 }

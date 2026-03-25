@@ -173,6 +173,21 @@ impl Elicitation for Validator {
         // No need to ask the agent for anything.
         Ok(Validator)
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl Prompt for Formatter {
@@ -188,6 +203,21 @@ impl Elicitation for Formatter {
         tracing::debug!("Eliciting Formatter (unit struct)");
         Ok(Formatter)
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl Prompt for Parser {
@@ -202,6 +232,21 @@ impl Elicitation for Parser {
     async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting Parser (unit struct)");
         Ok(Parser)
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 

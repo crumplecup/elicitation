@@ -59,6 +59,21 @@ impl Elicitation for StringStyle {
             )))
         })
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl Prompt for String {
@@ -84,5 +99,20 @@ impl Elicitation for String {
 
         // Elicit directly with custom prompt
         communicator.send_prompt(prompt).await
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }

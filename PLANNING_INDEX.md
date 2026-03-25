@@ -649,6 +649,49 @@ backends). Works in tmux/screen, over SSH, no X11 needed.
 
 ---
 
+### Ledger Workflow Test (End-to-End Validation)
+
+**Document:** [LEDGER_WORKFLOW_TEST_PLAN.md](LEDGER_WORKFLOW_TEST_PLAN.md)
+
+**Status:** 🔲 Planning (Phase 1 Ready to Implement)
+
+**Description:** End-to-end validation that agent workflow composition → emit_binary → compiled
+executable works correctly. Uses a double-entry ledger as the test domain because it requires
+transactions, demonstrates contract composition, and has meaningful error cases (unlike a simple
+todo app).
+
+**Why a Ledger:**
+- Transactions mandatory (debit + credit must balance atomically)
+- Contract composition: `And<DbConnected, And<TransactionOpen, TransactionCommitted>>`
+- Meaningful errors (insufficient funds, negative amounts, concurrent races)
+- Complex queries (balance = SUM aggregation)
+- Relatable domain (everyone understands money)
+
+**Test Architecture:**
+1. Agent composes workflow (13 tools: sqlx + tokio_net)
+2. emit_binary generates code (BinaryScaffold → main.rs + Cargo.toml)
+3. cargo build --release (compiles generated code)
+4. Run binary + validate with reqwest (HTTP server responds correctly)
+
+**Phases:**
+- Phase 1: Smoke test (hardcoded transfer, manual HTTP strings, SQLite in-memory)
+- Phase 2: Balance query endpoint (SQL aggregation, read path)
+- Phase 3: Dynamic transfers (JSON parsing, parameterized queries)
+- Phase 4: Contract types (ValidatedTransfer, amount > 0, sufficient funds)
+- Phase 5: Typestate state machine (Transfer<Pending> → <Validated> → <Committed>)
+- Phase 6: Concurrent transfers (proper transaction isolation, race conditions)
+
+**Success Criteria:**
+- ✅ Generated code compiles without errors
+- ✅ Binary runs and accepts TCP connections
+- ✅ Transactions commit successfully
+- ✅ HTTP responses validated via reqwest
+- ✅ Test passes in CI
+
+**Location:** `crates/elicit_server/tests/ledger_*.rs`
+
+---
+
 ### Macro-Driven MCP Tool System
 
 **Document:** [MACRO_TOOL_GEN_PLAN.md](MACRO_TOOL_GEN_PLAN.md)

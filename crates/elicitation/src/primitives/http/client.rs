@@ -25,6 +25,21 @@ impl Elicitation for reqwest::Client {
         tracing::debug!("Constructing reqwest::Client");
         Ok(reqwest::Client::new())
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl ElicitIntrospect for reqwest::Client {

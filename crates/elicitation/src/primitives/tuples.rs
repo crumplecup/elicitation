@@ -31,7 +31,22 @@ macro_rules! impl_tuple_elicit {
                 async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
                     Ok(Self::Default)
                 }
-            }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
         }
 
         impl<$($T),+> Prompt for ($($T,)+)
@@ -68,7 +83,22 @@ macro_rules! impl_tuple_elicit {
                 tracing::debug!("Tuple complete");
                 Ok(($($T,)+))
             }
-        }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
     };
 }
 
@@ -99,6 +129,21 @@ impl Elicitation for UnitStyle {
     async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl Prompt for () {
@@ -114,6 +159,21 @@ impl Elicitation for () {
     async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting unit type ()");
         Ok(())
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 

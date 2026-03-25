@@ -355,6 +355,20 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
     };
     #[cfg(not(feature = "proofs"))]
     let proof_methods = quote! {};
+    #[cfg(feature = "proofs")]
+    let style_proof_methods = quote! {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+    };
+    #[cfg(not(feature = "proofs"))]
+    let style_proof_methods = quote! {};
 
     let expanded = quote! {
         impl elicitation::Prompt for #name #ty_generics #where_clause {
@@ -388,6 +402,7 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
             ) -> elicitation::ElicitResult<Self> {
                 Ok(Self::Default)
             }
+            #style_proof_methods
         }
 
         #[allow(unexpected_cfgs)]
@@ -527,6 +542,20 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
     };
     #[cfg(not(feature = "proofs"))]
     let proof_methods = quote! {};
+    #[cfg(feature = "proofs")]
+    let style_proof_methods = quote! {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+    };
+    #[cfg(not(feature = "proofs"))]
+    let style_proof_methods = quote! {};
 
     let expanded = quote! {
         impl elicitation::Prompt for #name #ty_generics #where_clause {
@@ -560,6 +589,7 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
             ) -> elicitation::ElicitResult<Self> {
                 Ok(Self::Default)
             }
+            #style_proof_methods
         }
 
         #[allow(unexpected_cfgs)]
@@ -887,6 +917,20 @@ fn generate_elicit_impl_simple(
     };
     #[cfg(not(feature = "proofs"))]
     let proof_methods = quote! {};
+    #[cfg(feature = "proofs")]
+    let style_proof_methods = quote! {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+    };
+    #[cfg(not(feature = "proofs"))]
+    let style_proof_methods = quote! {};
 
     quote! {
         /// Style enum for this type (default-only).
@@ -909,6 +953,7 @@ fn generate_elicit_impl_simple(
             async fn elicit<C: elicitation::ElicitCommunicator>(_communicator: &C) -> elicitation::ElicitResult<Self> {
                 Ok(Self::Default)
             }
+            #style_proof_methods
         }
 
         #[allow(unexpected_cfgs)]
@@ -1149,6 +1194,20 @@ fn generate_elicit_impl_styled(
     };
     #[cfg(not(feature = "proofs"))]
     let proof_methods = quote! {};
+    #[cfg(feature = "proofs")]
+    let style_proof_methods = quote! {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::proc_macro2::TokenStream::new()
+        }
+    };
+    #[cfg(not(feature = "proofs"))]
+    let style_proof_methods = quote! {};
 
     // Generate enum with first variant as default
     let default_variant = &style_variants[0];
@@ -1232,6 +1291,7 @@ fn generate_elicit_impl_styled(
                     elicitation::ElicitError::new(elicitation::ElicitErrorKind::InvalidSelection(label))
                 })
             }
+            #style_proof_methods
         }
 
         #[allow(unexpected_cfgs)]

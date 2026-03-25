@@ -23,6 +23,21 @@ impl Elicitation for reqwest::StatusCode {
         let wrapper = StatusCodeValid::elicit(communicator).await?;
         Ok(wrapper.into_inner())
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl ElicitIntrospect for reqwest::StatusCode {
@@ -81,6 +96,21 @@ impl Elicitation for StatusCodeValid {
 
         StatusCodeValid::new(code)
             .map_err(|e| ElicitError::new(ElicitErrorKind::ParseError(e.to_string())))
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 

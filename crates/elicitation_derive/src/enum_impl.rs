@@ -509,6 +509,18 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
             async fn elicit<C: elicitation::ElicitCommunicator>(_communicator: &C) -> elicitation::ElicitResult<Self> {
                 Ok(Self::Default)
             }
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::proc_macro2::TokenStream::new()
+            }
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::proc_macro2::TokenStream::new()
+            }
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::proc_macro2::TokenStream::new()
+            }
         }
     }
 }
