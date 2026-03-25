@@ -35,7 +35,7 @@
 //! Registered under the `"jiff_workflow"` namespace.
 
 use elicitation::contracts::{And, Established};
-use elicitation::{ElicitPlugin, Prop, elicit_tool};
+use elicitation::{ElicitPlugin, Prop, VerifiedWorkflow, elicit_tool};
 use jiff::Timestamp;
 use rmcp::{
     ErrorData,
@@ -50,18 +50,26 @@ use tracing::instrument;
 /// Proposition: the input string is a valid jiff `Timestamp`.
 #[derive(Prop)]
 pub struct TimestampParsed;
+impl VerifiedWorkflow for TimestampParsed {}
+
 
 /// Proposition: the timestamp is strictly in the future (after `Timestamp::now()`).
 #[derive(Prop)]
 pub struct TimestampFuture;
+impl VerifiedWorkflow for TimestampFuture {}
+
 
 /// Proposition: the input string is a valid jiff `Zoned` datetime.
 #[derive(Prop)]
 pub struct ZonedParsed;
+impl VerifiedWorkflow for ZonedParsed {}
+
 
 /// Proposition: a timezone conversion was successfully applied to a `Zoned` value.
 #[derive(Prop)]
 pub struct TimezoneConverted;
+impl VerifiedWorkflow for TimezoneConverted {}
+
 
 /// Composite: parsed AND in the future.
 pub type FutureTimestampProof = And<TimestampParsed, TimestampFuture>;

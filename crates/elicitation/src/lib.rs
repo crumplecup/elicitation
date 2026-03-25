@@ -112,6 +112,7 @@ mod proxy;
 pub mod style;
 pub mod tool;
 mod tool_registry;
+mod verified_workflow;
 
 // Router macro module (declarative macro)
 #[macro_use]
@@ -202,6 +203,9 @@ pub use contracts::{
 
 // Completion marker — enforces all elicitation obligations at compile time
 pub use complete::ElicitComplete;
+
+// Workflow verification marker — enforces all proposition obligations
+pub use verified_workflow::VerifiedWorkflow;
 
 // Tools (contract-based MCP tools)
 pub use tool::{Tool, True, both_tools, then};

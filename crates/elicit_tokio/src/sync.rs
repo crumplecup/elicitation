@@ -25,7 +25,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use elicitation::contracts::{Established, Prop};
-use elicitation::{Elicit, PluginContext};
+use elicitation::{Elicit, PluginContext, VerifiedWorkflow};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -76,6 +76,8 @@ impl Prop for PermitAcquired {
         }
     }
 }
+impl VerifiedWorkflow for PermitAcquired {}
+
 
 /// Proposition: a `notified()` await returned — a notification was received.
 #[derive(Elicit)]
@@ -113,6 +115,8 @@ impl Prop for NotificationReceived {
         }
     }
 }
+impl VerifiedWorkflow for NotificationReceived {}
+
 
 /// Proposition: all parties have reached the barrier and it has released.
 #[derive(Elicit)]
@@ -150,6 +154,8 @@ impl Prop for BarrierReached {
         }
     }
 }
+impl VerifiedWorkflow for BarrierReached {}
+
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

@@ -30,7 +30,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use elicitation::contracts::{Established, Prop};
-use elicitation::{Elicit, PluginContext};
+use elicitation::{Elicit, PluginContext, VerifiedWorkflow};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -80,6 +80,8 @@ impl Prop for DuplexCreated {
         }
     }
 }
+impl VerifiedWorkflow for DuplexCreated {}
+
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

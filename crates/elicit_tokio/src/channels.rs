@@ -76,7 +76,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use elicitation::contracts::{Established, Prop};
-use elicitation::{Elicit, PluginContext};
+use elicitation::{Elicit, PluginContext, VerifiedWorkflow};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -128,6 +128,8 @@ impl Prop for MessageSent {
         }
     }
 }
+impl VerifiedWorkflow for MessageSent {}
+
 
 /// Proposition: a message was received from a channel.
 #[derive(Elicit)]
@@ -165,6 +167,8 @@ impl Prop for MessageReceived {
         }
     }
 }
+impl VerifiedWorkflow for MessageReceived {}
+
 
 /// Proposition: a channel or end was closed.
 #[derive(Elicit)]
@@ -202,6 +206,8 @@ impl Prop for ChannelClosed {
         }
     }
 }
+impl VerifiedWorkflow for ChannelClosed {}
+
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

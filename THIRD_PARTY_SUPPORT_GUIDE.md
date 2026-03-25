@@ -1457,6 +1457,106 @@ git commit -m "feat(foo-types): register ElicitComplete and add proof validation
 
 ---
 
+## Phase 8 — VerifiedWorkflow Registration and Proof Validation
+
+This is the **final phase for workflow proposition types** — the typestate markers
+used in `Established<P>` contracts. It mirrors Phase 7 for elicitation core types.
+
+### When to use this phase
+
+Apply Phase 8 whenever you add proposition (`Prop`) types to a workflow crate
+(e.g. `elicit_foo/src/workflow.rs`). If your crate has no workflow plugin, skip
+this phase entirely.
+
+### 8.1 Define the proposition
+
+For a zero-cost typestate marker, use `#[derive(Prop)]`:
+
+```rust
+/// Proposition: the input was successfully validated.
+#[derive(Prop)]
+pub struct FooValidated;
+```
+
+For a proposition with meaningful semantic content, write a manual `impl Prop`:
+
+```rust
+impl Prop for FooValidated {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        quote::quote! {
+            #[kani::proof]
+            fn verify_foo_validated_axiom() { /* ... */ }
+        }
+    }
+    // verus_proof and creusot_proof similarly
+}
+```
+
+Use `#[derive(Prop)]` for simple marker types — it generates uniquely-named trivial
+harnesses for all three verifiers automatically.
+
+### 8.2 Register `VerifiedWorkflow`
+
+Add the impl immediately after the `Prop` impl:
+
+```rust
+impl VerifiedWorkflow for FooValidated {}
+```
+
+The compiler accepts this only when `FooValidated: Prop` with all three proof
+methods present. If the `#[derive(Prop)]` or manual `impl Prop` is missing or
+incomplete, the compiler will reject with a precise error.
+
+### 8.3 Add to `workflow_verified_test.rs`
+
+Create or open `crates/elicit_foo/tests/workflow_verified_test.rs`:
+
+```rust
+#![cfg(feature = "proofs")]
+
+use elicit_foo::FooValidated;
+use elicitation::VerifiedWorkflow;
+
+#[track_caller]
+fn assert_verified<T: VerifiedWorkflow>(label: &str) {
+    assert!(T::validate_proofs_non_empty(), "{label}: proofs are empty");
+}
+
+#[test]
+fn foo_props_non_empty() {
+    assert_verified::<FooValidated>("FooValidated");
+}
+```
+
+### 8.4 Add composition tests (composite `And<P, Q>` only)
+
+If your workflow exposes a production composite type (e.g. `And<UrlParsed, HttpsRequired>`),
+add containment assertions to the same test file:
+
+```rust
+#[test]
+fn foo_and_contains_constituents() {
+    use elicitation::contracts::And;
+    type Composite = And<FooValidated, FooAuthorized>;
+    assert!(Composite::kani_proof_contains::<FooValidated>());
+    assert!(Composite::kani_proof_contains::<FooAuthorized>());
+}
+```
+
+Composition tests are only needed for **manual** `impl Prop` blocks or explicitly
+documented composite types. `And<P, Q>` propagates mechanically — the blanket impl
+in `VerifiedWorkflow` guarantees delegation without additional test coverage.
+
+### 8.5 Run and commit
+
+```bash
+just test-package elicit_foo --features proofs
+git commit -m "feat(elicit-foo): register VerifiedWorkflow and add proof validation tests"
+```
+
+---
+
 ## Checklist Summary
 
 Use this to track progress when adding a new crate:
@@ -1516,6 +1616,12 @@ Feature flag: foo-types
 [ ] proof_non_empty_test.rs: assert_proofs_non_empty::<Foo> for each new type + wrappers
 [ ] proof_composition_test.rs: assert_kani_contains for aggregate types with manual impls
 [ ] just test-package elicitation passes clean
+
+(If the crate has a workflow plugin with Prop types:)
+[ ] #[derive(Prop)] or manual impl Prop for each proposition type
+[ ] impl VerifiedWorkflow for each proposition type (compiler enforces Prop completeness)
+[ ] tests/workflow_verified_test.rs: assert_verified for each Prop + And<P,Q> containment
+[ ] just test-package elicit_foo --features proofs passes clean
 
 [ ] git commit -m "feat(foo-types): add Elicitation + verification support for foo crate"
 [ ] git push

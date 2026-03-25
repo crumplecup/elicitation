@@ -9,7 +9,7 @@
 
 use elicitation::contracts::{Established, Prop};
 use elicitation::emit_code::EmitCode;
-use elicitation::{Elicit, ElicitPlugin, elicit_tool};
+use elicitation::{Elicit, ElicitPlugin, VerifiedWorkflow, elicit_tool};
 use rmcp::ErrorData;
 use rmcp::model::{CallToolResult, Content};
 use tracing::instrument;
@@ -35,8 +35,7 @@ pub struct SqlxFragPlugin;
 #[derive(Elicit)]
 pub struct QueryFragmentEmitted;
 impl Prop for QueryFragmentEmitted {
-    #[cfg(feature = "proofs")]
-    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
             fn verify_query_fragment_emitted_axiom() {
@@ -47,8 +46,7 @@ impl Prop for QueryFragmentEmitted {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
             pub fn verify_query_fragment_emitted(params_valid: bool) -> (result: bool)
@@ -60,8 +58,7 @@ impl Prop for QueryFragmentEmitted {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
             #[ensures(result == true)]
@@ -72,6 +69,8 @@ impl Prop for QueryFragmentEmitted {
         }
     }
 }
+impl VerifiedWorkflow for QueryFragmentEmitted {}
+
 
 /// Proposition: a `sqlx::query_as!(Type, sql, params…)` source fragment was emitted.
 ///
@@ -79,8 +78,7 @@ impl Prop for QueryFragmentEmitted {
 #[derive(Elicit)]
 pub struct QueryAsFragmentEmitted;
 impl Prop for QueryAsFragmentEmitted {
-    #[cfg(feature = "proofs")]
-    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
             fn verify_query_as_fragment_emitted_axiom() {
@@ -91,8 +89,7 @@ impl Prop for QueryAsFragmentEmitted {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
             pub fn verify_query_as_fragment_emitted(params_valid: bool) -> (result: bool)
@@ -104,8 +101,7 @@ impl Prop for QueryAsFragmentEmitted {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
             #[ensures(result == true)]
@@ -116,6 +112,8 @@ impl Prop for QueryAsFragmentEmitted {
         }
     }
 }
+impl VerifiedWorkflow for QueryAsFragmentEmitted {}
+
 
 /// Proposition: a `sqlx::query_scalar!(sql, params…)` source fragment was emitted.
 ///
@@ -123,8 +121,7 @@ impl Prop for QueryAsFragmentEmitted {
 #[derive(Elicit)]
 pub struct QueryScalarFragmentEmitted;
 impl Prop for QueryScalarFragmentEmitted {
-    #[cfg(feature = "proofs")]
-    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
             fn verify_query_scalar_fragment_emitted_axiom() {
@@ -135,8 +132,7 @@ impl Prop for QueryScalarFragmentEmitted {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
             pub fn verify_query_scalar_fragment_emitted(params_valid: bool) -> (result: bool)
@@ -148,8 +144,7 @@ impl Prop for QueryScalarFragmentEmitted {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
             #[ensures(result == true)]
@@ -160,6 +155,8 @@ impl Prop for QueryScalarFragmentEmitted {
         }
     }
 }
+impl VerifiedWorkflow for QueryScalarFragmentEmitted {}
+
 
 /// Proposition: a `sqlx::migrate!(path).run(&pool).await?` source fragment was emitted.
 ///
@@ -167,8 +164,7 @@ impl Prop for QueryScalarFragmentEmitted {
 #[derive(Elicit)]
 pub struct MigrateFragmentEmitted;
 impl Prop for MigrateFragmentEmitted {
-    #[cfg(feature = "proofs")]
-    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
             fn verify_migrate_fragment_emitted_axiom() {
@@ -179,8 +175,7 @@ impl Prop for MigrateFragmentEmitted {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
             pub fn verify_migrate_fragment_emitted(params_valid: bool) -> (result: bool)
@@ -192,8 +187,7 @@ impl Prop for MigrateFragmentEmitted {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
             #[ensures(result == true)]
@@ -204,6 +198,8 @@ impl Prop for MigrateFragmentEmitted {
         }
     }
 }
+impl VerifiedWorkflow for MigrateFragmentEmitted {}
+
 
 // ── query! ────────────────────────────────────────────────────────────────────
 

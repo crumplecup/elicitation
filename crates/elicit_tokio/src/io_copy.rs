@@ -42,7 +42,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use elicitation::Elicit;
+use elicitation::{Elicit, VerifiedWorkflow};
 use elicitation::contracts::{Established, Prop};
 use futures::future::BoxFuture;
 use rmcp::{
@@ -96,6 +96,8 @@ impl Prop for BytesCopied {
         }
     }
 }
+impl VerifiedWorkflow for BytesCopied {}
+
 
 // ── Param / result types ──────────────────────────────────────────────────────
 

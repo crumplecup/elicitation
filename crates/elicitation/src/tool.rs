@@ -224,7 +224,7 @@
 //! - [Vision document](../../elicitation_composition_primitives.md): Design philosophy
 
 use crate::{
-    ElicitResult, Elicitation,
+    ElicitResult, Elicitation, VerifiedWorkflow,
     contracts::{Established, Prop},
 };
 #[cfg(feature = "proofs")]
@@ -332,6 +332,8 @@ impl Prop for True {
         crate::verification::proof_helpers::creusot_trivial_prop("true_prop")
     }
 }
+impl VerifiedWorkflow for True {}
+
 
 impl True {
     /// Axiom: truth is always established.

@@ -28,7 +28,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use elicitation::contracts::{Established, Prop};
-use elicitation::{Elicit, PluginContext};
+use elicitation::{Elicit, PluginContext, VerifiedWorkflow};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -80,6 +80,8 @@ impl Prop for ListenerBound {
         }
     }
 }
+impl VerifiedWorkflow for ListenerBound {}
+
 
 /// Proposition: an incoming TCP connection was accepted by a listener.
 #[derive(Elicit)]
@@ -117,6 +119,8 @@ impl Prop for ConnectionAccepted {
         }
     }
 }
+impl VerifiedWorkflow for ConnectionAccepted {}
+
 
 /// Proposition: a TCP stream was successfully connected to a remote address.
 #[derive(Elicit)]
@@ -154,6 +158,8 @@ impl Prop for StreamConnected {
         }
     }
 }
+impl VerifiedWorkflow for StreamConnected {}
+
 
 /// Proposition: at least one byte was received from a stream or socket.
 #[derive(Elicit)]
@@ -191,6 +197,8 @@ impl Prop for DataReceived {
         }
     }
 }
+impl VerifiedWorkflow for DataReceived {}
+
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

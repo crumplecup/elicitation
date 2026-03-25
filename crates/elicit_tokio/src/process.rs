@@ -22,7 +22,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use elicitation::contracts::{Established, Prop};
-use elicitation::{Elicit, PluginContext};
+use elicitation::{Elicit, PluginContext, VerifiedWorkflow};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -74,6 +74,8 @@ impl Prop for ProcessSpawned {
         }
     }
 }
+impl VerifiedWorkflow for ProcessSpawned {}
+
 
 /// Proposition: `child.wait()` completed — the child process has exited.
 #[derive(Elicit)]
@@ -111,6 +113,8 @@ impl Prop for ProcessExited {
         }
     }
 }
+impl VerifiedWorkflow for ProcessExited {}
+
 
 /// Proposition: bytes were written to a child process's stdin pipe.
 #[derive(Elicit)]
@@ -148,6 +152,8 @@ impl Prop for StdinWritten {
         }
     }
 }
+impl VerifiedWorkflow for StdinWritten {}
+
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

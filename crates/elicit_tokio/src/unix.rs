@@ -45,7 +45,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use elicitation::contracts::{Established, Prop};
-use elicitation::{Elicit, PluginContext};
+use elicitation::{Elicit, PluginContext, VerifiedWorkflow};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -99,6 +99,8 @@ impl Prop for UnixListenerBound {
         }
     }
 }
+impl VerifiedWorkflow for UnixListenerBound {}
+
 
 /// Proposition: a Unix domain socket listener accepted an incoming connection.
 #[derive(Elicit)]
@@ -138,6 +140,8 @@ impl Prop for UnixConnectionAccepted {
         }
     }
 }
+impl VerifiedWorkflow for UnixConnectionAccepted {}
+
 
 /// Proposition: a Unix domain stream socket connected to a listener.
 #[derive(Elicit)]
@@ -177,6 +181,8 @@ impl Prop for UnixStreamConnected {
         }
     }
 }
+impl VerifiedWorkflow for UnixStreamConnected {}
+
 
 /// Proposition: data was received on a Unix domain socket (stream or datagram).
 #[derive(Elicit)]
@@ -216,6 +222,8 @@ impl Prop for UnixDataReceived {
         }
     }
 }
+impl VerifiedWorkflow for UnixDataReceived {}
+
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

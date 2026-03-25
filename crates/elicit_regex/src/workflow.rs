@@ -36,7 +36,7 @@
 //! Registered under the `"regex_workflow"` namespace.
 
 use elicitation::contracts::{And, Established};
-use elicitation::{ElicitPlugin, Prop, elicit_tool};
+use elicitation::{ElicitPlugin, Prop, VerifiedWorkflow, elicit_tool};
 use regex::Regex as InnerRegex;
 use rmcp::{
     ErrorData,
@@ -51,10 +51,14 @@ use tracing::instrument;
 /// Proposition: the pattern string compiled into a valid `Regex`.
 #[derive(Prop)]
 pub struct RegexValid;
+impl VerifiedWorkflow for RegexValid {}
+
 
 /// Proposition: the regex found at least one match in the target text.
 #[derive(Prop)]
 pub struct PatternMatched;
+impl VerifiedWorkflow for PatternMatched {}
+
 
 /// Composite: the pattern is valid AND it matched.
 pub type MatchProof = And<RegexValid, PatternMatched>;

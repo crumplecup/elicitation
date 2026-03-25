@@ -17,7 +17,7 @@
 //! | `spawn_blocking` | `body` | error at runtime | emit-only |
 //! | `block_in_place` | `body` | error at runtime | emit-only |
 
-use elicitation::Elicit;
+use elicitation::{Elicit, VerifiedWorkflow};
 use elicitation::contracts::{Established, Prop};
 use elicitation_derive::ElicitPlugin;
 use rmcp::{ErrorData, model::CallToolResult};
@@ -61,6 +61,8 @@ impl Prop for TaskYielded {
         }
     }
 }
+impl VerifiedWorkflow for TaskYielded {}
+
 
 /// Parameters for `tokio_task__yield_now` (none required).
 #[derive(Debug, Deserialize, JsonSchema)]

@@ -21,7 +21,7 @@
 use std::sync::Arc;
 
 use elicitation::contracts::{Established, Prop};
-use elicitation::{Elicit, PluginContext};
+use elicitation::{Elicit, PluginContext, VerifiedWorkflow};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -75,6 +75,8 @@ impl Prop for CtrlCReceived {
         }
     }
 }
+impl VerifiedWorkflow for CtrlCReceived {}
+
 
 /// Proposition: a Unix signal handler was registered successfully.
 #[cfg(unix)]
@@ -114,6 +116,8 @@ impl Prop for SignalHandlerRegistered {
         }
     }
 }
+impl VerifiedWorkflow for SignalHandlerRegistered {}
+
 
 /// Proposition: a registered Unix signal stream received a signal.
 #[cfg(unix)]
@@ -153,6 +157,8 @@ impl Prop for SignalReceived {
         }
     }
 }
+impl VerifiedWorkflow for SignalReceived {}
+
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

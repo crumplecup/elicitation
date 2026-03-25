@@ -55,7 +55,7 @@ use std::sync::Arc;
 use elicitation::PluginContext;
 use elicitation::contracts::{And, Established, Prop, both};
 use elicitation::emit_code::CustomEmit;
-use elicitation::{ColumnEntry, ColumnValue, Elicit, RowData, elicit_tool};
+use elicitation::{ColumnEntry, ColumnValue, Elicit, RowData, VerifiedWorkflow, elicit_tool};
 use futures::future::BoxFuture;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -79,8 +79,7 @@ use crate::QueryResultData;
 #[derive(Elicit)]
 pub struct DbConnected;
 impl Prop for DbConnected {
-    #[cfg(feature = "proofs")]
-    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
             fn verify_db_connected_axiom() {
@@ -91,8 +90,7 @@ impl Prop for DbConnected {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
             pub fn verify_db_connected(connect_ok: bool) -> (result: bool)
@@ -104,8 +102,7 @@ impl Prop for DbConnected {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
             #[ensures(result == true)]
@@ -116,13 +113,14 @@ impl Prop for DbConnected {
         }
     }
 }
+impl VerifiedWorkflow for DbConnected {}
+
 
 /// Proposition: a SQL statement completed and `rows_affected` is known.
 #[derive(Elicit)]
 pub struct QueryExecuted;
 impl Prop for QueryExecuted {
-    #[cfg(feature = "proofs")]
-    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
             fn verify_query_executed_axiom() {
@@ -133,8 +131,7 @@ impl Prop for QueryExecuted {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
             pub fn verify_query_executed(execute_ok: bool) -> (result: bool)
@@ -146,8 +143,7 @@ impl Prop for QueryExecuted {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
             #[ensures(result == true)]
@@ -158,13 +154,14 @@ impl Prop for QueryExecuted {
         }
     }
 }
+impl VerifiedWorkflow for QueryExecuted {}
+
 
 /// Proposition: a SELECT returned ≥ 0 rows without error.
 #[derive(Elicit)]
 pub struct RowsFetched;
 impl Prop for RowsFetched {
-    #[cfg(feature = "proofs")]
-    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
             fn verify_rows_fetched_axiom() {
@@ -175,8 +172,7 @@ impl Prop for RowsFetched {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
             pub fn verify_rows_fetched(fetch_ok: bool) -> (result: bool)
@@ -188,8 +184,7 @@ impl Prop for RowsFetched {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
             #[ensures(result == true)]
@@ -200,13 +195,14 @@ impl Prop for RowsFetched {
         }
     }
 }
+impl VerifiedWorkflow for RowsFetched {}
+
 
 /// Proposition: a transaction was started and is uncommitted.
 #[derive(Elicit)]
 pub struct TransactionOpen;
 impl Prop for TransactionOpen {
-    #[cfg(feature = "proofs")]
-    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
             fn verify_transaction_open_axiom() {
@@ -217,8 +213,7 @@ impl Prop for TransactionOpen {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
             pub fn verify_transaction_open(begin_ok: bool) -> (result: bool)
@@ -230,8 +225,7 @@ impl Prop for TransactionOpen {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
             #[ensures(result == true)]
@@ -242,13 +236,14 @@ impl Prop for TransactionOpen {
         }
     }
 }
+impl VerifiedWorkflow for TransactionOpen {}
+
 
 /// Proposition: a transaction was successfully committed.
 #[derive(Elicit)]
 pub struct TransactionCommitted;
 impl Prop for TransactionCommitted {
-    #[cfg(feature = "proofs")]
-    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
             fn verify_transaction_committed_axiom() {
@@ -259,8 +254,7 @@ impl Prop for TransactionCommitted {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
             pub fn verify_transaction_committed(commit_ok: bool) -> (result: bool)
@@ -272,8 +266,7 @@ impl Prop for TransactionCommitted {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
             #[ensures(result == true)]
@@ -284,13 +277,14 @@ impl Prop for TransactionCommitted {
         }
     }
 }
+impl VerifiedWorkflow for TransactionCommitted {}
+
 
 /// Proposition: a transaction was successfully rolled back.
 #[derive(Elicit)]
 pub struct TransactionRolledBack;
 impl Prop for TransactionRolledBack {
-    #[cfg(feature = "proofs")]
-    fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
             fn verify_transaction_rolled_back_axiom() {
@@ -301,8 +295,7 @@ impl Prop for TransactionRolledBack {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
             pub fn verify_transaction_rolled_back(rollback_ok: bool) -> (result: bool)
@@ -314,8 +307,7 @@ impl Prop for TransactionRolledBack {
         }
     }
 
-    #[cfg(feature = "proofs")]
-    fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
             #[ensures(result == true)]
@@ -326,6 +318,8 @@ impl Prop for TransactionRolledBack {
         }
     }
 }
+impl VerifiedWorkflow for TransactionRolledBack {}
+
 
 /// Composite: a connection was made and a query was executed.
 pub type ConnectedAndExecuted = And<DbConnected, QueryExecuted>;

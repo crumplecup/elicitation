@@ -21,24 +21,31 @@ pub fn expand(input: TokenStream) -> TokenStream {
     // downstream crate needs no snake_case dependency at runtime.
     let snake_name = name.to_string().to_snake_case();
 
+    // Gate proof method generation on elicitation_derive's own `proofs` feature.
+    // This mirrors how `#[derive(Elicit)]` conditionally generates proof methods
+    // in struct_impl.rs — using compile-time cfg, NOT `#[cfg(...)]` in generated code.
+    #[cfg(feature = "proofs")]
+    let proof_methods = quote! {
+        fn kani_proof() -> ::elicitation::proc_macro2::TokenStream {
+            ::elicitation::verification::proof_helpers::kani_trivial_prop(#snake_name)
+        }
+
+        fn verus_proof() -> ::elicitation::proc_macro2::TokenStream {
+            ::elicitation::verification::proof_helpers::verus_trivial_prop(#snake_name)
+        }
+
+        fn creusot_proof() -> ::elicitation::proc_macro2::TokenStream {
+            ::elicitation::verification::proof_helpers::creusot_trivial_prop(#snake_name)
+        }
+    };
+    #[cfg(not(feature = "proofs"))]
+    let proof_methods = quote! {};
+
     let expanded = quote! {
         impl #impl_generics ::elicitation::contracts::Prop for #name #ty_generics
         #where_clause
         {
-            #[cfg(feature = "proofs")]
-            fn kani_proof() -> ::elicitation::proc_macro2::TokenStream {
-                ::elicitation::verification::proof_helpers::kani_trivial_prop(#snake_name)
-            }
-
-            #[cfg(feature = "proofs")]
-            fn verus_proof() -> ::elicitation::proc_macro2::TokenStream {
-                ::elicitation::verification::proof_helpers::verus_trivial_prop(#snake_name)
-            }
-
-            #[cfg(feature = "proofs")]
-            fn creusot_proof() -> ::elicitation::proc_macro2::TokenStream {
-                ::elicitation::verification::proof_helpers::creusot_trivial_prop(#snake_name)
-            }
+            #proof_methods
         }
     };
 

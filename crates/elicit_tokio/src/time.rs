@@ -21,7 +21,7 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use elicitation::contracts::{Established, Prop};
-use elicitation::{Elicit, PluginContext};
+use elicitation::{Elicit, PluginContext, VerifiedWorkflow};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -73,6 +73,8 @@ impl Prop for SleepCompleted {
         }
     }
 }
+impl VerifiedWorkflow for SleepCompleted {}
+
 
 /// Proposition: a `timeout_await` call returned (either expired or checked).
 #[derive(Elicit)]
@@ -111,6 +113,8 @@ impl Prop for TimeoutResolved {
         }
     }
 }
+impl VerifiedWorkflow for TimeoutResolved {}
+
 
 // ── Internal context entries ──────────────────────────────────────────────────
 
