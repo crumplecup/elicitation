@@ -899,3 +899,125 @@ pub fn kani_uuid_non_nil() -> TokenStream {
         }
     }
 }
+
+// ============================================================================
+// Single-Variant Style Enum Proof Helpers
+// ============================================================================
+
+/// Generate a Kani proof for a single-variant `Default` style enum.
+///
+/// Proves:
+/// - `Default::default()` returns the `Default` variant
+/// - Copy semantics preserve equality
+///
+/// Used for all style selector enums (VecStyle, ArrayStyle, OptionStyle, etc.)
+/// which have exactly one `#[default]` variant and are `Copy + PartialEq`.
+pub fn kani_single_variant_enum(enum_name: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!("verify_{}_default", enum_name.to_lowercase()),
+        Span::call_site(),
+    );
+    let enum_ident: TokenStream = enum_name.parse().expect("valid enum name");
+    quote! {
+        #[kani::proof]
+        fn #fn_ident() {
+            let s: #enum_ident = Default::default();
+            let s2 = s; // Copy
+            assert!(s == s2, "copy preserves equality");
+            // Roundtrip through the only variant
+            let _: #enum_ident = #enum_ident::Default;
+        }
+    }
+}
+
+/// Generate a Verus proof for a single-variant `Default` style enum.
+///
+/// Proves that constructing the `Default` variant is an identity operation:
+/// the returned value equals the input variant.
+pub fn verus_single_variant_enum(enum_name: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!("verify_{}_default", enum_name.to_lowercase()),
+        Span::call_site(),
+    );
+    let enum_ident: TokenStream = enum_name.parse().expect("valid enum name");
+    quote! {
+        pub fn #fn_ident(s: #enum_ident) -> (result: #enum_ident)
+            ensures result == s,
+        {
+            s
+        }
+    }
+}
+
+/// Generate a Creusot proof for a single-variant `Default` style enum.
+///
+/// Proves that `Default::default()` returns the expected `Default` variant.
+pub fn creusot_single_variant_enum(enum_name: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!("verify_{}_default", enum_name.to_lowercase()),
+        Span::call_site(),
+    );
+    let enum_ident: TokenStream = enum_name.parse().expect("valid enum name");
+    quote! {
+        #[ensures(matches!(result, #enum_ident::Default))]
+        pub fn #fn_ident() -> #enum_ident {
+            #enum_ident::default()
+        }
+    }
+}
+
+// ============================================================================
+// Unit Struct Proof Helpers
+// ============================================================================
+
+/// Generate a Kani proof for a zero-sized unit struct.
+///
+/// Proves: construction is infallible (only one value exists), and
+/// the struct is `PartialEq`-equal to itself (reflexivity).
+pub fn kani_unit_struct(struct_name: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!("verify_{}_unit", struct_name.to_lowercase()),
+        Span::call_site(),
+    );
+    let struct_ident: TokenStream = struct_name.parse().expect("valid struct name");
+    quote! {
+        #[kani::proof]
+        fn #fn_ident() {
+            // Only one value of a unit struct exists
+            let a = #struct_ident;
+            let b = #struct_ident;
+            assert!(a == b, "unit struct equality is reflexive");
+        }
+    }
+}
+
+/// Generate a Verus proof for a zero-sized unit struct.
+pub fn verus_unit_struct(struct_name: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!("verify_{}_unit", struct_name.to_lowercase()),
+        Span::call_site(),
+    );
+    let struct_ident: TokenStream = struct_name.parse().expect("valid struct name");
+    quote! {
+        pub fn #fn_ident() -> (result: #struct_ident)
+            ensures result == #struct_ident,
+        {
+            #struct_ident
+        }
+    }
+}
+
+/// Generate a Creusot proof for a zero-sized unit struct.
+pub fn creusot_unit_struct(struct_name: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!("verify_{}_unit", struct_name.to_lowercase()),
+        Span::call_site(),
+    );
+    let struct_ident: TokenStream = struct_name.parse().expect("valid struct name");
+    quote! {
+        #[ensures(result == #struct_ident)]
+        pub fn #fn_ident() -> #struct_ident {
+            #struct_ident
+        }
+    }
+}

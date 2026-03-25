@@ -27,17 +27,17 @@ impl Elicitation for BoxStyle {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::kani_single_variant_enum("BoxStyle")
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::verus_single_variant_enum("BoxStyle")
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::creusot_single_variant_enum("BoxStyle")
     }
 }
 
@@ -62,17 +62,17 @@ impl Elicitation for RcStyle {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::kani_single_variant_enum("RcStyle")
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::verus_single_variant_enum("RcStyle")
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::creusot_single_variant_enum("RcStyle")
     }
 }
 
@@ -97,17 +97,17 @@ impl Elicitation for ArcStyle {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::kani_single_variant_enum("ArcStyle")
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::verus_single_variant_enum("ArcStyle")
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::creusot_single_variant_enum("ArcStyle")
     }
 }
 

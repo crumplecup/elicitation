@@ -25,17 +25,17 @@ impl Elicitation for ArrayStyle {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::kani_single_variant_enum("ArrayStyle")
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::verus_single_variant_enum("ArrayStyle")
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::creusot_single_variant_enum("ArrayStyle")
     }
 }
 
