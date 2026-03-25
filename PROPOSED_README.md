@@ -478,7 +478,7 @@ impl Elicitation for PortNumber {
 |---|---|---|---|
 | **Kani** | Bounded model checking / symbolic execution | Exhaustive within bound; finds real bugs | 388 passing harnesses |
 | **Verus** | SMT-based program logic | Arithmetic and data structure properties | 158 passing proofs |
-| **Creusot** | Deductive verification with Pearlite annotations | Rich invariants; compositional across functions | 19,909 valid goals across 16 modules |
+| **Creusot** | Deductive verification with Pearlite annotations | Rich invariants; compositional across functions | 20,885 valid goals across 19 modules |
 
 Results are tracked in `*_verification_results.csv`.
 
