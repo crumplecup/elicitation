@@ -1412,7 +1412,9 @@ where
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        <C as Elicitation>::kani_proof()
+        let mut tokens = crate::verification::proof_helpers::kani_array_all_satisfy();
+        tokens.extend(<C as Elicitation>::kani_proof());
+        tokens
     }
 
     #[cfg(feature = "proofs")]

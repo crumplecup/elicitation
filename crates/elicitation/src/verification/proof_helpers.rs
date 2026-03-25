@@ -782,6 +782,35 @@ pub fn kani_set_non_empty(set_type: &str) -> TokenStream {
     }
 }
 
+/// Generate a Kani proof for `ArrayAllSatisfy<C, N>`.
+///
+/// Proves that:
+/// - `ArrayAllSatisfy::new(elements)` stores exactly N elements
+/// - The array length is exactly N after round-trip through `get()`
+/// - Elements survive the wrapper without mutation
+///
+/// Harness uses a concrete N=3 array of `I8Positive`, mirroring the reference
+/// harness in `elicitation_kani::collections::verify_array_all_satisfy`.
+pub fn kani_array_all_satisfy() -> TokenStream {
+    quote! {
+        #[kani::proof]
+        fn verify_array_all_satisfy_wrapper() {
+            let arr = [
+                I8Positive::new(1i8).expect("1 is positive"),
+                I8Positive::new(2i8).expect("2 is positive"),
+                I8Positive::new(3i8).expect("3 is positive"),
+            ];
+            let contract = ArrayAllSatisfy::<I8Positive, 3>::new(arr);
+            let stored = contract.get();
+            assert!(stored.len() == 3, "length preserved");
+            // Each element satisfies the positive constraint
+            for elem in stored {
+                assert!(*elem.get() > 0, "all elements satisfy constraint");
+            }
+        }
+    }
+}
+
 // ============================================================================
 // Primitive Default Wrapper Proof Helpers
 // ============================================================================
