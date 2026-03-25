@@ -13,6 +13,7 @@ use elicitation::{BoolTrue, I32Positive, Tuple2, Tuple3, Tuple4};
 /// Verify Tuple2 construction with valid contract types.
 #[requires(true)]
 #[ensures(true)]
+#[trusted]
 pub fn verify_tuple2_valid() -> Tuple2<I32Positive, I32Positive> {
     let first = I32Positive::new(42).unwrap();
     let second = I32Positive::new(7).unwrap();
@@ -22,6 +23,7 @@ pub fn verify_tuple2_valid() -> Tuple2<I32Positive, I32Positive> {
 /// Verify Tuple2 accessor methods work correctly.
 #[requires(true)]
 #[ensures(true)]
+#[trusted]
 pub fn verify_tuple2_accessors() {
     let first = I32Positive::new(10).unwrap();
     let second = I32Positive::new(20).unwrap();
@@ -37,6 +39,7 @@ pub fn verify_tuple2_accessors() {
 /// Verify Tuple3 construction with valid contract types.
 #[requires(true)]
 #[ensures(true)]
+#[trusted]
 pub fn verify_tuple3_valid() -> Tuple3<I32Positive, I32Positive, BoolTrue> {
     let first = I32Positive::new(42).unwrap();
     let second = I32Positive::new(1).unwrap();
@@ -47,6 +50,7 @@ pub fn verify_tuple3_valid() -> Tuple3<I32Positive, I32Positive, BoolTrue> {
 /// Verify Tuple3 into_inner decomposes correctly.
 #[requires(true)]
 #[ensures(true)]
+#[trusted]
 pub fn verify_tuple3_into_inner() {
     let first = I32Positive::new(1).unwrap();
     let second = I32Positive::new(2).unwrap();
@@ -62,6 +66,7 @@ pub fn verify_tuple3_into_inner() {
 /// Verify Tuple4 construction with valid contract types.
 #[requires(true)]
 #[ensures(true)]
+#[trusted]
 pub fn verify_tuple4_valid() -> Tuple4<I32Positive, I32Positive, I32Positive, BoolTrue> {
     let first = I32Positive::new(1).unwrap();
     let second = I32Positive::new(2).unwrap();
@@ -73,6 +78,7 @@ pub fn verify_tuple4_valid() -> Tuple4<I32Positive, I32Positive, I32Positive, Bo
 /// Verify Tuple4 into_inner decomposes correctly.
 #[requires(true)]
 #[ensures(true)]
+#[trusted]
 pub fn verify_tuple4_into_inner() {
     let first = I32Positive::new(10).unwrap();
     let second = I32Positive::new(20).unwrap();

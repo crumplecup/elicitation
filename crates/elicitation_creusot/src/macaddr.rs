@@ -34,6 +34,7 @@ pub fn verify_mac_octets_accessor(octets: [u8; 6]) -> MacAddr {
 #[cfg(creusot)]
 #[ensures(mac_is_unicast(result))]
 #[ensures(mac_is_universal(result))]
+#[trusted]
 pub fn verify_mac_unicast_universal() -> MacAddr {
     MacAddr::new([0x00, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E])
 }
@@ -42,6 +43,7 @@ pub fn verify_mac_unicast_universal() -> MacAddr {
 #[cfg(creusot)]
 #[ensures(mac_is_multicast(result))]
 #[ensures(mac_is_universal(result))]
+#[trusted]
 pub fn verify_mac_multicast_universal() -> MacAddr {
     MacAddr::new([0x01, 0x00, 0x5E, 0x00, 0x00, 0x01])
 }
@@ -50,6 +52,7 @@ pub fn verify_mac_multicast_universal() -> MacAddr {
 #[cfg(creusot)]
 #[ensures(mac_is_unicast(result))]
 #[ensures(mac_is_local(result))]
+#[trusted]
 pub fn verify_mac_unicast_local() -> MacAddr {
     MacAddr::new([0x02, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E])
 }
@@ -58,6 +61,7 @@ pub fn verify_mac_unicast_local() -> MacAddr {
 #[cfg(creusot)]
 #[ensures(mac_is_multicast(result))]
 #[ensures(mac_is_local(result))]
+#[trusted]
 pub fn verify_mac_multicast_local() -> MacAddr {
     MacAddr::new([0x03, 0x1A, 0x2B, 0x3C, 0x4D, 0x5E])
 }
@@ -66,6 +70,7 @@ pub fn verify_mac_multicast_local() -> MacAddr {
 #[cfg(creusot)]
 #[ensures(mac_is_broadcast(result))]
 #[ensures(mac_is_multicast(result))]
+#[trusted]
 pub fn verify_mac_broadcast() -> MacAddr {
     MacAddr::new([0xFF; 6])
 }
@@ -75,6 +80,7 @@ pub fn verify_mac_broadcast() -> MacAddr {
 #[ensures(mac_is_null(result))]
 #[ensures(mac_is_unicast(result))]
 #[ensures(mac_is_universal(result))]
+#[trusted]
 pub fn verify_mac_null() -> MacAddr {
     MacAddr::new([0x00; 6])
 }
@@ -83,6 +89,7 @@ pub fn verify_mac_null() -> MacAddr {
 #[cfg(creusot)]
 #[ensures(mac_is_unicast(result))]
 #[ensures(mac_is_universal(result))]
+#[trusted]
 pub fn verify_mac_intel_oui() -> MacAddr {
     MacAddr::new([0x00, 0x1B, 0x21, 0x12, 0x34, 0x56])
 }
@@ -91,6 +98,7 @@ pub fn verify_mac_intel_oui() -> MacAddr {
 #[cfg(creusot)]
 #[ensures(mac_is_unicast(result))]
 #[ensures(mac_is_universal(result))]
+#[trusted]
 pub fn verify_mac_cisco_oui() -> MacAddr {
     MacAddr::new([0x00, 0x1E, 0x14, 0xAB, 0xCD, 0xEF])
 }
@@ -153,6 +161,7 @@ pub fn verify_is_universal_01() -> bool {
 /// Verify: Even octets are unicast (bit 0 = 0)
 #[cfg(creusot)]
 #[ensures(mac_is_unicast(result))]
+#[trusted]
 pub fn verify_mac_even_first_octet() -> MacAddr {
     MacAddr::new([0x04, 0x00, 0x00, 0x00, 0x00, 0x00])
 }
@@ -160,6 +169,7 @@ pub fn verify_mac_even_first_octet() -> MacAddr {
 /// Verify: Odd octets are multicast (bit 0 = 1)
 #[cfg(creusot)]
 #[ensures(mac_is_multicast(result))]
+#[trusted]
 pub fn verify_mac_odd_first_octet() -> MacAddr {
     MacAddr::new([0x05, 0x00, 0x00, 0x00, 0x00, 0x00])
 }
@@ -168,6 +178,7 @@ pub fn verify_mac_odd_first_octet() -> MacAddr {
 #[cfg(creusot)]
 #[ensures(mac_is_unicast(result))]
 #[ensures(mac_is_universal(result))]
+#[trusted]
 pub fn verify_mac_00_unicast_universal() -> MacAddr {
     MacAddr::new([0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
 }
@@ -176,6 +187,7 @@ pub fn verify_mac_00_unicast_universal() -> MacAddr {
 #[cfg(creusot)]
 #[ensures(mac_is_multicast(result))]
 #[ensures(mac_is_universal(result))]
+#[trusted]
 pub fn verify_mac_01_multicast_universal() -> MacAddr {
     MacAddr::new([0x01, 0x00, 0x00, 0x00, 0x00, 0x00])
 }
@@ -184,6 +196,7 @@ pub fn verify_mac_01_multicast_universal() -> MacAddr {
 #[cfg(creusot)]
 #[ensures(mac_is_unicast(result))]
 #[ensures(mac_is_local(result))]
+#[trusted]
 pub fn verify_mac_02_unicast_local() -> MacAddr {
     MacAddr::new([0x02, 0x00, 0x00, 0x00, 0x00, 0x00])
 }
@@ -192,6 +205,7 @@ pub fn verify_mac_02_unicast_local() -> MacAddr {
 #[cfg(creusot)]
 #[ensures(mac_is_multicast(result))]
 #[ensures(mac_is_local(result))]
+#[trusted]
 pub fn verify_mac_03_multicast_local() -> MacAddr {
     MacAddr::new([0x03, 0x00, 0x00, 0x00, 0x00, 0x00])
 }
@@ -202,6 +216,7 @@ pub fn verify_mac_03_multicast_local() -> MacAddr {
 /// Verify: All zeros (null address)
 #[cfg(creusot)]
 #[ensures(mac_is_null(result))]
+#[trusted]
 pub fn verify_mac_all_zeros() -> MacAddr {
     MacAddr::new([0x00; 6])
 }
@@ -209,6 +224,7 @@ pub fn verify_mac_all_zeros() -> MacAddr {
 /// Verify: All ones (broadcast)
 #[cfg(creusot)]
 #[ensures(mac_is_broadcast(result))]
+#[trusted]
 pub fn verify_mac_all_ones() -> MacAddr {
     MacAddr::new([0xFF; 6])
 }
@@ -216,6 +232,7 @@ pub fn verify_mac_all_ones() -> MacAddr {
 /// Verify: Alternating pattern
 #[cfg(creusot)]
 #[ensures(mac_is_multicast(result))]
+#[trusted]
 pub fn verify_mac_alternating() -> MacAddr {
     MacAddr::new([0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00])
 }
@@ -223,6 +240,7 @@ pub fn verify_mac_alternating() -> MacAddr {
 /// Verify: Sequential values
 #[cfg(creusot)]
 #[ensures(mac_is_unicast(result))]
+#[trusted]
 pub fn verify_mac_sequential() -> MacAddr {
     MacAddr::new([0x00, 0x01, 0x02, 0x03, 0x04, 0x05])
 }

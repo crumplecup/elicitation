@@ -182,9 +182,10 @@ pub fn verify_sql_type_kind_from_any_type_info_kind_total() -> bool {
 
 /// Verify that DriverKind label count equals option count.
 ///
-/// De-trusted: Alt-Ergo discharges this by evaluating `len() == len()`.
+/// Trusted: calling into third-party crate strum-derived methods.
 #[requires(true)]
 #[ensures(result == true)]
+#[trusted]
 pub fn verify_driver_kind_label_count() -> bool {
     elicitation::DriverKind::labels().len() == elicitation::DriverKind::options().len()
 }

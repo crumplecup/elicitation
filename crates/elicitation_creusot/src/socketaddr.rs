@@ -27,10 +27,9 @@ pub fn verify_socket_v4_construction(ip: [u8; 4], port: u16) -> SocketAddrV4Byte
 
 /// Verify: ip() accessor returns the IP address
 #[cfg(creusot)]
-pub fn verify_socket_v4_ip_accessor(ip: [u8; 4], port: u16) -> SocketAddrV4Bytes {
+pub fn verify_socket_v4_ip_accessor(ip: [u8; 4], port: u16) {
     let socket = SocketAddrV4Bytes::from_octets(ip, port);
     let _ip_ref = socket.ip();
-    socket
 }
 
 /// Verify: port() accessor returns the port
@@ -42,10 +41,9 @@ pub fn verify_socket_v4_port_accessor(ip: [u8; 4], port: u16) -> SocketAddrV4Byt
 
 /// Verify: into_parts() decomposes correctly
 #[cfg(creusot)]
-pub fn verify_socket_v4_into_parts(ip: [u8; 4], port: u16) -> SocketAddrV4Bytes {
+pub fn verify_socket_v4_into_parts(ip: [u8; 4], port: u16) {
     let socket = SocketAddrV4Bytes::from_octets(ip, port);
     let (_ip, _port) = socket.into_parts();
-    socket
 }
 
 /// Verify: Common socket address (HTTP on localhost)
@@ -87,10 +85,9 @@ pub fn verify_socket_v6_construction(ip: [u8; 16], port: u16) -> SocketAddrV6Byt
 
 /// Verify: ip() accessor returns the IP address
 #[cfg(creusot)]
-pub fn verify_socket_v6_ip_accessor(ip: [u8; 16], port: u16) -> SocketAddrV6Bytes {
+pub fn verify_socket_v6_ip_accessor(ip: [u8; 16], port: u16) {
     let socket = SocketAddrV6Bytes::from_octets(ip, port);
     let _ip_ref = socket.ip();
-    socket
 }
 
 /// Verify: port() accessor returns the port
@@ -102,10 +99,9 @@ pub fn verify_socket_v6_port_accessor(ip: [u8; 16], port: u16) -> SocketAddrV6By
 
 /// Verify: into_parts() decomposes correctly
 #[cfg(creusot)]
-pub fn verify_socket_v6_into_parts(ip: [u8; 16], port: u16) -> SocketAddrV6Bytes {
+pub fn verify_socket_v6_into_parts(ip: [u8; 16], port: u16) {
     let socket = SocketAddrV6Bytes::from_octets(ip, port);
     let (_ip, _port) = socket.into_parts();
-    socket
 }
 
 /// Verify: IPv6 localhost HTTP
