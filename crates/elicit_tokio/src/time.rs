@@ -40,7 +40,6 @@ use uuid::Uuid;
 #[derive(Elicit)]
 pub struct SleepCompleted;
 impl Prop for SleepCompleted {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -52,8 +51,6 @@ impl Prop for SleepCompleted {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -65,8 +62,6 @@ impl Prop for SleepCompleted {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -83,7 +78,6 @@ impl Prop for SleepCompleted {
 #[derive(Elicit)]
 pub struct TimeoutResolved;
 impl Prop for TimeoutResolved {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -95,8 +89,6 @@ impl Prop for TimeoutResolved {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -108,8 +100,6 @@ impl Prop for TimeoutResolved {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]

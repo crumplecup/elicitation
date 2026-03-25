@@ -85,6 +85,7 @@ extern crate proc_macro;
 mod contract_type;
 mod derive_elicit;
 mod derive_elicit_plugin;
+mod derive_prop;
 mod elicit_tool;
 mod emit_rewriter;
 mod enum_impl;
@@ -462,7 +463,44 @@ pub fn elicit_tool(args: TokenStream, item: TokenStream) -> TokenStream {
     elicit_tool::expand(args.into(), item.into()).into()
 }
 
-/// Derive the identity [`ElicitProxy`](elicitation::ElicitProxy) implementation.
+/// Derive the [`Prop`](elicitation::contracts::Prop) trait for a zero-cost typestate marker.
+///
+/// Generates trivial but non-empty, uniquely-named proof harnesses
+/// (`kani_proof`, `verus_proof`, `creusot_proof`) for the proposition.
+/// The harness function names are derived from the struct name in `snake_case`,
+/// so multiple derived propositions can coexist in the same verification target.
+///
+/// Use this for unit structs that serve as typestate markers in workflows.
+/// For propositions with meaningful semantic content (e.g., `DbConnected` which
+/// models a real connection attempt), write a manual `impl Prop` with real harnesses.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation_derive::Prop;
+///
+/// #[derive(Debug, Clone, Copy, Prop)]
+/// pub struct UrlParsed;
+///
+/// #[derive(Debug, Clone, Copy, Prop)]
+/// pub struct HttpsRequired;
+/// ```
+///
+/// The generated Kani harness for `UrlParsed` is equivalent to:
+///
+/// ```rust,ignore
+/// #[kani::proof]
+/// fn verify_url_parsed_prop_marker() {
+///     let established: bool = true;
+///     assert!(established);
+/// }
+/// ```
+#[proc_macro_derive(Prop)]
+pub fn derive_prop(input: TokenStream) -> TokenStream {
+    derive_prop::expand(input)
+}
+
+
 ///
 /// This generates a trivial impl where `type Proxy = Self`, meaning the type
 /// is its own proxy — no conversion needed.  Use this on any type that already

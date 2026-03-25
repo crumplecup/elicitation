@@ -1023,6 +1023,66 @@ pub fn creusot_unit_struct(struct_name: &str) -> TokenStream {
 }
 
 // ============================================================================
+// Trivial Prop Proof Helpers (used by #[derive(Prop)])
+// ============================================================================
+
+/// Generate a Kani proof for a zero-cost typestate marker proposition.
+///
+/// `fn_name` is the snake_case function-name suffix (e.g. `"db_connected"`).
+/// The generated harness is named `verify_<fn_name>_prop_marker`.
+pub fn kani_trivial_prop(fn_name: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!("verify_{fn_name}_prop_marker"),
+        Span::call_site(),
+    );
+    quote! {
+        #[kani::proof]
+        fn #fn_ident() {
+            // Zero-cost typestate marker — trivially established.
+            let established: bool = true;
+            assert!(established);
+        }
+    }
+}
+
+/// Generate a Verus proof for a zero-cost typestate marker proposition.
+///
+/// `fn_name` is the snake_case function-name suffix (e.g. `"db_connected"`).
+pub fn verus_trivial_prop(fn_name: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!("verify_{fn_name}_prop_contract"),
+        Span::call_site(),
+    );
+    quote! {
+        verus! {
+        pub fn #fn_ident() -> (result: bool)
+            ensures result == true,
+        {
+            true
+        }
+        }
+    }
+}
+
+/// Generate a Creusot proof for a zero-cost typestate marker proposition.
+///
+/// `fn_name` is the snake_case function-name suffix (e.g. `"db_connected"`).
+pub fn creusot_trivial_prop(fn_name: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!("verify_{fn_name}_prop_creusot"),
+        Span::call_site(),
+    );
+    quote! {
+        #[requires(true)]
+        #[ensures(result == true)]
+        #[trusted]
+        pub fn #fn_ident() -> bool {
+            true
+        }
+    }
+}
+
+// ============================================================================
 // Verus/Creusot Variants for Integer/Float/Bool Default Wrappers
 // ============================================================================
 

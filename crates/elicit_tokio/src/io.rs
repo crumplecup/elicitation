@@ -49,7 +49,6 @@ use uuid::Uuid;
 #[derive(Elicit)]
 pub struct DuplexCreated {}
 impl Prop for DuplexCreated {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -59,8 +58,6 @@ impl Prop for DuplexCreated {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -72,8 +69,6 @@ impl Prop for DuplexCreated {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]

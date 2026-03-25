@@ -1156,7 +1156,7 @@ use elicitation::emit_code::{CrateDep, EmitCode};
 const SQLX_DEP: CrateDep = CrateDep {
     name: "sqlx",
     version: "0.8",
-    features: &["runtime-tokio", "any"],
+    features: &["runtime-tokio", "any", "sqlite", "postgres", "mysql"],
 };
 
 /// Emit-only params for pool-level SQL tools.

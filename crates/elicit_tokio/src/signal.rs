@@ -43,7 +43,6 @@ use uuid::Uuid;
 #[derive(Elicit)]
 pub struct CtrlCReceived {}
 impl Prop for CtrlCReceived {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -54,8 +53,6 @@ impl Prop for CtrlCReceived {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -67,8 +64,6 @@ impl Prop for CtrlCReceived {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -87,7 +82,6 @@ impl Prop for CtrlCReceived {
 pub struct SignalHandlerRegistered {}
 #[cfg(unix)]
 impl Prop for SignalHandlerRegistered {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -98,8 +92,6 @@ impl Prop for SignalHandlerRegistered {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -111,8 +103,6 @@ impl Prop for SignalHandlerRegistered {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -131,7 +121,6 @@ impl Prop for SignalHandlerRegistered {
 pub struct SignalReceived {}
 #[cfg(unix)]
 impl Prop for SignalReceived {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -142,8 +131,6 @@ impl Prop for SignalReceived {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -155,8 +142,6 @@ impl Prop for SignalReceived {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]

@@ -96,7 +96,6 @@ type Value = serde_json::Value;
 #[derive(Elicit)]
 pub struct MessageSent {}
 impl Prop for MessageSent {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -107,8 +106,6 @@ impl Prop for MessageSent {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -120,8 +117,6 @@ impl Prop for MessageSent {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -138,7 +133,6 @@ impl Prop for MessageSent {
 #[derive(Elicit)]
 pub struct MessageReceived {}
 impl Prop for MessageReceived {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -149,8 +143,6 @@ impl Prop for MessageReceived {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -162,8 +154,6 @@ impl Prop for MessageReceived {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -180,7 +170,6 @@ impl Prop for MessageReceived {
 #[derive(Elicit)]
 pub struct ChannelClosed {}
 impl Prop for ChannelClosed {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -191,8 +180,6 @@ impl Prop for ChannelClosed {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -204,8 +191,6 @@ impl Prop for ChannelClosed {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]

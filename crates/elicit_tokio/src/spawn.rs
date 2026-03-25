@@ -82,7 +82,6 @@ use uuid::Uuid;
 #[derive(Elicit)]
 pub struct TaskSpawned {}
 impl Prop for TaskSpawned {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -92,8 +91,6 @@ impl Prop for TaskSpawned {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -105,8 +102,6 @@ impl Prop for TaskSpawned {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -123,7 +118,6 @@ impl Prop for TaskSpawned {
 #[derive(Elicit)]
 pub struct TaskJoined {}
 impl Prop for TaskJoined {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -134,8 +128,6 @@ impl Prop for TaskJoined {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -147,8 +139,6 @@ impl Prop for TaskJoined {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -165,7 +155,6 @@ impl Prop for TaskJoined {
 #[derive(Elicit)]
 pub struct TaskAborted {}
 impl Prop for TaskAborted {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -175,8 +164,6 @@ impl Prop for TaskAborted {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -188,8 +175,6 @@ impl Prop for TaskAborted {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]

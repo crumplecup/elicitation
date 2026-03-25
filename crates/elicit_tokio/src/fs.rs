@@ -37,7 +37,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 #[derive(Elicit)]
 pub struct FileRead {}
 impl Prop for FileRead {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -48,8 +47,6 @@ impl Prop for FileRead {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -61,8 +58,6 @@ impl Prop for FileRead {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -79,7 +74,6 @@ impl Prop for FileRead {
 #[derive(Elicit)]
 pub struct FileWritten {}
 impl Prop for FileWritten {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -90,8 +84,6 @@ impl Prop for FileWritten {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -103,8 +95,6 @@ impl Prop for FileWritten {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -121,7 +111,6 @@ impl Prop for FileWritten {
 #[derive(Elicit)]
 pub struct DirCreated {}
 impl Prop for DirCreated {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -132,8 +121,6 @@ impl Prop for DirCreated {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -145,8 +132,6 @@ impl Prop for DirCreated {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]

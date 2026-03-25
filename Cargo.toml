@@ -114,6 +114,7 @@ tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "io-
 syn = { version = "2", features = ["full", "extra-traits"] }
 quote = "1"
 proc-macro2 = "1"
+heck = "0.5"
 prettyplease = "0.2"
 toml = "1"
 

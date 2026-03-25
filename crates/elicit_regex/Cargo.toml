@@ -32,6 +32,7 @@ serde_json.workspace = true
 
 [features]
 emit = ["dep:quote", "elicitation/emit"]
+proofs = ["elicitation/proofs"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

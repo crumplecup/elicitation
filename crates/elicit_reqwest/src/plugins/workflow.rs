@@ -35,8 +35,8 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use crate::HttpContext;
-use elicitation::contracts::{And, Established, Prop, both};
-use elicitation::{ElicitPlugin, F64Positive, UrlValid as UrlValidType, elicit_tool};
+use elicitation::contracts::{And, Established, both};
+use elicitation::{ElicitPlugin, F64Positive, Prop, UrlValid as UrlValidType, elicit_tool};
 use reqwest::header::{HeaderMap, HeaderValue};
 use rmcp::{
     ErrorData,
@@ -49,20 +49,20 @@ use tracing::instrument;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: the URL string is syntactically valid and was successfully parsed.
+#[derive(Prop)]
 pub struct UrlValid;
-impl Prop for UrlValid {}
 
 /// Proposition: the HTTP request was dispatched and a response was received.
+#[derive(Prop)]
 pub struct RequestCompleted;
-impl Prop for RequestCompleted {}
 
 /// Proposition: the response status code is in the 2xx (success) range.
+#[derive(Prop)]
 pub struct StatusSuccess;
-impl Prop for StatusSuccess {}
 
 /// Proposition: the request carried a non-empty authorization credential.
+#[derive(Prop)]
 pub struct Authorized;
-impl Prop for Authorized {}
 
 /// Composite: a complete successful fetch (URL valid, request sent, 2xx status).
 pub type FetchSucceeded = And<UrlValid, And<RequestCompleted, StatusSuccess>>;

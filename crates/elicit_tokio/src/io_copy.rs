@@ -62,7 +62,6 @@ use uuid::Uuid;
 #[derive(Elicit)]
 pub struct BytesCopied {}
 impl Prop for BytesCopied {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -75,8 +74,6 @@ impl Prop for BytesCopied {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -88,8 +85,6 @@ impl Prop for BytesCopied {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]

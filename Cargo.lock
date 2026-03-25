@@ -1266,6 +1266,7 @@ dependencies = [
  "derive_more",
  "elicitation",
  "elicitation_rand",
+ "heck",
  "jiff",
  "proc-macro2",
  "quote",

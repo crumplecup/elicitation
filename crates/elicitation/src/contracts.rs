@@ -324,36 +324,33 @@ pub trait Prop: 'static {
     /// Generate a Kani proof harness for this proposition.
     ///
     /// Returns a [`proc_macro2::TokenStream`] containing a `#[kani::proof]` harness
-    /// that encodes this proposition as a trusted axiom. An empty stream means
-    /// no proof has been implemented — coverage tests assert non-empty.
+    /// that encodes this proposition as a trusted axiom. There is no default —
+    /// every proposition must supply a proof. Use `#[derive(Prop)]` for trivial
+    /// zero-cost marker propositions.
     ///
     /// Available with the `proofs` feature.
     #[cfg(feature = "proofs")]
-    fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
-    }
+    fn kani_proof() -> proc_macro2::TokenStream;
 
     /// Generate a Verus proof for this proposition.
     ///
     /// Returns a [`proc_macro2::TokenStream`] containing a Verus-verified function
-    /// encoding this proposition's postcondition invariant.
+    /// encoding this proposition's postcondition invariant. There is no default —
+    /// use `#[derive(Prop)]` for trivial marker propositions.
     ///
     /// Available with the `proofs` feature.
     #[cfg(feature = "proofs")]
-    fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
-    }
+    fn verus_proof() -> proc_macro2::TokenStream;
 
     /// Generate a Creusot contract proof for this proposition.
     ///
     /// Returns a [`proc_macro2::TokenStream`] containing a `#[trusted]` Creusot
-    /// contract function encoding this proposition's postcondition.
+    /// contract function encoding this proposition's postcondition. There is no
+    /// default — use `#[derive(Prop)]` for trivial marker propositions.
     ///
     /// Available with the `proofs` feature.
     #[cfg(feature = "proofs")]
-    fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
-    }
+    fn creusot_proof() -> proc_macro2::TokenStream;
 }
 
 /// Witness that proposition P has been established.
@@ -591,17 +588,23 @@ pub struct And<P: Prop, Q: Prop> {
 impl<P: Prop, Q: Prop> Prop for And<P, Q> {
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = P::kani_proof();
+        ts.extend(Q::kani_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = P::verus_proof();
+        ts.extend(Q::verus_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = P::creusot_proof();
+        ts.extend(Q::creusot_proof());
+        ts
     }
 }
 

@@ -34,8 +34,8 @@
 //!
 //! Registered under the `"jiff_workflow"` namespace.
 
-use elicitation::contracts::{And, Established, Prop};
-use elicitation::{ElicitPlugin, elicit_tool};
+use elicitation::contracts::{And, Established};
+use elicitation::{ElicitPlugin, Prop, elicit_tool};
 use jiff::Timestamp;
 use rmcp::{
     ErrorData,
@@ -48,20 +48,20 @@ use tracing::instrument;
 // ── Propositions ──────────────────────────────────────────────────────────────
 
 /// Proposition: the input string is a valid jiff `Timestamp`.
+#[derive(Prop)]
 pub struct TimestampParsed;
-impl Prop for TimestampParsed {}
 
 /// Proposition: the timestamp is strictly in the future (after `Timestamp::now()`).
+#[derive(Prop)]
 pub struct TimestampFuture;
-impl Prop for TimestampFuture {}
 
 /// Proposition: the input string is a valid jiff `Zoned` datetime.
+#[derive(Prop)]
 pub struct ZonedParsed;
-impl Prop for ZonedParsed {}
 
 /// Proposition: a timezone conversion was successfully applied to a `Zoned` value.
+#[derive(Prop)]
 pub struct TimezoneConverted;
-impl Prop for TimezoneConverted {}
 
 /// Composite: parsed AND in the future.
 pub type FutureTimestampProof = And<TimestampParsed, TimestampFuture>;

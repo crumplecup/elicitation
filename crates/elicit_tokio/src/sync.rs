@@ -43,7 +43,6 @@ use uuid::Uuid;
 #[derive(Elicit)]
 pub struct PermitAcquired;
 impl Prop for PermitAcquired {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -55,8 +54,6 @@ impl Prop for PermitAcquired {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -68,8 +65,6 @@ impl Prop for PermitAcquired {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -86,7 +81,6 @@ impl Prop for PermitAcquired {
 #[derive(Elicit)]
 pub struct NotificationReceived;
 impl Prop for NotificationReceived {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -97,8 +91,6 @@ impl Prop for NotificationReceived {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -110,8 +102,6 @@ impl Prop for NotificationReceived {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -128,7 +118,6 @@ impl Prop for NotificationReceived {
 #[derive(Elicit)]
 pub struct BarrierReached;
 impl Prop for BarrierReached {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -139,8 +128,6 @@ impl Prop for BarrierReached {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -152,8 +139,6 @@ impl Prop for BarrierReached {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]

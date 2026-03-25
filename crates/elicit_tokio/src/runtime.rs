@@ -32,7 +32,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Elicit)]
 pub struct RuntimeFlavored {}
 impl Prop for RuntimeFlavored {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -42,8 +41,6 @@ impl Prop for RuntimeFlavored {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -55,8 +52,6 @@ impl Prop for RuntimeFlavored {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]

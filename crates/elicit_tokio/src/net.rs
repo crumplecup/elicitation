@@ -48,7 +48,6 @@ use uuid::Uuid;
 #[derive(Elicit)]
 pub struct ListenerBound;
 impl Prop for ListenerBound {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -59,8 +58,6 @@ impl Prop for ListenerBound {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -72,8 +69,6 @@ impl Prop for ListenerBound {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -90,7 +85,6 @@ impl Prop for ListenerBound {
 #[derive(Elicit)]
 pub struct ConnectionAccepted;
 impl Prop for ConnectionAccepted {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -101,8 +95,6 @@ impl Prop for ConnectionAccepted {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -114,8 +106,6 @@ impl Prop for ConnectionAccepted {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -132,7 +122,6 @@ impl Prop for ConnectionAccepted {
 #[derive(Elicit)]
 pub struct StreamConnected;
 impl Prop for StreamConnected {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -143,8 +132,6 @@ impl Prop for StreamConnected {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -156,8 +143,6 @@ impl Prop for StreamConnected {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]
@@ -174,7 +159,6 @@ impl Prop for StreamConnected {
 #[derive(Elicit)]
 pub struct DataReceived;
 impl Prop for DataReceived {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[kani::proof]
@@ -185,8 +169,6 @@ impl Prop for DataReceived {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             verus! {
@@ -198,8 +180,6 @@ impl Prop for DataReceived {
             }
         }
     }
-
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
         quote::quote! {
             #[requires(true)]

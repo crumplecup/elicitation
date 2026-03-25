@@ -39,8 +39,8 @@
 //!
 //! Registered under the `"json_workflow"` namespace.
 
-use elicitation::contracts::{And, Established, Prop, both};
-use elicitation::{ElicitPlugin, elicit_tool};
+use elicitation::contracts::{And, Established, both};
+use elicitation::{ElicitPlugin, Prop, elicit_tool};
 use rmcp::{
     ErrorData,
     model::{CallToolResult, Content},
@@ -52,24 +52,24 @@ use tracing::instrument;
 // ── Propositions ──────────────────────────────────────────────────────────────
 
 /// Proposition: the input string is syntactically valid JSON.
+#[derive(Prop)]
 pub struct JsonParsed;
-impl Prop for JsonParsed {}
 
 /// Proposition: the JSON value is an object (`serde_json::Map`), not array/string/etc.
+#[derive(Prop)]
 pub struct IsObject;
-impl Prop for IsObject {}
 
 /// Proposition: a JSON Pointer (RFC 6901) path was resolved successfully in the document.
+#[derive(Prop)]
 pub struct PointerResolved;
-impl Prop for PointerResolved {}
 
 /// Proposition: all specified required keys are present in a JSON object.
+#[derive(Prop)]
 pub struct RequiredKeysPresent;
-impl Prop for RequiredKeysPresent {}
 
 /// Proposition: a pointer-targeted update was applied to the document.
+#[derive(Prop)]
 pub struct UpdateApplied;
-impl Prop for UpdateApplied {}
 
 /// Composite: document is parsed AND its type is a JSON object.
 pub type ParsedObject = And<JsonParsed, IsObject>;
