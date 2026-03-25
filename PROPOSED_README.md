@@ -606,7 +606,7 @@ Add the dependencies:
 [dependencies]
 elicitation        = "0.9"
 elicitation_macros = "0.9"
-rmcp               = "0.1"
+rmcp               = "1"
 schemars           = "0.8"
 serde              = { version = "1", features = ["derive"] }
 tokio              = { version = "1", features = ["full"] }
