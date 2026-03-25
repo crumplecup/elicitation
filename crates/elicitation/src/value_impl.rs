@@ -93,17 +93,17 @@ impl Elicitation for JsonType {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::kani_select_wrapper("JsonType", "null")
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::verus_select_wrapper("JsonType", "null")
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::creusot_select_wrapper("JsonType", "null")
     }
 }
 
@@ -123,31 +123,17 @@ impl Elicitation for Value {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
-    }
-
-    #[cfg(feature = "proofs")]
-    #[cfg(feature = "proofs")]
-    fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::kani_trusted_opaque("serde_json::Value")
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::verus_trusted_opaque("serde_json::Value")
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
-    }
-    fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
-    }
-
-    #[cfg(feature = "proofs")]
-    fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::creusot_trusted_opaque("serde_json::Value")
     }
 }
 
