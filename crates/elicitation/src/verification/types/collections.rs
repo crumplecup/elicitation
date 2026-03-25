@@ -75,7 +75,9 @@ impl<T: Elicitation + Send> Elicitation for VecNonEmpty<T> {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = crate::verification::proof_helpers::kani_vec_non_empty();
+        ts.extend(<T as Elicitation>::kani_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
@@ -134,7 +136,7 @@ impl<C: Elicitation + Send> Elicitation for VecAllSatisfy<C> {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        <C as Elicitation>::kani_proof()
     }
 
     #[cfg(feature = "proofs")]
@@ -208,7 +210,9 @@ impl<T: Elicitation + Send> Elicitation for OptionSome<T> {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = crate::verification::proof_helpers::kani_option_some();
+        ts.extend(<T as Elicitation>::kani_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
@@ -272,7 +276,9 @@ impl<T: Elicitation + Send> Elicitation for ResultOk<T> {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = crate::verification::proof_helpers::kani_result_ok();
+        ts.extend(<T as Elicitation>::kani_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
@@ -328,7 +334,9 @@ impl<C: Elicitation + Send> Elicitation for BoxSatisfies<C> {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = crate::verification::proof_helpers::kani_pointer_satisfies("Box");
+        ts.extend(<C as Elicitation>::kani_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
@@ -384,7 +392,9 @@ impl<C: Elicitation + Send> Elicitation for ArcSatisfies<C> {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = crate::verification::proof_helpers::kani_pointer_satisfies("Arc");
+        ts.extend(<C as Elicitation>::kani_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
@@ -440,7 +450,9 @@ impl<C: Elicitation + Send> Elicitation for RcSatisfies<C> {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = crate::verification::proof_helpers::kani_pointer_satisfies("Rc");
+        ts.extend(<C as Elicitation>::kani_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
@@ -672,7 +684,10 @@ where
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = crate::verification::proof_helpers::kani_map_non_empty("HashMap");
+        ts.extend(<K as Elicitation>::kani_proof());
+        ts.extend(<V as Elicitation>::kani_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
@@ -805,7 +820,10 @@ where
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = crate::verification::proof_helpers::kani_map_non_empty("BTreeMap");
+        ts.extend(<K as Elicitation>::kani_proof());
+        ts.extend(<V as Elicitation>::kani_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
@@ -935,7 +953,9 @@ where
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = crate::verification::proof_helpers::kani_set_non_empty("HashSet");
+        ts.extend(<T as Elicitation>::kani_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
@@ -1061,7 +1081,9 @@ where
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = crate::verification::proof_helpers::kani_set_non_empty("BTreeSet");
+        ts.extend(<T as Elicitation>::kani_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
@@ -1191,7 +1213,9 @@ where
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = crate::verification::proof_helpers::kani_set_non_empty("VecDeque");
+        ts.extend(<T as Elicitation>::kani_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
@@ -1317,7 +1341,9 @@ where
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        let mut ts = crate::verification::proof_helpers::kani_set_non_empty("LinkedList");
+        ts.extend(<T as Elicitation>::kani_proof());
+        ts
     }
 
     #[cfg(feature = "proofs")]
@@ -1386,7 +1412,7 @@ where
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        <C as Elicitation>::kani_proof()
     }
 
     #[cfg(feature = "proofs")]
