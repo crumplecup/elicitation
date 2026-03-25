@@ -92,12 +92,18 @@ macro_rules! impl_float_default_wrapper {
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::verus_float_default(
+            stringify!($wrapper),
+            stringify!($primitive),
+        )
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::creusot_float_default(
+            stringify!($wrapper),
+            stringify!($primitive),
+        )
     }
 }
         }

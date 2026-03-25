@@ -40,12 +40,12 @@ impl Elicitation for bool {
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        <crate::verification::types::BoolDefault as crate::Elicitation>::verus_proof()
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        <crate::verification::types::BoolDefault as crate::Elicitation>::creusot_proof()
     }
 }
 
