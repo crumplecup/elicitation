@@ -72,3 +72,5 @@ emit = [
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
 tracing-subscriber = { workspace = true }
+tempfile = "3.13"
+reqwest = { workspace = true }

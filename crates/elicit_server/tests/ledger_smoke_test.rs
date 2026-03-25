@@ -214,6 +214,6 @@ async fn test_ledger_workflow_smoke() {
     println!("HTTP validation successful: {}", body);
 
     // Step 8: Cleanup
-    child.kill().await.ok();
+    child.kill().ok();
     println!("Test passed!");
 }
