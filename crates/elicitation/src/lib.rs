@@ -89,6 +89,7 @@ mod server; // Server-side wrapper (analogous to ElicitClient)
 // Verification framework imports
 
 mod collections;
+mod complete;
 mod containers;
 mod default_style;
 mod error;
@@ -198,6 +199,9 @@ pub use type_spec::{
 pub use contracts::{
     And, Established, Implies, InVariant, Is, Prop, Refines, both, downcast, fst, snd,
 };
+
+// Completion marker — enforces all elicitation obligations at compile time
+pub use complete::ElicitComplete;
 
 // Tools (contract-based MCP tools)
 pub use tool::{Tool, True, both_tools, then};

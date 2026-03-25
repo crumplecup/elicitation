@@ -83,16 +83,28 @@ where
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        {
+            let mut ts = <T as Elicitation>::kani_proof();
+            ts.extend(<E as Elicitation>::kani_proof());
+            ts
+        }
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        {
+            let mut ts = <T as Elicitation>::verus_proof();
+            ts.extend(<E as Elicitation>::verus_proof());
+            ts
+        }
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        {
+            let mut ts = <T as Elicitation>::creusot_proof();
+            ts.extend(<E as Elicitation>::creusot_proof());
+            ts
+        }
     }
 }
