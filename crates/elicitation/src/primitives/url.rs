@@ -32,17 +32,20 @@ impl Elicitation for url::Url {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        use crate::verification::types::UrlValid;
+        <UrlValid as crate::Elicitation>::kani_proof()
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        use crate::verification::types::UrlValid;
+        <UrlValid as crate::Elicitation>::verus_proof()
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        use crate::verification::types::UrlValid;
+        <UrlValid as crate::Elicitation>::creusot_proof()
     }
 }
 

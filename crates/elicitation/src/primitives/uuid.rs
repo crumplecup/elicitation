@@ -115,17 +115,23 @@ impl Elicitation for UuidGenerationMode {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::kani_select_wrapper("UuidGenerationMode", "V4 (Random)")
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::verus_select_wrapper(
+            "UuidGenerationMode",
+            "V4 (Random)",
+        )
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::creusot_select_wrapper(
+            "UuidGenerationMode",
+            "V4 (Random)",
+        )
     }
 }
 
@@ -216,17 +222,17 @@ impl Elicitation for Uuid {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::kani_trusted_opaque("uuid::Uuid")
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::verus_trusted_opaque("uuid::Uuid")
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::creusot_trusted_opaque("uuid::Uuid")
     }
 }
 

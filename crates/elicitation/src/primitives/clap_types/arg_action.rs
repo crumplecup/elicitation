@@ -84,17 +84,26 @@ impl Elicitation for ArgAction {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::kani_select_wrapper(
+            "ArgAction",
+            "Set (store single value)",
+        )
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::verus_select_wrapper(
+            "ArgAction",
+            "Set (store single value)",
+        )
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::creusot_select_wrapper(
+            "ArgAction",
+            "Set (store single value)",
+        )
     }
 }
 

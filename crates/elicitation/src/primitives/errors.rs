@@ -202,17 +202,23 @@ impl Elicitation for IoErrorGenerationMode {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::kani_select_wrapper("IoErrorGenerationMode", "NotFound")
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::verus_select_wrapper(
+            "IoErrorGenerationMode",
+            "NotFound",
+        )
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::creusot_select_wrapper(
+            "IoErrorGenerationMode",
+            "NotFound",
+        )
     }
 }
 
@@ -270,17 +276,17 @@ impl Elicitation for io::Error {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::kani_trusted_opaque("io::Error")
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::verus_trusted_opaque("io::Error")
     }
 
     #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        crate::verification::proof_helpers::creusot_trusted_opaque("io::Error")
     }
 }
 
@@ -377,17 +383,26 @@ mod json_error {
 
         #[cfg(feature = "proofs")]
         fn kani_proof() -> proc_macro2::TokenStream {
-            proc_macro2::TokenStream::new()
+            crate::verification::proof_helpers::kani_select_wrapper(
+                "JsonErrorGenerationMode",
+                "Syntax Error",
+            )
         }
 
         #[cfg(feature = "proofs")]
         fn verus_proof() -> proc_macro2::TokenStream {
-            proc_macro2::TokenStream::new()
+            crate::verification::proof_helpers::verus_select_wrapper(
+                "JsonErrorGenerationMode",
+                "Syntax Error",
+            )
         }
 
         #[cfg(feature = "proofs")]
         fn creusot_proof() -> proc_macro2::TokenStream {
-            proc_macro2::TokenStream::new()
+            crate::verification::proof_helpers::creusot_select_wrapper(
+                "JsonErrorGenerationMode",
+                "Syntax Error",
+            )
         }
     }
 
@@ -456,17 +471,17 @@ mod json_error {
 
         #[cfg(feature = "proofs")]
         fn kani_proof() -> proc_macro2::TokenStream {
-            proc_macro2::TokenStream::new()
+            crate::verification::proof_helpers::kani_trusted_opaque("serde_json::Error")
         }
 
         #[cfg(feature = "proofs")]
         fn verus_proof() -> proc_macro2::TokenStream {
-            proc_macro2::TokenStream::new()
+            crate::verification::proof_helpers::verus_trusted_opaque("serde_json::Error")
         }
 
         #[cfg(feature = "proofs")]
         fn creusot_proof() -> proc_macro2::TokenStream {
-            proc_macro2::TokenStream::new()
+            crate::verification::proof_helpers::creusot_trusted_opaque("serde_json::Error")
         }
     }
 }
