@@ -172,28 +172,49 @@ A struct's proof is the union of its parts. Add a field, get its proof for free.
 
 ### Style System
 
-Types can provide context-aware prompts through the `Styled` and `Style` traits.
-The same type presents differently depending on the deployment scenario, locale, or
-user persona — without duplicating the construction logic:
+Every type ships with default prompts, but the Style system means you are never
+locked into them. The classic use case is **human vs. AI audience**: a terse
+machine-readable prompt is noise to a human; a friendly wizard-style prompt is
+equally wasteful to an agent that just needs the field name and constraints.
+
+You don't implement anything — you annotate fields with `#[prompt]` and name
+the styles you need. The derive generates the style enum for you:
 
 ```rust
-use elicitation::{Style, Styled};
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct DeployConfig {
+    // Default prompt (used when no style is active)
+    #[prompt("environment")]
+    // Named style overrides — derive generates DeployConfigElicitStyle::{ Default, Human, Agent }
+    #[prompt("Which environment should we deploy to?", style = "human")]
+    #[prompt("environment: production|staging|development", style = "agent")]
+    pub environment: Environment,
 
-#[derive(Style)]
-pub enum DeploymentStyle { Production, Development }
-
-impl Styled for DeployConfig {
-    type Style = DeploymentStyle;
-
-    fn prompt(style: &Self::Style) -> Option<&'static str> {
-        match style {
-            DeploymentStyle::Production  => Some("Configure production service (changes are live):"),
-            DeploymentStyle::Development => Some("Configure development service:"),
-        }
-    }
+    #[prompt("replicas")]
+    #[prompt("How many replicas? (1–16, default 2):", style = "human")]
+    #[prompt("replicas: u8 1..=16", style = "agent")]
+    pub replicas: u8,
 }
 ```
 
+Then hot-swap the style per session at the call site — no changes to the type:
+
+```rust
+// Human session
+let result = DeployConfig::elicit(
+    &client.with_style::<DeployConfig, _>(DeployConfigElicitStyle::Human)
+).await?;
+
+// Agent session
+let result = DeployConfig::elicit(
+    &client.with_style::<DeployConfig, _>(DeployConfigElicitStyle::Agent)
+).await?;
+```
+
+`with_style::<T, _>(style)` works on **any** type `T` with an `Elicitation`
+impl, including third-party types the core crate ships impls for. This is the
+escape hatch from vendor lock-in: our default prompts are a starting point, not
+a constraint.
 
 ### Generators
 
@@ -453,11 +474,13 @@ impl Elicitation for PortNumber {
 
 ### The three verifiers
 
-| Verifier | Approach | Strength |
-|---|---|---|
-| **Kani** | Bounded model checking / symbolic execution | Exhaustive within bound; finds real bugs |
-| **Creusot** | Deductive verification with Pearlite annotations | Rich invariants; compositional across functions |
-| **Verus** | SMT-based program logic | Arithmetic and data structure properties |
+| Verifier | Approach | Strength | Coverage |
+|---|---|---|---|
+| **Kani** | Bounded model checking / symbolic execution | Exhaustive within bound; finds real bugs | 388 passing harnesses |
+| **Verus** | SMT-based program logic | Arithmetic and data structure properties | 158 passing proofs |
+| **Creusot** | Deductive verification with Pearlite annotations | Rich invariants; compositional across functions | 19,909 valid goals across 16 modules |
+
+Results are tracked in `*_verification_results.csv`.
 
 ### Trust the source, verify the wrapper
 
