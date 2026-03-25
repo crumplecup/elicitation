@@ -55,4 +55,38 @@ pub trait ElicitComplete:
     + for<'de> serde::Deserialize<'de>
     + schemars::JsonSchema
 {
+    /// Runtime check: does this type's Kani proof contain `Inner`'s Kani proof?
+    ///
+    /// Use this in tests to assert delegation — i.e., that an aggregate type's
+    /// proof includes its constituent types' proofs. Catches regressions in
+    /// manual proof implementations.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// assert!(VecNonEmpty::<String>::kani_proof_contains::<String>(),
+    ///     "VecNonEmpty proof must include String's proof");
+    /// ```
+    #[cfg(feature = "proofs")]
+    fn kani_proof_contains<Inner: Elicitation>() -> bool {
+        let outer = Self::kani_proof().to_string();
+        let inner = Inner::kani_proof().to_string();
+        !inner.is_empty() && outer.contains(&inner)
+    }
+
+    /// Runtime check: does this type's Verus proof contain `Inner`'s Verus proof?
+    #[cfg(feature = "proofs")]
+    fn verus_proof_contains<Inner: Elicitation>() -> bool {
+        let outer = Self::verus_proof().to_string();
+        let inner = Inner::verus_proof().to_string();
+        !inner.is_empty() && outer.contains(&inner)
+    }
+
+    /// Runtime check: does this type's Creusot proof contain `Inner`'s Creusot proof?
+    #[cfg(feature = "proofs")]
+    fn creusot_proof_contains<Inner: Elicitation>() -> bool {
+        let outer = Self::creusot_proof().to_string();
+        let inner = Inner::creusot_proof().to_string();
+        !inner.is_empty() && outer.contains(&inner)
+    }
 }
