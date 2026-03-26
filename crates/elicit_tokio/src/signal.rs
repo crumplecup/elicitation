@@ -115,6 +115,7 @@ impl Prop for SignalHandlerRegistered {
         }
     }
 }
+#[cfg(unix)]
 impl VerifiedWorkflow for SignalHandlerRegistered {}
 
 /// Proposition: a registered Unix signal stream received a signal.
@@ -155,6 +156,7 @@ impl Prop for SignalReceived {
         }
     }
 }
+#[cfg(unix)]
 impl VerifiedWorkflow for SignalReceived {}
 
 // ── Plugin context ────────────────────────────────────────────────────────────
