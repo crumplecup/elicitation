@@ -32,7 +32,6 @@ fn compose_phase2_workflow() -> Vec<serde_json::Value> {
                 "max_connections": 1
             }
         }),
-
         // Step 2: CREATE TABLE
         json!({
             "tool": "sqlx_workflow__execute",
@@ -47,14 +46,11 @@ fn compose_phase2_workflow() -> Vec<serde_json::Value> {
                 "args": []
             }
         }),
-
         // === Transfer 1: Alice -100, Bob +100 ===
-
         json!({
             "tool": "sqlx_workflow__begin",
             "params": {}
         }),
-
         json!({
             "tool": "sqlx_workflow__tx_execute",
             "params": {
@@ -62,7 +58,6 @@ fn compose_phase2_workflow() -> Vec<serde_json::Value> {
                 "args": []
             }
         }),
-
         json!({
             "tool": "sqlx_workflow__tx_execute",
             "params": {
@@ -70,19 +65,15 @@ fn compose_phase2_workflow() -> Vec<serde_json::Value> {
                 "args": []
             }
         }),
-
         json!({
             "tool": "sqlx_workflow__commit",
             "params": {}
         }),
-
         // === Transfer 2: Alice -50, Bob +50 ===
-
         json!({
             "tool": "sqlx_workflow__begin",
             "params": {}
         }),
-
         json!({
             "tool": "sqlx_workflow__tx_execute",
             "params": {
@@ -90,7 +81,6 @@ fn compose_phase2_workflow() -> Vec<serde_json::Value> {
                 "args": []
             }
         }),
-
         json!({
             "tool": "sqlx_workflow__tx_execute",
             "params": {
@@ -98,12 +88,10 @@ fn compose_phase2_workflow() -> Vec<serde_json::Value> {
                 "args": []
             }
         }),
-
         json!({
             "tool": "sqlx_workflow__commit",
             "params": {}
         }),
-
         // === Balance Queries ===
 
         // Step 11: Query Alice's balance
@@ -114,7 +102,6 @@ fn compose_phase2_workflow() -> Vec<serde_json::Value> {
                 "args": []
             }
         }),
-
         // Step 12: Query Bob's balance
         json!({
             "tool": "sqlx_workflow__fetch_one",
@@ -123,7 +110,6 @@ fn compose_phase2_workflow() -> Vec<serde_json::Value> {
                 "args": []
             }
         }),
-
         // Step 13: Query total balance (should be zero - double-entry invariant)
         json!({
             "tool": "sqlx_workflow__fetch_one",
@@ -132,7 +118,6 @@ fn compose_phase2_workflow() -> Vec<serde_json::Value> {
                 "args": []
             }
         }),
-
         // === Validation ===
         // The generated binary will execute these queries. We can inspect the
         // generated code to verify the queries are correct, and optionally
@@ -224,7 +209,10 @@ async fn test_ledger_phase2_queries() {
         actual_binary_path.display()
     );
 
-    println!("✅ Binary compiled successfully: {}", actual_binary_path.display());
+    println!(
+        "✅ Binary compiled successfully: {}",
+        actual_binary_path.display()
+    );
 
     // Step 8: Run the binary and capture output
     println!("\n=== Running binary ===");

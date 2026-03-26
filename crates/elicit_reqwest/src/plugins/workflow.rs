@@ -36,7 +36,9 @@ use std::time::Duration;
 
 use crate::HttpContext;
 use elicitation::contracts::{And, Established, both};
-use elicitation::{ElicitPlugin, F64Positive, Prop, UrlValid as UrlValidType, VerifiedWorkflow, elicit_tool};
+use elicitation::{
+    ElicitPlugin, F64Positive, Prop, UrlValid as UrlValidType, VerifiedWorkflow, elicit_tool,
+};
 use reqwest::header::{HeaderMap, HeaderValue};
 use rmcp::{
     ErrorData,
@@ -53,24 +55,20 @@ use tracing::instrument;
 pub struct UrlValid;
 impl VerifiedWorkflow for UrlValid {}
 
-
 /// Proposition: the HTTP request was dispatched and a response was received.
 #[derive(Prop)]
 pub struct RequestCompleted;
 impl VerifiedWorkflow for RequestCompleted {}
-
 
 /// Proposition: the response status code is in the 2xx (success) range.
 #[derive(Prop)]
 pub struct StatusSuccess;
 impl VerifiedWorkflow for StatusSuccess {}
 
-
 /// Proposition: the request carried a non-empty authorization credential.
 #[derive(Prop)]
 pub struct Authorized;
 impl VerifiedWorkflow for Authorized {}
-
 
 /// Composite: a complete successful fetch (URL valid, request sent, 2xx status).
 pub type FetchSucceeded = And<UrlValid, And<RequestCompleted, StatusSuccess>>;

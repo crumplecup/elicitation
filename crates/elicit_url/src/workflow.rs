@@ -49,18 +49,15 @@ use tracing::instrument;
 pub struct UrlParsed;
 impl VerifiedWorkflow for UrlParsed {}
 
-
 /// Proposition: the URL scheme is specifically `https`.
 #[derive(Prop)]
 pub struct HttpsRequired;
 impl VerifiedWorkflow for HttpsRequired {}
 
-
 /// Proposition: the URL scheme is in the caller-supplied allow-list.
 #[derive(Prop)]
 pub struct SchemeAllowed;
 impl VerifiedWorkflow for SchemeAllowed {}
-
 
 /// Composite: URL is parsed AND scheme is https.
 pub type SecureUrl = And<UrlParsed, HttpsRequired>;

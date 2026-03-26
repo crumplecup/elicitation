@@ -155,10 +155,7 @@ async fn test_ledger_workflow_smoke() {
         "Binary does not exist at {}",
         actual_binary_path.display()
     );
-    assert!(
-        actual_binary_path.is_file(),
-        "Binary path is not a file"
-    );
+    assert!(actual_binary_path.is_file(), "Binary path is not a file");
 
     println!("Test passed! Binary at: {}", actual_binary_path.display());
     println!("Generated code can be inspected at: {}", main_rs.display());

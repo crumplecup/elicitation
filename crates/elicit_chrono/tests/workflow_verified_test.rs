@@ -6,8 +6,8 @@
 #![cfg(feature = "proofs")]
 
 use elicit_chrono::{DateTimeFuture, DateTimeInRange, DateTimeParsed};
-use elicitation::contracts::{And, Prop};
 use elicitation::VerifiedWorkflow;
+use elicitation::contracts::{And, Prop};
 
 #[track_caller]
 fn assert_verified<T: VerifiedWorkflow>(label: &str) {

@@ -76,7 +76,6 @@ impl Prop for ProcessSpawned {
 }
 impl VerifiedWorkflow for ProcessSpawned {}
 
-
 /// Proposition: `child.wait()` completed — the child process has exited.
 #[derive(Elicit)]
 pub struct ProcessExited {}
@@ -115,7 +114,6 @@ impl Prop for ProcessExited {
 }
 impl VerifiedWorkflow for ProcessExited {}
 
-
 /// Proposition: bytes were written to a child process's stdin pipe.
 #[derive(Elicit)]
 pub struct StdinWritten {}
@@ -153,7 +151,6 @@ impl Prop for StdinWritten {
     }
 }
 impl VerifiedWorkflow for StdinWritten {}
-
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

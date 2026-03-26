@@ -14,8 +14,8 @@ use elicit_tokio::{
     SignalHandlerRegistered, SignalReceived, UnixConnectionAccepted, UnixDataReceived,
     UnixListenerBound, UnixStreamConnected,
 };
-use elicitation::contracts::And;
 use elicitation::VerifiedWorkflow;
+use elicitation::contracts::And;
 
 #[track_caller]
 fn assert_verified<T: VerifiedWorkflow>(label: &str) {

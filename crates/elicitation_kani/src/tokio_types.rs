@@ -72,7 +72,8 @@ use elicitation::contracts::{And, Established, Prop, both};
 
 macro_rules! assert_prop_zero_sized {
     ($name:ident) => {
-        #[derive(elicitation::Prop)] struct $name;
+        #[derive(elicitation::Prop)]
+        struct $name;
         assert!(
             std::mem::size_of::<$name>() == 0,
             "{} must be zero-sized",
@@ -728,7 +729,8 @@ fn verify_unix_data_received_axiom() {
 #[kani::proof]
 fn verify_established_zero_sized_general() {
     use std::mem::size_of;
-    #[derive(elicitation::Prop)] struct AnyProp;
+    #[derive(elicitation::Prop)]
+    struct AnyProp;
     assert!(size_of::<Established<AnyProp>>() == 0);
 }
 
@@ -737,8 +739,10 @@ fn verify_established_zero_sized_general() {
 #[kani::proof]
 fn verify_and_combinator_zero_sized() {
     use std::mem::size_of;
-    #[derive(elicitation::Prop)] struct P;
-    #[derive(elicitation::Prop)] struct Q;
+    #[derive(elicitation::Prop)]
+    struct P;
+    #[derive(elicitation::Prop)]
+    struct Q;
     assert!(size_of::<And<P, Q>>() == 0);
 }
 
@@ -747,8 +751,10 @@ fn verify_and_combinator_zero_sized() {
 #[kani::proof]
 fn verify_both_composition_zero_sized() {
     use std::mem::size_of;
-    #[derive(elicitation::Prop)] struct P;
-    #[derive(elicitation::Prop)] struct Q;
+    #[derive(elicitation::Prop)]
+    struct P;
+    #[derive(elicitation::Prop)]
+    struct Q;
     let p: Established<P> = Established::assert();
     let q: Established<Q> = Established::assert();
     let _combined: Established<And<P, Q>> = both(p, q);
@@ -760,9 +766,12 @@ fn verify_both_composition_zero_sized() {
 #[kani::proof]
 fn verify_three_way_composition_zero_sized() {
     use std::mem::size_of;
-    #[derive(elicitation::Prop)] struct Bound;
-    #[derive(elicitation::Prop)] struct Accepted;
-    #[derive(elicitation::Prop)] struct Connected;
+    #[derive(elicitation::Prop)]
+    struct Bound;
+    #[derive(elicitation::Prop)]
+    struct Accepted;
+    #[derive(elicitation::Prop)]
+    struct Connected;
     let p: Established<Bound> = Established::assert();
     let q: Established<Accepted> = Established::assert();
     let r: Established<Connected> = Established::assert();

@@ -334,7 +334,6 @@ impl Prop for True {
 }
 impl VerifiedWorkflow for True {}
 
-
 impl True {
     /// Axiom: truth is always established.
     ///

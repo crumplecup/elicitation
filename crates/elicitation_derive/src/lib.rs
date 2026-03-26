@@ -500,7 +500,6 @@ pub fn derive_prop(input: TokenStream) -> TokenStream {
     derive_prop::expand(input)
 }
 
-
 ///
 /// This generates a trivial impl where `type Proxy = Self`, meaning the type
 /// is its own proxy — no conversion needed.  Use this on any type that already

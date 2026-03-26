@@ -62,8 +62,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use elicitation::{Elicit, VerifiedWorkflow};
 use elicitation::contracts::{Established, Prop};
+use elicitation::{Elicit, VerifiedWorkflow};
 use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
@@ -115,7 +115,6 @@ impl Prop for TaskSpawned {
 }
 impl VerifiedWorkflow for TaskSpawned {}
 
-
 /// Proposition: a spawned task completed and its output was retrieved.
 #[derive(Elicit)]
 pub struct TaskJoined {}
@@ -154,7 +153,6 @@ impl Prop for TaskJoined {
 }
 impl VerifiedWorkflow for TaskJoined {}
 
-
 /// Proposition: a spawned task was cancelled via `JoinHandle::abort()`.
 #[derive(Elicit)]
 pub struct TaskAborted {}
@@ -191,7 +189,6 @@ impl Prop for TaskAborted {
     }
 }
 impl VerifiedWorkflow for TaskAborted {}
-
 
 // ── Workload traits ───────────────────────────────────────────────────────────
 

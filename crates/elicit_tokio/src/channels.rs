@@ -130,7 +130,6 @@ impl Prop for MessageSent {
 }
 impl VerifiedWorkflow for MessageSent {}
 
-
 /// Proposition: a message was received from a channel.
 #[derive(Elicit)]
 pub struct MessageReceived {}
@@ -169,7 +168,6 @@ impl Prop for MessageReceived {
 }
 impl VerifiedWorkflow for MessageReceived {}
 
-
 /// Proposition: a channel or end was closed.
 #[derive(Elicit)]
 pub struct ChannelClosed {}
@@ -207,7 +205,6 @@ impl Prop for ChannelClosed {
     }
 }
 impl VerifiedWorkflow for ChannelClosed {}
-
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

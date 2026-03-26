@@ -19,8 +19,8 @@
 //! | `build_multi_thread` | `worker_threads?, enable_all, max_blocking_threads?` | error at runtime | emit-only |
 //! | `block_on` | `runtime_var, body` | error at runtime | emit-only |
 
-use elicitation::{Elicit, VerifiedWorkflow};
 use elicitation::contracts::{Established, Prop};
+use elicitation::{Elicit, VerifiedWorkflow};
 use elicitation_derive::ElicitPlugin;
 use rmcp::{ErrorData, model::CallToolResult};
 use schemars::JsonSchema;
@@ -64,7 +64,6 @@ impl Prop for RuntimeFlavored {
     }
 }
 impl VerifiedWorkflow for RuntimeFlavored {}
-
 
 // ── Runtime flavor mirror ─────────────────────────────────────────────────────
 

@@ -74,3 +74,11 @@ tokio = { workspace = true, features = ["full"] }
 tracing-subscriber = { workspace = true }
 tempfile = "3.13"
 reqwest = { workspace = true }
+
+[[test]]
+name = "ledger_smoke_test"
+required-features = ["emit"]
+
+[[test]]
+name = "ledger_phase2_query_test"
+required-features = ["emit"]

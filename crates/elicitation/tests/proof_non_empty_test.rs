@@ -13,8 +13,14 @@ use elicitation::Elicitation;
 #[track_caller]
 fn assert_proofs_non_empty<T: Elicitation>(label: &str) {
     assert!(!T::kani_proof().is_empty(), "{label}: kani_proof is empty");
-    assert!(!T::verus_proof().is_empty(), "{label}: verus_proof is empty");
-    assert!(!T::creusot_proof().is_empty(), "{label}: creusot_proof is empty");
+    assert!(
+        !T::verus_proof().is_empty(),
+        "{label}: verus_proof is empty"
+    );
+    assert!(
+        !T::creusot_proof().is_empty(),
+        "{label}: creusot_proof is empty"
+    );
 }
 
 // ============================================================================
@@ -36,14 +42,10 @@ fn bool_proofs_non_empty() {
 // ============================================================================
 
 use elicitation::verification::types::{
-    I8Default, I8NonNegative, I8NonZero, I8Positive,
-    I16Default, I16NonNegative, I16NonZero, I16Positive,
-    I32Default, I32NonNegative, I32NonZero, I32Positive,
-    I64Default, I64NonNegative, I64NonZero, I64Positive,
-    U8Default, U8NonZero, U8Positive,
-    U16Default, U16NonZero, U16Positive,
-    U32Default, U32NonZero, U32Positive,
-    U64Default, U64NonZero, U64Positive,
+    I8Default, I8NonNegative, I8NonZero, I8Positive, I16Default, I16NonNegative, I16NonZero,
+    I16Positive, I32Default, I32NonNegative, I32NonZero, I32Positive, I64Default, I64NonNegative,
+    I64NonZero, I64Positive, U8Default, U8NonZero, U8Positive, U16Default, U16NonZero, U16Positive,
+    U32Default, U32NonZero, U32Positive, U64Default, U64NonZero, U64Positive,
 };
 
 #[test]
@@ -95,8 +97,8 @@ fn integer_wrapper_proofs_non_empty() {
 // ============================================================================
 
 use elicitation::verification::types::{
-    F32Default, F32Finite, F32NonNegative, F32Positive,
-    F64Default, F64Finite, F64NonNegative, F64Positive,
+    F32Default, F32Finite, F32NonNegative, F32Positive, F64Default, F64Finite, F64NonNegative,
+    F64Positive,
 };
 
 #[test]
@@ -122,9 +124,8 @@ fn float_wrapper_proofs_non_empty() {
 // ============================================================================
 
 use elicitation::verification::types::{
-    CharAlphabetic, CharAlphanumeric, CharNumeric,
-    PathBufExists, PathBufIsDir, PathBufIsFile, PathBufReadable,
-    DurationPositive,
+    CharAlphabetic, CharAlphanumeric, CharNumeric, DurationPositive, PathBufExists, PathBufIsDir,
+    PathBufIsFile, PathBufReadable,
 };
 
 #[test]
@@ -165,8 +166,7 @@ fn systemtime_proofs_non_empty() {
 // ============================================================================
 
 use elicitation::verification::types::{
-    IpPrivate, IpPublic, IpV4, IpV6,
-    Ipv4Loopback, Ipv6Loopback,
+    IpPrivate, IpPublic, IpV4, IpV6, Ipv4Loopback, Ipv6Loopback,
 };
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 
@@ -214,9 +214,9 @@ fn generic_container_proofs_non_empty() {
 // ============================================================================
 
 use elicitation::verification::types::{
-    ArcSatisfies, BoxSatisfies, BTreeMapNonEmpty, BTreeSetNonEmpty,
-    HashMapNonEmpty, HashSetNonEmpty, LinkedListNonEmpty, OptionSome,
-    ResultOk, RcSatisfies, VecAllSatisfy, VecDequeNonEmpty, VecNonEmpty,
+    ArcSatisfies, BTreeMapNonEmpty, BTreeSetNonEmpty, BoxSatisfies, HashMapNonEmpty,
+    HashSetNonEmpty, LinkedListNonEmpty, OptionSome, RcSatisfies, ResultOk, VecAllSatisfy,
+    VecDequeNonEmpty, VecNonEmpty,
 };
 
 #[test]
@@ -243,7 +243,9 @@ fn verification_wrapper_proofs_non_empty() {
 #[cfg(feature = "url")]
 mod url_tests {
     use super::assert_proofs_non_empty;
-    use elicitation::verification::types::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost};
+    use elicitation::verification::types::{
+        UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost,
+    };
 
     #[test]
     fn url_proofs_non_empty() {

@@ -2,7 +2,7 @@
 
 use elicitation::{
     ElicitResult,
-    contracts::{And, Established, InVariant, Is, Prop, both},
+    contracts::{And, Established, InVariant, Is, both},
 };
 
 /// Test that elicit_proven returns a proof
@@ -17,10 +17,10 @@ async fn test_string_elicit_proven() -> ElicitResult<()> {
 /// Test that proofs can be used in downstream functions
 #[test]
 fn test_proof_composition() {
+    #[derive(elicitation::Prop)]
     struct EmailValidated;
+    #[derive(elicitation::Prop)]
     struct ConsentObtained;
-    impl Prop for EmailValidated {}
-    impl Prop for ConsentObtained {}
 
     // Simulate two proofs
     let email_proof: Established<EmailValidated> = Established::assert();
@@ -59,8 +59,8 @@ fn test_proofs_zero_sized() {
     let i32_proof: Established<Is<i32>> = Established::assert();
     assert_eq!(std::mem::size_of_val(&i32_proof), 0);
 
+    #[derive(elicitation::Prop)]
     struct EmailValid;
-    impl Prop for EmailValid {}
     let custom_proof: Established<EmailValid> = Established::assert();
     assert_eq!(std::mem::size_of_val(&custom_proof), 0);
 }

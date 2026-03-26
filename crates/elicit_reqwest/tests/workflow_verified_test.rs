@@ -3,8 +3,8 @@
 #![cfg(feature = "proofs")]
 
 use elicit_reqwest::{Authorized, RequestCompleted, StatusSuccess, UrlValid};
-use elicitation::contracts::And;
 use elicitation::VerifiedWorkflow;
+use elicitation::contracts::And;
 
 #[track_caller]
 fn assert_verified<T: VerifiedWorkflow>(label: &str) {

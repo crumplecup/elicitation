@@ -15,7 +15,7 @@
 
 #![cfg(feature = "proofs")]
 
-use elicitation::{ElicitComplete, Elicitation};
+use elicitation::Elicitation;
 
 // ============================================================================
 // Helper
@@ -82,8 +82,8 @@ fn rc_delegates_to_inner() {
 // ============================================================================
 
 use elicitation::verification::types::{
-    ArcSatisfies, BoxSatisfies, BTreeMapNonEmpty, BTreeSetNonEmpty, HashMapNonEmpty,
-    HashSetNonEmpty, LinkedListNonEmpty, OptionSome, ResultOk, RcSatisfies, VecAllSatisfy,
+    ArcSatisfies, BTreeMapNonEmpty, BTreeSetNonEmpty, BoxSatisfies, HashMapNonEmpty,
+    HashSetNonEmpty, LinkedListNonEmpty, OptionSome, RcSatisfies, ResultOk, VecAllSatisfy,
     VecDequeNonEmpty, VecNonEmpty,
 };
 
@@ -161,8 +161,7 @@ fn linked_list_non_empty_delegates_to_element() {
 // Primitives — delegate to wrapper types
 // ============================================================================
 
-use elicitation::verification::types::{BoolDefault, I8Default, I16Default, I32Default, I64Default,
-    U8Default, U16Default, U32Default, U64Default, F32Default, F64Default};
+use elicitation::verification::types::{BoolDefault, F64Default, I32Default, I64Default};
 
 #[test]
 fn bool_delegates_to_bool_default() {

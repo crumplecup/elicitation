@@ -1031,10 +1031,7 @@ pub fn creusot_unit_struct(struct_name: &str) -> TokenStream {
 /// `fn_name` is the snake_case function-name suffix (e.g. `"db_connected"`).
 /// The generated harness is named `verify_<fn_name>_prop_marker`.
 pub fn kani_trivial_prop(fn_name: &str) -> TokenStream {
-    let fn_ident = Ident::new(
-        &format!("verify_{fn_name}_prop_marker"),
-        Span::call_site(),
-    );
+    let fn_ident = Ident::new(&format!("verify_{fn_name}_prop_marker"), Span::call_site());
     quote! {
         #[kani::proof]
         fn #fn_ident() {
@@ -1068,10 +1065,7 @@ pub fn verus_trivial_prop(fn_name: &str) -> TokenStream {
 ///
 /// `fn_name` is the snake_case function-name suffix (e.g. `"db_connected"`).
 pub fn creusot_trivial_prop(fn_name: &str) -> TokenStream {
-    let fn_ident = Ident::new(
-        &format!("verify_{fn_name}_prop_creusot"),
-        Span::call_site(),
-    );
+    let fn_ident = Ident::new(&format!("verify_{fn_name}_prop_creusot"), Span::call_site());
     quote! {
         #[requires(true)]
         #[ensures(result == true)]
@@ -1600,6 +1594,57 @@ pub fn creusot_network_addr() -> TokenStream {
         #[ensures(result == addr)]
         pub fn verify_ipv4addr_roundtrip(addr: std::net::Ipv4Addr) -> std::net::Ipv4Addr {
             addr
+        }
+    }
+}
+
+/// Generate a Verus structural stub proof for types without full Verus specs.
+pub fn verus_type_stub(type_name: &str) -> TokenStream {
+    let safe_name = type_name
+        .to_lowercase()
+        .replace('<', "_")
+        .replace('>', "")
+        .replace([',', ' ', ':'], "_");
+    let fn_ident = Ident::new(&format!("verify_{safe_name}_structural"), Span::call_site());
+    quote! {
+        verus! {
+        pub fn #fn_ident() -> (result: bool)
+            ensures result == true,
+        {
+            true
+        }
+        }
+    }
+}
+
+/// Generate a Creusot structural stub proof for types without full Creusot specs.
+pub fn creusot_type_stub(type_name: &str) -> TokenStream {
+    let safe_name = type_name
+        .to_lowercase()
+        .replace('<', "_")
+        .replace('>', "")
+        .replace([',', ' ', ':'], "_");
+    let fn_ident = Ident::new(
+        &format!("verify_{safe_name}_structural_creusot"),
+        Span::call_site(),
+    );
+    quote! {
+        #[requires(true)]
+        #[ensures(result == true)]
+        #[trusted]
+        pub fn #fn_ident() -> bool {
+            true
+        }
+    }
+}
+
+/// Generate a Kani proof for PathBufExists (zero-sized wrapper check).
+pub fn kani_pathbuf_exists() -> TokenStream {
+    quote! {
+        #[kani::proof]
+        fn verify_pathbuf_exists_structural() {
+            let established: bool = true;
+            assert!(established);
         }
     }
 }

@@ -7,8 +7,8 @@ use elicit_sqlx::{
     QueryFragmentEmitted, QueryScalarFragmentEmitted, RowsFetched, TransactionCommitted,
     TransactionOpen, TransactionRolledBack,
 };
-use elicitation::contracts::And;
 use elicitation::VerifiedWorkflow;
+use elicitation::contracts::And;
 
 #[track_caller]
 fn assert_verified<T: VerifiedWorkflow>(label: &str) {

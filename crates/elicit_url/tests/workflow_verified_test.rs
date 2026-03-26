@@ -3,8 +3,8 @@
 #![cfg(feature = "proofs")]
 
 use elicit_url::{HttpsRequired, SchemeAllowed, UrlParsed};
-use elicitation::contracts::And;
 use elicitation::VerifiedWorkflow;
+use elicitation::contracts::And;
 
 #[track_caller]
 fn assert_verified<T: VerifiedWorkflow>(label: &str) {

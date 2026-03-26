@@ -352,10 +352,14 @@ fn verify_migrate_fragment_emitted_axiom() {
 #[kani::proof]
 fn verify_fragment_props_zero_sized() {
     use std::mem::size_of;
-    #[derive(elicitation::Prop)] struct QueryFragmentEmitted;
-    #[derive(elicitation::Prop)] struct QueryAsFragmentEmitted;
-    #[derive(elicitation::Prop)] struct QueryScalarFragmentEmitted;
-    #[derive(elicitation::Prop)] struct MigrateFragmentEmitted;
+    #[derive(elicitation::Prop)]
+    struct QueryFragmentEmitted;
+    #[derive(elicitation::Prop)]
+    struct QueryAsFragmentEmitted;
+    #[derive(elicitation::Prop)]
+    struct QueryScalarFragmentEmitted;
+    #[derive(elicitation::Prop)]
+    struct MigrateFragmentEmitted;
     assert!(size_of::<QueryFragmentEmitted>() == 0);
     assert!(size_of::<QueryAsFragmentEmitted>() == 0);
     assert!(size_of::<QueryScalarFragmentEmitted>() == 0);
@@ -370,7 +374,8 @@ fn verify_established_is_zero_sized() {
     use std::mem::size_of;
     // DbConnected, QueryExecuted, etc. are unit structs — zero-sized.
     // Established<P> wraps PhantomData<P>, so also zero-sized.
-    #[derive(elicitation::Prop)] struct Dummy;
+    #[derive(elicitation::Prop)]
+    struct Dummy;
     assert!(size_of::<Established<Dummy>>() == 0);
 }
 
@@ -378,8 +383,10 @@ fn verify_established_is_zero_sized() {
 #[kani::proof]
 fn verify_and_combinator_is_zero_sized() {
     use std::mem::size_of;
-    #[derive(elicitation::Prop)] struct P;
-    #[derive(elicitation::Prop)] struct Q;
+    #[derive(elicitation::Prop)]
+    struct P;
+    #[derive(elicitation::Prop)]
+    struct Q;
     assert!(size_of::<And<P, Q>>() == 0);
 }
 
@@ -387,8 +394,10 @@ fn verify_and_combinator_is_zero_sized() {
 #[kani::proof]
 fn verify_both_result_is_zero_sized() {
     use std::mem::size_of;
-    #[derive(elicitation::Prop)] struct P;
-    #[derive(elicitation::Prop)] struct Q;
+    #[derive(elicitation::Prop)]
+    struct P;
+    #[derive(elicitation::Prop)]
+    struct Q;
     let p: Established<P> = Established::assert();
     let q: Established<Q> = Established::assert();
     let _both: Established<And<P, Q>> = both(p, q);

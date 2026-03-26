@@ -53,12 +53,10 @@ use tracing::instrument;
 pub struct RegexValid;
 impl VerifiedWorkflow for RegexValid {}
 
-
 /// Proposition: the regex found at least one match in the target text.
 #[derive(Prop)]
 pub struct PatternMatched;
 impl VerifiedWorkflow for PatternMatched {}
-
 
 /// Composite: the pattern is valid AND it matched.
 pub type MatchProof = And<RegexValid, PatternMatched>;

@@ -49,18 +49,15 @@ use tracing::instrument;
 pub struct DateTimeParsed;
 impl VerifiedWorkflow for DateTimeParsed {}
 
-
 /// Proposition: the datetime is strictly in the future (after `Utc::now()`).
 #[derive(Prop)]
 pub struct DateTimeFuture;
 impl VerifiedWorkflow for DateTimeFuture {}
 
-
 /// Proposition: the datetime falls within the asserted [start, end] range.
 #[derive(Prop)]
 pub struct DateTimeInRange;
 impl VerifiedWorkflow for DateTimeInRange {}
-
 
 /// Composite: parsed AND in the future.
 pub type FutureDateTimeProof = And<DateTimeParsed, DateTimeFuture>;

@@ -75,7 +75,6 @@ impl Prop for SleepCompleted {
 }
 impl VerifiedWorkflow for SleepCompleted {}
 
-
 /// Proposition: a `timeout_await` call returned (either expired or checked).
 #[derive(Elicit)]
 pub struct TimeoutResolved;
@@ -114,7 +113,6 @@ impl Prop for TimeoutResolved {
     }
 }
 impl VerifiedWorkflow for TimeoutResolved {}
-
 
 // ── Internal context entries ──────────────────────────────────────────────────
 

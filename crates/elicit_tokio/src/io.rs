@@ -82,7 +82,6 @@ impl Prop for DuplexCreated {
 }
 impl VerifiedWorkflow for DuplexCreated {}
 
-
 // ── Plugin context ────────────────────────────────────────────────────────────
 
 /// Shared state for all `tokio_io__*` tool calls.

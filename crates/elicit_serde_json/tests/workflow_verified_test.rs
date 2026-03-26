@@ -2,9 +2,11 @@
 
 #![cfg(feature = "proofs")]
 
-use elicit_serde_json::{IsObject, JsonParsed, PointerResolved, RequiredKeysPresent, UpdateApplied};
-use elicitation::contracts::And;
+use elicit_serde_json::{
+    IsObject, JsonParsed, PointerResolved, RequiredKeysPresent, UpdateApplied,
+};
 use elicitation::VerifiedWorkflow;
+use elicitation::contracts::And;
 
 #[track_caller]
 fn assert_verified<T: VerifiedWorkflow>(label: &str) {

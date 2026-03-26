@@ -488,6 +488,29 @@ fn generate_elicit_impl(
 fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
     let style_name = quote::format_ident!("{}Style", name);
 
+    // Compute proof methods at macro-expansion time so the cfg is checked against
+    // this proc-macro's own `proofs` feature, not the destination crate's features.
+    #[cfg(feature = "proofs")]
+    let style_proof_methods = quote! {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::verification::proof_helpers::kani_single_variant_enum(
+                stringify!(#style_name)
+            )
+        }
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::verification::proof_helpers::verus_single_variant_enum(
+                stringify!(#style_name)
+            )
+        }
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::verification::proof_helpers::creusot_single_variant_enum(
+                stringify!(#style_name)
+            )
+        }
+    };
+    #[cfg(not(feature = "proofs"))]
+    let style_proof_methods = quote! {};
+
     quote! {
         /// Style enum for this type (default-only for now).
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -509,24 +532,7 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
             async fn elicit<C: elicitation::ElicitCommunicator>(_communicator: &C) -> elicitation::ElicitResult<Self> {
                 Ok(Self::Default)
             }
-            #[cfg(feature = "proofs")]
-            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-                elicitation::verification::proof_helpers::kani_single_variant_enum(
-                    stringify!(#style_name)
-                )
-            }
-            #[cfg(feature = "proofs")]
-            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-                elicitation::verification::proof_helpers::verus_single_variant_enum(
-                    stringify!(#style_name)
-                )
-            }
-            #[cfg(feature = "proofs")]
-            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-                elicitation::verification::proof_helpers::creusot_single_variant_enum(
-                    stringify!(#style_name)
-                )
-            }
+            #style_proof_methods
         }
     }
 }

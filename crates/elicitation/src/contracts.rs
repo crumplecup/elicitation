@@ -47,13 +47,13 @@
 //! # Quick Start
 //!
 //! ```rust
-//! use elicitation::contracts::{Prop, Established, And, both};
+//! use elicitation::contracts::{Established, And, both};
 //!
 //! // Define your workflow's propositions
+//! #[derive(elicitation::Prop)]
 //! struct EmailValidated;
+//! #[derive(elicitation::Prop)]
 //! struct ConsentObtained;
-//! impl Prop for EmailValidated {}
-//! impl Prop for ConsentObtained {}
 //!
 //! // Step 1: Validate (returns proof if valid)
 //! fn validate_email(email: &str) -> Option<Established<EmailValidated>> {
@@ -129,13 +129,13 @@
 //! # Multi-Step Composition Example
 //!
 //! ```rust
-//! use elicitation::contracts::{Prop, Established, Is, And, both};
+//! use elicitation::contracts::{Established, And, both, Is};
 //!
 //! // Define propositions for agent workflow
+//! #[derive(elicitation::Prop)]
 //! struct EmailValidated;
+//! #[derive(elicitation::Prop)]
 //! struct ConsentObtained;
-//! impl Prop for EmailValidated {}
-//! impl Prop for ConsentObtained {}
 //!
 //! // Step 1: Validate email (establishes EmailValidated)
 //! fn validate_email(email: &str) -> Option<Established<EmailValidated>> {
@@ -409,12 +409,12 @@ impl<P: Prop> Established<P> {
     /// # Examples
     ///
     /// ```rust
-    /// use elicitation::contracts::{Established, Is, Implies, Prop};
+    /// use elicitation::contracts::{Established, Is, Implies};
     /// use std::marker::PhantomData;
     ///
     /// // StringNonEmpty implies String (via refinement)
+    /// #[derive(elicitation::Prop)]
     /// struct StringNonEmpty;
-    /// impl Prop for StringNonEmpty {}
     /// impl Implies<Is<String>> for StringNonEmpty {}
     ///
     /// let strong_proof: Established<StringNonEmpty> = Established::assert();
@@ -528,13 +528,12 @@ impl<T: 'static> Prop for Is<T> {
 /// # Examples
 ///
 /// ```rust
-/// use elicitation::contracts::{Prop, Implies};
+/// use elicitation::contracts::Implies;
 ///
+/// #[derive(elicitation::Prop)]
 /// struct Strong;
+/// #[derive(elicitation::Prop)]
 /// struct Weak;
-///
-/// impl Prop for Strong {}
-/// impl Prop for Weak {}
 ///
 /// // Declare that Strong implies Weak
 /// impl Implies<Weak> for Strong {}
@@ -565,11 +564,10 @@ type AndMarker<P, Q> = (fn() -> P, fn() -> Q);
 /// use std::marker::PhantomData;
 ///
 /// // Two propositions
+/// #[derive(elicitation::Prop)]
 /// struct ValidUrl;
+/// #[derive(elicitation::Prop)]
 /// struct HasPort;
-///
-/// impl elicitation::contracts::Prop for ValidUrl {}
-/// impl elicitation::contracts::Prop for HasPort {}
 ///
 /// let url_proof: Established<ValidUrl> = Established::assert();
 /// let port_proof: Established<HasPort> = Established::assert();
@@ -615,12 +613,12 @@ impl<P: Prop, Q: Prop> Prop for And<P, Q> {
 /// # Examples
 ///
 /// ```rust
-/// use elicitation::contracts::{Established, And, both, Prop};
+/// use elicitation::contracts::{Established, And, both};
 ///
+/// #[derive(elicitation::Prop)]
 /// struct P;
+/// #[derive(elicitation::Prop)]
 /// struct Q;
-/// impl Prop for P {}
-/// impl Prop for Q {}
 ///
 /// let p: Established<P> = Established::assert();
 /// let q: Established<Q> = Established::assert();
@@ -640,12 +638,12 @@ pub fn both<P: Prop, Q: Prop>(_p: Established<P>, _q: Established<Q>) -> Establi
 /// # Examples
 ///
 /// ```rust
-/// use elicitation::contracts::{Established, And, both, fst, Prop};
+/// use elicitation::contracts::{Established, And, both, fst};
 ///
+/// #[derive(elicitation::Prop)]
 /// struct P;
+/// #[derive(elicitation::Prop)]
 /// struct Q;
-/// impl Prop for P {}
-/// impl Prop for Q {}
 ///
 /// let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
 /// let p: Established<P> = fst(pq);
@@ -664,12 +662,12 @@ pub fn fst<P: Prop, Q: Prop>(_both: Established<And<P, Q>>) -> Established<P> {
 /// # Examples
 ///
 /// ```rust
-/// use elicitation::contracts::{Established, And, both, snd, Prop};
+/// use elicitation::contracts::{Established, And, both, snd};
 ///
+/// #[derive(elicitation::Prop)]
 /// struct P;
+/// #[derive(elicitation::Prop)]
 /// struct Q;
-/// impl Prop for P {}
-/// impl Prop for Q {}
 ///
 /// let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
 /// let q: Established<Q> = snd(pq);

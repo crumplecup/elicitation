@@ -23,8 +23,8 @@
 //! | `read_dir` | `path` | `{ entries: [{name, is_file, is_dir, is_symlink}] }` |
 //! | `canonicalize` | `path` | `{ canonical_path }` |
 
-use elicitation::{Elicit, VerifiedWorkflow};
 use elicitation::contracts::{Established, Prop};
+use elicitation::{Elicit, VerifiedWorkflow};
 use elicitation_derive::ElicitPlugin;
 use rmcp::{ErrorData, model::CallToolResult, model::Content};
 use schemars::JsonSchema;
@@ -71,7 +71,6 @@ impl Prop for FileRead {
 }
 impl VerifiedWorkflow for FileRead {}
 
-
 /// Proposition: a file was written successfully (bytes are persisted).
 #[derive(Elicit)]
 pub struct FileWritten {}
@@ -110,7 +109,6 @@ impl Prop for FileWritten {
 }
 impl VerifiedWorkflow for FileWritten {}
 
-
 /// Proposition: a directory was created (path now exists as a directory).
 #[derive(Elicit)]
 pub struct DirCreated {}
@@ -148,7 +146,6 @@ impl Prop for DirCreated {
     }
 }
 impl VerifiedWorkflow for DirCreated {}
-
 
 // ── Param structs ─────────────────────────────────────────────────────────────
 

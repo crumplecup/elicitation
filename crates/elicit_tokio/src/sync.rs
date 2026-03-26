@@ -78,7 +78,6 @@ impl Prop for PermitAcquired {
 }
 impl VerifiedWorkflow for PermitAcquired {}
 
-
 /// Proposition: a `notified()` await returned — a notification was received.
 #[derive(Elicit)]
 pub struct NotificationReceived;
@@ -117,7 +116,6 @@ impl Prop for NotificationReceived {
 }
 impl VerifiedWorkflow for NotificationReceived {}
 
-
 /// Proposition: all parties have reached the barrier and it has released.
 #[derive(Elicit)]
 pub struct BarrierReached;
@@ -155,7 +153,6 @@ impl Prop for BarrierReached {
     }
 }
 impl VerifiedWorkflow for BarrierReached {}
-
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

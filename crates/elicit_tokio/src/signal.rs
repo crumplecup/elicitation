@@ -77,7 +77,6 @@ impl Prop for CtrlCReceived {
 }
 impl VerifiedWorkflow for CtrlCReceived {}
 
-
 /// Proposition: a Unix signal handler was registered successfully.
 #[cfg(unix)]
 #[derive(Elicit)]
@@ -118,7 +117,6 @@ impl Prop for SignalHandlerRegistered {
 }
 impl VerifiedWorkflow for SignalHandlerRegistered {}
 
-
 /// Proposition: a registered Unix signal stream received a signal.
 #[cfg(unix)]
 #[derive(Elicit)]
@@ -158,7 +156,6 @@ impl Prop for SignalReceived {
     }
 }
 impl VerifiedWorkflow for SignalReceived {}
-
 
 // ── Plugin context ────────────────────────────────────────────────────────────
 

@@ -47,18 +47,15 @@ use tracing::instrument;
 pub struct OffsetDateTimeParsed;
 impl VerifiedWorkflow for OffsetDateTimeParsed {}
 
-
 /// Proposition: the `OffsetDateTime` is strictly in the future.
 #[derive(Prop)]
 pub struct OffsetDateTimeFuture;
 impl VerifiedWorkflow for OffsetDateTimeFuture {}
 
-
 /// Proposition: the input string is a valid ISO 8601 local `PrimitiveDateTime`.
 #[derive(Prop)]
 pub struct PrimitiveDateTimeParsed;
 impl VerifiedWorkflow for PrimitiveDateTimeParsed {}
-
 
 /// Composite: parsed AND in the future.
 pub type FutureOffsetProof = And<OffsetDateTimeParsed, OffsetDateTimeFuture>;
