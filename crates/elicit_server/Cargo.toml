@@ -84,3 +84,6 @@ required-features = ["emit"]
 [[test]]
 name = "ledger_phase2_query_test"
 required-features = ["emit"]
+
+[[test]]
+name = "ledger_phase5_typestate_test"
