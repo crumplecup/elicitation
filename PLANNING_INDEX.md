@@ -690,6 +690,61 @@ todo app).
 
 **Location:** `crates/elicit_server/tests/ledger_*.rs`
 
+**Progress:**
+- ✅ Phase 1 (Smoke): Basic emit pipeline validation - COMPLETE
+- ✅ Phase 2 (Query): SQL aggregation and balance queries - COMPLETE
+- ✅ Phase 3 (Dynamic): Parameterized queries with runtime binding - COMPLETE
+- ✅ Phase 4 (Contracts): Pre-transfer validation pattern - COMPLETE
+- 🔲 Phase 5 (Typestate): State machine implementation - NEXT
+- 🔲 Phase 6 (Concurrent): Transaction isolation under load
+
+---
+
+### Typestate Ledger Design
+
+**Document:** [TYPESTATE_LEDGER_DESIGN.md](TYPESTATE_LEDGER_DESIGN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Design document for implementing a double-entry ledger using elicitation
+framework's typestate state machines with proof-carrying contracts. Builds on the proven
+emit pipeline from Phases 1-4, following patterns from strictly_games/tictactoe.
+
+**Design Principles:**
+- **Typestate phases**: `Transfer<Pending>` → `Transfer<Validated>` → `Transfer<Committed>` / `Transfer<Rejected>`
+- **Propositions**: `AmountPositive`, `SufficientFunds`, `AccountsDistinct`, `BalancedEntries`
+- **Composite props**: `ValidTransfer = And<AmountPositive, And<SufficientFunds, AccountsDistinct>>`
+- **Validation functions**: Return `Established<Prop>` on success, error otherwise
+- **Proof-carrying execution**: `commit()` requires `Established<ValidTransfer>` proof
+- **Transitions consume self**: `pending.validate()` consumes and returns `Validated`
+
+**Key Features:**
+- Compile-time guarantees (can't commit without validation)
+- Zero-cost proofs (`Established<P>` is `PhantomData`)
+- Compositional verification (Kani checks proof composition)
+- Type-driven design (state machine encoded in types)
+- Audit trail (each state captures relevant data)
+- Integration with sqlx_workflow tools (proven in Phases 1-4)
+
+**Proof Composition:**
+```rust
+// Level 1: Basic propositions
+AmountPositive, SufficientFunds, AccountsDistinct
+
+// Level 2: Valid transfer
+ValidTransfer = And<AmountPositive, And<SufficientFunds, AccountsDistinct>>
+
+// Level 3: Committable transfer
+CommittableTransfer = And<ValidTransfer, TransactionOpen>
+
+// Level 4: Committed transfer
+CommittedTransfer = And<CommittableTransfer, BalancedEntries>
+```
+
+**Implementation Plan:**
+- Phase 5a: Typestate types & validation (AccountId, Amount, Transfer<S>, propositions)
+- Phase 5b: Commit logic & workflow integration (emit test with typestate)
+
 ---
 
 ### Macro-Driven MCP Tool System
