@@ -222,60 +222,45 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// For composite types (derived via `#[derive(Elicit)]`), returns the aggregated
     /// proofs of all constituent field types.
     ///
-    /// # Returns
+    /// Returns a [`proc_macro2::TokenStream`] containing a complete `#[kani::proof]`
+    /// harness verifying this type's invariants with symbolic inputs.
     ///
-    /// An empty token stream if no proof is implemented for this type.
+    /// There is no default — every `impl Elicitation` must provide this method
+    /// explicitly. Types with no Kani proof must return `TokenStream::new()` to
+    /// opt out consciously. This is enforced so that missing proofs are caught
+    /// at compile time when the `proofs` feature is active.
     ///
     /// Available with the `proofs` feature.
     #[cfg(feature = "proofs")]
-    fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
-    }
+    fn kani_proof() -> proc_macro2::TokenStream;
 
-    /// Generate a Verus specification proof for this type.
-    ///
     /// Returns a [`proc_macro2::TokenStream`] containing a Verus-verified function
     /// with `requires`/`ensures` specifications for this type's invariants.
     ///
-    /// The returned token stream is valid Rust source using Verus DSL and can be
-    /// compiled with the Verus toolchain to verify the specifications.
-    ///
-    /// # Returns
-    ///
-    /// An empty token stream if no Verus proof is implemented for this type.
+    /// There is no default — every `impl Elicitation` must provide this method
+    /// explicitly. Types with no Verus proof must return `TokenStream::new()` to
+    /// opt out consciously.
     ///
     /// Available with the `proofs` feature.
     #[cfg(feature = "proofs")]
-    fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
-    }
+    fn verus_proof() -> proc_macro2::TokenStream;
 
-    /// Generate a Creusot contract proof for this type.
-    ///
     /// Returns a [`proc_macro2::TokenStream`] containing Creusot contract functions
     /// with `#[requires]`/`#[ensures]`/`#[trusted]` attributes for this type's invariants.
     ///
-    /// The returned token stream uses `creusot_contracts` attributes and can be
-    /// compiled with the Creusot toolchain for formal verification.
-    ///
-    /// # Returns
-    ///
-    /// An empty token stream if no Creusot proof is implemented for this type.
+    /// There is no default — every `impl Elicitation` must provide this method
+    /// explicitly. Types with no Creusot proof must return `TokenStream::new()` to
+    /// opt out consciously.
     ///
     /// Available with the `proofs` feature.
     #[cfg(feature = "proofs")]
-    fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
-    }
+    fn creusot_proof() -> proc_macro2::TokenStream;
 
-    /// Generate a Prusti separation logic proof for this type.
-    ///
     /// Returns a [`proc_macro2::TokenStream`] containing Prusti contract functions
     /// with `#[requires]`/`#[ensures]` attributes for this type's invariants.
     ///
-    /// # Returns
-    ///
-    /// An empty token stream if no Prusti proof is implemented for this type.
+    /// Defaults to an empty token stream. Prusti does not support Rust edition 2024,
+    /// so this is optional until upstream support is restored.
     ///
     /// Available with the `proofs` feature.
     #[cfg(feature = "proofs")]
@@ -508,6 +493,20 @@ impl TypeMetadata {
     }
 }
 
+/// Metadata for one variant of a Select-pattern enum.
+///
+/// Unit variants have `fields: vec![]`. Tuple and struct variants carry
+/// `FieldInfo` for each associated field, enabling graph traversal and
+/// complete structural introspection.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct VariantMetadata {
+    /// Variant label shown to the agent (e.g., `"Fast"`, `"Production"`).
+    pub label: String,
+    /// Field edges for this variant. Empty for unit variants.
+    pub fields: Vec<crate::FieldInfo>,
+}
+
 /// Pattern-specific structural details.
 ///
 /// Each variant corresponds to an `ElicitationPattern` and provides
@@ -524,9 +523,12 @@ pub enum PatternDetails {
     },
 
     /// Select pattern (enums).
+    ///
+    /// Each [`VariantMetadata`] carries the variant label and any associated
+    /// field types, enabling full structural traversal of enums with data variants.
     Select {
-        /// Option labels from the `Select` trait.
-        options: Vec<String>,
+        /// Variant metadata including per-variant field types.
+        variants: Vec<VariantMetadata>,
     },
 
     /// Affirm pattern (booleans).
@@ -534,4 +536,17 @@ pub enum PatternDetails {
 
     /// Primitive pattern (direct value).
     Primitive,
+}
+
+impl PatternDetails {
+    /// For Select patterns: the variant labels in order.
+    ///
+    /// Convenience method for callers that only need labels (e.g. rendering
+    /// option lists) without traversing variant field structure.
+    pub fn variant_labels(&self) -> Vec<&str> {
+        match self {
+            Self::Select { variants } => variants.iter().map(|v| v.label.as_str()).collect(),
+            _ => vec![],
+        }
+    }
 }

@@ -32,8 +32,8 @@
 //! Registered under the `"chrono_workflow"` namespace.
 
 use chrono::{DateTime, Duration, Utc};
-use elicitation::contracts::{And, Established, Prop};
-use elicitation::{ElicitPlugin, elicit_tool};
+use elicitation::contracts::{And, Established};
+use elicitation::{ElicitPlugin, Prop, VerifiedWorkflow, elicit_tool};
 use rmcp::{
     ErrorData,
     model::{CallToolResult, Content},
@@ -45,16 +45,19 @@ use tracing::instrument;
 // ── Propositions ──────────────────────────────────────────────────────────────
 
 /// Proposition: the input string is a valid RFC 3339 datetime.
+#[derive(Prop)]
 pub struct DateTimeParsed;
-impl Prop for DateTimeParsed {}
+impl VerifiedWorkflow for DateTimeParsed {}
 
 /// Proposition: the datetime is strictly in the future (after `Utc::now()`).
+#[derive(Prop)]
 pub struct DateTimeFuture;
-impl Prop for DateTimeFuture {}
+impl VerifiedWorkflow for DateTimeFuture {}
 
 /// Proposition: the datetime falls within the asserted [start, end] range.
+#[derive(Prop)]
 pub struct DateTimeInRange;
-impl Prop for DateTimeInRange {}
+impl VerifiedWorkflow for DateTimeInRange {}
 
 /// Composite: parsed AND in the future.
 pub type FutureDateTimeProof = And<DateTimeParsed, DateTimeFuture>;

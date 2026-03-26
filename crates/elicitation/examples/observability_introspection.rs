@@ -94,11 +94,11 @@ fn trace_type_structure<T: ElicitIntrospect>() {
                 );
             }
         }
-        PatternDetails::Select { options } => {
+        PatternDetails::Select { variants } => {
             tracing::info!(
-                option_count = options.len(),
-                options = ?options,
-                "Select pattern options"
+                variant_count = variants.len(),
+                labels = ?variants.iter().map(|v| &v.label).collect::<Vec<_>>(),
+                "Select pattern variants"
             );
         }
         PatternDetails::Affirm => {
@@ -196,12 +196,16 @@ fn plan_elicitation_strategy<T: ElicitIntrospect>() {
                 );
             }
         }
-        PatternDetails::Select { options } => {
+        PatternDetails::Select { variants } => {
             println!("Strategy: Variant selection followed by field elicitation");
-            println!("Choices: {}", options.len());
-            println!("\nAvailable options:");
-            for (i, opt) in options.iter().enumerate() {
-                println!("  {}. {}", i + 1, opt);
+            println!("Choices: {}", variants.len());
+            println!("\nAvailable variants:");
+            for (i, v) in variants.iter().enumerate() {
+                if v.fields.is_empty() {
+                    println!("  {}. {}", i + 1, v.label);
+                } else {
+                    println!("  {}. {} ({} fields)", i + 1, v.label, v.fields.len());
+                }
             }
         }
         PatternDetails::Affirm => {

@@ -1,0 +1,33 @@
+[package]
+name = "elicit_clap"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled clap type wrappers — newtypes with JsonSchema and MCP reflect methods"
+keywords = ["mcp", "clap", "cli", "elicitation", "jsonschema"]
+categories = ["command-line-interface", "development-tools"]
+
+[dependencies]
+elicitation = { workspace = true, features = ["clap-types"] }
+elicitation_derive.workspace = true
+elicitation_macros.workspace = true
+clap = { workspace = true }
+inventory.workspace = true
+rmcp.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+futures.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true }
+serde_json = { workspace = true }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

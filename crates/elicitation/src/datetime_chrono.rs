@@ -23,7 +23,7 @@
 
 use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitationPattern, Generator, PatternDetails, Prompt, Select, TypeMetadata,
+    ElicitationPattern, Generator, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata,
     datetime_common::{DateTimeComponents, DateTimeInputMethod},
     mcp,
 };
@@ -121,6 +121,21 @@ impl Elicitation for DateTimeUtcGenerationMode {
             }
         }
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl ElicitIntrospect for DateTimeUtcGenerationMode {
@@ -133,7 +148,13 @@ impl ElicitIntrospect for DateTimeUtcGenerationMode {
             type_name: "DateTimeUtcGenerationMode",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                options: Self::labels(),
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
             },
         }
     }
@@ -274,6 +295,21 @@ impl Elicitation for NaiveDateTimeGenerationMode {
             }
         }
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl ElicitIntrospect for NaiveDateTimeGenerationMode {
@@ -286,7 +322,13 @@ impl ElicitIntrospect for NaiveDateTimeGenerationMode {
             type_name: "NaiveDateTimeGenerationMode",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                options: Self::labels(),
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
             },
         }
     }
@@ -417,6 +459,21 @@ impl Elicitation for DateTime<Utc> {
             }
         }
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl ElicitIntrospect for DateTime<Utc> {
@@ -524,6 +581,21 @@ impl Elicitation for DateTime<FixedOffset> {
             }
         }
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl ElicitIntrospect for DateTime<FixedOffset> {
@@ -611,6 +683,21 @@ impl Elicitation for NaiveDateTime {
                 })
             }
         }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 

@@ -47,13 +47,13 @@
 //! # Quick Start
 //!
 //! ```rust
-//! use elicitation::contracts::{Prop, Established, And, both};
+//! use elicitation::contracts::{Established, And, both};
 //!
 //! // Define your workflow's propositions
+//! #[derive(elicitation::Prop)]
 //! struct EmailValidated;
+//! #[derive(elicitation::Prop)]
 //! struct ConsentObtained;
-//! impl Prop for EmailValidated {}
-//! impl Prop for ConsentObtained {}
 //!
 //! // Step 1: Validate (returns proof if valid)
 //! fn validate_email(email: &str) -> Option<Established<EmailValidated>> {
@@ -129,13 +129,13 @@
 //! # Multi-Step Composition Example
 //!
 //! ```rust
-//! use elicitation::contracts::{Prop, Established, Is, And, both};
+//! use elicitation::contracts::{Established, And, both, Is};
 //!
 //! // Define propositions for agent workflow
+//! #[derive(elicitation::Prop)]
 //! struct EmailValidated;
+//! #[derive(elicitation::Prop)]
 //! struct ConsentObtained;
-//! impl Prop for EmailValidated {}
-//! impl Prop for ConsentObtained {}
 //!
 //! // Step 1: Validate email (establishes EmailValidated)
 //! fn validate_email(email: &str) -> Option<Established<EmailValidated>> {
@@ -302,6 +302,8 @@
 //! - [Examples](../../examples): Complete working examples
 //! - [Kani verification](https://model-checking.github.io/kani/): How we verify properties
 
+#[cfg(feature = "proofs")]
+use proc_macro2;
 use std::marker::PhantomData;
 
 /// Marker trait: types that represent propositions.
@@ -318,7 +320,38 @@ use std::marker::PhantomData;
 /// // Built-in proposition: value inhabits type T
 /// type StringProp = Is<String>;
 /// ```
-pub trait Prop: 'static {}
+pub trait Prop: 'static {
+    /// Generate a Kani proof harness for this proposition.
+    ///
+    /// Returns a [`proc_macro2::TokenStream`] containing a `#[kani::proof]` harness
+    /// that encodes this proposition as a trusted axiom. There is no default —
+    /// every proposition must supply a proof. Use `#[derive(Prop)]` for trivial
+    /// zero-cost marker propositions.
+    ///
+    /// Available with the `proofs` feature.
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream;
+
+    /// Generate a Verus proof for this proposition.
+    ///
+    /// Returns a [`proc_macro2::TokenStream`] containing a Verus-verified function
+    /// encoding this proposition's postcondition invariant. There is no default —
+    /// use `#[derive(Prop)]` for trivial marker propositions.
+    ///
+    /// Available with the `proofs` feature.
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream;
+
+    /// Generate a Creusot contract proof for this proposition.
+    ///
+    /// Returns a [`proc_macro2::TokenStream`] containing a `#[trusted]` Creusot
+    /// contract function encoding this proposition's postcondition. There is no
+    /// default — use `#[derive(Prop)]` for trivial marker propositions.
+    ///
+    /// Available with the `proofs` feature.
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream;
+}
 
 /// Witness that proposition P has been established.
 ///
@@ -376,12 +409,12 @@ impl<P: Prop> Established<P> {
     /// # Examples
     ///
     /// ```rust
-    /// use elicitation::contracts::{Established, Is, Implies, Prop};
+    /// use elicitation::contracts::{Established, Is, Implies};
     /// use std::marker::PhantomData;
     ///
     /// // StringNonEmpty implies String (via refinement)
+    /// #[derive(elicitation::Prop)]
     /// struct StringNonEmpty;
-    /// impl Prop for StringNonEmpty {}
     /// impl Implies<Is<String>> for StringNonEmpty {}
     ///
     /// let strong_proof: Established<StringNonEmpty> = Established::assert();
@@ -406,6 +439,44 @@ impl<P: Prop> Clone for Established<P> {
     }
 }
 
+impl<P: Prop> std::fmt::Debug for Established<P> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Established")
+    }
+}
+
+impl<P: Prop + crate::Elicitation> crate::Prompt for Established<P> {
+    fn prompt() -> Option<&'static str> {
+        P::prompt()
+    }
+}
+
+impl<P: Prop + crate::Elicitation> crate::Elicitation for Established<P> {
+    type Style = <P as crate::Elicitation>::Style;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: crate::ElicitCommunicator>(communicator: &C) -> crate::ElicitResult<Self> {
+        tracing::debug!("Eliciting proof proposition for Established");
+        let _p = P::elicit(communicator).await?;
+        Ok(Established::assert())
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
+
 /// Proposition: value inhabits type T with its invariants.
 ///
 /// `Is<T>` represents the statement "a value of type T exists and
@@ -427,7 +498,22 @@ pub struct Is<T> {
     _marker: PhantomData<fn() -> T>,
 }
 
-impl<T: 'static> Prop for Is<T> {}
+impl<T: 'static> Prop for Is<T> {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
 
 /// Logical implication: P implies Q.
 ///
@@ -442,13 +528,12 @@ impl<T: 'static> Prop for Is<T> {}
 /// # Examples
 ///
 /// ```rust
-/// use elicitation::contracts::{Prop, Implies};
+/// use elicitation::contracts::Implies;
 ///
+/// #[derive(elicitation::Prop)]
 /// struct Strong;
+/// #[derive(elicitation::Prop)]
 /// struct Weak;
-///
-/// impl Prop for Strong {}
-/// impl Prop for Weak {}
 ///
 /// // Declare that Strong implies Weak
 /// impl Implies<Weak> for Strong {}
@@ -479,11 +564,10 @@ type AndMarker<P, Q> = (fn() -> P, fn() -> Q);
 /// use std::marker::PhantomData;
 ///
 /// // Two propositions
+/// #[derive(elicitation::Prop)]
 /// struct ValidUrl;
+/// #[derive(elicitation::Prop)]
 /// struct HasPort;
-///
-/// impl elicitation::contracts::Prop for ValidUrl {}
-/// impl elicitation::contracts::Prop for HasPort {}
 ///
 /// let url_proof: Established<ValidUrl> = Established::assert();
 /// let port_proof: Established<HasPort> = Established::assert();
@@ -499,7 +583,28 @@ pub struct And<P: Prop, Q: Prop> {
     _marker: PhantomData<AndMarker<P, Q>>,
 }
 
-impl<P: Prop, Q: Prop> Prop for And<P, Q> {}
+impl<P: Prop, Q: Prop> Prop for And<P, Q> {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        let mut ts = P::kani_proof();
+        ts.extend(Q::kani_proof());
+        ts
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        let mut ts = P::verus_proof();
+        ts.extend(Q::verus_proof());
+        ts
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        let mut ts = P::creusot_proof();
+        ts.extend(Q::creusot_proof());
+        ts
+    }
+}
 
 /// Combine two proofs into a conjunction.
 ///
@@ -508,12 +613,12 @@ impl<P: Prop, Q: Prop> Prop for And<P, Q> {}
 /// # Examples
 ///
 /// ```rust
-/// use elicitation::contracts::{Established, And, both, Prop};
+/// use elicitation::contracts::{Established, And, both};
 ///
+/// #[derive(elicitation::Prop)]
 /// struct P;
+/// #[derive(elicitation::Prop)]
 /// struct Q;
-/// impl Prop for P {}
-/// impl Prop for Q {}
 ///
 /// let p: Established<P> = Established::assert();
 /// let q: Established<Q> = Established::assert();
@@ -533,12 +638,12 @@ pub fn both<P: Prop, Q: Prop>(_p: Established<P>, _q: Established<Q>) -> Establi
 /// # Examples
 ///
 /// ```rust
-/// use elicitation::contracts::{Established, And, both, fst, Prop};
+/// use elicitation::contracts::{Established, And, both, fst};
 ///
+/// #[derive(elicitation::Prop)]
 /// struct P;
+/// #[derive(elicitation::Prop)]
 /// struct Q;
-/// impl Prop for P {}
-/// impl Prop for Q {}
 ///
 /// let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
 /// let p: Established<P> = fst(pq);
@@ -557,12 +662,12 @@ pub fn fst<P: Prop, Q: Prop>(_both: Established<And<P, Q>>) -> Established<P> {
 /// # Examples
 ///
 /// ```rust
-/// use elicitation::contracts::{Established, And, both, snd, Prop};
+/// use elicitation::contracts::{Established, And, both, snd};
 ///
+/// #[derive(elicitation::Prop)]
 /// struct P;
+/// #[derive(elicitation::Prop)]
 /// struct Q;
-/// impl Prop for P {}
-/// impl Prop for Q {}
 ///
 /// let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
 /// let q: Established<Q> = snd(pq);
@@ -680,7 +785,22 @@ pub struct InVariant<E, V> {
     _marker: PhantomData<InVariantMarker<E, V>>,
 }
 
-impl<E: 'static, V: 'static> Prop for InVariant<E, V> {}
+impl<E: 'static, V: 'static> Prop for InVariant<E, V> {
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -733,8 +853,38 @@ mod tests {
         struct StrongProp;
         struct WeakProp;
 
-        impl Prop for StrongProp {}
-        impl Prop for WeakProp {}
+        impl Prop for StrongProp {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
+        impl Prop for WeakProp {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
         impl Implies<WeakProp> for StrongProp {}
 
         // Can weaken from strong to weak
@@ -747,8 +897,38 @@ mod tests {
         struct _PropA;
         struct _PropB;
 
-        impl Prop for _PropA {}
-        impl Prop for _PropB {}
+        impl Prop for _PropA {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
+        impl Prop for _PropB {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
 
         // This would fail to compile (no Implies<_PropB> for _PropA):
         // let a: Established<_PropA> = Established::assert();
@@ -759,8 +939,38 @@ mod tests {
     fn test_conjunction_combine() {
         struct P;
         struct Q;
-        impl Prop for P {}
-        impl Prop for Q {}
+        impl Prop for P {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
+        impl Prop for Q {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
 
         let p: Established<P> = Established::assert();
         let q: Established<Q> = Established::assert();
@@ -771,8 +981,38 @@ mod tests {
     fn test_conjunction_project_left() {
         struct P;
         struct Q;
-        impl Prop for P {}
-        impl Prop for Q {}
+        impl Prop for P {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
+        impl Prop for Q {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
 
         let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
         let _p: Established<P> = fst(pq);
@@ -782,8 +1022,38 @@ mod tests {
     fn test_conjunction_project_right() {
         struct P;
         struct Q;
-        impl Prop for P {}
-        impl Prop for Q {}
+        impl Prop for P {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
+        impl Prop for Q {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
 
         let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
         let _q: Established<Q> = snd(pq);
@@ -793,8 +1063,38 @@ mod tests {
     fn test_conjunction_implies_components() {
         struct P;
         struct Q;
-        impl Prop for P {}
-        impl Prop for Q {}
+        impl Prop for P {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
+        impl Prop for Q {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
 
         // Use projection functions instead of weaken
         let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
@@ -806,8 +1106,38 @@ mod tests {
     fn test_conjunction_is_zero_sized() {
         struct P;
         struct Q;
-        impl Prop for P {}
-        impl Prop for Q {}
+        impl Prop for P {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
+        impl Prop for Q {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
 
         let pq: Established<And<P, Q>> = both(Established::assert(), Established::assert());
         assert_eq!(std::mem::size_of_val(&pq), 0);
@@ -818,9 +1148,54 @@ mod tests {
         struct P;
         struct Q;
         struct R;
-        impl Prop for P {}
-        impl Prop for Q {}
-        impl Prop for R {}
+        impl Prop for P {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
+        impl Prop for Q {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
+        impl Prop for R {
+            #[cfg(feature = "proofs")]
+            fn kani_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn verus_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+
+            #[cfg(feature = "proofs")]
+            fn creusot_proof() -> proc_macro2::TokenStream {
+                proc_macro2::TokenStream::new()
+            }
+        }
 
         // Can nest: (P ∧ Q) ∧ R
         let p: Established<P> = Established::assert();

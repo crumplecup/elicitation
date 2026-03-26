@@ -89,7 +89,7 @@ is the evidence.
 
 ### `verification/types/floats.rs`
 
-```
+```text
 F64Positive      — f64 > 0.0 and finite
 F64NonNegative   — f64 >= 0.0 and finite
 F64Finite        — f64 finite (no NaN/inf)
@@ -98,21 +98,21 @@ F32Positive, F32NonNegative, F32Finite    — f32 variants
 
 ### `verification/types/integers.rs`
 
-```
+```text
 I8/I16/I32/I64/U8/U16/U32/U64/USize + Positive, NonNegative, NonZero variants
 I8/I16/I32/I64/U8/U16/U32/U64/USize + Range<MIN, MAX>  (const-generic bounds)
 ```
 
 ### `verification/types/strings.rs`
 
-```
+```text
 StringNonEmpty<const MAX_LEN: usize = 4096>   — len > 0, len <= MAX_LEN
 StringDefault                                  — unconstrained (already has Deserialize)
 ```
 
 ### `verification/types/urls.rs`  *(feature = "url")*
 
-```
+```text
 UrlValid         — any parseable URL
 UrlHttps         — HTTPS only; new(value: &str) → parse + scheme == "https"
 UrlHttp          — HTTP only

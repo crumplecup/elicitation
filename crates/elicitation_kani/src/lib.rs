@@ -1,6 +1,6 @@
 //! Kani formal verification proofs for elicitation contracts.
 //!
-//! This crate contains 291 proof harnesses verifying contract invariants
+//! This crate contains 304 proof harnesses verifying contract invariants
 //! using the Kani model checker's symbolic execution engine.
 //!
 //! # Architecture
@@ -16,7 +16,7 @@
 //! # Running Proofs
 //!
 //! ```bash
-//! # All proofs (291 harnesses)
+//! # All proofs (304 harnesses)
 //! cargo kani -p elicitation_kani --all-features
 //!
 //! # Specific module
@@ -92,7 +92,7 @@ mod urlbytes;
 mod urls;
 
 // Serde boundary consistency proofs (require verification + serde_json)
-#[cfg(kani)]
+#[cfg(all(kani, feature = "serde_json"))]
 mod serde_boundary;
 
 #[cfg(all(kani, feature = "regex"))]
@@ -108,3 +108,12 @@ mod datetimes_time;
 
 #[cfg(all(kani, feature = "jiff"))]
 mod datetimes_jiff;
+
+#[cfg(all(kani, feature = "clap-types"))]
+mod clap_types;
+
+#[cfg(all(kani, feature = "sqlx-types"))]
+mod sqlx_types;
+
+#[cfg(all(kani, feature = "tokio-types"))]
+mod tokio_types;

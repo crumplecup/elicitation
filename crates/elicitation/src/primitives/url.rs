@@ -29,6 +29,24 @@ impl Elicitation for url::Url {
         // Unwrap to primitive
         Ok(wrapper.into_inner())
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        use crate::verification::types::UrlValid;
+        <UrlValid as crate::Elicitation>::kani_proof()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        use crate::verification::types::UrlValid;
+        <UrlValid as crate::Elicitation>::verus_proof()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        use crate::verification::types::UrlValid;
+        <UrlValid as crate::Elicitation>::creusot_proof()
+    }
 }
 
 impl ElicitIntrospect for url::Url {

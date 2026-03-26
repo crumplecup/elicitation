@@ -1,10 +1,6 @@
 //! Integration tests for contract-based tools.
 
-use elicitation::{
-    ElicitResult,
-    contracts::{Established, Prop},
-    tool::True,
-};
+use elicitation::{ElicitResult, contracts::Established, tool::True};
 
 /// Test tool with no preconditions
 #[tokio::test]
@@ -24,8 +20,8 @@ fn test_true_zero_sized() {
 /// Test tool with precondition
 #[test]
 fn test_tool_with_precondition() {
+    #[derive(elicitation::Prop)]
     struct EmailValidated;
-    impl Prop for EmailValidated {}
 
     struct MockSendEmail;
 
@@ -48,10 +44,10 @@ fn test_tool_with_precondition() {
 /// Test tool chain with proof composition
 #[test]
 fn test_tool_chain() {
+    #[derive(elicitation::Prop)]
     struct EmailValidated;
+    #[derive(elicitation::Prop)]
     struct EmailSent;
-    impl Prop for EmailValidated {}
-    impl Prop for EmailSent {}
 
     struct ValidateEmail;
     impl ValidateEmail {
@@ -108,10 +104,10 @@ fn test_cannot_call_without_proof() {
 fn test_tool_with_multiple_preconditions() {
     use elicitation::contracts::{And, both};
 
+    #[derive(elicitation::Prop)]
     struct EmailValidated;
+    #[derive(elicitation::Prop)]
     struct ConsentObtained;
-    impl Prop for EmailValidated {}
-    impl Prop for ConsentObtained {}
 
     struct RegisterUser;
     impl RegisterUser {
@@ -135,10 +131,10 @@ fn test_tool_with_multiple_preconditions() {
 /// Test sequential tool composition with then
 #[tokio::test]
 async fn test_then_composition() {
+    #[derive(elicitation::Prop)]
     struct EmailValidated;
+    #[derive(elicitation::Prop)]
     struct EmailSent;
-    impl Prop for EmailValidated {}
-    impl Prop for EmailSent {}
 
     // String implements Elicitation
     struct ValidateEmail;
@@ -191,10 +187,10 @@ async fn test_then_composition() {
 async fn test_both_tools_composition() {
     use elicitation::contracts::both;
 
+    #[derive(elicitation::Prop)]
     struct EmailValidated;
+    #[derive(elicitation::Prop)]
     struct PhoneValidated;
-    impl Prop for EmailValidated {}
-    impl Prop for PhoneValidated {}
 
     struct ValidateEmail;
     impl elicitation::Tool for ValidateEmail {

@@ -24,7 +24,8 @@
 
 use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitationPattern, Generator, PatternDetails, Prompt, Select, TypeMetadata, mcp,
+    ElicitationPattern, Generator, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata,
+    mcp,
 };
 use uuid::Uuid;
 
@@ -111,6 +112,27 @@ impl Elicitation for UuidGenerationMode {
             ))
         })
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_select_wrapper("UuidGenerationMode", "V4 (Random)")
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_select_wrapper(
+            "UuidGenerationMode",
+            "V4 (Random)",
+        )
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_select_wrapper(
+            "UuidGenerationMode",
+            "V4 (Random)",
+        )
+    }
 }
 
 impl ElicitIntrospect for UuidGenerationMode {
@@ -123,7 +145,13 @@ impl ElicitIntrospect for UuidGenerationMode {
             type_name: "UuidGenerationMode",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                options: Self::labels(),
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
             },
         }
     }
@@ -190,6 +218,21 @@ impl Elicitation for Uuid {
 
         tracing::debug!(uuid = %uuid, mode = ?mode, "Generated UUID");
         Ok(uuid)
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trusted_opaque("uuid::Uuid")
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_type_stub("uuid_Uuid")
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_type_stub("uuid_Uuid")
     }
 }
 

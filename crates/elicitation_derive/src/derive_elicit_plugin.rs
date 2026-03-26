@@ -97,8 +97,8 @@ fn expand_inner(input: TokenStream) -> Result<TokenStream> {
 
 /// Return a `TokenStream` expression that evaluates to `Arc<PluginContext>`.
 ///
-/// - Unit struct → `Arc::new(PluginContext::default())`
-/// - One unnamed field → `self.0.clone()` (assumes `Arc<PluginContext>` newtype)
+/// - Unit struct → `Arc::new(NoContext) as Arc<dyn Any + Send + Sync>`
+/// - One unnamed field → `self.0.clone() as Arc<dyn Any + Send + Sync>` (newtype around an `Arc<Ctx>`)
 fn context_source_expr(ast: &DeriveInput) -> Result<TokenStream> {
     let Data::Struct(ref data) = ast.data else {
         return Err(Error::new_spanned(
@@ -109,15 +109,16 @@ fn context_source_expr(ast: &DeriveInput) -> Result<TokenStream> {
 
     match &data.fields {
         Fields::Unit => Ok(quote! {
-            ::std::sync::Arc::new(elicitation::PluginContext::default())
+            ::std::sync::Arc::new(elicitation::NoContext)
+                as ::std::sync::Arc<dyn ::std::any::Any + Send + Sync>
         }),
         Fields::Unnamed(unnamed) if unnamed.unnamed.len() == 1 => Ok(quote! {
-            self.0.clone()
+            self.0.clone() as ::std::sync::Arc<dyn ::std::any::Any + Send + Sync>
         }),
         other => Err(Error::new_spanned(
             other,
             "#[derive(ElicitPlugin)] supports only unit structs or newtypes with one \
-             unnamed field (e.g. `struct MyPlugin(Arc<PluginContext>);`)",
+             unnamed field (e.g. `struct MyPlugin(Arc<MyCtx>);`)",
         )),
     }
 }

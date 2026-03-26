@@ -21,6 +21,7 @@
 #![warn(missing_docs)]
 
 mod client;
+mod context;
 mod error;
 mod plugin;
 pub mod plugins;
@@ -29,6 +30,7 @@ mod response;
 mod types;
 
 pub use client::Client;
+pub use context::HttpContext;
 pub use error::Error;
 // Re-export Plugin at crate root for backward compatibility.
 pub use plugin::Plugin;

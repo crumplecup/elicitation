@@ -1,0 +1,38 @@
+# Cargo audit configuration — accepted risks with documented rationale.
+# Each ignore entry has an explanation of why upgrading is not possible and
+# why the risk is acceptable for this project (MCP tool framework, not a TLS
+# server or cryptographic library in its own right).
+
+[advisories]
+ignore = [
+    # aws-lc-sys: 4 CVEs (RUSTSEC-2026-0044/0045/0046/0048)
+    # Root cause: reqwest 0.13.2 → rustls 0.23.x → aws-lc-rs 1.16.x → aws-lc-sys 0.37.x
+    # aws-lc-rs 1.16 requires `aws-lc-sys = "^0.37"` (semver-locked to 0.37 series).
+    # Fixed versions are in aws-lc-sys >= 0.38 (aws-lc-rs >= 1.17).
+    # Cannot update without reqwest publishing a new release that bumps rustls.
+    # Risk: low for this project — we use reqwest only as an HTTP client for tool
+    # calls (no X.509 name constraint validation, no AES-CCM tag verification).
+    "RUSTSEC-2026-0044",
+    "RUSTSEC-2026-0045",
+    "RUSTSEC-2026-0046",
+    "RUSTSEC-2026-0047",
+    "RUSTSEC-2026-0048",
+
+    # rsa 0.9.x: Marvin Attack timing side-channel (RUSTSEC-2023-0071)
+    # No fixed version exists in the 0.9.x series.
+    # Indirect dependency: elicit_sqlx → sqlx → sqlx-mysql → rsa.
+    # Risk: low for this project — rsa is used by sqlx-mysql for RSA key exchange
+    # during MySQL authentication over loopback/trusted networks. We do not expose
+    # raw RSA operations and do not use MySQL over untrusted channels in the test suite.
+    "RUSTSEC-2023-0071",
+
+    # paste 1.0.x: unmaintained (RUSTSEC-2024-0436) — no CVE, no vulnerability.
+    # Direct dependency of the `elicitation` crate; used extensively in
+    # verification/types (integers.rs, floats.rs, tuples.rs) for identifier
+    # concatenation in macro expansions.
+    # paste has not been updated since 2023 but is functionally complete; the
+    # identifier-pasting use case is stable and has no security surface.
+    # Replacement candidates (paste2, macro_rules_attribute) require significant
+    # refactoring of ~200+ paste! invocations across the codebase.
+    "RUSTSEC-2024-0436",
+]

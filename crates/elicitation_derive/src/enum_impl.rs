@@ -97,7 +97,20 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
 
     // Generate ElicitIntrospect impl
     let introspect_impl =
-        generate_introspect_impl(name, &impl_generics, &ty_generics, &where_clause);
+        generate_introspect_impl(name, &variants, &impl_generics, &ty_generics, &where_clause);
+
+    // Generate TypeGraphKey submission for non-generic enums.
+    let graph_key_emission = if generics.params.is_empty() {
+        let name_str = name.to_string();
+        quote! {
+            elicitation::inventory::submit!(elicitation::TypeGraphKey::new(
+                #name_str,
+                <#name as elicitation::ElicitIntrospect>::metadata,
+            ));
+        }
+    } else {
+        quote! {}
+    };
 
     // Note: Verification code is NOT generated for user types.
     // Users can write verification harnesses manually if needed.
@@ -109,6 +122,7 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
         #select_impl
         #elicit_impl
         #introspect_impl
+        #graph_key_emission
     };
 
     TokenStream::from(expanded)
@@ -474,6 +488,29 @@ fn generate_elicit_impl(
 fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
     let style_name = quote::format_ident!("{}Style", name);
 
+    // Compute proof methods at macro-expansion time so the cfg is checked against
+    // this proc-macro's own `proofs` feature, not the destination crate's features.
+    #[cfg(feature = "proofs")]
+    let style_proof_methods = quote! {
+        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::verification::proof_helpers::kani_single_variant_enum(
+                stringify!(#style_name)
+            )
+        }
+        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::verification::proof_helpers::verus_single_variant_enum(
+                stringify!(#style_name)
+            )
+        }
+        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+            elicitation::verification::proof_helpers::creusot_single_variant_enum(
+                stringify!(#style_name)
+            )
+        }
+    };
+    #[cfg(not(feature = "proofs"))]
+    let style_proof_methods = quote! {};
+
     quote! {
         /// Style enum for this type (default-only for now).
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -495,6 +532,7 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
             async fn elicit<C: elicitation::ElicitCommunicator>(_communicator: &C) -> elicitation::ElicitResult<Self> {
                 Ok(Self::Default)
             }
+            #style_proof_methods
         }
     }
 }
@@ -502,11 +540,59 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
 /// Generate ElicitIntrospect implementation for an enum.
 fn generate_introspect_impl(
     name: &syn::Ident,
+    variants: &[VariantInfo],
     impl_generics: &syn::ImplGenerics,
     ty_generics: &syn::TypeGenerics,
     where_clause: &Option<&syn::WhereClause>,
 ) -> TokenStream2 {
     let name_str = name.to_string();
+
+    // Build VariantMetadata for each variant, capturing per-variant fields.
+    let variant_metadata: Vec<TokenStream2> = variants
+        .iter()
+        .map(|v| {
+            let label = v.ident.to_string();
+            let fields: Vec<TokenStream2> = match &v.fields {
+                VariantFields::Unit => vec![],
+                VariantFields::Tuple(types) => types
+                    .iter()
+                    .enumerate()
+                    .map(|(i, ty)| {
+                        let field_name = i.to_string();
+                        let type_name = quote!(#ty).to_string().replace(' ', "");
+                        quote! {
+                            elicitation::FieldInfo {
+                                name: #field_name,
+                                prompt: None,
+                                type_name: #type_name,
+                            }
+                        }
+                    })
+                    .collect(),
+                VariantFields::Struct(fields) => fields
+                    .iter()
+                    .map(|f| {
+                        let field_name = f.ident.to_string();
+                        let ty = &f.ty;
+                        let type_name = quote!(#ty).to_string().replace(' ', "");
+                        quote! {
+                            elicitation::FieldInfo {
+                                name: #field_name,
+                                prompt: None,
+                                type_name: #type_name,
+                            }
+                        }
+                    })
+                    .collect(),
+            };
+            quote! {
+                elicitation::VariantMetadata {
+                    label: #label.to_string(),
+                    fields: vec![#(#fields),*],
+                }
+            }
+        })
+        .collect();
 
     quote! {
         impl #impl_generics elicitation::ElicitIntrospect for #name #ty_generics #where_clause {
@@ -519,7 +605,7 @@ fn generate_introspect_impl(
                     type_name: #name_str,
                     description: <Self as elicitation::Prompt>::prompt(),
                     details: elicitation::PatternDetails::Select {
-                        options: <Self as elicitation::Select>::labels(),
+                        variants: vec![#(#variant_metadata),*],
                     },
                 }
             }

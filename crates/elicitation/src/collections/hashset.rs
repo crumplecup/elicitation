@@ -24,6 +24,21 @@ impl Elicitation for HashSetStyle {
     async fn elicit<C: ElicitCommunicator>(_communicator: &C) -> ElicitResult<Self> {
         Ok(Self::Default)
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_single_variant_enum("HashSetStyle")
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_single_variant_enum("HashSetStyle")
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_single_variant_enum("HashSetStyle")
+    }
 }
 
 impl<T> Prompt for HashSet<T>
@@ -70,5 +85,20 @@ where
         }
 
         Ok(set)
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        <T as Elicitation>::kani_proof()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        <T as Elicitation>::verus_proof()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        <T as Elicitation>::creusot_proof()
     }
 }

@@ -82,7 +82,31 @@ macro_rules! impl_integer_default_wrapper {
 
                     Ok(Self::new(value))
                 }
-            }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_integer_default(
+            stringify!($wrapper),
+            stringify!($primitive),
+        )
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_integer_default(
+            stringify!($wrapper),
+            stringify!($primitive),
+        )
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_integer_default(
+            stringify!($wrapper),
+            stringify!($primitive),
+        )
+    }
+}
         }
     };
 }
@@ -577,6 +601,21 @@ impl crate::Elicitation for I8RangeStyle {
     async fn elicit<C: crate::ElicitCommunicator>(_communicator: &C) -> crate::ElicitResult<Self> {
         Ok(Self::Default)
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl_integer_range_serde_bridge!(I8Range<i8>);
@@ -608,6 +647,21 @@ impl<const MIN: i8, const MAX: i8> Elicitation for I8Range<MIN, MAX> {
                 }
             }
         }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 
@@ -1009,6 +1063,21 @@ impl crate::Elicitation for I16RangeStyle {
     async fn elicit<C: crate::ElicitCommunicator>(_communicator: &C) -> crate::ElicitResult<Self> {
         Ok(Self::Default)
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl_integer_range_serde_bridge!(I16Range<i16>);
@@ -1039,6 +1108,21 @@ impl<const MIN: i16, const MAX: i16> Elicitation for I16Range<MIN, MAX> {
                 }
             }
         }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 
@@ -1299,6 +1383,21 @@ impl crate::Elicitation for U8RangeStyle {
     async fn elicit<C: crate::ElicitCommunicator>(_communicator: &C) -> crate::ElicitResult<Self> {
         Ok(Self::Default)
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl_integer_range_serde_bridge!(U8Range<u8>);
@@ -1329,6 +1428,21 @@ impl<const MIN: u8, const MAX: u8> Elicitation for U8Range<MIN, MAX> {
                 }
             }
         }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 
@@ -1481,6 +1595,21 @@ impl crate::Elicitation for U16RangeStyle {
     async fn elicit<C: crate::ElicitCommunicator>(_communicator: &C) -> crate::ElicitResult<Self> {
         Ok(Self::Default)
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl_integer_range_serde_bridge!(U16Range<u16>);
@@ -1511,6 +1640,21 @@ impl<const MIN: u16, const MAX: u16> Elicitation for U16Range<MIN, MAX> {
                 }
             }
         }
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
     }
 }
 
@@ -1659,7 +1803,7 @@ mod u16_range_tests {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct U8Positive(u8);
 
-#[elicitation_macros::instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl U8Positive {
     /// Create a new U8Positive, validating value is positive (> 0).
     #[spec(requires: [value > 0])]
@@ -1722,7 +1866,7 @@ impl Elicitation for U8Positive {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct U16Positive(u16);
 
-#[elicitation_macros::instrumented_impl]
+#[cfg_attr(not(kani), instrumented_impl)]
 impl U16Positive {
     /// Create a new U16Positive, validating value is positive (> 0).
     #[spec(requires: [value > 0])]
@@ -1864,6 +2008,7 @@ macro_rules! impl_signed_contracts {
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_positive(stringify!($positive), stringify!($base))
                 }
+
             }
         }
 
@@ -1945,6 +2090,7 @@ macro_rules! impl_signed_contracts {
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_positive(stringify!($nonnegative), stringify!($base))
                 }
+
             }
         }
 
@@ -2005,7 +2151,22 @@ macro_rules! impl_signed_contracts {
             async fn elicit<C: crate::ElicitCommunicator>(_communicator: &C) -> crate::ElicitResult<Self> {
                 Ok(Self::Default)
             }
-        }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
 
         impl<const MIN: $base, const MAX: $base> Prompt for $range<MIN, MAX> {
             fn prompt() -> Option<&'static str> {
@@ -2034,7 +2195,22 @@ macro_rules! impl_signed_contracts {
                     }
                 }
             }
-        }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
 
         // Tests
         paste::paste! {
@@ -2233,6 +2409,7 @@ macro_rules! impl_unsigned_contracts {
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
+
             }
         }
 
@@ -2293,7 +2470,22 @@ macro_rules! impl_unsigned_contracts {
             async fn elicit<C: crate::ElicitCommunicator>(_communicator: &C) -> crate::ElicitResult<Self> {
                 Ok(Self::Default)
             }
-        }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
 
         impl<const MIN: $base, const MAX: $base> Prompt for $range<MIN, MAX> {
             fn prompt() -> Option<&'static str> {
@@ -2322,7 +2514,22 @@ macro_rules! impl_unsigned_contracts {
                     }
                 }
             }
-        }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
 
         // Tests
         paste::paste! {
@@ -2587,6 +2794,7 @@ macro_rules! impl_signed_nonzero {
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_nonzero(stringify!($nonzero), stringify!($base))
                 }
+
             }
         }
     };
@@ -2672,6 +2880,7 @@ macro_rules! impl_unsigned_positive {
                 fn creusot_proof() -> proc_macro2::TokenStream {
                     crate::verification::proof_helpers::creusot_numeric_positive(stringify!($positive), stringify!($base))
                 }
+
             }
         }
     };

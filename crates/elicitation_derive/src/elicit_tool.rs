@@ -46,6 +46,12 @@ enum EmitMode {
     Auto,
     /// Delegate to a user-supplied type implementing `CustomEmit<Params>`.
     Custom(Path),
+    /// Skip all emit code generation — no `impl EmitCode`, no `register_emit!`.
+    ///
+    /// Use for tools whose params contain types without `ToCodeLiteral` (e.g.
+    /// `serde_json::Value`), or for meta-tools like `emit_binary` that should
+    /// not themselves participate in the recovery pipeline.
+    None,
 }
 
 impl Parse for ElicitToolArgs {
@@ -151,7 +157,15 @@ impl Parse for ElicitToolArgs {
                                 }
                                 // emit = some::Type
                                 Expr::Path(p) => {
-                                    emit = EmitMode::Custom(p.path.clone());
+                                    // Special case: emit = None → skip all emit generation
+                                    if p.path.is_ident("None") {
+                                        emit = EmitMode::None;
+                                    // Special case: emit = Auto → explicit auto (same as default)
+                                    } else if p.path.is_ident("Auto") {
+                                        emit = EmitMode::Auto;
+                                    } else {
+                                        emit = EmitMode::Custom(p.path.clone());
+                                    }
                                 }
                                 other => {
                                     return Err(Error::new_spanned(
@@ -255,7 +269,7 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
     // Generate the descriptor constructor, using the context-aware variant if needed.
     let descriptor_body = if is_ctx_aware {
         quote! {
-            elicitation::make_descriptor_ctx::<#params_ty, _>(
+            elicitation::make_descriptor_ctx::<_, #params_ty, _>(
                 #name,
                 #description,
                 |ctx, p| ::std::boxed::Box::pin(#fn_ident(ctx, p)),
@@ -368,6 +382,10 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
 
             expanded = quote! { #expanded #emit_block };
         }
+        EmitMode::None => {
+            // No EmitCode impl, no register_emit! — this tool does not
+            // participate in the code recovery pipeline.
+        }
     }
 
     Ok(expanded)
@@ -390,15 +408,15 @@ fn first_param_is_context(func: &ItemFn) -> bool {
         return false;
     };
 
-    // Name heuristic: parameter named `ctx`
+    // Name heuristic: parameter named `ctx` or `_ctx`
     if let Pat::Ident(p) = first.pat.as_ref()
-        && p.ident == "ctx"
+        && (p.ident == "ctx" || p.ident == "_ctx")
     {
         return true;
     }
 
-    // Type heuristic: last path segment is `PluginContext`
-    type_path_ends_with(first.ty.as_ref(), "PluginContext")
+    // Type heuristic: last path segment ends with `Context`
+    type_path_ends_with(first.ty.as_ref(), "Context")
 }
 
 /// Check whether any segment in a type path ends with `name`.

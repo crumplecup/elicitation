@@ -2,7 +2,7 @@
 
 use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, mcp,
+    ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata, mcp,
 };
 
 crate::default_style!(reqwest::Method => MethodStyle);
@@ -86,6 +86,21 @@ impl Elicitation for reqwest::Method {
             )))
         })
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_select_wrapper("reqwest::Method", "GET")
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_select_wrapper("reqwest::Method", "GET")
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_select_wrapper("reqwest::Method", "GET")
+    }
 }
 
 impl ElicitIntrospect for reqwest::Method {
@@ -98,7 +113,13 @@ impl ElicitIntrospect for reqwest::Method {
             type_name: "reqwest::Method",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                options: Self::labels(),
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
             },
         }
     }

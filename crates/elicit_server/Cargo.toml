@@ -24,6 +24,9 @@ elicit_url = { workspace = true }
 elicit_chrono = { workspace = true }
 elicit_jiff = { workspace = true }
 elicit_time = { workspace = true }
+elicit_sqlx = { workspace = true }
+elicit_regex = { workspace = true }
+elicit_tokio = { workspace = true }
 
 # Third-party types (needed in cross-crate workflows)
 reqwest = { workspace = true }
@@ -62,8 +65,20 @@ emit = [
   "elicit_chrono/emit",
   "elicit_jiff/emit",
   "elicit_time/emit",
+  "elicit_regex/emit",
+  "elicit_tokio/emit",
 ]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
 tracing-subscriber = { workspace = true }
+tempfile = "3.13"
+reqwest = { workspace = true }
+
+[[test]]
+name = "ledger_smoke_test"
+required-features = ["emit"]
+
+[[test]]
+name = "ledger_phase2_query_test"
+required-features = ["emit"]

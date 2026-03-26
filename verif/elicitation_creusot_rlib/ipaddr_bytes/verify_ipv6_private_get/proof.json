@@ -1,0 +1,20 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_branch_Result_Ipv6Private_ValidationError": {
+        "prover": "cvc5@1.3.1",
+        "time": 0.016
+      },
+      "vc_elim_Break": { "prover": "cvc5@1.3.1", "time": 0.015 },
+      "vc_elim_Continue": { "prover": "cvc5@1.3.1", "time": 0.013 },
+      "vc_from_ValidationError": { "prover": "cvc5@1.3.1", "time": 0.018 },
+      "vc_from_residual_Result_Ipv6Private_ValidationError": {
+        "prover": "cvc5@1.3.1",
+        "time": 0.015
+      },
+      "vc_new": { "prover": "cvc5@1.3.1", "time": 0.016 },
+      "vc_verify_ipv6_private_get": { "prover": "cvc5@1.3.1", "time": 0.031 }
+    }
+  }
+}

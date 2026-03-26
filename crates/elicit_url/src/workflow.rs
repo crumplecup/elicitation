@@ -31,8 +31,8 @@
 //!
 //! Registered under the `"url_workflow"` namespace.
 
-use elicitation::contracts::{And, Established, Prop};
-use elicitation::{ElicitPlugin, elicit_tool};
+use elicitation::contracts::{And, Established};
+use elicitation::{ElicitPlugin, Prop, VerifiedWorkflow, elicit_tool};
 use rmcp::{
     ErrorData,
     model::{CallToolResult, Content},
@@ -45,16 +45,19 @@ use tracing::instrument;
 // ── Propositions ──────────────────────────────────────────────────────────────
 
 /// Proposition: the input string is a syntactically valid URL.
+#[derive(Prop)]
 pub struct UrlParsed;
-impl Prop for UrlParsed {}
+impl VerifiedWorkflow for UrlParsed {}
 
 /// Proposition: the URL scheme is specifically `https`.
+#[derive(Prop)]
 pub struct HttpsRequired;
-impl Prop for HttpsRequired {}
+impl VerifiedWorkflow for HttpsRequired {}
 
 /// Proposition: the URL scheme is in the caller-supplied allow-list.
+#[derive(Prop)]
 pub struct SchemeAllowed;
-impl Prop for SchemeAllowed {}
+impl VerifiedWorkflow for SchemeAllowed {}
 
 /// Composite: URL is parsed AND scheme is https.
 pub type SecureUrl = And<UrlParsed, HttpsRequired>;

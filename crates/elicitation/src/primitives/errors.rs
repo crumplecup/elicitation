@@ -199,6 +199,27 @@ impl Elicitation for IoErrorGenerationMode {
 
         Ok(mode)
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_select_wrapper("IoErrorGenerationMode", "NotFound")
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_select_wrapper(
+            "IoErrorGenerationMode",
+            "NotFound",
+        )
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_select_wrapper(
+            "IoErrorGenerationMode",
+            "NotFound",
+        )
+    }
 }
 
 /// Generator for creating std::io::Error instances for testing.
@@ -251,6 +272,21 @@ impl Elicitation for io::Error {
         // Create generator and generate error
         let generator = IoErrorGenerator::new(mode);
         Ok(generator.generate())
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trusted_opaque("io::Error")
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trusted_opaque("io::Error")
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trusted_opaque("io::Error")
     }
 }
 
@@ -344,6 +380,30 @@ mod json_error {
                 ))
             })
         }
+
+        #[cfg(feature = "proofs")]
+        fn kani_proof() -> proc_macro2::TokenStream {
+            crate::verification::proof_helpers::kani_select_wrapper(
+                "JsonErrorGenerationMode",
+                "Syntax Error",
+            )
+        }
+
+        #[cfg(feature = "proofs")]
+        fn verus_proof() -> proc_macro2::TokenStream {
+            crate::verification::proof_helpers::verus_select_wrapper(
+                "JsonErrorGenerationMode",
+                "Syntax Error",
+            )
+        }
+
+        #[cfg(feature = "proofs")]
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            crate::verification::proof_helpers::creusot_select_wrapper(
+                "JsonErrorGenerationMode",
+                "Syntax Error",
+            )
+        }
     }
 
     /// Generator for creating serde_json::Error instances for testing.
@@ -407,6 +467,21 @@ mod json_error {
             // Create generator and generate error
             let generator = JsonErrorGenerator::new(mode);
             Ok(generator.generate())
+        }
+
+        #[cfg(feature = "proofs")]
+        fn kani_proof() -> proc_macro2::TokenStream {
+            crate::verification::proof_helpers::kani_trusted_opaque("serde_json::Error")
+        }
+
+        #[cfg(feature = "proofs")]
+        fn verus_proof() -> proc_macro2::TokenStream {
+            crate::verification::proof_helpers::verus_trusted_opaque("serde_json::Error")
+        }
+
+        #[cfg(feature = "proofs")]
+        fn creusot_proof() -> proc_macro2::TokenStream {
+            crate::verification::proof_helpers::creusot_trusted_opaque("serde_json::Error")
         }
     }
 }

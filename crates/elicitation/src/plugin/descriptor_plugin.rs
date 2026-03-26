@@ -1,20 +1,14 @@
-//! [`DescriptorPlugin`] — blanket [`ElicitPlugin`] impl for descriptor-based plugins.
+//! [`DescriptorPlugin`] — blanket [`StatefulPlugin`] impl for descriptor-based plugins.
 //!
-//! Implement this trait instead of [`ElicitPlugin`] directly when your plugin
-//! exposes a static slice of [`ToolDescriptor`]s.  The blanket impl provides
-//! `list_tools` and `call_tool` for free.
+//! Implement this trait instead of [`ElicitPlugin`] or [`StatefulPlugin`] directly when
+//! your plugin exposes a static slice of [`ToolDescriptor`]s.  The blanket impl routes
+//! through [`StatefulPlugin`] (with [`NoContext`]) and provides `list_tools` and
+//! `call_tool` for free.
 
-use futures::future::BoxFuture;
-use rmcp::{
-    ErrorData,
-    model::{CallToolRequestParams, CallToolResult, Tool},
-    service::RequestContext,
-};
-use tracing::instrument;
+use rmcp::model::Tool;
 
-use crate::rmcp::RoleServer;
-
-use super::{ElicitPlugin, PluginContext, descriptor::ToolDescriptor};
+use super::{StatefulPlugin, descriptor::ToolDescriptor};
+use crate::plugin::context::NoContext;
 
 /// A plugin that exposes a static slice of [`ToolDescriptor`]s.
 ///
@@ -57,7 +51,9 @@ pub trait DescriptorPlugin: Send + Sync + 'static {
     fn descriptors(&self) -> &[ToolDescriptor];
 }
 
-impl<T: DescriptorPlugin> ElicitPlugin for T {
+impl<T: DescriptorPlugin> StatefulPlugin for T {
+    type Context = NoContext;
+
     fn name(&self) -> &'static str {
         DescriptorPlugin::name(self)
     }
@@ -66,29 +62,11 @@ impl<T: DescriptorPlugin> ElicitPlugin for T {
         self.descriptors().iter().map(|d| d.as_tool()).collect()
     }
 
-    #[instrument(skip(self), fields(plugin = self.name(), tool = %params.name))]
-    fn call_tool<'a>(
-        &'a self,
-        params: CallToolRequestParams,
-        _ctx: RequestContext<RoleServer>,
-    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
-        let bare = params
-            .name
-            .strip_prefix(&format!("{name}__", name = self.name()))
-            .map(|s| s.to_owned())
-            .unwrap_or_else(|| params.name.to_string());
+    fn tool_descriptors(&self) -> Vec<ToolDescriptor> {
+        self.descriptors().to_vec()
+    }
 
-        match self.descriptors().iter().find(|d| d.name == bare.as_str()) {
-            Some(descriptor) => {
-                let ctx = std::sync::Arc::new(PluginContext::default());
-                descriptor.dispatch(ctx, params)
-            }
-            None => Box::pin(async move {
-                Err(ErrorData::invalid_params(
-                    format!("unknown tool: {bare}"),
-                    None,
-                ))
-            }),
-        }
+    fn context(&self) -> std::sync::Arc<NoContext> {
+        std::sync::Arc::new(NoContext)
     }
 }

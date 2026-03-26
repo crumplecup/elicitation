@@ -1,8 +1,8 @@
 //! Creusot proofs for integer contract types.
 //!
-//! These proofs use #[trusted] following the "cloud of assumptions" pattern.
-//! We trust: Rust stdlib integers, comparison operations, our validation logic.
-//! We verify: That our wrapper types correctly use these trusted components.
+//! extern_spec axioms for all constructors live in extern_specs.rs.
+//! The proof obligations here (value in range → Ok, out of range → Err)
+//! follow by direct implication and are discharged by Alt-Ergo automatically.
 
 use crate::*;
 use elicitation::{
@@ -21,7 +21,6 @@ use elicitation::{
 /// Prove that I8Positive construction succeeds for positive values.
 #[requires(value@ > 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i8_positive_valid(value: i8) -> Result<I8Positive, ValidationError> {
     I8Positive::new(value)
 }
@@ -29,7 +28,6 @@ pub fn verify_i8_positive_valid(value: i8) -> Result<I8Positive, ValidationError
 /// Prove that I8Positive construction fails for non-positive values.
 #[requires(value@ <= 0)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_i8_positive_invalid(value: i8) -> Result<I8Positive, ValidationError> {
     I8Positive::new(value)
 }
@@ -37,7 +35,6 @@ pub fn verify_i8_positive_invalid(value: i8) -> Result<I8Positive, ValidationErr
 /// Prove that I8Positive::get() returns the wrapped value.
 #[requires(value@ > 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i8_positive_accessor(value: i8) -> Result<I8Positive, ValidationError> {
     I8Positive::new(value)
 }
@@ -45,7 +42,6 @@ pub fn verify_i8_positive_accessor(value: i8) -> Result<I8Positive, ValidationEr
 /// Prove that I8NonNegative construction succeeds for non-negative values.
 #[requires(value@ >= 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i8_non_negative_valid(value: i8) -> Result<I8NonNegative, ValidationError> {
     I8NonNegative::new(value)
 }
@@ -53,7 +49,6 @@ pub fn verify_i8_non_negative_valid(value: i8) -> Result<I8NonNegative, Validati
 /// Prove that I8NonNegative construction fails for negative values.
 #[requires(value@ < 0)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_i8_non_negative_invalid(value: i8) -> Result<I8NonNegative, ValidationError> {
     I8NonNegative::new(value)
 }
@@ -61,7 +56,6 @@ pub fn verify_i8_non_negative_invalid(value: i8) -> Result<I8NonNegative, Valida
 /// Prove that I8NonZero construction succeeds for non-zero values.
 #[requires(value@ != 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i8_non_zero_valid(value: i8) -> Result<I8NonZero, ValidationError> {
     I8NonZero::new(value)
 }
@@ -69,7 +63,6 @@ pub fn verify_i8_non_zero_valid(value: i8) -> Result<I8NonZero, ValidationError>
 /// Prove that I8NonZero construction fails for zero.
 #[requires(value@ == 0)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_i8_non_zero_invalid(value: i8) -> Result<I8NonZero, ValidationError> {
     I8NonZero::new(value)
 }
@@ -81,7 +74,6 @@ pub fn verify_i8_non_zero_invalid(value: i8) -> Result<I8NonZero, ValidationErro
 /// Prove that U8Positive construction succeeds for positive values.
 #[requires(value@ > 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u8_positive_valid(value: u8) -> Result<U8Positive, ValidationError> {
     U8Positive::new(value)
 }
@@ -89,7 +81,6 @@ pub fn verify_u8_positive_valid(value: u8) -> Result<U8Positive, ValidationError
 /// Prove that U8Positive construction fails for zero.
 #[requires(value@ == 0)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_u8_positive_invalid(value: u8) -> Result<U8Positive, ValidationError> {
     U8Positive::new(value)
 }
@@ -97,7 +88,6 @@ pub fn verify_u8_positive_invalid(value: u8) -> Result<U8Positive, ValidationErr
 /// Prove that U8NonZero construction succeeds for non-zero values.
 #[requires(value@ != 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u8_non_zero_valid(value: u8) -> Result<U8NonZero, ValidationError> {
     U8NonZero::new(value)
 }
@@ -105,7 +95,6 @@ pub fn verify_u8_non_zero_valid(value: u8) -> Result<U8NonZero, ValidationError>
 /// Prove that U8NonZero construction fails for zero.
 #[requires(value@ == 0)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_u8_non_zero_invalid(value: u8) -> Result<U8NonZero, ValidationError> {
     U8NonZero::new(value)
 }
@@ -117,7 +106,6 @@ pub fn verify_u8_non_zero_invalid(value: u8) -> Result<U8NonZero, ValidationErro
 /// Prove that I16Positive construction succeeds for positive values.
 #[requires(value@ > 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i16_positive_valid(value: i16) -> Result<I16Positive, ValidationError> {
     I16Positive::new(value)
 }
@@ -125,7 +113,6 @@ pub fn verify_i16_positive_valid(value: i16) -> Result<I16Positive, ValidationEr
 /// Prove that I16NonNegative construction succeeds for non-negative values.
 #[requires(value@ >= 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i16_non_negative_valid(value: i16) -> Result<I16NonNegative, ValidationError> {
     I16NonNegative::new(value)
 }
@@ -133,7 +120,6 @@ pub fn verify_i16_non_negative_valid(value: i16) -> Result<I16NonNegative, Valid
 /// Prove that I16NonZero construction succeeds for non-zero values.
 #[requires(value@ != 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i16_non_zero_valid(value: i16) -> Result<I16NonZero, ValidationError> {
     I16NonZero::new(value)
 }
@@ -145,7 +131,6 @@ pub fn verify_i16_non_zero_valid(value: i16) -> Result<I16NonZero, ValidationErr
 /// Prove that U16Positive construction succeeds for positive values.
 #[requires(value@ > 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u16_positive_valid(value: u16) -> Result<U16Positive, ValidationError> {
     U16Positive::new(value)
 }
@@ -153,7 +138,6 @@ pub fn verify_u16_positive_valid(value: u16) -> Result<U16Positive, ValidationEr
 /// Prove that U16NonZero construction succeeds for non-zero values.
 #[requires(value@ != 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u16_non_zero_valid(value: u16) -> Result<U16NonZero, ValidationError> {
     U16NonZero::new(value)
 }
@@ -165,7 +149,6 @@ pub fn verify_u16_non_zero_valid(value: u16) -> Result<U16NonZero, ValidationErr
 /// Prove that I32Positive construction succeeds for positive values.
 #[requires(value@ > 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i32_positive_valid(value: i32) -> Result<I32Positive, ValidationError> {
     I32Positive::new(value)
 }
@@ -173,7 +156,6 @@ pub fn verify_i32_positive_valid(value: i32) -> Result<I32Positive, ValidationEr
 /// Prove that I32NonNegative construction succeeds for non-negative values.
 #[requires(value@ >= 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i32_non_negative_valid(value: i32) -> Result<I32NonNegative, ValidationError> {
     I32NonNegative::new(value)
 }
@@ -181,7 +163,6 @@ pub fn verify_i32_non_negative_valid(value: i32) -> Result<I32NonNegative, Valid
 /// Prove that I32NonZero construction succeeds for non-zero values.
 #[requires(value@ != 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i32_non_zero_valid(value: i32) -> Result<I32NonZero, ValidationError> {
     I32NonZero::new(value)
 }
@@ -193,7 +174,6 @@ pub fn verify_i32_non_zero_valid(value: i32) -> Result<I32NonZero, ValidationErr
 /// Prove that U32Positive construction succeeds for positive values.
 #[requires(value@ > 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u32_positive_valid(value: u32) -> Result<U32Positive, ValidationError> {
     U32Positive::new(value)
 }
@@ -201,7 +181,6 @@ pub fn verify_u32_positive_valid(value: u32) -> Result<U32Positive, ValidationEr
 /// Prove that U32NonZero construction succeeds for non-zero values.
 #[requires(value@ != 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u32_non_zero_valid(value: u32) -> Result<U32NonZero, ValidationError> {
     U32NonZero::new(value)
 }
@@ -213,7 +192,6 @@ pub fn verify_u32_non_zero_valid(value: u32) -> Result<U32NonZero, ValidationErr
 /// Prove that I64Positive construction succeeds for positive values.
 #[requires(value@ > 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i64_positive_valid(value: i64) -> Result<I64Positive, ValidationError> {
     I64Positive::new(value)
 }
@@ -221,7 +199,6 @@ pub fn verify_i64_positive_valid(value: i64) -> Result<I64Positive, ValidationEr
 /// Prove that I64NonNegative construction succeeds for non-negative values.
 #[requires(value@ >= 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i64_non_negative_valid(value: i64) -> Result<I64NonNegative, ValidationError> {
     I64NonNegative::new(value)
 }
@@ -229,7 +206,6 @@ pub fn verify_i64_non_negative_valid(value: i64) -> Result<I64NonNegative, Valid
 /// Prove that I64NonZero construction succeeds for non-zero values.
 #[requires(value@ != 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i64_non_zero_valid(value: i64) -> Result<I64NonZero, ValidationError> {
     I64NonZero::new(value)
 }
@@ -241,7 +217,6 @@ pub fn verify_i64_non_zero_valid(value: i64) -> Result<I64NonZero, ValidationErr
 /// Prove that U64Positive construction succeeds for positive values.
 #[requires(value@ > 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u64_positive_valid(value: u64) -> Result<U64Positive, ValidationError> {
     U64Positive::new(value)
 }
@@ -249,7 +224,6 @@ pub fn verify_u64_positive_valid(value: u64) -> Result<U64Positive, ValidationEr
 /// Prove that U64NonZero construction succeeds for non-zero values.
 #[requires(value@ != 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u64_non_zero_valid(value: u64) -> Result<U64NonZero, ValidationError> {
     U64NonZero::new(value)
 }
@@ -261,7 +235,6 @@ pub fn verify_u64_non_zero_valid(value: u64) -> Result<U64NonZero, ValidationErr
 /// Prove that I128Positive construction succeeds for positive values.
 #[requires(value@ > 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i128_positive_valid(value: i128) -> Result<I128Positive, ValidationError> {
     I128Positive::new(value)
 }
@@ -269,7 +242,6 @@ pub fn verify_i128_positive_valid(value: i128) -> Result<I128Positive, Validatio
 /// Prove that I128NonNegative construction succeeds for non-negative values.
 #[requires(value@ >= 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i128_non_negative_valid(value: i128) -> Result<I128NonNegative, ValidationError> {
     I128NonNegative::new(value)
 }
@@ -277,7 +249,6 @@ pub fn verify_i128_non_negative_valid(value: i128) -> Result<I128NonNegative, Va
 /// Prove that I128NonZero construction succeeds for non-zero values.
 #[requires(value@ != 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i128_non_zero_valid(value: i128) -> Result<I128NonZero, ValidationError> {
     I128NonZero::new(value)
 }
@@ -289,7 +260,6 @@ pub fn verify_i128_non_zero_valid(value: i128) -> Result<I128NonZero, Validation
 /// Prove that U128Positive construction succeeds for positive values.
 #[requires(value@ > 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u128_positive_valid(value: u128) -> Result<U128Positive, ValidationError> {
     U128Positive::new(value)
 }
@@ -297,7 +267,6 @@ pub fn verify_u128_positive_valid(value: u128) -> Result<U128Positive, Validatio
 /// Prove that U128NonZero construction succeeds for non-zero values.
 #[requires(value@ != 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u128_non_zero_valid(value: u128) -> Result<U128NonZero, ValidationError> {
     U128NonZero::new(value)
 }
@@ -309,7 +278,6 @@ pub fn verify_u128_non_zero_valid(value: u128) -> Result<U128NonZero, Validation
 /// Prove that IsizePositive construction succeeds for positive values.
 #[requires(value@ > 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_isize_positive_valid(value: isize) -> Result<IsizePositive, ValidationError> {
     IsizePositive::new(value)
 }
@@ -317,7 +285,6 @@ pub fn verify_isize_positive_valid(value: isize) -> Result<IsizePositive, Valida
 /// Prove that IsizeNonNegative construction succeeds for non-negative values.
 #[requires(value@ >= 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_isize_non_negative_valid(value: isize) -> Result<IsizeNonNegative, ValidationError> {
     IsizeNonNegative::new(value)
 }
@@ -325,7 +292,6 @@ pub fn verify_isize_non_negative_valid(value: isize) -> Result<IsizeNonNegative,
 /// Prove that IsizeNonZero construction succeeds for non-zero values.
 #[requires(value@ != 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_isize_non_zero_valid(value: isize) -> Result<IsizeNonZero, ValidationError> {
     IsizeNonZero::new(value)
 }
@@ -337,7 +303,6 @@ pub fn verify_isize_non_zero_valid(value: isize) -> Result<IsizeNonZero, Validat
 /// Prove that UsizePositive construction succeeds for positive values.
 #[requires(value@ > 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_usize_positive_valid(value: usize) -> Result<UsizePositive, ValidationError> {
     UsizePositive::new(value)
 }
@@ -345,7 +310,6 @@ pub fn verify_usize_positive_valid(value: usize) -> Result<UsizePositive, Valida
 /// Prove that UsizeNonZero construction succeeds for non-zero values.
 #[requires(value@ != 0)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_usize_non_zero_valid(value: usize) -> Result<UsizeNonZero, ValidationError> {
     UsizeNonZero::new(value)
 }
@@ -357,7 +321,6 @@ pub fn verify_usize_non_zero_valid(value: usize) -> Result<UsizeNonZero, Validat
 /// Prove that I8Range construction succeeds for values in range.
 #[requires(-10 <= value@ && value@ <= 10)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i8_range_valid(value: i8) -> Result<I8Range<-10, 10>, ValidationError> {
     I8Range::<-10, 10>::new(value)
 }
@@ -365,7 +328,6 @@ pub fn verify_i8_range_valid(value: i8) -> Result<I8Range<-10, 10>, ValidationEr
 /// Prove that I8Range construction fails for values out of range.
 #[requires(value@ < -10 || value@ > 10)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
 pub fn verify_i8_range_invalid(value: i8) -> Result<I8Range<-10, 10>, ValidationError> {
     I8Range::<-10, 10>::new(value)
 }
@@ -373,7 +335,6 @@ pub fn verify_i8_range_invalid(value: i8) -> Result<I8Range<-10, 10>, Validation
 /// Prove that U8Range construction succeeds for values in range.
 #[requires(10 <= value@ && value@ <= 250)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u8_range_valid(value: u8) -> Result<U8Range<10, 250>, ValidationError> {
     U8Range::<10, 250>::new(value)
 }
@@ -381,7 +342,6 @@ pub fn verify_u8_range_valid(value: u8) -> Result<U8Range<10, 250>, ValidationEr
 /// Prove that I16Range construction succeeds for values in range.
 #[requires(-1000 <= value@ && value@ <= 1000)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i16_range_valid(value: i16) -> Result<I16Range<-1000, 1000>, ValidationError> {
     I16Range::<-1000, 1000>::new(value)
 }
@@ -389,7 +349,6 @@ pub fn verify_i16_range_valid(value: i16) -> Result<I16Range<-1000, 1000>, Valid
 /// Prove that U16Range construction succeeds for values in range.
 #[requires(100 <= value@ && value@ <= 65000)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u16_range_valid(value: u16) -> Result<U16Range<100, 65000>, ValidationError> {
     U16Range::<100, 65000>::new(value)
 }
@@ -397,7 +356,6 @@ pub fn verify_u16_range_valid(value: u16) -> Result<U16Range<100, 65000>, Valida
 /// Prove that I32Range construction succeeds for values in range.
 #[requires(-100000 <= value@ && value@ <= 100000)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i32_range_valid(value: i32) -> Result<I32Range<-100000, 100000>, ValidationError> {
     I32Range::<-100000, 100000>::new(value)
 }
@@ -405,7 +363,6 @@ pub fn verify_i32_range_valid(value: i32) -> Result<I32Range<-100000, 100000>, V
 /// Prove that U32Range construction succeeds for values in range.
 #[requires(1000 <= value@ && value@ <= 4000000000)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u32_range_valid(value: u32) -> Result<U32Range<1000, 4000000000>, ValidationError> {
     U32Range::<1000, 4000000000>::new(value)
 }
@@ -413,7 +370,6 @@ pub fn verify_u32_range_valid(value: u32) -> Result<U32Range<1000, 4000000000>, 
 /// Prove that I64Range construction succeeds for values in range.
 #[requires(-1000000000 <= value@ && value@ <= 1000000000)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_i64_range_valid(
     value: i64,
 ) -> Result<I64Range<-1000000000, 1000000000>, ValidationError> {
@@ -423,7 +379,6 @@ pub fn verify_i64_range_valid(
 /// Prove that U64Range construction succeeds for values in range.
 #[requires(1000000 <= value@ && value@ <= 18000000000000000000)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_u64_range_valid(
     value: u64,
 ) -> Result<U64Range<1000000, 18000000000000000000>, ValidationError> {
@@ -433,7 +388,6 @@ pub fn verify_u64_range_valid(
 /// Prove that IsizeRange construction succeeds for values in range.
 #[requires(-500 <= value@ && value@ <= 500)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_isize_range_valid(value: isize) -> Result<IsizeRange<-500, 500>, ValidationError> {
     IsizeRange::<-500, 500>::new(value)
 }
@@ -441,7 +395,6 @@ pub fn verify_isize_range_valid(value: isize) -> Result<IsizeRange<-500, 500>, V
 /// Prove that UsizeRange construction succeeds for values in range.
 #[requires(100 <= value@ && value@ <= 10000)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
 pub fn verify_usize_range_valid(value: usize) -> Result<UsizeRange<100, 10000>, ValidationError> {
     UsizeRange::<100, 10000>::new(value)
 }

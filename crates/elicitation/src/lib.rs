@@ -89,11 +89,14 @@ mod server; // Server-side wrapper (analogous to ElicitClient)
 // Verification framework imports
 
 mod collections;
+mod complete;
 mod containers;
 mod default_style;
 mod error;
 pub mod type_spec;
 pub mod verification;
+
+pub mod type_graph;
 
 #[cfg(feature = "cli")]
 pub mod cli;
@@ -105,9 +108,11 @@ pub mod emit_code;
 pub mod mcp;
 mod paradigm;
 mod primitives;
+mod proxy;
 pub mod style;
 pub mod tool;
 mod tool_registry;
+mod verified_workflow;
 
 // Router macro module (declarative macro)
 #[macro_use]
@@ -128,10 +133,16 @@ pub use elicit_json::ElicitJson;
 pub mod plugin;
 mod plugin_registry;
 pub use plugin::{
-    DescriptorPlugin, ElicitPlugin, PluginContext, PluginToolRegistration, ToolDescriptor,
-    make_descriptor, make_descriptor_ctx,
+    DescriptorPlugin, ElicitPlugin, NoContext, PluginContext, PluginToolRegistration,
+    StatefulPlugin, ToolDescriptor, make_descriptor, make_descriptor_ctx,
 };
 pub use plugin_registry::{PluginRegistry, Toolchain};
+
+pub mod dynamic;
+pub use dynamic::{
+    AnyToolFactory, AnyToolSlot, DynamicToolDescriptor, DynamicToolRegistry,
+    ToolFactoryRegistration, TypedSlot,
+};
 
 #[cfg(feature = "serde_json")]
 mod value_impl;
@@ -167,8 +178,16 @@ pub use server::ElicitServer;
 pub use elicitation_style::ElicitationStyle;
 pub use traits::{
     ElicitBuilder, ElicitIntrospect, Elicitation, ElicitationPattern, Generator, PatternDetails,
-    Prompt, TypeMetadata,
+    Prompt, TypeMetadata, VariantMetadata,
 };
+
+// Type graph visualization — registry always available; builder/renderers gated on `graph`
+#[cfg(feature = "graph")]
+pub use type_graph::{
+    DotRenderer, GraphEdge, GraphNode, GraphRenderer, MermaidDirection, MermaidRenderer, NodeKind,
+    TypeGraph, TypeGraphError, TypeGraphPlugin,
+};
+pub use type_graph::{TypeGraphKey, all_graphable_types, lookup_type_graph};
 
 // Type spec layer (agent-browsable contracts)
 pub use type_spec::{
@@ -182,6 +201,12 @@ pub use contracts::{
     And, Established, Implies, InVariant, Is, Prop, Refines, both, downcast, fst, snd,
 };
 
+// Completion marker — enforces all elicitation obligations at compile time
+pub use complete::ElicitComplete;
+
+// Workflow verification marker — enforces all proposition obligations
+pub use verified_workflow::VerifiedWorkflow;
+
 // Tools (contract-based MCP tools)
 pub use tool::{Tool, True, both_tools, then};
 
@@ -190,6 +215,7 @@ pub use tool_registry::{ElicitToolDescriptor, collect_all_elicit_tools};
 
 // Interaction paradigm traits
 pub use paradigm::{Affirm, Authorize, FieldInfo, Filter, Select, Survey};
+pub use proxy::ElicitProxy;
 
 // Dynamic collections
 pub use collections::ChoiceSet;
@@ -225,6 +251,8 @@ pub use proc_macro2;
 
 // Re-export derive macros with user-friendly names
 pub use elicitation_derive::{Elicit, ElicitPlugin, elicit_tool};
+// Prop derive macro (trait lives at elicitation::contracts::Prop; both can coexist)
+pub use elicitation_derive::Prop;
 
 // Re-export verification contract types at crate level (for kani_proofs imports)
 // EXPLICIT exports - no globs (helps compiler show what's missing)
@@ -436,3 +464,24 @@ pub use primitives::http::{
 
 #[cfg(all(any(feature = "verification", kani), feature = "reqwest"))]
 pub use verification::types::StatusCodeValid;
+
+// clap types (feature-gated on clap-types)
+#[cfg(feature = "clap-types")]
+pub use primitives::clap_types::{
+    ArgActionStyle, ArgGroupStyle, ArgStyle, ColorChoiceStyle, CommandStyle, ErrorKindStyle,
+    IdStyle, PossibleValueStyle, ValueHintStyle, ValueRangeStyle, ValueSourceStyle,
+};
+
+// sqlx types (feature-gated on sqlx-types)
+#[cfg(feature = "sqlx-types")]
+pub use primitives::sqlx_types::{
+    AnyQueryResultStyle, AnyTypeInfoStyle, ColumnDescriptorStyle, ColumnEntryStyle, RowDataStyle,
+};
+#[cfg(feature = "sqlx-types")]
+pub use primitives::sqlx_types::{
+    AnyTypeInfoKindStyle, ColumnValueStyle, DriverKindStyle, SqlTypeKindStyle, SqlxErrorKindStyle,
+};
+#[cfg(feature = "sqlx-types")]
+pub use primitives::sqlx_types::{
+    ColumnDescriptor, ColumnEntry, ColumnValue, DriverKind, RowData, SqlTypeKind,
+};

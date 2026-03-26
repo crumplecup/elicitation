@@ -1,0 +1,15 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_labels_ValueSource": { "prover": "cvc5@1.3.1", "time": 0.01 },
+      "vc_len_String": { "prover": "cvc5@1.3.1", "time": 0.015 },
+      "vc_len_ValueSource": { "prover": "cvc5@1.3.1", "time": 0.013 },
+      "vc_options_ValueSource": { "prover": "cvc5@1.3.1", "time": 0.013 },
+      "vc_verify_value_source_label_count": {
+        "prover": "cvc5@1.3.1",
+        "time": 0.014
+      }
+    }
+  }
+}

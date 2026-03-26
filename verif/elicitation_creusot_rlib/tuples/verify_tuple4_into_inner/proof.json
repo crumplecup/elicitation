@@ -1,0 +1,34 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_into_inner_I32Positive": { "prover": "cvc5@1.3.1", "time": 0.02 },
+      "vc_new": { "prover": "cvc5@1.3.1", "time": 0.023 },
+      "vc_new'0": { "prover": "cvc5@1.3.1", "time": 0.014 },
+      "vc_new_I32Positive": { "prover": "cvc5@1.3.1", "time": 0.016 },
+      "vc_unwrap_BoolTrue": { "prover": "cvc5@1.3.1", "time": 0.013 },
+      "vc_unwrap_I32Positive": { "prover": "cvc5@1.3.1", "time": 0.023 },
+      "vc_verify_tuple4_into_inner": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "cvc5@1.3.1", "time": 0.022 },
+              { "prover": "cvc5@1.3.1", "time": 0.017 },
+              { "prover": "cvc5@1.3.1", "time": 0.029 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "cvc5@1.3.1", "time": 0.015 },
+                  { "prover": "cvc5@1.3.1", "time": 0.02 }
+                ]
+              },
+              { "prover": "cvc5@1.3.1", "time": 0.013 }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

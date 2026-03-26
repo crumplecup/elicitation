@@ -139,6 +139,24 @@ impl Elicitation for SystemTimeGenerationMode {
             }
         }
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_multi_variant_enum(
+            "SystemTimeGenerationMode",
+            "UnixEpoch",
+        )
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_multi_variant_enum("SystemTimeGenerationMode")
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_multi_variant_enum("SystemTimeGenerationMode")
+    }
 }
 
 /// Generator for creating SystemTime values with a specified strategy.
@@ -225,5 +243,20 @@ impl Elicitation for SystemTime {
 
         tracing::debug!(time = ?time, mode = ?mode, "Generated SystemTime");
         Ok(time)
+    }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_systemtime()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_systemtime()
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_systemtime()
     }
 }

@@ -39,7 +39,7 @@ and other battle-tested crates for their own correctness. We verify that
 *our wrapper logic* — constructors, accessors, generators — uses those
 foundations correctly.
 
-```
+```text
   ┌─────────────────────────────────────┐
   │  Our wrappers   ← verified by Kani  │
   ├─────────────────────────────────────┤

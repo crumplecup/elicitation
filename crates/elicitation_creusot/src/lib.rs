@@ -11,6 +11,15 @@
 // Creusot attributes
 pub use creusot_std::prelude::*;
 
+// Trusted logic functions for elicitation types (logic-callable in contracts)
+mod logic_fns;
+#[cfg(creusot)]
+pub use logic_fns::*;
+
+// Extern spec axioms for elicitation constructors (enables non-trusted proofs)
+#[cfg(creusot)]
+mod extern_specs;
+
 // Module declarations
 mod bools;
 mod chars;
@@ -72,8 +81,10 @@ mod http;
 
 // Re-export all proof functions for discoverability
 pub use bools::*;
+#[cfg(creusot)]
 pub use chars::*;
 pub use collections::*;
+#[cfg(creusot)]
 pub use durations::*;
 pub use floats::*;
 pub use integers::*;
@@ -132,3 +143,21 @@ pub use datetimes_jiff::*;
 
 #[cfg(feature = "reqwest")]
 pub use http::*;
+
+#[cfg(feature = "clap-types")]
+mod clap_types;
+
+#[cfg(feature = "clap-types")]
+pub use clap_types::*;
+
+#[cfg(feature = "sqlx-types")]
+mod sqlx_types;
+
+#[cfg(feature = "sqlx-types")]
+pub use sqlx_types::*;
+
+#[cfg(feature = "tokio-types")]
+mod tokio_types;
+
+#[cfg(feature = "tokio-types")]
+pub use tokio_types::*;

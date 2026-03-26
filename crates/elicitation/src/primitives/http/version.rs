@@ -2,7 +2,7 @@
 
 use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, mcp,
+    ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata, mcp,
 };
 
 crate::default_style!(reqwest::Version => VersionStyle);
@@ -71,6 +71,21 @@ impl Elicitation for reqwest::Version {
             )))
         })
     }
+
+    #[cfg(feature = "proofs")]
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_select_wrapper("reqwest::Version", "HTTP/1.1")
+    }
+
+    #[cfg(feature = "proofs")]
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_select_wrapper("reqwest::Version", "HTTP/1.1")
+    }
+
+    #[cfg(feature = "proofs")]
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_select_wrapper("reqwest::Version", "HTTP/1.1")
+    }
 }
 
 impl ElicitIntrospect for reqwest::Version {
@@ -83,7 +98,13 @@ impl ElicitIntrospect for reqwest::Version {
             type_name: "reqwest::Version",
             description: Self::prompt(),
             details: PatternDetails::Select {
-                options: Self::labels(),
+                variants: Self::labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
             },
         }
     }

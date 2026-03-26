@@ -11,22 +11,21 @@
 
 use elicitation::{
     ElicitResult, ValidationError,
-    contracts::{And, Established, Implies, Prop, both},
+    contracts::{And, Established, Implies, both},
     tool::{Tool, True, then},
 };
 
 // Domain propositions for email workflow
+#[derive(elicitation::Prop)]
 struct EmailFormatValid;
+#[derive(elicitation::Prop)]
 struct EmailSanitized;
+#[derive(elicitation::Prop)]
 struct SpamChecked;
+#[derive(elicitation::Prop)]
 struct RateLimitChecked;
+#[derive(elicitation::Prop)]
 struct EmailSent;
-
-impl Prop for EmailFormatValid {}
-impl Prop for EmailSanitized {}
-impl Prop for SpamChecked {}
-impl Prop for RateLimitChecked {}
-impl Prop for EmailSent {}
 
 // Sanitization implies format validity
 impl Implies<EmailFormatValid> for EmailSanitized {}

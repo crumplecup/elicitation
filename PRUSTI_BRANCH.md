@@ -6,8 +6,8 @@ The `prusti-verification` branch exists as a frozen artifact, preserving 427 for
 
 ## The Dream That Lives On
 
-Branch: `prusti-verification` (edition 2021, no CI)  
-Status: Complete implementation, blocked by upstream  
+Branch: `prusti-verification` (edition 2021, no CI)
+Status: Complete implementation, blocked by upstream
 Proofs: 427 across 19 modules in `elicitation_prusti`
 
 ## The Trifecta of Formalism (Active on main/dev)
@@ -20,13 +20,13 @@ While Prusti sleeps, three verifiers actively guard our code:
 
 ## The Blocker
 
-**Last Prusti Release:** cargo-prusti 0.2.2 (rustc 1.74.0, Oct 2023)  
-**Edition 2024 Stabilized:** February 2024  
+**Last Prusti Release:** cargo-prusti 0.2.2 (rustc 1.74.0, Oct 2023)
+**Edition 2024 Stabilized:** February 2024
 **Ecosystem Status:** crates.io has moved to edition 2024
 
 Prusti's embedded cargo cannot parse edition 2024 manifests, even in transitive dependencies:
 
-```
+```text
 error: failed to parse manifest at `time-core-0.1.8/Cargo.toml`
 Caused by:
   this version of Cargo is older than the `2024` edition
@@ -56,4 +56,4 @@ If successful, Prusti rejoins the trifecta on main/dev!
 
 ---
 
-*"A dream deferred is not a dream denied."*
+> "A dream deferred is not a dream denied."

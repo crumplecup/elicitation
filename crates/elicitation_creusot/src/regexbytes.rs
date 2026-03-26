@@ -10,6 +10,8 @@
 //!
 //! This is compositional verification: regex_crate_correct → wrapper_correct.
 
+use crate::*;
+
 #[cfg(creusot)]
 use elicitation::verification::types::{
     BalancedDelimiters, RegexBytes, ValidCharClass, ValidEscapes, ValidQuantifiers, ValidationError,
@@ -19,10 +21,9 @@ use elicitation::verification::types::{
 // ============================================================================
 
 /// Verify: BalancedDelimiters rejects length exceeding MAX_LEN
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() > MAX_LEN)]
-#[ensures(result.is_err())]
+#[requires(bytes@.len() > MAX_LEN@)]
+#[ensures(match result { Err(_) => true, Ok(_) => false })]
 pub fn verify_balanced_length_check<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<BalancedDelimiters<MAX_LEN>, ValidationError> {
@@ -30,9 +31,8 @@ pub fn verify_balanced_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: BalancedDelimiters accepts valid length
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= MAX_LEN)]
+#[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_balanced_length_valid<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<BalancedDelimiters<MAX_LEN>, ValidationError> {
@@ -40,44 +40,42 @@ pub fn verify_balanced_length_valid<const MAX_LEN: usize>(
 }
 
 /// Verify: Simple balanced parentheses
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_balanced_simple() -> Result<BalancedDelimiters<16>, ValidationError> {
-    BalancedDelimiters::from_slice(b"(abc)")
+    let bytes = [b'(', b'a', b'b', b'c', b')'];
+    BalancedDelimiters::from_slice(&bytes)
 }
 
 /// Verify: Nested balanced delimiters
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_balanced_nested() -> Result<BalancedDelimiters<16>, ValidationError> {
-    BalancedDelimiters::from_slice(b"((a|b)c)")
+    let bytes = [b'(', b'(', b'a', b'|', b'b', b')', b'c', b')'];
+    BalancedDelimiters::from_slice(&bytes)
 }
 
 /// Verify: Balanced brackets (character class)
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_balanced_brackets() -> Result<BalancedDelimiters<16>, ValidationError> {
-    BalancedDelimiters::from_slice(b"[a-z]+")
+    let bytes = [b'[', b'a', b'-', b'z', b']', b'+'];
+    BalancedDelimiters::from_slice(&bytes)
 }
 
 /// Verify: Balanced braces (quantifier)
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_balanced_braces() -> Result<BalancedDelimiters<16>, ValidationError> {
-    BalancedDelimiters::from_slice(b"a{2,5}")
+    let bytes = [b'a', b'{', b'2', b',', b'5', b'}'];
+    BalancedDelimiters::from_slice(&bytes)
 }
 
 /// Verify: Empty regex
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_balanced_empty() -> Result<BalancedDelimiters<16>, ValidationError> {
-    BalancedDelimiters::from_slice(b"")
+    BalancedDelimiters::from_slice(&[] as &[u8])
 }
 
 /// Verify: as_str() returns valid string
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= MAX_LEN)]
+#[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_balanced_as_str<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<BalancedDelimiters<MAX_LEN>, ValidationError> {
@@ -90,10 +88,9 @@ pub fn verify_balanced_as_str<const MAX_LEN: usize>(
 // ============================================================================
 
 /// Verify: ValidEscapes rejects length exceeding MAX_LEN
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() > MAX_LEN)]
-#[ensures(result.is_err())]
+#[requires(bytes@.len() > MAX_LEN@)]
+#[ensures(match result { Err(_) => true, Ok(_) => false })]
 pub fn verify_escapes_length_check<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<ValidEscapes<MAX_LEN>, ValidationError> {
@@ -101,9 +98,8 @@ pub fn verify_escapes_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: ValidEscapes accepts valid length
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= MAX_LEN)]
+#[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_escapes_length_valid<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<ValidEscapes<MAX_LEN>, ValidationError> {
@@ -111,44 +107,43 @@ pub fn verify_escapes_length_valid<const MAX_LEN: usize>(
 }
 
 /// Verify: Digit escape (\d)
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_escape_digit() -> Result<ValidEscapes<16>, ValidationError> {
-    ValidEscapes::from_slice(b"\\d+")
+    let bytes = [b'\\', b'd', b'+'];
+    ValidEscapes::from_slice(&bytes)
 }
 
 /// Verify: Word escape (\w)
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_escape_word() -> Result<ValidEscapes<16>, ValidationError> {
-    ValidEscapes::from_slice(b"\\w*")
+    let bytes = [b'\\', b'w', b'*'];
+    ValidEscapes::from_slice(&bytes)
 }
 
 /// Verify: Dot escape (\.)
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_escape_dot() -> Result<ValidEscapes<16>, ValidationError> {
-    ValidEscapes::from_slice(b"\\.")
+    let bytes = [b'\\', b'.'];
+    ValidEscapes::from_slice(&bytes)
 }
 
 /// Verify: Newline escape (\n)
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_escape_newline() -> Result<ValidEscapes<16>, ValidationError> {
-    ValidEscapes::from_slice(b"\\n")
+    let bytes = [b'\\', b'n'];
+    ValidEscapes::from_slice(&bytes)
 }
 
 /// Verify: Tab escape (\t)
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_escape_tab() -> Result<ValidEscapes<16>, ValidationError> {
-    ValidEscapes::from_slice(b"\\t")
+    let bytes = [b'\\', b't'];
+    ValidEscapes::from_slice(&bytes)
 }
 
 /// Verify: as_str() returns valid string
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= MAX_LEN)]
+#[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_escapes_as_str<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<ValidEscapes<MAX_LEN>, ValidationError> {
@@ -161,10 +156,9 @@ pub fn verify_escapes_as_str<const MAX_LEN: usize>(
 // ============================================================================
 
 /// Verify: ValidQuantifiers rejects length exceeding MAX_LEN
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() > MAX_LEN)]
-#[ensures(result.is_err())]
+#[requires(bytes@.len() > MAX_LEN@)]
+#[ensures(match result { Err(_) => true, Ok(_) => false })]
 pub fn verify_quantifiers_length_check<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<ValidQuantifiers<MAX_LEN>, ValidationError> {
@@ -172,9 +166,8 @@ pub fn verify_quantifiers_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: ValidQuantifiers accepts valid length
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= MAX_LEN)]
+#[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_quantifiers_length_valid<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<ValidQuantifiers<MAX_LEN>, ValidationError> {
@@ -182,44 +175,43 @@ pub fn verify_quantifiers_length_valid<const MAX_LEN: usize>(
 }
 
 /// Verify: Star quantifier (*)
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_quantifier_star() -> Result<ValidQuantifiers<16>, ValidationError> {
-    ValidQuantifiers::from_slice(b"a*")
+    let bytes = [b'a', b'*'];
+    ValidQuantifiers::from_slice(&bytes)
 }
 
 /// Verify: Plus quantifier (+)
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_quantifier_plus() -> Result<ValidQuantifiers<16>, ValidationError> {
-    ValidQuantifiers::from_slice(b"b+")
+    let bytes = [b'b', b'+'];
+    ValidQuantifiers::from_slice(&bytes)
 }
 
 /// Verify: Question quantifier (?)
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_quantifier_question() -> Result<ValidQuantifiers<16>, ValidationError> {
-    ValidQuantifiers::from_slice(b"c?")
+    let bytes = [b'c', b'?'];
+    ValidQuantifiers::from_slice(&bytes)
 }
 
 /// Verify: Exact count quantifier ({n})
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_quantifier_exact() -> Result<ValidQuantifiers<16>, ValidationError> {
-    ValidQuantifiers::from_slice(b"d{3}")
+    let bytes = [b'd', b'{', b'3', b'}'];
+    ValidQuantifiers::from_slice(&bytes)
 }
 
 /// Verify: Range quantifier ({n,m})
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_quantifier_range() -> Result<ValidQuantifiers<16>, ValidationError> {
-    ValidQuantifiers::from_slice(b"e{2,5}")
+    let bytes = [b'e', b'{', b'2', b',', b'5', b'}'];
+    ValidQuantifiers::from_slice(&bytes)
 }
 
 /// Verify: as_str() returns valid string
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= MAX_LEN)]
+#[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_quantifiers_as_str<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<ValidQuantifiers<MAX_LEN>, ValidationError> {
@@ -232,10 +224,9 @@ pub fn verify_quantifiers_as_str<const MAX_LEN: usize>(
 // ============================================================================
 
 /// Verify: ValidCharClass rejects length exceeding MAX_LEN
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() > MAX_LEN)]
-#[ensures(result.is_err())]
+#[requires(bytes@.len() > MAX_LEN@)]
+#[ensures(match result { Err(_) => true, Ok(_) => false })]
 pub fn verify_charclass_length_check<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<ValidCharClass<MAX_LEN>, ValidationError> {
@@ -243,9 +234,8 @@ pub fn verify_charclass_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: ValidCharClass accepts valid length
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= MAX_LEN)]
+#[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_charclass_length_valid<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<ValidCharClass<MAX_LEN>, ValidationError> {
@@ -253,37 +243,36 @@ pub fn verify_charclass_length_valid<const MAX_LEN: usize>(
 }
 
 /// Verify: Character class range [a-z]
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_charclass_range() -> Result<ValidCharClass<16>, ValidationError> {
-    ValidCharClass::from_slice(b"[a-z]")
+    let bytes = [b'[', b'a', b'-', b'z', b']'];
+    ValidCharClass::from_slice(&bytes)
 }
 
 /// Verify: Character class set [abc]
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_charclass_set() -> Result<ValidCharClass<16>, ValidationError> {
-    ValidCharClass::from_slice(b"[abc]")
+    let bytes = [b'[', b'a', b'b', b'c', b']'];
+    ValidCharClass::from_slice(&bytes)
 }
 
 /// Verify: Negated character class [^a-z]
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_charclass_negated() -> Result<ValidCharClass<16>, ValidationError> {
-    ValidCharClass::from_slice(b"[^a-z]")
+    let bytes = [b'[', b'^', b'a', b'-', b'z', b']'];
+    ValidCharClass::from_slice(&bytes)
 }
 
 /// Verify: Character class with escape [\\d]
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_charclass_escape() -> Result<ValidCharClass<16>, ValidationError> {
-    ValidCharClass::from_slice(b"[\\d]")
+    let bytes = [b'[', b'\\', b'd', b']'];
+    ValidCharClass::from_slice(&bytes)
 }
 
 /// Verify: as_str() returns valid string
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= MAX_LEN)]
+#[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_charclass_as_str<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<ValidCharClass<MAX_LEN>, ValidationError> {
@@ -296,10 +285,9 @@ pub fn verify_charclass_as_str<const MAX_LEN: usize>(
 // ============================================================================
 
 /// Verify: RegexBytes rejects length exceeding MAX_LEN
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() > MAX_LEN)]
-#[ensures(result.is_err())]
+#[requires(bytes@.len() > MAX_LEN@)]
+#[ensures(match result { Err(_) => true, Ok(_) => false })]
 pub fn verify_regex_length_check<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<RegexBytes<MAX_LEN>, ValidationError> {
@@ -307,9 +295,8 @@ pub fn verify_regex_length_check<const MAX_LEN: usize>(
 }
 
 /// Verify: RegexBytes accepts valid length
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= MAX_LEN)]
+#[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_regex_length_valid<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<RegexBytes<MAX_LEN>, ValidationError> {
@@ -317,65 +304,68 @@ pub fn verify_regex_length_valid<const MAX_LEN: usize>(
 }
 
 /// Verify: Simple literal regex
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_regex_literal() -> Result<RegexBytes<16>, ValidationError> {
-    RegexBytes::from_slice(b"hello")
+    let bytes = [b'h', b'e', b'l', b'l', b'o'];
+    RegexBytes::from_slice(&bytes)
 }
 
 /// Verify: Regex with alternation
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_regex_alternation() -> Result<RegexBytes<16>, ValidationError> {
-    RegexBytes::from_slice(b"cat|dog")
+    let bytes = [b'c', b'a', b't', b'|', b'd', b'o', b'g'];
+    RegexBytes::from_slice(&bytes)
 }
 
 /// Verify: Regex with quantifiers
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_regex_quantifiers() -> Result<RegexBytes<16>, ValidationError> {
-    RegexBytes::from_slice(b"a*b+c?")
+    let bytes = [b'a', b'*', b'b', b'+', b'c', b'?'];
+    RegexBytes::from_slice(&bytes)
 }
 
 /// Verify: Regex with character class
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_regex_charclass() -> Result<RegexBytes<16>, ValidationError> {
-    RegexBytes::from_slice(b"[a-z]+")
+    let bytes = [b'[', b'a', b'-', b'z', b']', b'+'];
+    RegexBytes::from_slice(&bytes)
 }
 
 /// Verify: Regex with escapes
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_regex_escapes() -> Result<RegexBytes<16>, ValidationError> {
-    RegexBytes::from_slice(b"\\d{3}-\\d{4}")
+    let bytes = [
+        b'\\', b'd', b'{', b'3', b'}', b'-', b'\\', b'd', b'{', b'4', b'}',
+    ];
+    RegexBytes::from_slice(&bytes)
 }
 
 /// Verify: Complex regex (email-like)
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_regex_complex() -> Result<RegexBytes<32>, ValidationError> {
-    RegexBytes::from_slice(b"[a-z]+@[a-z]+\\.[a-z]+")
+    let bytes = [
+        b'[', b'a', b'-', b'z', b']', b'+', b'@', b'[', b'a', b'-', b'z', b']', b'+', b'\\', b'.',
+        b'[', b'a', b'-', b'z', b']', b'+',
+    ];
+    RegexBytes::from_slice(&bytes)
 }
 
 /// Verify: Regex with groups
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_regex_groups() -> Result<RegexBytes<16>, ValidationError> {
-    RegexBytes::from_slice(b"(ab)+c")
+    let bytes = [b'(', b'a', b'b', b')', b'+', b'c'];
+    RegexBytes::from_slice(&bytes)
 }
 
 /// Verify: Empty regex
-#[trusted]
 #[cfg(creusot)]
 pub fn verify_regex_empty() -> Result<RegexBytes<16>, ValidationError> {
-    RegexBytes::from_slice(b"")
+    RegexBytes::from_slice(&[] as &[u8])
 }
 
 /// Verify: as_str() returns valid string
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= MAX_LEN)]
+#[requires(bytes@.len() <= MAX_LEN@)]
 pub fn verify_regex_as_str<const MAX_LEN: usize>(
     bytes: &[u8],
 ) -> Result<RegexBytes<MAX_LEN>, ValidationError> {
@@ -388,25 +378,22 @@ pub fn verify_regex_as_str<const MAX_LEN: usize>(
 // ============================================================================
 
 /// Verify: Small buffer (2 bytes)
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= 2)]
+#[requires(bytes@.len() <= 2)]
 pub fn verify_regex_small_buffer(bytes: &[u8]) -> Result<RegexBytes<2>, ValidationError> {
     RegexBytes::from_slice(bytes)
 }
 
 /// Verify: Medium buffer (64 bytes)
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= 64)]
+#[requires(bytes@.len() <= 64)]
 pub fn verify_regex_medium_buffer(bytes: &[u8]) -> Result<RegexBytes<64>, ValidationError> {
     RegexBytes::from_slice(bytes)
 }
 
 /// Verify: Large buffer (256 bytes)
-#[trusted]
 #[cfg(creusot)]
-#[requires(bytes.len() <= 256)]
+#[requires(bytes@.len() <= 256)]
 pub fn verify_regex_large_buffer(bytes: &[u8]) -> Result<RegexBytes<256>, ValidationError> {
     RegexBytes::from_slice(bytes)
 }

@@ -28,6 +28,7 @@ pub struct FetchAndExtractParams {
 ```
 
 The macro reads the struct once and generates:
+
 - MCP tool descriptor (name, schema)
 - Runtime dispatch entry in the global `inventory` registry
 - `EmitCode` impl that reproduces the binary calling this tool

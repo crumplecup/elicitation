@@ -7,37 +7,26 @@
 //!
 //! # How it works
 //!
-//! 1. Agent builds a workflow interactively using tools from `elicit_reqwest`
-//!    and/or `elicit_serde_json`
+//! 1. Agent builds a workflow interactively using tools from any shadow crate
 //! 2. Agent calls `emit_binary` with the ordered list of tool names + params
-//! 3. Plugin dispatches each step to the matching [`EmitCode`] impl via each
-//!    crate's `dispatch_emit` function (params stay private)
+//! 3. Plugin dispatches each step to the matching [`EmitCode`] impl via the
+//!    global `register_emit!` inventory (populated at link time)
 //! 4. [`BinaryScaffold`] assembles the steps into `#[tokio::main] async fn main()`
 //! 5. `src/main.rs` + `Cargo.toml` are written to `output_dir`
 //! 6. `cargo build --release` is invoked if `compile = true`; binary path returned
 //!
 //! # Supported tools
 //!
-//! **elicit_reqwest:** `fetch`, `auth_fetch`, `post`, `api_call`, `health_check`,
-//! `url_build`, `status_summary`, `build_request`, `paginated_get`
-//!
-//! **elicit_serde_json:** `parse_and_focus`, `validate_object`, `safe_merge`,
-//! `pointer_update`, `field_chain`
+//! All tools registered via `#[elicit_tool]` in the shadow crates linked into
+//! `elicit_server` are available. See the `elicit_server` crate docs for the
+//! full table of plugins and their tool names.
 
-use elicitation::ElicitPlugin;
 use elicitation::emit_code::{BinaryScaffold, EmitCode};
-use futures::future::BoxFuture;
-use rmcp::{
-    ErrorData,
-    model::{CallToolRequestParams, CallToolResult, Tool},
-    service::RequestContext,
-};
+use elicitation::{ElicitPlugin, elicit_tool};
+use rmcp::{ErrorData, model::CallToolResult, model::Content};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
-
-use crate::util::{parse_args, typed_tool};
-use elicitation::rmcp::RoleServer;
 
 // ── Param types ───────────────────────────────────────────────────────────────
 
@@ -88,71 +77,36 @@ fn default_package_name() -> String {
 ///
 /// Register with your [`elicitation::PluginRegistry`] to expose `emit_binary`
 /// as an MCP tool.
+#[derive(Debug, ElicitPlugin)]
+#[plugin(name = "emit")]
 pub struct EmitBinaryPlugin;
 
-impl ElicitPlugin for EmitBinaryPlugin {
-    fn name(&self) -> &'static str {
-        "emit"
-    }
+// ── Tool handler ──────────────────────────────────────────────────────────────
 
-    fn list_tools(&self) -> Vec<Tool> {
-        vec![typed_tool::<EmitBinaryParams>(
-            "emit_binary",
-            "Recover an ordered sequence of verified workflow tool calls as a standalone, \
-                 compilable Rust program. Each step preserves full typestate ceremony: proof \
-                 tokens, Established<P>, contract types — all intact. The emitted binary \
-                 calls the same verified library APIs the agent used interactively, so the \
-                 formal verification blanket extends to the generated program.\n\
-                 Supported tools: fetch, auth_fetch, post, api_call, health_check, url_build, \
-                 status_summary, build_request, paginated_get (elicit_reqwest); \
-                 parse_and_focus, validate_object, safe_merge, pointer_update, field_chain \
-                 (elicit_serde_json); parse_url, assert_https, validate_scheme, build_url, \
-                 join_url (elicit_url); parse_datetime, assert_future, assert_in_range, \
-                 compute_duration, add_seconds (elicit_chrono); parse_timestamp, parse_zoned, \
-                 assert_future, convert_tz, compute_span (elicit_jiff); \
-                 parse_offset_datetime, parse_primitive_datetime, assert_future, \
-                 compute_duration, add_seconds (elicit_time); secure_fetch, \
-                 validated_api_call (secure_fetch); fetch_and_extract, fetch_and_validate \
-                 (fetch_and_parse).",
-        )]
-    }
-
-    fn call_tool<'a>(
-        &'a self,
-        params: CallToolRequestParams,
-        _cx: RequestContext<RoleServer>,
-    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
-        Box::pin(async move {
-            match params.name.as_ref() {
-                "emit_binary" => {
-                    let p: EmitBinaryParams = match parse_args(&params) {
-                        Ok(p) => p,
-                        Err(e) => return Err(e),
-                    };
-                    emit_binary_impl(p).await
-                }
-                name => Err(ErrorData::invalid_params(
-                    format!("Unknown tool: {name}"),
-                    None,
-                )),
-            }
-        })
-    }
-}
-
-// ── Implementation ────────────────────────────────────────────────────────────
-
+#[elicit_tool(
+    plugin = "emit",
+    name = "emit_binary",
+    emit = None,
+    description = "Recover an ordered sequence of verified workflow tool calls as a standalone, \
+                   compilable Rust program. Each step preserves full typestate ceremony: proof \
+                   tokens, Established<P>, contract types — all intact. The emitted binary \
+                   calls the same verified library APIs the agent used interactively, so the \
+                   formal verification blanket extends to the generated program.\n\
+                   All tools registered in the emit inventory are supported. See the \
+                   elicit_server crate docs for the full plugin/tool table."
+)]
 #[instrument(skip(p), fields(steps = p.steps.len(), output_dir = %p.output_dir))]
-async fn emit_binary_impl(p: EmitBinaryParams) -> Result<CallToolResult, ErrorData> {
+async fn emit_binary(p: EmitBinaryParams) -> Result<CallToolResult, ErrorData> {
     let mut steps: Vec<Box<dyn EmitCode>> = Vec::new();
 
     for (i, step) in p.steps.iter().enumerate() {
-        match dispatch_step(&step.tool, &step.params) {
+        match elicitation::emit_code::dispatch_emit(&step.tool, step.params.clone()) {
             Ok(boxed) => steps.push(boxed),
             Err(e) => {
-                return Ok(CallToolResult::error(vec![rmcp::model::Content::text(
-                    format!("Step {i} ('{}') failed to deserialize: {e}", step.tool),
-                )]));
+                return Ok(CallToolResult::error(vec![Content::text(format!(
+                    "Step {i} ('{}') failed to deserialize: {e}",
+                    step.tool
+                ))]));
             }
         }
     }
@@ -166,40 +120,28 @@ async fn emit_binary_impl(p: EmitBinaryParams) -> Result<CallToolResult, ErrorDa
     let main_rs = match scaffold.emit_to_disk(&output_dir, &p.package_name) {
         Ok(path) => path,
         Err(e) => {
-            return Ok(CallToolResult::error(vec![rmcp::model::Content::text(
-                format!("Failed to write source: {e}"),
-            )]));
+            return Ok(CallToolResult::error(vec![Content::text(format!(
+                "Failed to write source: {e}"
+            ))]));
         }
     };
 
     if !p.compile {
-        return Ok(CallToolResult::success(vec![rmcp::model::Content::text(
-            format!(
-                "Source written to {}\nRun: cd {} && cargo run",
-                main_rs.display(),
-                output_dir.display(),
-            ),
-        )]));
+        return Ok(CallToolResult::success(vec![Content::text(format!(
+            "Source written to {}\nRun: cd {} && cargo run",
+            main_rs.display(),
+            output_dir.display(),
+        ))]));
     }
 
     match elicitation::emit_code::compile(&output_dir) {
-        Ok(binary) => Ok(CallToolResult::success(vec![rmcp::model::Content::text(
-            format!(
-                "Binary compiled: {}\nSource: {}",
-                binary.display(),
-                main_rs.display(),
-            ),
-        )])),
-        Err(e) => Ok(CallToolResult::error(vec![rmcp::model::Content::text(
-            format!("Compilation failed:\n{e}"),
-        )])),
+        Ok(binary) => Ok(CallToolResult::success(vec![Content::text(format!(
+            "Binary compiled: {}\nSource: {}",
+            binary.display(),
+            main_rs.display(),
+        ))])),
+        Err(e) => Ok(CallToolResult::error(vec![Content::text(format!(
+            "Compilation failed:\n{e}"
+        ))])),
     }
-}
-
-/// Dispatch a tool name + raw JSON params to the matching `EmitCode` impl.
-///
-/// Delegates to the global `elicitation::emit_code::dispatch_emit` registry,
-/// which is populated at link time via `register_emit!` in each workflow crate.
-fn dispatch_step(tool: &str, params: &serde_json::Value) -> Result<Box<dyn EmitCode>, String> {
-    elicitation::emit_code::dispatch_emit(tool, params.clone())
 }

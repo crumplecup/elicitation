@@ -8,18 +8,17 @@
 //!
 //! Run with: `cargo run --example contracts_composition`
 
-use elicitation::contracts::{And, Established, Implies, Prop, Refines, both};
+use elicitation::contracts::{And, Established, Implies, Refines, both};
 
 // Domain propositions
+#[derive(elicitation::Prop)]
 struct EmailFormatValid;
+#[derive(elicitation::Prop)]
 struct EmailExists;
+#[derive(elicitation::Prop)]
 struct EmailConfirmed;
+#[derive(elicitation::Prop)]
 struct UserProfileCreated;
-
-impl Prop for EmailFormatValid {}
-impl Prop for EmailExists {}
-impl Prop for EmailConfirmed {}
-impl Prop for UserProfileCreated {}
 
 // Implication: Email existence implies format validity
 impl Implies<EmailFormatValid> for EmailExists {}

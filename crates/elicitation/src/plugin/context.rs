@@ -1,49 +1,36 @@
-//! [`PluginContext`] — shared execution context for plugin tools.
+//! [`PluginContext`] — marker trait for plugin-specific server-side state.
 //!
-//! Plugins that need long-lived resources (HTTP connection pools, credentials,
-//! telemetry handles) store them here and receive an `Arc<PluginContext>` on
-//! every tool invocation.
+//! Each shadow crate that needs long-lived resources (connection pools,
+//! credentials, transaction registries) defines its own context struct and
+//! implements [`PluginContext`].  The context is held behind `Arc` and shared
+//! across all tool calls on the same server instance.
 //!
-//! # Feature gates
-//!
-//! The `http` field is available when the `reqwest` feature is enabled
-//! (part of the default `full` feature bundle).
+//! Stateless plugins that require no server-side state use [`NoContext`].
 
-use std::sync::Arc;
-
-/// Shared execution context passed to every tool handler.
+/// Marker trait for plugin-specific server-side state.
 ///
-/// Holding the context behind [`Arc`] lets multiple plugins share the same
-/// `reqwest::Client` connection pool, which is the primary motivation for
-/// this type.
+/// Implement this on a struct that holds the resources a plugin needs across
+/// tool calls (e.g. an HTTP client, a database pool).  The struct is wrapped
+/// in `Arc` and passed to every context-aware tool handler.
 ///
 /// # Example
 ///
-/// ```rust,no_run
-/// use std::sync::Arc;
+/// ```rust
 /// use elicitation::plugin::PluginContext;
 ///
-/// let ctx = Arc::new(PluginContext::default());
+/// pub struct MyContext {
+///     pub value: u32,
+/// }
+///
+/// impl PluginContext for MyContext {}
 /// ```
-#[derive(Debug, Clone)]
-pub struct PluginContext {
-    /// Shared HTTP client. Present when the `reqwest` feature is enabled.
-    #[cfg(feature = "reqwest")]
-    pub http: reqwest::Client,
-}
+pub trait PluginContext: std::any::Any + Send + Sync + 'static {}
 
-impl Default for PluginContext {
-    fn default() -> Self {
-        Self {
-            #[cfg(feature = "reqwest")]
-            http: reqwest::Client::new(),
-        }
-    }
-}
+/// No-op context for stateless plugins.
+///
+/// Plugins that require no server-side state use `NoContext` as their context
+/// type.  `#[derive(ElicitPlugin)]` on a unit struct automatically uses this.
+#[derive(Debug, Default, Clone)]
+pub struct NoContext;
 
-impl PluginContext {
-    /// Create a new context with default settings.
-    pub fn new() -> Arc<Self> {
-        Arc::new(Self::default())
-    }
-}
+impl PluginContext for NoContext {}

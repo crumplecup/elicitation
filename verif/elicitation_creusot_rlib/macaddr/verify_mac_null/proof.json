@@ -1,0 +1,28 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_new": { "prover": "cvc5@1.3.1", "time": 0.019 },
+      "vc_verify_mac_null": {
+        "tactic": "compute_specified",
+        "children": [
+          {
+            "tactic": "split_vc",
+            "children": [
+              { "prover": "cvc5@1.3.1", "time": 0.026 },
+              {
+                "tactic": "split_vc",
+                "children": [
+                  { "prover": "cvc5@1.3.1", "time": 0.011 },
+                  { "prover": "cvc5@1.3.1", "time": 0.029 },
+                  { "prover": "cvc5@1.3.1", "time": 0.018 },
+                  { "prover": "cvc5@1.3.1", "time": 0.018 }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

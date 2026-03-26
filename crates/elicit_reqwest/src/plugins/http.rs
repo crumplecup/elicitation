@@ -7,7 +7,8 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use elicitation::{ElicitPlugin, PluginContext, elicit_tool};
+use crate::HttpContext;
+use elicitation::{ElicitPlugin, elicit_tool};
 use elicitation::{F64Positive, UrlValid};
 use rmcp::{
     ErrorData,
@@ -40,17 +41,17 @@ use tracing::instrument;
 /// ```
 #[derive(ElicitPlugin)]
 #[plugin(name = "http")]
-pub struct Plugin(pub Arc<PluginContext>);
+pub struct Plugin(pub Arc<HttpContext>);
 
 impl Plugin {
     /// Create a plugin wrapping a new default HTTP client.
     pub fn new() -> Self {
-        Self(PluginContext::new())
+        Self(HttpContext::new())
     }
 
     /// Create a plugin wrapping a pre-configured [`reqwest::Client`].
     pub fn with_client(client: reqwest::Client) -> Self {
-        Self(Arc::new(PluginContext { http: client }))
+        Self(Arc::new(HttpContext { http: client }))
     }
 }
 
@@ -221,7 +222,7 @@ async fn execute_head(builder: reqwest::RequestBuilder) -> Result<CallToolResult
     description = "Send an HTTP GET request; returns status, URL, and response body."
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
-async fn http_get(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
+async fn http_get(ctx: Arc<HttpContext>, p: HttpParams) -> Result<CallToolResult, ErrorData> {
     let builder = ctx.http.get(p.url.get().as_str());
     execute(apply_options(builder, &p)).await
 }
@@ -232,10 +233,7 @@ async fn http_get(ctx: Arc<PluginContext>, p: HttpParams) -> Result<CallToolResu
     description = "Send an HTTP POST request with optional body; returns status, URL, and response body."
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
-async fn http_post(
-    ctx: Arc<PluginContext>,
-    p: HttpPostParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn http_post(ctx: Arc<HttpContext>, p: HttpPostParams) -> Result<CallToolResult, ErrorData> {
     let builder = ctx.http.post(p.url.get().as_str());
     execute(apply_http_opts!(builder, p)).await
 }
@@ -246,7 +244,7 @@ async fn http_post(
     description = "Send an HTTP PUT request with optional body; returns status, URL, and response body."
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
-async fn http_put(ctx: Arc<PluginContext>, p: HttpPutParams) -> Result<CallToolResult, ErrorData> {
+async fn http_put(ctx: Arc<HttpContext>, p: HttpPutParams) -> Result<CallToolResult, ErrorData> {
     let builder = ctx.http.put(p.url.get().as_str());
     execute(apply_http_opts!(builder, p)).await
 }
@@ -258,7 +256,7 @@ async fn http_put(ctx: Arc<PluginContext>, p: HttpPutParams) -> Result<CallToolR
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn http_delete(
-    ctx: Arc<PluginContext>,
+    ctx: Arc<HttpContext>,
     p: HttpDeleteParams,
 ) -> Result<CallToolResult, ErrorData> {
     let builder = ctx.http.delete(p.url.get().as_str());
@@ -272,7 +270,7 @@ async fn http_delete(
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
 async fn http_patch(
-    ctx: Arc<PluginContext>,
+    ctx: Arc<HttpContext>,
     p: HttpPatchParams,
 ) -> Result<CallToolResult, ErrorData> {
     let builder = ctx.http.patch(p.url.get().as_str());
@@ -285,10 +283,7 @@ async fn http_patch(
     description = "Send an HTTP HEAD request; returns status and URL only (no body)."
 )]
 #[instrument(skip(ctx, p), fields(url = %p.url.get()))]
-async fn http_head(
-    ctx: Arc<PluginContext>,
-    p: HttpHeadParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn http_head(ctx: Arc<HttpContext>, p: HttpHeadParams) -> Result<CallToolResult, ErrorData> {
     let builder = ctx.http.head(p.url.get().as_str());
     execute_head(apply_http_opts!(builder, p)).await
 }

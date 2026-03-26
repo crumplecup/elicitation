@@ -85,6 +85,7 @@ extern crate proc_macro;
 mod contract_type;
 mod derive_elicit;
 mod derive_elicit_plugin;
+mod derive_prop;
 mod elicit_tool;
 mod emit_rewriter;
 mod enum_impl;
@@ -460,4 +461,84 @@ pub fn derive_elicit_plugin(input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn elicit_tool(args: TokenStream, item: TokenStream) -> TokenStream {
     elicit_tool::expand(args.into(), item.into()).into()
+}
+
+/// Derive the [`Prop`](elicitation::contracts::Prop) trait for a zero-cost typestate marker.
+///
+/// Generates trivial but non-empty, uniquely-named proof harnesses
+/// (`kani_proof`, `verus_proof`, `creusot_proof`) for the proposition.
+/// The harness function names are derived from the struct name in `snake_case`,
+/// so multiple derived propositions can coexist in the same verification target.
+///
+/// Use this for unit structs that serve as typestate markers in workflows.
+/// For propositions with meaningful semantic content (e.g., `DbConnected` which
+/// models a real connection attempt), write a manual `impl Prop` with real harnesses.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation_derive::Prop;
+///
+/// #[derive(Debug, Clone, Copy, Prop)]
+/// pub struct UrlParsed;
+///
+/// #[derive(Debug, Clone, Copy, Prop)]
+/// pub struct HttpsRequired;
+/// ```
+///
+/// The generated Kani harness for `UrlParsed` is equivalent to:
+///
+/// ```rust,ignore
+/// #[kani::proof]
+/// fn verify_url_parsed_prop_marker() {
+///     let established: bool = true;
+///     assert!(established);
+/// }
+/// ```
+#[proc_macro_derive(Prop)]
+pub fn derive_prop(input: TokenStream) -> TokenStream {
+    derive_prop::expand(input)
+}
+
+///
+/// This generates a trivial impl where `type Proxy = Self`, meaning the type
+/// is its own proxy — no conversion needed.  Use this on any type that already
+/// satisfies `Serialize + DeserializeOwned + JsonSchema`.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicitation_derive::ElicitProxy;
+///
+/// #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit, ElicitProxy)]
+/// pub struct MyConfig {
+///     pub name: String,
+///     pub value: i32,
+/// }
+/// ```
+///
+/// The generated code is equivalent to:
+///
+/// ```rust,ignore
+/// impl ::elicitation::ElicitProxy for MyConfig {
+///     type Proxy = MyConfig;
+///     fn into_proxy(self) -> MyConfig { self }
+///     fn from_proxy(proxy: MyConfig) -> MyConfig { proxy }
+/// }
+/// ```
+#[proc_macro_derive(ElicitProxy)]
+pub fn derive_elicit_proxy(input: TokenStream) -> TokenStream {
+    let input = syn::parse_macro_input!(input as syn::DeriveInput);
+    let name = &input.ident;
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
+    quote::quote! {
+        impl #impl_generics ::elicitation::ElicitProxy for #name #ty_generics
+        #where_clause
+        {
+            type Proxy = #name #ty_generics;
+            fn into_proxy(self) -> #name #ty_generics { self }
+            fn from_proxy(proxy: #name #ty_generics) -> #name #ty_generics { proxy }
+        }
+    }
+    .into()
 }

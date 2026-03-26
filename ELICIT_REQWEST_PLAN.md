@@ -14,7 +14,7 @@ Based on [reqwest documentation](https://docs.rs/reqwest/latest/reqwest/):
 
 ## Crate Structure
 
-```
+```text
 crates/elicit_reqwest/
 ├── Cargo.toml
 ├── src/

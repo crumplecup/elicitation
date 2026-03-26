@@ -1,0 +1,41 @@
+[package]
+name = "elicit_tokio"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled tokio shadow crate — MCP tools for async time, sync primitives, and runtime inspection"
+keywords = ["mcp", "tokio", "elicitation", "async", "tools"]
+categories = ["asynchronous", "development-tools"]
+
+[dependencies]
+elicitation = { workspace = true }
+elicitation_derive.workspace = true
+
+tokio = { workspace = true, features = ["time", "sync", "rt"] }
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+rmcp.workspace = true
+tracing.workspace = true
+futures.workspace = true
+uuid = { workspace = true, features = ["v4"] }
+
+# Code emission (optional)
+quote = { workspace = true, optional = true }
+
+[dev-dependencies]
+serde_json.workspace = true
+tokio = { workspace = true, features = ["rt", "macros"] }
+
+[features]
+default = ["proofs"]
+emit = ["dep:quote", "elicitation/emit"]
+proofs = ["dep:quote", "elicitation/proofs"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

@@ -29,8 +29,8 @@
 //!
 //! Registered under the `"time_workflow"` namespace.
 
-use elicitation::contracts::{And, Established, Prop};
-use elicitation::{ElicitPlugin, elicit_tool};
+use elicitation::contracts::{And, Established};
+use elicitation::{ElicitPlugin, Prop, VerifiedWorkflow, elicit_tool};
 use rmcp::{
     ErrorData,
     model::{CallToolResult, Content},
@@ -43,16 +43,19 @@ use tracing::instrument;
 // ── Propositions ──────────────────────────────────────────────────────────────
 
 /// Proposition: the input string is a valid RFC 3339 `OffsetDateTime`.
+#[derive(Prop)]
 pub struct OffsetDateTimeParsed;
-impl Prop for OffsetDateTimeParsed {}
+impl VerifiedWorkflow for OffsetDateTimeParsed {}
 
 /// Proposition: the `OffsetDateTime` is strictly in the future.
+#[derive(Prop)]
 pub struct OffsetDateTimeFuture;
-impl Prop for OffsetDateTimeFuture {}
+impl VerifiedWorkflow for OffsetDateTimeFuture {}
 
 /// Proposition: the input string is a valid ISO 8601 local `PrimitiveDateTime`.
+#[derive(Prop)]
 pub struct PrimitiveDateTimeParsed;
-impl Prop for PrimitiveDateTimeParsed {}
+impl VerifiedWorkflow for PrimitiveDateTimeParsed {}
 
 /// Composite: parsed AND in the future.
 pub type FutureOffsetProof = And<OffsetDateTimeParsed, OffsetDateTimeFuture>;

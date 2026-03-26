@@ -8,16 +8,15 @@
 //!
 //! Run with: `cargo run --example contracts_basic`
 
-use elicitation::contracts::{And, Established, Prop, both};
+use elicitation::contracts::{And, Established, both};
 
 // Define propositions for our domain
+#[derive(elicitation::Prop)]
 struct EmailValidated;
+#[derive(elicitation::Prop)]
 struct PasswordStrong;
+#[derive(elicitation::Prop)]
 struct ConsentObtained;
-
-impl Prop for EmailValidated {}
-impl Prop for PasswordStrong {}
-impl Prop for ConsentObtained {}
 
 /// Validate email format (simplified for example).
 ///
