@@ -51,6 +51,7 @@
 #![warn(missing_docs)]
 
 mod fetch_and_parse;
+pub mod ledger;
 mod secure_fetch;
 
 #[cfg(feature = "emit")]

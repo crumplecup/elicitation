@@ -34,11 +34,15 @@ chrono = { workspace = true }
 jiff = { workspace = true }
 url = { workspace = true }
 time = { workspace = true }
+sqlx = { workspace = true }
 
 # Serialization
 serde = { workspace = true }
 serde_json = { workspace = true }
 schemars = { workspace = true }
+
+# Derive macros
+derive_more = { workspace = true }
 
 # Async
 tokio = { workspace = true }
@@ -50,14 +54,12 @@ rmcp = { workspace = true }
 # Tracing
 tracing = { workspace = true }
 
-# Code recovery (optional)
-proc-macro2 = { workspace = true, optional = true }
-quote = { workspace = true, optional = true }
+# Code recovery
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
 
 [features]
 emit = [
-  "dep:proc-macro2",
-  "dep:quote",
   "elicitation/emit",
   "elicit_reqwest/emit",
   "elicit_serde_json/emit",

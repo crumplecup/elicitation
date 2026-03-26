@@ -695,7 +695,10 @@ todo app).
 - ✅ Phase 2 (Query): SQL aggregation and balance queries - COMPLETE
 - ✅ Phase 3 (Dynamic): Parameterized queries with runtime binding - COMPLETE
 - ✅ Phase 4 (Contracts): Pre-transfer validation pattern - COMPLETE
-- 🔲 Phase 5 (Typestate): State machine implementation - NEXT
+- 🚧 Phase 5 (Typestate): State machine implementation - IN PROGRESS
+  - ✅ Phase 5a: Typestate types and validation functions - COMPLETE
+  - 🔲 Phase 5b: Workflow code generation integration
+  - 🔲 Phase 5c: End-to-end typestate test
 - 🔲 Phase 6 (Concurrent): Transaction isolation under load
 
 ---
@@ -704,11 +707,13 @@ todo app).
 
 **Document:** [TYPESTATE_LEDGER_DESIGN.md](TYPESTATE_LEDGER_DESIGN.md)
 
-**Status:** 🔲 Planning
+**Status:** 🚧 Implementation In Progress
 
 **Description:** Design document for implementing a double-entry ledger using elicitation
 framework's typestate state machines with proof-carrying contracts. Builds on the proven
 emit pipeline from Phases 1-4, following patterns from strictly_games/tictactoe.
+
+**Implementation Location:** `crates/elicit_server/src/ledger/` (moved from elicitation core to avoid circular dependencies)
 
 **Design Principles:**
 - **Typestate phases**: `Transfer<Pending>` → `Transfer<Validated>` → `Transfer<Committed>` / `Transfer<Rejected>`
