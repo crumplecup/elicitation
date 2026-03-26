@@ -87,3 +87,6 @@ required-features = ["emit"]
 
 [[test]]
 name = "ledger_phase5_typestate_test"
+
+[[test]]
+name = "ledger_phase6_concurrent_test"
