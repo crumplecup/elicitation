@@ -154,6 +154,122 @@ impl PromptTree {
             }
         }
     }
+
+    /// Convert to an AccessKit `TreeUpdate` for use in a visualizer or
+    /// assistive technology bridge.
+    ///
+    /// The root node receives `NodeId(0)`.  All descendant nodes receive
+    /// auto-incremented IDs.  The returned `TreeUpdate` is self-contained
+    /// and has no dependency on a live UI context.
+    ///
+    /// Role mapping:
+    /// - `Leaf`   → `Role::TextField`
+    /// - `Select` → `Role::ComboBox` (options as `Role::ListBoxOption` children)
+    /// - `Survey` → `Role::Form`     (fields as named children)
+    /// - `Affirm` → `Role::CheckBox`
+    ///
+    /// Prompt text is placed in `node.label`; the type name in
+    /// `node.description`.
+    #[cfg(feature = "prompt-tree-accesskit")]
+    pub fn to_accesskit_tree(&self) -> accesskit::TreeUpdate {
+        let mut nodes: Vec<(accesskit::NodeId, accesskit::Node)> = Vec::new();
+        let mut counter: u64 = 0;
+        let root_id = build_accesskit_nodes(self, &mut counter, &mut nodes);
+        let tree = accesskit::Tree::new(root_id);
+        accesskit::TreeUpdate {
+            nodes,
+            tree: Some(tree),
+            tree_id: accesskit::TreeId::ROOT,
+            focus: root_id,
+        }
+    }
+}
+
+/// Recursively build AccessKit nodes, returning the `NodeId` of the root.
+#[cfg(feature = "prompt-tree-accesskit")]
+fn build_accesskit_nodes(
+    tree: &PromptTree,
+    counter: &mut u64,
+    nodes: &mut Vec<(accesskit::NodeId, accesskit::Node)>,
+) -> accesskit::NodeId {
+    let id = accesskit::NodeId(*counter);
+    *counter += 1;
+
+    match tree {
+        PromptTree::Leaf { prompt, type_name } => {
+            let mut node = accesskit::Node::new(accesskit::Role::TextInput);
+            node.set_label(prompt.as_str());
+            node.set_description(type_name.as_str());
+            nodes.push((id, node));
+        }
+        PromptTree::Affirm { prompt, type_name } => {
+            let mut node = accesskit::Node::new(accesskit::Role::CheckBox);
+            node.set_label(prompt.as_str());
+            node.set_description(type_name.as_str());
+            nodes.push((id, node));
+        }
+        PromptTree::Select {
+            prompt,
+            type_name,
+            options,
+            branches,
+        } => {
+            // Build option + branch children first so we can reference their IDs.
+            let mut child_ids: Vec<accesskit::NodeId> = Vec::new();
+
+            for (option_label, branch) in options.iter().zip(branches.iter()) {
+                // Each option gets a ListBoxOption node.
+                let opt_id = accesskit::NodeId(*counter);
+                *counter += 1;
+                let mut opt_node = accesskit::Node::new(accesskit::Role::ListBoxOption);
+                opt_node.set_label(option_label.as_str());
+                // If the variant has a branch, nest it as a child.
+                if let Some(subtree) = branch {
+                    let branch_id = build_accesskit_nodes(subtree, counter, nodes);
+                    opt_node.push_child(branch_id);
+                }
+                nodes.push((opt_id, opt_node));
+                child_ids.push(opt_id);
+            }
+
+            let mut node = accesskit::Node::new(accesskit::Role::ComboBox);
+            node.set_label(prompt.as_str());
+            node.set_description(type_name.as_str());
+            for child_id in child_ids {
+                node.push_child(child_id);
+            }
+            nodes.push((id, node));
+        }
+        PromptTree::Survey {
+            prompt,
+            type_name,
+            fields,
+        } => {
+            let mut child_ids: Vec<accesskit::NodeId> = Vec::new();
+            for (field_name, subtree) in fields {
+                let field_id = build_accesskit_nodes(subtree, counter, nodes);
+                // Wrap each field in a Group node labelled with the field name.
+                let wrapper_id = accesskit::NodeId(*counter);
+                *counter += 1;
+                let mut wrapper = accesskit::Node::new(accesskit::Role::Group);
+                wrapper.set_label(field_name.as_str());
+                wrapper.push_child(field_id);
+                nodes.push((wrapper_id, wrapper));
+                child_ids.push(wrapper_id);
+            }
+            let mut node = accesskit::Node::new(accesskit::Role::Form);
+            if let Some(p) = prompt {
+                node.set_label(p.as_str());
+            }
+            node.set_description(type_name.as_str());
+            for child_id in child_ids {
+                node.push_child(child_id);
+            }
+            nodes.push((id, node));
+        }
+    }
+
+    id
 }
 
 // ============================================================================

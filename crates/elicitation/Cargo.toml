@@ -77,6 +77,7 @@ syn = { workspace = true, optional = true }
 # Re-export derive macro
 elicitation_derive = { workspace = true }
 elicitation_macros = { workspace = true }
+accesskit = { version = "0.24", optional = true }
 
 [dev-dependencies]
 tokio-test = { workspace = true }
@@ -131,6 +132,9 @@ graph = []
 # Static prompt tree — PromptTree, ElicitPromptTree, assembled_prompts()
 prompt-tree = ["elicitation_derive/prompt-tree"]
 
+# AccessKit tree bridge — PromptTree::to_accesskit_tree()
+prompt-tree-accesskit = ["prompt-tree", "dep:accesskit"]
+
 # Formal verification support
 verification = [] # Core Contract trait only
 # verify-kani lives in elicitation_kani crate (dedicated)
@@ -148,6 +152,7 @@ cli = ["dep:clap", "clap-types", "csv", "chrono", "shellexpand", "dirs"]
 
 # Development (all optional features + CLI)
 dev = ["full", "cli", "graph"]
+accesskit = ["dep:accesskit"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
