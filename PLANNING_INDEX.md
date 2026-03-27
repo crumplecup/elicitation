@@ -872,3 +872,16 @@ CLI `graph` subcommand and `TypeGraphPlugin` MCP tool ship in the `graph` featur
 - ✅ C: Mermaid + DOT renderers behind `GraphRenderer` trait
 - ✅ D: `elicitation graph` CLI subcommand
 - ✅ E: `TypeGraphPlugin` MCP tool (3 tools: list, graph, describe_edges)
+
+---
+
+### Visualization Guide
+
+**Document:** [VISUALIZATION_GUIDE.md](VISUALIZATION_GUIDE.md)
+
+**Status:** ✅ Complete
+
+**Description:** Unified reference tying together all visualization components:
+the structural type graph, the prompt tree, the assembled-prompt flat view, and
+the AccessKit bridge. Explains how the three views interlock, which feature flag
+enables each, and when to reach for each API.
