@@ -168,3 +168,119 @@ fn dot_direction_enum_is_lightblue() {
         "Select nodes should be lightblue"
     );
 }
+
+// ============================================================================
+// Prompt annotation tests — types with #[prompt] annotations
+// ============================================================================
+
+#[derive(Debug, Clone, Elicit)]
+#[prompt("Where are you going?")]
+pub enum PromptedDirection {
+    North,
+    South,
+}
+
+#[derive(Debug, Clone, Elicit)]
+#[prompt("Configure the server:")]
+pub struct ServerLocation {
+    #[prompt("Host name:")]
+    pub host: String,
+    #[prompt("Port number:")]
+    pub port: u16,
+}
+
+#[test]
+fn mermaid_node_label_includes_type_prompt() {
+    let graph = TypeGraph::from_root("PromptedDirection").unwrap();
+    let output = MermaidRenderer::new().render(&graph);
+    assert!(
+        output.contains("Where are you going?"),
+        "Mermaid label should contain the type-level prompt; output:\n{output}"
+    );
+}
+
+#[test]
+fn mermaid_survey_node_label_includes_type_prompt() {
+    let graph = TypeGraph::from_root("ServerLocation").unwrap();
+    let output = MermaidRenderer {
+        include_primitives: true,
+        ..Default::default()
+    }
+    .render(&graph);
+    assert!(
+        output.contains("Configure the server:"),
+        "Mermaid Survey label should contain the type-level prompt; output:\n{output}"
+    );
+}
+
+#[test]
+fn mermaid_edge_label_includes_field_prompt() {
+    let graph = TypeGraph::from_root("ServerLocation").unwrap();
+    let output = MermaidRenderer {
+        include_primitives: true,
+        ..Default::default()
+    }
+    .render(&graph);
+    assert!(
+        output.contains("Host name:"),
+        "Mermaid edge label should include field prompt; output:\n{output}"
+    );
+    assert!(
+        output.contains("Port number:"),
+        "Mermaid edge label should include port field prompt; output:\n{output}"
+    );
+}
+
+#[test]
+fn dot_node_label_includes_type_prompt() {
+    let graph = TypeGraph::from_root("PromptedDirection").unwrap();
+    let output = DotRenderer::new().render(&graph);
+    assert!(
+        output.contains("Where are you going?"),
+        "DOT label should contain the type-level prompt; output:\n{output}"
+    );
+}
+
+#[test]
+fn dot_survey_node_label_includes_type_prompt() {
+    let graph = TypeGraph::from_root("ServerLocation").unwrap();
+    let output = DotRenderer {
+        include_primitives: true,
+        ..Default::default()
+    }
+    .render(&graph);
+    assert!(
+        output.contains("Configure the server:"),
+        "DOT Survey label should contain the type-level prompt; output:\n{output}"
+    );
+}
+
+#[test]
+fn dot_edge_label_includes_field_prompt() {
+    let graph = TypeGraph::from_root("ServerLocation").unwrap();
+    let output = DotRenderer {
+        include_primitives: true,
+        ..Default::default()
+    }
+    .render(&graph);
+    assert!(
+        output.contains("Host name:"),
+        "DOT edge label should include field prompt; output:\n{output}"
+    );
+}
+
+#[test]
+fn nodes_without_prompt_still_render_correctly() {
+    // Direction has no #[prompt] annotation — should still render fine.
+    let graph = TypeGraph::from_root("Direction").unwrap();
+    let mermaid = MermaidRenderer::new().render(&graph);
+    let dot = DotRenderer::new().render(&graph);
+    assert!(
+        mermaid.contains("Direction"),
+        "Mermaid should still contain Direction"
+    );
+    assert!(
+        dot.contains("Direction"),
+        "DOT should still contain Direction"
+    );
+}

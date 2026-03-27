@@ -76,13 +76,7 @@ impl GraphRenderer for MermaidRenderer {
             if skip {
                 continue;
             }
-            let label = match node.kind {
-                NodeKind::Survey => format!("[\"{} (survey)\"]", name),
-                NodeKind::Select => format!("[\"{} (select)\"]", name),
-                NodeKind::Affirm => format!("[\"{} (affirm)\"]", name),
-                NodeKind::Primitive => format!("[\"{}\"]", name),
-                NodeKind::Generic => format!("(\"(generic:{})\"]", name),
-            };
+            let label = mermaid_node_label(name, node);
             // Mermaid node ids can't contain `::` — sanitise to `__`.
             let id = sanitize_id(name);
             out.push_str(&format!("    {}{}\n", id, label));
@@ -98,10 +92,29 @@ impl GraphRenderer for MermaidRenderer {
             }
             let from_id = sanitize_id(&edge.from);
             let to_id = sanitize_id(&edge.to);
-            out.push_str(&format!("    {} -->|{}| {}\n", from_id, edge.label, to_id));
+            let edge_label = match &edge.prompt {
+                Some(p) => format!("{}: {}", edge.label, p),
+                None => edge.label.clone(),
+            };
+            out.push_str(&format!("    {} -->|{}| {}\n", from_id, edge_label, to_id));
         }
 
         out
+    }
+}
+
+/// Build the Mermaid bracket label for a node, including the prompt when present.
+fn mermaid_node_label(name: &str, node: &crate::type_graph::builder::GraphNode) -> String {
+    let kind_tag = match node.kind {
+        NodeKind::Survey => "survey",
+        NodeKind::Select => "select",
+        NodeKind::Affirm => "affirm",
+        NodeKind::Primitive => return format!("[\"{}\"]", name),
+        NodeKind::Generic => return format!("(\"(generic:{})\")", name),
+    };
+    match &node.prompt {
+        Some(p) => format!("[\"{} ({})\\n'{}'\"]", name, kind_tag, p),
+        None => format!("[\"{} ({})\"]", name, kind_tag),
     }
 }
 
