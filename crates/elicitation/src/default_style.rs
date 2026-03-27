@@ -51,5 +51,17 @@ macro_rules! default_style {
                 ))
             }
         }
+
+        #[cfg(feature = "prompt-tree")]
+        impl $crate::ElicitPromptTree for $style_name {
+            fn prompt_tree() -> $crate::PromptTree {
+                $crate::PromptTree::Leaf {
+                    prompt: <$style_name as $crate::Prompt>::prompt()
+                        .unwrap_or(stringify!($style_name))
+                        .to_string(),
+                    type_name: stringify!($style_name).to_string(),
+                }
+            }
+        }
     };
 }

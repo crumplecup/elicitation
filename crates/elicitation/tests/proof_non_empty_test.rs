@@ -283,3 +283,44 @@ mod uuid_tests {
 fn unit_proofs_non_empty() {
     assert_proofs_non_empty::<()>("()");
 }
+
+// ============================================================================
+// Derived unit-variant enums (regression: previously produced empty proofs)
+// ============================================================================
+
+use elicitation::{Elicit, Prompt, Select};
+
+/// Unit-variant enum with two states — the TicTacToe `Player` case.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
+enum TwoState {
+    A,
+    B,
+}
+
+/// Unit-variant enum with no `Default` derive — exercises `kani_first_variant_constructible`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
+enum ThreeState {
+    Alpha,
+    Beta,
+    Gamma,
+}
+
+/// Enum that wraps a unit-variant enum — exercises the cascading-emptiness case.
+#[derive(Debug, Clone, PartialEq, Eq, Elicit)]
+enum Wrapper {
+    Empty,
+    Occupied(TwoState),
+}
+
+#[test]
+fn derived_unit_variant_enum_proofs_non_empty() {
+    assert_proofs_non_empty::<TwoState>("TwoState (unit-variant enum regression)");
+    assert_proofs_non_empty::<ThreeState>("ThreeState (no Default regression)");
+}
+
+#[test]
+fn cascading_unit_variant_enum_proofs_non_empty() {
+    // Wrapper delegates to TwoState; since TwoState now has a non-empty proof,
+    // Wrapper's delegation loop extends by something non-empty.
+    assert_proofs_non_empty::<Wrapper>("Wrapper (cascading delegation regression)");
+}

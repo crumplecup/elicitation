@@ -930,6 +930,29 @@ pub fn kani_single_variant_enum(enum_name: &str) -> TokenStream {
     }
 }
 
+/// Generate a Kani proof that a unit-variant enum is inhabited.
+///
+/// Proves that `variant_name` is constructible without requiring `Default`,
+/// `PartialEq`, or `Copy`. Used as a fallback for user-defined domain enums
+/// whose variants are all unit variants and therefore have no field types to
+/// delegate proof generation to.
+pub fn kani_first_variant_constructible(enum_name: &str, variant_name: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!("verify_{}_constructible", enum_name.to_lowercase()),
+        Span::call_site(),
+    );
+    let enum_ident: TokenStream = enum_name.parse().expect("valid enum name");
+    let var_path: TokenStream = format!("{enum_name}::{variant_name}")
+        .parse()
+        .expect("valid variant path");
+    quote! {
+        #[kani::proof]
+        fn #fn_ident() {
+            let _: #enum_ident = #var_path;
+        }
+    }
+}
+
 /// Generate a Verus proof for a single-variant `Default` style enum.
 ///
 /// Proves that constructing the `Default` variant is an identity operation:

@@ -826,6 +826,31 @@ machine-readable constraint metadata.
 
 EMIT_AUTODERIVE_PLAN.md
 
+### Prompt Tree
+
+**Document:** [PROMPT_TREE_PLAN.md](PROMPT_TREE_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** `#[derive(Elicit)]` generates a static, compile-time-checkable
+`PromptTree` that represents the full prompt structure of a type — what the agent
+will be asked, in what order, with what options — without running an elicitation.
+Adds an `ElicitPromptTree` trait with `prompt_tree() -> PromptTree` and
+`assembled_prompts() -> Vec<AssembledPrompt>` (the exact strings the agent
+receives). Annotates typestate visualizer nodes with prompt text. Optional
+AccessKit bridge (`to_accesskit_tree()`) maps the tree onto AccessKit roles/properties
+for AT integration and richer visualizer tooltips.
+
+**Phases:**
+
+- 🔲 Step 1: Core types — `PromptTree`, `ElicitPromptTree` trait, blanket impls for primitives
+- 🔲 Step 2: Derive support — generate `ElicitPromptTree` impl in `enum_impl.rs` and `struct_impl.rs`
+- 🔲 Step 3: AccessKit bridge — `to_accesskit_tree()` behind `prompt-tree-accesskit` feature
+- 🔲 Step 4: Typestate visualizer annotation — `prompt_text` on `PatternDetails`, Mermaid/DOT tooltips
+- 🔲 Step 5: Tests — traversal, assembled prompt format, completeness helper
+
+---
+
 ### Type Graph Visualization
 
 **Document:** [TYPE_GRAPH_PLAN.md](TYPE_GRAPH_PLAN.md)

@@ -81,7 +81,7 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
     // Generate Prompt impl
     let prompt_impl = generate_prompt_impl(
         name,
-        custom_prompt,
+        custom_prompt.clone(),
         &impl_generics,
         &ty_generics,
         &where_clause,
@@ -150,6 +150,19 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
     // Users can write verification harnesses manually if needed.
     // Verification is primarily for elicitation's own contract types.
 
+    // Generate ElicitPromptTree impl
+    #[cfg(feature = "prompt-tree")]
+    let prompt_tree_impl = generate_prompt_tree_impl_struct(
+        name,
+        &field_infos,
+        custom_prompt.as_deref(),
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    #[cfg(not(feature = "prompt-tree"))]
+    let prompt_tree_impl = quote! {};
+
     let expanded = quote! {
         #prompt_impl
         #survey_impl
@@ -157,6 +170,7 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
         #introspect_impl
         #elicit_spec_impl
         #graph_key_emission
+        #prompt_tree_impl
     };
 
     TokenStream::from(expanded)
@@ -1545,5 +1559,73 @@ fn generate_graph_key_emission(name: &syn::Ident) -> TokenStream2 {
             #name_str,
             <#name as elicitation::ElicitIntrospect>::metadata,
         ));
+    }
+}
+
+/// Generate `ElicitPromptTree` impl for a named-field struct.
+#[cfg(feature = "prompt-tree")]
+fn generate_prompt_tree_impl_struct(
+    name: &syn::Ident,
+    field_infos: &[FieldInfo],
+    custom_prompt: Option<&str>,
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
+) -> TokenStream2 {
+    let name_str = name.to_string();
+    let prompt_expr = match custom_prompt {
+        Some(p) => quote! { Some(#p.to_string()) },
+        None => quote! {
+            <Self as elicitation::Prompt>::prompt().map(str::to_string)
+        },
+    };
+
+    let field_exprs = field_infos.iter().map(|f| {
+        let field_name = f.ident.to_string();
+        let ty = &f.ty;
+        let tree_expr = if let Some(ref fp) = f.default_prompt {
+            quote! {
+                <#ty as elicitation::ElicitPromptTree>::prompt_tree()
+                    .with_prompt(Some(#fp.to_string()))
+            }
+        } else {
+            quote! { <#ty as elicitation::ElicitPromptTree>::prompt_tree() }
+        };
+        quote! {
+            (#field_name.to_string(), Box::new(#tree_expr))
+        }
+    });
+
+    let existing_predicates: Vec<_> = match where_clause {
+        Some(wc) => wc.predicates.iter().collect(),
+        None => vec![],
+    };
+    let pt_bounds: Vec<_> = field_infos
+        .iter()
+        .map(|f| {
+            let ty = &f.ty;
+            quote! { #ty: elicitation::ElicitPromptTree }
+        })
+        .collect();
+
+    let where_tokens = if existing_predicates.is_empty() && pt_bounds.is_empty() {
+        quote! {}
+    } else {
+        quote! { where #(#existing_predicates,)* #(#pt_bounds),* }
+    };
+
+    quote! {
+        #[automatically_derived]
+        impl #impl_generics elicitation::ElicitPromptTree
+            for #name #ty_generics #where_tokens
+        {
+            fn prompt_tree() -> elicitation::PromptTree {
+                elicitation::PromptTree::Survey {
+                    prompt: #prompt_expr,
+                    type_name: #name_str.to_string(),
+                    fields: vec![#(#field_exprs),*],
+                }
+            }
+        }
     }
 }

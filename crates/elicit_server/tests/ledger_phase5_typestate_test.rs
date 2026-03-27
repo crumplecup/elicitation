@@ -328,11 +328,13 @@ async fn test_ledger_typestate_rollback_after_validation() {
     }
 
     // Verify Alice's balance unchanged (no commit happened)
-    let row = sqlx::query("SELECT COALESCE(SUM(amount), 0) as balance FROM ledger_entries WHERE account_name = ?")
-        .bind("Alice")
-        .fetch_one(&pool)
-        .await
-        .expect("Failed to query balance");
+    let row = sqlx::query(
+        "SELECT COALESCE(SUM(amount), 0) as balance FROM ledger_entries WHERE account_name = ?",
+    )
+    .bind("Alice")
+    .fetch_one(&pool)
+    .await
+    .expect("Failed to query balance");
 
     let balance: i64 = row.get("balance");
     assert_eq!(balance, 100, "Alice's balance should be unchanged");

@@ -6,7 +6,7 @@
 
 use std::marker::PhantomData;
 
-use elicitation::contracts::{both, Established};
+use elicitation::contracts::{Established, both};
 
 use crate::ledger::contracts::{
     AccountsDistinct, AmountPositive, BalancedEntries, SufficientFunds, ValidTransfer,
@@ -101,12 +101,7 @@ pub struct RejectedData {
 
 impl Transfer<Pending> {
     /// Creates a new pending transfer.
-    pub fn new(
-        from: AccountId,
-        to: AccountId,
-        amount: Amount,
-        transfer_id: TransferId,
-    ) -> Self {
+    pub fn new(from: AccountId, to: AccountId, amount: Amount, transfer_id: TransferId) -> Self {
         Self {
             from_account: from,
             to_account: to,
@@ -121,10 +116,7 @@ impl Transfer<Pending> {
     ///
     /// This is a non-async version for testing. The full async version
     /// with database queries is in the `sqlx-types` feature.
-    pub fn validate_sync(
-        self,
-        from_balance: i64,
-    ) -> Result<Transfer<Validated>, ValidationError> {
+    pub fn validate_sync(self, from_balance: i64) -> Result<Transfer<Validated>, ValidationError> {
         // Validate amount is positive
         let _amount_proof = validate_amount_positive(&self)?;
 

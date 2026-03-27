@@ -194,7 +194,9 @@ async fn test_ledger_phase4_contracts() {
 
     // Validate that balance query appears before transfer
     assert!(
-        generated_code.contains("SELECT COALESCE(SUM(amount), 0) as balance FROM ledger_entries WHERE account_name = ?"),
+        generated_code.contains(
+            "SELECT COALESCE(SUM(amount), 0) as balance FROM ledger_entries WHERE account_name = ?"
+        ),
         "Generated code should contain balance query before transfer"
     );
     assert!(

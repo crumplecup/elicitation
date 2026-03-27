@@ -37,12 +37,12 @@
 
 mod contracts;
 mod errors;
-mod typestate;
 mod types;
+mod typestate;
 
 pub use contracts::{
     AccountsDistinct, AmountPositive, BalancedEntries, SufficientFunds, ValidTransfer,
 };
 pub use errors::{CommitError, RejectionReason, ValidationError};
-pub use typestate::{Committed, Pending, Rejected, Transfer, Validated};
 pub use types::{AccountId, Amount, TransferId};
+pub use typestate::{Committed, Pending, Rejected, Transfer, Validated};
