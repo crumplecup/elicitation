@@ -106,7 +106,10 @@ fn node_label_color<'a>(
                 Some(p) => format!("|{}", dot_escape(p)),
                 None => String::new(),
             };
-            (format!("{{{}|survey{}}}", name, prompt_row), "lightyellow")
+            (
+                format!("{{{}|survey|{} fields{}}}", name, field_count, prompt_row),
+                "lightyellow",
+            )
         }
         NodeKind::Select => {
             let variant_count = graph.edges.iter().filter(|e| e.from == name).count();
