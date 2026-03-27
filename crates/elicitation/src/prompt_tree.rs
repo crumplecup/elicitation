@@ -1,25 +1,173 @@
-//! Static prompt tree for `Elicitation` types.
+//! Static prompt tree for [`Elicitation`][crate::Elicitation] types.
 //!
-//! [`PromptTree`] is a static, owned representation of the full prompt
-//! structure of a type — what the agent will be asked, in what order, and
-//! with what options — without running an elicitation or holding a
-//! communicator.
+//! # Overview
 //!
-//! The [`ElicitPromptTree`] trait is implemented by every type that derives
-//! [`crate::Elicit`], and by all primitive types in this crate. The derive
-//! recursively composes the tree from field and variant types, so adding a
-//! field to a struct automatically extends its prompt tree.
+//! When an agent interacts with an elicitation workflow it receives a sequence
+//! of prompts — one for each piece of information required to construct a
+//! strongly-typed Rust value. In a small workflow that sequence is obvious at a
+//! glance. In a deep, nested one it is not: the full prompt chain is buried
+//! across dozens of `#[derive(Elicit)]` types, field attributes, enum variants,
+//! and wrapper types, spread throughout the codebase. Without tooling, the only
+//! way to see the complete picture is to actually run the elicitation and read
+//! the agent's transcript.
 //!
-//! # Example
+//! This module eliminates that problem. It provides a **static, compile-time
+//! representation** of the entire prompt structure of any `Elicitation` type —
+//! what the agent will be asked, in what order, with what options — without
+//! executing a single `async` call or holding a communicator.
+//!
+//! The central abstraction is [`PromptTree`], a recursive enum that mirrors the
+//! shape of the value being elicited:
+//!
+//! | [`PromptTree`] variant | Elicitation pattern | Rust equivalent |
+//! |---|---|---|
+//! | [`Leaf`][PromptTree::Leaf] | scalar input | `String`, `u32`, `PathBuf`, … |
+//! | [`Select`][PromptTree::Select] | variant choice + optional data | `enum` |
+//! | [`Survey`][PromptTree::Survey] | field-by-field input | `struct` |
+//! | [`Affirm`][PromptTree::Affirm] | binary yes/no | `bool` |
+//!
+//! The [`ElicitPromptTree`] trait is the query interface: call
+//! `T::prompt_tree()` to obtain the tree, or `T::assembled_prompts()` for a
+//! flat, ordered list of every prompt in elicitation sequence.
+//!
+//! # How the Tree Is Composed
+//!
+//! `#[derive(Elicit)]` automatically generates an `ElicitPromptTree` impl that
+//! recurses into every field and variant type:
+//!
+//! ```text
+//! #[derive(Elicit)]
+//! #[prompt("Configure the server:")]
+//! struct ServerConfig {
+//!     #[prompt("Host name or IP:")]
+//!     host: String,
+//!     #[prompt("Port number:")]
+//!     port: u16,
+//!     tls: bool,
+//! }
+//!
+//! // The macro generates (approximately):
+//! impl ElicitPromptTree for ServerConfig {
+//!     fn prompt_tree() -> PromptTree {
+//!         PromptTree::Survey {
+//!             prompt: Some("Configure the server:".into()),
+//!             type_name: "ServerConfig".into(),
+//!             fields: vec![
+//!                 ("host".into(), Box::new(
+//!                     String::prompt_tree().with_prompt(Some("Host name or IP:".into()))
+//!                 )),
+//!                 ("port".into(), Box::new(
+//!                     u16::prompt_tree().with_prompt(Some("Port number:".into()))
+//!                 )),
+//!                 ("tls".into(), Box::new(bool::prompt_tree())),
+//!             ],
+//!         }
+//!     }
+//! }
+//! ```
+//!
+//! This is the **structural completeness guarantee**: because the macro sees the
+//! actual field types at compile time, every field is included automatically.
+//! There is no way to accidentally omit a field, and adding a new field to a
+//! struct automatically extends its prompt tree. The same holds for enums —
+//! adding a variant extends the `Select` node without touching any other code.
+//!
+//! # Field-Level Prompt Overrides
+//!
+//! A field-level `#[prompt("...")]` annotation overrides the inner type's
+//! default prompt text for that field. The override is applied via
+//! [`PromptTree::with_prompt`], which replaces the root prompt on whatever
+//! subtree the field type returns:
+//!
+//! ```text
+//! // String::prompt_tree() → Leaf { prompt: "Please enter text:", … }
+//! // After with_prompt("Host name or IP:"):
+//! //   → Leaf { prompt: "Host name or IP:", … }
+//! ```
+//!
+//! Without a field-level annotation the inner type's default prompt is
+//! preserved unchanged. This means primitive types like `String` and `u16`
+//! ship with sensible defaults that are automatically used wherever they appear
+//! without an override.
+//!
+//! # Reading the Full Prompt Sequence
+//!
+//! [`ElicitPromptTree::assembled_prompts`] performs a depth-first traversal of
+//! the tree and returns a [`Vec<AssembledPrompt>`] — one entry per question the
+//! agent will actually receive, in elicitation order. Each [`AssembledPrompt`]
+//! carries:
+//!
+//! - `text` — the exact prompt string
+//! - `kind` — which interaction pattern ([`PromptKind`])
+//! - `path` — breadcrumb trail of field/variant names from the root
 //!
 //! ```
-//! use elicitation::{ElicitPromptTree, PromptTree};
-//!
-//! let tree = bool::prompt_tree();
-//! assert!(matches!(tree, PromptTree::Affirm { .. }));
+//! use elicitation::{ElicitPromptTree, PromptKind};
 //!
 //! let prompts = bool::assembled_prompts();
 //! assert_eq!(prompts.len(), 1);
+//! assert_eq!(prompts[0].kind, PromptKind::Affirm);
+//! ```
+//!
+//! For a nested struct the path tells you *where* in the type hierarchy each
+//! prompt originates:
+//!
+//! ```text
+//! // For Deployment { env: Environment, config: ServerConfig { host, port, tls } }
+//! // assembled_prompts() returns (approximately):
+//! //
+//! //   path=["env"]            kind=Select  text="Select deployment environment:"
+//! //   path=["config", "host"] kind=Leaf    text="Host name or IP:"
+//! //   path=["config", "port"] kind=Leaf    text="Port number:"
+//! //   path=["config", "tls"]  kind=Affirm  text="Enable TLS?"
+//! ```
+//!
+//! # AccessKit Bridge
+//!
+//! Behind the `prompt-tree-accesskit` feature, every [`PromptTree`] can be
+//! converted to an [`accesskit::TreeUpdate`] via
+//! [`PromptTree::to_accesskit_tree`]. The AccessKit tree is self-contained — no
+//! live UI context, no async — and maps each node to the semantically closest
+//! accessibility role:
+//!
+//! | [`PromptTree`] variant | AccessKit [`Role`][accesskit::Role] |
+//! |---|---|
+//! | `Leaf` | `Role::TextInput` |
+//! | `Affirm` | `Role::CheckBox` |
+//! | `Select` | `Role::ComboBox` (options as `ListBoxOption` children) |
+//! | `Survey` | `Role::Form` (fields wrapped in `Group` children) |
+//!
+//! This makes the prompt structure consumable by screen readers, visualizers,
+//! and any downstream tooling that speaks the AccessKit protocol.
+//!
+//! # Type Graph Integration
+//!
+//! The `graph` feature annotates Mermaid and DOT type graph nodes with the
+//! prompts carried by this module. Type-level prompts appear in the node label;
+//! field-level prompts appear on the edges. This means a single `TypeGraph`
+//! render shows the full structural *and* conversational shape of your workflow
+//! in one diagram — without running anything.
+//!
+//! # Feature Flags
+//!
+//! | Feature | What it enables |
+//! |---|---|
+//! | `prompt-tree` | This entire module; required for all uses |
+//! | `prompt-tree-accesskit` | [`PromptTree::to_accesskit_tree`]; implies `prompt-tree` |
+//!
+//! # Quick Start
+//!
+//! ```
+//! use elicitation::{ElicitPromptTree, PromptTree, PromptKind};
+//!
+//! // Any type that derives Elicit (or is a primitive) works:
+//! let tree = bool::prompt_tree();
+//! assert!(matches!(tree, PromptTree::Affirm { .. }));
+//!
+//! // Flat traversal — see every question in order:
+//! let prompts = bool::assembled_prompts();
+//! assert_eq!(prompts.len(), 1);
+//! assert_eq!(prompts[0].kind, PromptKind::Affirm);
 //! assert!(!prompts[0].text.is_empty());
 //! ```
 
