@@ -6,10 +6,12 @@
 //! when multiple proposition types' proofs are assembled into a single
 //! verification target.
 
-use heck::ToSnakeCase;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::DeriveInput;
+
+#[cfg(feature = "proofs")]
+use heck::ToSnakeCase;
 
 /// Expand `#[derive(Prop)]` for a struct.
 pub fn expand(input: TokenStream) -> TokenStream {

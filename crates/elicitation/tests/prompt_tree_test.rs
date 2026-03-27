@@ -335,8 +335,109 @@ fn all_derived_types_prompts_complete() {
 }
 
 // ============================================================================
-// Regression: unit-variant enum (previously empty proofs, now correct tree)
+// Regression: missing integer types usize / isize / u128 / i128
+// (previously had no ElicitPromptTree impl; any struct using these as fields
+// would fail to compile with `prompt-tree` enabled)
 // ============================================================================
+
+#[test]
+fn all_integer_widths_are_leaf() {
+    for (tree, name) in [
+        (i8::prompt_tree(), "i8"),
+        (i16::prompt_tree(), "i16"),
+        (i32::prompt_tree(), "i32"),
+        (i64::prompt_tree(), "i64"),
+        (i128::prompt_tree(), "i128"),
+        (isize::prompt_tree(), "isize"),
+        (u8::prompt_tree(), "u8"),
+        (u16::prompt_tree(), "u16"),
+        (u32::prompt_tree(), "u32"),
+        (u64::prompt_tree(), "u64"),
+        (u128::prompt_tree(), "u128"),
+        (usize::prompt_tree(), "usize"),
+        (f32::prompt_tree(), "f32"),
+        (f64::prompt_tree(), "f64"),
+    ] {
+        assert!(
+            matches!(tree, PromptTree::Leaf { .. }),
+            "{name}: expected Leaf, got {tree:?}"
+        );
+        assert_eq!(tree.type_name(), name, "{name}: wrong type_name");
+        assert_eq!(tree.depth(), 1, "{name}: expected depth 1");
+    }
+}
+
+/// A struct using the previously-missing integer widths should compile and
+/// produce a Survey tree with the right number of fields.
+#[derive(Debug, Clone, Elicit)]
+#[prompt("Enter index info:")]
+struct IndexInfo {
+    #[prompt("Array index:")]
+    index: usize,
+    #[prompt("Signed offset:")]
+    offset: isize,
+    #[prompt("Large count:")]
+    count: u128,
+    #[prompt("Large signed:")]
+    signed: i128,
+}
+
+#[test]
+fn struct_with_usize_isize_fields_is_survey() {
+    let tree = IndexInfo::prompt_tree();
+    let PromptTree::Survey { fields, .. } = &tree else {
+        panic!("expected Survey, got {tree:?}");
+    };
+    assert_eq!(fields.len(), 4);
+    assert!(matches!(fields[0].1.as_ref(), PromptTree::Leaf { type_name, .. } if type_name == "usize"));
+    assert!(matches!(fields[1].1.as_ref(), PromptTree::Leaf { type_name, .. } if type_name == "isize"));
+    assert!(matches!(fields[2].1.as_ref(), PromptTree::Leaf { type_name, .. } if type_name == "u128"));
+    assert!(matches!(fields[3].1.as_ref(), PromptTree::Leaf { type_name, .. } if type_name == "i128"));
+}
+
+// ============================================================================
+// Regression: Established<P> missing ElicitPromptTree impl
+// (any struct with a proof-token field would fail to compile with prompt-tree)
+// ============================================================================
+
+#[cfg(feature = "verification")]
+mod established_tests {
+    use super::*;
+    use elicitation::contracts::{Established, Prop};
+
+    #[derive(elicitation::Prop)]
+    struct BetPlaced;
+
+    #[test]
+    fn established_is_leaf() {
+        // Established<P> itself should satisfy ElicitPromptTree (empty leaf).
+        let tree = Established::<BetPlaced>::prompt_tree();
+        assert!(
+            matches!(tree, PromptTree::Leaf { .. }),
+            "Established<P> should produce a Leaf, got {tree:?}"
+        );
+        assert_eq!(tree.type_name(), "Established");
+    }
+
+    /// A struct where the proof token is skipped (the common real-world pattern).
+    /// Before the fix, the `Established<P>: ElicitPromptTree` bound was missing,
+    /// so any code path that mentioned the type in a where clause would fail.
+    /// We verify the trait is callable directly (compilation = test passing).
+    #[test]
+    fn established_impl_exists_for_multiple_props() {
+        // Two different Prop types — both should satisfy ElicitPromptTree.
+        use elicitation::contracts::Is;
+        let t1 = Established::<BetPlaced>::prompt_tree();
+        let t2 = Established::<Is<String>>::prompt_tree();
+        for tree in [&t1, &t2] {
+            assert!(
+                matches!(tree, PromptTree::Leaf { .. }),
+                "Established should be a Leaf, got {tree:?}"
+            );
+            assert_eq!(tree.type_name(), "Established");
+        }
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
 enum TwoState {
