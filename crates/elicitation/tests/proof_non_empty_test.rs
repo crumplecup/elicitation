@@ -367,3 +367,88 @@ mod accesskit_proofs {
         assert_proofs_non_empty::<accesskit::ScrollHint>("accesskit::ScrollHint");
     }
 }
+
+// ============================================================================
+// egui enum proof token-stream tests
+// ============================================================================
+
+#[cfg(feature = "egui-types")]
+mod egui_proofs {
+    use elicitation::Elicitation;
+
+    #[track_caller]
+    fn assert_proofs_non_empty<T: Elicitation>(label: &str) {
+        assert!(!T::kani_proof().is_empty(), "{label}: kani_proof is empty");
+        assert!(
+            !T::verus_proof().is_empty(),
+            "{label}: verus_proof is empty"
+        );
+        assert!(
+            !T::creusot_proof().is_empty(),
+            "{label}: creusot_proof is empty"
+        );
+    }
+
+    #[test]
+    fn egui_enum_proofs_non_empty() {
+        assert_proofs_non_empty::<egui::Align>("egui::Align");
+        assert_proofs_non_empty::<egui::CursorIcon>("egui::CursorIcon");
+        assert_proofs_non_empty::<egui::Direction>("egui::Direction");
+        assert_proofs_non_empty::<egui::FontFamily>("egui::FontFamily");
+        assert_proofs_non_empty::<egui::Key>("egui::Key");
+        assert_proofs_non_empty::<egui::Order>("egui::Order");
+        assert_proofs_non_empty::<egui::PointerButton>("egui::PointerButton");
+        assert_proofs_non_empty::<egui::TextStyle>("egui::TextStyle");
+        assert_proofs_non_empty::<egui::TextWrapMode>("egui::TextWrapMode");
+        assert_proofs_non_empty::<egui::epaint::textures::TextureFilter>("egui::TextureFilter");
+        assert_proofs_non_empty::<egui::epaint::textures::TextureWrapMode>("egui::TextureWrapMode");
+        assert_proofs_non_empty::<egui::Theme>("egui::Theme");
+        assert_proofs_non_empty::<egui::ThemePreference>("egui::ThemePreference");
+        assert_proofs_non_empty::<egui::TouchPhase>("egui::TouchPhase");
+        assert_proofs_non_empty::<egui::UiKind>("egui::UiKind");
+        assert_proofs_non_empty::<egui::WidgetType>("egui::WidgetType");
+    }
+
+    /// Compile-time assertion: all trenchcoat wrappers satisfy ElicitComplete.
+    fn assert_elicit_complete<T: elicitation::ElicitComplete>() {}
+
+    #[test]
+    fn egui_trenchcoat_wrappers_elicit_complete() {
+        assert_elicit_complete::<elicitation::AlignSelect>();
+        assert_elicit_complete::<elicitation::CursorIconSelect>();
+        assert_elicit_complete::<elicitation::DirectionSelect>();
+        assert_elicit_complete::<elicitation::FontFamilySelect>();
+        assert_elicit_complete::<elicitation::KeySelect>();
+        assert_elicit_complete::<elicitation::OrderSelect>();
+        assert_elicit_complete::<elicitation::PointerButtonSelect>();
+        assert_elicit_complete::<elicitation::TextStyleSelect>();
+        assert_elicit_complete::<elicitation::TextWrapModeSelect>();
+        assert_elicit_complete::<elicitation::TextureFilterSelect>();
+        assert_elicit_complete::<elicitation::TextureWrapModeSelect>();
+        assert_elicit_complete::<elicitation::ThemeSelect>();
+        assert_elicit_complete::<elicitation::ThemePreferenceSelect>();
+        assert_elicit_complete::<elicitation::TouchPhaseSelect>();
+        assert_elicit_complete::<elicitation::UiKindSelect>();
+        assert_elicit_complete::<elicitation::WidgetTypeSelect>();
+    }
+
+    #[test]
+    fn egui_trenchcoat_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::AlignSelect>("AlignSelect");
+        assert_proofs_non_empty::<elicitation::CursorIconSelect>("CursorIconSelect");
+        assert_proofs_non_empty::<elicitation::DirectionSelect>("DirectionSelect");
+        assert_proofs_non_empty::<elicitation::FontFamilySelect>("FontFamilySelect");
+        assert_proofs_non_empty::<elicitation::KeySelect>("KeySelect");
+        assert_proofs_non_empty::<elicitation::OrderSelect>("OrderSelect");
+        assert_proofs_non_empty::<elicitation::PointerButtonSelect>("PointerButtonSelect");
+        assert_proofs_non_empty::<elicitation::TextStyleSelect>("TextStyleSelect");
+        assert_proofs_non_empty::<elicitation::TextWrapModeSelect>("TextWrapModeSelect");
+        assert_proofs_non_empty::<elicitation::TextureFilterSelect>("TextureFilterSelect");
+        assert_proofs_non_empty::<elicitation::TextureWrapModeSelect>("TextureWrapModeSelect");
+        assert_proofs_non_empty::<elicitation::ThemeSelect>("ThemeSelect");
+        assert_proofs_non_empty::<elicitation::ThemePreferenceSelect>("ThemePreferenceSelect");
+        assert_proofs_non_empty::<elicitation::TouchPhaseSelect>("TouchPhaseSelect");
+        assert_proofs_non_empty::<elicitation::UiKindSelect>("UiKindSelect");
+        assert_proofs_non_empty::<elicitation::WidgetTypeSelect>("WidgetTypeSelect");
+    }
+}

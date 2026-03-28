@@ -133,6 +133,10 @@ mod newtype_macro;
 #[macro_use]
 mod newtype_methods_macro;
 
+// Select trenchcoat macro: wraps foreign Select enums with JsonSchema + serde
+#[macro_use]
+mod select_trenchcoat_macro;
+
 mod traits;
 
 mod elicit_json;
@@ -182,7 +186,7 @@ pub use mcp_wrapper::ElicitToolOutput;
 pub use server::ElicitServer;
 
 // Core traits
-pub use elicitation_style::ElicitationStyle;
+pub use elicitation_style::StyleMarker;
 pub use traits::{
     ElicitBuilder, ElicitIntrospect, Elicitation, ElicitationPattern, Generator, PatternDetails,
     Prompt, TypeMetadata, VariantMetadata,
@@ -500,4 +504,16 @@ pub use primitives::accesskit_types::{
     LiveStyle, OrientationStyle, RoleStyle, ScrollHintStyle, ScrollUnitStyle, SortDirectionStyle,
     TextAlignStyle, TextDecorationStyleStyle, TextDirectionStyle, ToggledStyle,
     VerticalOffsetStyle,
+};
+
+// egui types (feature-gated on egui-types)
+#[cfg(feature = "egui-types")]
+pub use primitives::egui_types::{
+    AlignSelect, AlignStyle, CursorIconSelect, CursorIconStyle, DirectionSelect, DirectionStyle,
+    FontFamilySelect, FontFamilyStyle, KeySelect, KeyStyle, OrderSelect, OrderStyle,
+    PointerButtonSelect, PointerButtonStyle, TextStyleSelect, TextStyleStyle, TextWrapModeSelect,
+    TextWrapModeStyle, TextureFilterSelect, TextureFilterStyle, TextureWrapModeSelect,
+    TextureWrapModeStyle, ThemePreferenceSelect, ThemePreferenceStyle, ThemeSelect, ThemeStyle,
+    TouchPhaseSelect, TouchPhaseStyle, UiKindSelect, UiKindStyle, WidgetTypeSelect,
+    WidgetTypeStyle,
 };

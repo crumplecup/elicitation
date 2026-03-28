@@ -78,6 +78,7 @@ syn = { workspace = true, optional = true }
 elicitation_derive = { workspace = true }
 elicitation_macros = { workspace = true }
 accesskit = { workspace = true, optional = true }
+egui = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio-test = { workspace = true }
@@ -153,6 +154,7 @@ cli = ["dep:clap", "clap-types", "csv", "chrono", "shellexpand", "dirs"]
 # Development (all optional features + CLI)
 dev = ["full", "cli", "graph"]
 accesskit = ["dep:accesskit"]
+egui-types = ["dep:egui"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [

@@ -58,6 +58,9 @@ elicit_accesskit = { path = "crates/elicit_accesskit", version = "0.9.1" }
 # accesskit - UI accessibility infrastructure
 accesskit = { version = "0.24", features = ["serde", "schemars"] }
 
+# egui - immediate mode GUI framework
+egui = { version = "0.33", features = ["serde"] }
+
 # sqlx - database interaction library
 sqlx = { version = "0.8", features = [
   "runtime-tokio",

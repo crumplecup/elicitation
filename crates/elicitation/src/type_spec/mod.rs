@@ -26,6 +26,7 @@ mod clap_specs;
 mod collection_contracts;
 mod collections;
 mod datetime_specs;
+mod egui_specs;
 mod elicit_spec;
 mod float_contracts;
 mod http_specs;
