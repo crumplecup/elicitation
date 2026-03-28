@@ -324,3 +324,46 @@ fn cascading_unit_variant_enum_proofs_non_empty() {
     // Wrapper's delegation loop extends by something non-empty.
     assert_proofs_non_empty::<Wrapper>("Wrapper (cascading delegation regression)");
 }
+
+// ============================================================================
+// Third-party — accesskit types
+// ============================================================================
+
+#[cfg(feature = "accesskit")]
+mod accesskit_proofs {
+    use elicitation::Elicitation;
+
+    #[track_caller]
+    fn assert_proofs_non_empty<T: Elicitation>(label: &str) {
+        assert!(!T::kani_proof().is_empty(), "{label}: kani_proof is empty");
+        assert!(
+            !T::verus_proof().is_empty(),
+            "{label}: verus_proof is empty"
+        );
+        assert!(
+            !T::creusot_proof().is_empty(),
+            "{label}: creusot_proof is empty"
+        );
+    }
+
+    #[test]
+    fn accesskit_enum_proofs_non_empty() {
+        assert_proofs_non_empty::<accesskit::Role>("accesskit::Role");
+        assert_proofs_non_empty::<accesskit::Action>("accesskit::Action");
+        assert_proofs_non_empty::<accesskit::Invalid>("accesskit::Invalid");
+        assert_proofs_non_empty::<accesskit::Toggled>("accesskit::Toggled");
+        assert_proofs_non_empty::<accesskit::Orientation>("accesskit::Orientation");
+        assert_proofs_non_empty::<accesskit::TextDirection>("accesskit::TextDirection");
+        assert_proofs_non_empty::<accesskit::SortDirection>("accesskit::SortDirection");
+        assert_proofs_non_empty::<accesskit::AriaCurrent>("accesskit::AriaCurrent");
+        assert_proofs_non_empty::<accesskit::AutoComplete>("accesskit::AutoComplete");
+        assert_proofs_non_empty::<accesskit::Live>("accesskit::Live");
+        assert_proofs_non_empty::<accesskit::HasPopup>("accesskit::HasPopup");
+        assert_proofs_non_empty::<accesskit::ListStyle>("accesskit::ListStyle");
+        assert_proofs_non_empty::<accesskit::TextAlign>("accesskit::TextAlign");
+        assert_proofs_non_empty::<accesskit::VerticalOffset>("accesskit::VerticalOffset");
+        assert_proofs_non_empty::<accesskit::TextDecorationStyle>("accesskit::TextDecorationStyle");
+        assert_proofs_non_empty::<accesskit::ScrollUnit>("accesskit::ScrollUnit");
+        assert_proofs_non_empty::<accesskit::ScrollHint>("accesskit::ScrollHint");
+    }
+}
