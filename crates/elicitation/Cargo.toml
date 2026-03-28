@@ -77,7 +77,7 @@ syn = { workspace = true, optional = true }
 # Re-export derive macro
 elicitation_derive = { workspace = true }
 elicitation_macros = { workspace = true }
-accesskit = { version = "0.24", optional = true }
+accesskit = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio-test = { workspace = true }

@@ -8,6 +8,10 @@ version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5351dcebb14b579ccab05f288596b2ae097005be7ee50a7c3d4ca9d0d5a66f6a"
 dependencies = [
+ "enumn",
+ "schemars",
+ "serde",
+ "serde_json",
  "uuid",
 ]
 
@@ -932,6 +936,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_accesskit"
+version = "0.9.1"
+dependencies = [
+ "accesskit",
+ "elicitation",
+ "elicitation_derive",
+ "elicitation_macros",
+ "futures",
+ "inventory",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "elicit_chrono"
 version = "0.9.1"
 dependencies = [
@@ -1346,6 +1368,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "75030f3c4f45dafd7586dd6780965a8c7e8e285a5ecb86713e63a79c5b2766f3"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "enumn"
+version = "0.1.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2f9ed6b3789237c8a0c1c505af1c7eb2c560df6186f01b098c3a1064ea532f38"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
