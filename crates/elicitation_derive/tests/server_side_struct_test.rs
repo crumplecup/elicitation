@@ -63,7 +63,13 @@ impl ElicitCommunicator for MockCommunicator {
         &self.style_context
     }
 
-    fn with_style<T: 'static, S: elicitation::ElicitationStyle>(&self, _style: S) -> Self {
+    fn with_style<
+        T: 'static,
+        S: elicitation::StyleMarker + elicitation::style::ElicitationStyle + 'static,
+    >(
+        &self,
+        _style: S,
+    ) -> Self {
         self.clone()
     }
 

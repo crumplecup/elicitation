@@ -506,11 +506,15 @@ impl Elicitation for UrlValid {
 
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let prompt = Self::prompt().unwrap();
-        tracing::debug!("Eliciting UrlValid with server-side send_prompt");
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<url::Url>("value", "URL", &crate::style::PromptContext::new(0, 1))
+            .unwrap_or(None)
+            .unwrap_or_else(|| Self::prompt().unwrap().to_string());
+        tracing::debug!(%prompt, "Eliciting UrlValid with server-side send_prompt");
 
         // Use send_prompt for server-side compatibility
-        let response = communicator.send_prompt(prompt).await?;
+        let response = communicator.send_prompt(&prompt).await?;
 
         // Parse the string as a URL
         let url = url::Url::parse(response.trim()).map_err(|e| {

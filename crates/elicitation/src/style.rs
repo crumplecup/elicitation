@@ -104,8 +104,10 @@ pub trait ElicitationStyle: Send + Sync {
         &self,
         field_name: &str,
         field_type: &str,
-        context: &PromptContext,
-    ) -> String;
+        _context: &PromptContext,
+    ) -> String {
+        format!("Enter {} ({}):", field_name, field_type)
+    }
 
     /// Generate optional help text for a field.
     ///
@@ -156,6 +158,9 @@ pub trait ElicitationStyle: Send + Sync {
         ""
     }
 }
+
+/// Unit type serves as a no-op style for types that don't need styling.
+impl ElicitationStyle for () {}
 
 /// Rendering style for select/dropdown interactions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

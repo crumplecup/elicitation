@@ -39,6 +39,8 @@ impl Elicitation for ArrayStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for ArrayStyle {}
+
 impl<T, const N: usize> Prompt for [T; N]
 where
     T: Elicitation + Send,

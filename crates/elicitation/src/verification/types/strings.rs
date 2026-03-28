@@ -281,10 +281,15 @@ impl Elicitation for StringDefault {
 
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let prompt = Self::prompt().unwrap();
-        tracing::debug!("Eliciting StringDefault with serde deserialization");
+        // Consult style context for a custom prompt, fall back to default
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "String", &crate::style::PromptContext::new(0, 1))?
+            .unwrap_or_else(|| Self::prompt().unwrap().to_string());
 
-        let params = crate::mcp::text_params(prompt);
+        tracing::debug!(prompt = %prompt, "Eliciting StringDefault");
+
+        let params = crate::mcp::text_params(&prompt);
 
         let result = communicator
             .call_tool(

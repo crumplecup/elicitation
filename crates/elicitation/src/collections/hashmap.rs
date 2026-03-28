@@ -41,6 +41,8 @@ impl Elicitation for HashMapStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for HashMapStyle {}
+
 impl<K, V> Prompt for HashMap<K, V>
 where
     K: Elicitation + Hash + Eq + Send,

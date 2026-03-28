@@ -39,6 +39,8 @@ impl Elicitation for OptionStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for OptionStyle {}
+
 impl<T: Elicitation + Send> Prompt for Option<T> {
     fn prompt() -> Option<&'static str> {
         Some("Would you like to provide a value for this field?")

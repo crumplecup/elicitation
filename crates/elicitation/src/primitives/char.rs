@@ -16,10 +16,14 @@ impl Elicitation for char {
 
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-        let prompt = Self::prompt().unwrap();
-        tracing::debug!("Eliciting char");
+        let prompt = communicator
+            .style_context()
+            .prompt_for_type::<Self>("value", "char", &crate::style::PromptContext::new(0, 1))
+            .unwrap_or(None)
+            .unwrap_or_else(|| Self::prompt().unwrap().to_string());
+        tracing::debug!(%prompt, "Eliciting char");
 
-        let params = mcp::text_params(prompt);
+        let params = mcp::text_params(&prompt);
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())

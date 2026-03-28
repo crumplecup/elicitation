@@ -76,6 +76,8 @@ impl Elicitation for StringStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for StringStyle {}
+
 impl Prompt for String {
     fn prompt() -> Option<&'static str> {
         Some("Please enter text:")

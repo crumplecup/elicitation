@@ -39,6 +39,8 @@ impl Elicitation for VecStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for VecStyle {}
+
 impl<T: Elicitation + Send> Prompt for Vec<T> {
     fn prompt() -> Option<&'static str> {
         Some("Would you like to add items to this collection?")

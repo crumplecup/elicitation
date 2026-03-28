@@ -425,6 +425,8 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
             #style_proof_methods
         }
 
+        impl elicitation::style::ElicitationStyle for #style_name {}
+
         #[allow(unexpected_cfgs)]
         impl #impl_generics elicitation::Elicitation for #name #ty_generics #where_clause {
             type Style = #style_name;
@@ -617,6 +619,8 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
             }
             #style_proof_methods
         }
+
+        impl elicitation::style::ElicitationStyle for #style_name {}
 
         #[allow(unexpected_cfgs)]
         impl #impl_generics elicitation::Elicitation for #name #ty_generics #where_clause {
@@ -988,6 +992,8 @@ fn generate_elicit_impl_simple(
             #style_proof_methods
         }
 
+        impl elicitation::style::ElicitationStyle for #style_name {}
+
         #[allow(unexpected_cfgs)]
         impl #impl_generics elicitation::Elicitation for #name #ty_generics #where_clause {
             type Style = #style_name;
@@ -1265,6 +1271,9 @@ fn generate_elicit_impl_styled(
                 Some("Select elicitation style:")
             }
         }
+
+        /// Generated style enums use default prompt formatting.
+        impl elicitation::style::ElicitationStyle for #style_enum_name {}
 
         impl elicitation::Select for #style_enum_name {
             fn options() -> &'static [Self] {

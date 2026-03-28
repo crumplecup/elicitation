@@ -666,6 +666,9 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
             }
         }
 
+        /// Generated style enums use default prompt formatting.
+        impl elicitation::style::ElicitationStyle for #style_name {}
+
         impl elicitation::Elicitation for #style_name {
             type Style = #style_name;
 

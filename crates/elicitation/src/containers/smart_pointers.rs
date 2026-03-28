@@ -41,6 +41,8 @@ impl Elicitation for BoxStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for BoxStyle {}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum RcStyle {
     #[default]
@@ -76,6 +78,8 @@ impl Elicitation for RcStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for RcStyle {}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum ArcStyle {
     #[default]
@@ -110,6 +114,8 @@ impl Elicitation for ArcStyle {
         crate::verification::proof_helpers::creusot_single_variant_enum("ArcStyle")
     }
 }
+
+impl crate::style::ElicitationStyle for ArcStyle {}
 
 // Box<T>
 impl<T> Prompt for Box<T>

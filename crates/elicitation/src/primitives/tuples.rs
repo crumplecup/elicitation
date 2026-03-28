@@ -60,6 +60,8 @@ macro_rules! impl_tuple_elicit {
         crate::verification::proof_helpers::creusot_single_variant_enum(short)
     }
 }
+
+            impl crate::style::ElicitationStyle for [<Tuple $( $idx )+ Style>] {}
         }
 
         impl<$($T),+> Prompt for ($($T,)+)
@@ -165,6 +167,8 @@ impl Elicitation for UnitStyle {
         crate::verification::proof_helpers::creusot_single_variant_enum("UnitStyle")
     }
 }
+
+impl crate::style::ElicitationStyle for UnitStyle {}
 
 impl Prompt for () {
     fn prompt() -> Option<&'static str> {

@@ -5,9 +5,7 @@
 //! `ElicitServer` implement this trait, allowing the `Elicitation` trait to
 //! work with either context seamlessly.
 
-use crate::{
-    ElicitError, ElicitErrorKind, ElicitResult, Elicitation, ElicitationStyle, TypeMetadata,
-};
+use crate::{ElicitError, ElicitErrorKind, ElicitResult, Elicitation, StyleMarker, TypeMetadata};
 use std::any::TypeId;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -73,8 +71,12 @@ pub trait ElicitCommunicator: Clone + Send + Sync {
     /// # Type Parameters
     ///
     /// * `T` - The type to set the style for
-    /// * `S` - The style type (must implement `ElicitationStyle`)
-    fn with_style<T: 'static, S: ElicitationStyle>(&self, style: S) -> Self;
+    /// * `S` - The style type (must implement [`StyleMarker`] and
+    ///   [`style::ElicitationStyle`](crate::style::ElicitationStyle))
+    fn with_style<T: 'static, S: StyleMarker + crate::style::ElicitationStyle + 'static>(
+        &self,
+        style: S,
+    ) -> Self;
 
     /// Get the current style for a type, or use default if not set.
     ///
@@ -86,7 +88,7 @@ pub trait ElicitCommunicator: Clone + Send + Sync {
     /// Returns an error if the style context lock is poisoned.
     fn style_or_default<T: Elicitation + 'static>(&self) -> ElicitResult<T::Style>
     where
-        T::Style: ElicitationStyle,
+        T::Style: StyleMarker,
     {
         Ok(self
             .style_context()
@@ -105,7 +107,7 @@ pub trait ElicitCommunicator: Clone + Send + Sync {
         &self,
     ) -> impl std::future::Future<Output = ElicitResult<T::Style>> + Send
     where
-        T::Style: ElicitationStyle,
+        T::Style: StyleMarker,
     {
         async move {
             if let Some(style) = self.style_context().get_style::<T, T::Style>()? {
@@ -189,6 +191,31 @@ pub trait ElicitCommunicator: Clone + Send + Sync {
     }
 }
 
+/// Internal trait for type-erased style storage.
+///
+/// Combines `Any` (for concrete type downcasting) with
+/// [`style::ElicitationStyle`](crate::style::ElicitationStyle)
+/// (for dynamic prompt generation). This allows stored styles to be both
+/// retrieved as concrete types via `get_style` and used dynamically via
+/// `prompt_for_type` without knowing the concrete type.
+trait StyleEntry: Send + Sync {
+    /// Downcast support for concrete type recovery.
+    fn as_any(&self) -> &dyn std::any::Any;
+
+    /// Dynamic access to the style's prompt generation.
+    fn as_style(&self) -> &dyn crate::style::ElicitationStyle;
+}
+
+impl<T: crate::style::ElicitationStyle + 'static> StyleEntry for T {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn as_style(&self) -> &dyn crate::style::ElicitationStyle {
+        self
+    }
+}
+
 /// Storage for type-specific styles.
 ///
 /// Uses `TypeId` to store different style enums for different types.
@@ -196,19 +223,23 @@ pub trait ElicitCommunicator: Clone + Send + Sync {
 /// Internally uses `Arc<RwLock<_>>` for efficient cloning.
 #[derive(Clone, Default)]
 pub struct StyleContext {
-    styles: Arc<RwLock<HashMap<TypeId, Box<dyn std::any::Any + Send + Sync>>>>,
+    styles: Arc<RwLock<HashMap<TypeId, Box<dyn StyleEntry>>>>,
 }
 
 impl StyleContext {
     /// Set a custom style for a specific type.
     ///
-    /// Accepts any style type S that implements ElicitationStyle.
+    /// Accepts any style type S that implements [`StyleMarker`] and
+    /// [`style::ElicitationStyle`](crate::style::ElicitationStyle).
     ///
     /// # Errors
     ///
     /// Returns an error if the lock is poisoned.
     #[tracing::instrument(skip(self, style), level = "debug", fields(type_id = ?TypeId::of::<T>()))]
-    pub fn set_style<T: 'static, S: ElicitationStyle>(&mut self, style: S) -> ElicitResult<()> {
+    pub fn set_style<T: 'static, S: StyleMarker + crate::style::ElicitationStyle + 'static>(
+        &mut self,
+        style: S,
+    ) -> ElicitResult<()> {
         let type_id = TypeId::of::<T>();
         let mut styles = self.styles.write().map_err(|e| {
             ElicitError::new(ElicitErrorKind::ParseError(format!(
@@ -229,7 +260,7 @@ impl StyleContext {
     ///
     /// Returns an error if the lock is poisoned.
     #[tracing::instrument(skip(self), level = "debug", fields(type_id = ?TypeId::of::<T>()))]
-    pub fn get_style<T: 'static, S: ElicitationStyle>(&self) -> ElicitResult<Option<S>> {
+    pub fn get_style<T: 'static, S: StyleMarker>(&self) -> ElicitResult<Option<S>> {
         let type_id = TypeId::of::<T>();
         let styles = self.styles.read().map_err(|e| {
             ElicitError::new(ElicitErrorKind::ParseError(format!(
@@ -239,8 +270,39 @@ impl StyleContext {
         })?;
         Ok(styles
             .get(&type_id)
-            .and_then(|boxed| boxed.downcast_ref::<S>())
+            .and_then(|entry| entry.as_any().downcast_ref::<S>())
             .cloned())
+    }
+
+    /// Generate a prompt for a type using its stored custom style.
+    ///
+    /// Returns `None` if no custom style was set for this type, allowing
+    /// callers to fall back to the default `Prompt::prompt()` string.
+    /// This enables primitive types (u64, i32, etc.) to respect styles
+    /// set via `with_style` without knowing the concrete style type.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the lock is poisoned.
+    #[tracing::instrument(skip(self), level = "debug", fields(type_id = ?TypeId::of::<T>()))]
+    pub fn prompt_for_type<T: 'static>(
+        &self,
+        field_name: &str,
+        field_type: &str,
+        context: &crate::style::PromptContext,
+    ) -> ElicitResult<Option<String>> {
+        let type_id = TypeId::of::<T>();
+        let styles = self.styles.read().map_err(|e| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "StyleContext lock poisoned: {}",
+                e
+            )))
+        })?;
+        Ok(styles.get(&type_id).map(|entry| {
+            entry
+                .as_style()
+                .prompt_for_field(field_name, field_type, context)
+        }))
     }
 }
 

@@ -40,6 +40,8 @@ impl Elicitation for LinkedListStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for LinkedListStyle {}
+
 impl<T> Prompt for LinkedList<T>
 where
     T: Elicitation + Send,
