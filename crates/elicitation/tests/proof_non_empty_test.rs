@@ -451,4 +451,32 @@ mod egui_proofs {
         assert_proofs_non_empty::<elicitation::UiKindSelect>("UiKindSelect");
         assert_proofs_non_empty::<elicitation::WidgetTypeSelect>("WidgetTypeSelect");
     }
+
+    // ── Composite struct wrapper tests ──────────────────────────────────
+
+    #[test]
+    fn egui_composite_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::EguiColor32>("EguiColor32");
+        assert_proofs_non_empty::<elicitation::EguiPos2>("EguiPos2");
+        assert_proofs_non_empty::<elicitation::EguiVec2>("EguiVec2");
+        assert_proofs_non_empty::<elicitation::EguiRect>("EguiRect");
+        assert_proofs_non_empty::<elicitation::EguiStroke>("EguiStroke");
+        assert_proofs_non_empty::<elicitation::EguiCornerRadius>("EguiCornerRadius");
+        assert_proofs_non_empty::<elicitation::EguiShadow>("EguiShadow");
+        assert_proofs_non_empty::<elicitation::EguiMargin>("EguiMargin");
+        assert_proofs_non_empty::<elicitation::EguiFontId>("EguiFontId");
+    }
+
+    #[test]
+    fn egui_composite_wrappers_elicit_complete() {
+        assert_elicit_complete::<elicitation::EguiColor32>();
+        assert_elicit_complete::<elicitation::EguiPos2>();
+        assert_elicit_complete::<elicitation::EguiVec2>();
+        assert_elicit_complete::<elicitation::EguiRect>();
+        assert_elicit_complete::<elicitation::EguiStroke>();
+        assert_elicit_complete::<elicitation::EguiCornerRadius>();
+        assert_elicit_complete::<elicitation::EguiShadow>();
+        assert_elicit_complete::<elicitation::EguiMargin>();
+        assert_elicit_complete::<elicitation::EguiFontId>();
+    }
 }

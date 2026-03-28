@@ -2,7 +2,7 @@
 //!
 //! Provides [`Elicitation`](crate::Elicitation) for the egui 0.33 types
 //! that can be interactively constructed from an agent — enumeration types via
-//! [`Select`](crate::Select).
+//! [`Select`](crate::Select) and composite types via Survey.
 //!
 //! # Enabled by the `egui-types` feature
 //!
@@ -11,6 +11,8 @@
 //! ```
 //!
 //! # Supported types
+//!
+//! ## Select enums
 //!
 //! | Type | Pattern | Notes |
 //! |------|---------|-------|
@@ -30,7 +32,22 @@
 //! | [`egui::WidgetType`] | Select | 18 widget type variants |
 //! | [`egui::epaint::textures::TextureFilter`] | Select | Nearest / Linear |
 //! | [`egui::epaint::textures::TextureWrapMode`] | Select | ClampToEdge / Repeat / MirroredRepeat |
+//!
+//! ## Composite structs
+//!
+//! | Type | Pattern | Notes |
+//! |------|---------|-------|
+//! | [`egui::Color32`] | Survey | RGBA color (r, g, b, a) |
+//! | [`egui::Pos2`] | Survey | 2D point (x, y) |
+//! | [`egui::Vec2`] | Survey | 2D vector/size (x, y) |
+//! | [`egui::Rect`] | Survey | Axis-aligned rectangle (min/max corners) |
+//! | [`egui::Stroke`] | Survey | Line style (width + color) |
+//! | [`egui::CornerRadius`] | Survey | Corner radii (nw, ne, sw, se) |
+//! | [`egui::Shadow`] | Survey | Drop shadow (offset, blur, spread, color) |
+//! | [`egui::Margin`] | Survey | Box margins (left, right, top, bottom) |
+//! | [`egui::FontId`] | Survey | Font specification (size + family) |
 
+// ── Select enum modules ──────────────────────────────────────────────
 mod align;
 mod cursor_icon;
 mod direction;
@@ -49,6 +66,18 @@ mod trenchcoats;
 mod ui_kind;
 mod widget_type;
 
+// ── Composite struct modules ─────────────────────────────────────────
+mod color32;
+mod corner_radius;
+mod font_id;
+mod margin;
+mod pos2;
+mod rect;
+mod shadow;
+mod stroke;
+mod vec2;
+
+// ── Style re-exports ─────────────────────────────────────────────────
 pub use align::AlignStyle;
 pub use cursor_icon::CursorIconStyle;
 pub use direction::DirectionStyle;
@@ -63,11 +92,24 @@ pub use texture_wrap_mode::TextureWrapModeStyle;
 pub use theme::ThemeStyle;
 pub use theme_preference::ThemePreferenceStyle;
 pub use touch_phase::TouchPhaseStyle;
+pub use ui_kind::UiKindStyle;
+pub use widget_type::WidgetTypeStyle;
+
+// ── Select trenchcoat wrapper re-exports ─────────────────────────────
 pub use trenchcoats::{
     AlignSelect, CursorIconSelect, DirectionSelect, FontFamilySelect, KeySelect, OrderSelect,
     PointerButtonSelect, TextStyleSelect, TextWrapModeSelect, TextureFilterSelect,
     TextureWrapModeSelect, ThemePreferenceSelect, ThemeSelect, TouchPhaseSelect, UiKindSelect,
     WidgetTypeSelect,
 };
-pub use ui_kind::UiKindStyle;
-pub use widget_type::WidgetTypeStyle;
+
+// ── Composite struct wrapper re-exports ──────────────────────────────
+pub use color32::{EguiColor32, EguiColor32Style};
+pub use corner_radius::{EguiCornerRadius, EguiCornerRadiusStyle};
+pub use font_id::{EguiFontId, EguiFontIdStyle};
+pub use margin::{EguiMargin, EguiMarginStyle};
+pub use pos2::{EguiPos2, EguiPos2Style};
+pub use rect::{EguiRect, EguiRectStyle};
+pub use shadow::{EguiShadow, EguiShadowStyle};
+pub use stroke::{EguiStroke, EguiStrokeStyle};
+pub use vec2::{EguiVec2, EguiVec2Style};

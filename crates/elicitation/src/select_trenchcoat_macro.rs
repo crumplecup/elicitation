@@ -220,6 +220,23 @@ macro_rules! _select_trenchcoat_common {
                 <$inner_path as $crate::ElicitIntrospect>::metadata()
             }
         }
+
+        // ── Forward ElicitPromptTree ──────────────────────────────────────
+        #[cfg(feature = "prompt-tree")]
+        impl $crate::ElicitPromptTree for $wrapper_name {
+            fn prompt_tree() -> $crate::PromptTree {
+                let labels = <Self as $crate::Select>::labels();
+                let branch_count = labels.len();
+                $crate::PromptTree::Select {
+                    prompt: <Self as $crate::Prompt>::prompt()
+                        .unwrap_or(concat!("Select a ", stringify!($wrapper_name), " variant"))
+                        .to_string(),
+                    type_name: stringify!($wrapper_name).to_string(),
+                    options: labels,
+                    branches: vec![None; branch_count],
+                }
+            }
+        }
     };
 }
 

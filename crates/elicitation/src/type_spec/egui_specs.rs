@@ -220,4 +220,181 @@ mod egui_impls {
         summary   = "The type of a built-in egui widget: Label, Button, TextEdit, \
                      Slider, ComboBox, and others (18 variants)."
     );
+
+    // -------------------------------------------------------------------------
+    // Macro: impl_egui_composite_spec!
+    //
+    // Derives ElicitSpec + ElicitComplete for composite struct wrappers
+    // (Survey pattern). Each wrapper already has serde + JsonSchema via
+    // derive, and Elicitation + ElicitIntrospect + ElicitSpec from this macro.
+    // -------------------------------------------------------------------------
+
+    macro_rules! impl_egui_composite_spec {
+        (
+            wrapper = $wrapper:ty,
+            name    = $name:literal,
+            summary = $summary:literal,
+            fields  = [ $( ($field_name:literal, $field_desc:literal) ),+ $(,)? ]
+        ) => {
+            impl ElicitSpec for $wrapper {
+                fn type_spec() -> TypeSpec {
+                    let field_entries: Vec<_> = vec![
+                        $(
+                            SpecEntryBuilder::default()
+                                .label($field_name.to_string())
+                                .description($field_desc.to_string())
+                                .build()
+                                .expect("valid SpecEntry"),
+                        )+
+                    ];
+
+                    let fields = SpecCategoryBuilder::default()
+                        .name("fields".to_string())
+                        .entries(field_entries)
+                        .build()
+                        .expect("valid SpecCategory");
+
+                    let source = SpecCategoryBuilder::default()
+                        .name("source".to_string())
+                        .entries(vec![
+                            SpecEntryBuilder::default()
+                                .label("crate".to_string())
+                                .description(
+                                    "egui v0.33 — immediate-mode GUI library for Rust"
+                                        .to_string(),
+                                )
+                                .build()
+                                .expect("valid SpecEntry"),
+                            SpecEntryBuilder::default()
+                                .label("pattern".to_string())
+                                .description(
+                                    "Survey — elicit each field in sequence".to_string(),
+                                )
+                                .build()
+                                .expect("valid SpecEntry"),
+                        ])
+                        .build()
+                        .expect("valid SpecCategory");
+
+                    TypeSpecBuilder::default()
+                        .type_name($name.to_string())
+                        .summary($summary.to_string())
+                        .categories(vec![fields, source])
+                        .build()
+                        .expect("valid TypeSpec")
+                }
+            }
+
+            inventory::submit!(TypeSpecInventoryKey::new(
+                $name,
+                <$wrapper as ElicitSpec>::type_spec,
+                std::any::TypeId::of::<$wrapper>
+            ));
+
+            impl ElicitComplete for $wrapper {}
+        };
+    }
+
+    // ── Composite struct wrappers ────────────────────────────────────────
+
+    impl_egui_composite_spec!(
+        wrapper = crate::EguiColor32,
+        name = "egui::Color32",
+        summary = "A 32-bit sRGBA color with unmultiplied alpha (r, g, b, a).",
+        fields = [
+            ("r", "Red channel (0–255)"),
+            ("g", "Green channel (0–255)"),
+            ("b", "Blue channel (0–255)"),
+            ("a", "Alpha channel (0–255, 255 = opaque)"),
+        ]
+    );
+
+    impl_egui_composite_spec!(
+        wrapper = crate::EguiPos2,
+        name = "egui::Pos2",
+        summary = "A 2D position in screen coordinates (x, y).",
+        fields = [
+            ("x", "Horizontal position in points"),
+            ("y", "Vertical position in points"),
+        ]
+    );
+
+    impl_egui_composite_spec!(
+        wrapper = crate::EguiVec2,
+        name = "egui::Vec2",
+        summary = "A 2D vector representing size or offset (x, y).",
+        fields = [
+            ("x", "Horizontal component in points"),
+            ("y", "Vertical component in points"),
+        ]
+    );
+
+    impl_egui_composite_spec!(
+        wrapper = crate::EguiRect,
+        name = "egui::Rect",
+        summary = "An axis-aligned rectangle defined by min/max corners.",
+        fields = [
+            ("min_x", "Left edge (minimum x)"),
+            ("min_y", "Top edge (minimum y)"),
+            ("max_x", "Right edge (maximum x)"),
+            ("max_y", "Bottom edge (maximum y)"),
+        ]
+    );
+
+    impl_egui_composite_spec!(
+        wrapper = crate::EguiStroke,
+        name = "egui::Stroke",
+        summary = "A stroke defined by width and color, used for outlines and borders.",
+        fields = [
+            ("width", "Stroke width in points"),
+            ("color", "Stroke color (EguiColor32)"),
+        ]
+    );
+
+    impl_egui_composite_spec!(
+        wrapper = crate::EguiCornerRadius,
+        name = "egui::CornerRadius",
+        summary = "Corner rounding radii for rectangles (nw, ne, sw, se).",
+        fields = [
+            ("nw", "North-west corner radius (0–255)"),
+            ("ne", "North-east corner radius (0–255)"),
+            ("sw", "South-west corner radius (0–255)"),
+            ("se", "South-east corner radius (0–255)"),
+        ]
+    );
+
+    impl_egui_composite_spec!(
+        wrapper = crate::EguiShadow,
+        name = "egui::Shadow",
+        summary = "A box shadow with offset, blur, spread, and color.",
+        fields = [
+            ("offset_x", "Horizontal offset (-128 to 127)"),
+            ("offset_y", "Vertical offset (-128 to 127)"),
+            ("blur", "Blur radius (0–255)"),
+            ("spread", "Spread radius (0–255)"),
+            ("color", "Shadow color (EguiColor32)"),
+        ]
+    );
+
+    impl_egui_composite_spec!(
+        wrapper = crate::EguiMargin,
+        name = "egui::Margin",
+        summary = "Margin around a rectangle (left, right, top, bottom).",
+        fields = [
+            ("left", "Left margin (-128 to 127)"),
+            ("right", "Right margin (-128 to 127)"),
+            ("top", "Top margin (-128 to 127)"),
+            ("bottom", "Bottom margin (-128 to 127)"),
+        ]
+    );
+
+    impl_egui_composite_spec!(
+        wrapper = crate::EguiFontId,
+        name = "egui::FontId",
+        summary = "A font identifier combining size and family.",
+        fields = [
+            ("size", "Font size in points"),
+            ("family", "Font family (FontFamilySelect)"),
+        ]
+    );
 }
