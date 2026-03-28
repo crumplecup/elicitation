@@ -389,10 +389,18 @@ fn struct_with_usize_isize_fields_is_survey() {
         panic!("expected Survey, got {tree:?}");
     };
     assert_eq!(fields.len(), 4);
-    assert!(matches!(fields[0].1.as_ref(), PromptTree::Leaf { type_name, .. } if type_name == "usize"));
-    assert!(matches!(fields[1].1.as_ref(), PromptTree::Leaf { type_name, .. } if type_name == "isize"));
-    assert!(matches!(fields[2].1.as_ref(), PromptTree::Leaf { type_name, .. } if type_name == "u128"));
-    assert!(matches!(fields[3].1.as_ref(), PromptTree::Leaf { type_name, .. } if type_name == "i128"));
+    assert!(
+        matches!(fields[0].1.as_ref(), PromptTree::Leaf { type_name, .. } if type_name == "usize")
+    );
+    assert!(
+        matches!(fields[1].1.as_ref(), PromptTree::Leaf { type_name, .. } if type_name == "isize")
+    );
+    assert!(
+        matches!(fields[2].1.as_ref(), PromptTree::Leaf { type_name, .. } if type_name == "u128")
+    );
+    assert!(
+        matches!(fields[3].1.as_ref(), PromptTree::Leaf { type_name, .. } if type_name == "i128")
+    );
 }
 
 // ============================================================================

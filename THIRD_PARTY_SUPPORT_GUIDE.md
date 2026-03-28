@@ -55,6 +55,15 @@ trait impls, no Kani/Creusot/Verus verification.  See the [Fragment Tools](#frag
 
 Never skip a section. Never add an `#[allow]` attribute. Fix root causes.
 
+> **Common mistake — skipping Phase 2 in favour of the shadow crate.**
+> It is tempting to jump straight to `crates/elicit_foo/` (Phase 3) because
+> that is where the visible MCP tools live.  Resist this.  Phase 2 is the
+> foundation: without `impl Elicitation for foo::MyType` in `crates/elicitation/`,
+> the shadow crate has no interactive elicitation behaviour to delegate to.
+> The shadow crate adds JSON-schema support and transport; Phase 2 adds the
+> *reasoning* — the prompts, the `Select` options, the proof stubs.
+> **Phase 2 must come before Phase 3, every time.**
+
 ---
 
 ## Phase 1 — Workspace Root (`Cargo.toml`)

@@ -492,3 +492,12 @@ pub use primitives::sqlx_types::{
 pub use primitives::sqlx_types::{
     ColumnDescriptor, ColumnEntry, ColumnValue, DriverKind, RowData, SqlTypeKind,
 };
+
+// accesskit types (feature-gated on accesskit)
+#[cfg(feature = "accesskit")]
+pub use primitives::accesskit_types::{
+    ActionStyle, AriaCurrentStyle, AutoCompleteStyle, HasPopupStyle, InvalidStyle, ListStyleStyle,
+    LiveStyle, OrientationStyle, RoleStyle, ScrollHintStyle, ScrollUnitStyle, SortDirectionStyle,
+    TextAlignStyle, TextDecorationStyleStyle, TextDirectionStyle, ToggledStyle,
+    VerticalOffsetStyle,
+};

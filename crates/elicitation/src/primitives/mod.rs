@@ -46,3 +46,6 @@ pub mod clap_types;
 
 #[cfg(feature = "sqlx-types")]
 pub mod sqlx_types;
+
+#[cfg(feature = "accesskit")]
+pub mod accesskit_types;
