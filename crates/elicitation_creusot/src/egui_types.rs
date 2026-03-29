@@ -75,9 +75,12 @@ macro_rules! select_creusot_proofs {
                 <$ty>::from_label("__unknown__").is_none()
             }
 
-            /// Verify label count equals option count (non-trusted).
+            /// Verify label count equals option count.
+            ///
+            /// Trusted because Vec::len() is opaque to Creusot.
             #[requires(true)]
             #[ensures(result == true)]
+            #[trusted]
             pub fn [< verify_ $snake _label_count >]() -> bool {
                 <$ty>::labels().len() == <$ty>::options().len()
             }

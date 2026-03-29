@@ -296,6 +296,11 @@ pub use serde_boundary::{
     verify_u8_positive_serde_invalid, verify_u8_positive_serde_valid,
     verify_u16_non_zero_serde_invalid, verify_u16_non_zero_serde_valid,
     verify_u16_positive_serde_invalid, verify_u16_positive_serde_valid,
+};
+
+// serde_boundary url functions require both serde_json AND url features.
+#[cfg(all(feature = "serde_json", feature = "url"))]
+pub use serde_boundary::{
     verify_url_http_serde_invalid, verify_url_http_serde_valid, verify_url_https_serde_invalid,
     verify_url_https_serde_valid, verify_url_valid_serde_invalid, verify_url_valid_serde_valid,
     verify_url_with_host_serde_valid,
@@ -413,6 +418,11 @@ pub use sqlx_types::{
     verify_sql_type_kind_label_count, verify_sql_type_kind_unknown_rejected,
     verify_sqlx_error_kind_all_labels_roundtrip, verify_sqlx_error_kind_known_label_accepted,
     verify_sqlx_error_kind_label_count, verify_sqlx_error_kind_unknown_rejected,
+};
+
+// sqlx_types functions that also require serde_json feature.
+#[cfg(all(feature = "sqlx-types", feature = "serde_json"))]
+pub use sqlx_types::{
     verify_to_sqlx_args_bool_is_single_element, verify_to_sqlx_args_null_is_single_element,
 };
 

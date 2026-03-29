@@ -31,7 +31,8 @@ serde_json = { workspace = true }
 
 [features]
 emit = []
-runtime = ["dep:uuid"]
+uuid = ["dep:uuid"]
+runtime = ["uuid"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
