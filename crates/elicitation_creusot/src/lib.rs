@@ -161,3 +161,9 @@ mod tokio_types;
 
 #[cfg(feature = "tokio-types")]
 pub use tokio_types::*;
+
+#[cfg(feature = "egui-types")]
+mod egui_types;
+
+#[cfg(feature = "egui-types")]
+pub use egui_types::*;

@@ -117,3 +117,6 @@ mod sqlx_types;
 
 #[cfg(all(kani, feature = "tokio-types"))]
 mod tokio_types;
+
+#[cfg(all(kani, feature = "egui-types"))]
+mod egui_types;

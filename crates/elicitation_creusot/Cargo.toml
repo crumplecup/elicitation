@@ -31,6 +31,8 @@ time = { workspace = true, optional = true }
 jiff = { workspace = true, optional = true }
 clap = { workspace = true, optional = true }
 sqlx = { workspace = true, optional = true }
+egui = { workspace = true, optional = true }
+paste = { workspace = true, optional = true }
 
 [features]
 default = []
@@ -47,3 +49,4 @@ reqwest = ["elicitation/reqwest"]
 clap-types = ["dep:clap", "elicitation/clap-types"]
 sqlx-types = ["dep:sqlx", "elicitation/sqlx-types"]
 tokio-types = []
+egui-types = ["dep:egui", "dep:paste", "elicitation/egui-types"]
