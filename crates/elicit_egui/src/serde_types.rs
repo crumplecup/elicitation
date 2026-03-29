@@ -556,6 +556,272 @@ fn default_true() -> bool {
 }
 
 // ---------------------------------------------------------------------------
+// Container JSON — layout containers
+// ---------------------------------------------------------------------------
+
+/// Serializable description of an egui layout container.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(tag = "type")]
+pub enum ContainerJson {
+    /// Floating window.
+    Window {
+        /// Window title.
+        title: String,
+        /// Initial position.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        default_pos: Option<Vec2Json>,
+        /// Initial size.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        default_size: Option<Vec2Json>,
+        /// Whether the window is resizable.
+        #[serde(default = "default_true")]
+        resizable: bool,
+        /// Whether the window is collapsible.
+        #[serde(default = "default_true")]
+        collapsible: bool,
+        /// Whether to enable scrolling.
+        #[serde(default)]
+        scroll: bool,
+        /// Whether to show the title bar.
+        #[serde(default = "default_true")]
+        title_bar: bool,
+    },
+
+    /// Left side panel.
+    LeftPanel {
+        /// Panel identifier.
+        id: String,
+        /// Default panel width.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        default_width: Option<f32>,
+        /// Whether the panel is resizable.
+        #[serde(default = "default_true")]
+        resizable: bool,
+        /// Minimum panel width.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        min_width: Option<f32>,
+        /// Maximum panel width.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        max_width: Option<f32>,
+    },
+
+    /// Right side panel.
+    RightPanel {
+        /// Panel identifier.
+        id: String,
+        /// Default panel width.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        default_width: Option<f32>,
+        /// Whether the panel is resizable.
+        #[serde(default = "default_true")]
+        resizable: bool,
+    },
+
+    /// Top panel.
+    TopPanel {
+        /// Panel identifier.
+        id: String,
+        /// Default panel height.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        default_height: Option<f32>,
+        /// Whether the panel is resizable.
+        #[serde(default)]
+        resizable: bool,
+    },
+
+    /// Bottom panel.
+    BottomPanel {
+        /// Panel identifier.
+        id: String,
+        /// Default panel height.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        default_height: Option<f32>,
+        /// Whether the panel is resizable.
+        #[serde(default)]
+        resizable: bool,
+    },
+
+    /// Central panel (fills remaining space).
+    CentralPanel,
+
+    /// Scrollable region.
+    ScrollArea {
+        /// Enable vertical scrolling.
+        #[serde(default = "default_true")]
+        vertical: bool,
+        /// Enable horizontal scrolling.
+        #[serde(default)]
+        horizontal: bool,
+        /// Maximum height before scrolling.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        max_height: Option<f32>,
+        /// Maximum width before scrolling.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        max_width: Option<f32>,
+        /// Whether to auto-shrink to content.
+        #[serde(default)]
+        auto_shrink: bool,
+        /// Whether to always show scroll bars.
+        #[serde(default)]
+        always_show_scroll: bool,
+    },
+
+    /// Collapsible section with header.
+    CollapsingHeader {
+        /// Header text.
+        text: String,
+        /// Whether the section starts open.
+        #[serde(default)]
+        default_open: bool,
+    },
+
+    /// Visual grouping (box around content).
+    Group,
+
+    /// Framed region with custom styling.
+    Frame {
+        /// Optional fill colour.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        fill: Option<ColorJson>,
+        /// Optional border stroke.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        stroke: Option<StrokeJson>,
+        /// Optional corner rounding.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        corner_radius: Option<CornerRadiusJson>,
+        /// Optional inner margin.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        inner_margin: Option<MarginJson>,
+        /// Optional outer margin.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        outer_margin: Option<MarginJson>,
+    },
+
+    /// Menu bar container.
+    MenuBar,
+
+    /// Menu within a menu bar.
+    Menu {
+        /// Menu title.
+        title: String,
+    },
+
+    /// Tooltip container.
+    Tooltip {
+        /// Tooltip text.
+        text: String,
+    },
+
+    /// Popup area (context menu, dropdown, etc.).
+    Popup {
+        /// Popup identifier.
+        id: String,
+    },
+}
+
+// ---------------------------------------------------------------------------
+// Layout JSON — layout configuration
+// ---------------------------------------------------------------------------
+
+/// Layout direction.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub enum LayoutDirection {
+    /// Left to right.
+    LeftToRight,
+    /// Right to left.
+    RightToLeft,
+    /// Top to bottom.
+    TopDown,
+    /// Bottom to top.
+    BottomUp,
+}
+
+/// Cross-axis alignment.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub enum LayoutAlign {
+    /// Align to minimum (left or top).
+    Min,
+    /// Centre alignment.
+    Center,
+    /// Align to maximum (right or bottom).
+    Max,
+}
+
+/// Serializable layout description.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(tag = "type")]
+pub enum LayoutJson {
+    /// Horizontal layout (left to right).
+    Horizontal {
+        /// Cross-axis alignment.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        align: Option<LayoutAlign>,
+    },
+
+    /// Vertical layout (top to bottom).
+    Vertical {
+        /// Cross-axis alignment.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        align: Option<LayoutAlign>,
+    },
+
+    /// Horizontal layout, centred cross-axis.
+    HorizontalCentered,
+
+    /// Vertical layout, centred cross-axis.
+    VerticalCentered,
+
+    /// Horizontal layout, justified (items stretch to fill).
+    HorizontalJustified,
+
+    /// Vertical layout, justified.
+    VerticalJustified,
+
+    /// Horizontal layout, wrapping to next line.
+    HorizontalWrapped,
+
+    /// Column-based layout.
+    Columns {
+        /// Number of columns.
+        count: usize,
+    },
+
+    /// Grid layout.
+    Grid {
+        /// Grid identifier.
+        id: String,
+        /// Number of columns.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        num_columns: Option<usize>,
+        /// Whether to stripe alternating rows.
+        #[serde(default)]
+        striped: bool,
+        /// Minimum column width.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        min_col_width: Option<f32>,
+        /// Maximum column width.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        max_col_width: Option<f32>,
+        /// Cell spacing.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        spacing: Option<Vec2Json>,
+    },
+
+    /// Indented section.
+    Indent {
+        /// Indentation amount in logical pixels.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        indent: Option<f32>,
+    },
+
+    /// Explicit spacing between widgets.
+    AddSpace {
+        /// Space amount in logical pixels.
+        amount: f32,
+    },
+}
+
+// ---------------------------------------------------------------------------
 // Response JSON — widget interaction state
 // ---------------------------------------------------------------------------
 
