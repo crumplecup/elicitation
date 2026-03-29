@@ -562,6 +562,21 @@ impl ProofHarness {
             Self::new("ui_types", "verify_progress_fraction_clamped"),
             Self::new("ui_types", "verify_render_stats_equality"),
             Self::new("ui_types", "verify_render_stats_clone"),
+            // ui_types: LayoutBuilder invariant proofs
+            Self::new("ui_types", "verify_builder_root_is_zero"),
+            Self::new("ui_types", "verify_builder_empty_is_valid"),
+            Self::new("ui_types", "verify_builder_counter_starts_at_one"),
+            Self::new("ui_types", "verify_builder_node_count"),
+            Self::new("ui_types", "verify_builder_container_node_count"),
+            Self::new("ui_types", "verify_builder_nested_containers"),
+            Self::new("ui_types", "verify_builder_auto_close"),
+            Self::new("ui_types", "verify_builder_reset_after_build"),
+            Self::new("ui_types", "verify_builder_default_eq_new"),
+            Self::new("ui_types", "verify_builder_property_targets_last"),
+            Self::new("ui_types", "verify_builder_slider"),
+            Self::new("ui_types", "verify_builder_progress"),
+            Self::new("ui_types", "verify_builder_all_container_types"),
+            Self::new("ui_types", "verify_builder_login_form"),
         ]
     }
 

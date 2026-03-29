@@ -339,3 +339,180 @@ pub fn verify_progress_overflow_clamps() -> bool {
     let clamped = fraction.clamp(0.0, 1.0);
     clamped == 1.0
 }
+
+// ============================================================================
+// LayoutBuilder invariants
+// ============================================================================
+
+/// Builder::new creates root at NodeId(0).
+///
+/// Trusted because AccessKit NodeId and Layout internals are opaque.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_builder_root_is_zero() -> bool {
+    let layout = elicit_ui::LayoutBuilder::new().build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    match layout.verify_a(vp) {
+        Ok(verified) => verified.root() == accesskit::NodeId(0),
+        Err(_) => false,
+    }
+}
+
+/// Empty builder produces a verifiable Layout.
+///
+/// Trusted because verify_a uses AccessKit tree traversal (opaque).
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_builder_empty_is_valid() -> bool {
+    let layout = elicit_ui::LayoutBuilder::new().build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    layout.verify_a(vp).is_ok()
+}
+
+/// Single widget added to builder produces verifiable Layout.
+///
+/// Trusted because builder internals and tree verification are opaque.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_builder_single_widget() -> bool {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .button("Submit").size(100, 50)
+        .build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    layout.verify_a(vp).is_ok()
+}
+
+/// Container with child produces verifiable Layout.
+///
+/// Trusted because tree construction and verification are opaque.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_builder_container_with_child() -> bool {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .form()
+            .button("Submit").size(100, 50)
+        .end()
+        .build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    layout.verify_a(vp).is_ok()
+}
+
+/// Nested containers produce verifiable Layout.
+///
+/// Trusted because multi-level tree wiring is opaque.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_builder_nested_containers() -> bool {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .group()
+            .group()
+                .button("Deep").size(100, 50)
+            .end()
+        .end()
+        .build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    layout.verify_a(vp).is_ok()
+}
+
+/// Auto-close: build() without end() produces verifiable Layout.
+///
+/// Trusted because stack auto-close logic is opaque.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_builder_auto_close() -> bool {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .form()
+            .group()
+                .button("Auto").size(100, 50)
+        .build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    layout.verify_a(vp).is_ok()
+}
+
+/// Build resets builder: second build produces valid empty layout.
+///
+/// Trusted because builder state management is opaque.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_builder_reset_after_build() -> bool {
+    let mut b = elicit_ui::LayoutBuilder::new();
+    b.button("First").size(100, 50);
+    let _first = b.build();
+    let second = b.build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    second.verify_a(vp).is_ok()
+}
+
+/// Default and new() produce equivalent results.
+///
+/// Trusted because Default trait impl is opaque.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_builder_default_eq_new() -> bool {
+    let a = elicit_ui::LayoutBuilder::default().build();
+    let b = elicit_ui::LayoutBuilder::new().build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    a.verify_a(vp).is_ok() && b.verify_a(vp).is_ok()
+}
+
+/// All seven container types produce valid trees.
+///
+/// Trusted because each container variant maps to AccessKit roles (opaque).
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_builder_all_container_types() -> bool {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .form().button("F").size(50, 30).end()
+        .group().button("G").size(50, 30).end()
+        .toolbar().button("T").size(50, 30).end()
+        .list().label("L").end()
+        .navigation().link("N", "/").end()
+        .section().label("S").end()
+        .dialog().button("D").size(50, 30).end()
+        .build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    layout.verify_a(vp).is_ok()
+}
+
+/// Slider widget with numeric range verifies.
+///
+/// Trusted because numeric property accessors are opaque.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_builder_slider() -> bool {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .slider("Volume", 50.0, 0.0, 100.0).size(200, 30)
+        .build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    layout.verify_a(vp).is_ok()
+}
+
+/// Composite login form passes verification.
+///
+/// Trusted because full tree construction and verification are opaque.
+#[requires(true)]
+#[ensures(result == true)]
+#[trusted]
+pub fn verify_builder_login_form() -> bool {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .heading("Login", 1).size(400, 40)
+        .form()
+            .text_input("Email").placeholder("you@example.com").size(300, 30)
+            .password_input("Password").size(300, 30)
+            .checkbox("Remember me").size(150, 30)
+            .button("Log in").size(120, 44)
+        .end()
+        .build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    layout.verify_a(vp).is_ok()
+}

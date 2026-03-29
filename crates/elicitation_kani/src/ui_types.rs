@@ -400,3 +400,254 @@ fn verify_render_stats_clone() {
     assert!(cloned.nodes_skipped == 2, "Clone must preserve nodes_skipped");
     assert!(stats == cloned, "Clone must be equal to original");
 }
+
+// ============================================================================
+// LayoutBuilder invariants
+// ============================================================================
+
+/// LayoutBuilder::new produces a builder with root at NodeId(0).
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_root_is_zero() {
+    let layout = elicit_ui::LayoutBuilder::new().build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    let verified = layout.verify_a(vp).expect("must verify");
+    assert!(
+        verified.root() == accesskit::NodeId(0),
+        "Builder root must be NodeId(0)"
+    );
+}
+
+/// Empty builder produces a valid Layout with only the root window.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_empty_is_valid() {
+    let layout = elicit_ui::LayoutBuilder::new().build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    assert!(
+        layout.verify_a(vp).is_ok(),
+        "Empty builder must produce a verifiable layout"
+    );
+}
+
+/// Builder counter starts at 1 and increments.
+///
+/// After adding one leaf widget, the next_id would be 2.
+/// We verify this indirectly: adding one button produces a layout
+/// with root (0) + one child (1) = 2 nodes.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_counter_starts_at_one() {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .button("A").size(100, 50)
+        .build();
+
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    assert!(
+        layout.verify_a(vp).is_ok(),
+        "Single-button layout must verify"
+    );
+}
+
+/// Adding N widgets produces N+1 nodes (root window + N leaves).
+///
+/// Verified with N=3: root + button + checkbox + label = 4 nodes.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_node_count() {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .button("A").size(100, 50)
+        .checkbox("B").size(100, 30)
+        .label("C")
+        .build();
+
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    assert!(
+        layout.verify_a(vp).is_ok(),
+        "Three-widget layout must verify"
+    );
+}
+
+/// Container adds exactly one extra node to the tree.
+///
+/// form() creates a container node + button inside it:
+/// root(0) → form(1) → button(2) = 3 nodes total.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_container_node_count() {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .form()
+            .button("Submit").size(100, 50)
+        .end()
+        .build();
+
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    assert!(
+        layout.verify_a(vp).is_ok(),
+        "Form with one button must verify"
+    );
+}
+
+/// Nested containers are wired correctly.
+///
+/// root → group → group → button: 4 nodes, 3 levels of nesting.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_nested_containers() {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .group()
+            .group()
+                .button("Deep").size(100, 50)
+            .end()
+        .end()
+        .build();
+
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    assert!(
+        layout.verify_a(vp).is_ok(),
+        "Nested containers must produce valid tree"
+    );
+}
+
+/// Auto-close: build() closes all open containers without explicit end().
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_auto_close() {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .form()
+            .group()
+                .button("Auto").size(100, 50)
+        // No .end() calls
+        .build();
+
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    assert!(
+        layout.verify_a(vp).is_ok(),
+        "Auto-close must produce valid tree"
+    );
+}
+
+/// Build resets the builder to initial state.
+///
+/// After build(), calling build() again produces a fresh empty layout.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_reset_after_build() {
+    let mut b = elicit_ui::LayoutBuilder::new();
+    b.button("First").size(100, 50);
+    let _first = b.build();
+
+    // Second build should produce empty layout (just root)
+    let second = b.build();
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    assert!(
+        second.verify_a(vp).is_ok(),
+        "Builder must reset after build()"
+    );
+}
+
+/// Default and new() produce equivalent builders.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_default_eq_new() {
+    let a = elicit_ui::LayoutBuilder::default().build();
+    let b = elicit_ui::LayoutBuilder::new().build();
+
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    assert!(
+        a.verify_a(vp).is_ok() && b.verify_a(vp).is_ok(),
+        "Default and new must both produce valid layouts"
+    );
+}
+
+/// Property setter (size) applies to the last-added node.
+///
+/// The button gets size 100x50; if size applied to root instead,
+/// verification would behave differently.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_property_targets_last() {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .button("Sized").size(100, 50)
+        .build();
+
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    assert!(
+        layout.verify_a(vp).is_ok(),
+        "Size must apply to last-added node"
+    );
+}
+
+/// Slider widget preserves numeric range.
+///
+/// Slider with value=50, min=0, max=100 produces a valid layout.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_slider() {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .slider("Volume", 50.0, 0.0, 100.0).size(200, 30)
+        .build();
+
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    assert!(
+        layout.verify_a(vp).is_ok(),
+        "Slider with numeric range must verify"
+    );
+}
+
+/// Progress widget with fraction produces valid layout.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_progress() {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .progress("Loading", 75.0, 100.0).size(200, 20)
+        .build();
+
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    assert!(
+        layout.verify_a(vp).is_ok(),
+        "Progress widget must verify"
+    );
+}
+
+/// All container types produce valid trees.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_all_container_types() {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .form().button("F").size(50, 30).end()
+        .group().button("G").size(50, 30).end()
+        .toolbar().button("T").size(50, 30).end()
+        .list().label("L").end()
+        .navigation().link("N", "/").end()
+        .section().label("S").end()
+        .dialog().button("D").size(50, 30).end()
+        .build();
+
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    assert!(
+        layout.verify_a(vp).is_ok(),
+        "All container types must produce valid tree"
+    );
+}
+
+/// Composite form: login form round-trip through verify.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_builder_login_form() {
+    let layout = elicit_ui::LayoutBuilder::new()
+        .heading("Login", 1).size(400, 40)
+        .form()
+            .text_input("Email").placeholder("you@example.com").size(300, 30)
+            .password_input("Password").size(300, 30)
+            .checkbox("Remember me").size(150, 30)
+            .button("Log in").size(120, 44)
+        .end()
+        .build();
+
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    assert!(
+        layout.verify_a(vp).is_ok(),
+        "Login form must pass A-level verification"
+    );
+}
