@@ -71,6 +71,8 @@
 
 mod contracts;
 mod errors;
+#[cfg(feature = "egui-backend")]
+mod renderer;
 mod typestate;
 mod types;
 mod validators;
@@ -79,5 +81,7 @@ pub use contracts::{
     AccessibleAA, HasLabel, KeyboardAccessible, MinTargetSize, NoOverflow, ValidRole,
 };
 pub use errors::{VerificationError, VerificationErrorKind, VerificationReport};
+#[cfg(feature = "egui-backend")]
+pub use renderer::{bounds_to_size, render_tree, RenderStats};
 pub use typestate::{Layout, Pending, Rendered, Verified};
 pub use types::{ElementId, Label, Size, Viewport};
