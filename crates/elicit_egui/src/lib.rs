@@ -22,8 +22,11 @@
 //! | [`widget_button`] | Clickable button | Interactive |
 //! | [`widget_small_button`] | Compact button | Interactive |
 //! | [`widget_checkbox`] | Boolean toggle | Interactive |
-//! | [`widget_radio_value`] | Radio button | Interactive |
+//! | [`widget_radio_value`] | Radio button (auto-update) | Interactive |
+//! | [`widget_radio`] | Radio button (display only) | Interactive |
 //! | [`widget_selectable_label`] | Toggle label | Interactive |
+//! | [`widget_toggle_value`] | Boolean toggle (simple) | Interactive |
+//! | [`widget_link`] | Clickable text link | Interactive |
 //! | [`widget_hyperlink`] | Web link | Interactive |
 //! | [`widget_separator`] | Divider line | Layout |
 //! | [`widget_spinner`] | Loading spinner | Feedback |
@@ -31,8 +34,13 @@
 //! | [`widget_text_edit_multiline`] | Multi-line input | Text |
 //! | [`widget_code_editor`] | Code editor | Text |
 //! | [`widget_slider`] | Numeric slider | Numeric |
+//! | [`widget_slider_vertical`] | Vertical slider | Numeric |
 //! | [`widget_drag_value`] | Drag-to-edit value | Numeric |
+//! | [`widget_drag_angle`] | Drag-to-edit angle (degrees) | Numeric |
+//! | [`widget_drag_angle_tau`] | Drag-to-edit angle (tau) | Numeric |
 //! | [`widget_progress_bar`] | Progress indicator | Feedback |
+//! | [`widget_color_edit_button_srgba`] | sRGBA colour picker | Colour |
+//! | [`widget_color_edit_button_hsva`] | HSVA colour picker | Colour |
 //! | [`widget_image`] | Image display | Media |
 //!
 //! # JSON interchange
@@ -58,8 +66,10 @@ pub use serde_types::{
 };
 
 pub use widget_tools::{
-    ButtonParams, CheckboxParams, CodeEditorParams, CodeParams, ColoredLabelParams,
+    ButtonParams, CheckboxParams, CodeEditorParams, CodeParams, ColorEditButtonHsvaParams,
+    ColorEditButtonSrgbaParams, ColoredLabelParams, DragAngleParams, DragAngleTauParams,
     DragValueParams, EmptyParams, HeadingParams, HyperlinkParams, ImageParams, LabelParams,
-    MonospaceParams, ProgressBarParams, RadioValueParams, SelectableLabelParams, SimpleTextParams,
-    SliderParams, SmallButtonParams, TextEditMultilineParams, TextEditSinglelineParams,
+    LinkParams, MonospaceParams, ProgressBarParams, RadioParams, RadioValueParams,
+    SelectableLabelParams, SimpleTextParams, SliderParams, SliderVerticalParams, SmallButtonParams,
+    TextEditMultilineParams, TextEditSinglelineParams, ToggleValueParams,
 };

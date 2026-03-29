@@ -251,6 +251,15 @@ pub enum WidgetJson {
         /// Optional border stroke.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         stroke: Option<StrokeJson>,
+        /// Whether the button appears "selected" (toggled on).
+        #[serde(default)]
+        selected: bool,
+        /// Whether to draw a frame around the button.
+        #[serde(default = "default_true")]
+        frame: bool,
+        /// Minimum widget size.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        min_size: Option<Vec2Json>,
     },
 
     /// Small button (less padding).
@@ -389,6 +398,9 @@ pub enum WidgetJson {
         /// Label text beside the slider.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         text: Option<String>,
+        /// Prefix string prepended to the value display.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        prefix: Option<String>,
         /// Suffix string appended to the value display.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         suffix: Option<String>,
@@ -398,6 +410,9 @@ pub enum WidgetJson {
         /// Whether to clamp value to range.
         #[serde(default = "default_true")]
         clamping: bool,
+        /// Whether to show the current value.
+        #[serde(default = "default_true")]
+        show_value: bool,
     },
 
     /// Drag-to-edit numeric value.
@@ -416,6 +431,12 @@ pub enum WidgetJson {
         /// Label suffix.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         suffix: Option<String>,
+        /// Minimum number of decimal places to display.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        min_decimals: Option<usize>,
+        /// Maximum number of decimal places to display.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        max_decimals: Option<usize>,
     },
 
     /// Progress bar (0.0–1.0).
@@ -425,6 +446,18 @@ pub enum WidgetJson {
         /// Optional overlay text.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         text: Option<String>,
+        /// Whether to animate the progress bar.
+        #[serde(default)]
+        animate: bool,
+        /// Optional fill colour override.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        fill: Option<ColorJson>,
+        /// Optional desired width in logical pixels.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        desired_width: Option<f32>,
+        /// Optional corner rounding.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        corner_radius: Option<CornerRadiusJson>,
     },
 
     /// Image display.
@@ -434,6 +467,87 @@ pub enum WidgetJson {
         /// Optional size constraint.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         size: Option<Vec2Json>,
+        /// Whether to maintain aspect ratio when resizing.
+        #[serde(default = "default_true")]
+        maintain_aspect_ratio: bool,
+        /// Optional tint colour applied over the image.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        tint: Option<ColorJson>,
+        /// Optional corner rounding.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        corner_radius: Option<CornerRadiusJson>,
+    },
+
+    /// Clickable text link (you handle the click action).
+    Link {
+        /// Link display text.
+        text: String,
+    },
+
+    /// Boolean toggle (auto-toggles on click, simpler than checkbox).
+    ToggleValue {
+        /// Label text.
+        text: String,
+        /// Current toggle state.
+        selected: bool,
+    },
+
+    /// Simple radio button (displays state, does not auto-update).
+    Radio {
+        /// Label text.
+        text: String,
+        /// Whether this radio is currently selected.
+        selected: bool,
+    },
+
+    /// Drag-to-edit angle in degrees (stored as radians).
+    DragAngle {
+        /// Angle value in radians.
+        radians: f64,
+    },
+
+    /// Drag-to-edit angle as fraction of tau (2π).
+    DragAngleTau {
+        /// Angle value in radians.
+        radians: f64,
+    },
+
+    /// sRGBA colour picker button.
+    ColorEditButtonSrgba {
+        /// Current colour value.
+        color: ColorJson,
+        /// Whether to show the alpha channel.
+        #[serde(default = "default_true")]
+        alpha: bool,
+    },
+
+    /// HSVA colour picker button.
+    ColorEditButtonHsva {
+        /// Current colour as RGBA (converted to HSVA internally).
+        color: ColorJson,
+        /// Whether to show the alpha channel.
+        #[serde(default = "default_true")]
+        alpha: bool,
+    },
+
+    /// Numeric slider with vertical orientation.
+    SliderVertical {
+        /// Current value.
+        value: f64,
+        /// Value range (inclusive).
+        range: RangeJson,
+        /// Step size between values.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        step: Option<f64>,
+        /// Label text.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        text: Option<String>,
+        /// Suffix string.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        suffix: Option<String>,
+        /// Whether to use logarithmic scale.
+        #[serde(default)]
+        logarithmic: bool,
     },
 }
 

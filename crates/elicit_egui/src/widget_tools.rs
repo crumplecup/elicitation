@@ -199,6 +199,14 @@ pub struct ButtonParams {
     pub fill: Option<ColorJson>,
     /// Optional border stroke.
     pub stroke: Option<StrokeJson>,
+    /// Whether the button appears "selected" (toggled on).
+    #[serde(default)]
+    pub selected: bool,
+    /// Whether to draw a frame around the button.
+    #[serde(default = "default_true")]
+    pub frame: bool,
+    /// Minimum widget size.
+    pub min_size: Option<crate::serde_types::Vec2Json>,
 }
 
 /// Create a clickable button.
@@ -214,6 +222,9 @@ async fn widget_button(p: ButtonParams) -> Result<CallToolResult, ErrorData> {
         wrap: p.wrap,
         fill: p.fill,
         stroke: p.stroke,
+        selected: p.selected,
+        frame: p.frame,
+        min_size: p.min_size,
     };
     Ok(widget_result(&w))
 }
@@ -473,6 +484,8 @@ pub struct SliderParams {
     pub step: Option<f64>,
     /// Label text beside the slider.
     pub text: Option<String>,
+    /// Prefix prepended to the value display.
+    pub prefix: Option<String>,
     /// Suffix appended to the value display.
     pub suffix: Option<String>,
     /// Whether to use logarithmic scale.
@@ -481,6 +494,9 @@ pub struct SliderParams {
     /// Whether to clamp value to range.
     #[serde(default = "default_true")]
     pub clamping: bool,
+    /// Whether to show the current value.
+    #[serde(default = "default_true")]
+    pub show_value: bool,
 }
 
 /// Create a numeric slider.
@@ -499,9 +515,11 @@ async fn widget_slider(p: SliderParams) -> Result<CallToolResult, ErrorData> {
         },
         step: p.step,
         text: p.text,
+        prefix: p.prefix,
         suffix: p.suffix,
         logarithmic: p.logarithmic,
         clamping: p.clamping,
+        show_value: p.show_value,
     };
     Ok(widget_result(&w))
 }
@@ -519,6 +537,10 @@ pub struct DragValueParams {
     pub prefix: Option<String>,
     /// Label suffix.
     pub suffix: Option<String>,
+    /// Minimum number of decimal places.
+    pub min_decimals: Option<usize>,
+    /// Maximum number of decimal places.
+    pub max_decimals: Option<usize>,
 }
 
 /// Create a drag-to-edit numeric value.
@@ -535,6 +557,8 @@ async fn widget_drag_value(p: DragValueParams) -> Result<CallToolResult, ErrorDa
         speed: p.speed,
         prefix: p.prefix,
         suffix: p.suffix,
+        min_decimals: p.min_decimals,
+        max_decimals: p.max_decimals,
     };
     Ok(widget_result(&w))
 }
@@ -546,6 +570,15 @@ pub struct ProgressBarParams {
     pub progress: f32,
     /// Optional overlay text.
     pub text: Option<String>,
+    /// Whether to animate the progress bar.
+    #[serde(default)]
+    pub animate: bool,
+    /// Optional fill colour override.
+    pub fill: Option<ColorJson>,
+    /// Optional desired width in logical pixels.
+    pub desired_width: Option<f32>,
+    /// Optional corner rounding.
+    pub corner_radius: Option<crate::serde_types::CornerRadiusJson>,
 }
 
 /// Create a progress bar.
@@ -559,6 +592,10 @@ async fn widget_progress_bar(p: ProgressBarParams) -> Result<CallToolResult, Err
     let w = WidgetJson::ProgressBar {
         progress: p.progress,
         text: p.text,
+        animate: p.animate,
+        fill: p.fill,
+        desired_width: p.desired_width,
+        corner_radius: p.corner_radius,
     };
     Ok(widget_result(&w))
 }
@@ -570,6 +607,13 @@ pub struct ImageParams {
     pub uri: String,
     /// Optional size constraint.
     pub size: Option<crate::serde_types::Vec2Json>,
+    /// Whether to maintain aspect ratio.
+    #[serde(default = "default_true")]
+    pub maintain_aspect_ratio: bool,
+    /// Optional tint colour.
+    pub tint: Option<ColorJson>,
+    /// Optional corner rounding.
+    pub corner_radius: Option<crate::serde_types::CornerRadiusJson>,
 }
 
 /// Create an image display.
@@ -583,6 +627,236 @@ async fn widget_image(p: ImageParams) -> Result<CallToolResult, ErrorData> {
     let w = WidgetJson::Image {
         uri: p.uri,
         size: p.size,
+        maintain_aspect_ratio: p.maintain_aspect_ratio,
+        tint: p.tint,
+        corner_radius: p.corner_radius,
+    };
+    Ok(widget_result(&w))
+}
+
+// ---------------------------------------------------------------------------
+// Link & navigation
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`widget_link`].
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct LinkParams {
+    /// Link display text.
+    pub text: String,
+}
+
+/// Create a clickable text link (you handle the click action).
+#[elicit_tool(
+    plugin = "egui_widgets",
+    name = "widget_link",
+    description = "Create a clickable text link (no auto-navigation). Returns WidgetJson::Link."
+)]
+#[instrument(skip_all)]
+async fn widget_link(p: LinkParams) -> Result<CallToolResult, ErrorData> {
+    let w = WidgetJson::Link { text: p.text };
+    Ok(widget_result(&w))
+}
+
+// ---------------------------------------------------------------------------
+// Toggle & radio variants
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`widget_toggle_value`].
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ToggleValueParams {
+    /// Label text.
+    pub text: String,
+    /// Current toggle state.
+    #[serde(default)]
+    pub selected: bool,
+}
+
+/// Create a boolean toggle (auto-toggles on click, simpler than checkbox).
+#[elicit_tool(
+    plugin = "egui_widgets",
+    name = "widget_toggle_value",
+    description = "Create a boolean toggle (simpler than checkbox). Returns WidgetJson::ToggleValue."
+)]
+#[instrument(skip_all)]
+async fn widget_toggle_value(p: ToggleValueParams) -> Result<CallToolResult, ErrorData> {
+    let w = WidgetJson::ToggleValue {
+        text: p.text,
+        selected: p.selected,
+    };
+    Ok(widget_result(&w))
+}
+
+/// Parameters for [`widget_radio`].
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct RadioParams {
+    /// Label text.
+    pub text: String,
+    /// Whether this radio is currently selected.
+    #[serde(default)]
+    pub selected: bool,
+}
+
+/// Create a simple radio button (displays state only).
+#[elicit_tool(
+    plugin = "egui_widgets",
+    name = "widget_radio",
+    description = "Create a simple radio button (display state, no auto-update). Returns WidgetJson::Radio."
+)]
+#[instrument(skip_all)]
+async fn widget_radio(p: RadioParams) -> Result<CallToolResult, ErrorData> {
+    let w = WidgetJson::Radio {
+        text: p.text,
+        selected: p.selected,
+    };
+    Ok(widget_result(&w))
+}
+
+// ---------------------------------------------------------------------------
+// Angle drag widgets
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`widget_drag_angle`].
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct DragAngleParams {
+    /// Angle value in radians.
+    pub radians: f64,
+}
+
+/// Create a drag-to-edit angle value displayed in degrees.
+#[elicit_tool(
+    plugin = "egui_widgets",
+    name = "widget_drag_angle",
+    description = "Create a drag-to-edit angle (displayed in degrees, stored as radians). Returns WidgetJson::DragAngle."
+)]
+#[instrument(skip_all)]
+async fn widget_drag_angle(p: DragAngleParams) -> Result<CallToolResult, ErrorData> {
+    let w = WidgetJson::DragAngle {
+        radians: p.radians,
+    };
+    Ok(widget_result(&w))
+}
+
+/// Parameters for [`widget_drag_angle_tau`].
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct DragAngleTauParams {
+    /// Angle value in radians.
+    pub radians: f64,
+}
+
+/// Create a drag-to-edit angle displayed as a fraction of tau (2π).
+#[elicit_tool(
+    plugin = "egui_widgets",
+    name = "widget_drag_angle_tau",
+    description = "Create a drag-to-edit angle (displayed as fraction of tau). Returns WidgetJson::DragAngleTau."
+)]
+#[instrument(skip_all)]
+async fn widget_drag_angle_tau(p: DragAngleTauParams) -> Result<CallToolResult, ErrorData> {
+    let w = WidgetJson::DragAngleTau {
+        radians: p.radians,
+    };
+    Ok(widget_result(&w))
+}
+
+// ---------------------------------------------------------------------------
+// Colour picker widgets
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`widget_color_edit_button_srgba`].
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ColorEditButtonSrgbaParams {
+    /// Current colour value.
+    pub color: ColorJson,
+    /// Whether to show the alpha channel.
+    #[serde(default = "default_true")]
+    pub alpha: bool,
+}
+
+/// Create an sRGBA colour picker button.
+#[elicit_tool(
+    plugin = "egui_widgets",
+    name = "widget_color_edit_button_srgba",
+    description = "Create an sRGBA colour picker button. Returns WidgetJson::ColorEditButtonSrgba."
+)]
+#[instrument(skip_all)]
+async fn widget_color_edit_button_srgba(
+    p: ColorEditButtonSrgbaParams,
+) -> Result<CallToolResult, ErrorData> {
+    let w = WidgetJson::ColorEditButtonSrgba {
+        color: p.color,
+        alpha: p.alpha,
+    };
+    Ok(widget_result(&w))
+}
+
+/// Parameters for [`widget_color_edit_button_hsva`].
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ColorEditButtonHsvaParams {
+    /// Current colour as RGBA (converted to HSVA internally).
+    pub color: ColorJson,
+    /// Whether to show the alpha channel.
+    #[serde(default = "default_true")]
+    pub alpha: bool,
+}
+
+/// Create an HSVA colour picker button.
+#[elicit_tool(
+    plugin = "egui_widgets",
+    name = "widget_color_edit_button_hsva",
+    description = "Create an HSVA colour picker button. Returns WidgetJson::ColorEditButtonHsva."
+)]
+#[instrument(skip_all)]
+async fn widget_color_edit_button_hsva(
+    p: ColorEditButtonHsvaParams,
+) -> Result<CallToolResult, ErrorData> {
+    let w = WidgetJson::ColorEditButtonHsva {
+        color: p.color,
+        alpha: p.alpha,
+    };
+    Ok(widget_result(&w))
+}
+
+// ---------------------------------------------------------------------------
+// Slider variants
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`widget_slider_vertical`].
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SliderVerticalParams {
+    /// Current value.
+    pub value: f64,
+    /// Minimum value (inclusive).
+    pub min: f64,
+    /// Maximum value (inclusive).
+    pub max: f64,
+    /// Step size between values.
+    pub step: Option<f64>,
+    /// Label text.
+    pub text: Option<String>,
+    /// Suffix string.
+    pub suffix: Option<String>,
+    /// Whether to use logarithmic scale.
+    #[serde(default)]
+    pub logarithmic: bool,
+}
+
+/// Create a vertical numeric slider.
+#[elicit_tool(
+    plugin = "egui_widgets",
+    name = "widget_slider_vertical",
+    description = "Create a vertical numeric slider. Returns WidgetJson::SliderVertical."
+)]
+#[instrument(skip_all)]
+async fn widget_slider_vertical(p: SliderVerticalParams) -> Result<CallToolResult, ErrorData> {
+    let w = WidgetJson::SliderVertical {
+        value: p.value,
+        range: RangeJson {
+            min: p.min,
+            max: p.max,
+        },
+        step: p.step,
+        text: p.text,
+        suffix: p.suffix,
+        logarithmic: p.logarithmic,
     };
     Ok(widget_result(&w))
 }
