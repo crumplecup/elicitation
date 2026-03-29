@@ -1177,6 +1177,7 @@ dependencies = [
  "chrono",
  "derive_more",
  "elicit_chrono",
+ "elicit_egui",
  "elicit_jiff",
  "elicit_regex",
  "elicit_reqwest",

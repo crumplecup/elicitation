@@ -27,6 +27,7 @@ elicit_time = { workspace = true }
 elicit_sqlx = { workspace = true }
 elicit_regex = { workspace = true }
 elicit_tokio = { workspace = true }
+elicit_egui = { workspace = true }
 
 # Third-party types (needed in cross-crate workflows)
 reqwest = { workspace = true }
@@ -69,6 +70,7 @@ emit = [
   "elicit_time/emit",
   "elicit_regex/emit",
   "elicit_tokio/emit",
+  "elicit_egui/emit",
 ]
 
 [dev-dependencies]
