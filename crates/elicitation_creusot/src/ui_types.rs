@@ -277,7 +277,7 @@ pub fn verify_render_stats_eq() -> bool {
 pub fn verify_bounds_width_non_negative() -> bool {
     let x0: f64 = 10.0;
     let x1: f64 = 110.0;
-    let w = (x1 - x0).abs() as f32;
+    let w = (x1 - x0).abs();
     w >= 0.0
 }
 
@@ -290,7 +290,7 @@ pub fn verify_bounds_width_non_negative() -> bool {
 pub fn verify_bounds_reversed_non_negative() -> bool {
     let x0: f64 = 200.0;
     let x1: f64 = 50.0;
-    let w = (x1 - x0).abs() as f32;
+    let w = (x1 - x0).abs();
     w >= 0.0
 }
 
