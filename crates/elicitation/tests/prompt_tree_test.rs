@@ -6,10 +6,7 @@
 
 #![cfg(feature = "prompt-tree")]
 
-use elicitation::{
-    AssembledPrompt, Elicit, ElicitPromptTree, Prompt, PromptKind, PromptTree, Select,
-    collect_assembled_prompts,
-};
+use elicitation::{Elicit, ElicitPromptTree, Prompt, PromptKind, PromptTree, Select};
 
 // ============================================================================
 // Helpers
@@ -234,6 +231,18 @@ struct ServerConfig {
 }
 
 #[test]
+fn server_config_fields_accessible() {
+    let cfg = ServerConfig {
+        host: "localhost".to_string(),
+        port: 8080,
+        tls: true,
+    };
+    assert_eq!(cfg.host, "localhost");
+    assert_eq!(cfg.port, 8080);
+    assert!(cfg.tls);
+}
+
+#[test]
 fn derived_struct_is_survey() {
     let tree = ServerConfig::prompt_tree();
     let PromptTree::Survey {
@@ -300,6 +309,16 @@ struct Deployment {
     env: Color,
     #[prompt("Replica count:")]
     replicas: u8,
+}
+
+#[test]
+fn deployment_fields_accessible() {
+    let d = Deployment {
+        env: Color::Red,
+        replicas: 3,
+    };
+    assert!(matches!(d.env, Color::Red));
+    assert_eq!(d.replicas, 3);
 }
 
 #[test]
@@ -383,6 +402,20 @@ struct IndexInfo {
 }
 
 #[test]
+fn index_info_fields_accessible() {
+    let info = IndexInfo {
+        index: 42,
+        offset: -7,
+        count: 999,
+        signed: -123,
+    };
+    assert_eq!(info.index, 42);
+    assert_eq!(info.offset, -7);
+    assert_eq!(info.count, 999);
+    assert_eq!(info.signed, -123);
+}
+
+#[test]
 fn struct_with_usize_isize_fields_is_survey() {
     let tree = IndexInfo::prompt_tree();
     let PromptTree::Survey { fields, .. } = &tree else {
@@ -411,7 +444,7 @@ fn struct_with_usize_isize_fields_is_survey() {
 #[cfg(feature = "verification")]
 mod established_tests {
     use super::*;
-    use elicitation::contracts::{Established, Prop};
+    use elicitation::contracts::Established;
 
     #[derive(elicitation::Prop)]
     struct BetPlaced;
