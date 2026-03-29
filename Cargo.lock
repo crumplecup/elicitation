@@ -1282,6 +1282,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_ui"
+version = "0.9.1"
+dependencies = [
+ "accesskit",
+ "derive-getters",
+ "derive-new",
+ "derive_more",
+ "egui",
+ "elicit_accesskit",
+ "elicitation",
+ "elicitation_derive",
+ "elicitation_macros",
+ "inventory",
+ "proc-macro2",
+ "quote",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "elicit_url"
 version = "0.9.1"
 dependencies = [
