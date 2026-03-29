@@ -21,6 +21,7 @@ members = [
   "crates/elicit_sqlx",
   "crates/elicit_tokio",
   "crates/elicit_accesskit",
+  "crates/elicit_egui",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
@@ -54,6 +55,7 @@ elicit_std = { path = "crates/elicit_std", version = "0.9.1" }
 elicit_sqlx = { path = "crates/elicit_sqlx", version = "0.9.1" }
 elicit_tokio = { path = "crates/elicit_tokio", version = "0.9.1" }
 elicit_accesskit = { path = "crates/elicit_accesskit", version = "0.9.1" }
+elicit_egui = { path = "crates/elicit_egui", version = "0.9.1" }
 
 # accesskit - UI accessibility infrastructure
 accesskit = { version = "0.24", features = ["serde", "schemars"] }

@@ -1057,6 +1057,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_egui"
+version = "0.9.1"
+dependencies = [
+ "egui",
+ "elicitation",
+ "elicitation_derive",
+ "elicitation_macros",
+ "inventory",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "elicit_jiff"
 version = "0.9.1"
 dependencies = [

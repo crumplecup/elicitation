@@ -1,0 +1,35 @@
+[package]
+name = "elicit_egui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled egui widget tools — dual-mode MCP tools with code emission"
+keywords = ["mcp", "egui", "gui", "elicitation", "jsonschema"]
+categories = ["gui", "development-tools"]
+
+[dependencies]
+elicitation = { workspace = true, features = ["egui-types"] }
+elicitation_derive.workspace = true
+elicitation_macros.workspace = true
+egui = { workspace = true }
+inventory.workspace = true
+rmcp.workspace = true
+schemars.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true }
+serde_json = { workspace = true }
+
+[features]
+emit = []
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
