@@ -24,7 +24,7 @@ just verify-verus-list
 cargo run --features cli --release -- verus list
 ```
 
-Output shows all 85 Verus proofs organized by module.
+Output shows all 182 Verus proofs organized by module.
 
 ### Run Verification with Tracking
 
@@ -288,7 +288,7 @@ just verify-verus-tracked verus_results.csv 1800
 
 ## Proof Coverage
 
-Currently tracking **85 Verus proofs** across these modules:
+Currently tracking **182 Verus proofs** across these modules:
 
 - **bools** (2 proofs) - Boolean contract verification
 - **chars** (4 proofs) - Character validation contracts
@@ -301,6 +301,13 @@ Currently tracking **85 Verus proofs** across these modules:
 - **strings** (11 proofs) - String validation contracts
 - **regexes** (1 proof, feature-gated) - Regex pattern contracts
 - **urls** (4 proofs, feature-gated) - URL validation contracts
+- **external_types** (25 proofs, feature-gated) - Chrono, time, jiff datetime
+- **primitives** (13 proofs) - Primitive type invariants
+- **stdlib_collections** (11 proofs) - Standard library collection contracts
+- **clap_types** (26 proofs, feature-gated) - CLI argument parser types
+- **sqlx_types** (32 proofs, feature-gated) - SQL database types
+- **egui_types** (feature-gated) - egui widget type contracts
+- **ui_types** (28 proofs, feature-gated) - Typestate UI, LayoutBuilder, renderer
 
 ## Workflow Examples
 
