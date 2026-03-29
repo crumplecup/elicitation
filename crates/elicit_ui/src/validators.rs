@@ -1,4 +1,4 @@
-/// Validation functions that establish proofs for UI accessibility propositions.
+//! Validation functions that establish proofs for UI accessibility propositions.
 
 use crate::{ElementId, VerificationError, Viewport};
 use accesskit::{Node, NodeId, Role};

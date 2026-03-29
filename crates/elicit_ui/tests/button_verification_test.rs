@@ -1,4 +1,4 @@
-/// Test button verification and rendering pipeline.
+//! Test button verification and rendering pipeline.
 
 use accesskit::{Node, NodeId, Role, Tree, TreeId, TreeUpdate};
 use elicit_ui::{Layout, Viewport};

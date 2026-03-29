@@ -10,9 +10,7 @@
 use accesskit::{
     Node as AkNode, NodeId as AkNodeId, Role as AkRole, TreeId as AkTreeId, TreeUpdate,
 };
-use elicit_accesskit::{
-    Action, Invalid, NodeEntry, NodeId, NodeJson, Rect, Role, Tree, TreeUpdateJson,
-};
+use elicit_accesskit::{Action, Invalid, NodeId, NodeJson, Rect, Role, Tree, TreeUpdateJson};
 use schemars::schema_for;
 use serde_json::{from_value, json, to_value};
 
@@ -21,7 +19,7 @@ use serde_json::{from_value, json, to_value};
 #[test]
 fn role_serializes_as_inner() {
     let role = Role(AkRole::Button);
-    let v = to_value(&role).unwrap();
+    let v = to_value(role).unwrap();
     let expected = to_value(AkRole::Button).unwrap();
     assert_eq!(v, expected);
 }
@@ -31,21 +29,21 @@ fn role_round_trips_json() {
     let json_val = json!("button");
     let role: Role = from_value(json_val.clone()).unwrap();
     assert_eq!(role.0, AkRole::Button);
-    assert_eq!(to_value(&role).unwrap(), json_val);
+    assert_eq!(to_value(role).unwrap(), json_val);
 }
 
 #[test]
 fn action_round_trips_json() {
     let json_val = json!("click");
     let action: Action = from_value(json_val.clone()).unwrap();
-    assert_eq!(to_value(&action).unwrap(), json_val);
+    assert_eq!(to_value(action).unwrap(), json_val);
 }
 
 #[test]
 fn invalid_round_trips_json() {
     let json_val = json!("grammar");
     let inv: Invalid = from_value(json_val.clone()).unwrap();
-    assert_eq!(to_value(&inv).unwrap(), json_val);
+    assert_eq!(to_value(inv).unwrap(), json_val);
 }
 
 // ── reflect_methods on Role wrapper ──────────────────────────────────────────
@@ -112,7 +110,7 @@ fn node_id_round_trips() {
 fn node_id_serializes_as_u64() {
     let id = AkNodeId::from(1u64);
     let wrapped: NodeId = id.into();
-    let v = to_value(&wrapped).unwrap();
+    let v = to_value(wrapped).unwrap();
     assert_eq!(v, json!(1u64));
 }
 

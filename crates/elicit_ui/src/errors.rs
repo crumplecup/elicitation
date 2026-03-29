@@ -1,4 +1,4 @@
-/// Error types for UI verification.
+//! Error types for UI verification.
 
 use crate::ElementId;
 use derive_more::{Display, Error};

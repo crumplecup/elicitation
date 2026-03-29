@@ -576,9 +576,7 @@ pub struct OverrideTextStyleParams {
     description = "Override a named text style (Heading, Body, Monospace, Button, Small) with font family and size. Returns StyleJson::OverrideTextStyle."
 )]
 #[instrument(skip_all)]
-async fn egui_override_text_style(
-    p: OverrideTextStyleParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn egui_override_text_style(p: OverrideTextStyleParams) -> Result<CallToolResult, ErrorData> {
     let s = StyleJson::OverrideTextStyle {
         style: p.style,
         family: p.family,
@@ -947,9 +945,7 @@ pub struct ScrollBarWidthParams {
     description = "Set scroll bar width, handle length, margins, and floating mode. Returns StyleJson::ScrollBar."
 )]
 #[instrument(skip_all)]
-async fn egui_set_scroll_bar_width(
-    p: ScrollBarWidthParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn egui_set_scroll_bar_width(p: ScrollBarWidthParams) -> Result<CallToolResult, ErrorData> {
     let s = StyleJson::ScrollBar {
         bar_width: p.bar_width,
         handle_min_length: p.handle_min_length,
@@ -974,9 +970,7 @@ pub struct ResizeGripSizeParams {
     description = "Set resize grip/handle corner size. Returns StyleJson::ResizeGripSize."
 )]
 #[instrument(skip_all)]
-async fn egui_set_resize_grip_size(
-    p: ResizeGripSizeParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn egui_set_resize_grip_size(p: ResizeGripSizeParams) -> Result<CallToolResult, ErrorData> {
     let s = StyleJson::ResizeGripSize { size: p.size };
     Ok(style_result(&s))
 }
@@ -1001,9 +995,7 @@ pub struct TextCursorBlinkParams {
     description = "Set text cursor blink settings (width, blink on/off durations, preview). Returns StyleJson::TextCursorBlink."
 )]
 #[instrument(skip_all)]
-async fn egui_set_text_cursor_width(
-    p: TextCursorBlinkParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn egui_set_text_cursor_width(p: TextCursorBlinkParams) -> Result<CallToolResult, ErrorData> {
     let s = StyleJson::TextCursorBlink {
         width: p.width,
         blink_on: p.blink_on,

@@ -1,4 +1,4 @@
-/// Core domain types for UI verification.
+//! Core domain types for UI verification.
 
 use derive_more::{AsRef, Deref, Display};
 use derive_new::new;
@@ -64,7 +64,7 @@ pub struct ElementId(accesskit::NodeId);
 impl ElementId {
     /// Create a new element ID.
     pub fn new(id: u64) -> Self {
-        Self(accesskit::NodeId(id.try_into().unwrap_or(0)))
+        Self(accesskit::NodeId(id))
     }
 
     /// Get the underlying NodeId.

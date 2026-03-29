@@ -1,4 +1,4 @@
-/// Proof-carrying contracts for UI accessibility properties.
+//! Proof-carrying contracts for UI accessibility properties.
 
 use std::marker::PhantomData;
 

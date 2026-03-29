@@ -1,4 +1,4 @@
-/// Typestate state machine for verified UI construction.
+//! Typestate state machine for verified UI construction.
 
 use crate::{validators, VerificationReport, Viewport};
 use accesskit::{Node, NodeId, TreeUpdate};
@@ -162,10 +162,10 @@ impl Layout<Pending> {
         }
 
         // Check AAA-level constraints if requested
-        if check_aaa {
-            if let Err(e) = validators::validate_min_target_size(&self.nodes, node_id) {
-                report.add_error(e);
-            }
+        if check_aaa
+            && let Err(e) = validators::validate_min_target_size(&self.nodes, node_id)
+        {
+            report.add_error(e);
         }
 
         // Recursively validate children

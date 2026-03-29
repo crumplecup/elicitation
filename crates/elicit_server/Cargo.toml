@@ -88,6 +88,18 @@ name = "ledger_phase2_query_test"
 required-features = ["emit"]
 
 [[test]]
+name = "ledger_phase3_dynamic_test"
+required-features = ["emit"]
+
+[[test]]
+name = "ledger_phase4_contracts_test"
+required-features = ["emit"]
+
+[[test]]
+name = "emit_smoke_test"
+required-features = ["emit"]
+
+[[test]]
 name = "ledger_phase5_typestate_test"
 
 [[test]]
