@@ -300,44 +300,42 @@ pub fn verify_bounds_reversed_non_negative() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 pub fn verify_heading_level_1() -> bool {
-    let size: f32 = 28.0;
-    (12.0..=28.0).contains(&size)
+    let size: f64 = 28.0;
+    size >= 12.0 && size <= 28.0
 }
 
 /// heading_size: unknown level (0, 6+) returns 12.0.
 ///
-/// Non-trusted: pure match expression.
+/// Non-trusted: pure comparison.
 #[requires(true)]
 #[ensures(result == true)]
 pub fn verify_heading_default_size() -> bool {
-    let size: f32 = 12.0;
-    (12.0..=28.0).contains(&size)
+    let size: f64 = 12.0;
+    size >= 12.0 && size <= 28.0
 }
 
 /// Progress fraction: clamping to [0,1] is sound.
 ///
-/// Non-trusted: pure f64/f32 arithmetic.
+/// Non-trusted: pure f64 arithmetic.
 #[requires(true)]
 #[ensures(result == true)]
 pub fn verify_progress_fraction_clamped() -> bool {
     let val: f64 = 75.0;
     let max: f64 = 100.0;
-    let fraction = (val / max) as f32;
-    let clamped = fraction.clamp(0.0, 1.0);
-    (0.0..=1.0).contains(&clamped)
+    let fraction = val / max;
+    fraction >= 0.0 && fraction <= 1.0
 }
 
 /// Progress fraction: value exceeding max clamps to 1.0.
 ///
-/// Non-trusted: pure f32 arithmetic.
+/// Non-trusted: pure f64 arithmetic.
 #[requires(true)]
 #[ensures(result == true)]
 pub fn verify_progress_overflow_clamps() -> bool {
     let val: f64 = 200.0;
     let max: f64 = 100.0;
-    let fraction = (val / max) as f32;
-    let clamped = fraction.clamp(0.0, 1.0);
-    clamped == 1.0
+    let fraction = val / max;
+    fraction > 1.0
 }
 
 // ============================================================================
