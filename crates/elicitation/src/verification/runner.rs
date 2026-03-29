@@ -555,6 +555,13 @@ impl ProofHarness {
             Self::new("ui_types", "verify_min_target_size_consistency"),
             Self::new("ui_types", "verify_empty_report_no_errors"),
             Self::new("ui_types", "verify_error_kind_display"),
+            // ui_types: renderer invariant proofs
+            Self::new("ui_types", "verify_render_stats_default_zeros"),
+            Self::new("ui_types", "verify_bounds_to_size_non_negative"),
+            Self::new("ui_types", "verify_heading_size_range"),
+            Self::new("ui_types", "verify_progress_fraction_clamped"),
+            Self::new("ui_types", "verify_render_stats_equality"),
+            Self::new("ui_types", "verify_render_stats_clone"),
         ]
     }
 

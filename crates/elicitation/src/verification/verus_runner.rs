@@ -226,6 +226,13 @@ impl VerusProof {
             Self::new("ui_types", "verify_element_id_roundtrip"),
             Self::new("ui_types", "verify_empty_report"),
             Self::new("ui_types", "verify_level_subset"),
+            // ui_types: renderer invariant proofs
+            Self::new("ui_types", "verify_render_stats_sum"),
+            Self::new("ui_types", "verify_progress_clamp"),
+            Self::new("ui_types", "verify_heading_size_positive"),
+            Self::new("ui_types", "verify_bounds_abs_non_negative"),
+            Self::new("ui_types", "verify_render_stats_default"),
+            Self::new("ui_types", "verify_stats_accounting"),
         ]
     }
 }

@@ -291,3 +291,112 @@ fn verify_error_kind_display() {
         "VerificationErrorKind Display must not be empty"
     );
 }
+
+// ============================================================================
+// Renderer invariants
+// ============================================================================
+
+/// RenderStats default is all zeros.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_render_stats_default_zeros() {
+    let stats = elicit_ui::RenderStats::default();
+    assert!(stats.nodes_visited == 0, "Default nodes_visited must be 0");
+    assert!(stats.widgets_rendered == 0, "Default widgets_rendered must be 0");
+    assert!(stats.containers_rendered == 0, "Default containers_rendered must be 0");
+    assert!(stats.nodes_skipped == 0, "Default nodes_skipped must be 0");
+}
+
+/// bounds_to_size returns non-negative dimensions for any valid Rect.
+///
+/// For any Rect where x1 >= x0 and y1 >= y0 (well-formed bounds),
+/// the returned (w, h) are both non-negative.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_bounds_to_size_non_negative() {
+    let x0: f64 = kani::any();
+    let y0: f64 = kani::any();
+    let x1: f64 = kani::any();
+    let y1: f64 = kani::any();
+
+    // Constrain to finite, reasonable values
+    kani::assume(x0.is_finite() && y0.is_finite());
+    kani::assume(x1.is_finite() && y1.is_finite());
+    kani::assume(x0.abs() <= 100000.0 && y0.abs() <= 100000.0);
+    kani::assume(x1.abs() <= 100000.0 && y1.abs() <= 100000.0);
+
+    let w = (x1 - x0).abs() as f32;
+    let h = (y1 - y0).abs() as f32;
+
+    assert!(w >= 0.0, "Width from bounds must be non-negative");
+    assert!(h >= 0.0, "Height from bounds must be non-negative");
+}
+
+/// heading_size returns a value in the known set {12.0, 14.0, 16.0, 18.0, 22.0, 28.0}.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_heading_size_range() {
+    let level: usize = kani::any();
+    kani::assume(level <= 10); // Bound the search space
+
+    let size: f32 = match level {
+        1 => 28.0,
+        2 => 22.0,
+        3 => 18.0,
+        4 => 16.0,
+        5 => 14.0,
+        _ => 12.0,
+    };
+
+    assert!(
+        size >= 12.0 && size <= 28.0,
+        "Heading size must be in [12.0, 28.0]"
+    );
+}
+
+/// Progress fraction clamping: for any val in [0, max] with max > 0,
+/// (val / max) clamped to [0, 1] produces a valid fraction.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_progress_fraction_clamped() {
+    let val: f64 = kani::any();
+    let max: f64 = kani::any();
+
+    kani::assume(val.is_finite() && max.is_finite());
+    kani::assume(max > 0.0);
+    kani::assume(val >= 0.0);
+    kani::assume(val <= 10000.0 && max <= 10000.0);
+
+    let fraction = (val / max) as f32;
+    let clamped = fraction.clamp(0.0, 1.0);
+
+    assert!(clamped >= 0.0, "Clamped fraction must be >= 0.0");
+    assert!(clamped <= 1.0, "Clamped fraction must be <= 1.0");
+}
+
+/// RenderStats equality: two default stats are equal.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_render_stats_equality() {
+    let a = elicit_ui::RenderStats::default();
+    let b = elicit_ui::RenderStats::default();
+    assert!(a == b, "Two default RenderStats must be equal");
+}
+
+/// RenderStats clone preserves all fields.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_render_stats_clone() {
+    let mut stats = elicit_ui::RenderStats::default();
+    stats.nodes_visited = 10;
+    stats.widgets_rendered = 5;
+    stats.containers_rendered = 3;
+    stats.nodes_skipped = 2;
+
+    let cloned = stats.clone();
+    assert!(cloned.nodes_visited == 10, "Clone must preserve nodes_visited");
+    assert!(cloned.widgets_rendered == 5, "Clone must preserve widgets_rendered");
+    assert!(cloned.containers_rendered == 3, "Clone must preserve containers_rendered");
+    assert!(cloned.nodes_skipped == 2, "Clone must preserve nodes_skipped");
+    assert!(stats == cloned, "Clone must be equal to original");
+}

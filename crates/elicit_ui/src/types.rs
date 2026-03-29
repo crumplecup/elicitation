@@ -90,3 +90,16 @@ impl std::fmt::Display for ElementId {
         write!(f, "ElementId({})", self.0 .0)
     }
 }
+
+/// Statistics collected during a render pass.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct RenderStats {
+    /// Total nodes visited.
+    pub nodes_visited: usize,
+    /// Number of interactive widgets rendered.
+    pub widgets_rendered: usize,
+    /// Number of container nodes rendered.
+    pub containers_rendered: usize,
+    /// Number of nodes skipped (hidden or unsupported role).
+    pub nodes_skipped: usize,
+}

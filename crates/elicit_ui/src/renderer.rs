@@ -6,20 +6,8 @@
 //! guaranteed to satisfy its WCAG constraints before rendering.
 
 use accesskit::{Node, NodeId, Rect, Role, Toggled};
+use crate::RenderStats;
 use std::collections::HashMap;
-
-/// Statistics collected during a render pass.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct RenderStats {
-    /// Total nodes visited.
-    pub nodes_visited: usize,
-    /// Number of interactive widgets rendered.
-    pub widgets_rendered: usize,
-    /// Number of container nodes rendered.
-    pub containers_rendered: usize,
-    /// Number of nodes skipped (hidden or unsupported role).
-    pub nodes_skipped: usize,
-}
 
 /// Render a verified AccessKit tree into an egui `Ui`.
 ///

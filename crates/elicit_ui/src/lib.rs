@@ -82,6 +82,6 @@ pub use contracts::{
 };
 pub use errors::{VerificationError, VerificationErrorKind, VerificationReport};
 #[cfg(feature = "egui-backend")]
-pub use renderer::{bounds_to_size, render_tree, RenderStats};
+pub use renderer::{bounds_to_size, render_tree};
 pub use typestate::{Layout, Pending, Rendered, Verified};
-pub use types::{ElementId, Label, Size, Viewport};
+pub use types::{ElementId, Label, RenderStats, Size, Viewport};
