@@ -1,4 +1,8 @@
 use verus_builtin_macros::verus;
+// Required by verus! macro for int type, comparison operators, and arithmetic
+// Cargo cannot detect this usage as it occurs during macro expansion
+#[allow(unused_imports)]
+use vstd::prelude::*;
 
 verus! {
 
