@@ -1708,10 +1708,7 @@ pub fn verus_composite_wrapper(wrapper_name: &str) -> TokenStream {
         .replace('<', "_")
         .replace('>', "")
         .replace([',', ' ', ':'], "_");
-    let fn_ident = Ident::new(
-        &format!("verify_{safe_name}_composite"),
-        Span::call_site(),
-    );
+    let fn_ident = Ident::new(&format!("verify_{safe_name}_composite"), Span::call_site());
     quote! {
         verus! {
         pub fn #fn_ident() -> (result: bool)

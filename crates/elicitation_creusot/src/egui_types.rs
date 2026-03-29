@@ -89,15 +89,43 @@ macro_rules! select_creusot_proofs {
 // Select enum proofs — Tier 1 (small enums)
 // ============================================================================
 
-select_creusot_proofs!(type_path = egui::Align,          snake = align,            known_label = "Min");
-select_creusot_proofs!(type_path = egui::Direction,       snake = direction,        known_label = "LeftToRight");
-select_creusot_proofs!(type_path = egui::Theme,           snake = theme,            known_label = "Dark");
-select_creusot_proofs!(type_path = egui::ThemePreference, snake = theme_preference, known_label = "Dark");
-select_creusot_proofs!(type_path = egui::FontFamily,      snake = font_family,      known_label = "Monospace");
-select_creusot_proofs!(type_path = egui::TextWrapMode,    snake = text_wrap_mode,   known_label = "Extend");
-select_creusot_proofs!(type_path = egui::TouchPhase,      snake = touch_phase,      known_label = "Start");
-select_creusot_proofs!(type_path = egui::PointerButton,   snake = pointer_button,   known_label = "Primary");
-select_creusot_proofs!(type_path = egui::Order,           snake = order,            known_label = "Background");
+select_creusot_proofs!(type_path = egui::Align, snake = align, known_label = "Min");
+select_creusot_proofs!(
+    type_path = egui::Direction,
+    snake = direction,
+    known_label = "LeftToRight"
+);
+select_creusot_proofs!(type_path = egui::Theme, snake = theme, known_label = "Dark");
+select_creusot_proofs!(
+    type_path = egui::ThemePreference,
+    snake = theme_preference,
+    known_label = "Dark"
+);
+select_creusot_proofs!(
+    type_path = egui::FontFamily,
+    snake = font_family,
+    known_label = "Monospace"
+);
+select_creusot_proofs!(
+    type_path = egui::TextWrapMode,
+    snake = text_wrap_mode,
+    known_label = "Extend"
+);
+select_creusot_proofs!(
+    type_path = egui::TouchPhase,
+    snake = touch_phase,
+    known_label = "Start"
+);
+select_creusot_proofs!(
+    type_path = egui::PointerButton,
+    snake = pointer_button,
+    known_label = "Primary"
+);
+select_creusot_proofs!(
+    type_path = egui::Order,
+    snake = order,
+    known_label = "Background"
+);
 
 select_creusot_proofs!(
     type_path = egui::epaint::textures::TextureFilter,
@@ -114,16 +142,36 @@ select_creusot_proofs!(
 // Select enum proofs — Tier 2 (medium enums)
 // ============================================================================
 
-select_creusot_proofs!(type_path = egui::TextStyle,  snake = text_style,  known_label = "Small");
-select_creusot_proofs!(type_path = egui::UiKind,     snake = ui_kind,     known_label = "Window");
-select_creusot_proofs!(type_path = egui::WidgetType, snake = widget_type, known_label = "Label");
+select_creusot_proofs!(
+    type_path = egui::TextStyle,
+    snake = text_style,
+    known_label = "Small"
+);
+select_creusot_proofs!(
+    type_path = egui::UiKind,
+    snake = ui_kind,
+    known_label = "Window"
+);
+select_creusot_proofs!(
+    type_path = egui::WidgetType,
+    snake = widget_type,
+    known_label = "Label"
+);
 
 // ============================================================================
 // Select enum proofs — Tier 3 (large enums)
 // ============================================================================
 
-select_creusot_proofs!(type_path = egui::CursorIcon, snake = cursor_icon, known_label = "Default");
-select_creusot_proofs!(type_path = egui::Key,        snake = key,         known_label = "ArrowDown");
+select_creusot_proofs!(
+    type_path = egui::CursorIcon,
+    snake = cursor_icon,
+    known_label = "Default"
+);
+select_creusot_proofs!(
+    type_path = egui::Key,
+    snake = key,
+    known_label = "ArrowDown"
+);
 
 // ============================================================================
 // Composite struct proofs — From roundtrip verification
@@ -189,7 +237,8 @@ pub fn verify_vec2_from_roundtrip() -> bool {
 #[ensures(result == true)]
 #[trusted]
 pub fn verify_rect_from_roundtrip() -> bool {
-    let original = egui::Rect::from_min_max(egui::Pos2::new(10.0, 20.0), egui::Pos2::new(30.0, 40.0));
+    let original =
+        egui::Rect::from_min_max(egui::Pos2::new(10.0, 20.0), egui::Pos2::new(30.0, 40.0));
     let wrapper = elicitation::EguiRect::from(original);
     let restored: egui::Rect = wrapper.into();
     restored.min.x == 10.0
@@ -219,7 +268,12 @@ pub fn verify_stroke_from_roundtrip() -> bool {
 #[ensures(result == true)]
 #[trusted]
 pub fn verify_corner_radius_from_roundtrip() -> bool {
-    let original = egui::CornerRadius { nw: 5, ne: 10, sw: 15, se: 20 };
+    let original = egui::CornerRadius {
+        nw: 5,
+        ne: 10,
+        sw: 15,
+        se: 20,
+    };
     let wrapper = elicitation::EguiCornerRadius::from(original);
     let restored: egui::CornerRadius = wrapper.into();
     restored.nw == 5 && restored.ne == 10 && restored.sw == 15 && restored.se == 20
@@ -255,7 +309,12 @@ pub fn verify_shadow_from_roundtrip() -> bool {
 #[ensures(result == true)]
 #[trusted]
 pub fn verify_margin_from_roundtrip() -> bool {
-    let original = egui::Margin { left: 5, right: 10, top: 15, bottom: 20 };
+    let original = egui::Margin {
+        left: 5,
+        right: 10,
+        top: 15,
+        bottom: 20,
+    };
     let wrapper = elicitation::EguiMargin::from(original);
     let restored: egui::Margin = wrapper.into();
     restored.left == 5 && restored.right == 10 && restored.top == 15 && restored.bottom == 20

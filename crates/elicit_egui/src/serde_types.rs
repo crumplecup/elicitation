@@ -138,10 +138,7 @@ impl From<egui::Rect> for RectJson {
 
 impl From<RectJson> for egui::Rect {
     fn from(r: RectJson) -> Self {
-        egui::Rect::from_min_max(
-            egui::pos2(r.min_x, r.min_y),
-            egui::pos2(r.max_x, r.max_y),
-        )
+        egui::Rect::from_min_max(egui::pos2(r.min_x, r.min_y), egui::pos2(r.max_x, r.max_y))
     }
 }
 

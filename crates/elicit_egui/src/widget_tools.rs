@@ -4,8 +4,8 @@
 //! In emit mode, the JSON can be converted to idiomatic egui code.
 
 use elicitation::elicit_tool;
-use rmcp::model::{CallToolResult, Content};
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
@@ -730,9 +730,7 @@ pub struct DragAngleParams {
 )]
 #[instrument(skip_all)]
 async fn widget_drag_angle(p: DragAngleParams) -> Result<CallToolResult, ErrorData> {
-    let w = WidgetJson::DragAngle {
-        radians: p.radians,
-    };
+    let w = WidgetJson::DragAngle { radians: p.radians };
     Ok(widget_result(&w))
 }
 
@@ -751,9 +749,7 @@ pub struct DragAngleTauParams {
 )]
 #[instrument(skip_all)]
 async fn widget_drag_angle_tau(p: DragAngleTauParams) -> Result<CallToolResult, ErrorData> {
-    let w = WidgetJson::DragAngleTau {
-        radians: p.radians,
-    };
+    let w = WidgetJson::DragAngleTau { radians: p.radians };
     Ok(widget_result(&w))
 }
 

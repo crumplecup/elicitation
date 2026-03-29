@@ -4,8 +4,8 @@
 //! a declarative way to inspect [`egui::Response`] properties.
 
 use elicitation::elicit_tool;
-use rmcp::model::{CallToolResult, Content};
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -151,9 +151,7 @@ async fn response_double_clicked(p: EmptyResponseParams) -> Result<CallToolResul
     description = "Check if the widget was right-clicked. Returns ResponseQueryJson::SecondaryClicked."
 )]
 #[instrument(skip_all)]
-async fn response_secondary_clicked(
-    p: EmptyResponseParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn response_secondary_clicked(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
     let _ = p;
     Ok(query_result(&ResponseQueryJson::SecondaryClicked))
 }
@@ -248,9 +246,7 @@ async fn response_request_focus(p: EmptyResponseParams) -> Result<CallToolResult
     description = "Surrender keyboard focus from the widget. Returns ResponseQueryJson::SurrenderFocus."
 )]
 #[instrument(skip_all)]
-async fn response_surrender_focus(
-    p: EmptyResponseParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn response_surrender_focus(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
     let _ = p;
     Ok(query_result(&ResponseQueryJson::SurrenderFocus))
 }
@@ -373,9 +369,7 @@ pub struct SetEnabledParams {
 )]
 #[instrument(skip_all)]
 async fn response_set_enabled(p: SetEnabledParams) -> Result<CallToolResult, ErrorData> {
-    let q = ResponseQueryJson::SetEnabled {
-        enabled: p.enabled,
-    };
+    let q = ResponseQueryJson::SetEnabled { enabled: p.enabled };
     Ok(query_result(&q))
 }
 

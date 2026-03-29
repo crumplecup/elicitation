@@ -5,13 +5,13 @@
 //! description that can be applied at runtime or emitted as code.
 
 use elicitation::elicit_tool;
-use rmcp::model::{CallToolResult, Content};
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
-use crate::serde_types::{ColorJson, CornerRadiusJson, StrokeJson, Vec2Json};
+use crate::serde_types::{ColorJson, CornerRadiusJson, MarginJson, StrokeJson, Vec2Json};
 
 // ---------------------------------------------------------------------------
 // Style JSON types
@@ -107,6 +107,124 @@ pub enum StyleJson {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         width: Option<f32>,
     },
+
+    /// Configure font families with named font data.
+    SetFonts {
+        /// Font family to configure.
+        family: FontFamily,
+        /// Ordered list of font data names for this family.
+        font_names: Vec<String>,
+    },
+
+    /// Override a named text style with font family and size.
+    OverrideTextStyle {
+        /// Which text style to override.
+        style: TextStyleName,
+        /// Font family for this style.
+        family: FontFamily,
+        /// Font size in points.
+        size: f32,
+    },
+
+    /// Set vertical text alignment.
+    SetTextValign {
+        /// Vertical alignment.
+        valign: TextValign,
+    },
+
+    /// Configure interaction timing and thresholds.
+    Interaction {
+        /// Time window for a click (seconds).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        sense_click_time: Option<f32>,
+        /// Drag distance threshold (logical pixels).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        sense_drag_threshold: Option<f32>,
+        /// Delay before tooltips appear (seconds).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        tooltip_delay: Option<f32>,
+        /// Only show tooltips when pointer is still.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        show_tooltips_only_when_still: Option<bool>,
+    },
+
+    /// Set UI animation duration.
+    AnimationTime {
+        /// Duration in seconds.
+        duration: f32,
+    },
+
+    /// Toggle debug rendering options.
+    DebugOptions {
+        /// Show widget hit-test rectangles.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        show_widget_hits: Option<bool>,
+        /// Debug information on hover.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        debug_on_hover: Option<bool>,
+        /// Show resize handle indicators.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        show_resize: Option<bool>,
+        /// Show interactive widget outlines.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        show_interactive_widgets: Option<bool>,
+        /// Show blocking-widget overlay.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        show_blocking_widget: Option<bool>,
+    },
+
+    /// Set window border stroke.
+    WindowStroke {
+        /// Stroke for window borders.
+        stroke: StrokeJson,
+    },
+
+    /// Set menu margin.
+    MenuMargin {
+        /// Margin around menus.
+        margin: MarginJson,
+    },
+
+    /// Configure scroll bar appearance.
+    ScrollBar {
+        /// Scroll bar track width (logical pixels).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        bar_width: Option<f32>,
+        /// Minimum scroll handle length.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        handle_min_length: Option<f32>,
+        /// Inner margin between bar and content.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        bar_inner_margin: Option<f32>,
+        /// Outer margin for the scroll bar.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        bar_outer_margin: Option<f32>,
+        /// Whether the scroll bar floats over content.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        floating: Option<bool>,
+    },
+
+    /// Set resize grip/handle size.
+    ResizeGripSize {
+        /// Side length of the resize corner (logical pixels).
+        size: f32,
+    },
+
+    /// Configure text cursor blink behaviour.
+    TextCursorBlink {
+        /// Cursor width (logical pixels).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        width: Option<f32>,
+        /// Blink-on duration (seconds, None = no blink).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        blink_on: Option<f32>,
+        /// Blink-off duration (seconds).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        blink_off: Option<f32>,
+        /// Whether to preview text cursor.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        preview: Option<bool>,
+    },
 }
 
 /// Visual property names.
@@ -143,6 +261,41 @@ pub enum WidgetState {
     Active,
     /// Open (e.g. combo box).
     Open,
+}
+
+/// Named font family in egui.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub enum FontFamily {
+    /// Proportional (variable-width) font.
+    Proportional,
+    /// Monospace (fixed-width) font.
+    Monospace,
+}
+
+/// Named text style in egui.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub enum TextStyleName {
+    /// Heading text style.
+    Heading,
+    /// Body text style.
+    Body,
+    /// Monospace text style.
+    Monospace,
+    /// Button text style.
+    Button,
+    /// Small text style.
+    Small,
+}
+
+/// Vertical text alignment.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+pub enum TextValign {
+    /// Align to top.
+    Top,
+    /// Centre vertically.
+    Center,
+    /// Align to bottom.
+    Bottom,
 }
 
 // ---------------------------------------------------------------------------
@@ -373,6 +526,489 @@ async fn style_text_cursor(p: TextCursorParams) -> Result<CallToolResult, ErrorD
     let s = StyleJson::TextCursor {
         color: p.color,
         width: p.width,
+    };
+    Ok(style_result(&s))
+}
+
+// ---------------------------------------------------------------------------
+// Font management tools
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`egui_set_fonts`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct SetFontsParams {
+    /// Font family to configure.
+    pub family: FontFamily,
+    /// Ordered list of font data names for this family.
+    pub font_names: Vec<String>,
+}
+
+/// Configure font families with named font data.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_fonts",
+    description = "Configure font families (proportional/monospace) with font data names. Returns StyleJson::SetFonts."
+)]
+#[instrument(skip_all)]
+async fn egui_set_fonts(p: SetFontsParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::SetFonts {
+        family: p.family,
+        font_names: p.font_names,
+    };
+    Ok(style_result(&s))
+}
+
+/// Parameters for [`egui_override_text_style`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct OverrideTextStyleParams {
+    /// Which text style to override.
+    pub style: TextStyleName,
+    /// Font family for this style.
+    pub family: FontFamily,
+    /// Font size in points.
+    pub size: f32,
+}
+
+/// Override a named text style with font family and size.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_override_text_style",
+    description = "Override a named text style (Heading, Body, Monospace, Button, Small) with font family and size. Returns StyleJson::OverrideTextStyle."
+)]
+#[instrument(skip_all)]
+async fn egui_override_text_style(
+    p: OverrideTextStyleParams,
+) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::OverrideTextStyle {
+        style: p.style,
+        family: p.family,
+        size: p.size,
+    };
+    Ok(style_result(&s))
+}
+
+/// Parameters for [`egui_set_text_valign`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct SetTextValignParams {
+    /// Vertical text alignment.
+    pub valign: TextValign,
+}
+
+/// Set vertical text alignment.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_text_valign",
+    description = "Set vertical text alignment (Top, Center, Bottom). Returns StyleJson::SetTextValign."
+)]
+#[instrument(skip_all)]
+async fn egui_set_text_valign(p: SetTextValignParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::SetTextValign { valign: p.valign };
+    Ok(style_result(&s))
+}
+
+// ---------------------------------------------------------------------------
+// Interaction settings tools
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`egui_set_interaction`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct InteractionParams {
+    /// Time window for a click (seconds).
+    pub sense_click_time: Option<f32>,
+    /// Drag distance threshold (logical pixels).
+    pub sense_drag_threshold: Option<f32>,
+    /// Delay before tooltips appear (seconds).
+    pub tooltip_delay: Option<f32>,
+    /// Only show tooltips when pointer is still.
+    pub show_tooltips_only_when_still: Option<bool>,
+}
+
+/// Configure interaction settings.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_interaction",
+    description = "Configure interaction settings (click time, drag threshold, tooltip delay). Returns StyleJson::Interaction."
+)]
+#[instrument(skip_all)]
+async fn egui_set_interaction(p: InteractionParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::Interaction {
+        sense_click_time: p.sense_click_time,
+        sense_drag_threshold: p.sense_drag_threshold,
+        tooltip_delay: p.tooltip_delay,
+        show_tooltips_only_when_still: p.show_tooltips_only_when_still,
+    };
+    Ok(style_result(&s))
+}
+
+/// Parameters for [`egui_set_animation_time`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct AnimationTimeParams {
+    /// Animation duration in seconds.
+    pub duration: f32,
+}
+
+/// Set animation duration for UI transitions.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_animation_time",
+    description = "Set animation duration for UI transitions (seconds). Returns StyleJson::AnimationTime."
+)]
+#[instrument(skip_all)]
+async fn egui_set_animation_time(p: AnimationTimeParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::AnimationTime {
+        duration: p.duration,
+    };
+    Ok(style_result(&s))
+}
+
+// ---------------------------------------------------------------------------
+// Debug settings tools
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`egui_set_debug_options`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct DebugOptionsParams {
+    /// Show widget hit-test rectangles.
+    pub show_widget_hits: Option<bool>,
+    /// Debug information on hover.
+    pub debug_on_hover: Option<bool>,
+    /// Show resize handle indicators.
+    pub show_resize: Option<bool>,
+    /// Show interactive widget outlines.
+    pub show_interactive_widgets: Option<bool>,
+    /// Show blocking-widget overlay.
+    pub show_blocking_widget: Option<bool>,
+}
+
+/// Toggle debug rendering options.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_debug_options",
+    description = "Toggle debug rendering (widget hits, debug on hover, resize indicators). Returns StyleJson::DebugOptions."
+)]
+#[instrument(skip_all)]
+async fn egui_set_debug_options(p: DebugOptionsParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::DebugOptions {
+        show_widget_hits: p.show_widget_hits,
+        debug_on_hover: p.debug_on_hover,
+        show_resize: p.show_resize,
+        show_interactive_widgets: p.show_interactive_widgets,
+        show_blocking_widget: p.show_blocking_widget,
+    };
+    Ok(style_result(&s))
+}
+
+// ---------------------------------------------------------------------------
+// Individual colour override tools
+// ---------------------------------------------------------------------------
+
+/// Parameters for individual colour override tools.
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct ColorOverrideParams {
+    /// Colour value.
+    pub color: ColorJson,
+}
+
+/// Set hyperlink colour.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_hyperlink_color",
+    description = "Set hyperlink colour. Returns StyleJson::Visual with HyperlinkColor."
+)]
+#[instrument(skip_all)]
+async fn egui_set_hyperlink_color(p: ColorOverrideParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::Visual {
+        property: VisualProperty::HyperlinkColor,
+        color: p.color,
+    };
+    Ok(style_result(&s))
+}
+
+/// Set faint background colour for alternating rows.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_faint_bg_color",
+    description = "Set faint background colour for alternating rows/subtle backgrounds. Returns StyleJson::Visual with FaintBgColor."
+)]
+#[instrument(skip_all)]
+async fn egui_set_faint_bg_color(p: ColorOverrideParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::Visual {
+        property: VisualProperty::FaintBgColor,
+        color: p.color,
+    };
+    Ok(style_result(&s))
+}
+
+/// Set extreme background colour.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_extreme_bg_color",
+    description = "Set extreme background colour (e.g. text input fields). Returns StyleJson::Visual with ExtremeBgColor."
+)]
+#[instrument(skip_all)]
+async fn egui_set_extreme_bg_color(p: ColorOverrideParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::Visual {
+        property: VisualProperty::ExtremeBgColor,
+        color: p.color,
+    };
+    Ok(style_result(&s))
+}
+
+/// Set code/monospace background colour.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_code_bg_color",
+    description = "Set code/monospace background colour. Returns StyleJson::Visual with CodeBgColor."
+)]
+#[instrument(skip_all)]
+async fn egui_set_code_bg_color(p: ColorOverrideParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::Visual {
+        property: VisualProperty::CodeBgColor,
+        color: p.color,
+    };
+    Ok(style_result(&s))
+}
+
+/// Set warning foreground colour.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_warn_fg_color",
+    description = "Set warning foreground colour. Returns StyleJson::Visual with WarnFgColor."
+)]
+#[instrument(skip_all)]
+async fn egui_set_warn_fg_color(p: ColorOverrideParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::Visual {
+        property: VisualProperty::WarnFgColor,
+        color: p.color,
+    };
+    Ok(style_result(&s))
+}
+
+/// Set error foreground colour.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_error_fg_color",
+    description = "Set error foreground colour. Returns StyleJson::Visual with ErrorFgColor."
+)]
+#[instrument(skip_all)]
+async fn egui_set_error_fg_color(p: ColorOverrideParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::Visual {
+        property: VisualProperty::ErrorFgColor,
+        color: p.color,
+    };
+    Ok(style_result(&s))
+}
+
+// ---------------------------------------------------------------------------
+// Stroke customisation tools
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`egui_set_widget_stroke`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct WidgetStrokeParams {
+    /// Which widget state to set stroke for.
+    pub state: WidgetState,
+    /// Stroke (width + colour).
+    pub stroke: StrokeJson,
+}
+
+/// Set stroke for a specific widget state.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_widget_stroke",
+    description = "Set border stroke (width + colour) for a widget state (Inactive, Hovered, Active, Open). Returns StyleJson::WidgetVisuals."
+)]
+#[instrument(skip_all)]
+async fn egui_set_widget_stroke(p: WidgetStrokeParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::WidgetVisuals {
+        state: p.state,
+        bg_fill: None,
+        weak_bg_fill: None,
+        bg_stroke: Some(p.stroke),
+        corner_radius: None,
+        fg_stroke: None,
+    };
+    Ok(style_result(&s))
+}
+
+/// Parameters for [`egui_set_window_stroke`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct WindowStrokeParams {
+    /// Window border stroke (width + colour).
+    pub stroke: StrokeJson,
+}
+
+/// Set window border stroke.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_window_stroke",
+    description = "Set window border stroke (width + colour). Returns StyleJson::WindowStroke."
+)]
+#[instrument(skip_all)]
+async fn egui_set_window_stroke(p: WindowStrokeParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::WindowStroke { stroke: p.stroke };
+    Ok(style_result(&s))
+}
+
+// ---------------------------------------------------------------------------
+// Margin / padding tools
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`egui_set_menu_margin`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct MenuMarginParams {
+    /// Menu margin (left, right, top, bottom).
+    pub margin: MarginJson,
+}
+
+/// Set margin for menus.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_menu_margin",
+    description = "Set margin around menus. Returns StyleJson::MenuMargin."
+)]
+#[instrument(skip_all)]
+async fn egui_set_menu_margin(p: MenuMarginParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::MenuMargin { margin: p.margin };
+    Ok(style_result(&s))
+}
+
+/// Parameters for [`egui_set_button_padding`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct ButtonPaddingParams {
+    /// Button padding (x = horizontal, y = vertical).
+    pub padding: Vec2Json,
+}
+
+/// Set padding for buttons.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_button_padding",
+    description = "Set button padding (horizontal, vertical). Returns StyleJson::Spacing."
+)]
+#[instrument(skip_all)]
+async fn egui_set_button_padding(p: ButtonPaddingParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::Spacing {
+        item_spacing: None,
+        window_margin: None,
+        button_padding: Some(p.padding),
+        indent: None,
+    };
+    Ok(style_result(&s))
+}
+
+/// Parameters for [`egui_set_indent`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct StyleIndentParams {
+    /// Indentation distance in logical pixels.
+    pub indent: f32,
+}
+
+/// Set indentation distance.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_indent",
+    description = "Set indentation distance in logical pixels. Returns StyleJson::Spacing."
+)]
+#[instrument(skip_all)]
+async fn egui_set_indent(p: StyleIndentParams) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::Spacing {
+        item_spacing: None,
+        window_margin: None,
+        button_padding: None,
+        indent: Some(p.indent),
+    };
+    Ok(style_result(&s))
+}
+
+// ---------------------------------------------------------------------------
+// Miscellaneous style tools
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`egui_set_scroll_bar_width`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct ScrollBarWidthParams {
+    /// Scroll bar track width (logical pixels).
+    pub bar_width: Option<f32>,
+    /// Minimum scroll handle length.
+    pub handle_min_length: Option<f32>,
+    /// Inner margin between bar and content.
+    pub bar_inner_margin: Option<f32>,
+    /// Outer margin for the scroll bar.
+    pub bar_outer_margin: Option<f32>,
+    /// Whether the scroll bar floats over content.
+    pub floating: Option<bool>,
+}
+
+/// Set scroll bar width and related settings.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_scroll_bar_width",
+    description = "Set scroll bar width, handle length, margins, and floating mode. Returns StyleJson::ScrollBar."
+)]
+#[instrument(skip_all)]
+async fn egui_set_scroll_bar_width(
+    p: ScrollBarWidthParams,
+) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::ScrollBar {
+        bar_width: p.bar_width,
+        handle_min_length: p.handle_min_length,
+        bar_inner_margin: p.bar_inner_margin,
+        bar_outer_margin: p.bar_outer_margin,
+        floating: p.floating,
+    };
+    Ok(style_result(&s))
+}
+
+/// Parameters for [`egui_set_resize_grip_size`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct ResizeGripSizeParams {
+    /// Size of the resize grip corner (logical pixels).
+    pub size: f32,
+}
+
+/// Set resize handle/grip visual size.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_resize_grip_size",
+    description = "Set resize grip/handle corner size. Returns StyleJson::ResizeGripSize."
+)]
+#[instrument(skip_all)]
+async fn egui_set_resize_grip_size(
+    p: ResizeGripSizeParams,
+) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::ResizeGripSize { size: p.size };
+    Ok(style_result(&s))
+}
+
+/// Parameters for [`egui_set_text_cursor_width`].
+#[derive(Debug, Clone, Deserialize, JsonSchema)]
+pub struct TextCursorBlinkParams {
+    /// Cursor width (logical pixels).
+    pub width: Option<f32>,
+    /// Blink-on duration (seconds, None = no blink).
+    pub blink_on: Option<f32>,
+    /// Blink-off duration (seconds).
+    pub blink_off: Option<f32>,
+    /// Whether to preview text cursor.
+    pub preview: Option<bool>,
+}
+
+/// Set text cursor blink settings.
+#[elicit_tool(
+    plugin = "egui_style",
+    name = "egui_set_text_cursor_width",
+    description = "Set text cursor blink settings (width, blink on/off durations, preview). Returns StyleJson::TextCursorBlink."
+)]
+#[instrument(skip_all)]
+async fn egui_set_text_cursor_width(
+    p: TextCursorBlinkParams,
+) -> Result<CallToolResult, ErrorData> {
+    let s = StyleJson::TextCursorBlink {
+        width: p.width,
+        blink_on: p.blink_on,
+        blink_off: p.blink_off,
+        preview: p.preview,
     };
     Ok(style_result(&s))
 }

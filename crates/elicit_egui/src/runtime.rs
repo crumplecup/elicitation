@@ -13,11 +13,11 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 use egui::Color32;
-use elicitation::elicit_tool;
 use elicitation::PluginContext;
+use elicitation::elicit_tool;
 use elicitation_derive::ElicitPlugin;
-use rmcp::model::{CallToolResult, Content};
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -217,9 +217,7 @@ async fn context_list(
         .lock()
         .map_err(|e| ErrorData::internal_error(format!("lock: {e}"), None))?
         .keys()
-        .map(|id| SessionInfo {
-            id: id.to_string(),
-        })
+        .map(|id| SessionInfo { id: id.to_string() })
         .collect();
 
     let json = serde_json::to_string(&sessions)
@@ -287,17 +285,13 @@ async fn context_run_frame(
         })
         .collect();
 
-    let copied_text = full_output
-        .platform_output
-        .commands
-        .iter()
-        .find_map(|cmd| {
-            if let egui::OutputCommand::CopyText(t) = cmd {
-                Some(t.clone())
-            } else {
-                None
-            }
-        });
+    let copied_text = full_output.platform_output.commands.iter().find_map(|cmd| {
+        if let egui::OutputCommand::CopyText(t) = cmd {
+            Some(t.clone())
+        } else {
+            None
+        }
+    });
 
     let needs_repaint = !full_output.viewport_output.is_empty();
 
@@ -521,9 +515,7 @@ pub fn render_widget(ui: &mut egui::Ui, widget: &WidgetJson) {
             }
             ui.add(dv);
         }
-        WidgetJson::ProgressBar {
-            progress, text, ..
-        } => {
+        WidgetJson::ProgressBar { progress, text, .. } => {
             let mut pb = egui::ProgressBar::new(*progress);
             if let Some(t) = text {
                 pb = pb.text(t.as_str());
@@ -564,14 +556,10 @@ pub fn render_widget(ui: &mut egui::Ui, widget: &WidgetJson) {
             ui.color_edit_button_hsva(&mut c);
         }
         WidgetJson::SliderVertical {
-            value,
-            range,
-            text,
-            ..
+            value, range, text, ..
         } => {
             let mut val = *value;
-            let mut slider =
-                egui::Slider::new(&mut val, range.min..=range.max).vertical();
+            let mut slider = egui::Slider::new(&mut val, range.min..=range.max).vertical();
             if let Some(t) = text {
                 slider = slider.text(t);
             }
@@ -581,11 +569,7 @@ pub fn render_widget(ui: &mut egui::Ui, widget: &WidgetJson) {
 }
 
 /// Render a container with its children. Returns total widget count.
-fn render_container(
-    ui: &mut egui::Ui,
-    container: &ContainerJson,
-    children: &[UiNode],
-) -> usize {
+fn render_container(ui: &mut egui::Ui, container: &ContainerJson, children: &[UiNode]) -> usize {
     match container {
         ContainerJson::CentralPanel | ContainerJson::Group | ContainerJson::MenuBar => {
             // These container types just wrap children directly
@@ -722,11 +706,7 @@ fn render_container(
 }
 
 /// Render a layout with its children. Returns total widget count.
-fn render_layout(
-    ui: &mut egui::Ui,
-    layout: &LayoutJson,
-    children: &[UiNode],
-) -> usize {
+fn render_layout(ui: &mut egui::Ui, layout: &LayoutJson, children: &[UiNode]) -> usize {
     match layout {
         LayoutJson::Horizontal { align } => {
             let layout = egui::Layout::left_to_right(align_to_egui(align));
@@ -771,8 +751,7 @@ fn render_layout(
         }
 
         LayoutJson::HorizontalJustified => {
-            let layout = egui::Layout::left_to_right(egui::Align::Center)
-                .with_cross_justify(true);
+            let layout = egui::Layout::left_to_right(egui::Align::Center).with_cross_justify(true);
             let mut count = 0;
             ui.with_layout(layout, |ui| {
                 for child in children {
@@ -881,8 +860,7 @@ pub fn apply_style(ctx: &egui::Context, style: &StyleJson) {
                 s.spacing.item_spacing = egui::vec2(is.x, is.y);
             }
             if let Some(wm) = window_margin {
-                s.spacing.window_margin =
-                    egui::Margin::symmetric(wm.x as i8, wm.y as i8);
+                s.spacing.window_margin = egui::Margin::symmetric(wm.x as i8, wm.y as i8);
             }
             if let Some(bp) = button_padding {
                 s.spacing.button_padding = egui::vec2(bp.x, bp.y);
@@ -938,9 +916,7 @@ pub fn apply_style(ctx: &egui::Context, style: &StyleJson) {
         } => {
             let mut v = ctx.global_style().visuals.clone();
             let wv = match state {
-                crate::style_tools::WidgetState::Noninteractive => {
-                    &mut v.widgets.noninteractive
-                }
+                crate::style_tools::WidgetState::Noninteractive => &mut v.widgets.noninteractive,
                 crate::style_tools::WidgetState::Inactive => &mut v.widgets.inactive,
                 crate::style_tools::WidgetState::Hovered => &mut v.widgets.hovered,
                 crate::style_tools::WidgetState::Active => &mut v.widgets.active,
@@ -976,6 +952,151 @@ pub fn apply_style(ctx: &egui::Context, style: &StyleJson) {
             }
             if let Some(w) = width {
                 v.text_cursor.stroke.width = *w;
+            }
+            ctx.set_visuals(v);
+        }
+        StyleJson::SetFonts { family, font_names } => {
+            let mut fonts = egui::FontDefinitions::default();
+            let egui_family = match family {
+                crate::style_tools::FontFamily::Proportional => egui::FontFamily::Proportional,
+                crate::style_tools::FontFamily::Monospace => egui::FontFamily::Monospace,
+            };
+            fonts
+                .families
+                .entry(egui_family)
+                .or_default()
+                .clone_from(font_names);
+            ctx.set_fonts(fonts);
+        }
+        StyleJson::OverrideTextStyle {
+            style: ts,
+            family,
+            size,
+        } => {
+            let egui_family = match family {
+                crate::style_tools::FontFamily::Proportional => egui::FontFamily::Proportional,
+                crate::style_tools::FontFamily::Monospace => egui::FontFamily::Monospace,
+            };
+            let egui_ts = match ts {
+                crate::style_tools::TextStyleName::Heading => egui::TextStyle::Heading,
+                crate::style_tools::TextStyleName::Body => egui::TextStyle::Body,
+                crate::style_tools::TextStyleName::Monospace => egui::TextStyle::Monospace,
+                crate::style_tools::TextStyleName::Button => egui::TextStyle::Button,
+                crate::style_tools::TextStyleName::Small => egui::TextStyle::Small,
+            };
+            let mut s = (*ctx.global_style()).clone();
+            s.text_styles
+                .insert(egui_ts, egui::FontId::new(*size, egui_family));
+            ctx.set_global_style(s);
+        }
+        StyleJson::SetTextValign { valign } => {
+            let mut s = (*ctx.global_style()).clone();
+            s.explanation_tooltips = matches!(valign, crate::style_tools::TextValign::Bottom);
+            // Note: egui doesn't have a direct text valign setting; this is a best-effort mapping
+            ctx.set_global_style(s);
+        }
+        StyleJson::Interaction {
+            tooltip_delay,
+            show_tooltips_only_when_still,
+            ..
+        } => {
+            let mut s = (*ctx.global_style()).clone();
+            if let Some(t) = tooltip_delay {
+                s.interaction.tooltip_delay = *t;
+            }
+            if let Some(b) = show_tooltips_only_when_still {
+                s.interaction.show_tooltips_only_when_still = *b;
+            }
+            ctx.set_global_style(s);
+        }
+        StyleJson::AnimationTime { duration } => {
+            let mut s = (*ctx.global_style()).clone();
+            s.animation_time = *duration;
+            ctx.set_global_style(s);
+        }
+        StyleJson::DebugOptions {
+            show_widget_hits,
+            debug_on_hover,
+            show_resize,
+            show_interactive_widgets,
+            ..
+        } => {
+            let mut s = (*ctx.global_style()).clone();
+            if let Some(v) = show_widget_hits {
+                s.debug.show_widget_hits = *v;
+            }
+            #[cfg(debug_assertions)]
+            if let Some(v) = debug_on_hover {
+                s.debug.debug_on_hover = *v;
+            }
+            #[cfg(not(debug_assertions))]
+            let _ = debug_on_hover;
+            if let Some(v) = show_resize {
+                s.debug.show_resize = *v;
+            }
+            if let Some(v) = show_interactive_widgets {
+                s.debug.show_interactive_widgets = *v;
+            }
+            ctx.set_global_style(s);
+        }
+        StyleJson::WindowStroke { stroke } => {
+            let mut v = ctx.global_style().visuals.clone();
+            v.window_stroke = stroke_json_to_egui(stroke);
+            ctx.set_visuals(v);
+        }
+        StyleJson::MenuMargin { margin } => {
+            let mut s = (*ctx.global_style()).clone();
+            s.spacing.menu_margin = margin_json_to_egui(margin);
+            ctx.set_global_style(s);
+        }
+        StyleJson::ScrollBar {
+            bar_width,
+            handle_min_length,
+            bar_inner_margin,
+            bar_outer_margin,
+            floating,
+        } => {
+            let mut s = (*ctx.global_style()).clone();
+            if let Some(w) = bar_width {
+                s.spacing.scroll.bar_width = *w;
+            }
+            if let Some(l) = handle_min_length {
+                s.spacing.scroll.handle_min_length = *l;
+            }
+            if let Some(m) = bar_inner_margin {
+                s.spacing.scroll.bar_inner_margin = *m;
+            }
+            if let Some(m) = bar_outer_margin {
+                s.spacing.scroll.bar_outer_margin = *m;
+            }
+            if let Some(f) = floating {
+                s.spacing.scroll.floating = *f;
+            }
+            ctx.set_global_style(s);
+        }
+        StyleJson::ResizeGripSize { size } => {
+            let mut v = ctx.global_style().visuals.clone();
+            v.resize_corner_size = *size;
+            ctx.set_visuals(v);
+        }
+        StyleJson::TextCursorBlink {
+            width,
+            blink_on,
+            blink_off,
+            preview,
+        } => {
+            let mut v = ctx.global_style().visuals.clone();
+            if let Some(w) = width {
+                v.text_cursor.stroke.width = *w;
+            }
+            if let Some(on) = blink_on {
+                v.text_cursor.on_duration = *on;
+            }
+            if let Some(off) = blink_off {
+                v.text_cursor.off_duration = *off;
+            }
+            if let Some(p) = preview {
+                v.text_cursor.preview = *p;
             }
             ctx.set_visuals(v);
         }

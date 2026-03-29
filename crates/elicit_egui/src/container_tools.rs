@@ -3,8 +3,8 @@
 //! Each tool returns a [`ContainerJson`] variant describing a layout container.
 
 use elicitation::elicit_tool;
-use rmcp::model::{CallToolResult, Content};
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
@@ -208,9 +208,7 @@ async fn container_bottom_panel(p: BottomPanelParams) -> Result<CallToolResult, 
     description = "Create a central panel that fills remaining space. Returns ContainerJson::CentralPanel."
 )]
 #[instrument(skip_all)]
-async fn container_central_panel(
-    p: EmptyContainerParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn container_central_panel(p: EmptyContainerParams) -> Result<CallToolResult, ErrorData> {
     let _ = p;
     Ok(container_result(&ContainerJson::CentralPanel))
 }

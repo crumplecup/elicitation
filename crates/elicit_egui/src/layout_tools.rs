@@ -4,8 +4,8 @@
 //! are arranged within a container.
 
 use elicitation::elicit_tool;
-use rmcp::model::{CallToolResult, Content};
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
@@ -76,9 +76,7 @@ async fn layout_vertical(p: VerticalParams) -> Result<CallToolResult, ErrorData>
     description = "Horizontal layout with centred cross-axis. Returns LayoutJson::HorizontalCentered."
 )]
 #[instrument(skip_all)]
-async fn layout_horizontal_centered(
-    p: EmptyLayoutParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn layout_horizontal_centered(p: EmptyLayoutParams) -> Result<CallToolResult, ErrorData> {
     let _ = p;
     Ok(layout_result(&LayoutJson::HorizontalCentered))
 }
@@ -90,9 +88,7 @@ async fn layout_horizontal_centered(
     description = "Vertical layout with centred cross-axis. Returns LayoutJson::VerticalCentered."
 )]
 #[instrument(skip_all)]
-async fn layout_vertical_centered(
-    p: EmptyLayoutParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn layout_vertical_centered(p: EmptyLayoutParams) -> Result<CallToolResult, ErrorData> {
     let _ = p;
     Ok(layout_result(&LayoutJson::VerticalCentered))
 }
@@ -104,9 +100,7 @@ async fn layout_vertical_centered(
     description = "Horizontal layout with justified items. Returns LayoutJson::HorizontalJustified."
 )]
 #[instrument(skip_all)]
-async fn layout_horizontal_justified(
-    p: EmptyLayoutParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn layout_horizontal_justified(p: EmptyLayoutParams) -> Result<CallToolResult, ErrorData> {
     let _ = p;
     Ok(layout_result(&LayoutJson::HorizontalJustified))
 }
@@ -118,9 +112,7 @@ async fn layout_horizontal_justified(
     description = "Vertical layout with justified items. Returns LayoutJson::VerticalJustified."
 )]
 #[instrument(skip_all)]
-async fn layout_vertical_justified(
-    p: EmptyLayoutParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn layout_vertical_justified(p: EmptyLayoutParams) -> Result<CallToolResult, ErrorData> {
     let _ = p;
     Ok(layout_result(&LayoutJson::VerticalJustified))
 }
@@ -132,9 +124,7 @@ async fn layout_vertical_justified(
     description = "Horizontal layout that wraps to next line. Returns LayoutJson::HorizontalWrapped."
 )]
 #[instrument(skip_all)]
-async fn layout_horizontal_wrapped(
-    p: EmptyLayoutParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn layout_horizontal_wrapped(p: EmptyLayoutParams) -> Result<CallToolResult, ErrorData> {
     let _ = p;
     Ok(layout_result(&LayoutJson::HorizontalWrapped))
 }

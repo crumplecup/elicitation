@@ -79,15 +79,39 @@ macro_rules! select_proofs {
 // Select enum proofs — Tier 1 (small enums, 2–6 variants)
 // ============================================================================
 
-select_proofs!(type_path = egui::Align,           snake = align,            variant_count = 3);
-select_proofs!(type_path = egui::Direction,        snake = direction,        variant_count = 4);
-select_proofs!(type_path = egui::Theme,            snake = theme,            variant_count = 2);
-select_proofs!(type_path = egui::ThemePreference,  snake = theme_preference, variant_count = 3);
-select_proofs!(type_path = egui::FontFamily,       snake = font_family,      variant_count = 2);
-select_proofs!(type_path = egui::TextWrapMode,     snake = text_wrap_mode,   variant_count = 3);
-select_proofs!(type_path = egui::TouchPhase,       snake = touch_phase,      variant_count = 4);
-select_proofs!(type_path = egui::PointerButton,    snake = pointer_button,   variant_count = 5);
-select_proofs!(type_path = egui::Order,            snake = order,            variant_count = 5);
+select_proofs!(type_path = egui::Align, snake = align, variant_count = 3);
+select_proofs!(
+    type_path = egui::Direction,
+    snake = direction,
+    variant_count = 4
+);
+select_proofs!(type_path = egui::Theme, snake = theme, variant_count = 2);
+select_proofs!(
+    type_path = egui::ThemePreference,
+    snake = theme_preference,
+    variant_count = 3
+);
+select_proofs!(
+    type_path = egui::FontFamily,
+    snake = font_family,
+    variant_count = 2
+);
+select_proofs!(
+    type_path = egui::TextWrapMode,
+    snake = text_wrap_mode,
+    variant_count = 3
+);
+select_proofs!(
+    type_path = egui::TouchPhase,
+    snake = touch_phase,
+    variant_count = 4
+);
+select_proofs!(
+    type_path = egui::PointerButton,
+    snake = pointer_button,
+    variant_count = 5
+);
+select_proofs!(type_path = egui::Order, snake = order, variant_count = 5);
 
 select_proofs!(
     type_path = egui::epaint::textures::TextureFilter,
@@ -104,16 +128,32 @@ select_proofs!(
 // Select enum proofs — Tier 2 (medium enums, 7–20 variants)
 // ============================================================================
 
-select_proofs!(type_path = egui::TextStyle,  snake = text_style,  variant_count = 5);
-select_proofs!(type_path = egui::UiKind,     snake = ui_kind,     variant_count = 17);
-select_proofs!(type_path = egui::WidgetType, snake = widget_type, variant_count = 18);
+select_proofs!(
+    type_path = egui::TextStyle,
+    snake = text_style,
+    variant_count = 5
+);
+select_proofs!(
+    type_path = egui::UiKind,
+    snake = ui_kind,
+    variant_count = 17
+);
+select_proofs!(
+    type_path = egui::WidgetType,
+    snake = widget_type,
+    variant_count = 18
+);
 
 // ============================================================================
 // Select enum proofs — Tier 3 (large enums, 35–103 variants)
 // ============================================================================
 
-select_proofs!(type_path = egui::CursorIcon, snake = cursor_icon, variant_count = 35);
-select_proofs!(type_path = egui::Key,        snake = key,         variant_count = 103);
+select_proofs!(
+    type_path = egui::CursorIcon,
+    snake = cursor_icon,
+    variant_count = 35
+);
+select_proofs!(type_path = egui::Key, snake = key, variant_count = 103);
 
 // ============================================================================
 // Composite struct proofs — From roundtrip verification
@@ -210,10 +250,8 @@ fn verify_rect_from_roundtrip() {
     kani::assume(max_x.is_finite());
     kani::assume(max_y.is_finite());
 
-    let original = egui::Rect::from_min_max(
-        egui::Pos2::new(min_x, min_y),
-        egui::Pos2::new(max_x, max_y),
-    );
+    let original =
+        egui::Rect::from_min_max(egui::Pos2::new(min_x, min_y), egui::Pos2::new(max_x, max_y));
     let wrapper = elicitation::EguiRect::from(original);
     let restored: egui::Rect = wrapper.into();
 
