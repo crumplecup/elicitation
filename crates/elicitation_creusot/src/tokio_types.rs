@@ -50,7 +50,7 @@
 #![cfg(feature = "tokio-types")]
 
 use creusot_std::prelude::*;
-use elicitation::contracts::{And, Established, Prop};
+use elicitation::contracts::{And, Established, Is};
 
 // ============================================================================
 // tokio::time — sleep, timeout
@@ -484,11 +484,9 @@ pub fn verify_unix_data_received_contract() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 #[trusted]
-pub fn verify_established_is_zero_sized() -> bool {
+pub fn verify_tokio_established_is_zero_sized() -> bool {
     use std::mem::size_of;
-    struct Dummy;
-    impl Prop for Dummy {}
-    size_of::<Established<Dummy>>() == 0
+    size_of::<Established<Is<String>>>() == 0
 }
 
 /// Structural proof: `And<P, Q>` is a unit struct — size is 0.
@@ -497,11 +495,7 @@ pub fn verify_established_is_zero_sized() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 #[trusted]
-pub fn verify_and_combinator_is_zero_sized() -> bool {
+pub fn verify_tokio_and_combinator_is_zero_sized() -> bool {
     use std::mem::size_of;
-    struct P;
-    struct Q;
-    impl Prop for P {}
-    impl Prop for Q {}
-    size_of::<And<P, Q>>() == 0
+    size_of::<And<Is<u8>, Is<u16>>>() == 0
 }

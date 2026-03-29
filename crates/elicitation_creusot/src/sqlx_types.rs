@@ -46,7 +46,7 @@ use elicitation::Select;
 /// De-trusted: Alt-Ergo discharges this by evaluating `len() == len()`.
 #[requires(true)]
 #[ensures(result == true)]
-pub fn verify_error_kind_label_count() -> bool {
+pub fn verify_sqlx_error_kind_label_count() -> bool {
     sqlx::error::ErrorKind::labels().len() == sqlx::error::ErrorKind::options().len()
 }
 
@@ -54,7 +54,7 @@ pub fn verify_error_kind_label_count() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 #[trusted]
-pub fn verify_error_kind_known_label_accepted() -> bool {
+pub fn verify_sqlx_error_kind_known_label_accepted() -> bool {
     sqlx::error::ErrorKind::from_label("UniqueViolation").is_some()
 }
 
@@ -62,7 +62,7 @@ pub fn verify_error_kind_known_label_accepted() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 #[trusted]
-pub fn verify_error_kind_all_labels_roundtrip() -> bool {
+pub fn verify_sqlx_error_kind_all_labels_roundtrip() -> bool {
     sqlx::error::ErrorKind::labels()
         .iter()
         .all(|label| sqlx::error::ErrorKind::from_label(label).is_some())
@@ -72,7 +72,7 @@ pub fn verify_error_kind_all_labels_roundtrip() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 #[trusted]
-pub fn verify_error_kind_unknown_rejected() -> bool {
+pub fn verify_sqlx_error_kind_unknown_rejected() -> bool {
     sqlx::error::ErrorKind::from_label("__unknown__").is_none()
 }
 
@@ -242,7 +242,7 @@ pub fn verify_to_sqlx_args_bool_is_single_element() -> bool {
 // Proposition combinators
 // ============================================================================
 
-use elicitation::contracts::{And, Established, Prop};
+use elicitation::contracts::{And, Established, Is};
 
 // ── SqlxFragPlugin macro emit Props ──────────────────────────────────────────
 
@@ -304,20 +304,13 @@ pub fn verify_migrate_fragment_emitted_contract() -> bool {
 #[trusted]
 pub fn verify_fragment_props_zero_sized() -> bool {
     use std::mem::size_of;
-    struct QueryFragmentEmitted;
-    struct QueryAsFragmentEmitted;
-    struct QueryScalarFragmentEmitted;
-    struct MigrateFragmentEmitted;
-    impl Prop for QueryFragmentEmitted {}
-    impl Prop for QueryAsFragmentEmitted {}
-    impl Prop for QueryScalarFragmentEmitted {}
-    impl Prop for MigrateFragmentEmitted {}
-    size_of::<QueryFragmentEmitted>() == 0
-        && size_of::<QueryAsFragmentEmitted>() == 0
-        && size_of::<QueryScalarFragmentEmitted>() == 0
-        && size_of::<MigrateFragmentEmitted>() == 0
-        && size_of::<Established<QueryFragmentEmitted>>() == 0
-        && size_of::<Established<MigrateFragmentEmitted>>() == 0
+    // Use Is<T> as stand-in Prop types (avoids incomplete trait impls on local structs)
+    size_of::<Is<u8>>() == 0
+        && size_of::<Is<u16>>() == 0
+        && size_of::<Is<u32>>() == 0
+        && size_of::<Is<u64>>() == 0
+        && size_of::<Established<Is<u8>>>() == 0
+        && size_of::<Established<Is<u64>>>() == 0
 }
 
 /// `Established<P>` has zero runtime size — structural proof.
@@ -326,9 +319,7 @@ pub fn verify_fragment_props_zero_sized() -> bool {
 #[trusted]
 pub fn verify_established_is_zero_sized() -> bool {
     use std::mem::size_of;
-    struct Dummy;
-    impl Prop for Dummy {}
-    size_of::<Established<Dummy>>() == 0
+    size_of::<Established<Is<String>>>() == 0
 }
 
 /// `And<P,Q>` has zero runtime size — structural proof.
@@ -337,9 +328,5 @@ pub fn verify_established_is_zero_sized() -> bool {
 #[trusted]
 pub fn verify_and_combinator_is_zero_sized() -> bool {
     use std::mem::size_of;
-    struct P;
-    struct Q;
-    impl Prop for P {}
-    impl Prop for Q {}
-    size_of::<And<P, Q>>() == 0
+    size_of::<And<Is<u8>, Is<u16>>>() == 0
 }

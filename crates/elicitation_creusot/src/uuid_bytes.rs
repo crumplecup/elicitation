@@ -7,6 +7,7 @@
 //!
 //! This is compositional verification: rfc4122_correct → wrapper_correct.
 
+#[cfg(creusot)]
 use crate::*;
 
 #[cfg(creusot)]
