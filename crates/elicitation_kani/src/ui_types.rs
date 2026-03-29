@@ -526,9 +526,11 @@ fn verify_size_eq_is_structural() {
 #[kani::proof]
 fn verify_element_id_preserves_value() {
     let val: u64 = kani::any();
-    let nid = accesskit::NodeId(val);
-    let eid = elicit_ui::ElementId::new(nid);
-    assert!(eid.node_id() == nid, "ElementId must preserve inner NodeId");
+    let eid = elicit_ui::ElementId::new(val);
+    assert!(
+        eid.node_id() == accesskit::NodeId(val),
+        "ElementId must preserve inner NodeId"
+    );
 }
 
 /// ElementId equality is by NodeId value.
@@ -536,8 +538,8 @@ fn verify_element_id_preserves_value() {
 #[kani::proof]
 fn verify_element_id_eq_by_value() {
     let val: u64 = kani::any();
-    let a = elicit_ui::ElementId::new(accesskit::NodeId(val));
-    let b = elicit_ui::ElementId::new(accesskit::NodeId(val));
+    let a = elicit_ui::ElementId::new(val);
+    let b = elicit_ui::ElementId::new(val);
     assert!(a == b, "Same NodeId must yield equal ElementIds");
 }
 
