@@ -540,6 +540,21 @@ impl ProofHarness {
             Self::new("tokio_types", "verify_and_combinator_zero_sized"),
             Self::new("tokio_types", "verify_both_composition_zero_sized"),
             Self::new("tokio_types", "verify_three_way_composition_zero_sized"),
+            // ui_types: typestate UI verification contract proofs
+            Self::new("ui_types", "verify_label_rejects_empty"),
+            Self::new("ui_types", "verify_label_accepts_non_empty"),
+            Self::new("ui_types", "verify_size_meets_min_target_size"),
+            Self::new("ui_types", "verify_size_boundary_43_44"),
+            Self::new("ui_types", "verify_size_both_dimensions_required"),
+            Self::new("ui_types", "verify_element_id_roundtrip"),
+            Self::new("ui_types", "verify_element_id_from_node_id"),
+            Self::new("ui_types", "verify_viewport_construction"),
+            Self::new("ui_types", "verify_propositions_zero_sized"),
+            Self::new("ui_types", "verify_overflow_check_sound"),
+            Self::new("ui_types", "verify_overflow_detection_complete"),
+            Self::new("ui_types", "verify_min_target_size_consistency"),
+            Self::new("ui_types", "verify_empty_report_no_errors"),
+            Self::new("ui_types", "verify_error_kind_display"),
         ]
     }
 

@@ -1399,10 +1399,12 @@ dependencies = [
 name = "elicitation_creusot"
 version = "0.9.1"
 dependencies = [
+ "accesskit",
  "chrono",
  "clap",
  "creusot-std",
  "egui",
+ "elicit_ui",
  "elicitation",
  "jiff",
  "paste",
@@ -1444,9 +1446,11 @@ dependencies = [
 name = "elicitation_kani"
 version = "0.9.1"
 dependencies = [
+ "accesskit",
  "chrono",
  "clap",
  "egui",
+ "elicit_ui",
  "elicitation",
  "jiff",
  "kani-verifier",

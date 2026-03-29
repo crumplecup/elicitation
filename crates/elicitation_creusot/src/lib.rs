@@ -167,3 +167,9 @@ mod egui_types;
 
 #[cfg(feature = "egui-types")]
 pub use egui_types::*;
+
+#[cfg(feature = "ui-types")]
+mod ui_types;
+
+#[cfg(feature = "ui-types")]
+pub use ui_types::*;

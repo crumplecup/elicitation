@@ -214,6 +214,18 @@ impl VerusProof {
             Self::new("tokio_types", "verify_and_combinator_is_zero_sized"),
             Self::new("tokio_types", "verify_both_result_is_zero_sized"),
             Self::new("tokio_types", "verify_three_way_composition_is_zero_sized"),
+            // ui_types: typestate UI verification proofs
+            Self::new("ui_types", "verify_meets_min_target_size"),
+            Self::new("ui_types", "verify_size_boundary"),
+            Self::new("ui_types", "verify_size_both_dimensions"),
+            Self::new("ui_types", "verify_no_overflow"),
+            Self::new("ui_types", "verify_overflow_detected"),
+            Self::new("ui_types", "verify_exact_fit"),
+            Self::new("ui_types", "verify_label_non_empty"),
+            Self::new("ui_types", "verify_propositions_zero_cost"),
+            Self::new("ui_types", "verify_element_id_roundtrip"),
+            Self::new("ui_types", "verify_empty_report"),
+            Self::new("ui_types", "verify_level_subset"),
         ]
     }
 }
