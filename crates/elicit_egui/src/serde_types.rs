@@ -849,3 +849,39 @@ pub struct ResponseJson {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub rect: Option<RectJson>,
 }
+
+// ---------------------------------------------------------------------------
+// UI tree — compositional description of a full egui frame
+// ---------------------------------------------------------------------------
+
+/// A node in a declarative UI tree.
+///
+/// Agents compose `UiNode` trees to describe an entire egui frame.
+/// The runtime module renders these into actual egui calls.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(tag = "node_type")]
+pub enum UiNode {
+    /// A leaf widget.
+    Widget {
+        /// The widget description.
+        widget: WidgetJson,
+    },
+
+    /// A container with children.
+    Container {
+        /// The container description.
+        container: ContainerJson,
+        /// Child nodes rendered inside the container.
+        #[serde(default)]
+        children: Vec<UiNode>,
+    },
+
+    /// A layout wrapper around children.
+    Layout {
+        /// The layout description.
+        layout: LayoutJson,
+        /// Child nodes arranged by the layout.
+        #[serde(default)]
+        children: Vec<UiNode>,
+    },
+}

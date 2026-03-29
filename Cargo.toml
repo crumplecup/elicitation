@@ -61,7 +61,8 @@ elicit_egui = { path = "crates/elicit_egui", version = "0.9.1" }
 accesskit = { version = "0.24", features = ["serde", "schemars"] }
 
 # egui - immediate mode GUI framework
-egui = { version = "0.33", features = ["serde"] }
+egui = { version = "0.34", features = ["serde"] }
+eframe = { version = "0.34", default-features = false, features = ["default_fonts", "glow"] }
 
 # sqlx - database interaction library
 sqlx = { version = "0.8", features = [

@@ -133,6 +133,8 @@
 mod container_tools;
 mod layout_tools;
 mod response_tools;
+#[cfg(feature = "runtime")]
+pub mod runtime;
 pub mod serde_types;
 pub mod style_tools;
 pub mod widget_tools;
@@ -155,13 +157,19 @@ pub use response_tools::{
 
 pub use serde_types::{
     ColorJson, ContainerJson, CornerRadiusJson, LayoutAlign, LayoutDirection, LayoutJson,
-    MarginJson, RangeJson, RectJson, ResponseJson, StrokeJson, Vec2Json, WidgetJson,
+    MarginJson, RangeJson, RectJson, ResponseJson, StrokeJson, UiNode, Vec2Json, WidgetJson,
 };
 
 pub use style_tools::{
     EmptyStyleParams, SelectionParams, SpacingParams, StyleJson, TextCursorParams,
     VisualParams, VisualProperty, WidgetState, WidgetVisualsParams, WindowRoundingParams,
     WindowShadowParams,
+};
+
+#[cfg(feature = "runtime")]
+pub use runtime::{
+    ApplyStyleParams, EguiRuntimeContext, EguiRuntimePlugin, EmptyRuntimeParams,
+    FrameOutputJson, RunFrameParams, SessionIdParams, SessionInfo,
 };
 
 pub use widget_tools::{
