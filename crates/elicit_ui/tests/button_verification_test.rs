@@ -36,7 +36,10 @@ fn test_button_valid_label() {
     let viewport = Viewport::new(1920, 1080);
     let result = layout.verify_a(viewport);
 
-    assert!(result.is_ok(), "Button with valid label should pass Level A");
+    assert!(
+        result.is_ok(),
+        "Button with valid label should pass Level A"
+    );
 }
 
 #[test]

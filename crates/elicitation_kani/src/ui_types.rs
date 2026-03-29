@@ -213,7 +213,10 @@ fn verify_overflow_check_sound() {
     let fits_h = (x + w) <= vp_w;
     let fits_v = (y + h) <= vp_h;
 
-    assert!(fits_h && fits_v, "Element that fits must not be flagged as overflow");
+    assert!(
+        fits_h && fits_v,
+        "Element that fits must not be flagged as overflow"
+    );
 }
 
 /// Viewport overflow check: element that exceeds bounds IS detected.
@@ -302,8 +305,14 @@ fn verify_error_kind_display() {
 fn verify_render_stats_default_zeros() {
     let stats = elicit_ui::RenderStats::default();
     assert!(stats.nodes_visited == 0, "Default nodes_visited must be 0");
-    assert!(stats.widgets_rendered == 0, "Default widgets_rendered must be 0");
-    assert!(stats.containers_rendered == 0, "Default containers_rendered must be 0");
+    assert!(
+        stats.widgets_rendered == 0,
+        "Default widgets_rendered must be 0"
+    );
+    assert!(
+        stats.containers_rendered == 0,
+        "Default containers_rendered must be 0"
+    );
     assert!(stats.nodes_skipped == 0, "Default nodes_skipped must be 0");
 }
 
@@ -394,10 +403,22 @@ fn verify_render_stats_clone() {
     stats.nodes_skipped = 2;
 
     let cloned = stats.clone();
-    assert!(cloned.nodes_visited == 10, "Clone must preserve nodes_visited");
-    assert!(cloned.widgets_rendered == 5, "Clone must preserve widgets_rendered");
-    assert!(cloned.containers_rendered == 3, "Clone must preserve containers_rendered");
-    assert!(cloned.nodes_skipped == 2, "Clone must preserve nodes_skipped");
+    assert!(
+        cloned.nodes_visited == 10,
+        "Clone must preserve nodes_visited"
+    );
+    assert!(
+        cloned.widgets_rendered == 5,
+        "Clone must preserve widgets_rendered"
+    );
+    assert!(
+        cloned.containers_rendered == 3,
+        "Clone must preserve containers_rendered"
+    );
+    assert!(
+        cloned.nodes_skipped == 2,
+        "Clone must preserve nodes_skipped"
+    );
     assert!(stats == cloned, "Clone must be equal to original");
 }
 
@@ -439,7 +460,8 @@ fn verify_builder_empty_is_valid() {
 #[kani::proof]
 fn verify_builder_counter_starts_at_one() {
     let layout = elicit_ui::LayoutBuilder::new()
-        .button("A").size(100, 50)
+        .button("A")
+        .size(100, 50)
         .build();
 
     let vp = elicit_ui::Viewport::new(1920, 1080);
@@ -456,8 +478,10 @@ fn verify_builder_counter_starts_at_one() {
 #[kani::proof]
 fn verify_builder_node_count() {
     let layout = elicit_ui::LayoutBuilder::new()
-        .button("A").size(100, 50)
-        .checkbox("B").size(100, 30)
+        .button("A")
+        .size(100, 50)
+        .checkbox("B")
+        .size(100, 30)
         .label("C")
         .build();
 
@@ -477,7 +501,8 @@ fn verify_builder_node_count() {
 fn verify_builder_container_node_count() {
     let layout = elicit_ui::LayoutBuilder::new()
         .form()
-            .button("Submit").size(100, 50)
+        .button("Submit")
+        .size(100, 50)
         .end()
         .build();
 
@@ -496,9 +521,10 @@ fn verify_builder_container_node_count() {
 fn verify_builder_nested_containers() {
     let layout = elicit_ui::LayoutBuilder::new()
         .group()
-            .group()
-                .button("Deep").size(100, 50)
-            .end()
+        .group()
+        .button("Deep")
+        .size(100, 50)
+        .end()
         .end()
         .build();
 
@@ -515,8 +541,9 @@ fn verify_builder_nested_containers() {
 fn verify_builder_auto_close() {
     let layout = elicit_ui::LayoutBuilder::new()
         .form()
-            .group()
-                .button("Auto").size(100, 50)
+        .group()
+        .button("Auto")
+        .size(100, 50)
         // No .end() calls
         .build();
 
@@ -568,7 +595,8 @@ fn verify_builder_default_eq_new() {
 #[kani::proof]
 fn verify_builder_property_targets_last() {
     let layout = elicit_ui::LayoutBuilder::new()
-        .button("Sized").size(100, 50)
+        .button("Sized")
+        .size(100, 50)
         .build();
 
     let vp = elicit_ui::Viewport::new(1920, 1080);
@@ -585,7 +613,8 @@ fn verify_builder_property_targets_last() {
 #[kani::proof]
 fn verify_builder_slider() {
     let layout = elicit_ui::LayoutBuilder::new()
-        .slider("Volume", 50.0, 0.0, 100.0).size(200, 30)
+        .slider("Volume", 50.0, 0.0, 100.0)
+        .size(200, 30)
         .build();
 
     let vp = elicit_ui::Viewport::new(1920, 1080);
@@ -600,14 +629,12 @@ fn verify_builder_slider() {
 #[kani::proof]
 fn verify_builder_progress() {
     let layout = elicit_ui::LayoutBuilder::new()
-        .progress("Loading", 75.0, 100.0).size(200, 20)
+        .progress("Loading", 75.0, 100.0)
+        .size(200, 20)
         .build();
 
     let vp = elicit_ui::Viewport::new(1920, 1080);
-    assert!(
-        layout.verify_a(vp).is_ok(),
-        "Progress widget must verify"
-    );
+    assert!(layout.verify_a(vp).is_ok(), "Progress widget must verify");
 }
 
 /// All container types produce valid trees.
@@ -615,13 +642,31 @@ fn verify_builder_progress() {
 #[kani::proof]
 fn verify_builder_all_container_types() {
     let layout = elicit_ui::LayoutBuilder::new()
-        .form().button("F").size(50, 30).end()
-        .group().button("G").size(50, 30).end()
-        .toolbar().button("T").size(50, 30).end()
-        .list().label("L").end()
-        .navigation().link("N", "/").end()
-        .section().label("S").end()
-        .dialog().button("D").size(50, 30).end()
+        .form()
+        .button("F")
+        .size(50, 30)
+        .end()
+        .group()
+        .button("G")
+        .size(50, 30)
+        .end()
+        .toolbar()
+        .button("T")
+        .size(50, 30)
+        .end()
+        .list()
+        .label("L")
+        .end()
+        .navigation()
+        .link("N", "/")
+        .end()
+        .section()
+        .label("S")
+        .end()
+        .dialog()
+        .button("D")
+        .size(50, 30)
+        .end()
         .build();
 
     let vp = elicit_ui::Viewport::new(1920, 1080);
@@ -636,12 +681,18 @@ fn verify_builder_all_container_types() {
 #[kani::proof]
 fn verify_builder_login_form() {
     let layout = elicit_ui::LayoutBuilder::new()
-        .heading("Login", 1).size(400, 40)
+        .heading("Login", 1)
+        .size(400, 40)
         .form()
-            .text_input("Email").placeholder("you@example.com").size(300, 30)
-            .password_input("Password").size(300, 30)
-            .checkbox("Remember me").size(150, 30)
-            .button("Log in").size(120, 44)
+        .text_input("Email")
+        .placeholder("you@example.com")
+        .size(300, 30)
+        .password_input("Password")
+        .size(300, 30)
+        .checkbox("Remember me")
+        .size(150, 30)
+        .button("Log in")
+        .size(120, 44)
         .end()
         .build();
 

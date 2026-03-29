@@ -184,10 +184,7 @@ fn render_slider() {
 
     let update = make_update(
         root_id,
-        vec![
-            (root_id, window_root(vec![slider_id])),
-            (slider_id, slider),
-        ],
+        vec![(root_id, window_root(vec![slider_id])), (slider_id, slider)],
         root_id,
     );
 
@@ -335,7 +332,10 @@ fn render_login_form() {
 
     assert_eq!(rendered.root(), root_id);
     // 4 interactive widgets: email, password, checkbox, button
-    assert_eq!(stats.widgets_rendered, 4, "email + password + checkbox + button");
+    assert_eq!(
+        stats.widgets_rendered, 4,
+        "email + password + checkbox + button"
+    );
     // 2 containers: root Window + Form
     assert_eq!(stats.containers_rendered, 2, "window + form");
     assert_eq!(stats.nodes_visited, 6, "root + form + 4 children");
@@ -433,11 +433,7 @@ fn render_hidden_node_skipped() {
 fn render_empty_tree() {
     let root_id = node_id(0);
 
-    let update = make_update(
-        root_id,
-        vec![(root_id, window_root(vec![]))],
-        root_id,
-    );
+    let update = make_update(root_id, vec![(root_id, window_root(vec![]))], root_id);
 
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");

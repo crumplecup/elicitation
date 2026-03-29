@@ -99,9 +99,7 @@ impl VerificationError {
     #[track_caller]
     pub fn below_min_target_size(element_id: ElementId, width: u32, height: u32) -> Self {
         Self::new(VerificationErrorKind::BelowMinTargetSize(
-            element_id,
-            width,
-            height,
+            element_id, width, height,
         ))
     }
 

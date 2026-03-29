@@ -20,8 +20,8 @@
 //!     .build();
 //! ```
 
-use accesskit::{Node, NodeId, Rect, Role, Toggled, Tree, TreeId, TreeUpdate};
 use crate::{Layout, Pending};
+use accesskit::{Node, NodeId, Rect, Role, Toggled, Tree, TreeId, TreeUpdate};
 
 /// Stack-based builder for AccessKit trees.
 ///

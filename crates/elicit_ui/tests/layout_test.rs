@@ -124,9 +124,9 @@ fn test_form_one_missing_label() {
 #[test]
 fn test_form_multiple_errors() {
     let update = create_form_tree(&[
-        ("", Role::TextInput, 200.0, 50.0),   // Missing label
-        ("", Role::Button, 200.0, 50.0),       // Missing label
-        ("OK", Role::CheckBox, 200.0, 50.0),   // Valid
+        ("", Role::TextInput, 200.0, 50.0),  // Missing label
+        ("", Role::Button, 200.0, 50.0),     // Missing label
+        ("OK", Role::CheckBox, 200.0, 50.0), // Valid
     ]);
     let layout = Layout::from_update(update);
     let vp = Viewport::new(1920, 1080);
@@ -167,10 +167,7 @@ fn test_toolbar_nested_unlabeled_button() {
     let vp = Viewport::new(1920, 1080);
 
     let result = layout.verify_a(vp);
-    assert!(
-        result.is_err(),
-        "Toolbar with unlabeled button should fail"
-    );
+    assert!(result.is_err(), "Toolbar with unlabeled button should fail");
 }
 
 #[test]

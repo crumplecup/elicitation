@@ -1,6 +1,6 @@
 //! Typestate state machine for verified UI construction.
 
-use crate::{validators, VerificationReport, Viewport};
+use crate::{VerificationReport, Viewport, validators};
 use accesskit::{Node, NodeId, TreeUpdate};
 use std::collections::HashMap;
 use std::marker::PhantomData;
@@ -54,10 +54,7 @@ impl Layout<Pending> {
     /// - ValidRole (WCAG 4.1.2 Level A)
     /// - KeyboardAccessible (WCAG 2.1.1 Level A)
     #[tracing::instrument(skip(self), fields(root = ?self.root))]
-    pub fn verify_a(
-        self,
-        viewport: Viewport,
-    ) -> Result<Layout<Verified>, VerificationReport> {
+    pub fn verify_a(self, viewport: Viewport) -> Result<Layout<Verified>, VerificationReport> {
         tracing::debug!("Verifying layout against WCAG Level A");
         let mut report = VerificationReport::new();
 
@@ -84,10 +81,7 @@ impl Layout<Pending> {
     /// Checks all Level A constraints plus:
     /// - NoOverflow (WCAG 1.4.10 Level AA)
     #[tracing::instrument(skip(self), fields(root = ?self.root))]
-    pub fn verify_aa(
-        self,
-        viewport: Viewport,
-    ) -> Result<Layout<Verified>, VerificationReport> {
+    pub fn verify_aa(self, viewport: Viewport) -> Result<Layout<Verified>, VerificationReport> {
         tracing::debug!("Verifying layout against WCAG Level AA");
         let mut report = VerificationReport::new();
 
@@ -114,10 +108,7 @@ impl Layout<Pending> {
     /// Checks all Level AA constraints plus:
     /// - MinTargetSize (WCAG 2.5.5 Level AAA)
     #[tracing::instrument(skip(self), fields(root = ?self.root))]
-    pub fn verify_aaa(
-        self,
-        viewport: Viewport,
-    ) -> Result<Layout<Verified>, VerificationReport> {
+    pub fn verify_aaa(self, viewport: Viewport) -> Result<Layout<Verified>, VerificationReport> {
         tracing::debug!("Verifying layout against WCAG Level AAA");
         let mut report = VerificationReport::new();
 
@@ -162,9 +153,7 @@ impl Layout<Pending> {
         }
 
         // Check AAA-level constraints if requested
-        if check_aaa
-            && let Err(e) = validators::validate_min_target_size(&self.nodes, node_id)
-        {
+        if check_aaa && let Err(e) = validators::validate_min_target_size(&self.nodes, node_id) {
             report.add_error(e);
         }
 

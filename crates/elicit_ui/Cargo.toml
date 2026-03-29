@@ -46,3 +46,7 @@ egui-backend = ["dep:egui"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
+
+[[test]]
+name = "egui_renderer_test"
+required-features = ["egui-backend"]

@@ -5,8 +5,8 @@
 //! the tree has already passed verification, every node is
 //! guaranteed to satisfy its WCAG constraints before rendering.
 
-use accesskit::{Node, NodeId, Rect, Role, Toggled};
 use crate::RenderStats;
+use accesskit::{Node, NodeId, Rect, Role, Toggled};
 use std::collections::HashMap;
 
 /// Render a verified AccessKit tree into an egui `Ui`.
@@ -17,11 +17,7 @@ use std::collections::HashMap;
 ///
 /// Returns [`RenderStats`] summarizing what was rendered.
 #[tracing::instrument(skip(ui, nodes), fields(root = ?root))]
-pub fn render_tree(
-    ui: &mut egui::Ui,
-    nodes: &HashMap<NodeId, Node>,
-    root: NodeId,
-) -> RenderStats {
+pub fn render_tree(ui: &mut egui::Ui, nodes: &HashMap<NodeId, Node>, root: NodeId) -> RenderStats {
     let mut stats = RenderStats::default();
     render_node_recursive(ui, nodes, root, &mut stats);
     tracing::debug!(
@@ -55,8 +51,15 @@ fn render_node_recursive(
     let role = node.role();
     match role {
         // ── Containers ──────────────────────────────────────
-        Role::Window | Role::Pane | Role::Form | Role::Group | Role::Section
-        | Role::Region | Role::Main | Role::GenericContainer | Role::Document => {
+        Role::Window
+        | Role::Pane
+        | Role::Form
+        | Role::Group
+        | Role::Section
+        | Role::Region
+        | Role::Main
+        | Role::GenericContainer
+        | Role::Document => {
             render_container(ui, nodes, node, stats);
         }
 
@@ -77,8 +80,12 @@ fn render_node_recursive(
             render_switch(ui, node);
             stats.widgets_rendered += 1;
         }
-        Role::TextInput | Role::SearchInput | Role::EmailInput
-        | Role::UrlInput | Role::PhoneNumberInput | Role::PasswordInput => {
+        Role::TextInput
+        | Role::SearchInput
+        | Role::EmailInput
+        | Role::UrlInput
+        | Role::PhoneNumberInput
+        | Role::PasswordInput => {
             render_text_input(ui, node);
             stats.widgets_rendered += 1;
         }
@@ -112,11 +119,26 @@ fn render_node_recursive(
         }
 
         // ── Text / semantic ─────────────────────────────────
-        Role::Label | Role::Paragraph | Role::TextRun | Role::Heading
-        | Role::Legend | Role::Caption | Role::Blockquote | Role::Code
-        | Role::Strong | Role::Emphasis | Role::Mark | Role::Abbr
-        | Role::Term | Role::Definition | Role::Note | Role::Status
-        | Role::Alert | Role::Log | Role::Time | Role::Timer => {
+        Role::Label
+        | Role::Paragraph
+        | Role::TextRun
+        | Role::Heading
+        | Role::Legend
+        | Role::Caption
+        | Role::Blockquote
+        | Role::Code
+        | Role::Strong
+        | Role::Emphasis
+        | Role::Mark
+        | Role::Abbr
+        | Role::Term
+        | Role::Definition
+        | Role::Note
+        | Role::Status
+        | Role::Alert
+        | Role::Log
+        | Role::Time
+        | Role::Timer => {
             render_label(ui, node);
             stats.widgets_rendered += 1;
         }
@@ -138,10 +160,19 @@ fn render_node_recursive(
         Role::TabList => {
             render_tab_list(ui, nodes, node, stats);
         }
-        Role::Tab | Role::TabPanel | Role::ListItem | Role::Row
-        | Role::Cell | Role::GridCell | Role::RowHeader | Role::ColumnHeader
-        | Role::RowGroup | Role::TreeItem | Role::ListBoxOption
-        | Role::MenuItem | Role::MenuListOption => {
+        Role::Tab
+        | Role::TabPanel
+        | Role::ListItem
+        | Role::Row
+        | Role::Cell
+        | Role::GridCell
+        | Role::RowHeader
+        | Role::ColumnHeader
+        | Role::RowGroup
+        | Role::TreeItem
+        | Role::ListBoxOption
+        | Role::MenuItem
+        | Role::MenuListOption => {
             render_container(ui, nodes, node, stats);
         }
         Role::Dialog | Role::AlertDialog => {
@@ -150,9 +181,15 @@ fn render_node_recursive(
         Role::Menu | Role::MenuBar | Role::MenuListPopup => {
             render_container(ui, nodes, node, stats);
         }
-        Role::Navigation | Role::Banner | Role::Complementary
-        | Role::ContentInfo | Role::Header | Role::Footer
-        | Role::SectionHeader | Role::SectionFooter | Role::Search
+        Role::Navigation
+        | Role::Banner
+        | Role::Complementary
+        | Role::ContentInfo
+        | Role::Header
+        | Role::Footer
+        | Role::SectionHeader
+        | Role::SectionFooter
+        | Role::Search
         | Role::Article => {
             render_container(ui, nodes, node, stats);
         }
@@ -264,10 +301,7 @@ fn render_tab_list(
 // ── Widget rendering ─────────────────────────────────────────
 
 fn node_label(node: &Node) -> String {
-    node.label()
-        .or(node.value())
-        .unwrap_or("")
-        .to_string()
+    node.label().or(node.value()).unwrap_or("").to_string()
 }
 
 fn render_button(ui: &mut egui::Ui, node: &Node) {
@@ -282,7 +316,10 @@ fn render_button(ui: &mut egui::Ui, node: &Node) {
 fn render_checkbox(ui: &mut egui::Ui, node: &Node) {
     let text = node_label(node);
     let mut checked = matches!(node.toggled(), Some(Toggled::True));
-    ui.add_enabled(!node.is_disabled(), egui::Checkbox::new(&mut checked, &text));
+    ui.add_enabled(
+        !node.is_disabled(),
+        egui::Checkbox::new(&mut checked, &text),
+    );
 }
 
 fn render_radio(ui: &mut egui::Ui, node: &Node) {
@@ -330,9 +367,7 @@ fn render_number_input(ui: &mut egui::Ui, node: &Node) {
     let step = node.numeric_value_step().unwrap_or(1.0);
     ui.add_enabled(
         !node.is_disabled(),
-        egui::DragValue::new(&mut val)
-            .range(min..=max)
-            .speed(step),
+        egui::DragValue::new(&mut val).range(min..=max).speed(step),
     );
 }
 

@@ -17,11 +17,7 @@ impl Label {
     /// Returns `None` if the input is empty.
     pub fn new(s: impl Into<String>) -> Option<Self> {
         let s = s.into();
-        if s.is_empty() {
-            None
-        } else {
-            Some(Self(s))
-        }
+        if s.is_empty() { None } else { Some(Self(s)) }
     }
 
     /// Get the label text.
@@ -87,7 +83,7 @@ impl From<accesskit::NodeId> for ElementId {
 
 impl std::fmt::Display for ElementId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ElementId({})", self.0 .0)
+        write!(f, "ElementId({})", self.0.0)
     }
 }
 
