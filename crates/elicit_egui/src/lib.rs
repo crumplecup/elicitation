@@ -80,7 +80,7 @@
 //! | `layout_indent` | Indentation | Pixel amount |
 //! | `layout_add_space` | Spacing | Pixel amount |
 //!
-//! ## Styling (9 tools)
+//! ## Styling (29 tools)
 //!
 //! | Tool | Style | Notes |
 //! |------|-------|-------|
@@ -93,6 +93,26 @@
 //! | `style_widget_visuals` | Widget state visuals | Fill, stroke per state |
 //! | `style_selection` | Selection highlight | Background, stroke |
 //! | `style_text_cursor` | Text cursor | Colour, width |
+//! | `egui_set_fonts` | Font families | Proportional, monospace |
+//! | `egui_override_text_style` | Text style override | Family + size per style |
+//! | `egui_set_text_valign` | Text vertical align | Top, center, bottom |
+//! | `egui_set_interaction` | Interaction settings | Click time, drag threshold |
+//! | `egui_set_animation_time` | Animation duration | Transition timing |
+//! | `egui_set_debug_options` | Debug rendering | Widget hits, hover debug |
+//! | `egui_set_hyperlink_color` | Hyperlink colour | — |
+//! | `egui_set_faint_bg_color` | Faint background | Alternating rows |
+//! | `egui_set_extreme_bg_color` | Extreme background | Text input fields |
+//! | `egui_set_code_bg_color` | Code background | Monospace background |
+//! | `egui_set_warn_fg_color` | Warning foreground | — |
+//! | `egui_set_error_fg_color` | Error foreground | — |
+//! | `egui_set_widget_stroke` | Widget state stroke | Per-state border |
+//! | `egui_set_window_stroke` | Window border stroke | Width + colour |
+//! | `egui_set_menu_margin` | Menu margin | Left, right, top, bottom |
+//! | `egui_set_button_padding` | Button padding | Horizontal, vertical |
+//! | `egui_set_indent` | Indentation | Pixel distance |
+//! | `egui_set_scroll_bar_width` | Scroll bar | Width, handle, margins |
+//! | `egui_set_resize_grip_size` | Resize grip | Corner size |
+//! | `egui_set_text_cursor_width` | Cursor blink | Width, blink timing |
 //!
 //! ## Response (21 tools)
 //!
@@ -120,6 +140,44 @@
 //! | `response_scroll_to_me` | Scroll into view | — |
 //! | `response_context_menu` | Context menu | — |
 //!
+//! ## Menus & Popups (13 tools)
+//!
+//! | Tool | Action | Notes |
+//! |------|--------|-------|
+//! | `egui_context_menu` | Right-click menu | Region ID |
+//! | `egui_context_menu_item` | Menu item | Label + shortcut |
+//! | `egui_context_menu_separator` | Menu separator | — |
+//! | `egui_popup` | Popup at position | ID, position, content |
+//! | `egui_popup_below_widget` | Popup below widget | Anchor ID |
+//! | `egui_close_popup` | Close popup | — |
+//! | `egui_tooltip` | Hover tooltip | Widget ID, text |
+//! | `egui_tooltip_rich` | Rich tooltip | Custom UI content |
+//! | `egui_tooltip_at_pointer` | Pointer tooltip | Text at cursor |
+//! | `egui_modal` | Modal dialog | Title, content, buttons |
+//! | `egui_confirm_dialog` | Confirm dialog | Yes/no |
+//! | `egui_alert_dialog` | Alert dialog | OK button |
+//! | `egui_notification` | Toast message | Text, duration, position |
+//!
+//! ## Input (14 tools)
+//!
+//! | Tool | Query | Notes |
+//! |------|-------|-------|
+//! | `egui_key_pressed` | Key pressed | This frame |
+//! | `egui_key_released` | Key released | This frame |
+//! | `egui_key_down` | Key held down | Current state |
+//! | `egui_modifiers` | Modifier keys | Ctrl, Shift, Alt, Cmd |
+//! | `egui_pointer_pos` | Pointer position | — |
+//! | `egui_pointer_button_pressed` | Mouse pressed | Button name |
+//! | `egui_pointer_button_released` | Mouse released | Button name |
+//! | `egui_pointer_delta` | Pointer delta | This frame |
+//! | `egui_scroll_delta` | Scroll delta | — |
+//! | `egui_clipboard_get` | Get clipboard | Text |
+//! | `egui_clipboard_set` | Set clipboard | Text |
+//! | `egui_request_focus` | Request focus | Widget ID |
+//! | `egui_surrender_focus` | Release focus | Widget ID |
+//! | `egui_has_focus` | Check focus | Widget ID |
+//!
+//!
 //! # JSON interchange
 //!
 //! Tools communicate via tagged enums that serialize to compact JSON:
@@ -131,7 +189,10 @@
 #![warn(missing_docs)]
 
 mod container_tools;
+pub mod fragment_tools;
+mod input_tools;
 mod layout_tools;
+mod menu_tools;
 mod response_tools;
 #[cfg(feature = "runtime")]
 pub mod runtime;
@@ -141,7 +202,7 @@ pub mod widget_tools;
 
 pub use container_tools::{
     BottomPanelParams, CollapsingParams, EmptyContainerParams, FrameParams, LeftPanelParams,
-    MenuParams, PopupParams, RightPanelParams, ScrollAreaParams, TopPanelParams, TooltipParams,
+    MenuParams, PopupParams, RightPanelParams, ScrollAreaParams, TooltipParams, TopPanelParams,
     WindowParams,
 };
 
@@ -161,15 +222,19 @@ pub use serde_types::{
 };
 
 pub use style_tools::{
-    EmptyStyleParams, SelectionParams, SpacingParams, StyleJson, TextCursorParams,
-    VisualParams, VisualProperty, WidgetState, WidgetVisualsParams, WindowRoundingParams,
-    WindowShadowParams,
+    AnimationTimeParams, ButtonPaddingParams, ColorOverrideParams, DebugOptionsParams,
+    EmptyStyleParams, FontFamily, InteractionParams, MenuMarginParams,
+    OverrideTextStyleParams, ResizeGripSizeParams, ScrollBarWidthParams, SelectionParams,
+    SetFontsParams, SetTextValignParams, SpacingParams, StyleIndentParams, StyleJson,
+    TextCursorBlinkParams, TextCursorParams, TextStyleName, TextValign, VisualParams,
+    VisualProperty, WidgetState, WidgetStrokeParams, WidgetVisualsParams, WindowRoundingParams,
+    WindowShadowParams, WindowStrokeParams,
 };
 
 #[cfg(feature = "runtime")]
 pub use runtime::{
-    ApplyStyleParams, EguiRuntimeContext, EguiRuntimePlugin, EmptyRuntimeParams,
-    FrameOutputJson, RunFrameParams, SessionIdParams, SessionInfo,
+    ApplyStyleParams, EguiRuntimeContext, EguiRuntimePlugin, EmptyRuntimeParams, FrameOutputJson,
+    RunFrameParams, SessionIdParams, SessionInfo,
 };
 
 pub use widget_tools::{
@@ -179,4 +244,22 @@ pub use widget_tools::{
     LinkParams, MonospaceParams, ProgressBarParams, RadioParams, RadioValueParams,
     SelectableLabelParams, SimpleTextParams, SliderParams, SliderVerticalParams, SmallButtonParams,
     TextEditMultilineParams, TextEditSinglelineParams, ToggleValueParams,
+};
+
+pub use input_tools::{
+    ClipboardSetParams, EmptyInputParams, FocusParams, InputActionJson, KeyParams, ModifiersJson,
+    PointerButtonParams,
+};
+
+pub use menu_tools::{
+    AlertDialogParams, ConfirmDialogParams, ContextMenuItemParams, ContextMenuParams,
+    EmptyMenuParams, MenuActionJson, MenuPopupParams, MenuTooltipParams, ModalParams,
+    NotificationParams, PopupBelowWidgetParams, TooltipAtPointerParams, TooltipRichParams,
+};
+
+pub use fragment_tools::{
+    AppStateParams, FormFieldDef, FormParams, MessageEnumParams, MessageVariantDef,
+    NativeAppParams, SettingsFieldDef, SettingsPanelParams, SettingsSectionDef,
+    SidebarLayoutParams, StateFieldDef, TabDef, TabPanelParams, TableColumnDef, TableParams,
+    ToolbarButtonDef, ToolbarParams, WebAppParams,
 };
