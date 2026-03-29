@@ -1219,7 +1219,7 @@ mod verification_impls {
         leaf_impl!(UuidNonNil, "UuidNonNil");
     }
 
-    #[cfg(feature = "chrono")]
+    #[cfg(all(feature = "chrono", not(kani)))]
     mod chrono_impls {
         use super::*;
         use crate::verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
@@ -1228,7 +1228,7 @@ mod verification_impls {
         leaf_impl!(NaiveDateTimeAfter, "NaiveDateTimeAfter");
     }
 
-    #[cfg(feature = "time")]
+    #[cfg(all(feature = "time", not(kani)))]
     mod time_impls {
         use super::*;
         use crate::verification::types::{OffsetDateTimeAfter, OffsetDateTimeBefore};
@@ -1236,7 +1236,7 @@ mod verification_impls {
         leaf_impl!(OffsetDateTimeBefore, "OffsetDateTimeBefore");
     }
 
-    #[cfg(feature = "jiff")]
+    #[cfg(all(feature = "jiff", not(kani)))]
     mod jiff_impls {
         use super::*;
         use crate::verification::types::{TimestampAfter, TimestampBefore};
@@ -1255,7 +1255,7 @@ mod verification_impls {
         leaf_impl!(UrlCanBeBase, "UrlCanBeBase");
     }
 
-    #[cfg(feature = "serde_json")]
+    #[cfg(all(feature = "serde_json", not(kani)))]
     mod serde_json_impls {
         use super::*;
         use crate::verification::types::{ValueArray, ValueNonNull, ValueObject};
