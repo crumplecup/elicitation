@@ -69,6 +69,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod builder;
 mod contracts;
 mod errors;
 #[cfg(feature = "egui-backend")]
@@ -77,6 +78,7 @@ mod typestate;
 mod types;
 mod validators;
 
+pub use builder::LayoutBuilder;
 pub use contracts::{
     AccessibleAA, HasLabel, KeyboardAccessible, MinTargetSize, NoOverflow, ValidRole,
 };
