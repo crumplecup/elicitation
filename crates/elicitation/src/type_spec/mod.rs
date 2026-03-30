@@ -19,12 +19,14 @@
 //! // → [SpecEntry { label: "positive", description: "value must be > 0", expression: Some("value > 0") }]
 //! ```
 
+mod accesskit_specs;
 mod bool_contracts;
 mod char_contracts;
 mod clap_specs;
 mod collection_contracts;
 mod collections;
 mod datetime_specs;
+mod egui_specs;
 mod elicit_spec;
 mod float_contracts;
 mod http_specs;

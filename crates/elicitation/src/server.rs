@@ -8,7 +8,7 @@ use rmcp::service::{Peer, RoleServer};
 
 use crate::{
     ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitResult, ElicitationContext,
-    ElicitationStyle, StyleContext,
+    StyleContext, StyleMarker,
 };
 
 /// Server wrapper that carries style context.
@@ -20,7 +20,7 @@ use crate::{
 /// # Example
 ///
 /// ```rust,ignore
-/// use elicitation::{ElicitServer, ElicitationStyle, Elicitation};
+/// use elicitation::{ElicitServer, StyleMarker, Elicitation};
 ///
 /// // In a tool handler:
 /// #[tool]
@@ -124,7 +124,10 @@ impl ElicitCommunicator for ElicitServer {
         &self.style_context
     }
 
-    fn with_style<T: 'static, S: ElicitationStyle>(&self, style: S) -> Self {
+    fn with_style<T: 'static, S: StyleMarker + crate::style::ElicitationStyle + 'static>(
+        &self,
+        style: S,
+    ) -> Self {
         let mut ctx = self.style_context.clone();
         let _ = ctx.set_style::<T, S>(style);
         Self {

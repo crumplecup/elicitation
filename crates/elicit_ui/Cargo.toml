@@ -1,0 +1,52 @@
+[package]
+name = "elicit_ui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Typestate-based verified UI system using AccessKit as universal IR"
+keywords = ["mcp", "ui", "accessibility", "typestate", "verification"]
+categories = ["gui", "development-tools", "accessibility"]
+
+[dependencies]
+elicitation = { workspace = true, features = ["accesskit", "proofs"] }
+elicitation_derive.workspace = true
+elicitation_macros.workspace = true
+elicit_accesskit.workspace = true
+accesskit = { workspace = true }
+inventory.workspace = true
+rmcp.workspace = true
+schemars.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+tracing.workspace = true
+derive_more.workspace = true
+derive-getters.workspace = true
+derive-new.workspace = true
+
+# Frontend dependencies (optional)
+egui = { workspace = true, optional = true }
+
+# Code emission
+proc-macro2 = { workspace = true, optional = true }
+quote = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+serde_json = { workspace = true }
+egui = { workspace = true }
+
+[features]
+emit = ["dep:proc-macro2", "dep:quote", "elicitation/emit"]
+egui-backend = ["dep:egui"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
+
+[[test]]
+name = "egui_renderer_test"
+required-features = ["egui-backend"]

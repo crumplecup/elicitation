@@ -32,6 +32,10 @@ url = { workspace = true, optional = true }
 regex = { workspace = true, optional = true }
 clap = { workspace = true, optional = true }
 sqlx = { workspace = true, optional = true }
+egui = { workspace = true, optional = true }
+paste = { workspace = true, optional = true }
+elicit_ui = { workspace = true, optional = true }
+accesskit = { workspace = true, optional = true }
 
 [features]
 default = []
@@ -46,6 +50,8 @@ serde_json = ["dep:serde_json", "elicitation/serde_json"]
 clap-types = ["dep:clap", "elicitation/clap-types"]
 sqlx-types = ["dep:sqlx", "elicitation/sqlx-types"]
 tokio-types = []
+egui-types = ["dep:egui", "dep:paste", "elicitation/egui-types"]
+ui-types = ["dep:elicit_ui", "dep:accesskit"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }

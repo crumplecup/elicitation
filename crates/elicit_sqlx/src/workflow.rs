@@ -625,9 +625,9 @@ fn bind_chain(args: &[serde_json::Value]) -> TokenStream {
             serde_json::Value::Bool(b) => quote! { .bind(#b) },
             serde_json::Value::Number(n) => {
                 if let Some(i) = n.as_i64() {
-                    quote! { .bind(#i i64) }
+                    quote! { .bind(#i) }
                 } else if let Some(f) = n.as_f64() {
-                    quote! { .bind(#f f64) }
+                    quote! { .bind(#f) }
                 } else {
                     quote! { .bind(Option::<String>::None) }
                 }

@@ -66,11 +66,22 @@ macro_rules! impl_float_default_wrapper {
 
                 #[tracing::instrument(skip(communicator))]
                 async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-                    let prompt = Self::prompt().unwrap();
-                    tracing::debug!(concat!("Eliciting ", stringify!($wrapper), " with server-side send_prompt"));
+                    // Consult style context for a custom prompt, fall back to default
+                    let prompt = communicator
+                        .style_context()
+                        .prompt_for_type::<$primitive>(
+                            "value",
+                            stringify!($primitive),
+                            &crate::style::PromptContext::new(0, 1),
+                        )?
+                        .unwrap_or_else(|| Self::prompt().unwrap().to_string());
 
-                    // Use send_prompt for server-side compatibility
-                    let response = communicator.send_prompt(prompt).await?;
+                    tracing::debug!(
+                        prompt = %prompt,
+                        concat!("Eliciting ", stringify!($wrapper))
+                    );
+
+                    let response = communicator.send_prompt(&prompt).await?;
 
                     // Parse response as float
                     let value: $primitive = response.trim().parse().map_err(|e| {

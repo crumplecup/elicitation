@@ -4,8 +4,7 @@ use rmcp::service::{Peer, RoleClient};
 use std::sync::Arc;
 
 use crate::{
-    ElicitCommunicator, ElicitResult, Elicitation, ElicitationContext, ElicitationStyle,
-    StyleContext,
+    ElicitCommunicator, ElicitResult, Elicitation, ElicitationContext, StyleContext, StyleMarker,
 };
 
 /// Client wrapper that carries style context.
@@ -15,12 +14,13 @@ use crate::{
 /// styles independently.
 ///
 /// Users can provide custom style types for any type by implementing
-/// [`ElicitationStyle`] and calling [`with_style`](Self::with_style).
+/// [`StyleMarker`] and [`style::ElicitationStyle`](crate::style::ElicitationStyle),
+/// then calling [`with_style`](Self::with_style).
 ///
 /// # Example
 ///
 /// ```rust,ignore
-/// use elicitation::{ElicitClient, ElicitationStyle, Elicitation};
+/// use elicitation::{ElicitClient, StyleMarker, Elicitation};
 ///
 /// // Define custom style for i32
 /// #[derive(Clone, Default)]
@@ -30,7 +30,9 @@ use crate::{
 ///     Verbose
 /// }
 ///
-/// impl ElicitationStyle for MyI32Style {}
+/// // StyleMarker auto-implemented via blanket impl.
+/// // Implement ElicitationStyle for custom prompt generation.
+/// impl elicitation::style::ElicitationStyle for MyI32Style {}
 ///
 /// // Use it
 /// let client = ElicitClient::new(peer);
@@ -64,7 +66,7 @@ impl ElicitClient {
 
     /// Create a new client with a custom style for a specific type.
     ///
-    /// Accepts any style type that implements [`ElicitationStyle`], allowing
+    /// Accepts any style type that implements [`StyleMarker`], allowing
     /// users to define custom styles for built-in types.
     ///
     /// Returns a new `ElicitClient` with the style added to the context.
@@ -80,7 +82,13 @@ impl ElicitClient {
     /// let client = client.with_style::<i32, _>(MyI32Style::Verbose);
     /// ```
     #[tracing::instrument(skip(self, style))]
-    pub fn with_style<T: Elicitation + 'static, S: ElicitationStyle>(&self, style: S) -> Self {
+    pub fn with_style<
+        T: Elicitation + 'static,
+        S: StyleMarker + crate::style::ElicitationStyle + 'static,
+    >(
+        &self,
+        style: S,
+    ) -> Self {
         let type_name = std::any::type_name::<T>();
         tracing::debug!(type_name, "Setting custom style");
         let mut ctx = self.style_context.clone();
@@ -109,7 +117,7 @@ impl ElicitClient {
     #[tracing::instrument(skip(self))]
     pub fn style_or_default<T: Elicitation + 'static>(&self) -> T::Style
     where
-        T::Style: ElicitationStyle,
+        T::Style: StyleMarker,
     {
         let type_name = std::any::type_name::<T>();
         match self.style_context.get_style::<T, T::Style>() {
@@ -145,7 +153,7 @@ impl ElicitClient {
     #[tracing::instrument(skip(self))]
     pub async fn style_or_elicit<T: Elicitation + 'static>(&self) -> ElicitResult<T::Style>
     where
-        T::Style: ElicitationStyle,
+        T::Style: StyleMarker,
     {
         if let Some(style) = self.style_context.get_style::<T, T::Style>()? {
             tracing::debug!(
@@ -206,7 +214,10 @@ impl ElicitCommunicator for ElicitClient {
         &self.style_context
     }
 
-    fn with_style<T: 'static, S: ElicitationStyle>(&self, style: S) -> Self {
+    fn with_style<T: 'static, S: StyleMarker + crate::style::ElicitationStyle + 'static>(
+        &self,
+        style: S,
+    ) -> Self {
         let mut ctx = self.style_context.clone();
         let _ = ctx.set_style::<T, S>(style);
         Self {

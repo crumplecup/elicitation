@@ -81,7 +81,13 @@ pub trait Elicitation: Sized + Prompt + 'static {
     ///
     /// The style enum itself implements `Elicitation` (using the Select pattern),
     /// enabling automatic style selection when no style is pre-set.
-    type Style: Elicitation + Default + Clone + Send + Sync + 'static;
+    type Style: Elicitation
+        + crate::style::ElicitationStyle
+        + Default
+        + Clone
+        + Send
+        + Sync
+        + 'static;
 
     /// Elicit a value of this type from the user via style-aware client.
     ///

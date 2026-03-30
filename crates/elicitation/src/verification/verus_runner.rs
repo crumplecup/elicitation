@@ -214,6 +214,37 @@ impl VerusProof {
             Self::new("tokio_types", "verify_and_combinator_is_zero_sized"),
             Self::new("tokio_types", "verify_both_result_is_zero_sized"),
             Self::new("tokio_types", "verify_three_way_composition_is_zero_sized"),
+            // ui_types: typestate UI verification proofs
+            Self::new("ui_types", "verify_meets_min_target_size"),
+            Self::new("ui_types", "verify_size_boundary"),
+            Self::new("ui_types", "verify_size_both_dimensions"),
+            Self::new("ui_types", "verify_no_overflow"),
+            Self::new("ui_types", "verify_overflow_detected"),
+            Self::new("ui_types", "verify_exact_fit"),
+            Self::new("ui_types", "verify_label_non_empty"),
+            Self::new("ui_types", "verify_propositions_zero_cost"),
+            Self::new("ui_types", "verify_element_id_roundtrip"),
+            Self::new("ui_types", "verify_empty_report"),
+            Self::new("ui_types", "verify_level_subset"),
+            // ui_types: renderer invariant proofs
+            Self::new("ui_types", "verify_render_stats_sum"),
+            Self::new("ui_types", "verify_progress_clamp"),
+            Self::new("ui_types", "verify_heading_size_positive"),
+            Self::new("ui_types", "verify_bounds_abs_non_negative"),
+            Self::new("ui_types", "verify_render_stats_default"),
+            Self::new("ui_types", "verify_stats_accounting"),
+            // ui_types: LayoutBuilder invariant proofs
+            Self::new("ui_types", "verify_builder_root_is_zero"),
+            Self::new("ui_types", "verify_builder_empty_valid"),
+            Self::new("ui_types", "verify_builder_node_count"),
+            Self::new("ui_types", "verify_builder_container_count"),
+            Self::new("ui_types", "verify_builder_stack_depth"),
+            Self::new("ui_types", "verify_builder_auto_close"),
+            Self::new("ui_types", "verify_builder_reset"),
+            Self::new("ui_types", "verify_builder_default_eq_new"),
+            Self::new("ui_types", "verify_builder_all_containers"),
+            Self::new("ui_types", "verify_builder_id_uniqueness"),
+            Self::new("ui_types", "verify_builder_composite_form"),
         ]
     }
 }

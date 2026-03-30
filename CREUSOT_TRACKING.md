@@ -6,8 +6,8 @@ This document describes the Creusot proof infrastructure for the elicitation pro
 
 The Creusot verification system provides:
 
-- **240 SMT goals** discharged by Alt-Ergo/cvc5 across 26 modules (up from all-`#[trusted]` scaffolding)
-- **Module-level tracking** — CLI runner tracks compilation status for each of 26 modules
+- **240 SMT goals** discharged by Alt-Ergo/cvc5 across 31 modules (up from all-`#[trusted]` scaffolding)
+- **Module-level tracking** — CLI runner tracks compilation status for each of 31 modules
 - **CSV output** — Verification results with timestamps and timing data
 - **Progressive de-trusting** — `extern_spec!` axioms replace `#[trusted]` on witness functions
 - **Cloud of assumptions** — trust stdlib and validation libraries; prove wrapper contracts
@@ -102,7 +102,17 @@ Internal wrappers verifying the stdlib → contract bridge:
 | **http** | ✅ SMT proved | `reqwest` — StatusCodeValid |
 | **serde_boundary** | 🔒 trusted | `serde_json` — no formal serde model |
 
-**Total: 240 SMT goals proved. Remaining trusted functions hit genuine hard walls in Creusot 0.10.x.**
+### Third-Party Shadow Crate Modules (5)
+
+| Module | Status | Feature | Types |
+|--------|--------|---------|-------|
+| **clap_types** | 🔒 trusted | `clap-types` | CLI argument parser contracts |
+| **sqlx_types** | 🔒 trusted | `sqlx-types` | SQL database type contracts |
+| **tokio_types** | 🔒 trusted | `tokio-types` | Async runtime contracts |
+| **egui_types** | 🔒 trusted | `egui-types` | egui widget type contracts |
+| **ui_types** | 🔒 trusted | `ui-types` | Typestate UI, LayoutBuilder, renderer (37 functions) |
+
+**Total: 240 SMT goals proved across 27 core modules. 5 third-party modules with trusted proofs. Remaining trusted functions hit genuine hard walls in Creusot 0.10.x.**
 
 ## Verification Pattern
 
@@ -184,7 +194,7 @@ cargo check -p elicitation_creusot
 ### Check All Proofs (With Features)
 
 ```bash
-# All 456 proofs with all features enabled
+# All 610 proofs with all features enabled
 cargo check -p elicitation_creusot --all-features
 
 # Should complete instantly with zero warnings

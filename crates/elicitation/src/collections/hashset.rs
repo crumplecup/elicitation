@@ -41,6 +41,8 @@ impl Elicitation for HashSetStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for HashSetStyle {}
+
 impl<T> Prompt for HashSet<T>
 where
     T: Elicitation + Hash + Eq + Send,

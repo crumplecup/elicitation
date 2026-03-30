@@ -77,11 +77,15 @@ impl GraphRenderer for DotRenderer {
             if target_is_leaf && !self.include_primitives {
                 continue;
             }
+            let edge_label = match &edge.prompt {
+                Some(p) => format!("{}\\n{}", edge.label, dot_escape(p)),
+                None => edge.label.clone(),
+            };
             out.push_str(&format!(
                 "    {} -> {} [label=\"{}\"]\n",
                 dot_id(&edge.from),
                 dot_id(&edge.to),
-                edge.label,
+                edge_label,
             ));
         }
 
@@ -98,22 +102,50 @@ fn node_label_color<'a>(
     match node.kind {
         NodeKind::Survey => {
             let field_count = graph.edges.iter().filter(|e| e.from == name).count();
+            let prompt_row = match &node.prompt {
+                Some(p) => format!("|{}", dot_escape(p)),
+                None => String::new(),
+            };
             (
-                format!("{{{}|survey|{} fields}}", name, field_count),
+                format!("{{{}|survey|{} fields{}}}", name, field_count, prompt_row),
                 "lightyellow",
             )
         }
         NodeKind::Select => {
             let variant_count = graph.edges.iter().filter(|e| e.from == name).count();
+            let prompt_row = match &node.prompt {
+                Some(p) => format!("|{}", dot_escape(p)),
+                None => String::new(),
+            };
             (
-                format!("{{{}|select|{} variants}}", name, variant_count),
+                format!(
+                    "{{{}|select|{} variants{}}}",
+                    name, variant_count, prompt_row
+                ),
                 "lightblue",
             )
         }
-        NodeKind::Affirm => (format!("{{{}|affirm}}", name), "lightgreen"),
+        NodeKind::Affirm => {
+            let prompt_row = match &node.prompt {
+                Some(p) => format!("|{}", dot_escape(p)),
+                None => String::new(),
+            };
+            (format!("{{{}|affirm{}}}", name, prompt_row), "lightgreen")
+        }
         NodeKind::Primitive => (name.to_string(), "white"),
         NodeKind::Generic => (format!("(generic:{})", name), "lightyellow"),
     }
+}
+
+/// Escape characters that have special meaning inside a DOT record label.
+fn dot_escape(s: &str) -> String {
+    s.replace('\\', "\\\\")
+        .replace('"', "\\\"")
+        .replace('{', "\\{")
+        .replace('}', "\\}")
+        .replace('|', "\\|")
+        .replace('<', "\\<")
+        .replace('>', "\\>")
 }
 
 /// Produce a valid DOT identifier. Quotes names containing special characters.

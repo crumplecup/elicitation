@@ -2,7 +2,7 @@
 
 Kani model-checking proofs for [`elicitation`] contract types.
 
-This crate contains **291+ proof harnesses** that formally verify the
+This crate contains **386 proof harnesses** that formally verify the
 correctness of every contract type in the elicitation framework using
 [Kani] — a Rust model checker that uses symbolic execution to confirm
 properties hold for *all possible inputs*, not just the ones you thought
@@ -95,7 +95,7 @@ Every contract type has at least two harnesses:
 Install Kani following the [official instructions][kani-install], then:
 
 ```bash
-# All 291 harnesses
+# All 386 harnesses
 cargo kani -p elicitation_kani --all-features -- --default-unwind 20
 
 # Feature-specific subset

@@ -10,6 +10,7 @@
 //!
 //! This is compositional verification: regex_crate_correct → wrapper_correct.
 
+#[cfg(creusot)]
 use crate::*;
 
 #[cfg(creusot)]

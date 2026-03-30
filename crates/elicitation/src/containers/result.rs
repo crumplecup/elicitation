@@ -39,6 +39,8 @@ impl Elicitation for ResultStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for ResultStyle {}
+
 impl<T, E> Prompt for Result<T, E>
 where
     T: Elicitation + Send,

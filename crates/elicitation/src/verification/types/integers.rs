@@ -67,11 +67,22 @@ macro_rules! impl_integer_default_wrapper {
 
                 #[tracing::instrument(skip(communicator))]
                 async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
-                    let prompt = Self::prompt().unwrap();
-                    tracing::debug!(concat!("Eliciting ", stringify!($wrapper), " with server-side send_prompt"));
+                    // Consult style context for a custom prompt, fall back to default
+                    let prompt = communicator
+                        .style_context()
+                        .prompt_for_type::<$primitive>(
+                            "value",
+                            stringify!($primitive),
+                            &crate::style::PromptContext::new(0, 1),
+                        )?
+                        .unwrap_or_else(|| Self::prompt().unwrap().to_string());
 
-                    // Use send_prompt for server-side compatibility
-                    let response = communicator.send_prompt(prompt).await?;
+                    tracing::debug!(
+                        prompt = %prompt,
+                        concat!("Eliciting ", stringify!($wrapper))
+                    );
+
+                    let response = communicator.send_prompt(&prompt).await?;
 
                     // Parse response as integer
                     let value: $primitive = response.trim().parse().map_err(|e| {
@@ -618,6 +629,8 @@ impl crate::Elicitation for I8RangeStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for I8RangeStyle {}
+
 impl_integer_range_serde_bridge!(I8Range<i8>);
 
 impl<const MIN: i8, const MAX: i8> Prompt for I8Range<MIN, MAX> {
@@ -1080,6 +1093,8 @@ impl crate::Elicitation for I16RangeStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for I16RangeStyle {}
+
 impl_integer_range_serde_bridge!(I16Range<i16>);
 
 impl<const MIN: i16, const MAX: i16> Prompt for I16Range<MIN, MAX> {
@@ -1400,6 +1415,8 @@ impl crate::Elicitation for U8RangeStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for U8RangeStyle {}
+
 impl_integer_range_serde_bridge!(U8Range<u8>);
 
 impl<const MIN: u8, const MAX: u8> Prompt for U8Range<MIN, MAX> {
@@ -1611,6 +1628,8 @@ impl crate::Elicitation for U16RangeStyle {
         proc_macro2::TokenStream::new()
     }
 }
+
+impl crate::style::ElicitationStyle for U16RangeStyle {}
 
 impl_integer_range_serde_bridge!(U16Range<u16>);
 
@@ -2168,6 +2187,8 @@ macro_rules! impl_signed_contracts {
     }
 }
 
+
+        impl crate::style::ElicitationStyle for $range_style {}
         impl<const MIN: $base, const MAX: $base> Prompt for $range<MIN, MAX> {
             fn prompt() -> Option<&'static str> {
                 Some("Please enter a number within the specified range:")
@@ -2487,6 +2508,8 @@ macro_rules! impl_unsigned_contracts {
     }
 }
 
+
+        impl crate::style::ElicitationStyle for $range_style {}
         impl<const MIN: $base, const MAX: $base> Prompt for $range<MIN, MAX> {
             fn prompt() -> Option<&'static str> {
                 Some("Please enter a number within the specified range:")

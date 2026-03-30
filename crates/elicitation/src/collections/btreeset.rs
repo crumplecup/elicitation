@@ -40,6 +40,8 @@ impl Elicitation for BTreeSetStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for BTreeSetStyle {}
+
 impl<T> Prompt for BTreeSet<T>
 where
     T: Elicitation + Ord + Send,

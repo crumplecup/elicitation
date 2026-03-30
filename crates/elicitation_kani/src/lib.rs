@@ -1,6 +1,6 @@
 //! Kani formal verification proofs for elicitation contracts.
 //!
-//! This crate contains 304 proof harnesses verifying contract invariants
+//! This crate contains 386 proof harnesses verifying contract invariants
 //! using the Kani model checker's symbolic execution engine.
 //!
 //! # Architecture
@@ -12,11 +12,12 @@
 //! - **Network**: IP addresses, MAC addresses, socket addresses
 //! - **External**: URLs, UUIDs, regex, paths
 //! - **Mechanisms**: Contract composition and verification
+//! - **Third-party**: clap, sqlx, tokio, egui, UI typestate types
 //!
 //! # Running Proofs
 //!
 //! ```bash
-//! # All proofs (304 harnesses)
+//! # All proofs (386 harnesses)
 //! cargo kani -p elicitation_kani --all-features
 //!
 //! # Specific module
@@ -117,3 +118,9 @@ mod sqlx_types;
 
 #[cfg(all(kani, feature = "tokio-types"))]
 mod tokio_types;
+
+#[cfg(all(kani, feature = "egui-types"))]
+mod egui_types;
+
+#[cfg(all(kani, feature = "ui-types"))]
+mod ui_types;

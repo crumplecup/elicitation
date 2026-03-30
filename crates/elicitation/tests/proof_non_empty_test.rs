@@ -283,3 +283,200 @@ mod uuid_tests {
 fn unit_proofs_non_empty() {
     assert_proofs_non_empty::<()>("()");
 }
+
+// ============================================================================
+// Derived unit-variant enums (regression: previously produced empty proofs)
+// ============================================================================
+
+use elicitation::{Elicit, Prompt, Select};
+
+/// Unit-variant enum with two states — the TicTacToe `Player` case.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
+enum TwoState {
+    A,
+    B,
+}
+
+/// Unit-variant enum with no `Default` derive — exercises `kani_first_variant_constructible`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
+enum ThreeState {
+    Alpha,
+    Beta,
+    Gamma,
+}
+
+/// Enum that wraps a unit-variant enum — exercises the cascading-emptiness case.
+#[derive(Debug, Clone, PartialEq, Eq, Elicit)]
+enum Wrapper {
+    Empty,
+    Occupied(TwoState),
+}
+
+#[test]
+fn derived_unit_variant_enum_proofs_non_empty() {
+    assert_proofs_non_empty::<TwoState>("TwoState (unit-variant enum regression)");
+    assert_proofs_non_empty::<ThreeState>("ThreeState (no Default regression)");
+}
+
+#[test]
+fn cascading_unit_variant_enum_proofs_non_empty() {
+    // Wrapper delegates to TwoState; since TwoState now has a non-empty proof,
+    // Wrapper's delegation loop extends by something non-empty.
+    assert_proofs_non_empty::<Wrapper>("Wrapper (cascading delegation regression)");
+}
+
+// ============================================================================
+// Third-party — accesskit types
+// ============================================================================
+
+#[cfg(feature = "accesskit")]
+mod accesskit_proofs {
+    use elicitation::Elicitation;
+
+    #[track_caller]
+    fn assert_proofs_non_empty<T: Elicitation>(label: &str) {
+        assert!(!T::kani_proof().is_empty(), "{label}: kani_proof is empty");
+        assert!(
+            !T::verus_proof().is_empty(),
+            "{label}: verus_proof is empty"
+        );
+        assert!(
+            !T::creusot_proof().is_empty(),
+            "{label}: creusot_proof is empty"
+        );
+    }
+
+    #[test]
+    fn accesskit_enum_proofs_non_empty() {
+        assert_proofs_non_empty::<accesskit::Role>("accesskit::Role");
+        assert_proofs_non_empty::<accesskit::Action>("accesskit::Action");
+        assert_proofs_non_empty::<accesskit::Invalid>("accesskit::Invalid");
+        assert_proofs_non_empty::<accesskit::Toggled>("accesskit::Toggled");
+        assert_proofs_non_empty::<accesskit::Orientation>("accesskit::Orientation");
+        assert_proofs_non_empty::<accesskit::TextDirection>("accesskit::TextDirection");
+        assert_proofs_non_empty::<accesskit::SortDirection>("accesskit::SortDirection");
+        assert_proofs_non_empty::<accesskit::AriaCurrent>("accesskit::AriaCurrent");
+        assert_proofs_non_empty::<accesskit::AutoComplete>("accesskit::AutoComplete");
+        assert_proofs_non_empty::<accesskit::Live>("accesskit::Live");
+        assert_proofs_non_empty::<accesskit::HasPopup>("accesskit::HasPopup");
+        assert_proofs_non_empty::<accesskit::ListStyle>("accesskit::ListStyle");
+        assert_proofs_non_empty::<accesskit::TextAlign>("accesskit::TextAlign");
+        assert_proofs_non_empty::<accesskit::VerticalOffset>("accesskit::VerticalOffset");
+        assert_proofs_non_empty::<accesskit::TextDecorationStyle>("accesskit::TextDecorationStyle");
+        assert_proofs_non_empty::<accesskit::ScrollUnit>("accesskit::ScrollUnit");
+        assert_proofs_non_empty::<accesskit::ScrollHint>("accesskit::ScrollHint");
+    }
+}
+
+// ============================================================================
+// egui enum proof token-stream tests
+// ============================================================================
+
+#[cfg(feature = "egui-types")]
+mod egui_proofs {
+    use elicitation::Elicitation;
+
+    #[track_caller]
+    fn assert_proofs_non_empty<T: Elicitation>(label: &str) {
+        assert!(!T::kani_proof().is_empty(), "{label}: kani_proof is empty");
+        assert!(
+            !T::verus_proof().is_empty(),
+            "{label}: verus_proof is empty"
+        );
+        assert!(
+            !T::creusot_proof().is_empty(),
+            "{label}: creusot_proof is empty"
+        );
+    }
+
+    #[test]
+    fn egui_enum_proofs_non_empty() {
+        assert_proofs_non_empty::<egui::Align>("egui::Align");
+        assert_proofs_non_empty::<egui::CursorIcon>("egui::CursorIcon");
+        assert_proofs_non_empty::<egui::Direction>("egui::Direction");
+        assert_proofs_non_empty::<egui::FontFamily>("egui::FontFamily");
+        assert_proofs_non_empty::<egui::Key>("egui::Key");
+        assert_proofs_non_empty::<egui::Order>("egui::Order");
+        assert_proofs_non_empty::<egui::PointerButton>("egui::PointerButton");
+        assert_proofs_non_empty::<egui::TextStyle>("egui::TextStyle");
+        assert_proofs_non_empty::<egui::TextWrapMode>("egui::TextWrapMode");
+        assert_proofs_non_empty::<egui::epaint::textures::TextureFilter>("egui::TextureFilter");
+        assert_proofs_non_empty::<egui::epaint::textures::TextureWrapMode>("egui::TextureWrapMode");
+        assert_proofs_non_empty::<egui::Theme>("egui::Theme");
+        assert_proofs_non_empty::<egui::ThemePreference>("egui::ThemePreference");
+        assert_proofs_non_empty::<egui::TouchPhase>("egui::TouchPhase");
+        assert_proofs_non_empty::<egui::UiKind>("egui::UiKind");
+        assert_proofs_non_empty::<egui::WidgetType>("egui::WidgetType");
+    }
+
+    /// Compile-time assertion: all trenchcoat wrappers satisfy ElicitComplete.
+    fn assert_elicit_complete<T: elicitation::ElicitComplete>() {}
+
+    #[test]
+    fn egui_trenchcoat_wrappers_elicit_complete() {
+        assert_elicit_complete::<elicitation::AlignSelect>();
+        assert_elicit_complete::<elicitation::CursorIconSelect>();
+        assert_elicit_complete::<elicitation::DirectionSelect>();
+        assert_elicit_complete::<elicitation::FontFamilySelect>();
+        assert_elicit_complete::<elicitation::KeySelect>();
+        assert_elicit_complete::<elicitation::OrderSelect>();
+        assert_elicit_complete::<elicitation::PointerButtonSelect>();
+        assert_elicit_complete::<elicitation::TextStyleSelect>();
+        assert_elicit_complete::<elicitation::TextWrapModeSelect>();
+        assert_elicit_complete::<elicitation::TextureFilterSelect>();
+        assert_elicit_complete::<elicitation::TextureWrapModeSelect>();
+        assert_elicit_complete::<elicitation::ThemeSelect>();
+        assert_elicit_complete::<elicitation::ThemePreferenceSelect>();
+        assert_elicit_complete::<elicitation::TouchPhaseSelect>();
+        assert_elicit_complete::<elicitation::UiKindSelect>();
+        assert_elicit_complete::<elicitation::WidgetTypeSelect>();
+    }
+
+    #[test]
+    fn egui_trenchcoat_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::AlignSelect>("AlignSelect");
+        assert_proofs_non_empty::<elicitation::CursorIconSelect>("CursorIconSelect");
+        assert_proofs_non_empty::<elicitation::DirectionSelect>("DirectionSelect");
+        assert_proofs_non_empty::<elicitation::FontFamilySelect>("FontFamilySelect");
+        assert_proofs_non_empty::<elicitation::KeySelect>("KeySelect");
+        assert_proofs_non_empty::<elicitation::OrderSelect>("OrderSelect");
+        assert_proofs_non_empty::<elicitation::PointerButtonSelect>("PointerButtonSelect");
+        assert_proofs_non_empty::<elicitation::TextStyleSelect>("TextStyleSelect");
+        assert_proofs_non_empty::<elicitation::TextWrapModeSelect>("TextWrapModeSelect");
+        assert_proofs_non_empty::<elicitation::TextureFilterSelect>("TextureFilterSelect");
+        assert_proofs_non_empty::<elicitation::TextureWrapModeSelect>("TextureWrapModeSelect");
+        assert_proofs_non_empty::<elicitation::ThemeSelect>("ThemeSelect");
+        assert_proofs_non_empty::<elicitation::ThemePreferenceSelect>("ThemePreferenceSelect");
+        assert_proofs_non_empty::<elicitation::TouchPhaseSelect>("TouchPhaseSelect");
+        assert_proofs_non_empty::<elicitation::UiKindSelect>("UiKindSelect");
+        assert_proofs_non_empty::<elicitation::WidgetTypeSelect>("WidgetTypeSelect");
+    }
+
+    // ── Composite struct wrapper tests ──────────────────────────────────
+
+    #[test]
+    fn egui_composite_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::EguiColor32>("EguiColor32");
+        assert_proofs_non_empty::<elicitation::EguiPos2>("EguiPos2");
+        assert_proofs_non_empty::<elicitation::EguiVec2>("EguiVec2");
+        assert_proofs_non_empty::<elicitation::EguiRect>("EguiRect");
+        assert_proofs_non_empty::<elicitation::EguiStroke>("EguiStroke");
+        assert_proofs_non_empty::<elicitation::EguiCornerRadius>("EguiCornerRadius");
+        assert_proofs_non_empty::<elicitation::EguiShadow>("EguiShadow");
+        assert_proofs_non_empty::<elicitation::EguiMargin>("EguiMargin");
+        assert_proofs_non_empty::<elicitation::EguiFontId>("EguiFontId");
+    }
+
+    #[test]
+    fn egui_composite_wrappers_elicit_complete() {
+        assert_elicit_complete::<elicitation::EguiColor32>();
+        assert_elicit_complete::<elicitation::EguiPos2>();
+        assert_elicit_complete::<elicitation::EguiVec2>();
+        assert_elicit_complete::<elicitation::EguiRect>();
+        assert_elicit_complete::<elicitation::EguiStroke>();
+        assert_elicit_complete::<elicitation::EguiCornerRadius>();
+        assert_elicit_complete::<elicitation::EguiShadow>();
+        assert_elicit_complete::<elicitation::EguiMargin>();
+        assert_elicit_complete::<elicitation::EguiFontId>();
+    }
+}

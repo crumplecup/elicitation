@@ -98,6 +98,13 @@ pub mod verification;
 
 pub mod type_graph;
 
+#[cfg(feature = "prompt-tree")]
+pub mod prompt_tree;
+#[cfg(feature = "prompt-tree")]
+pub use prompt_tree::{
+    AssembledPrompt, ElicitPromptTree, PromptKind, PromptTree, collect_assembled_prompts,
+};
+
 #[cfg(feature = "cli")]
 pub mod cli;
 
@@ -125,6 +132,10 @@ mod newtype_macro;
 // Newtype methods macro module (declarative macros with method delegation)
 #[macro_use]
 mod newtype_methods_macro;
+
+// Select trenchcoat macro: wraps foreign Select enums with JsonSchema + serde
+#[macro_use]
+mod select_trenchcoat_macro;
 
 mod traits;
 
@@ -175,7 +186,7 @@ pub use mcp_wrapper::ElicitToolOutput;
 pub use server::ElicitServer;
 
 // Core traits
-pub use elicitation_style::ElicitationStyle;
+pub use elicitation_style::StyleMarker;
 pub use traits::{
     ElicitBuilder, ElicitIntrospect, Elicitation, ElicitationPattern, Generator, PatternDetails,
     Prompt, TypeMetadata, VariantMetadata,
@@ -253,6 +264,8 @@ pub use proc_macro2;
 pub use elicitation_derive::{Elicit, ElicitPlugin, elicit_tool};
 // Prop derive macro (trait lives at elicitation::contracts::Prop; both can coexist)
 pub use elicitation_derive::Prop;
+// ToCodeLiteral derive (trait lives at elicitation::emit_code::ToCodeLiteral)
+pub use elicitation_derive::ToCodeLiteral;
 
 // Re-export verification contract types at crate level (for kani_proofs imports)
 // EXPLICIT exports - no globs (helps compiler show what's missing)
@@ -484,4 +497,71 @@ pub use primitives::sqlx_types::{
 #[cfg(feature = "sqlx-types")]
 pub use primitives::sqlx_types::{
     ColumnDescriptor, ColumnEntry, ColumnValue, DriverKind, RowData, SqlTypeKind,
+};
+
+// accesskit types (feature-gated on accesskit)
+#[cfg(feature = "accesskit")]
+pub use primitives::accesskit_types::{
+    ActionStyle, AriaCurrentStyle, AutoCompleteStyle, HasPopupStyle, InvalidStyle, ListStyleStyle,
+    LiveStyle, OrientationStyle, RoleStyle, ScrollHintStyle, ScrollUnitStyle, SortDirectionStyle,
+    TextAlignStyle, TextDecorationStyleStyle, TextDirectionStyle, ToggledStyle,
+    VerticalOffsetStyle,
+};
+
+// egui types (feature-gated on egui-types)
+#[cfg(feature = "egui-types")]
+pub use primitives::egui_types::{
+    // Select trenchcoat wrappers
+    AlignSelect,
+    // Select enum styles
+    AlignStyle,
+    CursorIconSelect,
+    CursorIconStyle,
+    DirectionSelect,
+    DirectionStyle,
+    // Composite struct wrappers
+    EguiColor32,
+    EguiColor32Style,
+    EguiCornerRadius,
+    EguiCornerRadiusStyle,
+    EguiFontId,
+    EguiFontIdStyle,
+    EguiMargin,
+    EguiMarginStyle,
+    EguiPos2,
+    EguiPos2Style,
+    EguiRect,
+    EguiRectStyle,
+    EguiShadow,
+    EguiShadowStyle,
+    EguiStroke,
+    EguiStrokeStyle,
+    EguiVec2,
+    EguiVec2Style,
+    FontFamilySelect,
+    FontFamilyStyle,
+    KeySelect,
+    KeyStyle,
+    OrderSelect,
+    OrderStyle,
+    PointerButtonSelect,
+    PointerButtonStyle,
+    TextStyleSelect,
+    TextStyleStyle,
+    TextWrapModeSelect,
+    TextWrapModeStyle,
+    TextureFilterSelect,
+    TextureFilterStyle,
+    TextureWrapModeSelect,
+    TextureWrapModeStyle,
+    ThemePreferenceSelect,
+    ThemePreferenceStyle,
+    ThemeSelect,
+    ThemeStyle,
+    TouchPhaseSelect,
+    TouchPhaseStyle,
+    UiKindSelect,
+    UiKindStyle,
+    WidgetTypeSelect,
+    WidgetTypeStyle,
 };

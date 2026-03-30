@@ -72,7 +72,7 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
     // Generate Prompt impl
     let prompt_impl = generate_prompt_impl(
         name,
-        custom_prompt,
+        custom_prompt.clone(),
         &impl_generics,
         &ty_generics,
         &where_clause,
@@ -116,6 +116,19 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
     // Users can write verification harnesses manually if needed.
     // Verification is primarily for elicitation's own contract types.
 
+    // Generate ElicitPromptTree impl
+    #[cfg(feature = "prompt-tree")]
+    let prompt_tree_impl = generate_prompt_tree_impl_enum(
+        name,
+        &variants,
+        custom_prompt.as_deref(),
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+    #[cfg(not(feature = "prompt-tree"))]
+    let prompt_tree_impl = quote! {};
+
     let expanded = quote! {
         #style_enum
         #prompt_impl
@@ -123,9 +136,111 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
         #elicit_impl
         #introspect_impl
         #graph_key_emission
+        #prompt_tree_impl
     };
 
     TokenStream::from(expanded)
+}
+#[cfg(feature = "prompt-tree")]
+fn generate_prompt_tree_impl_enum(
+    name: &syn::Ident,
+    variants: &[VariantInfo],
+    custom_prompt: Option<&str>,
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
+) -> TokenStream2 {
+    let name_str = name.to_string();
+    let prompt_expr = match custom_prompt {
+        Some(p) => quote! { #p.to_string() },
+        None => quote! {
+            <Self as elicitation::Prompt>::prompt()
+                .unwrap_or(#name_str)
+                .to_string()
+        },
+    };
+
+    let option_strs: Vec<String> = variants.iter().map(|v| v.ident.to_string()).collect();
+
+    let branch_exprs = variants.iter().map(|v| match &v.fields {
+        VariantFields::Unit => quote! { None },
+        VariantFields::Tuple(types) => {
+            let field_exprs = types.iter().enumerate().map(|(i, ty)| {
+                let field_name = format!("_{i}");
+                quote! {
+                    (#field_name.to_string(),
+                     Box::new(<#ty as elicitation::ElicitPromptTree>::prompt_tree()))
+                }
+            });
+            let variant_name = v.ident.to_string();
+            quote! {
+                Some(Box::new(elicitation::PromptTree::Survey {
+                    prompt: None,
+                    type_name: #variant_name.to_string(),
+                    fields: vec![#(#field_exprs),*],
+                }))
+            }
+        }
+        VariantFields::Struct(fields) => {
+            let field_exprs = fields.iter().map(|f| {
+                let field_name = f.ident.to_string();
+                let ty = &f.ty;
+                quote! {
+                    (#field_name.to_string(),
+                     Box::new(<#ty as elicitation::ElicitPromptTree>::prompt_tree()))
+                }
+            });
+            let variant_name = v.ident.to_string();
+            quote! {
+                Some(Box::new(elicitation::PromptTree::Survey {
+                    prompt: None,
+                    type_name: #variant_name.to_string(),
+                    fields: vec![#(#field_exprs),*],
+                }))
+            }
+        }
+    });
+
+    // Collect all field types across all variants to add ElicitPromptTree bounds.
+    let all_field_types: Vec<&syn::Type> = variants
+        .iter()
+        .flat_map(|v| match &v.fields {
+            VariantFields::Unit => vec![],
+            VariantFields::Tuple(types) => types.iter().collect(),
+            VariantFields::Struct(fields) => fields.iter().map(|f| &f.ty).collect(),
+        })
+        .collect();
+
+    let existing_predicates: Vec<_> = match where_clause {
+        Some(wc) => wc.predicates.iter().collect(),
+        None => vec![],
+    };
+    let pt_bounds: Vec<_> = all_field_types
+        .iter()
+        .map(|ty| quote! { #ty: elicitation::ElicitPromptTree })
+        .collect();
+
+    let where_tokens = if existing_predicates.is_empty() && pt_bounds.is_empty() {
+        quote! {}
+    } else {
+        quote! { where #(#existing_predicates,)* #(#pt_bounds),* }
+    };
+
+    quote! {
+        #[automatically_derived]
+        impl #impl_generics elicitation::ElicitPromptTree
+            for #name #ty_generics #where_tokens
+        {
+            fn prompt_tree() -> elicitation::PromptTree {
+                elicitation::PromptTree::Select {
+                    prompt: #prompt_expr,
+                    type_name: #name_str.to_string(),
+                    options: vec![#(#option_strs.to_string()),*],
+                    branches: vec![#(#branch_exprs),*],
+                }
+            }
+        }
+    }
 }
 
 /// Extract custom prompt from #[prompt("...")] attribute.
@@ -407,29 +522,54 @@ fn generate_elicit_impl(
     let match_arms = variants.iter().map(|v| generate_variant_match_arm(v, name));
 
     #[cfg(feature = "proofs")]
-    let proof_methods = quote! {
-        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
-            #(
-                ts.extend(<#all_field_types as elicitation::Elicitation>::kani_proof());
-            )*
-            ts
-        }
+    let proof_methods = if all_field_types.is_empty() {
+        // No field types to delegate to — emit a trivial-but-non-empty proof that
+        // witnesses the enum's own variants are reachable and well-formed.
+        let name_str = name.to_string();
+        let first_variant = variants
+            .first()
+            .map(|v| v.ident.to_string())
+            .unwrap_or_else(|| "Default".to_string());
+        quote! {
+            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::kani_first_variant_constructible(
+                    &#name_str, &#first_variant
+                )
+            }
 
-        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
-            #(
-                ts.extend(<#all_field_types as elicitation::Elicitation>::verus_proof());
-            )*
-            ts
-        }
+            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::verus_multi_variant_enum(&#name_str)
+            }
 
-        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
-            #(
-                ts.extend(<#all_field_types as elicitation::Elicitation>::creusot_proof());
-            )*
-            ts
+            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::creusot_multi_variant_enum(&#name_str)
+            }
+        }
+    } else {
+        quote! {
+            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::proc_macro2::TokenStream::new();
+                #(
+                    ts.extend(<#all_field_types as elicitation::Elicitation>::kani_proof());
+                )*
+                ts
+            }
+
+            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::proc_macro2::TokenStream::new();
+                #(
+                    ts.extend(<#all_field_types as elicitation::Elicitation>::verus_proof());
+                )*
+                ts
+            }
+
+            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::proc_macro2::TokenStream::new();
+                #(
+                    ts.extend(<#all_field_types as elicitation::Elicitation>::creusot_proof());
+                )*
+                ts
+            }
         }
     };
     #[cfg(not(feature = "proofs"))]
@@ -525,6 +665,9 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
                 None
             }
         }
+
+        /// Generated style enums use default prompt formatting.
+        impl elicitation::style::ElicitationStyle for #style_name {}
 
         impl elicitation::Elicitation for #style_name {
             type Style = #style_name;

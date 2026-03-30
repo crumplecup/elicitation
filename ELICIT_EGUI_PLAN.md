@@ -2,6 +2,13 @@
 
 > **Premise:** Expose egui's immediate mode GUI API as MCP tools for both runtime UI execution and code generation.
 > **Approach:** Completionist harvesting using dual-mode tools (primary), runtime-only tools (UI display), and fragment tools (app code gen).
+>
+> **Technique reference:** See [THIRD_PARTY_SUPPORT_GUIDE.md](THIRD_PARTY_SUPPORT_GUIDE.md) for
+> the step-by-step recipe (Phases 1–8). This plan identifies **what** to harvest;
+> the guide describes **how** to implement each phase. For a completed reference,
+> see the `accesskit` support: `crates/elicitation/src/primitives/accesskit_types/`
+> (Phase 2), `crates/elicit_accesskit/` (Phase 3), and
+> `crates/elicitation/src/type_spec/accesskit_specs.rs` (Phase 7).
 
 ---
 
@@ -426,13 +433,219 @@ Code generation for complete egui applications:
 
 ---
 
-## Phase 1: Widget Dual-Mode Tools
+## Phase 0: Core Elicitation Impls (`crates/elicitation/`)
+
+> **Prerequisite for everything else.** Before the shadow crate exists, the
+> core library must know how to elicit egui's pure-data types. This is the
+> "accesskit treatment" — see
+> [THIRD_PARTY_SUPPORT_GUIDE § Phase 2](THIRD_PARTY_SUPPORT_GUIDE.md#phase-2--core-trait-impls-in-crateselicitation).
+
+### 0.1 Workspace dependency
+
+In workspace root `Cargo.toml`:
+
+```toml
+[workspace.dependencies]
+egui = { version = "0.33", features = ["serde"] }
+```
+
+**Note:** egui re-exports types from `emath` (Pos2, Vec2, Rect, Align) and
+`epaint` (Color32, Stroke, Rounding, Shadow). The `egui` crate dependency
+covers all of them.
+
+**Version consideration:** egui 0.33 depends on `accesskit ^0.21`. Our
+workspace already uses `accesskit = "0.24"` for `elicit_accesskit`. These
+are semver-incompatible, so Cargo treats them as different crates. The two
+do not conflict but also do not interoperate — egui's internal accesskit
+tree uses 0.21 types, while our `elicit_accesskit` wraps 0.24 types. This
+is fine; they serve different purposes (egui's a11y internals vs our
+elicitation of a11y concepts).
+
+### 0.2 Feature flag
+
+In `crates/elicitation/Cargo.toml`:
+
+```toml
+[dependencies]
+egui = { workspace = true, optional = true }
+
+[features]
+egui-types = ["dep:egui"]
+```
+
+### 0.3 Select enums (user picks from a fixed list)
+
+Create `crates/elicitation/src/primitives/egui_types/` with one file per
+type, following the accesskit template (see `accesskit_types/toggled.rs`).
+
+Each file implements: `Prompt`, `Select`, `default_style!`, `Elicitation`,
+`ElicitIntrospect`, plus proof stubs.
+
+**Tier 1 — Small enums (2–6 variants), highest value:**
+
+| Type | Variants | Notes |
+|------|----------|-------|
+| `Align` | `Min`, `Center`, `Max` | Layout alignment axis |
+| `Direction` | `LeftToRight`, `RightToLeft`, `TopDown`, `BottomUp` | Layout flow |
+| `Theme` | `Dark`, `Light` | Color theme |
+| `ThemePreference` | `Dark`, `Light`, `System` | User preference |
+| `FontFamily` | `Monospace`, `Proportional` | Font selection (+ `Name(String)`) |
+| `TextWrapMode` | `Extend`, `Wrap`, `Truncate` | Text overflow behaviour |
+| `TextureFilter` | `Nearest`, `Linear` | Image scaling filter |
+| `TextureWrapMode` | `ClampToEdge`, `Repeat`, `MirroredRepeat` | Texture tiling |
+| `TouchPhase` | `Start`, `Move`, `End`, `Cancel` | Touch input state |
+| `PointerButton` | `Primary`, `Secondary`, `Middle`, `Extra1`, `Extra2` | Mouse button |
+| `Order` | `Background`, `PanelResizeLine`, `Middle`, `Foreground`, `Tooltip`, `Debug` | Draw layer |
+
+**Tier 2 — Medium enums (7–20 variants):**
+
+| Type | Variants | Notes |
+|------|----------|-------|
+| `WidgetType` | ~16 | `Label`, `Hyperlink`, `TextEdit`, `Button`, `Checkbox`, `RadioButton`, `SelectableLabel`, `ComboBox`, `Slider`, `DragValue`, `ColorButton`, `ImageButton`, `CollapsingHeader`, `ProgressIndicator`, `Image`, `Other` |
+| `UiKind` | ~10 | `CentralPanel`, `LeftPanel`, `RightPanel`, `TopPanel`, `BottomPanel`, `Window`, `TableCell`, `GenericArea`, `Popup`, `Menu` |
+| `TextStyle` | ~6 | `Small`, `Body`, `Monospace`, `Button`, `Heading`, `Name(String)` |
+
+**Tier 3 — Large enums (use serde deserialization, like accesskit::Role):**
+
+| Type | Variants | Notes |
+|------|----------|-------|
+| `CursorIcon` | ~35 | `Default`, `None`, `ContextMenu`, `Help`, `PointingHand`, `Progress`, `Wait`, `Cell`, `Crosshair`, `Text`, `VerticalText`, `Alias`, `Copy`, `Move`, `NoDrop`, `NotAllowed`, `Grab`, `Grabbing`, `AllScroll`, `ResizeHorizontal`, `ResizeNeSw`, `ResizeNwSe`, `ResizeVertical`, `ResizeEast`, `ResizeNorth`, … |
+| `Key` | ~100+ | Full keyboard. Use `serde_json::from_str` approach. |
+
+**Implementation pattern (per file):**
+
+```rust
+// src/primitives/egui_types/direction.rs
+use crate::{
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect,
+    ElicitResult, Elicitation, ElicitationPattern, PatternDetails,
+    Prompt, Select, TypeMetadata, VariantMetadata, mcp,
+};
+use egui::Direction;
+
+impl Prompt for Direction {
+    fn prompt() -> Option<&'static str> {
+        Some("Choose layout direction:")
+    }
+}
+
+impl Select for Direction {
+    fn options() -> Vec<Self> {
+        vec![
+            Direction::LeftToRight,
+            Direction::RightToLeft,
+            Direction::TopDown,
+            Direction::BottomUp,
+        ]
+    }
+
+    fn labels() -> Vec<String> {
+        Self::options()
+            .iter()
+            .map(|v| serde_json::to_string(v)
+                .unwrap().trim_matches('"').to_string())
+            .collect()
+    }
+
+    fn from_label(label: &str) -> Option<Self> {
+        serde_json::from_str(&format!("\"{}\"", label)).ok()
+    }
+}
+
+crate::default_style!(egui::Direction => DirectionStyle);
+// ... Elicitation + ElicitIntrospect impls (see accesskit_types for template)
+```
+
+For Tier 3 (large enums like `Key`, `CursorIcon`), use the serde
+deserialization approach from `accesskit_types/role.rs` — labels are
+generated from `serde_json::to_string()` and `from_label` uses
+`serde_json::from_str()`, avoiding a 100-arm match.
+
+**Types NOT suited for Select (skip in Phase 0):**
+
+- `Event` — complex tagged union with payloads, not a user-facing selection
+- `Shape` — rendering primitive, not user-facing
+- `ImageData` — large binary data
+- `TextureId` — opaque handle
+- `OutputCommand` — internal command enum
+
+### 0.4 Composite struct types (text input)
+
+Some egui types are small composites that should use the text/structured
+elicitation pattern rather than Select:
+
+| Type | Fields | Notes |
+|------|--------|-------|
+| `Color32` | `r: u8, g: u8, b: u8, a: u8` | sRGBA colour; parse from hex `#RRGGBBAA` |
+| `Pos2` | `x: f32, y: f32` | 2D point |
+| `Vec2` | `x: f32, y: f32` | 2D vector/size |
+| `Rect` | `min: Pos2, max: Pos2` | Axis-aligned rectangle |
+| `Stroke` | `width: f32, color: Color32` | Line style |
+| `Rounding` | `nw: f32, ne: f32, sw: f32, se: f32` | Corner radii |
+| `Shadow` | `offset: Vec2, blur: f32, spread: f32, color: Color32` | Drop shadow |
+| `Margin` | `left: f32, right: f32, top: f32, bottom: f32` | Box margins |
+| `FontId` | `size: f32, family: FontFamily` | Font specification |
+
+These use `ElicitationPattern::Composite` and recursively elicit their
+fields. `Color32` may additionally support hex-string parsing via a
+text-input shortcut.
+
+### 0.5 Module wiring
+
+```rust
+// crates/elicitation/src/primitives/mod.rs
+#[cfg(feature = "egui-types")]
+pub mod egui_types;
+
+// crates/elicitation/src/lib.rs
+#[cfg(feature = "egui-types")]
+pub use primitives::egui_types::*;
+```
+
+### 0.6 TypeSpec + ElicitComplete
+
+Create `src/type_spec/egui_specs.rs` with `impl_egui_select_spec!` macro
+(same pattern as `accesskit_specs.rs`):
+
+- `ElicitSpec` for each enum
+- `ElicitComplete` marker for each type
+- `inventory::submit!` registration
+
+### 0.7 Verification proofs
+
+Following the guide's Phases 4–6:
+
+- **Kani** (`elicitation_kani/src/egui_types.rs`): `proof_labels_non_empty`,
+  `proof_roundtrip`, `proof_options_match_labels`, `proof_from_label_valid`
+- **Creusot** (`elicitation_creusot/src/egui_types.rs`): trusted proof stubs
+- **Verus** (`elicitation_verus/src/egui_types.rs`): label-count ensures
+
+### 0.8 Proof validation tests
+
+Add `egui_proofs` module to `tests/proof_non_empty_test.rs`, gated on
+`#[cfg(feature = "egui-types")]`.
+
+### 0.9 Estimated scope
+
+- **~16 Select enum files** (Tier 1 + Tier 2 + Tier 3)
+- **~9 composite struct files** (Color32, Pos2, Vec2, Rect, Stroke, Rounding, Shadow, Margin, FontId)
+- **1 mod.rs** + wiring in `primitives/mod.rs` + `lib.rs`
+- **1 egui_specs.rs** in `type_spec/`
+- **3 verification files** (Kani, Creusot, Verus)
+- **1 test module addition**
+
+---
+
+## Phase 1: Widget Dual-Mode Tools (Shadow Crate)
+
+> This is "Phase 3" in the [THIRD_PARTY_SUPPORT_GUIDE](THIRD_PARTY_SUPPORT_GUIDE.md#phase-3--wrapper-crate-crateselicit_foo).
+> Phase 0 above **must** be complete before starting here.
 
 **Goal:** Establish dual-mode pattern for widget creation.
 
 ### Crate Structure
 
-```
+```text
 crates/elicit_egui/
 ├── Cargo.toml
 └── src/
@@ -620,6 +833,9 @@ impl CustomEmit<SliderParams> for WidgetSliderEmit {
 
 ## Phase 2: Container Dual-Mode Tools
 
+> Continues the shadow crate (guide Phase 3). Depends on Phase 0 composite
+> types — container tools reference `Pos2`, `Vec2`, `Color32` etc.
+
 **Goal:** Windows, panels, scroll areas, etc.
 
 ### Dual-Mode Tool Example: Window
@@ -696,6 +912,9 @@ impl CustomEmit<WindowParams> for ContainerWindowEmit {
 
 ## Phase 3: Runtime Context Management
 
+> This corresponds to guide Phase 3C (Verified Workflow Plugin). Runtime
+> tools are feature-gated behind `runtime` and require `eframe`.
+
 **Goal:** Actually run egui UIs (requires eframe).
 
 ### Runtime Tool Example: Create Context
@@ -756,6 +975,9 @@ async fn context_run_frame(p: RunFrameParams) -> Result<CallToolResult, ErrorDat
 ---
 
 ## Phase 4: Fragment Tools (Complete Apps)
+
+> This corresponds to guide Phase 3D (EmitCode for Workflow Tools).
+> Fragment tools generate Rust source code, not runtime output.
 
 **Goal:** Generate complete egui/eframe applications.
 
@@ -898,33 +1120,68 @@ fn emit_window_children(children: &[WidgetJson], indent: usize) -> String {
 
 ## Implementation Order
 
+> For each phase below, follow the corresponding section in
+> [THIRD_PARTY_SUPPORT_GUIDE.md](THIRD_PARTY_SUPPORT_GUIDE.md).
+> Phase 0 maps to the guide's Phase 2; Phase 1+ maps to the guide's Phase 3+.
+
+### Foundation (must complete first)
+
+1. **Phase 0a** — Workspace dep + feature flag in `crates/elicitation/Cargo.toml`
+2. **Phase 0b** — Tier 1 Select enums (11 small enums, 2–6 variants each)
+3. **Phase 0c** — Tier 2 Select enums (3 medium enums, 6–16 variants)
+4. **Phase 0d** — Tier 3 Select enums (2 large enums: `CursorIcon`, `Key`)
+5. **Phase 0e** — Composite struct types (9 types: Color32, Pos2, Vec2, Rect, Stroke, Rounding, Shadow, Margin, FontId)
+6. **Phase 0f** — `egui_specs.rs` (ElicitSpec + ElicitComplete for all types)
+7. **Phase 0g** — Verification proofs (Kani, Creusot, Verus)
+8. **Phase 0h** — `just check-all elicitation --features egui-types`
+
+### Shadow crate scaffold
+
 1. **Phase 1a** — Crate scaffold: `Cargo.toml`, `lib.rs`, `serde_types.rs`
 2. **Phase 1b** — Basic widget dual-mode tools: (50 tools)
 3. **Phase 1c** — Text input widget dual-mode tools: (20 tools)
 4. **Phase 1d** — `just check elicit_egui`
-5. **Phase 2a** — Numeric widget dual-mode tools: (30 tools)
-6. **Phase 2b** — Color widget dual-mode tools: (15 tools)
-7. **Phase 2c** — Progress/status widget dual-mode tools: (10 tools)
-8. **Phase 2d** — `just check elicit_egui`
-9. **Phase 3a** — Container dual-mode tools: (40 tools)
-10. **Phase 3b** — Layout dual-mode tools: (35 tools)
-11. **Phase 3c** — Grid layout dual-mode tools: (20 tools)
-12. **Phase 3d** — `just check elicit_egui`
-13. **Phase 4a** — Styling dual-mode tools: (40 tools)
-14. **Phase 4b** — Response checking dual-mode tools: (30 tools)
-15. **Phase 4c** — Context menu/tooltip dual-mode tools: (20 tools)
-16. **Phase 4d** — `just check elicit_egui`
-17. **Phase 5a** — Input/event dual-mode tools: (10 tools)
-18. **Phase 5b** — `just check elicit_egui`
-19. **Phase 6a** — Runtime context management: (15 tools) — requires `runtime` feature
-20. **Phase 6b** — Runtime app state registry: (20 tools) — requires `runtime` feature
-21. **Phase 6c** — Runtime platform integration: (15 tools) — requires `runtime` feature
-22. **Phase 6d** — `just check elicit_egui --features runtime`
-23. **Phase 7a** — Fragment widget code generation: (10 tools)
-24. **Phase 7b** — Fragment container code generation: (10 tools)
-25. **Phase 7c** — Fragment complete app assembly: (10 tools)
-26. **Phase 7d** — `just check elicit_egui --all-features`
-27. **Phase 8** — Wire into `elicit_server` emit chain
+
+### Widget expansion
+
+1. **Phase 2a** — Numeric widget dual-mode tools: (30 tools)
+2. **Phase 2b** — Color widget dual-mode tools: (15 tools)
+3. **Phase 2c** — Progress/status widget dual-mode tools: (10 tools)
+4. **Phase 2d** — `just check elicit_egui`
+
+### Containers and layout
+
+1. **Phase 3a** — Container dual-mode tools: (40 tools)
+2. **Phase 3b** — Layout dual-mode tools: (35 tools)
+3. **Phase 3c** — Grid layout dual-mode tools: (20 tools)
+4. **Phase 3d** — `just check elicit_egui`
+
+### Styling and interaction
+
+1. **Phase 4a** — Styling dual-mode tools: (40 tools)
+2. **Phase 4b** — Response checking dual-mode tools: (30 tools)
+3. **Phase 4c** — Context menu/tooltip dual-mode tools: (20 tools)
+4. **Phase 4d** — `just check elicit_egui`
+
+### Input and events
+
+1. **Phase 5a** — Input/event dual-mode tools: (10 tools)
+2. **Phase 5b** — `just check elicit_egui`
+
+### Runtime (feature-gated)
+
+1. **Phase 6a** — Runtime context management: (15 tools) — requires `runtime` feature
+2. **Phase 6b** — Runtime app state registry: (20 tools) — requires `runtime` feature
+3. **Phase 6c** — Runtime platform integration: (15 tools) — requires `runtime` feature
+4. **Phase 6d** — `just check elicit_egui --features runtime`
+
+### Code generation and integration
+
+1. **Phase 7a** — Fragment widget code generation: (10 tools)
+2. **Phase 7b** — Fragment container code generation: (10 tools)
+3. **Phase 7c** — Fragment complete app assembly: (10 tools)
+4. **Phase 7d** — `just check elicit_egui --all-features`
+5. **Phase 8** — Wire into `elicit_server` emit chain
 
 ---
 

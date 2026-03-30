@@ -46,6 +46,8 @@ async-trait = { workspace = true }
 [features]
 # Proof emission support — gate proof method generation
 proofs = []
+# Static prompt tree generation
+prompt-tree = []
 # Passthrough features for testing (library users don't pay for these)
 chrono = ["elicitation_rand/chrono"]
 time = ["elicitation_rand/time"]

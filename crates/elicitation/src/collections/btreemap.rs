@@ -40,6 +40,8 @@ impl Elicitation for BTreeMapStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for BTreeMapStyle {}
+
 impl<K, V> Prompt for BTreeMap<K, V>
 where
     K: Elicitation + Ord + Send,

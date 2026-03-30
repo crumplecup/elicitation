@@ -477,6 +477,20 @@ impl<P: Prop + crate::Elicitation> crate::Elicitation for Established<P> {
     }
 }
 
+/// `Established<P>` is a zero-sized proof token — it carries no user-facing
+/// prompt. Any struct that holds one as a field still needs the bound satisfied
+/// when `prompt-tree` is enabled; we return an empty `Leaf` so the derive
+/// can compile without noise in the assembled prompt output.
+#[cfg(feature = "prompt-tree")]
+impl<P: Prop> crate::ElicitPromptTree for Established<P> {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Leaf {
+            prompt: String::new(),
+            type_name: "Established".to_string(),
+        }
+    }
+}
+
 /// Proposition: value inhabits type T with its invariants.
 ///
 /// `Is<T>` represents the statement "a value of type T exists and

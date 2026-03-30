@@ -1,0 +1,50 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ui_types.rs" 162 0 162 44 *)
+
+let%span sui_types = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ui_types.rs" 163 17 163 18
+let%span sui_types'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ui_types.rs" 164 17 164 18
+let%span sui_types'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ui_types.rs" 165 17 165 20
+let%span sui_types'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ui_types.rs" 166 17 166 19
+let%span sui_types'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ui_types.rs" 167 20 167 24
+let%span sui_types'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ui_types.rs" 168 20 168 24
+let%span sui_types'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ui_types.rs" 170 4 170 11
+let%span sui_types'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ui_types.rs" 170 23 170 30
+let%span sui_types'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ui_types.rs" 170 4 170 38
+let%span sui_types'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ui_types.rs" 160 11 160 15
+let%span sui_types'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ui_types.rs" 161 10 161 24
+
+use creusot.int.UInt32
+use creusot.prelude.Any
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_overflow_origin_fits
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ui_types.rs" 162 0 162 44] (return (x: bool)) = (! bb0
+  [ bb0 = s0
+    [ s0 = [ &x <- [%#sui_types] (0: UInt32.t) ] s1
+    | s1 = [ &y <- [%#sui_types'0] (0: UInt32.t) ] s2
+    | s2 = [ &w <- [%#sui_types'1] (100: UInt32.t) ] s3
+    | s3 = [ &h <- [%#sui_types'2] (50: UInt32.t) ] s4
+    | s4 = [ &vp_w <- [%#sui_types'3] (1920: UInt32.t) ] s5
+    | s5 = [ &vp_h <- [%#sui_types'4] (1080: UInt32.t) ] s6
+    | s6 = UInt32.add [%#sui_types'5] {x} {w} (fun (_x: UInt32.t) -> [ &_10 <- _x ] s7)
+    | s7 = [ &_9 <- UInt32.le _10 vp_w ] s8
+    | s8 = any [ br0 -> {_9 = false} (! bb2) | br1 -> {_9} (! bb1) ] ]
+  | bb1 = s0
+    [ s0 = UInt32.add [%#sui_types'6] {y} {h} (fun (_x: UInt32.t) -> [ &_14 <- _x ] s1)
+    | s1 = [ &_ret <- UInt32.le _14 vp_h ] s2
+    | s2 = return {_ret} ]
+  | bb2 = s0 [ s0 = [ &_ret <- [%#sui_types'7] false ] s1 | s1 = return {_ret} ] ]
+  [ & _ret: bool = Any.any_l ()
+  | & x: UInt32.t = Any.any_l ()
+  | & y: UInt32.t = Any.any_l ()
+  | & w: UInt32.t = Any.any_l ()
+  | & h: UInt32.t = Any.any_l ()
+  | & vp_w: UInt32.t = Any.any_l ()
+  | & vp_h: UInt32.t = Any.any_l ()
+  | & _9: bool = Any.any_l ()
+  | & _10: UInt32.t = Any.any_l ()
+  | & _14: UInt32.t = Any.any_l () ])
+  [ return (result: bool) -> {[@stop_split] [@expl:verify_overflow_origin_fits ensures] [%#sui_types'9] result = true}
+    (! return {result}) ]

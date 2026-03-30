@@ -40,6 +40,14 @@
 //! | `TokioIoPlugin` | `elicit_tokio` | duplex_create, duplex_read, duplex_write, duplex_close |
 //! | `TokioUnixPlugin` | `elicit_tokio` | unix_listener_bind, unix_listener_accept, unix_listener_local_addr, unix_listener_close, unix_stream_connect, unix_stream_read, unix_stream_write, unix_stream_local_addr, unix_stream_peer_addr, unix_stream_close, unix_datagram_bind, unix_datagram_send_to, unix_datagram_recv_from, unix_datagram_local_addr, unix_datagram_close (**unix only**) |
 //! | `TokioSpawnPlugin` | `elicit_tokio` | join, try_join, abort + one dynamic tool per registered workload type |
+//! | `EguiWidgetsPlugin` | `elicit_egui` | label, heading, button, small_button, checkbox, radio, slider, text_edit, … (31 tools) |
+//! | `EguiContainersPlugin` | `elicit_egui` | window, top_panel, bottom_panel, left_panel, right_panel, scroll_area, … (14 tools) |
+//! | `EguiLayoutPlugin` | `elicit_egui` | horizontal, vertical, columns, grid, indent, add_space, … (11 tools) |
+//! | `EguiStylePlugin` | `elicit_egui` | set_spacing, dark_mode, light_mode, set_fonts, set_interaction, … (29 tools) |
+//! | `EguiResponsePlugin` | `elicit_egui` | was_clicked, is_hovered, has_focus, drag_started, value_changed, … (21 tools) |
+//! | `EguiMenusPlugin` | `elicit_egui` | context_menu, popup, tooltip, modal, confirm_dialog, … (13 tools) |
+//! | `EguiInputPlugin` | `elicit_egui` | key_pressed, pointer_pos, scroll_delta, clipboard_get, request_focus, … (14 tools) |
+//! | `EguiFragmentsPlugin` | `elicit_egui` | fragment_native_app, fragment_form, fragment_table, fragment_tab_panel, … (10 tools) |
 //!
 //! # Feature flags
 //!
@@ -51,6 +59,7 @@
 #![warn(missing_docs)]
 
 mod fetch_and_parse;
+pub mod ledger;
 mod secure_fetch;
 
 #[cfg(feature = "emit")]
@@ -133,6 +142,8 @@ pub fn emit_dispatch_crate(
         #[cfg(unix)]
         std::mem::size_of::<elicit_tokio::UnixListenerBindParams>(),
         std::mem::size_of::<elicit_tokio::JoinParams>(),
+        // elicit_egui
+        std::mem::size_of::<elicit_egui::LabelParams>(),
     ];
     if crate_name.is_empty() {
         elicitation::emit_code::dispatch_emit(tool, params)

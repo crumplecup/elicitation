@@ -9,7 +9,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // For this example, we demonstrate the type system without
     // actually calling APIs (would require botticelli dependency)
-    println!("This example demonstrates the ElicitationStyle trait API.");
+    println!("This example demonstrates the StyleMarker trait API.");
     println!("It shows how custom styles can be defined and used.\n");
 
     // Example: Define custom styles for built-in types

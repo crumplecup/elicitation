@@ -40,6 +40,8 @@ impl Elicitation for VecDequeStyle {
     }
 }
 
+impl crate::style::ElicitationStyle for VecDequeStyle {}
+
 impl<T> Prompt for VecDeque<T>
 where
     T: Elicitation + Send,

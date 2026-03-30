@@ -25,6 +25,11 @@ pub struct GraphNode {
     pub name: String,
     /// How this node was classified.
     pub kind: NodeKind,
+    /// Optional prompt text from the type's `Prompt` implementation.
+    ///
+    /// Populated from [`TypeMetadata::description`] for registered types;
+    /// `None` for primitives, generic placeholders, and unit variant nodes.
+    pub prompt: Option<String>,
 }
 
 /// Classification of a graph node.
@@ -51,6 +56,10 @@ pub struct GraphEdge {
     pub label: String,
     /// Target node name.
     pub to: String,
+    /// Optional field-level prompt, from `#[prompt("...")]` on a struct field.
+    ///
+    /// `None` for variant edges (enums) and edges without an explicit prompt.
+    pub prompt: Option<String>,
 }
 
 /// Error returned when graph construction fails.
@@ -109,7 +118,14 @@ impl TypeGraph {
                 None => {
                     // Leaf node — classify as generic placeholder or primitive.
                     let kind = classify_leaf(&name);
-                    graph.nodes.insert(name.clone(), GraphNode { name, kind });
+                    graph.nodes.insert(
+                        name.clone(),
+                        GraphNode {
+                            name,
+                            kind,
+                            prompt: None,
+                        },
+                    );
                 }
                 Some(meta) => {
                     let kind = match meta.pattern() {
@@ -123,6 +139,7 @@ impl TypeGraph {
                         GraphNode {
                             name: name.clone(),
                             kind,
+                            prompt: meta.description.map(str::to_string),
                         },
                     );
 
@@ -133,6 +150,7 @@ impl TypeGraph {
                                     from: name.clone(),
                                     label: field.name.to_string(),
                                     to: field.type_name.to_string(),
+                                    prompt: field.prompt.map(str::to_string),
                                 });
                                 if !visited.contains(field.type_name) {
                                     queue.push_back(field.type_name.to_string());
@@ -151,6 +169,7 @@ impl TypeGraph {
                                         from: name.clone(),
                                         label: variant.label.clone(),
                                         to: variant_node.clone(),
+                                        prompt: None,
                                     });
                                     if !visited.contains(&variant_node) {
                                         visited.insert(variant_node.clone());
@@ -159,6 +178,7 @@ impl TypeGraph {
                                             GraphNode {
                                                 name: variant_node,
                                                 kind: NodeKind::Primitive,
+                                                prompt: None,
                                             },
                                         );
                                     }
@@ -168,6 +188,7 @@ impl TypeGraph {
                                         from: name.clone(),
                                         label: variant.label.clone(),
                                         to: variant_node.clone(),
+                                        prompt: None,
                                     });
                                     if !visited.contains(&variant_node) {
                                         visited.insert(variant_node.clone());
@@ -176,6 +197,7 @@ impl TypeGraph {
                                             GraphNode {
                                                 name: variant_node.clone(),
                                                 kind: NodeKind::Select,
+                                                prompt: None,
                                             },
                                         );
                                         for field in &variant.fields {
@@ -183,6 +205,7 @@ impl TypeGraph {
                                                 from: variant_node.clone(),
                                                 label: field.name.to_string(),
                                                 to: field.type_name.to_string(),
+                                                prompt: field.prompt.map(str::to_string),
                                             });
                                             if !visited.contains(field.type_name) {
                                                 queue.push_back(field.type_name.to_string());
