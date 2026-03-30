@@ -245,7 +245,8 @@ async fn egui_popup_below_widget(p: PopupBelowWidgetParams) -> Result<CallToolRe
     plugin = "egui_menus",
     name = "egui_close_popup",
     description = "Close the current popup. Returns MenuActionJson::ClosePopup.",
-    emit = Auto
+    emit = Auto,
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_close_popup(p: EmptyMenuParams) -> Result<CallToolResult, ErrorData> {

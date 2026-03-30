@@ -882,3 +882,88 @@ pub enum UiNode {
         children: Vec<UiNode>,
     },
 }
+
+// ── ToCodeLiteral impls for emit feature ────────────────────────────────────
+
+#[cfg(feature = "emit")]
+mod emit_impls {
+    use super::{
+        ColorJson, CornerRadiusJson, LayoutAlign, MarginJson, RangeJson, StrokeJson, Vec2Json,
+    };
+    use elicitation::emit_code::ToCodeLiteral;
+    use quote::quote;
+
+    impl ToCodeLiteral for ColorJson {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let (r, g, b, a) = (self.r, self.g, self.b, self.a);
+            quote! { ColorJson { r: #r, g: #g, b: #b, a: #a } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { ColorJson }
+        }
+    }
+
+    impl ToCodeLiteral for StrokeJson {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let width = self.width;
+            let color = self.color.to_code_literal();
+            quote! { StrokeJson { width: #width, color: #color } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { StrokeJson }
+        }
+    }
+
+    impl ToCodeLiteral for RangeJson {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let (min, max) = (self.min, self.max);
+            quote! { RangeJson { min: #min, max: #max } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { RangeJson }
+        }
+    }
+
+    impl ToCodeLiteral for Vec2Json {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let (x, y) = (self.x, self.y);
+            quote! { Vec2Json { x: #x, y: #y } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { Vec2Json }
+        }
+    }
+
+    impl ToCodeLiteral for CornerRadiusJson {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let (nw, ne, sw, se) = (self.nw, self.ne, self.sw, self.se);
+            quote! { CornerRadiusJson { nw: #nw, ne: #ne, sw: #sw, se: #se } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { CornerRadiusJson }
+        }
+    }
+
+    impl ToCodeLiteral for MarginJson {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let (left, right, top, bottom) = (self.left, self.right, self.top, self.bottom);
+            quote! { MarginJson { left: #left, right: #right, top: #top, bottom: #bottom } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { MarginJson }
+        }
+    }
+
+    impl ToCodeLiteral for LayoutAlign {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            match self {
+                LayoutAlign::Min => quote! { LayoutAlign::Min },
+                LayoutAlign::Center => quote! { LayoutAlign::Center },
+                LayoutAlign::Max => quote! { LayoutAlign::Max },
+            }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { LayoutAlign }
+        }
+    }
+}

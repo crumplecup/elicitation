@@ -139,7 +139,8 @@ async fn widget_small(p: SimpleTextParams) -> Result<CallToolResult, ErrorData> 
 #[elicit_tool(
     plugin = "egui_widgets",
     name = "widget_strong",
-    description = "Create strong (bold) text. Returns WidgetJson::Strong."
+    description = "Create strong (bold) text. Returns WidgetJson::Strong.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn widget_strong(p: SimpleTextParams) -> Result<CallToolResult, ErrorData> {
@@ -151,7 +152,8 @@ async fn widget_strong(p: SimpleTextParams) -> Result<CallToolResult, ErrorData>
 #[elicit_tool(
     plugin = "egui_widgets",
     name = "widget_weak",
-    description = "Create weak (faint) text. Returns WidgetJson::Weak."
+    description = "Create weak (faint) text. Returns WidgetJson::Weak.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn widget_weak(p: SimpleTextParams) -> Result<CallToolResult, ErrorData> {
@@ -363,7 +365,8 @@ async fn widget_separator(p: EmptyParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "egui_widgets",
     name = "widget_spinner",
-    description = "Create a loading spinner animation. Returns WidgetJson::Spinner."
+    description = "Create a loading spinner animation. Returns WidgetJson::Spinner.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn widget_spinner(p: EmptyParams) -> Result<CallToolResult, ErrorData> {

@@ -131,7 +131,8 @@ async fn egui_key_pressed(p: KeyParams) -> Result<CallToolResult, ErrorData> {
     plugin = "egui_input",
     name = "egui_key_released",
     description = "Check if a key was released this frame. Returns InputActionJson::KeyReleased.",
-    emit = Auto
+    emit = Auto,
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_key_released(p: KeyParams) -> Result<CallToolResult, ErrorData> {
@@ -144,7 +145,8 @@ async fn egui_key_released(p: KeyParams) -> Result<CallToolResult, ErrorData> {
     plugin = "egui_input",
     name = "egui_key_down",
     description = "Check if a key is currently held down. Returns InputActionJson::KeyDown.",
-    emit = Auto
+    emit = Auto,
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_key_down(p: KeyParams) -> Result<CallToolResult, ErrorData> {
@@ -174,7 +176,8 @@ async fn egui_modifiers(p: EmptyInputParams) -> Result<CallToolResult, ErrorData
     plugin = "egui_input",
     name = "egui_pointer_pos",
     description = "Get current pointer/mouse position. Returns InputActionJson::PointerPos.",
-    emit = Auto
+    emit = Auto,
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_pointer_pos(p: EmptyInputParams) -> Result<CallToolResult, ErrorData> {
@@ -207,7 +210,8 @@ async fn egui_pointer_button_pressed(p: PointerButtonParams) -> Result<CallToolR
     plugin = "egui_input",
     name = "egui_pointer_button_released",
     description = "Check if a mouse button was released. Returns InputActionJson::PointerButtonReleased.",
-    emit = Auto
+    emit = Auto,
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_pointer_button_released(p: PointerButtonParams) -> Result<CallToolResult, ErrorData> {
@@ -220,7 +224,8 @@ async fn egui_pointer_button_released(p: PointerButtonParams) -> Result<CallTool
     plugin = "egui_input",
     name = "egui_pointer_delta",
     description = "Get pointer movement delta this frame. Returns InputActionJson::PointerDelta.",
-    emit = Auto
+    emit = Auto,
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_pointer_delta(p: EmptyInputParams) -> Result<CallToolResult, ErrorData> {
@@ -233,7 +238,8 @@ async fn egui_pointer_delta(p: EmptyInputParams) -> Result<CallToolResult, Error
     plugin = "egui_input",
     name = "egui_scroll_delta",
     description = "Get scroll wheel delta. Returns InputActionJson::ScrollDelta.",
-    emit = Auto
+    emit = Auto,
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_scroll_delta(p: EmptyInputParams) -> Result<CallToolResult, ErrorData> {
@@ -250,7 +256,8 @@ async fn egui_scroll_delta(p: EmptyInputParams) -> Result<CallToolResult, ErrorD
     plugin = "egui_input",
     name = "egui_clipboard_get",
     description = "Get text from clipboard. Returns InputActionJson::ClipboardGet.",
-    emit = Auto
+    emit = Auto,
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_clipboard_get(p: EmptyInputParams) -> Result<CallToolResult, ErrorData> {
@@ -309,7 +316,8 @@ async fn egui_request_focus(p: FocusParams) -> Result<CallToolResult, ErrorData>
     plugin = "egui_input",
     name = "egui_surrender_focus",
     description = "Release keyboard focus from a widget. Returns InputActionJson::SurrenderFocus.",
-    emit = Auto
+    emit = Auto,
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_surrender_focus(p: FocusParams) -> Result<CallToolResult, ErrorData> {
@@ -324,7 +332,8 @@ async fn egui_surrender_focus(p: FocusParams) -> Result<CallToolResult, ErrorDat
     plugin = "egui_input",
     name = "egui_has_focus",
     description = "Check if a widget has keyboard focus. Returns InputActionJson::HasFocus.",
-    emit = Auto
+    emit = Auto,
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_has_focus(p: FocusParams) -> Result<CallToolResult, ErrorData> {

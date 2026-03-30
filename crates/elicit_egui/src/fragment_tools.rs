@@ -982,3 +982,125 @@ impl {enum_name} {{
     );
     Ok(code_result(&code))
 }
+
+// ── ToCodeLiteral impls for emit feature ────────────────────────────────────
+
+#[cfg(feature = "emit")]
+mod emit_impls {
+    use super::{
+        FormFieldDef, MessageVariantDef, SettingsFieldDef, SettingsSectionDef, StateFieldDef,
+        TabDef, TableColumnDef, ToolbarButtonDef,
+    };
+    use elicitation::emit_code::ToCodeLiteral;
+    use quote::quote;
+
+    impl ToCodeLiteral for FormFieldDef {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let name = &self.name;
+            let field_type = &self.field_type;
+            let label = &self.label;
+            quote! { FormFieldDef { name: #name.to_string(), field_type: #field_type.to_string(), label: #label.to_string() } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { FormFieldDef }
+        }
+    }
+
+    impl ToCodeLiteral for TableColumnDef {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let name = &self.name;
+            let header = &self.header;
+            quote! { TableColumnDef { name: #name.to_string(), header: #header.to_string() } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { TableColumnDef }
+        }
+    }
+
+    impl ToCodeLiteral for SettingsFieldDef {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let name = &self.name;
+            let field_type = &self.field_type;
+            let label = &self.label;
+            let default_value = &self.default_value;
+            quote! { SettingsFieldDef {
+                name: #name.to_string(),
+                field_type: #field_type.to_string(),
+                label: #label.to_string(),
+                default_value: #default_value.to_string(),
+            } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { SettingsFieldDef }
+        }
+    }
+
+    impl ToCodeLiteral for SettingsSectionDef {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let name = &self.name;
+            let fields: Vec<_> = self.fields.iter().map(|f| f.to_code_literal()).collect();
+            quote! { SettingsSectionDef { name: #name.to_string(), fields: ::std::vec![#(#fields),*] } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { SettingsSectionDef }
+        }
+    }
+
+    impl ToCodeLiteral for TabDef {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let name = &self.name;
+            let label = &self.label;
+            quote! { TabDef { name: #name.to_string(), label: #label.to_string() } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { TabDef }
+        }
+    }
+
+    impl ToCodeLiteral for ToolbarButtonDef {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let name = &self.name;
+            let label = &self.label;
+            let tooltip = &self.tooltip;
+            quote! { ToolbarButtonDef { name: #name.to_string(), label: #label.to_string(), tooltip: #tooltip.to_string() } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { ToolbarButtonDef }
+        }
+    }
+
+    impl ToCodeLiteral for StateFieldDef {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let name = &self.name;
+            let rust_type = &self.rust_type;
+            let default_value = &self.default_value;
+            quote! { StateFieldDef {
+                name: #name.to_string(),
+                rust_type: #rust_type.to_string(),
+                default_value: #default_value.to_string(),
+            } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { StateFieldDef }
+        }
+    }
+
+    impl ToCodeLiteral for MessageVariantDef {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            let name = &self.name;
+            let payload = self
+                .payload_type
+                .as_ref()
+                .map(|p| {
+                    quote! { ::std::option::Option::Some(#p.to_string()) }
+                })
+                .unwrap_or_else(|| {
+                    quote! { ::std::option::Option::None::<String> }
+                });
+            quote! { MessageVariantDef { name: #name.to_string(), payload_type: #payload } }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { MessageVariantDef }
+        }
+    }
+}

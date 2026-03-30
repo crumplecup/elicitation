@@ -290,7 +290,8 @@ async fn container_collapsing(p: CollapsingParams) -> Result<CallToolResult, Err
 #[elicit_tool(
     plugin = "egui_containers",
     name = "container_group",
-    description = "Create a visual grouping box around content. Returns ContainerJson::Group."
+    description = "Create a visual grouping box around content. Returns ContainerJson::Group.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn container_group(p: EmptyContainerParams) -> Result<CallToolResult, ErrorData> {
@@ -339,7 +340,8 @@ async fn container_frame(p: FrameParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "egui_containers",
     name = "container_menu_bar",
-    description = "Create a menu bar. Returns ContainerJson::MenuBar."
+    description = "Create a menu bar. Returns ContainerJson::MenuBar.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn container_menu_bar(p: EmptyContainerParams) -> Result<CallToolResult, ErrorData> {

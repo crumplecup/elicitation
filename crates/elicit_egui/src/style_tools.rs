@@ -363,7 +363,8 @@ async fn style_dark_mode(p: EmptyStyleParams) -> Result<CallToolResult, ErrorDat
 #[elicit_tool(
     plugin = "egui_style",
     name = "style_light_mode",
-    description = "Switch to light visual theme. Returns StyleJson::LightMode."
+    description = "Switch to light visual theme. Returns StyleJson::LightMode.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn style_light_mode(p: EmptyStyleParams) -> Result<CallToolResult, ErrorData> {
@@ -726,7 +727,8 @@ async fn egui_set_hyperlink_color(p: ColorOverrideParams) -> Result<CallToolResu
 #[elicit_tool(
     plugin = "egui_style",
     name = "egui_set_faint_bg_color",
-    description = "Set faint background colour for alternating rows/subtle backgrounds. Returns StyleJson::Visual with FaintBgColor."
+    description = "Set faint background colour for alternating rows/subtle backgrounds. Returns StyleJson::Visual with FaintBgColor.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_set_faint_bg_color(p: ColorOverrideParams) -> Result<CallToolResult, ErrorData> {
@@ -741,7 +743,8 @@ async fn egui_set_faint_bg_color(p: ColorOverrideParams) -> Result<CallToolResul
 #[elicit_tool(
     plugin = "egui_style",
     name = "egui_set_extreme_bg_color",
-    description = "Set extreme background colour (e.g. text input fields). Returns StyleJson::Visual with ExtremeBgColor."
+    description = "Set extreme background colour (e.g. text input fields). Returns StyleJson::Visual with ExtremeBgColor.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_set_extreme_bg_color(p: ColorOverrideParams) -> Result<CallToolResult, ErrorData> {
@@ -756,7 +759,8 @@ async fn egui_set_extreme_bg_color(p: ColorOverrideParams) -> Result<CallToolRes
 #[elicit_tool(
     plugin = "egui_style",
     name = "egui_set_code_bg_color",
-    description = "Set code/monospace background colour. Returns StyleJson::Visual with CodeBgColor."
+    description = "Set code/monospace background colour. Returns StyleJson::Visual with CodeBgColor.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_set_code_bg_color(p: ColorOverrideParams) -> Result<CallToolResult, ErrorData> {
@@ -771,7 +775,8 @@ async fn egui_set_code_bg_color(p: ColorOverrideParams) -> Result<CallToolResult
 #[elicit_tool(
     plugin = "egui_style",
     name = "egui_set_warn_fg_color",
-    description = "Set warning foreground colour. Returns StyleJson::Visual with WarnFgColor."
+    description = "Set warning foreground colour. Returns StyleJson::Visual with WarnFgColor.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_set_warn_fg_color(p: ColorOverrideParams) -> Result<CallToolResult, ErrorData> {
@@ -786,7 +791,8 @@ async fn egui_set_warn_fg_color(p: ColorOverrideParams) -> Result<CallToolResult
 #[elicit_tool(
     plugin = "egui_style",
     name = "egui_set_error_fg_color",
-    description = "Set error foreground colour. Returns StyleJson::Visual with ErrorFgColor."
+    description = "Set error foreground colour. Returns StyleJson::Visual with ErrorFgColor.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn egui_set_error_fg_color(p: ColorOverrideParams) -> Result<CallToolResult, ErrorData> {
@@ -1003,4 +1009,86 @@ async fn egui_set_text_cursor_width(p: TextCursorBlinkParams) -> Result<CallTool
         preview: p.preview,
     };
     Ok(style_result(&s))
+}
+
+// ── ToCodeLiteral impls for emit feature ────────────────────────────────────
+
+#[cfg(feature = "emit")]
+mod emit_impls {
+    use super::{FontFamily, TextStyleName, TextValign, VisualProperty, WidgetState};
+    use elicitation::emit_code::ToCodeLiteral;
+    use quote::quote;
+
+    impl ToCodeLiteral for VisualProperty {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            match self {
+                VisualProperty::HyperlinkColor => quote! { VisualProperty::HyperlinkColor },
+                VisualProperty::FaintBgColor => quote! { VisualProperty::FaintBgColor },
+                VisualProperty::ExtremeBgColor => quote! { VisualProperty::ExtremeBgColor },
+                VisualProperty::CodeBgColor => quote! { VisualProperty::CodeBgColor },
+                VisualProperty::WarnFgColor => quote! { VisualProperty::WarnFgColor },
+                VisualProperty::ErrorFgColor => quote! { VisualProperty::ErrorFgColor },
+                VisualProperty::WindowFill => quote! { VisualProperty::WindowFill },
+                VisualProperty::PanelFill => quote! { VisualProperty::PanelFill },
+            }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { VisualProperty }
+        }
+    }
+
+    impl ToCodeLiteral for WidgetState {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            match self {
+                WidgetState::Noninteractive => quote! { WidgetState::Noninteractive },
+                WidgetState::Inactive => quote! { WidgetState::Inactive },
+                WidgetState::Hovered => quote! { WidgetState::Hovered },
+                WidgetState::Active => quote! { WidgetState::Active },
+                WidgetState::Open => quote! { WidgetState::Open },
+            }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { WidgetState }
+        }
+    }
+
+    impl ToCodeLiteral for FontFamily {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            match self {
+                FontFamily::Proportional => quote! { FontFamily::Proportional },
+                FontFamily::Monospace => quote! { FontFamily::Monospace },
+            }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { FontFamily }
+        }
+    }
+
+    impl ToCodeLiteral for TextStyleName {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            match self {
+                TextStyleName::Heading => quote! { TextStyleName::Heading },
+                TextStyleName::Body => quote! { TextStyleName::Body },
+                TextStyleName::Monospace => quote! { TextStyleName::Monospace },
+                TextStyleName::Button => quote! { TextStyleName::Button },
+                TextStyleName::Small => quote! { TextStyleName::Small },
+            }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { TextStyleName }
+        }
+    }
+
+    impl ToCodeLiteral for TextValign {
+        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
+            match self {
+                TextValign::Top => quote! { TextValign::Top },
+                TextValign::Center => quote! { TextValign::Center },
+                TextValign::Bottom => quote! { TextValign::Bottom },
+            }
+        }
+        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
+            quote! { TextValign }
+        }
+    }
 }

@@ -85,7 +85,8 @@ async fn layout_horizontal_centered(p: EmptyLayoutParams) -> Result<CallToolResu
 #[elicit_tool(
     plugin = "egui_layout",
     name = "layout_vertical_centered",
-    description = "Vertical layout with centred cross-axis. Returns LayoutJson::VerticalCentered."
+    description = "Vertical layout with centred cross-axis. Returns LayoutJson::VerticalCentered.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn layout_vertical_centered(p: EmptyLayoutParams) -> Result<CallToolResult, ErrorData> {
@@ -97,7 +98,8 @@ async fn layout_vertical_centered(p: EmptyLayoutParams) -> Result<CallToolResult
 #[elicit_tool(
     plugin = "egui_layout",
     name = "layout_horizontal_justified",
-    description = "Horizontal layout with justified items. Returns LayoutJson::HorizontalJustified."
+    description = "Horizontal layout with justified items. Returns LayoutJson::HorizontalJustified.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn layout_horizontal_justified(p: EmptyLayoutParams) -> Result<CallToolResult, ErrorData> {
@@ -109,7 +111,8 @@ async fn layout_horizontal_justified(p: EmptyLayoutParams) -> Result<CallToolRes
 #[elicit_tool(
     plugin = "egui_layout",
     name = "layout_vertical_justified",
-    description = "Vertical layout with justified items. Returns LayoutJson::VerticalJustified."
+    description = "Vertical layout with justified items. Returns LayoutJson::VerticalJustified.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn layout_vertical_justified(p: EmptyLayoutParams) -> Result<CallToolResult, ErrorData> {
@@ -121,7 +124,8 @@ async fn layout_vertical_justified(p: EmptyLayoutParams) -> Result<CallToolResul
 #[elicit_tool(
     plugin = "egui_layout",
     name = "layout_horizontal_wrapped",
-    description = "Horizontal layout that wraps to next line. Returns LayoutJson::HorizontalWrapped."
+    description = "Horizontal layout that wraps to next line. Returns LayoutJson::HorizontalWrapped.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn layout_horizontal_wrapped(p: EmptyLayoutParams) -> Result<CallToolResult, ErrorData> {

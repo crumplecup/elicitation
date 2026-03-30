@@ -136,7 +136,8 @@ async fn response_clicked(p: EmptyResponseParams) -> Result<CallToolResult, Erro
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_double_clicked",
-    description = "Check if the widget was double-clicked. Returns ResponseQueryJson::DoubleClicked."
+    description = "Check if the widget was double-clicked. Returns ResponseQueryJson::DoubleClicked.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_double_clicked(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -148,7 +149,8 @@ async fn response_double_clicked(p: EmptyResponseParams) -> Result<CallToolResul
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_secondary_clicked",
-    description = "Check if the widget was right-clicked. Returns ResponseQueryJson::SecondaryClicked."
+    description = "Check if the widget was right-clicked. Returns ResponseQueryJson::SecondaryClicked.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_secondary_clicked(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -179,7 +181,8 @@ async fn response_clicked_n(p: ClickedNParams) -> Result<CallToolResult, ErrorDa
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_hovered",
-    description = "Check if the widget is being hovered. Returns ResponseQueryJson::Hovered."
+    description = "Check if the widget is being hovered. Returns ResponseQueryJson::Hovered.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_hovered(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -195,7 +198,8 @@ async fn response_hovered(p: EmptyResponseParams) -> Result<CallToolResult, Erro
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_has_focus",
-    description = "Check if the widget has keyboard focus. Returns ResponseQueryJson::HasFocus."
+    description = "Check if the widget has keyboard focus. Returns ResponseQueryJson::HasFocus.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_has_focus(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -207,7 +211,8 @@ async fn response_has_focus(p: EmptyResponseParams) -> Result<CallToolResult, Er
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_gained_focus",
-    description = "Check if the widget just gained focus. Returns ResponseQueryJson::GainedFocus."
+    description = "Check if the widget just gained focus. Returns ResponseQueryJson::GainedFocus.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_gained_focus(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -219,7 +224,8 @@ async fn response_gained_focus(p: EmptyResponseParams) -> Result<CallToolResult,
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_lost_focus",
-    description = "Check if the widget just lost focus. Returns ResponseQueryJson::LostFocus."
+    description = "Check if the widget just lost focus. Returns ResponseQueryJson::LostFocus.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_lost_focus(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -231,7 +237,8 @@ async fn response_lost_focus(p: EmptyResponseParams) -> Result<CallToolResult, E
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_request_focus",
-    description = "Request keyboard focus for the widget. Returns ResponseQueryJson::RequestFocus."
+    description = "Request keyboard focus for the widget. Returns ResponseQueryJson::RequestFocus.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_request_focus(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -243,7 +250,8 @@ async fn response_request_focus(p: EmptyResponseParams) -> Result<CallToolResult
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_surrender_focus",
-    description = "Surrender keyboard focus from the widget. Returns ResponseQueryJson::SurrenderFocus."
+    description = "Surrender keyboard focus from the widget. Returns ResponseQueryJson::SurrenderFocus.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_surrender_focus(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -259,7 +267,8 @@ async fn response_surrender_focus(p: EmptyResponseParams) -> Result<CallToolResu
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_dragged",
-    description = "Check if the widget is being dragged. Returns ResponseQueryJson::Dragged."
+    description = "Check if the widget is being dragged. Returns ResponseQueryJson::Dragged.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_dragged(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -271,7 +280,8 @@ async fn response_dragged(p: EmptyResponseParams) -> Result<CallToolResult, Erro
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_drag_released",
-    description = "Check if drag was released. Returns ResponseQueryJson::DragReleased."
+    description = "Check if drag was released. Returns ResponseQueryJson::DragReleased.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_drag_released(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -283,7 +293,8 @@ async fn response_drag_released(p: EmptyResponseParams) -> Result<CallToolResult
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_drag_delta",
-    description = "Get the drag delta (pointer movement while dragging). Returns ResponseQueryJson::DragDelta."
+    description = "Get the drag delta (pointer movement while dragging). Returns ResponseQueryJson::DragDelta.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_drag_delta(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -299,7 +310,8 @@ async fn response_drag_delta(p: EmptyResponseParams) -> Result<CallToolResult, E
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_changed",
-    description = "Check if the widget value changed. Returns ResponseQueryJson::Changed."
+    description = "Check if the widget value changed. Returns ResponseQueryJson::Changed.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_changed(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -311,7 +323,8 @@ async fn response_changed(p: EmptyResponseParams) -> Result<CallToolResult, Erro
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_rect",
-    description = "Get the widget bounding rectangle. Returns ResponseQueryJson::Rect."
+    description = "Get the widget bounding rectangle. Returns ResponseQueryJson::Rect.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_rect(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -323,7 +336,8 @@ async fn response_rect(p: EmptyResponseParams) -> Result<CallToolResult, ErrorDa
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_hover_pos",
-    description = "Get the pointer position while hovering. Returns ResponseQueryJson::HoverPos."
+    description = "Get the pointer position while hovering. Returns ResponseQueryJson::HoverPos.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_hover_pos(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -377,7 +391,8 @@ async fn response_set_enabled(p: SetEnabledParams) -> Result<CallToolResult, Err
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_highlight",
-    description = "Highlight the widget for emphasis. Returns ResponseQueryJson::Highlight."
+    description = "Highlight the widget for emphasis. Returns ResponseQueryJson::Highlight.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_highlight(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -389,7 +404,8 @@ async fn response_highlight(p: EmptyResponseParams) -> Result<CallToolResult, Er
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_scroll_to_me",
-    description = "Scroll to make the widget visible. Returns ResponseQueryJson::ScrollToMe."
+    description = "Scroll to make the widget visible. Returns ResponseQueryJson::ScrollToMe.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_scroll_to_me(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {
@@ -401,7 +417,8 @@ async fn response_scroll_to_me(p: EmptyResponseParams) -> Result<CallToolResult,
 #[elicit_tool(
     plugin = "egui_response",
     name = "response_context_menu",
-    description = "Show a context menu for the widget. Returns ResponseQueryJson::ContextMenu."
+    description = "Show a context menu for the widget. Returns ResponseQueryJson::ContextMenu.",
+    emit = None
 )]
 #[instrument(skip_all)]
 async fn response_context_menu(p: EmptyResponseParams) -> Result<CallToolResult, ErrorData> {

@@ -1074,6 +1074,7 @@ dependencies = [
  "elicitation_derive",
  "elicitation_macros",
  "inventory",
+ "quote",
  "rmcp",
  "schemars",
  "serde",

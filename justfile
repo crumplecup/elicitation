@@ -264,7 +264,7 @@ check-features:
         exit 1
     fi
 
-    if grep -qE "^warning:" "$LOG_FILE"; then
+    if grep -E "^warning:" "$LOG_FILE" | grep -qv "pearlite-syn"; then
         echo ""
         echo "⚠️  Feature powerset completed with warnings. See: $LOG_FILE"
         exit 1

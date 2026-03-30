@@ -48,7 +48,7 @@ mod emit_impls {
     use proc_macro2::TokenStream;
     use quote::quote;
 
-    impl<T> Prop for HasLabel<T> {
+    impl<T: 'static> Prop for HasLabel<T> {
         fn kani_proof() -> TokenStream {
             quote! {
                 #[kani::proof]
@@ -82,7 +82,7 @@ mod emit_impls {
         }
     }
 
-    impl<T> Prop for ValidRole<T> {
+    impl<T: 'static> Prop for ValidRole<T> {
         fn kani_proof() -> TokenStream {
             quote! {
                 #[kani::proof]
@@ -112,7 +112,7 @@ mod emit_impls {
         }
     }
 
-    impl<T> Prop for MinTargetSize<T> {
+    impl<T: 'static> Prop for MinTargetSize<T> {
         fn kani_proof() -> TokenStream {
             quote! {
                 #[kani::proof]
@@ -151,7 +151,7 @@ mod emit_impls {
         }
     }
 
-    impl<T> Prop for NoOverflow<T> {
+    impl<T: 'static> Prop for NoOverflow<T> {
         fn kani_proof() -> TokenStream {
             quote! {
                 #[kani::proof]
@@ -213,7 +213,7 @@ mod emit_impls {
         }
     }
 
-    impl<T> Prop for KeyboardAccessible<T> {
+    impl<T: 'static> Prop for KeyboardAccessible<T> {
         fn kani_proof() -> TokenStream {
             quote! {
                 #[kani::proof]
@@ -244,7 +244,7 @@ mod emit_impls {
         }
     }
 
-    impl<T> Prop for AccessibleAA<T> {
+    impl<T: 'static> Prop for AccessibleAA<T> {
         fn kani_proof() -> TokenStream {
             quote! {
                 #[kani::proof]
