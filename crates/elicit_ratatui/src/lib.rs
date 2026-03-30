@@ -66,6 +66,7 @@
 #![warn(missing_docs)]
 
 mod layout_tools;
+mod property_tools;
 mod serde_types;
 mod style_tools;
 mod text_tools;
@@ -94,4 +95,22 @@ pub use text_tools::{
 pub use widget_tools::{
     BarChartParams, BlockParams, ChartParams, ClearParams, GaugeParams, LineGaugeParams,
     ListParams, ParagraphParams, ScrollbarParams, SparklineParams, TableParams, TabsParams,
+};
+pub use property_tools::{
+    BarChartSetBarGapParams, BarChartSetBarStyleParams, BarChartSetBarWidthParams,
+    BarChartSetBlockParams, BarChartSetDirectionParams, BarChartSetMaxValueParams,
+    BarChartSetStyleParams, BlockSetBorderStyleParams, BlockSetBorderTypeParams,
+    BlockSetBordersParams, BlockSetPaddingParams, BlockSetStyleParams, BlockSetTitleParams,
+    ChartSetBlockParams, ChartSetLegendPositionParams, ChartSetStyleParams, ChartSetXAxisParams,
+    ChartSetYAxisParams, GaugeSetBlockParams, GaugeSetGaugeStyleParams, GaugeSetLabelParams,
+    GaugeSetStyleParams, LineGaugeSetBlockParams, LineGaugeSetLabelParams, LineGaugeSetStyleParams,
+    ListSetBlockParams, ListSetHighlightStyleParams, ListSetHighlightSymbolParams,
+    ListSetStateParams, ListSetStyleParams, ParagraphSetAlignmentParams, ParagraphSetBlockParams,
+    ParagraphSetScrollParams, ParagraphSetStyleParams, ParagraphSetWrapParams,
+    ScrollbarSetStateParams, ScrollbarSetStyleParams, SparklineSetBlockParams,
+    SparklineSetDirectionParams, SparklineSetMaxParams, SparklineSetStyleParams,
+    TableSetBlockParams, TableSetColumnSpacingParams, TableSetHeaderParams,
+    TableSetHighlightStyleParams, TableSetHighlightSymbolParams, TableSetStateParams,
+    TabsSetBlockParams, TabsSetDividerParams, TabsSetHighlightStyleParams, TabsSetSelectedParams,
+    TabsSetStyleParams,
 };

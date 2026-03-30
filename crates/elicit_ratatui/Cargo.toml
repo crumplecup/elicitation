@@ -17,6 +17,7 @@ elicitation = { workspace = true }
 elicitation_derive.workspace = true
 elicitation_macros.workspace = true
 ratatui = { workspace = true }
+crossterm = { workspace = true, optional = true }
 inventory.workspace = true
 rmcp.workspace = true
 schemars.workspace = true
@@ -33,7 +34,7 @@ serde_json = { workspace = true }
 [features]
 emit = ["dep:quote", "elicitation/emit"]
 uuid = ["dep:uuid"]
-runtime = ["uuid"]
+runtime = ["dep:crossterm", "dep:uuid", "ratatui/crossterm"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
