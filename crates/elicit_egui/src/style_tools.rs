@@ -4,6 +4,7 @@
 //! text styles, widget visuals, etc. Each returns a [`StyleJson`]
 //! description that can be applied at runtime or emitted as code.
 
+use elicitation::ToCodeLiteral;
 use elicitation::elicit_tool;
 use rmcp::ErrorData;
 use rmcp::model::{CallToolResult, Content};
@@ -18,7 +19,7 @@ use crate::serde_types::{ColorJson, CornerRadiusJson, MarginJson, StrokeJson, Ve
 // ---------------------------------------------------------------------------
 
 /// Serializable style configuration.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 #[serde(tag = "type")]
 pub enum StyleJson {
     /// Set global spacing values.
@@ -228,7 +229,7 @@ pub enum StyleJson {
 }
 
 /// Visual property names.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub enum VisualProperty {
     /// Hyperlink colour.
     HyperlinkColor,
@@ -249,7 +250,7 @@ pub enum VisualProperty {
 }
 
 /// Widget interaction state.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub enum WidgetState {
     /// Normal (no interaction).
     Noninteractive,
@@ -264,7 +265,7 @@ pub enum WidgetState {
 }
 
 /// Named font family in egui.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub enum FontFamily {
     /// Proportional (variable-width) font.
     Proportional,
@@ -273,7 +274,7 @@ pub enum FontFamily {
 }
 
 /// Named text style in egui.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub enum TextStyleName {
     /// Heading text style.
     Heading,
@@ -288,7 +289,7 @@ pub enum TextStyleName {
 }
 
 /// Vertical text alignment.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub enum TextValign {
     /// Align to top.
     Top,
@@ -1009,86 +1010,4 @@ async fn egui_set_text_cursor_width(p: TextCursorBlinkParams) -> Result<CallTool
         preview: p.preview,
     };
     Ok(style_result(&s))
-}
-
-// ── ToCodeLiteral impls for emit feature ────────────────────────────────────
-
-#[cfg(feature = "emit")]
-mod emit_impls {
-    use super::{FontFamily, TextStyleName, TextValign, VisualProperty, WidgetState};
-    use elicitation::emit_code::ToCodeLiteral;
-    use quote::quote;
-
-    impl ToCodeLiteral for VisualProperty {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            match self {
-                VisualProperty::HyperlinkColor => quote! { VisualProperty::HyperlinkColor },
-                VisualProperty::FaintBgColor => quote! { VisualProperty::FaintBgColor },
-                VisualProperty::ExtremeBgColor => quote! { VisualProperty::ExtremeBgColor },
-                VisualProperty::CodeBgColor => quote! { VisualProperty::CodeBgColor },
-                VisualProperty::WarnFgColor => quote! { VisualProperty::WarnFgColor },
-                VisualProperty::ErrorFgColor => quote! { VisualProperty::ErrorFgColor },
-                VisualProperty::WindowFill => quote! { VisualProperty::WindowFill },
-                VisualProperty::PanelFill => quote! { VisualProperty::PanelFill },
-            }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { VisualProperty }
-        }
-    }
-
-    impl ToCodeLiteral for WidgetState {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            match self {
-                WidgetState::Noninteractive => quote! { WidgetState::Noninteractive },
-                WidgetState::Inactive => quote! { WidgetState::Inactive },
-                WidgetState::Hovered => quote! { WidgetState::Hovered },
-                WidgetState::Active => quote! { WidgetState::Active },
-                WidgetState::Open => quote! { WidgetState::Open },
-            }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { WidgetState }
-        }
-    }
-
-    impl ToCodeLiteral for FontFamily {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            match self {
-                FontFamily::Proportional => quote! { FontFamily::Proportional },
-                FontFamily::Monospace => quote! { FontFamily::Monospace },
-            }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { FontFamily }
-        }
-    }
-
-    impl ToCodeLiteral for TextStyleName {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            match self {
-                TextStyleName::Heading => quote! { TextStyleName::Heading },
-                TextStyleName::Body => quote! { TextStyleName::Body },
-                TextStyleName::Monospace => quote! { TextStyleName::Monospace },
-                TextStyleName::Button => quote! { TextStyleName::Button },
-                TextStyleName::Small => quote! { TextStyleName::Small },
-            }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { TextStyleName }
-        }
-    }
-
-    impl ToCodeLiteral for TextValign {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            match self {
-                TextValign::Top => quote! { TextValign::Top },
-                TextValign::Center => quote! { TextValign::Center },
-                TextValign::Bottom => quote! { TextValign::Bottom },
-            }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { TextValign }
-        }
-    }
 }

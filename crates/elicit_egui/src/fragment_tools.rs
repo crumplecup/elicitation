@@ -4,6 +4,7 @@
 //! paste directly into their egui/eframe projects.  The generated code
 //! includes the necessary `use` imports so fragments are self-contained.
 
+use elicitation::ToCodeLiteral;
 use elicitation::elicit_tool;
 use rmcp::ErrorData;
 use rmcp::model::{CallToolResult, Content};
@@ -210,7 +211,7 @@ pub async fn start(canvas_id: &str) -> Result<(), eframe::wasm_bindgen::JsValue>
 // ---------------------------------------------------------------------------
 
 /// A single field in a generated form.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct FormFieldDef {
     /// Rust field name (snake_case).
     pub name: String,
@@ -334,7 +335,7 @@ impl {name} {{
 }
 
 /// A column definition for a generated table.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct TableColumnDef {
     /// Rust field name on the row struct (snake_case).
     pub name: String,
@@ -423,7 +424,7 @@ impl {name} {{
 }
 
 /// A field definition within a settings section.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct SettingsFieldDef {
     /// Rust field name (snake_case).
     pub name: String,
@@ -436,7 +437,7 @@ pub struct SettingsFieldDef {
 }
 
 /// A named section within a settings panel.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct SettingsSectionDef {
     /// Section name (used as collapsing header text).
     pub name: String,
@@ -638,7 +639,7 @@ impl SidebarLayout {{
 }
 
 /// A single tab definition.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct TabDef {
     /// Identifier for the tab (used in match arms).
     pub name: String,
@@ -737,7 +738,7 @@ impl TabPanel {{
 }
 
 /// A single toolbar button definition.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct ToolbarButtonDef {
     /// Button identifier (snake_case, used as method suffix).
     pub name: String,
@@ -814,7 +815,7 @@ impl Toolbar {{
 // ---------------------------------------------------------------------------
 
 /// A single field in a generated state struct.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct StateFieldDef {
     /// Rust field name (snake_case).
     pub name: String,
@@ -893,7 +894,7 @@ impl {name} {{
 }
 
 /// A single variant in a generated message enum.
-#[derive(Debug, Clone, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct MessageVariantDef {
     /// Variant name (PascalCase).
     pub name: String,
@@ -981,126 +982,4 @@ impl {enum_name} {{
         match_arms = match_arms,
     );
     Ok(code_result(&code))
-}
-
-// ── ToCodeLiteral impls for emit feature ────────────────────────────────────
-
-#[cfg(feature = "emit")]
-mod emit_impls {
-    use super::{
-        FormFieldDef, MessageVariantDef, SettingsFieldDef, SettingsSectionDef, StateFieldDef,
-        TabDef, TableColumnDef, ToolbarButtonDef,
-    };
-    use elicitation::emit_code::ToCodeLiteral;
-    use quote::quote;
-
-    impl ToCodeLiteral for FormFieldDef {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let name = &self.name;
-            let field_type = &self.field_type;
-            let label = &self.label;
-            quote! { FormFieldDef { name: #name.to_string(), field_type: #field_type.to_string(), label: #label.to_string() } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { FormFieldDef }
-        }
-    }
-
-    impl ToCodeLiteral for TableColumnDef {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let name = &self.name;
-            let header = &self.header;
-            quote! { TableColumnDef { name: #name.to_string(), header: #header.to_string() } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { TableColumnDef }
-        }
-    }
-
-    impl ToCodeLiteral for SettingsFieldDef {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let name = &self.name;
-            let field_type = &self.field_type;
-            let label = &self.label;
-            let default_value = &self.default_value;
-            quote! { SettingsFieldDef {
-                name: #name.to_string(),
-                field_type: #field_type.to_string(),
-                label: #label.to_string(),
-                default_value: #default_value.to_string(),
-            } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { SettingsFieldDef }
-        }
-    }
-
-    impl ToCodeLiteral for SettingsSectionDef {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let name = &self.name;
-            let fields: Vec<_> = self.fields.iter().map(|f| f.to_code_literal()).collect();
-            quote! { SettingsSectionDef { name: #name.to_string(), fields: ::std::vec![#(#fields),*] } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { SettingsSectionDef }
-        }
-    }
-
-    impl ToCodeLiteral for TabDef {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let name = &self.name;
-            let label = &self.label;
-            quote! { TabDef { name: #name.to_string(), label: #label.to_string() } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { TabDef }
-        }
-    }
-
-    impl ToCodeLiteral for ToolbarButtonDef {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let name = &self.name;
-            let label = &self.label;
-            let tooltip = &self.tooltip;
-            quote! { ToolbarButtonDef { name: #name.to_string(), label: #label.to_string(), tooltip: #tooltip.to_string() } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { ToolbarButtonDef }
-        }
-    }
-
-    impl ToCodeLiteral for StateFieldDef {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let name = &self.name;
-            let rust_type = &self.rust_type;
-            let default_value = &self.default_value;
-            quote! { StateFieldDef {
-                name: #name.to_string(),
-                rust_type: #rust_type.to_string(),
-                default_value: #default_value.to_string(),
-            } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { StateFieldDef }
-        }
-    }
-
-    impl ToCodeLiteral for MessageVariantDef {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let name = &self.name;
-            let payload = self
-                .payload_type
-                .as_ref()
-                .map(|p| {
-                    quote! { ::std::option::Option::Some(#p.to_string()) }
-                })
-                .unwrap_or_else(|| {
-                    quote! { ::std::option::Option::None::<String> }
-                });
-            quote! { MessageVariantDef { name: #name.to_string(), payload_type: #payload } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { MessageVariantDef }
-        }
-    }
 }

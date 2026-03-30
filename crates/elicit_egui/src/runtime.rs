@@ -244,8 +244,7 @@ pub struct RunFrameParams {
 #[elicit_tool(
     plugin = "egui_runtime",
     name = "context_run_frame",
-    description = "Run one egui frame with a UI tree. Returns frame output info.",
-    emit = None
+    description = "Run one egui frame with a UI tree. Returns frame output info."
 )]
 #[instrument(skip_all, fields(session_id = %p.session_id, nodes = p.ui_tree.len()))]
 async fn context_run_frame(
@@ -327,8 +326,7 @@ pub struct ApplyStyleParams {
 #[elicit_tool(
     plugin = "egui_runtime",
     name = "context_apply_style",
-    description = "Apply a StyleJson configuration to an egui context session.",
-    emit = None
+    description = "Apply a StyleJson configuration to an egui context session."
 )]
 #[instrument(skip_all, fields(session_id = %p.session_id))]
 async fn context_apply_style(

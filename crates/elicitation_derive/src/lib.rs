@@ -86,6 +86,7 @@ mod contract_type;
 mod derive_elicit;
 mod derive_elicit_plugin;
 mod derive_prop;
+mod derive_to_code_literal;
 mod elicit_tool;
 mod emit_rewriter;
 mod enum_impl;
@@ -541,4 +542,33 @@ pub fn derive_elicit_proxy(input: TokenStream) -> TokenStream {
         }
     }
     .into()
+}
+
+/// Derive `ToCodeLiteral` for structs and enums.
+///
+/// Generates a `#[cfg(feature = "emit")]`-gated implementation that
+/// converts each field/variant into a `TokenStream` expression
+/// reconstructing the value.
+///
+/// # Structs
+///
+/// ```rust,ignore
+/// #[derive(ToCodeLiteral)]
+/// struct ColorJson { r: f32, g: f32, b: f32, a: f32 }
+/// ```
+///
+/// # Enums
+///
+/// Handles unit, tuple, and struct variants:
+///
+/// ```rust,ignore
+/// #[derive(ToCodeLiteral)]
+/// enum Align { Min, Center, Max }
+/// ```
+///
+/// Recursive types work automatically via existing `Vec<T>` / `Option<T>`
+/// blanket impls.
+#[proc_macro_derive(ToCodeLiteral)]
+pub fn derive_to_code_literal(input: TokenStream) -> TokenStream {
+    derive_to_code_literal::expand(input)
 }

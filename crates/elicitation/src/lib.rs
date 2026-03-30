@@ -264,6 +264,8 @@ pub use proc_macro2;
 pub use elicitation_derive::{Elicit, ElicitPlugin, elicit_tool};
 // Prop derive macro (trait lives at elicitation::contracts::Prop; both can coexist)
 pub use elicitation_derive::Prop;
+// ToCodeLiteral derive (trait lives at elicitation::emit_code::ToCodeLiteral)
+pub use elicitation_derive::ToCodeLiteral;
 
 // Re-export verification contract types at crate level (for kani_proofs imports)
 // EXPLICIT exports - no globs (helps compiler show what's missing)

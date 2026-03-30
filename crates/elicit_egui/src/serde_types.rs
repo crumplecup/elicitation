@@ -4,6 +4,7 @@
 //! generation. Each widget tool returns a [`WidgetJson`] variant; the emit
 //! layer converts it to idiomatic egui code.
 
+use elicitation::ToCodeLiteral;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -12,7 +13,7 @@ use serde::{Deserialize, Serialize};
 // ---------------------------------------------------------------------------
 
 /// RGBA colour in sRGB space (0–255 per channel).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct ColorJson {
     /// Red channel (0–255).
     pub r: u8,
@@ -59,7 +60,7 @@ impl From<ColorJson> for egui::Color32 {
 }
 
 /// Line style: width + colour.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct StrokeJson {
     /// Line width in logical pixels.
     pub width: f32,
@@ -83,7 +84,7 @@ impl From<StrokeJson> for egui::Stroke {
 }
 
 /// Numeric range (inclusive).
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct RangeJson {
     /// Minimum value (inclusive).
     pub min: f64,
@@ -92,7 +93,7 @@ pub struct RangeJson {
 }
 
 /// 2D point in logical pixels.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct Vec2Json {
     /// X component.
     pub x: f32,
@@ -113,7 +114,7 @@ impl From<Vec2Json> for egui::Vec2 {
 }
 
 /// Axis-aligned rectangle in logical pixels.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct RectJson {
     /// Minimum x (left edge).
     pub min_x: f32,
@@ -143,7 +144,7 @@ impl From<RectJson> for egui::Rect {
 }
 
 /// Corner radii for rounded rectangles.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct CornerRadiusJson {
     /// North-west corner radius.
     pub nw: u8,
@@ -178,7 +179,7 @@ impl From<CornerRadiusJson> for egui::CornerRadius {
 }
 
 /// Box margins in logical pixels.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct MarginJson {
     /// Left margin.
     pub left: f32,
@@ -220,7 +221,7 @@ impl From<MarginJson> for egui::Margin {
 ///
 /// Each variant captures the parameters needed to recreate the widget in
 /// either runtime (immediate mode) or code-emission mode.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 #[serde(tag = "type")]
 pub enum WidgetJson {
     /// Plain text label.
@@ -557,7 +558,7 @@ fn default_true() -> bool {
 // ---------------------------------------------------------------------------
 
 /// Serializable description of an egui layout container.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 #[serde(tag = "type")]
 pub enum ContainerJson {
     /// Floating window.
@@ -721,7 +722,7 @@ pub enum ContainerJson {
 // ---------------------------------------------------------------------------
 
 /// Layout direction.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub enum LayoutDirection {
     /// Left to right.
     LeftToRight,
@@ -734,7 +735,7 @@ pub enum LayoutDirection {
 }
 
 /// Cross-axis alignment.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub enum LayoutAlign {
     /// Align to minimum (left or top).
     Min,
@@ -745,7 +746,7 @@ pub enum LayoutAlign {
 }
 
 /// Serializable layout description.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 #[serde(tag = "type")]
 pub enum LayoutJson {
     /// Horizontal layout (left to right).
@@ -825,7 +826,7 @@ pub enum LayoutJson {
 /// Serializable representation of widget interaction state.
 ///
 /// Captures the most commonly queried fields from [`egui::Response`].
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct ResponseJson {
     /// Widget was clicked this frame.
     pub clicked: bool,
@@ -855,7 +856,7 @@ pub struct ResponseJson {
 ///
 /// Agents compose `UiNode` trees to describe an entire egui frame.
 /// The runtime module renders these into actual egui calls.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 #[serde(tag = "node_type")]
 pub enum UiNode {
     /// A leaf widget.
@@ -881,89 +882,4 @@ pub enum UiNode {
         #[serde(default)]
         children: Vec<UiNode>,
     },
-}
-
-// ── ToCodeLiteral impls for emit feature ────────────────────────────────────
-
-#[cfg(feature = "emit")]
-mod emit_impls {
-    use super::{
-        ColorJson, CornerRadiusJson, LayoutAlign, MarginJson, RangeJson, StrokeJson, Vec2Json,
-    };
-    use elicitation::emit_code::ToCodeLiteral;
-    use quote::quote;
-
-    impl ToCodeLiteral for ColorJson {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let (r, g, b, a) = (self.r, self.g, self.b, self.a);
-            quote! { ColorJson { r: #r, g: #g, b: #b, a: #a } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { ColorJson }
-        }
-    }
-
-    impl ToCodeLiteral for StrokeJson {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let width = self.width;
-            let color = self.color.to_code_literal();
-            quote! { StrokeJson { width: #width, color: #color } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { StrokeJson }
-        }
-    }
-
-    impl ToCodeLiteral for RangeJson {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let (min, max) = (self.min, self.max);
-            quote! { RangeJson { min: #min, max: #max } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { RangeJson }
-        }
-    }
-
-    impl ToCodeLiteral for Vec2Json {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let (x, y) = (self.x, self.y);
-            quote! { Vec2Json { x: #x, y: #y } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { Vec2Json }
-        }
-    }
-
-    impl ToCodeLiteral for CornerRadiusJson {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let (nw, ne, sw, se) = (self.nw, self.ne, self.sw, self.se);
-            quote! { CornerRadiusJson { nw: #nw, ne: #ne, sw: #sw, se: #se } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { CornerRadiusJson }
-        }
-    }
-
-    impl ToCodeLiteral for MarginJson {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            let (left, right, top, bottom) = (self.left, self.right, self.top, self.bottom);
-            quote! { MarginJson { left: #left, right: #right, top: #top, bottom: #bottom } }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { MarginJson }
-        }
-    }
-
-    impl ToCodeLiteral for LayoutAlign {
-        fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
-            match self {
-                LayoutAlign::Min => quote! { LayoutAlign::Min },
-                LayoutAlign::Center => quote! { LayoutAlign::Center },
-                LayoutAlign::Max => quote! { LayoutAlign::Max },
-            }
-        }
-        fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-            quote! { LayoutAlign }
-        }
-    }
 }
