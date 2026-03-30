@@ -56,6 +56,7 @@ struct Config {
 Supports three variant types:
 
 **Unit Variants:**
+
 ```rust
 #[derive(Elicit, JsonSchema)]
 enum Role {
@@ -66,6 +67,7 @@ enum Role {
 ```
 
 **Tuple Variants:**
+
 ```rust
 #[derive(Elicit, JsonSchema)]
 enum MediaSource {
@@ -76,6 +78,7 @@ enum MediaSource {
 ```
 
 **Struct Variants:**
+
 ```rust
 #[derive(Elicit, JsonSchema)]
 enum Input {
@@ -138,12 +141,14 @@ let score = generator.generate();
 #### Supported Contracts
 
 **Range Contracts:**
+
 ```rust
 #[rand(bounded(1, 100))]     // Values in [1, 100)
 #[rand(bounded(-50, 50))]    // Negative ranges supported
 ```
 
 **Simple Contracts:**
+
 ```rust
 #[rand(positive)]  // Positive values only
 #[rand(nonzero)]   // Non-zero values
@@ -152,6 +157,7 @@ let score = generator.generate();
 ```
 
 **Composite Contracts:**
+
 ```rust
 #[rand(and(positive, even))]           // Positive even numbers
 #[rand(or(positive, negative))]        // Either positive or negative
@@ -159,6 +165,7 @@ let score = generator.generate();
 ```
 
 **Nested Contracts:**
+
 ```rust
 #[rand(or(
     and(positive, bounded(1, 50)),
@@ -215,6 +222,7 @@ pub struct MyPlugin;
 #### Struct Shapes
 
 **Unit Structs** (ephemeral context):
+
 ```rust
 #[derive(ElicitPlugin)]
 #[plugin(name = "my_plugin")]
@@ -223,6 +231,7 @@ pub struct MyPlugin;
 ```
 
 **Newtype Pattern** (shared context):
+
 ```rust
 #[derive(ElicitPlugin)]
 #[plugin(name = "database")]
@@ -268,8 +277,8 @@ pub struct MyConfig {
 ```
 
 Generates:
+
 ```rust
-impl ElicitProxy for MyConfig {
     type Proxy = MyConfig;
     fn into_proxy(self) -> MyConfig { self }
     fn from_proxy(proxy: MyConfig) -> MyConfig { proxy }
@@ -427,12 +436,14 @@ pub struct User {
 #### Use Cases
 
 **Newtype Validation:**
+
 ```rust
 #[contract_type(requires = "value >= 1024 && value <= 65535")]
 pub struct PortNumber(u16);
 ```
 
 **Domain Constraints:**
+
 ```rust
 #[contract_type(
     requires = "email.contains('@')",
@@ -463,6 +474,7 @@ impl Client {
 #### What Gets Generated
 
 **1. Parameter Struct:**
+
 ```rust
 #[derive(Debug, Clone, Elicit, JsonSchema)]
 pub struct GetParams {
@@ -471,6 +483,7 @@ pub struct GetParams {
 ```
 
 **2. Wrapper Method:**
+
 ```rust
 impl Client {
     #[tool(description = "Get resource from URL")]
