@@ -907,6 +907,66 @@ pub struct ScrollbarStateJson {
 }
 
 // ---------------------------------------------------------------------------
+// Event types
+// ---------------------------------------------------------------------------
+
+/// JSON representation of a key event.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub struct KeyEventJson {
+    /// Key code (e.g. "Char(q)", "Enter", "Esc", "Up", "Down", "Left", "Right", "Tab", "Backspace", "F(1)").
+    pub code: String,
+    /// Key modifiers (e.g. "CONTROL", "SHIFT", "ALT").
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub modifiers: Vec<String>,
+}
+
+/// JSON representation of a mouse event.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub struct MouseEventJson {
+    /// Mouse event kind (e.g. "Down(Left)", "Up(Left)", "Drag(Left)", "Moved", "ScrollDown", "ScrollUp").
+    pub kind: String,
+    /// Column position.
+    pub column: u16,
+    /// Row position.
+    pub row: u16,
+    /// Key modifiers active during mouse event.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub modifiers: Vec<String>,
+}
+
+/// JSON representation of a terminal event.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+#[serde(tag = "type")]
+pub enum EventJson {
+    /// A key was pressed.
+    Key {
+        /// Key event details.
+        event: KeyEventJson,
+    },
+    /// A mouse event occurred.
+    Mouse {
+        /// Mouse event details.
+        event: MouseEventJson,
+    },
+    /// The terminal was resized.
+    Resize {
+        /// New width.
+        width: u16,
+        /// New height.
+        height: u16,
+    },
+    /// Focus gained.
+    FocusGained,
+    /// Focus lost.
+    FocusLost,
+    /// Paste event.
+    Paste {
+        /// Pasted text.
+        text: String,
+    },
+}
+
+// ---------------------------------------------------------------------------
 // TUI node tree (compositional)
 // ---------------------------------------------------------------------------
 
