@@ -906,6 +906,32 @@ impl<V: ToCodeLiteral> ToCodeLiteral for std::collections::HashMap<String, V> {
     }
 }
 
+impl<T: ToCodeLiteral> ToCodeLiteral for Box<T> {
+    fn type_tokens() -> TokenStream {
+        let inner = <T as ToCodeLiteral>::type_tokens();
+        quote::quote! { ::std::boxed::Box<#inner> }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let inner = (**self).to_code_literal();
+        quote::quote! { ::std::boxed::Box::new(#inner) }
+    }
+}
+
+impl<A: ToCodeLiteral, B: ToCodeLiteral> ToCodeLiteral for (A, B) {
+    fn type_tokens() -> TokenStream {
+        let a = <A as ToCodeLiteral>::type_tokens();
+        let b = <B as ToCodeLiteral>::type_tokens();
+        quote::quote! { (#a, #b) }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let a = self.0.to_code_literal();
+        let b = self.1.to_code_literal();
+        quote::quote! { (#a, #b) }
+    }
+}
+
 // ToCodeLiteral for std types that already have EmitCode: delegate directly.
 
 impl ToCodeLiteral for std::net::IpAddr {

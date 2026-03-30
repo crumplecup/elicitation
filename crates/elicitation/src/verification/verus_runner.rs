@@ -457,11 +457,9 @@ pub fn run_all_proofs(
         println!("📂 Loading existing results...");
         let mut reader = Reader::from_path(output_csv)
             .with_context(|| format!("Failed to read CSV: {}", output_csv.display()))?;
-        for result in reader.deserialize::<VerusProofResult>() {
-            if let Ok(result) = result {
-                if result.is_success() {
-                    completed_proofs.insert(format!("{}::{}", result.module(), result.proof()));
-                }
+        for result in reader.deserialize::<VerusProofResult>().flatten() {
+            if result.is_success() {
+                completed_proofs.insert(format!("{}::{}", result.module(), result.proof()));
             }
         }
         println!("   Found {} completed proofs", completed_proofs.len());

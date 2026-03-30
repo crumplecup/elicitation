@@ -1,0 +1,39 @@
+[package]
+name = "elicit_ratatui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled ratatui TUI tools — dual-mode MCP tools with code emission"
+keywords = ["mcp", "ratatui", "tui", "elicitation", "jsonschema"]
+categories = ["command-line-interface", "development-tools"]
+
+[dependencies]
+elicitation = { workspace = true }
+elicitation_derive.workspace = true
+elicitation_macros.workspace = true
+ratatui = { workspace = true }
+inventory.workspace = true
+rmcp.workspace = true
+schemars.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+tracing.workspace = true
+uuid = { workspace = true, optional = true }
+quote = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+serde_json = { workspace = true }
+
+[features]
+emit = ["dep:quote", "elicitation/emit"]
+uuid = ["dep:uuid"]
+runtime = ["uuid"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

@@ -22,6 +22,7 @@ members = [
   "crates/elicit_tokio",
   "crates/elicit_accesskit",
   "crates/elicit_egui",
+  "crates/elicit_ratatui",
   "crates/elicit_ui",
 ]
 # Verus verification crate - verification only, not buildable with cargo
@@ -57,6 +58,7 @@ elicit_sqlx = { path = "crates/elicit_sqlx", version = "0.9.1" }
 elicit_tokio = { path = "crates/elicit_tokio", version = "0.9.1" }
 elicit_accesskit = { path = "crates/elicit_accesskit", version = "0.9.1" }
 elicit_egui = { path = "crates/elicit_egui", version = "0.9.1" }
+elicit_ratatui = { path = "crates/elicit_ratatui", version = "0.9.1" }
 elicit_ui = { path = "crates/elicit_ui", version = "0.9.1" }
 
 # accesskit - UI accessibility infrastructure
@@ -64,6 +66,9 @@ accesskit = { version = "0.24", features = ["serde", "schemars"] }
 
 # egui - immediate mode GUI framework
 egui = { version = "0.34", features = ["serde"] }
+
+# ratatui - terminal user interface framework
+ratatui = { version = "0.30", default-features = false }
 eframe = { version = "0.34", default-features = false, features = ["default_fonts", "glow"] }
 
 # sqlx - database interaction library
