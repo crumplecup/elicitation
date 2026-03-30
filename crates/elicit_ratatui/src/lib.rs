@@ -20,6 +20,9 @@
 //! | `widget_gauge` | Gauge | Progress indicator |
 //! | `widget_sparkline` | Sparkline | Compact inline chart |
 //! | `widget_bar_chart` | BarChart | Grouped vertical/horizontal bars |
+//! | `widget_chart` | Chart | Line/scatter chart with axes |
+//! | `widget_line_gauge` | LineGauge | Linear progress bar |
+//! | `widget_scrollbar` | Scrollbar | Scroll position indicator |
 //! | `widget_tabs` | Tabs | Horizontal tab selector |
 //! | `widget_clear` | Clear | Clear a rectangular area |
 //!
@@ -47,24 +50,48 @@
 //! | `constraint_max` | Maximum length constraint |
 //! | `constraint_fill` | Fill remaining space constraint |
 //! | `constraint_ratio` | Ratio constraint |
+//!
+//! ## Text
+//!
+//! | Tool | Description |
+//! |------|-------------|
+//! | `text_raw` | Create plain unstyled text |
+//! | `text_styled` | Create styled text with a single span |
+//! | `span_raw` | Create a plain unstyled span |
+//! | `span_styled` | Create a styled span |
+//! | `line_from_spans` | Create a line from spans |
+//! | `text_from_lines` | Create multi-line text from lines |
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod layout_tools;
 mod serde_types;
 mod style_tools;
+mod text_tools;
 mod widget_tools;
 
+pub use layout_tools::{
+    ConstraintFillParams, ConstraintLengthParams, ConstraintMaxParams, ConstraintMinParams,
+    ConstraintPercentageParams, ConstraintRatioParams, LayoutHorizontalParams,
+    LayoutVerticalParams,
+};
 pub use serde_types::{
-    BlockJson, BorderTypeJson, BordersJson, CellJson, ColorJson, ConstraintJson, DirectionJson,
-    ListStateJson, MarginJson, ModifierJson, PaddingJson, RowJson, StyleJson, TableStateJson,
-    TuiNode, WidgetJson,
+    AlignmentJson, AxisJson, BarGroupJson, BarJson, BlockJson, BorderTypeJson, BordersJson,
+    CellJson, ColorJson, ConstraintJson, DatasetJson, DirectionJson, GraphTypeJson,
+    LegendPositionJson, LineJson, ListStateJson, MarginJson, MarkerJson, ModifierJson,
+    PaddingJson, RowJson, ScrollbarOrientationJson, ScrollbarStateJson, SpanJson, StyleJson,
+    TableStateJson, TextJson, TuiNode, WidgetJson,
 };
 pub use style_tools::{
     ColorIndexedParams, ColorNamedParams, ColorRgbParams, ModifierParams, StyleBgParams,
     StyleFgParams, StyleResetParams,
 };
+pub use text_tools::{
+    LineFromSpansParams, SpanRawParams, SpanStyledParams, TextFromLinesParams, TextRawParams,
+    TextStyledParams,
+};
 pub use widget_tools::{
-    BlockParams, ClearParams, GaugeParams, ListParams, ParagraphParams, SparklineParams,
-    TableParams, TabsParams,
+    BarChartParams, BlockParams, ChartParams, ClearParams, GaugeParams, LineGaugeParams,
+    ListParams, ParagraphParams, ScrollbarParams, SparklineParams, TableParams, TabsParams,
 };

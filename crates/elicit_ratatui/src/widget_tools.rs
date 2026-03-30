@@ -4,7 +4,9 @@
 //! by a ratatui backend or emitted as Rust source code.
 
 use crate::serde_types::{
-    BlockJson, ConstraintJson, ListStateJson, RowJson, StyleJson, TableStateJson, WidgetJson,
+    AxisJson, BarGroupJson, BlockJson, ConstraintJson, DatasetJson, LegendPositionJson,
+    ListStateJson, RowJson, ScrollbarOrientationJson, ScrollbarStateJson, StyleJson,
+    TableStateJson, WidgetJson,
 };
 use rmcp::model::{CallToolResult, Content};
 use rmcp::ErrorData;
@@ -357,4 +359,216 @@ pub struct ClearParams;
 #[instrument(skip_all)]
 async fn widget_clear(_p: ClearParams) -> Result<CallToolResult, ErrorData> {
     Ok(widget_result(&WidgetJson::Clear))
+}
+
+// ---------------------------------------------------------------------------
+// BarChart
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`widget_bar_chart`].
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct BarChartParams {
+    /// Bar groups.
+    pub data: Vec<BarGroupJson>,
+    /// Optional surrounding block.
+    #[serde(default)]
+    pub block: Option<BlockJson>,
+    /// Maximum bar value (auto-calculated if absent).
+    #[serde(default)]
+    pub max_value: Option<u64>,
+    /// Bar width.
+    #[serde(default)]
+    pub bar_width: Option<u16>,
+    /// Gap between bars in a group.
+    #[serde(default)]
+    pub bar_gap: Option<u16>,
+    /// Gap between groups.
+    #[serde(default)]
+    pub group_gap: Option<u16>,
+    /// Bar style.
+    #[serde(default)]
+    pub bar_style: Option<StyleJson>,
+    /// Value label style.
+    #[serde(default)]
+    pub value_style: Option<StyleJson>,
+    /// Label style.
+    #[serde(default)]
+    pub label_style: Option<StyleJson>,
+    /// Layout direction.
+    #[serde(default)]
+    pub direction: Option<crate::serde_types::DirectionJson>,
+    /// Bar chart style.
+    #[serde(default)]
+    pub style: Option<StyleJson>,
+}
+
+/// Create a bar chart with grouped bars.
+#[elicit_tool(
+    plugin = "ratatui_widgets",
+    name = "widget_bar_chart",
+    description = "Create a bar chart with grouped bars. Returns WidgetJson::BarChart."
+)]
+#[instrument(skip_all)]
+async fn widget_bar_chart(p: BarChartParams) -> Result<CallToolResult, ErrorData> {
+    let w = WidgetJson::BarChart {
+        data: p.data,
+        block: p.block,
+        max_value: p.max_value,
+        bar_width: p.bar_width,
+        bar_gap: p.bar_gap,
+        group_gap: p.group_gap,
+        bar_style: p.bar_style,
+        value_style: p.value_style,
+        label_style: p.label_style,
+        direction: p.direction,
+        style: p.style,
+    };
+    Ok(widget_result(&w))
+}
+
+// ---------------------------------------------------------------------------
+// Chart
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`widget_chart`].
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ChartParams {
+    /// Datasets to plot.
+    pub datasets: Vec<DatasetJson>,
+    /// Optional surrounding block.
+    #[serde(default)]
+    pub block: Option<BlockJson>,
+    /// X axis configuration.
+    #[serde(default)]
+    pub x_axis: Option<AxisJson>,
+    /// Y axis configuration.
+    #[serde(default)]
+    pub y_axis: Option<AxisJson>,
+    /// Chart style.
+    #[serde(default)]
+    pub style: Option<StyleJson>,
+    /// Legend position.
+    #[serde(default)]
+    pub legend_position: Option<LegendPositionJson>,
+}
+
+/// Create a line/scatter chart with axes.
+#[elicit_tool(
+    plugin = "ratatui_widgets",
+    name = "widget_chart",
+    description = "Create a line/scatter chart with axes and datasets. Returns WidgetJson::Chart."
+)]
+#[instrument(skip_all)]
+async fn widget_chart(p: ChartParams) -> Result<CallToolResult, ErrorData> {
+    let w = WidgetJson::Chart {
+        datasets: p.datasets,
+        block: p.block,
+        x_axis: p.x_axis,
+        y_axis: p.y_axis,
+        style: p.style,
+        legend_position: p.legend_position,
+    };
+    Ok(widget_result(&w))
+}
+
+// ---------------------------------------------------------------------------
+// LineGauge
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`widget_line_gauge`].
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct LineGaugeParams {
+    /// Progress ratio (0.0–1.0).
+    pub ratio: f64,
+    /// Optional label text.
+    #[serde(default)]
+    pub label: Option<String>,
+    /// Optional surrounding block.
+    #[serde(default)]
+    pub block: Option<BlockJson>,
+    /// Line gauge style.
+    #[serde(default)]
+    pub style: Option<StyleJson>,
+    /// Filled portion style.
+    #[serde(default)]
+    pub filled_style: Option<StyleJson>,
+    /// Unfilled portion style.
+    #[serde(default)]
+    pub unfilled_style: Option<StyleJson>,
+}
+
+/// Create a linear progress gauge.
+#[elicit_tool(
+    plugin = "ratatui_widgets",
+    name = "widget_line_gauge",
+    description = "Create a linear progress gauge (0.0–1.0). Returns WidgetJson::LineGauge."
+)]
+#[instrument(skip_all)]
+async fn widget_line_gauge(p: LineGaugeParams) -> Result<CallToolResult, ErrorData> {
+    let w = WidgetJson::LineGauge {
+        ratio: p.ratio,
+        label: p.label,
+        block: p.block,
+        style: p.style,
+        filled_style: p.filled_style,
+        unfilled_style: p.unfilled_style,
+    };
+    Ok(widget_result(&w))
+}
+
+// ---------------------------------------------------------------------------
+// Scrollbar
+// ---------------------------------------------------------------------------
+
+/// Parameters for [`widget_scrollbar`].
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ScrollbarParams {
+    /// Scrollbar orientation.
+    pub orientation: ScrollbarOrientationJson,
+    /// Thumb symbol.
+    #[serde(default)]
+    pub thumb_symbol: Option<String>,
+    /// Track symbol.
+    #[serde(default)]
+    pub track_symbol: Option<String>,
+    /// Begin symbol (arrow at start).
+    #[serde(default)]
+    pub begin_symbol: Option<String>,
+    /// End symbol (arrow at end).
+    #[serde(default)]
+    pub end_symbol: Option<String>,
+    /// Scrollbar style.
+    #[serde(default)]
+    pub style: Option<StyleJson>,
+    /// Thumb style.
+    #[serde(default)]
+    pub thumb_style: Option<StyleJson>,
+    /// Track style.
+    #[serde(default)]
+    pub track_style: Option<StyleJson>,
+    /// State.
+    #[serde(default)]
+    pub state: Option<ScrollbarStateJson>,
+}
+
+/// Create a scrollbar indicator.
+#[elicit_tool(
+    plugin = "ratatui_widgets",
+    name = "widget_scrollbar",
+    description = "Create a scrollbar indicator with configurable orientation and symbols. Returns WidgetJson::Scrollbar."
+)]
+#[instrument(skip_all)]
+async fn widget_scrollbar(p: ScrollbarParams) -> Result<CallToolResult, ErrorData> {
+    let w = WidgetJson::Scrollbar {
+        orientation: p.orientation,
+        thumb_symbol: p.thumb_symbol,
+        track_symbol: p.track_symbol,
+        begin_symbol: p.begin_symbol,
+        end_symbol: p.end_symbol,
+        style: p.style,
+        thumb_style: p.thumb_style,
+        track_style: p.track_style,
+        state: p.state,
+    };
+    Ok(widget_result(&w))
 }

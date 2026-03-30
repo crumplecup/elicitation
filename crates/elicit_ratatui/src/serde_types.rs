@@ -454,6 +454,77 @@ pub struct TableStateJson {
 }
 
 // ---------------------------------------------------------------------------
+// Text composition
+// ---------------------------------------------------------------------------
+
+/// Text alignment.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub enum AlignmentJson {
+    /// Left aligned.
+    Left,
+    /// Center aligned.
+    Center,
+    /// Right aligned.
+    Right,
+}
+
+impl From<AlignmentJson> for ratatui::layout::Alignment {
+    fn from(a: AlignmentJson) -> Self {
+        match a {
+            AlignmentJson::Left => Self::Left,
+            AlignmentJson::Center => Self::Center,
+            AlignmentJson::Right => Self::Right,
+        }
+    }
+}
+
+impl From<ratatui::layout::Alignment> for AlignmentJson {
+    fn from(a: ratatui::layout::Alignment) -> Self {
+        match a {
+            ratatui::layout::Alignment::Left => Self::Left,
+            ratatui::layout::Alignment::Center => Self::Center,
+            ratatui::layout::Alignment::Right => Self::Right,
+        }
+    }
+}
+
+/// JSON representation of a styled text span.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub struct SpanJson {
+    /// Span text content.
+    pub content: String,
+    /// Span style.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style: Option<StyleJson>,
+}
+
+/// JSON representation of a line of styled spans.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub struct LineJson {
+    /// Spans composing the line.
+    pub spans: Vec<SpanJson>,
+    /// Line style (applied to entire line).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style: Option<StyleJson>,
+    /// Line alignment.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub alignment: Option<AlignmentJson>,
+}
+
+/// JSON representation of multi-line text.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub struct TextJson {
+    /// Lines of text.
+    pub lines: Vec<LineJson>,
+    /// Text style.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style: Option<StyleJson>,
+    /// Text alignment.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub alignment: Option<AlignmentJson>,
+}
+
+// ---------------------------------------------------------------------------
 // Widget enum (tagged union of all widget descriptions)
 // ---------------------------------------------------------------------------
 
@@ -588,6 +659,251 @@ pub enum WidgetJson {
     },
     /// Clear a rectangular area.
     Clear,
+    /// A bar chart with grouped bars.
+    BarChart {
+        /// Bar groups.
+        data: Vec<BarGroupJson>,
+        /// Optional surrounding block.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        block: Option<BlockJson>,
+        /// Maximum bar value (auto-calculated if absent).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        max_value: Option<u64>,
+        /// Bar width.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        bar_width: Option<u16>,
+        /// Gap between bars in a group.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        bar_gap: Option<u16>,
+        /// Gap between groups.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        group_gap: Option<u16>,
+        /// Bar style.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        bar_style: Option<StyleJson>,
+        /// Value label style.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        value_style: Option<StyleJson>,
+        /// Label style.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        label_style: Option<StyleJson>,
+        /// Layout direction.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        direction: Option<DirectionJson>,
+        /// Bar chart style.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        style: Option<StyleJson>,
+    },
+    /// A line/scatter chart with axes.
+    Chart {
+        /// Datasets to plot.
+        datasets: Vec<DatasetJson>,
+        /// Optional surrounding block.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        block: Option<BlockJson>,
+        /// X axis configuration.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        x_axis: Option<AxisJson>,
+        /// Y axis configuration.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        y_axis: Option<AxisJson>,
+        /// Chart style.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        style: Option<StyleJson>,
+        /// Legend position.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        legend_position: Option<LegendPositionJson>,
+    },
+    /// A linear progress gauge.
+    LineGauge {
+        /// Progress ratio (0.0–1.0).
+        ratio: f64,
+        /// Optional label text.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        label: Option<String>,
+        /// Optional surrounding block.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        block: Option<BlockJson>,
+        /// Line gauge style.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        style: Option<StyleJson>,
+        /// Filled portion style.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        filled_style: Option<StyleJson>,
+        /// Unfilled portion style.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        unfilled_style: Option<StyleJson>,
+    },
+    /// A scrollbar indicator.
+    Scrollbar {
+        /// Scrollbar orientation.
+        orientation: ScrollbarOrientationJson,
+        /// Thumb symbol.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        thumb_symbol: Option<String>,
+        /// Track symbol.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        track_symbol: Option<String>,
+        /// Begin symbol (arrow at start).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        begin_symbol: Option<String>,
+        /// End symbol (arrow at end).
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        end_symbol: Option<String>,
+        /// Scrollbar style.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        style: Option<StyleJson>,
+        /// Thumb style.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        thumb_style: Option<StyleJson>,
+        /// Track style.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        track_style: Option<StyleJson>,
+        /// State.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        state: Option<ScrollbarStateJson>,
+    },
+}
+
+// ---------------------------------------------------------------------------
+// BarChart helpers
+// ---------------------------------------------------------------------------
+
+/// JSON representation of a single bar in a bar chart.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub struct BarJson {
+    /// Bar label text.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
+    /// Bar value.
+    pub value: u64,
+    /// Bar style.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style: Option<StyleJson>,
+    /// Value label style.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub value_style: Option<StyleJson>,
+    /// Text value to display (overrides numeric).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text_value: Option<String>,
+}
+
+/// JSON representation of a group of bars.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub struct BarGroupJson {
+    /// Group label.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
+    /// Bars in this group.
+    pub bars: Vec<BarJson>,
+}
+
+// ---------------------------------------------------------------------------
+// Chart helpers
+// ---------------------------------------------------------------------------
+
+/// Chart graph type.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub enum GraphTypeJson {
+    /// Scatter plot.
+    Scatter,
+    /// Line chart.
+    Line,
+}
+
+/// Chart marker style.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub enum MarkerJson {
+    /// Dot marker.
+    Dot,
+    /// Braille pattern marker.
+    Braille,
+    /// Block marker.
+    Block,
+    /// Bar marker.
+    Bar,
+    /// Half-block marker.
+    HalfBlock,
+}
+
+/// JSON representation of a chart dataset.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub struct DatasetJson {
+    /// Dataset name (shown in legend).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// Data points as (x, y) pairs.
+    pub data: Vec<(f64, f64)>,
+    /// Point/line style.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style: Option<StyleJson>,
+    /// Marker type.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub marker: Option<MarkerJson>,
+    /// Graph type (Line or Scatter).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub graph_type: Option<GraphTypeJson>,
+}
+
+/// JSON representation of a chart axis.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub struct AxisJson {
+    /// Axis title.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+    /// Axis value bounds [min, max].
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bounds: Option<(f64, f64)>,
+    /// Axis tick labels.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub labels: Vec<String>,
+    /// Axis style.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style: Option<StyleJson>,
+}
+
+/// Legend position for charts.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub enum LegendPositionJson {
+    /// Top left.
+    TopLeft,
+    /// Top right.
+    TopRight,
+    /// Bottom left.
+    BottomLeft,
+    /// Bottom right.
+    BottomRight,
+}
+
+// ---------------------------------------------------------------------------
+// Scrollbar
+// ---------------------------------------------------------------------------
+
+/// Scrollbar orientation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub enum ScrollbarOrientationJson {
+    /// Vertical scrollbar on the right.
+    VerticalRight,
+    /// Vertical scrollbar on the left.
+    VerticalLeft,
+    /// Horizontal scrollbar at bottom.
+    HorizontalBottom,
+    /// Horizontal scrollbar at top.
+    HorizontalTop,
+}
+
+/// JSON representation of `ScrollbarState`.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub struct ScrollbarStateJson {
+    /// Total content length.
+    #[serde(default)]
+    pub content_length: usize,
+    /// Current scroll position.
+    #[serde(default)]
+    pub position: usize,
+    /// Viewport content length.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub viewport_content_length: Option<usize>,
 }
 
 // ---------------------------------------------------------------------------
