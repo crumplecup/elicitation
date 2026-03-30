@@ -11,6 +11,8 @@ Procedural macros for the `elicitation` framework, providing automatic trait imp
   - [`#[derive(Rand)]`](#deriverand)
   - [`#[derive(ElicitPlugin)]`](#deriveelicitplugin)
   - [`#[derive(ElicitProxy)]`](#deriveelicitproxy)
+  - [`#[derive(ToCodeLiteral)]`](#derivetocodeliteral)
+  - [`#[derive(Prop)]`](#deriveprop)
 - [Attribute Macros](#attribute-macros)
   - [`#[contract_type]`](#contract_type)
   - [`#[reflect_methods]`](#reflect_methods)
@@ -273,6 +275,104 @@ impl ElicitProxy for MyConfig {
     fn from_proxy(proxy: MyConfig) -> MyConfig { proxy }
 }
 ```
+
+---
+
+### `#[derive(ToCodeLiteral)]`
+
+Auto-generates the `ToCodeLiteral` trait implementation, which converts a value into a `TokenStream` expression that reconstructs it. Used by the code emission pipeline — when `#[elicit_tool]` auto-derives `EmitCode` for a params struct, it calls `to_code_literal()` on every field to embed concrete values into the emitted Rust source.
+
+#### Basic Usage
+
+```rust
+use elicitation::ToCodeLiteral;
+
+#[derive(ToCodeLiteral)]
+struct ColorJson {
+    r: f32,
+    g: f32,
+    b: f32,
+    a: f32,
+}
+
+// Generates (when feature = "emit"):
+// impl ToCodeLiteral for ColorJson {
+//     fn to_code_literal(&self) -> TokenStream {
+//         // ... calls to_code_literal on each field ...
+//         quote! { ColorJson { r: #r, g: #g, b: #b, a: #a } }
+//     }
+//     fn type_tokens() -> TokenStream { quote! { ColorJson } }
+// }
+```
+
+#### Enum Support
+
+Handles unit, tuple, and struct variants:
+
+```rust
+#[derive(ToCodeLiteral)]
+enum UiNode {
+    Widget { widget: WidgetJson },                                // struct variant
+    Container { container: ContainerJson, children: Vec<UiNode> }, // recursive
+    Leaf(String),                                                  // tuple variant
+    Empty,                                                         // unit variant
+}
+```
+
+Each variant becomes a match arm that destructures, converts each field via `to_code_literal()`, and reassembles.
+
+#### Recursive Types
+
+`Vec<T>`, `Option<T>`, and `HashMap<String, V>` have blanket `ToCodeLiteral` impls that delegate element-wise. So `Vec<UiNode>` works automatically as long as `UiNode` itself has the derive.
+
+#### Feature Gating
+
+The generated impl is always wrapped in `#[cfg(feature = "emit")]`:
+
+- The derive attribute is **always available** (proc macros run regardless of features).
+- The impl **silently vanishes** when `emit` is disabled.
+- Downstream crates need their own `emit` feature that activates `elicitation/emit`.
+
+#### Requirements
+
+- Every field type must implement `ToCodeLiteral` (primitives and std types already do).
+- The crate must have `quote` available (typically optional, gated on `emit`).
+
+---
+
+### `#[derive(Prop)]`
+
+Generates a trivial `Prop` trait implementation for zero-cost typestate marker types. The `Prop` trait marks types as propositions in the typestate verification system — they carry no runtime data but serve as compile-time proof witnesses.
+
+#### Usage
+
+```rust
+use elicitation::Prop;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Prop)]
+pub struct Validated;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Prop)]
+pub struct Submitted;
+```
+
+#### What Gets Generated
+
+With the `proofs` feature enabled, generates uniquely-named proof harnesses:
+
+```rust
+impl Prop for Validated {
+    fn kani_proof() -> TokenStream { /* verify_validated_prop_marker */ }
+    fn verus_proof() -> TokenStream { /* ... */ }
+    fn creusot_proof() -> TokenStream { /* ... */ }
+}
+```
+
+Without `proofs`, generates an empty `impl Prop for Validated {}`.
+
+#### Why Unique Names Matter
+
+The generated harness is named `verify_<snake_type_name>_prop_marker`, ensuring no collisions when multiple propositions' proofs are assembled into a single verification target.
 
 ---
 
