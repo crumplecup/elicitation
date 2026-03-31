@@ -1,11 +1,13 @@
 //! Tests for `elicit_ratatui` serde types, From conversions, and TUI tree composition.
 
 use elicit_ratatui::{
-    AlignmentJson, AxisJson, BarGroupJson, BarJson, BlockJson, BorderTypeJson, BordersJson,
-    CellJson, ColorJson, ConstraintJson, DatasetJson, DirectionJson, EventJson, GraphTypeJson,
-    KeyEventJson, LegendPositionJson, LineJson, ListStateJson, MarginJson, MarkerJson,
-    ModifierJson, MouseEventJson, PaddingJson, RowJson, ScrollbarOrientationJson,
-    ScrollbarStateJson, SpanJson, StyleJson, TableStateJson, TextJson, TuiNode, WidgetJson,
+    AlignmentJson, AxisJson, BarChartParams, BarGroupJson, BarJson, BlockJson, BlockParams,
+    BorderTypeJson, BordersJson, CellJson, ChartParams, ColorJson, ConstraintJson, DatasetJson,
+    DirectionJson, EventJson, GaugeParams, GraphTypeJson, KeyEventJson, LegendPositionJson,
+    LineGaugeParams, LineJson, ListParams, ListStateJson, MarginJson, MarkerJson, ModifierJson,
+    MouseEventJson, PaddingJson, ParagraphParams, RowJson, ScrollbarOrientationJson,
+    ScrollbarParams, ScrollbarStateJson, SpanJson, SparklineParams, StyleJson, TableParams,
+    TableStateJson, TabsParams, TextJson, TuiNode, WidgetJson,
 };
 
 // ---------------------------------------------------------------------------
@@ -1027,4 +1029,168 @@ fn test_color_rgb_from_raw_json() {
             b: 128
         }
     );
+}
+
+// ---------------------------------------------------------------------------
+// Widget param deserialization (simulating MCP input)
+// ---------------------------------------------------------------------------
+
+#[test]
+fn test_block_params_from_json() {
+    let json = r#"{"title": "Test", "borders": "All"}"#;
+    let params: BlockParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.title, Some("Test".to_string()));
+    assert_eq!(params.borders, Some(BordersJson::All));
+}
+
+#[test]
+fn test_block_params_minimal_json() {
+    let json = r#"{}"#;
+    let params: BlockParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.title, None);
+    assert_eq!(params.borders, None);
+    assert_eq!(params.style, None);
+}
+
+#[test]
+fn test_paragraph_params_from_json() {
+    let json = r#"{"text": "Hello", "wrap": true, "alignment": "Center"}"#;
+    let params: ParagraphParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.text, "Hello");
+    assert!(params.wrap);
+    assert_eq!(params.alignment, Some("Center".to_string()));
+}
+
+#[test]
+fn test_list_params_from_json() {
+    let json = r#"{"items": ["a", "b", "c"], "highlight_symbol": ">> "}"#;
+    let params: ListParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.items.len(), 3);
+    assert_eq!(params.highlight_symbol, Some(">> ".to_string()));
+}
+
+#[test]
+fn test_table_params_from_json() {
+    let json = r#"{
+        "rows": [{"cells": [{"content": "a"}, {"content": "b"}]}],
+        "widths": [{"type": "Length", "value": 10}, {"type": "Fill", "value": 1}]
+    }"#;
+    let params: TableParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.rows.len(), 1);
+    assert_eq!(params.widths.len(), 2);
+    assert_eq!(params.rows[0].cells[0].content, "a");
+}
+
+#[test]
+fn test_gauge_params_from_json() {
+    let json = r#"{"ratio": 0.42, "label": "42%"}"#;
+    let params: GaugeParams = serde_json::from_str(json).unwrap();
+    assert!((params.ratio - 0.42).abs() < f64::EPSILON);
+    assert_eq!(params.label, Some("42%".to_string()));
+}
+
+#[test]
+fn test_sparkline_params_from_json() {
+    let json = r#"{"data": [1, 2, 3, 4, 5], "max": 10}"#;
+    let params: SparklineParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.data, vec![1, 2, 3, 4, 5]);
+    assert_eq!(params.max, Some(10));
+}
+
+#[test]
+fn test_tabs_params_from_json() {
+    let json = r#"{"titles": ["Home", "Settings"], "selected": 0}"#;
+    let params: TabsParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.titles, vec!["Home", "Settings"]);
+    assert_eq!(params.selected, Some(0));
+}
+
+#[test]
+fn test_chart_params_from_json() {
+    let json = r#"{
+        "datasets": [{
+            "name": "data",
+            "data": [[0.0, 1.0], [1.0, 2.0]],
+            "graph_type": "Line",
+            "marker": "Dot"
+        }],
+        "legend_position": "TopRight"
+    }"#;
+    let params: ChartParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.datasets.len(), 1);
+    assert_eq!(params.datasets[0].name, Some("data".to_string()));
+    assert_eq!(params.legend_position, Some(LegendPositionJson::TopRight));
+}
+
+#[test]
+fn test_bar_chart_params_from_json() {
+    let json = r#"{
+        "data": [{
+            "label": "Group",
+            "bars": [{"value": 10, "label": "A"}, {"value": 20}]
+        }],
+        "bar_width": 3,
+        "direction": "Vertical"
+    }"#;
+    let params: BarChartParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.data.len(), 1);
+    assert_eq!(params.data[0].bars.len(), 2);
+    assert_eq!(params.bar_width, Some(3));
+    assert_eq!(params.direction, Some(DirectionJson::Vertical));
+}
+
+#[test]
+fn test_line_gauge_params_from_json() {
+    let json = r#"{"ratio": 0.8, "label": "80%"}"#;
+    let params: LineGaugeParams = serde_json::from_str(json).unwrap();
+    assert!((params.ratio - 0.8).abs() < f64::EPSILON);
+    assert_eq!(params.label, Some("80%".to_string()));
+}
+
+#[test]
+fn test_scrollbar_params_from_json() {
+    let json = r#"{
+        "orientation": "VerticalRight",
+        "state": {"content_length": 200, "position": 50}
+    }"#;
+    let params: ScrollbarParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.orientation, ScrollbarOrientationJson::VerticalRight);
+    let state = params.state.unwrap();
+    assert_eq!(state.content_length, 200);
+    assert_eq!(state.position, 50);
+}
+
+#[test]
+fn test_table_params_with_header_from_json() {
+    let json = r#"{
+        "rows": [{"cells": [{"content": "val1"}, {"content": "val2"}]}],
+        "widths": [{"type": "Percentage", "value": 50}, {"type": "Percentage", "value": 50}],
+        "header": {"cells": [{"content": "Col A"}, {"content": "Col B"}]},
+        "column_spacing": 2
+    }"#;
+    let params: TableParams = serde_json::from_str(json).unwrap();
+    assert!(params.header.is_some());
+    let header = params.header.unwrap();
+    assert_eq!(header.cells[0].content, "Col A");
+    assert_eq!(params.column_spacing, Some(2));
+}
+
+#[test]
+fn test_scrollbar_params_all_symbols() {
+    let json = r#"{
+        "orientation": "HorizontalBottom",
+        "thumb_symbol": "█",
+        "track_symbol": "─",
+        "begin_symbol": "◄",
+        "end_symbol": "►"
+    }"#;
+    let params: ScrollbarParams = serde_json::from_str(json).unwrap();
+    assert_eq!(
+        params.orientation,
+        ScrollbarOrientationJson::HorizontalBottom
+    );
+    assert_eq!(params.thumb_symbol, Some("█".to_string()));
+    assert_eq!(params.track_symbol, Some("─".to_string()));
+    assert_eq!(params.begin_symbol, Some("◄".to_string()));
+    assert_eq!(params.end_symbol, Some("►".to_string()));
 }

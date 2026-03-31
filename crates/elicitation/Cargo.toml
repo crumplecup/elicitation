@@ -79,6 +79,7 @@ elicitation_derive = { workspace = true }
 elicitation_macros = { workspace = true }
 accesskit = { workspace = true, optional = true }
 egui = { workspace = true, optional = true }
+ratatui = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio-test = { workspace = true }
@@ -96,7 +97,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "proofs", "verification", "graph", "clap-types", "sqlx-types", "prompt-tree"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "proofs", "verification", "graph", "clap-types", "sqlx-types", "prompt-tree", "ratatui"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -155,6 +156,7 @@ cli = ["dep:clap", "clap-types", "csv", "chrono", "shellexpand", "dirs"]
 dev = ["full", "cli", "graph"]
 accesskit = ["dep:accesskit"]
 egui-types = ["dep:egui"]
+ratatui = ["dep:ratatui"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [

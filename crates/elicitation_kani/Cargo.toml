@@ -33,6 +33,7 @@ regex = { workspace = true, optional = true }
 clap = { workspace = true, optional = true }
 sqlx = { workspace = true, optional = true }
 egui = { workspace = true, optional = true }
+ratatui = { workspace = true, optional = true }
 paste = { workspace = true, optional = true }
 elicit_ui = { workspace = true, optional = true }
 accesskit = { workspace = true, optional = true }
@@ -51,6 +52,7 @@ clap-types = ["dep:clap", "elicitation/clap-types"]
 sqlx-types = ["dep:sqlx", "elicitation/sqlx-types"]
 tokio-types = []
 egui-types = ["dep:egui", "dep:paste", "elicitation/egui-types"]
+ratatui = ["dep:ratatui", "dep:paste", "elicitation/ratatui"]
 ui-types = ["dep:elicit_ui", "dep:accesskit"]
 
 [lints.rust]

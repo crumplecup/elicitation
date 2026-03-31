@@ -33,6 +33,7 @@ mod http_specs;
 mod integer_contracts;
 mod integers;
 mod network_specs;
+mod ratatui_specs;
 mod regex_specs;
 mod registry;
 mod scalars;

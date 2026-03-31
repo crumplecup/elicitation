@@ -122,5 +122,8 @@ mod tokio_types;
 #[cfg(all(kani, feature = "egui-types"))]
 mod egui_types;
 
+#[cfg(all(kani, feature = "ratatui"))]
+mod ratatui_types;
+
 #[cfg(all(kani, feature = "ui-types"))]
 mod ui_types;

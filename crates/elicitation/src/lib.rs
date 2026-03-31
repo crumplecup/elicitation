@@ -565,3 +565,27 @@ pub use primitives::egui_types::{
     WidgetTypeSelect,
     WidgetTypeStyle,
 };
+
+// ratatui types (feature-gated on ratatui)
+#[cfg(feature = "ratatui")]
+pub use primitives::ratatui_types::{
+    // Select enum styles
+    AlignmentStyle,
+    BorderTypeStyle,
+    ColorStyle,
+    RatatuiDirectionStyle,
+    // Trenchcoat wrappers (add JsonSchema for ElicitComplete)
+    AlignmentSelect,
+    BorderTypeSelect,
+    BordersSelect,
+    ColorSelect,
+    RatatuiDirectionSelect,
+    ScrollbarOrientationSelect,
+    // Composite struct wrappers
+    RatatuiMargin,
+    RatatuiMarginStyle,
+    RatatuiPadding,
+    RatatuiPaddingStyle,
+    RatatuiStyle,
+    RatatuiStyleStyle,
+};

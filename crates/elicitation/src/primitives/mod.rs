@@ -52,3 +52,6 @@ pub mod accesskit_types;
 
 #[cfg(feature = "egui-types")]
 pub mod egui_types;
+
+#[cfg(feature = "ratatui")]
+pub mod ratatui_types;
