@@ -553,3 +553,77 @@ pub fn verify_builder_login_form() -> bool {
     let vp = elicit_ui::Viewport::new(1920, 1080);
     layout.verify_a(vp).is_ok()
 }
+
+// ── CssLength resolution proofs ──────────────────────────────────────────────
+
+/// Trusted axiom: Px(v) resolves to v directly.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_px_resolves_directly() -> bool {
+    let length = elicit_ui::CssLength::Px(42.0_f64);
+    length.to_px(16.0, 16.0, 1920.0, 1080.0, 100.0) == 42.0_f64
+}
+
+/// Trusted axiom: Em(v) resolves to v × font_size_px.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_em_resolution() -> bool {
+    let length = elicit_ui::CssLength::Em(1.5_f64);
+    // 1.5em at 16px font = 24px
+    length.to_px(16.0, 16.0, 1920.0, 1080.0, 100.0) == 24.0_f64
+}
+
+/// Trusted axiom: Rem(v) resolves to v × root_font_size_px.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_rem_resolution() -> bool {
+    let length = elicit_ui::CssLength::Rem(2.0_f64);
+    // 2rem at 16px root = 32px
+    length.to_px(16.0, 16.0, 1920.0, 1080.0, 100.0) == 32.0_f64
+}
+
+/// Trusted axiom: Vw(v) resolves to v × viewport_width / 100.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_vw_resolution() -> bool {
+    let length = elicit_ui::CssLength::Vw(50.0_f64);
+    // 50vw at 1920px viewport = 960px
+    length.to_px(16.0, 16.0, 1920.0, 1080.0, 100.0) == 960.0_f64
+}
+
+/// Trusted axiom: Vh(v) resolves to v × viewport_height / 100.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_vh_resolution() -> bool {
+    let length = elicit_ui::CssLength::Vh(100.0_f64);
+    // 100vh at 1080px viewport = 1080px
+    length.to_px(16.0, 16.0, 1920.0, 1080.0, 100.0) == 1080.0_f64
+}
+
+/// Trusted axiom: Percent(v) resolves to v × containing_block / 100.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_percent_resolution() -> bool {
+    let length = elicit_ui::CssLength::Percent(80.0_f64);
+    // 80% of 500px containing block = 400px
+    length.to_px(16.0, 16.0, 1920.0, 1080.0, 500.0) == 400.0_f64
+}
+
+/// Trusted axiom: only Px is NOT zoom-invariant.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_zoom_invariant_classification() -> bool {
+    !elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Px(16.0))
+        && elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Em(1.0))
+        && elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Rem(1.0))
+        && elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Vw(50.0))
+        && elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Vh(50.0))
+        && elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Percent(100.0))
+}

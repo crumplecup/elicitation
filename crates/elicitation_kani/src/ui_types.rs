@@ -592,3 +592,110 @@ fn verify_typestate_markers_distinct() {
         "Markers must all be zero-sized"
     );
 }
+
+// ── CssLength resolution proofs ──────────────────────────────────────────────
+
+/// Px resolves directly to its value.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_px_resolves_directly() {
+    let v: f64 = kani::any();
+    kani::assume!(v.is_finite());
+    let length = elicit_ui::CssLength::Px(v);
+    let result = length.to_px(16.0, 16.0, 1920.0, 1080.0, 100.0);
+    assert!(result == v, "Px(v) resolves to v");
+}
+
+/// Em resolves to value × font_size_px.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_em_resolution() {
+    let v: f64 = kani::any();
+    let font_size: f64 = kani::any();
+    kani::assume!(v.is_finite() && font_size.is_finite());
+    let length = elicit_ui::CssLength::Em(v);
+    let result = length.to_px(font_size, 16.0, 1920.0, 1080.0, 100.0);
+    assert!(result == v * font_size, "Em(v) resolves to v * font_size");
+}
+
+/// Rem resolves to value × root_font_size_px.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_rem_resolution() {
+    let v: f64 = kani::any();
+    let root_font_size: f64 = kani::any();
+    kani::assume!(v.is_finite() && root_font_size.is_finite());
+    let length = elicit_ui::CssLength::Rem(v);
+    let result = length.to_px(16.0, root_font_size, 1920.0, 1080.0, 100.0);
+    assert!(
+        result == v * root_font_size,
+        "Rem(v) resolves to v * root_font_size"
+    );
+}
+
+/// Vw resolves to value × viewport_width / 100.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_vw_resolution() {
+    let v: f64 = kani::any();
+    let vw: f64 = kani::any();
+    kani::assume!(v.is_finite() && vw.is_finite());
+    let length = elicit_ui::CssLength::Vw(v);
+    let result = length.to_px(16.0, 16.0, vw, 1080.0, 100.0);
+    assert!(result == v * vw / 100.0, "Vw(v) resolves to v * vw / 100");
+}
+
+/// Vh resolves to value × viewport_height / 100.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_vh_resolution() {
+    let v: f64 = kani::any();
+    let vh: f64 = kani::any();
+    kani::assume!(v.is_finite() && vh.is_finite());
+    let length = elicit_ui::CssLength::Vh(v);
+    let result = length.to_px(16.0, 16.0, 1920.0, vh, 100.0);
+    assert!(result == v * vh / 100.0, "Vh(v) resolves to v * vh / 100");
+}
+
+/// Percent resolves to value × containing_block / 100.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_percent_resolution() {
+    let v: f64 = kani::any();
+    let cb: f64 = kani::any();
+    kani::assume!(v.is_finite() && cb.is_finite());
+    let length = elicit_ui::CssLength::Percent(v);
+    let result = length.to_px(16.0, 16.0, 1920.0, 1080.0, cb);
+    assert!(
+        result == v * cb / 100.0,
+        "Percent(v) resolves to v * cb / 100"
+    );
+}
+
+/// Only Px is NOT zoom-invariant; all relative units are.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_zoom_invariant_classification() {
+    let v: f64 = kani::any();
+    kani::assume!(v.is_finite());
+    assert!(!elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Px(v)));
+    assert!(elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Em(v)));
+    assert!(elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Rem(v)));
+    assert!(elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Vw(v)));
+    assert!(elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Vh(v)));
+    assert!(elicit_ui::is_zoom_invariant(
+        &elicit_ui::CssLength::Percent(v)
+    ));
+}
+
+/// Serde roundtrip preserves CssLength variants and values.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_length_serde_px_roundtrip() {
+    let v: f64 = kani::any();
+    kani::assume!(v.is_finite());
+    let original = elicit_ui::CssLength::Px(v);
+    let json = serde_json::to_string(&original).expect("serialize");
+    let restored: elicit_ui::CssLength = serde_json::from_str(&json).expect("deserialize");
+    assert!(restored == original, "Px serde roundtrip");
+}

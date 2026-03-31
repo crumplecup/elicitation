@@ -316,4 +316,77 @@ pub fn verify_builder_composite_form(form_valid: bool) -> (result: bool)
     form_valid
 }
 
+// ── CssLength zoom invariance shadow proofs ──────────────────────────────────
+// Shadow enum modeling CssLength variant classification.
+// f64 arithmetic is not provable in Verus, so we focus on structural properties.
+
+pub enum ShadowCssUnit {
+    Px,
+    Em,
+    Rem,
+    Vw,
+    Vh,
+    Percent,
+}
+
+/// Shadow zoom invariance: returns true for relative units, false for Px.
+pub fn shadow_is_zoom_invariant(unit: &ShadowCssUnit) -> (result: bool)
+    ensures
+        result == match *unit {
+            ShadowCssUnit::Px => false,
+            ShadowCssUnit::Em => true,
+            ShadowCssUnit::Rem => true,
+            ShadowCssUnit::Vw => true,
+            ShadowCssUnit::Vh => true,
+            ShadowCssUnit::Percent => true,
+        },
+{
+    match unit {
+        ShadowCssUnit::Px => false,
+        _ => true,
+    }
+}
+
+/// Only Px is not zoom-invariant.
+pub fn verify_css_px_not_zoom_invariant() -> (result: bool)
+    ensures result == false,
+{
+    shadow_is_zoom_invariant(&ShadowCssUnit::Px)
+}
+
+/// Em is zoom-invariant.
+pub fn verify_css_em_zoom_invariant() -> (result: bool)
+    ensures result == true,
+{
+    shadow_is_zoom_invariant(&ShadowCssUnit::Em)
+}
+
+/// Rem is zoom-invariant.
+pub fn verify_css_rem_zoom_invariant() -> (result: bool)
+    ensures result == true,
+{
+    shadow_is_zoom_invariant(&ShadowCssUnit::Rem)
+}
+
+/// Vw is zoom-invariant.
+pub fn verify_css_vw_zoom_invariant() -> (result: bool)
+    ensures result == true,
+{
+    shadow_is_zoom_invariant(&ShadowCssUnit::Vw)
+}
+
+/// Vh is zoom-invariant.
+pub fn verify_css_vh_zoom_invariant() -> (result: bool)
+    ensures result == true,
+{
+    shadow_is_zoom_invariant(&ShadowCssUnit::Vh)
+}
+
+/// Percent is zoom-invariant.
+pub fn verify_css_percent_zoom_invariant() -> (result: bool)
+    ensures result == true,
+{
+    shadow_is_zoom_invariant(&ShadowCssUnit::Percent)
+}
+
 } // verus!

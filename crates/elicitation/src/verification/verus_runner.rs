@@ -246,30 +246,78 @@ impl VerusProof {
             Self::new("ui_types", "verify_builder_id_uniqueness"),
             Self::new("ui_types", "verify_builder_composite_form"),
             // ratatui_types: select enum proofs
-            Self::new("ratatui_types", "verify_ratatui_alignment_known_label_accepted"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_alignment_known_label_accepted",
+            ),
             Self::new("ratatui_types", "verify_ratatui_alignment_unknown_rejected"),
-            Self::new("ratatui_types", "verify_ratatui_alignment_roundtrip_complete"),
-            Self::new("ratatui_types", "verify_ratatui_alignment_label_count_matches"),
-            Self::new("ratatui_types", "verify_ratatui_direction_known_label_accepted"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_alignment_roundtrip_complete",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_alignment_label_count_matches",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_direction_known_label_accepted",
+            ),
             Self::new("ratatui_types", "verify_ratatui_direction_unknown_rejected"),
-            Self::new("ratatui_types", "verify_ratatui_direction_roundtrip_complete"),
-            Self::new("ratatui_types", "verify_ratatui_direction_label_count_matches"),
-            Self::new("ratatui_types", "verify_ratatui_border_type_known_label_accepted"),
-            Self::new("ratatui_types", "verify_ratatui_border_type_unknown_rejected"),
-            Self::new("ratatui_types", "verify_ratatui_border_type_roundtrip_complete"),
-            Self::new("ratatui_types", "verify_ratatui_border_type_label_count_matches"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_direction_roundtrip_complete",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_direction_label_count_matches",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_border_type_known_label_accepted",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_border_type_unknown_rejected",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_border_type_roundtrip_complete",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_border_type_label_count_matches",
+            ),
             Self::new("ratatui_types", "verify_ratatui_color_known_label_accepted"),
             Self::new("ratatui_types", "verify_ratatui_color_unknown_rejected"),
             Self::new("ratatui_types", "verify_ratatui_color_roundtrip_complete"),
             Self::new("ratatui_types", "verify_ratatui_color_label_count_matches"),
-            Self::new("ratatui_types", "verify_ratatui_borders_known_label_accepted"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_borders_known_label_accepted",
+            ),
             Self::new("ratatui_types", "verify_ratatui_borders_unknown_rejected"),
             Self::new("ratatui_types", "verify_ratatui_borders_roundtrip_complete"),
-            Self::new("ratatui_types", "verify_ratatui_borders_label_count_matches"),
-            Self::new("ratatui_types", "verify_ratatui_scrollbar_orientation_known_label_accepted"),
-            Self::new("ratatui_types", "verify_ratatui_scrollbar_orientation_unknown_rejected"),
-            Self::new("ratatui_types", "verify_ratatui_scrollbar_orientation_roundtrip_complete"),
-            Self::new("ratatui_types", "verify_ratatui_scrollbar_orientation_label_count_matches"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_borders_label_count_matches",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_scrollbar_orientation_known_label_accepted",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_scrollbar_orientation_unknown_rejected",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_scrollbar_orientation_roundtrip_complete",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_scrollbar_orientation_label_count_matches",
+            ),
             // ratatui_types: composite struct proofs (shadow types)
             Self::new("ratatui_types", "verify_ratatui_padding_roundtrip"),
             Self::new("ratatui_types", "verify_ratatui_padding_concrete"),
@@ -325,7 +373,10 @@ impl VerusProof {
             Self::new("egui_types", "verify_texture_filter_unknown_rejected"),
             Self::new("egui_types", "verify_texture_filter_roundtrip_complete"),
             Self::new("egui_types", "verify_texture_filter_label_count_matches"),
-            Self::new("egui_types", "verify_texture_wrap_mode_known_label_accepted"),
+            Self::new(
+                "egui_types",
+                "verify_texture_wrap_mode_known_label_accepted",
+            ),
             Self::new("egui_types", "verify_texture_wrap_mode_unknown_rejected"),
             Self::new("egui_types", "verify_texture_wrap_mode_roundtrip_complete"),
             Self::new("egui_types", "verify_texture_wrap_mode_label_count_matches"),
@@ -375,6 +426,13 @@ impl VerusProof {
             Self::new("egui_types", "verify_stroke_roundtrip"),
             Self::new("egui_types", "verify_shadow_roundtrip"),
             Self::new("egui_types", "verify_font_id_roundtrip"),
+            // ui_types: CssLength shadow proofs
+            Self::new("ui_types", "verify_css_px_not_zoom_invariant"),
+            Self::new("ui_types", "verify_css_em_zoom_invariant"),
+            Self::new("ui_types", "verify_css_rem_zoom_invariant"),
+            Self::new("ui_types", "verify_css_vw_zoom_invariant"),
+            Self::new("ui_types", "verify_css_vh_zoom_invariant"),
+            Self::new("ui_types", "verify_css_percent_zoom_invariant"),
         ]
     }
 }
