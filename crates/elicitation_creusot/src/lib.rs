@@ -98,6 +98,9 @@ mod tokio_types;
 #[cfg(feature = "egui-types")]
 mod egui_types;
 
+#[cfg(feature = "ratatui-types")]
+mod ratatui_types;
+
 #[cfg(feature = "ui-types")]
 mod ui_types;
 
@@ -484,6 +487,28 @@ pub use egui_types::{
     verify_ui_kind_unknown_rejected, verify_vec2_from_roundtrip,
     verify_widget_type_all_labels_roundtrip, verify_widget_type_known_label_accepted,
     verify_widget_type_label_count, verify_widget_type_unknown_rejected,
+};
+
+#[cfg(feature = "ratatui-types")]
+pub use ratatui_types::{
+    verify_borders_select_into_inner, verify_ratatui_alignment_all_labels_roundtrip,
+    verify_ratatui_alignment_known_label_accepted, verify_ratatui_alignment_label_count,
+    verify_ratatui_alignment_unknown_rejected, verify_ratatui_border_type_all_labels_roundtrip,
+    verify_ratatui_border_type_known_label_accepted, verify_ratatui_border_type_label_count,
+    verify_ratatui_border_type_unknown_rejected, verify_ratatui_borders_all_labels_roundtrip,
+    verify_ratatui_borders_known_label_accepted, verify_ratatui_borders_label_count,
+    verify_ratatui_borders_unknown_rejected, verify_ratatui_color_all_labels_roundtrip,
+    verify_ratatui_color_known_label_accepted, verify_ratatui_color_label_count,
+    verify_ratatui_color_unknown_rejected, verify_ratatui_direction_all_labels_roundtrip,
+    verify_ratatui_direction_known_label_accepted, verify_ratatui_direction_label_count,
+    verify_ratatui_direction_unknown_rejected, verify_ratatui_margin_from_roundtrip,
+    verify_ratatui_margin_wrapper_fields, verify_ratatui_padding_from_roundtrip,
+    verify_ratatui_padding_wrapper_fields,
+    verify_ratatui_scrollbar_orientation_all_labels_roundtrip,
+    verify_ratatui_scrollbar_orientation_known_label_accepted,
+    verify_ratatui_scrollbar_orientation_label_count,
+    verify_ratatui_scrollbar_orientation_unknown_rejected, verify_ratatui_style_all_modifiers,
+    verify_ratatui_style_empty_roundtrip, verify_ratatui_style_fg_bg_presence,
 };
 
 #[cfg(feature = "ui-types")]

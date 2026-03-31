@@ -54,4 +54,5 @@ pub mod clap_types;
 pub mod sqlx_types;
 pub mod tokio_types;
 pub mod egui_types;
+pub mod ratatui_types;
 pub mod ui_types;
