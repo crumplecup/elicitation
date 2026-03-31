@@ -109,6 +109,7 @@ mod style_tools;
 #[cfg(feature = "runtime")]
 mod terminal_tools;
 mod text_tools;
+pub mod tui_accesskit_convert;
 mod widget_tools;
 
 #[cfg(feature = "runtime")]
@@ -149,6 +150,7 @@ pub use serde_types::{
     ModifierJson, MouseEventJson, PaddingJson, RowJson, ScrollbarOrientationJson,
     ScrollbarStateJson, SpanJson, StyleJson, TableStateJson, TextJson, TuiNode, WidgetJson,
 };
+pub use tui_accesskit_convert::{tree_update_to_tui_node, tui_node_to_tree_update};
 pub use style_tools::{
     ColorIndexedParams, ColorNamedParams, ColorRgbParams, ModifierParams, StyleBgParams,
     StyleFgParams, StyleResetParams,

@@ -1285,6 +1285,7 @@ dependencies = [
 name = "elicit_ratatui"
 version = "0.9.1"
 dependencies = [
+ "accesskit",
  "crossterm 0.28.1",
  "elicitation",
  "elicitation_derive",
