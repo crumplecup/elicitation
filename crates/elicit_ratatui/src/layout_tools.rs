@@ -4,8 +4,8 @@
 //! that can be rendered by a ratatui backend or emitted as Rust source code.
 
 use crate::serde_types::{ConstraintJson, DirectionJson, MarginJson, TuiNode};
-use rmcp::model::{CallToolResult, Content};
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;

@@ -6,8 +6,8 @@
 use crate::serde_types::{ConstraintJson, DirectionJson, TuiNode, WidgetJson};
 use elicitation::ToCodeLiteral;
 use elicitation::elicit_tool;
-use rmcp::model::{CallToolResult, Content};
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
@@ -269,10 +269,7 @@ fn tui_node_to_code(node: &TuiNode, indent: usize) -> String {
                 constraints.iter().map(constraint_to_code).collect();
             let mut code = format!("{pad}let chunks = Layout::default()\n");
             code += &format!("{pad}    .direction({dir})\n");
-            code += &format!(
-                "{pad}    .constraints([{}])\n",
-                constraints_code.join(", ")
-            );
+            code += &format!("{pad}    .constraints([{}])\n", constraints_code.join(", "));
             if let Some(m) = margin {
                 code += &format!("{pad}    .horizontal_margin({})\n", m.horizontal);
                 code += &format!("{pad}    .vertical_margin({})\n", m.vertical);
@@ -454,7 +451,10 @@ async fn emit_event_handler(p: EmitEventHandlerParams) -> Result<CallToolResult,
     ));
     for h in &p.handlers {
         let arm = key_to_match_arm(&h.key);
-        match_arms.push_str(&format!("            {arm} => {{ {action} }}\n", action = h.action));
+        match_arms.push_str(&format!(
+            "            {arm} => {{ {action} }}\n",
+            action = h.action
+        ));
     }
     match_arms.push_str("            _ => {}\n");
 

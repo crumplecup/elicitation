@@ -98,42 +98,31 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+#[cfg(feature = "runtime")]
+mod event_tools;
 #[cfg(feature = "emit")]
 mod fragment_tools;
 mod layout_tools;
 mod property_tools;
 mod serde_types;
 mod style_tools;
-mod text_tools;
-mod widget_tools;
-#[cfg(feature = "runtime")]
-mod event_tools;
 #[cfg(feature = "runtime")]
 mod terminal_tools;
+mod text_tools;
+mod widget_tools;
 
+#[cfg(feature = "runtime")]
+pub use event_tools::{EventPollParams, EventReadKeyParams, EventReadParams};
+#[cfg(feature = "emit")]
+pub use fragment_tools::{
+    AppFieldJson, AssembleRatatuiAppParams, EmitAppLoopParams, EmitAppStructParams,
+    EmitCargoTomlParams, EmitDrawFnParams, EmitEventHandlerParams, EmitMainRsParams,
+    KeyHandlerJson,
+};
 pub use layout_tools::{
     ConstraintFillParams, ConstraintLengthParams, ConstraintMaxParams, ConstraintMinParams,
     ConstraintPercentageParams, ConstraintRatioParams, LayoutHorizontalParams,
     LayoutVerticalParams,
-};
-pub use serde_types::{
-    AlignmentJson, AxisJson, BarGroupJson, BarJson, BlockJson, BorderTypeJson, BordersJson,
-    CellJson, ColorJson, ConstraintJson, DatasetJson, DirectionJson, EventJson, GraphTypeJson,
-    KeyEventJson, LegendPositionJson, LineJson, ListStateJson, MarginJson, MarkerJson,
-    ModifierJson, MouseEventJson, PaddingJson, RowJson, ScrollbarOrientationJson,
-    ScrollbarStateJson, SpanJson, StyleJson, TableStateJson, TextJson, TuiNode, WidgetJson,
-};
-pub use style_tools::{
-    ColorIndexedParams, ColorNamedParams, ColorRgbParams, ModifierParams, StyleBgParams,
-    StyleFgParams, StyleResetParams,
-};
-pub use text_tools::{
-    LineFromSpansParams, SpanRawParams, SpanStyledParams, TextFromLinesParams, TextRawParams,
-    TextStyledParams,
-};
-pub use widget_tools::{
-    BarChartParams, BlockParams, ChartParams, ClearParams, GaugeParams, LineGaugeParams,
-    ListParams, ParagraphParams, ScrollbarParams, SparklineParams, TableParams, TabsParams,
 };
 pub use property_tools::{
     BarChartSetBarGapParams, BarChartSetBarStyleParams, BarChartSetBarWidthParams,
@@ -153,17 +142,28 @@ pub use property_tools::{
     TabsSetBlockParams, TabsSetDividerParams, TabsSetHighlightStyleParams, TabsSetSelectedParams,
     TabsSetStyleParams,
 };
-#[cfg(feature = "runtime")]
-pub use event_tools::{EventPollParams, EventReadKeyParams, EventReadParams};
+pub use serde_types::{
+    AlignmentJson, AxisJson, BarGroupJson, BarJson, BlockJson, BorderTypeJson, BordersJson,
+    CellJson, ColorJson, ConstraintJson, DatasetJson, DirectionJson, EventJson, GraphTypeJson,
+    KeyEventJson, LegendPositionJson, LineJson, ListStateJson, MarginJson, MarkerJson,
+    ModifierJson, MouseEventJson, PaddingJson, RowJson, ScrollbarOrientationJson,
+    ScrollbarStateJson, SpanJson, StyleJson, TableStateJson, TextJson, TuiNode, WidgetJson,
+};
+pub use style_tools::{
+    ColorIndexedParams, ColorNamedParams, ColorRgbParams, ModifierParams, StyleBgParams,
+    StyleFgParams, StyleResetParams,
+};
 #[cfg(feature = "runtime")]
 pub use terminal_tools::{
     TerminalClearParams, TerminalCreateParams, TerminalDestroyParams, TerminalDrawParams,
     TerminalHideCursorParams, TerminalSetCursorParams, TerminalShowCursorParams,
     TerminalSizeParams,
 };
-#[cfg(feature = "emit")]
-pub use fragment_tools::{
-    AppFieldJson, AssembleRatatuiAppParams, EmitAppLoopParams, EmitAppStructParams,
-    EmitCargoTomlParams, EmitDrawFnParams, EmitEventHandlerParams, EmitMainRsParams,
-    KeyHandlerJson,
+pub use text_tools::{
+    LineFromSpansParams, SpanRawParams, SpanStyledParams, TextFromLinesParams, TextRawParams,
+    TextStyledParams,
+};
+pub use widget_tools::{
+    BarChartParams, BlockParams, ChartParams, ClearParams, GaugeParams, LineGaugeParams,
+    ListParams, ParagraphParams, ScrollbarParams, SparklineParams, TableParams, TabsParams,
 };

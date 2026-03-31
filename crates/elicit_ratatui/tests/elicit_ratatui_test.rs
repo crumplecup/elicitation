@@ -145,11 +145,7 @@ fn test_style_to_ratatui() {
 #[test]
 fn test_style_serde_round_trip() {
     let s = StyleJson {
-        fg: Some(ColorJson::Rgb {
-            r: 1,
-            g: 2,
-            b: 3,
-        }),
+        fg: Some(ColorJson::Rgb { r: 1, g: 2, b: 3 }),
         bg: None,
         modifiers: vec![ModifierJson::Dim],
     };

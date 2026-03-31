@@ -5,9 +5,11 @@
 
 use std::time::Duration;
 
-use ratatui::crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind};
-use rmcp::model::{CallToolResult, Content};
+use ratatui::crossterm::event::{
+    self, Event, KeyCode, KeyEvent, KeyModifiers, MouseEvent, MouseEventKind,
+};
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
@@ -113,9 +115,7 @@ fn event_to_json(ev: &Event) -> EventJson {
         },
         Event::FocusGained => EventJson::FocusGained,
         Event::FocusLost => EventJson::FocusLost,
-        Event::Paste(text) => EventJson::Paste {
-            text: text.clone(),
-        },
+        Event::Paste(text) => EventJson::Paste { text: text.clone() },
     }
 }
 

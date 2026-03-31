@@ -3,8 +3,8 @@
 //! Each tool returns a [`StyleJson`] or [`ColorJson`] description.
 
 use crate::serde_types::{ColorJson, ModifierJson, StyleJson};
-use rmcp::model::{CallToolResult, Content};
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
@@ -201,7 +201,7 @@ async fn color_named(p: ColorNamedParams) -> Result<CallToolResult, ErrorData> {
             return Err(ErrorData::internal_error(
                 format!("Unknown colour name: {}", p.name),
                 None,
-            ))
+            ));
         }
     };
     Ok(color_result(&c))

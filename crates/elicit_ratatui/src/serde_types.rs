@@ -167,7 +167,9 @@ impl ModifierJson {
 // ---------------------------------------------------------------------------
 
 /// JSON representation of a ratatui `Style`.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral,
+)]
 pub struct StyleJson {
     /// Foreground colour.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -432,7 +434,9 @@ pub struct CellJson {
 // ---------------------------------------------------------------------------
 
 /// JSON representation of `ListState`.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral,
+)]
 pub struct ListStateJson {
     /// Currently selected index.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -443,7 +447,9 @@ pub struct ListStateJson {
 }
 
 /// JSON representation of `TableState`.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral,
+)]
 pub struct TableStateJson {
     /// Currently selected row index.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -893,7 +899,9 @@ pub enum ScrollbarOrientationJson {
 }
 
 /// JSON representation of `ScrollbarState`.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral,
+)]
 pub struct ScrollbarStateJson {
     /// Total content length.
     #[serde(default)]

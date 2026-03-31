@@ -7,16 +7,16 @@ use std::collections::HashMap;
 use std::io;
 use std::sync::{Mutex, OnceLock};
 
-use ratatui::crossterm::execute;
-use ratatui::crossterm::terminal::{
-    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
-};
-use ratatui::backend::CrosstermBackend;
-use ratatui::layout::Rect;
 use ratatui::Frame;
 use ratatui::Terminal;
-use rmcp::model::{CallToolResult, Content};
+use ratatui::backend::CrosstermBackend;
+use ratatui::crossterm::execute;
+use ratatui::crossterm::terminal::{
+    EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
+};
+use ratatui::layout::Rect;
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
@@ -80,12 +80,14 @@ async fn terminal_create(p: TerminalCreateParams) -> Result<CallToolResult, Erro
         execute!(stdout, EnterAlternateScreen)
             .map_err(|e| format!("enter alternate screen: {e}"))?;
         if let Some(title) = &p.title {
-            execute!(stdout, ratatui::crossterm::terminal::SetTitle(title.as_str()))
-                .map_err(|e| format!("set title: {e}"))?;
+            execute!(
+                stdout,
+                ratatui::crossterm::terminal::SetTitle(title.as_str())
+            )
+            .map_err(|e| format!("set title: {e}"))?;
         }
         let backend = CrosstermBackend::new(stdout);
-        let terminal =
-            Terminal::new(backend).map_err(|e| format!("create terminal: {e}"))?;
+        let terminal = Terminal::new(backend).map_err(|e| format!("create terminal: {e}"))?;
         let id = Uuid::new_v4();
         terminals()
             .lock()
@@ -95,7 +97,9 @@ async fn terminal_create(p: TerminalCreateParams) -> Result<CallToolResult, Erro
     })();
 
     match result {
-        Ok(id) => Ok(json_result(&serde_json::json!({ "terminal_id": id.to_string() }))),
+        Ok(id) => Ok(json_result(
+            &serde_json::json!({ "terminal_id": id.to_string() }),
+        )),
         Err(msg) => Ok(CallToolResult::error(vec![Content::text(msg)])),
     }
 }
@@ -492,8 +496,10 @@ fn render_widget(frame: &mut Frame, area: Rect, widget: &WidgetJson) {
             highlight_symbol,
             ..
         } => {
-            let list_items: Vec<ratatui::text::Line> =
-                items.iter().map(|s| ratatui::text::Line::raw(s.as_str())).collect();
+            let list_items: Vec<ratatui::text::Line> = items
+                .iter()
+                .map(|s| ratatui::text::Line::raw(s.as_str()))
+                .collect();
             let mut list = ratatui::widgets::List::new(list_items);
             if let Some(s) = style {
                 list = list.style(ratatui::style::Style::from(s.clone()));
@@ -526,7 +532,8 @@ fn render_widget(frame: &mut Frame, area: Rect, widget: &WidgetJson) {
                     .collect();
                 ratatui::widgets::Row::new(cells)
             };
-            let data_rows: Vec<ratatui::widgets::Row<'static>> = rows.iter().map(&make_row).collect();
+            let data_rows: Vec<ratatui::widgets::Row<'static>> =
+                rows.iter().map(&make_row).collect();
             let constraints: Vec<ratatui::layout::Constraint> =
                 widths.iter().map(|w| (*w).into()).collect();
             let mut table = ratatui::widgets::Table::new(data_rows, constraints);

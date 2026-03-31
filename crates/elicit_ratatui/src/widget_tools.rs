@@ -8,8 +8,8 @@ use crate::serde_types::{
     ListStateJson, RowJson, ScrollbarOrientationJson, ScrollbarStateJson, StyleJson,
     TableStateJson, WidgetJson,
 };
-use rmcp::model::{CallToolResult, Content};
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
@@ -60,9 +60,7 @@ pub struct BlockParams {
 #[instrument(skip_all)]
 async fn widget_block(p: BlockParams) -> Result<CallToolResult, ErrorData> {
     let block = BlockJson {
-        borders: p
-            .borders
-            .unwrap_or(crate::serde_types::BordersJson::All),
+        borders: p.borders.unwrap_or(crate::serde_types::BordersJson::All),
         border_type: p.border_type,
         title: p.title,
         style: p.style,

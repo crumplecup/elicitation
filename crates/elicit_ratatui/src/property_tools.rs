@@ -8,8 +8,8 @@ use crate::serde_types::{
     AxisJson, BlockJson, BorderTypeJson, BordersJson, DirectionJson, LegendPositionJson,
     ListStateJson, PaddingJson, RowJson, ScrollbarStateJson, StyleJson, TableStateJson, WidgetJson,
 };
-use rmcp::model::{CallToolResult, Content};
 use rmcp::ErrorData;
+use rmcp::model::{CallToolResult, Content};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use tracing::instrument;
@@ -160,9 +160,7 @@ pub struct BlockSetBorderStyleParams {
     description = "Set the border style on a Block widget. Returns the modified WidgetJson."
 )]
 #[instrument(skip_all)]
-async fn block_set_border_style(
-    p: BlockSetBorderStyleParams,
-) -> Result<CallToolResult, ErrorData> {
+async fn block_set_border_style(p: BlockSetBorderStyleParams) -> Result<CallToolResult, ErrorData> {
     let mut widget = p.widget;
     match &mut widget {
         WidgetJson::Block { block } => {
@@ -631,9 +629,7 @@ async fn table_set_column_spacing(
 ) -> Result<CallToolResult, ErrorData> {
     let mut widget = p.widget;
     match &mut widget {
-        WidgetJson::Table {
-            column_spacing, ..
-        } => {
+        WidgetJson::Table { column_spacing, .. } => {
             *column_spacing = Some(p.column_spacing);
         }
         other => return Ok(wrong_variant("Table", other)),
