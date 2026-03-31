@@ -624,6 +624,10 @@ impl ProofHarness {
             Self::new("geo_types", "verify_geo_rect_well_formed"),
             Self::new("geo_types", "verify_geo_line_from_roundtrip"),
             Self::new("geo_types", "verify_geo_line_wrapper_fields"),
+            // palette_types: color struct proofs
+            Self::new("palette_types", "verify_palette_srgb_from_roundtrip"),
+            Self::new("palette_types", "verify_palette_srgb_wrapper_fields"),
+            Self::new("palette_types", "verify_palette_srgb_black_white"),
         ]
     }
 

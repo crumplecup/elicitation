@@ -600,3 +600,7 @@ pub use primitives::geo_types::{
     GeoRect,
     GeoRectStyle,
 };
+
+// palette (feature-gated on palette)
+#[cfg(feature = "palette")]
+pub use primitives::palette_types::{PaletteSrgb, PaletteSrgbStyle};

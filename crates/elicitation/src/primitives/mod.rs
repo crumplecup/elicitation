@@ -58,3 +58,6 @@ pub mod ratatui_types;
 
 #[cfg(feature = "geo-types")]
 pub mod geo_types;
+
+#[cfg(feature = "palette")]
+pub mod palette_types;

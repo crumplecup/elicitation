@@ -77,6 +77,9 @@ syn = { workspace = true, optional = true }
 # GeoRust spatial types (optional)
 geo-types = { workspace = true, optional = true }
 
+# Color science (optional)
+palette = { workspace = true, optional = true }
+
 # Re-export derive macro
 elicitation_derive = { workspace = true }
 elicitation_macros = { workspace = true }
@@ -161,6 +164,7 @@ accesskit = ["dep:accesskit"]
 egui-types = ["dep:egui"]
 ratatui = ["dep:ratatui"]
 geo-types = ["dep:geo-types"]
+palette = ["dep:palette"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [

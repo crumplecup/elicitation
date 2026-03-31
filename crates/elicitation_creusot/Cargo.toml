@@ -35,6 +35,7 @@ egui = { workspace = true, optional = true }
 paste = { workspace = true, optional = true }
 ratatui = { workspace = true, optional = true }
 geo-types = { workspace = true, optional = true }
+palette = { workspace = true, optional = true }
 elicit_ui = { workspace = true, optional = true }
 accesskit = { workspace = true, optional = true }
 
@@ -56,4 +57,5 @@ tokio-types = []
 egui-types = ["dep:egui", "dep:paste", "elicitation/egui-types"]
 ratatui-types = ["dep:ratatui", "dep:paste", "elicitation/ratatui"]
 geo-types = ["dep:geo-types", "elicitation/geo-types"]
+palette = ["dep:palette", "elicitation/palette"]
 ui-types = ["dep:elicit_ui", "dep:accesskit"]

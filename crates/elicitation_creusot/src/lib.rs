@@ -104,6 +104,9 @@ mod ratatui_types;
 #[cfg(feature = "geo-types")]
 mod geo_types;
 
+#[cfg(feature = "palette")]
+mod palette_types;
+
 #[cfg(feature = "ui-types")]
 mod ui_types;
 
@@ -519,6 +522,12 @@ pub use ratatui_types::{
 pub use geo_types::{
     verify_geo_coord_concrete, verify_geo_coord_roundtrip, verify_geo_line_degenerate,
     verify_geo_line_roundtrip, verify_geo_rect_roundtrip, verify_geo_rect_well_formed,
+};
+
+#[cfg(feature = "palette")]
+pub use palette_types::{
+    verify_palette_srgb_concrete, verify_palette_srgb_extremes, verify_palette_srgb_primaries,
+    verify_palette_srgb_roundtrip,
 };
 
 #[cfg(feature = "ui-types")]

@@ -287,6 +287,15 @@ impl VerusProof {
             Self::new("geo_types", "verify_geo_line_roundtrip"),
             Self::new("geo_types", "verify_geo_line_concrete"),
             Self::new("geo_types", "verify_geo_line_degenerate"),
+            // palette_types: shadow struct proofs
+            Self::new("palette_types", "verify_palette_srgb_roundtrip"),
+            Self::new("palette_types", "verify_palette_srgb_concrete"),
+            Self::new("palette_types", "verify_palette_srgb_black"),
+            Self::new("palette_types", "verify_palette_srgb_white"),
+            Self::new("palette_types", "verify_palette_srgb_red"),
+            Self::new("palette_types", "verify_palette_srgb_green"),
+            Self::new("palette_types", "verify_palette_srgb_blue"),
+            Self::new("palette_types", "verify_palette_srgb_independence"),
             // egui_types: select enum proofs
             Self::new("egui_types", "verify_align_known_label_accepted"),
             Self::new("egui_types", "verify_align_unknown_rejected"),
