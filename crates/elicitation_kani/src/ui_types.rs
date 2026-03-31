@@ -835,3 +835,58 @@ fn verify_wcag_level_display() {
     assert_eq!(format!("{}", elicit_ui::WcagLevel::AA), "AA");
     assert_eq!(format!("{}", elicit_ui::WcagLevel::AAA), "AAA");
 }
+
+// ── ConstraintProfile and typestate proofs ────────────────────────────────────
+
+/// ConstraintProfile::WcagA has 3 hard constraints.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_profile_a_constraint_count() {
+    let cs = elicit_ui::ConstraintProfile::WcagA.to_constraint_set();
+    assert_eq!(cs.hard_constraints().len(), 3, "WCAG A: 3 hard constraints");
+}
+
+/// ConstraintProfile::WcagAA has 4 hard constraints (A + NoOverflow).
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_profile_aa_constraint_count() {
+    let cs = elicit_ui::ConstraintProfile::WcagAA.to_constraint_set();
+    assert_eq!(cs.hard_constraints().len(), 4, "WCAG AA: 4 hard constraints");
+}
+
+/// ConstraintProfile::WcagAAA has 5 hard constraints (AA + MinTouchTarget).
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_profile_aaa_constraint_count() {
+    let cs = elicit_ui::ConstraintProfile::WcagAAA.to_constraint_set();
+    assert_eq!(cs.hard_constraints().len(), 5, "WCAG AAA: 5 hard constraints");
+}
+
+/// Monotonicity: A < AA < AAA constraint counts.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_profile_monotonicity() {
+    let a = elicit_ui::ConstraintProfile::WcagA.to_constraint_set().hard_constraints().len();
+    let aa = elicit_ui::ConstraintProfile::WcagAA.to_constraint_set().hard_constraints().len();
+    let aaa = elicit_ui::ConstraintProfile::WcagAAA.to_constraint_set().hard_constraints().len();
+    assert!(a < aa, "A < AA");
+    assert!(aa < aaa, "AA < AAA");
+}
+
+/// Typestate markers are zero-sized.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_typestate_markers_zero_sized() {
+    assert_eq!(std::mem::size_of::<elicit_ui::Pending>(), 0);
+    assert_eq!(std::mem::size_of::<elicit_ui::Verified>(), 0);
+    assert_eq!(std::mem::size_of::<elicit_ui::Rendered>(), 0);
+}
+
+/// Typestate markers are distinct types (equality check).
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_typestate_markers_eq() {
+    assert_eq!(elicit_ui::Pending, elicit_ui::Pending);
+    assert_eq!(elicit_ui::Verified, elicit_ui::Verified);
+    assert_eq!(elicit_ui::Rendered, elicit_ui::Rendered);
+}

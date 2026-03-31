@@ -586,4 +586,7 @@ pub use ui_types::{
     verify_srgb_from_u8_bounds,
     verify_viewport_construction,
     verify_wcag_level_display,
+    // ConstraintProfile and typestate proofs
+    verify_profile_a_count, verify_profile_aa_count, verify_profile_aaa_count,
+    verify_profile_monotonicity, verify_typestate_zero_sized,
 };

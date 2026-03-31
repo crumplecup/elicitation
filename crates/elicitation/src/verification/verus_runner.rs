@@ -447,6 +447,11 @@ impl VerusProof {
             Self::new("ui_types", "verify_contrast_aaa_large_threshold"),
             Self::new("ui_types", "verify_aaa_stricter_than_aa_normal"),
             Self::new("ui_types", "verify_aaa_stricter_than_aa_large"),
+            // ui_types: ConstraintProfile shadow proofs
+            Self::new("ui_types", "verify_profile_a_count"),
+            Self::new("ui_types", "verify_profile_aa_count"),
+            Self::new("ui_types", "verify_profile_aaa_count"),
+            Self::new("ui_types", "verify_profile_monotonicity"),
         ]
     }
 }

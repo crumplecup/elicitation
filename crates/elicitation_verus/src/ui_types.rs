@@ -556,4 +556,58 @@ pub fn verify_aaa_stricter_than_aa_large() -> (result: bool)
     aaa >= aa
 }
 
+// ── ConstraintProfile shadow proofs ──────────────────────────────────────────
+
+pub enum ShadowConstraintProfile {
+    WcagA,
+    WcagAA,
+    WcagAAA,
+}
+
+/// Shadow hard constraint count per profile.
+pub fn shadow_hard_count(profile: &ShadowConstraintProfile) -> (result: u64)
+    ensures match *profile {
+        ShadowConstraintProfile::WcagA => result == 3,
+        ShadowConstraintProfile::WcagAA => result == 4,
+        ShadowConstraintProfile::WcagAAA => result == 5,
+    },
+{
+    match profile {
+        ShadowConstraintProfile::WcagA => 3,
+        ShadowConstraintProfile::WcagAA => 4,
+        ShadowConstraintProfile::WcagAAA => 5,
+    }
+}
+
+/// WCAG A has 3 hard constraints.
+pub fn verify_profile_a_count() -> (result: u64)
+    ensures result == 3,
+{
+    shadow_hard_count(&ShadowConstraintProfile::WcagA)
+}
+
+/// WCAG AA has 4 hard constraints.
+pub fn verify_profile_aa_count() -> (result: u64)
+    ensures result == 4,
+{
+    shadow_hard_count(&ShadowConstraintProfile::WcagAA)
+}
+
+/// WCAG AAA has 5 hard constraints.
+pub fn verify_profile_aaa_count() -> (result: u64)
+    ensures result == 5,
+{
+    shadow_hard_count(&ShadowConstraintProfile::WcagAAA)
+}
+
+/// Monotonicity: A < AA < AAA.
+pub fn verify_profile_monotonicity() -> (result: bool)
+    ensures result == true,
+{
+    let a = shadow_hard_count(&ShadowConstraintProfile::WcagA);
+    let aa = shadow_hard_count(&ShadowConstraintProfile::WcagAA);
+    let aaa = shadow_hard_count(&ShadowConstraintProfile::WcagAAA);
+    a < aa && aa < aaa
+}
+
 } // verus!

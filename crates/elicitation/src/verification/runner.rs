@@ -681,6 +681,13 @@ impl ProofHarness {
             Self::new("ui_types", "verify_contrast_ratio_min_bound"),
             Self::new("ui_types", "verify_srgb_color_from_u8_bounds"),
             Self::new("ui_types", "verify_wcag_level_display"),
+            // ui_types: ConstraintProfile and typestate proofs
+            Self::new("ui_types", "verify_profile_a_constraint_count"),
+            Self::new("ui_types", "verify_profile_aa_constraint_count"),
+            Self::new("ui_types", "verify_profile_aaa_constraint_count"),
+            Self::new("ui_types", "verify_profile_monotonicity"),
+            Self::new("ui_types", "verify_typestate_markers_zero_sized"),
+            Self::new("ui_types", "verify_typestate_markers_eq"),
         ]
     }
 

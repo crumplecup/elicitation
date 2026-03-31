@@ -750,3 +750,71 @@ pub fn verify_wcag_level_display() -> bool {
         && format!("{}", elicit_ui::WcagLevel::AA) == "AA"
         && format!("{}", elicit_ui::WcagLevel::AAA) == "AAA"
 }
+
+// ── ConstraintProfile and typestate proofs ────────────────────────────────────
+
+/// Trusted axiom: WCAG A profile has 3 hard constraints.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_profile_a_count() -> bool {
+    elicit_ui::ConstraintProfile::WcagA
+        .to_constraint_set()
+        .hard_constraints()
+        .len()
+        == 3
+}
+
+/// Trusted axiom: WCAG AA profile has 4 hard constraints.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_profile_aa_count() -> bool {
+    elicit_ui::ConstraintProfile::WcagAA
+        .to_constraint_set()
+        .hard_constraints()
+        .len()
+        == 4
+}
+
+/// Trusted axiom: WCAG AAA profile has 5 hard constraints.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_profile_aaa_count() -> bool {
+    elicit_ui::ConstraintProfile::WcagAAA
+        .to_constraint_set()
+        .hard_constraints()
+        .len()
+        == 5
+}
+
+/// Trusted axiom: profile constraint counts are monotonically increasing.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_profile_monotonicity() -> bool {
+    let a = elicit_ui::ConstraintProfile::WcagA
+        .to_constraint_set()
+        .hard_constraints()
+        .len();
+    let aa = elicit_ui::ConstraintProfile::WcagAA
+        .to_constraint_set()
+        .hard_constraints()
+        .len();
+    let aaa = elicit_ui::ConstraintProfile::WcagAAA
+        .to_constraint_set()
+        .hard_constraints()
+        .len();
+    a < aa && aa < aaa
+}
+
+/// Trusted axiom: typestate markers are zero-sized.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_typestate_zero_sized() -> bool {
+    std::mem::size_of::<elicit_ui::Pending>() == 0
+        && std::mem::size_of::<elicit_ui::Verified>() == 0
+        && std::mem::size_of::<elicit_ui::Rendered>() == 0
+}
