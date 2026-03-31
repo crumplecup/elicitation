@@ -34,6 +34,7 @@ clap = { workspace = true, optional = true }
 sqlx = { workspace = true, optional = true }
 egui = { workspace = true, optional = true }
 ratatui = { workspace = true, optional = true }
+geo-types = { workspace = true, optional = true }
 paste = { workspace = true, optional = true }
 elicit_ui = { workspace = true, optional = true }
 accesskit = { workspace = true, optional = true }
@@ -53,6 +54,7 @@ sqlx-types = ["dep:sqlx", "elicitation/sqlx-types"]
 tokio-types = []
 egui-types = ["dep:egui", "dep:paste", "elicitation/egui-types"]
 ratatui = ["dep:ratatui", "dep:paste", "elicitation/ratatui"]
+geo-types = ["dep:geo-types", "elicitation/geo-types"]
 ui-types = ["dep:elicit_ui", "dep:accesskit"]
 
 [lints.rust]

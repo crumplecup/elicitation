@@ -125,5 +125,8 @@ mod egui_types;
 #[cfg(all(kani, feature = "ratatui"))]
 mod ratatui_types;
 
+#[cfg(all(kani, feature = "geo-types"))]
+mod geo_types;
+
 #[cfg(all(kani, feature = "ui-types"))]
 mod ui_types;

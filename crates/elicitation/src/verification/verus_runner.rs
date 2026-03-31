@@ -278,6 +278,15 @@ impl VerusProof {
             Self::new("ratatui_types", "verify_ratatui_style_modifiers"),
             Self::new("ratatui_types", "verify_ratatui_style_colors"),
             Self::new("ratatui_types", "verify_borders_select_roundtrip"),
+            // geo_types: shadow struct proofs
+            Self::new("geo_types", "verify_geo_coord_roundtrip"),
+            Self::new("geo_types", "verify_geo_coord_concrete"),
+            Self::new("geo_types", "verify_geo_rect_roundtrip"),
+            Self::new("geo_types", "verify_geo_rect_concrete"),
+            Self::new("geo_types", "verify_geo_rect_well_formed"),
+            Self::new("geo_types", "verify_geo_line_roundtrip"),
+            Self::new("geo_types", "verify_geo_line_concrete"),
+            Self::new("geo_types", "verify_geo_line_degenerate"),
             // egui_types: select enum proofs
             Self::new("egui_types", "verify_align_known_label_accepted"),
             Self::new("egui_types", "verify_align_unknown_rejected"),

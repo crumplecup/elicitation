@@ -589,3 +589,14 @@ pub use primitives::ratatui_types::{
     RatatuiStyle,
     RatatuiStyleStyle,
 };
+
+// geo-types (feature-gated on geo-types)
+#[cfg(feature = "geo-types")]
+pub use primitives::geo_types::{
+    GeoCoord,
+    GeoCoordStyle,
+    GeoLine,
+    GeoLineStyle,
+    GeoRect,
+    GeoRectStyle,
+};

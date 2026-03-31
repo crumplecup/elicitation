@@ -55,3 +55,6 @@ pub mod egui_types;
 
 #[cfg(feature = "ratatui")]
 pub mod ratatui_types;
+
+#[cfg(feature = "geo-types")]
+pub mod geo_types;

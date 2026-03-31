@@ -617,6 +617,13 @@ impl ProofHarness {
             Self::new("ratatui_types", "verify_ratatui_style_modifier_combinations"),
             Self::new("ratatui_types", "verify_ratatui_style_fg_bg_presence"),
             Self::new("ratatui_types", "verify_borders_select_into_inner_roundtrip"),
+            // geo_types: composite struct proofs
+            Self::new("geo_types", "verify_geo_coord_from_roundtrip"),
+            Self::new("geo_types", "verify_geo_coord_wrapper_fields"),
+            Self::new("geo_types", "verify_geo_rect_from_roundtrip"),
+            Self::new("geo_types", "verify_geo_rect_well_formed"),
+            Self::new("geo_types", "verify_geo_line_from_roundtrip"),
+            Self::new("geo_types", "verify_geo_line_wrapper_fields"),
         ]
     }
 

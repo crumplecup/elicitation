@@ -74,6 +74,9 @@ quote = { workspace = true, optional = true }
 prettyplease = { workspace = true, optional = true }
 syn = { workspace = true, optional = true }
 
+# GeoRust spatial types (optional)
+geo-types = { workspace = true, optional = true }
+
 # Re-export derive macro
 elicitation_derive = { workspace = true }
 elicitation_macros = { workspace = true }
@@ -157,6 +160,7 @@ dev = ["full", "cli", "graph"]
 accesskit = ["dep:accesskit"]
 egui-types = ["dep:egui"]
 ratatui = ["dep:ratatui"]
+geo-types = ["dep:geo-types"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [

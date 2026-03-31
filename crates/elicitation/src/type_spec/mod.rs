@@ -29,6 +29,7 @@ mod datetime_specs;
 mod egui_specs;
 mod elicit_spec;
 mod float_contracts;
+mod geo_specs;
 mod http_specs;
 mod integer_contracts;
 mod integers;

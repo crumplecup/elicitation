@@ -101,6 +101,9 @@ mod egui_types;
 #[cfg(feature = "ratatui-types")]
 mod ratatui_types;
 
+#[cfg(feature = "geo-types")]
+mod geo_types;
+
 #[cfg(feature = "ui-types")]
 mod ui_types;
 
@@ -510,6 +513,12 @@ pub use ratatui_types::{
     verify_ratatui_scrollbar_orientation_label_count,
     verify_ratatui_scrollbar_orientation_unknown_rejected, verify_ratatui_style_all_modifiers,
     verify_ratatui_style_empty_roundtrip, verify_ratatui_style_fg_bg_presence,
+};
+
+#[cfg(feature = "geo-types")]
+pub use geo_types::{
+    verify_geo_coord_concrete, verify_geo_coord_roundtrip, verify_geo_line_degenerate,
+    verify_geo_line_roundtrip, verify_geo_rect_roundtrip, verify_geo_rect_well_formed,
 };
 
 #[cfg(feature = "ui-types")]
