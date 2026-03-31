@@ -104,6 +104,7 @@ mod event_tools;
 mod fragment_tools;
 mod layout_tools;
 mod property_tools;
+mod render_backend;
 mod serde_types;
 mod style_tools;
 #[cfg(feature = "runtime")]
@@ -143,6 +144,7 @@ pub use property_tools::{
     TabsSetBlockParams, TabsSetDividerParams, TabsSetHighlightStyleParams, TabsSetSelectedParams,
     TabsSetStyleParams,
 };
+pub use render_backend::RatatuiBackend;
 pub use serde_types::{
     AlignmentJson, AxisJson, BarGroupJson, BarJson, BlockJson, BorderTypeJson, BordersJson,
     CellJson, ColorJson, ConstraintJson, DatasetJson, DirectionJson, EventJson, GraphTypeJson,

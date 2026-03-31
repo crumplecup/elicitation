@@ -16,6 +16,7 @@ categories = ["command-line-interface", "development-tools"]
 elicitation = { workspace = true }
 elicitation_derive.workspace = true
 elicitation_macros.workspace = true
+elicit_ui = { path = "../elicit_ui" }
 ratatui = { workspace = true }
 accesskit = { workspace = true }
 crossterm = { workspace = true, optional = true }

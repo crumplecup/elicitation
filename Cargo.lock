@@ -1287,6 +1287,7 @@ version = "0.9.1"
 dependencies = [
  "accesskit",
  "crossterm 0.28.1",
+ "elicit_ui",
  "elicitation",
  "elicitation_derive",
  "elicitation_macros",
