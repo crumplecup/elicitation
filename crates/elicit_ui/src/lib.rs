@@ -85,7 +85,7 @@ mod validators;
 
 pub use builder::LayoutBuilder;
 pub use color_contrast::{
-    contrast_ratio, ContrastEnhanced, ContrastMinimum, NonTextContrast, SrgbColor, TextSize,
+    ContrastEnhanced, ContrastMinimum, NonTextContrast, SrgbColor, TextSize, contrast_ratio,
 };
 pub use constraints::{
     Constraint, ConstraintContext, ConstraintSet, ConstraintSetBuilder, ConstraintVerification,
@@ -96,13 +96,13 @@ pub use constraints::{
 pub use contracts::{
     AccessibleAA, HasLabel, KeyboardAccessible, MinTargetSize, NoOverflow, ValidRole,
 };
+pub use css_units::{Breakpoint, BreakpointSet, CssLength, CssParseError, is_zoom_invariant};
 pub use errors::{VerificationError, VerificationErrorKind, VerificationReport};
-#[cfg(feature = "egui-backend")]
-pub use renderer::{bounds_to_size, render_tree};
-pub use types::{ElementId, Label, RenderStats, Size, Viewport};
-pub use spatial::{BoundingBox, LayoutContext};
-pub use css_units::{is_zoom_invariant, Breakpoint, BreakpointSet, CssLength, CssParseError};
 pub use layout_engine::LayoutEngineError;
 #[cfg(feature = "layout-engine")]
 pub use layout_engine::{LayoutMode, TaffyBridge};
+#[cfg(feature = "egui-backend")]
+pub use renderer::{bounds_to_size, render_tree};
+pub use spatial::{BoundingBox, LayoutContext};
+pub use types::{ElementId, Label, RenderStats, Size, Viewport};
 pub use typestate::{ConstraintProfile, Layout, Pending, Rendered, Verified};

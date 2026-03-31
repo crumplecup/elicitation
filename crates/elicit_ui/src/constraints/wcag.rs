@@ -53,11 +53,7 @@ fn is_focusable_role(role: Role) -> bool {
 pub struct HasLabelConstraint;
 
 impl Constraint for HasLabelConstraint {
-    fn check(
-        &self,
-        node_id: NodeId,
-        ctx: &ConstraintContext<'_>,
-    ) -> Result<(), Violation> {
+    fn check(&self, node_id: NodeId, ctx: &ConstraintContext<'_>) -> Result<(), Violation> {
         let node = match ctx.nodes.get(&node_id) {
             Some(n) => n,
             None => return Ok(()),
@@ -92,11 +88,7 @@ impl Constraint for HasLabelConstraint {
 pub struct ValidRoleConstraint;
 
 impl Constraint for ValidRoleConstraint {
-    fn check(
-        &self,
-        node_id: NodeId,
-        ctx: &ConstraintContext<'_>,
-    ) -> Result<(), Violation> {
+    fn check(&self, node_id: NodeId, ctx: &ConstraintContext<'_>) -> Result<(), Violation> {
         // In AccessKit, all Role enum variants are valid by construction.
         let _node = ctx.nodes.get(&node_id);
         Ok(())
@@ -116,11 +108,7 @@ impl Constraint for ValidRoleConstraint {
 pub struct MinTouchTargetConstraint;
 
 impl Constraint for MinTouchTargetConstraint {
-    fn check(
-        &self,
-        node_id: NodeId,
-        ctx: &ConstraintContext<'_>,
-    ) -> Result<(), Violation> {
+    fn check(&self, node_id: NodeId, ctx: &ConstraintContext<'_>) -> Result<(), Violation> {
         let node = match ctx.nodes.get(&node_id) {
             Some(n) => n,
             None => return Ok(()),
@@ -163,11 +151,7 @@ impl Constraint for MinTouchTargetConstraint {
 pub struct NoOverflowConstraint;
 
 impl Constraint for NoOverflowConstraint {
-    fn check(
-        &self,
-        node_id: NodeId,
-        ctx: &ConstraintContext<'_>,
-    ) -> Result<(), Violation> {
+    fn check(&self, node_id: NodeId, ctx: &ConstraintContext<'_>) -> Result<(), Violation> {
         let node = match ctx.nodes.get(&node_id) {
             Some(n) => n,
             None => return Ok(()),
@@ -214,11 +198,7 @@ impl Constraint for NoOverflowConstraint {
 pub struct KeyboardAccessibleConstraint;
 
 impl Constraint for KeyboardAccessibleConstraint {
-    fn check(
-        &self,
-        node_id: NodeId,
-        ctx: &ConstraintContext<'_>,
-    ) -> Result<(), Violation> {
+    fn check(&self, node_id: NodeId, ctx: &ConstraintContext<'_>) -> Result<(), Violation> {
         let node = match ctx.nodes.get(&node_id) {
             Some(n) => n,
             None => return Ok(()),

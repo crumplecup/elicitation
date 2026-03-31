@@ -132,11 +132,7 @@ impl LayoutContext {
     /// Check containment: is `inner` fully inside `outer`?
     #[cfg(feature = "geo")]
     #[tracing::instrument(level = "trace", skip(self))]
-    pub fn contains(
-        &self,
-        outer: &accesskit::NodeId,
-        inner: &accesskit::NodeId,
-    ) -> Option<bool> {
+    pub fn contains(&self, outer: &accesskit::NodeId, inner: &accesskit::NodeId) -> Option<bool> {
         use geo::Contains;
         let outer_rect = self.bounds.get(outer)?.to_geo_rect();
         let inner_rect = self.bounds.get(inner)?.to_geo_rect();

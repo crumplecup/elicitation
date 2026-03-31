@@ -77,16 +77,14 @@ impl CssLength {
             .try_parse(|p| {
                 let token = p.next()?;
                 match token {
-                    cssparser::Token::Dimension { value, unit, .. } => {
-                        match &**unit {
-                            "px" => Ok(CssLength::Px(f64::from(*value))),
-                            "em" => Ok(CssLength::Em(f64::from(*value))),
-                            "rem" => Ok(CssLength::Rem(f64::from(*value))),
-                            "vw" => Ok(CssLength::Vw(f64::from(*value))),
-                            "vh" => Ok(CssLength::Vh(f64::from(*value))),
-                            _ => Err(p.new_custom_error(())),
-                        }
-                    }
+                    cssparser::Token::Dimension { value, unit, .. } => match &**unit {
+                        "px" => Ok(CssLength::Px(f64::from(*value))),
+                        "em" => Ok(CssLength::Em(f64::from(*value))),
+                        "rem" => Ok(CssLength::Rem(f64::from(*value))),
+                        "vw" => Ok(CssLength::Vw(f64::from(*value))),
+                        "vh" => Ok(CssLength::Vh(f64::from(*value))),
+                        _ => Err(p.new_custom_error(())),
+                    },
                     cssparser::Token::Percentage { unit_value, .. } => {
                         Ok(CssLength::Percent(f64::from(*unit_value) * 100.0))
                     }

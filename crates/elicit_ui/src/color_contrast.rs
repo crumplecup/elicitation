@@ -5,8 +5,8 @@
 //! - SC 1.4.6 Contrast (Enhanced) — Level AAA: 7:1 normal, 4.5:1 large
 //! - SC 1.4.11 Non-text Contrast — Level AA: 3:1 for UI components
 
-use accesskit::NodeId;
 use crate::constraints::{Constraint, ConstraintContext, SpecReference, Violation, WcagLevel};
+use accesskit::NodeId;
 
 /// sRGB color for contrast checking.
 ///
@@ -53,8 +53,8 @@ impl SrgbColor {
 #[cfg(feature = "color")]
 #[tracing::instrument(level = "debug")]
 pub fn contrast_ratio(fg: &SrgbColor, bg: &SrgbColor) -> f32 {
-    use palette::color_difference::Wcag21RelativeContrast;
     use palette::Srgb;
+    use palette::color_difference::Wcag21RelativeContrast;
 
     let fg_srgb: Srgb<f32> = Srgb::new(fg.r, fg.g, fg.b);
     let bg_srgb: Srgb<f32> = Srgb::new(bg.r, bg.g, bg.b);
@@ -113,11 +113,7 @@ pub struct ContrastMinimum {
 
 impl Constraint for ContrastMinimum {
     #[tracing::instrument(level = "debug", skip(self, _ctx))]
-    fn check(
-        &self,
-        _node_id: NodeId,
-        _ctx: &ConstraintContext<'_>,
-    ) -> Result<(), Violation> {
+    fn check(&self, _node_id: NodeId, _ctx: &ConstraintContext<'_>) -> Result<(), Violation> {
         let ratio = contrast_ratio(&self.foreground, &self.background);
         let required = match self.text_size {
             TextSize::Normal => 4.5,
@@ -161,11 +157,7 @@ pub struct ContrastEnhanced {
 
 impl Constraint for ContrastEnhanced {
     #[tracing::instrument(level = "debug", skip(self, _ctx))]
-    fn check(
-        &self,
-        _node_id: NodeId,
-        _ctx: &ConstraintContext<'_>,
-    ) -> Result<(), Violation> {
+    fn check(&self, _node_id: NodeId, _ctx: &ConstraintContext<'_>) -> Result<(), Violation> {
         let ratio = contrast_ratio(&self.foreground, &self.background);
         let required = match self.text_size {
             TextSize::Normal => 7.0,
@@ -206,11 +198,7 @@ pub struct NonTextContrast {
 
 impl Constraint for NonTextContrast {
     #[tracing::instrument(level = "debug", skip(self, _ctx))]
-    fn check(
-        &self,
-        _node_id: NodeId,
-        _ctx: &ConstraintContext<'_>,
-    ) -> Result<(), Violation> {
+    fn check(&self, _node_id: NodeId, _ctx: &ConstraintContext<'_>) -> Result<(), Violation> {
         let ratio = contrast_ratio(&self.foreground, &self.background);
         let required = 3.0_f32;
 

@@ -27,10 +27,7 @@ fn make_tree(nodes: Vec<(NodeId, Node)>) -> (HashMap<NodeId, Node>, NodeId) {
     (map, root_id)
 }
 
-fn make_ctx(
-    nodes: &HashMap<NodeId, Node>,
-    viewport: Viewport,
-) -> ConstraintContext<'_> {
+fn make_ctx(nodes: &HashMap<NodeId, Node>, viewport: Viewport) -> ConstraintContext<'_> {
     ConstraintContext { nodes, viewport }
 }
 
@@ -140,11 +137,7 @@ fn text_spacing_passes_for_non_overlapping_siblings() {
     let mut root = Node::new(Role::Group);
     root.set_children(vec![child1_id, child2_id]);
 
-    let nodes = HashMap::from([
-        (root_id, root),
-        (child1_id, child1),
-        (child2_id, child2),
-    ]);
+    let nodes = HashMap::from([(root_id, root), (child1_id, child1), (child2_id, child2)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!(TextSpacing.check(root_id, &ctx).is_ok());
@@ -162,11 +155,7 @@ fn text_spacing_fails_for_overlapping_siblings() {
     let mut root = Node::new(Role::Group);
     root.set_children(vec![child1_id, child2_id]);
 
-    let nodes = HashMap::from([
-        (root_id, root),
-        (child1_id, child1),
-        (child2_id, child2),
-    ]);
+    let nodes = HashMap::from([(root_id, root), (child1_id, child1), (child2_id, child2)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     assert!(TextSpacing.check(root_id, &ctx).is_err());
@@ -226,11 +215,7 @@ fn min_spacing_passes_for_well_spaced_siblings() {
     let mut root = Node::new(Role::Group);
     root.set_children(vec![child1_id, child2_id]);
 
-    let nodes = HashMap::from([
-        (root_id, root),
-        (child1_id, child1),
-        (child2_id, child2),
-    ]);
+    let nodes = HashMap::from([(root_id, root), (child1_id, child1), (child2_id, child2)]);
     let ctx = make_ctx(&nodes, Viewport::new(1920, 1080));
 
     // 20px gap, min 8px → pass
@@ -337,9 +322,7 @@ fn verify_custom_with_reflow() {
     let layout = Layout::from_update(update);
     let viewport = Viewport::new(320, 480);
 
-    let constraint_set = ConstraintSetBuilder::default()
-        .hard(Reflow320)
-        .build();
+    let constraint_set = ConstraintSetBuilder::default().hard(Reflow320).build();
 
     let result = layout.verify_custom(viewport, &constraint_set);
     assert!(result.is_err());

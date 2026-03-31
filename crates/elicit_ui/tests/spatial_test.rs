@@ -1,7 +1,7 @@
 //! Tests for the spatial bridge (BoundingBox, LayoutContext).
 
-use elicit_ui::{BoundingBox, LayoutContext, Viewport};
 use accesskit::NodeId;
+use elicit_ui::{BoundingBox, LayoutContext, Viewport};
 use std::collections::HashMap;
 
 #[test]

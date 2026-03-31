@@ -5,15 +5,13 @@
 //! - **Structural**: Compile-time or type-level guarantees (e.g., CSS unit semantics)
 //! - **Advisory**: Warnings, not errors (e.g., design system heuristics)
 
-mod wcag;
 mod spatial;
+mod wcag;
 
+pub use spatial::{GridAlignment, MinSpacing, Reflow320, ResizeText200, TextSpacing};
 pub use wcag::{
     HasLabelConstraint, KeyboardAccessibleConstraint, MinTouchTargetConstraint,
     NoOverflowConstraint, ValidRoleConstraint,
-};
-pub use spatial::{
-    GridAlignment, MinSpacing, Reflow320, ResizeText200, TextSpacing,
 };
 
 use crate::{ElementId, Viewport};
@@ -187,11 +185,7 @@ pub trait Constraint: Send + Sync {
     ///
     /// Returns `Ok(())` if the constraint is satisfied, or a spec-traceable
     /// `Violation` describing the failure.
-    fn check(
-        &self,
-        node_id: NodeId,
-        ctx: &ConstraintContext<'_>,
-    ) -> Result<(), Violation>;
+    fn check(&self, node_id: NodeId, ctx: &ConstraintContext<'_>) -> Result<(), Violation>;
 
     /// External specification reference for this constraint.
     fn spec_ref(&self) -> SpecReference;
@@ -217,11 +211,7 @@ impl ConstraintSet {
     ///
     /// Returns hard violations as errors. Advisory violations are collected as warnings.
     #[tracing::instrument(skip(self, ctx))]
-    pub fn verify(
-        &self,
-        root: NodeId,
-        ctx: &ConstraintContext<'_>,
-    ) -> ConstraintVerification {
+    pub fn verify(&self, root: NodeId, ctx: &ConstraintContext<'_>) -> ConstraintVerification {
         let mut hard_violations = Vec::new();
         let mut structural_violations = Vec::new();
         let mut warnings = Vec::new();

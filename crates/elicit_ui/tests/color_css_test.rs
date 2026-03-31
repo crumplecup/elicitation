@@ -1,7 +1,7 @@
 //! Tests for color contrast and CSS unit modules.
 
 use elicit_ui::{
-    contrast_ratio, is_zoom_invariant, Breakpoint, BreakpointSet, CssLength, SrgbColor, TextSize,
+    Breakpoint, BreakpointSet, CssLength, SrgbColor, TextSize, contrast_ratio, is_zoom_invariant,
 };
 
 // ─── Color contrast ───────────────────────────────────────────────────
@@ -102,8 +102,7 @@ fn wcag_breakpoints_include_320() {
 
 #[test]
 fn breakpoint_set_custom() {
-    let bps = BreakpointSet::wcag()
-        .with_breakpoint(Breakpoint::new("ultra-wide", 2560, 3840));
+    let bps = BreakpointSet::wcag().with_breakpoint(Breakpoint::new("ultra-wide", 2560, 3840));
     assert_eq!(bps.breakpoints().len(), 5);
 }
 

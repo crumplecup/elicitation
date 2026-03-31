@@ -6,8 +6,8 @@
 
 use accesskit::NodeId;
 
-use crate::constraints::{Constraint, ConstraintContext, SpecReference, Violation, WcagLevel};
 use crate::ElementId;
+use crate::constraints::{Constraint, ConstraintContext, SpecReference, Violation, WcagLevel};
 
 /// WCAG 1.4.10 — Reflow (Level AA).
 ///
