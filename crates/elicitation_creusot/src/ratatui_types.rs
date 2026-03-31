@@ -304,10 +304,7 @@ pub fn verify_ratatui_padding_concrete() -> ratatui::widgets::Padding {
 /// Prove Margin::new → field read → Margin::new roundtrip preserves values.
 #[requires(true)]
 #[ensures(margin_horizontal(result) == horizontal && margin_vertical(result) == vertical)]
-pub fn verify_ratatui_margin_roundtrip(
-    horizontal: u16,
-    vertical: u16,
-) -> ratatui::layout::Margin {
+pub fn verify_ratatui_margin_roundtrip(horizontal: u16, vertical: u16) -> ratatui::layout::Margin {
     let original = ratatui::layout::Margin::new(horizontal, vertical);
     let h = read_margin_horizontal(&original);
     let v = read_margin_vertical(&original);
@@ -346,8 +343,8 @@ pub fn verify_ratatui_style_empty_roundtrip() -> bool {
 pub fn verify_ratatui_style_all_modifiers() -> bool {
     use ratatui::style::{Modifier, Style};
 
-    let style = Style::default()
-        .add_modifier(Modifier::BOLD | Modifier::ITALIC | Modifier::UNDERLINED);
+    let style =
+        Style::default().add_modifier(Modifier::BOLD | Modifier::ITALIC | Modifier::UNDERLINED);
     let wrapper = elicitation::RatatuiStyle::from(style);
     wrapper.bold && wrapper.italic && wrapper.underlined
 }

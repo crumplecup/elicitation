@@ -25,7 +25,10 @@ use creusot_std::prelude::*;
 #[requires(true)]
 #[ensures(result == true)]
 pub fn verify_geo_coord_roundtrip() -> bool {
-    let coord = geo_types::Coord { x: 1.5_f64, y: -2.3_f64 };
+    let coord = geo_types::Coord {
+        x: 1.5_f64,
+        y: -2.3_f64,
+    };
     let wrapper = elicitation::GeoCoord::from(coord);
     let restored: geo_types::Coord<f64> = wrapper.into();
     restored.x == 1.5_f64 && restored.y == -2.3_f64
@@ -36,7 +39,10 @@ pub fn verify_geo_coord_roundtrip() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 pub fn verify_geo_coord_concrete() -> bool {
-    let coord = geo_types::Coord { x: 0.0_f64, y: 0.0_f64 };
+    let coord = geo_types::Coord {
+        x: 0.0_f64,
+        y: 0.0_f64,
+    };
     let wrapper = elicitation::GeoCoord::from(coord);
     wrapper.x == 0.0_f64 && wrapper.y == 0.0_f64
 }
@@ -49,8 +55,14 @@ pub fn verify_geo_coord_concrete() -> bool {
 #[ensures(result == true)]
 pub fn verify_geo_rect_roundtrip() -> bool {
     let rect = geo_types::Rect::new(
-        geo_types::Coord { x: 0.0_f64, y: 0.0_f64 },
-        geo_types::Coord { x: 10.0_f64, y: 20.0_f64 },
+        geo_types::Coord {
+            x: 0.0_f64,
+            y: 0.0_f64,
+        },
+        geo_types::Coord {
+            x: 10.0_f64,
+            y: 20.0_f64,
+        },
     );
     let wrapper = elicitation::GeoRect::from(rect);
     let restored: geo_types::Rect<f64> = wrapper.into();
@@ -67,8 +79,14 @@ pub fn verify_geo_rect_roundtrip() -> bool {
 pub fn verify_geo_rect_well_formed() -> bool {
     // Reversed corners should be normalized
     let rect = geo_types::Rect::new(
-        geo_types::Coord { x: 10.0_f64, y: 20.0_f64 },
-        geo_types::Coord { x: 0.0_f64, y: 0.0_f64 },
+        geo_types::Coord {
+            x: 10.0_f64,
+            y: 20.0_f64,
+        },
+        geo_types::Coord {
+            x: 0.0_f64,
+            y: 0.0_f64,
+        },
     );
     let wrapper = elicitation::GeoRect::from(rect);
     wrapper.min.x <= wrapper.max.x && wrapper.min.y <= wrapper.max.y
@@ -82,8 +100,14 @@ pub fn verify_geo_rect_well_formed() -> bool {
 #[ensures(result == true)]
 pub fn verify_geo_line_roundtrip() -> bool {
     let line = geo_types::Line::new(
-        geo_types::Coord { x: 1.0_f64, y: 2.0_f64 },
-        geo_types::Coord { x: 3.0_f64, y: 4.0_f64 },
+        geo_types::Coord {
+            x: 1.0_f64,
+            y: 2.0_f64,
+        },
+        geo_types::Coord {
+            x: 3.0_f64,
+            y: 4.0_f64,
+        },
     );
     let wrapper = elicitation::GeoLine::from(line);
     let restored: geo_types::Line<f64> = wrapper.into();
@@ -99,8 +123,14 @@ pub fn verify_geo_line_roundtrip() -> bool {
 #[ensures(result == true)]
 pub fn verify_geo_line_degenerate() -> bool {
     let line = geo_types::Line::new(
-        geo_types::Coord { x: 5.0_f64, y: 5.0_f64 },
-        geo_types::Coord { x: 5.0_f64, y: 5.0_f64 },
+        geo_types::Coord {
+            x: 5.0_f64,
+            y: 5.0_f64,
+        },
+        geo_types::Coord {
+            x: 5.0_f64,
+            y: 5.0_f64,
+        },
     );
     let wrapper = elicitation::GeoLine::from(line);
     wrapper.start.x == wrapper.end.x && wrapper.start.y == wrapper.end.y

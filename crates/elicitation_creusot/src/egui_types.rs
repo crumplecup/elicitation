@@ -434,12 +434,7 @@ pub fn verify_corner_radius_concrete() -> egui::CornerRadius {
 #[requires(true)]
 #[ensures(margin_left(result) == left && margin_right(result) == right
        && margin_top(result) == top && margin_bottom(result) == bottom)]
-pub fn verify_margin_roundtrip(
-    left: i8,
-    right: i8,
-    top: i8,
-    bottom: i8,
-) -> egui::Margin {
+pub fn verify_margin_roundtrip(left: i8, right: i8, top: i8, bottom: i8) -> egui::Margin {
     let original = make_margin(left, right, top, bottom);
     let l = read_margin_left(&original);
     let r = read_margin_right(&original);

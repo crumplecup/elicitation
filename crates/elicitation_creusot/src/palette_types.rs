@@ -50,8 +50,12 @@ pub fn verify_palette_srgb_extremes() -> bool {
     let white = palette::Srgb::new(1.0_f32, 1.0_f32, 1.0_f32);
     let bw = elicitation::PaletteSrgb::from(black);
     let ww = elicitation::PaletteSrgb::from(white);
-    bw.r == 0.0_f32 && bw.g == 0.0_f32 && bw.b == 0.0_f32
-        && ww.r == 1.0_f32 && ww.g == 1.0_f32 && ww.b == 1.0_f32
+    bw.r == 0.0_f32
+        && bw.g == 0.0_f32
+        && bw.b == 0.0_f32
+        && ww.r == 1.0_f32
+        && ww.g == 1.0_f32
+        && ww.b == 1.0_f32
 }
 
 /// Trusted axiom: PaletteSrgb pure primary colors are preserved.
@@ -67,7 +71,13 @@ pub fn verify_palette_srgb_primaries() -> bool {
     let gw = elicitation::PaletteSrgb::from(green);
     let bw = elicitation::PaletteSrgb::from(blue);
 
-    rw.r == 1.0_f32 && rw.g == 0.0_f32 && rw.b == 0.0_f32
-        && gw.r == 0.0_f32 && gw.g == 1.0_f32 && gw.b == 0.0_f32
-        && bw.r == 0.0_f32 && bw.g == 0.0_f32 && bw.b == 1.0_f32
+    rw.r == 1.0_f32
+        && rw.g == 0.0_f32
+        && rw.b == 0.0_f32
+        && gw.r == 0.0_f32
+        && gw.g == 1.0_f32
+        && gw.b == 0.0_f32
+        && bw.r == 0.0_f32
+        && bw.g == 0.0_f32
+        && bw.b == 1.0_f32
 }

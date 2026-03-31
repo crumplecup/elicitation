@@ -99,20 +99,20 @@ macro_rules! select_proofs_fast {
 // ============================================================================
 
 select_proofs!(
-    type_path     = ratatui::layout::Alignment,
-    snake         = ratatui_alignment,
+    type_path = ratatui::layout::Alignment,
+    snake = ratatui_alignment,
     variant_count = 3
 );
 
 select_proofs!(
-    type_path     = ratatui::layout::Direction,
-    snake         = ratatui_direction,
+    type_path = ratatui::layout::Direction,
+    snake = ratatui_direction,
     variant_count = 2
 );
 
 select_proofs!(
-    type_path     = ratatui::widgets::BorderType,
-    snake         = ratatui_border_type,
+    type_path = ratatui::widgets::BorderType,
+    snake = ratatui_border_type,
     variant_count = 4
 );
 
@@ -121,8 +121,8 @@ select_proofs!(
 // roundtrip proofs below that partition labels by byte length to avoid
 // unbounded string-comparison unwinding.
 select_proofs_fast!(
-    type_path     = ratatui::style::Color,
-    snake         = ratatui_color,
+    type_path = ratatui::style::Color,
+    snake = ratatui_color,
     variant_count = 19
 );
 
@@ -168,26 +168,35 @@ macro_rules! color_bucket_proof {
 
 color_bucket_proof!(verify_ratatui_color_roundtrip_3b, ["Red"]);
 color_bucket_proof!(verify_ratatui_color_roundtrip_4b, ["Blue", "Cyan", "Gray"]);
-color_bucket_proof!(verify_ratatui_color_roundtrip_5b, ["Reset", "Black", "Green", "White"]);
+color_bucket_proof!(
+    verify_ratatui_color_roundtrip_5b,
+    ["Reset", "Black", "Green", "White"]
+);
 color_bucket_proof!(verify_ratatui_color_roundtrip_6b, ["Yellow"]);
 color_bucket_proof!(verify_ratatui_color_roundtrip_7b, ["Magenta"]);
 color_bucket_proof!(verify_ratatui_color_roundtrip_8b, ["DarkGray", "LightRed"]);
-color_bucket_proof!(verify_ratatui_color_roundtrip_9b, ["LightBlue", "LightCyan"]);
+color_bucket_proof!(
+    verify_ratatui_color_roundtrip_9b,
+    ["LightBlue", "LightCyan"]
+);
 color_bucket_proof!(verify_ratatui_color_roundtrip_10b, ["LightGreen"]);
 color_bucket_proof!(verify_ratatui_color_roundtrip_11b, ["LightYellow"]);
 color_bucket_proof!(verify_ratatui_color_roundtrip_12b, ["LightMagenta"]);
-color_bucket_proof!(verify_ratatui_color_roundtrip_sentinel, ["RGB (custom)\u{2026}", "Indexed (0\u{2013}255)\u{2026}"]);
+color_bucket_proof!(
+    verify_ratatui_color_roundtrip_sentinel,
+    ["RGB (custom)\u{2026}", "Indexed (0\u{2013}255)\u{2026}"]
+);
 
 // Borders uses bitflag presets — 8 common combinations
 select_proofs!(
-    type_path     = ratatui::widgets::Borders,
-    snake         = ratatui_borders,
+    type_path = ratatui::widgets::Borders,
+    snake = ratatui_borders,
     variant_count = 8
 );
 
 select_proofs!(
-    type_path     = ratatui::widgets::ScrollbarOrientation,
-    snake         = ratatui_scrollbar_orientation,
+    type_path = ratatui::widgets::ScrollbarOrientation,
+    snake = ratatui_scrollbar_orientation,
     variant_count = 4
 );
 
@@ -231,9 +240,15 @@ fn verify_ratatui_padding_wrapper_fields() {
     let wrapper = elicitation::RatatuiPadding::from(original);
 
     assert!(wrapper.left == left, "Padding wrapper.left matches input");
-    assert!(wrapper.right == right, "Padding wrapper.right matches input");
+    assert!(
+        wrapper.right == right,
+        "Padding wrapper.right matches input"
+    );
     assert!(wrapper.top == top, "Padding wrapper.top matches input");
-    assert!(wrapper.bottom == bottom, "Padding wrapper.bottom matches input");
+    assert!(
+        wrapper.bottom == bottom,
+        "Padding wrapper.bottom matches input"
+    );
 }
 
 // ── Margin ──────────────────────────────────────────────────────────────
@@ -248,7 +263,10 @@ fn verify_ratatui_margin_from_roundtrip() {
     let wrapper = elicitation::RatatuiMargin::from(original);
     let restored: ratatui::layout::Margin = wrapper.into();
 
-    assert!(restored.horizontal == horizontal, "Margin horizontal preserved");
+    assert!(
+        restored.horizontal == horizontal,
+        "Margin horizontal preserved"
+    );
     assert!(restored.vertical == vertical, "Margin vertical preserved");
 }
 
@@ -261,8 +279,14 @@ fn verify_ratatui_margin_wrapper_fields() {
     let original = ratatui::layout::Margin::new(horizontal, vertical);
     let wrapper = elicitation::RatatuiMargin::from(original);
 
-    assert!(wrapper.horizontal == horizontal, "Margin wrapper.horizontal matches");
-    assert!(wrapper.vertical == vertical, "Margin wrapper.vertical matches");
+    assert!(
+        wrapper.horizontal == horizontal,
+        "Margin wrapper.horizontal matches"
+    );
+    assert!(
+        wrapper.vertical == vertical,
+        "Margin wrapper.vertical matches"
+    );
 }
 
 // ── Style (complex — string-based color, bitflag modifiers) ─────────────
@@ -293,7 +317,10 @@ fn verify_ratatui_style_empty_roundtrip() {
     let restored: Style = wrapper.try_into().expect("valid style");
     assert!(restored.fg.is_none(), "Restored default has no fg");
     assert!(restored.bg.is_none(), "Restored default has no bg");
-    assert!(restored.add_modifier.is_empty(), "Restored default has no modifiers");
+    assert!(
+        restored.add_modifier.is_empty(),
+        "Restored default has no modifiers"
+    );
 }
 
 #[cfg(feature = "ratatui")]
@@ -301,8 +328,8 @@ fn verify_ratatui_style_empty_roundtrip() {
 fn verify_ratatui_style_all_modifiers() {
     use ratatui::style::{Modifier, Style};
 
-    let style = Style::default()
-        .add_modifier(Modifier::BOLD | Modifier::ITALIC | Modifier::UNDERLINED);
+    let style =
+        Style::default().add_modifier(Modifier::BOLD | Modifier::ITALIC | Modifier::UNDERLINED);
 
     let wrapper = elicitation::RatatuiStyle::from(style);
 
@@ -311,9 +338,18 @@ fn verify_ratatui_style_all_modifiers() {
     assert!(wrapper.underlined, "UNDERLINED mapped to underlined=true");
 
     let restored: Style = wrapper.try_into().expect("valid style");
-    assert!(restored.add_modifier.contains(Modifier::BOLD), "BOLD roundtrips");
-    assert!(restored.add_modifier.contains(Modifier::ITALIC), "ITALIC roundtrips");
-    assert!(restored.add_modifier.contains(Modifier::UNDERLINED), "UNDERLINED roundtrips");
+    assert!(
+        restored.add_modifier.contains(Modifier::BOLD),
+        "BOLD roundtrips"
+    );
+    assert!(
+        restored.add_modifier.contains(Modifier::ITALIC),
+        "ITALIC roundtrips"
+    );
+    assert!(
+        restored.add_modifier.contains(Modifier::UNDERLINED),
+        "UNDERLINED roundtrips"
+    );
 }
 
 #[cfg(feature = "ratatui")]
@@ -380,6 +416,9 @@ fn verify_borders_select_into_inner_roundtrip() {
     for borders in presets {
         let select = elicitation::BordersSelect::from(borders);
         let inner = select.into_inner();
-        assert!(inner == borders, "BordersSelect preserves inner Borders value");
+        assert!(
+            inner == borders,
+            "BordersSelect preserves inner Borders value"
+        );
     }
 }
