@@ -200,6 +200,10 @@ pub mod serde_types;
 pub mod style_tools;
 pub mod widget_tools;
 
+pub mod accesskit_bridge;
+
+pub use accesskit_bridge::{EguiBackend, bounds_to_size, render_tree};
+
 pub use container_tools::{
     BottomPanelParams, CollapsingParams, EmptyContainerParams, FrameParams, LeftPanelParams,
     MenuParams, PopupParams, RightPanelParams, ScrollAreaParams, TooltipParams, TopPanelParams,

@@ -302,54 +302,6 @@ fn build_survey_form() {
     layout.verify_a(viewport()).expect("should verify");
 }
 
-// ── Verify + render round-trip ─────────────────────────────────
-
-#[test]
-#[cfg(feature = "egui-backend")]
-fn builder_verify_render_roundtrip() {
-    let layout = LayoutBuilder::new()
-        .button("Click me")
-        .size(100, 50)
-        .checkbox("Check me")
-        .size(100, 30)
-        .text_input("Type here")
-        .size(200, 30)
-        .build();
-
-    let verified = layout.verify_a(viewport()).expect("should verify");
-
-    let ctx = egui::Context::default();
-    let (rendered, stats) = verified.render_egui(&ctx);
-
-    assert!(rendered.root().0 == 0);
-    assert_eq!(stats.widgets_rendered, 3, "button + checkbox + text input");
-    assert_eq!(stats.containers_rendered, 1, "root window");
-}
-
-#[test]
-#[cfg(feature = "egui-backend")]
-fn builder_form_verify_render() {
-    let layout = LayoutBuilder::new()
-        .form()
-        .text_input("Name")
-        .size(200, 30)
-        .text_input("Email")
-        .size(200, 30)
-        .button("Send")
-        .size(100, 44)
-        .end()
-        .build();
-
-    let verified = layout.verify_a(viewport()).expect("should verify");
-
-    let ctx = egui::Context::default();
-    let (_rendered, stats) = verified.render_egui(&ctx);
-
-    assert_eq!(stats.widgets_rendered, 3, "2 inputs + 1 button");
-    assert_eq!(stats.containers_rendered, 2, "window + form");
-    assert_eq!(stats.nodes_visited, 5, "window + form + 3 children");
-}
-
 // ── Edge cases ─────────────────────────────────────────────────
 
 #[test]

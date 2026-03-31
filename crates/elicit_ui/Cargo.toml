@@ -28,9 +28,6 @@ derive_more.workspace = true
 derive-getters.workspace = true
 derive-new.workspace = true
 
-# Frontend dependencies (optional)
-egui = { workspace = true, optional = true }
-
 # GeoRust spatial types (optional)
 geo = { workspace = true, optional = true }
 geo-types = { workspace = true, optional = true }
@@ -51,11 +48,9 @@ quote = { workspace = true, optional = true }
 [dev-dependencies]
 tokio = { workspace = true }
 serde_json = { workspace = true }
-egui = { workspace = true }
 
 [features]
 emit = ["dep:proc-macro2", "dep:quote", "elicitation/emit"]
-egui-backend = ["dep:egui"]
 geo = ["dep:geo", "dep:geo-types"]
 css = ["dep:cssparser"]
 color = ["dep:palette"]
@@ -63,7 +58,3 @@ layout-engine = ["dep:taffy"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
-
-[[test]]
-name = "egui_renderer_test"
-required-features = ["egui-backend"]

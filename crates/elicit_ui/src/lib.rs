@@ -61,8 +61,9 @@
 //! // Verify WCAG Level AA compliance
 //! let verified = layout.verify_aa(Viewport::new(1920, 1080))?;
 //!
-//! // Render to frontend (requires egui-backend feature)
-//! // let rendered = verified.render_egui(&egui_ctx);
+//! // Render to frontend via RenderBackend
+//! // let backend = elicit_egui::EguiBackend::new(&egui_ctx);
+//! // let (rendered, stats) = verified.render(&backend);
 //! # Ok::<(), elicit_ui::VerificationReport>(())
 //! ```
 
@@ -77,8 +78,6 @@ mod css_units;
 mod errors;
 mod layout_engine;
 mod render_backend;
-#[cfg(feature = "egui-backend")]
-mod renderer;
 mod spatial;
 mod types;
 mod typestate;
@@ -102,8 +101,6 @@ pub use errors::{VerificationError, VerificationErrorKind, VerificationReport};
 pub use layout_engine::LayoutEngineError;
 #[cfg(feature = "layout-engine")]
 pub use layout_engine::{LayoutMode, TaffyBridge};
-#[cfg(feature = "egui-backend")]
-pub use renderer::{bounds_to_size, render_tree};
 pub use render_backend::RenderBackend;
 pub use spatial::{BoundingBox, LayoutContext};
 pub use types::{ElementId, Label, RenderStats, Size, Viewport};

@@ -295,38 +295,6 @@ impl Layout<Verified> {
         (layout, stats)
     }
 
-    /// Render the layout to egui.
-    ///
-    /// Walks the verified AccessKit tree and renders each node to
-    /// the corresponding egui widget.
-    ///
-    /// Available when `egui-backend` feature is enabled.
-    ///
-    /// **Deprecated**: Use `render(&EguiBackend::new(ctx))` instead once
-    /// `elicit_egui` provides `EguiBackend`.
-    #[cfg(feature = "egui-backend")]
-    #[tracing::instrument(skip(self, ctx), fields(root = ?self.root))]
-    pub fn render_egui(self, ctx: &egui::Context) -> (Layout<Rendered>, crate::RenderStats) {
-        tracing::debug!("Rendering layout to egui");
-
-        let mut stats = crate::RenderStats::default();
-        let nodes_ref = &self.nodes;
-        let root = self.root;
-
-        let _output = ctx.run_ui(egui::RawInput::default(), |ui| {
-            stats = crate::renderer::render_tree(ui, nodes_ref, root);
-        });
-
-        let layout = Layout {
-            nodes: self.nodes,
-            root: self.root,
-            viewport: self.viewport,
-            report: self.report,
-            _state: PhantomData,
-        };
-
-        (layout, stats)
-    }
 }
 
 impl Layout<Rendered> {

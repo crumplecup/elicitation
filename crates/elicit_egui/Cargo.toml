@@ -16,7 +16,9 @@ categories = ["gui", "development-tools"]
 elicitation = { workspace = true, features = ["egui-types"] }
 elicitation_derive.workspace = true
 elicitation_macros.workspace = true
+elicit_ui = { path = "../elicit_ui" }
 egui = { workspace = true }
+accesskit = { workspace = true }
 inventory.workspace = true
 rmcp.workspace = true
 schemars.workspace = true

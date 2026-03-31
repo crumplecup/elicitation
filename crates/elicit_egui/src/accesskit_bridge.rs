@@ -1,15 +1,43 @@
-//! egui renderer for WCAG-verified AccessKit trees.
+//! AccessKit bridge for egui — bidirectional conversion between
+//! AccessKit trees and egui widgets.
 //!
-//! Walks the AccessKit tree from root to leaves, mapping each
-//! `accesskit::Role` to the corresponding egui widget. Because
-//! the tree has already passed verification, every node is
-//! guaranteed to satisfy its WCAG constraints before rendering.
+//! Provides:
+//! - [`EguiBackend`] — [`RenderBackend`] implementation for egui
+//! - [`render_tree`] — render an AccessKit tree into an `egui::Ui`
+//! - [`bounds_to_size`] — extract pixel size from AccessKit node bounds
 
-use crate::RenderStats;
 use accesskit::{Node, NodeId, Rect, Role, Toggled};
+use elicit_ui::{RenderBackend, RenderStats};
 use std::collections::HashMap;
 
-/// Render a verified AccessKit tree into an egui `Ui`.
+/// egui render backend for verified AccessKit trees.
+///
+/// Wraps an `&egui::Context` and implements [`RenderBackend`] so that
+/// `Layout<Verified>::render(&EguiBackend::new(ctx))` works.
+pub struct EguiBackend<'a> {
+    ctx: &'a egui::Context,
+}
+
+impl<'a> EguiBackend<'a> {
+    /// Create a new egui render backend.
+    pub fn new(ctx: &'a egui::Context) -> Self {
+        Self { ctx }
+    }
+}
+
+impl RenderBackend for EguiBackend<'_> {
+    fn render_tree(&self, nodes: &HashMap<NodeId, Node>, root: NodeId) -> RenderStats {
+        let mut stats = RenderStats::default();
+
+        let _output = self.ctx.run_ui(egui::RawInput::default(), |ui| {
+            stats = render_tree_inner(ui, nodes, root);
+        });
+
+        stats
+    }
+}
+
+/// Render a verified AccessKit tree into an `egui::Ui`.
 ///
 /// Walks from `root` through the node map, creating egui widgets
 /// for each node based on its role. Container nodes create nested
@@ -18,6 +46,14 @@ use std::collections::HashMap;
 /// Returns [`RenderStats`] summarizing what was rendered.
 #[tracing::instrument(skip(ui, nodes), fields(root = ?root))]
 pub fn render_tree(ui: &mut egui::Ui, nodes: &HashMap<NodeId, Node>, root: NodeId) -> RenderStats {
+    render_tree_inner(ui, nodes, root)
+}
+
+fn render_tree_inner(
+    ui: &mut egui::Ui,
+    nodes: &HashMap<NodeId, Node>,
+    root: NodeId,
+) -> RenderStats {
     let mut stats = RenderStats::default();
     render_node_recursive(ui, nodes, root, &mut stats);
     tracing::debug!(
@@ -30,7 +66,18 @@ pub fn render_tree(ui: &mut egui::Ui, nodes: &HashMap<NodeId, Node>, root: NodeI
     stats
 }
 
-/// Recursively render a single node and its children.
+/// Compute minimum desired size from AccessKit bounds.
+///
+/// Returns `(width, height)` if the node has bounds set, otherwise `None`.
+pub fn bounds_to_size(node: &Node) -> Option<(f32, f32)> {
+    let Rect { x0, y0, x1, y1 } = node.bounds()?;
+    let w = (x1 - x0).abs() as f32;
+    let h = (y1 - y0).abs() as f32;
+    Some((w, h))
+}
+
+// ── Recursive rendering engine ──────────────────────────────────
+
 fn render_node_recursive(
     ui: &mut egui::Ui,
     nodes: &HashMap<NodeId, Node>,
@@ -209,7 +256,6 @@ fn render_node_recursive(
 
         // ── Unsupported / unknown ───────────────────────────
         _ => {
-            // For unknown roles, render children if any, or skip leaf
             if node.children().is_empty() {
                 stats.nodes_skipped += 1;
             } else {
@@ -413,7 +459,6 @@ fn render_link(ui: &mut egui::Ui, node: &Node) {
 
 fn render_color_well(ui: &mut egui::Ui, node: &Node) {
     let text = node_label(node);
-    // No native egui color picker widget for inline use — show a button
     let btn = egui::Button::new(format!("🎨 {text}"));
     ui.add_enabled(!node.is_disabled(), btn);
 }
@@ -449,7 +494,6 @@ fn render_image_placeholder(ui: &mut egui::Ui, node: &Node) {
 
 /// Determine heading font size from the hierarchical level property.
 fn heading_size(node: &Node) -> f32 {
-    // AccessKit stores heading level via level()
     match node.level() {
         Some(1) => 28.0,
         Some(2) => 22.0,
@@ -458,14 +502,4 @@ fn heading_size(node: &Node) -> f32 {
         Some(5) => 14.0,
         _ => 12.0,
     }
-}
-
-/// Compute minimum desired size from AccessKit bounds.
-///
-/// Returns `(width, height)` if the node has bounds set, otherwise `None`.
-pub fn bounds_to_size(node: &Node) -> Option<(f32, f32)> {
-    let Rect { x0, y0, x1, y1 } = node.bounds()?;
-    let w = (x1 - x0).abs() as f32;
-    let h = (y1 - y0).abs() as f32;
-    Some((w, h))
 }
