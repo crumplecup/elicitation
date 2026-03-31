@@ -204,9 +204,9 @@ mod ratatui_impls {
 
     impl_ratatui_composite_spec!(
         wrapper = crate::RatatuiStyle,
-        name    = "ratatui::style::Style",
+        name = "ratatui::style::Style",
         summary = "Terminal text style — foreground/background colour and modifiers.",
-        fields  = [
+        fields = [
             ("fg", "Foreground colour (e.g. Red, #FF00AA)"),
             ("bg", "Background colour"),
             ("bold", "Apply bold modifier"),
@@ -217,9 +217,9 @@ mod ratatui_impls {
 
     impl_ratatui_composite_spec!(
         wrapper = crate::RatatuiPadding,
-        name    = "ratatui::widgets::Padding",
+        name = "ratatui::widgets::Padding",
         summary = "Inner padding for a Block widget (left, right, top, bottom).",
-        fields  = [
+        fields = [
             ("left", "Left padding in cells"),
             ("right", "Right padding in cells"),
             ("top", "Top padding in cells"),
@@ -229,9 +229,9 @@ mod ratatui_impls {
 
     impl_ratatui_composite_spec!(
         wrapper = crate::RatatuiMargin,
-        name    = "ratatui::layout::Margin",
+        name = "ratatui::layout::Margin",
         summary = "Outer margin for layout — horizontal and vertical spacing.",
-        fields  = [
+        fields = [
             ("horizontal", "Left + right margin in cells"),
             ("vertical", "Top + bottom margin in cells"),
         ]

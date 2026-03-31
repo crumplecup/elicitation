@@ -14,14 +14,7 @@ use ratatui::style::{Color, Modifier, Style};
 /// Uses string representations for `Color` and `Modifier` fields because
 /// those ratatui types don't implement `JsonSchema`.
 #[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    Eq,
-    Hash,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
+    Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
 )]
 pub struct RatatuiStyle {
     /// Foreground colour (e.g. "Red", "#FF00AA", "Reset").
@@ -180,14 +173,8 @@ impl crate::ElicitPromptTree for RatatuiStyle {
             prompt: Self::prompt().map(|s| s.to_string()),
             type_name: "RatatuiStyle".to_string(),
             fields: vec![
-                (
-                    "fg".to_string(),
-                    Box::new(<Option<String>>::prompt_tree()),
-                ),
-                (
-                    "bg".to_string(),
-                    Box::new(<Option<String>>::prompt_tree()),
-                ),
+                ("fg".to_string(), Box::new(<Option<String>>::prompt_tree())),
+                ("bg".to_string(), Box::new(<Option<String>>::prompt_tree())),
                 ("bold".to_string(), Box::new(bool::prompt_tree())),
                 ("italic".to_string(), Box::new(bool::prompt_tree())),
                 ("underlined".to_string(), Box::new(bool::prompt_tree())),

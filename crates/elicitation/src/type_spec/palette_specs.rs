@@ -84,9 +84,9 @@ mod palette_impls {
 
     impl_palette_composite_spec!(
         wrapper = crate::PaletteSrgb,
-        name    = "palette::Srgb<f32>",
+        name = "palette::Srgb<f32>",
         summary = "An RGB color in sRGB color space with floating-point channels (0.0–1.0).",
-        fields  = [
+        fields = [
             ("r", "Red channel intensity (0.0 = dark, 1.0 = bright)"),
             ("g", "Green channel intensity (0.0 = dark, 1.0 = bright)"),
             ("b", "Blue channel intensity (0.0 = dark, 1.0 = bright)"),

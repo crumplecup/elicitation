@@ -13,13 +13,7 @@ use super::coord::GeoCoord;
 /// An axis-aligned rectangle defined by its minimum and maximum corners.
 /// The constructor normalizes the corners so `min` ≤ `max` on each axis.
 #[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
+    Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
 )]
 pub struct GeoRect {
     /// Minimum corner (lower-left).
@@ -39,10 +33,7 @@ impl From<Rect<f64>> for GeoRect {
 
 impl From<GeoRect> for Rect<f64> {
     fn from(r: GeoRect) -> Self {
-        Rect::new(
-            Coord::<f64>::from(r.min),
-            Coord::<f64>::from(r.max),
-        )
+        Rect::new(Coord::<f64>::from(r.min), Coord::<f64>::from(r.max))
     }
 }
 

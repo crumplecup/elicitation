@@ -28,7 +28,7 @@ const NAMED_COLORS: &[(&str, Color)] = &[
     ("LightMagenta", Color::LightMagenta),
     ("LightCyan", Color::LightCyan),
     ("White", Color::White),
-    ("RGB (custom)…", Color::Reset),   // sentinel
+    ("RGB (custom)…", Color::Reset),    // sentinel
     ("Indexed (0–255)…", Color::Reset), // sentinel
 ];
 
@@ -63,10 +63,8 @@ impl Elicitation for Color {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ratatui::style::Color");
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose colour:"),
-            &Self::labels(),
-        );
+        let params =
+            mcp::select_params(Self::prompt().unwrap_or("Choose colour:"), &Self::labels());
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
@@ -78,8 +76,7 @@ impl Elicitation for Color {
 
         match label.as_str() {
             "RGB (custom)…" => {
-                let rgb_params =
-                    mcp::text_params("Enter RGB as #RRGGBB (e.g. #FF00AA):");
+                let rgb_params = mcp::text_params("Enter RGB as #RRGGBB (e.g. #FF00AA):");
                 let rgb_result = communicator
                     .call_tool(
                         rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
@@ -93,18 +90,12 @@ impl Elicitation for Color {
                         "Expected 6 hex digits, got: {trimmed}"
                     ))));
                 }
-                let r =
-                    u8::from_str_radix(&trimmed[0..2], 16).map_err(|e| {
-                        ElicitError::new(ElicitErrorKind::ParseError(e.to_string()))
-                    })?;
-                let g =
-                    u8::from_str_radix(&trimmed[2..4], 16).map_err(|e| {
-                        ElicitError::new(ElicitErrorKind::ParseError(e.to_string()))
-                    })?;
-                let b =
-                    u8::from_str_radix(&trimmed[4..6], 16).map_err(|e| {
-                        ElicitError::new(ElicitErrorKind::ParseError(e.to_string()))
-                    })?;
+                let r = u8::from_str_radix(&trimmed[0..2], 16)
+                    .map_err(|e| ElicitError::new(ElicitErrorKind::ParseError(e.to_string())))?;
+                let g = u8::from_str_radix(&trimmed[2..4], 16)
+                    .map_err(|e| ElicitError::new(ElicitErrorKind::ParseError(e.to_string())))?;
+                let b = u8::from_str_radix(&trimmed[4..6], 16)
+                    .map_err(|e| ElicitError::new(ElicitErrorKind::ParseError(e.to_string())))?;
                 Ok(Color::Rgb(r, g, b))
             }
             "Indexed (0–255)…" => {
@@ -116,9 +107,12 @@ impl Elicitation for Color {
                     )
                     .await?;
                 let idx_str = mcp::parse_string(mcp::extract_value(idx_result)?)?;
-                let index: u8 = idx_str.trim().parse().map_err(|e: std::num::ParseIntError| {
-                    ElicitError::new(ElicitErrorKind::ParseError(e.to_string()))
-                })?;
+                let index: u8 = idx_str
+                    .trim()
+                    .parse()
+                    .map_err(|e: std::num::ParseIntError| {
+                        ElicitError::new(ElicitErrorKind::ParseError(e.to_string()))
+                    })?;
                 Ok(Color::Indexed(index))
             }
             other => Self::from_label(other).ok_or_else(|| {

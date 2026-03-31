@@ -12,13 +12,7 @@ use super::coord::GeoCoord;
 ///
 /// A line segment defined by a start and end coordinate.
 #[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
+    Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
 )]
 pub struct GeoLine {
     /// Start coordinate.
@@ -38,10 +32,7 @@ impl From<Line<f64>> for GeoLine {
 
 impl From<GeoLine> for Line<f64> {
     fn from(l: GeoLine) -> Self {
-        Line::new(
-            Coord::<f64>::from(l.start),
-            Coord::<f64>::from(l.end),
-        )
+        Line::new(Coord::<f64>::from(l.start), Coord::<f64>::from(l.end))
     }
 }
 

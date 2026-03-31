@@ -569,18 +569,17 @@ pub use primitives::egui_types::{
 // ratatui types (feature-gated on ratatui)
 #[cfg(feature = "ratatui")]
 pub use primitives::ratatui_types::{
-    // Select enum styles
-    AlignmentStyle,
-    BorderTypeStyle,
-    ColorStyle,
-    RatatuiDirectionStyle,
     // Trenchcoat wrappers (add JsonSchema for ElicitComplete)
     AlignmentSelect,
+    // Select enum styles
+    AlignmentStyle,
     BorderTypeSelect,
+    BorderTypeStyle,
     BordersSelect,
     ColorSelect,
+    ColorStyle,
     RatatuiDirectionSelect,
-    ScrollbarOrientationSelect,
+    RatatuiDirectionStyle,
     // Composite struct wrappers
     RatatuiMargin,
     RatatuiMarginStyle,
@@ -588,17 +587,13 @@ pub use primitives::ratatui_types::{
     RatatuiPaddingStyle,
     RatatuiStyle,
     RatatuiStyleStyle,
+    ScrollbarOrientationSelect,
 };
 
 // geo-types (feature-gated on geo-types)
 #[cfg(feature = "geo-types")]
 pub use primitives::geo_types::{
-    GeoCoord,
-    GeoCoordStyle,
-    GeoLine,
-    GeoLineStyle,
-    GeoRect,
-    GeoRectStyle,
+    GeoCoord, GeoCoordStyle, GeoLine, GeoLineStyle, GeoRect, GeoRectStyle,
 };
 
 // palette (feature-gated on palette)

@@ -135,7 +135,11 @@ fn srgb_spec_fields_category() {
 
 #[test]
 fn srgb_serde_roundtrip() {
-    let wrapper = PaletteSrgb { r: 0.5, g: 0.75, b: 0.25 };
+    let wrapper = PaletteSrgb {
+        r: 0.5,
+        g: 0.75,
+        b: 0.25,
+    };
     let json = serde_json::to_string(&wrapper).expect("serialize");
     let restored: PaletteSrgb = serde_json::from_str(&json).expect("deserialize");
     assert_eq!(wrapper, restored);

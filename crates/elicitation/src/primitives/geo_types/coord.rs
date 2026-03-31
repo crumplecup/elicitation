@@ -10,13 +10,7 @@ use geo_types::Coord;
 ///
 /// A 2D coordinate with x and y fields, commonly used for spatial positioning.
 #[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
+    Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
 )]
 pub struct GeoCoord {
     /// X coordinate (longitude or horizontal position).

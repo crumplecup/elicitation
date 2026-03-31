@@ -6,9 +6,9 @@
 //! RatatuiPadding, RatatuiMargin.
 
 use elicitation::{
-    AlignmentSelect, AlignmentStyle, BorderTypeSelect, BorderTypeStyle, BordersSelect,
-    ColorSelect, ColorStyle, ElicitComplete, ElicitIntrospect, ElicitSpec, ElicitationPattern,
-    Elicitation, RatatuiDirectionSelect, RatatuiDirectionStyle, RatatuiMargin, RatatuiMarginStyle,
+    AlignmentSelect, AlignmentStyle, BorderTypeSelect, BorderTypeStyle, BordersSelect, ColorSelect,
+    ColorStyle, ElicitComplete, ElicitIntrospect, ElicitSpec, Elicitation, ElicitationPattern,
+    RatatuiDirectionSelect, RatatuiDirectionStyle, RatatuiMargin, RatatuiMarginStyle,
     RatatuiPadding, RatatuiPaddingStyle, RatatuiStyle, RatatuiStyleStyle,
     ScrollbarOrientationSelect,
 };
@@ -168,10 +168,7 @@ mod introspect {
             ElicitationPattern::Select
         );
         let meta = ScrollbarOrientationSelect::metadata();
-        assert_eq!(
-            meta.type_name,
-            "ratatui::widgets::ScrollbarOrientation"
-        );
+        assert_eq!(meta.type_name, "ratatui::widgets::ScrollbarOrientation");
     }
 
     #[test]
@@ -345,9 +342,7 @@ mod specs {
                 .entries()
                 .iter()
                 .find(|e| e.label() == "crate")
-                .unwrap_or_else(|| {
-                    panic!("{} missing crate entry in source", spec.type_name())
-                });
+                .unwrap_or_else(|| panic!("{} missing crate entry in source", spec.type_name()));
             assert!(
                 crate_entry.description().contains("ratatui"),
                 "{} source should mention ratatui",
@@ -510,18 +505,12 @@ mod style_types {
 
     #[test]
     fn ratatui_padding_style_is_unit() {
-        assert_eq!(
-            RatatuiPaddingStyle::default(),
-            RatatuiPaddingStyle::Default
-        );
+        assert_eq!(RatatuiPaddingStyle::default(), RatatuiPaddingStyle::Default);
     }
 
     #[test]
     fn ratatui_margin_style_is_unit() {
-        assert_eq!(
-            RatatuiMarginStyle::default(),
-            RatatuiMarginStyle::Default
-        );
+        assert_eq!(RatatuiMarginStyle::default(), RatatuiMarginStyle::Default);
     }
 }
 

@@ -4,7 +4,7 @@
 //! Covers: GeoCoord, GeoRect, GeoLine.
 
 use elicitation::{
-    ElicitComplete, ElicitIntrospect, ElicitSpec, ElicitationPattern, Elicitation, GeoCoord,
+    ElicitComplete, ElicitIntrospect, ElicitSpec, Elicitation, ElicitationPattern, GeoCoord,
     GeoCoordStyle, GeoLine, GeoLineStyle, GeoRect, GeoRectStyle,
 };
 
@@ -215,9 +215,7 @@ mod specs {
                 .entries()
                 .iter()
                 .find(|e| e.label() == "crate")
-                .unwrap_or_else(|| {
-                    panic!("{} missing crate entry in source", spec.type_name())
-                });
+                .unwrap_or_else(|| panic!("{} missing crate entry in source", spec.type_name()));
             assert!(
                 crate_entry.description().contains("geo-types"),
                 "{} source should mention geo-types",

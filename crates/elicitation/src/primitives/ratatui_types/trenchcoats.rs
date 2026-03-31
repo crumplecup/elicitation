@@ -117,10 +117,8 @@ impl Elicitation for Borders {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting ratatui::widgets::Borders");
-        let params = mcp::select_params(
-            Self::prompt().unwrap_or("Choose borders:"),
-            &Self::labels(),
-        );
+        let params =
+            mcp::select_params(Self::prompt().unwrap_or("Choose borders:"), &Self::labels());
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
@@ -138,18 +136,12 @@ impl Elicitation for Borders {
 
     #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_select_wrapper(
-            "ratatui::widgets::Borders",
-            "All",
-        )
+        crate::verification::proof_helpers::kani_select_wrapper("ratatui::widgets::Borders", "All")
     }
 
     #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_select_wrapper(
-            "ratatui::widgets::Borders",
-            "All",
-        )
+        crate::verification::proof_helpers::verus_select_wrapper("ratatui::widgets::Borders", "All")
     }
 
     #[cfg(feature = "proofs")]
@@ -383,8 +375,4 @@ crate::select_trenchcoat_traits!(
 // ---------------------------------------------------------------------------
 
 crate::select_trenchcoat!(ratatui::style::Color, as ColorSelect, serde);
-crate::select_trenchcoat_traits!(
-    ColorSelect,
-    ratatui::style::Color,
-    [copy, eq, hash]
-);
+crate::select_trenchcoat_traits!(ColorSelect, ratatui::style::Color, [copy, eq, hash]);

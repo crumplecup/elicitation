@@ -84,9 +84,9 @@ mod geo_impls {
 
     impl_geo_composite_spec!(
         wrapper = crate::GeoCoord,
-        name    = "geo_types::Coord<f64>",
+        name = "geo_types::Coord<f64>",
         summary = "A 2D coordinate with x and y components, used for spatial positioning.",
-        fields  = [
+        fields = [
             ("x", "X coordinate (longitude or horizontal position)"),
             ("y", "Y coordinate (latitude or vertical position)"),
         ]
@@ -94,10 +94,10 @@ mod geo_impls {
 
     impl_geo_composite_spec!(
         wrapper = crate::GeoRect,
-        name    = "geo_types::Rect<f64>",
+        name = "geo_types::Rect<f64>",
         summary = "An axis-aligned rectangle defined by min and max corners. \
                    Corners are normalized so min ≤ max on each axis.",
-        fields  = [
+        fields = [
             ("min", "Minimum corner (GeoCoord — lower-left)"),
             ("max", "Maximum corner (GeoCoord — upper-right)"),
         ]
@@ -105,9 +105,9 @@ mod geo_impls {
 
     impl_geo_composite_spec!(
         wrapper = crate::GeoLine,
-        name    = "geo_types::Line<f64>",
+        name = "geo_types::Line<f64>",
         summary = "A line segment defined by start and end coordinates.",
-        fields  = [
+        fields = [
             ("start", "Start coordinate (GeoCoord)"),
             ("end", "End coordinate (GeoCoord)"),
         ]

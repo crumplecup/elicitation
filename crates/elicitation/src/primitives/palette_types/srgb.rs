@@ -11,13 +11,7 @@ use palette::Srgb;
 /// An RGB color in the sRGB color space with three floating-point channels
 /// ranging from 0.0 (dark) to 1.0 (bright).
 #[derive(
-    Debug,
-    Clone,
-    Copy,
-    PartialEq,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
+    Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
 )]
 pub struct PaletteSrgb {
     /// Red channel (0.0–1.0).
