@@ -100,6 +100,7 @@ impl CreusotModule {
             Self::with_feature("sqlx_types", "sqlx-types"),
             Self::with_feature("tokio_types", "tokio-types"),
             Self::with_feature("egui_types", "egui-types"),
+            Self::with_feature("ratatui_types", "ratatui-types"),
             Self::with_feature("ui_types", "ui-types"),
         ]
     }
