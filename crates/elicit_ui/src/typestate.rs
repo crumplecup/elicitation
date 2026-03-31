@@ -265,12 +265,45 @@ impl Layout<Verified> {
             .expect("Verified layout must have report")
     }
 
+    /// Get a reference to the node map.
+    pub fn nodes(&self) -> &HashMap<NodeId, Node> {
+        &self.nodes
+    }
+
+    /// Render the verified layout through a [`RenderBackend`].
+    ///
+    /// This is the generic render path. Frontend crates provide their
+    /// own `RenderBackend` implementation (e.g., `EguiBackend`,
+    /// `RatatuiBackend`).
+    #[tracing::instrument(skip(self, backend), fields(root = ?self.root))]
+    pub fn render<B: crate::RenderBackend>(
+        self,
+        backend: &B,
+    ) -> (Layout<Rendered>, crate::RenderStats) {
+        tracing::debug!("Rendering layout via backend");
+
+        let stats = backend.render_tree(&self.nodes, self.root);
+
+        let layout = Layout {
+            nodes: self.nodes,
+            root: self.root,
+            viewport: self.viewport,
+            report: self.report,
+            _state: PhantomData,
+        };
+
+        (layout, stats)
+    }
+
     /// Render the layout to egui.
     ///
     /// Walks the verified AccessKit tree and renders each node to
     /// the corresponding egui widget.
     ///
     /// Available when `egui-backend` feature is enabled.
+    ///
+    /// **Deprecated**: Use `render(&EguiBackend::new(ctx))` instead once
+    /// `elicit_egui` provides `EguiBackend`.
     #[cfg(feature = "egui-backend")]
     #[tracing::instrument(skip(self, ctx), fields(root = ?self.root))]
     pub fn render_egui(self, ctx: &egui::Context) -> (Layout<Rendered>, crate::RenderStats) {

@@ -76,6 +76,7 @@ mod contracts;
 mod css_units;
 mod errors;
 mod layout_engine;
+mod render_backend;
 #[cfg(feature = "egui-backend")]
 mod renderer;
 mod spatial;
@@ -103,6 +104,7 @@ pub use layout_engine::LayoutEngineError;
 pub use layout_engine::{LayoutMode, TaffyBridge};
 #[cfg(feature = "egui-backend")]
 pub use renderer::{bounds_to_size, render_tree};
+pub use render_backend::RenderBackend;
 pub use spatial::{BoundingBox, LayoutContext};
 pub use types::{ElementId, Label, RenderStats, Size, Viewport};
 pub use typestate::{ConstraintProfile, Layout, Pending, Rendered, Verified};
