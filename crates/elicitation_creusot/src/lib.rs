@@ -550,6 +550,11 @@ pub use ui_types::{
     verify_builder_root_is_zero,
     verify_builder_single_widget,
     verify_builder_slider,
+    // Contrast and constraint proofs
+    verify_contrast_black_white_max,
+    verify_contrast_identical_is_one,
+    verify_contrast_min_bound,
+    verify_contrast_symmetric,
     // CssLength resolution proofs
     verify_css_em_resolution,
     verify_css_percent_resolution,
@@ -578,5 +583,7 @@ pub use ui_types::{
     verify_size_both_dimensions_required,
     verify_size_fails_below_boundary,
     verify_size_meets_at_boundary,
+    verify_srgb_from_u8_bounds,
     verify_viewport_construction,
+    verify_wcag_level_display,
 };

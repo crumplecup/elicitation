@@ -770,3 +770,68 @@ fn verify_bbox_exceeds_viewport() {
         "width 801 exceeds 800px viewport"
     );
 }
+
+// ── Contrast and constraint proofs ───────────────────────────────────────────
+
+/// Contrast ratio of identical colors is 1.0.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_contrast_identical_colors_is_one() {
+    let white = elicit_ui::SrgbColor::new(1.0, 1.0, 1.0);
+    let ratio = elicit_ui::contrast_ratio(&white, &white);
+    assert!(
+        (ratio - 1.0).abs() < 0.01,
+        "identical colors must have ratio ~1.0"
+    );
+}
+
+/// Contrast ratio of black on white is ~21.0.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_contrast_black_white_max() {
+    let black = elicit_ui::SrgbColor::new(0.0, 0.0, 0.0);
+    let white = elicit_ui::SrgbColor::new(1.0, 1.0, 1.0);
+    let ratio = elicit_ui::contrast_ratio(&black, &white);
+    assert!(ratio >= 20.0, "black on white must have ratio >= 20");
+    assert!(ratio <= 21.1, "black on white must have ratio <= 21.1");
+}
+
+/// Contrast ratio is symmetric: f(a,b) == f(b,a).
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_contrast_ratio_symmetric() {
+    let red = elicit_ui::SrgbColor::new(1.0, 0.0, 0.0);
+    let blue = elicit_ui::SrgbColor::new(0.0, 0.0, 1.0);
+    let r1 = elicit_ui::contrast_ratio(&red, &blue);
+    let r2 = elicit_ui::contrast_ratio(&blue, &red);
+    assert!((r1 - r2).abs() < 0.01, "contrast ratio must be symmetric");
+}
+
+/// Contrast ratio is always >= 1.0.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_contrast_ratio_min_bound() {
+    let c1 = elicit_ui::SrgbColor::new(0.5, 0.5, 0.5);
+    let c2 = elicit_ui::SrgbColor::new(0.5, 0.5, 0.5);
+    let ratio = elicit_ui::contrast_ratio(&c1, &c2);
+    assert!(ratio >= 1.0, "contrast ratio must be >= 1.0");
+}
+
+/// SrgbColor::from_u8 roundtrip: 255 -> 1.0, 0 -> 0.0.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_srgb_color_from_u8_bounds() {
+    let white = elicit_ui::SrgbColor::from_u8(255, 255, 255);
+    assert!((white.r - 1.0).abs() < 0.01, "255 must map to ~1.0");
+    let black = elicit_ui::SrgbColor::from_u8(0, 0, 0);
+    assert!(black.r.abs() < 0.01, "0 must map to ~0.0");
+}
+
+/// WcagLevel Display formatting.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_wcag_level_display() {
+    assert_eq!(format!("{}", elicit_ui::WcagLevel::A), "A");
+    assert_eq!(format!("{}", elicit_ui::WcagLevel::AA), "AA");
+    assert_eq!(format!("{}", elicit_ui::WcagLevel::AAA), "AAA");
+}

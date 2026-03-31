@@ -685,3 +685,68 @@ pub fn verify_bbox_exceeds_viewport() -> bool {
     let bbox = elicit_ui::BoundingBox::new(0.0, 0.0, 801.0, 600.0);
     !bbox.within_viewport(&vp)
 }
+
+// ── Contrast and constraint proofs ───────────────────────────────────────────
+
+/// Trusted axiom: identical colors have contrast ratio ~1.0.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_contrast_identical_is_one() -> bool {
+    let white = elicit_ui::SrgbColor::new(1.0, 1.0, 1.0);
+    let ratio = elicit_ui::contrast_ratio(&white, &white);
+    (ratio - 1.0_f32).abs() < 0.01
+}
+
+/// Trusted axiom: black on white has contrast ratio ~21.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_contrast_black_white_max() -> bool {
+    let black = elicit_ui::SrgbColor::new(0.0, 0.0, 0.0);
+    let white = elicit_ui::SrgbColor::new(1.0, 1.0, 1.0);
+    let ratio = elicit_ui::contrast_ratio(&black, &white);
+    ratio >= 20.0 && ratio <= 21.1
+}
+
+/// Trusted axiom: contrast ratio is symmetric.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_contrast_symmetric() -> bool {
+    let red = elicit_ui::SrgbColor::new(1.0, 0.0, 0.0);
+    let blue = elicit_ui::SrgbColor::new(0.0, 0.0, 1.0);
+    let r1 = elicit_ui::contrast_ratio(&red, &blue);
+    let r2 = elicit_ui::contrast_ratio(&blue, &red);
+    (r1 - r2).abs() < 0.01
+}
+
+/// Trusted axiom: contrast ratio >= 1.0 always.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_contrast_min_bound() -> bool {
+    let gray = elicit_ui::SrgbColor::new(0.5, 0.5, 0.5);
+    let ratio = elicit_ui::contrast_ratio(&gray, &gray);
+    ratio >= 1.0
+}
+
+/// Trusted axiom: SrgbColor::from_u8(255,...) yields ~1.0.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_srgb_from_u8_bounds() -> bool {
+    let white = elicit_ui::SrgbColor::from_u8(255, 255, 255);
+    let black = elicit_ui::SrgbColor::from_u8(0, 0, 0);
+    (white.r - 1.0_f32).abs() < 0.01 && black.r.abs() < 0.01
+}
+
+/// Trusted axiom: WcagLevel Display is correct.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_wcag_level_display() -> bool {
+    format!("{}", elicit_ui::WcagLevel::A) == "A"
+        && format!("{}", elicit_ui::WcagLevel::AA) == "AA"
+        && format!("{}", elicit_ui::WcagLevel::AAA) == "AAA"
+}

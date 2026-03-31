@@ -440,6 +440,13 @@ impl VerusProof {
             Self::new("ui_types", "verify_bbox_touch_target_large"),
             Self::new("ui_types", "verify_bbox_within_viewport"),
             Self::new("ui_types", "verify_bbox_exceeds_viewport"),
+            // ui_types: WCAG contrast threshold proofs
+            Self::new("ui_types", "verify_contrast_aa_normal_threshold"),
+            Self::new("ui_types", "verify_contrast_aa_large_threshold"),
+            Self::new("ui_types", "verify_contrast_aaa_normal_threshold"),
+            Self::new("ui_types", "verify_contrast_aaa_large_threshold"),
+            Self::new("ui_types", "verify_aaa_stricter_than_aa_normal"),
+            Self::new("ui_types", "verify_aaa_stricter_than_aa_large"),
         ]
     }
 }

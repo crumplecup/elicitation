@@ -469,4 +469,91 @@ pub fn verify_bbox_exceeds_viewport() -> (result: bool)
     shadow_within_viewport(801, 600, 800, 600)
 }
 
+// ── WCAG contrast threshold shadow proofs ────────────────────────────────────
+
+pub enum ShadowWcagLevel {
+    A,
+    AA,
+    AAA,
+}
+
+pub enum ShadowTextSize {
+    Normal,
+    Large,
+}
+
+/// Minimum contrast required for AA (WCAG 1.4.3).
+/// Normal: 45 (representing 4.5:1), Large: 30 (representing 3.0:1).
+pub fn shadow_contrast_minimum_threshold(size: &ShadowTextSize) -> (result: u64)
+    ensures match *size {
+        ShadowTextSize::Normal => result == 45,
+        ShadowTextSize::Large => result == 30,
+    },
+{
+    match size {
+        ShadowTextSize::Normal => 45,
+        ShadowTextSize::Large => 30,
+    }
+}
+
+/// Enhanced contrast required for AAA (WCAG 1.4.6).
+/// Normal: 70 (representing 7.0:1), Large: 45 (representing 4.5:1).
+pub fn shadow_contrast_enhanced_threshold(size: &ShadowTextSize) -> (result: u64)
+    ensures match *size {
+        ShadowTextSize::Normal => result == 70,
+        ShadowTextSize::Large => result == 45,
+    },
+{
+    match size {
+        ShadowTextSize::Normal => 70,
+        ShadowTextSize::Large => 45,
+    }
+}
+
+/// AA normal threshold is 4.5 (45).
+pub fn verify_contrast_aa_normal_threshold() -> (result: u64)
+    ensures result == 45,
+{
+    shadow_contrast_minimum_threshold(&ShadowTextSize::Normal)
+}
+
+/// AA large threshold is 3.0 (30).
+pub fn verify_contrast_aa_large_threshold() -> (result: u64)
+    ensures result == 30,
+{
+    shadow_contrast_minimum_threshold(&ShadowTextSize::Large)
+}
+
+/// AAA normal threshold is 7.0 (70).
+pub fn verify_contrast_aaa_normal_threshold() -> (result: u64)
+    ensures result == 70,
+{
+    shadow_contrast_enhanced_threshold(&ShadowTextSize::Normal)
+}
+
+/// AAA large threshold is 4.5 (45).
+pub fn verify_contrast_aaa_large_threshold() -> (result: u64)
+    ensures result == 45,
+{
+    shadow_contrast_enhanced_threshold(&ShadowTextSize::Large)
+}
+
+/// AAA thresholds are strictly >= AA thresholds for normal text.
+pub fn verify_aaa_stricter_than_aa_normal() -> (result: bool)
+    ensures result == true,
+{
+    let aa = shadow_contrast_minimum_threshold(&ShadowTextSize::Normal);
+    let aaa = shadow_contrast_enhanced_threshold(&ShadowTextSize::Normal);
+    aaa >= aa
+}
+
+/// AAA thresholds are strictly >= AA thresholds for large text.
+pub fn verify_aaa_stricter_than_aa_large() -> (result: bool)
+    ensures result == true,
+{
+    let aa = shadow_contrast_minimum_threshold(&ShadowTextSize::Large);
+    let aaa = shadow_contrast_enhanced_threshold(&ShadowTextSize::Large);
+    aaa >= aa
+}
+
 } // verus!

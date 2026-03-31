@@ -674,6 +674,13 @@ impl ProofHarness {
             Self::new("ui_types", "verify_bbox_fails_touch_target_small"),
             Self::new("ui_types", "verify_bbox_within_viewport"),
             Self::new("ui_types", "verify_bbox_exceeds_viewport"),
+            // ui_types: contrast and constraint proofs
+            Self::new("ui_types", "verify_contrast_identical_colors_is_one"),
+            Self::new("ui_types", "verify_contrast_black_white_max"),
+            Self::new("ui_types", "verify_contrast_ratio_symmetric"),
+            Self::new("ui_types", "verify_contrast_ratio_min_bound"),
+            Self::new("ui_types", "verify_srgb_color_from_u8_bounds"),
+            Self::new("ui_types", "verify_wcag_level_display"),
         ]
     }
 
