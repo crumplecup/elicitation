@@ -667,6 +667,13 @@ impl ProofHarness {
             Self::new("ui_types", "verify_css_percent_resolution"),
             Self::new("ui_types", "verify_css_zoom_invariant_classification"),
             Self::new("ui_types", "verify_css_length_serde_px_roundtrip"),
+            // ui_types: BoundingBox spatial proofs
+            Self::new("ui_types", "verify_bbox_right_equals_x_plus_width"),
+            Self::new("ui_types", "verify_bbox_bottom_equals_y_plus_height"),
+            Self::new("ui_types", "verify_bbox_meets_touch_target_44x44"),
+            Self::new("ui_types", "verify_bbox_fails_touch_target_small"),
+            Self::new("ui_types", "verify_bbox_within_viewport"),
+            Self::new("ui_types", "verify_bbox_exceeds_viewport"),
         ]
     }
 

@@ -699,3 +699,74 @@ fn verify_css_length_serde_px_roundtrip() {
     let restored: elicit_ui::CssLength = serde_json::from_str(&json).expect("deserialize");
     assert!(restored == original, "Px serde roundtrip");
 }
+
+// ── BoundingBox spatial proofs ───────────────────────────────────────────────
+
+/// BoundingBox::right() equals x + width.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_bbox_right_equals_x_plus_width() {
+    let x: f64 = kani::any();
+    let w: f64 = kani::any();
+    kani::assume!(x.is_finite() && w.is_finite());
+    kani::assume!(x >= 0.0 && w >= 0.0);
+    let bbox = elicit_ui::BoundingBox::new(x, 0.0, w, 10.0);
+    let right = bbox.right();
+    assert!(
+        (right - (x + w)).abs() < 1e-10,
+        "right() must equal x + width"
+    );
+}
+
+/// BoundingBox::bottom() equals y + height.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_bbox_bottom_equals_y_plus_height() {
+    let y: f64 = kani::any();
+    let h: f64 = kani::any();
+    kani::assume!(y.is_finite() && h.is_finite());
+    kani::assume!(y >= 0.0 && h >= 0.0);
+    let bbox = elicit_ui::BoundingBox::new(0.0, y, 10.0, h);
+    let bottom = bbox.bottom();
+    assert!(
+        (bottom - (y + h)).abs() < 1e-10,
+        "bottom() must equal y + height"
+    );
+}
+
+/// BoundingBox at origin with 44x44 meets touch target.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_bbox_meets_touch_target_44x44() {
+    let bbox = elicit_ui::BoundingBox::new(0.0, 0.0, 44.0, 44.0);
+    assert!(bbox.meets_touch_target(), "44x44 must meet touch target");
+}
+
+/// BoundingBox smaller than 44x44 fails touch target.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_bbox_fails_touch_target_small() {
+    let bbox = elicit_ui::BoundingBox::new(0.0, 0.0, 43.0, 43.0);
+    assert!(!bbox.meets_touch_target(), "43x43 must fail touch target");
+}
+
+/// BoundingBox within viewport returns true.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_bbox_within_viewport() {
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    let bbox = elicit_ui::BoundingBox::new(10.0, 10.0, 100.0, 50.0);
+    assert!(bbox.within_viewport(&vp), "small box in large viewport");
+}
+
+/// BoundingBox exceeding viewport returns false.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_bbox_exceeds_viewport() {
+    let vp = elicit_ui::Viewport::new(800, 600);
+    let bbox = elicit_ui::BoundingBox::new(0.0, 0.0, 801.0, 600.0);
+    assert!(
+        !bbox.within_viewport(&vp),
+        "width 801 exceeds 800px viewport"
+    );
+}

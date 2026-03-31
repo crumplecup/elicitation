@@ -389,4 +389,84 @@ pub fn verify_css_percent_zoom_invariant() -> (result: bool)
     shadow_is_zoom_invariant(&ShadowCssUnit::Percent)
 }
 
+// ── BoundingBox / LayoutMode shadow proofs ───────────────────────────────────
+
+pub enum ShadowLayoutMode {
+    Block,
+    Flex,
+    Grid,
+}
+
+/// Shadow default for LayoutMode is Block.
+pub fn shadow_layout_mode_default() -> (result: ShadowLayoutMode)
+    ensures result is Block,
+{
+    ShadowLayoutMode::Block
+}
+
+/// LayoutMode has exactly 3 variants, default is Block.
+pub fn verify_layout_mode_default_is_block() -> (result: bool)
+    ensures result == true,
+{
+    let mode = shadow_layout_mode_default();
+    match mode {
+        ShadowLayoutMode::Block => true,
+        _ => false,
+    }
+}
+
+/// Shadow touch target check: width >= 44 && height >= 44.
+pub fn shadow_meets_touch_target(width: u64, height: u64) -> (result: bool)
+    ensures result == (width >= 44 && height >= 44),
+{
+    width >= 44 && height >= 44
+}
+
+/// 44x44 meets touch target.
+pub fn verify_bbox_touch_target_44x44() -> (result: bool)
+    ensures result == true,
+{
+    shadow_meets_touch_target(44, 44)
+}
+
+/// 43x43 fails touch target.
+pub fn verify_bbox_touch_target_43x43() -> (result: bool)
+    ensures result == false,
+{
+    shadow_meets_touch_target(43, 43)
+}
+
+/// Large dimensions meet touch target.
+pub fn verify_bbox_touch_target_large() -> (result: bool)
+    ensures result == true,
+{
+    shadow_meets_touch_target(200, 100)
+}
+
+/// Shadow viewport containment: right <= vp_width && bottom <= vp_height.
+pub fn shadow_within_viewport(
+    right: u64,
+    bottom: u64,
+    vp_width: u64,
+    vp_height: u64,
+) -> (result: bool)
+    ensures result == (right <= vp_width && bottom <= vp_height),
+{
+    right <= vp_width && bottom <= vp_height
+}
+
+/// Small box within large viewport.
+pub fn verify_bbox_within_viewport() -> (result: bool)
+    ensures result == true,
+{
+    shadow_within_viewport(110, 60, 1920, 1080)
+}
+
+/// Box exceeding viewport width.
+pub fn verify_bbox_exceeds_viewport() -> (result: bool)
+    ensures result == false,
+{
+    shadow_within_viewport(801, 600, 800, 600)
+}
+
 } // verus!

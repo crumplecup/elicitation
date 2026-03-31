@@ -627,3 +627,61 @@ pub fn verify_css_zoom_invariant_classification() -> bool {
         && elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Vh(50.0))
         && elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Percent(100.0))
 }
+
+// ── BoundingBox spatial proofs ───────────────────────────────────────────────
+
+/// Trusted axiom: right() = x + width for concrete values.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_bbox_right_concrete() -> bool {
+    let bbox = elicit_ui::BoundingBox::new(10.0, 20.0, 100.0, 50.0);
+    (bbox.right() - 110.0_f64).abs() < 1e-10
+}
+
+/// Trusted axiom: bottom() = y + height for concrete values.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_bbox_bottom_concrete() -> bool {
+    let bbox = elicit_ui::BoundingBox::new(10.0, 20.0, 100.0, 50.0);
+    (bbox.bottom() - 70.0_f64).abs() < 1e-10
+}
+
+/// Trusted axiom: 44x44 meets WCAG touch target.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_bbox_touch_target_met() -> bool {
+    let bbox = elicit_ui::BoundingBox::new(0.0, 0.0, 44.0, 44.0);
+    bbox.meets_touch_target()
+}
+
+/// Trusted axiom: 43x43 fails WCAG touch target.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_bbox_touch_target_failed() -> bool {
+    let bbox = elicit_ui::BoundingBox::new(0.0, 0.0, 43.0, 43.0);
+    !bbox.meets_touch_target()
+}
+
+/// Trusted axiom: small box within large viewport.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_bbox_within_viewport() -> bool {
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    let bbox = elicit_ui::BoundingBox::new(10.0, 10.0, 100.0, 50.0);
+    bbox.within_viewport(&vp)
+}
+
+/// Trusted axiom: box exceeding viewport width fails containment.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_bbox_exceeds_viewport() -> bool {
+    let vp = elicit_ui::Viewport::new(800, 600);
+    let bbox = elicit_ui::BoundingBox::new(0.0, 0.0, 801.0, 600.0);
+    !bbox.within_viewport(&vp)
+}

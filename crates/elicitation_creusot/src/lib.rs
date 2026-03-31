@@ -530,6 +530,13 @@ pub use palette_types::{
 
 #[cfg(feature = "ui-types")]
 pub use ui_types::{
+    // BoundingBox spatial proofs
+    verify_bbox_bottom_concrete,
+    verify_bbox_exceeds_viewport,
+    verify_bbox_right_concrete,
+    verify_bbox_touch_target_failed,
+    verify_bbox_touch_target_met,
+    verify_bbox_within_viewport,
     verify_bounds_reversed_non_negative,
     verify_bounds_width_non_negative,
     verify_builder_all_container_types,

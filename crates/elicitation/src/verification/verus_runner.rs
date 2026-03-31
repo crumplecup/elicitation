@@ -433,6 +433,13 @@ impl VerusProof {
             Self::new("ui_types", "verify_css_vw_zoom_invariant"),
             Self::new("ui_types", "verify_css_vh_zoom_invariant"),
             Self::new("ui_types", "verify_css_percent_zoom_invariant"),
+            // ui_types: BoundingBox / LayoutMode shadow proofs
+            Self::new("ui_types", "verify_layout_mode_default_is_block"),
+            Self::new("ui_types", "verify_bbox_touch_target_44x44"),
+            Self::new("ui_types", "verify_bbox_touch_target_43x43"),
+            Self::new("ui_types", "verify_bbox_touch_target_large"),
+            Self::new("ui_types", "verify_bbox_within_viewport"),
+            Self::new("ui_types", "verify_bbox_exceeds_viewport"),
         ]
     }
 }
