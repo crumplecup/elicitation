@@ -129,6 +129,19 @@ tracing = "0.1"
 # Async runtime
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std", "io-util", "time", "sync", "rt", "fs", "net", "process", "signal"] }
 
+# GeoRust spatial types
+geo = "0.29"
+geo-types = "0.7"
+
+# CSS parsing (Mozilla/Servo)
+cssparser = "0.34"
+
+# Color science
+palette = "0.7"
+
+# Layout engine (CSS Block/Flexbox/Grid)
+taffy = "0.7"
+
 # Proc macros
 syn = { version = "2", features = ["full", "extra-traits"] }
 quote = "1"
