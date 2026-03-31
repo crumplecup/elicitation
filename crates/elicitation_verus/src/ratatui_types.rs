@@ -1,4 +1,7 @@
 use verus_builtin_macros::verus;
+// Required by verus! macro for int type, comparison operators, and arithmetic
+#[allow(unused_imports)]
+use vstd::prelude::*;
 
 verus! {
 
@@ -173,34 +176,98 @@ pub fn verify_ratatui_scrollbar_orientation_label_count_matches(counts_equal: bo
 }
 
 // ============================================================================
-// Composite struct proofs — From roundtrip verification
+// Composite struct shadow types
+//
+// Shadow structs model the field layout of ratatui composite types. We trust
+// that the field layout matches the real type. The solver verifies our
+// wrapper logic: construct → read fields → reconstruct preserves values.
 // ============================================================================
 
-// ---- RatatuiPadding (left, right, top, bottom: u16) ----
+// ---- Shadow struct: Padding (left, right, top, bottom: u16) ----
 
-/// Proof that Padding From roundtrip preserves all four sides.
-pub fn verify_ratatui_padding_roundtrip(left_ok: bool, right_ok: bool, top_ok: bool, bottom_ok: bool) -> (result: bool)
-    ensures result == (left_ok && right_ok && top_ok && bottom_ok),
-{
-    left_ok && right_ok && top_ok && bottom_ok
+pub struct ShadowPadding {
+    pub left: u16,
+    pub right: u16,
+    pub top: u16,
+    pub bottom: u16,
 }
 
-// ---- RatatuiMargin (horizontal, vertical: u16) ----
-
-/// Proof that Margin From roundtrip preserves both dimensions.
-pub fn verify_ratatui_margin_roundtrip(horizontal_ok: bool, vertical_ok: bool) -> (result: bool)
-    ensures result == (horizontal_ok && vertical_ok),
+/// Construct a ShadowPadding from components.
+pub fn make_padding(left: u16, right: u16, top: u16, bottom: u16) -> (result: ShadowPadding)
+    ensures
+        result.left == left,
+        result.right == right,
+        result.top == top,
+        result.bottom == bottom,
 {
-    horizontal_ok && vertical_ok
+    ShadowPadding { left, right, top, bottom }
 }
 
-// ---- RatatuiStyle (fg, bg: Option<String>, bold, italic, underlined: bool) ----
+/// Prove Padding roundtrip: construct → read fields → reconstruct preserves all sides.
+pub fn verify_ratatui_padding_roundtrip(left: u16, right: u16, top: u16, bottom: u16) -> (result: ShadowPadding)
+    ensures
+        result.left == left,
+        result.right == right,
+        result.top == top,
+        result.bottom == bottom,
+{
+    let original = make_padding(left, right, top, bottom);
+    make_padding(original.left, original.right, original.top, original.bottom)
+}
+
+/// Prove Padding concrete construction with known values.
+pub fn verify_ratatui_padding_concrete() -> (result: ShadowPadding)
+    ensures
+        result.left == 1u16,
+        result.right == 2u16,
+        result.top == 3u16,
+        result.bottom == 4u16,
+{
+    make_padding(1, 2, 3, 4)
+}
+
+// ---- Shadow struct: Margin (horizontal, vertical: u16) ----
+
+pub struct ShadowRatatuiMargin {
+    pub horizontal: u16,
+    pub vertical: u16,
+}
+
+/// Construct a ShadowRatatuiMargin from components.
+pub fn make_ratatui_margin(horizontal: u16, vertical: u16) -> (result: ShadowRatatuiMargin)
+    ensures
+        result.horizontal == horizontal,
+        result.vertical == vertical,
+{
+    ShadowRatatuiMargin { horizontal, vertical }
+}
+
+/// Prove Margin roundtrip: construct → read fields → reconstruct preserves both dimensions.
+pub fn verify_ratatui_margin_roundtrip(horizontal: u16, vertical: u16) -> (result: ShadowRatatuiMargin)
+    ensures
+        result.horizontal == horizontal,
+        result.vertical == vertical,
+{
+    let original = make_ratatui_margin(horizontal, vertical);
+    make_ratatui_margin(original.horizontal, original.vertical)
+}
+
+/// Prove Margin concrete construction with known values.
+pub fn verify_ratatui_margin_concrete() -> (result: ShadowRatatuiMargin)
+    ensures
+        result.horizontal == 5u16,
+        result.vertical == 10u16,
+{
+    make_ratatui_margin(5, 10)
+}
+
+// ---- Style modifiers (bold, italic, underlined: bool) ----
 
 /// Proof that Style modifier mapping preserves all three flags.
-pub fn verify_ratatui_style_modifiers(bold_ok: bool, italic_ok: bool, underlined_ok: bool) -> (result: bool)
-    ensures result == (bold_ok && italic_ok && underlined_ok),
+pub fn verify_ratatui_style_modifiers(bold: bool, italic: bool, underlined: bool) -> (result: bool)
+    ensures result == (bold && italic && underlined),
 {
-    bold_ok && italic_ok && underlined_ok
+    bold && italic && underlined
 }
 
 /// Proof that Style fg/bg presence is preserved.

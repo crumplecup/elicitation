@@ -1,4 +1,7 @@
 use verus_builtin_macros::verus;
+// Required by verus! macro for int type, comparison operators, and arithmetic
+#[allow(unused_imports)]
+use vstd::prelude::*;
 
 verus! {
 
@@ -433,27 +436,149 @@ pub fn verify_key_label_count_matches(counts_equal: bool) -> (result: bool)
 }
 
 // ============================================================================
-// egui crate — Composite struct wrapper types
+// egui crate — Composite struct shadow types
 //
-// From-roundtrip specifications. Each proof models the property that
-// converting egui::T → EguiT → egui::T preserves all field values.
+// Shadow structs model the field layout of egui composite types. We trust
+// that the field layout matches the real type. The solver verifies our
+// wrapper logic: construct → read fields → reconstruct preserves values.
+//
+// Types with integer fields (Color32, CornerRadius, Margin) get real proofs.
+// Types with f32 fields (Pos2, Vec2, Rect, Stroke, Shadow, FontId) remain
+// boolean stubs — Verus f32 equality is limited.
 // ============================================================================
 
-// ---- Color32 (r, g, b, a: u8) ----
+// ---- Shadow struct: Color32 (r, g, b, a: u8) ----
 
-/// Proof that Color32 From roundtrip preserves RGBA channels.
-pub fn verify_color32_roundtrip(r_preserved: bool, g_preserved: bool, b_preserved: bool, a_preserved: bool) -> (result: bool)
-    ensures result == (r_preserved && g_preserved && b_preserved && a_preserved),
-{
-    r_preserved && g_preserved && b_preserved && a_preserved
+pub struct ShadowColor32 {
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
+    pub a: u8,
 }
 
-/// Proof that Color32 wrapper fields match source.
-pub fn verify_color32_wrapper_fields(all_fields_match: bool) -> (result: bool)
-    ensures result == all_fields_match,
+/// Construct a ShadowColor32 from components.
+pub fn make_color32(r: u8, g: u8, b: u8, a: u8) -> (result: ShadowColor32)
+    ensures
+        result.r == r,
+        result.g == g,
+        result.b == b,
+        result.a == a,
 {
-    all_fields_match
+    ShadowColor32 { r, g, b, a }
 }
+
+/// Prove Color32 roundtrip: construct → read fields → reconstruct preserves all channels.
+pub fn verify_color32_roundtrip(r: u8, g: u8, b: u8, a: u8) -> (result: ShadowColor32)
+    ensures
+        result.r == r,
+        result.g == g,
+        result.b == b,
+        result.a == a,
+{
+    let original = make_color32(r, g, b, a);
+    make_color32(original.r, original.g, original.b, original.a)
+}
+
+/// Prove Color32 concrete construction with known values.
+pub fn verify_color32_concrete() -> (result: ShadowColor32)
+    ensures
+        result.r == 255u8,
+        result.g == 128u8,
+        result.b == 0u8,
+        result.a == 255u8,
+{
+    make_color32(255, 128, 0, 255)
+}
+
+// ---- Shadow struct: CornerRadius (nw, ne, sw, se: u8) ----
+
+pub struct ShadowCornerRadius {
+    pub nw: u8,
+    pub ne: u8,
+    pub sw: u8,
+    pub se: u8,
+}
+
+/// Construct a ShadowCornerRadius from components.
+pub fn make_corner_radius(nw: u8, ne: u8, sw: u8, se: u8) -> (result: ShadowCornerRadius)
+    ensures
+        result.nw == nw,
+        result.ne == ne,
+        result.sw == sw,
+        result.se == se,
+{
+    ShadowCornerRadius { nw, ne, sw, se }
+}
+
+/// Prove CornerRadius roundtrip: construct → read fields → reconstruct preserves all corners.
+pub fn verify_corner_radius_roundtrip(nw: u8, ne: u8, sw: u8, se: u8) -> (result: ShadowCornerRadius)
+    ensures
+        result.nw == nw,
+        result.ne == ne,
+        result.sw == sw,
+        result.se == se,
+{
+    let original = make_corner_radius(nw, ne, sw, se);
+    make_corner_radius(original.nw, original.ne, original.sw, original.se)
+}
+
+/// Prove CornerRadius concrete construction with known values.
+pub fn verify_corner_radius_concrete() -> (result: ShadowCornerRadius)
+    ensures
+        result.nw == 5u8,
+        result.ne == 10u8,
+        result.sw == 15u8,
+        result.se == 20u8,
+{
+    make_corner_radius(5, 10, 15, 20)
+}
+
+// ---- Shadow struct: Margin (left, right, top, bottom: i8) ----
+
+pub struct ShadowMargin {
+    pub left: i8,
+    pub right: i8,
+    pub top: i8,
+    pub bottom: i8,
+}
+
+/// Construct a ShadowMargin from components.
+pub fn make_margin(left: i8, right: i8, top: i8, bottom: i8) -> (result: ShadowMargin)
+    ensures
+        result.left == left,
+        result.right == right,
+        result.top == top,
+        result.bottom == bottom,
+{
+    ShadowMargin { left, right, top, bottom }
+}
+
+/// Prove Margin roundtrip: construct → read fields → reconstruct preserves all sides.
+pub fn verify_margin_roundtrip(left: i8, right: i8, top: i8, bottom: i8) -> (result: ShadowMargin)
+    ensures
+        result.left == left,
+        result.right == right,
+        result.top == top,
+        result.bottom == bottom,
+{
+    let original = make_margin(left, right, top, bottom);
+    make_margin(original.left, original.right, original.top, original.bottom)
+}
+
+/// Prove Margin concrete construction with known values.
+pub fn verify_margin_concrete() -> (result: ShadowMargin)
+    ensures
+        result.left == 5i8,
+        result.right == 10i8,
+        result.top == 15i8,
+        result.bottom == 20i8,
+{
+    make_margin(5, 10, 15, 20)
+}
+
+// ============================================================================
+// Float-field composites — boolean stubs (f32 equality opaque)
+// ============================================================================
 
 // ---- Pos2 (x, y: f32) ----
 
@@ -491,31 +616,13 @@ pub fn verify_stroke_roundtrip(width_ok: bool, color_ok: bool) -> (result: bool)
     width_ok && color_ok
 }
 
-// ---- CornerRadius (nw, ne, sw, se: u8) ----
-
-/// Proof that CornerRadius From roundtrip preserves all four corners.
-pub fn verify_corner_radius_roundtrip(nw_ok: bool, ne_ok: bool, sw_ok: bool, se_ok: bool) -> (result: bool)
-    ensures result == (nw_ok && ne_ok && sw_ok && se_ok),
-{
-    nw_ok && ne_ok && sw_ok && se_ok
-}
-
-// ---- Shadow (offset_x, offset_y: i8, blur, spread: u8, color: Color32) ----
+// ---- Shadow (offset: f32, blur: u8, spread: u8, color: Color32) ----
 
 /// Proof that Shadow From roundtrip preserves all fields.
 pub fn verify_shadow_roundtrip(offset_ok: bool, blur_ok: bool, spread_ok: bool, color_ok: bool) -> (result: bool)
     ensures result == (offset_ok && blur_ok && spread_ok && color_ok),
 {
     offset_ok && blur_ok && spread_ok && color_ok
-}
-
-// ---- Margin (left, right, top, bottom: i8) ----
-
-/// Proof that Margin From roundtrip preserves all four margins.
-pub fn verify_margin_roundtrip(left_ok: bool, right_ok: bool, top_ok: bool, bottom_ok: bool) -> (result: bool)
-    ensures result == (left_ok && right_ok && top_ok && bottom_ok),
-{
-    left_ok && right_ok && top_ok && bottom_ok
 }
 
 // ---- FontId (size: f32, family: FontFamily) ----
