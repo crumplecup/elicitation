@@ -125,7 +125,7 @@ impl Constraint for ContrastMinimum {
         } else {
             Err(Violation::ContrastInsufficient {
                 actual: ratio,
-                required: required as f32,
+                required,
                 foreground: self.foreground.to_hex(),
                 background: self.background.to_hex(),
             })
@@ -169,7 +169,7 @@ impl Constraint for ContrastEnhanced {
         } else {
             Err(Violation::ContrastInsufficient {
                 actual: ratio,
-                required: required as f32,
+                required,
                 foreground: self.foreground.to_hex(),
                 background: self.background.to_hex(),
             })

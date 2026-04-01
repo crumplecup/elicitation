@@ -78,18 +78,17 @@ impl Constraint for TextSpacing {
 
                 if let (Some(a_node), Some(b_node)) =
                     (ctx.nodes.get(&child_a), ctx.nodes.get(&child_b))
+                    && let (Some(a_bounds), Some(b_bounds)) = (a_node.bounds(), b_node.bounds())
                 {
-                    if let (Some(a_bounds), Some(b_bounds)) = (a_node.bounds(), b_node.bounds()) {
-                        // Check for vertical overlap (text spacing issue)
-                        let a_bottom = a_bounds.y1;
-                        let b_top = b_bounds.y0;
+                    // Check for vertical overlap (text spacing issue)
+                    let a_bottom = a_bounds.y1;
+                    let b_top = b_bounds.y0;
 
-                        if a_bottom > b_top && a_bounds.y0 < b_bounds.y1 {
-                            return Err(Violation::TextSpacing {
-                                element1: ElementId::from(child_a),
-                                element2: ElementId::from(child_b),
-                            });
-                        }
+                    if a_bottom > b_top && a_bounds.y0 < b_bounds.y1 {
+                        return Err(Violation::TextSpacing {
+                            element1: ElementId::from(child_a),
+                            element2: ElementId::from(child_b),
+                        });
                     }
                 }
             }
@@ -179,22 +178,21 @@ impl Constraint for MinSpacing {
             for j in (i + 1)..children.len() {
                 if let (Some(a_node), Some(b_node)) =
                     (ctx.nodes.get(&children[i]), ctx.nodes.get(&children[j]))
+                    && let (Some(a_bounds), Some(b_bounds)) = (a_node.bounds(), b_node.bounds())
                 {
-                    if let (Some(a_bounds), Some(b_bounds)) = (a_node.bounds(), b_node.bounds()) {
-                        // Vertical gap
-                        let v_gap = (b_bounds.y0 - a_bounds.y1).max(a_bounds.y0 - b_bounds.y1);
-                        // Horizontal gap
-                        let h_gap = (b_bounds.x0 - a_bounds.x1).max(a_bounds.x0 - b_bounds.x1);
+                    // Vertical gap
+                    let v_gap = (b_bounds.y0 - a_bounds.y1).max(a_bounds.y0 - b_bounds.y1);
+                    // Horizontal gap
+                    let h_gap = (b_bounds.x0 - a_bounds.x1).max(a_bounds.x0 - b_bounds.x1);
 
-                        let gap = v_gap.max(h_gap);
+                    let gap = v_gap.max(h_gap);
 
-                        if gap < self.min_gap && gap >= 0.0 {
-                            return Err(Violation::GridAlignment {
-                                element: ElementId::from(children[j]),
-                                position: (b_bounds.x0, b_bounds.y0),
-                                grid_step: self.min_gap,
-                            });
-                        }
+                    if gap < self.min_gap && gap >= 0.0 {
+                        return Err(Violation::GridAlignment {
+                            element: ElementId::from(children[j]),
+                            position: (b_bounds.x0, b_bounds.y0),
+                            grid_step: self.min_gap,
+                        });
                     }
                 }
             }

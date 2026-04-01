@@ -176,28 +176,17 @@ impl Constraint for MinReadableSize {
 ///
 /// let constraint_set = TerminalAccessible::default().to_constraint_set();
 /// ```
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct TerminalAccessible {
     /// Minimum readable size constraint settings.
     pub min_readable: MinReadableSize,
-}
-
-impl Default for TerminalAccessible {
-    fn default() -> Self {
-        Self {
-            min_readable: MinReadableSize::default(),
-        }
-    }
 }
 
 impl TerminalAccessible {
     /// Create with custom minimum readable size thresholds.
     pub fn with_min_readable(min_cols: u32, min_rows: u32) -> Self {
         Self {
-            min_readable: MinReadableSize {
-                min_cols,
-                min_rows,
-            },
+            min_readable: MinReadableSize { min_cols, min_rows },
         }
     }
 

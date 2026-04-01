@@ -3,6 +3,8 @@
 //!
 //! Covers: GeoCoord, GeoRect, GeoLine.
 
+#![cfg(feature = "geo-types")]
+
 use elicitation::{
     ElicitComplete, ElicitIntrospect, ElicitSpec, Elicitation, ElicitationPattern, GeoCoord,
     GeoCoordStyle, GeoLine, GeoLineStyle, GeoRect, GeoRectStyle,
