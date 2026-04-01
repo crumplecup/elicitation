@@ -465,12 +465,80 @@ the Rust source code directly.
 
 ---
 
+## AccessKit bridge (dual-frontend IR)
+
+`elicit_egui` is the egui-side implementation of the `elicit_ui` dual-frontend
+architecture. It provides:
+
+### EguiBackend
+
+Implements `elicit_ui::RenderBackend`, converting a verified `Layout<Verified>`
+AccessKit tree into egui widget calls:
+
+```rust
+use elicit_egui::EguiBackend;
+use elicit_ui::{Layout, Viewport};
+
+// After building and verifying your AccessKit tree:
+let backend = EguiBackend::new(&ctx);  // egui::Context
+let (rendered, stats) = verified.render(&backend);
+
+println!("Rendered {} widgets, {} containers",
+    stats.widgets_rendered, stats.containers_rendered);
+```
+
+### Bidirectional UiNode ↔ AccessKit conversion
+
+Tools for translating between `UiNode` trees and `accesskit::TreeUpdate`:
+
+```rust
+use elicit_egui::{ui_node_to_tree_update, tree_update_to_ui_node};
+
+// Forward: UiNode tree → AccessKit IR (for WCAG verification)
+let tree_update = ui_node_to_tree_update(&ui_root);
+
+// Reverse: AccessKit IR → UiNode tree (for rendering)
+let ui_node = tree_update_to_ui_node(&tree_update, root_id);
+```
+
+This enables the full round-trip:
+
+```text
+UiNode ──ui_node_to_tree_update()──→ AccessKit IR
+                                          │
+                              elicit_ui constraint verification
+                                          │
+                                          ▼
+AccessKit IR ──tree_update_to_ui_node()──→ UiNode ──EguiBackend──→ egui frame
+```
+
+### WCAG compliance checking for existing egui apps
+
+The bridge enables accessibility analysis of any `UiNode` tree — you can
+feed an existing egui app's UI into `elicit_ui` constraints and ask:
+*"Is my egui app WCAG compliant?"*
+
+```rust
+use elicit_egui::ui_node_to_tree_update;
+use elicit_ui::{Layout, Viewport, ConstraintProfile};
+
+let tree_update = ui_node_to_tree_update(&my_ui_tree);
+let layout = Layout::from_update(tree_update);
+let result = layout.verify_with_profile(
+    Viewport::new(1920, 1080),
+    ConstraintProfile::WcagAA,
+);
+```
+
+---
+
 ## Feature flags
 
 | Feature | Effect |
 |---|---|
 | `emit` | Enables `EmitCode` code-recovery support |
 | `runtime` | Enables headless egui context management (5 tools) |
+| `uuid` | UUID handles for runtime context registry (implied by `runtime`) |
 
 ---
 
@@ -481,7 +549,8 @@ egui types participate in the elicitation verification pipeline:
 - **Kani** — bounded model checking for Select enum roundtrips and composite
   struct field coverage (`crates/elicitation_kani/src/egui_types.rs`)
 - **Creusot** — deductive proofs for Select/Composite implementations
-  (`crates/elicitation_creusot/src/egui_types.rs`)
+  (`crates/elicitation_creusot/src/egui_types.rs`);
+  proof artifacts in `verif/elicitation_creusot_rlib/egui_types/`
 
 The trenchcoat pattern (newtype wrappers with `JsonSchema` + verification
 traits) enables full `schemars` support and MCP tool schema generation despite
