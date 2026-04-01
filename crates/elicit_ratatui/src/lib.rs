@@ -159,8 +159,8 @@ pub use style_tools::{
 };
 #[cfg(feature = "runtime")]
 pub use terminal_tools::{
-    TerminalClearParams, TerminalCreateParams, TerminalDestroyParams, TerminalDrawParams,
-    TerminalHideCursorParams, TerminalSetCursorParams, TerminalShowCursorParams,
+    render_node, render_widget, TerminalClearParams, TerminalCreateParams, TerminalDestroyParams,
+    TerminalDrawParams, TerminalHideCursorParams, TerminalSetCursorParams, TerminalShowCursorParams,
     TerminalSizeParams,
 };
 pub use text_tools::{

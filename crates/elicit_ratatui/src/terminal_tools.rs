@@ -421,7 +421,11 @@ async fn terminal_draw(p: TerminalDrawParams) -> Result<CallToolResult, ErrorDat
 // ---------------------------------------------------------------------------
 
 /// Recursively render a `TuiNode` tree into a ratatui frame.
-fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
+///
+/// Callers with a `TuiNode` tree (e.g. from [`tui_node_to_tree_update`] /
+/// [`tree_update_to_tui_node`] or built directly) can call this to drive a
+/// `ratatui::Frame` without re-implementing the layout/widget dispatch.
+pub fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
     match node {
         TuiNode::Widget { widget } => render_widget(frame, area, widget),
         TuiNode::Layout {
@@ -452,7 +456,10 @@ fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
 }
 
 /// Render a single `WidgetJson` into a frame area.
-fn render_widget(frame: &mut Frame, area: Rect, widget: &WidgetJson) {
+///
+/// Exposed so callers can render individual widgets by hand when they
+/// do not need the full recursive `TuiNode` tree dispatch.
+pub fn render_widget(frame: &mut Frame, area: Rect, widget: &WidgetJson) {
     match widget {
         WidgetJson::Block { block } => {
             render_block_widget(frame, area, block);
