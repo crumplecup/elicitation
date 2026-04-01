@@ -52,8 +52,10 @@ serde_json = { workspace = true }
 [features]
 emit = ["dep:proc-macro2", "dep:quote", "elicitation/emit"]
 geo = ["dep:geo", "dep:geo-types"]
+geo-types = ["geo"]
 css = ["dep:cssparser"]
 color = ["dep:palette"]
+palette = ["color"]
 layout-engine = ["dep:taffy"]
 
 [lints.rust]
