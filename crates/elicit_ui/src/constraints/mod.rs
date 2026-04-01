@@ -10,7 +10,10 @@ mod terminal;
 mod wcag;
 
 pub use spatial::{GridAlignment, MinSpacing, Reflow320, ResizeText200, TextSpacing};
-pub use terminal::{MinReadableSize, TerminalAccessible, TerminalNoOverflow};
+pub use terminal::{
+    BreakpointOutcome, BreakpointReport, BreakpointResult, BreakpointTier, MinReadableSize,
+    TerminalAccessible, TerminalBreakpoint, TerminalBreakpointSet, TerminalNoOverflow,
+};
 pub use wcag::{
     HasLabelConstraint, KeyboardAccessibleConstraint, MinTouchTargetConstraint,
     NoOverflowConstraint, ValidRoleConstraint,

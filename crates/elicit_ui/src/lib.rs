@@ -88,10 +88,12 @@ pub use color_contrast::{
     ContrastEnhanced, ContrastMinimum, NonTextContrast, SrgbColor, TextSize, contrast_ratio,
 };
 pub use constraints::{
-    Constraint, ConstraintContext, ConstraintSet, ConstraintSetBuilder, ConstraintVerification,
-    GridAlignment, HasLabelConstraint, KeyboardAccessibleConstraint, MinReadableSize, MinSpacing,
+    BreakpointOutcome, BreakpointReport, BreakpointResult, BreakpointTier, Constraint,
+    ConstraintContext, ConstraintSet, ConstraintSetBuilder, ConstraintVerification, GridAlignment,
+    HasLabelConstraint, KeyboardAccessibleConstraint, MinReadableSize, MinSpacing,
     MinTouchTargetConstraint, NoOverflowConstraint, Reflow320, ResizeText200, SpecReference,
-    TerminalAccessible, TerminalNoOverflow, TextSpacing, ValidRoleConstraint, Violation, WcagLevel,
+    TerminalAccessible, TerminalBreakpoint, TerminalBreakpointSet, TerminalNoOverflow, TextSpacing,
+    ValidRoleConstraint, Violation, WcagLevel,
 };
 pub use contracts::{
     AccessibleAA, HasLabel, KeyboardAccessible, MinTargetSize, NoOverflow, ValidRole,
