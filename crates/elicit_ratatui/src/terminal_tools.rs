@@ -22,7 +22,7 @@ use serde::Deserialize;
 use tracing::instrument;
 use uuid::Uuid;
 
-use crate::serde_types::{BlockJson, TuiNode, WidgetJson};
+use crate::serde_types::{BlockJson, ParagraphText, TuiNode, WidgetJson};
 use elicitation::elicit_tool;
 
 /// Crossterm terminal type alias.
@@ -472,7 +472,46 @@ pub fn render_widget(frame: &mut Frame, area: Rect, widget: &WidgetJson) {
             alignment,
             block,
         } => {
-            let mut p = ratatui::widgets::Paragraph::new(text.as_str());
+            let ratatui_text: ratatui::text::Text<'static> = match text {
+                ParagraphText::Plain(s) => ratatui::text::Text::raw(s.clone()),
+                ParagraphText::Rich(t) => {
+                    let lines: Vec<ratatui::text::Line<'static>> = t
+                        .lines
+                        .iter()
+                        .map(|l| {
+                            let spans: Vec<ratatui::text::Span<'static>> = l
+                                .spans
+                                .iter()
+                                .map(|s| {
+                                    let style = s
+                                        .style
+                                        .clone()
+                                        .map(ratatui::style::Style::from)
+                                        .unwrap_or_default();
+                                    ratatui::text::Span::styled(s.content.clone(), style)
+                                })
+                                .collect();
+                            let mut line = ratatui::text::Line::from(spans);
+                            if let Some(ls) = &l.style {
+                                line = line.style(ratatui::style::Style::from(ls.clone()));
+                            }
+                            if let Some(a) = l.alignment {
+                                line = line.alignment(ratatui::layout::Alignment::from(a));
+                            }
+                            line
+                        })
+                        .collect();
+                    let mut rich = ratatui::text::Text::from(lines);
+                    if let Some(ts) = &t.style {
+                        rich = rich.style(ratatui::style::Style::from(ts.clone()));
+                    }
+                    if let Some(a) = t.alignment {
+                        rich = rich.alignment(ratatui::layout::Alignment::from(a));
+                    }
+                    rich
+                }
+            };
+            let mut p = ratatui::widgets::Paragraph::new(ratatui_text);
             if let Some(s) = style {
                 p = p.style(ratatui::style::Style::from(s.clone()));
             }
