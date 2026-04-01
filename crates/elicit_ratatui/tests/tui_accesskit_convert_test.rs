@@ -183,7 +183,7 @@ fn accesskit_label_to_paragraph() {
     let tui_node = tree_update_to_tui_node(&update).unwrap();
     match tui_node {
         TuiNode::Widget { widget } => match *widget {
-            WidgetJson::Paragraph { text, .. } => assert_eq!(text, "Hello"),
+            WidgetJson::Paragraph { text, .. } => assert_eq!(text.to_plain_string(), "Hello"),
             other => panic!("Expected Paragraph, got: {other:?}"),
         },
         other => panic!("Expected Widget, got: {other:?}"),
@@ -236,7 +236,7 @@ fn paragraph_roundtrip() {
 
     match roundtripped {
         TuiNode::Widget { widget } => match *widget {
-            WidgetJson::Paragraph { text, .. } => assert_eq!(text, "Round trip"),
+            WidgetJson::Paragraph { text, .. } => assert_eq!(text.to_plain_string(), "Round trip"),
             other => panic!("Expected Paragraph, got: {other:?}"),
         },
         other => panic!("Expected Widget, got: {other:?}"),

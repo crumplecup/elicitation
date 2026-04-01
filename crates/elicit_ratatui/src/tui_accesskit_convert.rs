@@ -92,7 +92,7 @@ fn widget_to_accesskit(widget: &WidgetJson) -> Node {
             ..
         } => {
             let mut n = Node::new(Role::Label);
-            n.set_value(text.as_str());
+            n.set_value(text.to_plain_string().as_str());
             apply_block_label(&mut n, block.as_ref());
             n
         }
@@ -215,7 +215,7 @@ fn convert_accesskit_node(
     let Some(node) = node_map.get(&node_id) else {
         return TuiNode::Widget {
             widget: Box::new(WidgetJson::Paragraph {
-                text: String::new(),
+                text: String::new().into(),
                 style: None,
                 wrap: true,
                 scroll: None,
@@ -258,7 +258,7 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
     let role = node.role();
     let label = node.label().unwrap_or("").to_string();
     let value = node.value().unwrap_or("").to_string();
-    let text = if !value.is_empty() {
+    let text_str = if !value.is_empty() {
         value.clone()
     } else {
         label.clone()
@@ -282,7 +282,7 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
     match role {
         Role::Label | Role::Paragraph | Role::TextRun => {
             WidgetJson::Paragraph {
-                text,
+                text: text_str.into(),
                 style: None,
                 wrap: true,
                 scroll: None,
@@ -292,7 +292,7 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
         }
         Role::Heading | Role::Strong | Role::Emphasis | Role::Code | Role::Mark => {
             WidgetJson::Paragraph {
-                text,
+                text: text_str.into(),
                 style: None,
                 wrap: true,
                 scroll: None,
@@ -393,7 +393,7 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
         },
         // Fallback: Paragraph with text
         _ => WidgetJson::Paragraph {
-            text,
+            text: text_str.into(),
             style: None,
             wrap: true,
             scroll: None,

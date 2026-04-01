@@ -5,7 +5,7 @@
 
 use crate::serde_types::{
     AxisJson, BarGroupJson, BlockJson, ConstraintJson, DatasetJson, LegendPositionJson,
-    ListStateJson, RowJson, ScrollbarOrientationJson, ScrollbarStateJson, StyleJson,
+    ListStateJson, ParagraphText, RowJson, ScrollbarOrientationJson, ScrollbarStateJson, StyleJson,
     TableStateJson, WidgetJson,
 };
 use rmcp::ErrorData;
@@ -78,8 +78,11 @@ async fn widget_block(p: BlockParams) -> Result<CallToolResult, ErrorData> {
 /// Parameters for [`widget_paragraph`].
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct ParagraphParams {
-    /// Display text.
-    pub text: String,
+    /// Display text — either a plain string or a richly-styled `TextJson` object.
+    ///
+    /// Plain: `"Hello world"`
+    /// Rich: `{"lines":[{"spans":[{"content":"host","style":{"fg":"Cyan"}},{"content":": msg"}]}]}`
+    pub text: ParagraphText,
     /// Text style.
     #[serde(default)]
     pub style: Option<StyleJson>,

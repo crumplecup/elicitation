@@ -19,15 +19,8 @@ use crate::serde_types::TuiNode;
 ///
 /// ```rust,no_run
 /// use elicit_ratatui::RatatuiBackend;
-/// use elicit_ui::{Layout, Viewport};
-///
-/// let layout = Layout::from_update(/* ... */);
-/// let verified = layout.verify_a(Viewport::new(80, 24)).unwrap();
 ///
 /// let backend = RatatuiBackend::new();
-/// let (rendered, stats) = verified.render(&backend);
-///
-/// // Access the TuiNode tree for terminal rendering
 /// let tui_tree = backend.last_tui_tree();
 /// ```
 pub struct RatatuiBackend {

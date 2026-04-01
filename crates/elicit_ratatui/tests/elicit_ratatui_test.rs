@@ -5,7 +5,7 @@ use elicit_ratatui::{
     BorderTypeJson, BordersJson, CellJson, ChartParams, ColorJson, ConstraintJson, DatasetJson,
     DirectionJson, EventJson, GaugeParams, GraphTypeJson, KeyEventJson, LegendPositionJson,
     LineGaugeParams, LineJson, ListParams, ListStateJson, MarginJson, MarkerJson, ModifierJson,
-    MouseEventJson, PaddingJson, ParagraphParams, RowJson, ScrollbarOrientationJson,
+    MouseEventJson, PaddingJson, ParagraphParams, ParagraphText, RowJson, ScrollbarOrientationJson,
     ScrollbarParams, ScrollbarStateJson, SpanJson, SparklineParams, StyleJson, TableParams,
     TableStateJson, TabsParams, TextJson, TuiNode, WidgetJson,
 };
@@ -456,7 +456,7 @@ fn test_widget_block_serde() {
 #[test]
 fn test_widget_paragraph_serde() {
     let w = WidgetJson::Paragraph {
-        text: "Hello world".to_string(),
+        text: "Hello world".into(),
         style: None,
         wrap: true,
         scroll: Some((5, 0)),
@@ -733,7 +733,7 @@ fn test_event_focus_variants_serde() {
 #[test]
 fn test_event_paste_serde() {
     let e = EventJson::Paste {
-        text: "pasted text".to_string(),
+        text: "pasted text".into(),
     };
     let json = serde_json::to_string(&e).expect("serialize");
     let back: EventJson = serde_json::from_str(&json).expect("deserialize");
@@ -766,7 +766,7 @@ fn test_tui_node_layout_with_children() {
         children: vec![
             TuiNode::Widget {
                 widget: Box::new(WidgetJson::Paragraph {
-                    text: "Top half".to_string(),
+                    text: "Top half".into(),
                     style: None,
                     wrap: false,
                     scroll: None,
@@ -776,7 +776,7 @@ fn test_tui_node_layout_with_children() {
             },
             TuiNode::Widget {
                 widget: Box::new(WidgetJson::Paragraph {
-                    text: "Bottom half".to_string(),
+                    text: "Bottom half".into(),
                     style: None,
                     wrap: false,
                     scroll: None,
@@ -832,7 +832,7 @@ fn test_tui_node_nested_layouts() {
                     },
                     TuiNode::Widget {
                         widget: Box::new(WidgetJson::Paragraph {
-                            text: "Content".to_string(),
+                            text: "Content".into(),
                             style: None,
                             wrap: true,
                             scroll: None,
@@ -1052,7 +1052,7 @@ fn test_block_params_minimal_json() {
 fn test_paragraph_params_from_json() {
     let json = r#"{"text": "Hello", "wrap": true, "alignment": "Center"}"#;
     let params: ParagraphParams = serde_json::from_str(json).unwrap();
-    assert_eq!(params.text, "Hello");
+    assert_eq!(params.text.to_plain_string(), "Hello");
     assert!(params.wrap);
     assert_eq!(params.alignment, Some("Center".to_string()));
 }
@@ -1189,4 +1189,119 @@ fn test_scrollbar_params_all_symbols() {
     assert_eq!(params.track_symbol, Some("─".to_string()));
     assert_eq!(params.begin_symbol, Some("◄".to_string()));
     assert_eq!(params.end_symbol, Some("►".to_string()));
+}
+
+// ---------------------------------------------------------------------------
+// ParagraphText — plain and rich text
+// ---------------------------------------------------------------------------
+
+#[test]
+fn paragraph_text_plain_roundtrip() {
+    let w = WidgetJson::Paragraph {
+        text: "hello".into(),
+        style: None,
+        wrap: false,
+        scroll: None,
+        alignment: None,
+        block: None,
+    };
+    let json = serde_json::to_string(&w).unwrap();
+    // Plain strings serialize as JSON strings, not objects.
+    assert!(json.contains(r#""text":"hello""#), "got: {json}");
+    let back: WidgetJson = serde_json::from_str(&json).unwrap();
+    assert_eq!(w, back);
+}
+
+#[test]
+fn paragraph_text_rich_serde() {
+    let rich = TextJson {
+        lines: vec![LineJson {
+            spans: vec![
+                SpanJson {
+                    content: "host".into(),
+                    style: Some(StyleJson {
+                        fg: Some(ColorJson::Cyan),
+                        bg: None,
+                        modifiers: vec![],
+                    }),
+                },
+                SpanJson {
+                    content: ": message".into(),
+                    style: None,
+                },
+            ],
+            style: None,
+            alignment: None,
+        }],
+        style: None,
+        alignment: None,
+    };
+    let w = WidgetJson::Paragraph {
+        text: ParagraphText::Rich(rich.clone()),
+        style: None,
+        wrap: true,
+        scroll: None,
+        alignment: None,
+        block: None,
+    };
+    let json = serde_json::to_string(&w).unwrap();
+    let back: WidgetJson = serde_json::from_str(&json).unwrap();
+    assert_eq!(w, back);
+}
+
+#[test]
+fn paragraph_text_to_plain_string() {
+    let plain = ParagraphText::Plain("hello".into());
+    assert_eq!(plain.to_plain_string(), "hello");
+
+    let rich = ParagraphText::Rich(TextJson {
+        lines: vec![
+            LineJson {
+                spans: vec![
+                    SpanJson { content: "foo".into(), style: None },
+                    SpanJson { content: "bar".into(), style: None },
+                ],
+                style: None,
+                alignment: None,
+            },
+            LineJson {
+                spans: vec![SpanJson { content: "baz".into(), style: None }],
+                style: None,
+                alignment: None,
+            },
+        ],
+        style: None,
+        alignment: None,
+    });
+    assert_eq!(rich.to_plain_string(), "foobar\nbaz");
+}
+
+#[test]
+fn paragraph_params_accepts_rich_text_json() {
+    // ColorJson is internally tagged: {"type": "Cyan"}, not "Cyan"
+    let json = r#"{
+        "text": {
+            "lines": [{
+                "spans": [
+                    {"content": "cyan", "style": {"fg": {"type": "Cyan"}}},
+                    {"content": " white"}
+                ]
+            }]
+        },
+        "wrap": true
+    }"#;
+    let params: ParagraphParams = serde_json::from_str(json).unwrap();
+    assert_eq!(params.text.to_plain_string(), "cyan white");
+    assert!(params.wrap);
+}
+
+#[test]
+fn debug_text_json_deser() {
+    // ColorJson is internally tagged: use {"type": "Cyan"} not "Cyan"
+    let text_json = r#"{"lines":[{"spans":[{"content":"cyan","style":{"fg":{"type":"Cyan"}}},{"content":" white"}]}]}"#;
+    let r: Result<TextJson, _> = serde_json::from_str(text_json);
+    assert!(r.is_ok(), "TextJson deser failed: {:?}", r.err());
+
+    let pt: Result<ParagraphText, _> = serde_json::from_str(text_json);
+    assert!(pt.is_ok(), "ParagraphText deser failed: {:?}", pt.err());
 }

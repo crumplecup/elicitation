@@ -531,6 +531,96 @@ pub struct TextJson {
 }
 
 // ---------------------------------------------------------------------------
+// ParagraphText — plain string or rich TextJson (backward-compatible)
+// ---------------------------------------------------------------------------
+
+/// Paragraph text content: either a plain string or a richly-styled [`TextJson`].
+///
+/// Serializes as a JSON string for plain text, or a JSON object for rich text.
+/// Existing JSON using a plain string continues to work unchanged, while
+/// callers that need per-span coloring pass a `TextJson` object.
+///
+/// # Examples
+/// ```json
+/// "Hello world"                                                            // plain
+/// {"lines":[{"spans":[{"content":"host","style":{"fg":{"type":"Cyan"}}}]}]}  // rich
+/// ```
+///
+/// # Note on serde
+/// Uses hand-written serde because `#[serde(untagged)]` cannot deserialize
+/// string-form enum variants (like `ColorJson::Cyan`) through its internal
+/// `Content<'de>` buffer when nested inside an untagged union.
+#[derive(Debug, Clone, PartialEq, Eq, JsonSchema, ToCodeLiteral)]
+pub enum ParagraphText {
+    /// Plain unstyled text.
+    Plain(String),
+    /// Multi-line text with per-span styling.
+    Rich(TextJson),
+}
+
+impl serde::Serialize for ParagraphText {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            Self::Plain(s) => s.serialize(serializer),
+            Self::Rich(t) => t.serialize(serializer),
+        }
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for ParagraphText {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = serde_json::Value::deserialize(deserializer)?;
+        match value {
+            serde_json::Value::String(s) => Ok(Self::Plain(s)),
+            serde_json::Value::Object(_) => serde_json::from_value::<TextJson>(value)
+                .map(Self::Rich)
+                .map_err(serde::de::Error::custom),
+            other => Err(serde::de::Error::custom(format!(
+                "expected string or object for ParagraphText, got {}",
+                other
+            ))),
+        }
+    }
+}
+
+impl ParagraphText {
+    /// Returns the full plain-text content by concatenating all span content.
+    ///
+    /// For [`ParagraphText::Plain`] this is a clone; for
+    /// [`ParagraphText::Rich`] span content is joined with newlines between
+    /// lines.
+    pub fn to_plain_string(&self) -> String {
+        match self {
+            Self::Plain(s) => s.clone(),
+            Self::Rich(t) => t
+                .lines
+                .iter()
+                .map(|l| l.spans.iter().map(|s| s.content.as_str()).collect::<String>())
+                .collect::<Vec<_>>()
+                .join("\n"),
+        }
+    }
+}
+
+impl From<String> for ParagraphText {
+    fn from(s: String) -> Self {
+        Self::Plain(s)
+    }
+}
+
+impl From<&str> for ParagraphText {
+    fn from(s: &str) -> Self {
+        Self::Plain(s.to_string())
+    }
+}
+
+impl From<TextJson> for ParagraphText {
+    fn from(t: TextJson) -> Self {
+        Self::Rich(t)
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Widget enum (tagged union of all widget descriptions)
 // ---------------------------------------------------------------------------
 
@@ -546,8 +636,8 @@ pub enum WidgetJson {
     },
     /// A text paragraph.
     Paragraph {
-        /// Display text.
-        text: String,
+        /// Display text — either a plain string or a richly-styled [`ParagraphText`].
+        text: ParagraphText,
         /// Text style.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         style: Option<StyleJson>,

@@ -149,7 +149,7 @@ pub use serde_types::{
     AlignmentJson, AxisJson, BarGroupJson, BarJson, BlockJson, BorderTypeJson, BordersJson,
     CellJson, ColorJson, ConstraintJson, DatasetJson, DirectionJson, EventJson, GraphTypeJson,
     KeyEventJson, LegendPositionJson, LineJson, ListStateJson, MarginJson, MarkerJson,
-    ModifierJson, MouseEventJson, PaddingJson, RowJson, ScrollbarOrientationJson,
+    ModifierJson, MouseEventJson, PaddingJson, ParagraphText, RowJson, ScrollbarOrientationJson,
     ScrollbarStateJson, SpanJson, StyleJson, TableStateJson, TextJson, TuiNode, WidgetJson,
 };
 pub use tui_accesskit_convert::{tree_update_to_tui_node, tui_node_to_tree_update};
