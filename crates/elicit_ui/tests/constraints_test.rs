@@ -21,12 +21,6 @@ fn make_node(role: Role, label: &str, bounds: Option<(f64, f64, f64, f64)>) -> N
     node
 }
 
-fn make_tree(nodes: Vec<(NodeId, Node)>) -> (HashMap<NodeId, Node>, NodeId) {
-    let root_id = nodes[0].0;
-    let map: HashMap<NodeId, Node> = nodes.into_iter().collect();
-    (map, root_id)
-}
-
 fn make_ctx(nodes: &HashMap<NodeId, Node>, viewport: Viewport) -> ConstraintContext<'_> {
     ConstraintContext { nodes, viewport }
 }

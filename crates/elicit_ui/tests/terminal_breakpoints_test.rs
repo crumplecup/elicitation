@@ -53,7 +53,11 @@ fn standard_set_has_seven_breakpoints() {
 #[test]
 fn standard_set_required_count() {
     let set = TerminalBreakpointSet::standard();
-    assert_eq!(set.required().len(), 5, "VT100, small, medium, large, ultrawide");
+    assert_eq!(
+        set.required().len(),
+        5,
+        "VT100, small, medium, large, ultrawide"
+    );
 }
 
 #[test]
@@ -78,8 +82,12 @@ fn breakpoint_to_viewport() {
 
 #[test]
 fn custom_breakpoint_added() {
-    let set = TerminalBreakpointSet::standard()
-        .with_breakpoint(TerminalBreakpoint::new("custom", 256, 80, BreakpointTier::Advisory));
+    let set = TerminalBreakpointSet::standard().with_breakpoint(TerminalBreakpoint::new(
+        "custom",
+        256,
+        80,
+        BreakpointTier::Advisory,
+    ));
     assert_eq!(set.breakpoints().len(), 8);
 }
 
@@ -112,7 +120,10 @@ fn large_tree_fails_small_viewports() {
     let report = set.verify_all(root_id, &nodes, &constraint_set);
 
     // micro is expected-fail, tiny is advisory → both should not block validity
-    assert!(report.is_valid(), "Failures only at expected-fail and advisory tiers");
+    assert!(
+        report.is_valid(),
+        "Failures only at expected-fail and advisory tiers"
+    );
 
     // micro (40×12): tree 90×25 overflows → expected-fail
     let micro = &report.results[0];
@@ -124,7 +135,12 @@ fn large_tree_fails_small_viewports() {
 
     // VT100+ should all pass
     for r in &report.results[2..] {
-        assert_eq!(r.outcome, BreakpointOutcome::Pass, "{} should pass", r.breakpoint.name);
+        assert_eq!(
+            r.outcome,
+            BreakpointOutcome::Pass,
+            "{} should pass",
+            r.breakpoint.name
+        );
     }
 }
 
@@ -139,8 +155,7 @@ fn tree_too_large_for_vt100_fails() {
     let report = set.verify_all(root_id, &nodes, &constraint_set);
 
     assert!(!report.is_valid(), "100×30 overflows VT100 (required)");
-    assert!(report.failures().len() >= 1);
-
+    assert!(!report.failures().is_empty());
     let vt100 = &report.results[2];
     assert_eq!(vt100.breakpoint.name, "VT100");
     assert_eq!(vt100.outcome, BreakpointOutcome::Fail);
@@ -154,7 +169,11 @@ fn min_readable_at_breakpoints() {
     let child_id = NodeId::from(1u64);
 
     // Root fills viewport, child pane is 8×2 (below 10×3 min)
-    let root = make_node(Role::Window, Some(rect(0.0, 0.0, 80.0, 24.0)), vec![child_id]);
+    let root = make_node(
+        Role::Window,
+        Some(rect(0.0, 0.0, 80.0, 24.0)),
+        vec![child_id],
+    );
     let child = make_node(Role::Group, Some(rect(0.0, 0.0, 8.0, 2.0)), vec![]);
 
     let mut nodes = HashMap::new();
@@ -170,7 +189,7 @@ fn min_readable_at_breakpoints() {
     // MinReadableSize is viewport-independent (checks absolute bounds)
     // so it fails at every breakpoint
     assert!(!report.is_valid());
-    assert!(report.failures().len() >= 1);
+    assert!(!report.failures().is_empty());
 }
 
 // ─── BreakpointReport summary ───

@@ -1,7 +1,7 @@
 //! Tests for color contrast and CSS unit modules.
 
 use elicit_ui::{
-    Breakpoint, BreakpointSet, CssLength, SrgbColor, TextSize, contrast_ratio, is_zoom_invariant,
+    Breakpoint, BreakpointSet, CssLength, SrgbColor, contrast_ratio, is_zoom_invariant,
 };
 
 // ─── Color contrast ───────────────────────────────────────────────────

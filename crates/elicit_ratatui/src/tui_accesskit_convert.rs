@@ -5,10 +5,8 @@
 //! descriptions into the shared AccessKit IR for verification and
 //! cross-frontend translation.
 
+use crate::serde_types::{BlockJson, BordersJson, DirectionJson, TuiNode, WidgetJson};
 use accesskit::{Node, NodeId, Role, Tree, TreeId, TreeUpdate};
-use crate::serde_types::{
-    BlockJson, BordersJson, DirectionJson, TuiNode, WidgetJson,
-};
 
 /// Convert a `TuiNode` tree into an AccessKit `TreeUpdate`.
 ///
@@ -86,19 +84,13 @@ fn convert_node(tui_node: &TuiNode, nodes: &mut Vec<(NodeId, Node)>, next_id: &m
 
 fn widget_to_accesskit(widget: &WidgetJson) -> Node {
     match widget {
-        WidgetJson::Paragraph {
-            text,
-            block,
-            ..
-        } => {
+        WidgetJson::Paragraph { text, block, .. } => {
             let mut n = Node::new(Role::Label);
             n.set_value(text.to_plain_string().as_str());
             apply_block_label(&mut n, block.as_ref());
             n
         }
-        WidgetJson::List {
-            items, block, ..
-        } => {
+        WidgetJson::List { items, block, .. } => {
             let mut n = Node::new(Role::List);
             // Encode items as the value (comma-separated for round-trip)
             if !items.is_empty() {
@@ -112,16 +104,17 @@ fn widget_to_accesskit(widget: &WidgetJson) -> Node {
             apply_block_label(&mut n, Some(block));
             n
         }
-        WidgetJson::Table {
-            rows, block, ..
-        } => {
+        WidgetJson::Table { rows, block, .. } => {
             let mut n = Node::new(Role::Table);
             n.set_value(format!("{} rows", rows.len()).as_str());
             apply_block_label(&mut n, block.as_ref());
             n
         }
         WidgetJson::Gauge {
-            ratio, label, block, ..
+            ratio,
+            label,
+            block,
+            ..
         } => {
             let mut n = Node::new(Role::ProgressIndicator);
             n.set_numeric_value(*ratio * 100.0);
@@ -133,7 +126,10 @@ fn widget_to_accesskit(widget: &WidgetJson) -> Node {
             n
         }
         WidgetJson::LineGauge {
-            ratio, label, block, ..
+            ratio,
+            label,
+            block,
+            ..
         } => {
             let mut n = Node::new(Role::ProgressIndicator);
             n.set_numeric_value(*ratio * 100.0);
@@ -199,10 +195,10 @@ fn widget_to_accesskit(widget: &WidgetJson) -> Node {
 }
 
 fn apply_block_label(node: &mut Node, block: Option<&BlockJson>) {
-    if let Some(b) = block {
-        if let Some(ref title) = b.title {
-            node.set_label(title.as_str());
-        }
+    if let Some(b) = block
+        && let Some(ref title) = b.title
+    {
+        node.set_label(title.as_str());
     }
 }
 
@@ -280,16 +276,14 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
     };
 
     match role {
-        Role::Label | Role::Paragraph | Role::TextRun => {
-            WidgetJson::Paragraph {
-                text: text_str.into(),
-                style: None,
-                wrap: true,
-                scroll: None,
-                alignment: None,
-                block: block_from_label(&label),
-            }
-        }
+        Role::Label | Role::Paragraph | Role::TextRun => WidgetJson::Paragraph {
+            text: text_str.into(),
+            style: None,
+            wrap: true,
+            scroll: None,
+            alignment: None,
+            block: block_from_label(&label),
+        },
         Role::Heading | Role::Strong | Role::Emphasis | Role::Code | Role::Mark => {
             WidgetJson::Paragraph {
                 text: text_str.into(),
@@ -318,11 +312,7 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
         Role::Group | Role::Section | Role::Region | Role::GenericContainer | Role::Form => {
             WidgetJson::Block {
                 block: BlockJson {
-                    title: if label.is_empty() {
-                        None
-                    } else {
-                        Some(label)
-                    },
+                    title: if label.is_empty() { None } else { Some(label) },
                     borders: BordersJson::None,
                     border_type: None,
                     border_style: None,
