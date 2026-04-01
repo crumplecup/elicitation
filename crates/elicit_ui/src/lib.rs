@@ -89,9 +89,9 @@ pub use color_contrast::{
 };
 pub use constraints::{
     Constraint, ConstraintContext, ConstraintSet, ConstraintSetBuilder, ConstraintVerification,
-    GridAlignment, HasLabelConstraint, KeyboardAccessibleConstraint, MinSpacing,
+    GridAlignment, HasLabelConstraint, KeyboardAccessibleConstraint, MinReadableSize, MinSpacing,
     MinTouchTargetConstraint, NoOverflowConstraint, Reflow320, ResizeText200, SpecReference,
-    TextSpacing, ValidRoleConstraint, Violation, WcagLevel,
+    TerminalAccessible, TerminalNoOverflow, TextSpacing, ValidRoleConstraint, Violation, WcagLevel,
 };
 pub use contracts::{
     AccessibleAA, HasLabel, KeyboardAccessible, MinTargetSize, NoOverflow, ValidRole,

@@ -6,9 +6,11 @@
 //! - **Advisory**: Warnings, not errors (e.g., design system heuristics)
 
 mod spatial;
+mod terminal;
 mod wcag;
 
 pub use spatial::{GridAlignment, MinSpacing, Reflow320, ResizeText200, TextSpacing};
+pub use terminal::{MinReadableSize, TerminalAccessible, TerminalNoOverflow};
 pub use wcag::{
     HasLabelConstraint, KeyboardAccessibleConstraint, MinTouchTargetConstraint,
     NoOverflowConstraint, ValidRoleConstraint,
@@ -165,6 +167,36 @@ pub enum Violation {
         position: (f64, f64),
         /// Grid step size.
         grid_step: f64,
+    },
+    /// Element overflows terminal cell viewport.
+    TerminalOverflow {
+        /// Element that overflows.
+        element: ElementId,
+        /// Element column position.
+        element_col: i32,
+        /// Element row position.
+        element_row: i32,
+        /// Element width in columns.
+        element_cols: u32,
+        /// Element height in rows.
+        element_rows: u32,
+        /// Viewport width in columns.
+        viewport_cols: u32,
+        /// Viewport height in rows.
+        viewport_rows: u32,
+    },
+    /// Container pane below minimum readable dimensions.
+    BelowMinReadableSize {
+        /// Element that is too small.
+        element: ElementId,
+        /// Actual width in columns.
+        actual_cols: u32,
+        /// Actual height in rows.
+        actual_rows: u32,
+        /// Minimum columns required.
+        min_cols: u32,
+        /// Minimum rows required.
+        min_rows: u32,
     },
 }
 
