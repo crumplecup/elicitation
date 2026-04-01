@@ -1,0 +1,98 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 280 0 285 30 *)
+
+let%span sratatui_types = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 286 19 286 75
+let%span sratatui_types'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 287 12 287 40
+let%span sratatui_types'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 288 12 288 41
+let%span sratatui_types'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 289 12 289 39
+let%span sratatui_types'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 290 12 290 42
+let%span sratatui_types'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 291 4 291 46
+let%span sratatui_types'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 277 11 277 15
+let%span sratatui_types'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 278 10 279 72
+let%span sratatui_types'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 94 18 94 46
+let%span sratatui_types'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 95 18 95 48
+let%span sratatui_types'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 96 18 96 44
+let%span sratatui_types'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 97 18 97 50
+let%span sratatui_types'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 120 10 120 36
+let%span sratatui_types'12 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 127 10 127 37
+let%span sratatui_types'13 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 134 10 134 35
+let%span sratatui_types'14 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 141 10 141 38
+
+use creusot.int.UInt16
+use creusot.prelude.Any
+
+type t_Padding = { left: UInt16.t; right: UInt16.t; top: UInt16.t; bottom: UInt16.t }
+
+function padding_left [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 43 0 43 57] (_p: t_Padding) : UInt16.t
+
+function padding_right [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 50 0 50 58] (_p: t_Padding) : UInt16.t
+
+function padding_top [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 57 0 57 56] (_p: t_Padding) : UInt16.t
+
+function padding_bottom [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 64 0 64 59] (_p: t_Padding) : UInt16.t
+
+let rec new (left'0: UInt16.t) (right'0: UInt16.t) (top'0: UInt16.t) (bottom'0: UInt16.t) (return (x: t_Padding)) = any
+  [ return (result: t_Padding) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new ensures #0] [%#sratatui_types'7] padding_left result
+      = left'0)
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sratatui_types'8] padding_right result = right'0)
+    /\ ([@stop_split] [@expl:new ensures #2] [%#sratatui_types'9] padding_top result = top'0)
+    /\ ([@stop_split] [@expl:new ensures #3] [%#sratatui_types'10] padding_bottom result = bottom'0)}
+    (! return {result}) ]
+
+let rec read_padding_left (p: t_Padding) (return (x: UInt16.t)) = any
+  [ return (result: UInt16.t) -> {[@stop_split] [@expl:read_padding_left ensures] [%#sratatui_types'11] padding_left p
+    = result}
+    (! return {result}) ]
+
+let rec read_padding_right (p: t_Padding) (return (x: UInt16.t)) = any
+  [ return (result: UInt16.t) -> {[@stop_split] [@expl:read_padding_right ensures] [%#sratatui_types'12] padding_right p
+    = result}
+    (! return {result}) ]
+
+let rec read_padding_top (p: t_Padding) (return (x: UInt16.t)) = any
+  [ return (result: UInt16.t) -> {[@stop_split] [@expl:read_padding_top ensures] [%#sratatui_types'13] padding_top p
+    = result}
+    (! return {result}) ]
+
+let rec read_padding_bottom (p: t_Padding) (return (x: UInt16.t)) = any
+  [ return (result: UInt16.t) ->
+  {[@stop_split] [@expl:read_padding_bottom ensures] [%#sratatui_types'14] padding_bottom p = result}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_ratatui_padding_roundtrip
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 280 0 285 30] (left'0: UInt16.t)
+  (right'0: UInt16.t) (top'0: UInt16.t) (bottom'0: UInt16.t) (return (x: t_Padding)) = (! bb0
+  [ bb0 = s0
+    [ s0 = new [%#sratatui_types] {left'0} {right'0} {top'0} {bottom'0} (fun (_x: t_Padding) -> [ &original <- _x ] s1)
+    | s1 = [ &_18 <- original ] s2
+    | s2 = read_padding_left [%#sratatui_types'0] {_18} (fun (_x: UInt16.t) -> [ &l <- _x ] s3)
+    | s3 = [ &_21 <- original ] s4
+    | s4 = read_padding_right [%#sratatui_types'1] {_21} (fun (_x: UInt16.t) -> [ &r <- _x ] s5)
+    | s5 = [ &_24 <- original ] s6
+    | s6 = read_padding_top [%#sratatui_types'2] {_24} (fun (_x: UInt16.t) -> [ &t <- _x ] s7)
+    | s7 = [ &_27 <- original ] s8
+    | s8 = read_padding_bottom [%#sratatui_types'3] {_27} (fun (_x: UInt16.t) -> [ &b <- _x ] s9)
+    | s9 = new [%#sratatui_types'4] {l} {r} {t} {b} (fun (_x: t_Padding) -> [ &_ret <- _x ] s10)
+    | s10 = return {_ret} ] ]
+  [ & _ret: t_Padding = Any.any_l ()
+  | & left'0: UInt16.t = left'0
+  | & right'0: UInt16.t = right'0
+  | & top'0: UInt16.t = top'0
+  | & bottom'0: UInt16.t = bottom'0
+  | & original: t_Padding = Any.any_l ()
+  | & l: UInt16.t = Any.any_l ()
+  | & _18: t_Padding = Any.any_l ()
+  | & r: UInt16.t = Any.any_l ()
+  | & _21: t_Padding = Any.any_l ()
+  | & t: UInt16.t = Any.any_l ()
+  | & _24: t_Padding = Any.any_l ()
+  | & b: UInt16.t = Any.any_l ()
+  | & _27: t_Padding = Any.any_l () ])
+  [ return (result: t_Padding) ->
+  {[@stop_split] [@expl:verify_ratatui_padding_roundtrip ensures] [%#sratatui_types'6] padding_left result = left'0
+    /\ padding_right result = right'0 /\ padding_top result = top'0 /\ padding_bottom result = bottom'0}
+    (! return {result}) ]

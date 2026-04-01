@@ -1,0 +1,54 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 298 0 298 69 *)
+
+let%span sratatui_types = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 299 35 299 36
+let%span sratatui_types'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 299 38 299 39
+let%span sratatui_types'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 299 41 299 42
+let%span sratatui_types'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 299 44 299 45
+let%span sratatui_types'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 299 4 299 46
+let%span sratatui_types'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 295 11 295 15
+let%span sratatui_types'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 296 10 297 67
+let%span sratatui_types'6 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 94 18 94 46
+let%span sratatui_types'7 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 95 18 95 48
+let%span sratatui_types'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 96 18 96 44
+let%span sratatui_types'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 97 18 97 50
+
+use creusot.int.UInt16
+use creusot.prelude.Any
+
+type t_Padding = { left: UInt16.t; right: UInt16.t; top: UInt16.t; bottom: UInt16.t }
+
+function padding_left [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 43 0 43 57] (_p: t_Padding) : UInt16.t
+
+function padding_right [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 50 0 50 58] (_p: t_Padding) : UInt16.t
+
+function padding_top [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 57 0 57 56] (_p: t_Padding) : UInt16.t
+
+function padding_bottom [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 64 0 64 59] (_p: t_Padding) : UInt16.t
+
+let rec new (left'0: UInt16.t) (right'0: UInt16.t) (top'0: UInt16.t) (bottom'0: UInt16.t) (return (x: t_Padding)) = any
+  [ return (result: t_Padding) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new ensures #0] [%#sratatui_types'6] padding_left result
+      = left'0)
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sratatui_types'7] padding_right result = right'0)
+    /\ ([@stop_split] [@expl:new ensures #2] [%#sratatui_types'8] padding_top result = top'0)
+    /\ ([@stop_split] [@expl:new ensures #3] [%#sratatui_types'9] padding_bottom result = bottom'0)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_ratatui_padding_concrete
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 298 0 298 69]
+  (return (x: t_Padding)) = (! bb0
+  [ bb0 = s0
+    [ s0 = new [%#sratatui_types'3] {[%#sratatui_types] (1: UInt16.t)} {[%#sratatui_types'0] (2: UInt16.t)}
+        {[%#sratatui_types'1] (3: UInt16.t)} {[%#sratatui_types'2] (4: UInt16.t)}
+        (fun (_x: t_Padding) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ] [ & _ret: t_Padding = Any.any_l () ])
+  [ return (result: t_Padding) ->
+  {[@stop_split] [@expl:verify_ratatui_padding_concrete ensures] [%#sratatui_types'5] UInt16.t'int (padding_left result)
+      = 1
+    /\ UInt16.t'int (padding_right result) = 2
+    /\ UInt16.t'int (padding_top result) = 3 /\ UInt16.t'int (padding_bottom result) = 4}
+    (! return {result}) ]

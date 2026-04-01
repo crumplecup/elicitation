@@ -1,0 +1,42 @@
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 320 0 320 66 *)
+
+let%span sratatui_types = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 321 33 321 34
+let%span sratatui_types'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 321 36 321 37
+let%span sratatui_types'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 321 4 321 38
+let%span sratatui_types'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 318 11 318 15
+let%span sratatui_types'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 319 10 319 74
+let%span sratatui_types'4 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 104 18 104 57
+let%span sratatui_types'5 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 105 18 105 53
+
+use creusot.int.UInt16
+use creusot.prelude.Any
+
+type t_Margin = { horizontal: UInt16.t; vertical: UInt16.t }
+
+function margin_horizontal [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 71 0 71 60] (_m: t_Margin) : UInt16.t
+
+function margin_vertical [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 78 0 78 58] (_m: t_Margin) : UInt16.t
+
+let rec new (horizontal'0: UInt16.t) (vertical'0: UInt16.t) (return (x: t_Margin)) = any
+  [ return (result: t_Margin) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new ensures #0] [%#sratatui_types'4] margin_horizontal result
+      = horizontal'0)
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sratatui_types'5] margin_vertical result = vertical'0)}
+    (! return {result}) ]
+
+meta "compute_max_steps" 1000000
+
+meta "select_lsinst" "all"
+
+let rec verify_ratatui_margin_concrete
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/ratatui_types.rs" 320 0 320 66]
+  (return (x: t_Margin)) = (! bb0
+  [ bb0 = s0
+    [ s0 = new [%#sratatui_types'1] {[%#sratatui_types] (3: UInt16.t)} {[%#sratatui_types'0] (7: UInt16.t)}
+        (fun (_x: t_Margin) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ] [ & _ret: t_Margin = Any.any_l () ])
+  [ return (result: t_Margin) ->
+  {[@stop_split] [@expl:verify_ratatui_margin_concrete ensures] [%#sratatui_types'3] UInt16.t'int (margin_horizontal result)
+      = 3
+    /\ UInt16.t'int (margin_vertical result) = 7}
+    (! return {result}) ]

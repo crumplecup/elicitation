@@ -1,0 +1,16 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_new": { "prover": "cvc5@1.3.1", "time": 0.015 },
+      "vc_read_padding_bottom": { "prover": "cvc5@1.3.1", "time": 0.015 },
+      "vc_read_padding_left": { "prover": "cvc5@1.3.1", "time": 0.014 },
+      "vc_read_padding_right": { "prover": "cvc5@1.3.1", "time": 0.016 },
+      "vc_read_padding_top": { "prover": "cvc5@1.3.1", "time": 0.013 },
+      "vc_verify_ratatui_padding_roundtrip": {
+        "prover": "cvc5@1.3.1",
+        "time": 0.017
+      }
+    }
+  }
+}
