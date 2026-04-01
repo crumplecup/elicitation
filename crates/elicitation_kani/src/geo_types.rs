@@ -18,8 +18,8 @@ fn verify_geo_coord_from_roundtrip() {
     let y: f64 = kani::any();
 
     // Skip NaN (NaN != NaN breaks equality)
-    kani::assume!(x.is_finite());
-    kani::assume!(y.is_finite());
+    kani::assume(x.is_finite());
+    kani::assume(y.is_finite());
 
     let original = geo_types::Coord { x, y };
     let wrapper = elicitation::GeoCoord::from(original);
@@ -35,8 +35,8 @@ fn verify_geo_coord_wrapper_fields() {
     let x: f64 = kani::any();
     let y: f64 = kani::any();
 
-    kani::assume!(x.is_finite());
-    kani::assume!(y.is_finite());
+    kani::assume(x.is_finite());
+    kani::assume(y.is_finite());
 
     let original = geo_types::Coord { x, y };
     let wrapper = elicitation::GeoCoord::from(original);
@@ -55,8 +55,8 @@ fn verify_geo_rect_from_roundtrip() {
     let x2: f64 = kani::any();
     let y2: f64 = kani::any();
 
-    kani::assume!(x1.is_finite() && y1.is_finite());
-    kani::assume!(x2.is_finite() && y2.is_finite());
+    kani::assume(x1.is_finite() && y1.is_finite());
+    kani::assume(x2.is_finite() && y2.is_finite());
 
     let original = geo_types::Rect::new(
         geo_types::Coord { x: x1, y: y1 },
@@ -80,8 +80,8 @@ fn verify_geo_rect_well_formed() {
     let x2: f64 = kani::any();
     let y2: f64 = kani::any();
 
-    kani::assume!(x1.is_finite() && y1.is_finite());
-    kani::assume!(x2.is_finite() && y2.is_finite());
+    kani::assume(x1.is_finite() && y1.is_finite());
+    kani::assume(x2.is_finite() && y2.is_finite());
 
     let rect = geo_types::Rect::new(
         geo_types::Coord { x: x1, y: y1 },
@@ -104,8 +104,8 @@ fn verify_geo_line_from_roundtrip() {
     let x2: f64 = kani::any();
     let y2: f64 = kani::any();
 
-    kani::assume!(x1.is_finite() && y1.is_finite());
-    kani::assume!(x2.is_finite() && y2.is_finite());
+    kani::assume(x1.is_finite() && y1.is_finite());
+    kani::assume(x2.is_finite() && y2.is_finite());
 
     let original = geo_types::Line::new(
         geo_types::Coord { x: x1, y: y1 },
@@ -128,8 +128,8 @@ fn verify_geo_line_wrapper_fields() {
     let x2: f64 = kani::any();
     let y2: f64 = kani::any();
 
-    kani::assume!(x1.is_finite() && y1.is_finite());
-    kani::assume!(x2.is_finite() && y2.is_finite());
+    kani::assume(x1.is_finite() && y1.is_finite());
+    kani::assume(x2.is_finite() && y2.is_finite());
 
     let original = geo_types::Line::new(
         geo_types::Coord { x: x1, y: y1 },

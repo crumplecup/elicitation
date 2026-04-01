@@ -600,7 +600,7 @@ fn verify_typestate_markers_distinct() {
 #[kani::proof]
 fn verify_css_px_resolves_directly() {
     let v: f64 = kani::any();
-    kani::assume!(v.is_finite());
+    kani::assume(v.is_finite());
     let length = elicit_ui::CssLength::Px(v);
     let result = length.to_px(16.0, 16.0, 1920.0, 1080.0, 100.0);
     assert!(result == v, "Px(v) resolves to v");
@@ -612,7 +612,7 @@ fn verify_css_px_resolves_directly() {
 fn verify_css_em_resolution() {
     let v: f64 = kani::any();
     let font_size: f64 = kani::any();
-    kani::assume!(v.is_finite() && font_size.is_finite());
+    kani::assume(v.is_finite() && font_size.is_finite());
     let length = elicit_ui::CssLength::Em(v);
     let result = length.to_px(font_size, 16.0, 1920.0, 1080.0, 100.0);
     assert!(result == v * font_size, "Em(v) resolves to v * font_size");
@@ -624,7 +624,7 @@ fn verify_css_em_resolution() {
 fn verify_css_rem_resolution() {
     let v: f64 = kani::any();
     let root_font_size: f64 = kani::any();
-    kani::assume!(v.is_finite() && root_font_size.is_finite());
+    kani::assume(v.is_finite() && root_font_size.is_finite());
     let length = elicit_ui::CssLength::Rem(v);
     let result = length.to_px(16.0, root_font_size, 1920.0, 1080.0, 100.0);
     assert!(
@@ -639,7 +639,7 @@ fn verify_css_rem_resolution() {
 fn verify_css_vw_resolution() {
     let v: f64 = kani::any();
     let vw: f64 = kani::any();
-    kani::assume!(v.is_finite() && vw.is_finite());
+    kani::assume(v.is_finite() && vw.is_finite());
     let length = elicit_ui::CssLength::Vw(v);
     let result = length.to_px(16.0, 16.0, vw, 1080.0, 100.0);
     assert!(result == v * vw / 100.0, "Vw(v) resolves to v * vw / 100");
@@ -651,7 +651,7 @@ fn verify_css_vw_resolution() {
 fn verify_css_vh_resolution() {
     let v: f64 = kani::any();
     let vh: f64 = kani::any();
-    kani::assume!(v.is_finite() && vh.is_finite());
+    kani::assume(v.is_finite() && vh.is_finite());
     let length = elicit_ui::CssLength::Vh(v);
     let result = length.to_px(16.0, 16.0, 1920.0, vh, 100.0);
     assert!(result == v * vh / 100.0, "Vh(v) resolves to v * vh / 100");
@@ -663,7 +663,7 @@ fn verify_css_vh_resolution() {
 fn verify_css_percent_resolution() {
     let v: f64 = kani::any();
     let cb: f64 = kani::any();
-    kani::assume!(v.is_finite() && cb.is_finite());
+    kani::assume(v.is_finite() && cb.is_finite());
     let length = elicit_ui::CssLength::Percent(v);
     let result = length.to_px(16.0, 16.0, 1920.0, 1080.0, cb);
     assert!(
@@ -677,7 +677,7 @@ fn verify_css_percent_resolution() {
 #[kani::proof]
 fn verify_css_zoom_invariant_classification() {
     let v: f64 = kani::any();
-    kani::assume!(v.is_finite());
+    kani::assume(v.is_finite());
     assert!(!elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Px(v)));
     assert!(elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Em(v)));
     assert!(elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Rem(v)));
@@ -693,7 +693,7 @@ fn verify_css_zoom_invariant_classification() {
 #[kani::proof]
 fn verify_css_length_serde_px_roundtrip() {
     let v: f64 = kani::any();
-    kani::assume!(v.is_finite());
+    kani::assume(v.is_finite());
     let original = elicit_ui::CssLength::Px(v);
     let json = serde_json::to_string(&original).expect("serialize");
     let restored: elicit_ui::CssLength = serde_json::from_str(&json).expect("deserialize");
@@ -708,8 +708,8 @@ fn verify_css_length_serde_px_roundtrip() {
 fn verify_bbox_right_equals_x_plus_width() {
     let x: f64 = kani::any();
     let w: f64 = kani::any();
-    kani::assume!(x.is_finite() && w.is_finite());
-    kani::assume!(x >= 0.0 && w >= 0.0);
+    kani::assume(x.is_finite() && w.is_finite());
+    kani::assume(x >= 0.0 && w >= 0.0);
     let bbox = elicit_ui::BoundingBox::new(x, 0.0, w, 10.0);
     let right = bbox.right();
     assert!(
@@ -724,8 +724,8 @@ fn verify_bbox_right_equals_x_plus_width() {
 fn verify_bbox_bottom_equals_y_plus_height() {
     let y: f64 = kani::any();
     let h: f64 = kani::any();
-    kani::assume!(y.is_finite() && h.is_finite());
-    kani::assume!(y >= 0.0 && h >= 0.0);
+    kani::assume(y.is_finite() && h.is_finite());
+    kani::assume(y >= 0.0 && h >= 0.0);
     let bbox = elicit_ui::BoundingBox::new(0.0, y, 10.0, h);
     let bottom = bbox.bottom();
     assert!(

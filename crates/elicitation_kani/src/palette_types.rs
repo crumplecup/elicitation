@@ -18,9 +18,9 @@ fn verify_palette_srgb_from_roundtrip() {
     let g: f32 = kani::any();
     let b: f32 = kani::any();
 
-    kani::assume!(r.is_finite());
-    kani::assume!(g.is_finite());
-    kani::assume!(b.is_finite());
+    kani::assume(r.is_finite());
+    kani::assume(g.is_finite());
+    kani::assume(b.is_finite());
 
     let original = palette::Srgb::new(r, g, b);
     let wrapper = elicitation::PaletteSrgb::from(original);
@@ -38,9 +38,9 @@ fn verify_palette_srgb_wrapper_fields() {
     let g: f32 = kani::any();
     let b: f32 = kani::any();
 
-    kani::assume!(r.is_finite());
-    kani::assume!(g.is_finite());
-    kani::assume!(b.is_finite());
+    kani::assume(r.is_finite());
+    kani::assume(g.is_finite());
+    kani::assume(b.is_finite());
 
     let original = palette::Srgb::new(r, g, b);
     let wrapper = elicitation::PaletteSrgb::from(original);
