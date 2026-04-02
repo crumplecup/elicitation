@@ -132,3 +132,81 @@ impl DateTimeFixed {
         chrono::DateTime::parse_from_rfc3339(s).ok().map(Into::into)
     }
 }
+
+// ── Elicitation framework traits ─────────────────────────────────────────────
+
+impl elicitation::Prompt for DateTimeFixed {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter a datetime with timezone offset in RFC 3339 format (e.g. 2024-01-15T12:30:00+05:30):")
+    }
+}
+
+impl elicitation::Elicitation for DateTimeFixed {
+    type Style = ();
+
+    async fn elicit<C: elicitation::ElicitCommunicator>(
+        communicator: &C,
+    ) -> elicitation::ElicitResult<Self> {
+        let response = communicator
+            .send_prompt("Enter a datetime with timezone offset in RFC 3339 format (e.g. 2024-01-15T12:30:00+05:30):")
+            .await?;
+        let inner = response.parse::<chrono::DateTime<chrono::FixedOffset>>()
+            .map_err(|e| elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(
+                format!("Invalid fixed-offset datetime: {e}"),
+            )))?;
+        Ok(Self(Arc::new(inner)))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+    fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+    fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+}
+
+impl elicitation::ElicitIntrospect for DateTimeFixed {
+    fn pattern() -> elicitation::ElicitationPattern { elicitation::ElicitationPattern::Primitive }
+    fn metadata() -> elicitation::TypeMetadata {
+        elicitation::TypeMetadata {
+            type_name: "DateTimeFixed",
+            description: <Self as elicitation::Prompt>::prompt(),
+            details: elicitation::PatternDetails::Primitive,
+        }
+    }
+}
+
+impl elicitation::ElicitPromptTree for DateTimeFixed {
+    fn prompt_tree() -> elicitation::PromptTree {
+        elicitation::PromptTree::Leaf {
+            prompt: "DateTimeFixed".to_string(),
+            type_name: "DateTimeFixed".to_string(),
+        }
+    }
+}
+
+impl elicitation::ElicitSpec for DateTimeFixed {
+    fn type_spec() -> elicitation::TypeSpec {
+        elicitation::TypeSpecBuilder::default()
+            .type_name("DateTimeFixed".to_string())
+            .summary("Datetime with fixed timezone offset in RFC 3339 format.".to_string())
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+
+mod emit_impls {
+    use super::DateTimeFixed;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for DateTimeFixed {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.0.to_rfc3339();
+            quote::quote! {
+                ::elicit_chrono::DateTimeFixed::from(
+                    #s.parse::<::chrono::DateTime<::chrono::FixedOffset>>().expect("valid fixed datetime")
+                )
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for DateTimeFixed {}

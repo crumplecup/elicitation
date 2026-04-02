@@ -122,3 +122,22 @@ impl JsonValue {
         serde_json::to_string_pretty(&*self.0).unwrap_or_else(|e| e.to_string())
     }
 }
+
+mod emit_impls {
+    use super::JsonValue;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for JsonValue {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.0.to_string();
+            quote::quote! {
+                ::elicit_serde_json::JsonValue::from(
+                    ::serde_json::from_str::<::serde_json::Value>(#s).expect("valid JSON value")
+                )
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for JsonValue {}

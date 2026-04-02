@@ -26,6 +26,7 @@ futures.workspace = true
 
 # Code recovery (optional)
 quote = { workspace = true }
+proc-macro2 = { workspace = true }
 
 [dev-dependencies]
 serde_json.workspace = true

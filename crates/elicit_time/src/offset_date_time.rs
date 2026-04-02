@@ -155,3 +155,83 @@ impl OffsetDateTime {
             .map(Into::into)
     }
 }
+
+// ── Elicitation framework traits ─────────────────────────────────────────────
+
+impl elicitation::Prompt for OffsetDateTime {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter an RFC 3339 offset datetime (e.g. 2024-01-15T12:00:00+00:00):")
+    }
+}
+
+impl elicitation::Elicitation for OffsetDateTime {
+    type Style = ();
+
+    async fn elicit<C: elicitation::ElicitCommunicator>(
+        communicator: &C,
+    ) -> elicitation::ElicitResult<Self> {
+        let response = communicator
+            .send_prompt("Enter an RFC 3339 offset datetime (e.g. 2024-01-15T12:00:00+00:00):")
+            .await?;
+        let inner = time::OffsetDateTime::parse(&response, &time::format_description::well_known::Rfc3339)
+            .map_err(|e| elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(
+                format!("Invalid RFC 3339 datetime: {e}"),
+            )))?;
+        Ok(Self(Arc::new(inner)))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+    fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+    fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+}
+
+impl elicitation::ElicitIntrospect for OffsetDateTime {
+    fn pattern() -> elicitation::ElicitationPattern { elicitation::ElicitationPattern::Primitive }
+    fn metadata() -> elicitation::TypeMetadata {
+        elicitation::TypeMetadata {
+            type_name: "OffsetDateTime",
+            description: <Self as elicitation::Prompt>::prompt(),
+            details: elicitation::PatternDetails::Primitive,
+        }
+    }
+}
+
+impl elicitation::ElicitPromptTree for OffsetDateTime {
+    fn prompt_tree() -> elicitation::PromptTree {
+        elicitation::PromptTree::Leaf {
+            prompt: "OffsetDateTime".to_string(),
+            type_name: "OffsetDateTime".to_string(),
+        }
+    }
+}
+
+impl elicitation::ElicitSpec for OffsetDateTime {
+    fn type_spec() -> elicitation::TypeSpec {
+        elicitation::TypeSpecBuilder::default()
+            .type_name("OffsetDateTime".to_string())
+            .summary("RFC 3339 offset datetime (e.g. 2024-01-15T12:00:00+00:00).".to_string())
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+
+mod emit_impls {
+    use super::OffsetDateTime;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for OffsetDateTime {
+        fn to_code_literal(&self) -> TokenStream {
+            use time::format_description::well_known::Rfc3339;
+            let s = self.0.format(&Rfc3339).expect("valid RFC 3339");
+            quote::quote! {
+                ::elicit_time::OffsetDateTime::from(
+                    ::time::OffsetDateTime::parse(#s, &::time::format_description::well_known::Rfc3339)
+                        .expect("valid OffsetDateTime")
+                )
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for OffsetDateTime {}
