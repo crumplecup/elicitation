@@ -39,7 +39,7 @@ use uuid::Uuid;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: `Command::spawn()` succeeded — the child process is running.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct ProcessSpawned {}
 impl Prop for ProcessSpawned {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -77,7 +77,7 @@ impl Prop for ProcessSpawned {
 impl VerifiedWorkflow for ProcessSpawned {}
 
 /// Proposition: `child.wait()` completed — the child process has exited.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct ProcessExited {}
 impl Prop for ProcessExited {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -115,7 +115,7 @@ impl Prop for ProcessExited {
 impl VerifiedWorkflow for ProcessExited {}
 
 /// Proposition: bytes were written to a child process's stdin pipe.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct StdinWritten {}
 impl Prop for StdinWritten {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {

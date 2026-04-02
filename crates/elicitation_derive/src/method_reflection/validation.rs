@@ -40,8 +40,10 @@ pub fn validate_generic_bounds(generics: &Generics) -> syn::Result<()> {
         // 1. Directly on the parameter declaration (T: Bound)
         // 2. In a where clause (where T: Bound)
 
-        let has_elicitation = has_trait_bound(type_param, &generics.where_clause, "Elicitation");
-        let has_jsonschema = has_trait_bound(type_param, &generics.where_clause, "JsonSchema");
+        let has_elicitation = has_trait_bound(type_param, &generics.where_clause, "Elicitation")
+            || has_trait_bound(type_param, &generics.where_clause, "ElicitComplete");
+        let has_jsonschema = has_trait_bound(type_param, &generics.where_clause, "JsonSchema")
+            || has_trait_bound(type_param, &generics.where_clause, "ElicitComplete");
 
         if !has_elicitation {
             return Err(syn::Error::new(

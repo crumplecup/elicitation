@@ -4,7 +4,7 @@ use elicitation::verification::types::{I8Positive, StringNonEmpty};
 use elicitation::{Elicit, Prompt, Select};
 
 /// Test enum with all variant types.
-#[derive(Elicit)]
+#[derive(Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[allow(dead_code)] // Test enum
 #[allow(clippy::large_enum_variant)] // Test code
 enum _Status {

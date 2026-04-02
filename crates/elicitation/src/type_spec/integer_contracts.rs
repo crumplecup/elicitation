@@ -69,6 +69,7 @@ macro_rules! impl_integer_contract_spec {
         }
 
         inventory::submit!(TypeSpecInventoryKey::new($name, <$ty as ElicitSpec>::type_spec, std::any::TypeId::of::<$ty>));
+        impl crate::ElicitComplete for $ty {}
     };
 }
 

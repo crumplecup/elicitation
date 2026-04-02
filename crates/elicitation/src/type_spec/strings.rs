@@ -55,3 +55,5 @@ inventory::submit!(TypeSpecInventoryKey::new(
     <String as ElicitSpec>::type_spec,
     std::any::TypeId::of::<String>
 ));
+
+impl crate::ElicitComplete for String {}

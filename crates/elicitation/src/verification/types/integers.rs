@@ -2572,6 +2572,14 @@ impl_signed_contracts!(
 // u32 family
 impl_unsigned_contracts!(u32, U32NonZero, U32Range, U32RangeStyle, 42, 10, 100, 50);
 
+// Serde/JsonSchema bridges for i32 and u32 families
+impl_integer_serde_bridge!(I32Positive, i32, "Positive i32 value (> 0)", { "minimum": 1 });
+impl_integer_serde_bridge!(I32NonNegative, i32, "Non-negative i32 value (>= 0)", { "minimum": 0 });
+impl_integer_range_serde_bridge!(I32Range<i32>);
+impl_integer_serde_bridge!(I32NonZero, i32, "Non-zero i32 value (!= 0)", { "not": {"const": 0} });
+impl_integer_serde_bridge!(U32NonZero, u32, "Non-zero u32 value (!= 0)", { "minimum": 1 });
+impl_integer_range_serde_bridge!(U32Range<u32>);
+
 // ============================================================================
 // Default Wrappers (for MCP elicitation of primitives)
 // ============================================================================
@@ -2613,6 +2621,14 @@ impl_signed_contracts!(
 // u64 family
 impl_unsigned_contracts!(u64, U64NonZero, U64Range, U64RangeStyle, 42, 10, 100, 50);
 
+// Serde/JsonSchema bridges for i64 and u64 families
+impl_integer_serde_bridge!(I64Positive, i64, "Positive i64 value (> 0)", { "minimum": 1 });
+impl_integer_serde_bridge!(I64NonNegative, i64, "Non-negative i64 value (>= 0)", { "minimum": 0 });
+impl_integer_range_serde_bridge!(I64Range<i64>);
+impl_integer_serde_bridge!(I64NonZero, i64, "Non-zero i64 value (!= 0)", { "not": {"const": 0} });
+impl_integer_serde_bridge!(U64NonZero, u64, "Non-zero u64 value (!= 0)", { "minimum": 1 });
+impl_integer_range_serde_bridge!(U64Range<u64>);
+
 // i128 family
 impl_signed_contracts!(
     i128,
@@ -2639,6 +2655,14 @@ impl_unsigned_contracts!(
     50
 );
 
+// Serde/JsonSchema bridges for i128 and u128 families
+impl_integer_serde_bridge!(I128Positive, i128, "Positive i128 value (> 0)", { "minimum": 1 });
+impl_integer_serde_bridge!(I128NonNegative, i128, "Non-negative i128 value (>= 0)", { "minimum": 0 });
+impl_integer_range_serde_bridge!(I128Range<i128>);
+impl_integer_serde_bridge!(I128NonZero, i128, "Non-zero i128 value (!= 0)", { "not": {"const": 0} });
+impl_integer_serde_bridge!(U128NonZero, u128, "Non-zero u128 value (!= 0)", { "minimum": 1 });
+impl_integer_range_serde_bridge!(U128Range<u128>);
+
 // isize family
 impl_signed_contracts!(
     isize,
@@ -2664,6 +2688,14 @@ impl_unsigned_contracts!(
     100,
     50
 );
+
+// Serde/JsonSchema bridges for isize and usize families
+impl_integer_serde_bridge!(IsizePositive, isize, "Positive isize value (> 0)", { "minimum": 1 });
+impl_integer_serde_bridge!(IsizeNonNegative, isize, "Non-negative isize value (>= 0)", { "minimum": 0 });
+impl_integer_range_serde_bridge!(IsizeRange<isize>);
+impl_integer_serde_bridge!(IsizeNonZero, isize, "Non-zero isize value (!= 0)", { "not": {"const": 0} });
+impl_integer_serde_bridge!(UsizeNonZero, usize, "Non-zero usize value (!= 0)", { "minimum": 1 });
+impl_integer_range_serde_bridge!(UsizeRange<usize>);
 
 // ============================================================================
 // Additional Signed NonZero Types (for Prusti proofs)
@@ -2831,6 +2863,11 @@ impl_unsigned_positive!(u64, U64Positive, 42);
 impl_unsigned_positive!(u128, U128Positive, 42);
 impl_unsigned_positive!(usize, UsizePositive, 42);
 
+impl_integer_serde_bridge!(U32Positive, u32, "Positive u32 value (> 0)", { "minimum": 1 });
+impl_integer_serde_bridge!(U64Positive, u64, "Positive u64 value (> 0)", { "minimum": 1 });
+impl_integer_serde_bridge!(U128Positive, u128, "Positive u128 value (> 0)", { "minimum": 1 });
+impl_integer_serde_bridge!(UsizePositive, usize, "Positive usize value (> 0)", { "minimum": 1 });
+
 // ============================================================================
 // Float Contract Types (f32, f64)
 // ============================================================================
@@ -2929,3 +2966,57 @@ mod emit_impls {
     impl_to_code_literal_int!(UsizePositive);
     impl_to_code_literal_range!(UsizeRange, usize);
 }
+
+// ── ElicitIntrospect impls ────────────────────────────────────────────────────
+
+macro_rules! impl_primitive_introspect {
+    ($($ty:ty => $name:literal),+ $(,)?) => {
+        $(
+            impl crate::ElicitIntrospect for $ty {
+                fn pattern() -> crate::ElicitationPattern {
+                    crate::ElicitationPattern::Primitive
+                }
+                fn metadata() -> crate::TypeMetadata {
+                    crate::TypeMetadata {
+                        type_name: $name,
+                        description: <$ty as crate::Prompt>::prompt(),
+                        details: crate::PatternDetails::Primitive,
+                    }
+                }
+            }
+        )+
+    };
+}
+
+impl_primitive_introspect!(
+    I8Positive => "I8Positive",
+    I8NonNegative => "I8NonNegative",
+    I8NonZero => "I8NonZero",
+    I16Positive => "I16Positive",
+    I16NonNegative => "I16NonNegative",
+    I16NonZero => "I16NonZero",
+    I32Positive => "I32Positive",
+    I32NonNegative => "I32NonNegative",
+    I32NonZero => "I32NonZero",
+    I64Positive => "I64Positive",
+    I64NonNegative => "I64NonNegative",
+    I64NonZero => "I64NonZero",
+    I128Positive => "I128Positive",
+    I128NonNegative => "I128NonNegative",
+    I128NonZero => "I128NonZero",
+    IsizePositive => "IsizePositive",
+    IsizeNonNegative => "IsizeNonNegative",
+    IsizeNonZero => "IsizeNonZero",
+    U8NonZero => "U8NonZero",
+    U8Positive => "U8Positive",
+    U16NonZero => "U16NonZero",
+    U16Positive => "U16Positive",
+    U32NonZero => "U32NonZero",
+    U32Positive => "U32Positive",
+    U64NonZero => "U64NonZero",
+    U64Positive => "U64Positive",
+    U128NonZero => "U128NonZero",
+    U128Positive => "U128Positive",
+    UsizeNonZero => "UsizeNonZero",
+    UsizePositive => "UsizePositive",
+);

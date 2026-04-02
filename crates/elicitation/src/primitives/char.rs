@@ -55,3 +55,16 @@ impl Elicitation for char {
         crate::verification::proof_helpers::creusot_char()
     }
 }
+
+impl crate::ElicitIntrospect for char {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "char",
+            description: <char as crate::Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
+    }
+}

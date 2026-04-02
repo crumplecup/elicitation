@@ -79,7 +79,7 @@ use uuid::Uuid;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: a task was successfully spawned and a `JoinHandle` is registered.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct TaskSpawned {}
 impl Prop for TaskSpawned {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -116,7 +116,7 @@ impl Prop for TaskSpawned {
 impl VerifiedWorkflow for TaskSpawned {}
 
 /// Proposition: a spawned task completed and its output was retrieved.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct TaskJoined {}
 impl Prop for TaskJoined {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -154,7 +154,7 @@ impl Prop for TaskJoined {
 impl VerifiedWorkflow for TaskJoined {}
 
 /// Proposition: a spawned task was cancelled via `JoinHandle::abort()`.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct TaskAborted {}
 impl Prop for TaskAborted {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {

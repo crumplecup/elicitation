@@ -38,7 +38,7 @@ use elicitation::{Elicit, ElicitIntrospect, PatternDetails, Prompt, Select};
 // ============================================================================
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct NetworkConfig {
     host: String,
     port: u16,
@@ -46,7 +46,7 @@ struct NetworkConfig {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 enum DeploymentMode {
     Development,
     Staging,
@@ -54,7 +54,7 @@ enum DeploymentMode {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct ApplicationConfig {
     name: String,
     network: NetworkConfig,

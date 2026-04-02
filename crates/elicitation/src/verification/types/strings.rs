@@ -332,3 +332,31 @@ mod emit_impls {
         }
     }
 }
+
+// ── ElicitIntrospect impls ────────────────────────────────────────────────────
+
+impl<const MAX_LEN: usize> crate::ElicitIntrospect for StringNonEmpty<MAX_LEN> {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "StringNonEmpty",
+            description: <Self as crate::Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
+    }
+}
+
+impl crate::ElicitIntrospect for StringDefault {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "StringDefault",
+            description: <Self as crate::Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
+    }
+}

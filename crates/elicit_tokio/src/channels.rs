@@ -93,7 +93,7 @@ type Value = serde_json::Value;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: a message was sent on a channel successfully.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct MessageSent {}
 impl Prop for MessageSent {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -131,7 +131,7 @@ impl Prop for MessageSent {
 impl VerifiedWorkflow for MessageSent {}
 
 /// Proposition: a message was received from a channel.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct MessageReceived {}
 impl Prop for MessageReceived {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -169,7 +169,7 @@ impl Prop for MessageReceived {
 impl VerifiedWorkflow for MessageReceived {}
 
 /// Proposition: a channel or end was closed.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct ChannelClosed {}
 impl Prop for ChannelClosed {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {

@@ -95,7 +95,7 @@ mod layer2 {
     /// Note: In a real application, you would use contract types like U16NonZero
     /// and I32Positive. This example uses primitives for simplicity.
     #[allow(dead_code)]
-    #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+    #[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
     pub struct NetworkConfig {
         /// Network port.
         pub port: u16,
@@ -111,7 +111,7 @@ mod layer2 {
     /// - `max_retries`: u8 (primitive type, symbolically verifiable)
     /// - ⟹ AppMetadata is verified ∎
     #[allow(dead_code)]
-    #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+    #[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
     pub struct AppMetadata {
         /// Application name.
         pub name: String,
@@ -144,7 +144,7 @@ mod layer3 {
     /// 3. Layer 3 structs are proven by composition (ApplicationConfig)
     /// 4. ∴ The entire hierarchy is formally verified ∎
     #[allow(dead_code)]
-    #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+    #[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
     pub struct ApplicationConfig {
         /// Network settings (verified).
         pub network: NetworkConfig,
@@ -160,7 +160,7 @@ mod layer3 {
     /// - `Production`: Contains NetworkConfig (verified struct)
     /// - ⟹ DeploymentMode is verified ∎
     #[allow(dead_code)]
-    #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+    #[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
     pub enum DeploymentMode {
         /// Development mode (no configuration needed).
         Development,

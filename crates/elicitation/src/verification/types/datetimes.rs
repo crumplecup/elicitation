@@ -21,7 +21,9 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 ///
 /// Available with the `chrono` feature.
 #[cfg(feature = "chrono")]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
 #[cfg(not(kani))]
 pub struct DateTimeUtcAfter {
     value: DateTime<Utc>,
@@ -1079,5 +1081,29 @@ mod time_tests {
         let value = threshold + Duration::hours(1);
         let result = OffsetDateTimeBefore::new(value, threshold);
         assert!(result.is_err());
+    }
+}
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+#[cfg(feature = "chrono")]
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for DateTimeUtcAfter {
+        fn to_code_literal(&self) -> TokenStream {
+            let value_rfc3339 = self.value.to_rfc3339();
+            let threshold_rfc3339 = self.threshold.to_rfc3339();
+            quote::quote! {
+                elicitation::DateTimeUtcAfter::new(
+                    ::chrono::DateTime::parse_from_rfc3339(#value_rfc3339)
+                        .expect("valid rfc3339").with_timezone(&::chrono::Utc),
+                    ::chrono::DateTime::parse_from_rfc3339(#threshold_rfc3339)
+                        .expect("valid rfc3339").with_timezone(&::chrono::Utc),
+                ).expect("valid DateTimeUtcAfter")
+            }
+        }
     }
 }

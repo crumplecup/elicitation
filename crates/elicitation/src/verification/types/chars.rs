@@ -11,7 +11,18 @@ use elicitation_macros::instrumented_impl;
 /// Contract type for alphabetic char values.
 ///
 /// Validates on construction, then can unwrap to stdlib char via `into_inner()`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
+#[schemars(description = "An alphabetic character (a-z, A-Z)")]
 pub struct CharAlphabetic(char);
 
 #[cfg_attr(not(kani), instrumented_impl)]
@@ -101,7 +112,18 @@ impl Elicitation for CharAlphabetic {
 /// Contract type for numeric char values.
 ///
 /// Validates on construction, then can unwrap to stdlib char via `into_inner()`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
+#[schemars(description = "A numeric character (0-9)")]
 pub struct CharNumeric(char);
 
 impl CharNumeric {
@@ -189,7 +211,18 @@ impl Elicitation for CharNumeric {
 /// Contract type for alphanumeric char values.
 ///
 /// Validates on construction, then can unwrap to stdlib char via `into_inner()`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
+#[schemars(description = "An alphanumeric character (a-z, A-Z, 0-9)")]
 pub struct CharAlphanumeric(char);
 
 #[cfg_attr(not(kani), instrumented_impl)]
@@ -357,3 +390,59 @@ mod char_alphanumeric_tests {
         assert_eq!(value, 'x');
     }
 }
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for CharAlphabetic {
+        fn to_code_literal(&self) -> TokenStream {
+            let c = self.get();
+            quote::quote! { elicitation::CharAlphabetic::new(#c).expect("valid CharAlphabetic") }
+        }
+    }
+
+    impl ToCodeLiteral for CharNumeric {
+        fn to_code_literal(&self) -> TokenStream {
+            let c = self.get();
+            quote::quote! { elicitation::CharNumeric::new(#c).expect("valid CharNumeric") }
+        }
+    }
+
+    impl ToCodeLiteral for CharAlphanumeric {
+        fn to_code_literal(&self) -> TokenStream {
+            let c = self.get();
+            quote::quote! { elicitation::CharAlphanumeric::new(#c).expect("valid CharAlphanumeric") }
+        }
+    }
+}
+
+// ── ElicitIntrospect impls ────────────────────────────────────────────────────
+
+macro_rules! impl_primitive_introspect {
+    ($($ty:ty => $name:literal),+ $(,)?) => {
+        $(
+            impl crate::ElicitIntrospect for $ty {
+                fn pattern() -> crate::ElicitationPattern {
+                    crate::ElicitationPattern::Primitive
+                }
+                fn metadata() -> crate::TypeMetadata {
+                    crate::TypeMetadata {
+                        type_name: $name,
+                        description: <$ty as crate::Prompt>::prompt(),
+                        details: crate::PatternDetails::Primitive,
+                    }
+                }
+            }
+        )+
+    };
+}
+
+impl_primitive_introspect!(
+    CharAlphabetic => "CharAlphabetic",
+    CharNumeric => "CharNumeric",
+    CharAlphanumeric => "CharAlphanumeric",
+);

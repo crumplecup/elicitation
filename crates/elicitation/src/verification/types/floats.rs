@@ -1037,3 +1037,33 @@ mod emit_impls {
     impl_to_code_literal_float!(F64NonNegative);
     impl_to_code_literal_float!(F64Finite);
 }
+
+// ── ElicitIntrospect impls ────────────────────────────────────────────────────
+
+macro_rules! impl_primitive_introspect {
+    ($($ty:ty => $name:literal),+ $(,)?) => {
+        $(
+            impl crate::ElicitIntrospect for $ty {
+                fn pattern() -> crate::ElicitationPattern {
+                    crate::ElicitationPattern::Primitive
+                }
+                fn metadata() -> crate::TypeMetadata {
+                    crate::TypeMetadata {
+                        type_name: $name,
+                        description: <$ty as crate::Prompt>::prompt(),
+                        details: crate::PatternDetails::Primitive,
+                    }
+                }
+            }
+        )+
+    };
+}
+
+impl_primitive_introspect!(
+    F32Positive => "F32Positive",
+    F32NonNegative => "F32NonNegative",
+    F32Finite => "F32Finite",
+    F64Positive => "F64Positive",
+    F64NonNegative => "F64NonNegative",
+    F64Finite => "F64Finite",
+);

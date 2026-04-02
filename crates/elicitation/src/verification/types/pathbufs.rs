@@ -11,7 +11,10 @@ use std::path::PathBuf;
 /// A PathBuf that is guaranteed to exist on the filesystem (runtime check).
 ///
 /// **Note:** This is a runtime validation, not compile-time.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+#[schemars(description = "A PathBuf that exists on the filesystem")]
 pub struct PathBufExists(PathBuf);
 
 #[cfg_attr(not(kani), instrumented_impl)]
@@ -85,7 +88,10 @@ impl Elicitation for PathBufExists {
 /// A PathBuf that is guaranteed to be readable (runtime check).
 ///
 /// **Note:** This is a runtime validation checking metadata access.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+#[schemars(description = "A PathBuf that is readable")]
 pub struct PathBufReadable(PathBuf);
 
 #[cfg_attr(not(kani), instrumented_impl)]
@@ -157,7 +163,10 @@ impl Elicitation for PathBufReadable {
 /// A PathBuf that is guaranteed to be a directory (runtime check).
 ///
 /// **Note:** Path must exist for this check to work.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+#[schemars(description = "A PathBuf that is a directory")]
 pub struct PathBufIsDir(PathBuf);
 
 #[cfg_attr(not(kani), instrumented_impl)]
@@ -235,7 +244,10 @@ impl Elicitation for PathBufIsDir {
 /// A PathBuf that is guaranteed to be a file (runtime check).
 ///
 /// **Note:** Path must exist for this check to work.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+#[schemars(description = "A PathBuf that is a file")]
 pub struct PathBufIsFile(PathBuf);
 
 #[cfg_attr(not(kani), instrumented_impl)]
@@ -375,5 +387,54 @@ mod tests {
         original.push("Cargo.toml");
         let exists = PathBufExists::new(original.clone()).unwrap();
         assert_eq!(exists.into_inner(), original);
+    }
+}
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    use std::path::Path;
+
+    impl ToCodeLiteral for PathBufExists {
+        fn to_code_literal(&self) -> TokenStream {
+            let p = self.get().display().to_string();
+            quote::quote! {
+                elicitation::PathBufExists::new(::std::path::PathBuf::from(#p))
+                    .expect("valid PathBufExists")
+            }
+        }
+    }
+
+    impl ToCodeLiteral for PathBufReadable {
+        fn to_code_literal(&self) -> TokenStream {
+            let p = self.get().display().to_string();
+            quote::quote! {
+                elicitation::PathBufReadable::new(::std::path::PathBuf::from(#p))
+                    .expect("valid PathBufReadable")
+            }
+        }
+    }
+
+    impl ToCodeLiteral for PathBufIsDir {
+        fn to_code_literal(&self) -> TokenStream {
+            let p = self.get().display().to_string();
+            quote::quote! {
+                elicitation::PathBufIsDir::new(::std::path::PathBuf::from(#p))
+                    .expect("valid PathBufIsDir")
+            }
+        }
+    }
+
+    impl ToCodeLiteral for PathBufIsFile {
+        fn to_code_literal(&self) -> TokenStream {
+            let p = self.get().display().to_string();
+            quote::quote! {
+                elicitation::PathBufIsFile::new(::std::path::PathBuf::from(#p))
+                    .expect("valid PathBufIsFile")
+            }
+        }
     }
 }

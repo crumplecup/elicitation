@@ -10,7 +10,7 @@ use elicitation::{Elicit, ElicitPromptTree, Prompt, PromptTree, Select};
 // Helper types
 // ============================================================================
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[prompt("Pick a colour:")]
 enum Colour {
     Red,
@@ -18,7 +18,7 @@ enum Colour {
     Blue,
 }
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[prompt("Configure server:")]
 struct ServerCfg {
     #[prompt("Host name:")]

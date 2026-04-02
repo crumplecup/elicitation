@@ -61,6 +61,8 @@ macro_rules! impl_integer_spec {
             <$primitive as ElicitSpec>::type_spec,
             std::any::TypeId::of::<$primitive>
         ));
+
+        impl crate::ElicitComplete for $primitive {}
     };
 }
 

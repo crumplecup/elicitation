@@ -4,7 +4,7 @@ use elicitation::Elicit;
 use elicitation::verification::types::*;
 
 /// Comprehensive struct testing ALL type categories.
-#[derive(Elicit)]
+#[derive(Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[allow(dead_code)] // Test struct
 struct ComprehensiveTest {
     // Primitives

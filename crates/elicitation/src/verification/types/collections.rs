@@ -1524,3 +1524,152 @@ impl<T> RcNonNull<T> {
         self.0
     }
 }
+
+// ── Serde + JsonSchema + ToCodeLiteral impls ──────────────────────────────────
+
+impl<T: serde::Serialize> serde::Serialize for VecNonEmpty<T> {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        self.0.serialize(s)
+    }
+}
+
+impl<'de, T: serde::Deserialize<'de>> serde::Deserialize<'de> for VecNonEmpty<T> {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let v = Vec::<T>::deserialize(d)?;
+        if v.is_empty() {
+            return Err(serde::de::Error::custom("VecNonEmpty cannot be empty"));
+        }
+        Ok(Self(v))
+    }
+}
+
+impl<T: schemars::JsonSchema> schemars::JsonSchema for VecNonEmpty<T> {
+    fn schema_name() -> ::std::borrow::Cow<'static, str> {
+        format!("VecNonEmpty<{}>", T::schema_name()).into()
+    }
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        let items_val =
+            serde_json::to_value(generator.subschema_for::<T>()).expect("schema to value");
+        let mut map = serde_json::Map::new();
+        map.insert("type".to_string(), "array".into());
+        map.insert("minItems".to_string(), 1u64.into());
+        map.insert("items".to_string(), items_val);
+        schemars::Schema::from(map)
+    }
+}
+
+impl<T: serde::Serialize> serde::Serialize for OptionSome<T> {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        self.0.serialize(s)
+    }
+}
+
+impl<'de, T: serde::Deserialize<'de>> serde::Deserialize<'de> for OptionSome<T> {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let value = T::deserialize(d)?;
+        Ok(Self(value))
+    }
+}
+
+impl<T: schemars::JsonSchema> schemars::JsonSchema for OptionSome<T> {
+    fn schema_name() -> ::std::borrow::Cow<'static, str> {
+        format!("OptionSome<{}>", T::schema_name()).into()
+    }
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        T::json_schema(generator)
+    }
+}
+
+impl<T: serde::Serialize> serde::Serialize for ResultOk<T> {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        self.0.serialize(s)
+    }
+}
+
+impl<'de, T: serde::Deserialize<'de>> serde::Deserialize<'de> for ResultOk<T> {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let value = T::deserialize(d)?;
+        Ok(Self(value))
+    }
+}
+
+impl<T: schemars::JsonSchema> schemars::JsonSchema for ResultOk<T> {
+    fn schema_name() -> ::std::borrow::Cow<'static, str> {
+        format!("ResultOk<{}>", T::schema_name()).into()
+    }
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        T::json_schema(generator)
+    }
+}
+
+// ── ElicitIntrospect impls ────────────────────────────────────────────────────
+
+impl<T: crate::Elicitation + Send> crate::ElicitIntrospect for VecNonEmpty<T> {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "VecNonEmpty",
+            description: <Self as crate::Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
+    }
+}
+
+impl<T: crate::Elicitation + Send> crate::ElicitIntrospect for OptionSome<T> {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "OptionSome",
+            description: <Self as crate::Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
+    }
+}
+
+impl<T: crate::Elicitation + Send> crate::ElicitIntrospect for ResultOk<T> {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "ResultOk",
+            description: <Self as crate::Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
+    }
+}
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl<T: ToCodeLiteral> ToCodeLiteral for VecNonEmpty<T> {
+        fn to_code_literal(&self) -> TokenStream {
+            let items: Vec<TokenStream> = self.0.iter().map(|x| x.to_code_literal()).collect();
+            quote::quote! {
+                elicitation::VecNonEmpty::new(vec![#(#items),*]).expect("non-empty")
+            }
+        }
+    }
+
+    impl<T: ToCodeLiteral> ToCodeLiteral for OptionSome<T> {
+        fn to_code_literal(&self) -> TokenStream {
+            let inner = self.0.to_code_literal();
+            quote::quote! { elicitation::OptionSome::from_value(#inner) }
+        }
+    }
+
+    impl<T: ToCodeLiteral> ToCodeLiteral for ResultOk<T> {
+        fn to_code_literal(&self) -> TokenStream {
+            let inner = self.0.to_code_literal();
+            quote::quote! { elicitation::ResultOk::from_value(#inner) }
+        }
+    }
+}

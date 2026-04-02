@@ -46,7 +46,7 @@ use uuid::Uuid;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: a `tokio::io::duplex()` pair was created and both ends are registered.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct DuplexCreated {}
 impl Prop for DuplexCreated {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {

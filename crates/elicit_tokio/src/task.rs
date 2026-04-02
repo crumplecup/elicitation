@@ -27,7 +27,7 @@ use serde::{Deserialize, Serialize};
 // ── Param / result types ──────────────────────────────────────────────────────
 
 /// Proposition: `tokio::task::yield_now()` returned — the task yielded to the scheduler.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct TaskYielded {}
 impl Prop for TaskYielded {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {

@@ -3,7 +3,9 @@
 use elicitation::StringStyle;
 
 /// Test type with String field that has multiple styles.
-#[derive(Debug, Clone, elicitation::Elicit)]
+#[derive(
+    Debug, Clone, elicitation::Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
 #[allow(dead_code)] // Test struct
 struct Config {
     /// Server name (supports Agent/Human styles).

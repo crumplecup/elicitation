@@ -29,7 +29,7 @@ use serde::{Deserialize, Serialize};
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: `tokio_runtime__inspect_flavor` returned successfully — the runtime flavor is known.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct RuntimeFlavored {}
 impl Prop for RuntimeFlavored {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {

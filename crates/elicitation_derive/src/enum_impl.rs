@@ -5,6 +5,27 @@ use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::{DeriveInput, Fields};
 
+fn elicit_complete_where(generics: &syn::Generics) -> TokenStream2 {
+    let existing: Vec<TokenStream2> = generics
+        .where_clause
+        .as_ref()
+        .map(|wc| wc.predicates.iter().map(|p| quote! { #p }).collect())
+        .unwrap_or_default();
+    let extra: Vec<TokenStream2> = generics
+        .type_params()
+        .map(|tp| {
+            let id = &tp.ident;
+            quote! { #id: elicitation::ElicitComplete }
+        })
+        .collect();
+    let all: Vec<TokenStream2> = existing.into_iter().chain(extra).collect();
+    if all.is_empty() {
+        quote! {}
+    } else {
+        quote! { where #(#all),* }
+    }
+}
+
 /// Information about an enum variant and its fields.
 struct VariantInfo {
     ident: syn::Ident,
@@ -22,6 +43,71 @@ enum VariantFields {
 struct FieldInfo {
     ident: syn::Ident,
     ty: syn::Type,
+}
+
+/// Generates an `ElicitSpec` impl for an enum.
+///
+/// Produces a `TypeSpec` with a "variants" category listing all variant names,
+/// and registers it in the global inventory for non-generic enums.
+fn generate_elicit_spec_impl(
+    name: &syn::Ident,
+    variants: &[VariantInfo],
+    generics: &syn::Generics,
+) -> TokenStream2 {
+    let name_str = name.to_string();
+    let variant_count = variants.len();
+    let auto_summary = format!(
+        "Enum with {} variant{}.",
+        variant_count,
+        if variant_count == 1 { "" } else { "s" }
+    );
+
+    let variant_entries: Vec<TokenStream2> = variants
+        .iter()
+        .map(|v| {
+            let label = v.ident.to_string();
+            quote! {
+                elicitation::SpecEntryBuilder::default()
+                    .label(#label.to_string())
+                    .description(#label.to_string())
+                    .build()
+                    .expect("valid SpecEntry")
+            }
+        })
+        .collect();
+
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+
+    let inventory = if generics.params.is_empty() {
+        quote! {
+            elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
+                #name_str,
+                <#name as elicitation::ElicitSpec>::type_spec,
+                std::any::TypeId::of::<#name>
+            ));
+        }
+    } else {
+        quote! {}
+    };
+
+    quote! {
+        impl #impl_generics elicitation::ElicitSpec for #name #ty_generics #where_clause {
+            fn type_spec() -> elicitation::TypeSpec {
+                let variants_cat = elicitation::SpecCategoryBuilder::default()
+                    .name("variants".to_string())
+                    .entries(vec![#(#variant_entries),*])
+                    .build()
+                    .expect("valid SpecCategory");
+                elicitation::TypeSpecBuilder::default()
+                    .type_name(#name_str.to_string())
+                    .summary(#auto_summary.to_string())
+                    .categories(vec![variants_cat])
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
+        #inventory
+    }
 }
 
 /// Expand #[derive(Elicit)] for enums.
@@ -137,6 +223,10 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
         &where_clause,
     );
 
+    let elicit_complete_where = elicit_complete_where(&input.generics);
+
+    let elicit_spec_impl = generate_elicit_spec_impl(name, &variants, generics);
+
     let expanded = quote! {
         #style_enum
         #prompt_impl
@@ -146,7 +236,8 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
         #graph_key_emission
         #prompt_tree_impl
         #to_code_literal_impl
-        impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #where_clause {}
+        #elicit_spec_impl
+        impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #elicit_complete_where {}
     };
 
     TokenStream::from(expanded)

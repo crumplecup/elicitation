@@ -62,7 +62,7 @@ use uuid::Uuid;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: a Unix domain socket listener was bound to a path.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct UnixListenerBound {}
 impl Prop for UnixListenerBound {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -102,7 +102,7 @@ impl Prop for UnixListenerBound {
 impl VerifiedWorkflow for UnixListenerBound {}
 
 /// Proposition: a Unix domain socket listener accepted an incoming connection.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct UnixConnectionAccepted {}
 impl Prop for UnixConnectionAccepted {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -142,7 +142,7 @@ impl Prop for UnixConnectionAccepted {
 impl VerifiedWorkflow for UnixConnectionAccepted {}
 
 /// Proposition: a Unix domain stream socket connected to a listener.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct UnixStreamConnected {}
 impl Prop for UnixStreamConnected {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -182,7 +182,7 @@ impl Prop for UnixStreamConnected {
 impl VerifiedWorkflow for UnixStreamConnected {}
 
 /// Proposition: data was received on a Unix domain socket (stream or datagram).
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct UnixDataReceived {}
 impl Prop for UnixDataReceived {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {

@@ -40,7 +40,7 @@ use uuid::Uuid;
 // ── Propositions ──────────────────────────────────────────────────────────────
 
 /// Proposition: a semaphore permit was successfully acquired.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct PermitAcquired;
 impl Prop for PermitAcquired {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -79,7 +79,7 @@ impl Prop for PermitAcquired {
 impl VerifiedWorkflow for PermitAcquired {}
 
 /// Proposition: a `notified()` await returned — a notification was received.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct NotificationReceived;
 impl Prop for NotificationReceived {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -117,7 +117,7 @@ impl Prop for NotificationReceived {
 impl VerifiedWorkflow for NotificationReceived {}
 
 /// Proposition: all parties have reached the barrier and it has released.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct BarrierReached;
 impl Prop for BarrierReached {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {

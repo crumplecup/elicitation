@@ -31,7 +31,7 @@ impl Client {
     /// Start building a GET request to `url`.
     pub fn get<U>(&self, url: U) -> RequestBuilder
     where
-        U: elicitation::Elicitation + schemars::JsonSchema + reqwest::IntoUrl,
+        U: elicitation::ElicitComplete + reqwest::IntoUrl,
     {
         self.0.get(url).into()
     }
@@ -39,7 +39,7 @@ impl Client {
     /// Start building a POST request to `url`.
     pub fn post<U>(&self, url: U) -> RequestBuilder
     where
-        U: elicitation::Elicitation + schemars::JsonSchema + reqwest::IntoUrl,
+        U: elicitation::ElicitComplete + reqwest::IntoUrl,
     {
         self.0.post(url).into()
     }
@@ -47,7 +47,7 @@ impl Client {
     /// Start building a PUT request to `url`.
     pub fn put<U>(&self, url: U) -> RequestBuilder
     where
-        U: elicitation::Elicitation + schemars::JsonSchema + reqwest::IntoUrl,
+        U: elicitation::ElicitComplete + reqwest::IntoUrl,
     {
         self.0.put(url).into()
     }
@@ -55,7 +55,7 @@ impl Client {
     /// Start building a DELETE request to `url`.
     pub fn delete<U>(&self, url: U) -> RequestBuilder
     where
-        U: elicitation::Elicitation + schemars::JsonSchema + reqwest::IntoUrl,
+        U: elicitation::ElicitComplete + reqwest::IntoUrl,
     {
         self.0.delete(url).into()
     }
@@ -63,7 +63,7 @@ impl Client {
     /// Start building a PATCH request to `url`.
     pub fn patch<U>(&self, url: U) -> RequestBuilder
     where
-        U: elicitation::Elicitation + schemars::JsonSchema + reqwest::IntoUrl,
+        U: elicitation::ElicitComplete + reqwest::IntoUrl,
     {
         self.0.patch(url).into()
     }
@@ -71,7 +71,7 @@ impl Client {
     /// Start building a HEAD request to `url`.
     pub fn head<U>(&self, url: U) -> RequestBuilder
     where
-        U: elicitation::Elicitation + schemars::JsonSchema + reqwest::IntoUrl,
+        U: elicitation::ElicitComplete + reqwest::IntoUrl,
     {
         self.0.head(url).into()
     }

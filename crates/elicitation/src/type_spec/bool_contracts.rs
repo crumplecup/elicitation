@@ -63,3 +63,6 @@ inventory::submit!(TypeSpecInventoryKey::new(
     BoolFalse::type_spec,
     std::any::TypeId::of::<BoolFalse>
 ));
+
+impl crate::ElicitComplete for crate::verification::types::BoolTrue {}
+impl crate::ElicitComplete for crate::verification::types::BoolFalse {}

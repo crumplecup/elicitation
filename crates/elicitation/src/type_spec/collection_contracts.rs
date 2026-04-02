@@ -55,12 +55,33 @@ macro_rules! impl_nonempty_spec {
 
 // ── Non-empty collections ─────────────────────────────────────────────────────
 
-impl_nonempty_spec!(
-    type    = VecNonEmpty<i32>,
-    name    = "VecNonEmpty",
-    item    = "vec",
-    summary = "A Vec guaranteed to contain at least one element.",
-);
+impl<T: ElicitSpec> ElicitSpec for VecNonEmpty<T> {
+    fn type_spec() -> TypeSpec {
+        let requires = SpecCategoryBuilder::default()
+            .name("requires".to_string())
+            .entries(vec![
+                SpecEntryBuilder::default()
+                    .label("non_empty".to_string())
+                    .description("vec must contain at least one element.".to_string())
+                    .expression(Some("!vec.is_empty()".to_string()))
+                    .build()
+                    .expect("valid SpecEntry"),
+            ])
+            .build()
+            .expect("valid SpecCategory");
+        TypeSpecBuilder::default()
+            .type_name("VecNonEmpty".to_string())
+            .summary("A Vec guaranteed to contain at least one element.".to_string())
+            .categories(vec![requires])
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+inventory::submit!(TypeSpecInventoryKey::new(
+    "VecNonEmpty",
+    <VecNonEmpty<i32> as ElicitSpec>::type_spec,
+    std::any::TypeId::of::<VecNonEmpty<i32>>
+));
 
 impl_nonempty_spec!(
     type    = HashMapNonEmpty<String, i32>,
@@ -106,7 +127,7 @@ impl_nonempty_spec!(
 
 // ── Option and Result contract types ─────────────────────────────────────────
 
-impl ElicitSpec for OptionSome<i32> {
+impl<T: ElicitSpec> ElicitSpec for OptionSome<T> {
     fn type_spec() -> TypeSpec {
         let requires = SpecCategoryBuilder::default()
             .name("requires".to_string())
@@ -131,11 +152,11 @@ impl ElicitSpec for OptionSome<i32> {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "OptionSome",
-    OptionSome::<i32>::type_spec,
+    <OptionSome<i32> as ElicitSpec>::type_spec,
     std::any::TypeId::of::<OptionSome<i32>>
 ));
 
-impl ElicitSpec for ResultOk<i32> {
+impl<T: ElicitSpec> ElicitSpec for ResultOk<T> {
     fn type_spec() -> TypeSpec {
         let requires = SpecCategoryBuilder::default()
             .name("requires".to_string())
@@ -160,6 +181,98 @@ impl ElicitSpec for ResultOk<i32> {
 
 inventory::submit!(TypeSpecInventoryKey::new(
     "ResultOk",
-    ResultOk::<i32>::type_spec,
+    <ResultOk<i32> as ElicitSpec>::type_spec,
     std::any::TypeId::of::<ResultOk<i32>>
 ));
+
+// ── ElicitComplete impls ──────────────────────────────────────────────────────
+
+impl<T: crate::ElicitComplete + Send> crate::ElicitComplete
+    for crate::verification::types::VecNonEmpty<T>
+{
+}
+impl<T: crate::ElicitComplete + Send> crate::ElicitComplete
+    for crate::verification::types::OptionSome<T>
+{
+}
+impl<T: crate::ElicitComplete + Send> crate::ElicitComplete
+    for crate::verification::types::ResultOk<T>
+{
+}
+
+// ── Tuple ElicitSpec impls ────────────────────────────────────────────────────
+
+use crate::verification::types::{Tuple2, Tuple3, Tuple4};
+
+impl<C1: ElicitSpec, C2: ElicitSpec> ElicitSpec for Tuple2<C1, C2> {
+    fn type_spec() -> TypeSpec {
+        TypeSpecBuilder::default()
+            .type_name("Tuple2".to_string())
+            .summary("A verified pair of two constrained values.".to_string())
+            .categories(vec![])
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+
+inventory::submit!(TypeSpecInventoryKey::new(
+    "Tuple2",
+    <Tuple2<i32, i32> as ElicitSpec>::type_spec,
+    std::any::TypeId::of::<Tuple2<i32, i32>>
+));
+
+impl<C1: ElicitSpec, C2: ElicitSpec, C3: ElicitSpec> ElicitSpec for Tuple3<C1, C2, C3> {
+    fn type_spec() -> TypeSpec {
+        TypeSpecBuilder::default()
+            .type_name("Tuple3".to_string())
+            .summary("A verified triple of three constrained values.".to_string())
+            .categories(vec![])
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+
+inventory::submit!(TypeSpecInventoryKey::new(
+    "Tuple3",
+    <Tuple3<i32, i32, i32> as ElicitSpec>::type_spec,
+    std::any::TypeId::of::<Tuple3<i32, i32, i32>>
+));
+
+impl<C1: ElicitSpec, C2: ElicitSpec, C3: ElicitSpec, C4: ElicitSpec> ElicitSpec
+    for Tuple4<C1, C2, C3, C4>
+{
+    fn type_spec() -> TypeSpec {
+        TypeSpecBuilder::default()
+            .type_name("Tuple4".to_string())
+            .summary("A verified quad of four constrained values.".to_string())
+            .categories(vec![])
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+
+inventory::submit!(TypeSpecInventoryKey::new(
+    "Tuple4",
+    <Tuple4<i32, i32, i32, i32> as ElicitSpec>::type_spec,
+    std::any::TypeId::of::<Tuple4<i32, i32, i32, i32>>
+));
+
+impl<C1: crate::ElicitComplete + Send, C2: crate::ElicitComplete + Send> crate::ElicitComplete
+    for Tuple2<C1, C2>
+{
+}
+impl<
+    C1: crate::ElicitComplete + Send,
+    C2: crate::ElicitComplete + Send,
+    C3: crate::ElicitComplete + Send,
+> crate::ElicitComplete for Tuple3<C1, C2, C3>
+{
+}
+impl<
+    C1: crate::ElicitComplete + Send,
+    C2: crate::ElicitComplete + Send,
+    C3: crate::ElicitComplete + Send,
+    C4: crate::ElicitComplete + Send,
+> crate::ElicitComplete for Tuple4<C1, C2, C3, C4>
+{
+}

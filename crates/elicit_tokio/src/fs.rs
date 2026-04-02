@@ -34,7 +34,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: a file was read successfully (content is available).
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct FileRead {}
 impl Prop for FileRead {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -72,7 +72,7 @@ impl Prop for FileRead {
 impl VerifiedWorkflow for FileRead {}
 
 /// Proposition: a file was written successfully (bytes are persisted).
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct FileWritten {}
 impl Prop for FileWritten {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -110,7 +110,7 @@ impl Prop for FileWritten {
 impl VerifiedWorkflow for FileWritten {}
 
 /// Proposition: a directory was created (path now exists as a directory).
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct DirCreated {}
 impl Prop for DirCreated {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {

@@ -112,3 +112,16 @@ impl Elicitation for String {
         crate::verification::proof_helpers::creusot_string()
     }
 }
+
+impl crate::ElicitIntrospect for String {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "String",
+            description: <String as crate::Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
+    }
+}

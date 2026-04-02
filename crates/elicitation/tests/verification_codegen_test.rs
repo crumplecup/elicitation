@@ -11,7 +11,7 @@ use elicitation::verification::types::{I8Positive, StringNonEmpty};
 /// When compiled with --features verify-kani, should generate:
 /// - __make_User constructor with #[kani::requires] and #[kani::ensures]
 /// - __verify_User harness with #[kani::proof_for_contract]
-#[derive(Elicit)]
+#[derive(Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct _User {
     _name: StringNonEmpty,
     _age: I8Positive,

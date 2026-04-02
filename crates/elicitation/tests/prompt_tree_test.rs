@@ -125,7 +125,17 @@ fn string_assembled_is_one_prompt() {
 // Derived enums
 // ============================================================================
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Elicit,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
 #[prompt("Pick a color:")]
 enum Color {
     Red,
@@ -173,7 +183,9 @@ fn derived_enum_assembled_contains_options_list() {
 }
 
 /// Enum with a tuple variant — exercises branch sub-tree generation.
-#[derive(Debug, Clone, PartialEq, Eq, Elicit)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
 enum Shape {
     Circle,
     Rect(u32, u32),
@@ -219,7 +231,7 @@ fn enum_with_branch_assembled_includes_subprompts() {
 // Derived structs
 // ============================================================================
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[prompt("Configure server:")]
 struct ServerConfig {
     #[prompt("Host name or IP:")]
@@ -303,7 +315,7 @@ fn derived_struct_depth() {
 // Nesting — struct containing an enum
 // ============================================================================
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct Deployment {
     #[prompt("Target environment:")]
     env: Color,
@@ -388,7 +400,7 @@ fn all_integer_widths_are_leaf() {
 
 /// A struct using the previously-missing integer widths should compile and
 /// produce a Survey tree with the right number of fields.
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[prompt("Enter index info:")]
 struct IndexInfo {
     #[prompt("Array index:")]
@@ -479,7 +491,17 @@ mod established_tests {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Elicit,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
 enum TwoState {
     A,
     B,

@@ -195,3 +195,27 @@ mod url_tests {
         assert_kani_contains::<url::Url, UrlValid>("url::Url → UrlValid");
     }
 }
+
+// ============================================================================
+// Atomics — delegate to underlying primitive
+// ============================================================================
+
+#[test]
+fn atomics_delegate_to_primitives() {
+    use std::sync::atomic::{
+        AtomicBool, AtomicI8, AtomicI16, AtomicI32, AtomicI64, AtomicIsize, AtomicU8, AtomicU16,
+        AtomicU32, AtomicU64, AtomicUsize,
+    };
+
+    assert_kani_contains::<AtomicBool, bool>("AtomicBool → bool");
+    assert_kani_contains::<AtomicI8, i8>("AtomicI8 → i8");
+    assert_kani_contains::<AtomicI16, i16>("AtomicI16 → i16");
+    assert_kani_contains::<AtomicI32, i32>("AtomicI32 → i32");
+    assert_kani_contains::<AtomicI64, i64>("AtomicI64 → i64");
+    assert_kani_contains::<AtomicIsize, isize>("AtomicIsize → isize");
+    assert_kani_contains::<AtomicU8, u8>("AtomicU8 → u8");
+    assert_kani_contains::<AtomicU16, u16>("AtomicU16 → u16");
+    assert_kani_contains::<AtomicU32, u32>("AtomicU32 → u32");
+    assert_kani_contains::<AtomicU64, u64>("AtomicU64 → u64");
+    assert_kani_contains::<AtomicUsize, usize>("AtomicUsize → usize");
+}

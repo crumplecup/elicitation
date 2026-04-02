@@ -48,7 +48,9 @@ macro_rules! impl_atomic_elicitation {
             }
 
             fn kani_proof() -> proc_macro2::TokenStream {
-                crate::verification::proof_helpers::kani_atomic($atomic_path, "bool")
+                let mut ts = crate::verification::proof_helpers::kani_atomic($atomic_path, "bool");
+                ts.extend(<bool as Elicitation>::kani_proof());
+                ts
             }
 
             fn verus_proof() -> proc_macro2::TokenStream {
@@ -104,7 +106,12 @@ macro_rules! impl_atomic_elicitation {
             }
 
             fn kani_proof() -> proc_macro2::TokenStream {
-                crate::verification::proof_helpers::kani_atomic($atomic_path, stringify!($prim))
+                let mut ts = crate::verification::proof_helpers::kani_atomic(
+                    $atomic_path,
+                    stringify!($prim),
+                );
+                ts.extend(<$prim as Elicitation>::kani_proof());
+                ts
             }
 
             fn verus_proof() -> proc_macro2::TokenStream {
