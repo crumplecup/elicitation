@@ -8,6 +8,10 @@
 //! Each atomic wraps its corresponding primitive: eliciting an atomic value
 //! elicits the underlying primitive and wraps it with `Atomic*::new(val)`.
 //!
+//! The proof methods generate harnesses that verify the core atomic invariant:
+//! `Atomic*::new(val).load(SeqCst) == val`. Verus and Creusot proofs are
+//! `#[trusted]` since those tools cannot verify unsafe hardware atomic ops.
+//!
 //! [`ToCodeLiteral`](crate::emit_code::ToCodeLiteral) is implemented in
 //! `emit_code.rs` alongside the other primitive impls.
 
@@ -22,7 +26,7 @@ use crate::{
 };
 
 macro_rules! impl_atomic_elicitation {
-    (bool: $atomic:ty) => {
+    (bool: $atomic:ty, $atomic_path:literal) => {
         impl Prompt for $atomic {
             fn prompt() -> Option<&'static str> {
                 Some(concat!(
@@ -44,15 +48,15 @@ macro_rules! impl_atomic_elicitation {
             }
 
             fn kani_proof() -> proc_macro2::TokenStream {
-                <bool as Elicitation>::kani_proof()
+                crate::verification::proof_helpers::kani_atomic($atomic_path, "bool")
             }
 
             fn verus_proof() -> proc_macro2::TokenStream {
-                <bool as Elicitation>::verus_proof()
+                crate::verification::proof_helpers::verus_atomic($atomic_path, "bool")
             }
 
             fn creusot_proof() -> proc_macro2::TokenStream {
-                <bool as Elicitation>::creusot_proof()
+                crate::verification::proof_helpers::creusot_atomic($atomic_path, "bool")
             }
         }
 
@@ -71,7 +75,7 @@ macro_rules! impl_atomic_elicitation {
         }
     };
 
-    (int: $atomic:ty => $prim:ty) => {
+    (int: $atomic:ty, $atomic_path:literal => $prim:ty) => {
         impl Prompt for $atomic {
             fn prompt() -> Option<&'static str> {
                 Some(concat!(
@@ -100,15 +104,15 @@ macro_rules! impl_atomic_elicitation {
             }
 
             fn kani_proof() -> proc_macro2::TokenStream {
-                <$prim as Elicitation>::kani_proof()
+                crate::verification::proof_helpers::kani_atomic($atomic_path, stringify!($prim))
             }
 
             fn verus_proof() -> proc_macro2::TokenStream {
-                <$prim as Elicitation>::verus_proof()
+                crate::verification::proof_helpers::verus_atomic($atomic_path, stringify!($prim))
             }
 
             fn creusot_proof() -> proc_macro2::TokenStream {
-                <$prim as Elicitation>::creusot_proof()
+                crate::verification::proof_helpers::creusot_atomic($atomic_path, stringify!($prim))
             }
         }
 
@@ -128,16 +132,16 @@ macro_rules! impl_atomic_elicitation {
     };
 }
 
-impl_atomic_elicitation!(bool: AtomicBool);
+impl_atomic_elicitation!(bool: AtomicBool, "::std::sync::atomic::AtomicBool");
 
-impl_atomic_elicitation!(int: AtomicI8 => i8);
-impl_atomic_elicitation!(int: AtomicI16 => i16);
-impl_atomic_elicitation!(int: AtomicI32 => i32);
-impl_atomic_elicitation!(int: AtomicI64 => i64);
-impl_atomic_elicitation!(int: AtomicIsize => isize);
+impl_atomic_elicitation!(int: AtomicI8,    "::std::sync::atomic::AtomicI8"    => i8);
+impl_atomic_elicitation!(int: AtomicI16,   "::std::sync::atomic::AtomicI16"   => i16);
+impl_atomic_elicitation!(int: AtomicI32,   "::std::sync::atomic::AtomicI32"   => i32);
+impl_atomic_elicitation!(int: AtomicI64,   "::std::sync::atomic::AtomicI64"   => i64);
+impl_atomic_elicitation!(int: AtomicIsize, "::std::sync::atomic::AtomicIsize" => isize);
 
-impl_atomic_elicitation!(int: AtomicU8 => u8);
-impl_atomic_elicitation!(int: AtomicU16 => u16);
-impl_atomic_elicitation!(int: AtomicU32 => u32);
-impl_atomic_elicitation!(int: AtomicU64 => u64);
-impl_atomic_elicitation!(int: AtomicUsize => usize);
+impl_atomic_elicitation!(int: AtomicU8,    "::std::sync::atomic::AtomicU8"    => u8);
+impl_atomic_elicitation!(int: AtomicU16,   "::std::sync::atomic::AtomicU16"   => u16);
+impl_atomic_elicitation!(int: AtomicU32,   "::std::sync::atomic::AtomicU32"   => u32);
+impl_atomic_elicitation!(int: AtomicU64,   "::std::sync::atomic::AtomicU64"   => u64);
+impl_atomic_elicitation!(int: AtomicUsize, "::std::sync::atomic::AtomicUsize" => usize);

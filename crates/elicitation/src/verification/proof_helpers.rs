@@ -1746,3 +1746,83 @@ pub fn creusot_composite_wrapper(wrapper_name: &str) -> TokenStream {
         }
     }
 }
+
+// ============================================================================
+// Atomic Type Proof Helpers
+// ============================================================================
+//
+// Core property for all atomic types: constructing with a value and immediately
+// loading with SeqCst ordering returns the same value.
+
+/// Generate a Kani proof for an atomic integer/bool type (new → load identity).
+///
+/// Proves that `Atomic*::new(val).load(SeqCst) == val` for any symbolic value.
+pub fn kani_atomic(atomic_path: &str, prim_type: &str) -> TokenStream {
+    let fn_name = atomic_path
+        .replace("::", "_")
+        .replace("std_sync_atomic_", "")
+        .to_lowercase();
+    let fn_ident = Ident::new(&format!("verify_{fn_name}"), Span::call_site());
+    let atomic_tok: TokenStream = atomic_path.parse().expect("valid atomic path");
+    let prim_tok: TokenStream = prim_type.parse().expect("valid primitive type");
+    quote! {
+        #[kani::proof]
+        fn #fn_ident() {
+            use std::sync::atomic::Ordering;
+            let value: #prim_tok = kani::any();
+            let atomic = #atomic_tok::new(value);
+            assert_eq!(
+                atomic.load(Ordering::SeqCst),
+                value,
+                concat!(stringify!(#atomic_tok), "::new(val).load(SeqCst) == val")
+            );
+        }
+    }
+}
+
+/// Generate a Verus proof for an atomic integer/bool type (new → load identity).
+///
+/// Proves that loading an atomic constructed with `val` returns `val`.
+/// Verus cannot directly reason about atomics (they are `unsafe` hardware ops),
+/// so this is a trusted specification function that documents the invariant.
+pub fn verus_atomic(atomic_path: &str, prim_type: &str) -> TokenStream {
+    let fn_name = atomic_path
+        .replace("::", "_")
+        .replace("std_sync_atomic_", "")
+        .to_lowercase();
+    let fn_ident = Ident::new(&format!("verify_{fn_name}_identity"), Span::call_site());
+    let prim_tok: TokenStream = prim_type.parse().expect("valid primitive type");
+    let atomic_tok: TokenStream = atomic_path.parse().expect("valid atomic path");
+    quote! {
+        #[verifier::trusted]
+        pub fn #fn_ident(value: #prim_tok) -> (result: #prim_tok)
+            ensures result == value,
+        {
+            use std::sync::atomic::Ordering;
+            let atomic = #atomic_tok::new(value);
+            atomic.load(Ordering::SeqCst)
+        }
+    }
+}
+
+/// Generate a Creusot proof for an atomic integer/bool type (new → load identity).
+///
+/// The `#[trusted]` attribute is required because Creusot cannot verify unsafe
+/// atomic hardware operations; this axiomatises the expected identity invariant.
+pub fn creusot_atomic(atomic_path: &str, prim_type: &str) -> TokenStream {
+    let fn_name = atomic_path
+        .replace("::", "_")
+        .replace("std_sync_atomic_", "")
+        .to_lowercase();
+    let fn_ident = Ident::new(&format!("verify_{fn_name}_identity"), Span::call_site());
+    let prim_tok: TokenStream = prim_type.parse().expect("valid primitive type");
+    let atomic_tok: TokenStream = atomic_path.parse().expect("valid atomic path");
+    quote! {
+        #[trusted]
+        #[ensures(result == value)]
+        pub fn #fn_ident(value: #prim_tok) -> #prim_tok {
+            use std::sync::atomic::Ordering;
+            #atomic_tok::new(value).load(Ordering::SeqCst)
+        }
+    }
+}
