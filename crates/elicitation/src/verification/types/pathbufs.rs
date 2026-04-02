@@ -396,7 +396,6 @@ mod emit_impls {
     use super::*;
     use crate::emit_code::ToCodeLiteral;
     use proc_macro2::TokenStream;
-    use std::path::Path;
 
     impl ToCodeLiteral for PathBufExists {
         fn to_code_literal(&self) -> TokenStream {
