@@ -185,15 +185,15 @@ macro_rules! elicit_newtype {
             }
 
             fn kani_proof() -> $crate::proc_macro2::TokenStream {
-                $crate::proc_macro2::TokenStream::new()
+                $crate::verification::proof_helpers::kani_trusted_opaque(stringify!($wrapper_name))
             }
 
             fn verus_proof() -> $crate::proc_macro2::TokenStream {
-                $crate::proc_macro2::TokenStream::new()
+                $crate::verification::proof_helpers::verus_trusted_opaque(stringify!($wrapper_name))
             }
 
             fn creusot_proof() -> $crate::proc_macro2::TokenStream {
-                $crate::proc_macro2::TokenStream::new()
+                $crate::verification::proof_helpers::creusot_trusted_opaque(stringify!($wrapper_name))
             }
         }
 
@@ -332,15 +332,15 @@ macro_rules! elicit_newtype {
             }
 
             fn kani_proof() -> $crate::proc_macro2::TokenStream {
-                $crate::proc_macro2::TokenStream::new()
+                $crate::verification::proof_helpers::kani_trusted_opaque(stringify!($wrapper_name))
             }
 
             fn verus_proof() -> $crate::proc_macro2::TokenStream {
-                $crate::proc_macro2::TokenStream::new()
+                $crate::verification::proof_helpers::verus_trusted_opaque(stringify!($wrapper_name))
             }
 
             fn creusot_proof() -> $crate::proc_macro2::TokenStream {
-                $crate::proc_macro2::TokenStream::new()
+                $crate::verification::proof_helpers::creusot_trusted_opaque(stringify!($wrapper_name))
             }
         }
 

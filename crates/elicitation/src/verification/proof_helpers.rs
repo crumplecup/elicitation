@@ -1563,15 +1563,49 @@ pub fn kani_trusted_opaque(type_name: &str) -> TokenStream {
 }
 
 /// Generate a Verus proof for an opaque third-party type (trusted boundary).
-pub fn verus_trusted_opaque(_type_name: &str) -> TokenStream {
-    // Verus trusted boundary: emit an empty-body spec function
-    quote! {}
+///
+/// Emits a `#[verifier::trusted]` spec function that documents the axiom:
+/// the upstream library guarantees this type's correctness, and our wrapper
+/// only adds an elicitation interface on top.
+pub fn verus_trusted_opaque(type_name: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!(
+            "verify_{}_trusted_boundary",
+            type_name.to_lowercase().replace([':', ' ', '<', '>'], "_")
+        ),
+        Span::call_site(),
+    );
+    quote! {
+        #[verifier::trusted]
+        pub fn #fn_ident() {
+            // Trusted boundary: this type's internals are opaque to Verus.
+            // We accept the upstream library's guarantees as axioms.
+            // Our wrapper code (Elicitation impl) is verified at the call site.
+        }
+    }
 }
 
 /// Generate a Creusot proof for an opaque third-party type (trusted boundary).
-pub fn creusot_trusted_opaque(_type_name: &str) -> TokenStream {
-    // Creusot trusted boundary: emit an empty-body spec function
-    quote! {}
+///
+/// Emits a `#[trusted]` function that documents the axiom: the upstream
+/// library guarantees this type's correctness, and our wrapper only adds
+/// an elicitation interface on top.
+pub fn creusot_trusted_opaque(type_name: &str) -> TokenStream {
+    let fn_ident = Ident::new(
+        &format!(
+            "verify_{}_trusted_boundary",
+            type_name.to_lowercase().replace([':', ' ', '<', '>'], "_")
+        ),
+        Span::call_site(),
+    );
+    quote! {
+        #[trusted]
+        pub fn #fn_ident() {
+            // Trusted boundary: this type's internals are opaque to Creusot.
+            // We accept the upstream library's guarantees as axioms.
+            // Our wrapper code (Elicitation impl) is verified at the call site.
+        }
+    }
 }
 
 /// Generate Kani proofs for network address types.

@@ -18,6 +18,6 @@ fn all_serde_json_types_are_elicit_complete() {
 
 #[test]
 fn serde_json_wrapper_proofs_are_empty_by_design() {
-    assert!(elicit_serde_json::JsonValue::kani_proof().is_empty(),  "JsonValue kani_proof expected empty");
-    assert!(elicit_serde_json::JsonNumber::kani_proof().is_empty(), "JsonNumber kani_proof expected empty");
+    assert!(!elicit_serde_json::JsonValue::kani_proof().is_empty(), "JsonValue kani_proof expected non-empty");
+    assert!(!elicit_serde_json::JsonNumber::kani_proof().is_empty(), "JsonNumber kani_proof expected non-empty");
 }

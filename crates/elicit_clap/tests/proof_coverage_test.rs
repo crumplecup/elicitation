@@ -36,15 +36,15 @@ fn all_clap_types_are_elicit_complete() {
 
 #[test]
 fn clap_wrapper_proofs_are_empty_by_design() {
-    assert!(elicit_clap::Arg::kani_proof().is_empty(),       "Arg kani_proof expected empty");
-    assert!(elicit_clap::ArgAction::kani_proof().is_empty(), "ArgAction kani_proof expected empty");
-    assert!(elicit_clap::ArgGroup::kani_proof().is_empty(),  "ArgGroup kani_proof expected empty");
-    assert!(elicit_clap::ColorChoice::kani_proof().is_empty(),"ColorChoice kani_proof expected empty");
-    assert!(elicit_clap::Command::kani_proof().is_empty(),   "Command kani_proof expected empty");
-    assert!(elicit_clap::ErrorKind::kani_proof().is_empty(), "ErrorKind kani_proof expected empty");
-    assert!(elicit_clap::Id::kani_proof().is_empty(),        "Id kani_proof expected empty");
-    assert!(elicit_clap::PossibleValue::kani_proof().is_empty(), "PossibleValue kani_proof expected empty");
-    assert!(elicit_clap::ValueHint::kani_proof().is_empty(), "ValueHint kani_proof expected empty");
-    assert!(elicit_clap::ValueRange::kani_proof().is_empty(),"ValueRange kani_proof expected empty");
-    assert!(elicit_clap::ValueSource::kani_proof().is_empty(),"ValueSource kani_proof expected empty");
+    assert!(!elicit_clap::Arg::kani_proof().is_empty(), "Arg kani_proof expected non-empty");
+    assert!(!elicit_clap::ArgAction::kani_proof().is_empty(), "ArgAction kani_proof expected non-empty");
+    assert!(!elicit_clap::ArgGroup::kani_proof().is_empty(), "ArgGroup kani_proof expected non-empty");
+    assert!(!elicit_clap::ColorChoice::kani_proof().is_empty(), "ColorChoice kani_proof expected non-empty");
+    assert!(!elicit_clap::Command::kani_proof().is_empty(), "Command kani_proof expected non-empty");
+    assert!(!elicit_clap::ErrorKind::kani_proof().is_empty(), "ErrorKind kani_proof expected non-empty");
+    assert!(!elicit_clap::Id::kani_proof().is_empty(), "Id kani_proof expected non-empty");
+    assert!(!elicit_clap::PossibleValue::kani_proof().is_empty(), "PossibleValue kani_proof expected non-empty");
+    assert!(!elicit_clap::ValueHint::kani_proof().is_empty(), "ValueHint kani_proof expected non-empty");
+    assert!(!elicit_clap::ValueRange::kani_proof().is_empty(), "ValueRange kani_proof expected non-empty");
+    assert!(!elicit_clap::ValueSource::kani_proof().is_empty(), "ValueSource kani_proof expected non-empty");
 }

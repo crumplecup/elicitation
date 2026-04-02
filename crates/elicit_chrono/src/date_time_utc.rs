@@ -173,13 +173,13 @@ impl elicitation::Elicitation for DateTimeUtc {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        elicitation::verification::proof_helpers::kani_trusted_opaque("DateTimeUtc")
     }
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        elicitation::verification::proof_helpers::verus_trusted_opaque("DateTimeUtc")
     }
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        elicitation::verification::proof_helpers::creusot_trusted_opaque("DateTimeUtc")
     }
 }
 

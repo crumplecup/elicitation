@@ -162,15 +162,15 @@ impl elicitation::Elicitation for AnyRow {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        elicitation::verification::proof_helpers::kani_trusted_opaque("AnyRow")
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        elicitation::verification::proof_helpers::verus_trusted_opaque("AnyRow")
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        proc_macro2::TokenStream::new()
+        elicitation::verification::proof_helpers::creusot_trusted_opaque("AnyRow")
     }
 }
 

@@ -19,7 +19,7 @@ fn all_chrono_types_are_elicit_complete() {
 
 #[test]
 fn chrono_wrapper_proofs_are_empty_by_design() {
-    assert!(elicit_chrono::DateTimeFixed::kani_proof().is_empty(),  "DateTimeFixed kani_proof expected empty");
-    assert!(elicit_chrono::DateTimeUtc::kani_proof().is_empty(),    "DateTimeUtc kani_proof expected empty");
-    assert!(elicit_chrono::NaiveDateTime::kani_proof().is_empty(),  "NaiveDateTime kani_proof expected empty");
+    assert!(!elicit_chrono::DateTimeFixed::kani_proof().is_empty(), "DateTimeFixed kani_proof expected non-empty");
+    assert!(!elicit_chrono::DateTimeUtc::kani_proof().is_empty(), "DateTimeUtc kani_proof expected non-empty");
+    assert!(!elicit_chrono::NaiveDateTime::kani_proof().is_empty(), "NaiveDateTime kani_proof expected non-empty");
 }

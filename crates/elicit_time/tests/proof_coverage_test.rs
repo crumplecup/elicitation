@@ -18,6 +18,6 @@ fn all_time_types_are_elicit_complete() {
 
 #[test]
 fn time_wrapper_proofs_are_empty_by_design() {
-    assert!(elicit_time::OffsetDateTime::kani_proof().is_empty(),     "OffsetDateTime kani_proof expected empty");
-    assert!(elicit_time::PrimitiveDateTime::kani_proof().is_empty(),  "PrimitiveDateTime kani_proof expected empty");
+    assert!(!elicit_time::OffsetDateTime::kani_proof().is_empty(), "OffsetDateTime kani_proof expected non-empty");
+    assert!(!elicit_time::PrimitiveDateTime::kani_proof().is_empty(), "PrimitiveDateTime kani_proof expected non-empty");
 }
