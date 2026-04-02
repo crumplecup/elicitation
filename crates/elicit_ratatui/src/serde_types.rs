@@ -595,7 +595,12 @@ impl ParagraphText {
             Self::Rich(t) => t
                 .lines
                 .iter()
-                .map(|l| l.spans.iter().map(|s| s.content.as_str()).collect::<String>())
+                .map(|l| {
+                    l.spans
+                        .iter()
+                        .map(|s| s.content.as_str())
+                        .collect::<String>()
+                })
                 .collect::<Vec<_>>()
                 .join("\n"),
         }

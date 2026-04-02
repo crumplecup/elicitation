@@ -5,8 +5,8 @@
 //! into the shared AccessKit IR for verification and cross-frontend
 //! translation.
 
-use accesskit::{Node, NodeId, Role, Tree, TreeId, TreeUpdate};
 use crate::serde_types::{ContainerJson, LayoutJson, UiNode, WidgetJson};
+use accesskit::{Node, NodeId, Role, Tree, TreeId, TreeUpdate};
 
 /// Convert a `UiNode` tree into an AccessKit `TreeUpdate`.
 ///
@@ -208,10 +208,7 @@ fn widget_to_accesskit(widget: &WidgetJson) -> Node {
             n
         }
         WidgetJson::Slider {
-            value,
-            range,
-            text,
-            ..
+            value, range, text, ..
         } => {
             let mut n = Node::new(Role::Slider);
             n.set_numeric_value(*value);
@@ -223,10 +220,7 @@ fn widget_to_accesskit(widget: &WidgetJson) -> Node {
             n
         }
         WidgetJson::SliderVertical {
-            value,
-            range,
-            text,
-            ..
+            value, range, text, ..
         } => {
             let mut n = Node::new(Role::Slider);
             n.set_numeric_value(*value);
@@ -247,8 +241,7 @@ fn widget_to_accesskit(widget: &WidgetJson) -> Node {
             }
             n
         }
-        WidgetJson::DragAngle { radians }
-        | WidgetJson::DragAngleTau { radians } => {
+        WidgetJson::DragAngle { radians } | WidgetJson::DragAngleTau { radians } => {
             let mut n = Node::new(Role::SpinButton);
             n.set_numeric_value(*radians);
             n
@@ -380,7 +373,11 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
     let role = node.role();
     let label = node.label().unwrap_or("").to_string();
     let value = node.value().unwrap_or("").to_string();
-    let text = if !value.is_empty() { value } else { label.clone() };
+    let text = if !value.is_empty() {
+        value
+    } else {
+        label.clone()
+    };
 
     match role {
         Role::Button | Role::DefaultButton => WidgetJson::Button {

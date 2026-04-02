@@ -6,8 +6,6 @@
 //! - Round-trip: serialize then deserialize preserves value
 //! - JsonSchema contains the correct constraint fields
 
-#![cfg(feature = "verification")]
-
 use elicitation::verification::types::{
     F32Finite, F32NonNegative, F32Positive, F64Finite, F64NonNegative, F64Positive, I8NonNegative,
     I8NonZero, I8Positive, I16NonNegative, I16NonZero, I16Positive, StringNonEmpty, U8NonZero,
@@ -246,7 +244,6 @@ mod integer_serde {
 // Integer range tests
 // ---------------------------------------------------------------------------
 
-#[cfg(feature = "verification")]
 mod integer_range_serde {
     use elicitation::verification::types::{I8Range, I16Range, U8Range, U16Range};
 

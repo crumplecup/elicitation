@@ -892,7 +892,11 @@ fn verify_profile_a_constraint_count() {
 #[kani::proof]
 fn verify_profile_aa_constraint_count() {
     let cs = elicit_ui::ConstraintProfile::WcagAA.to_constraint_set();
-    assert_eq!(cs.hard_constraints().len(), 4, "WCAG AA: 4 hard constraints");
+    assert_eq!(
+        cs.hard_constraints().len(),
+        4,
+        "WCAG AA: 4 hard constraints"
+    );
 }
 
 /// ConstraintProfile::WcagAAA has 5 hard constraints (AA + MinTouchTarget).
@@ -900,16 +904,29 @@ fn verify_profile_aa_constraint_count() {
 #[kani::proof]
 fn verify_profile_aaa_constraint_count() {
     let cs = elicit_ui::ConstraintProfile::WcagAAA.to_constraint_set();
-    assert_eq!(cs.hard_constraints().len(), 5, "WCAG AAA: 5 hard constraints");
+    assert_eq!(
+        cs.hard_constraints().len(),
+        5,
+        "WCAG AAA: 5 hard constraints"
+    );
 }
 
 /// Monotonicity: A < AA < AAA constraint counts.
 #[cfg(feature = "ui-types")]
 #[kani::proof]
 fn verify_profile_monotonicity() {
-    let a = elicit_ui::ConstraintProfile::WcagA.to_constraint_set().hard_constraints().len();
-    let aa = elicit_ui::ConstraintProfile::WcagAA.to_constraint_set().hard_constraints().len();
-    let aaa = elicit_ui::ConstraintProfile::WcagAAA.to_constraint_set().hard_constraints().len();
+    let a = elicit_ui::ConstraintProfile::WcagA
+        .to_constraint_set()
+        .hard_constraints()
+        .len();
+    let aa = elicit_ui::ConstraintProfile::WcagAA
+        .to_constraint_set()
+        .hard_constraints()
+        .len();
+    let aaa = elicit_ui::ConstraintProfile::WcagAAA
+        .to_constraint_set()
+        .hard_constraints()
+        .len();
     assert!(a < aa, "A < AA");
     assert!(aa < aaa, "AA < AAA");
 }

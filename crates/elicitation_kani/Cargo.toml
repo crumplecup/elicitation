@@ -15,7 +15,7 @@ categories = ["development-tools", "mathematics"]
 
 [dependencies]
 # Core dependency - verification framework only
-elicitation = { workspace = true, features = ["verification"] }
+elicitation = { workspace = true }
 
 # Serialization (for serde boundary proofs)
 serde_json = { workspace = true, optional = true }

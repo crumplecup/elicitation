@@ -32,18 +32,15 @@ impl Elicitation for bool {
         Ok(wrapper.into_inner())
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         use crate::verification::types::BoolDefault;
         <BoolDefault as crate::Elicitation>::kani_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         <crate::verification::types::BoolDefault as crate::Elicitation>::verus_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         <crate::verification::types::BoolDefault as crate::Elicitation>::creusot_proof()
     }

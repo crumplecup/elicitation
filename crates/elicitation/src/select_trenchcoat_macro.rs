@@ -194,17 +194,14 @@ macro_rules! _select_trenchcoat_common {
                     .map(Self::from)
             }
 
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 <$inner_path as $crate::Elicitation>::kani_proof()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 <$inner_path as $crate::Elicitation>::verus_proof()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 <$inner_path as $crate::Elicitation>::creusot_proof()
             }

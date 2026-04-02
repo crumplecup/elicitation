@@ -134,17 +134,14 @@ impl Elicitation for Borders {
         })
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_select_wrapper("ratatui::widgets::Borders", "All")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_select_wrapper("ratatui::widgets::Borders", "All")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_select_wrapper(
             "ratatui::widgets::Borders",
@@ -200,17 +197,14 @@ impl Elicitation for BordersSelect {
             .map(Self)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         <Borders as Elicitation>::kani_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         <Borders as Elicitation>::verus_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         <Borders as Elicitation>::creusot_proof()
     }
@@ -290,7 +284,6 @@ impl Elicitation for ScrollbarOrientation {
         })
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_select_wrapper(
             "ratatui::widgets::ScrollbarOrientation",
@@ -298,7 +291,6 @@ impl Elicitation for ScrollbarOrientation {
         )
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_select_wrapper(
             "ratatui::widgets::ScrollbarOrientation",
@@ -306,7 +298,6 @@ impl Elicitation for ScrollbarOrientation {
         )
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_select_wrapper(
             "ratatui::widgets::ScrollbarOrientation",

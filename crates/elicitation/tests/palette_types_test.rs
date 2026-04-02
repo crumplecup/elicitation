@@ -179,7 +179,6 @@ fn srgb_is_elicit_complete() {
 // Proof coverage
 // ══════════════════════════════════════════════════════════════════════
 
-#[cfg(feature = "proofs")]
 mod proof_coverage {
     use elicitation::{Elicitation, PaletteSrgb};
 

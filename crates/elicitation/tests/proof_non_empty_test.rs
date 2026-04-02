@@ -5,8 +5,6 @@
 //! This catches regressions where a refactor accidentally drops proof
 //! content from a manual impl.
 
-#![cfg(feature = "proofs")]
-
 use elicitation::Elicitation;
 
 /// Assert all three proof methods return non-empty TokenStreams.

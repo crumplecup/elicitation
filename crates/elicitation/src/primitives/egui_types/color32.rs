@@ -74,17 +74,14 @@ impl Elicitation for EguiColor32 {
         Ok(Self { r, g, b, a })
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_composite_wrapper("EguiColor32")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_composite_wrapper("EguiColor32")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_composite_wrapper("EguiColor32")
     }

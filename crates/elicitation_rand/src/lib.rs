@@ -77,7 +77,7 @@ pub mod collections;
 pub mod rand_trait;
 
 // Phase 6 - Kani verification
-#[cfg(all(kani, feature = "verification"))]
+#[cfg(kani)]
 pub mod verification;
 
 pub use collections::VecGenerator;

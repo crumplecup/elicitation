@@ -2,9 +2,7 @@
 
 use accesskit::{Node, NodeId, Role, Tree, TreeId, TreeUpdate};
 use elicit_egui::egui_accesskit_convert::{tree_update_to_ui_node, ui_node_to_tree_update};
-use elicit_egui::serde_types::{
-    ContainerJson, LayoutJson, RangeJson, UiNode, WidgetJson,
-};
+use elicit_egui::serde_types::{ContainerJson, LayoutJson, RangeJson, UiNode, WidgetJson};
 
 // ── Forward: UiNode → AccessKit ────────────────────────────
 
@@ -42,10 +40,7 @@ fn checkbox_preserves_toggle_state() {
     let update = ui_node_to_tree_update(&node);
     let (_, ak_node) = &update.nodes[0];
     assert_eq!(ak_node.role(), Role::CheckBox);
-    assert!(matches!(
-        ak_node.toggled(),
-        Some(accesskit::Toggled::True)
-    ));
+    assert!(matches!(ak_node.toggled(), Some(accesskit::Toggled::True)));
 }
 
 #[test]
@@ -207,7 +202,9 @@ fn accesskit_slider_roundtrip() {
 
     match roundtripped {
         UiNode::Widget {
-            widget: WidgetJson::Slider { value, range, text, .. },
+            widget: WidgetJson::Slider {
+                value, range, text, ..
+            },
         } => {
             assert!((value - 75.0).abs() < f64::EPSILON);
             assert!((range.min - 10.0).abs() < f64::EPSILON);

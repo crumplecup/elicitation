@@ -208,10 +208,7 @@ fn render_slider() {
 
     let update = make_update(
         root_id,
-        vec![
-            (root_id, window_root(vec![slider_id])),
-            (slider_id, slider),
-        ],
+        vec![(root_id, window_root(vec![slider_id])), (slider_id, slider)],
         root_id,
     );
 

@@ -347,7 +347,33 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
         quote! {}
     };
 
-    #[cfg(feature = "proofs")]
+    // Generate ElicitPromptTree impl for tuple struct by creating synthetic FieldInfos
+    // with index-based names ("0", "1", ...) matching how Survey fields are named.
+    #[cfg(feature = "prompt-tree")]
+    let prompt_tree_impl = {
+        let tuple_field_infos: Vec<FieldInfo> = field_types
+            .iter()
+            .enumerate()
+            .map(|(i, ty)| FieldInfo {
+                ident: quote::format_ident!("_{}", i),
+                ty: (*ty).clone(),
+                default_prompt: None,
+                styled_prompts: std::collections::HashMap::new(),
+                spec_requires: vec![],
+            })
+            .collect();
+        generate_prompt_tree_impl_struct(
+            name,
+            &tuple_field_infos,
+            custom_prompt.as_deref(),
+            &impl_generics,
+            &ty_generics,
+            &where_clause,
+        )
+    };
+    #[cfg(not(feature = "prompt-tree"))]
+    let prompt_tree_impl = quote! {};
+
     let proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             let mut ts = elicitation::proc_macro2::TokenStream::new();
@@ -367,9 +393,6 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
             ts
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let proof_methods = quote! {};
-    #[cfg(feature = "proofs")]
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_single_variant_enum(
@@ -387,8 +410,6 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
             )
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let style_proof_methods = quote! {};
 
     let expanded = quote! {
         impl elicitation::Prompt for #name #ty_generics #where_clause {
@@ -461,6 +482,7 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
 
         #elicit_spec_impl
         #graph_key_emission
+        #prompt_tree_impl
     };
 
     TokenStream::from(expanded)
@@ -548,7 +570,6 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
         quote! {}
     };
 
-    #[cfg(feature = "proofs")]
     let proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_unit_struct(stringify!(#name))
@@ -562,9 +583,6 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
             elicitation::verification::proof_helpers::creusot_unit_struct(stringify!(#name))
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let proof_methods = quote! {};
-    #[cfg(feature = "proofs")]
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_single_variant_enum(
@@ -582,8 +600,6 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
             )
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let style_proof_methods = quote! {};
 
     let expanded = quote! {
         impl elicitation::Prompt for #name #ty_generics #where_clause {
@@ -919,7 +935,6 @@ fn generate_elicit_impl_simple(
         }
     };
 
-    #[cfg(feature = "proofs")]
     let proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             let mut ts = elicitation::proc_macro2::TokenStream::new();
@@ -945,9 +960,6 @@ fn generate_elicit_impl_simple(
             ts
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let proof_methods = quote! {};
-    #[cfg(feature = "proofs")]
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_single_variant_enum(
@@ -965,8 +977,6 @@ fn generate_elicit_impl_simple(
             )
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let style_proof_methods = quote! {};
 
     quote! {
         /// Style enum for this type (default-only).
@@ -1202,9 +1212,7 @@ fn generate_elicit_impl_styled(
         }
     };
 
-    #[cfg(feature = "proofs")]
     let elicited_types: Vec<_> = elicited_fields.iter().map(|info| &info.ty).collect();
-    #[cfg(feature = "proofs")]
     let proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             let mut ts = elicitation::proc_macro2::TokenStream::new();
@@ -1230,9 +1238,6 @@ fn generate_elicit_impl_styled(
             ts
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let proof_methods = quote! {};
-    #[cfg(feature = "proofs")]
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_single_variant_enum(
@@ -1250,8 +1255,6 @@ fn generate_elicit_impl_styled(
             )
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let style_proof_methods = quote! {};
 
     // Generate enum with first variant as default
     let default_variant = &style_variants[0];

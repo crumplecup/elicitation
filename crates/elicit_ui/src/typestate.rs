@@ -294,7 +294,6 @@ impl Layout<Verified> {
 
         (layout, stats)
     }
-
 }
 
 impl Layout<Rendered> {

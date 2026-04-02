@@ -1,0 +1,15 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_labels_ErrorKind": { "prover": "cvc5@1.3.1", "time": 0.01 },
+      "vc_len_ErrorKind": { "prover": "cvc5@1.3.1", "time": 0.012 },
+      "vc_len_String": { "prover": "cvc5@1.3.1", "time": 0.015 },
+      "vc_options_ErrorKind": { "prover": "cvc5@1.3.1", "time": 0.012 },
+      "vc_verify_sqlx_error_kind_label_count": {
+        "prover": "cvc5@1.3.1",
+        "time": 0.015
+      }
+    }
+  }
+}

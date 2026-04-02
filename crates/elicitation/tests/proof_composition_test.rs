@@ -13,8 +13,6 @@
 //! Only covers **manual** impls — derived types get composition for free
 //! from the `#[derive(Elicit)]` macro which iterates fields mechanically.
 
-#![cfg(feature = "proofs")]
-
 use elicitation::Elicitation;
 
 // ============================================================================

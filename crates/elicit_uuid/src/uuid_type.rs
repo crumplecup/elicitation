@@ -55,3 +55,10 @@ impl Uuid {
             .map(|u| std::sync::Arc::new(u).into())
     }
 }
+
+impl Default for Uuid {
+    /// Returns the nil UUID (all zeros).
+    fn default() -> Self {
+        uuid::Uuid::nil().into()
+    }
+}

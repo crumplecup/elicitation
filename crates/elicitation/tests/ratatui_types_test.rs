@@ -17,7 +17,6 @@ use elicitation::{
 fn assert_elicit_complete<T: ElicitComplete>() {}
 
 /// Assert all three proof methods return non-empty token streams.
-#[cfg(feature = "proofs")]
 #[track_caller]
 fn assert_proofs_non_empty<T: Elicitation>(label: &str) {
     assert!(!T::kani_proof().is_empty(), "{label}: kani_proof is empty");
@@ -538,7 +537,6 @@ mod elicit_complete {
 
 // ── Proof coverage (non-empty token streams) ──────────────────────────────────
 
-#[cfg(feature = "proofs")]
 mod proof_coverage {
     use super::*;
     use ratatui::layout::{Alignment, Direction};

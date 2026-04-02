@@ -60,17 +60,14 @@ impl Elicitation for StringStyle {
         })
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_multi_variant_enum("StringStyle", "Human")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_multi_variant_enum("StringStyle")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_multi_variant_enum("StringStyle")
     }
@@ -103,17 +100,14 @@ impl Elicitation for String {
         communicator.send_prompt(prompt).await
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_string()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_string()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_string()
     }

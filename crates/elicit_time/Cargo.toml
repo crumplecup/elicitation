@@ -29,7 +29,6 @@ quote = { workspace = true, optional = true }
 
 [features]
 emit = ["dep:quote", "elicitation/emit"]
-proofs = ["elicitation/proofs"]
 
 [dev-dependencies]
 serde_json.workspace = true

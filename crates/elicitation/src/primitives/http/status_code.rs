@@ -24,17 +24,14 @@ impl Elicitation for reqwest::StatusCode {
         Ok(wrapper.into_inner())
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_trusted_opaque("status_code")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_trusted_opaque("status_code")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_trusted_opaque("status_code")
     }
@@ -98,17 +95,14 @@ impl Elicitation for StatusCodeValid {
             .map_err(|e| ElicitError::new(ElicitErrorKind::ParseError(e.to_string())))
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_trusted_opaque("status_code")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_trusted_opaque("status_code")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_trusted_opaque("status_code")
     }

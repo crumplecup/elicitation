@@ -9,20 +9,13 @@
 //! cargo run --example verification_multi_example --features verification
 //! ```
 
-#[cfg(feature = "verification")]
 use elicitation::verification::contracts::{I32Positive, StringNonEmpty, VecNonEmpty};
-#[cfg(feature = "verification")]
 use elicitation::verification::{Contract, DynContract, VerifierBackend, compose};
 
 fn main() {
-    #[cfg(not(feature = "verification"))]
-    println!("Run with --features verification to see multi-verifier contracts.");
-
-    #[cfg(feature = "verification")]
     run();
 }
 
-#[cfg(feature = "verification")]
 fn run() {
     println!("=== Multi-Verifier Contract Example ===\n");
 

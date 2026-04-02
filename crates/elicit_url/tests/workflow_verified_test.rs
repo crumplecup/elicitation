@@ -1,7 +1,5 @@
 //! `VerifiedWorkflow` validation tests for elicit_url propositions.
 
-#![cfg(feature = "proofs")]
-
 use elicit_url::{HttpsRequired, SchemeAllowed, UrlParsed};
 use elicitation::VerifiedWorkflow;
 use elicitation::contracts::And;

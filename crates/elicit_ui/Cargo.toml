@@ -13,7 +13,7 @@ keywords = ["mcp", "ui", "accessibility", "typestate", "verification"]
 categories = ["gui", "development-tools", "accessibility"]
 
 [dependencies]
-elicitation = { workspace = true, features = ["accesskit", "proofs"] }
+elicitation = { workspace = true, features = ["accesskit"] }
 elicitation_derive.workspace = true
 elicitation_macros.workspace = true
 elicit_accesskit.workspace = true

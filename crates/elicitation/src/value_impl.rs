@@ -91,17 +91,14 @@ impl Elicitation for JsonType {
             .ok_or_else(|| ElicitError::new(ElicitErrorKind::InvalidSelection(label)))
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_select_wrapper("JsonType", "null")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_select_wrapper("JsonType", "null")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_select_wrapper("JsonType", "null")
     }
@@ -121,17 +118,14 @@ impl Elicitation for Value {
         elicit_with_depth(communicator, 0).await
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_trusted_opaque("serde_json::Value")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_trusted_opaque("serde_json::Value")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_trusted_opaque("serde_json::Value")
     }

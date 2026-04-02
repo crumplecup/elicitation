@@ -7,8 +7,8 @@ use accesskit::{Node, NodeId};
 use elicit_ui::{RenderBackend, RenderStats};
 use std::collections::HashMap;
 
-use crate::tui_accesskit_convert;
 use crate::serde_types::TuiNode;
+use crate::tui_accesskit_convert;
 
 /// Ratatui render backend for verified AccessKit trees.
 ///
@@ -81,11 +81,7 @@ impl RenderBackend for RatatuiBackend {
     }
 }
 
-fn count_nodes(
-    nodes: &HashMap<NodeId, Node>,
-    node_id: NodeId,
-    stats: &mut RenderStats,
-) {
+fn count_nodes(nodes: &HashMap<NodeId, Node>, node_id: NodeId, stats: &mut RenderStats) {
     let Some(node) = nodes.get(&node_id) else {
         stats.nodes_skipped += 1;
         return;

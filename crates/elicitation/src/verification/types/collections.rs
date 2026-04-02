@@ -73,19 +73,16 @@ impl<T: Elicitation + Send> Elicitation for VecNonEmpty<T> {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = crate::verification::proof_helpers::kani_vec_non_empty();
         ts.extend(<T as Elicitation>::kani_proof());
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("VecNonEmpty")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("VecNonEmpty")
     }
@@ -134,17 +131,14 @@ impl<C: Elicitation + Send> Elicitation for VecAllSatisfy<C> {
         Ok(Self::new(elements)) // Composition = automatic verification
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         <C as Elicitation>::kani_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("VecAllSatisfy")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("VecAllSatisfy")
     }
@@ -208,19 +202,16 @@ impl<T: Elicitation + Send> Elicitation for OptionSome<T> {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = crate::verification::proof_helpers::kani_option_some();
         ts.extend(<T as Elicitation>::kani_proof());
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("OptionSome")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("OptionSome")
     }
@@ -274,19 +265,16 @@ impl<T: Elicitation + Send> Elicitation for ResultOk<T> {
         Ok(Self::from_value(value))
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = crate::verification::proof_helpers::kani_result_ok();
         ts.extend(<T as Elicitation>::kani_proof());
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("ResultOk")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("ResultOk")
     }
@@ -332,19 +320,16 @@ impl<C: Elicitation + Send> Elicitation for BoxSatisfies<C> {
         Ok(Self::new(value))
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = crate::verification::proof_helpers::kani_pointer_satisfies("Box");
         ts.extend(<C as Elicitation>::kani_proof());
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("BoxSatisfies")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("BoxSatisfies")
     }
@@ -390,19 +375,16 @@ impl<C: Elicitation + Send> Elicitation for ArcSatisfies<C> {
         Ok(Self::new(value))
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = crate::verification::proof_helpers::kani_pointer_satisfies("Arc");
         ts.extend(<C as Elicitation>::kani_proof());
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("ArcSatisfies")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("ArcSatisfies")
     }
@@ -448,19 +430,16 @@ impl<C: Elicitation + Send> Elicitation for RcSatisfies<C> {
         Ok(Self::new(value))
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = crate::verification::proof_helpers::kani_pointer_satisfies("Rc");
         ts.extend(<C as Elicitation>::kani_proof());
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("RcSatisfies")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("RcSatisfies")
     }
@@ -682,7 +661,6 @@ where
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = crate::verification::proof_helpers::kani_map_non_empty("HashMap");
         ts.extend(<K as Elicitation>::kani_proof());
@@ -690,12 +668,10 @@ where
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("HashMapNonEmpty")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("HashMapNonEmpty")
     }
@@ -818,7 +794,6 @@ where
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = crate::verification::proof_helpers::kani_map_non_empty("BTreeMap");
         ts.extend(<K as Elicitation>::kani_proof());
@@ -826,12 +801,10 @@ where
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("BTreeMapNonEmpty")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("BTreeMapNonEmpty")
     }
@@ -951,19 +924,16 @@ where
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = crate::verification::proof_helpers::kani_set_non_empty("HashSet");
         ts.extend(<T as Elicitation>::kani_proof());
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("HashSetNonEmpty")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("HashSetNonEmpty")
     }
@@ -1079,19 +1049,16 @@ where
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = crate::verification::proof_helpers::kani_set_non_empty("BTreeSet");
         ts.extend(<T as Elicitation>::kani_proof());
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("BTreeSetNonEmpty")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("BTreeSetNonEmpty")
     }
@@ -1211,19 +1178,16 @@ where
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = crate::verification::proof_helpers::kani_set_non_empty("VecDeque");
         ts.extend(<T as Elicitation>::kani_proof());
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("VecDequeNonEmpty")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("VecDequeNonEmpty")
     }
@@ -1339,19 +1303,16 @@ where
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = crate::verification::proof_helpers::kani_set_non_empty("LinkedList");
         ts.extend(<T as Elicitation>::kani_proof());
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("LinkedListNonEmpty")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("LinkedListNonEmpty")
     }
@@ -1410,19 +1371,16 @@ where
         Ok(Self::new(elements))
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut tokens = crate::verification::proof_helpers::kani_array_all_satisfy();
         tokens.extend(<C as Elicitation>::kani_proof());
         tokens
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("ArrayAllSatisfy")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("ArrayAllSatisfy")
     }

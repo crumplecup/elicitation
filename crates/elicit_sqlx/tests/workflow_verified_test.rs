@@ -1,7 +1,5 @@
 //! `VerifiedWorkflow` validation tests for elicit_sqlx propositions.
 
-#![cfg(feature = "proofs")]
-
 use elicit_sqlx::{
     DbConnected, MigrateFragmentEmitted, QueryAsFragmentEmitted, QueryExecuted,
     QueryFragmentEmitted, QueryScalarFragmentEmitted, RowsFetched, TransactionCommitted,

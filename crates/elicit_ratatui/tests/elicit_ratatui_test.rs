@@ -1258,14 +1258,23 @@ fn paragraph_text_to_plain_string() {
         lines: vec![
             LineJson {
                 spans: vec![
-                    SpanJson { content: "foo".into(), style: None },
-                    SpanJson { content: "bar".into(), style: None },
+                    SpanJson {
+                        content: "foo".into(),
+                        style: None,
+                    },
+                    SpanJson {
+                        content: "bar".into(),
+                        style: None,
+                    },
                 ],
                 style: None,
                 alignment: None,
             },
             LineJson {
-                spans: vec![SpanJson { content: "baz".into(), style: None }],
+                spans: vec![SpanJson {
+                    content: "baz".into(),
+                    style: None,
+                }],
                 style: None,
                 alignment: None,
             },

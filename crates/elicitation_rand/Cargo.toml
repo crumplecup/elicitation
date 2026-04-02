@@ -27,7 +27,6 @@ time = ["dep:time"]
 jiff = ["dep:jiff"]
 uuid = ["dep:uuid"]
 url = ["dep:url"]
-verification = ["chrono", "csv", "serde"]
 
 [dev-dependencies]
 tokio = { workspace = true }

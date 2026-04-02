@@ -521,7 +521,6 @@ fn generate_elicit_impl(
     // Phase 2: Field elicitation based on variant
     let match_arms = variants.iter().map(|v| generate_variant_match_arm(v, name));
 
-    #[cfg(feature = "proofs")]
     let proof_methods = if all_field_types.is_empty() {
         // No field types to delegate to — emit a trivial-but-non-empty proof that
         // witnesses the enum's own variants are reachable and well-formed.
@@ -572,8 +571,6 @@ fn generate_elicit_impl(
             }
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let proof_methods = quote! {};
 
     quote! {
         #[automatically_derived]
@@ -630,7 +627,6 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
 
     // Compute proof methods at macro-expansion time so the cfg is checked against
     // this proc-macro's own `proofs` feature, not the destination crate's features.
-    #[cfg(feature = "proofs")]
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_single_variant_enum(
@@ -648,8 +644,6 @@ fn generate_style_enum(name: &syn::Ident) -> TokenStream2 {
             )
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let style_proof_methods = quote! {};
 
     quote! {
         /// Style enum for this type (default-only for now).

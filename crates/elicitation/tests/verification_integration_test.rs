@@ -3,8 +3,6 @@
 //! This test verifies that #[derive(Elicit)] generates correct verification
 //! code for all four supported verifiers.
 
-#![cfg(feature = "verification")]
-
 use elicitation::*;
 
 /// Test struct with multiple field types to ensure comprehensive verification.

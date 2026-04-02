@@ -14,7 +14,7 @@ categories = ["web-programming::http-client", "development-tools", "asynchronous
 
 [dependencies]
 # Elicitation framework with reqwest + url support
-elicitation = { workspace = true, features = ["reqwest", "verification"] }
+elicitation = { workspace = true, features = ["reqwest"] }
 elicitation_derive.workspace = true
 
 # HTTP client
@@ -52,7 +52,6 @@ quote = { workspace = true, optional = true }
 
 [features]
 emit = ["dep:quote", "elicitation/emit"]
-proofs = ["elicitation/proofs"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["test-util"] }

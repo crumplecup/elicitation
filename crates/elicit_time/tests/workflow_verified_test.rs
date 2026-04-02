@@ -1,7 +1,5 @@
 //! `VerifiedWorkflow` validation tests for elicit_time propositions.
 
-#![cfg(feature = "proofs")]
-
 use elicit_time::{OffsetDateTimeFuture, OffsetDateTimeParsed, PrimitiveDateTimeParsed};
 use elicitation::VerifiedWorkflow;
 use elicitation::contracts::And;

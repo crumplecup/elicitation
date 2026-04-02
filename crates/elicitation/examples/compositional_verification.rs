@@ -61,7 +61,6 @@
 //! cargo kani --harness verify_compositional_legos
 //! ```
 
-#[cfg(any(feature = "verification", kani))]
 use elicitation::Elicit;
 
 #[cfg(kani)]
@@ -83,7 +82,6 @@ use elicitation::Elicitation;
 // Layer 2: Derived Structs (Compositional Proofs)
 // ============================================================================
 
-#[cfg(any(feature = "verification", kani))]
 mod layer2 {
     use super::*;
 
@@ -123,14 +121,12 @@ mod layer2 {
     }
 }
 
-#[cfg(any(feature = "verification", kani))]
 use layer2::{AppMetadata, NetworkConfig};
 
 // ============================================================================
 // Layer 3: Higher-Order Types (Nested Compositional Proofs)
 // ============================================================================
 
-#[cfg(any(feature = "verification", kani))]
 mod layer3 {
     use super::*;
     use elicitation::{Prompt, Select};
@@ -177,7 +173,6 @@ mod layer3 {
     }
 }
 
-#[cfg(any(feature = "verification", kani))]
 // Example types removed;
 
 // ============================================================================
@@ -284,20 +279,11 @@ fn main() {
     println!("The verification happens when you compile - no runtime needed!");
     println!();
 
-    #[cfg(any(feature = "verification", kani))]
     {
         println!("Verification features enabled - types are compositionally verified!");
         println!();
         println!("To witness the proofs:");
         println!("  cargo check --example compositional_verification --features verification");
         println!("  cargo kani --harness verify_compositional_legos");
-    }
-
-    #[cfg(not(any(feature = "verification", kani)))]
-    {
-        println!("Verification features NOT enabled.");
-        println!();
-        println!("To enable verification:");
-        println!("  cargo check --example compositional_verification --features verification");
     }
 }

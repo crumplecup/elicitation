@@ -1,7 +1,5 @@
 //! Proof coverage tests — assert every Prop has non-empty kani/verus/creusot proofs.
 
-#![cfg(feature = "proofs")]
-
 use elicit_sqlx::{
     DbConnected, MigrateFragmentEmitted, QueryAsFragmentEmitted, QueryExecuted,
     QueryFragmentEmitted, QueryScalarFragmentEmitted, RowsFetched, TransactionCommitted,

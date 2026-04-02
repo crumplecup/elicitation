@@ -147,7 +147,6 @@ pub trait ElicitComplete:
     /// ```rust,ignore
     /// assert!(bool::validate_proofs_non_empty(), "bool proofs must be non-empty");
     /// ```
-    #[cfg(feature = "proofs")]
     fn validate_proofs_non_empty() -> bool {
         !Self::kani_proof().is_empty()
             && !Self::verus_proof().is_empty()
@@ -166,7 +165,6 @@ pub trait ElicitComplete:
     /// assert!(VecNonEmpty::<String>::kani_proof_contains::<String>(),
     ///     "VecNonEmpty proof must include String's proof");
     /// ```
-    #[cfg(feature = "proofs")]
     fn kani_proof_contains<Inner: Elicitation>() -> bool {
         let outer = Self::kani_proof().to_string();
         let inner = Inner::kani_proof().to_string();
@@ -174,7 +172,6 @@ pub trait ElicitComplete:
     }
 
     /// Runtime check: does this type's Verus proof contain `Inner`'s Verus proof?
-    #[cfg(feature = "proofs")]
     fn verus_proof_contains<Inner: Elicitation>() -> bool {
         let outer = Self::verus_proof().to_string();
         let inner = Inner::verus_proof().to_string();
@@ -182,7 +179,6 @@ pub trait ElicitComplete:
     }
 
     /// Runtime check: does this type's Creusot proof contain `Inner`'s Creusot proof?
-    #[cfg(feature = "proofs")]
     fn creusot_proof_contains<Inner: Elicitation>() -> bool {
         let outer = Self::creusot_proof().to_string();
         let inner = Inner::creusot_proof().to_string();

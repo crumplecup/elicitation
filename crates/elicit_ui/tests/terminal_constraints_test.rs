@@ -67,7 +67,10 @@ fn terminal_no_overflow_exceeds_cols() {
         .hard(TerminalNoOverflow)
         .build();
     let result = set.verify(root_id, &ctx);
-    assert!(!result.is_valid(), "100 cols should overflow 80-col viewport");
+    assert!(
+        !result.is_valid(),
+        "100 cols should overflow 80-col viewport"
+    );
     assert_eq!(result.hard_violations.len(), 1);
 }
 
@@ -86,7 +89,10 @@ fn terminal_no_overflow_exceeds_rows() {
         .hard(TerminalNoOverflow)
         .build();
     let result = set.verify(root_id, &ctx);
-    assert!(!result.is_valid(), "30 rows should overflow 24-row viewport");
+    assert!(
+        !result.is_valid(),
+        "30 rows should overflow 24-row viewport"
+    );
 }
 
 #[test]
@@ -94,7 +100,11 @@ fn terminal_no_overflow_child_overflows() {
     let root_id = NodeId::from(0u64);
     let child_id = NodeId::from(1u64);
 
-    let root = make_node(Role::Window, Some(rect(0.0, 0.0, 80.0, 24.0)), vec![child_id]);
+    let root = make_node(
+        Role::Window,
+        Some(rect(0.0, 0.0, 80.0, 24.0)),
+        vec![child_id],
+    );
     // Child starts at col 70, 20 cols wide → exceeds 80-col viewport
     let child = make_node(Role::Group, Some(rect(70.0, 0.0, 90.0, 10.0)), vec![]);
 
@@ -108,7 +118,10 @@ fn terminal_no_overflow_child_overflows() {
         .hard(TerminalNoOverflow)
         .build();
     let result = set.verify(root_id, &ctx);
-    assert!(!result.is_valid(), "Child at col 70+20 overflows 80-col viewport");
+    assert!(
+        !result.is_valid(),
+        "Child at col 70+20 overflows 80-col viewport"
+    );
 }
 
 #[test]
@@ -288,7 +301,10 @@ fn terminal_accessible_catches_overflow() {
 
     let set = TerminalAccessible::default().to_constraint_set();
     let result = set.verify(root_id, &ctx);
-    assert!(!result.is_valid(), "TerminalAccessible should catch overflow");
+    assert!(
+        !result.is_valid(),
+        "TerminalAccessible should catch overflow"
+    );
 }
 
 #[test]

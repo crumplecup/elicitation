@@ -2,8 +2,6 @@
 //!
 //! A failing test here means a Prop was added without implementing proof methods.
 
-#![cfg(feature = "proofs")]
-
 use elicit_tokio::{
     BarrierReached,
     BytesCopied,

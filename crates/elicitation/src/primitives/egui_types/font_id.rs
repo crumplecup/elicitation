@@ -57,17 +57,14 @@ impl Elicitation for EguiFontId {
         Ok(Self { size, family })
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_composite_wrapper("EguiFontId")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_composite_wrapper("EguiFontId")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_composite_wrapper("EguiFontId")
     }

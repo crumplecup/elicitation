@@ -25,17 +25,14 @@ impl Elicitation for BoxStyle {
         Ok(Self::Default)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_single_variant_enum("BoxStyle")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_single_variant_enum("BoxStyle")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_single_variant_enum("BoxStyle")
     }
@@ -62,17 +59,14 @@ impl Elicitation for RcStyle {
         Ok(Self::Default)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_single_variant_enum("RcStyle")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_single_variant_enum("RcStyle")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_single_variant_enum("RcStyle")
     }
@@ -99,17 +93,14 @@ impl Elicitation for ArcStyle {
         Ok(Self::Default)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_single_variant_enum("ArcStyle")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_single_variant_enum("ArcStyle")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_single_variant_enum("ArcStyle")
     }
@@ -140,17 +131,14 @@ where
         T::elicit(communicator).await.map(Box::new)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         <T as Elicitation>::kani_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         <T as Elicitation>::verus_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         <T as Elicitation>::creusot_proof()
     }
@@ -179,17 +167,14 @@ where
         T::elicit(communicator).await.map(Rc::new)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         <T as Elicitation>::kani_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         <T as Elicitation>::verus_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         <T as Elicitation>::creusot_proof()
     }
@@ -218,17 +203,14 @@ where
         T::elicit(communicator).await.map(Arc::new)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         <T as Elicitation>::kani_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         <T as Elicitation>::verus_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         <T as Elicitation>::creusot_proof()
     }

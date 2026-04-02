@@ -63,7 +63,6 @@ impl Elicitation for ColorChoice {
         })
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_select_wrapper(
             "ColorChoice",
@@ -71,7 +70,6 @@ impl Elicitation for ColorChoice {
         )
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_select_wrapper(
             "ColorChoice",
@@ -79,7 +77,6 @@ impl Elicitation for ColorChoice {
         )
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_select_wrapper(
             "ColorChoice",

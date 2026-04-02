@@ -10,7 +10,6 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::DeriveInput;
 
-#[cfg(feature = "proofs")]
 use heck::ToSnakeCase;
 
 /// Expand `#[derive(Prop)]` for a struct.
@@ -22,7 +21,6 @@ pub fn expand(input: TokenStream) -> TokenStream {
     // Gate proof method generation on elicitation_derive's own `proofs` feature.
     // This mirrors how `#[derive(Elicit)]` conditionally generates proof methods
     // in struct_impl.rs — using compile-time cfg, NOT `#[cfg(...)]` in generated code.
-    #[cfg(feature = "proofs")]
     let proof_methods = {
         // Convert PascalCase to snake_case at macro-expansion time so the
         // downstream crate needs no snake_case dependency at runtime.
@@ -41,8 +39,6 @@ pub fn expand(input: TokenStream) -> TokenStream {
             }
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let proof_methods = quote! {};
 
     let expanded = quote! {
         impl #impl_generics ::elicitation::contracts::Prop for #name #ty_generics

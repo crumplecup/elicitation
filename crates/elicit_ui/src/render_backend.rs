@@ -24,9 +24,5 @@ pub trait RenderBackend {
     /// Render the AccessKit tree starting from `root`.
     ///
     /// Returns [`RenderStats`] summarizing what was rendered.
-    fn render_tree(
-        &self,
-        nodes: &HashMap<NodeId, Node>,
-        root: NodeId,
-    ) -> RenderStats;
+    fn render_tree(&self, nodes: &HashMap<NodeId, Node>, root: NodeId) -> RenderStats;
 }

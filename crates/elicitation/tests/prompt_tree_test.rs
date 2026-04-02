@@ -441,7 +441,6 @@ fn struct_with_usize_isize_fields_is_survey() {
 // (any struct with a proof-token field would fail to compile with prompt-tree)
 // ============================================================================
 
-#[cfg(feature = "verification")]
 mod established_tests {
     use super::*;
     use elicitation::contracts::Established;
