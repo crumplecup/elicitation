@@ -180,6 +180,7 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
         #graph_key_emission
         #prompt_tree_impl
         #to_code_literal_impl
+        impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #where_clause {}
     };
 
     TokenStream::from(expanded)
@@ -502,7 +503,11 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
         &where_clause,
     );
 
-    TokenStream::from(quote! { #expanded #to_code_literal_impl })
+    TokenStream::from(quote! {
+        #expanded
+        #to_code_literal_impl
+        impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #where_clause {}
+    })
 }
 
 /// Expand #[derive(Elicit)] for unit structs.
@@ -698,7 +703,11 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
         &where_clause,
     );
 
-    TokenStream::from(quote! { #expanded #to_code_literal_impl })
+    TokenStream::from(quote! {
+        #expanded
+        #to_code_literal_impl
+        impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #where_clause {}
+    })
 }
 
 /// Field information for code generation.

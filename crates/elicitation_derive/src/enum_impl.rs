@@ -146,6 +146,7 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
         #graph_key_emission
         #prompt_tree_impl
         #to_code_literal_impl
+        impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #where_clause {}
     };
 
     TokenStream::from(expanded)
