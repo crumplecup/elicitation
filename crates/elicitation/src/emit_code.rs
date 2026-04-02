@@ -886,6 +886,19 @@ impl<T: ToCodeLiteral> ToCodeLiteral for Vec<T> {
     }
 }
 
+impl<T: ToCodeLiteral, const N: usize> ToCodeLiteral for [T; N] {
+    fn type_tokens() -> TokenStream {
+        let t = <T as ToCodeLiteral>::type_tokens();
+        let n = proc_macro2::Literal::usize_suffixed(N);
+        quote::quote! { [#t; #n] }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let elements: Vec<_> = self.iter().map(|e| e.to_code_literal()).collect();
+        quote::quote! { [#(#elements),*] }
+    }
+}
+
 impl<V: ToCodeLiteral> ToCodeLiteral for std::collections::HashMap<String, V> {
     fn type_tokens() -> TokenStream {
         let v = <V as ToCodeLiteral>::type_tokens();
