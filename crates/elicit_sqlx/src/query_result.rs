@@ -43,3 +43,42 @@ impl AnyQueryResult {
         }
     }
 }
+
+impl serde::Serialize for AnyQueryResult {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.to_result_data().serialize(serializer)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for AnyQueryResult {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        let data = QueryResultData::deserialize(d)?;
+        Ok(AnyQueryResult(std::sync::Arc::new(
+            sqlx::any::AnyQueryResult {
+                rows_affected: data.rows_affected,
+                last_insert_id: data.last_insert_id,
+            },
+        )))
+    }
+}
+
+mod emit_impls {
+    use super::AnyQueryResult;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for AnyQueryResult {
+        fn to_code_literal(&self) -> TokenStream {
+            let rows_affected = self.rows_affected();
+            let last_insert_id = self.last_insert_id();
+            quote::quote! {
+                ::elicit_sqlx::AnyQueryResult::from(::sqlx::any::AnyQueryResult {
+                    rows_affected: #rows_affected,
+                    last_insert_id: #last_insert_id,
+                })
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for AnyQueryResult {}

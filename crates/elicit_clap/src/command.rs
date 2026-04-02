@@ -103,3 +103,22 @@ impl Command {
         self.0.get_display_order()
     }
 }
+
+// ── ElicitComplete + ToCodeLiteral ───────────────────────────────────────────
+
+mod emit_impls {
+    use super::Command;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for Command {
+        fn to_code_literal(&self) -> TokenStream {
+            let name = self.0.get_name().to_string();
+            quote::quote! {
+                ::elicit_clap::Command::from(::clap::Command::new(#name))
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for Command {}

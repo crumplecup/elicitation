@@ -26,6 +26,39 @@ impl serde::Serialize for PossibleValue {
     }
 }
 
+impl<'de> serde::Deserialize<'de> for PossibleValue {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::{self, MapAccess, Visitor};
+        struct PossibleValueVisitor;
+        impl<'de> Visitor<'de> for PossibleValueVisitor {
+            type Value = PossibleValue;
+            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, r#"a possible value object with at least a "name" field"#)
+            }
+            fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<PossibleValue, A::Error> {
+                let mut name: Option<String> = None;
+                let mut help: Option<String> = None;
+                while let Some(key) = map.next_key::<String>()? {
+                    match key.as_str() {
+                        "name" => name = Some(map.next_value()?),
+                        "help" => help = Some(map.next_value()?),
+                        _ => {
+                            map.next_value::<serde::de::IgnoredAny>()?;
+                        }
+                    }
+                }
+                let name = name.ok_or_else(|| de::Error::missing_field("name"))?;
+                let mut pv = clap::builder::PossibleValue::new(name);
+                if let Some(h) = help {
+                    pv = pv.help(h);
+                }
+                Ok(PossibleValue(std::sync::Arc::new(pv)))
+            }
+        }
+        deserializer.deserialize_map(PossibleValueVisitor)
+    }
+}
+
 #[reflect_methods]
 impl PossibleValue {
     /// Returns the name of this possible value.
@@ -52,3 +85,33 @@ impl PossibleValue {
         self.0.matches(&value, true)
     }
 }
+
+// ── ElicitComplete + ToCodeLiteral ───────────────────────────────────────────
+
+mod emit_impls {
+    use super::PossibleValue;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for PossibleValue {
+        fn to_code_literal(&self) -> TokenStream {
+            let name = self.0.get_name().to_string();
+            if let Some(help) = self.0.get_help() {
+                let help_str = help.to_string();
+                quote::quote! {
+                    ::elicit_clap::PossibleValue::from(
+                        ::clap::builder::PossibleValue::new(#name).help(#help_str)
+                    )
+                }
+            } else {
+                quote::quote! {
+                    ::elicit_clap::PossibleValue::from(
+                        ::clap::builder::PossibleValue::new(#name)
+                    )
+                }
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for PossibleValue {}

@@ -150,20 +150,29 @@ impl elicitation::Elicitation for PrimitiveDateTime {
         let response = communicator
             .send_prompt("Enter a local datetime (e.g. 2024-01-15T12:00:00):")
             .await?;
-        let inner = time::PrimitiveDateTime::parse(&response, &FORMAT)
-            .map_err(|e| elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(
-                format!("Invalid local datetime: {e}"),
-            )))?;
+        let inner = time::PrimitiveDateTime::parse(&response, &FORMAT).map_err(|e| {
+            elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(format!(
+                "Invalid local datetime: {e}"
+            )))
+        })?;
         Ok(Self(Arc::new(inner)))
     }
 
-    fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-    fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-    fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl elicitation::ElicitIntrospect for PrimitiveDateTime {
-    fn pattern() -> elicitation::ElicitationPattern { elicitation::ElicitationPattern::Primitive }
+    fn pattern() -> elicitation::ElicitationPattern {
+        elicitation::ElicitationPattern::Primitive
+    }
     fn metadata() -> elicitation::TypeMetadata {
         elicitation::TypeMetadata {
             type_name: "PrimitiveDateTime",
@@ -186,14 +195,16 @@ impl elicitation::ElicitSpec for PrimitiveDateTime {
     fn type_spec() -> elicitation::TypeSpec {
         elicitation::TypeSpecBuilder::default()
             .type_name("PrimitiveDateTime".to_string())
-            .summary("ISO 8601 local datetime without timezone (e.g. 2024-01-15T12:00:00).".to_string())
+            .summary(
+                "ISO 8601 local datetime without timezone (e.g. 2024-01-15T12:00:00).".to_string(),
+            )
             .build()
             .expect("valid TypeSpec")
     }
 }
 
 mod emit_impls {
-    use super::{PrimitiveDateTime, FORMAT};
+    use super::{FORMAT, PrimitiveDateTime};
     use elicitation::emit_code::ToCodeLiteral;
     use proc_macro2::TokenStream;
 

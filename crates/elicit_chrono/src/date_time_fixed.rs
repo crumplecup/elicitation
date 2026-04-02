@@ -137,7 +137,9 @@ impl DateTimeFixed {
 
 impl elicitation::Prompt for DateTimeFixed {
     fn prompt() -> Option<&'static str> {
-        Some("Enter a datetime with timezone offset in RFC 3339 format (e.g. 2024-01-15T12:30:00+05:30):")
+        Some(
+            "Enter a datetime with timezone offset in RFC 3339 format (e.g. 2024-01-15T12:30:00+05:30):",
+        )
     }
 }
 
@@ -150,20 +152,31 @@ impl elicitation::Elicitation for DateTimeFixed {
         let response = communicator
             .send_prompt("Enter a datetime with timezone offset in RFC 3339 format (e.g. 2024-01-15T12:30:00+05:30):")
             .await?;
-        let inner = response.parse::<chrono::DateTime<chrono::FixedOffset>>()
-            .map_err(|e| elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(
-                format!("Invalid fixed-offset datetime: {e}"),
-            )))?;
+        let inner = response
+            .parse::<chrono::DateTime<chrono::FixedOffset>>()
+            .map_err(|e| {
+                elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(format!(
+                    "Invalid fixed-offset datetime: {e}"
+                )))
+            })?;
         Ok(Self(Arc::new(inner)))
     }
 
-    fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-    fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-    fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl elicitation::ElicitIntrospect for DateTimeFixed {
-    fn pattern() -> elicitation::ElicitationPattern { elicitation::ElicitationPattern::Primitive }
+    fn pattern() -> elicitation::ElicitationPattern {
+        elicitation::ElicitationPattern::Primitive
+    }
     fn metadata() -> elicitation::TypeMetadata {
         elicitation::TypeMetadata {
             type_name: "DateTimeFixed",

@@ -136,20 +136,29 @@ impl elicitation::Elicitation for Regex {
         let response = communicator
             .send_prompt("Enter a regular expression pattern (e.g. ^[a-z]+$):")
             .await?;
-        let inner = regex::Regex::new(&response)
-            .map_err(|e| elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(
-                format!("Invalid regex pattern: {e}"),
-            )))?;
+        let inner = regex::Regex::new(&response).map_err(|e| {
+            elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(format!(
+                "Invalid regex pattern: {e}"
+            )))
+        })?;
         Ok(Self(Arc::new(inner)))
     }
 
-    fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-    fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-    fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl elicitation::ElicitIntrospect for Regex {
-    fn pattern() -> elicitation::ElicitationPattern { elicitation::ElicitationPattern::Primitive }
+    fn pattern() -> elicitation::ElicitationPattern {
+        elicitation::ElicitationPattern::Primitive
+    }
     fn metadata() -> elicitation::TypeMetadata {
         elicitation::TypeMetadata {
             type_name: "Regex",

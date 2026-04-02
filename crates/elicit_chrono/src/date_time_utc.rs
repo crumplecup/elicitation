@@ -162,20 +162,31 @@ impl elicitation::Elicitation for DateTimeUtc {
         let response = communicator
             .send_prompt("Enter a UTC datetime in RFC 3339 format (e.g. 2024-01-15T12:30:00Z):")
             .await?;
-        let inner = response.parse::<chrono::DateTime<chrono::Utc>>()
-            .map_err(|e| elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(
-                format!("Invalid UTC datetime: {e}"),
-            )))?;
+        let inner = response
+            .parse::<chrono::DateTime<chrono::Utc>>()
+            .map_err(|e| {
+                elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(format!(
+                    "Invalid UTC datetime: {e}"
+                )))
+            })?;
         Ok(Self(Arc::new(inner)))
     }
 
-    fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-    fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-    fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl elicitation::ElicitIntrospect for DateTimeUtc {
-    fn pattern() -> elicitation::ElicitationPattern { elicitation::ElicitationPattern::Primitive }
+    fn pattern() -> elicitation::ElicitationPattern {
+        elicitation::ElicitationPattern::Primitive
+    }
     fn metadata() -> elicitation::TypeMetadata {
         elicitation::TypeMetadata {
             type_name: "DateTimeUtc",

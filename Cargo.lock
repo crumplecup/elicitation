@@ -1236,6 +1236,8 @@ dependencies = [
  "elicitation_macros",
  "futures",
  "inventory",
+ "proc-macro2",
+ "quote",
  "rmcp",
  "schemars",
  "serde",

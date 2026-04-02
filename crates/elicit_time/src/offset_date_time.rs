@@ -173,20 +173,31 @@ impl elicitation::Elicitation for OffsetDateTime {
         let response = communicator
             .send_prompt("Enter an RFC 3339 offset datetime (e.g. 2024-01-15T12:00:00+00:00):")
             .await?;
-        let inner = time::OffsetDateTime::parse(&response, &time::format_description::well_known::Rfc3339)
-            .map_err(|e| elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(
-                format!("Invalid RFC 3339 datetime: {e}"),
-            )))?;
+        let inner =
+            time::OffsetDateTime::parse(&response, &time::format_description::well_known::Rfc3339)
+                .map_err(|e| {
+                    elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(
+                        format!("Invalid RFC 3339 datetime: {e}"),
+                    ))
+                })?;
         Ok(Self(Arc::new(inner)))
     }
 
-    fn kani_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-    fn verus_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
-    fn creusot_proof() -> proc_macro2::TokenStream { proc_macro2::TokenStream::new() }
+    fn kani_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
 }
 
 impl elicitation::ElicitIntrospect for OffsetDateTime {
-    fn pattern() -> elicitation::ElicitationPattern { elicitation::ElicitationPattern::Primitive }
+    fn pattern() -> elicitation::ElicitationPattern {
+        elicitation::ElicitationPattern::Primitive
+    }
     fn metadata() -> elicitation::TypeMetadata {
         elicitation::TypeMetadata {
             type_name: "OffsetDateTime",
