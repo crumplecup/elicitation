@@ -62,3 +62,24 @@ impl Default for Uuid {
         uuid::Uuid::nil().into()
     }
 }
+
+// ── ElicitComplete + ToCodeLiteral ───────────────────────────────────────────
+
+mod emit_impls {
+    use super::Uuid;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for Uuid {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.0.hyphenated().to_string();
+            quote::quote! {
+                ::elicit_uuid::Uuid::from(
+                    ::uuid::Uuid::parse_str(#s).expect("valid uuid")
+                )
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for Uuid {}
