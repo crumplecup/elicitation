@@ -79,12 +79,14 @@ impl ElicitCommunicator for MockCommunicator {
 }
 
 // Test structs
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, PartialEq, elicitation::Elicit)]
 struct SimpleStruct {
     name: String,
     age: u8,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, PartialEq, elicitation::Elicit)]
 #[prompt("Configure your settings:")]
 struct ConfigStruct {
@@ -92,6 +94,7 @@ struct ConfigStruct {
     port: u16,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, PartialEq, elicitation::Elicit)]
 struct BoolStruct {
     enabled: bool,
@@ -175,12 +178,14 @@ async fn test_struct_parse_error_still_uses_send_prompt() {
 }
 
 // Test nested types (enum in struct)
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Copy, PartialEq, elicitation::Elicit)]
 enum Status {
     Active,
     Inactive,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, PartialEq, elicitation::Elicit)]
 struct UserWithStatus {
     name: String,

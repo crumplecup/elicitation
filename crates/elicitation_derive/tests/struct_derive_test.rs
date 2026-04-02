@@ -2,18 +2,21 @@
 
 use elicitation::{Elicit, FieldInfo, Prompt, Select, Survey};
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Copy, PartialEq, Elicit)]
 enum Status {
     Active,
     Inactive,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Elicit)]
 struct SimpleStruct {
     name: String,
     age: u8,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Elicit)]
 #[prompt("Let's configure your settings:")]
 struct ConfigStruct {
@@ -21,6 +24,7 @@ struct ConfigStruct {
     retries: i32,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Elicit)]
 struct FieldPromptStruct {
     #[prompt("What is your username?")]
@@ -47,6 +51,7 @@ impl SkipFieldStruct {
 
 // Manual impl to test #[skip] behavior would work
 // For now, we test it via the fields() check
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Elicit)]
 struct PartialSkipStruct {
     name: String,
@@ -55,6 +60,7 @@ struct PartialSkipStruct {
     _internal: String,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Elicit)]
 struct NestedStruct {
     name: String,
@@ -204,14 +210,17 @@ fn test_struct_field_usage() {
 // ── Tuple struct (newtype and multi-field) ────────────────────────────────────
 
 /// Newtype wrapper: single-field tuple struct
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Elicit)]
 struct WrappedName(String);
 
 /// Multi-value tuple struct
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Elicit)]
 struct Point(f64, f64);
 
 /// Newtype with prompt
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Elicit)]
 #[prompt("Enter a list of tags:")]
 struct TagList(Vec<String>);
@@ -253,9 +262,11 @@ fn test_newtype_construction() {
 
 // ── Unit structs ──────────────────────────────────────────────────────────────
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Copy, Elicit)]
 struct Parse;
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Copy, Elicit)]
 #[prompt("Validate the input:")]
 struct Validate;

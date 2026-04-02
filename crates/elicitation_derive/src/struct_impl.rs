@@ -1002,9 +1002,11 @@ fn generate_elicit_impl_simple(
         }
     };
 
-    let proof_methods = quote! {
+    let proof_methods = {
+        let wrapper_name_str = name.to_string();
+        quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            let mut ts = elicitation::verification::proof_helpers::kani_newtype_wrapper_harness(#wrapper_name_str);
             #(
                 ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
             )*
@@ -1012,7 +1014,7 @@ fn generate_elicit_impl_simple(
         }
 
         fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            let mut ts = elicitation::verification::proof_helpers::verus_newtype_wrapper_harness(#wrapper_name_str);
             #(
                 ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
             )*
@@ -1020,13 +1022,13 @@ fn generate_elicit_impl_simple(
         }
 
         fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            let mut ts = elicitation::verification::proof_helpers::creusot_newtype_wrapper_harness(#wrapper_name_str);
             #(
                 ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
             )*
             ts
         }
-    };
+    }};
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_single_variant_enum(
@@ -1280,9 +1282,11 @@ fn generate_elicit_impl_styled(
     };
 
     let elicited_types: Vec<_> = elicited_fields.iter().map(|info| &info.ty).collect();
-    let proof_methods = quote! {
+    let proof_methods = {
+        let wrapper_name_str = name.to_string();
+        quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            let mut ts = elicitation::verification::proof_helpers::kani_newtype_wrapper_harness(#wrapper_name_str);
             #(
                 ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
             )*
@@ -1290,7 +1294,7 @@ fn generate_elicit_impl_styled(
         }
 
         fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            let mut ts = elicitation::verification::proof_helpers::verus_newtype_wrapper_harness(#wrapper_name_str);
             #(
                 ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
             )*
@@ -1298,13 +1302,13 @@ fn generate_elicit_impl_styled(
         }
 
         fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
+            let mut ts = elicitation::verification::proof_helpers::creusot_newtype_wrapper_harness(#wrapper_name_str);
             #(
                 ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
             )*
             ts
         }
-    };
+    }};
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_single_variant_enum(

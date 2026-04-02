@@ -31,12 +31,14 @@ use elicitation::{Elicit, ElicitIntrospect, ElicitationPattern, Prompt, Select, 
 
 // ── Named structs ─────────────────────────────────────────────────────────────
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Elicit)]
 struct PlainStruct {
     name: String,
     age: u32,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Elicit)]
 #[prompt("Configure the server:")]
 struct PromptedStruct {
@@ -44,6 +46,7 @@ struct PromptedStruct {
     port: u16,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Elicit)]
 struct SkipStruct {
     visible: String,
@@ -51,12 +54,14 @@ struct SkipStruct {
     internal_id: u64,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Elicit)]
 struct NestedNamedStruct {
     label: String,
     inner: PlainStruct,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Elicit)]
 struct OptionFieldStruct {
     required: String,
@@ -65,27 +70,33 @@ struct OptionFieldStruct {
 
 // ── Tuple structs ─────────────────────────────────────────────────────────────
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Elicit)]
 struct Newtype(String);
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Elicit)]
 struct MultiField(f64, f64, f64);
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Elicit)]
 #[prompt("Enter a comma-separated list:")]
 struct PromptedTuple(Vec<String>);
 
 // ── Unit structs ──────────────────────────────────────────────────────────────
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Copy, Elicit)]
 struct UnitNoPrompt;
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Copy, Elicit)]
 #[prompt("Confirm action:")]
 struct UnitWithPrompt;
 
 // ── Enums: unit variants ──────────────────────────────────────────────────────
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Copy, PartialEq, Elicit)]
 enum UnitEnum {
     Alpha,
@@ -93,6 +104,7 @@ enum UnitEnum {
     Gamma,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Copy, PartialEq, Elicit)]
 #[prompt("Choose a direction:")]
 enum PromptedEnum {
@@ -104,6 +116,7 @@ enum PromptedEnum {
 
 // ── Enums: mixed variants ─────────────────────────────────────────────────────
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, PartialEq, Elicit)]
 enum MixedEnum {
     Plain,
@@ -113,6 +126,7 @@ enum MixedEnum {
 
 // ── Enums: all-tuple variants ─────────────────────────────────────────────────
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, PartialEq, Elicit)]
 enum AllTupleEnum {
     Single(String),
@@ -121,6 +135,7 @@ enum AllTupleEnum {
 
 // ── Enums: all-struct variants ────────────────────────────────────────────────
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, PartialEq, Elicit)]
 enum AllStructEnum {
     Http { status: u16, body: String },
@@ -129,12 +144,14 @@ enum AllStructEnum {
 
 // ── Enums: nested (variant holds another Elicit enum) ────────────────────────
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Copy, PartialEq, Elicit)]
 enum Inner {
     X,
     Y,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, PartialEq, Elicit)]
 enum Outer {
     Leaf,

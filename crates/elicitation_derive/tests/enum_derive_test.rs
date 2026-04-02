@@ -2,6 +2,7 @@
 
 use elicitation::{Elicit, Elicitation, Prompt, Select};
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Copy, PartialEq, Elicit)]
 enum SimpleEnum {
     First,
@@ -9,6 +10,7 @@ enum SimpleEnum {
     Third,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Copy, PartialEq, Elicit)]
 #[prompt("Choose your favorite color:")]
 enum ColorEnum {
@@ -18,11 +20,13 @@ enum ColorEnum {
 }
 
 // Test tuple variants
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, PartialEq, Elicit)]
 enum SimpleTuple {
     Value(String),
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, PartialEq, Elicit)]
 enum MultiTuple {
     Pair(String, i32),
@@ -30,11 +34,13 @@ enum MultiTuple {
 }
 
 // Test struct variants
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, PartialEq, Elicit)]
 enum StructVariant {
     Config { host: String, port: u16 },
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, PartialEq, Elicit)]
 enum MultiStruct {
     ServerConfig { host: String, port: u16 },
@@ -42,6 +48,7 @@ enum MultiStruct {
 }
 
 // Test mixed variants
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, PartialEq, Elicit)]
 enum Mixed {
     Unit,
@@ -50,12 +57,14 @@ enum Mixed {
 }
 
 // Test nested enums
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, Copy, PartialEq, Elicit)]
 enum Inner {
     A,
     B,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[derive(Debug, Clone, PartialEq, Elicit)]
 enum Outer {
     Contains(Inner),
