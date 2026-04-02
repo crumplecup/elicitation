@@ -82,6 +82,21 @@ mod accesskit_impls {
             ));
 
             impl ElicitComplete for $ty {}
+
+            impl crate::emit_code::ToCodeLiteral for $ty {
+                fn to_code_literal(&self) -> crate::proc_macro2::TokenStream {
+                    let variant = format!("{self:?}");
+                    let variant_tok: crate::proc_macro2::TokenStream =
+                        variant.parse().expect("Debug output is valid Rust ident");
+                    let type_path: crate::proc_macro2::TokenStream =
+                        stringify!($ty).parse().expect("type path is valid tokens");
+                    crate::quote::quote! { #type_path::#variant_tok }
+                }
+
+                fn type_tokens() -> crate::proc_macro2::TokenStream {
+                    stringify!($ty).parse().expect("type path is valid tokens")
+                }
+            }
         };
     }
 

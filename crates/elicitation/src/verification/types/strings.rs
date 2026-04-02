@@ -317,7 +317,6 @@ impl Elicitation for StringDefault {
 
 // ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 
-#[cfg(feature = "emit")]
 mod emit_impls {
     use super::*;
     use crate::emit_code::ToCodeLiteral;

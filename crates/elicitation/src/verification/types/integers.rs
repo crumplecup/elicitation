@@ -2837,7 +2837,6 @@ impl_unsigned_positive!(usize, UsizePositive, 42);
 
 // ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 
-#[cfg(feature = "emit")]
 mod emit_impls {
     use super::*;
     use crate::emit_code::ToCodeLiteral;

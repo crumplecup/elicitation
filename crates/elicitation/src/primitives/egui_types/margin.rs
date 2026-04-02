@@ -7,7 +7,15 @@ use crate::{
 
 /// Spacing margin on each side (wrapper for `egui::Margin`).
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
 )]
 pub struct EguiMargin {
     /// Left margin.

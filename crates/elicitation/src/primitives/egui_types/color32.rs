@@ -16,6 +16,7 @@ use crate::{
     serde::Serialize,
     serde::Deserialize,
     schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
 )]
 pub struct EguiColor32 {
     /// Red channel (0–255).

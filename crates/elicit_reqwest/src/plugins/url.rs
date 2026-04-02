@@ -719,12 +719,11 @@ async fn url_set_password(p: SetPasswordParams) -> Result<CallToolResult, ErrorD
 
 // ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 
-#[cfg(feature = "emit")]
 impl elicitation::emit_code::ToCodeLiteral for ParseWithParamsEntry {
     fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
         let key = &self.key;
         let value = &self.value;
-        ::quote::quote! {
+        elicitation::quote::quote! {
             ParseWithParamsEntry {
                 key: #key.to_string(),
                 value: #value.to_string(),

@@ -16,6 +16,7 @@ use crate::{
     serde::Serialize,
     serde::Deserialize,
     schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
 )]
 pub struct EguiCornerRadius {
     /// North-west (top-left) radius.

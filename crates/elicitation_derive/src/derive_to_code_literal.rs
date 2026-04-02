@@ -157,7 +157,6 @@ pub fn expand(input: TokenStream) -> TokenStream {
     };
 
     let expanded = quote! {
-        #[cfg(feature = "emit")]
         impl #impl_generics ::elicitation::emit_code::ToCodeLiteral
             for #name #ty_generics #where_clause
         {
@@ -166,12 +165,72 @@ pub fn expand(input: TokenStream) -> TokenStream {
             }
 
             fn type_tokens() -> ::elicitation::proc_macro2::TokenStream {
-                ::quote::quote! { #name }
+                ::elicitation::quote::quote! { #name }
             }
         }
     };
 
     expanded.into()
+}
+
+/// Generate a complete `ToCodeLiteral` impl block for use inside other derive macros.
+///
+/// Called by `expand_named_struct`, `expand_tuple_struct`, `expand_unit_struct`,
+/// and `expand_enum` to emit the impl alongside the `Elicitation` impl.
+pub fn generate_to_code_literal_impl(
+    name: &syn::Ident,
+    data: &syn::Data,
+    impl_generics: &syn::ImplGenerics,
+    ty_generics: &syn::TypeGenerics,
+    where_clause: &Option<&syn::WhereClause>,
+) -> TokenStream2 {
+    let body = match data {
+        syn::Data::Struct(data) => gen_struct_body(name, &data.fields),
+        syn::Data::Enum(data) => gen_enum_body(name, data),
+        syn::Data::Union(_) => {
+            return syn::Error::new_spanned(name, "ToCodeLiteral cannot be derived for unions")
+                .to_compile_error();
+        }
+    };
+
+    // Collect field types to add ToCodeLiteral bounds in where clause
+    let field_types: Vec<syn::Type> = match data {
+        syn::Data::Struct(data) => data.fields.iter().map(|f| f.ty.clone()).collect(),
+        syn::Data::Enum(data) => data
+            .variants
+            .iter()
+            .flat_map(|v| v.fields.iter().map(|f| f.ty.clone()))
+            .collect(),
+        _ => vec![],
+    };
+    let tcl_bounds: Vec<_> = field_types
+        .iter()
+        .map(|ty| quote! { #ty: ::elicitation::emit_code::ToCodeLiteral })
+        .collect();
+    let existing: Vec<_> = match where_clause {
+        Some(wc) => wc.predicates.iter().collect(),
+        None => vec![],
+    };
+    let where_tokens = if existing.is_empty() && tcl_bounds.is_empty() {
+        quote! {}
+    } else {
+        quote! { where #(#existing,)* #(#tcl_bounds,)* }
+    };
+
+    quote! {
+        #[automatically_derived]
+        impl #impl_generics ::elicitation::emit_code::ToCodeLiteral
+            for #name #ty_generics #where_tokens
+        {
+            fn to_code_literal(&self) -> ::elicitation::proc_macro2::TokenStream {
+                #body
+            }
+
+            fn type_tokens() -> ::elicitation::proc_macro2::TokenStream {
+                ::elicitation::quote::quote! { #name }
+            }
+        }
+    }
 }
 
 /// Emit a literal `#` token that will be interpreted by the runtime `quote!`.
@@ -215,10 +274,13 @@ fn build_tuple_fields_pattern(local_vars: &[syn::Ident]) -> TokenStream2 {
     tokens
 }
 
-/// Wrap tokens in `::quote::quote! { <inner> }`.
+/// Wrap tokens in `::elicitation::quote::quote! { <inner> }`.
+///
+/// Uses the re-exported `quote` from `elicitation` so downstream crates
+/// don't need `quote` as a direct dependency.
 fn wrap_in_quote(inner: TokenStream2) -> TokenStream2 {
     let group = Group::new(Delimiter::Brace, inner);
-    let mut result = quote! { ::quote::quote! };
+    let mut result = quote! { ::elicitation::quote::quote! };
     result.extend(std::iter::once(TokenTree::Group(group)));
     result
 }

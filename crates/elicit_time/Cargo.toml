@@ -25,10 +25,10 @@ tracing.workspace = true
 futures.workspace = true
 
 # Code recovery (optional)
-quote = { workspace = true, optional = true }
+quote = { workspace = true }
 
 [features]
-emit = ["dep:quote", "elicitation/emit"]
+emit = ["elicitation/emit"]
 
 [dev-dependencies]
 serde_json.workspace = true

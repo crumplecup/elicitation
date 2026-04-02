@@ -165,7 +165,6 @@ pub struct BlockOnParams {
 
 // ── Emit impls ────────────────────────────────────────────────────────────────
 
-#[cfg(feature = "emit")]
 mod emit_impls {
     use super::{BlockOnParams, BuildCurrentThreadParams, BuildMultiThreadParams};
     use elicitation::emit_code::{CrateDep, EmitCode, EmitEntry};
@@ -174,7 +173,7 @@ mod emit_impls {
     fn parse_body(body: &str) -> TokenStream {
         body.parse().unwrap_or_else(|_| {
             let lit = body;
-            ::quote::quote! { compile_error!(#lit) }
+            elicitation::quote::quote! { compile_error!(#lit) }
         })
     }
 
@@ -187,17 +186,17 @@ mod emit_impls {
             let var: TokenStream = self
                 .runtime_var
                 .parse()
-                .unwrap_or_else(|_| ::quote::quote! { runtime });
-            let mut chain = ::quote::quote! {
+                .unwrap_or_else(|_| elicitation::quote::quote! { runtime });
+            let mut chain = elicitation::quote::quote! {
                 tokio::runtime::Builder::new_current_thread()
             };
             if self.enable_all {
-                chain = ::quote::quote! { #chain.enable_all() };
+                chain = elicitation::quote::quote! { #chain.enable_all() };
             }
             if let Some(n) = self.max_blocking_threads {
-                chain = ::quote::quote! { #chain.max_blocking_threads(#n) };
+                chain = elicitation::quote::quote! { #chain.max_blocking_threads(#n) };
             }
-            ::quote::quote! {
+            elicitation::quote::quote! {
                 let #var = #chain.build().unwrap();
             }
         }
@@ -211,20 +210,20 @@ mod emit_impls {
             let var: TokenStream = self
                 .runtime_var
                 .parse()
-                .unwrap_or_else(|_| ::quote::quote! { runtime });
-            let mut chain = ::quote::quote! {
+                .unwrap_or_else(|_| elicitation::quote::quote! { runtime });
+            let mut chain = elicitation::quote::quote! {
                 tokio::runtime::Builder::new_multi_thread()
             };
             if let Some(n) = self.worker_threads {
-                chain = ::quote::quote! { #chain.worker_threads(#n) };
+                chain = elicitation::quote::quote! { #chain.worker_threads(#n) };
             }
             if self.enable_all {
-                chain = ::quote::quote! { #chain.enable_all() };
+                chain = elicitation::quote::quote! { #chain.enable_all() };
             }
             if let Some(n) = self.max_blocking_threads {
-                chain = ::quote::quote! { #chain.max_blocking_threads(#n) };
+                chain = elicitation::quote::quote! { #chain.max_blocking_threads(#n) };
             }
-            ::quote::quote! {
+            elicitation::quote::quote! {
                 let #var = #chain.build().unwrap();
             }
         }
@@ -238,9 +237,9 @@ mod emit_impls {
             let var: TokenStream = self
                 .runtime_var
                 .parse()
-                .unwrap_or_else(|_| ::quote::quote! { runtime });
+                .unwrap_or_else(|_| elicitation::quote::quote! { runtime });
             let body = parse_body(&self.body);
-            ::quote::quote! {
+            elicitation::quote::quote! {
                 #var.block_on(async { #body })
             }
         }

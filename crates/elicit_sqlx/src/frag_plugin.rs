@@ -201,6 +201,7 @@ impl VerifiedWorkflow for MigrateFragmentEmitted {}
 
 #[elicit_tool(
     plugin = "sqlx_frag",
+    emit = None,
     name = "query",
     description = "Emit a `sqlx::query!(sql, params…)` expression. \
                    Requires DATABASE_URL at compile time of the emitted binary. \
@@ -217,6 +218,7 @@ async fn emit_query(p: QueryParams) -> Result<CallToolResult, ErrorData> {
 
 #[elicit_tool(
     plugin = "sqlx_frag",
+    emit = None,
     name = "query_as",
     description = "Emit a `sqlx::query_as!(TargetType, sql, params…)` expression. \
                    The target type must implement `sqlx::FromRow`. \
@@ -234,6 +236,7 @@ async fn emit_query_as(p: QueryAsParams) -> Result<CallToolResult, ErrorData> {
 
 #[elicit_tool(
     plugin = "sqlx_frag",
+    emit = None,
     name = "query_scalar",
     description = "Emit a `sqlx::query_scalar!(sql, params…)` expression for \
                    queries returning a single scalar value (e.g. COUNT). \
@@ -251,6 +254,7 @@ async fn emit_query_scalar(p: QueryScalarParams) -> Result<CallToolResult, Error
 
 #[elicit_tool(
     plugin = "sqlx_frag",
+    emit = None,
     name = "migrate",
     description = "Emit a `sqlx::migrate!(path).run(&pool).await?` statement. \
                    Requires DATABASE_URL at compile time of the emitted binary. \

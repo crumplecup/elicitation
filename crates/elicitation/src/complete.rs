@@ -136,6 +136,7 @@ pub trait ElicitComplete:
     + serde::Serialize
     + for<'de> serde::Deserialize<'de>
     + schemars::JsonSchema
+    + crate::emit_code::ToCodeLiteral
 {
     /// Runtime check: all three proof methods return non-empty TokenStreams.
     ///

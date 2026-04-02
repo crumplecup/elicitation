@@ -1004,7 +1004,6 @@ impl_float_default_wrapper!(f64, F64Default);
 
 // ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 
-#[cfg(feature = "emit")]
 mod emit_impls {
     use super::*;
     use crate::emit_code::ToCodeLiteral;

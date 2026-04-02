@@ -26,14 +26,14 @@ serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 tracing.workspace = true
 uuid = { workspace = true, optional = true }
-quote = { workspace = true, optional = true }
+quote = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
 serde_json = { workspace = true }
 
 [features]
-emit = ["dep:quote", "elicitation/emit"]
+emit = ["elicitation/emit"]
 uuid = ["dep:uuid"]
 runtime = ["uuid"]
 

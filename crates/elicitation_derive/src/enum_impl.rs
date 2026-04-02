@@ -129,6 +129,14 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
     #[cfg(not(feature = "prompt-tree"))]
     let prompt_tree_impl = quote! {};
 
+    let to_code_literal_impl = crate::derive_to_code_literal::generate_to_code_literal_impl(
+        name,
+        &input.data,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+
     let expanded = quote! {
         #style_enum
         #prompt_impl
@@ -137,6 +145,7 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
         #introspect_impl
         #graph_key_emission
         #prompt_tree_impl
+        #to_code_literal_impl
     };
 
     TokenStream::from(expanded)

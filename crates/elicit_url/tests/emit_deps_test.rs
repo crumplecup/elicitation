@@ -12,7 +12,6 @@
 //! `crate_deps()` should always contain at least `elicit_url` itself and
 //! `elicitation`.  If these fail, the macro-level `all_crate_deps()` is broken.
 
-#[cfg(feature = "emit")]
 mod emit_deps {
     use elicitation::emit_code::BinaryScaffold;
 

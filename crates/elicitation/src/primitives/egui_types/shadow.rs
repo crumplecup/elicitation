@@ -10,7 +10,15 @@ use crate::{
 ///
 /// The `offset` array is flattened to `offset_x` / `offset_y` for JSON ergonomics.
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
 )]
 pub struct EguiShadow {
     /// Horizontal offset (positive = right).

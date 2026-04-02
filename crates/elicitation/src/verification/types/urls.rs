@@ -771,7 +771,7 @@ mod tests {
 
 // ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 
-#[cfg(all(feature = "emit", feature = "url", not(kani)))]
+#[cfg(all(feature = "url", not(kani)))]
 mod emit_impls {
     use super::*;
     use crate::emit_code::ToCodeLiteral;

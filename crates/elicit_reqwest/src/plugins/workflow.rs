@@ -1151,33 +1151,33 @@ async fn wf_paginated_get(
 
 // ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 
-#[cfg(feature = "emit")]
 impl elicitation::emit_code::ToCodeLiteral for AuthType {
     fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
         match self {
-            AuthType::Bearer => ::quote::quote! { elicit_reqwest::AuthType::Bearer },
-            AuthType::Basic => ::quote::quote! { elicit_reqwest::AuthType::Basic },
-            AuthType::ApiKey => ::quote::quote! { elicit_reqwest::AuthType::ApiKey },
-            AuthType::None => ::quote::quote! { elicit_reqwest::AuthType::None },
+            AuthType::Bearer => elicitation::quote::quote! { elicit_reqwest::AuthType::Bearer },
+            AuthType::Basic => elicitation::quote::quote! { elicit_reqwest::AuthType::Basic },
+            AuthType::ApiKey => elicitation::quote::quote! { elicit_reqwest::AuthType::ApiKey },
+            AuthType::None => elicitation::quote::quote! { elicit_reqwest::AuthType::None },
         }
     }
 }
 
-#[cfg(feature = "emit")]
 impl elicitation::emit_code::ToCodeLiteral for ContentType {
     fn type_tokens() -> elicitation::proc_macro2::TokenStream {
-        ::quote::quote! { elicit_reqwest::ContentType }
+        elicitation::quote::quote! { elicit_reqwest::ContentType }
     }
 
     fn to_code_literal(&self) -> elicitation::proc_macro2::TokenStream {
         match self {
-            ContentType::Json => ::quote::quote! { elicit_reqwest::ContentType::Json },
+            ContentType::Json => elicitation::quote::quote! { elicit_reqwest::ContentType::Json },
             ContentType::FormUrlEncoded => {
-                ::quote::quote! { elicit_reqwest::ContentType::FormUrlEncoded }
+                elicitation::quote::quote! { elicit_reqwest::ContentType::FormUrlEncoded }
             }
-            ContentType::PlainText => ::quote::quote! { elicit_reqwest::ContentType::PlainText },
+            ContentType::PlainText => {
+                elicitation::quote::quote! { elicit_reqwest::ContentType::PlainText }
+            }
             ContentType::OctetStream => {
-                ::quote::quote! { elicit_reqwest::ContentType::OctetStream }
+                elicitation::quote::quote! { elicit_reqwest::ContentType::OctetStream }
             }
         }
     }
@@ -1186,15 +1186,13 @@ impl elicitation::emit_code::ToCodeLiteral for ContentType {
 // ── CustomEmit impls ──────────────────────────────────────────────────────────
 
 /// ZST for custom emit of `wf_fetch_json`.
-#[cfg(feature = "emit")]
 pub(crate) struct FetchJsonEmit;
 
-#[cfg(feature = "emit")]
 impl elicitation::emit_code::CustomEmit<FetchJsonParams> for FetchJsonEmit {
     fn emit_code(params: &FetchJsonParams) -> elicitation::proc_macro2::TokenStream {
         let url = elicitation::emit_code::ToCodeLiteral::to_code_literal(&params.url);
         let timeout = elicitation::emit_code::ToCodeLiteral::to_code_literal(&params.timeout_secs);
-        ::quote::quote! {
+        elicitation::quote::quote! {
             let mut __headers = reqwest::header::HeaderMap::new();
             __headers.insert(
                 reqwest::header::ACCEPT,

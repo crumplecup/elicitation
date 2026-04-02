@@ -71,8 +71,8 @@ sqlx = { workspace = true, optional = true }
 # Code recovery / emission (optional)
 proc-macro2 = { workspace = true }
 quote = { workspace = true }
-prettyplease = { workspace = true, optional = true }
-syn = { workspace = true, optional = true }
+prettyplease = { workspace = true }
+syn = { workspace = true }
 
 # GeoRust spatial types (optional)
 geo-types = { workspace = true, optional = true }
@@ -103,7 +103,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "prompt-tree", "ratatui"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "prompt-tree", "ratatui", "emit"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -129,7 +129,7 @@ regex = ["dep:regex"]
 reqwest = ["dep:reqwest", "dep:http", "dep:bytes", "url"]
 
 # Code recovery — emit verified workflows as Rust source
-emit = ["dep:prettyplease", "dep:syn"]
+emit = []
 
 # Proof emission — proc_macro2/quote for kani/verus/creusot/prusti proof methods
 

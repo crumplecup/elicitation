@@ -676,7 +676,6 @@ async fn wf_field_chain(p: FieldChainParams) -> Result<CallToolResult, ErrorData
 /// Custom emit for `parse_and_focus`.
 pub struct ParseAndFocusEmit;
 
-#[cfg(feature = "emit")]
 impl elicitation::emit_code::CustomEmit<ParseFocusParams> for ParseAndFocusEmit {
     fn emit_code(params: &ParseFocusParams) -> elicitation::proc_macro2::TokenStream {
         let json = &params.json;
@@ -695,7 +694,6 @@ impl elicitation::emit_code::CustomEmit<ParseFocusParams> for ParseAndFocusEmit 
 /// Custom emit for `validate_object`.
 pub struct ValidateObjectEmit;
 
-#[cfg(feature = "emit")]
 impl elicitation::emit_code::CustomEmit<ValidateObjectParams> for ValidateObjectEmit {
     fn emit_code(params: &ValidateObjectParams) -> elicitation::proc_macro2::TokenStream {
         let json = &params.json;
@@ -717,7 +715,6 @@ impl elicitation::emit_code::CustomEmit<ValidateObjectParams> for ValidateObject
 /// Custom emit for `safe_merge`.
 pub struct SafeMergeEmit;
 
-#[cfg(feature = "emit")]
 impl elicitation::emit_code::CustomEmit<MergeParams> for SafeMergeEmit {
     fn emit_code(params: &MergeParams) -> elicitation::proc_macro2::TokenStream {
         let base = params.base.to_string();
@@ -753,7 +750,6 @@ impl elicitation::emit_code::CustomEmit<MergeParams> for SafeMergeEmit {
 /// Custom emit for `pointer_update`.
 pub struct PointerUpdateEmit;
 
-#[cfg(feature = "emit")]
 impl elicitation::emit_code::CustomEmit<PointerUpdateParams> for PointerUpdateEmit {
     fn emit_code(params: &PointerUpdateParams) -> elicitation::proc_macro2::TokenStream {
         let json = &params.json;
@@ -787,7 +783,6 @@ impl elicitation::emit_code::CustomEmit<PointerUpdateParams> for PointerUpdateEm
 /// Custom emit for `field_chain`.
 pub struct FieldChainEmit;
 
-#[cfg(feature = "emit")]
 impl elicitation::emit_code::CustomEmit<FieldChainParams> for FieldChainEmit {
     fn emit_code(params: &FieldChainParams) -> elicitation::proc_macro2::TokenStream {
         let json = &params.json;

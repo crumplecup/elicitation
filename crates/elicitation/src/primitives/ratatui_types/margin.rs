@@ -20,6 +20,7 @@ use ratatui::layout::Margin;
     serde::Serialize,
     serde::Deserialize,
     schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
 )]
 pub struct RatatuiMargin {
     /// Horizontal margin.

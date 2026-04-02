@@ -210,6 +210,19 @@ impl Elicitation for BordersSelect {
     }
 }
 
+impl crate::emit_code::ToCodeLiteral for BordersSelect {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let bits = self.0.bits();
+        quote::quote! {
+            BordersSelect::from(ratatui::widgets::Borders::from_bits_truncate(#bits))
+        }
+    }
+
+    fn type_tokens() -> proc_macro2::TokenStream {
+        quote::quote! { BordersSelect }
+    }
+}
+
 // ---------------------------------------------------------------------------
 // ScrollbarOrientation (regular enum with serde)
 // ---------------------------------------------------------------------------

@@ -33,6 +33,7 @@ pub struct StdMacrosPlugin;
 
 #[elicit_tool(
     plugin = "std",
+    emit = None,
     name = "format",
     description = "Emit a `format!(template, args…)` expression. \
                    The template is a format string literal; args are Rust \
@@ -49,6 +50,7 @@ async fn emit_format(p: FormatParams) -> Result<CallToolResult, ErrorData> {
 
 #[elicit_tool(
     plugin = "std",
+    emit = None,
     name = "include_str",
     description = "Emit an `include_str!(\"path\")` expression that embeds a \
                    file's contents as a `&'static str` at compile time. \
@@ -65,6 +67,7 @@ async fn emit_include_str(p: IncludeStrParams) -> Result<CallToolResult, ErrorDa
 
 #[elicit_tool(
     plugin = "std",
+    emit = None,
     name = "env",
     description = "Emit an `env!(\"VAR\")` expression that reads an environment \
                    variable at compile time of the emitted binary. \
@@ -81,6 +84,7 @@ async fn emit_env(p: EnvParams) -> Result<CallToolResult, ErrorData> {
 
 #[elicit_tool(
     plugin = "std",
+    emit = None,
     name = "concat",
     description = "Emit a `concat!(\"a\", \"b\", …)` expression that joins \
                    string literal parts into a single `&'static str` at compile \
@@ -97,6 +101,7 @@ async fn emit_concat(p: ConcatParams) -> Result<CallToolResult, ErrorData> {
 
 #[elicit_tool(
     plugin = "std",
+    emit = None,
     name = "assemble",
     description = "Assemble statement-level fragment strings into a compilable \
                    Rust binary. Each string in `steps` is a Rust fragment \

@@ -8,7 +8,14 @@ use crate::{
 
 /// Line stroke (wrapper for `egui::Stroke`).
 #[derive(
-    Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
 )]
 pub struct EguiStroke {
     /// Stroke width in points.

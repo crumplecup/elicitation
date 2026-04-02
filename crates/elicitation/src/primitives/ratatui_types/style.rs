@@ -14,7 +14,15 @@ use ratatui::style::{Color, Modifier, Style};
 /// Uses string representations for `Color` and `Modifier` fields because
 /// those ratatui types don't implement `JsonSchema`.
 #[derive(
-    Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
 )]
 pub struct RatatuiStyle {
     /// Foreground colour (e.g. "Red", "#FF00AA", "Reset").

@@ -338,11 +338,10 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
                 .collect();
 
             let emit_block = quote! {
-                #[cfg(feature = "emit")]
                 impl elicitation::emit_code::EmitCode for #params_ty {
                     fn emit_code(&self) -> elicitation::proc_macro2::TokenStream {
                         #(#field_bindings)*
-                        ::quote::quote! { #rewritten }
+                        elicitation::quote::quote! { #rewritten }
                     }
 
                     fn crate_deps(&self) -> ::std::vec::Vec<elicitation::emit_code::CrateDep> {
@@ -350,7 +349,6 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
                     }
                 }
 
-                #[cfg(feature = "emit")]
                 elicitation::register_emit!(#name, #params_ty);
             };
 
@@ -365,7 +363,6 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
                 })
                 .collect();
             let emit_block = quote! {
-                #[cfg(feature = "emit")]
                 impl elicitation::emit_code::EmitCode for #params_ty {
                     fn emit_code(&self) -> elicitation::proc_macro2::TokenStream {
                         <#custom_ty as elicitation::emit_code::CustomEmit<#params_ty>>::emit_code(self)
@@ -376,7 +373,6 @@ fn expand_inner(args: TokenStream, item: TokenStream) -> Result<TokenStream> {
                     }
                 }
 
-                #[cfg(feature = "emit")]
                 elicitation::register_emit!(#name, #params_ty);
             };
 

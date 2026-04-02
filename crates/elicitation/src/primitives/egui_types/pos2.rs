@@ -7,7 +7,14 @@ use crate::{
 
 /// 2D point (wrapper for `egui::Pos2`).
 #[derive(
-    Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
 )]
 pub struct EguiPos2 {
     /// X coordinate.

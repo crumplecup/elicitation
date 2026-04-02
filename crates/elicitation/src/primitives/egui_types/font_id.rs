@@ -10,7 +10,15 @@ use crate::{
 ///
 /// Uses [`FontFamilySelect`] for the family field, which covers the
 /// unit variants of `egui::FontFamily` (Monospace, Proportional).
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
+)]
 pub struct EguiFontId {
     /// Font size in points.
     pub size: f32,

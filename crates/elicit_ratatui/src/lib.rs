@@ -100,7 +100,6 @@
 
 #[cfg(feature = "runtime")]
 mod event_tools;
-#[cfg(feature = "emit")]
 mod fragment_tools;
 mod layout_tools;
 mod property_tools;
@@ -115,7 +114,6 @@ mod widget_tools;
 
 #[cfg(feature = "runtime")]
 pub use event_tools::{EventPollParams, EventReadKeyParams, EventReadParams};
-#[cfg(feature = "emit")]
 pub use fragment_tools::{
     AppFieldJson, AssembleRatatuiAppParams, EmitAppLoopParams, EmitAppStructParams,
     EmitCargoTomlParams, EmitDrawFnParams, EmitEventHandlerParams, EmitMainRsParams,

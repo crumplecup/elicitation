@@ -79,6 +79,8 @@
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
+// Allow ::elicitation::... paths in proc-macro generated code inside this crate.
+extern crate self as elicitation;
 
 mod client;
 mod communicator;
@@ -110,7 +112,6 @@ pub mod cli;
 
 pub mod contracts;
 
-#[cfg(feature = "emit")]
 pub mod emit_code;
 pub mod mcp;
 mod paradigm;
@@ -258,6 +259,8 @@ pub use async_trait;
 // instead of requiring proc_macro2 as a direct dep of downstream crates.
 #[doc(hidden)]
 pub use proc_macro2;
+#[doc(hidden)]
+pub use quote;
 
 // Re-export derive macros with user-friendly names
 pub use elicitation_derive::{Elicit, ElicitPlugin, elicit_tool};

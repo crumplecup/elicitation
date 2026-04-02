@@ -7,7 +7,14 @@ use crate::{
 
 /// 2D vector / size (wrapper for `egui::Vec2`).
 #[derive(
-    Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
 )]
 pub struct EguiVec2 {
     /// X component (width or horizontal direction).

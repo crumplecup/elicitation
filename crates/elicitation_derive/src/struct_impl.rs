@@ -163,6 +163,14 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
     #[cfg(not(feature = "prompt-tree"))]
     let prompt_tree_impl = quote! {};
 
+    let to_code_literal_impl = crate::derive_to_code_literal::generate_to_code_literal_impl(
+        name,
+        &input.data,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+
     let expanded = quote! {
         #prompt_impl
         #survey_impl
@@ -171,6 +179,7 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
         #elicit_spec_impl
         #graph_key_emission
         #prompt_tree_impl
+        #to_code_literal_impl
     };
 
     TokenStream::from(expanded)
@@ -485,7 +494,15 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
         #prompt_tree_impl
     };
 
-    TokenStream::from(expanded)
+    let to_code_literal_impl = crate::derive_to_code_literal::generate_to_code_literal_impl(
+        name,
+        &input.data,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+
+    TokenStream::from(quote! { #expanded #to_code_literal_impl })
 }
 
 /// Expand #[derive(Elicit)] for unit structs.
@@ -673,7 +690,15 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
         #graph_key_emission
     };
 
-    TokenStream::from(expanded)
+    let to_code_literal_impl = crate::derive_to_code_literal::generate_to_code_literal_impl(
+        name,
+        &input.data,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+
+    TokenStream::from(quote! { #expanded #to_code_literal_impl })
 }
 
 /// Field information for code generation.

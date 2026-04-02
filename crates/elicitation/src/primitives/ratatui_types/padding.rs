@@ -20,6 +20,7 @@ use ratatui::widgets::Padding;
     serde::Serialize,
     serde::Deserialize,
     schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
 )]
 pub struct RatatuiPadding {
     /// Left padding.
