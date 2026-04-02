@@ -20,6 +20,7 @@
 //! ```
 
 mod accesskit_specs;
+mod atomics;
 mod bool_contracts;
 mod char_contracts;
 mod clap_specs;

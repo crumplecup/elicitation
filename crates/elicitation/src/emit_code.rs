@@ -1019,3 +1019,46 @@ impl ToCodeLiteral for reqwest::StatusCode {
         EmitCode::emit_code(self)
     }
 }
+
+// ── Atomic types ─────────────────────────────────────────────────────────────
+
+/// Generate `ToCodeLiteral` for an atomic type by loading the current value
+/// and emitting `::std::sync::atomic::Atomic*::new(value)`.
+macro_rules! impl_atomic_to_code_literal {
+    ($($atomic:ident => $prim:ty),+ $(,)?) => {
+        $(
+            impl ToCodeLiteral for ::std::sync::atomic::$atomic {
+                fn to_code_literal(&self) -> TokenStream {
+                    use ::std::sync::atomic::Ordering;
+                    let val = self.load(Ordering::SeqCst);
+                    let val_lit = <$prim as ToCodeLiteral>::to_code_literal(&val);
+                    let ty: TokenStream =
+                        concat!("::std::sync::atomic::", stringify!($atomic))
+                            .parse()
+                            .expect("valid atomic type path");
+                    quote::quote! { #ty::new(#val_lit) }
+                }
+
+                fn type_tokens() -> TokenStream {
+                    concat!("::std::sync::atomic::", stringify!($atomic))
+                        .parse()
+                        .expect("valid atomic type path")
+                }
+            }
+        )+
+    };
+}
+
+impl_atomic_to_code_literal!(
+    AtomicBool => bool,
+    AtomicI8 => i8,
+    AtomicI16 => i16,
+    AtomicI32 => i32,
+    AtomicI64 => i64,
+    AtomicIsize => isize,
+    AtomicU8 => u8,
+    AtomicU16 => u16,
+    AtomicU32 => u32,
+    AtomicU64 => u64,
+    AtomicUsize => usize,
+);

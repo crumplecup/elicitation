@@ -9,6 +9,7 @@
 //! - PathBuf: std::path::PathBuf
 //! - Network types: IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, etc.
 //! - Duration: std::time::Duration
+//! - Atomics: AtomicBool, AtomicI8..AtomicI64, AtomicU8..AtomicU64, AtomicIsize, AtomicUsize
 //! - Tuples: (T1, T2), (T1, T2, T3), up to arity 12
 //!
 //! All primitive types implement:
@@ -17,6 +18,7 @@
 //!
 //! Integer and float types use generic macros to eliminate duplication.
 
+mod atomics;
 mod boolean;
 mod char;
 pub mod duration;
