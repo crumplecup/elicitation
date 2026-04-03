@@ -780,27 +780,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb2a7d3066da2de787b7f032c736763eb7ae5d355f81a68bab2675a96008b0bf"
 dependencies = [
  "lab",
- "phf",
+ "phf 0.11.3",
 ]
 
 [[package]]
 name = "cssparser"
-version = "0.34.0"
+version = "0.37.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7c66d1cd8ed61bf80b38432613a7a2f09401ab8d0501110655f8b341484a3e3"
+checksum = "8c9cdaae01d5ed7882b04d795e7f752f46ff52d2fa3b50a20d28c464510bba98"
 dependencies = [
  "cssparser-macros",
  "dtoa-short",
  "itoa",
- "phf",
+ "phf 0.13.1",
  "smallvec",
 ]
 
 [[package]]
 name = "cssparser-macros"
-version = "0.6.1"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13b588ba4ac1a99f7f2964d24b3d896ddc6bf847ee3855dbd4366f058cfcd331"
+checksum = "10a2a99df6e410a8ff4245aa2006499ea662245f967cc7c0a38c83ef8eb44dbf"
 dependencies = [
  "quote",
  "syn 2.0.114",
@@ -1192,7 +1192,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_accesskit"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "accesskit",
  "elicitation",
@@ -1210,7 +1210,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_chrono"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "chrono",
  "derive_builder",
@@ -1228,7 +1228,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_clap"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "clap",
  "elicitation",
@@ -1248,7 +1248,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_egui"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "accesskit",
  "egui",
@@ -1269,7 +1269,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_jiff"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "derive_builder",
  "elicitation",
@@ -1287,10 +1287,10 @@ dependencies = [
 
 [[package]]
 name = "elicit_ratatui"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "accesskit",
- "crossterm 0.28.1",
+ "crossterm 0.29.0",
  "elicit_ui",
  "elicitation",
  "elicitation_derive",
@@ -1309,7 +1309,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_regex"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -1326,7 +1326,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_reqwest"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "bytes",
  "derive_builder",
@@ -1348,7 +1348,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_serde"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -1365,7 +1365,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_serde_json"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -1381,7 +1381,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_server"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "chrono",
  "derive_more",
@@ -1416,7 +1416,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_sqlx"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "derive-getters",
  "derive_more",
@@ -1441,7 +1441,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_std"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -1458,7 +1458,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_time"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "derive_builder",
  "elicitation",
@@ -1476,7 +1476,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_tokio"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -1493,7 +1493,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_ui"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "accesskit",
  "cssparser",
@@ -1521,7 +1521,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_url"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "derive_builder",
  "elicitation",
@@ -1539,7 +1539,7 @@ dependencies = [
 
 [[package]]
 name = "elicit_uuid"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "elicitation",
  "elicitation_derive",
@@ -1557,7 +1557,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "accesskit",
  "anodized",
@@ -1617,7 +1617,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_creusot"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "accesskit",
  "chrono",
@@ -1641,7 +1641,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_derive"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -1667,7 +1667,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_kani"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "accesskit",
  "chrono",
@@ -1691,7 +1691,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_macros"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1700,7 +1700,7 @@ dependencies = [
 
 [[package]]
 name = "elicitation_rand"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "chrono",
  "csv",
@@ -2078,9 +2078,9 @@ dependencies = [
 
 [[package]]
 name = "geo"
-version = "0.29.3"
+version = "0.32.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34f0e6e028c581e82e6822a68869514e94c25e7f8ea669a2d8595bdf7461ccc5"
+checksum = "3f3901269ec6d4f6068d3f09e5f02f995bd076398dcd1dfec407cd230b02d11b"
 dependencies = [
  "earcutr",
  "float_next_after",
@@ -2089,8 +2089,10 @@ dependencies = [
  "i_overlay",
  "log",
  "num-traits",
+ "rand 0.8.5",
  "robust",
  "rstar",
+ "sif-itree",
  "spade",
 ]
 
@@ -2159,9 +2161,9 @@ dependencies = [
 
 [[package]]
 name = "grid"
-version = "0.15.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36119f3a540b086b4e436bb2b588cf98a68863470e0e880f4d0842f112a3183a"
+checksum = "f9e2d4c0a8296178d8802098410ca05d86b17a10bb5ab559b3fb404c1f948220"
 
 [[package]]
 name = "h2"
@@ -2386,24 +2388,24 @@ dependencies = [
 
 [[package]]
 name = "i_float"
-version = "1.6.0"
+version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "775f9961a8d2f879725da8aff789bb20a3ddf297473e0c90af75e69313919490"
+checksum = "010025c2c532c8d82e42d0b8bb5184afa449fa6f06c709ea9adcb16c49ae405b"
 dependencies = [
- "serde",
+ "libm",
 ]
 
 [[package]]
 name = "i_key_sort"
-version = "0.2.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "347c253b4748a1a28baf94c9ce133b6b166f08573157e05afe718812bc599fcd"
+checksum = "9190f86706ca38ac8add223b2aed8b1330002b5cdbbce28fb58b10914d38fc27"
 
 [[package]]
 name = "i_overlay"
-version = "1.9.4"
+version = "4.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01882ce5ed786bf6e8f5167f171a4026cd129ce17d9ff5cbf1e6749b98628ece"
+checksum = "413183068e6e0289e18d7d0a1f661b81546e6918d5453a44570b9ab30cbed1b3"
 dependencies = [
  "i_float",
  "i_key_sort",
@@ -2414,19 +2416,18 @@ dependencies = [
 
 [[package]]
 name = "i_shape"
-version = "1.6.0"
+version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27dbe9e5238d6b9c694c08415bf00fb370b089949bd818ab01f41f8927b8774c"
+checksum = "1ea154b742f7d43dae2897fcd5ead86bc7b5eefcedd305a7ebf9f69d44d61082"
 dependencies = [
  "i_float",
- "serde",
 ]
 
 [[package]]
 name = "i_tree"
-version = "0.8.3"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "155181bc97d770181cf9477da51218a19ee92a8e5be642e796661aee2b601139"
+checksum = "35e6d558e6d4c7b82bc51d9c771e7a927862a161a7d87bf2b0541450e0e20915"
 
 [[package]]
 name = "iana-time-zone"
@@ -3414,7 +3415,7 @@ dependencies = [
  "approx",
  "fast-srgb8",
  "palette_derive",
- "phf",
+ "phf 0.11.3",
 ]
 
 [[package]]
@@ -3547,8 +3548,19 @@ version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1fd6780a80ae0c52cc120a26a1a42c1ae51b247a253e4e06113d23d2c2edd078"
 dependencies = [
- "phf_macros",
- "phf_shared",
+ "phf_macros 0.11.3",
+ "phf_shared 0.11.3",
+]
+
+[[package]]
+name = "phf"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1562dc717473dbaa4c1f85a36410e03c047b2e7df7f45ee938fbef64ae7fadf"
+dependencies = [
+ "phf_macros 0.13.1",
+ "phf_shared 0.13.1",
+ "serde",
 ]
 
 [[package]]
@@ -3557,8 +3569,8 @@ version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aef8048c789fa5e851558d709946d6d79a8ff88c0440c587967f8e94bfb1216a"
 dependencies = [
- "phf_generator",
- "phf_shared",
+ "phf_generator 0.11.3",
+ "phf_shared 0.11.3",
 ]
 
 [[package]]
@@ -3567,8 +3579,18 @@ version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c80231409c20246a13fddb31776fb942c38553c51e871f8cbd687a4cfb5843d"
 dependencies = [
- "phf_shared",
+ "phf_shared 0.11.3",
  "rand 0.8.5",
+]
+
+[[package]]
+name = "phf_generator"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "135ace3a761e564ec88c03a77317a7c6b80bb7f7135ef2544dbe054243b89737"
+dependencies = [
+ "fastrand",
+ "phf_shared 0.13.1",
 ]
 
 [[package]]
@@ -3577,8 +3599,21 @@ version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f84ac04429c13a7ff43785d75ad27569f2951ce0ffd30a3321230db2fc727216"
 dependencies = [
- "phf_generator",
- "phf_shared",
+ "phf_generator 0.11.3",
+ "phf_shared 0.11.3",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.114",
+]
+
+[[package]]
+name = "phf_macros"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "812f032b54b1e759ccd5f8b6677695d5268c588701effba24601f6932f8269ef"
+dependencies = [
+ "phf_generator 0.13.1",
+ "phf_shared 0.13.1",
  "proc-macro2",
  "quote",
  "syn 2.0.114",
@@ -3589,6 +3624,15 @@ name = "phf_shared"
 version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67eabc2ef2a60eb7faa00097bd1ffdb5bd28e62bf39990626a582201b7a754e5"
+dependencies = [
+ "siphasher",
+]
+
+[[package]]
+name = "phf_shared"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e57fef6bc5981e38c2ce2d63bfa546861309f875b8a75f092d1d54ae2d64f266"
 dependencies = [
  "siphasher",
 ]
@@ -4566,6 +4610,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
+name = "sif-itree"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d7f45b8998ced5134fb1d75732c77842a3e888f19c1ff98481822e8fbfbf930b"
+
+[[package]]
 name = "signal-hook"
 version = "0.3.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4997,11 +5047,12 @@ dependencies = [
 
 [[package]]
 name = "taffy"
-version = "0.7.7"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab4f4d046dd956a47a7e1a2947083d7ac3e6aa3cfaaead36173ceaa5ab11878c"
+checksum = "96fb9d22ffe63c7aa8996275aa0017404b513619bb6cf6309d9f822095afb414"
 dependencies = [
  "arrayvec",
+ "cssparser",
  "grid",
  "serde",
  "slotmap",
@@ -5028,7 +5079,7 @@ checksum = "d4ea810f0692f9f51b382fff5893887bb4580f5fa246fde546e0b13e7fcee662"
 dependencies = [
  "fnv",
  "nom",
- "phf",
+ "phf 0.11.3",
  "phf_codegen",
 ]
 
@@ -5076,7 +5127,7 @@ dependencies = [
  "ordered-float",
  "pest",
  "pest_derive",
- "phf",
+ "phf 0.11.3",
  "serde",
  "sha2",
  "signal-hook",
