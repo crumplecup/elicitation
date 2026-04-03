@@ -109,3 +109,13 @@ impl crate::ElicitPromptTree for GeoRect {
         }
     }
 }
+
+impl crate::emit_code::ToCodeLiteral for GeoRect {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let min = self.min.to_code_literal();
+        let max = self.max.to_code_literal();
+        quote::quote! {
+            elicitation::GeoRect { min: #min, max: #max }
+        }
+    }
+}

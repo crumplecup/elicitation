@@ -1094,8 +1094,8 @@ mod emit_impls {
 
     impl ToCodeLiteral for DateTimeUtcAfter {
         fn to_code_literal(&self) -> TokenStream {
-            let value_rfc3339 = self.value.to_rfc3339();
-            let threshold_rfc3339 = self.threshold.to_rfc3339();
+            let value_rfc3339 = self.get().to_rfc3339();
+            let threshold_rfc3339 = self.threshold().to_rfc3339();
             quote::quote! {
                 elicitation::DateTimeUtcAfter::new(
                     ::chrono::DateTime::parse_from_rfc3339(#value_rfc3339)

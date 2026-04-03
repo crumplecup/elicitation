@@ -120,3 +120,14 @@ impl crate::ElicitPromptTree for PaletteSrgb {
         }
     }
 }
+
+impl crate::emit_code::ToCodeLiteral for PaletteSrgb {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let r = self.r;
+        let g = self.g;
+        let b = self.b;
+        quote::quote! {
+            elicitation::PaletteSrgb { r: #r, g: #g, b: #b }
+        }
+    }
+}

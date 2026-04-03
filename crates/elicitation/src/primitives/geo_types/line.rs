@@ -108,3 +108,13 @@ impl crate::ElicitPromptTree for GeoLine {
         }
     }
 }
+
+impl crate::emit_code::ToCodeLiteral for GeoLine {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let start = self.start.to_code_literal();
+        let end = self.end.to_code_literal();
+        quote::quote! {
+            elicitation::GeoLine { start: #start, end: #end }
+        }
+    }
+}

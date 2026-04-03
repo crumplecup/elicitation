@@ -105,3 +105,13 @@ impl crate::ElicitPromptTree for GeoCoord {
         }
     }
 }
+
+impl crate::emit_code::ToCodeLiteral for GeoCoord {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let x = self.x;
+        let y = self.y;
+        quote::quote! {
+            elicitation::GeoCoord { x: #x, y: #y }
+        }
+    }
+}
