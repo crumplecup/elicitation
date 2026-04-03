@@ -138,10 +138,10 @@ impl TaffyBridge {
             let height = bounds.y1 - bounds.y0;
 
             if width > 0.0 {
-                style.size.width = Dimension::Length(width as f32);
+                style.size.width = Dimension::length(width as f32);
             }
             if height > 0.0 {
-                style.size.height = Dimension::Length(height as f32);
+                style.size.height = Dimension::length(height as f32);
             }
         }
 

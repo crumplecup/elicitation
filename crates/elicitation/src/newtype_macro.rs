@@ -211,6 +211,7 @@ macro_rules! elicit_newtype {
             }
         }
 
+        #[cfg(feature = "prompt-tree")]
         impl $crate::ElicitPromptTree for $wrapper_name {
             fn prompt_tree() -> $crate::PromptTree {
                 $crate::PromptTree::Leaf {
@@ -358,6 +359,7 @@ macro_rules! elicit_newtype {
             }
         }
 
+        #[cfg(feature = "prompt-tree")]
         impl $crate::ElicitPromptTree for $wrapper_name {
             fn prompt_tree() -> $crate::PromptTree {
                 $crate::PromptTree::Leaf {

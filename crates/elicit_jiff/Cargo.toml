@@ -31,6 +31,7 @@ futures.workspace = true
 
 [features]
 emit = ["elicitation/emit"]
+prompt-tree = ["elicitation/prompt-tree"]
 
 [dev-dependencies]
 serde_json.workspace = true
