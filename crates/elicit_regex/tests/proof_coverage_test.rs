@@ -17,5 +17,8 @@ fn all_regex_types_are_elicit_complete() {
 
 #[test]
 fn regex_wrapper_proofs_are_empty_by_design() {
-    assert!(!elicit_regex::Regex::kani_proof().is_empty(), "Regex kani_proof expected non-empty");
+    assert!(
+        !elicit_regex::Regex::kani_proof().is_empty(),
+        "Regex kani_proof expected non-empty"
+    );
 }

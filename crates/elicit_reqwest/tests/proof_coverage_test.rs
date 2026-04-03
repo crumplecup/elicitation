@@ -39,16 +39,40 @@ fn all_reqwest_types_are_elicit_complete() {
 
 #[test]
 fn reqwest_newtype_proofs_are_empty_by_design() {
-    assert!(!elicit_reqwest::Client::kani_proof().is_empty(), "Client kani_proof expected non-empty");
-    assert!(!elicit_reqwest::Error::kani_proof().is_empty(), "Error kani_proof expected non-empty");
-    assert!(!elicit_reqwest::RequestBuilder::kani_proof().is_empty(), "RequestBuilder kani_proof expected non-empty");
-    assert!(!elicit_reqwest::Response::kani_proof().is_empty(), "Response kani_proof expected non-empty");
+    assert!(
+        !elicit_reqwest::Client::kani_proof().is_empty(),
+        "Client kani_proof expected non-empty"
+    );
+    assert!(
+        !elicit_reqwest::Error::kani_proof().is_empty(),
+        "Error kani_proof expected non-empty"
+    );
+    assert!(
+        !elicit_reqwest::RequestBuilder::kani_proof().is_empty(),
+        "RequestBuilder kani_proof expected non-empty"
+    );
+    assert!(
+        !elicit_reqwest::Response::kani_proof().is_empty(),
+        "Response kani_proof expected non-empty"
+    );
 }
 
 #[test]
 fn reqwest_trusted_opaque_proofs_are_non_empty() {
-    assert!(!elicit_reqwest::Method::kani_proof().is_empty(),     "Method kani_proof expected non-empty");
-    assert!(!elicit_reqwest::StatusCode::kani_proof().is_empty(), "StatusCode kani_proof expected non-empty");
-    assert!(!elicit_reqwest::Version::kani_proof().is_empty(),    "Version kani_proof expected non-empty");
-    assert!(!elicit_reqwest::HeaderMap::kani_proof().is_empty(),  "HeaderMap kani_proof expected non-empty");
+    assert!(
+        !elicit_reqwest::Method::kani_proof().is_empty(),
+        "Method kani_proof expected non-empty"
+    );
+    assert!(
+        !elicit_reqwest::StatusCode::kani_proof().is_empty(),
+        "StatusCode kani_proof expected non-empty"
+    );
+    assert!(
+        !elicit_reqwest::Version::kani_proof().is_empty(),
+        "Version kani_proof expected non-empty"
+    );
+    assert!(
+        !elicit_reqwest::HeaderMap::kani_proof().is_empty(),
+        "HeaderMap kani_proof expected non-empty"
+    );
 }

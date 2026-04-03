@@ -20,5 +20,8 @@ fn all_uuid_types_are_elicit_complete() {
 
 #[test]
 fn uuid_wrapper_proofs_are_empty_by_design() {
-    assert!(!elicit_uuid::Uuid::kani_proof().is_empty(), "Uuid wrapper kani_proof expected non-empty");
+    assert!(
+        !elicit_uuid::Uuid::kani_proof().is_empty(),
+        "Uuid wrapper kani_proof expected non-empty"
+    );
 }

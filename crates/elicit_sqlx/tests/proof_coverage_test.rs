@@ -52,9 +52,24 @@ fn all_sqlx_wrapper_types_are_elicit_complete() {
 
 #[test]
 fn sqlx_wrapper_proofs_are_empty_by_design() {
-    assert!(!AnyColumn::kani_proof().is_empty(), "AnyColumn kani_proof expected non-empty");
-    assert!(!AnyQueryResult::kani_proof().is_empty(), "AnyQueryResult kani_proof expected non-empty");
-    assert!(!AnyRow::kani_proof().is_empty(), "AnyRow kani_proof expected non-empty");
-    assert!(!AnyTypeInfo::kani_proof().is_empty(), "AnyTypeInfo kani_proof expected non-empty");
-    assert!(!SqlxError::kani_proof().is_empty(), "SqlxError kani_proof expected non-empty");
+    assert!(
+        !AnyColumn::kani_proof().is_empty(),
+        "AnyColumn kani_proof expected non-empty"
+    );
+    assert!(
+        !AnyQueryResult::kani_proof().is_empty(),
+        "AnyQueryResult kani_proof expected non-empty"
+    );
+    assert!(
+        !AnyRow::kani_proof().is_empty(),
+        "AnyRow kani_proof expected non-empty"
+    );
+    assert!(
+        !AnyTypeInfo::kani_proof().is_empty(),
+        "AnyTypeInfo kani_proof expected non-empty"
+    );
+    assert!(
+        !SqlxError::kani_proof().is_empty(),
+        "SqlxError kani_proof expected non-empty"
+    );
 }

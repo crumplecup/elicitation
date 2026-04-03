@@ -17,5 +17,8 @@ fn all_url_types_are_elicit_complete() {
 
 #[test]
 fn url_wrapper_proofs_are_empty_by_design() {
-    assert!(!elicit_url::Url::kani_proof().is_empty(), "Url wrapper kani_proof expected non-empty");
+    assert!(
+        !elicit_url::Url::kani_proof().is_empty(),
+        "Url wrapper kani_proof expected non-empty"
+    );
 }

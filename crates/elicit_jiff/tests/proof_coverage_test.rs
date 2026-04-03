@@ -18,6 +18,12 @@ fn all_jiff_types_are_elicit_complete() {
 
 #[test]
 fn jiff_wrapper_proofs_are_empty_by_design() {
-    assert!(!elicit_jiff::Timestamp::kani_proof().is_empty(), "Timestamp kani_proof expected non-empty");
-    assert!(!elicit_jiff::Zoned::kani_proof().is_empty(), "Zoned kani_proof expected non-empty");
+    assert!(
+        !elicit_jiff::Timestamp::kani_proof().is_empty(),
+        "Timestamp kani_proof expected non-empty"
+    );
+    assert!(
+        !elicit_jiff::Zoned::kani_proof().is_empty(),
+        "Zoned kani_proof expected non-empty"
+    );
 }
