@@ -64,16 +64,32 @@ impl ElicitCommunicator for MockCommunicator {
 }
 
 // Test enums
-#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
-#[derive(Debug, Clone, Copy, PartialEq, elicitation::Elicit)]
+#[derive(
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    elicitation::Elicit,
+)]
 enum SimpleEnum {
     First,
     Second,
     Third,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
-#[derive(Debug, Clone, Copy, PartialEq, elicitation::Elicit)]
+#[derive(
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    elicitation::Elicit,
+)]
 #[prompt("Choose a color:")]
 enum ColorEnum {
     Red,
@@ -147,4 +163,3 @@ async fn test_enum_invalid_response_still_uses_send_prompt() {
     // Should fail with invalid selection
     assert!(result.is_err(), "Invalid selection should error");
 }
-
