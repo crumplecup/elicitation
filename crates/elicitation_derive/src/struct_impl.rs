@@ -1005,30 +1005,31 @@ fn generate_elicit_impl_simple(
     let proof_methods = {
         let wrapper_name_str = name.to_string();
         quote! {
-        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::verification::proof_helpers::kani_newtype_wrapper_harness(#wrapper_name_str);
-            #(
-                ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
-            )*
-            ts
-        }
+            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::verification::proof_helpers::kani_newtype_wrapper_harness(#wrapper_name_str);
+                #(
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
+                )*
+                ts
+            }
 
-        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::verification::proof_helpers::verus_newtype_wrapper_harness(#wrapper_name_str);
-            #(
-                ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
-            )*
-            ts
-        }
+            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::verification::proof_helpers::verus_newtype_wrapper_harness(#wrapper_name_str);
+                #(
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
+                )*
+                ts
+            }
 
-        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::verification::proof_helpers::creusot_newtype_wrapper_harness(#wrapper_name_str);
-            #(
-                ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
-            )*
-            ts
+            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::verification::proof_helpers::creusot_newtype_wrapper_harness(#wrapper_name_str);
+                #(
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
+                )*
+                ts
+            }
         }
-    }};
+    };
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_single_variant_enum(
@@ -1285,30 +1286,31 @@ fn generate_elicit_impl_styled(
     let proof_methods = {
         let wrapper_name_str = name.to_string();
         quote! {
-        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::verification::proof_helpers::kani_newtype_wrapper_harness(#wrapper_name_str);
-            #(
-                ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
-            )*
-            ts
-        }
+            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::verification::proof_helpers::kani_newtype_wrapper_harness(#wrapper_name_str);
+                #(
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
+                )*
+                ts
+            }
 
-        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::verification::proof_helpers::verus_newtype_wrapper_harness(#wrapper_name_str);
-            #(
-                ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
-            )*
-            ts
-        }
+            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::verification::proof_helpers::verus_newtype_wrapper_harness(#wrapper_name_str);
+                #(
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
+                )*
+                ts
+            }
 
-        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::verification::proof_helpers::creusot_newtype_wrapper_harness(#wrapper_name_str);
-            #(
-                ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
-            )*
-            ts
+            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::verification::proof_helpers::creusot_newtype_wrapper_harness(#wrapper_name_str);
+                #(
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
+                )*
+                ts
+            }
         }
-    }};
+    };
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_single_variant_enum(
@@ -1479,14 +1481,6 @@ fn capitalize_first(s: &str) -> String {
     }
 }
 
-/// Generate `ElicitSpec` impl for a derived struct.
-///
-/// The composed spec has:
-/// - One `"fields.<name>"` sub-category per non-skipped field, populated by a runtime
-///   `lookup_type_spec_by_id` call on the field's type (plus any `#[spec_requires]` extras).
-/// - An optional top-level `"requires"` category for struct-level `#[spec_requires]` entries.
-/// - A summary from `#[spec_summary = "..."]` or an auto-generated fallback.
-/// - An `inventory::submit!` registration so `lookup_type_spec("MyType")` works.
 /// Generics context passed to impl generators.
 struct GenericsCtx<'a> {
     impl_generics: &'a syn::ImplGenerics<'a>,
@@ -1495,6 +1489,14 @@ struct GenericsCtx<'a> {
     emit_inventory: bool,
 }
 
+/// Generate `ElicitSpec` impl for a derived struct.
+///
+/// The composed spec has:
+/// - One `"fields.<name>"` sub-category per non-skipped field, populated by a runtime
+///   `lookup_type_spec_by_id` call on the field's type (plus any `#[spec_requires]` extras).
+/// - An optional top-level `"requires"` category for struct-level `#[spec_requires]` entries.
+/// - A summary from `#[spec_summary = "..."]` or an auto-generated fallback.
+/// - An `inventory::submit!` registration so `lookup_type_spec("MyType")` works.
 fn generate_elicit_spec_impl(
     name: &syn::Ident,
     field_infos: &[FieldInfo],
