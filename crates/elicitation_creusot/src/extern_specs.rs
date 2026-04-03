@@ -866,6 +866,8 @@ extern_spec! {
 extern_spec! {
     impl<const MAX_LEN: usize> StringNonEmpty<MAX_LEN> {
         #[ensures(value@.len() == 0 ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(value@.len() > MAX_LEN@ ==> match result { Err(_) => true, Ok(_) => false })]
+        #[ensures(value@.len() > 0 && value@.len() <= MAX_LEN@ ==> match result { Ok(_) => true, Err(_) => false })]
         fn new(value: String) -> Result<StringNonEmpty<MAX_LEN>, ValidationError>;
     }
 }

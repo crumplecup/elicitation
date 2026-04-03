@@ -4,7 +4,7 @@ let%span sbools = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/b
 let%span sbools'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/bools.rs" 28 11 28 17
 let%span sbools'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/bools.rs" 30 47 30 81
 let%span sbools'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/bools.rs" 29 10 29 57
-let%span sbools'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/bools.rs" 102 4 102 31
+let%span sbools'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/bools.rs" 121 4 121 31
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 52 18 52 76
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 53 18 53 75
 

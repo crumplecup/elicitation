@@ -11,11 +11,14 @@ use elicitation::StringNonEmpty;
 // ============================================================================
 
 /// Verify StringNonEmpty construction with valid non-empty string.
-#[requires(true)]
+///
+/// Parameterized proof: any string with 0 < len ≤ 4096 bytes produces Ok.
+#[requires(value@.len() > 0 && value@.len() <= 4096)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
-pub fn verify_string_non_empty_valid() -> Result<StringNonEmpty, elicitation::ValidationError> {
-    StringNonEmpty::new("hello".to_string())
+pub fn verify_string_non_empty_valid(
+    value: String,
+) -> Result<StringNonEmpty, elicitation::ValidationError> {
+    StringNonEmpty::new(value)
 }
 
 /// Verify StringNonEmpty rejects empty string.
@@ -26,19 +29,23 @@ pub fn verify_string_non_empty_invalid() -> Result<StringNonEmpty, elicitation::
 }
 
 /// Verify StringNonEmpty with custom max length.
-#[requires(true)]
+///
+/// Parameterized proof: any string with 0 < len ≤ 10 bytes produces Ok.
+#[requires(value@.len() > 0 && value@.len() <= 10)]
 #[ensures(match result { Ok(_) => true, Err(_) => false })]
-#[trusted]
-pub fn verify_string_non_empty_bounded_valid()
--> Result<StringNonEmpty<10>, elicitation::ValidationError> {
-    StringNonEmpty::<10>::new("short".to_string())
+pub fn verify_string_non_empty_bounded_valid(
+    value: String,
+) -> Result<StringNonEmpty<10>, elicitation::ValidationError> {
+    StringNonEmpty::<10>::new(value)
 }
 
 /// Verify StringNonEmpty rejects string exceeding max length.
-#[requires(true)]
+///
+/// Parameterized proof: any string with len > 10 bytes produces Err.
+#[requires(value@.len() > 10)]
 #[ensures(match result { Ok(_) => false, Err(_) => true })]
-#[trusted]
-pub fn verify_string_non_empty_too_long() -> Result<StringNonEmpty<10>, elicitation::ValidationError>
-{
-    StringNonEmpty::<10>::new("this string is way too long".to_string())
+pub fn verify_string_non_empty_too_long(
+    value: String,
+) -> Result<StringNonEmpty<10>, elicitation::ValidationError> {
+    StringNonEmpty::<10>::new(value)
 }

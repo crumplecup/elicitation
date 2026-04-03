@@ -1,24 +1,29 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 91 0 91 80 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 36 0 38 61 *)
 
-let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 108 18 108 81
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 109 18 109 81
-let%span sintegers = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 92 4 92 25
-let%span sintegers'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 89 11 89 22
-let%span sintegers'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 91 46 91 80
-let%span sintegers'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 90 10 90 57
-let%span sintegers'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/integers.rs" 1237 4 1237 35
+let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 871 15 871 20
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 868 18 868 87
+let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 869 18 869 93
+let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 870 18 870 114
+let%span sstrings = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 39 4 39 36
+let%span sstrings'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 37 4 37 9
+let%span sstrings'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 34 11 34 49
+let%span sstrings'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 38 5 38 61
+let%span sstrings'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 35 10 35 57
+let%span sstrings'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/strings.rs" 44 4 44 66
 
-use creusot.int.UInt8
 use creusot.int.Int128
 use creusot.float.Float64
 use creusot.int.UInt64
 use creusot.prelude.Char
+use creusot.int.UInt8
 use creusot.int.UInt16
+use seq.Seq
 use creusot.prelude.Any
-
-type t_U8NonZero
+use int.Int
 
 type t_String
+
+type t_StringNonEmpty
 
 type t_ValidationError =
   | NotPositive Int128.t
@@ -82,11 +87,11 @@ type t_ValidationError =
   | StatusCodeInvalid UInt16.t
   | HeaderInvalid t_String
 
-type t_Result_U8NonZero_ValidationError = Ok t_U8NonZero | Err t_ValidationError
-
-predicate inv_U8NonZero (_1: t_U8NonZero)
+type t_Result_StringNonEmpty_ValidationError = Ok t_StringNonEmpty | Err t_ValidationError
 
 predicate inv_String (_1: t_String)
+
+predicate inv_StringNonEmpty (_1: t_StringNonEmpty)
 
 predicate inv_ValidationError (_1: t_ValidationError)
 
@@ -154,27 +159,38 @@ axiom inv_axiom [@rewrite]: forall x: t_ValidationError [inv_ValidationError x].
       | HeaderInvalid f0 -> inv_String f0
       end
 
-predicate inv_Result_U8NonZero_ValidationError (_1: t_Result_U8NonZero_ValidationError)
+predicate inv_Result_StringNonEmpty_ValidationError (_1: t_Result_StringNonEmpty_ValidationError)
 
 axiom inv_axiom'0 [@rewrite]:
-  forall x: t_Result_U8NonZero_ValidationError [inv_Result_U8NonZero_ValidationError x]. inv_Result_U8NonZero_ValidationError x
+  forall x: t_Result_StringNonEmpty_ValidationError [inv_Result_StringNonEmpty_ValidationError x]. inv_Result_StringNonEmpty_ValidationError x
     = match x with
-      | Ok f0 -> inv_U8NonZero f0
+      | Ok f0 -> inv_StringNonEmpty f0
       | Err f0 -> inv_ValidationError f0
       end
 
-let rec new (value: UInt8.t) (return (x: t_Result_U8NonZero_ValidationError)) = any
-  [ return (result: t_Result_U8NonZero_ValidationError) ->
-  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#sintegers'3] inv_Result_U8NonZero_ValidationError result)
-    /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs] UInt8.t'int value <> 0
+function view_String (self: t_String) : Seq.seq Char.t
+
+let rec new (value: t_String) (return (x: t_Result_StringNonEmpty_ValidationError)) =
+  {[@stop_split] [@expl:new 'value' type invariant] [%#sextern_specs] inv_String value}
+  any
+  [ return (result: t_Result_StringNonEmpty_ValidationError) ->
+  {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#sstrings'4] inv_Result_StringNonEmpty_ValidationError result)
+    /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs'0] Seq.length (view_String value) = 0
       -> match result with
-        | Ok _ -> true
-        | Err _ -> false
+        | Err _ -> true
+        | Ok _ -> false
         end)
-    /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'0] UInt8.t'int value = 0
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'1] Seq.length (view_String value)
+        > UInt64.t'int (10: UInt64.t)
+      -> match result with
+        | Err _ -> true
+        | Ok _ -> false
+        end)
+    /\ ([@stop_split] [@expl:new ensures #2] [%#sextern_specs'2] Seq.length (view_String value) > 0
+      /\ Seq.length (view_String value) <= UInt64.t'int (10: UInt64.t)
     -> match result with
-      | Err _ -> true
-      | Ok _ -> false
+      | Ok _ -> true
+      | Err _ -> false
       end)}
     (! return {result}) ]
 
@@ -182,16 +198,21 @@ meta "compute_max_steps" 1000000
 
 meta "select_lsinst" "all"
 
-let rec verify_u8_non_zero_valid [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 91 0 91 80]
-  (value: UInt8.t) (return (x: t_Result_U8NonZero_ValidationError)) =
-  {[@stop_split] [@expl:verify_u8_non_zero_valid requires] [%#sintegers'0] UInt8.t'int value <> 0}
+let rec verify_string_non_empty_bounded_valid
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 36 0 38 61] (value: t_String)
+  (return (x: t_Result_StringNonEmpty_ValidationError)) =
+  {[@stop_split] [@expl:verify_string_non_empty_bounded_valid requires] ([@stop_split] [@expl:verify_string_non_empty_bounded_valid 'value' type invariant] [%#sstrings'0] inv_String value)
+  /\ ([@stop_split] [@expl:verify_string_non_empty_bounded_valid requires] [%#sstrings'1] Seq.length (view_String value)
+    > 0
+  /\ Seq.length (view_String value) <= 10)}
   (! bb0
   [ bb0 = s0
-    [ s0 = new [%#sintegers] {value} (fun (_x: t_Result_U8NonZero_ValidationError) -> [ &_ret <- _x ] s1)
-    | s1 = return {_ret} ] ] [ & _ret: t_Result_U8NonZero_ValidationError = Any.any_l () | & value: UInt8.t = value ])
-  [ return (result: t_Result_U8NonZero_ValidationError) ->
-  {[@stop_split] [@expl:verify_u8_non_zero_valid ensures] ([@stop_split] [@expl:verify_u8_non_zero_valid result type invariant] [%#sintegers'1] inv_Result_U8NonZero_ValidationError result)
-    /\ ([@stop_split] [@expl:verify_u8_non_zero_valid ensures] [%#sintegers'2] match result with
+    [ s0 = new [%#sstrings] {value} (fun (_x: t_Result_StringNonEmpty_ValidationError) -> [ &_ret <- _x ] s1)
+    | s1 = return {_ret} ] ]
+  [ & _ret: t_Result_StringNonEmpty_ValidationError = Any.any_l () | & value: t_String = value ])
+  [ return (result: t_Result_StringNonEmpty_ValidationError) ->
+  {[@stop_split] [@expl:verify_string_non_empty_bounded_valid ensures] ([@stop_split] [@expl:verify_string_non_empty_bounded_valid result type invariant] [%#sstrings'2] inv_Result_StringNonEmpty_ValidationError result)
+    /\ ([@stop_split] [@expl:verify_string_non_empty_bounded_valid ensures] [%#sstrings'3] match result with
       | Ok _ -> true
       | Err _ -> false
       end)}

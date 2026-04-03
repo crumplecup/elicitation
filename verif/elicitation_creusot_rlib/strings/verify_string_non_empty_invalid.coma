@@ -1,13 +1,15 @@
-(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 24 0 24 96 *)
+(* #"/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 27 0 27 96 *)
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 857 18 857 41
-let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 869 15 869 20
+let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 871 15 871 20
 let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 868 18 868 87
-let%span sstrings = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 25 24 25 37
-let%span sstrings'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 25 4 25 38
-let%span sstrings'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 22 11 22 15
-let%span sstrings'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 24 44 24 96
-let%span sstrings'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 23 10 23 57
+let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 869 18 869 93
+let%span sextern_specs'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 870 18 870 114
+let%span sstrings = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 28 24 28 37
+let%span sstrings'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 28 4 28 38
+let%span sstrings'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 25 11 25 15
+let%span sstrings'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 27 44 27 96
+let%span sstrings'3 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 26 10 26 57
 let%span sstrings'4 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/strings.rs" 44 4 44 66
 
 use creusot.prelude.Char
@@ -18,6 +20,7 @@ use creusot.int.UInt64
 use creusot.int.UInt8
 use creusot.int.UInt16
 use creusot.prelude.Any
+use int.Int
 
 type t_String
 
@@ -179,10 +182,22 @@ let rec new'0 (value: t_String) (return (x: t_Result_StringNonEmpty_ValidationEr
   any
   [ return (result: t_Result_StringNonEmpty_ValidationError) ->
   {[@stop_split] [@expl:new ensures] ([@stop_split] [@expl:new result type invariant] [%#sstrings'4] inv_Result_StringNonEmpty_ValidationError result)
-    /\ ([@stop_split] [@expl:new ensures] [%#sextern_specs'1] Seq.length (view_String value) = 0
+    /\ ([@stop_split] [@expl:new ensures #0] [%#sextern_specs'1] Seq.length (view_String value) = 0
+      -> match result with
+        | Err _ -> true
+        | Ok _ -> false
+        end)
+    /\ ([@stop_split] [@expl:new ensures #1] [%#sextern_specs'2] Seq.length (view_String value)
+        > UInt64.t'int (4096: UInt64.t)
+      -> match result with
+        | Err _ -> true
+        | Ok _ -> false
+        end)
+    /\ ([@stop_split] [@expl:new ensures #2] [%#sextern_specs'3] Seq.length (view_String value) > 0
+      /\ Seq.length (view_String value) <= UInt64.t'int (4096: UInt64.t)
     -> match result with
-      | Err _ -> true
-      | Ok _ -> false
+      | Ok _ -> true
+      | Err _ -> false
       end)}
     (! return {result}) ]
 
@@ -191,7 +206,7 @@ meta "compute_max_steps" 1000000
 meta "select_lsinst" "all"
 
 let rec verify_string_non_empty_invalid
-  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 24 0 24 96]
+  [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/strings.rs" 27 0 27 96]
   (return (x: t_Result_StringNonEmpty_ValidationError)) = (! bb0
   [ bb0 = s0
     [ s0 = new [%#sstrings] (fun (_x: t_String) -> [ &_3 <- _x ] s1)
