@@ -1242,6 +1242,7 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
+ "tokio",
  "tracing",
 ]
 
@@ -1549,6 +1550,7 @@ dependencies = [
  "rmcp",
  "schemars",
  "serde",
+ "serde_json",
  "tracing",
  "uuid",
 ]
