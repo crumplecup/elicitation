@@ -31,6 +31,8 @@ quote.workspace = true
 prompt-tree = ["elicitation/prompt-tree"]
 
 [dev-dependencies]
+tokio = { workspace = true }
+serde_json = { workspace = true }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
