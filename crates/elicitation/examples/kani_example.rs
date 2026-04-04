@@ -15,13 +15,6 @@
 //! cargo kani -p elicitation_kani --all-features
 //! ```
 
-#[cfg(not(feature = "verification"))]
-fn main() {
-    eprintln!("This example requires the verification feature.");
-    eprintln!("Run with: cargo run --example kani_example --features verification");
-}
-
-#[cfg(feature = "verification")]
 mod kani_enabled {
 
     // Domain types and implementations would go here
@@ -31,7 +24,6 @@ mod kani_enabled {
     }
 }
 
-#[cfg(feature = "verification")]
 fn main() {
     kani_enabled::run_main();
 }

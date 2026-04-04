@@ -100,6 +100,9 @@ impl CreusotModule {
             Self::with_feature("sqlx_types", "sqlx-types"),
             Self::with_feature("tokio_types", "tokio-types"),
             Self::with_feature("egui_types", "egui-types"),
+            Self::with_feature("ratatui_types", "ratatui-types"),
+            Self::with_feature("geo_types", "geo-types"),
+            Self::with_feature("palette_types", "palette"),
             Self::with_feature("ui_types", "ui-types"),
         ]
     }
@@ -305,11 +308,9 @@ pub fn run_all_modules(output_csv: &Path, resume: bool) -> Result<CreusotSummary
         println!("📂 Loading existing results...");
         let mut reader = Reader::from_path(output_csv)
             .with_context(|| format!("Failed to read CSV: {}", output_csv.display()))?;
-        for result in reader.deserialize::<CreusotModuleResult>() {
-            if let Ok(result) = result {
-                if result.is_success() {
-                    completed_modules.insert(result.module().clone());
-                }
+        for result in reader.deserialize::<CreusotModuleResult>().flatten() {
+            if result.is_success() {
+                completed_modules.insert(result.module().clone());
             }
         }
         println!("   Found {} completed modules", completed_modules.len());
@@ -735,11 +736,9 @@ pub fn run_all_modules_prove(
         println!("📂 Loading existing results...");
         let mut reader = Reader::from_path(module_csv)
             .with_context(|| format!("Failed to read CSV: {}", module_csv.display()))?;
-        for result in reader.deserialize::<CreusotModuleResult>() {
-            if let Ok(result) = result {
-                if result.is_success() {
-                    completed_modules.insert(result.module().clone());
-                }
+        for result in reader.deserialize::<CreusotModuleResult>().flatten() {
+            if result.is_success() {
+                completed_modules.insert(result.module().clone());
             }
         }
         println!("   Found {} completed modules", completed_modules.len());
@@ -752,7 +751,6 @@ pub fn run_all_modules_prove(
     // Append to goals CSV if it already exists so historical runs are preserved.
     let goals_file_exists = goals_csv.exists();
     let goals_file = std::fs::OpenOptions::new()
-        .write(true)
         .create(true)
         .append(true)
         .open(goals_csv)

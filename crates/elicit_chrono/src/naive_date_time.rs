@@ -87,3 +87,23 @@ impl NaiveDateTime {
             .map(|dt| std::sync::Arc::new(dt).into())
     }
 }
+
+mod emit_impls {
+    use super::NaiveDateTime;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for NaiveDateTime {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.0.to_string();
+            quote::quote! {
+                ::elicit_chrono::NaiveDateTime::from(
+                    ::chrono::NaiveDateTime::parse_from_str(#s, "%Y-%m-%d %H:%M:%S%.f")
+                        .expect("valid NaiveDateTime")
+                )
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for NaiveDateTime {}

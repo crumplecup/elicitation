@@ -2,14 +2,32 @@
 
 use elicitation::{Elicit, Elicitation, Prompt, Select};
 
-#[derive(Debug, Clone, Copy, PartialEq, Elicit)]
+#[derive(
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Elicit,
+)]
 enum SimpleEnum {
     First,
     Second,
     Third,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Elicit)]
+#[derive(
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Elicit,
+)]
 #[prompt("Choose your favorite color:")]
 enum ColorEnum {
     Red,
@@ -18,31 +36,41 @@ enum ColorEnum {
 }
 
 // Test tuple variants
-#[derive(Debug, Clone, PartialEq, Elicit)]
+#[derive(
+    serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Clone, PartialEq, Elicit,
+)]
 enum SimpleTuple {
     Value(String),
 }
 
-#[derive(Debug, Clone, PartialEq, Elicit)]
+#[derive(
+    serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Clone, PartialEq, Elicit,
+)]
 enum MultiTuple {
     Pair(String, i32),
     Triple(String, i32, bool),
 }
 
 // Test struct variants
-#[derive(Debug, Clone, PartialEq, Elicit)]
+#[derive(
+    serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Clone, PartialEq, Elicit,
+)]
 enum StructVariant {
     Config { host: String, port: u16 },
 }
 
-#[derive(Debug, Clone, PartialEq, Elicit)]
+#[derive(
+    serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Clone, PartialEq, Elicit,
+)]
 enum MultiStruct {
     ServerConfig { host: String, port: u16 },
     ClientConfig { url: String, timeout: u32 },
 }
 
 // Test mixed variants
-#[derive(Debug, Clone, PartialEq, Elicit)]
+#[derive(
+    serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Clone, PartialEq, Elicit,
+)]
 enum Mixed {
     Unit,
     Tuple(String),
@@ -50,13 +78,24 @@ enum Mixed {
 }
 
 // Test nested enums
-#[derive(Debug, Clone, Copy, PartialEq, Elicit)]
+#[derive(
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Elicit,
+)]
 enum Inner {
     A,
     B,
 }
 
-#[derive(Debug, Clone, PartialEq, Elicit)]
+#[derive(
+    serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Clone, PartialEq, Elicit,
+)]
 enum Outer {
     Contains(Inner),
     StructContains { inner: Inner },

@@ -33,9 +33,8 @@ serde_json.workspace = true
 tokio = { workspace = true, features = ["rt", "macros"] }
 
 [features]
-default = ["proofs"]
+default = []
 emit = ["elicitation/emit"]
-proofs = ["elicitation/proofs"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

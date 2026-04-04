@@ -35,19 +35,16 @@ macro_rules! impl_float_elicit_via_wrapper {
                 Ok(wrapper.into_inner())
             }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         use crate::verification::types::$wrapper;
         <$wrapper as crate::Elicitation>::kani_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         use crate::verification::types::$wrapper;
         <$wrapper as crate::Elicitation>::verus_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         use crate::verification::types::$wrapper;
         <$wrapper as crate::Elicitation>::creusot_proof()
@@ -99,19 +96,16 @@ impl Elicitation for f64 {
         Ok(wrapper.into_inner())
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         use crate::verification::types::F64Default;
         <F64Default as crate::Elicitation>::kani_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         use crate::verification::types::F64Default;
         <F64Default as crate::Elicitation>::verus_proof()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         use crate::verification::types::F64Default;
         <F64Default as crate::Elicitation>::creusot_proof()

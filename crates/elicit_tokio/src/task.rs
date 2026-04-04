@@ -27,7 +27,7 @@ use serde::{Deserialize, Serialize};
 // ── Param / result types ──────────────────────────────────────────────────────
 
 /// Proposition: `tokio::task::yield_now()` returned — the task yielded to the scheduler.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct TaskYielded {}
 impl Prop for TaskYielded {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -112,7 +112,6 @@ fn json_result<T: Serialize>(v: &T) -> CallToolResult {
 
 // ── Emit impls ────────────────────────────────────────────────────────────────
 
-#[cfg(feature = "emit")]
 mod emit_impls {
     use super::{BlockInPlaceParams, SpawnBlockingParams, SpawnParams};
     use elicitation::emit_code::{CrateDep, EmitCode, EmitEntry};
@@ -121,14 +120,14 @@ mod emit_impls {
     fn parse_body(body: &str) -> TokenStream {
         body.parse().unwrap_or_else(|_| {
             let lit = body;
-            ::quote::quote! { compile_error!(#lit) }
+            elicitation::quote::quote! { compile_error!(#lit) }
         })
     }
 
     impl EmitCode for SpawnParams {
         fn emit_code(&self) -> TokenStream {
             let body = parse_body(&self.body);
-            ::quote::quote! {
+            elicitation::quote::quote! {
                 tokio::spawn(async move { #body })
             }
         }
@@ -140,7 +139,7 @@ mod emit_impls {
     impl EmitCode for SpawnBlockingParams {
         fn emit_code(&self) -> TokenStream {
             let body = parse_body(&self.body);
-            ::quote::quote! {
+            elicitation::quote::quote! {
                 tokio::task::spawn_blocking(move || { #body })
             }
         }
@@ -152,7 +151,7 @@ mod emit_impls {
     impl EmitCode for BlockInPlaceParams {
         fn emit_code(&self) -> TokenStream {
             let body = parse_body(&self.body);
-            ::quote::quote! {
+            elicitation::quote::quote! {
                 tokio::task::block_in_place(move || { #body })
             }
         }

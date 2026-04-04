@@ -18,7 +18,7 @@ let%span snetworks'8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/
 let%span snetworks'9 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 100 11 100 15
 let%span snetworks'10 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 102 41 102 91
 let%span snetworks'11 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/networks.rs" 101 10 101 57
-let%span snetworks'12 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/networks.rs" 394 4 394 41
+let%span snetworks'12 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/networks.rs" 379 4 379 41
 
 use creusot.int.UInt16
 use int.ComputerDivision

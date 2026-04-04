@@ -1,7 +1,5 @@
 //! `VerifiedWorkflow` validation tests for elicit_serde_json propositions.
 
-#![cfg(feature = "proofs")]
-
 use elicit_serde_json::{
     IsObject, JsonParsed, PointerResolved, RequiredKeysPresent, UpdateApplied,
 };

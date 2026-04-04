@@ -144,3 +144,92 @@ impl DateTimeUtc {
             .map(Into::into)
     }
 }
+
+// ── Elicitation framework traits ─────────────────────────────────────────────
+
+impl elicitation::Prompt for DateTimeUtc {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter a UTC datetime in RFC 3339 format (e.g. 2024-01-15T12:30:00Z):")
+    }
+}
+
+impl elicitation::Elicitation for DateTimeUtc {
+    type Style = ();
+
+    async fn elicit<C: elicitation::ElicitCommunicator>(
+        communicator: &C,
+    ) -> elicitation::ElicitResult<Self> {
+        let response = communicator
+            .send_prompt("Enter a UTC datetime in RFC 3339 format (e.g. 2024-01-15T12:30:00Z):")
+            .await?;
+        let inner = response
+            .parse::<chrono::DateTime<chrono::Utc>>()
+            .map_err(|e| {
+                elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(format!(
+                    "Invalid UTC datetime: {e}"
+                )))
+            })?;
+        Ok(Self(Arc::new(inner)))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        elicitation::verification::proof_helpers::kani_trusted_opaque("DateTimeUtc")
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        elicitation::verification::proof_helpers::verus_trusted_opaque("DateTimeUtc")
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        elicitation::verification::proof_helpers::creusot_trusted_opaque("DateTimeUtc")
+    }
+}
+
+impl elicitation::ElicitIntrospect for DateTimeUtc {
+    fn pattern() -> elicitation::ElicitationPattern {
+        elicitation::ElicitationPattern::Primitive
+    }
+    fn metadata() -> elicitation::TypeMetadata {
+        elicitation::TypeMetadata {
+            type_name: "DateTimeUtc",
+            description: <Self as elicitation::Prompt>::prompt(),
+            details: elicitation::PatternDetails::Primitive,
+        }
+    }
+}
+
+impl elicitation::ElicitPromptTree for DateTimeUtc {
+    fn prompt_tree() -> elicitation::PromptTree {
+        elicitation::PromptTree::Leaf {
+            prompt: "DateTimeUtc".to_string(),
+            type_name: "DateTimeUtc".to_string(),
+        }
+    }
+}
+
+impl elicitation::ElicitSpec for DateTimeUtc {
+    fn type_spec() -> elicitation::TypeSpec {
+        elicitation::TypeSpecBuilder::default()
+            .type_name("DateTimeUtc".to_string())
+            .summary("UTC datetime in RFC 3339 format (e.g. 2024-01-15T12:30:00Z).".to_string())
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+
+mod emit_impls {
+    use super::DateTimeUtc;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for DateTimeUtc {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.0.to_rfc3339();
+            quote::quote! {
+                ::elicit_chrono::DateTimeUtc::from(
+                    #s.parse::<::chrono::DateTime<::chrono::Utc>>().expect("valid UTC datetime")
+                )
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for DateTimeUtc {}

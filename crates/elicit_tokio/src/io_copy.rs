@@ -59,7 +59,7 @@ use uuid::Uuid;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: `tokio::io::copy` completed — all readable bytes were written to the writer.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct BytesCopied {}
 impl Prop for BytesCopied {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {

@@ -43,18 +43,28 @@ impl Elicitation for char {
         })
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_char()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_char()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_char()
+    }
+}
+
+impl crate::ElicitIntrospect for char {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "char",
+            description: <char as crate::Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
     }
 }

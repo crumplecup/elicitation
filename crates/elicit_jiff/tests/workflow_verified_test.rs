@@ -1,7 +1,5 @@
 //! `VerifiedWorkflow` validation tests for elicit_jiff propositions.
 
-#![cfg(feature = "proofs")]
-
 use elicit_jiff::{TimestampFuture, TimestampParsed, TimezoneConverted, ZonedParsed};
 use elicitation::VerifiedWorkflow;
 use elicitation::contracts::And;

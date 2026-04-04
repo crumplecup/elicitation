@@ -61,8 +61,9 @@
 //! // Verify WCAG Level AA compliance
 //! let verified = layout.verify_aa(Viewport::new(1920, 1080))?;
 //!
-//! // Render to frontend (requires egui-backend feature)
-//! // let rendered = verified.render_egui(&egui_ctx);
+//! // Render to frontend via RenderBackend
+//! // let backend = elicit_egui::EguiBackend::new(&egui_ctx);
+//! // let (rendered, stats) = verified.render(&backend);
 //! # Ok::<(), elicit_ui::VerificationReport>(())
 //! ```
 
@@ -70,20 +71,39 @@
 #![warn(missing_docs)]
 
 mod builder;
+mod color_contrast;
+pub mod constraints;
 mod contracts;
+mod css_units;
 mod errors;
-#[cfg(feature = "egui-backend")]
-mod renderer;
+mod layout_engine;
+mod render_backend;
+mod spatial;
 mod types;
 mod typestate;
 mod validators;
 
 pub use builder::LayoutBuilder;
+pub use color_contrast::{
+    ContrastEnhanced, ContrastMinimum, NonTextContrast, SrgbColor, TextSize, contrast_ratio,
+};
+pub use constraints::{
+    BreakpointOutcome, BreakpointReport, BreakpointResult, BreakpointTier, Constraint,
+    ConstraintContext, ConstraintSet, ConstraintSetBuilder, ConstraintVerification, GridAlignment,
+    HasLabelConstraint, KeyboardAccessibleConstraint, MinReadableSize, MinSpacing,
+    MinTouchTargetConstraint, NoOverflowConstraint, Reflow320, ResizeText200, SpecReference,
+    TerminalAccessible, TerminalBreakpoint, TerminalBreakpointSet, TerminalNoOverflow, TextSpacing,
+    ValidRoleConstraint, Violation, WcagLevel,
+};
 pub use contracts::{
     AccessibleAA, HasLabel, KeyboardAccessible, MinTargetSize, NoOverflow, ValidRole,
 };
+pub use css_units::{Breakpoint, BreakpointSet, CssLength, CssParseError, is_zoom_invariant};
 pub use errors::{VerificationError, VerificationErrorKind, VerificationReport};
-#[cfg(feature = "egui-backend")]
-pub use renderer::{bounds_to_size, render_tree};
+pub use layout_engine::LayoutEngineError;
+#[cfg(feature = "layout-engine")]
+pub use layout_engine::{LayoutMode, TaffyBridge};
+pub use render_backend::RenderBackend;
+pub use spatial::{BoundingBox, LayoutContext};
 pub use types::{ElementId, Label, RenderStats, Size, Viewport};
-pub use typestate::{Layout, Pending, Rendered, Verified};
+pub use typestate::{ConstraintProfile, Layout, Pending, Rendered, Verified};

@@ -414,13 +414,15 @@ macro_rules! __elicit_param_struct {
     // No parameters - don't generate a struct
     ($struct_name:ident,) => {};
 
-    // With parameters - generate struct with Elicit and JsonSchema derives
+    // With parameters - generate struct with Elicit, serde, and JsonSchema derives
     ($struct_name:ident, $($param_name:ident: $param_ty:ty),+) => {
         #[derive(
             ::std::fmt::Debug,
             ::std::clone::Clone,
             $crate::Elicit,
             ::schemars::JsonSchema,
+            ::serde::Serialize,
+            ::serde::Deserialize,
         )]
         pub struct $struct_name {
             $(pub $param_name: $crate::__convert_param_type!($param_ty)),+

@@ -62,13 +62,11 @@ mod fetch_and_parse;
 pub mod ledger;
 mod secure_fetch;
 
-#[cfg(feature = "emit")]
 mod emit_plugin;
 
 pub use fetch_and_parse::{FetchAndParsePlugin, http_get};
 pub use secure_fetch::SecureFetchPlugin;
 
-#[cfg(feature = "emit")]
 pub use emit_plugin::{EmitBinaryParams, EmitBinaryPlugin, WorkflowStep};
 
 /// Look up a tool by name and deserialize its params, drawing from all
@@ -80,7 +78,6 @@ pub use emit_plugin::{EmitBinaryParams, EmitBinaryPlugin, WorkflowStep};
 /// present in the final binary.  Integration tests must call this function
 /// (not the bare `dispatch_emit`) so the linker does not discard unreferenced
 /// CGUs.
-#[cfg(feature = "emit")]
 pub fn emit_dispatch(
     tool: &str,
     params: serde_json::Value,
@@ -92,7 +89,6 @@ pub fn emit_dispatch(
 ///
 /// Use this when multiple crates register the same tool name (e.g.
 /// `"assert_future"` in `elicit_chrono`, `elicit_jiff`, `elicit_time`).
-#[cfg(feature = "emit")]
 pub fn emit_dispatch_crate(
     tool: &str,
     crate_name: &str,

@@ -69,16 +69,23 @@ bytes = { workspace = true, optional = true }
 sqlx = { workspace = true, optional = true }
 
 # Code recovery / emission (optional)
-proc-macro2 = { workspace = true, optional = true }
-quote = { workspace = true, optional = true }
-prettyplease = { workspace = true, optional = true }
-syn = { workspace = true, optional = true }
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+prettyplease = { workspace = true }
+syn = { workspace = true }
+
+# GeoRust spatial types (optional)
+geo-types = { workspace = true, optional = true }
+
+# Color science (optional)
+palette = { workspace = true, optional = true }
 
 # Re-export derive macro
 elicitation_derive = { workspace = true }
 elicitation_macros = { workspace = true }
 accesskit = { workspace = true, optional = true }
 egui = { workspace = true, optional = true }
+ratatui = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio-test = { workspace = true }
@@ -96,7 +103,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "proofs", "verification", "graph", "clap-types", "sqlx-types", "prompt-tree"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "prompt-tree", "ratatui", "emit"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -122,10 +129,9 @@ regex = ["dep:regex"]
 reqwest = ["dep:reqwest", "dep:http", "dep:bytes", "url"]
 
 # Code recovery — emit verified workflows as Rust source
-emit = ["dep:prettyplease", "dep:syn", "proofs"]
+emit = []
 
 # Proof emission — proc_macro2/quote for kani/verus/creusot/prusti proof methods
-proofs = ["dep:proc-macro2", "dep:quote", "elicitation_derive/proofs"]
 
 # Type graph visualization — inventory-based structural registry + renderers
 graph = []
@@ -137,9 +143,8 @@ prompt-tree = ["elicitation_derive/prompt-tree"]
 prompt-tree-accesskit = ["prompt-tree", "dep:accesskit"]
 
 # Formal verification support
-verification = [] # Core Contract trait only
 # verify-kani lives in elicitation_kani crate (dedicated)
-verify-verus = ["verification"] # Verus SMT verifier
+verify-verus = []
 verify-all = ["verify-verus"]
 
 # Enable clap type elicitation (ColorChoice, ArgAction, ValueHint, etc.)
@@ -155,6 +160,9 @@ cli = ["dep:clap", "clap-types", "csv", "chrono", "shellexpand", "dirs"]
 dev = ["full", "cli", "graph"]
 accesskit = ["dep:accesskit"]
 egui-types = ["dep:egui"]
+ratatui = ["dep:ratatui"]
+geo-types = ["dep:geo-types"]
+palette = ["dep:palette"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [

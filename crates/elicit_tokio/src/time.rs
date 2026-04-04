@@ -37,7 +37,7 @@ use uuid::Uuid;
 // ── Propositions ──────────────────────────────────────────────────────────────
 
 /// Proposition: a `sleep` or `sleep_until` completed without interruption.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct SleepCompleted;
 impl Prop for SleepCompleted {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -76,7 +76,7 @@ impl Prop for SleepCompleted {
 impl VerifiedWorkflow for SleepCompleted {}
 
 /// Proposition: a `timeout_await` call returned (either expired or checked).
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct TimeoutResolved;
 impl Prop for TimeoutResolved {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {

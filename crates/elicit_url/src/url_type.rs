@@ -90,3 +90,20 @@ impl Url {
             .map(|u| std::sync::Arc::new(u).into())
     }
 }
+
+mod emit_impls {
+    use super::Url;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for Url {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.0.as_str().to_string();
+            quote::quote! {
+                ::elicit_url::Url::from(::url::Url::parse(#s).expect("valid url"))
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for Url {}

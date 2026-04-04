@@ -6,7 +6,7 @@ let%span sintegers = "/home/erik/repos/elicitation/crates/elicitation_creusot/sr
 let%span sintegers'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 36 11 36 21
 let%span sintegers'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 38 49 38 84
 let%span sintegers'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/integers.rs" 37 10 37 57
-let%span sintegers'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/integers.rs" 260 4 260 34
+let%span sintegers'3 = "/home/erik/repos/elicitation/crates/elicitation/src/verification/types/integers.rs" 257 4 257 34
 
 use creusot.int.Int8
 use creusot.int.Int128

@@ -237,7 +237,6 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// at compile time when the `proofs` feature is active.
     ///
     /// Available with the `proofs` feature.
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream;
 
     /// Returns a [`proc_macro2::TokenStream`] containing a Verus-verified function
@@ -248,7 +247,6 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// opt out consciously.
     ///
     /// Available with the `proofs` feature.
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream;
 
     /// Returns a [`proc_macro2::TokenStream`] containing Creusot contract functions
@@ -259,7 +257,6 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// opt out consciously.
     ///
     /// Available with the `proofs` feature.
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream;
 
     /// Returns a [`proc_macro2::TokenStream`] containing Prusti contract functions
@@ -269,7 +266,6 @@ pub trait Elicitation: Sized + Prompt + 'static {
     /// so this is optional until upstream support is restored.
     ///
     /// Available with the `proofs` feature.
-    #[cfg(feature = "proofs")]
     fn prusti_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }

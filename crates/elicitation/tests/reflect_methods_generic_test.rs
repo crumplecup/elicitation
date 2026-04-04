@@ -11,7 +11,10 @@ elicit_newtype!(Vec<String>, as StringList);
 impl StringList {
     pub fn contains<T>(&self, item: &T) -> bool
     where
-        T: elicitation::Elicitation + schemars::JsonSchema + PartialEq<String>,
+        T: elicitation::Elicitation
+            + schemars::JsonSchema
+            + PartialEq<String>
+            + elicitation::ElicitComplete,
     {
         self.0.iter().any(|s| item == s)
     }

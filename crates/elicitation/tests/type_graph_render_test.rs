@@ -7,7 +7,7 @@ use elicitation::{
 
 // --- Simple stable type for snapshot tests ---
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum Direction {
     North,
     South,
@@ -15,7 +15,7 @@ pub enum Direction {
     West,
 }
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct Location {
     pub label: String,
     pub direction: Direction,
@@ -173,14 +173,14 @@ fn dot_direction_enum_is_lightblue() {
 // Prompt annotation tests — types with #[prompt] annotations
 // ============================================================================
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[prompt("Where are you going?")]
 pub enum PromptedDirection {
     North,
     South,
 }
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[prompt("Configure the server:")]
 pub struct ServerLocation {
     #[prompt("Host name:")]

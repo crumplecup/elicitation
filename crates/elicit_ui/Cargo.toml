@@ -13,7 +13,7 @@ keywords = ["mcp", "ui", "accessibility", "typestate", "verification"]
 categories = ["gui", "development-tools", "accessibility"]
 
 [dependencies]
-elicitation = { workspace = true, features = ["accesskit", "proofs"] }
+elicitation = { workspace = true, features = ["accesskit"] }
 elicitation_derive.workspace = true
 elicitation_macros.workspace = true
 elicit_accesskit.workspace = true
@@ -28,25 +28,35 @@ derive_more.workspace = true
 derive-getters.workspace = true
 derive-new.workspace = true
 
-# Frontend dependencies (optional)
-egui = { workspace = true, optional = true }
+# GeoRust spatial types (optional)
+geo = { workspace = true, optional = true }
+geo-types = { workspace = true, optional = true }
+
+# CSS parsing (optional)
+cssparser = { workspace = true, optional = true }
+
+# Color science (optional)
+palette = { workspace = true, optional = true }
+
+# Layout engine (optional)
+taffy = { workspace = true, optional = true }
 
 # Code emission
-proc-macro2 = { workspace = true, optional = true }
-quote = { workspace = true, optional = true }
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
 serde_json = { workspace = true }
-egui = { workspace = true }
 
 [features]
-emit = ["dep:proc-macro2", "dep:quote", "elicitation/emit"]
-egui-backend = ["dep:egui"]
+emit = ["elicitation/emit"]
+geo = ["dep:geo", "dep:geo-types"]
+geo-types = ["geo"]
+css = ["dep:cssparser"]
+color = ["dep:palette"]
+palette = ["color"]
+layout-engine = ["dep:taffy"]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
-
-[[test]]
-name = "egui_renderer_test"
-required-features = ["egui-backend"]

@@ -577,6 +577,117 @@ impl ProofHarness {
             Self::new("ui_types", "verify_verified_is_zero_sized"),
             Self::new("ui_types", "verify_rendered_is_zero_sized"),
             Self::new("ui_types", "verify_typestate_markers_distinct"),
+            // ratatui_types: select enum proofs
+            Self::new("ratatui_types", "verify_ratatui_alignment_label_count"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_alignment_all_labels_roundtrip",
+            ),
+            Self::new("ratatui_types", "verify_ratatui_alignment_unknown_rejected"),
+            Self::new("ratatui_types", "verify_ratatui_direction_label_count"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_direction_all_labels_roundtrip",
+            ),
+            Self::new("ratatui_types", "verify_ratatui_direction_unknown_rejected"),
+            Self::new("ratatui_types", "verify_ratatui_border_type_label_count"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_border_type_all_labels_roundtrip",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_border_type_unknown_rejected",
+            ),
+            Self::new("ratatui_types", "verify_ratatui_color_label_count"),
+            Self::new("ratatui_types", "verify_ratatui_color_unknown_rejected"),
+            Self::new("ratatui_types", "verify_ratatui_borders_label_count"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_borders_all_labels_roundtrip",
+            ),
+            Self::new("ratatui_types", "verify_ratatui_borders_unknown_rejected"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_scrollbar_orientation_label_count",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_scrollbar_orientation_all_labels_roundtrip",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_scrollbar_orientation_unknown_rejected",
+            ),
+            // ratatui_types: color bucketed roundtrip proofs
+            Self::new("ratatui_types", "verify_ratatui_color_roundtrip_3b"),
+            Self::new("ratatui_types", "verify_ratatui_color_roundtrip_4b"),
+            Self::new("ratatui_types", "verify_ratatui_color_roundtrip_5b"),
+            Self::new("ratatui_types", "verify_ratatui_color_roundtrip_6b"),
+            Self::new("ratatui_types", "verify_ratatui_color_roundtrip_7b"),
+            Self::new("ratatui_types", "verify_ratatui_color_roundtrip_8b"),
+            Self::new("ratatui_types", "verify_ratatui_color_roundtrip_9b"),
+            Self::new("ratatui_types", "verify_ratatui_color_roundtrip_10b"),
+            Self::new("ratatui_types", "verify_ratatui_color_roundtrip_11b"),
+            Self::new("ratatui_types", "verify_ratatui_color_roundtrip_12b"),
+            Self::new("ratatui_types", "verify_ratatui_color_roundtrip_sentinel"),
+            // ratatui_types: composite struct proofs
+            Self::new("ratatui_types", "verify_ratatui_padding_from_roundtrip"),
+            Self::new("ratatui_types", "verify_ratatui_padding_wrapper_fields"),
+            Self::new("ratatui_types", "verify_ratatui_margin_from_roundtrip"),
+            Self::new("ratatui_types", "verify_ratatui_margin_wrapper_fields"),
+            Self::new("ratatui_types", "verify_ratatui_style_empty_roundtrip"),
+            Self::new("ratatui_types", "verify_ratatui_style_all_modifiers"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_style_modifier_combinations",
+            ),
+            Self::new("ratatui_types", "verify_ratatui_style_fg_bg_presence"),
+            Self::new(
+                "ratatui_types",
+                "verify_borders_select_into_inner_roundtrip",
+            ),
+            // geo_types: composite struct proofs
+            Self::new("geo_types", "verify_geo_coord_from_roundtrip"),
+            Self::new("geo_types", "verify_geo_coord_wrapper_fields"),
+            Self::new("geo_types", "verify_geo_rect_from_roundtrip"),
+            Self::new("geo_types", "verify_geo_rect_well_formed"),
+            Self::new("geo_types", "verify_geo_line_from_roundtrip"),
+            Self::new("geo_types", "verify_geo_line_wrapper_fields"),
+            // palette_types: color struct proofs
+            Self::new("palette_types", "verify_palette_srgb_from_roundtrip"),
+            Self::new("palette_types", "verify_palette_srgb_wrapper_fields"),
+            Self::new("palette_types", "verify_palette_srgb_black_white"),
+            // ui_types: CssLength resolution proofs
+            Self::new("ui_types", "verify_css_px_resolves_directly"),
+            Self::new("ui_types", "verify_css_em_resolution"),
+            Self::new("ui_types", "verify_css_rem_resolution"),
+            Self::new("ui_types", "verify_css_vw_resolution"),
+            Self::new("ui_types", "verify_css_vh_resolution"),
+            Self::new("ui_types", "verify_css_percent_resolution"),
+            Self::new("ui_types", "verify_css_zoom_invariant_classification"),
+            Self::new("ui_types", "verify_css_length_serde_px_roundtrip"),
+            // ui_types: BoundingBox spatial proofs
+            Self::new("ui_types", "verify_bbox_right_equals_x_plus_width"),
+            Self::new("ui_types", "verify_bbox_bottom_equals_y_plus_height"),
+            Self::new("ui_types", "verify_bbox_meets_touch_target_44x44"),
+            Self::new("ui_types", "verify_bbox_fails_touch_target_small"),
+            Self::new("ui_types", "verify_bbox_within_viewport"),
+            Self::new("ui_types", "verify_bbox_exceeds_viewport"),
+            // ui_types: contrast and constraint proofs
+            Self::new("ui_types", "verify_contrast_identical_colors_is_one"),
+            Self::new("ui_types", "verify_contrast_black_white_max"),
+            Self::new("ui_types", "verify_contrast_ratio_symmetric"),
+            Self::new("ui_types", "verify_contrast_ratio_min_bound"),
+            Self::new("ui_types", "verify_srgb_color_from_u8_bounds"),
+            Self::new("ui_types", "verify_wcag_level_display"),
+            // ui_types: ConstraintProfile and typestate proofs
+            Self::new("ui_types", "verify_profile_a_constraint_count"),
+            Self::new("ui_types", "verify_profile_aa_constraint_count"),
+            Self::new("ui_types", "verify_profile_aaa_constraint_count"),
+            Self::new("ui_types", "verify_profile_monotonicity"),
+            Self::new("ui_types", "verify_typestate_markers_zero_sized"),
+            Self::new("ui_types", "verify_typestate_markers_eq"),
         ]
     }
 

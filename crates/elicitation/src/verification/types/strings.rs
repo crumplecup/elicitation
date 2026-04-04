@@ -151,17 +151,14 @@ impl<const MAX_LEN: usize> Elicitation for StringNonEmpty<MAX_LEN> {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_string_non_empty()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -305,17 +302,14 @@ impl Elicitation for StringDefault {
         Ok(serde_json::from_value(value)?)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -323,7 +317,6 @@ impl Elicitation for StringDefault {
 
 // ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 
-#[cfg(feature = "emit")]
 mod emit_impls {
     use super::*;
     use crate::emit_code::ToCodeLiteral;
@@ -336,6 +329,34 @@ mod emit_impls {
                 elicitation::StringNonEmpty::<#MAX_LEN>::new(#s.to_string())
                     .expect("valid StringNonEmpty")
             }
+        }
+    }
+}
+
+// ── ElicitIntrospect impls ────────────────────────────────────────────────────
+
+impl<const MAX_LEN: usize> crate::ElicitIntrospect for StringNonEmpty<MAX_LEN> {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "StringNonEmpty",
+            description: <Self as crate::Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
+        }
+    }
+}
+
+impl crate::ElicitIntrospect for StringDefault {
+    fn pattern() -> crate::ElicitationPattern {
+        crate::ElicitationPattern::Primitive
+    }
+    fn metadata() -> crate::TypeMetadata {
+        crate::TypeMetadata {
+            type_name: "StringDefault",
+            description: <Self as crate::Prompt>::prompt(),
+            details: crate::PatternDetails::Primitive,
         }
     }
 }

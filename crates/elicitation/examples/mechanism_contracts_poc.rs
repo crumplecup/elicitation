@@ -11,7 +11,6 @@
 //!
 //! When both proven, the entire elicitation chain is proven.
 
-#[cfg(feature = "verification")]
 use elicitation::verification::{
     Contract,
     contracts::{I32Positive, StringNonEmpty},
@@ -21,11 +20,6 @@ use elicitation::verification::{
 };
 
 fn main() {
-    #[cfg(not(feature = "verification"))]
-    {
-        println!("Run with --features verification to see mechanism contracts.");
-    }
-    #[cfg(feature = "verification")]
     {
         println!("=== Mechanism Contract Proof of Concept ===\n");
 

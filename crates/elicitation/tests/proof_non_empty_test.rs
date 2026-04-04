@@ -5,8 +5,6 @@
 //! This catches regressions where a refactor accidentally drops proof
 //! content from a manual impl.
 
-#![cfg(feature = "proofs")]
-
 use elicitation::Elicitation;
 
 /// Assert all three proof methods return non-empty TokenStreams.
@@ -291,14 +289,34 @@ fn unit_proofs_non_empty() {
 use elicitation::{Elicit, Prompt, Select};
 
 /// Unit-variant enum with two states — the TicTacToe `Player` case.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Elicit,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
 enum TwoState {
     A,
     B,
 }
 
 /// Unit-variant enum with no `Default` derive — exercises `kani_first_variant_constructible`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Elicit,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
 enum ThreeState {
     Alpha,
     Beta,
@@ -306,7 +324,9 @@ enum ThreeState {
 }
 
 /// Enum that wraps a unit-variant enum — exercises the cascading-emptiness case.
-#[derive(Debug, Clone, PartialEq, Eq, Elicit)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
 enum Wrapper {
     Empty,
     Occupied(TwoState),
@@ -478,5 +498,49 @@ mod egui_proofs {
         assert_elicit_complete::<elicitation::EguiShadow>();
         assert_elicit_complete::<elicitation::EguiMargin>();
         assert_elicit_complete::<elicitation::EguiFontId>();
+    }
+}
+
+// ============================================================================
+// Atomics — all 11 std::sync::atomic types
+// ============================================================================
+
+mod atomic_proofs {
+    use super::assert_proofs_non_empty;
+    use std::sync::atomic::{
+        AtomicBool, AtomicI8, AtomicI16, AtomicI32, AtomicI64, AtomicIsize, AtomicU8, AtomicU16,
+        AtomicU32, AtomicU64, AtomicUsize,
+    };
+
+    fn assert_elicit_complete<T: elicitation::ElicitComplete>() {}
+
+    #[test]
+    fn atomic_proofs_non_empty() {
+        assert_proofs_non_empty::<AtomicBool>("AtomicBool");
+        assert_proofs_non_empty::<AtomicI8>("AtomicI8");
+        assert_proofs_non_empty::<AtomicI16>("AtomicI16");
+        assert_proofs_non_empty::<AtomicI32>("AtomicI32");
+        assert_proofs_non_empty::<AtomicI64>("AtomicI64");
+        assert_proofs_non_empty::<AtomicIsize>("AtomicIsize");
+        assert_proofs_non_empty::<AtomicU8>("AtomicU8");
+        assert_proofs_non_empty::<AtomicU16>("AtomicU16");
+        assert_proofs_non_empty::<AtomicU32>("AtomicU32");
+        assert_proofs_non_empty::<AtomicU64>("AtomicU64");
+        assert_proofs_non_empty::<AtomicUsize>("AtomicUsize");
+    }
+
+    #[test]
+    fn atomics_elicit_complete() {
+        assert_elicit_complete::<AtomicBool>();
+        assert_elicit_complete::<AtomicI8>();
+        assert_elicit_complete::<AtomicI16>();
+        assert_elicit_complete::<AtomicI32>();
+        assert_elicit_complete::<AtomicI64>();
+        assert_elicit_complete::<AtomicIsize>();
+        assert_elicit_complete::<AtomicU8>();
+        assert_elicit_complete::<AtomicU16>();
+        assert_elicit_complete::<AtomicU32>();
+        assert_elicit_complete::<AtomicU64>();
+        assert_elicit_complete::<AtomicUsize>();
     }
 }

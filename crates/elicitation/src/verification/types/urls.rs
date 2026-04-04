@@ -527,17 +527,14 @@ impl Elicitation for UrlValid {
         Ok(Self::from_url(url))
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_url_valid()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("UrlValid")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("UrlValid")
     }
@@ -558,17 +555,14 @@ impl Elicitation for UrlHttps {
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_url_https()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("UrlHttps")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("UrlHttps")
     }
@@ -589,17 +583,14 @@ impl Elicitation for UrlHttp {
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_url_https()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("UrlHttp")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("UrlHttp")
     }
@@ -620,17 +611,14 @@ impl Elicitation for UrlWithHost {
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_url_with_host()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("UrlWithHost")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("UrlWithHost")
     }
@@ -651,17 +639,14 @@ impl Elicitation for UrlCanBeBase {
         Self::from_url(value).map_err(crate::ElicitError::from)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_url_can_be_base()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("UrlCanBeBase")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("UrlCanBeBase")
     }
@@ -786,7 +771,7 @@ mod tests {
 
 // ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 
-#[cfg(all(feature = "emit", feature = "url", not(kani)))]
+#[cfg(all(feature = "url", not(kani)))]
 mod emit_impls {
     use super::*;
     use crate::emit_code::ToCodeLiteral;

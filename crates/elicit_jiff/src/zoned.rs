@@ -108,3 +108,20 @@ impl Zoned {
             .map(|z| std::sync::Arc::new(z).into())
     }
 }
+
+mod emit_impls {
+    use super::Zoned;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for Zoned {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.0.to_string();
+            quote::quote! {
+                ::elicit_jiff::Zoned::from(#s.parse::<::jiff::Zoned>().expect("valid Zoned"))
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for Zoned {}

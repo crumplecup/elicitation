@@ -15,7 +15,17 @@ use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation, Prompt, Selec
 use rmcp::ServiceExt;
 
 /// Priority level for tasks
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Elicit,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
 #[prompt("Select the priority level:")]
 enum Priority {
     Low,
@@ -25,7 +35,17 @@ enum Priority {
 }
 
 /// Task status
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Elicit,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
 #[prompt("What is the current status?")]
 enum Status {
     Todo,
@@ -35,7 +55,7 @@ enum Status {
 }
 
 /// Contact information
-#[derive(Debug, Elicit)]
+#[derive(Debug, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[prompt("Let's add contact information:")]
 struct Contact {
     #[prompt("Primary email address:")]
@@ -46,7 +66,7 @@ struct Contact {
 }
 
 /// Project member
-#[derive(Debug, Elicit)]
+#[derive(Debug, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct Member {
     #[prompt("Member's full name:")]
     name: String,
@@ -58,7 +78,7 @@ struct Member {
 }
 
 /// Individual task
-#[derive(Debug, Elicit)]
+#[derive(Debug, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[prompt("Let's create a task:")]
 struct Task {
     #[prompt("Task title:")]
@@ -76,7 +96,7 @@ struct Task {
 }
 
 /// Complete project structure
-#[derive(Debug, Elicit)]
+#[derive(Debug, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[prompt("Let's set up your project:")]
 struct Project {
     #[prompt("Project name:")]

@@ -11,7 +11,7 @@ use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
 
 /// Simple struct with default prompts
-#[derive(Debug, Elicit)]
+#[derive(Debug, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct Person {
     name: String,
     age: u8,
@@ -19,7 +19,7 @@ struct Person {
 }
 
 /// Struct with custom field prompts
-#[derive(Debug, Elicit)]
+#[derive(Debug, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[prompt("Let's configure your account:")]
 struct Account {
     #[prompt("What username would you like?")]
@@ -36,7 +36,7 @@ struct Account {
 }
 
 /// Struct with optional fields
-#[derive(Debug, Elicit)]
+#[derive(Debug, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct Profile {
     #[prompt("What's your full name?")]
     name: String,
@@ -52,7 +52,7 @@ struct Profile {
 }
 
 /// Struct with skipped fields (use Default::default())
-#[derive(Debug, Default, Elicit)]
+#[derive(Debug, Default, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct Task {
     #[prompt("What's the task title?")]
     title: String,

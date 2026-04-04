@@ -5,7 +5,7 @@
 
 use elicitation::Elicit;
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct _CanaryConfig {
     _value: String,
 }

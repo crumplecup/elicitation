@@ -113,12 +113,10 @@ impl Elicitation for UuidGenerationMode {
         })
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_select_wrapper("UuidGenerationMode", "V4 (Random)")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_select_wrapper(
             "UuidGenerationMode",
@@ -126,7 +124,6 @@ impl Elicitation for UuidGenerationMode {
         )
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_select_wrapper(
             "UuidGenerationMode",
@@ -220,17 +217,14 @@ impl Elicitation for Uuid {
         Ok(uuid)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_trusted_opaque("uuid::Uuid")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("uuid_Uuid")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("uuid_Uuid")
     }
@@ -246,6 +240,16 @@ impl ElicitIntrospect for Uuid {
             type_name: "uuid::Uuid",
             description: Self::prompt(),
             details: PatternDetails::Primitive,
+        }
+    }
+}
+
+#[cfg(feature = "prompt-tree")]
+impl crate::ElicitPromptTree for Uuid {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Leaf {
+            prompt: "UUID (e.g. 550e8400-e29b-41d4-a716-446655440000)".to_string(),
+            type_name: "uuid::Uuid".to_string(),
         }
     }
 }

@@ -32,7 +32,7 @@ pub struct SqlxFragPlugin;
 /// The fragment contains a valid macro invocation; it does NOT guarantee
 /// that the emitted binary will compile (requires `DATABASE_URL` at
 /// consumer build time).
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct QueryFragmentEmitted;
 impl Prop for QueryFragmentEmitted {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -74,7 +74,7 @@ impl VerifiedWorkflow for QueryFragmentEmitted {}
 /// Proposition: a `sqlx::query_as!(Type, sql, params…)` source fragment was emitted.
 ///
 /// Established by [`emit_query_as`] after [`EmitCode::emit_code`] succeeds.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct QueryAsFragmentEmitted;
 impl Prop for QueryAsFragmentEmitted {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -116,7 +116,7 @@ impl VerifiedWorkflow for QueryAsFragmentEmitted {}
 /// Proposition: a `sqlx::query_scalar!(sql, params…)` source fragment was emitted.
 ///
 /// Established by [`emit_query_scalar`] after [`EmitCode::emit_code`] succeeds.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct QueryScalarFragmentEmitted;
 impl Prop for QueryScalarFragmentEmitted {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -158,7 +158,7 @@ impl VerifiedWorkflow for QueryScalarFragmentEmitted {}
 /// Proposition: a `sqlx::migrate!(path).run(&pool).await?` source fragment was emitted.
 ///
 /// Established by [`emit_migrate`] after [`EmitCode::emit_code`] succeeds.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct MigrateFragmentEmitted;
 impl Prop for MigrateFragmentEmitted {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -201,6 +201,7 @@ impl VerifiedWorkflow for MigrateFragmentEmitted {}
 
 #[elicit_tool(
     plugin = "sqlx_frag",
+    emit = None,
     name = "query",
     description = "Emit a `sqlx::query!(sql, params…)` expression. \
                    Requires DATABASE_URL at compile time of the emitted binary. \
@@ -217,6 +218,7 @@ async fn emit_query(p: QueryParams) -> Result<CallToolResult, ErrorData> {
 
 #[elicit_tool(
     plugin = "sqlx_frag",
+    emit = None,
     name = "query_as",
     description = "Emit a `sqlx::query_as!(TargetType, sql, params…)` expression. \
                    The target type must implement `sqlx::FromRow`. \
@@ -234,6 +236,7 @@ async fn emit_query_as(p: QueryAsParams) -> Result<CallToolResult, ErrorData> {
 
 #[elicit_tool(
     plugin = "sqlx_frag",
+    emit = None,
     name = "query_scalar",
     description = "Emit a `sqlx::query_scalar!(sql, params…)` expression for \
                    queries returning a single scalar value (e.g. COUNT). \
@@ -251,6 +254,7 @@ async fn emit_query_scalar(p: QueryScalarParams) -> Result<CallToolResult, Error
 
 #[elicit_tool(
     plugin = "sqlx_frag",
+    emit = None,
     name = "migrate",
     description = "Emit a `sqlx::migrate!(path).run(&pool).await?` statement. \
                    Requires DATABASE_URL at compile time of the emitted binary. \

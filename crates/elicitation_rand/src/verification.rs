@@ -4,8 +4,8 @@
 //! rand functions. We trust rand's implementations (castle on cloud) and
 //! only verify our wrapper logic.
 
-#[cfg(all(kani, feature = "verification"))]
+#[cfg(kani)]
 pub mod kani_proofs;
 
-#[cfg(all(kani, feature = "verification"))]
+#[cfg(kani)]
 pub mod runner;

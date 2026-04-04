@@ -3,12 +3,10 @@
 //! This test verifies that #[derive(Elicit)] generates correct verification
 //! code for all four supported verifiers.
 
-#![cfg(feature = "verification")]
-
 use elicitation::*;
 
 /// Test struct with multiple field types to ensure comprehensive verification.
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct VerifiedUser {
     _name: StringNonEmpty,
     _age: I8Positive,
@@ -16,7 +14,7 @@ pub struct VerifiedUser {
 }
 
 /// Test enum with multiple variant types.
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum VerifiedStatus {
     Active,
     Pending(StringNonEmpty),

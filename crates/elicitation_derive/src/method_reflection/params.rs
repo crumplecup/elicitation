@@ -70,6 +70,31 @@ pub fn generate_param_struct(
     let generic_params = &generics.params;
     let where_clause = &generics.where_clause;
 
+    // Collect type param idents so we can add ElicitComplete bounds.
+    let type_param_idents: Vec<_> = generics.type_params().map(|tp| &tp.ident).collect();
+
+    // Extra where predicates: each type param must satisfy ElicitComplete
+    // (which transitively requires Elicitation + ElicitSpec + Serialize +
+    // Deserialize + JsonSchema + ToCodeLiteral).
+    let elicit_complete_bounds: Vec<TokenStream> = type_param_idents
+        .iter()
+        .map(|tp| quote! { #tp: ::elicitation::ElicitComplete })
+        .collect();
+
+    // Build augmented where clause merging existing predicates + ElicitComplete bounds.
+    let augmented_where: TokenStream = {
+        let existing: Vec<_> = where_clause
+            .as_ref()
+            .map(|wc| wc.predicates.iter().map(|p| quote! { #p }).collect())
+            .unwrap_or_default();
+        let all: Vec<_> = existing.into_iter().chain(elicit_complete_bounds).collect();
+        if all.is_empty() {
+            quote! {}
+        } else {
+            quote! { where #(#all),* }
+        }
+    };
+
     // Generate struct with or without generics
     if generic_params.is_empty() {
         // Non-generic struct
@@ -87,7 +112,8 @@ pub fn generate_param_struct(
             }
         }
     } else {
-        // Generic struct
+        // Generic struct: add explicit serde bounds to avoid E0283 ambiguity
+        // with the ElicitComplete supertrait bounds.
         quote! {
             #[derive(
                 ::std::fmt::Debug,
@@ -97,8 +123,9 @@ pub fn generate_param_struct(
                 ::serde::Serialize,
                 ::serde::Deserialize,
             )]
+            #[serde(bound = "")]
             pub struct #struct_ident<#generic_params>
-            #where_clause
+            #augmented_where
             {
                 #(#fields),*
             }

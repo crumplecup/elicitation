@@ -194,17 +194,14 @@ macro_rules! _select_trenchcoat_common {
                     .map(Self::from)
             }
 
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 <$inner_path as $crate::Elicitation>::kani_proof()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 <$inner_path as $crate::Elicitation>::verus_proof()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 <$inner_path as $crate::Elicitation>::creusot_proof()
             }
@@ -235,6 +232,28 @@ macro_rules! _select_trenchcoat_common {
                     options: labels,
                     branches: vec![None; branch_count],
                 }
+            }
+        }
+
+        // ── ToCodeLiteral: emit `WrapperName::from_label("variant").unwrap()` ──
+        impl $crate::emit_code::ToCodeLiteral for $wrapper_name {
+            fn to_code_literal(&self) -> $crate::proc_macro2::TokenStream {
+                // Use Select labels zipped with options to find the matching label
+                // by comparing debug representations (inner type may not impl PartialEq)
+                let inner_debug = format!("{:?}", self.0);
+                let label = <$inner_path as $crate::Select>::labels()
+                    .into_iter()
+                    .zip(<$inner_path as $crate::Select>::options().iter())
+                    .find(|(_, opt)| format!("{:?}", opt) == inner_debug)
+                    .map(|(l, _)| l)
+                    .unwrap_or_else(|| inner_debug.clone());
+                $crate::quote::quote! {
+                    $wrapper_name::from_label(#label).expect("valid label")
+                }
+            }
+
+            fn type_tokens() -> $crate::proc_macro2::TokenStream {
+                $crate::quote::quote! { $wrapper_name }
             }
         }
     };

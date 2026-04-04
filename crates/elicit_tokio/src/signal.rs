@@ -40,7 +40,7 @@ use uuid::Uuid;
 // ── Propositions ─────────────────────────────────────────────────────────────
 
 /// Proposition: `tokio::signal::ctrl_c()` returned — a Ctrl+C signal was received.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct CtrlCReceived {}
 impl Prop for CtrlCReceived {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -79,7 +79,7 @@ impl VerifiedWorkflow for CtrlCReceived {}
 
 /// Proposition: a Unix signal handler was registered successfully.
 #[cfg(unix)]
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct SignalHandlerRegistered {}
 #[cfg(unix)]
 impl Prop for SignalHandlerRegistered {
@@ -120,7 +120,7 @@ impl VerifiedWorkflow for SignalHandlerRegistered {}
 
 /// Proposition: a registered Unix signal stream received a signal.
 #[cfg(unix)]
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct SignalReceived {}
 #[cfg(unix)]
 impl Prop for SignalReceived {

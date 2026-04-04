@@ -21,7 +21,9 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 ///
 /// Available with the `chrono` feature.
 #[cfg(feature = "chrono")]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
 #[cfg(not(kani))]
 pub struct DateTimeUtcAfter {
     value: DateTime<Utc>,
@@ -133,17 +135,14 @@ impl Elicitation for DateTimeUtcAfter {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -264,17 +263,14 @@ impl Elicitation for DateTimeUtcBefore {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -396,17 +392,14 @@ impl Elicitation for NaiveDateTimeAfter {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -597,17 +590,14 @@ impl Elicitation for TimestampAfter {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -728,17 +718,14 @@ impl Elicitation for TimestampBefore {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -911,17 +898,14 @@ impl Elicitation for OffsetDateTimeAfter {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -1049,17 +1033,14 @@ impl Elicitation for OffsetDateTimeBefore {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -1100,5 +1081,29 @@ mod time_tests {
         let value = threshold + Duration::hours(1);
         let result = OffsetDateTimeBefore::new(value, threshold);
         assert!(result.is_err());
+    }
+}
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+#[cfg(feature = "chrono")]
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for DateTimeUtcAfter {
+        fn to_code_literal(&self) -> TokenStream {
+            let value_rfc3339 = self.get().to_rfc3339();
+            let threshold_rfc3339 = self.threshold().to_rfc3339();
+            quote::quote! {
+                elicitation::DateTimeUtcAfter::new(
+                    ::chrono::DateTime::parse_from_rfc3339(#value_rfc3339)
+                        .expect("valid rfc3339").with_timezone(&::chrono::Utc),
+                    ::chrono::DateTime::parse_from_rfc3339(#threshold_rfc3339)
+                        .expect("valid rfc3339").with_timezone(&::chrono::Utc),
+                ).expect("valid DateTimeUtcAfter")
+            }
+        }
     }
 }

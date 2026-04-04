@@ -9,7 +9,18 @@ use std::time::Duration;
 
 // DurationPositive - Positive durations (> zero)
 /// A Duration that is guaranteed to be positive (not zero).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
+#[schemars(description = "A positive duration (greater than zero)")]
 pub struct DurationPositive(Duration);
 
 #[cfg_attr(not(kani), instrumented_impl)]
@@ -64,17 +75,14 @@ impl Elicitation for DurationPositive {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_duration_positive()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_duration()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_duration()
     }
@@ -125,3 +133,48 @@ mod tests {
         assert_eq!(non_zero.into_inner(), duration);
     }
 }
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for DurationPositive {
+        fn to_code_literal(&self) -> TokenStream {
+            let secs = self.get().as_secs();
+            let nanos = self.get().subsec_nanos();
+            quote::quote! {
+                elicitation::DurationPositive::new(
+                    ::std::time::Duration::new(#secs, #nanos)
+                ).expect("valid DurationPositive")
+            }
+        }
+    }
+}
+
+// ── ElicitIntrospect impls ────────────────────────────────────────────────────
+
+macro_rules! impl_primitive_introspect {
+    ($($ty:ty => $name:literal),+ $(,)?) => {
+        $(
+            impl crate::ElicitIntrospect for $ty {
+                fn pattern() -> crate::ElicitationPattern {
+                    crate::ElicitationPattern::Primitive
+                }
+                fn metadata() -> crate::TypeMetadata {
+                    crate::TypeMetadata {
+                        type_name: $name,
+                        description: <$ty as crate::Prompt>::prompt(),
+                        details: crate::PatternDetails::Primitive,
+                    }
+                }
+            }
+        )+
+    };
+}
+
+impl_primitive_introspect!(
+    DurationPositive => "DurationPositive",
+);

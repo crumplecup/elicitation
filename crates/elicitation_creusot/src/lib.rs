@@ -98,6 +98,15 @@ mod tokio_types;
 #[cfg(feature = "egui-types")]
 mod egui_types;
 
+#[cfg(feature = "ratatui-types")]
+mod ratatui_types;
+
+#[cfg(feature = "geo-types")]
+mod geo_types;
+
+#[cfg(feature = "palette")]
+mod palette_types;
+
 #[cfg(feature = "ui-types")]
 mod ui_types;
 
@@ -450,31 +459,31 @@ pub use tokio_types::{
 #[cfg(feature = "egui-types")]
 pub use egui_types::{
     verify_align_all_labels_roundtrip, verify_align_known_label_accepted, verify_align_label_count,
-    verify_align_unknown_rejected, verify_color32_from_roundtrip, verify_color32_wrapper_fields,
-    verify_corner_radius_from_roundtrip, verify_cursor_icon_all_labels_roundtrip,
-    verify_cursor_icon_known_label_accepted, verify_cursor_icon_label_count,
-    verify_cursor_icon_unknown_rejected, verify_direction_all_labels_roundtrip,
-    verify_direction_known_label_accepted, verify_direction_label_count,
-    verify_direction_unknown_rejected, verify_font_family_all_labels_roundtrip,
-    verify_font_family_known_label_accepted, verify_font_family_label_count,
-    verify_font_family_unknown_rejected, verify_font_id_monospace_roundtrip,
-    verify_font_id_proportional_roundtrip, verify_key_all_labels_roundtrip,
-    verify_key_known_label_accepted, verify_key_label_count, verify_key_unknown_rejected,
-    verify_margin_from_roundtrip, verify_order_all_labels_roundtrip,
-    verify_order_known_label_accepted, verify_order_label_count, verify_order_unknown_rejected,
-    verify_pointer_button_all_labels_roundtrip, verify_pointer_button_known_label_accepted,
-    verify_pointer_button_label_count, verify_pointer_button_unknown_rejected,
-    verify_pos2_from_roundtrip, verify_rect_from_roundtrip, verify_shadow_from_roundtrip,
-    verify_stroke_from_roundtrip, verify_text_style_all_labels_roundtrip,
-    verify_text_style_known_label_accepted, verify_text_style_label_count,
-    verify_text_style_unknown_rejected, verify_text_wrap_mode_all_labels_roundtrip,
-    verify_text_wrap_mode_known_label_accepted, verify_text_wrap_mode_label_count,
-    verify_text_wrap_mode_unknown_rejected, verify_texture_filter_all_labels_roundtrip,
-    verify_texture_filter_known_label_accepted, verify_texture_filter_label_count,
-    verify_texture_filter_unknown_rejected, verify_texture_wrap_mode_all_labels_roundtrip,
-    verify_texture_wrap_mode_known_label_accepted, verify_texture_wrap_mode_label_count,
-    verify_texture_wrap_mode_unknown_rejected, verify_theme_all_labels_roundtrip,
-    verify_theme_known_label_accepted, verify_theme_label_count,
+    verify_align_unknown_rejected, verify_color32_concrete, verify_color32_roundtrip,
+    verify_corner_radius_concrete, verify_corner_radius_roundtrip,
+    verify_cursor_icon_all_labels_roundtrip, verify_cursor_icon_known_label_accepted,
+    verify_cursor_icon_label_count, verify_cursor_icon_unknown_rejected,
+    verify_direction_all_labels_roundtrip, verify_direction_known_label_accepted,
+    verify_direction_label_count, verify_direction_unknown_rejected,
+    verify_font_family_all_labels_roundtrip, verify_font_family_known_label_accepted,
+    verify_font_family_label_count, verify_font_family_unknown_rejected,
+    verify_font_id_monospace_roundtrip, verify_font_id_proportional_roundtrip,
+    verify_key_all_labels_roundtrip, verify_key_known_label_accepted, verify_key_label_count,
+    verify_key_unknown_rejected, verify_margin_concrete, verify_margin_roundtrip,
+    verify_order_all_labels_roundtrip, verify_order_known_label_accepted, verify_order_label_count,
+    verify_order_unknown_rejected, verify_pointer_button_all_labels_roundtrip,
+    verify_pointer_button_known_label_accepted, verify_pointer_button_label_count,
+    verify_pointer_button_unknown_rejected, verify_pos2_from_roundtrip, verify_rect_from_roundtrip,
+    verify_shadow_from_roundtrip, verify_stroke_from_roundtrip,
+    verify_text_style_all_labels_roundtrip, verify_text_style_known_label_accepted,
+    verify_text_style_label_count, verify_text_style_unknown_rejected,
+    verify_text_wrap_mode_all_labels_roundtrip, verify_text_wrap_mode_known_label_accepted,
+    verify_text_wrap_mode_label_count, verify_text_wrap_mode_unknown_rejected,
+    verify_texture_filter_all_labels_roundtrip, verify_texture_filter_known_label_accepted,
+    verify_texture_filter_label_count, verify_texture_filter_unknown_rejected,
+    verify_texture_wrap_mode_all_labels_roundtrip, verify_texture_wrap_mode_known_label_accepted,
+    verify_texture_wrap_mode_label_count, verify_texture_wrap_mode_unknown_rejected,
+    verify_theme_all_labels_roundtrip, verify_theme_known_label_accepted, verify_theme_label_count,
     verify_theme_preference_all_labels_roundtrip, verify_theme_preference_known_label_accepted,
     verify_theme_preference_label_count, verify_theme_preference_unknown_rejected,
     verify_theme_unknown_rejected, verify_touch_phase_all_labels_roundtrip,
@@ -486,19 +495,101 @@ pub use egui_types::{
     verify_widget_type_label_count, verify_widget_type_unknown_rejected,
 };
 
+#[cfg(feature = "ratatui-types")]
+pub use ratatui_types::{
+    verify_borders_select_into_inner, verify_ratatui_alignment_all_labels_roundtrip,
+    verify_ratatui_alignment_known_label_accepted, verify_ratatui_alignment_label_count,
+    verify_ratatui_alignment_unknown_rejected, verify_ratatui_border_type_all_labels_roundtrip,
+    verify_ratatui_border_type_known_label_accepted, verify_ratatui_border_type_label_count,
+    verify_ratatui_border_type_unknown_rejected, verify_ratatui_borders_all_labels_roundtrip,
+    verify_ratatui_borders_known_label_accepted, verify_ratatui_borders_label_count,
+    verify_ratatui_borders_unknown_rejected, verify_ratatui_color_all_labels_roundtrip,
+    verify_ratatui_color_known_label_accepted, verify_ratatui_color_label_count,
+    verify_ratatui_color_unknown_rejected, verify_ratatui_direction_all_labels_roundtrip,
+    verify_ratatui_direction_known_label_accepted, verify_ratatui_direction_label_count,
+    verify_ratatui_direction_unknown_rejected, verify_ratatui_margin_concrete,
+    verify_ratatui_margin_roundtrip, verify_ratatui_padding_concrete,
+    verify_ratatui_padding_roundtrip, verify_ratatui_scrollbar_orientation_all_labels_roundtrip,
+    verify_ratatui_scrollbar_orientation_known_label_accepted,
+    verify_ratatui_scrollbar_orientation_label_count,
+    verify_ratatui_scrollbar_orientation_unknown_rejected, verify_ratatui_style_all_modifiers,
+    verify_ratatui_style_empty_roundtrip, verify_ratatui_style_fg_bg_presence,
+};
+
+#[cfg(feature = "geo-types")]
+pub use geo_types::{
+    verify_geo_coord_concrete, verify_geo_coord_roundtrip, verify_geo_line_degenerate,
+    verify_geo_line_roundtrip, verify_geo_rect_roundtrip, verify_geo_rect_well_formed,
+};
+
+#[cfg(feature = "palette")]
+pub use palette_types::{
+    verify_palette_srgb_concrete, verify_palette_srgb_extremes, verify_palette_srgb_primaries,
+    verify_palette_srgb_roundtrip,
+};
+
 #[cfg(feature = "ui-types")]
 pub use ui_types::{
-    verify_bounds_reversed_non_negative, verify_bounds_width_non_negative,
-    verify_builder_all_container_types, verify_builder_auto_close,
-    verify_builder_container_with_child, verify_builder_default_eq_new,
-    verify_builder_empty_is_valid, verify_builder_login_form, verify_builder_nested_containers,
-    verify_builder_reset_after_build, verify_builder_root_is_zero, verify_builder_single_widget,
-    verify_builder_slider, verify_element_id_from_roundtrip, verify_element_id_roundtrip,
-    verify_empty_report_no_errors, verify_error_kind_display_non_empty,
-    verify_heading_default_size, verify_heading_level_1, verify_label_accepts_non_empty,
-    verify_label_rejects_empty, verify_overflow_exact_fit, verify_overflow_exceeds_width,
-    verify_overflow_origin_fits, verify_progress_fraction_clamped, verify_progress_overflow_clamps,
-    verify_propositions_zero_sized, verify_render_stats_clone, verify_render_stats_default_zeros,
-    verify_render_stats_eq, verify_size_both_dimensions_required, verify_size_fails_below_boundary,
-    verify_size_meets_at_boundary, verify_viewport_construction,
+    // BoundingBox spatial proofs
+    verify_bbox_bottom_concrete,
+    verify_bbox_exceeds_viewport,
+    verify_bbox_right_concrete,
+    verify_bbox_touch_target_failed,
+    verify_bbox_touch_target_met,
+    verify_bbox_within_viewport,
+    verify_bounds_reversed_non_negative,
+    verify_bounds_width_non_negative,
+    verify_builder_all_container_types,
+    verify_builder_auto_close,
+    verify_builder_container_with_child,
+    verify_builder_default_eq_new,
+    verify_builder_empty_is_valid,
+    verify_builder_login_form,
+    verify_builder_nested_containers,
+    verify_builder_reset_after_build,
+    verify_builder_root_is_zero,
+    verify_builder_single_widget,
+    verify_builder_slider,
+    // Contrast and constraint proofs
+    verify_contrast_black_white_max,
+    verify_contrast_identical_is_one,
+    verify_contrast_min_bound,
+    verify_contrast_symmetric,
+    // CssLength resolution proofs
+    verify_css_em_resolution,
+    verify_css_percent_resolution,
+    verify_css_px_resolves_directly,
+    verify_css_rem_resolution,
+    verify_css_vh_resolution,
+    verify_css_vw_resolution,
+    verify_css_zoom_invariant_classification,
+    verify_element_id_from_roundtrip,
+    verify_element_id_roundtrip,
+    verify_empty_report_no_errors,
+    verify_error_kind_display_non_empty,
+    verify_heading_default_size,
+    verify_heading_level_1,
+    verify_label_accepts_non_empty,
+    verify_label_rejects_empty,
+    verify_overflow_exact_fit,
+    verify_overflow_exceeds_width,
+    verify_overflow_origin_fits,
+    // ConstraintProfile and typestate proofs
+    verify_profile_a_count,
+    verify_profile_aa_count,
+    verify_profile_aaa_count,
+    verify_profile_monotonicity,
+    verify_progress_fraction_clamped,
+    verify_progress_overflow_clamps,
+    verify_propositions_zero_sized,
+    verify_render_stats_clone,
+    verify_render_stats_default_zeros,
+    verify_render_stats_eq,
+    verify_size_both_dimensions_required,
+    verify_size_fails_below_boundary,
+    verify_size_meets_at_boundary,
+    verify_srgb_from_u8_bounds,
+    verify_typestate_zero_sized,
+    verify_viewport_construction,
+    verify_wcag_level_display,
 };

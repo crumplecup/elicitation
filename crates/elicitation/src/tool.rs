@@ -227,7 +227,6 @@ use crate::{
     ElicitResult, Elicitation, VerifiedWorkflow,
     contracts::{Established, Prop},
 };
-#[cfg(feature = "proofs")]
 use proc_macro2;
 
 /// MCP tool with explicit preconditions and postconditions.
@@ -317,17 +316,14 @@ pub trait Tool {
 pub struct True;
 
 impl Prop for True {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_trivial_prop("true_prop")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_trivial_prop("true_prop")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_trivial_prop("true_prop")
     }

@@ -93,7 +93,6 @@ macro_rules! impl_float_default_wrapper {
                     Ok(Self::new(value))
                 }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_float_default(
             stringify!($wrapper),
@@ -101,7 +100,6 @@ macro_rules! impl_float_default_wrapper {
         )
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_float_default(
             stringify!($wrapper),
@@ -109,7 +107,6 @@ macro_rules! impl_float_default_wrapper {
         )
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_float_default(
             stringify!($wrapper),
@@ -251,17 +248,14 @@ impl Elicitation for F32Positive {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_float_positive("F32Positive", "f32")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_float_default("F32Positive", "f32")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_float_default("F32Positive", "f32")
     }
@@ -353,17 +347,14 @@ impl Elicitation for F32NonNegative {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_float_nonneg("F32NonNegative", "f32")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_float_default("F32NonNegative", "f32")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_float_default("F32NonNegative", "f32")
     }
@@ -449,17 +440,14 @@ impl Elicitation for F32Finite {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_float_finite("F32Finite", "f32")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_float_default("F32Finite", "f32")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_float_default("F32Finite", "f32")
     }
@@ -551,17 +539,14 @@ impl Elicitation for F64Positive {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_float_positive("F64Positive", "f64")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_float_default("F64Positive", "f64")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_float_default("F64Positive", "f64")
     }
@@ -653,17 +638,14 @@ impl Elicitation for F64NonNegative {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_float_nonneg("F64NonNegative", "f64")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_float_default("F64NonNegative", "f64")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_float_default("F64NonNegative", "f64")
     }
@@ -734,17 +716,14 @@ impl Elicitation for F64Finite {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_float_finite("F64Finite", "f64")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_float_default("F64Finite", "f64")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_float_default("F64Finite", "f64")
     }
@@ -1025,7 +1004,6 @@ impl_float_default_wrapper!(f64, F64Default);
 
 // ── ToCodeLiteral impls ───────────────────────────────────────────────────────
 
-#[cfg(feature = "emit")]
 mod emit_impls {
     use super::*;
     use crate::emit_code::ToCodeLiteral;
@@ -1059,3 +1037,33 @@ mod emit_impls {
     impl_to_code_literal_float!(F64NonNegative);
     impl_to_code_literal_float!(F64Finite);
 }
+
+// ── ElicitIntrospect impls ────────────────────────────────────────────────────
+
+macro_rules! impl_primitive_introspect {
+    ($($ty:ty => $name:literal),+ $(,)?) => {
+        $(
+            impl crate::ElicitIntrospect for $ty {
+                fn pattern() -> crate::ElicitationPattern {
+                    crate::ElicitationPattern::Primitive
+                }
+                fn metadata() -> crate::TypeMetadata {
+                    crate::TypeMetadata {
+                        type_name: $name,
+                        description: <$ty as crate::Prompt>::prompt(),
+                        details: crate::PatternDetails::Primitive,
+                    }
+                }
+            }
+        )+
+    };
+}
+
+impl_primitive_introspect!(
+    F32Positive => "F32Positive",
+    F32NonNegative => "F32NonNegative",
+    F32Finite => "F32Finite",
+    F64Positive => "F64Positive",
+    F64NonNegative => "F64NonNegative",
+    F64Finite => "F64Finite",
+);

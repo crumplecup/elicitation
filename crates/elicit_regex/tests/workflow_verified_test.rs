@@ -1,7 +1,5 @@
 //! `VerifiedWorkflow` validation tests for elicit_regex propositions.
 
-#![cfg(feature = "proofs")]
-
 use elicit_regex::{PatternMatched, RegexValid};
 use elicitation::VerifiedWorkflow;
 use elicitation::contracts::And;

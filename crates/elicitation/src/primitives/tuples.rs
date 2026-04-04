@@ -32,7 +32,6 @@ macro_rules! impl_tuple_elicit {
                     Ok(Self::Default)
                 }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         // paste!-generated name; derive at runtime via type_name
         let short = std::any::type_name::<Self>()
@@ -42,7 +41,6 @@ macro_rules! impl_tuple_elicit {
         crate::verification::proof_helpers::kani_single_variant_enum(short)
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         let short = std::any::type_name::<Self>()
             .split("::")
@@ -51,7 +49,6 @@ macro_rules! impl_tuple_elicit {
         crate::verification::proof_helpers::verus_single_variant_enum(short)
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         let short = std::any::type_name::<Self>()
             .split("::")
@@ -99,7 +96,6 @@ macro_rules! impl_tuple_elicit {
                 Ok(($($T,)+))
             }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         // Compose all element proofs: proof(T1,T2,...) = proof(T1) + proof(T2) + ...
         let mut ts = proc_macro2::TokenStream::new();
@@ -107,14 +103,12 @@ macro_rules! impl_tuple_elicit {
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         let mut ts = proc_macro2::TokenStream::new();
         $(ts.extend(<$T as Elicitation>::verus_proof());)+
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         let mut ts = proc_macro2::TokenStream::new();
         $(ts.extend(<$T as Elicitation>::creusot_proof());)+
@@ -152,17 +146,14 @@ impl Elicitation for UnitStyle {
         Ok(Self::Default)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_single_variant_enum("UnitStyle")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_single_variant_enum("UnitStyle")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_single_variant_enum("UnitStyle")
     }
@@ -185,17 +176,14 @@ impl Elicitation for () {
         Ok(())
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_unit_struct("UnitTuple")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_unit_struct("UnitTuple")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_unit_struct("UnitTuple")
     }

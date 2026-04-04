@@ -15,7 +15,20 @@ use rmcp::ServiceExt;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, LinkedList, VecDeque};
 
 /// Configuration value that can be a string or number
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Elicit)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    Elicit,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
 enum ConfigValue {
     Text,
     Number,

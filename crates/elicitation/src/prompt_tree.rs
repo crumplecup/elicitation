@@ -693,7 +693,6 @@ impl<T: ElicitPromptTree> ElicitPromptTree for std::collections::LinkedList<T> {
 // here so that any struct with a verification-type field can be derived.
 // ============================================================================
 
-#[cfg(feature = "verification")]
 mod verification_impls {
     use super::*;
     use crate::verification::types::{

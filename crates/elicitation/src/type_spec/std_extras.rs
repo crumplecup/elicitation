@@ -124,3 +124,5 @@ impl_pathbuf_spec!(
     summary = "A PathBuf guaranteed to point to a regular file at construction time.",
     requires = [("is_file", "Path must be an existing regular file.", "path.is_file()")],
 );
+
+impl crate::ElicitComplete for crate::verification::types::DurationPositive {}

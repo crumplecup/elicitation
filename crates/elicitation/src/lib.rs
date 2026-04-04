@@ -79,6 +79,8 @@
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
+// Allow ::elicitation::... paths in proc-macro generated code inside this crate.
+extern crate self as elicitation;
 
 mod client;
 mod communicator;
@@ -110,7 +112,6 @@ pub mod cli;
 
 pub mod contracts;
 
-#[cfg(feature = "emit")]
 pub mod emit_code;
 pub mod mcp;
 mod paradigm;
@@ -256,9 +257,10 @@ pub use async_trait;
 
 // Re-export proc_macro2 so generated code can use elicitation::proc_macro2
 // instead of requiring proc_macro2 as a direct dep of downstream crates.
-#[cfg(feature = "proofs")]
 #[doc(hidden)]
 pub use proc_macro2;
+#[doc(hidden)]
+pub use quote;
 
 // Re-export derive macros with user-friendly names
 pub use elicitation_derive::{Elicit, ElicitPlugin, elicit_tool};
@@ -269,10 +271,8 @@ pub use elicitation_derive::ToCodeLiteral;
 
 // Re-export verification contract types at crate level (for kani_proofs imports)
 // EXPLICIT exports - no globs (helps compiler show what's missing)
-#[cfg(any(feature = "verification", kani))]
 pub use verification::Contract;
 
-#[cfg(any(feature = "verification", kani))]
 pub use verification::types::{
     ArcNonNull,
     ArcSatisfies,
@@ -398,7 +398,7 @@ pub use verification::types::{
 };
 
 // UUIDs (feature-gated on uuid)
-#[cfg(all(any(feature = "verification", kani), feature = "uuid"))]
+#[cfg(feature = "uuid")]
 pub use verification::types::{UuidNonNil, UuidV4};
 
 #[cfg(feature = "uuid")]
@@ -438,31 +438,30 @@ pub use datetime_time::{
 pub use datetime_jiff::{TimestampGenerationMode, TimestampGenerator};
 
 // DateTimes (feature-gated on chrono/time/jiff)
-#[cfg(all(any(feature = "verification", kani), feature = "chrono"))]
+#[cfg(feature = "chrono")]
 pub use verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
 
-#[cfg(all(any(feature = "verification", kani), feature = "time"))]
+#[cfg(feature = "time")]
 pub use verification::types::{OffsetDateTimeAfter, OffsetDateTimeBefore};
 
-#[cfg(all(any(feature = "verification", kani), feature = "jiff"))]
+#[cfg(feature = "jiff")]
 pub use verification::types::{TimestampAfter, TimestampBefore};
 
 // Values (JSON - feature-gated)
-#[cfg(all(any(feature = "verification", kani), feature = "serde_json"))]
+#[cfg(feature = "serde_json")]
 pub use verification::types::{ValueArray, ValueNonNull, ValueObject};
 
 // URLs (feature-gated)
-#[cfg(all(any(feature = "verification", kani), feature = "url"))]
+#[cfg(feature = "url")]
 pub use verification::types::{UrlCanBeBase, UrlHttp, UrlHttps, UrlValid, UrlWithHost};
 
 // Regexes (feature-gated)
-#[cfg(all(any(feature = "verification", kani), feature = "regex"))]
+#[cfg(feature = "regex")]
 pub use verification::types::{
     RegexCaseInsensitive, RegexMultiline, RegexSetNonEmpty, RegexSetValid, RegexValid,
 };
 
 // Mechanisms
-#[cfg(any(feature = "verification", kani))]
 pub use verification::mechanisms::{
     AffirmReturnsBoolean, InputNonEmpty, MechanismWithType, NumericReturnsValid,
     SurveyReturnsValidVariant, TextReturnsNonEmpty, TextReturnsString,
@@ -475,7 +474,7 @@ pub use primitives::http::{
     VersionStyle,
 };
 
-#[cfg(all(any(feature = "verification", kani), feature = "reqwest"))]
+#[cfg(feature = "reqwest")]
 pub use verification::types::StatusCodeValid;
 
 // clap types (feature-gated on clap-types)
@@ -565,3 +564,37 @@ pub use primitives::egui_types::{
     WidgetTypeSelect,
     WidgetTypeStyle,
 };
+
+// ratatui types (feature-gated on ratatui)
+#[cfg(feature = "ratatui")]
+pub use primitives::ratatui_types::{
+    // Trenchcoat wrappers (add JsonSchema for ElicitComplete)
+    AlignmentSelect,
+    // Select enum styles
+    AlignmentStyle,
+    BorderTypeSelect,
+    BorderTypeStyle,
+    BordersSelect,
+    ColorSelect,
+    ColorStyle,
+    RatatuiDirectionSelect,
+    RatatuiDirectionStyle,
+    // Composite struct wrappers
+    RatatuiMargin,
+    RatatuiMarginStyle,
+    RatatuiPadding,
+    RatatuiPaddingStyle,
+    RatatuiStyle,
+    RatatuiStyleStyle,
+    ScrollbarOrientationSelect,
+};
+
+// geo-types (feature-gated on geo-types)
+#[cfg(feature = "geo-types")]
+pub use primitives::geo_types::{
+    GeoCoord, GeoCoordStyle, GeoLine, GeoLineStyle, GeoRect, GeoRectStyle,
+};
+
+// palette (feature-gated on palette)
+#[cfg(feature = "palette")]
+pub use primitives::palette_types::{PaletteSrgb, PaletteSrgbStyle};

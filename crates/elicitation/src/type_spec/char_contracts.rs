@@ -41,6 +41,8 @@ macro_rules! impl_char_contract_spec {
             <$ty as ElicitSpec>::type_spec,
             std::any::TypeId::of::<$ty>
         ));
+
+        impl crate::ElicitComplete for $ty {}
     };
 }
 

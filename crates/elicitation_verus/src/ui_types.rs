@@ -316,4 +316,298 @@ pub fn verify_builder_composite_form(form_valid: bool) -> (result: bool)
     form_valid
 }
 
+// ── CssLength zoom invariance shadow proofs ──────────────────────────────────
+// Shadow enum modeling CssLength variant classification.
+// f64 arithmetic is not provable in Verus, so we focus on structural properties.
+
+pub enum ShadowCssUnit {
+    Px,
+    Em,
+    Rem,
+    Vw,
+    Vh,
+    Percent,
+}
+
+/// Shadow zoom invariance: returns true for relative units, false for Px.
+pub fn shadow_is_zoom_invariant(unit: &ShadowCssUnit) -> (result: bool)
+    ensures
+        result == match *unit {
+            ShadowCssUnit::Px => false,
+            ShadowCssUnit::Em => true,
+            ShadowCssUnit::Rem => true,
+            ShadowCssUnit::Vw => true,
+            ShadowCssUnit::Vh => true,
+            ShadowCssUnit::Percent => true,
+        },
+{
+    match unit {
+        ShadowCssUnit::Px => false,
+        _ => true,
+    }
+}
+
+/// Only Px is not zoom-invariant.
+pub fn verify_css_px_not_zoom_invariant() -> (result: bool)
+    ensures result == false,
+{
+    shadow_is_zoom_invariant(&ShadowCssUnit::Px)
+}
+
+/// Em is zoom-invariant.
+pub fn verify_css_em_zoom_invariant() -> (result: bool)
+    ensures result == true,
+{
+    shadow_is_zoom_invariant(&ShadowCssUnit::Em)
+}
+
+/// Rem is zoom-invariant.
+pub fn verify_css_rem_zoom_invariant() -> (result: bool)
+    ensures result == true,
+{
+    shadow_is_zoom_invariant(&ShadowCssUnit::Rem)
+}
+
+/// Vw is zoom-invariant.
+pub fn verify_css_vw_zoom_invariant() -> (result: bool)
+    ensures result == true,
+{
+    shadow_is_zoom_invariant(&ShadowCssUnit::Vw)
+}
+
+/// Vh is zoom-invariant.
+pub fn verify_css_vh_zoom_invariant() -> (result: bool)
+    ensures result == true,
+{
+    shadow_is_zoom_invariant(&ShadowCssUnit::Vh)
+}
+
+/// Percent is zoom-invariant.
+pub fn verify_css_percent_zoom_invariant() -> (result: bool)
+    ensures result == true,
+{
+    shadow_is_zoom_invariant(&ShadowCssUnit::Percent)
+}
+
+// ── BoundingBox / LayoutMode shadow proofs ───────────────────────────────────
+
+pub enum ShadowLayoutMode {
+    Block,
+    Flex,
+    Grid,
+}
+
+/// Shadow default for LayoutMode is Block.
+pub fn shadow_layout_mode_default() -> (result: ShadowLayoutMode)
+    ensures result is Block,
+{
+    ShadowLayoutMode::Block
+}
+
+/// LayoutMode has exactly 3 variants, default is Block.
+pub fn verify_layout_mode_default_is_block() -> (result: bool)
+    ensures result == true,
+{
+    let mode = shadow_layout_mode_default();
+    match mode {
+        ShadowLayoutMode::Block => true,
+        _ => false,
+    }
+}
+
+/// Shadow touch target check: width >= 44 && height >= 44.
+pub fn shadow_meets_touch_target(width: u64, height: u64) -> (result: bool)
+    ensures result == (width >= 44 && height >= 44),
+{
+    width >= 44 && height >= 44
+}
+
+/// 44x44 meets touch target.
+pub fn verify_bbox_touch_target_44x44() -> (result: bool)
+    ensures result == true,
+{
+    shadow_meets_touch_target(44, 44)
+}
+
+/// 43x43 fails touch target.
+pub fn verify_bbox_touch_target_43x43() -> (result: bool)
+    ensures result == false,
+{
+    shadow_meets_touch_target(43, 43)
+}
+
+/// Large dimensions meet touch target.
+pub fn verify_bbox_touch_target_large() -> (result: bool)
+    ensures result == true,
+{
+    shadow_meets_touch_target(200, 100)
+}
+
+/// Shadow viewport containment: right <= vp_width && bottom <= vp_height.
+pub fn shadow_within_viewport(
+    right: u64,
+    bottom: u64,
+    vp_width: u64,
+    vp_height: u64,
+) -> (result: bool)
+    ensures result == (right <= vp_width && bottom <= vp_height),
+{
+    right <= vp_width && bottom <= vp_height
+}
+
+/// Small box within large viewport.
+pub fn verify_bbox_within_viewport() -> (result: bool)
+    ensures result == true,
+{
+    shadow_within_viewport(110, 60, 1920, 1080)
+}
+
+/// Box exceeding viewport width.
+pub fn verify_bbox_exceeds_viewport() -> (result: bool)
+    ensures result == false,
+{
+    shadow_within_viewport(801, 600, 800, 600)
+}
+
+// ── WCAG contrast threshold shadow proofs ────────────────────────────────────
+
+pub enum ShadowWcagLevel {
+    A,
+    AA,
+    AAA,
+}
+
+pub enum ShadowTextSize {
+    Normal,
+    Large,
+}
+
+/// Minimum contrast required for AA (WCAG 1.4.3).
+/// Normal: 45 (representing 4.5:1), Large: 30 (representing 3.0:1).
+pub fn shadow_contrast_minimum_threshold(size: &ShadowTextSize) -> (result: u64)
+    ensures match *size {
+        ShadowTextSize::Normal => result == 45,
+        ShadowTextSize::Large => result == 30,
+    },
+{
+    match size {
+        ShadowTextSize::Normal => 45,
+        ShadowTextSize::Large => 30,
+    }
+}
+
+/// Enhanced contrast required for AAA (WCAG 1.4.6).
+/// Normal: 70 (representing 7.0:1), Large: 45 (representing 4.5:1).
+pub fn shadow_contrast_enhanced_threshold(size: &ShadowTextSize) -> (result: u64)
+    ensures match *size {
+        ShadowTextSize::Normal => result == 70,
+        ShadowTextSize::Large => result == 45,
+    },
+{
+    match size {
+        ShadowTextSize::Normal => 70,
+        ShadowTextSize::Large => 45,
+    }
+}
+
+/// AA normal threshold is 4.5 (45).
+pub fn verify_contrast_aa_normal_threshold() -> (result: u64)
+    ensures result == 45,
+{
+    shadow_contrast_minimum_threshold(&ShadowTextSize::Normal)
+}
+
+/// AA large threshold is 3.0 (30).
+pub fn verify_contrast_aa_large_threshold() -> (result: u64)
+    ensures result == 30,
+{
+    shadow_contrast_minimum_threshold(&ShadowTextSize::Large)
+}
+
+/// AAA normal threshold is 7.0 (70).
+pub fn verify_contrast_aaa_normal_threshold() -> (result: u64)
+    ensures result == 70,
+{
+    shadow_contrast_enhanced_threshold(&ShadowTextSize::Normal)
+}
+
+/// AAA large threshold is 4.5 (45).
+pub fn verify_contrast_aaa_large_threshold() -> (result: u64)
+    ensures result == 45,
+{
+    shadow_contrast_enhanced_threshold(&ShadowTextSize::Large)
+}
+
+/// AAA thresholds are strictly >= AA thresholds for normal text.
+pub fn verify_aaa_stricter_than_aa_normal() -> (result: bool)
+    ensures result == true,
+{
+    let aa = shadow_contrast_minimum_threshold(&ShadowTextSize::Normal);
+    let aaa = shadow_contrast_enhanced_threshold(&ShadowTextSize::Normal);
+    aaa >= aa
+}
+
+/// AAA thresholds are strictly >= AA thresholds for large text.
+pub fn verify_aaa_stricter_than_aa_large() -> (result: bool)
+    ensures result == true,
+{
+    let aa = shadow_contrast_minimum_threshold(&ShadowTextSize::Large);
+    let aaa = shadow_contrast_enhanced_threshold(&ShadowTextSize::Large);
+    aaa >= aa
+}
+
+// ── ConstraintProfile shadow proofs ──────────────────────────────────────────
+
+pub enum ShadowConstraintProfile {
+    WcagA,
+    WcagAA,
+    WcagAAA,
+}
+
+/// Shadow hard constraint count per profile.
+pub fn shadow_hard_count(profile: &ShadowConstraintProfile) -> (result: u64)
+    ensures match *profile {
+        ShadowConstraintProfile::WcagA => result == 3,
+        ShadowConstraintProfile::WcagAA => result == 4,
+        ShadowConstraintProfile::WcagAAA => result == 5,
+    },
+{
+    match profile {
+        ShadowConstraintProfile::WcagA => 3,
+        ShadowConstraintProfile::WcagAA => 4,
+        ShadowConstraintProfile::WcagAAA => 5,
+    }
+}
+
+/// WCAG A has 3 hard constraints.
+pub fn verify_profile_a_count() -> (result: u64)
+    ensures result == 3,
+{
+    shadow_hard_count(&ShadowConstraintProfile::WcagA)
+}
+
+/// WCAG AA has 4 hard constraints.
+pub fn verify_profile_aa_count() -> (result: u64)
+    ensures result == 4,
+{
+    shadow_hard_count(&ShadowConstraintProfile::WcagAA)
+}
+
+/// WCAG AAA has 5 hard constraints.
+pub fn verify_profile_aaa_count() -> (result: u64)
+    ensures result == 5,
+{
+    shadow_hard_count(&ShadowConstraintProfile::WcagAAA)
+}
+
+/// Monotonicity: A < AA < AAA.
+pub fn verify_profile_monotonicity() -> (result: bool)
+    ensures result == true,
+{
+    let a = shadow_hard_count(&ShadowConstraintProfile::WcagA);
+    let aa = shadow_hard_count(&ShadowConstraintProfile::WcagAA);
+    let aaa = shadow_hard_count(&ShadowConstraintProfile::WcagAAA);
+    a < aa && aa < aaa
+}
+
 } // verus!

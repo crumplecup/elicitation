@@ -263,3 +263,180 @@ impl From<HeaderMap> for http::HeaderMap {
         Arc::try_unwrap(m.0).unwrap_or_else(|arc| (*arc).clone())
     }
 }
+
+// ── Elicitation / ElicitComplete impls ────────────────────────────────────────
+//
+// Method, StatusCode, Version, and HeaderMap are hand-crafted newtypes that
+// predate `elicit_newtype!`.  We manually add the Elicitation family of traits
+// so each type can satisfy the `ElicitComplete` supertrait.
+
+macro_rules! impl_elicitation_for_reqwest_newtype {
+    (
+        $Type:ident,
+        inner = $inner:expr,
+        description = $desc:literal,
+        type_name_str = $tn:literal $(,)?
+    ) => {
+        impl elicitation::Prompt for $Type {
+            fn prompt() -> Option<&'static str> {
+                Some($desc)
+            }
+        }
+
+        impl elicitation::Elicitation for $Type {
+            type Style = ();
+
+            async fn elicit<C: elicitation::ElicitCommunicator>(
+                _communicator: &C,
+            ) -> elicitation::ElicitResult<Self> {
+                Err(elicitation::ElicitError::new(
+                    elicitation::ElicitErrorKind::ParseError(
+                        concat!(
+                            "`",
+                            $tn,
+                            "` cannot be interactively elicited — construct it directly."
+                        )
+                        .to_string(),
+                    ),
+                ))
+            }
+
+            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::kani_trusted_opaque($tn)
+            }
+
+            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::verus_trusted_opaque($tn)
+            }
+
+            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::creusot_trusted_opaque($tn)
+            }
+        }
+
+        impl elicitation::ElicitIntrospect for $Type {
+            fn pattern() -> elicitation::ElicitationPattern {
+                elicitation::ElicitationPattern::Primitive
+            }
+
+            fn metadata() -> elicitation::TypeMetadata {
+                elicitation::TypeMetadata {
+                    type_name: $tn,
+                    description: Some($desc),
+                    details: elicitation::PatternDetails::Primitive,
+                }
+            }
+        }
+
+        impl elicitation::ElicitSpec for $Type {
+            fn type_spec() -> elicitation::TypeSpec {
+                elicitation::TypeSpecBuilder::default()
+                    .type_name($tn.to_string())
+                    .summary($desc.to_string())
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
+
+        impl elicitation::ElicitComplete for $Type {}
+    };
+}
+
+impl_elicitation_for_reqwest_newtype!(
+    Method,
+    inner = "reqwest::Method",
+    description = "HTTP method (e.g. GET, POST, PUT, DELETE)",
+    type_name_str = "Method",
+);
+
+impl_elicitation_for_reqwest_newtype!(
+    StatusCode,
+    inner = "reqwest::StatusCode",
+    description = "HTTP status code (100–599)",
+    type_name_str = "StatusCode",
+);
+
+impl_elicitation_for_reqwest_newtype!(
+    Version,
+    inner = "reqwest::Version",
+    description = "HTTP protocol version (e.g. HTTP/1.1, HTTP/2.0)",
+    type_name_str = "Version",
+);
+
+impl_elicitation_for_reqwest_newtype!(
+    HeaderMap,
+    inner = "http::HeaderMap",
+    description = "HTTP headers as a string-to-string map",
+    type_name_str = "HeaderMap",
+);
+
+// ── ToCodeLiteral impls ────────────────────────────────────────────────────────
+
+mod emit_impls {
+    use super::{HeaderMap, Method, StatusCode, Version};
+    use elicitation::emit_code::ToCodeLiteral;
+    use elicitation::proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for Method {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.0.as_str().to_string();
+            quote::quote! {
+                ::elicit_reqwest::Method::from(
+                    ::reqwest::Method::from_bytes(#s.as_bytes()).expect("valid HTTP method")
+                )
+            }
+        }
+    }
+
+    impl ToCodeLiteral for StatusCode {
+        fn to_code_literal(&self) -> TokenStream {
+            let n = self.0.as_u16();
+            quote::quote! {
+                ::elicit_reqwest::StatusCode::from_u16(#n).expect("valid status code")
+            }
+        }
+    }
+
+    impl ToCodeLiteral for Version {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = format!("{:?}", *self.0);
+            let variant: TokenStream = match s.as_str() {
+                "HTTP/0.9" => quote::quote! { ::reqwest::Version::HTTP_09 },
+                "HTTP/1.0" => quote::quote! { ::reqwest::Version::HTTP_10 },
+                "HTTP/1.1" => quote::quote! { ::reqwest::Version::HTTP_11 },
+                "HTTP/2.0" => quote::quote! { ::reqwest::Version::HTTP_2 },
+                "HTTP/3.0" => quote::quote! { ::reqwest::Version::HTTP_3 },
+                _ => quote::quote! { ::reqwest::Version::HTTP_11 },
+            };
+            quote::quote! { ::elicit_reqwest::Version::from(#variant) }
+        }
+    }
+
+    impl ToCodeLiteral for HeaderMap {
+        fn to_code_literal(&self) -> TokenStream {
+            let entries: Vec<_> = self
+                .0
+                .iter()
+                .map(|(k, v)| {
+                    let key = k.as_str();
+                    let val = v.to_str().unwrap_or("");
+                    quote::quote! { (#key, #val) }
+                })
+                .collect();
+            quote::quote! {
+                {
+                    let mut __map = ::http::HeaderMap::new();
+                    #(
+                        __map.insert(
+                            ::http::header::HeaderName::from_bytes(#entries.0.as_bytes())
+                                .expect("valid header name"),
+                            ::http::HeaderValue::from_str(#entries.1)
+                                .expect("valid header value"),
+                        );
+                    )*
+                    ::elicit_reqwest::HeaderMap::from(__map)
+                }
+            }
+        }
+    }
+}

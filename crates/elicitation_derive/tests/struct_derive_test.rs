@@ -2,26 +2,35 @@
 
 use elicitation::{Elicit, FieldInfo, Prompt, Select, Survey};
 
-#[derive(Debug, Clone, Copy, PartialEq, Elicit)]
+#[derive(
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Elicit,
+)]
 enum Status {
     Active,
     Inactive,
 }
 
-#[derive(Debug, Elicit)]
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Elicit)]
 struct SimpleStruct {
     name: String,
     age: u8,
 }
 
-#[derive(Debug, Elicit)]
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Elicit)]
 #[prompt("Let's configure your settings:")]
 struct ConfigStruct {
     timeout: u32,
     retries: i32,
 }
 
-#[derive(Debug, Elicit)]
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Elicit)]
 struct FieldPromptStruct {
     #[prompt("What is your username?")]
     username: String,
@@ -47,7 +56,7 @@ impl SkipFieldStruct {
 
 // Manual impl to test #[skip] behavior would work
 // For now, we test it via the fields() check
-#[derive(Debug, Elicit)]
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Elicit)]
 struct PartialSkipStruct {
     name: String,
     age: u8,
@@ -55,7 +64,7 @@ struct PartialSkipStruct {
     _internal: String,
 }
 
-#[derive(Debug, Elicit)]
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Elicit)]
 struct NestedStruct {
     name: String,
     status: Status,
@@ -204,15 +213,15 @@ fn test_struct_field_usage() {
 // ── Tuple struct (newtype and multi-field) ────────────────────────────────────
 
 /// Newtype wrapper: single-field tuple struct
-#[derive(Debug, Clone, Elicit)]
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Clone, Elicit)]
 struct WrappedName(String);
 
 /// Multi-value tuple struct
-#[derive(Debug, Clone, Elicit)]
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Clone, Elicit)]
 struct Point(f64, f64);
 
 /// Newtype with prompt
-#[derive(Debug, Clone, Elicit)]
+#[derive(serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Clone, Elicit)]
 #[prompt("Enter a list of tags:")]
 struct TagList(Vec<String>);
 
@@ -253,10 +262,14 @@ fn test_newtype_construction() {
 
 // ── Unit structs ──────────────────────────────────────────────────────────────
 
-#[derive(Debug, Clone, Copy, Elicit)]
+#[derive(
+    serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Clone, Copy, Elicit,
+)]
 struct Parse;
 
-#[derive(Debug, Clone, Copy, Elicit)]
+#[derive(
+    serde::Serialize, serde::Deserialize, schemars::JsonSchema, Debug, Clone, Copy, Elicit,
+)]
 #[prompt("Validate the input:")]
 struct Validate;
 

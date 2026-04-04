@@ -4,31 +4,31 @@ use elicitation::{Elicit, NodeKind, Prompt, Select, TypeGraph, TypeGraphError};
 
 // --- Test type hierarchy ---
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct Leaf {
     pub value: String,
 }
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct Parent {
     pub leaf: Leaf,
     pub count: u32,
 }
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct GrandParent {
     pub parent: Parent,
     pub label: String,
 }
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum Color {
     Red,
     Green,
     Blue,
 }
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct WithEnum {
     pub color: Color,
     pub name: String,

@@ -25,17 +25,14 @@ impl Elicitation for HashMapStyle {
         Ok(Self::Default)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_single_variant_enum("HashMapStyle")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_single_variant_enum("HashMapStyle")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_single_variant_enum("HashMapStyle")
     }
@@ -109,7 +106,6 @@ where
         Ok(map)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         {
             let mut ts = <K as Elicitation>::kani_proof();
@@ -118,7 +114,6 @@ where
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         {
             let mut ts = <K as Elicitation>::verus_proof();
@@ -127,7 +122,6 @@ where
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         {
             let mut ts = <K as Elicitation>::creusot_proof();

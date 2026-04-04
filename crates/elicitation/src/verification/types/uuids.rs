@@ -20,7 +20,18 @@ use uuid::Uuid;
 ///
 /// Available with the `uuid` feature.
 #[cfg(feature = "uuid")]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
+#[cfg_attr(feature = "uuid", schemars(description = "A UUID v4 value"))]
 pub struct UuidV4(Uuid);
 
 #[cfg(feature = "uuid")]
@@ -83,17 +94,14 @@ impl Elicitation for UuidV4 {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_uuid_v4()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("UuidV4")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("UuidV4")
     }
@@ -106,7 +114,18 @@ impl Elicitation for UuidV4 {
 ///
 /// Available with the `uuid` feature.
 #[cfg(feature = "uuid")]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
+#[cfg_attr(feature = "uuid", schemars(description = "A non-nil UUID value"))]
 pub struct UuidNonNil(Uuid);
 
 #[cfg(feature = "uuid")]
@@ -163,17 +182,14 @@ impl Elicitation for UuidNonNil {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_uuid_non_nil()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_type_stub("UuidNonNil")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_type_stub("UuidNonNil")
     }
@@ -239,5 +255,36 @@ mod tests {
         let uuid = Uuid::new_v4();
         let non_nil = UuidNonNil::new(uuid).unwrap();
         assert_eq!(non_nil.into_inner(), uuid);
+    }
+}
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+#[cfg(feature = "uuid")]
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for UuidV4 {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.get().to_string();
+            quote::quote! {
+                elicitation::UuidV4::new(
+                    ::uuid::Uuid::parse_str(#s).expect("valid uuid")
+                ).expect("valid UuidV4")
+            }
+        }
+    }
+
+    impl ToCodeLiteral for UuidNonNil {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.get().to_string();
+            quote::quote! {
+                elicitation::UuidNonNil::new(
+                    ::uuid::Uuid::parse_str(#s).expect("valid uuid")
+                ).expect("valid UuidNonNil")
+            }
+        }
     }
 }

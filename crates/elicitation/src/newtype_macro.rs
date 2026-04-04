@@ -157,6 +157,86 @@ macro_rules! elicit_newtype {
                 wrapper.0
             }
         }
+
+        impl $crate::Prompt for $wrapper_name {
+            fn prompt() -> ::std::option::Option<&'static str> {
+                None
+            }
+        }
+
+        impl $crate::Elicitation for $wrapper_name {
+            type Style = ();
+
+            async fn elicit<C: $crate::ElicitCommunicator>(
+                _communicator: &C,
+            ) -> $crate::ElicitResult<Self> {
+                Err($crate::ElicitError::new($crate::ElicitErrorKind::ParseError(
+                    concat!(
+                        "elicit() for `",
+                        stringify!($wrapper_name),
+                        "` requires the serde variant. Use `elicit_newtype!(",
+                        stringify!($inner_path),
+                        ", as ",
+                        stringify!($wrapper_name),
+                        ", serde)` or implement `Elicitation` manually."
+                    )
+                    .to_string(),
+                )))
+            }
+
+            fn kani_proof() -> $crate::proc_macro2::TokenStream {
+                $crate::verification::proof_helpers::kani_trusted_opaque(stringify!($wrapper_name))
+            }
+
+            fn verus_proof() -> $crate::proc_macro2::TokenStream {
+                $crate::verification::proof_helpers::verus_trusted_opaque(stringify!($wrapper_name))
+            }
+
+            fn creusot_proof() -> $crate::proc_macro2::TokenStream {
+                $crate::verification::proof_helpers::creusot_trusted_opaque(stringify!($wrapper_name))
+            }
+        }
+
+        impl $crate::ElicitIntrospect for $wrapper_name {
+            fn pattern() -> $crate::ElicitationPattern {
+                $crate::ElicitationPattern::Primitive
+            }
+
+            fn metadata() -> $crate::TypeMetadata {
+                $crate::TypeMetadata {
+                    type_name: stringify!($wrapper_name),
+                    description: None,
+                    details: $crate::PatternDetails::Primitive,
+                }
+            }
+        }
+
+        #[cfg(feature = "prompt-tree")]
+        impl $crate::ElicitPromptTree for $wrapper_name {
+            fn prompt_tree() -> $crate::PromptTree {
+                $crate::PromptTree::Leaf {
+                    prompt: stringify!($wrapper_name).to_string(),
+                    type_name: stringify!($wrapper_name).to_string(),
+                }
+            }
+        }
+
+        impl $crate::ElicitSpec for $wrapper_name {
+            fn type_spec() -> $crate::TypeSpec {
+                $crate::TypeSpecBuilder::default()
+                    .type_name(stringify!($wrapper_name).to_string())
+                    .summary(
+                        concat!(
+                            "Elicitation-enabled newtype wrapper around `",
+                            stringify!($inner_path),
+                            "`."
+                        )
+                        .to_string(),
+                    )
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
     };
 
     // Syntax: elicit_newtype!(path::to::Type, as WrapperName, serde);
@@ -222,6 +302,87 @@ macro_rules! elicit_newtype {
         impl ::std::convert::From<$wrapper_name> for ::std::sync::Arc<$inner_path> {
             fn from(wrapper: $wrapper_name) -> Self {
                 wrapper.0
+            }
+        }
+
+        impl $crate::Prompt for $wrapper_name {
+            fn prompt() -> ::std::option::Option<&'static str> {
+                None
+            }
+        }
+
+        impl $crate::Elicitation for $wrapper_name {
+            type Style = ();
+
+            async fn elicit<C: $crate::ElicitCommunicator>(
+                communicator: &C,
+            ) -> $crate::ElicitResult<Self> {
+                let response = communicator
+                    .send_prompt(concat!("Enter value for ", stringify!($wrapper_name)))
+                    .await?;
+                // Try JSON directly first; fall back to quoting for string-serialized types.
+                let inner: $inner_path = $crate::serde_json::from_str(&response).or_else(|_| {
+                    $crate::serde_json::from_str::<$inner_path>(&format!("\"{}\"", response))
+                })
+                .map_err(|e| {
+                    $crate::ElicitError::new($crate::ElicitErrorKind::ParseError(
+                        format!("Invalid {}: {}", stringify!($wrapper_name), e),
+                    ))
+                })?;
+                Ok(Self(::std::sync::Arc::new(inner)))
+            }
+
+            fn kani_proof() -> $crate::proc_macro2::TokenStream {
+                $crate::verification::proof_helpers::kani_trusted_opaque(stringify!($wrapper_name))
+            }
+
+            fn verus_proof() -> $crate::proc_macro2::TokenStream {
+                $crate::verification::proof_helpers::verus_trusted_opaque(stringify!($wrapper_name))
+            }
+
+            fn creusot_proof() -> $crate::proc_macro2::TokenStream {
+                $crate::verification::proof_helpers::creusot_trusted_opaque(stringify!($wrapper_name))
+            }
+        }
+
+        impl $crate::ElicitIntrospect for $wrapper_name {
+            fn pattern() -> $crate::ElicitationPattern {
+                $crate::ElicitationPattern::Primitive
+            }
+
+            fn metadata() -> $crate::TypeMetadata {
+                $crate::TypeMetadata {
+                    type_name: stringify!($wrapper_name),
+                    description: None,
+                    details: $crate::PatternDetails::Primitive,
+                }
+            }
+        }
+
+        #[cfg(feature = "prompt-tree")]
+        impl $crate::ElicitPromptTree for $wrapper_name {
+            fn prompt_tree() -> $crate::PromptTree {
+                $crate::PromptTree::Leaf {
+                    prompt: stringify!($wrapper_name).to_string(),
+                    type_name: stringify!($wrapper_name).to_string(),
+                }
+            }
+        }
+
+        impl $crate::ElicitSpec for $wrapper_name {
+            fn type_spec() -> $crate::TypeSpec {
+                $crate::TypeSpecBuilder::default()
+                    .type_name(stringify!($wrapper_name).to_string())
+                    .summary(
+                        concat!(
+                            "Elicitation-enabled newtype wrapper around `",
+                            stringify!($inner_path),
+                            "`."
+                        )
+                        .to_string(),
+                    )
+                    .build()
+                    .expect("valid TypeSpec")
             }
         }
     };

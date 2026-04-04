@@ -1,5 +1,10 @@
 //! Typestate state machine for verified UI construction.
 
+use crate::constraints::{
+    ConstraintContext, ConstraintSet, ConstraintSetBuilder, ConstraintVerification,
+    HasLabelConstraint, KeyboardAccessibleConstraint, MinTouchTargetConstraint,
+    NoOverflowConstraint, ValidRoleConstraint,
+};
 use crate::{VerificationReport, Viewport, validators};
 use accesskit::{Node, NodeId, TreeUpdate};
 use std::collections::HashMap;
@@ -130,6 +135,82 @@ impl Layout<Pending> {
         }
     }
 
+    /// Verify the layout using a [`ConstraintProfile`].
+    ///
+    /// This is the composable API that uses the constraint system directly.
+    /// The `verify_a`, `verify_aa`, and `verify_aaa` methods are sugar over
+    /// pre-built profiles.
+    #[tracing::instrument(skip(self), fields(root = ?self.root, profile = ?profile))]
+    pub fn verify_with_profile(
+        self,
+        viewport: Viewport,
+        profile: ConstraintProfile,
+    ) -> Result<Layout<Verified>, ConstraintVerification> {
+        tracing::debug!(?profile, "Verifying layout with constraint profile");
+
+        let constraint_set = profile.to_constraint_set();
+        let ctx = ConstraintContext {
+            nodes: &self.nodes,
+            viewport,
+        };
+
+        let verification = constraint_set.verify(self.root, &ctx);
+
+        if verification.is_valid() {
+            tracing::info!("Constraint verification successful");
+            Ok(Layout {
+                nodes: self.nodes,
+                root: self.root,
+                viewport: Some(viewport),
+                report: None,
+                _state: PhantomData,
+            })
+        } else {
+            tracing::error!(
+                hard = verification.hard_violations.len(),
+                structural = verification.structural_violations.len(),
+                "Constraint verification failed"
+            );
+            Err(verification)
+        }
+    }
+
+    /// Verify with a custom [`ConstraintSet`].
+    ///
+    /// For maximum flexibility — bring your own constraints.
+    #[tracing::instrument(skip(self, constraint_set), fields(root = ?self.root))]
+    pub fn verify_custom(
+        self,
+        viewport: Viewport,
+        constraint_set: &ConstraintSet,
+    ) -> Result<Layout<Verified>, ConstraintVerification> {
+        tracing::debug!("Verifying layout with custom constraint set");
+
+        let ctx = ConstraintContext {
+            nodes: &self.nodes,
+            viewport,
+        };
+
+        let verification = constraint_set.verify(self.root, &ctx);
+
+        if verification.is_valid() {
+            tracing::info!("Custom constraint verification successful");
+            Ok(Layout {
+                nodes: self.nodes,
+                root: self.root,
+                viewport: Some(viewport),
+                report: None,
+                _state: PhantomData,
+            })
+        } else {
+            tracing::error!(
+                hard = verification.hard_violations.len(),
+                "Custom constraint verification failed"
+            );
+            Err(verification)
+        }
+    }
+
     /// Recursively validate tree nodes.
     fn validate_tree_recursive(
         &self,
@@ -184,24 +265,24 @@ impl Layout<Verified> {
             .expect("Verified layout must have report")
     }
 
-    /// Render the layout to egui.
-    ///
-    /// Walks the verified AccessKit tree and renders each node to
-    /// the corresponding egui widget.
-    ///
-    /// Available when `egui-backend` feature is enabled.
-    #[cfg(feature = "egui-backend")]
-    #[tracing::instrument(skip(self, ctx), fields(root = ?self.root))]
-    pub fn render_egui(self, ctx: &egui::Context) -> (Layout<Rendered>, crate::RenderStats) {
-        tracing::debug!("Rendering layout to egui");
+    /// Get a reference to the node map.
+    pub fn nodes(&self) -> &HashMap<NodeId, Node> {
+        &self.nodes
+    }
 
-        let mut stats = crate::RenderStats::default();
-        let nodes_ref = &self.nodes;
-        let root = self.root;
+    /// Render the verified layout through a [`RenderBackend`].
+    ///
+    /// This is the generic render path. Frontend crates provide their
+    /// own `RenderBackend` implementation (e.g., `EguiBackend`,
+    /// `RatatuiBackend`).
+    #[tracing::instrument(skip(self, backend), fields(root = ?self.root))]
+    pub fn render<B: crate::RenderBackend>(
+        self,
+        backend: &B,
+    ) -> (Layout<Rendered>, crate::RenderStats) {
+        tracing::debug!("Rendering layout via backend");
 
-        let _output = ctx.run_ui(egui::RawInput::default(), |ui| {
-            stats = crate::renderer::render_tree(ui, nodes_ref, root);
-        });
+        let stats = backend.render_tree(&self.nodes, self.root);
 
         let layout = Layout {
             nodes: self.nodes,
@@ -219,5 +300,45 @@ impl Layout<Rendered> {
     /// Get the root node ID.
     pub fn root(&self) -> NodeId {
         self.root
+    }
+}
+
+/// Pre-built constraint profiles for common verification scenarios.
+///
+/// Each profile maps to a specific set of constraints from the constraint system.
+/// Use `verify_with_profile` on `Layout<Pending>` to apply.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ConstraintProfile {
+    /// WCAG Level A: label, role, keyboard access.
+    WcagA,
+    /// WCAG Level AA: Level A + no overflow.
+    WcagAA,
+    /// WCAG Level AAA: Level AA + min touch target.
+    WcagAAA,
+}
+
+impl ConstraintProfile {
+    /// Convert this profile to a [`ConstraintSet`].
+    pub fn to_constraint_set(&self) -> ConstraintSet {
+        match self {
+            Self::WcagA => ConstraintSetBuilder::default()
+                .hard(HasLabelConstraint)
+                .hard(ValidRoleConstraint)
+                .hard(KeyboardAccessibleConstraint)
+                .build(),
+            Self::WcagAA => ConstraintSetBuilder::default()
+                .hard(HasLabelConstraint)
+                .hard(ValidRoleConstraint)
+                .hard(KeyboardAccessibleConstraint)
+                .hard(NoOverflowConstraint)
+                .build(),
+            Self::WcagAAA => ConstraintSetBuilder::default()
+                .hard(HasLabelConstraint)
+                .hard(ValidRoleConstraint)
+                .hard(KeyboardAccessibleConstraint)
+                .hard(NoOverflowConstraint)
+                .hard(MinTouchTargetConstraint)
+                .build(),
+        }
     }
 }

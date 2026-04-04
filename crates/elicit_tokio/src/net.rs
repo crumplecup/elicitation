@@ -45,7 +45,7 @@ use uuid::Uuid;
 // ── Propositions ──────────────────────────────────────────────────────────────
 
 /// Proposition: a TCP listener was successfully bound to a local address.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct ListenerBound;
 impl Prop for ListenerBound {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -83,7 +83,7 @@ impl Prop for ListenerBound {
 impl VerifiedWorkflow for ListenerBound {}
 
 /// Proposition: an incoming TCP connection was accepted by a listener.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct ConnectionAccepted;
 impl Prop for ConnectionAccepted {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -121,7 +121,7 @@ impl Prop for ConnectionAccepted {
 impl VerifiedWorkflow for ConnectionAccepted {}
 
 /// Proposition: a TCP stream was successfully connected to a remote address.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct StreamConnected;
 impl Prop for StreamConnected {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -159,7 +159,7 @@ impl Prop for StreamConnected {
 impl VerifiedWorkflow for StreamConnected {}
 
 /// Proposition: at least one byte was received from a stream or socket.
-#[derive(Elicit)]
+#[derive(Elicit, ::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub struct DataReceived;
 impl Prop for DataReceived {
     fn kani_proof() -> elicitation::proc_macro2::TokenStream {

@@ -11,7 +11,7 @@ use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation, Prompt, Selec
 use rmcp::ServiceExt;
 
 /// Simple error type for demonstration
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 enum ApiError {
     NotFound,
     Unauthorized,
@@ -19,7 +19,7 @@ enum ApiError {
 }
 
 /// Status code type
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 enum StatusCode {
     Success,
     Redirect,

@@ -196,7 +196,6 @@ fn main() {
     // ========================================================================
     // 5. Default Contracts (Feature-Gated)
     // ========================================================================
-    #[cfg(feature = "verification")]
     {
         println!("\n5. DEFAULT CONTRACTS (FEATURE-GATED)");
         println!("-------------------------------------");
@@ -234,7 +233,6 @@ fn main() {
     println!("✅ Basic contracts work (StringNonEmpty, I32Positive, BoolValid)");
     println!("✅ Composition works (AND, OR, NOT combinators)");
     println!("✅ Runtime verifier swapping works (Kani, Creusot, Prusti, Verus)");
-    #[cfg(feature = "verification")]
     println!("✅ Compile-time defaults work (DEFAULT_*_CONTRACT)");
     println!("\nThe verification framework is fully operational!");
 }

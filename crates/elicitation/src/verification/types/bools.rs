@@ -11,7 +11,18 @@ use elicitation_macros::instrumented_impl;
 /// Contract type for true bool values.
 ///
 /// Validates on construction, then can unwrap to stdlib bool via `into_inner()`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
+#[schemars(description = "A boolean value that must be true")]
 pub struct BoolTrue(bool);
 
 #[cfg_attr(not(kani), instrumented_impl)]
@@ -71,17 +82,14 @@ impl Elicitation for BoolTrue {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_bool_true("BoolTrue")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_bool_default()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_bool_default()
     }
@@ -90,7 +98,18 @@ impl Elicitation for BoolTrue {
 /// Contract type for false bool values.
 ///
 /// Validates on construction, then can unwrap to stdlib bool via `into_inner()`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
+#[schemars(description = "A boolean value that must be false")]
 pub struct BoolFalse(bool);
 
 impl BoolFalse {
@@ -149,17 +168,14 @@ impl Elicitation for BoolFalse {
         }
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_bool_false("BoolFalse")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_bool_default()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_bool_default()
     }
@@ -288,18 +304,62 @@ impl Elicitation for BoolDefault {
         Ok(Self::new(value))
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_bool_default()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_bool_default()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_bool_default()
     }
 }
+
+// ── ToCodeLiteral impls ───────────────────────────────────────────────────────
+
+mod emit_impls {
+    use super::*;
+    use crate::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for BoolTrue {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { elicitation::BoolTrue::new(true).expect("valid BoolTrue") }
+        }
+    }
+
+    impl ToCodeLiteral for BoolFalse {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { elicitation::BoolFalse::new(false).expect("valid BoolFalse") }
+        }
+    }
+}
+
+// ── ElicitIntrospect impls ────────────────────────────────────────────────────
+
+macro_rules! impl_primitive_introspect {
+    ($($ty:ty => $name:literal),+ $(,)?) => {
+        $(
+            impl crate::ElicitIntrospect for $ty {
+                fn pattern() -> crate::ElicitationPattern {
+                    crate::ElicitationPattern::Primitive
+                }
+                fn metadata() -> crate::TypeMetadata {
+                    crate::TypeMetadata {
+                        type_name: $name,
+                        description: <$ty as crate::Prompt>::prompt(),
+                        details: crate::PatternDetails::Primitive,
+                    }
+                }
+            }
+        )+
+    };
+}
+
+impl_primitive_introspect!(
+    BoolTrue => "BoolTrue",
+    BoolFalse => "BoolFalse",
+    BoolDefault => "BoolDefault",
+);

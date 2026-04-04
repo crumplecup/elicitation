@@ -3,11 +3,9 @@
 //! Asserts that every Prop has non-empty proofs and that composite
 //! `And<P, Q>` types delegate to their constituent proofs.
 
-#![cfg(feature = "proofs")]
-
 use elicit_chrono::{DateTimeFuture, DateTimeInRange, DateTimeParsed};
 use elicitation::VerifiedWorkflow;
-use elicitation::contracts::{And, Prop};
+use elicitation::contracts::And;
 
 #[track_caller]
 fn assert_verified<T: VerifiedWorkflow>(label: &str) {

@@ -10,7 +10,7 @@ use std::any::TypeId;
 
 // ── Basic composition ─────────────────────────────────────────────────────────
 
-#[derive(Elicit, Debug)]
+#[derive(Elicit, Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct SimpleStruct {
     count: I32Positive,
     label: StringNonEmpty,
@@ -80,7 +80,7 @@ fn derived_struct_registered_by_type_id() {
 
 // ── #[spec_summary] override ──────────────────────────────────────────────────
 
-#[derive(Elicit, Debug)]
+#[derive(Elicit, Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[spec_summary = "A date range with a validated start and end point."]
 struct DateRange {
     start: I32Positive,
@@ -103,7 +103,7 @@ fn spec_summary_attr_overrides_auto() {
 
 // ── #[spec_requires] on struct (top-level invariant) ─────────────────────────
 
-#[derive(Elicit, Debug)]
+#[derive(Elicit, Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 #[spec_requires(start < end)]
 struct OrderedRange {
     start: I32Positive,
@@ -137,7 +137,7 @@ fn struct_level_spec_requires_creates_requires_category() {
 
 // ── #[spec_requires] on a field (extra entry in field's sub-category) ─────────
 
-#[derive(Elicit, Debug)]
+#[derive(Elicit, Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct BoundedCount {
     #[spec_requires(value < 100)]
     count: I32Positive,
@@ -182,12 +182,12 @@ fn field_level_spec_requires_appends_to_field_category() {
 
 // ── Recursive composition ─────────────────────────────────────────────────────
 
-#[derive(Elicit, Debug)]
+#[derive(Elicit, Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct Inner {
     value: I32Positive,
 }
 
-#[derive(Elicit, Debug)]
+#[derive(Elicit, Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct Outer {
     inner: Inner,
     label: StringNonEmpty,

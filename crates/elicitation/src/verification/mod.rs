@@ -217,7 +217,7 @@ use std::fmt::Debug;
 /// ```
 // String contracts
 /// Default String contract (Kani unless overridden by feature).
-#[cfg(all(feature = "verification", not(feature = "verify-verus")))]
+#[cfg(not(feature = "verify-verus"))]
 pub const DEFAULT_STRING_CONTRACT: contracts::StringNonEmpty = contracts::StringNonEmpty;
 
 /// Default String contract (Verus).
@@ -227,7 +227,7 @@ pub const DEFAULT_STRING_CONTRACT: contracts::verus::VerusStringNonEmpty =
 
 // i32 contracts
 /// Default i32 contract (Kani unless overridden by feature).
-#[cfg(all(feature = "verification", not(feature = "verify-verus")))]
+#[cfg(not(feature = "verify-verus"))]
 pub const DEFAULT_I32_CONTRACT: contracts::I32Positive = contracts::I32Positive;
 
 /// Default i32 contract (Verus).
@@ -237,7 +237,7 @@ pub const DEFAULT_I32_CONTRACT: contracts::verus::VerusI32Positive =
 
 // bool contracts
 /// Default bool contract (Kani unless overridden by feature).
-#[cfg(all(feature = "verification", not(feature = "verify-verus")))]
+#[cfg(not(feature = "verify-verus"))]
 pub const DEFAULT_BOOL_CONTRACT: contracts::BoolValid = contracts::BoolValid;
 
 /// Default bool contract (Verus).
@@ -815,7 +815,6 @@ pub mod runner;
 
 // Tool-specific adapters
 pub mod kani;
-#[cfg(feature = "proofs")]
 pub mod proof_helpers;
 
 #[cfg(feature = "cli")]
@@ -938,7 +937,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "verification")]
     fn test_default_contracts_available() {
         // Test that default contract constants are available when verification feature enabled
         use super::{DEFAULT_BOOL_CONTRACT, DEFAULT_I32_CONTRACT, DEFAULT_STRING_CONTRACT};
@@ -954,7 +952,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "verification")]
     fn test_default_contracts_usable_with_with_contract() {
         // Test that default contracts work with with_contract()
         use super::{DEFAULT_BOOL_CONTRACT, DEFAULT_I32_CONTRACT, DEFAULT_STRING_CONTRACT};

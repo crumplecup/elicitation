@@ -10,21 +10,21 @@ use elicitation::{Elicit, Prompt, Select};
 use elicitation::Elicitation;
 
 /// Simple struct for testing.
-#[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct TestStruct {
     pub name: String,
     pub count: u32,
 }
 
 /// Enum with variants for testing.
-#[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum TestEnum {
     Simple,
     WithData { value: String },
 }
 
 /// Nested struct for testing.
-#[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct NestedStruct {
     pub inner: TestStruct,
     pub mode: TestEnum,

@@ -227,3 +227,8 @@ inventory::submit!(TypeSpecInventoryKey::new(
     <char as ElicitSpec>::type_spec,
     std::any::TypeId::of::<char>
 ));
+
+impl crate::ElicitComplete for f32 {}
+impl crate::ElicitComplete for f64 {}
+impl crate::ElicitComplete for bool {}
+impl crate::ElicitComplete for char {}

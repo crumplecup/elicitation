@@ -74,3 +74,20 @@ impl Timestamp {
             .map(|t| std::sync::Arc::new(t).into())
     }
 }
+
+mod emit_impls {
+    use super::Timestamp;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for Timestamp {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.0.to_string();
+            quote::quote! {
+                ::elicit_jiff::Timestamp::from(#s.parse::<::jiff::Timestamp>().expect("valid Timestamp"))
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for Timestamp {}

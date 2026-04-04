@@ -41,12 +41,11 @@ pub struct KeyboardAccessible<T>(PhantomData<T>);
 pub struct AccessibleAA<T>(PhantomData<T>);
 
 // Implement elicitation::contracts::Prop for each proposition when emit feature is enabled
-#[cfg(feature = "emit")]
 mod emit_impls {
     use super::*;
     use elicitation::contracts::Prop;
-    use proc_macro2::TokenStream;
-    use quote::quote;
+    use elicitation::proc_macro2::TokenStream;
+    use elicitation::quote::quote;
 
     impl<T: 'static> Prop for HasLabel<T> {
         fn kani_proof() -> TokenStream {

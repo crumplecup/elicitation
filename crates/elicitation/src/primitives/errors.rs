@@ -200,12 +200,10 @@ impl Elicitation for IoErrorGenerationMode {
         Ok(mode)
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_select_wrapper("IoErrorGenerationMode", "NotFound")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_select_wrapper(
             "IoErrorGenerationMode",
@@ -213,7 +211,6 @@ impl Elicitation for IoErrorGenerationMode {
         )
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_select_wrapper(
             "IoErrorGenerationMode",
@@ -274,17 +271,14 @@ impl Elicitation for io::Error {
         Ok(generator.generate())
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_trusted_opaque("io::Error")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_trusted_opaque("io::Error")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_trusted_opaque("io::Error")
     }
@@ -381,7 +375,6 @@ mod json_error {
             })
         }
 
-        #[cfg(feature = "proofs")]
         fn kani_proof() -> proc_macro2::TokenStream {
             crate::verification::proof_helpers::kani_select_wrapper(
                 "JsonErrorGenerationMode",
@@ -389,7 +382,6 @@ mod json_error {
             )
         }
 
-        #[cfg(feature = "proofs")]
         fn verus_proof() -> proc_macro2::TokenStream {
             crate::verification::proof_helpers::verus_select_wrapper(
                 "JsonErrorGenerationMode",
@@ -397,7 +389,6 @@ mod json_error {
             )
         }
 
-        #[cfg(feature = "proofs")]
         fn creusot_proof() -> proc_macro2::TokenStream {
             crate::verification::proof_helpers::creusot_select_wrapper(
                 "JsonErrorGenerationMode",
@@ -469,17 +460,14 @@ mod json_error {
             Ok(generator.generate())
         }
 
-        #[cfg(feature = "proofs")]
         fn kani_proof() -> proc_macro2::TokenStream {
             crate::verification::proof_helpers::kani_trusted_opaque("serde_json::Error")
         }
 
-        #[cfg(feature = "proofs")]
         fn verus_proof() -> proc_macro2::TokenStream {
             crate::verification::proof_helpers::verus_trusted_opaque("serde_json::Error")
         }
 
-        #[cfg(feature = "proofs")]
         fn creusot_proof() -> proc_macro2::TokenStream {
             crate::verification::proof_helpers::creusot_trusted_opaque("serde_json::Error")
         }

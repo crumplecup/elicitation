@@ -61,7 +61,6 @@
 //! cargo kani --harness verify_compositional_legos
 //! ```
 
-#[cfg(any(feature = "verification", kani))]
 use elicitation::Elicit;
 
 #[cfg(kani)]
@@ -83,7 +82,6 @@ use elicitation::Elicitation;
 // Layer 2: Derived Structs (Compositional Proofs)
 // ============================================================================
 
-#[cfg(any(feature = "verification", kani))]
 mod layer2 {
     use super::*;
 
@@ -97,7 +95,7 @@ mod layer2 {
     /// Note: In a real application, you would use contract types like U16NonZero
     /// and I32Positive. This example uses primitives for simplicity.
     #[allow(dead_code)]
-    #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+    #[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
     pub struct NetworkConfig {
         /// Network port.
         pub port: u16,
@@ -113,7 +111,7 @@ mod layer2 {
     /// - `max_retries`: u8 (primitive type, symbolically verifiable)
     /// - ⟹ AppMetadata is verified ∎
     #[allow(dead_code)]
-    #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+    #[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
     pub struct AppMetadata {
         /// Application name.
         pub name: String,
@@ -123,14 +121,12 @@ mod layer2 {
     }
 }
 
-#[cfg(any(feature = "verification", kani))]
 use layer2::{AppMetadata, NetworkConfig};
 
 // ============================================================================
 // Layer 3: Higher-Order Types (Nested Compositional Proofs)
 // ============================================================================
 
-#[cfg(any(feature = "verification", kani))]
 mod layer3 {
     use super::*;
     use elicitation::{Prompt, Select};
@@ -148,7 +144,7 @@ mod layer3 {
     /// 3. Layer 3 structs are proven by composition (ApplicationConfig)
     /// 4. ∴ The entire hierarchy is formally verified ∎
     #[allow(dead_code)]
-    #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+    #[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
     pub struct ApplicationConfig {
         /// Network settings (verified).
         pub network: NetworkConfig,
@@ -164,7 +160,7 @@ mod layer3 {
     /// - `Production`: Contains NetworkConfig (verified struct)
     /// - ⟹ DeploymentMode is verified ∎
     #[allow(dead_code)]
-    #[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+    #[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
     pub enum DeploymentMode {
         /// Development mode (no configuration needed).
         Development,
@@ -177,7 +173,6 @@ mod layer3 {
     }
 }
 
-#[cfg(any(feature = "verification", kani))]
 // Example types removed;
 
 // ============================================================================
@@ -284,20 +279,11 @@ fn main() {
     println!("The verification happens when you compile - no runtime needed!");
     println!();
 
-    #[cfg(any(feature = "verification", kani))]
     {
         println!("Verification features enabled - types are compositionally verified!");
         println!();
         println!("To witness the proofs:");
         println!("  cargo check --example compositional_verification --features verification");
         println!("  cargo kani --harness verify_compositional_legos");
-    }
-
-    #[cfg(not(any(feature = "verification", kani)))]
-    {
-        println!("Verification features NOT enabled.");
-        println!();
-        println!("To enable verification:");
-        println!("  cargo check --example compositional_verification --features verification");
     }
 }

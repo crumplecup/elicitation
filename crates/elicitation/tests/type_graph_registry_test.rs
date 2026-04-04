@@ -7,20 +7,20 @@ use elicitation::{
 
 // --- Test types ---
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct SimpleStruct {
     pub name: String,
     pub count: u32,
 }
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum SimpleEnum {
     Alpha,
     Beta,
     Gamma,
 }
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum MixedEnum {
     Unit,
     WithData(String),

@@ -100,7 +100,6 @@
 //! pub struct DbConnected;
 //!
 //! impl Prop for DbConnected {
-//!     #[cfg(feature = "proofs")]
 //!     fn kani_proof() -> elicitation::proc_macro2::TokenStream {
 //!         quote::quote! {
 //!             #[kani::proof]
@@ -241,7 +240,6 @@ pub trait VerifiedWorkflow: Prop {
     /// ```rust,ignore
     /// assert!(UrlParsed::validate_proofs_non_empty(), "UrlParsed proofs must be non-empty");
     /// ```
-    #[cfg(feature = "proofs")]
     fn validate_proofs_non_empty() -> bool {
         !Self::kani_proof().is_empty()
             && !Self::verus_proof().is_empty()
@@ -261,7 +259,6 @@ pub trait VerifiedWorkflow: Prop {
     /// assert!(PQ::kani_proof_contains::<UrlParsed>());
     /// assert!(PQ::kani_proof_contains::<HttpsRequired>());
     /// ```
-    #[cfg(feature = "proofs")]
     fn kani_proof_contains<Inner: Prop>() -> bool {
         let outer = Self::kani_proof().to_string();
         let inner = Inner::kani_proof().to_string();
@@ -269,7 +266,6 @@ pub trait VerifiedWorkflow: Prop {
     }
 
     /// Runtime check: does this proposition's Verus proof contain `Inner`'s?
-    #[cfg(feature = "proofs")]
     fn verus_proof_contains<Inner: Prop>() -> bool {
         let outer = Self::verus_proof().to_string();
         let inner = Inner::verus_proof().to_string();
@@ -277,7 +273,6 @@ pub trait VerifiedWorkflow: Prop {
     }
 
     /// Runtime check: does this proposition's Creusot proof contain `Inner`'s?
-    #[cfg(feature = "proofs")]
     fn creusot_proof_contains<Inner: Prop>() -> bool {
         let outer = Self::creusot_proof().to_string();
         let inner = Inner::creusot_proof().to_string();

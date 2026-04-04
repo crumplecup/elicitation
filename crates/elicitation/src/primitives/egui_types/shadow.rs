@@ -10,7 +10,15 @@ use crate::{
 ///
 /// The `offset` array is flattened to `offset_x` / `offset_y` for JSON ergonomics.
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
 )]
 pub struct EguiShadow {
     /// Horizontal offset (positive = right).
@@ -84,17 +92,14 @@ impl Elicitation for EguiShadow {
         })
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_composite_wrapper("EguiShadow")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_composite_wrapper("EguiShadow")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_composite_wrapper("EguiShadow")
     }

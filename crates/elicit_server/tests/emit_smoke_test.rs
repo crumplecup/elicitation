@@ -10,7 +10,6 @@
 //! - **Network tools**: emit → `cargo build` — proves the generated code
 //!   compiles correctly without requiring a live server.
 
-#[cfg(feature = "emit")]
 mod smoke {
     use elicitation::emit_code::BinaryScaffold;
     use std::path::PathBuf;

@@ -553,3 +553,268 @@ pub fn verify_builder_login_form() -> bool {
     let vp = elicit_ui::Viewport::new(1920, 1080);
     layout.verify_a(vp).is_ok()
 }
+
+// ── CssLength resolution proofs ──────────────────────────────────────────────
+
+/// Trusted axiom: Px(v) resolves to v directly.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_px_resolves_directly() -> bool {
+    let length = elicit_ui::CssLength::Px(42.0_f64);
+    length.to_px(16.0, 16.0, 1920.0, 1080.0, 100.0) == 42.0_f64
+}
+
+/// Trusted axiom: Em(v) resolves to v × font_size_px.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_em_resolution() -> bool {
+    let length = elicit_ui::CssLength::Em(1.5_f64);
+    // 1.5em at 16px font = 24px
+    length.to_px(16.0, 16.0, 1920.0, 1080.0, 100.0) == 24.0_f64
+}
+
+/// Trusted axiom: Rem(v) resolves to v × root_font_size_px.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_rem_resolution() -> bool {
+    let length = elicit_ui::CssLength::Rem(2.0_f64);
+    // 2rem at 16px root = 32px
+    length.to_px(16.0, 16.0, 1920.0, 1080.0, 100.0) == 32.0_f64
+}
+
+/// Trusted axiom: Vw(v) resolves to v × viewport_width / 100.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_vw_resolution() -> bool {
+    let length = elicit_ui::CssLength::Vw(50.0_f64);
+    // 50vw at 1920px viewport = 960px
+    length.to_px(16.0, 16.0, 1920.0, 1080.0, 100.0) == 960.0_f64
+}
+
+/// Trusted axiom: Vh(v) resolves to v × viewport_height / 100.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_vh_resolution() -> bool {
+    let length = elicit_ui::CssLength::Vh(100.0_f64);
+    // 100vh at 1080px viewport = 1080px
+    length.to_px(16.0, 16.0, 1920.0, 1080.0, 100.0) == 1080.0_f64
+}
+
+/// Trusted axiom: Percent(v) resolves to v × containing_block / 100.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_percent_resolution() -> bool {
+    let length = elicit_ui::CssLength::Percent(80.0_f64);
+    // 80% of 500px containing block = 400px
+    length.to_px(16.0, 16.0, 1920.0, 1080.0, 500.0) == 400.0_f64
+}
+
+/// Trusted axiom: only Px is NOT zoom-invariant.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_css_zoom_invariant_classification() -> bool {
+    !elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Px(16.0))
+        && elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Em(1.0))
+        && elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Rem(1.0))
+        && elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Vw(50.0))
+        && elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Vh(50.0))
+        && elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Percent(100.0))
+}
+
+// ── BoundingBox spatial proofs ───────────────────────────────────────────────
+
+/// Trusted axiom: right() = x + width for concrete values.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_bbox_right_concrete() -> bool {
+    let bbox = elicit_ui::BoundingBox::new(10.0, 20.0, 100.0, 50.0);
+    (bbox.right() - 110.0_f64).abs() < 1e-10
+}
+
+/// Trusted axiom: bottom() = y + height for concrete values.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_bbox_bottom_concrete() -> bool {
+    let bbox = elicit_ui::BoundingBox::new(10.0, 20.0, 100.0, 50.0);
+    (bbox.bottom() - 70.0_f64).abs() < 1e-10
+}
+
+/// Trusted axiom: 44x44 meets WCAG touch target.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_bbox_touch_target_met() -> bool {
+    let bbox = elicit_ui::BoundingBox::new(0.0, 0.0, 44.0, 44.0);
+    bbox.meets_touch_target()
+}
+
+/// Trusted axiom: 43x43 fails WCAG touch target.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_bbox_touch_target_failed() -> bool {
+    let bbox = elicit_ui::BoundingBox::new(0.0, 0.0, 43.0, 43.0);
+    !bbox.meets_touch_target()
+}
+
+/// Trusted axiom: small box within large viewport.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_bbox_within_viewport() -> bool {
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    let bbox = elicit_ui::BoundingBox::new(10.0, 10.0, 100.0, 50.0);
+    bbox.within_viewport(&vp)
+}
+
+/// Trusted axiom: box exceeding viewport width fails containment.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_bbox_exceeds_viewport() -> bool {
+    let vp = elicit_ui::Viewport::new(800, 600);
+    let bbox = elicit_ui::BoundingBox::new(0.0, 0.0, 801.0, 600.0);
+    !bbox.within_viewport(&vp)
+}
+
+// ── Contrast and constraint proofs ───────────────────────────────────────────
+
+/// Trusted axiom: identical colors have contrast ratio ~1.0.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_contrast_identical_is_one() -> bool {
+    let white = elicit_ui::SrgbColor::new(1.0, 1.0, 1.0);
+    let ratio = elicit_ui::contrast_ratio(&white, &white);
+    (ratio - 1.0_f32).abs() < 0.01
+}
+
+/// Trusted axiom: black on white has contrast ratio ~21.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_contrast_black_white_max() -> bool {
+    let black = elicit_ui::SrgbColor::new(0.0, 0.0, 0.0);
+    let white = elicit_ui::SrgbColor::new(1.0, 1.0, 1.0);
+    let ratio = elicit_ui::contrast_ratio(&black, &white);
+    ratio >= 20.0 && ratio <= 21.1
+}
+
+/// Trusted axiom: contrast ratio is symmetric.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_contrast_symmetric() -> bool {
+    let red = elicit_ui::SrgbColor::new(1.0, 0.0, 0.0);
+    let blue = elicit_ui::SrgbColor::new(0.0, 0.0, 1.0);
+    let r1 = elicit_ui::contrast_ratio(&red, &blue);
+    let r2 = elicit_ui::contrast_ratio(&blue, &red);
+    (r1 - r2).abs() < 0.01
+}
+
+/// Trusted axiom: contrast ratio >= 1.0 always.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_contrast_min_bound() -> bool {
+    let gray = elicit_ui::SrgbColor::new(0.5, 0.5, 0.5);
+    let ratio = elicit_ui::contrast_ratio(&gray, &gray);
+    ratio >= 1.0
+}
+
+/// Trusted axiom: SrgbColor::from_u8(255,...) yields ~1.0.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_srgb_from_u8_bounds() -> bool {
+    let white = elicit_ui::SrgbColor::from_u8(255, 255, 255);
+    let black = elicit_ui::SrgbColor::from_u8(0, 0, 0);
+    (white.r - 1.0_f32).abs() < 0.01 && black.r.abs() < 0.01
+}
+
+/// Trusted axiom: WcagLevel Display is correct.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_wcag_level_display() -> bool {
+    format!("{}", elicit_ui::WcagLevel::A) == "A"
+        && format!("{}", elicit_ui::WcagLevel::AA) == "AA"
+        && format!("{}", elicit_ui::WcagLevel::AAA) == "AAA"
+}
+
+// ── ConstraintProfile and typestate proofs ────────────────────────────────────
+
+/// Trusted axiom: WCAG A profile has 3 hard constraints.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_profile_a_count() -> bool {
+    elicit_ui::ConstraintProfile::WcagA
+        .to_constraint_set()
+        .hard_constraints()
+        .len()
+        == 3
+}
+
+/// Trusted axiom: WCAG AA profile has 4 hard constraints.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_profile_aa_count() -> bool {
+    elicit_ui::ConstraintProfile::WcagAA
+        .to_constraint_set()
+        .hard_constraints()
+        .len()
+        == 4
+}
+
+/// Trusted axiom: WCAG AAA profile has 5 hard constraints.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_profile_aaa_count() -> bool {
+    elicit_ui::ConstraintProfile::WcagAAA
+        .to_constraint_set()
+        .hard_constraints()
+        .len()
+        == 5
+}
+
+/// Trusted axiom: profile constraint counts are monotonically increasing.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_profile_monotonicity() -> bool {
+    let a = elicit_ui::ConstraintProfile::WcagA
+        .to_constraint_set()
+        .hard_constraints()
+        .len();
+    let aa = elicit_ui::ConstraintProfile::WcagAA
+        .to_constraint_set()
+        .hard_constraints()
+        .len();
+    let aaa = elicit_ui::ConstraintProfile::WcagAAA
+        .to_constraint_set()
+        .hard_constraints()
+        .len();
+    a < aa && aa < aaa
+}
+
+/// Trusted axiom: typestate markers are zero-sized.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_typestate_zero_sized() -> bool {
+    std::mem::size_of::<elicit_ui::Pending>() == 0
+        && std::mem::size_of::<elicit_ui::Verified>() == 0
+        && std::mem::size_of::<elicit_ui::Rendered>() == 0
+}

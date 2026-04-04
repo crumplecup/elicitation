@@ -5,6 +5,29 @@ use proc_macro2::TokenStream as TokenStream2;
 use quote::quote;
 use syn::{DeriveInput, Field, Fields, punctuated::Punctuated, token::Comma};
 
+/// Build a `where` clause that includes all existing predicates plus
+/// `T: elicitation::ElicitComplete` for every type parameter.
+fn elicit_complete_where(generics: &syn::Generics) -> TokenStream2 {
+    let existing: Vec<TokenStream2> = generics
+        .where_clause
+        .as_ref()
+        .map(|wc| wc.predicates.iter().map(|p| quote! { #p }).collect())
+        .unwrap_or_default();
+    let extra: Vec<TokenStream2> = generics
+        .type_params()
+        .map(|tp| {
+            let id = &tp.ident;
+            quote! { #id: elicitation::ElicitComplete }
+        })
+        .collect();
+    let all: Vec<TokenStream2> = existing.into_iter().chain(extra).collect();
+    if all.is_empty() {
+        quote! {}
+    } else {
+        quote! { where #(#all),* }
+    }
+}
+
 /// Expand #[derive(Elicit)] for structs.
 ///
 /// Generates implementations of:
@@ -122,21 +145,20 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
     let introspect_impl =
         generate_introspect_impl(name, &impl_generics, &ty_generics, &where_clause);
 
-    // Generate ElicitSpec impl (composed from field type specs + user attributes)
-    // Skip for generic structs: inventory::submit! cannot register generic types.
-    let elicit_spec_impl = if generics.params.is_empty() {
-        generate_elicit_spec_impl(
-            name,
-            &field_infos,
-            &spec_summary,
-            &struct_spec_requires,
-            &impl_generics,
-            &ty_generics,
-            &where_clause,
-        )
-    } else {
-        quote! {}
-    };
+    // Generate ElicitSpec impl (composed from field type specs + user attributes).
+    // For generic structs, emit the impl but skip inventory::submit! (can't register generic types).
+    let elicit_spec_impl = generate_elicit_spec_impl(
+        name,
+        &field_infos,
+        &spec_summary,
+        &struct_spec_requires,
+        &GenericsCtx {
+            impl_generics: &impl_generics,
+            ty_generics: &ty_generics,
+            where_clause: &where_clause,
+            emit_inventory: generics.params.is_empty(),
+        },
+    );
 
     // Generate TypeGraphKey submission for the structural registry.
     // Skip for generic structs (same reason as ElicitSpec).
@@ -163,6 +185,16 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
     #[cfg(not(feature = "prompt-tree"))]
     let prompt_tree_impl = quote! {};
 
+    let to_code_literal_impl = crate::derive_to_code_literal::generate_to_code_literal_impl(
+        name,
+        &input.data,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+
+    let elicit_complete_where = elicit_complete_where(&input.generics);
+
     let expanded = quote! {
         #prompt_impl
         #survey_impl
@@ -171,12 +203,12 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
         #elicit_spec_impl
         #graph_key_emission
         #prompt_tree_impl
+        #to_code_literal_impl
+        impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #elicit_complete_where {}
     };
 
     TokenStream::from(expanded)
 }
-
-/// Expand #[derive(Elicit)] for tuple structs (newtype and multi-field).
 ///
 /// Generates Survey-pattern implementations where each positional field gets
 /// the index string ("0", "1", ...) as its field name.  Construction uses
@@ -311,7 +343,18 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
         }
     };
 
-    let elicit_spec_impl = if generics.params.is_empty() {
+    let elicit_spec_impl = {
+        let inventory = if generics.params.is_empty() {
+            quote! {
+                elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
+                    #name_str,
+                    <#name as elicitation::ElicitSpec>::type_spec,
+                    std::any::TypeId::of::<#name>
+                ));
+            }
+        } else {
+            quote! {}
+        };
         quote! {
             impl elicitation::ElicitSpec for #name {
                 fn type_spec() -> elicitation::TypeSpec {
@@ -330,15 +373,8 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
                         .expect("valid TypeSpec")
                 }
             }
-
-            elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
-                #name_str,
-                <#name as elicitation::ElicitSpec>::type_spec,
-                std::any::TypeId::of::<#name>
-            ));
+            #inventory
         }
-    } else {
-        quote! {}
     };
 
     let graph_key_emission = if generics.params.is_empty() {
@@ -347,7 +383,33 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
         quote! {}
     };
 
-    #[cfg(feature = "proofs")]
+    // Generate ElicitPromptTree impl for tuple struct by creating synthetic FieldInfos
+    // with index-based names ("0", "1", ...) matching how Survey fields are named.
+    #[cfg(feature = "prompt-tree")]
+    let prompt_tree_impl = {
+        let tuple_field_infos: Vec<FieldInfo> = field_types
+            .iter()
+            .enumerate()
+            .map(|(i, ty)| FieldInfo {
+                ident: quote::format_ident!("_{}", i),
+                ty: (*ty).clone(),
+                default_prompt: None,
+                styled_prompts: std::collections::HashMap::new(),
+                spec_requires: vec![],
+            })
+            .collect();
+        generate_prompt_tree_impl_struct(
+            name,
+            &tuple_field_infos,
+            custom_prompt.as_deref(),
+            &impl_generics,
+            &ty_generics,
+            &where_clause,
+        )
+    };
+    #[cfg(not(feature = "prompt-tree"))]
+    let prompt_tree_impl = quote! {};
+
     let proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             let mut ts = elicitation::proc_macro2::TokenStream::new();
@@ -367,9 +429,6 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
             ts
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let proof_methods = quote! {};
-    #[cfg(feature = "proofs")]
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_single_variant_enum(
@@ -387,8 +446,6 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
             )
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let style_proof_methods = quote! {};
 
     let expanded = quote! {
         impl elicitation::Prompt for #name #ty_generics #where_clause {
@@ -461,12 +518,26 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
 
         #elicit_spec_impl
         #graph_key_emission
+        #prompt_tree_impl
     };
 
-    TokenStream::from(expanded)
+    let to_code_literal_impl = crate::derive_to_code_literal::generate_to_code_literal_impl(
+        name,
+        &input.data,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+
+    let elicit_complete_where = elicit_complete_where(&input.generics);
+
+    TokenStream::from(quote! {
+        #expanded
+        #to_code_literal_impl
+        impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #elicit_complete_where {}
+    })
 }
 
-/// Expand #[derive(Elicit)] for unit structs.
 ///
 /// Unit structs have exactly one value, so `elicit()` returns `Ok(Self)` immediately
 /// with no user interaction needed.
@@ -517,7 +588,18 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
         }
     };
 
-    let elicit_spec_impl = if generics.params.is_empty() {
+    let elicit_spec_impl = {
+        let inventory = if generics.params.is_empty() {
+            quote! {
+                elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
+                    #name_str,
+                    <#name as elicitation::ElicitSpec>::type_spec,
+                    std::any::TypeId::of::<#name>
+                ));
+            }
+        } else {
+            quote! {}
+        };
         quote! {
             impl elicitation::ElicitSpec for #name {
                 fn type_spec() -> elicitation::TypeSpec {
@@ -531,15 +613,8 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
                         .expect("valid TypeSpec")
                 }
             }
-
-            elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
-                #name_str,
-                <#name as elicitation::ElicitSpec>::type_spec,
-                std::any::TypeId::of::<#name>
-            ));
+            #inventory
         }
-    } else {
-        quote! {}
     };
 
     let graph_key_emission = if generics.params.is_empty() {
@@ -548,7 +623,6 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
         quote! {}
     };
 
-    #[cfg(feature = "proofs")]
     let proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_unit_struct(stringify!(#name))
@@ -562,9 +636,6 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
             elicitation::verification::proof_helpers::creusot_unit_struct(stringify!(#name))
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let proof_methods = quote! {};
-    #[cfg(feature = "proofs")]
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_single_variant_enum(
@@ -582,8 +653,6 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
             )
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let style_proof_methods = quote! {};
 
     let expanded = quote! {
         impl elicitation::Prompt for #name #ty_generics #where_clause {
@@ -657,7 +726,21 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
         #graph_key_emission
     };
 
-    TokenStream::from(expanded)
+    let to_code_literal_impl = crate::derive_to_code_literal::generate_to_code_literal_impl(
+        name,
+        &input.data,
+        &impl_generics,
+        &ty_generics,
+        &where_clause,
+    );
+
+    let elicit_complete_where = elicit_complete_where(&input.generics);
+
+    TokenStream::from(quote! {
+        #expanded
+        #to_code_literal_impl
+        impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #elicit_complete_where {}
+    })
 }
 
 /// Field information for code generation.
@@ -919,35 +1002,34 @@ fn generate_elicit_impl_simple(
         }
     };
 
-    #[cfg(feature = "proofs")]
-    let proof_methods = quote! {
-        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
-            #(
-                ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
-            )*
-            ts
-        }
+    let proof_methods = {
+        let wrapper_name_str = name.to_string();
+        quote! {
+            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::verification::proof_helpers::kani_newtype_wrapper_harness(#wrapper_name_str);
+                #(
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
+                )*
+                ts
+            }
 
-        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
-            #(
-                ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
-            )*
-            ts
-        }
+            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::verification::proof_helpers::verus_newtype_wrapper_harness(#wrapper_name_str);
+                #(
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
+                )*
+                ts
+            }
 
-        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
-            #(
-                ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
-            )*
-            ts
+            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::verification::proof_helpers::creusot_newtype_wrapper_harness(#wrapper_name_str);
+                #(
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
+                )*
+                ts
+            }
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let proof_methods = quote! {};
-    #[cfg(feature = "proofs")]
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_single_variant_enum(
@@ -965,8 +1047,6 @@ fn generate_elicit_impl_simple(
             )
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let style_proof_methods = quote! {};
 
     quote! {
         /// Style enum for this type (default-only).
@@ -1202,37 +1282,35 @@ fn generate_elicit_impl_styled(
         }
     };
 
-    #[cfg(feature = "proofs")]
     let elicited_types: Vec<_> = elicited_fields.iter().map(|info| &info.ty).collect();
-    #[cfg(feature = "proofs")]
-    let proof_methods = quote! {
-        fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
-            #(
-                ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
-            )*
-            ts
-        }
+    let proof_methods = {
+        let wrapper_name_str = name.to_string();
+        quote! {
+            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::verification::proof_helpers::kani_newtype_wrapper_harness(#wrapper_name_str);
+                #(
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
+                )*
+                ts
+            }
 
-        fn verus_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
-            #(
-                ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
-            )*
-            ts
-        }
+            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::verification::proof_helpers::verus_newtype_wrapper_harness(#wrapper_name_str);
+                #(
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::verus_proof());
+                )*
+                ts
+            }
 
-        fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
-            let mut ts = elicitation::proc_macro2::TokenStream::new();
-            #(
-                ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
-            )*
-            ts
+            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+                let mut ts = elicitation::verification::proof_helpers::creusot_newtype_wrapper_harness(#wrapper_name_str);
+                #(
+                    ts.extend(<#elicited_types as elicitation::Elicitation>::creusot_proof());
+                )*
+                ts
+            }
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let proof_methods = quote! {};
-    #[cfg(feature = "proofs")]
     let style_proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
             elicitation::verification::proof_helpers::kani_single_variant_enum(
@@ -1250,8 +1328,6 @@ fn generate_elicit_impl_styled(
             )
         }
     };
-    #[cfg(not(feature = "proofs"))]
-    let style_proof_methods = quote! {};
 
     // Generate enum with first variant as default
     let default_variant = &style_variants[0];
@@ -1405,6 +1481,14 @@ fn capitalize_first(s: &str) -> String {
     }
 }
 
+/// Generics context passed to impl generators.
+struct GenericsCtx<'a> {
+    impl_generics: &'a syn::ImplGenerics<'a>,
+    ty_generics: &'a syn::TypeGenerics<'a>,
+    where_clause: &'a Option<&'a syn::WhereClause>,
+    emit_inventory: bool,
+}
+
 /// Generate `ElicitSpec` impl for a derived struct.
 ///
 /// The composed spec has:
@@ -1418,10 +1502,12 @@ fn generate_elicit_spec_impl(
     field_infos: &[FieldInfo],
     spec_summary: &Option<String>,
     struct_spec_requires: &[String],
-    impl_generics: &syn::ImplGenerics,
-    ty_generics: &syn::TypeGenerics,
-    where_clause: &Option<&syn::WhereClause>,
+    ctx: &GenericsCtx<'_>,
 ) -> TokenStream2 {
+    let impl_generics = ctx.impl_generics;
+    let ty_generics = ctx.ty_generics;
+    let where_clause = ctx.where_clause;
+    let emit_inventory = ctx.emit_inventory;
     let name_str = name.to_string();
     let field_count = field_infos.len();
 
@@ -1525,7 +1611,7 @@ fn generate_elicit_spec_impl(
         }
     };
 
-    quote! {
+    let spec_impl = quote! {
         impl #impl_generics elicitation::ElicitSpec for #name #ty_generics #where_clause {
             fn type_spec() -> elicitation::TypeSpec {
                 let mut categories: Vec<elicitation::SpecCategory> = Vec::new();
@@ -1548,13 +1634,21 @@ fn generate_elicit_spec_impl(
                     .expect("valid TypeSpec")
             }
         }
+    };
 
-        elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
-            #name_str,
-            <#name #ty_generics as elicitation::ElicitSpec>::type_spec,
-            std::any::TypeId::of::<#name #ty_generics>
-        ));
-    }
+    let inventory_submit = if emit_inventory {
+        quote! {
+            elicitation::inventory::submit!(elicitation::TypeSpecInventoryKey::new(
+                #name_str,
+                <#name #ty_generics as elicitation::ElicitSpec>::type_spec,
+                std::any::TypeId::of::<#name #ty_generics>
+            ));
+        }
+    } else {
+        quote! {}
+    };
+
+    quote! { #spec_impl #inventory_submit }
 }
 
 /// Emit an `inventory::submit!` call registering this struct in the

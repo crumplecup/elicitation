@@ -19,7 +19,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(creusot)', 'cfg(kani)'] }
 creusot-std = { workspace = true }
 
 # Import the contract types from main crate
-elicitation = { workspace = true, features = ["verification"] }
+elicitation = { workspace = true }
 
 # External dependencies needed by proofs (feature-gated)
 uuid = { workspace = true, optional = true }
@@ -33,6 +33,9 @@ clap = { workspace = true, optional = true }
 sqlx = { workspace = true, optional = true }
 egui = { workspace = true, optional = true }
 paste = { workspace = true, optional = true }
+ratatui = { workspace = true, optional = true }
+geo-types = { workspace = true, optional = true }
+palette = { workspace = true, optional = true }
 elicit_ui = { workspace = true, optional = true }
 accesskit = { workspace = true, optional = true }
 
@@ -52,4 +55,7 @@ clap-types = ["dep:clap", "elicitation/clap-types"]
 sqlx-types = ["dep:sqlx", "elicitation/sqlx-types"]
 tokio-types = []
 egui-types = ["dep:egui", "dep:paste", "elicitation/egui-types"]
+ratatui-types = ["dep:ratatui", "dep:paste", "elicitation/ratatui"]
+geo-types = ["dep:geo-types", "elicitation/geo-types"]
+palette = ["dep:palette", "elicitation/palette"]
 ui-types = ["dep:elicit_ui", "dep:accesskit"]

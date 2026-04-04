@@ -82,7 +82,7 @@ use elicitation::Elicitation;
 ///
 /// In a real application, you would use contract types like
 /// `U16NonZero` and `I32Positive` from elicitation.
-#[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct NetworkConfig {
     /// Network port.
     pub port: u16,
@@ -97,7 +97,7 @@ pub struct NetworkConfig {
 /// - `name`: String (primitive, no contract needed for demo)
 /// - `max_retries`: u8 (primitive, no contract needed for demo)
 /// - ⟹ AppMetadata is verified ∎
-#[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct AppMetadata {
     /// Application name.
     pub name: String,
@@ -122,7 +122,7 @@ pub struct AppMetadata {
 /// 2. Layer 2 structs are proven by composition (NetworkConfig, AppMetadata)
 /// 3. Layer 3 structs are proven by composition (ApplicationConfig)
 /// 4. ∴ The entire hierarchy is formally verified ∎
-#[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct ApplicationConfig {
     /// Network settings (verified).
     pub network: NetworkConfig,
@@ -137,7 +137,7 @@ pub struct ApplicationConfig {
 /// - `Development`: Unit variant (trivially verified)
 /// - `Production`: Contains NetworkConfig (verified struct)
 /// - ⟹ DeploymentMode is verified ∎
-#[derive(Debug, Clone, Elicit, schemars::JsonSchema)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum DeploymentMode {
     /// Development mode (no configuration needed).
     Development,

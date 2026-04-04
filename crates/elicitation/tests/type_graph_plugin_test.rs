@@ -5,7 +5,7 @@ use elicitation::{Elicit, Prompt, Select, TypeGraphPlugin};
 
 // --- Test types ---
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum Suit {
     Hearts,
     Diamonds,
@@ -13,7 +13,7 @@ pub enum Suit {
     Spades,
 }
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct Card {
     pub suit: Suit,
     pub value: u8,

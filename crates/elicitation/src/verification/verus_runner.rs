@@ -245,6 +245,213 @@ impl VerusProof {
             Self::new("ui_types", "verify_builder_all_containers"),
             Self::new("ui_types", "verify_builder_id_uniqueness"),
             Self::new("ui_types", "verify_builder_composite_form"),
+            // ratatui_types: select enum proofs
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_alignment_known_label_accepted",
+            ),
+            Self::new("ratatui_types", "verify_ratatui_alignment_unknown_rejected"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_alignment_roundtrip_complete",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_alignment_label_count_matches",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_direction_known_label_accepted",
+            ),
+            Self::new("ratatui_types", "verify_ratatui_direction_unknown_rejected"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_direction_roundtrip_complete",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_direction_label_count_matches",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_border_type_known_label_accepted",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_border_type_unknown_rejected",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_border_type_roundtrip_complete",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_border_type_label_count_matches",
+            ),
+            Self::new("ratatui_types", "verify_ratatui_color_known_label_accepted"),
+            Self::new("ratatui_types", "verify_ratatui_color_unknown_rejected"),
+            Self::new("ratatui_types", "verify_ratatui_color_roundtrip_complete"),
+            Self::new("ratatui_types", "verify_ratatui_color_label_count_matches"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_borders_known_label_accepted",
+            ),
+            Self::new("ratatui_types", "verify_ratatui_borders_unknown_rejected"),
+            Self::new("ratatui_types", "verify_ratatui_borders_roundtrip_complete"),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_borders_label_count_matches",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_scrollbar_orientation_known_label_accepted",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_scrollbar_orientation_unknown_rejected",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_scrollbar_orientation_roundtrip_complete",
+            ),
+            Self::new(
+                "ratatui_types",
+                "verify_ratatui_scrollbar_orientation_label_count_matches",
+            ),
+            // ratatui_types: composite struct proofs (shadow types)
+            Self::new("ratatui_types", "verify_ratatui_padding_roundtrip"),
+            Self::new("ratatui_types", "verify_ratatui_padding_concrete"),
+            Self::new("ratatui_types", "verify_ratatui_margin_roundtrip"),
+            Self::new("ratatui_types", "verify_ratatui_margin_concrete"),
+            Self::new("ratatui_types", "verify_ratatui_style_modifiers"),
+            Self::new("ratatui_types", "verify_ratatui_style_colors"),
+            Self::new("ratatui_types", "verify_borders_select_roundtrip"),
+            // geo_types: shadow struct proofs
+            Self::new("geo_types", "verify_geo_coord_roundtrip"),
+            Self::new("geo_types", "verify_geo_coord_concrete"),
+            Self::new("geo_types", "verify_geo_rect_roundtrip"),
+            Self::new("geo_types", "verify_geo_rect_concrete"),
+            Self::new("geo_types", "verify_geo_rect_well_formed"),
+            Self::new("geo_types", "verify_geo_line_roundtrip"),
+            Self::new("geo_types", "verify_geo_line_concrete"),
+            Self::new("geo_types", "verify_geo_line_degenerate"),
+            // palette_types: shadow struct proofs
+            Self::new("palette_types", "verify_palette_srgb_roundtrip"),
+            Self::new("palette_types", "verify_palette_srgb_concrete"),
+            Self::new("palette_types", "verify_palette_srgb_black"),
+            Self::new("palette_types", "verify_palette_srgb_white"),
+            Self::new("palette_types", "verify_palette_srgb_red"),
+            Self::new("palette_types", "verify_palette_srgb_green"),
+            Self::new("palette_types", "verify_palette_srgb_blue"),
+            Self::new("palette_types", "verify_palette_srgb_independence"),
+            // egui_types: select enum proofs
+            Self::new("egui_types", "verify_align_known_label_accepted"),
+            Self::new("egui_types", "verify_align_unknown_rejected"),
+            Self::new("egui_types", "verify_align_roundtrip_complete"),
+            Self::new("egui_types", "verify_align_label_count_matches"),
+            Self::new("egui_types", "verify_direction_known_label_accepted"),
+            Self::new("egui_types", "verify_direction_unknown_rejected"),
+            Self::new("egui_types", "verify_direction_roundtrip_complete"),
+            Self::new("egui_types", "verify_direction_label_count_matches"),
+            Self::new("egui_types", "verify_theme_known_label_accepted"),
+            Self::new("egui_types", "verify_theme_unknown_rejected"),
+            Self::new("egui_types", "verify_theme_roundtrip_complete"),
+            Self::new("egui_types", "verify_theme_label_count_matches"),
+            Self::new("egui_types", "verify_theme_preference_known_label_accepted"),
+            Self::new("egui_types", "verify_theme_preference_unknown_rejected"),
+            Self::new("egui_types", "verify_theme_preference_roundtrip_complete"),
+            Self::new("egui_types", "verify_theme_preference_label_count_matches"),
+            Self::new("egui_types", "verify_font_family_known_label_accepted"),
+            Self::new("egui_types", "verify_font_family_unknown_rejected"),
+            Self::new("egui_types", "verify_font_family_roundtrip_complete"),
+            Self::new("egui_types", "verify_font_family_label_count_matches"),
+            Self::new("egui_types", "verify_text_wrap_mode_known_label_accepted"),
+            Self::new("egui_types", "verify_text_wrap_mode_unknown_rejected"),
+            Self::new("egui_types", "verify_text_wrap_mode_roundtrip_complete"),
+            Self::new("egui_types", "verify_text_wrap_mode_label_count_matches"),
+            Self::new("egui_types", "verify_texture_filter_known_label_accepted"),
+            Self::new("egui_types", "verify_texture_filter_unknown_rejected"),
+            Self::new("egui_types", "verify_texture_filter_roundtrip_complete"),
+            Self::new("egui_types", "verify_texture_filter_label_count_matches"),
+            Self::new(
+                "egui_types",
+                "verify_texture_wrap_mode_known_label_accepted",
+            ),
+            Self::new("egui_types", "verify_texture_wrap_mode_unknown_rejected"),
+            Self::new("egui_types", "verify_texture_wrap_mode_roundtrip_complete"),
+            Self::new("egui_types", "verify_texture_wrap_mode_label_count_matches"),
+            Self::new("egui_types", "verify_touch_phase_known_label_accepted"),
+            Self::new("egui_types", "verify_touch_phase_unknown_rejected"),
+            Self::new("egui_types", "verify_touch_phase_roundtrip_complete"),
+            Self::new("egui_types", "verify_touch_phase_label_count_matches"),
+            Self::new("egui_types", "verify_pointer_button_known_label_accepted"),
+            Self::new("egui_types", "verify_pointer_button_unknown_rejected"),
+            Self::new("egui_types", "verify_pointer_button_roundtrip_complete"),
+            Self::new("egui_types", "verify_pointer_button_label_count_matches"),
+            Self::new("egui_types", "verify_order_known_label_accepted"),
+            Self::new("egui_types", "verify_order_unknown_rejected"),
+            Self::new("egui_types", "verify_order_roundtrip_complete"),
+            Self::new("egui_types", "verify_order_label_count_matches"),
+            Self::new("egui_types", "verify_text_style_known_label_accepted"),
+            Self::new("egui_types", "verify_text_style_unknown_rejected"),
+            Self::new("egui_types", "verify_text_style_roundtrip_complete"),
+            Self::new("egui_types", "verify_text_style_label_count_matches"),
+            Self::new("egui_types", "verify_ui_kind_known_label_accepted"),
+            Self::new("egui_types", "verify_ui_kind_unknown_rejected"),
+            Self::new("egui_types", "verify_ui_kind_roundtrip_complete"),
+            Self::new("egui_types", "verify_ui_kind_label_count_matches"),
+            Self::new("egui_types", "verify_widget_type_known_label_accepted"),
+            Self::new("egui_types", "verify_widget_type_unknown_rejected"),
+            Self::new("egui_types", "verify_widget_type_roundtrip_complete"),
+            Self::new("egui_types", "verify_widget_type_label_count_matches"),
+            Self::new("egui_types", "verify_cursor_icon_known_label_accepted"),
+            Self::new("egui_types", "verify_cursor_icon_unknown_rejected"),
+            Self::new("egui_types", "verify_cursor_icon_roundtrip_complete"),
+            Self::new("egui_types", "verify_cursor_icon_label_count_matches"),
+            Self::new("egui_types", "verify_key_known_label_accepted"),
+            Self::new("egui_types", "verify_key_unknown_rejected"),
+            Self::new("egui_types", "verify_key_roundtrip_complete"),
+            Self::new("egui_types", "verify_key_label_count_matches"),
+            // egui_types: composite struct proofs (shadow types)
+            Self::new("egui_types", "verify_color32_roundtrip"),
+            Self::new("egui_types", "verify_color32_concrete"),
+            Self::new("egui_types", "verify_corner_radius_roundtrip"),
+            Self::new("egui_types", "verify_corner_radius_concrete"),
+            Self::new("egui_types", "verify_margin_roundtrip"),
+            Self::new("egui_types", "verify_margin_concrete"),
+            // egui_types: float-field composites (boolean stubs)
+            Self::new("egui_types", "verify_pos2_roundtrip"),
+            Self::new("egui_types", "verify_vec2_roundtrip"),
+            Self::new("egui_types", "verify_rect_roundtrip"),
+            Self::new("egui_types", "verify_stroke_roundtrip"),
+            Self::new("egui_types", "verify_shadow_roundtrip"),
+            Self::new("egui_types", "verify_font_id_roundtrip"),
+            // ui_types: CssLength shadow proofs
+            Self::new("ui_types", "verify_css_px_not_zoom_invariant"),
+            Self::new("ui_types", "verify_css_em_zoom_invariant"),
+            Self::new("ui_types", "verify_css_rem_zoom_invariant"),
+            Self::new("ui_types", "verify_css_vw_zoom_invariant"),
+            Self::new("ui_types", "verify_css_vh_zoom_invariant"),
+            Self::new("ui_types", "verify_css_percent_zoom_invariant"),
+            // ui_types: BoundingBox / LayoutMode shadow proofs
+            Self::new("ui_types", "verify_layout_mode_default_is_block"),
+            Self::new("ui_types", "verify_bbox_touch_target_44x44"),
+            Self::new("ui_types", "verify_bbox_touch_target_43x43"),
+            Self::new("ui_types", "verify_bbox_touch_target_large"),
+            Self::new("ui_types", "verify_bbox_within_viewport"),
+            Self::new("ui_types", "verify_bbox_exceeds_viewport"),
+            // ui_types: WCAG contrast threshold proofs
+            Self::new("ui_types", "verify_contrast_aa_normal_threshold"),
+            Self::new("ui_types", "verify_contrast_aa_large_threshold"),
+            Self::new("ui_types", "verify_contrast_aaa_normal_threshold"),
+            Self::new("ui_types", "verify_contrast_aaa_large_threshold"),
+            Self::new("ui_types", "verify_aaa_stricter_than_aa_normal"),
+            Self::new("ui_types", "verify_aaa_stricter_than_aa_large"),
+            // ui_types: ConstraintProfile shadow proofs
+            Self::new("ui_types", "verify_profile_a_count"),
+            Self::new("ui_types", "verify_profile_aa_count"),
+            Self::new("ui_types", "verify_profile_aaa_count"),
+            Self::new("ui_types", "verify_profile_monotonicity"),
         ]
     }
 }
@@ -457,11 +664,9 @@ pub fn run_all_proofs(
         println!("📂 Loading existing results...");
         let mut reader = Reader::from_path(output_csv)
             .with_context(|| format!("Failed to read CSV: {}", output_csv.display()))?;
-        for result in reader.deserialize::<VerusProofResult>() {
-            if let Ok(result) = result {
-                if result.is_success() {
-                    completed_proofs.insert(format!("{}::{}", result.module(), result.proof()));
-                }
+        for result in reader.deserialize::<VerusProofResult>().flatten() {
+            if result.is_success() {
+                completed_proofs.insert(format!("{}::{}", result.module(), result.proof()));
             }
         }
         println!("   Found {} completed proofs", completed_proofs.len());

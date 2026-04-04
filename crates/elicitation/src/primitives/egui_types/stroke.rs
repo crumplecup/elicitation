@@ -8,7 +8,14 @@ use crate::{
 
 /// Line stroke (wrapper for `egui::Stroke`).
 #[derive(
-    Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
 )]
 pub struct EguiStroke {
     /// Stroke width in points.
@@ -53,17 +60,14 @@ impl Elicitation for EguiStroke {
         Ok(Self { width, color })
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_composite_wrapper("EguiStroke")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_composite_wrapper("EguiStroke")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_composite_wrapper("EguiStroke")
     }

@@ -118,3 +118,90 @@ impl Regex {
         regex::Regex::new(pattern).ok().map(Into::into)
     }
 }
+
+// ── Elicitation framework traits ─────────────────────────────────────────────
+
+impl elicitation::Prompt for Regex {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter a regular expression pattern (e.g. ^[a-z]+$):")
+    }
+}
+
+impl elicitation::Elicitation for Regex {
+    type Style = ();
+
+    async fn elicit<C: elicitation::ElicitCommunicator>(
+        communicator: &C,
+    ) -> elicitation::ElicitResult<Self> {
+        let response = communicator
+            .send_prompt("Enter a regular expression pattern (e.g. ^[a-z]+$):")
+            .await?;
+        let inner = regex::Regex::new(&response).map_err(|e| {
+            elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(format!(
+                "Invalid regex pattern: {e}"
+            )))
+        })?;
+        Ok(Self(Arc::new(inner)))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        elicitation::verification::proof_helpers::kani_trusted_opaque("Regex")
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        elicitation::verification::proof_helpers::verus_trusted_opaque("Regex")
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        elicitation::verification::proof_helpers::creusot_trusted_opaque("Regex")
+    }
+}
+
+impl elicitation::ElicitIntrospect for Regex {
+    fn pattern() -> elicitation::ElicitationPattern {
+        elicitation::ElicitationPattern::Primitive
+    }
+    fn metadata() -> elicitation::TypeMetadata {
+        elicitation::TypeMetadata {
+            type_name: "Regex",
+            description: <Self as elicitation::Prompt>::prompt(),
+            details: elicitation::PatternDetails::Primitive,
+        }
+    }
+}
+
+impl elicitation::ElicitPromptTree for Regex {
+    fn prompt_tree() -> elicitation::PromptTree {
+        elicitation::PromptTree::Leaf {
+            prompt: "Regex".to_string(),
+            type_name: "Regex".to_string(),
+        }
+    }
+}
+
+impl elicitation::ElicitSpec for Regex {
+    fn type_spec() -> elicitation::TypeSpec {
+        elicitation::TypeSpecBuilder::default()
+            .type_name("Regex".to_string())
+            .summary("A compiled regular expression pattern.".to_string())
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+
+mod emit_impls {
+    use super::Regex;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for Regex {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.0.as_str().to_string();
+            quote::quote! {
+                ::elicit_regex::Regex::from(
+                    ::regex::Regex::new(#s).expect("valid regex")
+                )
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for Regex {}

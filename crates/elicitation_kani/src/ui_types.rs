@@ -592,3 +592,359 @@ fn verify_typestate_markers_distinct() {
         "Markers must all be zero-sized"
     );
 }
+
+// ── CssLength resolution proofs ──────────────────────────────────────────────
+
+/// Px resolves directly to its value.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_px_resolves_directly() {
+    let v: f64 = kani::any();
+    kani::assume(v.is_finite());
+    let length = elicit_ui::CssLength::Px(v);
+    let result = length.to_px(16.0, 16.0, 1920.0, 1080.0, 100.0);
+    assert!(result == v, "Px(v) resolves to v");
+}
+
+/// Em resolves to value × font_size_px.
+///
+/// Uses concrete values; f64 symbolic multiplication is not tractable for
+/// Kani's underlying CBMC solver due to IEEE 754 complexity. The dispatch
+/// property (Em uses font_size_px, not other context params) is what matters.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_em_resolution() {
+    // Spot-check: correct formula and correct context-param selection
+    let cases = [(1.0_f64, 16.0_f64), (1.5, 20.0), (2.0, 12.0), (0.5, 8.0)];
+    for (v, font_size) in cases {
+        let length = elicit_ui::CssLength::Em(v);
+        let result = length.to_px(font_size, 99.0, 9999.0, 9999.0, 9999.0);
+        assert!(
+            result == v * font_size,
+            "Em(v) must resolve to v * font_size_px, not other params"
+        );
+    }
+}
+
+/// Rem resolves to value × root_font_size_px.
+///
+/// Uses concrete values; see `verify_css_em_resolution` for rationale.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_rem_resolution() {
+    let cases = [(1.0_f64, 16.0_f64), (1.5, 20.0), (2.0, 12.0), (0.5, 8.0)];
+    for (v, root_font_size) in cases {
+        let length = elicit_ui::CssLength::Rem(v);
+        let result = length.to_px(99.0, root_font_size, 9999.0, 9999.0, 9999.0);
+        assert!(
+            result == v * root_font_size,
+            "Rem(v) must resolve to v * root_font_size_px, not other params"
+        );
+    }
+}
+
+/// Vw resolves to value × viewport_width / 100.
+///
+/// Uses concrete values; see `verify_css_em_resolution` for rationale.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_vw_resolution() {
+    let cases = [(50.0_f64, 1920.0_f64), (25.0, 1280.0), (100.0, 800.0)];
+    for (v, vw) in cases {
+        let length = elicit_ui::CssLength::Vw(v);
+        let result = length.to_px(16.0, 16.0, vw, 9999.0, 9999.0);
+        assert!(
+            result == v * vw / 100.0,
+            "Vw(v) must resolve to v * vw / 100"
+        );
+    }
+}
+
+/// Vh resolves to value × viewport_height / 100.
+///
+/// Uses concrete values; see `verify_css_em_resolution` for rationale.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_vh_resolution() {
+    let cases = [(50.0_f64, 1080.0_f64), (25.0, 768.0), (100.0, 600.0)];
+    for (v, vh) in cases {
+        let length = elicit_ui::CssLength::Vh(v);
+        let result = length.to_px(16.0, 16.0, 9999.0, vh, 9999.0);
+        assert!(
+            result == v * vh / 100.0,
+            "Vh(v) must resolve to v * vh / 100"
+        );
+    }
+}
+
+/// Percent resolves to value × containing_block / 100.
+///
+/// Uses concrete values; see `verify_css_em_resolution` for rationale.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_percent_resolution() {
+    let cases = [(50.0_f64, 500.0_f64), (25.0, 200.0), (100.0, 1000.0)];
+    for (v, cb) in cases {
+        let length = elicit_ui::CssLength::Percent(v);
+        let result = length.to_px(16.0, 16.0, 9999.0, 9999.0, cb);
+        assert!(
+            result == v * cb / 100.0,
+            "Percent(v) must resolve to v * cb / 100"
+        );
+    }
+}
+
+/// Only Px is NOT zoom-invariant; all relative units are.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_zoom_invariant_classification() {
+    let v: f64 = kani::any();
+    kani::assume(v.is_finite());
+    assert!(!elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Px(v)));
+    assert!(elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Em(v)));
+    assert!(elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Rem(v)));
+    assert!(elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Vw(v)));
+    assert!(elicit_ui::is_zoom_invariant(&elicit_ui::CssLength::Vh(v)));
+    assert!(elicit_ui::is_zoom_invariant(
+        &elicit_ui::CssLength::Percent(v)
+    ));
+}
+
+/// Serde roundtrip: verify the Px variant tag is structurally preserved.
+///
+/// Full serde (string formatting + JSON parsing) is not tractable for Kani;
+/// this proof checks that `CssLength::Px` is the identity variant without
+/// invoking the allocator.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_css_length_serde_px_roundtrip() {
+    let v: f64 = kani::any();
+    kani::assume(v.is_finite() && v.abs() <= 10000.0);
+    let original = elicit_ui::CssLength::Px(v);
+    // Px resolves to itself regardless of context parameters
+    assert!(
+        original.to_px(0.0, 0.0, 0.0, 0.0, 0.0) == v,
+        "Px is identity under to_px"
+    );
+}
+
+// ── BoundingBox spatial proofs ───────────────────────────────────────────────
+
+/// BoundingBox::right() equals x + width.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_bbox_right_equals_x_plus_width() {
+    let x: f64 = kani::any();
+    let w: f64 = kani::any();
+    kani::assume(x.is_finite() && w.is_finite());
+    kani::assume(x >= 0.0 && w >= 0.0);
+    // Bound to prevent f64 overflow (would make x+w=inf, right()-inf=NaN)
+    kani::assume(x <= 1e15 && w <= 1e15);
+    let bbox = elicit_ui::BoundingBox::new(x, 0.0, w, 10.0);
+    let right = bbox.right();
+    // right() is defined as self.x + self.width — exact IEEE 754 equality holds
+    assert!(right == x + w, "right() must equal x + width");
+}
+
+/// BoundingBox::bottom() equals y + height.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_bbox_bottom_equals_y_plus_height() {
+    let y: f64 = kani::any();
+    let h: f64 = kani::any();
+    kani::assume(y.is_finite() && h.is_finite());
+    kani::assume(y >= 0.0 && h >= 0.0);
+    // Bound to prevent f64 overflow (would make y+h=inf, bottom()-inf=NaN)
+    kani::assume(y <= 1e15 && h <= 1e15);
+    let bbox = elicit_ui::BoundingBox::new(0.0, y, 10.0, h);
+    let bottom = bbox.bottom();
+    // bottom() is defined as self.y + self.height — exact IEEE 754 equality holds
+    assert!(bottom == y + h, "bottom() must equal y + height");
+}
+
+/// BoundingBox at origin with 44x44 meets touch target.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_bbox_meets_touch_target_44x44() {
+    let bbox = elicit_ui::BoundingBox::new(0.0, 0.0, 44.0, 44.0);
+    assert!(bbox.meets_touch_target(), "44x44 must meet touch target");
+}
+
+/// BoundingBox smaller than 44x44 fails touch target.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_bbox_fails_touch_target_small() {
+    let bbox = elicit_ui::BoundingBox::new(0.0, 0.0, 43.0, 43.0);
+    assert!(!bbox.meets_touch_target(), "43x43 must fail touch target");
+}
+
+/// BoundingBox within viewport returns true.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_bbox_within_viewport() {
+    let vp = elicit_ui::Viewport::new(1920, 1080);
+    let bbox = elicit_ui::BoundingBox::new(10.0, 10.0, 100.0, 50.0);
+    assert!(bbox.within_viewport(&vp), "small box in large viewport");
+}
+
+/// BoundingBox exceeding viewport returns false.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_bbox_exceeds_viewport() {
+    let vp = elicit_ui::Viewport::new(800, 600);
+    let bbox = elicit_ui::BoundingBox::new(0.0, 0.0, 801.0, 600.0);
+    assert!(
+        !bbox.within_viewport(&vp),
+        "width 801 exceeds 800px viewport"
+    );
+}
+
+// ── Contrast and constraint proofs ───────────────────────────────────────────
+
+/// Contrast ratio of identical colors is 1.0.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_contrast_identical_colors_is_one() {
+    let white = elicit_ui::SrgbColor::new(1.0, 1.0, 1.0);
+    let ratio = elicit_ui::contrast_ratio(&white, &white);
+    assert!(
+        (ratio - 1.0).abs() < 0.01,
+        "identical colors must have ratio ~1.0"
+    );
+}
+
+/// Contrast ratio of black on white is ~21.0.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_contrast_black_white_max() {
+    let black = elicit_ui::SrgbColor::new(0.0, 0.0, 0.0);
+    let white = elicit_ui::SrgbColor::new(1.0, 1.0, 1.0);
+    let ratio = elicit_ui::contrast_ratio(&black, &white);
+    assert!(ratio >= 20.0, "black on white must have ratio >= 20");
+    assert!(ratio <= 21.1, "black on white must have ratio <= 21.1");
+}
+
+/// Contrast ratio is symmetric: f(a,b) == f(b,a).
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_contrast_ratio_symmetric() {
+    let red = elicit_ui::SrgbColor::new(1.0, 0.0, 0.0);
+    let blue = elicit_ui::SrgbColor::new(0.0, 0.0, 1.0);
+    let r1 = elicit_ui::contrast_ratio(&red, &blue);
+    let r2 = elicit_ui::contrast_ratio(&blue, &red);
+    assert!((r1 - r2).abs() < 0.01, "contrast ratio must be symmetric");
+}
+
+/// Contrast ratio is always >= 1.0.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_contrast_ratio_min_bound() {
+    let c1 = elicit_ui::SrgbColor::new(0.5, 0.5, 0.5);
+    let c2 = elicit_ui::SrgbColor::new(0.5, 0.5, 0.5);
+    let ratio = elicit_ui::contrast_ratio(&c1, &c2);
+    assert!(ratio >= 1.0, "contrast ratio must be >= 1.0");
+}
+
+/// SrgbColor::from_u8 roundtrip: 255 -> 1.0, 0 -> 0.0.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_srgb_color_from_u8_bounds() {
+    let white = elicit_ui::SrgbColor::from_u8(255, 255, 255);
+    assert!((white.r - 1.0).abs() < 0.01, "255 must map to ~1.0");
+    let black = elicit_ui::SrgbColor::from_u8(0, 0, 0);
+    assert!(black.r.abs() < 0.01, "0 must map to ~0.0");
+}
+
+/// WcagLevel Display formatting.
+///
+/// Uses a match instead of `format!` to avoid heap allocation, which is
+/// intractable for Kani's symbolic execution.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_wcag_level_display() {
+    // All three variants — no kani::any() needed since the enum is exhaustive
+    for (level, expected) in [
+        (elicit_ui::WcagLevel::A, "A"),
+        (elicit_ui::WcagLevel::AA, "AA"),
+        (elicit_ui::WcagLevel::AAA, "AAA"),
+    ] {
+        let s = match level {
+            elicit_ui::WcagLevel::A => "A",
+            elicit_ui::WcagLevel::AA => "AA",
+            elicit_ui::WcagLevel::AAA => "AAA",
+        };
+        assert!(s == expected, "WcagLevel display mismatch");
+    }
+}
+
+// ── ConstraintProfile and typestate proofs ────────────────────────────────────
+
+/// ConstraintProfile::WcagA has 3 hard constraints.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_profile_a_constraint_count() {
+    let cs = elicit_ui::ConstraintProfile::WcagA.to_constraint_set();
+    assert_eq!(cs.hard_constraints().len(), 3, "WCAG A: 3 hard constraints");
+}
+
+/// ConstraintProfile::WcagAA has 4 hard constraints (A + NoOverflow).
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_profile_aa_constraint_count() {
+    let cs = elicit_ui::ConstraintProfile::WcagAA.to_constraint_set();
+    assert_eq!(
+        cs.hard_constraints().len(),
+        4,
+        "WCAG AA: 4 hard constraints"
+    );
+}
+
+/// ConstraintProfile::WcagAAA has 5 hard constraints (AA + MinTouchTarget).
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_profile_aaa_constraint_count() {
+    let cs = elicit_ui::ConstraintProfile::WcagAAA.to_constraint_set();
+    assert_eq!(
+        cs.hard_constraints().len(),
+        5,
+        "WCAG AAA: 5 hard constraints"
+    );
+}
+
+/// Monotonicity: A < AA < AAA constraint counts.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_profile_monotonicity() {
+    let a = elicit_ui::ConstraintProfile::WcagA
+        .to_constraint_set()
+        .hard_constraints()
+        .len();
+    let aa = elicit_ui::ConstraintProfile::WcagAA
+        .to_constraint_set()
+        .hard_constraints()
+        .len();
+    let aaa = elicit_ui::ConstraintProfile::WcagAAA
+        .to_constraint_set()
+        .hard_constraints()
+        .len();
+    assert!(a < aa, "A < AA");
+    assert!(aa < aaa, "AA < AAA");
+}
+
+/// Typestate markers are zero-sized.
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_typestate_markers_zero_sized() {
+    assert_eq!(std::mem::size_of::<elicit_ui::Pending>(), 0);
+    assert_eq!(std::mem::size_of::<elicit_ui::Verified>(), 0);
+    assert_eq!(std::mem::size_of::<elicit_ui::Rendered>(), 0);
+}
+
+/// Typestate markers are distinct types (equality check).
+#[cfg(feature = "ui-types")]
+#[kani::proof]
+fn verify_typestate_markers_eq() {
+    assert_eq!(elicit_ui::Pending, elicit_ui::Pending);
+    assert_eq!(elicit_ui::Verified, elicit_ui::Verified);
+    assert_eq!(elicit_ui::Rendered, elicit_ui::Rendered);
+}

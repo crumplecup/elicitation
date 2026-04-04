@@ -1,7 +1,5 @@
 //! `VerifiedWorkflow` validation tests for elicit_tokio propositions.
 
-#![cfg(feature = "proofs")]
-
 use elicit_tokio::{
     BarrierReached, BytesCopied, ChannelClosed, ConnectionAccepted, CtrlCReceived, DataReceived,
     DirCreated, DuplexCreated, FileRead, FileWritten, ListenerBound, MessageReceived, MessageSent,

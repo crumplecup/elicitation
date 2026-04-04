@@ -43,3 +43,22 @@ impl JsonNumber {
         self.0.to_string()
     }
 }
+
+mod emit_impls {
+    use super::JsonNumber;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for JsonNumber {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = self.0.to_string();
+            quote::quote! {
+                ::elicit_serde_json::JsonNumber::from(
+                    ::serde_json::from_str::<::serde_json::Number>(#s).expect("valid JSON number")
+                )
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for JsonNumber {}

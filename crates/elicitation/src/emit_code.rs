@@ -886,6 +886,19 @@ impl<T: ToCodeLiteral> ToCodeLiteral for Vec<T> {
     }
 }
 
+impl<T: ToCodeLiteral, const N: usize> ToCodeLiteral for [T; N] {
+    fn type_tokens() -> TokenStream {
+        let t = <T as ToCodeLiteral>::type_tokens();
+        let n = proc_macro2::Literal::usize_suffixed(N);
+        quote::quote! { [#t; #n] }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let elements: Vec<_> = self.iter().map(|e| e.to_code_literal()).collect();
+        quote::quote! { [#(#elements),*] }
+    }
+}
+
 impl<V: ToCodeLiteral> ToCodeLiteral for std::collections::HashMap<String, V> {
     fn type_tokens() -> TokenStream {
         let v = <V as ToCodeLiteral>::type_tokens();
@@ -903,6 +916,32 @@ impl<V: ToCodeLiteral> ToCodeLiteral for std::collections::HashMap<String, V> {
         quote::quote! {
             [#(#entries),*].into_iter().collect::<::std::collections::HashMap<_, _>>()
         }
+    }
+}
+
+impl<T: ToCodeLiteral> ToCodeLiteral for Box<T> {
+    fn type_tokens() -> TokenStream {
+        let inner = <T as ToCodeLiteral>::type_tokens();
+        quote::quote! { ::std::boxed::Box<#inner> }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let inner = (**self).to_code_literal();
+        quote::quote! { ::std::boxed::Box::new(#inner) }
+    }
+}
+
+impl<A: ToCodeLiteral, B: ToCodeLiteral> ToCodeLiteral for (A, B) {
+    fn type_tokens() -> TokenStream {
+        let a = <A as ToCodeLiteral>::type_tokens();
+        let b = <B as ToCodeLiteral>::type_tokens();
+        quote::quote! { (#a, #b) }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let a = self.0.to_code_literal();
+        let b = self.1.to_code_literal();
+        quote::quote! { (#a, #b) }
     }
 }
 
@@ -993,3 +1032,46 @@ impl ToCodeLiteral for reqwest::StatusCode {
         EmitCode::emit_code(self)
     }
 }
+
+// ── Atomic types ─────────────────────────────────────────────────────────────
+
+/// Generate `ToCodeLiteral` for an atomic type by loading the current value
+/// and emitting `::std::sync::atomic::Atomic*::new(value)`.
+macro_rules! impl_atomic_to_code_literal {
+    ($($atomic:ident => $prim:ty),+ $(,)?) => {
+        $(
+            impl ToCodeLiteral for ::std::sync::atomic::$atomic {
+                fn to_code_literal(&self) -> TokenStream {
+                    use ::std::sync::atomic::Ordering;
+                    let val = self.load(Ordering::SeqCst);
+                    let val_lit = <$prim as ToCodeLiteral>::to_code_literal(&val);
+                    let ty: TokenStream =
+                        concat!("::std::sync::atomic::", stringify!($atomic))
+                            .parse()
+                            .expect("valid atomic type path");
+                    quote::quote! { #ty::new(#val_lit) }
+                }
+
+                fn type_tokens() -> TokenStream {
+                    concat!("::std::sync::atomic::", stringify!($atomic))
+                        .parse()
+                        .expect("valid atomic type path")
+                }
+            }
+        )+
+    };
+}
+
+impl_atomic_to_code_literal!(
+    AtomicBool => bool,
+    AtomicI8 => i8,
+    AtomicI16 => i16,
+    AtomicI32 => i32,
+    AtomicI64 => i64,
+    AtomicIsize => isize,
+    AtomicU8 => u8,
+    AtomicU16 => u16,
+    AtomicU32 => u32,
+    AtomicU64 => u64,
+    AtomicUsize => usize,
+);

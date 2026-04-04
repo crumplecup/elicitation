@@ -16,6 +16,7 @@ use crate::{
     serde::Serialize,
     serde::Deserialize,
     schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral,
 )]
 pub struct EguiCornerRadius {
     /// North-west (top-left) radius.
@@ -79,17 +80,14 @@ impl Elicitation for EguiCornerRadius {
         Ok(Self { nw, ne, sw, se })
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::kani_composite_wrapper("EguiCornerRadius")
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::verus_composite_wrapper("EguiCornerRadius")
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         crate::verification::proof_helpers::creusot_composite_wrapper("EguiCornerRadius")
     }

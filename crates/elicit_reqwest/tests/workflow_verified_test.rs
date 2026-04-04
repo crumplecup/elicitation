@@ -1,7 +1,5 @@
 //! `VerifiedWorkflow` validation tests for elicit_reqwest propositions.
 
-#![cfg(feature = "proofs")]
-
 use elicit_reqwest::{Authorized, RequestCompleted, StatusSuccess, UrlValid};
 use elicitation::VerifiedWorkflow;
 use elicitation::contracts::And;

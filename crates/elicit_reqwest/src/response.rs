@@ -23,6 +23,43 @@ impl Serialize for Response {
     }
 }
 
+/// Deserialize from `{"status": u16, "url": str}` snapshot fields.
+///
+/// `reqwest::Response` has no public constructor, so this reconstructs a
+/// minimal placeholder via `http::Response`. The response body is always empty.
+impl<'de> serde::Deserialize<'de> for Response {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(serde::Deserialize)]
+        struct Snapshot {
+            status: u16,
+            _url: Option<String>,
+        }
+        let snap = Snapshot::deserialize(deserializer)?;
+        let status = http::StatusCode::from_u16(snap.status).map_err(serde::de::Error::custom)?;
+        let inner = reqwest::Response::from(
+            http::Response::builder()
+                .status(status)
+                .body(bytes::Bytes::new())
+                .map_err(serde::de::Error::custom)?,
+        );
+        Ok(Response(std::sync::Arc::new(inner)))
+    }
+}
+
+impl elicitation::ElicitComplete for Response {}
+
+mod emit_impls {
+    use super::Response;
+    use elicitation::emit_code::ToCodeLiteral;
+    use elicitation::proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for Response {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { { unimplemented!("reqwest::Response cannot be reconstructed as a code literal") } }
+        }
+    }
+}
+
 #[reflect_methods]
 impl Response {
     /// Returns the HTTP status code as a `u16`.

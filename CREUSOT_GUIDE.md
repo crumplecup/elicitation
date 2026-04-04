@@ -3,7 +3,7 @@
 This guide covers how to run, extend, and understand the Creusot formal
 verification proof suite for `elicitation`.
 
-**Current status: 243 SMT goals proved** across 12 de-trusting batches. The
+**Current status: 281 SMT goals proved** across 13 de-trusting batches. The
 proof suite began as all-`#[trusted]` scaffolding and has been progressively
 strengthened so that Alt-Ergo/cvc5 discharge real proof obligations for the
 majority of contract types. See [Current Status](#current-status) for the
@@ -421,7 +421,7 @@ PATH. The `just status` recipe reports whether Creusot is available.
 
 ## The De-Trusting Strategy
 
-The proof suite evolved through 11 batches from all-`#[trusted]` scaffolding to
+The proof suite evolved through 13 batches from all-`#[trusted]` scaffolding to
 real SMT proofs. The core technique: use `extern_spec!` blocks as **trusted
 axioms** about constructor behavior, then remove `#[trusted]` from the
 `verify_*` witness functions so the solver discharges real obligations.
@@ -509,17 +509,172 @@ witnesses based on non-empty literals (`"hello"`, `"short"`, etc.) remain
 
 ---
 
+## Foreign Type Composite Proofs
+
+Third-party crates (egui, ratatui) define types whose internals are opaque
+to Creusot — the solver cannot see through dependency function bodies. To
+verify our `From` wrapper logic, we use a **three-layer trusted surface**
+pattern that minimises what is axiomatically trusted while enabling real
+SMT-verified proofs.
+
+### The Three Layers
+
+```text
+Layer 1: Logic accessors   — model field access in the logic domain
+Layer 2: Extern specs /    — link constructors to logic accessors
+         trusted ctors
+Layer 3: Bridge functions  — connect runtime reads to logic accessors
+```
+
+#### Layer 1: Logic Accessors
+
+`#[logic(opaque)]` functions that represent field access purely in Pearlite.
+The solver treats them as uninterpreted functions — it knows they exist but
+cannot inspect their bodies.
+
+```rust
+#[trusted]
+#[logic(opaque)]
+pub fn padding_left(_p: ratatui::layout::Padding) -> u16 {
+    dead
+}
+```
+
+One accessor per field. Return type matches the field type (`u16`, `u8`,
+`i8`, etc.).
+
+#### Layer 2: Constructor Contracts
+
+For types with named constructor functions (e.g., `Padding::new()`), use
+`extern_spec!` to axiomatise the constructor:
+
+```rust
+extern_spec! {
+    impl ratatui::layout::Padding {
+        #[ensures(padding_left(result) == left
+               && padding_right(result) == right
+               && padding_top(result) == top
+               && padding_bottom(result) == bottom)]
+        fn new(left: u16, right: u16, top: u16, bottom: u16) -> Self;
+    }
+}
+```
+
+For types constructed via **struct literals** (no constructor function),
+Creusot cannot reason about foreign struct field assignment. Use a trusted
+constructor wrapper instead:
+
+```rust
+#[trusted]
+#[ensures(corner_radius_nw(result) == nw && corner_radius_ne(result) == ne
+       && corner_radius_sw(result) == sw && corner_radius_se(result) == se)]
+pub fn make_corner_radius(nw: u8, ne: u8, sw: u8, se: u8) -> egui::CornerRadius {
+    egui::CornerRadius { nw, ne, sw, se }
+}
+```
+
+#### Layer 3: Bridge Functions
+
+Trusted program functions that connect runtime field reads to logic
+accessors. These allow verified proof functions to read fields and have the
+solver reason about the result.
+
+```rust
+#[trusted]
+#[ensures(padding_left(*p) == result)]
+pub fn read_padding_left(p: &ratatui::layout::Padding) -> u16 {
+    p.left
+}
+```
+
+Key: bridge functions take `&T` references, but logic accessors take values.
+Use `*p` (dereference) in the `#[ensures]` clause to match types.
+
+### Non-Trusted Proof Functions
+
+With all three layers in place, the actual proof functions need **no**
+`#[trusted]` annotation — the SMT solver verifies them:
+
+```rust
+/// Prove Padding roundtrip: construct → read fields → reconstruct.
+#[requires(true)]
+#[ensures(padding_left(result) == left && padding_right(result) == right
+       && padding_top(result) == top && padding_bottom(result) == bottom)]
+pub fn verify_ratatui_padding_roundtrip(
+    left: u16, right: u16, top: u16, bottom: u16,
+) -> ratatui::layout::Padding {
+    let original = ratatui::layout::Padding::new(left, right, top, bottom);
+    let l = read_padding_left(&original);
+    let r = read_padding_right(&original);
+    let t = read_padding_top(&original);
+    let b = read_padding_bottom(&original);
+    ratatui::layout::Padding::new(l, r, t, b)
+}
+```
+
+The proof **inlines** the wrapper logic (field reads + constructor calls)
+instead of calling `From::from()`, because `From::from()` is an external
+function call that Creusot cannot see through.
+
+### Type Comparison in Ensures
+
+- Logic accessors return the program type (e.g., `u16`), not `Int`
+- Comparing two values of the same type: `padding_left(result) == left` ✓
+- Comparing logic result to an integer literal: `padding_left(result)@ == 1`
+  ✓ (use `@` to convert both sides to `Int`)
+- Bridge functions: `#[ensures(padding_left(*p) == result)]` — both `u16`,
+  no `@` needed
+
+### What Can Be Non-Trusted
+
+| Field type | Can de-trust? | Reason |
+|-----------|---------------|--------|
+| `u8`, `u16`, `u32`, `u64` | ✅ Yes | Integer fields fully supported |
+| `i8`, `i16`, `i32`, `i64` | ✅ Yes | Signed integers supported |
+| `f32`, `f64` | ❌ No | No `OrdLogic`, float comparison opaque |
+| `String`, `&str` | ❌ No | `str::view()` opaque |
+| Bitflags | ❌ No | `contains()` is opaque |
+
+### Currently Verified Foreign Composites
+
+| Type | Fields | Goals | Notes |
+|------|--------|-------|-------|
+| ratatui `Padding` | `u16` ×4 | 8 | `Padding::new()` via extern_spec |
+| ratatui `Margin` | `u16` ×2 | 6 | `Margin::new()` via extern_spec |
+| egui `Color32` | `u8` ×4 | 8 | `from_rgba_unmultiplied()` via extern_spec |
+| egui `CornerRadius` | `u8` ×4 | 8 | Struct literal via trusted ctor |
+| egui `Margin` | `i8` ×4 | 8 | Struct literal via trusted ctor |
+| **Total** | | **38** | |
+
+### Creusot Caching Gotcha
+
+Creusot uses its own target directory (`target/creusot/`), separate from the
+regular cargo target. When modifying proof source files, `.coma` files may
+not regenerate due to stale fingerprints. Force recompilation:
+
+```bash
+rm -rf target/creusot/debug/.fingerprint/elicitation_creusot-*
+rm -rf target/creusot/debug/deps/libelicitation_creusot*
+cargo creusot -- -p elicitation_creusot --features <feature>
+```
+
+`cargo clean -p elicitation_creusot` only cleans the **regular** target,
+not the Creusot target. Always delete fingerprints manually when debugging
+missing `.coma` files.
+
+---
+
 ## Current Status
 
 | Metric | Value |
 |--------|-------|
-| Total modules | 28 |
-| Passing (compilation) | 28 ✅ |
-| SMT goals proved | **243** |
-| De-trusting batches | 11 |
+| Total modules | 32 |
+| Passing (compilation) | 32 ✅ |
+| SMT goals proved | **281** |
+| De-trusting batches | 13 |
 | Creusot version | 0.10.x |
 
-All 28 modules compile. 240 proof obligations are now discharged by Alt-Ergo
+All 32 modules compile. 281 proof obligations are now discharged by Alt-Ergo
 rather than accepted on trust.
 
 ### Proved modules (real SMT proofs)
@@ -543,6 +698,8 @@ rather than accepted on trust.
 | `collections` | partial | Box/Arc/Rc/Array proved; HashMap/BTree/LinkedList trusted |
 | `strings` | partial | `String::new()` invalid case proved; literals opaque |
 | `tuples` | ✅ all | All `#[ensures(true)]` — trivially proved |
+| `ratatui_types` | partial | Padding/Margin roundtrip+concrete proved (14 goals); select enums, Style, Borders trusted (string/bitflag opacity) |
+| `egui_types` | partial | Color32/CornerRadius/Margin roundtrip+concrete proved (24 goals); float composites, select enums trusted |
 
 ### Hard walls (remain `#[trusted]`)
 
@@ -558,6 +715,8 @@ rather than accepted on trust.
 | `values.rs` | 6 | `serde_json::Value` discriminant — no Why3 model |
 | `uuids.rs` | 4 | `Uuid::parse_str` is opaque |
 | `strings.rs` | 3 | Non-empty string literals — `str::view()` opaque |
+| `ratatui_types.rs` | 28 | Select enum string roundtrips, Style/Modifier bitflags, Borders |
+| `egui_types.rs` | ~60 | Select enum string roundtrips, float-field composites (Pos2, Vec2, Rect, Stroke, Shadow, FontId) |
 | `clap_types.rs` | 16 | String literal opacity + third-party builder types (see below) |
 | `sqlx_types.rs` | 9 | String literal opacity (roundtrips/rejection) + `#[non_exhaustive]` `From` totality; label_count proofs de-trusted |
 

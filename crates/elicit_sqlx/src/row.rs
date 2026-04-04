@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use elicitation::{ColumnDescriptor, ColumnEntry, ColumnValue, RowData, SqlTypeKind};
 use elicitation_derive::reflect_methods;
+use serde::{Deserialize, Serialize};
 use sqlx::Column as _;
 use sqlx_core::any::{AnyValue, AnyValueKind};
 use tracing::instrument;
@@ -124,6 +125,101 @@ impl AnyRow {
         RowData::new(columns)
     }
 }
+
+impl Serialize for AnyRow {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.to_row_data().serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for AnyRow {
+    fn deserialize<D: serde::Deserializer<'de>>(_d: D) -> Result<Self, D::Error> {
+        Err(serde::de::Error::custom(
+            "sqlx::any::AnyRow cannot be reconstructed from JSON",
+        ))
+    }
+}
+
+// ── Elicitation framework traits ─────────────────────────────────────────────
+
+impl elicitation::Prompt for AnyRow {
+    fn prompt() -> Option<&'static str> {
+        None
+    }
+}
+
+impl elicitation::Elicitation for AnyRow {
+    type Style = ();
+
+    async fn elicit<C: elicitation::ElicitCommunicator>(
+        _communicator: &C,
+    ) -> elicitation::ElicitResult<Self> {
+        Err(elicitation::ElicitError::new(
+            elicitation::ElicitErrorKind::ParseError(
+                "AnyRow cannot be interactively elicited".to_string(),
+            ),
+        ))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        elicitation::verification::proof_helpers::kani_trusted_opaque("AnyRow")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        elicitation::verification::proof_helpers::verus_trusted_opaque("AnyRow")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        elicitation::verification::proof_helpers::creusot_trusted_opaque("AnyRow")
+    }
+}
+
+impl elicitation::ElicitIntrospect for AnyRow {
+    fn pattern() -> elicitation::ElicitationPattern {
+        elicitation::ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> elicitation::TypeMetadata {
+        elicitation::TypeMetadata {
+            type_name: "AnyRow",
+            description: None,
+            details: elicitation::PatternDetails::Primitive,
+        }
+    }
+}
+
+impl elicitation::ElicitPromptTree for AnyRow {
+    fn prompt_tree() -> elicitation::PromptTree {
+        elicitation::PromptTree::Leaf {
+            prompt: "AnyRow".to_string(),
+            type_name: "AnyRow".to_string(),
+        }
+    }
+}
+
+impl elicitation::ElicitSpec for AnyRow {
+    fn type_spec() -> elicitation::TypeSpec {
+        elicitation::TypeSpecBuilder::default()
+            .type_name("AnyRow".to_string())
+            .summary("Elicitation-enabled newtype wrapper around `sqlx::any::AnyRow`.".to_string())
+            .build()
+            .expect("valid TypeSpec")
+    }
+}
+
+mod emit_impls {
+    use super::AnyRow;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for AnyRow {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { { unimplemented!("AnyRow cannot be reconstructed as a code literal") } }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for AnyRow {}
 
 /// Converts a raw [`AnyValue`] directly to our serializable [`ColumnValue`].
 ///

@@ -64,14 +64,32 @@ impl ElicitCommunicator for MockCommunicator {
 }
 
 // Test enums
-#[derive(Debug, Clone, Copy, PartialEq, elicitation::Elicit)]
+#[derive(
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    elicitation::Elicit,
+)]
 enum SimpleEnum {
     First,
     Second,
     Third,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, elicitation::Elicit)]
+#[derive(
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    elicitation::Elicit,
+)]
 #[prompt("Choose a color:")]
 enum ColorEnum {
     Red,

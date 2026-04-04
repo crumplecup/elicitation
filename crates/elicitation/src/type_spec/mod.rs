@@ -20,6 +20,7 @@
 //! ```
 
 mod accesskit_specs;
+mod atomics;
 mod bool_contracts;
 mod char_contracts;
 mod clap_specs;
@@ -29,10 +30,13 @@ mod datetime_specs;
 mod egui_specs;
 mod elicit_spec;
 mod float_contracts;
+mod geo_specs;
 mod http_specs;
 mod integer_contracts;
 mod integers;
 mod network_specs;
+mod palette_specs;
+mod ratatui_specs;
 mod regex_specs;
 mod registry;
 mod scalars;

@@ -2,12 +2,12 @@
 
 use elicitation::{Elicit, collect_all_elicit_tools};
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct _TestConfig {
     _name: String,
 }
 
-#[derive(Debug, Clone, Elicit)]
+#[derive(Debug, Clone, Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 struct _TestUser {
     _id: u32,
 }

@@ -34,3 +34,36 @@ impl AnyColumn {
         self.0.type_info().name().to_string()
     }
 }
+
+impl serde::Serialize for AnyColumn {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap;
+        let mut map = serializer.serialize_map(Some(3))?;
+        map.serialize_entry("ordinal", &self.ordinal())?;
+        map.serialize_entry("name", &self.name())?;
+        map.serialize_entry("type_name", &self.type_name())?;
+        map.end()
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for AnyColumn {
+    fn deserialize<D: serde::Deserializer<'de>>(_d: D) -> Result<Self, D::Error> {
+        Err(serde::de::Error::custom(
+            "sqlx_core::any::AnyColumn cannot be reconstructed from JSON",
+        ))
+    }
+}
+
+mod emit_impls {
+    use super::AnyColumn;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for AnyColumn {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { { unimplemented!("AnyColumn cannot be reconstructed as a code literal") } }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for AnyColumn {}

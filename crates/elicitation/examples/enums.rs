@@ -11,7 +11,17 @@ use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation, Prompt, Selec
 use rmcp::ServiceExt;
 
 /// Simple enum with default prompt
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Elicit,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
 enum Priority {
     Low,
     Medium,
@@ -20,7 +30,17 @@ enum Priority {
 }
 
 /// Enum with custom prompt
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Elicit,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
 #[prompt("Choose your preferred programming language:")]
 enum Language {
     Rust,
@@ -31,7 +51,17 @@ enum Language {
 }
 
 /// Enum for status tracking
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Elicit)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Elicit,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
 #[prompt("What is the current status?")]
 enum Status {
     Pending,

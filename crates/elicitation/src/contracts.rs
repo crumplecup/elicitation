@@ -302,7 +302,6 @@
 //! - [Examples](../../examples): Complete working examples
 //! - [Kani verification](https://model-checking.github.io/kani/): How we verify properties
 
-#[cfg(feature = "proofs")]
 use proc_macro2;
 use std::marker::PhantomData;
 
@@ -329,7 +328,6 @@ pub trait Prop: 'static {
     /// zero-cost marker propositions.
     ///
     /// Available with the `proofs` feature.
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream;
 
     /// Generate a Verus proof for this proposition.
@@ -339,7 +337,6 @@ pub trait Prop: 'static {
     /// use `#[derive(Prop)]` for trivial marker propositions.
     ///
     /// Available with the `proofs` feature.
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream;
 
     /// Generate a Creusot contract proof for this proposition.
@@ -349,7 +346,6 @@ pub trait Prop: 'static {
     /// default — use `#[derive(Prop)]` for trivial marker propositions.
     ///
     /// Available with the `proofs` feature.
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream;
 }
 
@@ -461,19 +457,33 @@ impl<P: Prop + crate::Elicitation> crate::Elicitation for Established<P> {
         Ok(Established::assert())
     }
 
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
+    }
+}
+
+/// `Established<P>` is a zero-sized proof token — re-asserting it in emitted
+/// code is safe because the token carries no runtime state. The emitted call
+/// `Established::<P>::assert()` is identical to the original construction.
+impl<P: Prop + 'static> crate::emit_code::ToCodeLiteral for Established<P> {
+    fn type_tokens() -> proc_macro2::TokenStream {
+        let p: proc_macro2::TokenStream = std::any::type_name::<P>()
+            .parse()
+            .unwrap_or_else(|_| quote::quote! { _ });
+        quote::quote! { ::elicitation::Established<#p> }
+    }
+
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let ty = <Self as crate::emit_code::ToCodeLiteral>::type_tokens();
+        quote::quote! { <#ty>::assert() }
     }
 }
 
@@ -488,6 +498,36 @@ impl<P: Prop> crate::ElicitPromptTree for Established<P> {
             prompt: String::new(),
             type_name: "Established".to_string(),
         }
+    }
+}
+
+/// `Established<P>` is a zero-sized proof token. Serialization is trivial —
+/// the token carries no runtime state, so it round-trips through any format
+/// as a unit value. Deserializing reconstructs the token via `assert()`,
+/// which is safe because the surrounding serialized state already encodes the
+/// invariant that P holds (e.g. the bet balance is present in the ledger).
+#[cfg(feature = "serde")]
+impl<P: Prop> serde::Serialize for Established<P> {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_unit()
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, P: Prop> serde::Deserialize<'de> for Established<P> {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        <()>::deserialize(deserializer)?;
+        Ok(Self::assert())
+    }
+}
+
+impl<P: Prop + 'static> schemars::JsonSchema for Established<P> {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        "EstablishedProof".into()
+    }
+
+    fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({ "type": "null" })
     }
 }
 
@@ -513,17 +553,14 @@ pub struct Is<T> {
 }
 
 impl<T: 'static> Prop for Is<T> {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -598,21 +635,18 @@ pub struct And<P: Prop, Q: Prop> {
 }
 
 impl<P: Prop, Q: Prop> Prop for And<P, Q> {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = P::kani_proof();
         ts.extend(Q::kani_proof());
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         let mut ts = P::verus_proof();
         ts.extend(Q::verus_proof());
         ts
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         let mut ts = P::creusot_proof();
         ts.extend(Q::creusot_proof());
@@ -800,17 +834,14 @@ pub struct InVariant<E, V> {
 }
 
 impl<E: 'static, V: 'static> Prop for InVariant<E, V> {
-    #[cfg(feature = "proofs")]
     fn kani_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn verus_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
 
-    #[cfg(feature = "proofs")]
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
     }
@@ -868,33 +899,27 @@ mod tests {
         struct WeakProp;
 
         impl Prop for StrongProp {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
         }
         impl Prop for WeakProp {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
@@ -912,33 +937,27 @@ mod tests {
         struct _PropB;
 
         impl Prop for _PropA {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
         }
         impl Prop for _PropB {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
@@ -954,33 +973,27 @@ mod tests {
         struct P;
         struct Q;
         impl Prop for P {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
         }
         impl Prop for Q {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
@@ -996,33 +1009,27 @@ mod tests {
         struct P;
         struct Q;
         impl Prop for P {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
         }
         impl Prop for Q {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
@@ -1037,33 +1044,27 @@ mod tests {
         struct P;
         struct Q;
         impl Prop for P {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
         }
         impl Prop for Q {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
@@ -1078,33 +1079,27 @@ mod tests {
         struct P;
         struct Q;
         impl Prop for P {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
         }
         impl Prop for Q {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
@@ -1121,33 +1116,27 @@ mod tests {
         struct P;
         struct Q;
         impl Prop for P {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
         }
         impl Prop for Q {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
@@ -1163,49 +1152,40 @@ mod tests {
         struct Q;
         struct R;
         impl Prop for P {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
         }
         impl Prop for Q {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
         }
         impl Prop for R {
-            #[cfg(feature = "proofs")]
             fn kani_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn verus_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
 
-            #[cfg(feature = "proofs")]
             fn creusot_proof() -> proc_macro2::TokenStream {
                 proc_macro2::TokenStream::new()
             }
