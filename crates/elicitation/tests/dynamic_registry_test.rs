@@ -199,3 +199,136 @@ async fn reinstantiation_is_idempotent() {
         .count();
     assert_eq!(count, 1, "re-instantiation should not duplicate tools");
 }
+
+// ── ContextualFactory tests ────────────────────────────────────────────────────
+
+use elicitation::ContextualFactory;
+use serde_json::json;
+
+struct BetConstraints {
+    min: u64,
+    max: u64,
+    presets: Vec<u64>,
+}
+
+struct BetAmountFactory;
+
+impl ContextualFactory for BetAmountFactory {
+    type Context = BetConstraints;
+
+    fn instantiate(
+        &self,
+        prefix: &str,
+        ctx: &BetConstraints,
+    ) -> Result<Vec<DynamicToolDescriptor>, ErrorData> {
+        let mut tools = vec![];
+        let min = ctx.min;
+        let max = ctx.max;
+        let name = format!("{prefix}__place");
+        tools.push(DynamicToolDescriptor {
+            name: name.clone(),
+            description: format!("Place a bet between {min} and {max}"),
+            schema: json!({
+                "type": "object",
+                "properties": {
+                    "amount": { "type": "integer", "minimum": min, "maximum": max }
+                },
+                "required": ["amount"]
+            }),
+            handler: Arc::new(move |args: serde_json::Value| {
+                Box::pin(async move {
+                    let amount = args["amount"].as_u64().unwrap_or(0);
+                    if amount < min || amount > max {
+                        return Err(ErrorData::invalid_params("amount out of range", None));
+                    }
+                    Ok(rmcp::model::CallToolResult::success(vec![
+                        rmcp::model::Content::text(format!("bet {amount}"))
+                    ]))
+                })
+            }),
+        });
+        for &preset in ctx.presets.iter().filter(|&&p| p <= ctx.max) {
+            let pname = format!("{prefix}__preset_{preset}");
+            tools.push(DynamicToolDescriptor {
+                name: pname,
+                description: format!("Place preset bet of {preset}"),
+                schema: json!({ "type": "object", "properties": {} }),
+                handler: Arc::new(move |_args| {
+                    Box::pin(async move {
+                        Ok(rmcp::model::CallToolResult::success(vec![
+                            rmcp::model::Content::text(format!("bet {preset}"))
+                        ]))
+                    })
+                }),
+            });
+        }
+        Ok(tools)
+    }
+}
+
+#[test]
+fn contextual_tools_appear_in_list_tools() {
+    let registry = DynamicToolRegistry::new().register_contextual(
+        "bet",
+        BetAmountFactory,
+        BetConstraints { min: 1, max: 450, presets: vec![50, 100, 200, 500] },
+    );
+
+    let tools = registry.list_tools();
+    let names: Vec<&str> = tools.iter().map(|t| t.name.as_ref()).collect();
+
+    assert!(names.contains(&"bet__place"), "place tool missing");
+    assert!(names.contains(&"bet__preset_50"), "preset 50 missing");
+    assert!(names.contains(&"bet__preset_100"), "preset 100 missing");
+    assert!(names.contains(&"bet__preset_200"), "preset 200 missing");
+    // 500 exceeds bankroll of 450 — should not appear
+    assert!(!names.contains(&"bet__preset_500"), "preset 500 should be filtered");
+}
+
+#[test]
+fn contextual_re_registration_replaces_tools() {
+    let registry = DynamicToolRegistry::new()
+        .register_contextual(
+            "bet",
+            BetAmountFactory,
+            BetConstraints { min: 1, max: 450, presets: vec![50, 100] },
+        )
+        .register_contextual(
+            "bet",
+            BetAmountFactory,
+            BetConstraints { min: 1, max: 75, presets: vec![50, 100] },
+        );
+
+    let tools = registry.list_tools();
+    let names: Vec<&str> = tools.iter().map(|t| t.name.as_ref()).collect();
+
+    // After re-registration with max=75: preset_100 should be filtered
+    assert!(names.contains(&"bet__preset_50"), "preset 50 should be present");
+    assert!(!names.contains(&"bet__preset_100"), "preset 100 should be filtered after re-registration");
+    // Only one bet__place tool (no duplicates)
+    let place_count = names.iter().filter(|&&n| n == "bet__place").count();
+    assert_eq!(place_count, 1, "re-registration must not duplicate tools");
+}
+
+#[tokio::test]
+async fn contextual_tool_handler_enforces_schema_bounds() {
+    let registry = DynamicToolRegistry::new().register_contextual(
+        "bet",
+        BetAmountFactory,
+        BetConstraints { min: 1, max: 450, presets: vec![] },
+    );
+
+    // Valid amount
+    let ok = registry
+        .invoke_dynamic("bet__place", json!({ "amount": 100 }))
+        .await
+        .expect("tool should exist");
+    assert!(ok.is_ok(), "valid bet should succeed");
+
+    // Exceeds runtime maximum
+    let err = registry
+        .invoke_dynamic("bet__place", json!({ "amount": 500 }))
+        .await
+        .expect("tool should exist");
+    assert!(err.is_err(), "bet exceeding bankroll should fail");
+}

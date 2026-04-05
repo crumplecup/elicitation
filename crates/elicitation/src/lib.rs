@@ -150,7 +150,7 @@ pub use plugin_registry::{PluginRegistry, Toolchain};
 
 pub mod dynamic;
 pub use dynamic::{
-    AnyToolFactory, AnyToolSlot, DynamicToolDescriptor, DynamicToolRegistry,
+    AnyToolFactory, AnyToolSlot, ContextualFactory, DynamicToolDescriptor, DynamicToolRegistry,
     ToolFactoryRegistration, TypedSlot,
 };
 
