@@ -83,3 +83,13 @@ mod emit_impls {
 }
 
 impl elicitation::ElicitComplete for Uuid {}
+
+#[cfg(feature = "prompt-tree")]
+impl elicitation::ElicitPromptTree for Uuid {
+    fn prompt_tree() -> elicitation::PromptTree {
+        elicitation::PromptTree::Leaf {
+            prompt: "Uuid".to_string(),
+            type_name: "Uuid".to_string(),
+        }
+    }
+}
