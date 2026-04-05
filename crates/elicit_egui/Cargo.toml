@@ -16,9 +16,9 @@ categories = ["gui", "development-tools"]
 elicitation = { workspace = true, features = ["egui-types"] }
 elicitation_derive.workspace = true
 elicitation_macros.workspace = true
-elicit_ui = { path = "../elicit_ui" }
-egui = { workspace = true }
-accesskit = { workspace = true }
+elicit_ui.workspace = true
+egui.workspace = true
+accesskit.workspace = true
 inventory.workspace = true
 rmcp.workspace = true
 schemars.workspace = true
@@ -38,4 +38,9 @@ uuid = ["dep:uuid"]
 runtime = ["uuid"]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
+unexpected_cfgs = { level = "warn", check-cfg = [
+  'cfg(kani)',
+  'cfg(creusot)',
+  'cfg(prusti)',
+  'cfg(verus)',
+] }
