@@ -491,7 +491,6 @@ impl<P: Prop + 'static> crate::emit_code::ToCodeLiteral for Established<P> {
 /// prompt. Any struct that holds one as a field still needs the bound satisfied
 /// when `prompt-tree` is enabled; we return an empty `Leaf` so the derive
 /// can compile without noise in the assembled prompt output.
-#[cfg(feature = "prompt-tree")]
 impl<P: Prop> crate::ElicitPromptTree for Established<P> {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Leaf {

@@ -173,7 +173,6 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
     // Verification is primarily for elicitation's own contract types.
 
     // Generate ElicitPromptTree impl
-    #[cfg(feature = "prompt-tree")]
     let prompt_tree_impl = generate_prompt_tree_impl_struct(
         name,
         &field_infos,
@@ -182,8 +181,6 @@ pub fn expand_struct(input: DeriveInput) -> TokenStream {
         &ty_generics,
         &where_clause,
     );
-    #[cfg(not(feature = "prompt-tree"))]
-    let prompt_tree_impl = quote! {};
 
     let to_code_literal_impl = crate::derive_to_code_literal::generate_to_code_literal_impl(
         name,
@@ -385,7 +382,6 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
 
     // Generate ElicitPromptTree impl for tuple struct by creating synthetic FieldInfos
     // with index-based names ("0", "1", ...) matching how Survey fields are named.
-    #[cfg(feature = "prompt-tree")]
     let prompt_tree_impl = {
         let tuple_field_infos: Vec<FieldInfo> = field_types
             .iter()
@@ -407,8 +403,6 @@ fn expand_tuple_struct(input: DeriveInput, unnamed: Punctuated<syn::Field, Comma
             &where_clause,
         )
     };
-    #[cfg(not(feature = "prompt-tree"))]
-    let prompt_tree_impl = quote! {};
 
     let proof_methods = quote! {
         fn kani_proof() -> elicitation::proc_macro2::TokenStream {
@@ -739,6 +733,16 @@ fn expand_unit_struct(input: DeriveInput) -> TokenStream {
     TokenStream::from(quote! {
         #expanded
         #to_code_literal_impl
+        impl #impl_generics elicitation::ElicitPromptTree for #name #ty_generics #where_clause {
+            fn prompt_tree() -> elicitation::PromptTree {
+                elicitation::PromptTree::Leaf {
+                    prompt: <Self as elicitation::Prompt>::prompt()
+                        .unwrap_or(#name_str)
+                        .to_string(),
+                    type_name: #name_str.to_string(),
+                }
+            }
+        }
         impl #impl_generics elicitation::ElicitComplete for #name #ty_generics #elicit_complete_where {}
     })
 }
@@ -1666,7 +1670,6 @@ fn generate_graph_key_emission(name: &syn::Ident) -> TokenStream2 {
 }
 
 /// Generate `ElicitPromptTree` impl for a named-field struct.
-#[cfg(feature = "prompt-tree")]
 fn generate_prompt_tree_impl_struct(
     name: &syn::Ident,
     field_infos: &[FieldInfo],

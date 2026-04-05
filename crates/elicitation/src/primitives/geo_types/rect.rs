@@ -96,7 +96,6 @@ impl ElicitIntrospect for GeoRect {
     }
 }
 
-#[cfg(feature = "prompt-tree")]
 impl crate::ElicitPromptTree for GeoRect {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Survey {

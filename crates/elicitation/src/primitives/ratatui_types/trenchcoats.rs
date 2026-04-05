@@ -8,8 +8,9 @@
 //! wraps [`ratatui::widgets::ScrollbarOrientation`] with serde delegation.
 
 use crate::{
-    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
-    ElicitationPattern, PatternDetails, Prompt, Select, TypeMetadata, VariantMetadata, mcp,
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitPromptTree,
+    ElicitResult, Elicitation, ElicitationPattern, PatternDetails, Prompt, PromptTree, Select,
+    TypeMetadata, VariantMetadata, mcp,
 };
 use ratatui::widgets::{Borders, ScrollbarOrientation};
 
@@ -207,6 +208,21 @@ impl Elicitation for BordersSelect {
 
     fn creusot_proof() -> proc_macro2::TokenStream {
         <Borders as Elicitation>::creusot_proof()
+    }
+}
+
+impl ElicitPromptTree for BordersSelect {
+    fn prompt_tree() -> PromptTree {
+        let labels = <Borders as Select>::labels();
+        let branch_count = labels.len();
+        PromptTree::Select {
+            prompt: <Borders as Prompt>::prompt()
+                .unwrap_or("Choose borders")
+                .to_string(),
+            type_name: "BordersSelect".to_string(),
+            options: labels,
+            branches: vec![None; branch_count],
+        }
     }
 }
 

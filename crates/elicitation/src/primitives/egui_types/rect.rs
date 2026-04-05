@@ -130,7 +130,6 @@ impl ElicitIntrospect for EguiRect {
     }
 }
 
-#[cfg(feature = "prompt-tree")]
 impl crate::ElicitPromptTree for EguiRect {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Survey {

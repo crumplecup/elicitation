@@ -20,6 +20,7 @@
 //! | [`Elicitation`] | Interactive elicitation + **proof methods** | `#[derive(Elicit)]` or manual impl |
 //! | [`ElicitIntrospect`] | Structural metadata (field names, pattern) | Auto-derived by `#[derive(Elicit)]` |
 //! | [`ElicitSpec`] | Agent-browsable contract spec | `impl_select_spec!` / `impl_builder_spec!` in `type_spec/` |
+//! | [`ElicitPromptTree`] | Compile-time prompt structure (tree of inputs/selects) | `#[derive(Elicit)]` or manual impl |
 //! | `serde::Serialize` | Wire-format serialisation | `#[derive(Serialize)]` |
 //! | `serde::Deserialize` | Wire-format deserialisation | `#[derive(Deserialize)]` |
 //! | `schemars::JsonSchema` | JSON Schema generation for tooling | `#[derive(JsonSchema)]` |
@@ -118,7 +119,7 @@
 //! struct Pipeline<T: ElicitComplete> { /* ... */ }
 //! ```
 
-use crate::{ElicitIntrospect, ElicitSpec, Elicitation};
+use crate::{ElicitIntrospect, ElicitPromptTree, ElicitSpec, Elicitation};
 
 /// Compiler-enforced supertrait for fully-implemented elicitation support.
 ///
@@ -133,6 +134,7 @@ pub trait ElicitComplete:
     Elicitation
     + ElicitIntrospect
     + ElicitSpec
+    + ElicitPromptTree
     + serde::Serialize
     + for<'de> serde::Deserialize<'de>
     + schemars::JsonSchema

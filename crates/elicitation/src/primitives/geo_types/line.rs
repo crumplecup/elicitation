@@ -95,7 +95,6 @@ impl ElicitIntrospect for GeoLine {
     }
 }
 
-#[cfg(feature = "prompt-tree")]
 impl crate::ElicitPromptTree for GeoLine {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Survey {

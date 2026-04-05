@@ -244,7 +244,6 @@ impl ElicitIntrospect for Uuid {
     }
 }
 
-#[cfg(feature = "prompt-tree")]
 impl crate::ElicitPromptTree for Uuid {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Leaf {

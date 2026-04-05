@@ -130,7 +130,6 @@ impl ElicitIntrospect for EguiCornerRadius {
     }
 }
 
-#[cfg(feature = "prompt-tree")]
 impl crate::ElicitPromptTree for EguiCornerRadius {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Survey {

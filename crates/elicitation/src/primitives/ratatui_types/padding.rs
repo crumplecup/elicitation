@@ -130,7 +130,6 @@ impl ElicitIntrospect for RatatuiPadding {
     }
 }
 
-#[cfg(feature = "prompt-tree")]
 impl crate::ElicitPromptTree for RatatuiPadding {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Survey {

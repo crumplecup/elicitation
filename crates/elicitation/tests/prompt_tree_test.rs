@@ -4,8 +4,6 @@
 //! blanket impls for primitives, derive-generated impls for structs and enums,
 //! `assembled_prompts()` output format, and a completeness helper.
 
-#![cfg(feature = "prompt-tree")]
-
 use elicitation::{Elicit, ElicitPromptTree, Prompt, PromptKind, PromptTree, Select};
 
 // ============================================================================

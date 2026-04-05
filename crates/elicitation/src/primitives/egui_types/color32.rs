@@ -125,7 +125,6 @@ impl ElicitIntrospect for EguiColor32 {
     }
 }
 
-#[cfg(feature = "prompt-tree")]
 impl crate::ElicitPromptTree for EguiColor32 {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Survey {

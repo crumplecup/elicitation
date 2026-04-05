@@ -103,7 +103,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "prompt-tree", "ratatui", "emit"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "emit"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -137,10 +137,9 @@ emit = []
 graph = []
 
 # Static prompt tree — PromptTree, ElicitPromptTree, assembled_prompts()
-prompt-tree = ["elicitation_derive/prompt-tree"]
 
 # AccessKit tree bridge — PromptTree::to_accesskit_tree()
-prompt-tree-accesskit = ["prompt-tree", "dep:accesskit"]
+prompt-tree-accesskit = ["dep:accesskit"]
 
 # Formal verification support
 # verify-kani lives in elicitation_kani crate (dedicated)

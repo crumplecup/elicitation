@@ -9,8 +9,8 @@
 #[cfg(feature = "accesskit")]
 mod accesskit_impls {
     use crate::{
-        ElicitComplete, ElicitSpec, Select, SpecCategoryBuilder, SpecEntryBuilder, TypeSpec,
-        TypeSpecBuilder, TypeSpecInventoryKey,
+        ElicitComplete, ElicitPromptTree, ElicitSpec, PromptTree, Select, SpecCategoryBuilder,
+        SpecEntryBuilder, TypeSpec, TypeSpecBuilder, TypeSpecInventoryKey,
     };
 
     // -------------------------------------------------------------------------
@@ -82,6 +82,19 @@ mod accesskit_impls {
             ));
 
             impl ElicitComplete for $ty {}
+
+            impl ElicitPromptTree for $ty {
+                fn prompt_tree() -> PromptTree {
+                    let labels = <$ty as Select>::labels();
+                    let branch_count = labels.len();
+                    PromptTree::Select {
+                        prompt: $name.to_string(),
+                        type_name: $name.to_string(),
+                        options: labels,
+                        branches: vec![None; branch_count],
+                    }
+                }
+            }
 
             impl crate::emit_code::ToCodeLiteral for $ty {
                 fn to_code_literal(&self) -> crate::proc_macro2::TokenStream {

@@ -219,7 +219,6 @@ macro_rules! _select_trenchcoat_common {
         }
 
         // ── Forward ElicitPromptTree ──────────────────────────────────────
-        #[cfg(feature = "prompt-tree")]
         impl $crate::ElicitPromptTree for $wrapper_name {
             fn prompt_tree() -> $crate::PromptTree {
                 let labels = <Self as $crate::Select>::labels();

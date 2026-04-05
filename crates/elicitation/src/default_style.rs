@@ -52,7 +52,6 @@ macro_rules! default_style {
         /// Default styles use the default prompt formatting.
         impl $crate::style::ElicitationStyle for $style_name {}
 
-        #[cfg(feature = "prompt-tree")]
         impl $crate::ElicitPromptTree for $style_name {
             fn prompt_tree() -> $crate::PromptTree {
                 $crate::PromptTree::Leaf {

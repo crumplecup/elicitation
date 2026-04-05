@@ -100,9 +100,7 @@ pub mod verification;
 
 pub mod type_graph;
 
-#[cfg(feature = "prompt-tree")]
 pub mod prompt_tree;
-#[cfg(feature = "prompt-tree")]
 pub use prompt_tree::{
     AssembledPrompt, ElicitPromptTree, PromptKind, PromptTree, collect_assembled_prompts,
 };

@@ -92,7 +92,6 @@ impl ElicitIntrospect for GeoCoord {
     }
 }
 
-#[cfg(feature = "prompt-tree")]
 impl crate::ElicitPromptTree for GeoCoord {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Survey {

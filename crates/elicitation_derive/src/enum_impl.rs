@@ -203,7 +203,6 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
     // Verification is primarily for elicitation's own contract types.
 
     // Generate ElicitPromptTree impl
-    #[cfg(feature = "prompt-tree")]
     let prompt_tree_impl = generate_prompt_tree_impl_enum(
         name,
         &variants,
@@ -212,8 +211,6 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
         &ty_generics,
         &where_clause,
     );
-    #[cfg(not(feature = "prompt-tree"))]
-    let prompt_tree_impl = quote! {};
 
     let to_code_literal_impl = crate::derive_to_code_literal::generate_to_code_literal_impl(
         name,
@@ -242,7 +239,7 @@ pub fn expand_enum(input: DeriveInput) -> TokenStream {
 
     TokenStream::from(expanded)
 }
-#[cfg(feature = "prompt-tree")]
+/// Generate `ElicitPromptTree` impl for an enum.
 fn generate_prompt_tree_impl_enum(
     name: &syn::Ident,
     variants: &[VariantInfo],

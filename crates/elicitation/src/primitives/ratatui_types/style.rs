@@ -171,7 +171,6 @@ impl ElicitIntrospect for RatatuiStyle {
     }
 }
 
-#[cfg(feature = "prompt-tree")]
 impl crate::ElicitPromptTree for RatatuiStyle {
     fn prompt_tree() -> crate::PromptTree {
         crate::PromptTree::Survey {

@@ -15,7 +15,6 @@ categories = ["database", "development-tools"]
 [features]
 # Enable to run live-database integration tests (requires DATABASE_URL set).
 api = []
-prompt-tree = ["elicitation/prompt-tree"]
 
 [dependencies]
 elicitation = { workspace = true, features = ["sqlx-types", "emit"] }
