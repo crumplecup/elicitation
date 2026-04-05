@@ -27,10 +27,12 @@
 //!                    → agent re-calls list_tools, sees "user__my_method"
 //! ```
 
+pub mod contextual;
 pub mod factory;
 pub mod meta_tool;
 pub mod slot;
 
+pub use contextual::ContextualFactory;
 pub use factory::{AnyToolFactory, ToolFactoryRegistration};
 pub use slot::{AnyToolSlot, TypedSlot};
 
@@ -50,6 +52,7 @@ use serde::{Serialize, de::DeserializeOwned};
 use tracing::{debug, instrument, warn};
 
 use crate::{plugin::ElicitPlugin, rmcp::RoleServer, traits::Elicitation};
+use contextual::ContextualEntry;
 
 // ── DynamicToolDescriptor ──────────────────────────────────────────────────────
 
@@ -129,6 +132,11 @@ pub struct DynamicToolRegistry {
     slots: Arc<RwLock<HashMap<String, Box<dyn AnyToolSlot>>>>,
     /// Instantiated dynamic tools — populated by factory meta-tool calls.
     dynamic_tools: Arc<RwLock<Vec<DynamicToolDescriptor>>>,
+    /// Contextual entries registered via `register_contextual`.
+    ///
+    /// Stored separately so re-registration replaces the old entry without
+    /// touching inventory-instantiated tools.
+    contextual_entries: Arc<RwLock<Vec<ContextualEntry>>>,
     /// rmcp peer handle for `notify_tool_list_changed`.
     ///
     /// Injected by [`PluginRegistry`](crate::PluginRegistry) after the server
@@ -156,6 +164,7 @@ impl DynamicToolRegistry {
             factories,
             slots: Arc::new(RwLock::new(HashMap::new())),
             dynamic_tools: Arc::new(RwLock::new(Vec::new())),
+            contextual_entries: Arc::new(RwLock::new(Vec::new())),
             peer: Arc::new(OnceLock::new()),
         }
     }
@@ -266,6 +275,62 @@ impl DynamicToolRegistry {
         self
     }
 
+    /// Register a contextual factory with runtime data.
+    ///
+    /// Tools are instantiated immediately by calling
+    /// [`ContextualFactory::instantiate`] with the supplied `context`.  The
+    /// resulting [`DynamicToolDescriptor`]s are visible in `list_tools` right
+    /// away.
+    ///
+    /// Calling this again with the same `prefix` **replaces** the previously
+    /// generated tools for that prefix — old descriptors are dropped.  Pair
+    /// with [`notify_tool_list_changed`](Self::notify_tool_list_changed) to
+    /// push the updated list to connected agents.
+    ///
+    /// # Errors
+    ///
+    /// Returns `self` unchanged if the factory returns an error.  Errors are
+    /// logged at `warn` level so the server can continue running.
+    #[instrument(skip(self, factory, context), fields(prefix))]
+    pub fn register_contextual<F>(self, prefix: impl Into<String>, factory: F, context: F::Context) -> Self
+    where
+        F: ContextualFactory,
+    {
+        let prefix = prefix.into();
+        tracing::Span::current().record("prefix", prefix.as_str());
+        match ContextualEntry::new(prefix.clone(), &factory, &context) {
+            Ok(entry) => {
+                let mut entries = self
+                    .contextual_entries
+                    .write()
+                    .expect("contextual_entries lock poisoned");
+                entries.retain(|e| e.prefix != prefix);
+                entries.push(entry);
+                debug!(%prefix, "Registered contextual factory");
+            }
+            Err(e) => {
+                tracing::warn!(%prefix, error = ?e, "Contextual factory instantiation failed");
+            }
+        }
+        self
+    }
+
+    /// Send `notify_tool_list_changed` to the connected agent.
+    ///
+    /// Call this after re-registering a contextual factory on a phase
+    /// transition so the agent immediately sees the updated tool list.
+    ///
+    /// No-op if no peer is set (the agent must re-call `list_tools` manually).
+    pub async fn notify_tool_list_changed(&self) {
+        if let Some(peer) = self.peer.get() {
+            if let Err(e) = peer.notify_tool_list_changed().await {
+                warn!(error = ?e, "Failed to send notify_tool_list_changed");
+            }
+        } else {
+            debug!("No peer set — agent must re-call list_tools manually");
+        }
+    }
+
     /// Inject the rmcp peer so `notify_tool_list_changed` can be sent.
     ///
     /// Called by the server setup after the connection is established.
@@ -350,13 +415,7 @@ impl DynamicToolRegistry {
         }
 
         // Notify the agent that the tool list changed (await is safe here — no locks held)
-        if let Some(peer) = self.peer.get() {
-            if let Err(e) = peer.notify_tool_list_changed().await {
-                warn!(error = ?e, "Failed to send notify_tool_list_changed");
-            }
-        } else {
-            debug!("No peer set — agent must re-call list_tools manually");
-        }
+        self.notify_tool_list_changed().await;
 
         let summary = format!(
             "Instantiated {} tools for `{prefix}`: {}",
@@ -368,6 +427,7 @@ impl DynamicToolRegistry {
 
     /// Invoke a named dynamic tool with the given JSON argument object.
     ///
+    /// Searches both inventory-instantiated tools and contextual entries.
     /// Returns `None` if no tool with that name has been instantiated yet.
     /// Returns `Some(Err(...))` if the tool handler returns an error.
     ///
@@ -379,11 +439,27 @@ impl DynamicToolRegistry {
         args: serde_json::Value,
     ) -> Option<Result<CallToolResult, ErrorData>> {
         let handler = {
+            // Search inventory-instantiated tools first
             let tools = self
                 .dynamic_tools
                 .read()
                 .expect("dynamic_tools lock poisoned");
-            tools.iter().find(|d| d.name == name)?.handler.clone()
+            if let Some(d) = tools.iter().find(|d| d.name == name) {
+                d.handler.clone()
+            } else {
+                drop(tools);
+                // Then search contextual entries
+                let entries = self
+                    .contextual_entries
+                    .read()
+                    .expect("contextual_entries lock poisoned");
+                entries
+                    .iter()
+                    .flat_map(|e| e.descriptors.iter())
+                    .find(|d| d.name == name)?
+                    .handler
+                    .clone()
+            }
         };
         Some(handler(args).await)
     }
@@ -415,6 +491,14 @@ impl ElicitPlugin for DynamicToolRegistry {
             .read()
             .expect("dynamic_tools lock poisoned");
         tools.extend(dynamic.iter().map(|d| d.as_tool()));
+        drop(dynamic);
+        let contextual = self
+            .contextual_entries
+            .read()
+            .expect("contextual_entries lock poisoned");
+        for entry in contextual.iter() {
+            tools.extend(entry.descriptors.iter().map(|d| d.as_tool()));
+        }
         tools
     }
 
@@ -450,17 +534,27 @@ impl ElicitPlugin for DynamicToolRegistry {
                     .dynamic_tools
                     .read()
                     .expect("dynamic_tools lock poisoned");
-                tools
-                    .iter()
-                    .find(|d| d.name == tool_name)
-                    .ok_or_else(|| {
-                        ErrorData::invalid_params(
-                            format!("tool `{tool_name}` not found in dynamic registry"),
-                            None,
-                        )
-                    })?
-                    .handler
-                    .clone()
+                if let Some(d) = tools.iter().find(|d| d.name == tool_name) {
+                    d.handler.clone()
+                } else {
+                    drop(tools);
+                    let entries = self
+                        .contextual_entries
+                        .read()
+                        .expect("contextual_entries lock poisoned");
+                    entries
+                        .iter()
+                        .flat_map(|e| e.descriptors.iter())
+                        .find(|d| d.name == tool_name)
+                        .ok_or_else(|| {
+                            ErrorData::invalid_params(
+                                format!("tool `{tool_name}` not found in dynamic registry"),
+                                None,
+                            )
+                        })?
+                        .handler
+                        .clone()
+                }
                 // guard dropped here
             };
 
