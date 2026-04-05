@@ -13,12 +13,12 @@ keywords = ["mcp", "ratatui", "tui", "elicitation", "jsonschema"]
 categories = ["command-line-interface", "development-tools"]
 
 [dependencies]
-elicitation = { workspace = true }
+elicitation.workspace = true
 elicitation_derive.workspace = true
 elicitation_macros.workspace = true
-elicit_ui = { path = "../elicit_ui" }
-ratatui = { workspace = true }
-accesskit = { workspace = true }
+elicit_ui.workspace = true
+ratatui.workspace = true
+accesskit.workspace = true
 crossterm = { workspace = true, optional = true }
 inventory.workspace = true
 rmcp.workspace = true
@@ -27,11 +27,11 @@ serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 tracing.workspace = true
 uuid = { workspace = true, optional = true }
-quote = { workspace = true }
+quote.workspace = true
 
 [dev-dependencies]
-tokio = { workspace = true }
-serde_json = { workspace = true }
+tokio.workspace = true
+serde_json.workspace = true
 
 [features]
 emit = ["elicitation/emit"]
@@ -39,4 +39,9 @@ uuid = ["dep:uuid"]
 runtime = ["dep:crossterm", "dep:uuid", "ratatui/crossterm"]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
+unexpected_cfgs = { level = "warn", check-cfg = [
+  'cfg(kani)',
+  'cfg(creusot)',
+  'cfg(prusti)',
+  'cfg(verus)',
+] }
