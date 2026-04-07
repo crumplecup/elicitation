@@ -313,6 +313,34 @@ Foundation for linebender ecosystem (xilem, masonry, vello).
 
 ---
 
+### GAAP Ledger Integration
+
+**Document:** [GAAP_LEDGER_INTEGRATION.md](GAAP_LEDGER_INTEGRATION.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Applying Generally Accepted Accounting Principles (GAAP) to the typestate
+ledger system through proof-carrying propositions with formal spec references. Mirrors the
+WCAG constraint pattern from `elicit_ui` - where UI verification references WCAG standards,
+ledger verification will reference FASB ASC (Accounting Standards Codification).
+
+**Approach:** Create proposition types with `#[derive(elicitation::Prop)]` representing GAAP
+principles (Matching Principle, Accrual Basis, Historical Cost, etc.), each documented with
+accurate ASC references. Validation functions establish these propositions, creating
+audit-traceable proof chains for accounting compliance.
+
+**Key Deliverables:**
+- Research document: GAAP principles applicable to double-entry bookkeeping
+- `src/ledger/gaap.rs`: Proposition types with ASC references
+- Validation functions returning `Result<Established<P>, ValidationError>`
+- Integration with `Transfer<T>` typestate workflow
+- Composite proof type: `GaapCompliant = And<MatchingPrinciple, And<AccrualBasis, ...>>`
+- User guide: `GAAP_COMPLIANCE_GUIDE.md`
+
+**Timeline:** 10 days (5 phases: research, propositions, validation, integration, testing/docs)
+
+---
+
 ### Visualization Guide
 
 **Document:** [VISUALIZATION_GUIDE.md](VISUALIZATION_GUIDE.md)

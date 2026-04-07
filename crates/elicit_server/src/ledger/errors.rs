@@ -25,6 +25,78 @@ pub enum ValidationError {
     /// Database error during validation.
     #[display("Database error: {}", _0)]
     Database(String),
+
+    /// GAAP double-entry bookkeeping violation.
+    #[display(
+        "GAAP violation (Double-Entry): debit ({}) != credit ({})",
+        debit,
+        credit
+    )]
+    GaapDoubleEntry {
+        /// Debit amount.
+        debit: i64,
+        /// Credit amount.
+        credit: i64,
+    },
+
+    /// GAAP accrual basis violation.
+    #[display("GAAP violation (Accrual Basis): {}", reason)]
+    GaapAccrualBasis {
+        /// Reason for violation.
+        reason: String,
+    },
+
+    /// GAAP monetary unit assumption violation.
+    #[display("GAAP violation (Monetary Unit): {}", reason)]
+    GaapMonetaryUnit {
+        /// Reason for violation.
+        reason: String,
+    },
+
+    /// GAAP matching principle violation.
+    #[display("GAAP violation (Matching Principle): {}", reason)]
+    GaapMatchingPrinciple {
+        /// Reason for violation.
+        reason: String,
+    },
+
+    /// GAAP economic entity assumption violation.
+    #[display("GAAP violation (Economic Entity): {}", reason)]
+    GaapEconomicEntity {
+        /// Reason for violation.
+        reason: String,
+    },
+
+    /// GAAP historical cost principle violation.
+    #[display("GAAP violation (Historical Cost): {}", reason)]
+    GaapHistoricalCost {
+        /// Reason for violation.
+        reason: String,
+    },
+
+    /// GAAP conservatism principle violation.
+    #[display("GAAP violation (Conservatism): {}", reason)]
+    GaapConservatism {
+        /// Reason for violation.
+        reason: String,
+    },
+
+    /// GAAP going concern assumption violation.
+    #[display("GAAP violation (Going Concern): system not operational")]
+    GaapGoingConcern,
+
+    /// GAAP materiality principle violation.
+    #[display(
+        "GAAP violation (Materiality): amount {} exceeds threshold {}",
+        amount,
+        threshold
+    )]
+    GaapMateriality {
+        /// Transaction amount.
+        amount: i64,
+        /// Materiality threshold.
+        threshold: i64,
+    },
 }
 
 /// Commit error when executing transfer.

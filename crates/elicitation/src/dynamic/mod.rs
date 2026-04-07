@@ -292,7 +292,12 @@ impl DynamicToolRegistry {
     /// Returns `self` unchanged if the factory returns an error.  Errors are
     /// logged at `warn` level so the server can continue running.
     #[instrument(skip(self, factory, context), fields(prefix))]
-    pub fn register_contextual<F>(self, prefix: impl Into<String>, factory: F, context: F::Context) -> Self
+    pub fn register_contextual<F>(
+        self,
+        prefix: impl Into<String>,
+        factory: F,
+        context: F::Context,
+    ) -> Self
     where
         F: ContextualFactory,
     {
