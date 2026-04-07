@@ -544,3 +544,53 @@ mod atomic_proofs {
         assert_elicit_complete::<AtomicUsize>();
     }
 }
+
+// ============================================================================
+// Derived struct harness content — non-vacuous constructibility proof
+// ============================================================================
+
+mod kani_struct_harness_tests {
+    use elicitation::Elicitation;
+    use elicitation_derive::Elicit;
+    use schemars::JsonSchema;
+    use serde::{Deserialize, Serialize};
+
+    // A minimal data struct with two primitive fields.
+    #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+    #[cfg_attr(kani, derive(kani::Arbitrary))]
+    struct TestPoint {
+        x: f64,
+        y: f64,
+    }
+
+    // A zero-field marker struct — tautology is correct here.
+    #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+    struct TestMarker;
+
+    #[test]
+    fn data_struct_kani_harness_uses_kani_any() {
+        let proof = TestPoint::kani_proof().to_string();
+        assert!(
+            proof.contains("kani") && proof.contains("any"),
+            "data struct kani_proof() should use kani::any(), got:\n{proof}"
+        );
+        assert!(
+            proof.contains("TestPoint"),
+            "data struct kani_proof() should reference the type name, got:\n{proof}"
+        );
+        assert!(
+            !proof.contains("assert ! (established") && !proof.contains("assert!(established"),
+            "data struct kani_proof() must not be a tautology, got:\n{proof}"
+        );
+    }
+
+    #[test]
+    fn marker_struct_kani_harness_is_tautology() {
+        // Marker structs have no fields — assert!(true) is semantically correct.
+        let proof = TestMarker::kani_proof().to_string();
+        assert!(
+            !proof.is_empty(),
+            "marker struct kani_proof() must not be empty"
+        );
+    }
+}

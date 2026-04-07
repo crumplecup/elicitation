@@ -1008,9 +1008,33 @@ fn generate_elicit_impl_simple(
 
     let proof_methods = {
         let wrapper_name_str = name.to_string();
+        let safe_name = wrapper_name_str
+            .to_lowercase()
+            .replace([':', ' ', '<', '>'], "_");
+        let kani_fn_ident = quote::format_ident!("verify_{}_newtype_wrapper", safe_name);
+        let kani_wrapper_body = if elicited_fields.is_empty() {
+            // Marker struct — existence is the only property; tautology is correct.
+            quote! {
+                let mut ts = elicitation::verification::proof_helpers::kani_newtype_wrapper_harness(#wrapper_name_str);
+            }
+        } else {
+            // Data struct — prove constructibility from arbitrary valid inputs.
+            // #kani_fn_ident and #name are baked in as literal tokens; the inner
+            // quote! in the generated code has no runtime interpolations.
+            quote! {
+                let mut ts = elicitation::quote::quote! {
+                    #[cfg_attr(kani, ::kani::proof)]
+                    fn #kani_fn_ident() {
+                        // Proves #name is constructible from arbitrary valid field inputs.
+                        // Requires: #[cfg_attr(kani, derive(kani::Arbitrary))] on the struct.
+                        let _: #name = kani::any();
+                    }
+                };
+            }
+        };
         quote! {
             fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-                let mut ts = elicitation::verification::proof_helpers::kani_newtype_wrapper_harness(#wrapper_name_str);
+                #kani_wrapper_body
                 #(
                     ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
                 )*
@@ -1289,9 +1313,33 @@ fn generate_elicit_impl_styled(
     let elicited_types: Vec<_> = elicited_fields.iter().map(|info| &info.ty).collect();
     let proof_methods = {
         let wrapper_name_str = name.to_string();
+        let safe_name = wrapper_name_str
+            .to_lowercase()
+            .replace([':', ' ', '<', '>'], "_");
+        let kani_fn_ident = quote::format_ident!("verify_{}_newtype_wrapper", safe_name);
+        let kani_wrapper_body = if elicited_fields.is_empty() {
+            // Marker struct — existence is the only property; tautology is correct.
+            quote! {
+                let mut ts = elicitation::verification::proof_helpers::kani_newtype_wrapper_harness(#wrapper_name_str);
+            }
+        } else {
+            // Data struct — prove constructibility from arbitrary valid inputs.
+            // #kani_fn_ident and #name are baked in as literal tokens; the inner
+            // quote! in the generated code has no runtime interpolations.
+            quote! {
+                let mut ts = elicitation::quote::quote! {
+                    #[cfg_attr(kani, ::kani::proof)]
+                    fn #kani_fn_ident() {
+                        // Proves #name is constructible from arbitrary valid field inputs.
+                        // Requires: #[cfg_attr(kani, derive(kani::Arbitrary))] on the struct.
+                        let _: #name = kani::any();
+                    }
+                };
+            }
+        };
         quote! {
             fn kani_proof() -> elicitation::proc_macro2::TokenStream {
-                let mut ts = elicitation::verification::proof_helpers::kani_newtype_wrapper_harness(#wrapper_name_str);
+                #kani_wrapper_body
                 #(
                     ts.extend(<#elicited_types as elicitation::Elicitation>::kani_proof());
                 )*
