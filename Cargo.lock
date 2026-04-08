@@ -1268,6 +1268,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_geo_types"
+version = "0.10.0"
+dependencies = [
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "geo-types",
+ "proc-macro2",
+ "quote",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
 name = "elicit_jiff"
 version = "0.10.0"
 dependencies = [

@@ -590,7 +590,11 @@ pub use primitives::ratatui_types::{
 // geo-types (feature-gated on geo-types)
 #[cfg(feature = "geo-types")]
 pub use primitives::geo_types::{
-    GeoCoord, GeoCoordStyle, GeoLine, GeoLineStyle, GeoRect, GeoRectStyle,
+    GeoCoord, GeoCoordStyle, GeoGeometry, GeoGeometryCollection, GeoGeometryCollectionStyle,
+    GeoGeometryStyle, GeoLine, GeoLineString, GeoLineStringStyle, GeoLineStyle, GeoMultiLineString,
+    GeoMultiLineStringStyle, GeoMultiPoint, GeoMultiPointStyle, GeoMultiPolygon,
+    GeoMultiPolygonStyle, GeoPoint, GeoPointStyle, GeoPolygon, GeoPolygonStyle, GeoRect,
+    GeoRectStyle, GeoTriangle, GeoTriangleStyle,
 };
 
 // palette (feature-gated on palette)

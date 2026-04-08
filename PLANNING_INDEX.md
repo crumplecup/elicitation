@@ -81,6 +81,33 @@ git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:elicitation_vision.md
 
 ## Current Active Plans
 
+### elicit_geo_types Shadow Crate
+
+**Document:** [ELICIT_GEO_TYPES_PLAN.md](ELICIT_GEO_TYPES_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Complete the geo-types elicitation vocabulary (3 of 12 types done) and ship
+the `elicit_geo_types` shadow crate. The remaining 9 types (`Point`, `Triangle`, `LineString`,
+`Polygon`, `MultiPoint`, `MultiLineString`, `MultiPolygon`, `GeometryCollection`, `Geometry`
+enum) all compose cleanly from existing primitives: variable-length types delegate to
+`Vec<T>::elicit()`, `Polygon` is a two-field Survey, `Geometry` is a Select over variants.
+
+**Key Insight:** `Vec<T: Elicitation>` already has a full bool-gated loop impl — `LineString`,
+`MultiPoint`, etc. are essentially free once their inner types are elicitable. No registry
+pattern needed; pure value-type composition throughout.
+
+**Coverage:**
+- **Phase 2 (elicitation):** 9 new primitives in `crates/elicitation/src/primitives/geo_types/`
+- **Phase 4 (shadow crate):** `elicit_newtype!` + `reflect_methods` for all 12 types
+- **Phase 5 (MCP tools):** ~32 tools across 4 plugins (primitives, shapes, collections, geometry)
+- **Phase 6 (verification):** Kani roundtrip harnesses, Creusot trusted constructors, Verus structural proofs
+
+**Foundation for:** `elicit_geo` (algorithms), `elicit_geojson`, `elicit_wkt`, `elicit_wkb`,
+`elicit_georaster`, `elicit_rstar` — all depend on this vocabulary.
+
+---
+
 ### Third-Party Crate Support Guide
 
 **Document:** [THIRD_PARTY_SUPPORT_GUIDE.md](THIRD_PARTY_SUPPORT_GUIDE.md)

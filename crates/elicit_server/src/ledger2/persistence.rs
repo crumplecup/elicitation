@@ -7,7 +7,7 @@ use sqlx::{PgPool, Postgres, Transaction};
 use uuid::Uuid;
 
 use crate::ledger2::{
-    Account, AccountNumber, Amount, EntryId, EntityId, GaapProof, JournalEntry, JournalLine,
+    Account, AccountNumber, Amount, EntityId, EntryId, GaapProof, JournalEntry, JournalLine,
     Ledger, NormalBalance, Posted, StateData,
 };
 

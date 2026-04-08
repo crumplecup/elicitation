@@ -65,8 +65,8 @@ pub use journal_entry::{
 pub use journal_line::{Amount, JournalLine};
 pub use ledger::Ledger;
 pub use persistence::{
-    load_account, load_ledger, save_account, save_entry, save_ledger, PersistenceError,
-    PersistenceResult,
+    PersistenceError, PersistenceResult, load_account, load_ledger, save_account, save_entry,
+    save_ledger,
 };
 pub use statements::{
     ComparativeIncomeStatement, FinancialRatios, IncomeStatement, StatementPeriod,
