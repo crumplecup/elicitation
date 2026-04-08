@@ -55,6 +55,9 @@ rmcp = { workspace = true }
 # Tracing
 tracing = { workspace = true }
 
+# UUID
+uuid = { workspace = true }
+
 # Code recovery
 proc-macro2 = { workspace = true }
 quote = { workspace = true }

@@ -60,6 +60,7 @@
 
 mod fetch_and_parse;
 pub mod ledger;
+pub mod ledger2;
 mod secure_fetch;
 
 mod emit_plugin;

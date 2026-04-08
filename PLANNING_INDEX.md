@@ -317,27 +317,65 @@ Foundation for linebender ecosystem (xilem, masonry, vello).
 
 **Document:** [GAAP_LEDGER_INTEGRATION.md](GAAP_LEDGER_INTEGRATION.md)
 
-**Status:** 🔲 Planning
+**Status:** ✅ Complete (Phases 1-3, 5)
 
 **Description:** Applying Generally Accepted Accounting Principles (GAAP) to the typestate
 ledger system through proof-carrying propositions with formal spec references. Mirrors the
 WCAG constraint pattern from `elicit_ui` - where UI verification references WCAG standards,
 ledger verification will reference FASB ASC (Accounting Standards Codification).
 
-**Approach:** Create proposition types with `#[derive(elicitation::Prop)]` representing GAAP
-principles (Matching Principle, Accrual Basis, Historical Cost, etc.), each documented with
-accurate ASC references. Validation functions establish these propositions, creating
-audit-traceable proof chains for accounting compliance.
+**Completed:** 9 GAAP proposition types (P0/P1/P2 priority levels), validation functions,
+comprehensive test suite (39 tests), research document. Phase 4 (Transfer integration)
+deferred - validation functions work independently and can be integrated when needed.
 
 **Key Deliverables:**
-- Research document: GAAP principles applicable to double-entry bookkeeping
-- `src/ledger/gaap.rs`: Proposition types with ASC references
-- Validation functions returning `Result<Established<P>, ValidationError>`
-- Integration with `Transfer<T>` typestate workflow
-- Composite proof type: `GaapCompliant = And<MatchingPrinciple, And<AccrualBasis, ...>>`
-- User guide: `GAAP_COMPLIANCE_GUIDE.md`
+- ✅ Research document: GAAP principles applicable to double-entry bookkeeping
+- ✅ `src/ledger/gaap.rs`: Proposition types with ASC references (887 lines)
+- ✅ Validation functions returning `Result<Established<P>, ValidationError>`
+- ⏸️ Integration with `Transfer<T>` typestate workflow (deferred)
+- ✅ Composite proof types demonstrated in tests
+- ⏸️ User guide (inline documentation is comprehensive)
 
-**Timeline:** 10 days (5 phases: research, propositions, validation, integration, testing/docs)
+**Commit:** 2d64d721
+
+---
+
+### GAAP-Native Ledger Architecture
+
+**Document:** [GAAP_NATIVE_LEDGER.md](GAAP_NATIVE_LEDGER.md)
+
+**Status:** 📋 Planning - Ready for Review
+
+**Description:** Evolution from POC ledger to production-grade accounting system where
+**GAAP is the IR** (Intermediate Representation). Account types (Asset/Liability/Equity/
+Revenue/Expense) are primitive, not validation layers. Typesafe state machines constrain
+financial transactions to provable transitions. Building broad foundation for full
+accounting services: chart of accounts, financial statements, period closing, multi-entity,
+AI-assisted classification, audit trail.
+
+**Vision:**
+1. **GAAP as IR** - Account classes are foundational types, not post-hoc validation
+2. **Typesafe state machines** - `JournalEntry<Draft/Balanced/Posted/Closed>`
+3. **Double-entry by construction** - Builder pattern enforces balance before creation
+4. **Matching principle by design** - Revenue recognition types enforce temporal matching
+5. **AI-assisted accounting** - Classify transactions, suggest journal entries, match expenses
+6. **Audit-ready** - Every entry carries GAAP proof from construction through commit
+
+**Architecture:**
+- Chart of Accounts with GAAP account types (Asset/Liability/Equity/Revenue/Expense)
+- Journal Entry builder enforcing double-entry balance
+- Financial statements by projection (Balance Sheet, Income Statement, Cash Flow)
+- Period closing with retained earnings calculation
+- Multi-entity support with consolidation
+- AI-powered transaction classification (ASC 606 revenue recognition)
+- Complete audit trail with GAAP compliance metadata
+
+**Timeline:** 20 weeks (5 months), 10 phases
+
+**Migration:** Coexist with POC ledger (`ledger` vs `ledger2`), migrate incrementally,
+adapter pattern for `Transfer → JournalEntry` conversion
+
+**Next Step:** Architecture review and approval, then begin Phase 1 (GAAP Types foundation)
 
 ---
 
