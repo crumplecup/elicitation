@@ -60,15 +60,16 @@ impl Elicitation for GeoTriangle {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_composite_wrapper("GeoTriangle")
+        // GeoTriangle has three GeoCoord fields (v1, v2, v3) — delegate to compose.
+        GeoCoord::kani_proof()
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_composite_wrapper("GeoTriangle")
+        GeoCoord::verus_proof()
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_composite_wrapper("GeoTriangle")
+        GeoCoord::creusot_proof()
     }
 }
 

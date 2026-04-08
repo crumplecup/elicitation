@@ -518,8 +518,11 @@ pub use ratatui_types::{
 
 #[cfg(feature = "geo-types")]
 pub use geo_types::{
-    verify_geo_coord_concrete, verify_geo_coord_roundtrip, verify_geo_line_degenerate,
-    verify_geo_line_roundtrip, verify_geo_rect_roundtrip, verify_geo_rect_well_formed,
+    verify_geo_coord_concrete, verify_geo_coord_roundtrip, verify_geo_geometry_point_variant,
+    verify_geo_geometry_rect_variant, verify_geo_line_degenerate, verify_geo_line_roundtrip,
+    verify_geo_line_string_concrete, verify_geo_point_concrete, verify_geo_point_roundtrip,
+    verify_geo_rect_roundtrip, verify_geo_rect_well_formed, verify_geo_triangle_concrete,
+    verify_geo_triangle_roundtrip,
 };
 
 #[cfg(feature = "palette")]

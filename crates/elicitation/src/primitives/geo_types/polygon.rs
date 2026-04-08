@@ -61,15 +61,16 @@ impl Elicitation for GeoPolygon {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_composite_wrapper("GeoPolygon")
+        // GeoPolygon has exterior + interiors: both GeoLineString — delegate to compose.
+        GeoLineString::kani_proof()
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_composite_wrapper("GeoPolygon")
+        GeoLineString::verus_proof()
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_composite_wrapper("GeoPolygon")
+        GeoLineString::creusot_proof()
     }
 }
 

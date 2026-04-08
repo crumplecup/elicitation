@@ -135,3 +135,132 @@ pub fn verify_geo_line_degenerate() -> bool {
     let wrapper = elicitation::GeoLine::from(line);
     wrapper.start.x == wrapper.end.x && wrapper.start.y == wrapper.end.y
 }
+
+// ── Point proofs ─────────────────────────────────────────────────────────────
+
+/// Trusted axiom: GeoPoint roundtrip preserves coordinate.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_geo_point_roundtrip() -> bool {
+    let point = geo_types::Point::new(3.0_f64, 4.0_f64);
+    let wrapper = elicitation::GeoPoint::from(point);
+    let restored: geo_types::Point<f64> = wrapper.into();
+    restored.x() == 3.0_f64 && restored.y() == 4.0_f64
+}
+
+/// Trusted axiom: GeoPoint concrete — coord field matches constructor args.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_geo_point_concrete() -> bool {
+    let point = geo_types::Point::new(0.0_f64, 0.0_f64);
+    let wrapper = elicitation::GeoPoint::from(point);
+    wrapper.coord.x == 0.0_f64 && wrapper.coord.y == 0.0_f64
+}
+
+// ── Triangle proofs ──────────────────────────────────────────────────────────
+
+/// Trusted axiom: GeoTriangle roundtrip preserves all three vertices.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_geo_triangle_roundtrip() -> bool {
+    let tri = geo_types::Triangle::new(
+        geo_types::Coord {
+            x: 0.0_f64,
+            y: 0.0_f64,
+        },
+        geo_types::Coord {
+            x: 1.0_f64,
+            y: 0.0_f64,
+        },
+        geo_types::Coord {
+            x: 0.5_f64,
+            y: 1.0_f64,
+        },
+    );
+    let wrapper = elicitation::GeoTriangle::from(tri);
+    let restored: geo_types::Triangle<f64> = wrapper.into();
+    restored.0.x == 0.0_f64
+        && restored.1.x == 1.0_f64
+        && restored.2.x == 0.5_f64
+        && restored.2.y == 1.0_f64
+}
+
+/// Trusted axiom: GeoTriangle concrete — vertex fields match constructor args.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_geo_triangle_concrete() -> bool {
+    let tri = geo_types::Triangle::new(
+        geo_types::Coord {
+            x: 0.0_f64,
+            y: 0.0_f64,
+        },
+        geo_types::Coord {
+            x: 1.0_f64,
+            y: 0.0_f64,
+        },
+        geo_types::Coord {
+            x: 0.5_f64,
+            y: 1.0_f64,
+        },
+    );
+    let wrapper = elicitation::GeoTriangle::from(tri);
+    wrapper.v1.x == 0.0_f64
+        && wrapper.v2.x == 1.0_f64
+        && wrapper.v3.x == 0.5_f64
+        && wrapper.v3.y == 1.0_f64
+}
+
+// ── LineString proofs ────────────────────────────────────────────────────────
+
+/// Trusted axiom: GeoLineString concrete — two-coord construction preserved.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_geo_line_string_concrete() -> bool {
+    let coord_a = geo_types::Coord {
+        x: 1.0_f64,
+        y: 2.0_f64,
+    };
+    let coord_b = geo_types::Coord {
+        x: 3.0_f64,
+        y: 4.0_f64,
+    };
+    let original = geo_types::LineString::new(vec![coord_a, coord_b]);
+    let wrapper = elicitation::GeoLineString::from(original);
+    wrapper.0.len() == 2 && wrapper.0[0].x == 1.0_f64 && wrapper.0[1].y == 4.0_f64
+}
+
+// ── Geometry proofs ──────────────────────────────────────────────────────────
+
+/// Trusted axiom: GeoGeometry Point variant roundtrip preserves variant.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_geo_geometry_point_variant() -> bool {
+    let geo = geo_types::Geometry::Point(geo_types::Point::new(1.0_f64, 2.0_f64));
+    let wrapper = elicitation::GeoGeometry::from(geo);
+    matches!(wrapper, elicitation::GeoGeometry::Point(_))
+}
+
+/// Trusted axiom: GeoGeometry Rect variant roundtrip preserves variant.
+#[trusted]
+#[requires(true)]
+#[ensures(result == true)]
+pub fn verify_geo_geometry_rect_variant() -> bool {
+    let geo = geo_types::Geometry::Rect(geo_types::Rect::new(
+        geo_types::Coord {
+            x: 0.0_f64,
+            y: 0.0_f64,
+        },
+        geo_types::Coord {
+            x: 1.0_f64,
+            y: 1.0_f64,
+        },
+    ));
+    let wrapper = elicitation::GeoGeometry::from(geo);
+    matches!(wrapper, elicitation::GeoGeometry::Rect(_))
+}

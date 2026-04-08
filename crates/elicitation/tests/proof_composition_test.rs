@@ -219,3 +219,70 @@ fn atomics_delegate_to_primitives() {
     assert_kani_contains::<AtomicU64, u64>("AtomicU64 → u64");
     assert_kani_contains::<AtomicUsize, usize>("AtomicUsize → usize");
 }
+
+// ============================================================================
+// geo-types — composite types delegate to their constituent coord/geometry
+// ============================================================================
+
+#[cfg(feature = "geo-types")]
+mod geo_types_tests {
+    use super::assert_kani_contains;
+    use elicitation::{
+        GeoCoord, GeoGeometry, GeoGeometryCollection, GeoLine, GeoLineString, GeoMultiLineString,
+        GeoMultiPoint, GeoMultiPolygon, GeoPoint, GeoPolygon, GeoRect, GeoTriangle,
+    };
+
+    #[test]
+    fn geo_point_delegates_to_coord() {
+        assert_kani_contains::<GeoPoint, GeoCoord>("GeoPoint → GeoCoord");
+    }
+
+    #[test]
+    fn geo_triangle_delegates_to_coord() {
+        assert_kani_contains::<GeoTriangle, GeoCoord>("GeoTriangle → GeoCoord");
+    }
+
+    #[test]
+    fn geo_line_delegates_to_coord() {
+        assert_kani_contains::<GeoLine, GeoCoord>("GeoLine → GeoCoord");
+    }
+
+    #[test]
+    fn geo_rect_delegates_to_coord() {
+        assert_kani_contains::<GeoRect, GeoCoord>("GeoRect → GeoCoord");
+    }
+
+    #[test]
+    fn geo_line_string_delegates_to_coord() {
+        assert_kani_contains::<GeoLineString, GeoCoord>("GeoLineString → GeoCoord");
+    }
+
+    #[test]
+    fn geo_multi_point_delegates_to_point() {
+        assert_kani_contains::<GeoMultiPoint, GeoPoint>("GeoMultiPoint → GeoPoint");
+    }
+
+    #[test]
+    fn geo_multi_line_string_delegates_to_line_string() {
+        assert_kani_contains::<GeoMultiLineString, GeoLineString>(
+            "GeoMultiLineString → GeoLineString",
+        );
+    }
+
+    #[test]
+    fn geo_multi_polygon_delegates_to_polygon() {
+        assert_kani_contains::<GeoMultiPolygon, GeoPolygon>("GeoMultiPolygon → GeoPolygon");
+    }
+
+    #[test]
+    fn geo_geometry_collection_delegates_to_geometry() {
+        assert_kani_contains::<GeoGeometryCollection, GeoGeometry>(
+            "GeoGeometryCollection → GeoGeometry",
+        );
+    }
+
+    #[test]
+    fn geo_polygon_delegates_to_line_string() {
+        assert_kani_contains::<GeoPolygon, GeoLineString>("GeoPolygon → GeoLineString");
+    }
+}

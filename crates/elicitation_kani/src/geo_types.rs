@@ -142,3 +142,194 @@ fn verify_geo_line_wrapper_fields() {
     assert!(wrapper.end.x == x2, "Line wrapper.end.x matches");
     assert!(wrapper.end.y == y2, "Line wrapper.end.y matches");
 }
+
+// ── Point proofs ─────────────────────────────────────────────────────────────
+
+#[cfg(feature = "geo-types")]
+#[kani::proof]
+fn verify_geo_point_from_roundtrip() {
+    let x: f64 = kani::any();
+    let y: f64 = kani::any();
+
+    kani::assume(x.is_finite() && y.is_finite());
+
+    let original = geo_types::Point::new(x, y);
+    let wrapper = elicitation::GeoPoint::from(original);
+    let restored: geo_types::Point<f64> = wrapper.into();
+
+    assert!(restored.x() == x, "Point x preserved");
+    assert!(restored.y() == y, "Point y preserved");
+}
+
+#[cfg(feature = "geo-types")]
+#[kani::proof]
+fn verify_geo_point_wrapper_fields() {
+    let x: f64 = kani::any();
+    let y: f64 = kani::any();
+
+    kani::assume(x.is_finite() && y.is_finite());
+
+    let original = geo_types::Point::new(x, y);
+    let wrapper = elicitation::GeoPoint::from(original);
+
+    assert!(wrapper.coord.x == x, "Point wrapper.coord.x matches");
+    assert!(wrapper.coord.y == y, "Point wrapper.coord.y matches");
+}
+
+// ── Triangle proofs ──────────────────────────────────────────────────────────
+
+#[cfg(feature = "geo-types")]
+#[kani::proof]
+fn verify_geo_triangle_from_roundtrip() {
+    let x1: f64 = kani::any();
+    let y1: f64 = kani::any();
+    let x2: f64 = kani::any();
+    let y2: f64 = kani::any();
+    let x3: f64 = kani::any();
+    let y3: f64 = kani::any();
+
+    kani::assume(x1.is_finite() && y1.is_finite());
+    kani::assume(x2.is_finite() && y2.is_finite());
+    kani::assume(x3.is_finite() && y3.is_finite());
+
+    let original = geo_types::Triangle::new(
+        geo_types::Coord { x: x1, y: y1 },
+        geo_types::Coord { x: x2, y: y2 },
+        geo_types::Coord { x: x3, y: y3 },
+    );
+    let wrapper = elicitation::GeoTriangle::from(original);
+    let restored: geo_types::Triangle<f64> = wrapper.into();
+
+    assert!(
+        restored.0.x == x1 && restored.0.y == y1,
+        "Triangle v1 preserved"
+    );
+    assert!(
+        restored.1.x == x2 && restored.1.y == y2,
+        "Triangle v2 preserved"
+    );
+    assert!(
+        restored.2.x == x3 && restored.2.y == y3,
+        "Triangle v3 preserved"
+    );
+}
+
+#[cfg(feature = "geo-types")]
+#[kani::proof]
+fn verify_geo_triangle_wrapper_fields() {
+    let x1: f64 = kani::any();
+    let y1: f64 = kani::any();
+    let x2: f64 = kani::any();
+    let y2: f64 = kani::any();
+    let x3: f64 = kani::any();
+    let y3: f64 = kani::any();
+
+    kani::assume(x1.is_finite() && y1.is_finite());
+    kani::assume(x2.is_finite() && y2.is_finite());
+    kani::assume(x3.is_finite() && y3.is_finite());
+
+    let original = geo_types::Triangle::new(
+        geo_types::Coord { x: x1, y: y1 },
+        geo_types::Coord { x: x2, y: y2 },
+        geo_types::Coord { x: x3, y: y3 },
+    );
+    let wrapper = elicitation::GeoTriangle::from(original);
+
+    assert!(
+        wrapper.v1.x == x1 && wrapper.v1.y == y1,
+        "Triangle wrapper.v1 matches"
+    );
+    assert!(
+        wrapper.v2.x == x2 && wrapper.v2.y == y2,
+        "Triangle wrapper.v2 matches"
+    );
+    assert!(
+        wrapper.v3.x == x3 && wrapper.v3.y == y3,
+        "Triangle wrapper.v3 matches"
+    );
+}
+
+// ── LineString proofs ────────────────────────────────────────────────────────
+
+#[cfg(feature = "geo-types")]
+#[kani::proof]
+fn verify_geo_line_string_length_preserved() {
+    // Two-coord concrete case (arbitrary-length Vecs are beyond Kani's scope)
+    let coord_a = geo_types::Coord {
+        x: 1.0_f64,
+        y: 2.0_f64,
+    };
+    let coord_b = geo_types::Coord {
+        x: 3.0_f64,
+        y: 4.0_f64,
+    };
+    let original = geo_types::LineString::new(vec![coord_a, coord_b]);
+    let wrapper = elicitation::GeoLineString::from(original);
+
+    assert!(wrapper.0.len() == 2, "LineString length preserved");
+    assert!(
+        wrapper.0[0].x == 1.0_f64,
+        "LineString first coord x preserved"
+    );
+    assert!(
+        wrapper.0[1].y == 4.0_f64,
+        "LineString second coord y preserved"
+    );
+}
+
+// ── MultiPoint proofs ────────────────────────────────────────────────────────
+
+#[cfg(feature = "geo-types")]
+#[kani::proof]
+fn verify_geo_multi_point_length_preserved() {
+    let p1 = geo_types::Point::new(1.0_f64, 2.0_f64);
+    let p2 = geo_types::Point::new(3.0_f64, 4.0_f64);
+    let original = geo_types::MultiPoint::new(vec![p1, p2]);
+    let wrapper = elicitation::GeoMultiPoint::from(original);
+
+    assert!(wrapper.0.len() == 2, "MultiPoint length preserved");
+    assert!(
+        wrapper.0[0].coord.x == 1.0_f64,
+        "MultiPoint first point x preserved"
+    );
+}
+
+// ── Geometry proofs ──────────────────────────────────────────────────────────
+
+#[cfg(feature = "geo-types")]
+#[kani::proof]
+fn verify_geo_geometry_point_variant() {
+    let x: f64 = kani::any();
+    let y: f64 = kani::any();
+
+    kani::assume(x.is_finite() && y.is_finite());
+
+    let original = geo_types::Geometry::Point(geo_types::Point::new(x, y));
+    let wrapper = elicitation::GeoGeometry::from(original);
+
+    assert!(
+        matches!(wrapper, elicitation::GeoGeometry::Point(_)),
+        "Point geometry variant preserved"
+    );
+}
+
+#[cfg(feature = "geo-types")]
+#[kani::proof]
+fn verify_geo_geometry_rect_variant() {
+    let original = geo_types::Geometry::Rect(geo_types::Rect::new(
+        geo_types::Coord {
+            x: 0.0_f64,
+            y: 0.0_f64,
+        },
+        geo_types::Coord {
+            x: 1.0_f64,
+            y: 1.0_f64,
+        },
+    ));
+    let wrapper = elicitation::GeoGeometry::from(original);
+
+    assert!(
+        matches!(wrapper, elicitation::GeoGeometry::Rect(_)),
+        "Rect geometry variant preserved"
+    );
+}
