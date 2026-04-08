@@ -66,15 +66,21 @@ impl Elicitation for EguiFontId {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_composite_wrapper("EguiFontId")
+        let mut ts = <f32 as crate::Elicitation>::kani_proof();
+        ts.extend(<FontFamilySelect as crate::Elicitation>::kani_proof());
+        ts
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_composite_wrapper("EguiFontId")
+        let mut ts = <f32 as crate::Elicitation>::verus_proof();
+        ts.extend(<FontFamilySelect as crate::Elicitation>::verus_proof());
+        ts
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_composite_wrapper("EguiFontId")
+        let mut ts = <f32 as crate::Elicitation>::creusot_proof();
+        ts.extend(<FontFamilySelect as crate::Elicitation>::creusot_proof());
+        ts
     }
 }
 

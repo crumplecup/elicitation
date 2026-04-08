@@ -117,15 +117,21 @@ impl Elicitation for RatatuiStyle {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_composite_wrapper("RatatuiStyle")
+        let mut ts = <bool as crate::Elicitation>::kani_proof();
+        ts.extend(<Option::<String> as crate::Elicitation>::kani_proof());
+        ts
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_composite_wrapper("RatatuiStyle")
+        let mut ts = <bool as crate::Elicitation>::verus_proof();
+        ts.extend(<Option::<String> as crate::Elicitation>::verus_proof());
+        ts
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_composite_wrapper("RatatuiStyle")
+        let mut ts = <bool as crate::Elicitation>::creusot_proof();
+        ts.extend(<Option::<String> as crate::Elicitation>::creusot_proof());
+        ts
     }
 }
 

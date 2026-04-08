@@ -93,15 +93,21 @@ impl Elicitation for EguiShadow {
     }
 
     fn kani_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::kani_composite_wrapper("EguiShadow")
+        let mut ts = <i8 as crate::Elicitation>::kani_proof();
+        ts.extend(<EguiColor32 as crate::Elicitation>::kani_proof());
+        ts
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::verus_composite_wrapper("EguiShadow")
+        let mut ts = <i8 as crate::Elicitation>::verus_proof();
+        ts.extend(<EguiColor32 as crate::Elicitation>::verus_proof());
+        ts
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
-        crate::verification::proof_helpers::creusot_composite_wrapper("EguiShadow")
+        let mut ts = <i8 as crate::Elicitation>::creusot_proof();
+        ts.extend(<EguiColor32 as crate::Elicitation>::creusot_proof());
+        ts
     }
 }
 
