@@ -6,7 +6,7 @@ use chrono::NaiveDate;
 
 use crate::ledger2::{
     AccountBalance, AccountClass, AccountNumber, Amount, BalanceSheet, Balanced, EntityId, EntryId,
-    JournalEntry, JournalEntryError, JournalEntryResult, Posted,
+    IncomeStatement, JournalEntry, JournalEntryError, JournalEntryResult, Posted, StatementPeriod,
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -311,5 +311,89 @@ impl Ledger {
     /// Returns net income for a date range (revenue - expenses).
     pub fn net_income(&self, start_date: NaiveDate, end_date: NaiveDate) -> Amount {
         self.total_revenue(start_date, end_date) - self.total_expenses(start_date, end_date)
+    }
+
+    /// Generates an income statement for a period.
+    ///
+    /// The income statement summarizes revenues and expenses for the period,
+    /// showing net income (revenue - expenses).
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// let period = StatementPeriod::monthly(2024, 1);
+    /// let statement = ledger.income_statement(&period);
+    ///
+    /// println!("Revenue: {}", statement.total_revenue());
+    /// println!("Net Income: {}", statement.net_income());
+    /// ```
+    pub fn income_statement(&self, period: &StatementPeriod) -> IncomeStatement {
+        let mut statement = IncomeStatement::new(period.clone());
+
+        // Collect revenue and expense amounts by account
+        for entry in self.entries_in_range(period.start_date(), period.end_date()) {
+            for line in entry.lines() {
+                let account = line.account();
+                let account_number = account.number().clone();
+
+                match account.class() {
+                    AccountClass::Revenue(_) => {
+                        // Revenue has credit normal balance
+                        let amount = if let Some(credit) = line.credit_amount() {
+                            statement
+                                .revenue()
+                                .get(&account_number)
+                                .cloned()
+                                .unwrap_or(Amount::from_cents(0))
+                                + credit
+                        } else if let Some(debit) = line.debit_amount() {
+                            statement
+                                .revenue()
+                                .get(&account_number)
+                                .cloned()
+                                .unwrap_or(Amount::from_cents(0))
+                                - debit
+                        } else {
+                            statement
+                                .revenue()
+                                .get(&account_number)
+                                .cloned()
+                                .unwrap_or(Amount::from_cents(0))
+                        };
+                        statement.add_revenue(account_number, amount);
+                    }
+                    AccountClass::Expense(_) => {
+                        // Expenses have debit normal balance
+                        let amount = if let Some(debit) = line.debit_amount() {
+                            statement
+                                .expenses()
+                                .get(&account_number)
+                                .cloned()
+                                .unwrap_or(Amount::from_cents(0))
+                                + debit
+                        } else if let Some(credit) = line.credit_amount() {
+                            statement
+                                .expenses()
+                                .get(&account_number)
+                                .cloned()
+                                .unwrap_or(Amount::from_cents(0))
+                                - credit
+                        } else {
+                            statement
+                                .expenses()
+                                .get(&account_number)
+                                .cloned()
+                                .unwrap_or(Amount::from_cents(0))
+                        };
+                        statement.add_expense(account_number, amount);
+                    }
+                    _ => {
+                        // Ignore balance sheet accounts (Asset, Liability, Equity)
+                    }
+                }
+            }
+        }
+
+        statement
     }
 }

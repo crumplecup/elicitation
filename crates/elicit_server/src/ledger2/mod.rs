@@ -47,6 +47,7 @@ mod errors;
 mod journal_entry;
 mod journal_line;
 mod ledger;
+mod statements;
 
 pub use account::{Account, AccountBuilder, AccountBuilderError, AccountNumber, EntityId};
 pub use account_types::{
@@ -62,3 +63,6 @@ pub use journal_entry::{
 };
 pub use journal_line::{Amount, JournalLine};
 pub use ledger::Ledger;
+pub use statements::{
+    ComparativeIncomeStatement, FinancialRatios, IncomeStatement, StatementPeriod,
+};
