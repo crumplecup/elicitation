@@ -58,6 +58,9 @@ tracing = { workspace = true }
 # UUID
 uuid = { workspace = true }
 
+# Environment variables
+dotenvy = { workspace = true }
+
 # Code recovery
 proc-macro2 = { workspace = true }
 quote = { workspace = true }

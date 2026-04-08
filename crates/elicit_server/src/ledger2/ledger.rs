@@ -75,6 +75,43 @@ impl Ledger {
         }
     }
 
+    /// Adds a posted entry directly to the ledger (for loading from database).
+    ///
+    /// This bypasses the normal post() workflow and is intended for use when
+    /// loading entries from persistent storage. It updates account balances
+    /// and adds the entry to the chronological list.
+    ///
+    /// # Errors
+    ///
+    /// Returns error if the entry belongs to a different entity.
+    pub(crate) fn add_posted_entry(
+        &mut self,
+        entry: JournalEntry<Posted>,
+    ) -> JournalEntryResult<()> {
+        // Validate entity matches
+        if entry.entity_id() != self.entity_id {
+            return Err(JournalEntryError::entity_mismatch());
+        }
+
+        // Update account balances
+        for line in entry.lines() {
+            let account_number = line.account().number().clone();
+            let balance = self
+                .balances
+                .entry(account_number.clone())
+                .or_insert_with(|| AccountBalance::new(account_number, entry.date()));
+
+            balance.apply(line.side(), line.amount());
+        }
+
+        // Store entry
+        let entry_id = entry.entry_id();
+        self.entries.insert(entry_id, entry);
+        self.chronological.push(entry_id);
+
+        Ok(())
+    }
+
     /// Returns the entity ID.
     pub fn entity_id(&self) -> EntityId {
         self.entity_id

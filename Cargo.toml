@@ -151,7 +151,10 @@ sqlx = { version = "0.8", features = [
   "sqlite",
   "mysql",
   "macros",
+  "uuid",
+  "chrono",
 ] }
+dotenvy = "0.15"
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 clap = { version = "4", features = ["derive", "string"] }
