@@ -335,6 +335,12 @@ impl VerusProof {
             Self::new("geo_types", "verify_geo_line_roundtrip"),
             Self::new("geo_types", "verify_geo_line_concrete"),
             Self::new("geo_types", "verify_geo_line_degenerate"),
+            Self::new("geo_types", "verify_geo_point_roundtrip"),
+            Self::new("geo_types", "verify_geo_point_concrete"),
+            Self::new("geo_types", "verify_geo_triangle_roundtrip"),
+            Self::new("geo_types", "verify_geo_triangle_concrete"),
+            Self::new("geo_types", "verify_geo_geometry_point_variant"),
+            Self::new("geo_types", "verify_geo_geometry_rect_variant"),
             // palette_types: shadow struct proofs
             Self::new("palette_types", "verify_palette_srgb_roundtrip"),
             Self::new("palette_types", "verify_palette_srgb_concrete"),
