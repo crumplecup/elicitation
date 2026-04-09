@@ -13,7 +13,7 @@ keywords = ["mcp", "tower", "elicitation", "middleware", "tools"]
 categories = ["network-programming", "development-tools"]
 
 [dependencies]
-elicitation = { workspace = true }
+elicitation = { workspace = true, features = ["tower-types"] }
 elicitation_derive.workspace = true
 
 tower = { workspace = true, features = ["full"] }
@@ -27,11 +27,15 @@ serde_json.workspace = true
 rmcp.workspace = true
 tracing.workspace = true
 uuid = { workspace = true, features = ["v4"] }
+futures.workspace = true
+paste.workspace = true
+tokio = { workspace = true }
 
 quote = { workspace = true }
 
 [dev-dependencies]
 serde_json.workspace = true
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 
 [features]
 default = []

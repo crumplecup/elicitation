@@ -1611,6 +1611,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_tower"
+version = "0.10.0"
+dependencies = [
+ "bytes",
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "http",
+ "paste",
+ "quote",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "elicit_ui"
 version = "0.10.0"
 dependencies = [
