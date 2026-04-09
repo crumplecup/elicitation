@@ -597,6 +597,11 @@ pub use primitives::geo_types::{
     GeoRectStyle, GeoTriangle, GeoTriangleStyle,
 };
 
+#[cfg(feature = "geo")]
+pub mod geo_algorithms;
+#[cfg(feature = "geo")]
+pub use geo_algorithms::*;
+
 // palette (feature-gated on palette)
 #[cfg(feature = "palette")]
 pub use primitives::palette_types::{PaletteSrgb, PaletteSrgbStyle};

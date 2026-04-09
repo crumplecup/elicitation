@@ -26,6 +26,7 @@ members = [
   "crates/elicit_tokio",
   "crates/elicit_ui",
   "crates/elicit_geo_types",
+  "crates/elicit_geo",
   "crates/elicit_url",
   "crates/elicit_uuid",
 ]
@@ -72,6 +73,7 @@ elicit_time = { path = "crates/elicit_time", version = "0.10.0" }
 elicit_tokio = { path = "crates/elicit_tokio", version = "0.10.0" }
 elicit_ui = { path = "crates/elicit_ui", version = "0.10.0" }
 elicit_geo_types = { path = "crates/elicit_geo_types", version = "0.10.0" }
+elicit_geo = { path = "crates/elicit_geo", version = "0.10.0" }
 elicit_url = { path = "crates/elicit_url", version = "0.10.0" }
 elicit_uuid = { path = "crates/elicit_uuid", version = "0.10.0" }
 

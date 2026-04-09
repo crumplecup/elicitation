@@ -310,49 +310,70 @@ mod egui_types_tests {
     fn egui_color32_delegates_to_u8() {
         let outer = EguiColor32::kani_proof().to_string();
         let inner = <u8 as Elicitation>::kani_proof().to_string();
-        assert!(outer.contains(&inner), "EguiColor32 should delegate to u8\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "EguiColor32 should delegate to u8\nouter: {outer}\ninner: {inner}"
+        );
     }
 
     #[test]
     fn egui_corner_radius_delegates_to_u8() {
         let outer = EguiCornerRadius::kani_proof().to_string();
         let inner = <u8 as Elicitation>::kani_proof().to_string();
-        assert!(outer.contains(&inner), "EguiCornerRadius should delegate to u8\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "EguiCornerRadius should delegate to u8\nouter: {outer}\ninner: {inner}"
+        );
     }
 
     #[test]
     fn egui_margin_delegates_to_i8() {
         let outer = EguiMargin::kani_proof().to_string();
         let inner = <i8 as Elicitation>::kani_proof().to_string();
-        assert!(outer.contains(&inner), "EguiMargin should delegate to i8\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "EguiMargin should delegate to i8\nouter: {outer}\ninner: {inner}"
+        );
     }
 
     #[test]
     fn egui_pos2_delegates_to_f32() {
         let outer = EguiPos2::kani_proof().to_string();
         let inner = <f32 as Elicitation>::kani_proof().to_string();
-        assert!(outer.contains(&inner), "EguiPos2 should delegate to f32\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "EguiPos2 should delegate to f32\nouter: {outer}\ninner: {inner}"
+        );
     }
 
     #[test]
     fn egui_vec2_delegates_to_f32() {
         let outer = EguiVec2::kani_proof().to_string();
         let inner = <f32 as Elicitation>::kani_proof().to_string();
-        assert!(outer.contains(&inner), "EguiVec2 should delegate to f32\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "EguiVec2 should delegate to f32\nouter: {outer}\ninner: {inner}"
+        );
     }
 
     #[test]
     fn egui_rect_delegates_to_f32() {
         let outer = EguiRect::kani_proof().to_string();
         let inner = <f32 as Elicitation>::kani_proof().to_string();
-        assert!(outer.contains(&inner), "EguiRect should delegate to f32\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "EguiRect should delegate to f32\nouter: {outer}\ninner: {inner}"
+        );
     }
 
     #[test]
     fn egui_font_id_delegates_to_f32() {
         let outer = EguiFontId::kani_proof().to_string();
         let inner = <f32 as Elicitation>::kani_proof().to_string();
-        assert!(outer.contains(&inner), "EguiFontId should delegate to f32\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "EguiFontId should delegate to f32\nouter: {outer}\ninner: {inner}"
+        );
     }
 
     #[test]
@@ -360,35 +381,50 @@ mod egui_types_tests {
         let outer = EguiFontId::kani_proof().to_string();
         // FontFamilySelect proof must be present
         // (indirect check: outer is superset of f32, which is sufficient for this slot)
-        assert!(!outer.is_empty(), "EguiFontId::kani_proof() must be non-empty");
+        assert!(
+            !outer.is_empty(),
+            "EguiFontId::kani_proof() must be non-empty"
+        );
     }
 
     #[test]
     fn egui_shadow_delegates_to_color32() {
         let outer = EguiShadow::kani_proof().to_string();
         let inner = EguiColor32::kani_proof().to_string();
-        assert!(outer.contains(&inner), "EguiShadow should contain EguiColor32 proof\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "EguiShadow should contain EguiColor32 proof\nouter: {outer}\ninner: {inner}"
+        );
     }
 
     #[test]
     fn egui_shadow_delegates_to_i8() {
         let outer = EguiShadow::kani_proof().to_string();
         let inner = <i8 as Elicitation>::kani_proof().to_string();
-        assert!(outer.contains(&inner), "EguiShadow should contain i8 proof\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "EguiShadow should contain i8 proof\nouter: {outer}\ninner: {inner}"
+        );
     }
 
     #[test]
     fn egui_stroke_delegates_to_f32() {
         let outer = EguiStroke::kani_proof().to_string();
         let inner = <f32 as Elicitation>::kani_proof().to_string();
-        assert!(outer.contains(&inner), "EguiStroke should contain f32 proof\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "EguiStroke should contain f32 proof\nouter: {outer}\ninner: {inner}"
+        );
     }
 
     #[test]
     fn egui_stroke_delegates_to_color32() {
         let outer = EguiStroke::kani_proof().to_string();
         let inner = EguiColor32::kani_proof().to_string();
-        assert!(outer.contains(&inner), "EguiStroke should contain EguiColor32 proof\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "EguiStroke should contain EguiColor32 proof\nouter: {outer}\ninner: {inner}"
+        );
     }
 }
 
@@ -401,7 +437,10 @@ mod palette_types_tests {
     fn palette_srgb_delegates_to_f32() {
         let outer = PaletteSrgb::kani_proof().to_string();
         let inner = <f32 as Elicitation>::kani_proof().to_string();
-        assert!(outer.contains(&inner), "PaletteSrgb should delegate to f32\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "PaletteSrgb should delegate to f32\nouter: {outer}\ninner: {inner}"
+        );
     }
 }
 
@@ -414,20 +453,29 @@ mod ratatui_types_tests {
     fn ratatui_margin_delegates_to_u16() {
         let outer = RatatuiMargin::kani_proof().to_string();
         let inner = <u16 as Elicitation>::kani_proof().to_string();
-        assert!(outer.contains(&inner), "RatatuiMargin should delegate to u16\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "RatatuiMargin should delegate to u16\nouter: {outer}\ninner: {inner}"
+        );
     }
 
     #[test]
     fn ratatui_padding_delegates_to_u16() {
         let outer = RatatuiPadding::kani_proof().to_string();
         let inner = <u16 as Elicitation>::kani_proof().to_string();
-        assert!(outer.contains(&inner), "RatatuiPadding should delegate to u16\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "RatatuiPadding should delegate to u16\nouter: {outer}\ninner: {inner}"
+        );
     }
 
     #[test]
     fn ratatui_style_delegates_to_bool() {
         let outer = RatatuiStyle::kani_proof().to_string();
         let inner = <bool as Elicitation>::kani_proof().to_string();
-        assert!(outer.contains(&inner), "RatatuiStyle should contain bool proof\nouter: {outer}\ninner: {inner}");
+        assert!(
+            outer.contains(&inner),
+            "RatatuiStyle should contain bool proof\nouter: {outer}\ninner: {inner}"
+        );
     }
 }

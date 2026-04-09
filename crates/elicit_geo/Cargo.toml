@@ -1,0 +1,36 @@
+[package]
+name = "elicit_geo"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled geo algorithms MCP tools — predicates, measurements, transformations"
+keywords = ["mcp", "geo", "geometry", "algorithms", "elicitation"]
+categories = ["science::geo", "mathematics", "algorithms", "development-tools"]
+
+[dependencies]
+elicitation = { workspace = true, features = ["geo", "geo-types"] }
+elicit_geo_types = { workspace = true }
+geo = { workspace = true }
+geo-types = { workspace = true }
+rmcp = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+
+[features]
+default = []
+emit = ["elicitation/emit"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

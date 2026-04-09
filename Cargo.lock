@@ -1268,6 +1268,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_geo"
+version = "0.10.0"
+dependencies = [
+ "elicit_geo_types",
+ "elicitation",
+ "geo",
+ "geo-types",
+ "proc-macro2",
+ "quote",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tracing",
+]
+
+[[package]]
 name = "elicit_geo_types"
 version = "0.10.0"
 dependencies = [
@@ -1604,6 +1621,7 @@ dependencies = [
  "elicitation_macros",
  "erased-serde",
  "futures",
+ "geo",
  "geo-types",
  "http",
  "inventory",

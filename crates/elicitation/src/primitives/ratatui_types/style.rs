@@ -118,19 +118,19 @@ impl Elicitation for RatatuiStyle {
 
     fn kani_proof() -> proc_macro2::TokenStream {
         let mut ts = <bool as crate::Elicitation>::kani_proof();
-        ts.extend(<Option::<String> as crate::Elicitation>::kani_proof());
+        ts.extend(<Option<String> as crate::Elicitation>::kani_proof());
         ts
     }
 
     fn verus_proof() -> proc_macro2::TokenStream {
         let mut ts = <bool as crate::Elicitation>::verus_proof();
-        ts.extend(<Option::<String> as crate::Elicitation>::verus_proof());
+        ts.extend(<Option<String> as crate::Elicitation>::verus_proof());
         ts
     }
 
     fn creusot_proof() -> proc_macro2::TokenStream {
         let mut ts = <bool as crate::Elicitation>::creusot_proof();
-        ts.extend(<Option::<String> as crate::Elicitation>::creusot_proof());
+        ts.extend(<Option<String> as crate::Elicitation>::creusot_proof());
         ts
     }
 }

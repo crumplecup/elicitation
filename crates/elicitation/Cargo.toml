@@ -76,6 +76,7 @@ syn = { workspace = true }
 
 # GeoRust spatial types (optional)
 geo-types = { workspace = true, optional = true }
+geo = { workspace = true, optional = true }
 
 # Color science (optional)
 palette = { workspace = true, optional = true }
@@ -103,7 +104,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "emit"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "emit"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -161,6 +162,7 @@ accesskit = ["dep:accesskit"]
 egui-types = ["dep:egui"]
 ratatui = ["dep:ratatui"]
 geo-types = ["dep:geo-types"]
+geo = ["dep:geo", "geo-types"]
 palette = ["dep:palette"]
 
 [lints.rust]
