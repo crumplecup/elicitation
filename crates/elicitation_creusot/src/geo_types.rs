@@ -229,7 +229,8 @@ pub fn verify_geo_line_string_concrete() -> bool {
         x: 3.0_f64,
         y: 4.0_f64,
     };
-    let original = geo_types::LineString::new(vec![coord_a, coord_b]);
+    // Use ::std::vec! to avoid ambiguity with creusot_std::prelude::* glob import.
+    let original = geo_types::LineString::new(::std::vec![coord_a, coord_b]);
     let wrapper = elicitation::GeoLineString::from(original);
     wrapper.0.len() == 2 && wrapper.0[0].x == 1.0_f64 && wrapper.0[1].y == 4.0_f64
 }
