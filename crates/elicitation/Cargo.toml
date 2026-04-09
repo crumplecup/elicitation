@@ -78,6 +78,10 @@ syn = { workspace = true }
 geo-types = { workspace = true, optional = true }
 geo = { workspace = true, optional = true }
 
+# Tower middleware types (optional)
+tower = { workspace = true, features = ["full"], optional = true }
+tower-http = { workspace = true, features = ["full"], optional = true }
+
 # Color science (optional)
 palette = { workspace = true, optional = true }
 
@@ -104,7 +108,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "emit"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "tower-types", "emit"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -163,6 +167,8 @@ egui-types = ["dep:egui"]
 ratatui = ["dep:ratatui"]
 geo-types = ["dep:geo-types"]
 geo = ["dep:geo", "geo-types"]
+# Enable tower middleware type elicitation
+tower-types = ["dep:tower", "dep:tower-http"]
 palette = ["dep:palette"]
 
 [lints.rust]

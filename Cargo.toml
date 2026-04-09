@@ -29,10 +29,6 @@ members = [
   "crates/elicit_geo",
   "crates/elicit_url",
   "crates/elicit_uuid",
-  "crates/elicit_tower",
-  "crates/elicit_axum_core",
-  "crates/elicit_axum",
-  "crates/elicit_axum_fragments",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
@@ -80,10 +76,6 @@ elicit_geo_types = { path = "crates/elicit_geo_types", version = "0.10.0" }
 elicit_geo = { path = "crates/elicit_geo", version = "0.10.0" }
 elicit_url = { path = "crates/elicit_url", version = "0.10.0" }
 elicit_uuid = { path = "crates/elicit_uuid", version = "0.10.0" }
-elicit_tower = { path = "crates/elicit_tower", version = "0.10.0" }
-elicit_axum_core = { path = "crates/elicit_axum_core", version = "0.10.0" }
-elicit_axum = { path = "crates/elicit_axum", version = "0.10.0" }
-elicit_axum_fragments = { path = "crates/elicit_axum_fragments", version = "0.10.0" }
 
 # ── MCP ───────────────────────────────────────────────────────────────────────
 rmcp = { version = "1.3", features = [

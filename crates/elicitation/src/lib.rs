@@ -605,3 +605,20 @@ pub use geo_algorithms::*;
 // palette (feature-gated on palette)
 #[cfg(feature = "palette")]
 pub use primitives::palette_types::{PaletteSrgb, PaletteSrgbStyle};
+
+// tower + tower-http (feature-gated on tower-types)
+#[cfg(feature = "tower-types")]
+pub use primitives::tower_types::{
+    TowerAndThenHandle, TowerBoxServiceHandle, TowerBufferHandle, TowerBufferLayer,
+    TowerCatchPanicLayer, TowerClosed, TowerCompressionLayer, TowerConcurrencyLimitHandle,
+    TowerConcurrencyLimitLayer, TowerCorsLayer, TowerDecompressionLayer, TowerElapsed,
+    TowerExponentialBackoffMaker, TowerFilterHandle, TowerFilterLayer, TowerHttpServiceHandle,
+    TowerHttpTimeoutLayer, TowerLoadShedHandle, TowerLoadShedLayer, TowerMapErrHandle,
+    TowerMapRequestHandle, TowerMapResponseHandle, TowerNormalizePathLayer, TowerOverloaded,
+    TowerPropagateHeaderLayer, TowerRate, TowerRateLimitHandle, TowerRateLimitLayer,
+    TowerRetryHandle, TowerRetryLayer, TowerServiceBuilderHandle, TowerServiceError,
+    TowerSetRequestHeaderLayer, TowerSetResponseHeaderLayer, TowerSetSensitiveRequestHeadersLayer,
+    TowerSetSensitiveResponseHeadersLayer, TowerSetStatusLayer, TowerSpawnReadyLayer,
+    TowerThenHandle, TowerTimeoutHandle, TowerTimeoutLayer, TowerTpsBudget, TowerTraceLayer,
+    TowerValidateRequestHeaderLayer,
+};

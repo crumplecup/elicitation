@@ -63,3 +63,6 @@ pub mod geo_types;
 
 #[cfg(feature = "palette")]
 pub mod palette_types;
+
+#[cfg(feature = "tower-types")]
+pub mod tower_types;
