@@ -209,10 +209,19 @@ fn verify_geo_triangle_from_roundtrip() {
     // roundtrip may permute v1↔v3. Assert vertex-set preservation instead of
     // positional equality.
     let orig = [original.0, original.1, original.2];
-    let r0_ok = orig.iter().any(|v| v.x == restored.0.x && v.y == restored.0.y);
-    let r1_ok = orig.iter().any(|v| v.x == restored.1.x && v.y == restored.1.y);
-    let r2_ok = orig.iter().any(|v| v.x == restored.2.x && v.y == restored.2.y);
-    assert!(r0_ok && r1_ok && r2_ok, "Triangle vertex set preserved through roundtrip");
+    let r0_ok = orig
+        .iter()
+        .any(|v| v.x == restored.0.x && v.y == restored.0.y);
+    let r1_ok = orig
+        .iter()
+        .any(|v| v.x == restored.1.x && v.y == restored.1.y);
+    let r2_ok = orig
+        .iter()
+        .any(|v| v.x == restored.2.x && v.y == restored.2.y);
+    assert!(
+        r0_ok && r1_ok && r2_ok,
+        "Triangle vertex set preserved through roundtrip"
+    );
 }
 
 #[cfg(feature = "geo-types")]

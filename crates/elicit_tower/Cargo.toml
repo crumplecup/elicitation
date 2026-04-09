@@ -1,0 +1,32 @@
+[package]
+name = "elicit_tower"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled Tower service/layer + tower-http middleware MCP tools"
+keywords = ["mcp", "tower", "http", "middleware", "elicitation"]
+categories = ["web-programming", "network-programming", "development-tools"]
+
+[dependencies]
+elicitation = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+http = { workspace = true }
+rmcp = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[features]
+default = []
+emit = ["elicitation/emit"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
