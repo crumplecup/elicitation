@@ -191,6 +191,11 @@ fn verify_geo_triangle_from_roundtrip() {
     kani::assume(x1.is_finite() && y1.is_finite());
     kani::assume(x2.is_finite() && y2.is_finite());
     kani::assume(x3.is_finite() && y3.is_finite());
+    // Bound to prevent cross-product intermediate overflow (finite * finite can
+    // exceed f64::MAX, yielding ±infinity, whose subtraction produces NaN).
+    kani::assume(x1.abs() < 1e150 && y1.abs() < 1e150);
+    kani::assume(x2.abs() < 1e150 && y2.abs() < 1e150);
+    kani::assume(x3.abs() < 1e150 && y3.abs() < 1e150);
 
     let original = geo_types::Triangle::new(
         geo_types::Coord { x: x1, y: y1 },
@@ -200,18 +205,14 @@ fn verify_geo_triangle_from_roundtrip() {
     let wrapper = elicitation::GeoTriangle::from(original);
     let restored: geo_types::Triangle<f64> = wrapper.into();
 
-    assert!(
-        restored.0.x == x1 && restored.0.y == y1,
-        "Triangle v1 preserved"
-    );
-    assert!(
-        restored.1.x == x2 && restored.1.y == y2,
-        "Triangle v2 preserved"
-    );
-    assert!(
-        restored.2.x == x3 && restored.2.y == y3,
-        "Triangle v3 preserved"
-    );
+    // geo_types::Triangle::new reorders vertices to CCW orientation, so the
+    // roundtrip may permute v1↔v3. Assert vertex-set preservation instead of
+    // positional equality.
+    let orig = [original.0, original.1, original.2];
+    let r0_ok = orig.iter().any(|v| v.x == restored.0.x && v.y == restored.0.y);
+    let r1_ok = orig.iter().any(|v| v.x == restored.1.x && v.y == restored.1.y);
+    let r2_ok = orig.iter().any(|v| v.x == restored.2.x && v.y == restored.2.y);
+    assert!(r0_ok && r1_ok && r2_ok, "Triangle vertex set preserved through roundtrip");
 }
 
 #[cfg(feature = "geo-types")]
@@ -227,6 +228,10 @@ fn verify_geo_triangle_wrapper_fields() {
     kani::assume(x1.is_finite() && y1.is_finite());
     kani::assume(x2.is_finite() && y2.is_finite());
     kani::assume(x3.is_finite() && y3.is_finite());
+    // Bound to prevent cross-product intermediate overflow.
+    kani::assume(x1.abs() < 1e150 && y1.abs() < 1e150);
+    kani::assume(x2.abs() < 1e150 && y2.abs() < 1e150);
+    kani::assume(x3.abs() < 1e150 && y3.abs() < 1e150);
 
     let original = geo_types::Triangle::new(
         geo_types::Coord { x: x1, y: y1 },
@@ -235,17 +240,20 @@ fn verify_geo_triangle_wrapper_fields() {
     );
     let wrapper = elicitation::GeoTriangle::from(original);
 
+    // geo_types::Triangle::new may reorder to CCW — the wrapper faithfully
+    // mirrors whatever order Triangle stored, so assert against original.0/.1/.2
+    // rather than against the raw x1/x2/x3 inputs.
     assert!(
-        wrapper.v1.x == x1 && wrapper.v1.y == y1,
-        "Triangle wrapper.v1 matches"
+        wrapper.v1.x == original.0.x && wrapper.v1.y == original.0.y,
+        "Triangle wrapper.v1 mirrors original.0"
     );
     assert!(
-        wrapper.v2.x == x2 && wrapper.v2.y == y2,
-        "Triangle wrapper.v2 matches"
+        wrapper.v2.x == original.1.x && wrapper.v2.y == original.1.y,
+        "Triangle wrapper.v2 mirrors original.1"
     );
     assert!(
-        wrapper.v3.x == x3 && wrapper.v3.y == y3,
-        "Triangle wrapper.v3 matches"
+        wrapper.v3.x == original.2.x && wrapper.v3.y == original.2.y,
+        "Triangle wrapper.v3 mirrors original.2"
     );
 }
 
