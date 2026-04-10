@@ -1,4 +1,5 @@
-//! `GeoTransformationsPlugin` — MCP tools for translate, rotate, scale, simplify, and remove_repeated_points.
+//! `GeoTransformationsPlugin` — MCP tools for translate, rotate, scale, skew, simplify,
+//! densify, smooth, map_coords, and remove_repeated_points.
 
 use elicit_geo_types::{LineString, Polygon};
 use elicitation::contracts::Established;
@@ -315,6 +316,266 @@ async fn remove_repeated_points_linestring(
     Ok(CallToolResult::success(vec![Content::text(
         serde_json::to_string(&wrapped).map_err(json_err)?,
     )]))
+}
+
+// ── Skew ──────────────────────────────────────────────────────────────────────
+
+/// Parameters for skewing a linestring.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct SkewLinestringParams {
+    /// The linestring to skew.
+    pub linestring: LineString,
+    /// Skew angle along the x axis in degrees.
+    pub x_degrees: f64,
+    /// Skew angle along the y axis in degrees.
+    pub y_degrees: f64,
+}
+
+/// Parameters for skewing a polygon.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct SkewPolygonParams {
+    /// The polygon to skew.
+    pub polygon: Polygon,
+    /// Skew angle along the x axis in degrees.
+    pub x_degrees: f64,
+    /// Skew angle along the y axis in degrees.
+    pub y_degrees: f64,
+}
+
+#[elicit_tool(
+    plugin = "geo_transformations",
+    name = "skew_linestring",
+    description = "Skew a linestring by independent x and y shear angles (degrees). Returns a JSON LineString."
+)]
+#[instrument]
+async fn skew_linestring(p: SkewLinestringParams) -> Result<CallToolResult, ErrorData> {
+    use elicitation::GeoLineString;
+    use geo::Skew;
+    let raw: geo_types::LineString<f64> = geo_types::LineString::from((*p.linestring).clone());
+    let result = raw.skew_xy(p.x_degrees, p.y_degrees);
+    let wrapped = LineString::from(GeoLineString::from(result));
+    let _proof = Established::<TransformationApplied>::assert();
+    Ok(CallToolResult::success(vec![Content::text(
+        serde_json::to_string(&wrapped).map_err(json_err)?,
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "geo_transformations",
+    name = "skew_polygon",
+    description = "Skew a polygon by independent x and y shear angles (degrees). Returns a JSON Polygon."
+)]
+#[instrument]
+async fn skew_polygon(p: SkewPolygonParams) -> Result<CallToolResult, ErrorData> {
+    use elicitation::GeoPolygon;
+    use geo::Skew;
+    let raw: geo_types::Polygon<f64> = geo_types::Polygon::from((*p.polygon).clone());
+    let result = raw.skew_xy(p.x_degrees, p.y_degrees);
+    let wrapped = Polygon::from(GeoPolygon::from(result));
+    let _proof = Established::<TransformationApplied>::assert();
+    Ok(CallToolResult::success(vec![Content::text(
+        serde_json::to_string(&wrapped).map_err(json_err)?,
+    )]))
+}
+
+// ── ChaikinSmoothing ──────────────────────────────────────────────────────────
+
+/// Parameters for smoothing a linestring via Chaikin's algorithm.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct SmoothLinestringParams {
+    /// The linestring to smooth.
+    pub linestring: LineString,
+    /// Number of smoothing iterations. Each iteration doubles the vertex count.
+    pub n_iterations: u32,
+}
+
+/// Parameters for smoothing a polygon via Chaikin's algorithm.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct SmoothPolygonParams {
+    /// The polygon to smooth.
+    pub polygon: Polygon,
+    /// Number of smoothing iterations. Each iteration doubles the vertex count.
+    pub n_iterations: u32,
+}
+
+#[elicit_tool(
+    plugin = "geo_transformations",
+    name = "smooth_linestring",
+    description = "Smooth a linestring using Chaikin's algorithm. Each iteration doubles vertex count; \
+                   consider simplifying afterward. Returns a JSON LineString."
+)]
+#[instrument]
+async fn smooth_linestring(p: SmoothLinestringParams) -> Result<CallToolResult, ErrorData> {
+    use elicitation::GeoLineString;
+    use geo::ChaikinSmoothing;
+    let raw: geo_types::LineString<f64> = geo_types::LineString::from((*p.linestring).clone());
+    let result = raw.chaikin_smoothing(p.n_iterations as usize);
+    let wrapped = LineString::from(GeoLineString::from(result));
+    let _proof = Established::<TransformationApplied>::assert();
+    Ok(CallToolResult::success(vec![Content::text(
+        serde_json::to_string(&wrapped).map_err(json_err)?,
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "geo_transformations",
+    name = "smooth_polygon",
+    description = "Smooth a polygon using Chaikin's algorithm. Each iteration doubles vertex count; \
+                   consider simplifying afterward. Returns a JSON Polygon."
+)]
+#[instrument]
+async fn smooth_polygon(p: SmoothPolygonParams) -> Result<CallToolResult, ErrorData> {
+    use elicitation::GeoPolygon;
+    use geo::ChaikinSmoothing;
+    let raw: geo_types::Polygon<f64> = geo_types::Polygon::from((*p.polygon).clone());
+    let result = raw.chaikin_smoothing(p.n_iterations as usize);
+    let wrapped = Polygon::from(GeoPolygon::from(result));
+    let _proof = Established::<TransformationApplied>::assert();
+    Ok(CallToolResult::success(vec![Content::text(
+        serde_json::to_string(&wrapped).map_err(json_err)?,
+    )]))
+}
+
+// ── Densify ───────────────────────────────────────────────────────────────────
+
+/// Parameters for densifying a linestring.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct DensifyLinestringParams {
+    /// The linestring to densify.
+    pub linestring: LineString,
+    /// Maximum Euclidean segment length (same units as coordinates). Must be > 0.
+    pub max_segment_length: f64,
+}
+
+/// Parameters for densifying a polygon.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct DensifyPolygonParams {
+    /// The polygon to densify.
+    pub polygon: Polygon,
+    /// Maximum Euclidean segment length (same units as coordinates). Must be > 0.
+    pub max_segment_length: f64,
+}
+
+#[elicit_tool(
+    plugin = "geo_transformations",
+    name = "densify_linestring",
+    description = "Add intermediate points to a linestring so no segment exceeds max_segment_length \
+                   (Euclidean). For geodetic coordinates use max_segment_length in meters and note \
+                   that Euclidean is approximate — prefer densify_haversine for lat/lng. \
+                   Returns a JSON LineString."
+)]
+#[instrument]
+async fn densify_linestring(p: DensifyLinestringParams) -> Result<CallToolResult, ErrorData> {
+    use elicitation::GeoLineString;
+    use geo::Densify;
+    use geo::line_measures::Euclidean;
+    let raw: geo_types::LineString<f64> = geo_types::LineString::from((*p.linestring).clone());
+    let result = Euclidean.densify(&raw, p.max_segment_length);
+    let wrapped = LineString::from(GeoLineString::from(result));
+    let _proof = Established::<TransformationApplied>::assert();
+    Ok(CallToolResult::success(vec![Content::text(
+        serde_json::to_string(&wrapped).map_err(json_err)?,
+    )]))
+}
+
+#[elicit_tool(
+    plugin = "geo_transformations",
+    name = "densify_polygon",
+    description = "Add intermediate points to a polygon so no edge segment exceeds max_segment_length \
+                   (Euclidean). Returns a JSON Polygon."
+)]
+#[instrument]
+async fn densify_polygon(p: DensifyPolygonParams) -> Result<CallToolResult, ErrorData> {
+    use elicitation::GeoPolygon;
+    use geo::Densify;
+    use geo::line_measures::Euclidean;
+    let raw: geo_types::Polygon<f64> = geo_types::Polygon::from((*p.polygon).clone());
+    let result = Euclidean.densify(&raw, p.max_segment_length);
+    let wrapped = Polygon::from(GeoPolygon::from(result));
+    let _proof = Established::<TransformationApplied>::assert();
+    Ok(CallToolResult::success(vec![Content::text(
+        serde_json::to_string(&wrapped).map_err(json_err)?,
+    )]))
+}
+
+// ── map_coords (code fragment) ────────────────────────────────────────────────
+
+/// Parameters for emitting a map_coords code fragment for a point.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct MapCoordsPointParams {
+    /// Rust expression for the variable holding the `Point` (e.g. `"my_point"`).
+    pub point_var: String,
+    /// Rust closure or fn expression transforming a `Coord<f64>` to `Coord<f64>`.
+    /// Example: `"|coord: geo::Coord| geo::Coord { x: coord.x * scale, y: coord.y }"`
+    pub transform_fn: String,
+}
+
+/// Parameters for emitting a map_coords code fragment for a linestring.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct MapCoordsLinestringParams {
+    /// Rust expression for the variable holding the `LineString` (e.g. `"my_ls"`).
+    pub linestring_var: String,
+    /// Rust closure or fn expression transforming a `Coord<f64>` to `Coord<f64>`.
+    /// Example: `"|coord: geo::Coord| geo::Coord { x: coord.x + 1.0, y: coord.y + 1.0 }"`
+    pub transform_fn: String,
+}
+
+/// Parameters for emitting a map_coords code fragment for a polygon.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct MapCoordsPolygonParams {
+    /// Rust expression for the variable holding the `Polygon` (e.g. `"my_polygon"`).
+    pub polygon_var: String,
+    /// Rust closure or fn expression transforming a `Coord<f64>` to `Coord<f64>`.
+    /// Example: `"|coord: geo::Coord| geo::Coord { x: coord.x.to_radians(), y: coord.y.to_radians() }"`
+    pub transform_fn: String,
+}
+
+#[elicit_tool(
+    plugin = "geo_transformations",
+    name = "map_coords_point",
+    description = "Emit a Rust code fragment applying a coordinate transform closure to a Point. \
+                   The transform_fn is a Rust closure `|coord: geo::Coord| -> geo::Coord { ... }`. \
+                   Returns a Rust expression string, not a computed value."
+)]
+#[instrument]
+async fn map_coords_point(p: MapCoordsPointParams) -> Result<CallToolResult, ErrorData> {
+    let fragment = format!(
+        "use geo::MapCoords;\nlet result = {}.map_coords({});",
+        p.point_var, p.transform_fn
+    );
+    Ok(CallToolResult::success(vec![Content::text(fragment)]))
+}
+
+#[elicit_tool(
+    plugin = "geo_transformations",
+    name = "map_coords_linestring",
+    description = "Emit a Rust code fragment applying a coordinate transform closure to a LineString. \
+                   The transform_fn is a Rust closure `|coord: geo::Coord| -> geo::Coord { ... }`. \
+                   Returns a Rust expression string, not a computed value."
+)]
+#[instrument]
+async fn map_coords_linestring(p: MapCoordsLinestringParams) -> Result<CallToolResult, ErrorData> {
+    let fragment = format!(
+        "use geo::MapCoords;\nlet result = {}.map_coords({});",
+        p.linestring_var, p.transform_fn
+    );
+    Ok(CallToolResult::success(vec![Content::text(fragment)]))
+}
+
+#[elicit_tool(
+    plugin = "geo_transformations",
+    name = "map_coords_polygon",
+    description = "Emit a Rust code fragment applying a coordinate transform closure to a Polygon. \
+                   The transform_fn is a Rust closure `|coord: geo::Coord| -> geo::Coord { ... }`. \
+                   Returns a Rust expression string, not a computed value."
+)]
+#[instrument]
+async fn map_coords_polygon(p: MapCoordsPolygonParams) -> Result<CallToolResult, ErrorData> {
+    let fragment = format!(
+        "use geo::MapCoords;\nlet result = {}.map_coords({});",
+        p.polygon_var, p.transform_fn
+    );
+    Ok(CallToolResult::success(vec![Content::text(fragment)]))
 }
 
 /// Plugin exposing geometric transformation tools.

@@ -14,6 +14,6 @@ pub use calculations_plugin::GeoCalculationsPlugin;
 pub use geodesic_plugin::GeoGeodesicPlugin;
 pub use measurements_plugin::GeoMeasurementsPlugin;
 pub use predicates_plugin::GeoPredicatesPlugin;
-pub use transformations_plugin::GeoTransformationsPlugin;
+pub use transformations_plugin::{GeoTransformationsPlugin, TransformationApplied};
 pub use validation_plugin::GeoValidationPlugin;
 pub use workflow_plugin::GeoWorkflowPlugin;
