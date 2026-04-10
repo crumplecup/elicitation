@@ -15,7 +15,7 @@ Layer configurations are serializable survey structs stored in UUID-keyed
 registries server-side. Agents interact via opaque `layer_id` handles and call
 `*__layer_describe` to inspect what was created.
 
-Three plugins cover the full tower + tower-http surface:
+Seven plugins cover the full tower + tower-http surface:
 
 1. **`TowerLimitPlugin`** — core flow-control layers (concurrency, rate,
    timeout, buffer, load-shed, spawn-ready)
@@ -23,6 +23,13 @@ Three plugins cover the full tower + tower-http surface:
    and service filters
 3. **`TowerHttpPlugin`** — all tower-http middleware layers (compression,
    tracing, CORS, headers, timeouts, …)
+4. **`TowerUtilPlugin`** — utility layers (map-err, map-request, map-response,
+   map-future, then, and-then, box-clone-service, box-service)
+5. **`TowerBuilderPlugin`** — `ServiceBuilder` composition (layer stacking,
+   `make_service`, `into_inner`)
+6. **`TowerBalancePlugin`** — load-balanced service sets (p2c with peak-ewma
+   or pending-requests, `Balance` service, `Discover`-based construction)
+7. **`TowerSteerPlugin`** — request steering (`Steer` + index-based selector)
 
 ---
 
@@ -36,16 +43,27 @@ rmcp = { version = "0.1", features = ["server"] }
 
 ```rust,no_run
 use elicitation::PluginRegistry;
-use elicit_tower::{TowerLimitPlugin, TowerRetryPlugin, TowerHttpPlugin};
+use elicit_tower::{
+    TowerBalancePlugin, TowerBuilderPlugin, TowerHttpPlugin,
+    TowerLimitPlugin, TowerRetryPlugin, TowerSteerPlugin, TowerUtilPlugin,
+};
 
 let registry = PluginRegistry::new()
-    .register("tower_limit", TowerLimitPlugin::new())
-    .register("tower_retry", TowerRetryPlugin::new())
-    .register("tower_http",  TowerHttpPlugin::new());
+    .register("tower_limit",   TowerLimitPlugin::new())
+    .register("tower_retry",   TowerRetryPlugin::new())
+    .register("tower_http",    TowerHttpPlugin::new())
+    .register("tower_util",    TowerUtilPlugin::new())
+    .register("tower_builder", TowerBuilderPlugin::new())
+    .register("tower_balance", TowerBalancePlugin::new())
+    .register("tower_steer",   TowerSteerPlugin::new());
 
-// Limit tools:  tower_limit__concurrency_limit_layer_new, tower_limit__timeout_layer_new, …
-// Retry tools:  tower_retry__backoff_new, tower_retry__retry_layer_new, …
-// HTTP tools:   tower_http__compression_layer_new, tower_http__cors_layer_new, …
+// Limit tools:   tower_limit__concurrency_limit_layer_new, …
+// Retry tools:   tower_retry__backoff_new, tower_retry__retry_layer_new, …
+// HTTP tools:    tower_http__compression_layer_new, tower_http__cors_layer_new, …
+// Util tools:    tower_util__map_err_layer_new, tower_util__box_service_new, …
+// Builder tools: tower_builder__new, tower_builder__layer, …
+// Balance tools: tower_balance__peak_ewma_new, tower_balance__balance_new, …
+// Steer tools:   tower_steer__steer_new, tower_steer__describe, …
 ```
 
 ---
@@ -54,9 +72,13 @@ let registry = PluginRegistry::new()
 
 | Plugin | Namespace | Tool count | Notes |
 |---|---|---|---|
-| [`TowerLimitPlugin`] | `tower_limit__*` | 8 | Rate, concurrency, timeout, buffer, load-shed, spawn-ready |
-| [`TowerRetryPlugin`] | `tower_retry__*` | 6 | Exponential backoff, TPS budget, retry + filter layers |
-| [`TowerHttpPlugin`]  | `tower_http__*`  | 15 | All tower-http layers + describe |
+| [`TowerLimitPlugin`]   | `tower_limit__*`   | 8  | Rate, concurrency, timeout, buffer, load-shed, spawn-ready |
+| [`TowerRetryPlugin`]   | `tower_retry__*`   | 6  | Exponential backoff, TPS budget, retry + filter layers |
+| [`TowerHttpPlugin`]    | `tower_http__*`    | 15 | All tower-http layers + describe |
+| [`TowerUtilPlugin`]    | `tower_util__*`    | 10 | map-err/req/res/future, then, and-then, box-clone, box-service |
+| [`TowerBuilderPlugin`] | `tower_builder__*` | 4  | ServiceBuilder composition: layer, make_service, into_inner |
+| [`TowerBalancePlugin`] | `tower_balance__*` | 4  | P2c load balancing: peak-ewma, pending-requests, balance |
+| [`TowerSteerPlugin`]   | `tower_steer__*`   | 2  | Request steering with selector expression |
 
 ---
 
@@ -106,6 +128,49 @@ let registry = PluginRegistry::new()
 | `tower_http__sensitive_response_headers_layer_new` | Mark response headers as sensitive |
 | `tower_http__layer_describe` | Describe a previously created HTTP layer by its `layer_id` |
 
+### `TowerUtilPlugin` — `tower_util__*`
+
+| Tool | Description |
+|---|---|
+| `tower_util__map_err_layer_new` | Create a `MapErrLayer` with a closure/fn expression |
+| `tower_util__map_request_layer_new` | Create a `MapRequestLayer` with a closure/fn expression |
+| `tower_util__map_response_layer_new` | Create a `MapResponseLayer` with a closure/fn expression |
+| `tower_util__map_future_layer_new` | Create a `MapFutureLayer` with a closure/fn expression |
+| `tower_util__then_layer_new` | Create a `ThenLayer` with a callback expression |
+| `tower_util__and_then_layer_new` | Create an `AndThenLayer` with a callback expression |
+| `tower_util__box_clone_service_layer_new` | Create a `BoxCloneServiceLayer` (type-erased clone-able service) |
+| `tower_util__box_service_new` | Create a `BoxService` descriptor with request/response type names |
+| `tower_util__layer_describe` | Describe a previously created util layer by its `layer_id` |
+| `tower_util__box_service_describe` | Describe a previously created box service by its `service_id` |
+
+> All `*_fn` / closure fields accept any Rust expression: a closure literal
+> (`|e| e.to_string()`), a free function name (`my_fn`), or a macro invocation.
+
+### `TowerBuilderPlugin` — `tower_builder__*`
+
+| Tool | Description |
+|---|---|
+| `tower_builder__new` | Create a new `ServiceBuilder` descriptor |
+| `tower_builder__layer` | Push a `TowerLayerKind`-encoded layer onto the builder |
+| `tower_builder__describe` | Describe a builder by its `builder_id` |
+| `tower_builder__emit` | Emit Rust code constructing the `ServiceBuilder` |
+
+### `TowerBalancePlugin` — `tower_balance__*`
+
+| Tool | Description |
+|---|---|
+| `tower_balance__peak_ewma_new` | Create a `PeakEwma` load-metric descriptor |
+| `tower_balance__pending_requests_new` | Create a `PendingRequests` load-metric descriptor |
+| `tower_balance__balance_new` | Create a `Balance` service descriptor referencing a load metric |
+| `tower_balance__describe` | Describe a load metric or balance service by ID |
+
+### `TowerSteerPlugin` — `tower_steer__*`
+
+| Tool | Description |
+|---|---|
+| `tower_steer__steer_new` | Create a `Steer` descriptor with selector expression and named sub-services |
+| `tower_steer__describe` | Describe a previously created steer descriptor by its `steer_id` |
+
 ---
 
 ## Propositions
@@ -115,12 +180,20 @@ is non-trivially constrained:
 
 | Proposition | Plugin |
 |---|---|
-| [`TowerLayerCreated`] | `TowerLimitPlugin` |
-| [`TowerRateCreated`] | `TowerLimitPlugin` |
-| [`TowerBackoffCreated`] | `TowerRetryPlugin` |
-| [`TowerBudgetCreated`] | `TowerRetryPlugin` |
-| [`TowerRetryLayerCreated`] | `TowerRetryPlugin` |
-| [`TowerHttpLayerCreated`] | `TowerHttpPlugin` |
+| [`TowerLayerCreated`]          | `TowerLimitPlugin` |
+| [`TowerRateCreated`]           | `TowerLimitPlugin` |
+| [`TowerBackoffCreated`]        | `TowerRetryPlugin` |
+| [`TowerBudgetCreated`]         | `TowerRetryPlugin` |
+| [`TowerRetryLayerCreated`]     | `TowerRetryPlugin` |
+| [`TowerHttpLayerCreated`]      | `TowerHttpPlugin` |
+| [`TowerUtilLayerCreated`]      | `TowerUtilPlugin` |
+| [`TowerBoxServiceCreated`]     | `TowerUtilPlugin` |
+| [`TowerServiceBuilderCreated`] | `TowerBuilderPlugin` |
+| [`TowerServiceBuilderLayerAdded`] | `TowerBuilderPlugin` |
+| [`TowerServiceBuilderDone`]    | `TowerBuilderPlugin` |
+| [`TowerLoadCreated`]           | `TowerBalancePlugin` |
+| [`TowerBalanceCreated`]        | `TowerBalancePlugin` |
+| [`TowerSteerCreated`]          | `TowerSteerPlugin` |
 
 ---
 

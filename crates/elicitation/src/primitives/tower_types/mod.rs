@@ -18,20 +18,27 @@
 //! ```
 
 mod backoff;
+mod builder_types;
 mod errors;
 mod handles;
 mod http_handles;
 mod http_layers;
 mod layers;
+mod load_types;
 mod rate;
+mod util_layers;
 
 pub use backoff::{TowerExponentialBackoffMaker, TowerTpsBudget};
+pub use builder_types::{
+    TowerLayerKind, TowerLayerKindStyle, TowerServiceBuilder, TowerServiceBuilderStyle,
+};
 pub use errors::{TowerClosed, TowerElapsed, TowerOverloaded, TowerServiceError};
 pub use handles::{
-    TowerAndThenHandle, TowerBoxServiceHandle, TowerBufferHandle, TowerConcurrencyLimitHandle,
-    TowerFilterHandle, TowerLoadShedHandle, TowerMapErrHandle, TowerMapRequestHandle,
-    TowerMapResponseHandle, TowerRateLimitHandle, TowerRetryHandle, TowerServiceBuilderHandle,
-    TowerThenHandle, TowerTimeoutHandle,
+    TowerAndThenHandle, TowerBalanceHandle, TowerBoxCloneServiceHandle, TowerBoxServiceHandle,
+    TowerBufferHandle, TowerConcurrencyLimitHandle, TowerFilterHandle, TowerLoadShedHandle,
+    TowerMapErrHandle, TowerMapRequestHandle, TowerMapResponseHandle, TowerMapResultHandle,
+    TowerPeakEwmaHandle, TowerPendingRequestsHandle, TowerRateLimitHandle, TowerRetryHandle,
+    TowerServiceBuilderHandle, TowerSteerHandle, TowerThenHandle, TowerTimeoutHandle,
 };
 pub use http_handles::TowerHttpServiceHandle;
 pub use http_layers::{
@@ -45,4 +52,9 @@ pub use layers::{
     TowerBufferLayer, TowerConcurrencyLimitLayer, TowerFilterLayer, TowerLoadShedLayer,
     TowerRateLimitLayer, TowerRetryLayer, TowerSpawnReadyLayer, TowerTimeoutLayer,
 };
+pub use load_types::{TowerBalance, TowerPeakEwma, TowerPendingRequests, TowerSteer};
 pub use rate::TowerRate;
+pub use util_layers::{
+    TowerAndThenLayer, TowerBoxCloneServiceConfig, TowerBoxServiceConfig, TowerMapErrLayer,
+    TowerMapRequestLayer, TowerMapResponseLayer, TowerMapResultLayer, TowerThenLayer,
+};

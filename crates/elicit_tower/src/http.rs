@@ -618,7 +618,7 @@ async fn layer_describe(
         .await
         .get(&id)
         .ok_or_else(|| ErrorData::invalid_params(format!("layer_id not found: {id}"), None))
-        .map(|e| serde_json::to_string(e))?
+        .map(serde_json::to_string)?
         .map_err(|e| ErrorData::internal_error(format!("serialize error: {e}"), None))?;
     Ok(CallToolResult::success(vec![Content::text(entry)]))
 }

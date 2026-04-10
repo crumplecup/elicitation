@@ -112,18 +112,24 @@ mod tower_impls {
     }
 
     use crate::{
-        TowerAndThenHandle, TowerBoxServiceHandle, TowerBufferHandle, TowerBufferLayer,
-        TowerCatchPanicLayer, TowerClosed, TowerCompressionLayer, TowerConcurrencyLimitHandle,
+        TowerAndThenHandle, TowerAndThenLayer, TowerBalance, TowerBalanceHandle,
+        TowerBoxCloneServiceConfig, TowerBoxCloneServiceHandle, TowerBoxServiceConfig,
+        TowerBoxServiceHandle, TowerBufferHandle, TowerBufferLayer, TowerCatchPanicLayer,
+        TowerClosed, TowerCompressionLayer, TowerConcurrencyLimitHandle,
         TowerConcurrencyLimitLayer, TowerCorsLayer, TowerDecompressionLayer, TowerElapsed,
         TowerExponentialBackoffMaker, TowerFilterHandle, TowerFilterLayer, TowerHttpServiceHandle,
-        TowerHttpTimeoutLayer, TowerLoadShedHandle, TowerLoadShedLayer, TowerMapErrHandle,
-        TowerMapRequestHandle, TowerMapResponseHandle, TowerNormalizePathLayer, TowerOverloaded,
-        TowerPropagateHeaderLayer, TowerRate, TowerRateLimitHandle, TowerRateLimitLayer,
-        TowerRetryHandle, TowerRetryLayer, TowerServiceBuilderHandle, TowerServiceError,
+        TowerHttpTimeoutLayer, TowerLayerKind, TowerLoadShedHandle, TowerLoadShedLayer,
+        TowerMapErrHandle, TowerMapErrLayer, TowerMapRequestHandle, TowerMapRequestLayer,
+        TowerMapResponseHandle, TowerMapResponseLayer, TowerMapResultHandle, TowerMapResultLayer,
+        TowerNormalizePathLayer, TowerOverloaded, TowerPeakEwma, TowerPeakEwmaHandle,
+        TowerPendingRequests, TowerPendingRequestsHandle, TowerPropagateHeaderLayer, TowerRate,
+        TowerRateLimitHandle, TowerRateLimitLayer, TowerRetryHandle, TowerRetryLayer,
+        TowerServiceBuilder, TowerServiceBuilderHandle, TowerServiceError,
         TowerSetRequestHeaderLayer, TowerSetResponseHeaderLayer,
         TowerSetSensitiveRequestHeadersLayer, TowerSetSensitiveResponseHeadersLayer,
-        TowerSetStatusLayer, TowerSpawnReadyLayer, TowerThenHandle, TowerTimeoutHandle,
-        TowerTimeoutLayer, TowerTpsBudget, TowerTraceLayer, TowerValidateRequestHeaderLayer,
+        TowerSetStatusLayer, TowerSpawnReadyLayer, TowerSteer, TowerSteerHandle, TowerThenHandle,
+        TowerThenLayer, TowerTimeoutHandle, TowerTimeoutLayer, TowerTpsBudget, TowerTraceLayer,
+        TowerValidateRequestHeaderLayer,
     };
 
     // ── Core rate / limit ────────────────────────────────────────────────────
@@ -473,6 +479,175 @@ mod tower_impls {
         type    = TowerHttpServiceHandle,
         name    = "TowerHttpServiceHandle",
         summary = "UUID handle for a live tower-http layered service.",
+        fields  = [("id", "Registry UUID")]
+    );
+
+    // ── util_layers ──────────────────────────────────────────────────────────
+
+    impl_tower_survey_spec!(
+        type    = TowerMapErrLayer,
+        name    = "TowerMapErrLayer",
+        summary = "Applies an error-mapping function to every service error.",
+        fields  = [("mapper_fn", "Rust identifier for the error mapping fn")]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerMapRequestLayer,
+        name    = "TowerMapRequestLayer",
+        summary = "Transforms every request before it reaches the inner service.",
+        fields  = [("mapper_fn", "Rust identifier for the request mapping fn")]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerMapResponseLayer,
+        name    = "TowerMapResponseLayer",
+        summary = "Transforms every response returned by the inner service.",
+        fields  = [("mapper_fn", "Rust identifier for the response mapping fn")]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerMapResultLayer,
+        name    = "TowerMapResultLayer",
+        summary = "Transforms every Result returned by the inner service.",
+        fields  = [("mapper_fn", "Rust identifier for the result mapping fn")]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerAndThenLayer,
+        name    = "TowerAndThenLayer",
+        summary = "Chains an async combinator onto Ok responses from the inner service.",
+        fields  = [("f", "Rust identifier for the async and_then fn")]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerThenLayer,
+        name    = "TowerThenLayer",
+        summary = "Chains an async combinator onto all responses from the inner service.",
+        fields  = [("f", "Rust identifier for the async then fn")]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerBoxServiceConfig,
+        name    = "TowerBoxServiceConfig",
+        summary = "Factory config for BoxService<Req, Resp, Err> — stores type-parameter names.",
+        fields  = [
+            ("req_type",  "Request type (Rust expression)"),
+            ("resp_type", "Response type (Rust expression)"),
+            ("err_type",  "Error type (Rust expression)"),
+        ]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerBoxCloneServiceConfig,
+        name    = "TowerBoxCloneServiceConfig",
+        summary = "Factory config for BoxCloneService<Req, Resp, Err> — stores type-parameter names.",
+        fields  = [
+            ("req_type",  "Request type (Rust expression)"),
+            ("resp_type", "Response type (Rust expression)"),
+            ("err_type",  "Error type (Rust expression)"),
+        ]
+    );
+
+    // ── builder_types ────────────────────────────────────────────────────────
+
+    impl_tower_survey_spec!(
+        type    = TowerLayerKind,
+        name    = "TowerLayerKind",
+        summary = "Discriminated enum covering all serializable tower layer configurations.",
+        fields  = [("kind", "Layer variant — e.g. timeout, rate_limit, concurrency_limit")]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerServiceBuilder,
+        name    = "TowerServiceBuilder",
+        summary = "Composed tower service: an ordered list of layers plus an inner service name.",
+        fields  = [
+            ("service_name", "Rust identifier for the inner service"),
+            ("layers",       "Ordered tower layers (outermost first)"),
+        ]
+    );
+
+    // ── load_types ───────────────────────────────────────────────────────────
+
+    impl_tower_survey_spec!(
+        type    = TowerPeakEwma,
+        name    = "TowerPeakEwma",
+        summary = "PeakEwma load estimator: tracks peak round-trip time via exponential moving average.",
+        fields  = [
+            ("service_name",       "Inner service identifier"),
+            ("default_rtt_micros", "Default RTT estimate in microseconds"),
+            ("decay_nanos",        "Decay constant in nanoseconds"),
+        ]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerPendingRequests,
+        name    = "TowerPendingRequests",
+        summary = "PendingRequests load estimator: tracks outstanding in-flight request count.",
+        fields  = [("service_name", "Inner service identifier")]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerSteer,
+        name    = "TowerSteer",
+        summary = "Steer: routes requests to one of a pool of services using a Picker.",
+        fields  = [
+            ("service_names", "Pool of service identifiers"),
+            ("picker_name",   "Picker implementation identifier"),
+        ]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerBalance,
+        name    = "TowerBalance",
+        summary = "p2c Balance: power-of-two-choices load balancer over a service discovery stream.",
+        fields  = [
+            ("discovery_name", "Service discovery stream identifier"),
+            ("req_type",       "Request type (Rust expression)"),
+        ]
+    );
+
+    // ── new handles ──────────────────────────────────────────────────────────
+
+    impl_tower_survey_spec!(
+        type    = TowerMapResultHandle,
+        name    = "TowerMapResultHandle",
+        summary = "UUID handle for a live MapResult service.",
+        fields  = [("id", "Registry UUID")]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerBoxCloneServiceHandle,
+        name    = "TowerBoxCloneServiceHandle",
+        summary = "UUID handle for a live BoxCloneService.",
+        fields  = [("id", "Registry UUID")]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerSteerHandle,
+        name    = "TowerSteerHandle",
+        summary = "UUID handle for a live Steer service.",
+        fields  = [("id", "Registry UUID")]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerBalanceHandle,
+        name    = "TowerBalanceHandle",
+        summary = "UUID handle for a live p2c Balance.",
+        fields  = [("id", "Registry UUID")]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerPeakEwmaHandle,
+        name    = "TowerPeakEwmaHandle",
+        summary = "UUID handle for a live PeakEwma load estimator.",
+        fields  = [("id", "Registry UUID")]
+    );
+
+    impl_tower_survey_spec!(
+        type    = TowerPendingRequestsHandle,
+        name    = "TowerPendingRequestsHandle",
+        summary = "UUID handle for a live PendingRequests load estimator.",
         fields  = [("id", "Registry UUID")]
     );
 }

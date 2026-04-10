@@ -42,16 +42,22 @@ Adding full support for a third-party crate `foo` involves work across **six loc
 | `crates/elicitation_creusot/` | Creusot `#[requires]`/`#[ensures]`/`#[trusted]` proofs |
 | `crates/elicitation_verus/` | Verus `ensures`/`requires` proofs |
 
-There are **three distinct mechanisms** for exposing types as MCP tools:
+There are **five distinct mechanisms** for exposing types as MCP tools:
 
 | Mechanism | Use when | Location |
 |---|---|---|
 | `#[reflect_methods]` | Your newtype has methods you want to expose | `elicitation_derive` |
 | `#[reflect_trait]` | A *third-party trait* has methods worth calling on any `T: FooTrait` | `elicitation_macros` |
-| Fragment tool + `EmitCode` | A *Rust macro* that runs at compile time, not at runtime | `elicitation::emit_code` |
+| Fragment tool + `EmitCode` | A *Rust macro* (or closure/expression) that runs at compile time, not at runtime | `elicitation::emit_code` |
+| Descriptor-registry plugin | A *code-generation-target* crate (tower, axum, winit) — types cannot be instantiated over MCP; all value is in code recovery | Phase 3E |
+| Factory pattern for generics | A generic API `Foo<T>` where `T: ElicitComplete` — generates per-type tools at startup | Phase 3F |
 
 The fragment tool mechanism bypasses Phases 2, 4, 5, and 6 — no `Elicitation`
 trait impls, no Kani/Creusot/Verus verification.  See the [Fragment Tools](#fragment-tools-macros) section.
+
+The descriptor-registry and factory patterns (Phases 3E/3F) similarly bypass verification
+Phases 4–6 for descriptor types — `kani::assume(true)` is correct for types whose value
+is entirely in code recovery, not runtime execution.
 
 Never skip a section. Never add an `#[allow]` attribute. Fix root causes.
 
@@ -1071,6 +1077,330 @@ elicit_foo = { workspace = true }
 
 ---
 
+## Phase 3E — Descriptor-Registry Plugin (Code-Generation-Target Crates)
+
+Use this phase when the third-party library is a **code-generation target** — its types
+cannot be instantiated or called over an MCP boundary at runtime. The entire value is in
+**code recovery**: the agent assembles serializable descriptor structs, stores them by UUID,
+then uses `ToCodeLiteral`/`EmitCode` to recover the Rust source that creates them.
+
+Examples: `tower`, `axum`, `winit`, `wgpu`, `leptos`.
+
+Contrast with Phase 3C (workflow plugin): workflow plugins hold *live* resources (pools,
+connections, transactions). Descriptor-registry plugins hold *config descriptors* — pure
+data that maps back to Rust source.
+
+### 3E.1 Decide: descriptor crate vs. inline plugin
+
+For libraries whose types are entirely serializable configs (no live resources), the entire
+plugin can live in `crates/elicit_foo/` without a workflow module. Use a single `lib.rs`
+with one or more plugin modules.
+
+For libraries with a mix of config types and live resources, split:
+- Descriptor plugins in `crates/elicit_foo/src/` (one file per domain)
+- Workflow plugin in `crates/elicit_foo/src/workflow.rs` (Phase 3C pattern)
+
+### 3E.2 Descriptor types in `crates/elicitation/src/primitives/foo_types/`
+
+Each descriptor type is a serializable mirror of a third-party config. Design rules:
+
+**1. One field per config knob, primitive Rust types only.**
+
+```rust
+/// Descriptor for `tower::timeout::TimeoutLayer`.
+#[derive(Debug, Clone, PartialEq,
+    serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+    elicitation_derive::ToCodeLiteral)]
+pub struct TowerTimeoutLayer {
+    /// Timeout in milliseconds.
+    pub timeout_millis: u64,
+}
+```
+
+**2. Closure/fn/macro fields use `String` — same as `body: String` in fragment tools.**
+
+Store the full Rust expression as a string. The field can hold a closure
+(`"|e| e.to_string()"`), a function name (`"my_fn"`), or a macro invocation
+(`"vec![1, 2, 3]"`). On emit, parse with `.parse::<TokenStream>()` and splice
+into `quote!`. Do NOT write `From` impls for closure-typed fields — closures
+cannot be instantiated at runtime.
+
+```rust
+/// Descriptor for `tower::util::MapErrLayer<F>`.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize,
+    schemars::JsonSchema, elicitation_derive::ToCodeLiteral)]
+pub struct TowerMapErrLayer {
+    /// Rust expression for the error-mapping fn (closure or named fn).
+    /// Examples: `"|e| e.to_string()"`, `"my_mapper"`.
+    pub mapper_fn: String,
+}
+```
+
+Field prompts must say **"Rust expression (closure or fn name,
+e.g. `|e| e.to_string()`)"** — not just "Rust identifier". Closures,
+function names, and macro calls are all valid.
+
+**3. Generic type parameters become `String` fields storing the type expression.**
+
+```rust
+/// Factory config for `tower::util::BoxService<Req, Resp, Err>`.
+pub struct TowerBoxServiceConfig {
+    pub req_type: String,   // e.g. "http::Request<hyper::Body>"
+    pub resp_type: String,  // e.g. "http::Response<hyper::Body>"
+    pub err_type: String,   // e.g. "Box<dyn std::error::Error>"
+}
+```
+
+**4. Implement `ElicitComplete` — use the compiler as your checklist.**
+
+```rust
+impl ElicitComplete for TowerTimeoutLayer {}
+```
+
+The compiler rejects this if any supertrait (`Elicitation`, `ElicitIntrospect`,
+`ElicitSpec`, `Serialize`, `Deserialize`, `JsonSchema`) is missing. Do not paper
+over errors with `#[allow]` — follow each error to its root cause.
+
+**5. For types whose inner fields already implement `Elicitation`, delegate:**
+
+```rust
+impl Elicitation for TowerTimeoutLayer {
+    type Style = TowerTimeoutLayerStyle;
+
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        let timeout_millis = u64::elicit(communicator).await?;
+        Ok(Self { timeout_millis })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        <u64 as Elicitation>::kani_proof()
+    }
+    fn verus_proof() -> proc_macro2::TokenStream {
+        <u64 as Elicitation>::verus_proof()
+    }
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        <u64 as Elicitation>::creusot_proof()
+    }
+}
+```
+
+For single-field `String` types, delegate all three proofs to `<String as Elicitation>`.
+
+**6. `ToCodeLiteral` is always derived, never written manually.**
+
+`#[derive(elicitation_derive::ToCodeLiteral)]` recovers the exact Rust source
+expression that creates the descriptor. For `TowerTimeoutLayer { timeout_millis: 5000 }`,
+recovery produces `TowerTimeoutLayer { timeout_millis: 5000u64 }`. This is auditable:
+trace from any stored value back to the Rust that created it.
+
+### 3E.3 Inline variant enum for builder-style composition
+
+When a plugin needs to compose multiple layer types into a pipeline (e.g. `ServiceBuilder`),
+define a `FooLayerKind` enum that stores each variant's config inline:
+
+```rust
+/// Inline config enum — stores each layer variant's config inline (no UUID indirection).
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize,
+    schemars::JsonSchema, elicitation_derive::ToCodeLiteral)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum TowerLayerKind {
+    Timeout(TowerTimeoutLayer),
+    RateLimit(TowerRateLimitLayer),
+    MapErr(TowerMapErrLayer),
+    // ...
+}
+```
+
+Use `#[serde(tag = "kind", rename_all = "snake_case")]` for JSON discrimination.
+Never use UUID references for inline composition — that would require shared state
+between plugins.
+
+### 3E.4 Plugin structure
+
+Each plugin module follows this pattern (see `crates/elicit_tower/src/limit.rs`):
+
+```rust
+// 1. Context type — UUID-keyed registry per descriptor type
+pub struct TowerXCtx {
+    items: Mutex<HashMap<Uuid, TowerXLayer>>,
+}
+
+// 2. Proposition types — one per observable post-condition
+pub struct TowerXConfigured;
+impl Prop for TowerXConfigured {}
+impl VerifiedWorkflow for TowerXConfigured {}
+
+// 3. Tool functions — one per operation (create / describe / emit / list)
+#[elicit_tool(plugin = "tower_x", name = "tower_x__new", description = "...", emit = Auto)]
+async fn tower_x_new(ctx: Arc<TowerXCtx>, p: TowerXNewParams)
+    -> Result<CallToolResult, ErrorData>
+{
+    let layer = TowerXLayer { timeout_millis: p.timeout_millis };
+    let id = Uuid::new_v4();
+    ctx.items.lock().await.insert(id, layer);
+    let _proof: Established<TowerXConfigured> = Established::assert();
+    Ok(json_result(&TowerXIdResult { x_id: id.to_string() }))
+}
+
+// 4. Plugin struct — iterates inventory for list_tools / call_tool
+pub struct TowerXPlugin(Arc<TowerXCtx>);
+impl ElicitPlugin for TowerXPlugin { /* standard inventory dispatch */ }
+```
+
+Standard tool set per descriptor type:
+
+| Tool | Returns | Purpose |
+|---|---|---|
+| `foo_x__new` | `{ x_id }` | Create descriptor, store in registry |
+| `foo_x__describe` | JSON of descriptor | Inspect stored config |
+| `foo_x__emit` | Rust source string | Recover Rust code that creates this config |
+| `foo_x__list` | `[{ x_id, … }]` | List all stored descriptors |
+
+### 3E.5 `EmitCode` for closure/expression fields
+
+When a descriptor has a `body: String` or `mapper_fn: String` field, the plugin's
+`EmitCode` impl parses it and splices it into `quote!`:
+
+```rust
+fn parse_expr(s: &str) -> proc_macro2::TokenStream {
+    s.parse().unwrap_or_else(|_| {
+        let lit = s;
+        quote::quote! { compile_error!(#lit) }
+    })
+}
+
+impl EmitCode for TowerMapErrLayerEmit {
+    fn emit_code(&self) -> proc_macro2::TokenStream {
+        let mapper = parse_expr(&self.0.mapper_fn);
+        quote::quote! { tower::util::MapErrLayer::new(#mapper) }
+    }
+}
+```
+
+This is identical to how `elicit_tokio` handles `SpawnParams { body: String }`.
+
+### 3E.6 Trenchcoat pattern
+
+When a third-party type needs `Serialize + Deserialize + JsonSchema` but cannot derive
+them (e.g. it contains non-serializable fields, or it is `#[non_exhaustive]`), use a
+**trenchcoat** — a newtype wrapper that derives the needed traits:
+
+```rust
+/// Trenchcoat for `foo::ComplexType` — derives serde/JsonSchema for MCP transport.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+pub struct FooComplexTypeWrapper {
+    pub field_a: String,
+    pub field_b: u32,
+}
+
+// From impls bridge between wrapper and original:
+impl From<FooComplexTypeWrapper> for foo::ComplexType { /* ... */ }
+impl From<foo::ComplexType> for FooComplexTypeWrapper { /* ... */ }
+```
+
+The wrapper *is* the descriptor — the original type is never exposed directly over MCP.
+
+### 3E.7 Reference implementation
+
+`crates/elicit_tower/` — 7 plugins, 72 MCP tools:
+
+- `limit.rs` — `ConcurrencyLimitLayer`, `RateLimitLayer`, `LoadShedLayer`, `SpawnReadyLayer`
+- `retry.rs` — `RetryLayer`, `ExponentialBackoffMaker`, `TpsBudget`
+- `http.rs` — 14 tower-http layers
+- `util.rs` — `MapErrLayer`, `MapRequestLayer`, `MapResponseLayer`, `MapResultLayer`, `AndThenLayer`, `ThenLayer`, `BoxServiceConfig`, `BoxCloneServiceConfig`
+- `builder.rs` — `TowerLayerKind` inline enum + `ServiceBuilder` descriptor
+- `balance.rs` — `Balance`, `PeakEwma`, `PendingRequests`
+- `steer.rs` — `Steer`
+
+---
+
+## Phase 3F — Factory Pattern for Generic APIs
+
+Use this phase when a third-party API is **parameterized by a user type** —
+`Router<S>`, `Json<T>`, `State<S>`, `Extension<T>` — and the tools must be
+specialized per concrete type.
+
+### 3F.1 When to use
+
+- The API type `Foo<T>` requires `T` to implement a trait (e.g. `Clone + Send + Sync`)
+- Different users of your crate will supply different `T` types
+- The tool schema and behavior differ per `T` (field names, validation, etc.)
+- `T` is always `ElicitComplete` — the factory constraint guarantees all trait machinery
+
+### 3F.2 Pattern
+
+The plugin exposes a **builder** that the downstream crate calls at startup, registering
+each concrete `T`:
+
+```rust
+pub struct AxumRouterPlugin {
+    tools: Vec<Box<dyn ElicitPlugin>>,
+}
+
+impl AxumRouterPlugin {
+    pub fn builder() -> AxumRouterPluginBuilder { AxumRouterPluginBuilder::default() }
+}
+
+pub struct AxumRouterPluginBuilder { /* ... */ }
+
+impl AxumRouterPluginBuilder {
+    /// Register a concrete state type S for Router<S> tools.
+    /// Requires S: ElicitComplete — the compiler enforces all trait machinery.
+    pub fn register_state<S: ElicitComplete + 'static>(
+        mut self,
+        name: &'static str,
+        description: &'static str,
+    ) -> Self {
+        // Generates tools: axum_router__{name}__new, __route, __layer, __emit, etc.
+        self.registrations.push(Box::new(AxumRouterRegistration::<S>::new(name, description)));
+        self
+    }
+
+    pub fn build(self) -> AxumRouterPlugin { AxumRouterPlugin { tools: self.registrations } }
+}
+```
+
+Downstream integration code:
+
+```rust
+let router_plugin = AxumRouterPlugin::builder()
+    .register_state::<AppState>("app_state", "Main application state")
+    .build();
+```
+
+This generates tools at runtime:
+- `axum_router__app_state__new`
+- `axum_router__app_state__route`
+- `axum_router__app_state__layer`
+- `axum_router__app_state__emit`
+
+### 3F.3 Tool naming convention
+
+`{plugin}__{type_name}__{action}` — all lowercase, double-underscore separators.
+
+The `type_name` is the caller-supplied registration name (`"app_state"`), not the Rust
+type name. This keeps tool names stable across refactors.
+
+### 3F.4 `ElicitComplete` as the factory constraint
+
+Always bound generic type parameters with `ElicitComplete`:
+
+```rust
+pub fn register_state<S: ElicitComplete + 'static>(/* ... */) -> Self
+```
+
+`ElicitComplete` is a supertrait of `Elicitation + ElicitIntrospect + ElicitSpec +
+Serialize + Deserialize + JsonSchema`. Using it as the bound means the compiler rejects
+any `S` that is missing any piece of the framework — no runtime surprises.
+
+### 3F.5 Reference
+
+`crates/elicit_tokio/src/spawn.rs` — `TokioSpawnPlugin::builder()` with
+`register_blocking::<T>()` and `register_async::<T>()` is the canonical example of
+the factory pattern.
+
+---
+
 ## Phase 4 — Kani Verification (`crates/elicitation_kani/`)
 
 ### 4.1 `Cargo.toml`
@@ -1679,14 +2009,17 @@ variant definitions — trust those.**
 | Builder struct | text prompt + builder API | `kani::assume(true)` — trust upstream entirely | All builder invariants |
 | Complex owned struct | Survey (multi-field) | `kani::assume(true)` — trust upstream entirely | All struct invariants |
 | Third-party derive trait | `#[reflect_trait]` factory | Inventory registration + prime/instantiate lifecycle | Trait method implementations in upstream |
+| Config/layer descriptor (Phase 3E) | `ToCodeLiteral` + UUID registry | `kani::assume(true)` — value is in code recovery | All runtime type invariants |
+| `Fn`/closure/expression field | `body: String` or `mapper_fn: String` | No runtime verification — `From` impl omitted | Closure correctness (agent-supplied source) |
+| Generic `Foo<T>` where `T: ElicitComplete` | Factory pattern (Phase 3F) | Per-type tool generation + compiler-enforced `T: ElicitComplete` | `T`'s own trait impls |
 
 ---
 
-## Fragment Tools (Macros)
+## Fragment Tools (Macros and Closures)
 
-Some Rust APIs are macros that execute at **compile time** and cannot be called
-through an MCP boundary at runtime.  Use the **fragment tool** pattern for
-these.
+Some Rust APIs are macros or closures that execute at **compile time** or as **runtime
+callbacks**, and cannot be called directly through an MCP boundary. Use the
+**fragment tool** pattern for these.
 
 ### Two tool kinds
 

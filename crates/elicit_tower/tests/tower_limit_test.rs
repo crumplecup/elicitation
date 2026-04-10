@@ -1,8 +1,11 @@
-//! Integration tests for `TowerLimitPlugin` and `TowerRetryPlugin`.
+//! Integration tests for all `elicit_tower` plugins.
 
 use elicit_tower::{
-    TowerBackoffCreated, TowerBudgetCreated, TowerHttpLayerCreated, TowerLayerCreated,
-    TowerLimitPlugin, TowerRateCreated, TowerRetryLayerCreated, TowerRetryPlugin,
+    TowerBackoffCreated, TowerBalanceCreated, TowerBalancePlugin, TowerBoxServiceCreated,
+    TowerBudgetCreated, TowerBuilderPlugin, TowerHttpLayerCreated, TowerLayerCreated,
+    TowerLimitPlugin, TowerLoadCreated, TowerRateCreated, TowerRetryLayerCreated, TowerRetryPlugin,
+    TowerServiceBuilderCreated, TowerServiceBuilderDone, TowerServiceBuilderLayerAdded,
+    TowerSteerCreated, TowerSteerPlugin, TowerUtilLayerCreated, TowerUtilPlugin,
 };
 use elicitation::{ElicitPlugin, VerifiedWorkflow};
 
@@ -92,4 +95,111 @@ fn tower_retry_propositions_non_empty() {
 #[test]
 fn tower_http_propositions_non_empty() {
     assert_verified::<TowerHttpLayerCreated>("TowerHttpLayerCreated");
+}
+
+// ── New plugin smoke tests ────────────────────────────────────────────────────
+
+#[test]
+fn util_plugin_creates_successfully() {
+    let p = TowerUtilPlugin::new();
+    assert_eq!(p.name(), "tower_util");
+}
+
+#[test]
+fn builder_plugin_creates_successfully() {
+    let p = TowerBuilderPlugin::new();
+    assert_eq!(p.name(), "tower_builder");
+}
+
+#[test]
+fn balance_plugin_creates_successfully() {
+    let p = TowerBalancePlugin::new();
+    assert_eq!(p.name(), "tower_balance");
+}
+
+#[test]
+fn steer_plugin_creates_successfully() {
+    let p = TowerSteerPlugin::new();
+    assert_eq!(p.name(), "tower_steer");
+}
+
+#[test]
+fn util_plugin_list_tools_expected_names() {
+    let tools = TowerUtilPlugin::new().list_tools();
+    let names: Vec<&str> = tools.iter().map(|t| t.name.as_ref()).collect();
+    for name in &[
+        "tower_util__map_err_layer_new",
+        "tower_util__map_request_layer_new",
+        "tower_util__map_response_layer_new",
+        "tower_util__map_result_layer_new",
+        "tower_util__and_then_layer_new",
+        "tower_util__then_layer_new",
+        "tower_util__box_service_new",
+        "tower_util__box_clone_service_new",
+        "tower_util__layer_describe",
+        "tower_util__box_service_describe",
+    ] {
+        assert!(names.contains(name), "missing tool: {name}");
+    }
+}
+
+#[test]
+fn builder_plugin_list_tools_expected_names() {
+    let tools = TowerBuilderPlugin::new().list_tools();
+    let names: Vec<&str> = tools.iter().map(|t| t.name.as_ref()).collect();
+    for name in &[
+        "tower_builder__new",
+        "tower_builder__add_layer",
+        "tower_builder__build",
+        "tower_builder__describe",
+    ] {
+        assert!(names.contains(name), "missing tool: {name}");
+    }
+}
+
+#[test]
+fn balance_plugin_list_tools_expected_names() {
+    let tools = TowerBalancePlugin::new().list_tools();
+    let names: Vec<&str> = tools.iter().map(|t| t.name.as_ref()).collect();
+    for name in &[
+        "tower_balance__p2c_new",
+        "tower_balance__peak_ewma_new",
+        "tower_balance__pending_requests_new",
+        "tower_balance__describe",
+    ] {
+        assert!(names.contains(name), "missing tool: {name}");
+    }
+}
+
+#[test]
+fn steer_plugin_list_tools_expected_names() {
+    let tools = TowerSteerPlugin::new().list_tools();
+    let names: Vec<&str> = tools.iter().map(|t| t.name.as_ref()).collect();
+    for name in &["tower_steer__new", "tower_steer__describe"] {
+        assert!(names.contains(name), "missing tool: {name}");
+    }
+}
+
+#[test]
+fn tower_util_propositions_non_empty() {
+    assert_verified::<TowerUtilLayerCreated>("TowerUtilLayerCreated");
+    assert_verified::<TowerBoxServiceCreated>("TowerBoxServiceCreated");
+}
+
+#[test]
+fn tower_builder_propositions_non_empty() {
+    assert_verified::<TowerServiceBuilderCreated>("TowerServiceBuilderCreated");
+    assert_verified::<TowerServiceBuilderLayerAdded>("TowerServiceBuilderLayerAdded");
+    assert_verified::<TowerServiceBuilderDone>("TowerServiceBuilderDone");
+}
+
+#[test]
+fn tower_balance_propositions_non_empty() {
+    assert_verified::<TowerBalanceCreated>("TowerBalanceCreated");
+    assert_verified::<TowerLoadCreated>("TowerLoadCreated");
+}
+
+#[test]
+fn tower_steer_propositions_non_empty() {
+    assert_verified::<TowerSteerCreated>("TowerSteerCreated");
 }

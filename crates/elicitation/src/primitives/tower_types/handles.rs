@@ -177,3 +177,39 @@ tower_handle!(
     type_name = "tower::util::AndThen (handle)",
     prompt = "Enter the AndThen service registry UUID:"
 );
+
+tower_handle!(
+    TowerMapResultHandle,
+    type_name = "tower::util::MapResult (handle)",
+    prompt = "Enter the MapResult service registry UUID:"
+);
+
+tower_handle!(
+    TowerBoxCloneServiceHandle,
+    type_name = "tower::util::BoxCloneService (handle)",
+    prompt = "Enter the BoxCloneService registry UUID:"
+);
+
+tower_handle!(
+    TowerSteerHandle,
+    type_name = "tower::steer::Steer (handle)",
+    prompt = "Enter the Steer service registry UUID:"
+);
+
+tower_handle!(
+    TowerBalanceHandle,
+    type_name = "tower::balance::p2c::Balance (handle)",
+    prompt = "Enter the Balance service registry UUID:"
+);
+
+tower_handle!(
+    TowerPeakEwmaHandle,
+    type_name = "tower::load::PeakEwma (handle)",
+    prompt = "Enter the PeakEwma service registry UUID:"
+);
+
+tower_handle!(
+    TowerPendingRequestsHandle,
+    type_name = "tower::load::PendingRequests (handle)",
+    prompt = "Enter the PendingRequests service registry UUID:"
+);
