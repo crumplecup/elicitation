@@ -69,3 +69,10 @@ pub mod tower_types;
 
 #[cfg(feature = "axum-types")]
 pub mod axum_types;
+
+#[cfg(feature = "polars-types")]
+mod polars_types;
+#[cfg(feature = "polars-types")]
+pub use polars_types::{
+    PolarsDType, PolarsJoinType, PolarsPipelineDescriptor, PolarsPipelineOp, PolarsPipelineStep,
+};

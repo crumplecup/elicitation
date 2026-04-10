@@ -108,7 +108,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "tower-types", "axum-types", "emit"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "tower-types", "axum-types", "polars-types", "emit"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -171,6 +171,8 @@ geo = ["dep:geo", "geo-types"]
 tower-types = ["dep:tower", "dep:tower-http"]
 # Enable axum descriptor type support (router, handler, response, serve descriptors)
 axum-types = ["uuid"]
+# Enable polars descriptor type support (pipeline, join, dtype descriptors)
+polars-types = ["uuid"]
 palette = ["dep:palette"]
 
 [lints.rust]

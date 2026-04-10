@@ -38,6 +38,8 @@ mod integer_contracts;
 mod integers;
 mod network_specs;
 mod palette_specs;
+#[cfg(feature = "polars-types")]
+mod polars_specs;
 mod ratatui_specs;
 mod regex_specs;
 mod registry;

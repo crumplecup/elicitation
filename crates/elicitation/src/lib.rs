@@ -635,3 +635,9 @@ pub use primitives::axum_types::{
     AxumResponseDescriptor, AxumResponseKind, AxumRouteEntry, AxumRouterDescriptor,
     AxumServeDescriptor,
 };
+
+// polars descriptor types (feature-gated on polars-types)
+#[cfg(feature = "polars-types")]
+pub use primitives::{
+    PolarsDType, PolarsJoinType, PolarsPipelineDescriptor, PolarsPipelineOp, PolarsPipelineStep,
+};
