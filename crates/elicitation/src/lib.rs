@@ -627,3 +627,11 @@ pub use primitives::tower_types::{
     TowerSteerHandle, TowerThenHandle, TowerThenLayer, TowerTimeoutHandle, TowerTimeoutLayer,
     TowerTpsBudget, TowerTraceLayer, TowerValidateRequestHeaderLayer,
 };
+
+// axum descriptor types (feature-gated on axum-types)
+#[cfg(feature = "axum-types")]
+pub use primitives::axum_types::{
+    AxumExtractorEntry, AxumExtractorKind, AxumHandlerDescriptor, AxumHttpMethod,
+    AxumResponseDescriptor, AxumResponseKind, AxumRouteEntry, AxumRouterDescriptor,
+    AxumServeDescriptor,
+};

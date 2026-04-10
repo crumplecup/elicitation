@@ -66,3 +66,6 @@ pub mod palette_types;
 
 #[cfg(feature = "tower-types")]
 pub mod tower_types;
+
+#[cfg(feature = "axum-types")]
+pub mod axum_types;
