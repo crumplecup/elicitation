@@ -81,3 +81,11 @@ pub use polars_types::{
 mod uom_types;
 #[cfg(feature = "uom-types")]
 pub use uom_types::{UomFormula, UomQuantityKind, UomStep, UomUnitSystem};
+
+#[cfg(feature = "leptos-types")]
+mod leptos_types;
+#[cfg(feature = "leptos-types")]
+pub use leptos_types::{
+    LeptosAppDescriptor, LeptosComponentDescriptor, LeptosHtmlTag, LeptosMode,
+    LeptosPropDescriptor, LeptosRouteDescriptor, LeptosViewNode,
+};

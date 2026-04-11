@@ -1661,6 +1661,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_leptos"
+version = "0.10.0"
+dependencies = [
+ "derive_more",
+ "elicitation",
+ "futures",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "elicit_polars"
 version = "0.10.0"
 dependencies = [
@@ -2039,6 +2055,7 @@ dependencies = [
  "serde_json",
  "shellexpand",
  "sqlx",
+ "strum",
  "syn 2.0.114",
  "time",
  "tokio",

@@ -1,0 +1,36 @@
+[package]
+name = "elicit_leptos"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled leptos shadow crate — MCP tools for reactive state and code generation"
+keywords = ["mcp", "leptos", "reactive", "webassembly", "elicitation"]
+categories = ["web-programming", "wasm"]
+
+[dependencies]
+elicitation = { workspace = true, features = ["leptos-types", "emit"] }
+rmcp = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+derive_more = { workspace = true }
+futures = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+serde_json = { workspace = true }
+
+[features]
+default = []
+emit = ["elicitation/emit"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
