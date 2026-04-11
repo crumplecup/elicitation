@@ -8,10 +8,10 @@ use elicit_db::{
     ConnectionEstablished, ConnectionId, DatabaseCreated, DbBackupManager, DbColumn,
     DbDatabaseManager, DbError, DbErrorKind, DbExplain, DbIndexInfo, DbIndexManager, DbMonitor,
     DbQueryExecutor, DbResult, DbRoleInfo, DbRoleManager, DbRow, DbRows, DbSchema, DbSchemaManager,
-    DbServerAdmin, DbSessionInfo, DbSessionManager, DbStatActivity, DbTableInfo, DbTableManager,
-    DbTransactor, DbValue, Durable, IndexExists, IsolationLevel, LeastPrivilegeEnforced, Open,
-    RolledBack, RowVisible, SchemaCreated, TableCreated, TableExists, TransactionCommitted,
-    TransactionHandle, TxMarker, WALReplayable,
+    DbServerAdmin, DbSessionInfo, DbSessionManager, DbSpatialValue, DbStatActivity, DbTableInfo,
+    DbTableManager, DbTransactor, DbValue, Durable, IndexExists, IsolationLevel,
+    LeastPrivilegeEnforced, Open, RolledBack, RowVisible, SchemaCreated, TableCreated, TableExists,
+    TransactionCommitted, TransactionHandle, TxMarker, WALReplayable,
 };
 use elicitation::Established;
 use futures::future::BoxFuture;
@@ -60,26 +60,60 @@ fn tx_err(msg: impl Into<String>) -> DbError {
 
 // ── Row conversion ────────────────────────────────────────────────────────────
 
+fn decode_spatial_value(row: &AnyRow, ordinal: usize, type_name: &str) -> DbValue {
+    let wrap = |payload| match type_name {
+        "GEOGRAPHY" => DbValue::Geography(payload),
+        _ => DbValue::Geometry(payload),
+    };
+
+    row.try_get::<Vec<u8>, _>(ordinal)
+        .map(DbSpatialValue::Wkb)
+        .map(wrap)
+        .or_else(|_| {
+            row.try_get::<String, _>(ordinal)
+                .map(DbSpatialValue::Wkt)
+                .map(wrap)
+        })
+        .unwrap_or(DbValue::Null)
+}
+
 fn any_row_to_db_row(row: &AnyRow) -> DbRow {
     let cols: Vec<(String, DbValue)> = row
         .columns()
         .iter()
         .map(|col| {
             let name = col.name().to_string();
-            let ty = col.type_info().name();
+            let ty = col.type_info().name().to_uppercase();
             let val = match ty {
-                "BOOL" | "BOOLEAN" => row
+                ref ty if ty == "BOOL" || ty == "BOOLEAN" => row
                     .try_get::<bool, _>(col.ordinal())
                     .map(DbValue::Bool)
                     .unwrap_or(DbValue::Null),
-                "INT4" | "INTEGER" | "INT8" | "BIGINT" | "INT2" | "SMALLINT" => row
-                    .try_get::<i64, _>(col.ordinal())
-                    .map(DbValue::Int)
-                    .unwrap_or(DbValue::Null),
-                "FLOAT4" | "FLOAT8" | "REAL" | "DOUBLE PRECISION" => row
-                    .try_get::<f64, _>(col.ordinal())
-                    .map(DbValue::Float)
-                    .unwrap_or(DbValue::Null),
+                ref ty
+                    if ty == "INT4"
+                        || ty == "INTEGER"
+                        || ty == "INT8"
+                        || ty == "BIGINT"
+                        || ty == "INT2"
+                        || ty == "SMALLINT" =>
+                {
+                    row.try_get::<i64, _>(col.ordinal())
+                        .map(DbValue::Int)
+                        .unwrap_or(DbValue::Null)
+                }
+                ref ty
+                    if ty == "FLOAT4"
+                        || ty == "FLOAT8"
+                        || ty == "REAL"
+                        || ty == "DOUBLE PRECISION" =>
+                {
+                    row.try_get::<f64, _>(col.ordinal())
+                        .map(DbValue::Float)
+                        .unwrap_or(DbValue::Null)
+                }
+                ref ty if ty == "GEOMETRY" || ty == "GEOGRAPHY" => {
+                    decode_spatial_value(row, col.ordinal(), ty)
+                }
                 _ => row
                     .try_get::<String, _>(col.ordinal())
                     .map(DbValue::Text)
@@ -97,6 +131,16 @@ fn any_row_to_db_row(row: &AnyRow) -> DbRow {
 
 // ── Parameter binding ─────────────────────────────────────────────────────────
 
+fn bind_spatial_value<'q>(
+    q: sqlx::query::Query<'q, sqlx::Any, sqlx::any::AnyArguments<'q>>,
+    value: &'q DbSpatialValue,
+) -> sqlx::query::Query<'q, sqlx::Any, sqlx::any::AnyArguments<'q>> {
+    match value {
+        DbSpatialValue::Wkt(text) => q.bind(text.as_str()),
+        DbSpatialValue::Wkb(bytes) => q.bind(bytes.as_slice()),
+    }
+}
+
 fn bind_params<'q>(
     mut q: sqlx::query::Query<'q, sqlx::Any, sqlx::any::AnyArguments<'q>>,
     params: &'q [DbValue],
@@ -110,6 +154,9 @@ fn bind_params<'q>(
             DbValue::Text(s) => q = q.bind(s.as_str()),
             DbValue::Bytes(b) => q = q.bind(b.as_slice()),
             DbValue::Json(v) => q = q.bind(v.to_string()),
+            DbValue::Geometry(value) | DbValue::Geography(value) => {
+                q = bind_spatial_value(q, value)
+            }
         }
     }
     q

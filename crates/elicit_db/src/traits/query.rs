@@ -2,12 +2,11 @@
 //!
 //! Source: ISO/IEC 9075-2 §14; PostgreSQL docs §14 — Performance Tips.
 
-use elicitation::Established;
 use futures::future::BoxFuture;
 
 use crate::{
-    AuditLogged, DbExplain, DbResult, DbRows, DbValue, IsolationLevel, RowVisible,
-    TransactionCommitted,
+    DbExecuteResult, DbExplain, DbQueryRowsResult, DbResult, DbTransactionalExecuteResult, DbValue,
+    IsolationLevel,
 };
 
 /// Executes SQL queries and statements with contract return types.
@@ -19,20 +18,12 @@ pub trait DbQueryExecutor: Send + Sync {
     /// Returns the number of affected rows.
     ///
     /// Source: ISO/IEC 9075-2 §14.8 — `<insert statement>`
-    fn execute(
-        &self,
-        sql: &str,
-        params: &[DbValue],
-    ) -> BoxFuture<'_, DbResult<(u64, Established<AuditLogged>)>>;
+    fn execute(&self, sql: &str, params: &[DbValue]) -> BoxFuture<'_, DbExecuteResult>;
 
     /// Execute a query and return the result set.
     ///
     /// Source: ISO/IEC 9075-2 §14.1 — `<query expression>`
-    fn query_rows(
-        &self,
-        sql: &str,
-        params: &[DbValue],
-    ) -> BoxFuture<'_, DbResult<(DbRows, Established<RowVisible>)>>;
+    fn query_rows(&self, sql: &str, params: &[DbValue]) -> BoxFuture<'_, DbQueryRowsResult>;
 
     /// Run `EXPLAIN [ANALYZE]` on a query and return the plan.
     ///
@@ -47,12 +38,5 @@ pub trait DbQueryExecutor: Send + Sync {
         sql: &str,
         params: &[DbValue],
         isolation: IsolationLevel,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            u64,
-            Established<TransactionCommitted>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    ) -> BoxFuture<'_, DbTransactionalExecuteResult>;
 }

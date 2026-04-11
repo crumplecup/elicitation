@@ -2,12 +2,10 @@
 //!
 //! Source: ISO/IEC 9075-2 §17 — Transaction management.
 
-use elicitation::Established;
 use futures::future::BoxFuture;
 
 use crate::{
-    Committed, DbResult, Durable, IsolationLevel, Open, RolledBack, TransactionCommitted,
-    TransactionHandle, TxMarker,
+    DbCommitResult, DbResult, IsolationLevel, Open, RolledBack, TransactionHandle, TxMarker,
 };
 
 /// Manages explicit transactions: begin, commit, rollback, and savepoints.
@@ -25,17 +23,7 @@ pub trait DbTransactor: Send + Sync {
     /// Commit an open transaction durably.
     ///
     /// Source: ISO/IEC 9075-2 §17.3 — `<commit statement>`
-    fn commit(
-        &self,
-        handle: TransactionHandle,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            TxMarker<Committed>,
-            Established<TransactionCommitted>,
-            Established<Durable>,
-        )>,
-    >;
+    fn commit(&self, handle: TransactionHandle) -> BoxFuture<'_, DbCommitResult>;
 
     /// Roll back an open transaction, discarding all changes.
     ///

@@ -72,15 +72,17 @@ fn sqlx_db_backend_send_sync() {
 
 #[test]
 fn db_value_variants_exist() {
-    use elicit_db::DbValue;
+    use elicit_db::{DbSpatialValue, DbValue};
     // Ensure DbValue variants used in bind_params exist and are reachable.
     let _null = DbValue::Null;
     let _bool = DbValue::Bool(true);
     let _int = DbValue::Int(42);
-    let _float = DbValue::Float(3.14);
+    let _float = DbValue::Float(std::f64::consts::PI);
     let _text = DbValue::Text("hello".into());
     let _bytes = DbValue::Bytes(vec![1, 2, 3]);
     let _json = DbValue::Json(serde_json::json!({"key": "value"}));
+    let _geometry = DbValue::Geometry(DbSpatialValue::Wkt("POINT(1 2)".into()));
+    let _geography = DbValue::Geography(DbSpatialValue::Wkb(vec![1, 2, 3, 4]));
 }
 
 #[test]

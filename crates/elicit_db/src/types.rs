@@ -3,6 +3,64 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::{AuditLogged, Committed, DbResult, Durable, TransactionCommitted, TxMarker};
+use elicitation::Established;
+
+#[cfg(feature = "geo-types")]
+use elicit_geo_types::Geometry as GeoTypesGeometry;
+#[cfg(feature = "geo-types")]
+use elicit_geojson::{GeoJson as ShadowGeoJson, Geometry as ShadowGeoJsonGeometry};
+#[cfg(feature = "geo-types")]
+use elicit_wkb::{WriteOptions as WkbWriteOptions, write_geometry};
+#[cfg(feature = "geo-types")]
+use elicit_wkt::trait_factories::{ToWktF64, TryFromWktF64};
+
+/// A spatial payload encoded as WKT text or WKB bytes.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub enum DbSpatialValue {
+    /// Well-known text representation.
+    Wkt(String),
+    /// Well-known binary representation.
+    Wkb(Vec<u8>),
+}
+
+#[cfg(feature = "geo-types")]
+impl DbSpatialValue {
+    /// Encodes a geometry as validated WKT text for database transport.
+    #[tracing::instrument(skip(geom))]
+    pub fn from_geo_as_wkt(geom: &elicitation::GeoGeometry) -> Self {
+        let geom: geo_types::Geometry<f64> = geom.clone().into();
+        Self::Wkt(geom.wkt_string())
+    }
+
+    /// Encodes a geometry as validated WKB bytes for database transport.
+    #[tracing::instrument(skip(geom))]
+    pub fn from_geo_as_wkb(geom: &elicitation::GeoGeometry) -> Result<Self, String> {
+        let bytes =
+            write_geometry(geom, &WkbWriteOptions::default()).map_err(|error| error.to_string())?;
+        Ok(Self::Wkb(bytes.bytes))
+    }
+
+    /// Converts a WKT-backed spatial payload back into a `GeoGeometry`.
+    ///
+    /// WKB payloads remain transport-only until a faithful reverse conversion
+    /// layer lands for the current shadow stack.
+    #[tracing::instrument]
+    pub fn try_to_geo_geometry(&self) -> Result<elicitation::GeoGeometry, String> {
+        match self {
+            Self::Wkt(text) => {
+                let geom: geo_types::Geometry<f64> =
+                    <geo_types::Geometry<f64> as TryFromWktF64>::try_from_wkt_str(text)?;
+                Ok(geom.into())
+            }
+            Self::Wkb(_) => Err(
+                "WKB spatial payloads are transport-only for now; use WKT when GeoGeometry roundtrip is required"
+                    .to_string(),
+            ),
+        }
+    }
+}
+
 /// A single scalar database value.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub enum DbValue {
@@ -20,6 +78,80 @@ pub enum DbValue {
     Bytes(Vec<u8>),
     /// Arbitrary JSON value.
     Json(serde_json::Value),
+    /// PostGIS `geometry` payload.
+    Geometry(DbSpatialValue),
+    /// PostGIS `geography` payload.
+    Geography(DbSpatialValue),
+}
+
+#[cfg(feature = "geo-types")]
+impl DbValue {
+    /// Stores a geometry payload encoded as WKT.
+    #[tracing::instrument(skip(geom))]
+    pub fn geometry_from_geo_as_wkt(geom: &elicitation::GeoGeometry) -> Self {
+        Self::Geometry(DbSpatialValue::from_geo_as_wkt(geom))
+    }
+
+    /// Stores a geometry payload encoded as WKB.
+    #[tracing::instrument(skip(geom))]
+    pub fn geometry_from_geo_as_wkb(geom: &elicitation::GeoGeometry) -> Result<Self, String> {
+        Ok(Self::Geometry(DbSpatialValue::from_geo_as_wkb(geom)?))
+    }
+
+    /// Stores a geography payload encoded as WKT.
+    #[tracing::instrument(skip(geom))]
+    pub fn geography_from_geo_as_wkt(geom: &elicitation::GeoGeometry) -> Self {
+        Self::Geography(DbSpatialValue::from_geo_as_wkt(geom))
+    }
+
+    /// Stores a geography payload encoded as WKB.
+    #[tracing::instrument(skip(geom))]
+    pub fn geography_from_geo_as_wkb(geom: &elicitation::GeoGeometry) -> Result<Self, String> {
+        Ok(Self::Geography(DbSpatialValue::from_geo_as_wkb(geom)?))
+    }
+
+    /// Stores a GeoJSON document as a JSON/JSONB-style DB value.
+    #[tracing::instrument(skip(geojson))]
+    pub fn json_from_geojson(geojson: &ShadowGeoJson) -> Self {
+        Self::Json(geojson.clone().to_json_value())
+    }
+
+    /// Stores a geometry as a GeoJSON geometry document inside a JSON/JSONB-style DB value.
+    #[tracing::instrument(skip(geom))]
+    pub fn json_from_geo_as_geojson(geom: &elicitation::GeoGeometry) -> Self {
+        let geometry = GeoTypesGeometry::from(geom.clone());
+        let document = ShadowGeoJson::from(ShadowGeoJsonGeometry::from(&geometry));
+        Self::json_from_geojson(&document)
+    }
+
+    /// Attempts to recover a `GeoGeometry` from a spatial DB value.
+    #[tracing::instrument]
+    pub fn try_to_geo_geometry(&self) -> Result<elicitation::GeoGeometry, String> {
+        match self {
+            Self::Geometry(value) | Self::Geography(value) => value.try_to_geo_geometry(),
+            _ => Err("DbValue is not a geometry/geography payload".to_string()),
+        }
+    }
+
+    /// Attempts to recover a GeoJSON document from a JSON DB value.
+    #[tracing::instrument]
+    pub fn try_to_geojson(&self) -> Result<ShadowGeoJson, String> {
+        match self {
+            Self::Json(value) => {
+                ShadowGeoJson::from_json_value(value.clone()).map_err(|error| error.to_string())
+            }
+            _ => Err("DbValue is not a JSON payload".to_string()),
+        }
+    }
+
+    /// Attempts to recover a `GeoGeometry` from a JSON payload containing GeoJSON.
+    #[tracing::instrument]
+    pub fn try_json_to_geo_geometry(&self) -> Result<elicitation::GeoGeometry, String> {
+        let document = self.try_to_geojson()?;
+        let geometry: GeoTypesGeometry =
+            GeoTypesGeometry::try_from(document).map_err(|error| error.to_string())?;
+        Ok(geometry.as_ref().clone())
+    }
 }
 
 /// A single row from a query result — ordered named columns.
@@ -41,6 +173,26 @@ pub struct DbRows {
     /// Number of rows affected or returned.
     pub affected: u64,
 }
+
+/// Result shape for executing a statement plus audit confirmation.
+pub type DbExecuteResult = DbResult<(u64, Established<AuditLogged>)>;
+
+/// Result shape for fetching rows plus row-visibility confirmation.
+pub type DbQueryRowsResult = DbResult<(DbRows, Established<crate::RowVisible>)>;
+
+/// Result shape for an auto-managed transactional execute.
+pub type DbTransactionalExecuteResult = DbResult<(
+    u64,
+    Established<TransactionCommitted>,
+    Established<AuditLogged>,
+)>;
+
+/// Result shape for a durable commit of an explicit transaction.
+pub type DbCommitResult = DbResult<(
+    TxMarker<Committed>,
+    Established<TransactionCommitted>,
+    Established<Durable>,
+)>;
 
 /// Column definition metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]

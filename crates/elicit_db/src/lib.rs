@@ -83,7 +83,9 @@ pub use traits::{
     DbRoleManager, DbSchemaManager, DbServerAdmin, DbSessionManager, DbTableManager, DbTransactor,
 };
 pub use types::{
-    ConnectionId, DbColumn, DbExplain, DbIndexInfo, DbRoleInfo, DbRow, DbRows, DbSchema,
-    DbSessionInfo, DbStatActivity, DbTableInfo, DbValue, IsolationLevel, TransactionHandle,
+    ConnectionId, DbColumn, DbCommitResult, DbExecuteResult, DbExplain, DbIndexInfo,
+    DbQueryRowsResult, DbRoleInfo, DbRow, DbRows, DbSchema, DbSessionInfo, DbSpatialValue,
+    DbStatActivity, DbTableInfo, DbTransactionalExecuteResult, DbValue, IsolationLevel,
+    TransactionHandle,
 };
 pub use typestate::{Committed, Executed, Open, Prepared, RolledBack, TxMarker};

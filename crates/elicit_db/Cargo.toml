@@ -15,6 +15,10 @@ categories = ["database", "rust-patterns"]
 [dependencies]
 elicitation = { workspace = true }
 elicitation_derive.workspace = true
+elicit_wkt = { workspace = true, optional = true }
+elicit_wkb = { workspace = true, optional = true }
+elicit_geojson = { workspace = true, optional = true }
+elicit_geo_types = { workspace = true, optional = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 schemars.workspace = true
@@ -24,6 +28,7 @@ tracing.workspace = true
 strum.workspace = true
 proc-macro2.workspace = true
 quote.workspace = true
+geo-types = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
@@ -31,6 +36,17 @@ tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 [features]
 default = []
 emit = ["elicitation/emit"]
+geo-types = [
+    "dep:geo-types",
+    "dep:elicit_geo_types",
+    "dep:elicit_geojson",
+    "dep:elicit_wkt",
+    "dep:elicit_wkb",
+    "elicitation/geo-types",
+    "elicitation/geojson-types",
+    "elicitation/wkt-types",
+    "elicitation/wkb-types",
+]
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
