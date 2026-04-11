@@ -1,0 +1,38 @@
+[package]
+name = "elicit_wkt"
+version.workspace = true
+edition.workspace = true
+description = "Elicitation shadow crate for the wkt Well-Known Text library"
+keywords = ["mcp", "wkt", "geometry", "spatial", "elicitation"]
+categories = ["science::geo", "development-tools"]
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+
+[dependencies]
+elicitation = { workspace = true, features = ["wkt-types", "emit"] }
+elicitation_derive.workspace = true
+elicitation_macros.workspace = true
+wkt = { workspace = true }
+geo-types = { workspace = true }
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+rmcp.workspace = true
+tracing.workspace = true
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+futures.workspace = true
+inventory.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[features]
+default = []
+emit = ["elicitation/emit"]
+
+[lints]
+workspace = true

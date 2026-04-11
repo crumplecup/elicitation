@@ -274,6 +274,66 @@ mod uuid_tests {
 }
 
 // ============================================================================
+// WKT
+// ============================================================================
+
+#[cfg(feature = "geojson-types")]
+mod geojson_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn geojson_proofs_non_empty() {
+        assert_proofs_non_empty::<geojson::GeoJson>("geojson::GeoJson");
+        assert_proofs_non_empty::<geojson::Geometry>("geojson::Geometry");
+        assert_proofs_non_empty::<geojson::Value>("geojson::Value");
+        assert_proofs_non_empty::<geojson::Feature>("geojson::Feature");
+        assert_proofs_non_empty::<geojson::FeatureCollection>("geojson::FeatureCollection");
+        assert_proofs_non_empty::<geojson::feature::Id>("geojson::feature::Id");
+    }
+}
+
+// ============================================================================
+// WKT
+// ============================================================================
+
+#[cfg(feature = "wkt-types")]
+mod wkt_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn wkt_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::WktCoord>("WktCoord");
+        assert_proofs_non_empty::<elicitation::WktPoint>("WktPoint");
+        assert_proofs_non_empty::<elicitation::WktLineString>("WktLineString");
+        assert_proofs_non_empty::<elicitation::WktPolygon>("WktPolygon");
+        assert_proofs_non_empty::<elicitation::WktMultiPoint>("WktMultiPoint");
+        assert_proofs_non_empty::<elicitation::WktMultiLineString>("WktMultiLineString");
+        assert_proofs_non_empty::<elicitation::WktMultiPolygon>("WktMultiPolygon");
+        assert_proofs_non_empty::<elicitation::WktGeometryCollection>("WktGeometryCollection");
+        assert_proofs_non_empty::<elicitation::WktGeom>("WktGeom");
+        assert_proofs_non_empty::<elicitation::WktString>("WktString");
+    }
+}
+
+// ============================================================================
+// WKB
+// ============================================================================
+
+#[cfg(feature = "wkb-types")]
+mod wkb_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn wkb_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::WkbEndianness>("WkbEndianness");
+        assert_proofs_non_empty::<elicitation::WkbDimension>("WkbDimension");
+        assert_proofs_non_empty::<elicitation::WkbGeometryType>("WkbGeometryType");
+        assert_proofs_non_empty::<elicitation::WkbBytes>("WkbBytes");
+        assert_proofs_non_empty::<elicitation::WkbWriteOptions>("WkbWriteOptions");
+    }
+}
+
+// ============================================================================
 // Unit / trivial types
 // ============================================================================
 

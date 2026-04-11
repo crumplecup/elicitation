@@ -128,6 +128,15 @@ mod ratatui_types;
 #[cfg(all(kani, feature = "geo-types"))]
 mod geo_types;
 
+#[cfg(all(kani, feature = "geojson-types"))]
+mod geojson_types;
+
+#[cfg(all(kani, feature = "wkt-types"))]
+mod wkt_types;
+
+#[cfg(all(kani, feature = "wkb-types"))]
+mod wkb_types;
+
 #[cfg(all(kani, feature = "palette"))]
 mod palette_types;
 

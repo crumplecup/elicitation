@@ -1,0 +1,31 @@
+[package]
+name = "elicit_wkb"
+version.workspace = true
+edition.workspace = true
+description = "Elicitation shadow crate for the wkb Well-Known Binary library"
+keywords = ["mcp", "wkb", "geometry", "spatial", "elicitation"]
+categories = ["science::geo", "development-tools"]
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+
+[dependencies]
+elicitation = { workspace = true, features = ["wkb-types", "geo-types", "emit"] }
+wkb.workspace = true
+geo-types.workspace = true
+serde.workspace = true
+schemars.workspace = true
+tracing.workspace = true
+rmcp.workspace = true
+serde_json.workspace = true
+derive_more = { workspace = true, features = ["display", "error"] }
+elicitation_derive.workspace = true
+
+[features]
+default = []
+emit = ["elicitation/emit"]
+
+[lints]
+workspace = true

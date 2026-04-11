@@ -662,6 +662,24 @@ impl ProofHarness {
             Self::new("geo_types", "verify_geo_multi_point_length_preserved"),
             Self::new("geo_types", "verify_geo_geometry_point_variant"),
             Self::new("geo_types", "verify_geo_geometry_rect_variant"),
+            // wkt_types: WKT wrapper proofs
+            Self::new("wkt_types", "verify_wkt_string_trusted"),
+            Self::new("wkt_types", "verify_wkt_coord_from_roundtrip"),
+            Self::new("wkt_types", "verify_wkt_coord_wrapper_fields"),
+            Self::new("wkt_types", "verify_wkt_point_empty_roundtrip"),
+            Self::new("wkt_types", "verify_wkt_geom_point_variant"),
+            // wkb_types: WKB wrapper proofs
+            Self::new("wkb_types", "verify_wkb_endianness_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_dimension_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_geometry_type_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_write_options_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_bytes_known_point_metadata"),
+            // geojson_types: GeoJSON document/value proofs
+            Self::new("geojson_types", "verify_geojson_value_point_type_name"),
+            Self::new("geojson_types", "verify_geojson_geometry_new_point"),
+            Self::new("geojson_types", "verify_geojson_feature_property_access"),
+            Self::new("geojson_types", "verify_geojson_feature_collection_len"),
+            Self::new("geojson_types", "verify_geojson_id_string_variant"),
             // palette_types: color struct proofs
             Self::new("palette_types", "verify_palette_srgb_from_roundtrip"),
             Self::new("palette_types", "verify_palette_srgb_wrapper_fields"),

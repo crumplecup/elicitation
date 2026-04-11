@@ -126,7 +126,7 @@ impl<C: Elicitation + Send> Elicitation for VecAllSatisfy<C> {
     async fn elicit<Comm: ElicitCommunicator>(communicator: &Comm) -> ElicitResult<Self> {
         tracing::debug!("Eliciting VecAllSatisfy");
         // Each element is C (contract type), so all guaranteed valid!
-        let elements = Vec::<C>::elicit(communicator).await?;
+        let elements: Vec<C> = Vec::<C>::elicit(communicator).await?;
         tracing::debug!(count = elements.len(), "All elements satisfy contract");
         Ok(Self::new(elements)) // Composition = automatic verification
     }

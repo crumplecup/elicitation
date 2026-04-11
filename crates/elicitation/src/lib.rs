@@ -597,6 +597,30 @@ pub use primitives::geo_types::{
     GeoRectStyle, GeoTriangle, GeoTriangleStyle,
 };
 
+// geojson types (feature-gated on geojson-types)
+#[cfg(feature = "geojson-types")]
+pub use primitives::geojson_types::{
+    GeoJsonFeatureCollectionStyle, GeoJsonFeatureStyle, GeoJsonGeometryStyle,
+    GeoJsonGeometryValueStyle, GeoJsonIdStyle, GeoJsonStyle,
+};
+
+// wkt types (feature-gated on wkt-types)
+#[cfg(feature = "wkt-types")]
+pub use primitives::wkt_types::{
+    WktCoord, WktCoordStyle, WktGeom, WktGeomStyle, WktGeometryCollection,
+    WktGeometryCollectionStyle, WktLineString, WktLineStringStyle, WktMultiLineString,
+    WktMultiLineStringStyle, WktMultiPoint, WktMultiPointStyle, WktMultiPolygon,
+    WktMultiPolygonStyle, WktPoint, WktPointStyle, WktPolygon, WktPolygonStyle, WktString,
+    WktStringStyle,
+};
+
+// wkb types (feature-gated on wkb-types)
+#[cfg(feature = "wkb-types")]
+pub use primitives::wkb_types::{
+    WkbBytes, WkbBytesStyle, WkbDimension, WkbDimensionStyle, WkbEndianness, WkbEndiannessStyle,
+    WkbGeometryType, WkbGeometryTypeStyle, WkbWriteOptions, WkbWriteOptionsStyle,
+};
+
 #[cfg(feature = "geo")]
 pub mod geo_algorithms;
 #[cfg(feature = "geo")]

@@ -33,6 +33,8 @@ mod egui_specs;
 mod elicit_spec;
 mod float_contracts;
 mod geo_specs;
+#[cfg(feature = "geojson-types")]
+mod geojson_specs;
 mod http_specs;
 mod integer_contracts;
 mod integers;
@@ -53,6 +55,9 @@ pub mod type_spec_plugin;
 mod url_specs;
 mod uuid_specs;
 mod value_specs;
+#[cfg(feature = "wkb-types")]
+mod wkb_specs;
+mod wkt_specs;
 
 pub use collections::{HashMapSpec, HashSetSpec, OptionSpec, ResultSpec, VecSpec};
 

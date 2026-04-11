@@ -341,6 +341,24 @@ impl VerusProof {
             Self::new("geo_types", "verify_geo_triangle_concrete"),
             Self::new("geo_types", "verify_geo_geometry_point_variant"),
             Self::new("geo_types", "verify_geo_geometry_rect_variant"),
+            // wkt_types: shadow struct proofs
+            Self::new("wkt_types", "verify_wkt_coord_roundtrip"),
+            Self::new("wkt_types", "verify_wkt_coord_concrete"),
+            Self::new("wkt_types", "verify_wkt_point_empty"),
+            Self::new("wkt_types", "verify_wkt_geom_point_variant"),
+            Self::new("wkt_types", "verify_wkt_string_trusted"),
+            // wkb_types: shadow struct proofs
+            Self::new("wkb_types", "verify_wkb_endianness_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_dimension_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_geometry_type_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_write_options_roundtrip"),
+            Self::new("wkb_types", "verify_wkb_bytes_known_point"),
+            // geojson_types: shadow struct proofs
+            Self::new("geojson_types", "verify_geojson_value_point_type_name"),
+            Self::new("geojson_types", "verify_geojson_geometry_new_point"),
+            Self::new("geojson_types", "verify_geojson_feature_property_access"),
+            Self::new("geojson_types", "verify_geojson_feature_collection_len"),
+            Self::new("geojson_types", "verify_geojson_id_string_variant"),
             // palette_types: shadow struct proofs
             Self::new("palette_types", "verify_palette_srgb_roundtrip"),
             Self::new("palette_types", "verify_palette_srgb_concrete"),

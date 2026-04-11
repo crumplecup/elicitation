@@ -104,6 +104,15 @@ mod ratatui_types;
 #[cfg(feature = "geo-types")]
 mod geo_types;
 
+#[cfg(feature = "geojson-types")]
+mod geojson_types;
+
+#[cfg(feature = "wkt-types")]
+mod wkt_types;
+
+#[cfg(feature = "wkb-types")]
+mod wkb_types;
+
 #[cfg(feature = "palette")]
 mod palette_types;
 
@@ -523,6 +532,26 @@ pub use geo_types::{
     verify_geo_line_string_concrete, verify_geo_point_concrete, verify_geo_point_roundtrip,
     verify_geo_rect_roundtrip, verify_geo_rect_well_formed, verify_geo_triangle_concrete,
     verify_geo_triangle_roundtrip,
+};
+
+#[cfg(feature = "geojson-types")]
+pub use geojson_types::{
+    verify_geojson_feature_collection_len, verify_geojson_feature_property_access,
+    verify_geojson_geometry_new_point, verify_geojson_id_string_variant,
+    verify_geojson_value_point_type_name,
+};
+
+#[cfg(feature = "wkt-types")]
+pub use wkt_types::{
+    verify_wkt_coord_concrete, verify_wkt_coord_roundtrip, verify_wkt_geom_point_variant,
+    verify_wkt_point_empty, verify_wkt_string_trusted,
+};
+
+#[cfg(feature = "wkb-types")]
+pub use wkb_types::{
+    verify_wkb_bytes_known_point_metadata, verify_wkb_dimension_roundtrip,
+    verify_wkb_endianness_roundtrip, verify_wkb_geometry_type_roundtrip,
+    verify_wkb_write_options_roundtrip,
 };
 
 #[cfg(feature = "palette")]

@@ -624,10 +624,10 @@ impl Elicitation for RegexSetValid {
 
         loop {
             // Elicit Vec of pattern strings
-            let patterns = Vec::<String>::elicit(communicator).await?;
+            let patterns: Vec<String> = Vec::<String>::elicit(communicator).await?;
 
             // Try to construct RegexSetValid (validates all patterns)
-            match Self::new(patterns.iter().map(|s| s.as_str())) {
+            match Self::new(patterns.iter().map(|s: &String| s.as_str())) {
                 Ok(regex_set) => {
                     tracing::debug!(count = patterns.len(), "Valid regex set compiled");
                     return Ok(regex_set);
@@ -762,10 +762,10 @@ impl Elicitation for RegexSetNonEmpty {
 
         loop {
             // Elicit Vec of pattern strings
-            let patterns = Vec::<String>::elicit(communicator).await?;
+            let patterns: Vec<String> = Vec::<String>::elicit(communicator).await?;
 
             // Try to construct RegexSetNonEmpty (validates non-empty + patterns)
-            match Self::new(patterns.iter().map(|s| s.as_str())) {
+            match Self::new(patterns.iter().map(|s: &String| s.as_str())) {
                 Ok(regex_set) => {
                     tracing::debug!(count = patterns.len(), "Valid non-empty regex set compiled");
                     return Ok(regex_set);

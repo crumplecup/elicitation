@@ -102,6 +102,9 @@ impl CreusotModule {
             Self::with_feature("egui_types", "egui-types"),
             Self::with_feature("ratatui_types", "ratatui-types"),
             Self::with_feature("geo_types", "geo-types"),
+            Self::with_feature("geojson_types", "geojson-types"),
+            Self::with_feature("wkt_types", "wkt-types"),
+            Self::with_feature("wkb_types", "wkb-types"),
             Self::with_feature("palette_types", "palette"),
             Self::with_feature("ui_types", "ui-types"),
         ]

@@ -1,829 +1,379 @@
 # ELICIT_GEOJSON_PLAN.md
 
 ## Goal
-Add complete geojson support to elicitation as geometry serialization alphabet:
-1. **Core type integration** — geojson in `elicitation` with feature gating
-2. **Shadow crate** — `elicit_geojson` with MCP tools for GeoJSON serialization
 
-## Architecture Overview
+Shadow the `geojson` crate faithfully as the next GeoRust document-format crate:
 
-Following established patterns from elicit_serde_json, elicit_url:
-- **Core**: Feature-gated geojson with Elicitation impls for GeoJSON types
-- **Shadow crate**: ~4-6 workflow plugins covering GeoJSON format operations
-- **Serialization alphabet**: Convert geo-types ↔ GeoJSON, export/import layouts
+1. **Phase 2 core support** in `crates/elicitation/` for the real upstream `geojson`
+   document/value types.
+2. **Phase 3 shadow crate** `crates/elicit_geojson/` exposing those types,
+   constructors, parsing, formatting, and `geo-types` conversions as MCP tools.
+3. **Phase 4 verification** proving our wrapper/conversion behavior while trusting
+   upstream `geojson` invariants.
 
-## Why GeoJSON for UI?
+This is a **dictionary, not a redesign**. The plan must mirror upstream names and
+capabilities instead of inventing a parallel “layout export” model.
 
-GeoJSON provides universal interchange format:
-- **Export layouts**: elicit_ui layouts → GeoJSON → visualization tools
-- **Import layouts**: Design tools → GeoJSON → elicit_ui validation
-- **Debugging**: Human-readable geometry dumps
-- **Interop**: Web mapping libraries, design tools, spatial databases
+Reference guides:
+- `SHADOW_CRATE_MOTIVATION.md`
+- `THIRD_PARTY_SUPPORT_GUIDE.md`
+- `crates/elicit_wkt/`
+- `crates/elicit_wkb/`
 
-## API Coverage
+---
 
-geojson provides GeoJSON format support:
-- **Core Types**: `Geometry`, `Feature`, `FeatureCollection`
-- **Geometry Variants**: `Point`, `LineString`, `Polygon`, `MultiPoint`, etc.
-- **Conversions**: geo-types ↔ GeoJSON
-- **Serialization**: JSON ↔ GeoJSON structs (via serde)
-- **Validation**: GeoJSON specification compliance
+## Design guardrails
 
-**Total API surface**: ~8 core types, bidirectional conversions → ~25-35 MCP tools across 4-6 plugins
+1. **Shadow, do not reshape.**
+   - Keep the real top-level document types: `GeoJson`, `Geometry`, `Value`,
+     `Feature`, `FeatureCollection`, and `feature::Id`.
+   - Do not replace GeoJSON documents with a custom UI/layout abstraction.
 
-## Phase 1: Workspace Configuration
+2. **Separate document format from geometry model.**
+   - `geo_types` remains the computation vocabulary.
+   - `geojson` is the serialized document vocabulary.
+   - Conversion tools bridge them; they do not collapse the two domains.
 
-### Files to modify:
-- `Cargo.toml` (workspace root)
-- `crates/elicitation/Cargo.toml`
+3. **Keep consumer workflows layered above the core crate.**
+   - Layout export/import, map pipelines, and DB ingestion are downstream consumers.
+   - `elicit_geojson` itself should focus on the actual upstream GeoJSON API.
 
-### Changes:
+4. **Follow current workspace conventions.**
+   - Feature name should be `geojson-types`, not `geojson`.
+   - `lib.rs` files contain only `mod` and `pub use`.
+   - Tests live in `tests/`, not inline modules.
 
-**1.1 Add geojson to workspace dependencies**:
+---
+
+## Actual upstream API to mirror
+
+The `geojson` crate is structured around GeoJSON RFC 7946 document types.
+
+### Core document/value types
+
+| Upstream type | Notes |
+|---|---|
+| `geojson::GeoJson` | Top-level enum: `Geometry`, `Feature`, `FeatureCollection` |
+| `geojson::Geometry` | Struct with `bbox`, `value`, `foreign_members` |
+| `geojson::Value` | Enum for Point / MultiPoint / LineString / MultiLineString / Polygon / MultiPolygon / GeometryCollection |
+| `geojson::Feature` | Struct with `bbox`, `geometry`, `id`, `properties`, `foreign_members` |
+| `geojson::FeatureCollection` | Struct with `bbox`, `features`, `foreign_members` |
+| `geojson::feature::Id` | Enum: `String(String)` or `Number(serde_json::Number)` |
+
+### Important upstream behavior
+
+- `GeoJson`, `Geometry`, `Feature`, and `FeatureCollection` implement `FromStr` and `Display`.
+- `Geometry` exposes concise constructors like `Geometry::new_point(...)`.
+- `Feature` supports property helpers (`property`, `contains_property`, `set_property`, `remove_property`, iteration helpers).
+- `FeatureCollection::new(...)` constructs collections from iterables.
+- With the upstream `geo-types` feature enabled:
+  - `From<&geo_types::...>` exists for `Geometry`, `Value`, and `FeatureCollection`
+  - `TryFrom<GeoJson|Geometry|Value|Feature|FeatureCollection>` exists back to `geo_types` types
+
+These upstream names and conversions should drive the shadow-crate surface.
+
+---
+
+## Scope for the first implementation
+
+### In scope
+
+1. Workspace wiring for `geojson`
+2. `elicitation` feature-gated support for the upstream document/value types
+3. `elicit_geojson` wrappers for:
+   - `GeoJson`
+   - `Geometry`
+   - `Value`
+   - `Feature`
+   - `FeatureCollection`
+   - `Id`
+4. Parsing/formatting tools
+5. Construction tools for the main document/value types
+6. `geo-types` conversion helpers and workflow tools
+7. Verification wiring in Kani / Creusot / Verus
+
+### Explicitly out of scope for the initial landing
+
+1. Custom UI-layout semantics
+2. File I/O helpers unless the upstream crate itself provides a real API surface worth shadowing
+3. CRS extensions or non-RFC compatibility layers beyond what `geojson` already accepts
+4. Invented registries or descriptor systems
+
+---
+
+## Phase 1 — Workspace wiring
+
+### Root `Cargo.toml`
+
+Add:
+
 ```toml
-# GeoJSON format support
 geojson = "0.24"
+elicit_geojson = { path = "crates/elicit_geojson", version = "0.10.0" }
 ```
 
-**1.2 Add elicit_geojson member**:
+and add the new workspace member:
+
 ```toml
-  "crates/elicit_geojson",
+"crates/elicit_geojson",
 ```
 
-**1.3 Add elicit_geojson workspace dependency**:
+### `crates/elicitation/Cargo.toml`
+
+Add:
+
 ```toml
-elicit_geojson = { path = "crates/elicit_geojson", version = "0.9.1" }
+[dependencies]
+geojson = { workspace = true, optional = true }
 ```
 
-**1.4 Add geojson feature to elicitation**:
-- Add optional dependency: `geojson = { workspace = true, optional = true }`
-- Add feature: `geojson = ["dep:geojson", "geo_types", "serde_json"]`
-- Update `full` feature to include `"geojson"`
+Feature:
 
-## Phase 2: Core Type Integration
-
-### Files to create/modify:
-- `crates/elicitation/src/geojson_support.rs` (new)
-- `crates/elicitation/src/lib.rs` (modify)
-
-### Type Support Strategy:
-
-**2.1 GeoJSON Types** (manual `Elicitation` impl):
-
-Core GeoJSON structure:
-```rust
-// Top-level GeoJSON object
-pub enum GeoJson {
-    Geometry(Geometry),
-    Feature(Feature),
-    FeatureCollection(FeatureCollection),
-}
-
-// Geometry types
-pub struct Geometry {
-    pub value: Value,  // Point, LineString, Polygon, etc.
-    pub bbox: Option<Bbox>,
-    pub foreign_members: Option<JsonObject>,
-}
-
-// Feature with properties
-pub struct Feature {
-    pub geometry: Option<Geometry>,
-    pub properties: Option<JsonObject>,
-    pub id: Option<feature::Id>,
-    pub bbox: Option<Bbox>,
-    pub foreign_members: Option<JsonObject>,
-}
-
-// Collection of features
-pub struct FeatureCollection {
-    pub features: Vec<Feature>,
-    pub bbox: Option<Bbox>,
-    pub foreign_members: Option<JsonObject>,
-}
+```toml
+geojson-types = ["dep:geojson", "geo-types", "serde_json"]
 ```
 
-**2.2 Conversion Strategy**:
+Update `full` once the implementation lands.
 
-geojson provides bidirectional conversions with geo-types:
-```rust
-use geo_types::{Point, Polygon};
-use geojson::{Geometry, Value};
+---
 
-// geo-types → GeoJSON
-let point = Point::new(10.0, 20.0);
-let geojson: Geometry = point.into();
+## Phase 2 — `crates/elicitation/` core support
 
-// GeoJSON → geo-types
-let geojson_point = Geometry {
-    value: Value::Point(vec![10.0, 20.0]),
-    bbox: None,
-    foreign_members: None,
-};
-let geo_point: Point<f64> = geojson_point.try_into().unwrap();
+Follow `THIRD_PARTY_SUPPORT_GUIDE.md` literally: use a `primitives/geojson_types/`
+module and a `type_spec/geojson_specs.rs` file rather than a one-off
+`geojson_support.rs`.
+
+### Files
+
+```text
+crates/elicitation/src/primitives/geojson_types/
+├── mod.rs
+├── geojson.rs
+├── geometry.rs
+├── geometry_value.rs
+├── feature.rs
+├── feature_collection.rs
+└── id.rs
+
+crates/elicitation/src/type_spec/geojson_specs.rs
 ```
 
-### Implementation Pattern:
+### Phase 2 strategy
+
+Implement `Elicitation` for the real upstream types where practical:
+
+- `geojson::GeoJson`
+- `geojson::Geometry`
+- `geojson::Value`
+- `geojson::Feature`
+- `geojson::FeatureCollection`
+- `geojson::feature::Id`
+
+Recommended elicitation patterns:
+
+| Type | Pattern |
+|---|---|
+| `GeoJson` | `Select` over document variants |
+| `Value` | `Select` over geometry variants |
+| `Geometry` | Survey: `value`, optional `bbox`, optional `foreign_members` |
+| `Feature` | Survey: optional geometry, optional id, optional properties, optional bbox, optional foreign members |
+| `FeatureCollection` | Survey: features + optional bbox/foreign members |
+| `Id` | `Select` over string vs number |
+
+### Important constraint
+
+Do not invent a separate enum of pseudo-GeoJSON geometry names if the upstream
+`Value` already carries that information. The wrapper should expose the
+actual `Value` variants.
+
+### Module wiring
+
+`primitives/mod.rs`:
 
 ```rust
-// crates/elicitation/src/geojson_support.rs
-#![cfg(feature = "geojson")]
-
-use geojson::{GeoJson, Geometry, Feature, FeatureCollection};
-
-/// Elicitation impl for GeoJSON Geometry
-impl Elicitation for Geometry {
-    type Error = String;
-    async fn elicit(ctx: &mut ElicitationContext) -> Result<Self, Self::Error> {
-        // Prompt for geometry type, coordinates
-        // Build Geometry from user input
-    }
-}
-
-/// Elicitation impl for Feature
-impl Elicitation for Feature {
-    type Error = String;
-    async fn elicit(ctx: &mut ElicitationContext) -> Result<Self, Self::Error> {
-        // Prompt for geometry
-        // Optional: prompt for properties (key-value pairs)
-        // Optional: prompt for id
-    }
-}
-
-/// Elicitation impl for FeatureCollection
-impl Elicitation for FeatureCollection {
-    type Error = String;
-    async fn elicit(ctx: &mut ElicitationContext) -> Result<Self, Self::Error> {
-        // Prompt for number of features
-        // Elicit each feature
-    }
-}
+#[cfg(feature = "geojson-types")]
+mod geojson_types;
+#[cfg(feature = "geojson-types")]
+pub use geojson_types::{Feature, FeatureCollection, GeoJson, Geometry, Id, Value};
 ```
 
-**2.3 Export from lib.rs**:
-```rust
-#[cfg(feature = "geojson")]
-pub mod geojson_support;
+`lib.rs` should only re-export from `primitives`, consistent with workspace rules.
 
-#[cfg(feature = "geojson")]
-pub use geojson_support::*;
-```
+### TypeSpec
 
-## Phase 3: Create elicit_geojson Shadow Crate
+Add `geojson_specs.rs` so agents can browse the document/value vocabulary.
 
-### Directory Structure:
+---
 
-```
+## Phase 3 — `crates/elicit_geojson/` shadow crate
+
+### Crate shape
+
+Mirror upstream concepts, not downstream use cases.
+
+```text
 crates/elicit_geojson/
 ├── Cargo.toml
 ├── README.md
 ├── src/
 │   ├── lib.rs
-│   ├── geometry.rs         (Geometry wrapper)
-│   ├── feature.rs          (Feature wrapper)
-│   ├── collection.rs       (FeatureCollection wrapper)
-│   └── workflow/
-│       ├── mod.rs
-│       ├── geometry_plugin.rs      (~8 tools: Create/parse geometries)
-│       ├── feature_plugin.rs       (~6 tools: Create/parse features)
-│       ├── collection_plugin.rs    (~6 tools: Create/parse collections)
-│       ├── conversion_plugin.rs    (~8 tools: geo-types ↔ GeoJSON)
-│       ├── io_plugin.rs            (~4 tools: Read/write GeoJSON files)
-│       └── workflow_plugin.rs      (~6 tools: Common patterns)
+│   ├── geojson.rs
+│   ├── geometry.rs
+│   ├── geometry_value.rs
+│   ├── feature.rs
+│   ├── feature_collection.rs
+│   ├── workflow/
+│   │   ├── mod.rs
+│   │   ├── document_plugin.rs
+│   │   ├── geometry_plugin.rs
+│   │   ├── feature_plugin.rs
+│   │   └── conversion_plugin.rs
 └── tests/
-    └── geojson_test.rs
+    ├── smoke_test.rs
+    └── workflow_test.rs
 ```
 
-### Cargo.toml:
+### `lib.rs`
 
-```toml
-[package]
-name = "elicit_geojson"
-version.workspace = true
-edition.workspace = true
-license.workspace = true
-repository.workspace = true
-authors.workspace = true
-homepage.workspace = true
-documentation.workspace = true
-readme = "README.md"
-description = "Elicitation-enabled geojson wrappers with MCP tools for GeoJSON serialization"
-keywords = ["mcp", "geojson", "geo", "serialization", "elicitation"]
-categories = ["science::geo", "encoding", "development-tools"]
+Only:
 
-[dependencies]
-elicitation = { workspace = true, features = ["geojson", "geo_types", "serde_json"] }
-elicitation_derive.workspace = true
-elicitation_macros.workspace = true
-geojson = { workspace = true }
-geo-types = { workspace = true }
-elicit_geo_types = { workspace = true }
-inventory.workspace = true
-rmcp.workspace = true
-schemars.workspace = true
-serde = { workspace = true, features = ["derive"] }
-serde_json.workspace = true
-tracing.workspace = true
+- `mod ...`
+- `pub use ...`
 
-# Code emission
-proc-macro2 = { workspace = true, optional = true }
-quote = { workspace = true, optional = true }
+### Wrapper strategy
 
-[features]
-emit = ["dep:proc-macro2", "dep:quote", "elicitation/emit"]
+Use the established newtype/shadow pattern:
 
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
+- serde + schemars-friendly wrappers over the upstream types
+- `From` / `Into` or `TryFrom` bridges back to upstream
+- `#[reflect_methods]` for stable upstream-style methods
+- `#[reflect_trait]` only where a real third-party trait is being surfaced
+
+### Expected plugins
+
+Keep the first pass tight:
+
+| Plugin | Namespace | Purpose |
+|---|---|---|
+| `GeoJsonDocumentPlugin` | `geojson_document__*` | Parse, inspect, and convert top-level `GeoJson` documents |
+| `GeoJsonGeometryPlugin` | `geojson_geometry__*` | Construct and inspect `Geometry` / `Value` |
+| `GeoJsonFeaturePlugin` | `geojson_feature__*` | Construct and inspect `Feature` / `FeatureCollection` / `Id` |
+| `GeoJsonConversionPlugin` | `geojson_conversion__*` | Bridge to and from `geo_types` |
+
+Do **not** start with `io_plugin` or custom “workflow” plugins unless we later find
+upstream-shaped behavior that belongs there.
+
+### Conversion surface
+
+The important consumer-facing value is accurate conversion support:
+
+- `geo_types::Geometry<f64>` → `geojson::Geometry`
+- `geo_types::{Point, LineString, Polygon, Multi*, GeometryCollection}` → `Geometry` / `Value`
+- `GeoJson` / `Geometry` / `Value` / `Feature` / `FeatureCollection` → `geo_types` via fallible conversions
+
+This should be exposed explicitly and tested carefully.
+
+---
+
+## Phase 4 — Verification
+
+Follow the current third-party proof policy:
+
+> Trust the source. Verify the wrapper.
+
+### Kani
+
+Add:
+
+```text
+crates/elicitation_kani/src/geojson_types.rs
 ```
 
-### lib.rs structure:
+Focus on:
+- enum coverage for `GeoJson`, `Value`, and `Id`
+- wrapper roundtrips
+- known-value parse/format checks
+- conversion harnesses for simple shapes (point, line string, polygon)
 
-```rust
-//! `elicit_geojson` — comprehensive GeoJSON API exposure via MCP tools.
-//!
-//! Provides GeoJSON serialization for geometric data:
-//! - Geometry objects (Point, LineString, Polygon, etc.)
-//! - Features (geometry + properties)
-//! - FeatureCollections (multiple features)
-//! - Bidirectional conversion with geo-types
-//! - JSON serialization/deserialization
-//!
-//! # Plugin Organization (6 plugins, ~38 total tools)
-//!
-//! | Plugin | Tools | Coverage |
-//! |--------|-------|----------|
-//! | `GeoJsonGeometryPlugin` | 8 | Create/parse GeoJSON geometries |
-//! | `GeoJsonFeaturePlugin` | 6 | Create/parse features with properties |
-//! | `GeoJsonCollectionPlugin` | 6 | Create/parse feature collections |
-//! | `GeoJsonConversionPlugin` | 8 | Convert geo-types ↔ GeoJSON |
-//! | `GeoJsonIoPlugin` | 4 | Read/write GeoJSON files |
-//! | `GeoJsonWorkflowPlugin` | 6 | Common patterns |
+### Creusot
 
-#![forbid(unsafe_code)]
-#![warn(missing_docs)]
+Add:
 
-mod collection;
-mod feature;
-mod geometry;
-pub mod workflow;
-
-pub use collection::FeatureCollection;
-pub use feature::Feature;
-pub use geometry::Geometry;
-pub use workflow::{
-    GeoJsonCollectionPlugin, GeoJsonConversionPlugin, GeoJsonFeaturePlugin,
-    GeoJsonGeometryPlugin, GeoJsonIoPlugin, GeoJsonWorkflowPlugin,
-};
+```text
+crates/elicitation_creusot/src/geojson_types.rs
 ```
 
-## Phase 4: Implement Core Type Wrappers
+Use trusted wrapper constructors and structural postconditions. Do not attempt to
+re-prove RFC 7946 parsing internals.
 
-### 4.1 Geometry wrapper (geometry.rs):
+### Verus
 
-```rust
-use elicitation::{elicit_newtype, elicit_newtype_traits};
-use elicitation_derive::reflect_methods;
-use geojson as gj;
+Add:
 
-elicit_newtype!(gj::Geometry, as Geometry, serde);
-
-#[reflect_methods]
-impl Geometry {
-    #[instrument]
-    pub fn from_geo_types_point(point: &geo_types::Point<f64>) -> Self {
-        Self(gj::Geometry::from(point))
-    }
-
-    #[instrument]
-    pub fn from_geo_types_polygon(polygon: &geo_types::Polygon<f64>) -> Self {
-        Self(gj::Geometry::from(polygon))
-    }
-
-    #[instrument(skip(self))]
-    pub fn to_json_string(&self) -> Result<String, String> {
-        serde_json::to_string(&self.0)
-            .map_err(|e| format!("Serialization failed: {}", e))
-    }
-
-    #[instrument]
-    pub fn from_json_string(json: &str) -> Result<Self, String> {
-        serde_json::from_str(json)
-            .map(Self)
-            .map_err(|e| format!("Deserialization failed: {}", e))
-    }
-}
+```text
+crates/elicitation_verus/src/geojson_types.rs
 ```
 
-### 4.2 Feature wrapper (feature.rs):
+Keep proofs lightweight and structural, matching the WKT/WKB pattern.
 
-```rust
-elicit_newtype!(gj::Feature, as Feature, serde);
+### Runner wiring
 
-#[reflect_methods]
-impl Feature {
-    #[instrument]
-    pub fn new(geometry: Geometry, properties: Option<serde_json::Map<String, serde_json::Value>>) -> Self {
-        Self(gj::Feature {
-            geometry: Some(geometry.0),
-            properties,
-            id: None,
-            bbox: None,
-            foreign_members: None,
-        })
-    }
+Update:
 
-    #[instrument(skip(self))]
-    pub fn geometry(&self) -> Option<Geometry> {
-        self.0.geometry.clone().map(Geometry)
-    }
-
-    #[instrument(skip(self))]
-    pub fn properties(&self) -> Option<&serde_json::Map<String, serde_json::Value>> {
-        self.0.properties.as_ref()
-    }
-}
+```text
+crates/elicitation/src/verification/runner.rs
+crates/elicitation/src/verification/creusot_runner.rs
+crates/elicitation/src/verification/verus_runner.rs
+crates/elicitation/tests/proof_non_empty_test.rs
 ```
 
-### 4.3 FeatureCollection wrapper (collection.rs):
+---
 
-```rust
-elicit_newtype!(gj::FeatureCollection, as FeatureCollection, serde);
+## Validation plan
 
-#[reflect_methods]
-impl FeatureCollection {
-    #[instrument]
-    pub fn new(features: Vec<Feature>) -> Self {
-        Self(gj::FeatureCollection {
-            features: features.into_iter().map(|f| f.0).collect(),
-            bbox: None,
-            foreign_members: None,
-        })
-    }
+### Core support
 
-    #[instrument(skip(self))]
-    pub fn len(&self) -> usize {
-        self.0.features.len()
-    }
-
-    #[instrument(skip(self))]
-    pub fn is_empty(&self) -> bool {
-        self.0.features.is_empty()
-    }
-}
+```bash
+cargo check -p elicitation --features geojson-types
 ```
 
-## Phase 5: Implement MCP Tools
+### Shadow crate
 
-### 5.1 Geometry Plugin (workflow/geometry_plugin.rs):
-
-```rust
-use elicitation_derive::elicit_tool;
-use rmcp::{CallToolResult, Content, ErrorData};
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct CreateGeometryParams {
-    pub geometry_type: String,  // "Point", "LineString", "Polygon", etc.
-    pub coordinates: serde_json::Value,
-}
-
-#[elicit_tool(
-    plugin = "geojson_geometry",
-    name = "geojson_geometry__create",
-    description = "Create a GeoJSON Geometry from type and coordinates. \
-                   Types: Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon.",
-    emit = Auto
-)]
-async fn geometry_create(p: CreateGeometryParams) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Created GeoJSON {}", p.geometry_type))
-    ]))
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct ParseGeometryParams {
-    pub geojson_string: String,
-}
-
-#[elicit_tool(
-    plugin = "geojson_geometry",
-    name = "geojson_geometry__parse",
-    description = "Parse a GeoJSON Geometry from JSON string.",
-    emit = Auto
-)]
-async fn geometry_parse(p: ParseGeometryParams) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![
-        Content::text("Parsed GeoJSON Geometry")
-    ]))
-}
-
-// ... 6 more tools: geometry_to_json, geometry_type, geometry_coords, etc.
+```bash
+just check elicit_geojson
+just test-package elicit_geojson
+just check-all elicit_geojson
 ```
 
-### 5.2 Feature Plugin (workflow/feature_plugin.rs):
+### Proof crates
 
-```rust
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct CreateFeatureParams {
-    pub geometry: serde_json::Value,
-    pub properties: Option<serde_json::Map<String, serde_json::Value>>,
-    pub id: Option<String>,
-}
-
-#[elicit_tool(
-    plugin = "geojson_feature",
-    name = "geojson_feature__create",
-    description = "Create a GeoJSON Feature with geometry and optional properties.",
-    emit = Auto
-)]
-async fn feature_create(p: CreateFeatureParams) -> Result<CallToolResult, ErrorData> {
-    let prop_count = p.properties.as_ref().map(|m| m.len()).unwrap_or(0);
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Created Feature with {} properties", prop_count))
-    ]))
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct AddPropertyParams {
-    pub feature: serde_json::Value,
-    pub key: String,
-    pub value: serde_json::Value,
-}
-
-#[elicit_tool(
-    plugin = "geojson_feature",
-    name = "geojson_feature__add_property",
-    description = "Add a property (key-value pair) to a Feature.",
-    emit = Auto
-)]
-async fn feature_add_property(p: AddPropertyParams) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Added property '{}' to Feature", p.key))
-    ]))
-}
-
-// ... 4 more tools: get_property, remove_property, list_properties, etc.
+```bash
+cargo check -p elicitation_kani --features 'kani,geojson-types'
+cargo check -p elicitation_creusot --features 'geojson-types'
+cargo check --manifest-path crates/elicitation_verus/Cargo.toml
+cargo test -p elicitation --features geojson-types --test proof_non_empty_test
 ```
 
-### 5.3 Conversion Plugin (workflow/conversion_plugin.rs):
+---
 
-```rust
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct GeoTypesToGeoJsonParams {
-    pub geometry_type: String,  // "Point", "Polygon", etc.
-    pub geometry: serde_json::Value,
-}
+## Recommended implementation order
 
-#[elicit_tool(
-    plugin = "geojson_conversion",
-    name = "geojson_conversion__from_geo_types",
-    description = "Convert geo-types geometry to GeoJSON.",
-    emit = Auto
-)]
-async fn conversion_from_geo_types(p: GeoTypesToGeoJsonParams) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Converted {} to GeoJSON", p.geometry_type))
-    ]))
-}
+1. Workspace wiring + `geojson-types` feature
+2. Phase 2 upstream-type elicitation in `elicitation`
+3. Minimal `elicit_geojson` wrappers and parsing/construction tools
+4. `geo-types` conversion tools
+5. Shadow-crate tests
+6. Kani / Creusot / Verus wiring
+7. Only then consider higher-level GeoJSON consumer workflows
 
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct GeoJsonToGeoTypesParams {
-    pub geojson: serde_json::Value,
-}
+---
 
-#[elicit_tool(
-    plugin = "geojson_conversion",
-    name = "geojson_conversion__to_geo_types",
-    description = "Convert GeoJSON geometry to geo-types.",
-    emit = Auto
-)]
-async fn conversion_to_geo_types(p: GeoJsonToGeoTypesParams) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![
-        Content::text("Converted GeoJSON to geo-types")
-    ]))
-}
+## Success criteria
 
-// ... 6 more tools: batch conversion, validate conversion, etc.
-```
+This plan is complete when:
 
-### 5.4 I/O Plugin (workflow/io_plugin.rs):
-
-```rust
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct ReadGeoJsonParams {
-    pub file_path: String,
-}
-
-#[elicit_tool(
-    plugin = "geojson_io",
-    name = "geojson_io__read_file",
-    description = "Read GeoJSON from a file.",
-    emit = Auto
-)]
-async fn io_read_file(p: ReadGeoJsonParams) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Read GeoJSON from {}", p.file_path))
-    ]))
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct WriteGeoJsonParams {
-    pub file_path: String,
-    pub geojson: serde_json::Value,
-    pub pretty: Option<bool>,
-}
-
-#[elicit_tool(
-    plugin = "geojson_io",
-    name = "geojson_io__write_file",
-    description = "Write GeoJSON to a file. Use pretty=true for formatted output.",
-    emit = Auto
-)]
-async fn io_write_file(p: WriteGeoJsonParams) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Wrote GeoJSON to {}", p.file_path))
-    ]))
-}
-
-// ... 2 more tools: validate_file, format_json, etc.
-```
-
-### 5.5 Workflow Plugin (workflow/workflow_plugin.rs):
-
-```rust
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct LayoutToGeoJsonParams {
-    pub layout_nodes: Vec<serde_json::Value>,  // AccessKit nodes
-}
-
-#[elicit_tool(
-    plugin = "geojson_workflow",
-    name = "geojson_workflow__layout_to_geojson",
-    description = "Convert elicit_ui layout to GeoJSON FeatureCollection. \
-                   Each UI element becomes a Feature with bounds as Polygon.",
-    emit = Auto
-)]
-async fn workflow_layout_to_geojson(p: LayoutToGeoJsonParams) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Converted {} layout nodes to GeoJSON", p.layout_nodes.len()))
-    ]))
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct BoundsToPolygonParams {
-    pub x0: f64,
-    pub y0: f64,
-    pub x1: f64,
-    pub y1: f64,
-}
-
-#[elicit_tool(
-    plugin = "geojson_workflow",
-    name = "geojson_workflow__bounds_to_polygon",
-    description = "Convert bounding box to GeoJSON Polygon.",
-    emit = Auto
-)]
-async fn workflow_bounds_to_polygon(p: BoundsToPolygonParams) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![
-        Content::text(format!("Created Polygon from bounds ({}, {}) to ({}, {})",
-            p.x0, p.y0, p.x1, p.y1))
-    ]))
-}
-
-// ... 4 more tools: merge_collections, filter_features, etc.
-```
-
-## Phase 6: Testing
-
-### File to create:
-- `crates/elicit_geojson/tests/geojson_test.rs`
-
-### Test Coverage:
-
-```rust
-use geojson::{Geometry, Value};
-use geo_types::Point;
-
-#[test]
-fn test_point_to_geojson() {
-    let point = Point::new(10.0, 20.0);
-    let geometry: Geometry = (&point).into();
-
-    let json = serde_json::to_string(&geometry).unwrap();
-    assert!(json.contains("\"type\":\"Point\""));
-    assert!(json.contains("[10.0,20.0]"));
-}
-
-#[test]
-fn test_geojson_to_point() {
-    let json = r#"{"type":"Point","coordinates":[10.0,20.0]}"#;
-    let geometry: Geometry = serde_json::from_str(json).unwrap();
-
-    if let Value::Point(coords) = geometry.value {
-        assert_eq!(coords, vec![10.0, 20.0]);
-    } else {
-        panic!("Expected Point geometry");
-    }
-}
-
-#[test]
-fn test_feature_with_properties() {
-    let point = Point::new(10.0, 20.0);
-    let geometry: Geometry = (&point).into();
-
-    let mut properties = serde_json::Map::new();
-    properties.insert("name".to_string(), "Test Point".into());
-    properties.insert("value".to_string(), 42.into());
-
-    let feature = geojson::Feature {
-        geometry: Some(geometry),
-        properties: Some(properties),
-        id: None,
-        bbox: None,
-        foreign_members: None,
-    };
-
-    let json = serde_json::to_string(&feature).unwrap();
-    assert!(json.contains("\"name\":\"Test Point\""));
-    assert!(json.contains("\"value\":42"));
-}
-```
-
-## Phase 7: Documentation
-
-### File to create:
-- `crates/elicit_geojson/README.md`
-
-### Content:
-
-```markdown
-# elicit_geojson
-
-Elicitation-enabled wrappers around [`geojson`](https://docs.rs/geojson) for GeoJSON serialization.
-
-## Purpose
-
-Provides **GeoJSON serialization alphabet** for:
-- Exporting UI layouts to visualization tools
-- Importing layouts from design tools
-- Debugging spatial relationships
-- Interop with web mapping libraries
-
-## API Coverage
-
-| Plugin | Tools | Coverage |
-|--------|-------|----------|
-| `geojson_geometry` | 8 | Create/parse GeoJSON geometries |
-| `geojson_feature` | 6 | Features with properties |
-| `geojson_collection` | 6 | Feature collections |
-| `geojson_conversion` | 8 | geo-types ↔ GeoJSON |
-| `geojson_io` | 4 | Read/write GeoJSON files |
-| `geojson_workflow` | 6 | Common patterns |
-
-**Total: ~38 MCP tools**
-
-## Usage
-
-```rust
-use elicit_geojson::{Geometry, Feature, FeatureCollection};
-use geo_types::Point;
-
-// Convert geo-types to GeoJSON
-let point = Point::new(10.0, 20.0);
-let geometry: Geometry = Geometry::from_geo_types_point(&point);
-
-// Create Feature with properties
-let mut properties = serde_json::Map::new();
-properties.insert("name".to_string(), "Button".into());
-let feature = Feature::new(geometry, Some(properties));
-
-// Serialize to JSON
-let json = feature.to_json_string()?;
-```
-
-## Integration with elicit_ui
-
-Export UI layouts to GeoJSON for visualization:
-
-```rust
-use elicit_ui::Layout;
-use elicit_geojson::FeatureCollection;
-
-// Verified layout → GeoJSON
-let layout = Layout::from_update(update);
-let verified = layout.verify_aa(viewport)?;
-
-// Each element becomes a Feature
-let features: Vec<Feature> = verified.nodes()
-    .map(|(id, node)| {
-        let bounds = node.bounds().unwrap();
-        let polygon = bounds_to_polygon(bounds);
-        let mut props = serde_json::Map::new();
-        props.insert("id".into(), id.to_string().into());
-        props.insert("role".into(), format!("{:?}", node.role()).into());
-        Feature::new(polygon, Some(props))
-    })
-    .collect();
-
-let collection = FeatureCollection::new(features);
-collection.write_to_file("layout.geojson", true)?;
-
-// Now visualize in:
-// - QGIS
-// - Mapbox Studio
-// - Leaflet/OpenLayers
-// - Any GeoJSON viewer
-```
-```
-
-## Verification Steps
-
-**After implementation**:
-1. `cargo check -p elicit_geojson`
-2. `cargo test -p elicit_geojson`
-3. `cargo check -p elicitation --no-default-features --features geojson`
-4. `cargo check --all-features`
-
-**Manual verification**:
-1. Create geo-types geometry
-2. Convert to GeoJSON via tool
-3. Verify JSON output matches GeoJSON spec
-4. Round-trip: GeoJSON → geo-types → GeoJSON
-
-## Critical Files
-
-### To create:
-- `crates/elicit_geojson/Cargo.toml`
-- `crates/elicit_geojson/README.md`
-- `crates/elicit_geojson/src/lib.rs`
-- `crates/elicit_geojson/src/geometry.rs`
-- `crates/elicit_geojson/src/feature.rs`
-- `crates/elicit_geojson/src/collection.rs`
-- `crates/elicit_geojson/src/workflow/mod.rs`
-- `crates/elicit_geojson/src/workflow/geometry_plugin.rs`
-- `crates/elicit_geojson/src/workflow/feature_plugin.rs`
-- `crates/elicit_geojson/src/workflow/collection_plugin.rs`
-- `crates/elicit_geojson/src/workflow/conversion_plugin.rs`
-- `crates/elicit_geojson/src/workflow/io_plugin.rs`
-- `crates/elicit_geojson/src/workflow/workflow_plugin.rs`
-- `crates/elicit_geojson/tests/geojson_test.rs`
-- `crates/elicitation/src/geojson_support.rs`
-
-### To modify:
-- `Cargo.toml`
-- `crates/elicitation/Cargo.toml`
-- `crates/elicitation/src/lib.rs`
-
-## Implementation Order
-
-1. **Phase 1**: Workspace configuration (15 min)
-2. **Phase 2**: Core type integration (1 hour)
-3. **Phase 3**: Create elicit_geojson structure (30 min)
-4. **Phase 4**: Implement type wrappers (1 hour)
-5. **Phase 5**: Implement MCP tools (~38 tools) (5-7 hours)
-6. **Phase 6**: Testing (1 hour)
-7. **Phase 7**: Documentation (30 min)
-
-**Total estimated time**: 9-12 hours
-
-## Notes
-
-### Why GeoJSON?
-
-Universal interchange format for geometric data:
-- **Standard**: RFC 7946 specification
-- **Widely supported**: Every mapping library reads GeoJSON
-- **Human-readable**: JSON format, easy to debug
-- **Extensible**: Properties allow arbitrary metadata
-
-### Use Cases
-
-**UI Layout Export**:
-```json
-{
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[[0,0], [100,0], [100,50], [0,50], [0,0]]]
-      },
-      "properties": {
-        "element_id": "button_1",
-        "role": "Button",
-        "label": "Submit",
-        "wcag_level": "AA"
-      }
-    }
-  ]
-}
-```
-
-**Visualization Tools**:
-- QGIS - Desktop GIS
-- Mapbox Studio - Web mapping
-- geojson.io - Online viewer
-- Leaflet/OpenLayers - JavaScript libraries
-
-**Debugging**:
-Export failed layouts to GeoJSON, visualize spatial issues in mapping tools.
+1. `geojson` is wired into the workspace with a `geojson-types` feature
+2. Agents can elicit and inspect the real GeoJSON document/value types
+3. `elicit_geojson` exposes a faithful upstream-shaped MCP vocabulary
+4. `geo-types` ↔ GeoJSON conversions work through the shadow layer
+5. Proof wiring covers the wrapper vocabulary without reshaping upstream semantics
