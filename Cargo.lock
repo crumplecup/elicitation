@@ -1588,6 +1588,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_db"
+version = "0.10.0"
+dependencies = [
+ "derive_more",
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "proc-macro2",
+ "quote",
+ "schemars",
+ "serde",
+ "serde_json",
+ "strum",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "elicit_egui"
 version = "0.10.0"
 dependencies = [

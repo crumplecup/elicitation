@@ -34,6 +34,7 @@ members = [
   "crates/elicit_polars",
   "crates/elicit_uom",
   "crates/elicit_leptos",
+  "crates/elicit_db",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
@@ -86,6 +87,7 @@ elicit_uuid = { path = "crates/elicit_uuid", version = "0.10.0" }
 elicit_polars = { path = "crates/elicit_polars", version = "0.10.0" }
 elicit_uom = { path = "crates/elicit_uom", version = "0.10.0" }
 elicit_leptos = { path = "crates/elicit_leptos", version = "0.10.0" }
+elicit_db = { path = "crates/elicit_db", version = "0.10.0" }
 
 # ── MCP ───────────────────────────────────────────────────────────────────────
 rmcp = { version = "1.3", features = [
