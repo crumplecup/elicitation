@@ -2,8 +2,10 @@
 
 > **Role:** Interface crate — like `elicit_ui`, not a shadow crate.
 > **Purpose:** Define the domain boundary for database interactions. Provides Props,
-> typestate markers, traits, and composite contract types that both DB implementations
-> and consumers (axum handlers, leptos server fns, UI layers) program against.
+> typestate markers, and a **complete family of object-safe traits** covering all
+> operations of a pgAdmin-style DB management application.
+> Traits use contract return types (`Established<P>`) instead of associated types —
+> this gives object safety and a common contract language at every call site.
 > **No DB driver dependency.** Implementations (sqlx, diesel, sea-orm) live elsewhere.
 
 ---
@@ -14,11 +16,39 @@
 standards-anchored vocabulary of database contracts. Users reach for what they need.
 
 Analogies:
-- `elicit_ui` → WCAG Props + accessibility typestate
-- `elicit_db` → ISO SQL + ANSI isolation + PostgreSQL + ISO 27001 Props + DB typestate
+- `elicit_ui` → WCAG Props + accessibility typestate + rendering traits
+- `elicit_db` → ISO SQL + ANSI isolation + PostgreSQL + ISO 27001 Props + **management traits**
 
 The multi-standard stack from `elicit_db_plan.md` is the normative grounding for each
 Prop. Every Prop maps to either an ISO clause or a documented PostgreSQL guarantee.
+
+### Why contract return types instead of associated types
+
+Traditional trait design uses associated types for result shapes:
+```rust
+// NOT this — associated types break object safety
+trait DbExecutor {
+    type Row;
+    type Error;
+    fn query(&self, sql: &str) -> Result<Vec<Self::Row>, Self::Error>;
+}
+```
+
+`elicit_db` uses `Established<P>` tuples instead:
+```rust
+// THIS — object-safe, self-documenting
+trait DbQueryExecutor: Send + Sync {
+    fn query_rows(
+        &self, sql: &str, params: &[DbValue]
+    ) -> BoxFuture<DbResult<(DbRows, Established<RowVisible>)>>;
+}
+```
+
+Benefits:
+- `dyn DbTableManager` works — no associated types to bind
+- The return type IS the contract: callers know exactly what was proven
+- Composable: `(Established<RowInserted>, Established<AuditLogged>)` reads like prose
+- All implementations speak the same language regardless of underlying driver
 
 ---
 
@@ -31,8 +61,21 @@ crates/elicit_db/
 └── src/
     ├── lib.rs               # mod + pub use only
     ├── typestate.rs         # Transaction<S>, Query<S> state machine markers
-    ├── traits.rs            # DbConnection, DbTransaction, DbQuery traits
+    ├── types.rs             # DbRow, DbRows, DbValue, DbSchema, DbColumn, etc.
     ├── error.rs             # DbError / DbErrorKind
+    ├── traits/
+    │   ├── mod.rs           # pub use all traits
+    │   ├── session.rs       # DbSessionManager — connect/disconnect/list sessions
+    │   ├── server.rs        # DbServerAdmin — config, extensions, pg_settings
+    │   ├── database.rs      # DbDatabaseManager — create/drop/list/rename databases
+    │   ├── schema.rs        # DbSchemaManager — create/drop/list schemas
+    │   ├── table.rs         # DbTableManager — create/alter/drop/list/inspect tables
+    │   ├── query.rs         # DbQueryExecutor — execute/query/explain/analyze
+    │   ├── transaction.rs   # DbTransactor — begin/commit/rollback/savepoint
+    │   ├── index.rs         # DbIndexManager — create/drop/list indexes
+    │   ├── role.rs          # DbRoleManager — create/drop/grant/revoke/list roles
+    │   ├── monitor.rs       # DbMonitor — pg_stat_*, slow queries, bloat, index usage
+    │   └── backup.rs        # DbBackupManager — initiate/list/verify backups
     └── contracts/
         ├── mod.rs           # pub use all
         ├── iso_sql.rs       # DDL/DML/constraints (ISO 9075)
@@ -280,23 +323,328 @@ impl Transaction<Open> {
 
 ---
 
-## Traits: `traits.rs`
+## Trait Family: `traits/`
+
+All traits are **object-safe** (`dyn DbTableManager` works). Async methods return
+`BoxFuture`. No associated types — result shapes are expressed as contract tuples.
+
+### Common types used in trait signatures (`types.rs`)
 
 ```rust
-/// A database connection capable of beginning transactions.
-pub trait DbConnection: Send + Sync {
-    type Transaction<'a>: DbTransaction where Self: 'a;
-    fn begin(&mut self) -> impl Future<Output = DbResult<Transaction<Open>>>;
-}
+pub struct DbRow(pub IndexMap<String, DbValue>);
+pub struct DbRows(pub Vec<DbRow>);
+pub struct DbColumn { pub name: String, pub ty: String, pub nullable: bool, pub default: Option<String> }
+pub struct DbSchema { pub name: String, pub tables: Vec<DbTableInfo> }
+pub struct DbTableInfo { pub name: String, pub schema: String, pub columns: Vec<DbColumn> }
+pub struct DbIndexInfo { pub name: String, pub table: String, pub columns: Vec<String>, pub unique: bool }
+pub struct DbRoleInfo { pub name: String, pub superuser: bool, pub can_login: bool }
+pub struct DbSessionInfo { pub pid: i32, pub app_name: String, pub state: String, pub query: Option<String> }
+pub struct DbStatActivity { pub sessions: Vec<DbSessionInfo>, pub idle_count: usize, pub active_count: usize }
+pub struct DbExplain { pub plan: String, pub cost: Option<f64>, pub actual_rows: Option<i64> }
 
-/// A transaction that can execute queries and commit/rollback.
-pub trait DbTransaction: Send + Sync {
-    fn execute(&mut self, sql: &str, params: &[DbValue])
-        -> impl Future<Output = DbResult<u64>>;
-    fn query(&mut self, sql: &str, params: &[DbValue])
-        -> impl Future<Output = DbResult<Vec<DbRow>>>;
-    fn commit(self) -> impl Future<Output = DbResult<()>>;
-    fn rollback(self) -> impl Future<Output = DbResult<()>>;
+pub enum DbValue { Null, Bool(bool), Int(i64), Float(f64), Text(String), Bytes(Vec<u8>), Json(serde_json::Value) }
+pub type DbResult<T> = Result<T, DbError>;
+```
+
+### `traits/session.rs` — Connection & Session Management
+
+```rust
+/// Manage database sessions and connections.
+/// Covers: connect, disconnect, list active backends.
+pub trait DbSessionManager: Send + Sync {
+    fn connect(&self, url: &str)
+        -> BoxFuture<DbResult<(ConnectionId, Established<ConnectionEstablished>)>>;
+
+    fn disconnect(&self, id: ConnectionId)
+        -> BoxFuture<DbResult<()>>;
+
+    fn list_sessions(&self)
+        -> BoxFuture<DbResult<DbStatActivity>>;
+
+    fn terminate_session(&self, pid: i32)
+        -> BoxFuture<DbResult<Established<AuditLogged>>>;
+}
+```
+
+### `traits/server.rs` — Server Administration
+
+```rust
+/// PostgreSQL server-level administration.
+/// Covers: config inspection, extension management, version info.
+pub trait DbServerAdmin: Send + Sync {
+    fn server_version(&self)
+        -> BoxFuture<DbResult<String>>;
+
+    fn list_settings(&self)
+        -> BoxFuture<DbResult<Vec<(String, String)>>>;  // pg_settings
+
+    fn list_extensions(&self)
+        -> BoxFuture<DbResult<Vec<String>>>;
+
+    fn install_extension(&self, name: &str)
+        -> BoxFuture<DbResult<Established<AuditLogged>>>;
+
+    fn reload_config(&self)
+        -> BoxFuture<DbResult<Established<AuditLogged>>>;
+}
+```
+
+### `traits/database.rs` — Database Lifecycle
+
+```rust
+/// Manage the set of databases on a server.
+/// Source: ISO/IEC 9075-2 + PostgreSQL CREATE/DROP DATABASE
+pub trait DbDatabaseManager: Send + Sync {
+    fn create_database(&self, name: &str)
+        -> BoxFuture<DbResult<(Established<TableCreated>, Established<AuditLogged>)>>;
+        // TableCreated is the closest DDL prop; DatabaseCreated is a valid alias
+
+    fn drop_database(&self, name: &str)
+        -> BoxFuture<DbResult<Established<AuditLogged>>>;
+
+    fn list_databases(&self)
+        -> BoxFuture<DbResult<Vec<String>>>;
+
+    fn rename_database(&self, from: &str, to: &str)
+        -> BoxFuture<DbResult<Established<AuditLogged>>>;
+
+    fn database_size(&self, name: &str)
+        -> BoxFuture<DbResult<u64>>;  // bytes
+}
+```
+
+### `traits/schema.rs` — Schema Management
+
+```rust
+/// Manage schemas within a database.
+/// Source: ISO/IEC 9075-2 §11.1 — <schema definition>
+pub trait DbSchemaManager: Send + Sync {
+    fn create_schema(&self, name: &str)
+        -> BoxFuture<DbResult<(Established<SchemaExists>, Established<AuditLogged>)>>;
+
+    fn drop_schema(&self, name: &str, cascade: bool)
+        -> BoxFuture<DbResult<Established<AuditLogged>>>;
+
+    fn list_schemas(&self)
+        -> BoxFuture<DbResult<Vec<String>>>;
+
+    fn schema_info(&self, name: &str)
+        -> BoxFuture<DbResult<DbSchema>>;
+}
+```
+
+### `traits/table.rs` — Table Management
+
+```rust
+/// Full table lifecycle: create, alter, drop, inspect.
+/// Source: ISO/IEC 9075-2 §11.3 — <table definition>
+pub trait DbTableManager: Send + Sync {
+    fn create_table(&self, schema: &str, name: &str, columns: Vec<DbColumn>)
+        -> BoxFuture<DbResult<(Established<TableCreated>, Established<ReferentialIntegrityMaintained>)>>;
+
+    fn drop_table(&self, schema: &str, name: &str, cascade: bool)
+        -> BoxFuture<DbResult<Established<AuditLogged>>>;
+
+    fn list_tables(&self, schema: &str)
+        -> BoxFuture<DbResult<Vec<DbTableInfo>>>;
+
+    fn inspect_table(&self, schema: &str, name: &str)
+        -> BoxFuture<DbResult<(DbTableInfo, Established<TableExists>)>>;
+
+    fn add_column(&self, schema: &str, table: &str, column: DbColumn)
+        -> BoxFuture<DbResult<(Established<ColumnExists>, Established<AuditLogged>)>>;
+
+    fn drop_column(&self, schema: &str, table: &str, column: &str)
+        -> BoxFuture<DbResult<Established<AuditLogged>>>;
+
+    fn rename_table(&self, schema: &str, from: &str, to: &str)
+        -> BoxFuture<DbResult<Established<AuditLogged>>>;
+
+    fn truncate_table(&self, schema: &str, name: &str)
+        -> BoxFuture<DbResult<Established<AuditLogged>>>;
+}
+```
+
+### `traits/query.rs` — Query Execution
+
+```rust
+/// Execute SQL queries and DML. The core data-plane trait.
+/// Source: ISO/IEC 9075-2 §14 — Data manipulation
+pub trait DbQueryExecutor: Send + Sync {
+    /// Execute a DML statement (INSERT/UPDATE/DELETE), return affected row count.
+    fn execute(&self, sql: &str, params: &[DbValue])
+        -> BoxFuture<DbResult<(u64, Established<AuditLogged>)>>;
+
+    /// Execute a SELECT, return rows.
+    fn query_rows(&self, sql: &str, params: &[DbValue])
+        -> BoxFuture<DbResult<(DbRows, Established<RowVisible>)>>;
+
+    /// EXPLAIN a query — no rows modified.
+    fn explain(&self, sql: &str, analyze: bool)
+        -> BoxFuture<DbResult<DbExplain>>;
+
+    /// Execute inside a transaction, returning commit proof.
+    fn execute_in_transaction(
+        &self,
+        sql: &str,
+        params: &[DbValue],
+        isolation: IsolationLevel,
+    ) -> BoxFuture<DbResult<(u64, Established<TransactionCommitted>, Established<AuditLogged>)>>;
+}
+```
+
+### `traits/transaction.rs` — Transaction Control
+
+```rust
+/// Fine-grained transaction management with savepoints.
+/// Source: ISO/IEC 9075-2 §17 — Transaction management
+pub trait DbTransactor: Send + Sync {
+    fn begin(&self, isolation: IsolationLevel)
+        -> BoxFuture<DbResult<TransactionHandle>>;
+
+    fn commit(&self, handle: TransactionHandle)
+        -> BoxFuture<DbResult<(Established<TransactionCommitted>, Established<Durable>)>>;
+
+    fn rollback(&self, handle: TransactionHandle)
+        -> BoxFuture<DbResult<()>>;
+
+    fn savepoint(&self, handle: &TransactionHandle, name: &str)
+        -> BoxFuture<DbResult<()>>;
+
+    fn rollback_to_savepoint(&self, handle: &TransactionHandle, name: &str)
+        -> BoxFuture<DbResult<()>>;
+}
+```
+
+### `traits/index.rs` — Index Management
+
+```rust
+/// Create, drop, and inspect indexes.
+/// Source: PostgreSQL docs §11 — Indexes
+pub trait DbIndexManager: Send + Sync {
+    fn create_index(&self, table: &str, columns: &[&str], unique: bool)
+        -> BoxFuture<DbResult<(Established<IndexExists>, Established<AuditLogged>)>>;
+
+    fn drop_index(&self, name: &str)
+        -> BoxFuture<DbResult<Established<AuditLogged>>>;
+
+    fn list_indexes(&self, table: &str)
+        -> BoxFuture<DbResult<Vec<DbIndexInfo>>>;
+
+    fn reindex(&self, table: &str)
+        -> BoxFuture<DbResult<Established<AuditLogged>>>;
+}
+```
+
+### `traits/role.rs` — Role & Privilege Management
+
+```rust
+/// PostgreSQL role management and GRANT/REVOKE.
+/// Source: ISO/IEC 9075-2 §12 — Access control + ISO 27001 §A.5.15
+pub trait DbRoleManager: Send + Sync {
+    fn create_role(&self, name: &str, can_login: bool, superuser: bool)
+        -> BoxFuture<DbResult<(Established<AccessAuthorized>, Established<AuditLogged>)>>;
+
+    fn drop_role(&self, name: &str)
+        -> BoxFuture<DbResult<Established<AuditLogged>>>;
+
+    fn list_roles(&self)
+        -> BoxFuture<DbResult<Vec<DbRoleInfo>>>;
+
+    fn grant(&self, privilege: &str, on: &str, to: &str)
+        -> BoxFuture<DbResult<(Established<AccessAuthorized>, Established<AuditLogged>)>>;
+
+    fn revoke(&self, privilege: &str, on: &str, from: &str)
+        -> BoxFuture<DbResult<(Established<LeastPrivilegeEnforced>, Established<AuditLogged>)>>;
+}
+```
+
+### `traits/monitor.rs` — Performance Monitoring
+
+```rust
+/// Runtime monitoring: sessions, locks, slow queries, bloat.
+/// Source: PostgreSQL pg_stat_* system views
+pub trait DbMonitor: Send + Sync {
+    fn active_sessions(&self)
+        -> BoxFuture<DbResult<DbStatActivity>>;
+
+    fn slow_queries(&self, threshold_ms: u64)
+        -> BoxFuture<DbResult<Vec<DbSessionInfo>>>;
+
+    fn table_bloat(&self, schema: &str)
+        -> BoxFuture<DbResult<Vec<(String, f64)>>>;  // (table, bloat_ratio)
+
+    fn index_usage(&self, schema: &str)
+        -> BoxFuture<DbResult<Vec<(String, u64)>>>;  // (index, scans)
+
+    fn lock_waits(&self)
+        -> BoxFuture<DbResult<Vec<(i32, i32)>>>;  // (waiting_pid, blocking_pid)
+
+    fn cache_hit_ratio(&self)
+        -> BoxFuture<DbResult<f64>>;  // 0.0–1.0
+}
+```
+
+### `traits/backup.rs` — Backup & Recovery
+
+```rust
+/// Backup initiation, listing, and verification.
+/// Source: PostgreSQL docs §26 + ISO SQL (durability)
+pub trait DbBackupManager: Send + Sync {
+    fn initiate_backup(&self, label: &str)
+        -> BoxFuture<DbResult<(Established<BackupConsistent>, Established<AuditLogged>)>>;
+
+    fn list_backups(&self)
+        -> BoxFuture<DbResult<Vec<String>>>;
+
+    fn verify_backup(&self, label: &str)
+        -> BoxFuture<DbResult<Established<BackupConsistent>>>;
+
+    fn wal_status(&self)
+        -> BoxFuture<DbResult<Established<WALReplayable>>>;
+}
+```
+
+### Composite capability trait
+
+A full pgAdmin-style backend implements all of the above:
+
+```rust
+/// Complete database management backend.
+///
+/// Implement this for any database driver (sqlx, diesel, tiberius, libpq).
+/// All consumers depend only on this interface — not the driver.
+pub trait DbBackend:
+    DbSessionManager
+    + DbServerAdmin
+    + DbDatabaseManager
+    + DbSchemaManager
+    + DbTableManager
+    + DbQueryExecutor
+    + DbTransactor
+    + DbIndexManager
+    + DbRoleManager
+    + DbMonitor
+    + DbBackupManager
+    + Send
+    + Sync
+{}
+
+// Blanket impl: anything that impls all sub-traits gets DbBackend for free
+impl<T> DbBackend for T
+where
+    T: DbSessionManager + DbServerAdmin + DbDatabaseManager + DbSchemaManager
+     + DbTableManager + DbQueryExecutor + DbTransactor + DbIndexManager
+     + DbRoleManager + DbMonitor + DbBackupManager + Send + Sync
+{}
+```
+
+Usage at application level:
+
+```rust
+async fn get_table_info(db: &dyn DbTableManager, schema: &str, name: &str) {
+    let (info, Established::<TableExists> { .. }) = db.inspect_table(schema, name).await?;
+    // The destructured proof token is evidence — caller doesn't need to recheck
 }
 ```
 
@@ -380,14 +728,15 @@ emit = ["elicitation/emit"]
 2. `typestate.rs` (Transaction/Query state machines)
 3. `traits.rs` (DbConnection, DbTransaction, DbQuery)
 4. `crates/elicitation` primitives (`db-types` feature)
-5. Tests: verify Props compile, typestate transitions are correct
-6. README: contract reference with standard citations
+5. Tests: verify Props compile, typestate transitions correct, `dyn DbBackend` is object-safe
+6. README: trait family reference with standard citations per method
 
 ---
 
 ## Non-Goals (explicitly deferred)
 
-- `elicit_sqlx` — MCP tools wrapping sqlx (future crate, depends on elicit_db)
+- `elicit_sqlx` — MCP tools wrapping sqlx (future crate, depends on `elicit_db`)
 - Migration tooling (sqlx migrate / refinery) — deferred
 - Query builder DSL — deferred
 - Connection pooling traits — deferred (deadpool / bb8 are runtime concerns)
+- Actual sqlx/diesel/sea-orm implementations — separate impl crates, not here
