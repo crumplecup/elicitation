@@ -126,37 +126,11 @@ pattern, and a copy-paste checklist. The `clap` integration is the canonical ref
 
 **Document:** [ELICIT_AXUM_PLAN.md](ELICIT_AXUM_PLAN.md)
 
-**Status:** 🔲 Planning
+**Status:** ✅ Complete
 
-**Description:** Complete harvesting of the axum web framework (Router, 20+ extractors,
-responses, handlers, middleware, Tower integration) as MCP tools for agent composition of
-web services. Three-crate architecture: `elicit_tower` (Service/Layer + 20+ middleware),
-`elicit_axum_core` (FromRequest/IntoResponse traits), `elicit_axum` (Router, handlers, serve).
-
-**Key Challenge:** Axum is trait-heavy with type-level composition - handlers inferred from
-function signatures, extractors composed via type parameters. Solution: dual representation
-with both **code generation tools** (emit Rust handlers/middleware) and **runtime tools**
-(manipulate pre-compiled components).
-
-**Coverage:**
-- **Routing:** Router, MethodRouter, MethodFilter, nesting, merging, fallbacks
-- **Extractors:** Path, Query, Json, Form, Multipart, WebSocket, State, 20+ built-ins
-- **Responses:** Json, Html, Redirect, SSE, AppendHeaders, tuple responses
-- **Handlers:** Handler trait, HandlerService, code generation builder
-- **Middleware:** from_fn, from_extractor, map_request/response, Next, builder
-- **Tower:** Service/Layer traits, 20+ tower-http middleware (CORS, compression, tracing, etc.)
-- **Server:** serve(), Listener trait, graceful shutdown, IncomingStream
-- **HTTP:** Full http crate re-exports (StatusCode, HeaderMap, Method, Uri)
-
-**Strategy:**
-- Three shadow crates with clear separation of concerns
-- Trait reflection for FromRequest/IntoResponse/Handler/Service/Layer
-- Workflow-based tool design (create service, add endpoint, apply middleware)
-- Code generation for handlers and middleware (agents emit Rust code)
-- Runtime composition of pre-compiled handlers
-- Kani/Creusot verification for composition contracts
-
-**Timeline:** 6 weeks, 11 phases, 400-500 MCP tools, ~20,000-25,000 LOC
+**Description:** Harvesting of the axum web framework (Router, extractors, responses,
+handlers, middleware, Tower integration) as MCP tools. Descriptor-registry + factory
+pattern. `elicit_tower` + `elicit_axum` both complete.
 
 ---
 
@@ -164,12 +138,40 @@ with both **code generation tools** (emit Rust handlers/middleware) and **runtim
 
 **Document:** [ELICIT_POLARS_PLAN.md](ELICIT_POLARS_PLAN.md)
 
-**Status:** 🔲 Planning
+**Status:** ✅ Complete
 
-**Description:** Pragmatic harvesting of polars DataFrame library (~70-80% of API is
-JSON-serializable). Four-plugin architecture: DataFrame operations (eager), LazyFrame
-query builder (lazy), Expr composition DSL, and SQL interface. Unlike closure-heavy
-libraries, polars was designed for serialization with full serde support.
+**Description:** 72 tools across 4 plugins (PolarsExprPlugin, PolarsDataFramePlugin,
+PolarsPipelinePlugin, PolarsSqlPlugin). Runtime Expr registry + dual-tracking, DataFrame
+runtime execution, pipeline descriptor + emit_main, SQLContext.
+
+---
+
+### elicit_uom Shadow Crate
+
+**Document:** [ELICIT_UOM_PLAN.md](ELICIT_UOM_PLAN.md)
+
+**Status:** 📋 Planning
+
+**Description:** Units of Measurement (uom 0.38). Runtime enum-wrapper registry adapted
+for phantom-generic `Quantity<D,U,V>` — stores `(UomQuantityKind, f64_in_si_base)` pairs.
+Uses uom internally for conversion math. 18 quantity types (7 ISQ base + 11 derived).
+Code generation emits complete type-safe uom programs.
+
+**Key Insight:** uom is type-system-first — no runtime registry of `Quantity<D,U,V>` is
+possible. Adapted pattern: own `UomValue` enum wraps the f64 SI base value; uom does all
+conversion math internally. Factory pattern available for per-quantity sub-plugins.
+
+**Coverage:**
+- **UomQuantityPlugin (~40 tools):** 18 `new` tools, 5 query, 12 arithmetic, 1 convert
+- **UomCodePlugin (~15 tools):** 5 emit (conversion, calculation, formula, main, snippet) + 10 catalog
+- **Physics constants:** c, G, h, kB, NA, e, g
+- **Named formulas:** KineticEnergy, GravitationalPE, OhmsLaw, IdealGas, NewtonSecondLaw, Power
+
+**Strategy:**
+- Store `UomValue` enum (18 variants × f64 SI base) in `HashMap<Uuid, UomValue>`
+- Use uom for all conversion math — no reinvention of factors
+- Emit clean `use uom::si::f64::*` code with typed arithmetic
+- Parallel code tracking (like PolarsExprPlugin) for `code__emit_snippet`
 
 **Key Advantage:** Polars' `Expr` type is a **serializable AST** - agents can build
 complex queries by composing JSON-serializable expressions. No code generation needed,

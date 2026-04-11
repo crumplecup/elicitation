@@ -1401,7 +1401,137 @@ the factory pattern.
 
 ---
 
-## Phase 4 — Kani Verification (`crates/elicitation_kani/`)
+### 3F.6 Multi-Parameter Factory
+
+When the core type has **multiple independent generic parameters** — `Foo<A, B, C>` —
+the factory pattern extends naturally. Each parameter that is `ElicitComplete` contributes
+independently to tool naming, schema, and code generation.
+
+#### When to use
+
+- The API type has ≥2 independent generics (e.g. `Quantity<D, U, V>`, `HashMap<K, V>`)
+- Each parameter is a distinct semantic axis (dimension vs unit system vs value type)
+- Parameters can meaningfully vary independently — different registrations explore the
+  product space
+
+#### Canonical example: `uom::Quantity<D, U, V>`
+
+`uom` represents physical quantities as `Quantity<D, U, V>` where:
+- `D: Dimension` — type-level dimensional powers (Length, Mass, Velocity, …)
+- `U: Units<V>` — unit system (SI, CGS, …)
+- `V: Num + Conversion<V>` — underlying storage (f64, f32, i32, …)
+
+In practice, uom exposes convenient type aliases (`uom::si::f64::Length`, `uom::si::f64::Mass`)
+which are fully-specialized instantiations of the 3-parameter generic. The factory registers
+these **concrete type aliases** — one type parameter at the call site that resolves to three:
+
+```rust
+pub struct UomQuantityPlugin { /* ... */ }
+impl UomQuantityPlugin {
+    pub fn builder() -> UomQuantityPluginBuilder { Default::default() }
+}
+
+impl UomQuantityPluginBuilder {
+    /// Register a concrete quantity type Q (e.g. uom::si::f64::Length).
+    /// Q must be Quantity<D, U, V> for some D, U, V — the factory monomorphizes
+    /// tools for this exact (D, U, V) triple.
+    ///
+    /// `name` is the caller-supplied namespace for generated tools:
+    /// `{name}__new`, `{name}__get`, `{name}__add`, `{name}__emit`, etc.
+    pub fn register_quantity<Q>(mut self, name: &'static str) -> Self
+    where
+        Q: QuantityElicit + 'static,  // supertrait: Quantity + ElicitComplete
+    {
+        self.registrations.push(Box::new(QuantityRegistration::<Q>::new(name)));
+        self
+    }
+}
+```
+
+Downstream usage:
+
+```rust
+let plugin = UomQuantityPlugin::builder()
+    .register_quantity::<uom::si::f64::Length>("length")
+    .register_quantity::<uom::si::f64::Mass>("mass")
+    .register_quantity::<uom::si::f64::Time>("time")
+    .register_quantity::<uom::si::f64::Velocity>("velocity")
+    .build();
+// Generates: length__new, length__get, length__add, length__emit,
+//            mass__new, mass__get, mass__add, mass__emit, ...
+```
+
+Each registration gets its **own typed `HashMap<Uuid, Q>`** — no enum-wrapper, no type
+erasure. The compiler knows the exact type at codegen time.
+
+#### The ElicitComplete advantage for multi-param factories
+
+When each dimension parameter is independently `ElicitComplete`:
+
+```rust
+// Each of D, U, V contributes to code emission independently:
+// D knows: "I am Length; my SI unit is meter; I accept foot, km, ..."
+// U knows: "I am the SI system; I emit as uom::si::SI"
+// V knows: "I am f64; I emit as f64"
+
+// Factory can compose these to generate:
+// "use uom::si::f64::Length; let x = Length::new::<meter>(5.0);"
+```
+
+This compositional code generation is the unique value of multi-param `ElicitComplete`
+over a single opaque concrete type. Each parameter's `EmitCode` impl produces a fragment;
+the factory combines them into dimension-correct, unit-safe Rust source.
+
+#### Cross-registration arithmetic: the QuantityBus
+
+Multi-registration creates a coordination challenge: `length_id / time_id = velocity_id`
+spans three different typed HashMaps. The solution is a **QuantityBus** — a shared routing
+layer all registrations contribute to.
+
+```rust
+/// Shared bus: maps UUID → (quantity_name, f64_in_si_base_units).
+/// Allows cross-registration arithmetic without type erasure of the primary storage.
+pub type QuantityBus = Arc<Mutex<HashMap<Uuid, QuantityBusEntry>>>;
+
+pub struct QuantityBusEntry {
+    pub name: &'static str,   // "length", "mass", etc. — registration name
+    pub si_value: f64,        // always in SI base units
+}
+```
+
+Each `{name}__new` tool writes to both the typed HashMap (for emission, type-safe ops)
+and the QuantityBus (for cross-type ops). The bus-level arithmetic tool (`qty__div`,
+`qty__mul`) reads SI values from the bus, computes, resolves the result dimension from
+the derivation table, and routes the result into the appropriate typed HashMap.
+
+```
+length_id  ──bus──> 30.48 m           }
+time_id    ──bus──> 9.58 s            } qty__div resolves → Velocity
+                                       } creates velocity_id in velocity HashMap
+                                       } writes velocity_id + 3.18 m/s to bus
+```
+
+Both storage layers coexist:
+- **Typed HashMap** — used by `{name}__emit` (knows the uom type, emits perfect code)
+- **QuantityBus** — used by cross-type arithmetic (works on f64 SI values)
+
+#### Naming convention
+
+`{registration_name}__{action}` — all lowercase, double-underscore.
+
+With multi-param factory the registration name encodes all parameters that matter to users:
+`"length_cgs_f32"` for CGS f32 Length, `"length"` for the common SI f64 case.
+
+#### When NOT to use multi-param factory
+
+- Parameters are not independently meaningful to callers (use a single opaque type)
+- The product space is fixed and small (use the enum-wrapper runtime pattern instead —
+  simpler, no QuantityBus needed)
+- Cross-registration arithmetic is the primary operation (bus overhead dominates)
+
+---
+
+
 
 ### 4.1 `Cargo.toml`
 
