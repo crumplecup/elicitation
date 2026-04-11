@@ -150,30 +150,54 @@ runtime execution, pipeline descriptor + emit_main, SQLContext.
 
 **Document:** [ELICIT_UOM_PLAN.md](ELICIT_UOM_PLAN.md)
 
-**Status:** 📋 Planning
+**Status:** ✅ Complete
 
-**Description:** Units of Measurement (uom 0.38). Runtime enum-wrapper registry adapted
-for phantom-generic `Quantity<D,U,V>` — stores `(UomQuantityKind, f64_in_si_base)` pairs.
-Uses uom internally for conversion math. 18 quantity types (7 ISQ base + 11 derived).
-Code generation emits complete type-safe uom programs.
-
-**Key Insight:** uom is type-system-first — no runtime registry of `Quantity<D,U,V>` is
-possible. Adapted pattern: own `UomValue` enum wraps the f64 SI base value; uom does all
-conversion math internally. Factory pattern available for per-quantity sub-plugins.
+**Description:** Units of Measurement (uom 0.38). Phase 3F.6 multi-parameter factory —
+18 registered quantities each with typed `HashMap<Uuid, uom::si::f64::Q>`. Shared
+QuantityBus enables cross-registration arithmetic (Length/Time→Velocity). ~55 tools.
 
 **Coverage:**
-- **UomQuantityPlugin (~40 tools):** 18 `new` tools, 5 query, 12 arithmetic, 1 convert
+- **UomQuantityPlugin (~40 tools):** 36 per-registration (18×new+emit), 5 query, 12 arithmetic, 1 convert
 - **UomCodePlugin (~15 tools):** 5 emit (conversion, calculation, formula, main, snippet) + 10 catalog
-- **Physics constants:** c, G, h, kB, NA, e, g
-- **Named formulas:** KineticEnergy, GravitationalPE, OhmsLaw, IdealGas, NewtonSecondLaw, Power
+- **Physics constants:** c, G, h, kB, NA, e, g, ε0
+- **Named formulas:** KineticEnergy, GravitationalPE, OhmsLaw, IdealGas, Momentum
 
-**Strategy:**
-- Store `UomValue` enum (18 variants × f64 SI base) in `HashMap<Uuid, UomValue>`
-- Use uom for all conversion math — no reinvention of factors
-- Emit clean `use uom::si::f64::*` code with typed arithmetic
-- Parallel code tracking (like PolarsExprPlugin) for `code__emit_snippet`
+---
 
-**Key Advantage:** Polars' `Expr` type is a **serializable AST** - agents can build
+### elicit_leptos Shadow Crate
+
+**Document:** [ELICIT_LEPTOS_PLAN.md](ELICIT_LEPTOS_PLAN.md)
+
+**Status:** 📋 Planning (revised)
+
+**Description:** Leptos 0.8 reactive web framework. StatefulPlugin for server-side reactive
+primitives + DescriptorPlugin for code generation. ~75 tools.
+
+**Architecture:**
+- **`LeptosReactivePlugin`** (StatefulPlugin): `LeptosReactiveContext` holds an `Owner` scope,
+  `HashMap<Uuid, RwSignal<Value>>` signals, memos, actions. Uses `leptos ssr` feature — fully
+  server-side, no WASM. Tools: signal CRUD, memo derivation, context provide/use, actions.
+- **`LeptosCodePlugin`** (DescriptorPlugin): Pure code generation for all macro surfaces.
+  `LeptosComponentDescriptor`, `LeptosViewNode`, `LeptosRouteDescriptor`, `LeptosAppDescriptor`
+  descriptors feed into emit tools.
+
+**Coverage:**
+- **Reactive (~22 tools):** signals (8), memos (4), context (4), actions (4), owner (2)
+- **Components (~8 tools):** descriptor create/build/emit, `#[component]`, `#[island]`
+- **View (~12 tools):** parametric `element_emit`, Show, For, Suspense, Transition, ErrorBoundary, bindings, closures
+- **Server fns (~7 tools):** `#[server]`, Resource, Action, ServerAction, ActionForm
+- **Routing (~8 tools):** Router/Routes/Route descriptors, use_params, use_navigate
+- **Meta (~4 tools):** Title, Meta, Link, Stylesheet via leptos_meta
+- **Scaffolding (~8 tools):** App descriptor → emit_main_rs, emit_cargo_toml, emit_all
+- **Catalog (~6 tools):** HTML tags, leptos components, events, features, starter templates
+
+**Key decisions:**
+- One parametric `element_emit(tag, attrs, events, children)` replaces 140 per-element tools
+- `leptos features = ["ssr"]` — reactive_graph works server-side, no browser/WASM needed
+- Macros (`#[component]`, `view!`, `#[server]`, `#[island]`) are emit tools, not runtime wrappers
+- Closures (`on:click`, `class:active`, `{move || ...}`) follow closure-as-fragment pattern
+
+
 complex queries by composing JSON-serializable expressions. No code generation needed,
 just data structure composition.
 
