@@ -674,6 +674,21 @@ impl ProofHarness {
             Self::new("wkb_types", "verify_wkb_geometry_type_roundtrip"),
             Self::new("wkb_types", "verify_wkb_write_options_roundtrip"),
             Self::new("wkb_types", "verify_wkb_bytes_known_point_metadata"),
+            // georaster_types: GeoTIFF reader/value proofs
+            Self::new(
+                "georaster_types",
+                "verify_georaster_coordinate_new_semantics",
+            ),
+            Self::new(
+                "georaster_types",
+                "verify_georaster_planar_configuration_chunky",
+            ),
+            Self::new("georaster_types", "verify_georaster_color_type_rgb_bits"),
+            Self::new(
+                "georaster_types",
+                "verify_georaster_raster_value_rgb8_variant",
+            ),
+            Self::new("georaster_types", "verify_georaster_image_info_fields"),
             // geojson_types: GeoJSON document/value proofs
             Self::new("geojson_types", "verify_geojson_value_point_type_name"),
             Self::new("geojson_types", "verify_geojson_geometry_new_point"),

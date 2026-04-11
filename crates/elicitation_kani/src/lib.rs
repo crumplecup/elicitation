@@ -128,6 +128,9 @@ mod ratatui_types;
 #[cfg(all(kani, feature = "geo-types"))]
 mod geo_types;
 
+#[cfg(all(kani, feature = "georaster-types"))]
+mod georaster_types;
+
 #[cfg(all(kani, feature = "geojson-types"))]
 mod geojson_types;
 

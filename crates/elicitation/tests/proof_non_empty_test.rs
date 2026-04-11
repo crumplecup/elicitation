@@ -277,6 +277,31 @@ mod uuid_tests {
 // WKT
 // ============================================================================
 
+#[cfg(feature = "georaster-types")]
+mod georaster_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn georaster_proofs_non_empty() {
+        assert_proofs_non_empty::<georaster::Coordinate>("georaster::Coordinate");
+        assert_proofs_non_empty::<georaster::geotiff::RasterValue>(
+            "georaster::geotiff::RasterValue",
+        );
+        assert_proofs_non_empty::<georaster::geotiff::ImageInfo>("georaster::geotiff::ImageInfo");
+        assert_proofs_non_empty::<tiff::ColorType>("tiff::ColorType");
+        assert_proofs_non_empty::<tiff::tags::PhotometricInterpretation>(
+            "tiff::tags::PhotometricInterpretation",
+        );
+        assert_proofs_non_empty::<tiff::tags::PlanarConfiguration>(
+            "tiff::tags::PlanarConfiguration",
+        );
+    }
+}
+
+// ============================================================================
+// GeoJSON
+// ============================================================================
+
 #[cfg(feature = "geojson-types")]
 mod geojson_tests {
     use super::assert_proofs_non_empty;

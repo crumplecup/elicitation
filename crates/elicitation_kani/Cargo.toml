@@ -35,9 +35,11 @@ sqlx = { workspace = true, optional = true }
 egui = { workspace = true, optional = true }
 ratatui = { workspace = true, optional = true }
 geo-types = { workspace = true, optional = true }
+georaster = { workspace = true, optional = true }
 geojson = { workspace = true, optional = true }
-wkt = { workspace = true, optional = true }
 wkb = { workspace = true, optional = true }
+wkt = { workspace = true, optional = true }
+tiff = { workspace = true, optional = true }
 palette = { workspace = true, optional = true }
 paste = { workspace = true, optional = true }
 elicit_ui = { workspace = true, optional = true }
@@ -59,6 +61,7 @@ tokio-types = []
 egui-types = ["dep:egui", "dep:paste", "elicitation/egui-types"]
 ratatui = ["dep:ratatui", "dep:paste", "elicitation/ratatui"]
 geo-types = ["dep:geo-types", "elicitation/geo-types"]
+georaster-types = ["dep:georaster", "dep:tiff", "elicitation/georaster-types"]
 geojson-types = ["dep:geojson", "dep:serde_json", "elicitation/geojson-types"]
 wkt-types = ["dep:wkt", "elicitation/wkt-types"]
 wkb-types = ["dep:wkb", "elicitation/wkb-types"]

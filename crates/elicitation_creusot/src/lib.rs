@@ -104,6 +104,9 @@ mod ratatui_types;
 #[cfg(feature = "geo-types")]
 mod geo_types;
 
+#[cfg(feature = "georaster-types")]
+mod georaster_types;
+
 #[cfg(feature = "geojson-types")]
 mod geojson_types;
 
@@ -539,6 +542,13 @@ pub use geojson_types::{
     verify_geojson_feature_collection_len, verify_geojson_feature_property_access,
     verify_geojson_geometry_new_point, verify_geojson_id_string_variant,
     verify_geojson_value_point_type_name,
+};
+
+#[cfg(feature = "georaster-types")]
+pub use georaster_types::{
+    verify_georaster_color_type_rgb_bits, verify_georaster_coordinate_new_semantics,
+    verify_georaster_image_info_fields, verify_georaster_planar_configuration_chunky,
+    verify_georaster_raster_value_rgb8_variant,
 };
 
 #[cfg(feature = "wkt-types")]
