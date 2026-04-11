@@ -47,7 +47,9 @@ fn json_result(value: &impl serde::Serialize) -> CallToolResult {
 /// Parse a terminal ID from a string parameter.
 fn parse_terminal_id(id: &str) -> Result<Uuid, Box<CallToolResult>> {
     Uuid::parse_str(id).map_err(|e| {
-        Box::new(CallToolResult::error(vec![Content::text(format!("invalid terminal_id: {e}"))]))
+        Box::new(CallToolResult::error(vec![Content::text(format!(
+            "invalid terminal_id: {e}"
+        ))]))
     })
 }
 

@@ -641,3 +641,7 @@ pub use primitives::axum_types::{
 pub use primitives::{
     PolarsDType, PolarsJoinType, PolarsPipelineDescriptor, PolarsPipelineOp, PolarsPipelineStep,
 };
+
+// uom descriptor types (feature-gated on uom-types)
+#[cfg(feature = "uom-types")]
+pub use primitives::{UomFormula, UomQuantityKind, UomStep, UomUnitSystem};

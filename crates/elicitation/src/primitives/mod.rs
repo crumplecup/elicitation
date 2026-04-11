@@ -76,3 +76,8 @@ mod polars_types;
 pub use polars_types::{
     PolarsDType, PolarsJoinType, PolarsPipelineDescriptor, PolarsPipelineOp, PolarsPipelineStep,
 };
+
+#[cfg(feature = "uom-types")]
+mod uom_types;
+#[cfg(feature = "uom-types")]
+pub use uom_types::{UomFormula, UomQuantityKind, UomStep, UomUnitSystem};

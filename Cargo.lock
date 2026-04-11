@@ -1936,6 +1936,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_uom"
+version = "0.10.0"
+dependencies = [
+ "derive_more",
+ "elicitation",
+ "futures",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "uom",
+ "uuid",
+]
+
+[[package]]
 name = "elicit_url"
 version = "0.10.0"
 dependencies = [
@@ -5699,7 +5716,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -6443,7 +6460,6 @@ dependencies = [
  "cfg-if",
  "libc",
  "psm",
- "windows-sys 0.52.0",
  "windows-sys 0.59.0",
 ]
 
@@ -7171,6 +7187,16 @@ name = "unty"
 version = "0.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6d49784317cd0d1ee7ec5c716dd598ec5b4483ea832a2dced265471cc0f690ae"
+
+[[package]]
+name = "uom"
+version = "0.38.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a739f83872836c82a4f2527d4e54b37007b3de68cafe7edde95fd695968bf4b9"
+dependencies = [
+ "num-traits",
+ "typenum",
+]
 
 [[package]]
 name = "url"
