@@ -108,6 +108,53 @@ pattern needed; pure value-type composition throughout.
 
 ---
 
+### elicit_geojson Shadow Crate
+
+**Document:** [ELICIT_GEOJSON_PLAN.md](ELICIT_GEOJSON_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Faithful shadow of the `geojson` crate’s actual document/value API:
+`GeoJson`, `Geometry`, `Value`, `Feature`, `FeatureCollection`, and
+`feature::Id`, plus explicit `geo-types` conversion tools. This is a document-format
+vocabulary, not a custom layout/export framework.
+
+**Key Insight:** GeoJSON should sit beside `geo_types`, `wkt`, and `wkb` as a
+serialization/document alphabet. The shadow crate should mirror upstream parse,
+display, constructor, property, and conversion behavior rather than inventing a
+parallel model.
+
+**Coverage:**
+- **Phase 2 (elicitation):** feature-gated support for upstream GeoJSON document/value types
+- **Phase 3 (shadow crate):** `elicit_geojson` wrappers + upstream-shaped workflow plugins
+- **Phase 4 (verification):** Kani / Creusot / Verus wrapper proofs and runner wiring
+
+---
+
+### elicit_georaster Shadow Crate
+
+**Document:** [ELICIT_GEORASTER_PLAN.md](ELICIT_GEORASTER_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Faithful shadow of the current `georaster` crate, which is centered on
+GeoTIFF/COG reading rather than a broad raster algebra model. The plan targets the
+real upstream surface: `Coordinate` re-export plus
+`geotiff::{GeoTiffReader, ImageInfo, Pixels, RasterValue}`.
+
+**Key Insight:** The earlier georaster plan overreached by inventing `Raster<T>`,
+`GeoTransform`, terrain analysis, and `ndarray` workflows that do not exist in the
+upstream crate. This integration should start with the actual reader/value API and
+defer aspirational raster processing abstractions.
+
+**Coverage:**
+- **Phase 2 (elicitation):** feature-gated support for upstream value types such as
+  `RasterValue` and `ImageInfo`
+- **Phase 3 (shadow crate):** `elicit_georaster` wrappers + reader/sampling MCP tools
+- **Phase 4 (verification):** Kani / Creusot / Verus proof wiring for the upstream-shaped surface
+
+---
+
 ### Third-Party Crate Support Guide
 
 **Document:** [THIRD_PARTY_SUPPORT_GUIDE.md](THIRD_PARTY_SUPPORT_GUIDE.md)
