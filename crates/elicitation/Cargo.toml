@@ -78,7 +78,9 @@ syn = { workspace = true }
 # GeoRust spatial types (optional)
 geo-types = { workspace = true, optional = true }
 geo = { workspace = true, optional = true }
+georaster = { workspace = true, optional = true }
 geojson = { workspace = true, optional = true }
+tiff = { workspace = true, optional = true }
 
 # Well-Known Text spatial format (optional)
 wkt = { workspace = true, optional = true }
@@ -115,7 +117,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "geojson-types", "tower-types", "axum-types", "polars-types", "uom-types", "leptos-types", "wkt-types", "wkb-types", "emit"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "georaster-types", "geojson-types", "tower-types", "axum-types", "polars-types", "uom-types", "leptos-types", "wkt-types", "wkb-types", "emit"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -174,6 +176,7 @@ egui-types = ["dep:egui"]
 ratatui = ["dep:ratatui"]
 geo-types = ["dep:geo-types"]
 geo = ["dep:geo", "geo-types"]
+georaster-types = ["dep:georaster", "dep:tiff"]
 geojson-types = ["dep:geojson", "geo-types", "serde_json"]
 # Enable wkt spatial format type elicitation
 wkt-types = ["dep:wkt", "geo-types"]

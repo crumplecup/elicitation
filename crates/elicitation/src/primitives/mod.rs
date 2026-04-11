@@ -61,6 +61,9 @@ pub mod ratatui_types;
 #[cfg(feature = "geo-types")]
 pub mod geo_types;
 
+#[cfg(feature = "georaster-types")]
+pub mod georaster_types;
+
 #[cfg(feature = "geojson-types")]
 pub mod geojson_types;
 

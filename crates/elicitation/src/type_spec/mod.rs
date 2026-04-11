@@ -35,6 +35,8 @@ mod float_contracts;
 mod geo_specs;
 #[cfg(feature = "geojson-types")]
 mod geojson_specs;
+#[cfg(feature = "georaster-types")]
+mod georaster_specs;
 mod http_specs;
 mod integer_contracts;
 mod integers;

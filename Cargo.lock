@@ -1710,6 +1710,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_georaster"
+version = "0.10.0"
+dependencies = [
+ "elicitation",
+ "elicitation_derive",
+ "georaster",
+ "proc-macro2",
+ "quote",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tiff",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "elicit_jiff"
 version = "0.10.0"
 dependencies = [
@@ -2145,6 +2163,7 @@ dependencies = [
  "geo",
  "geo-types",
  "geojson",
+ "georaster",
  "hex",
  "http",
  "inventory",
@@ -2167,6 +2186,7 @@ dependencies = [
  "sqlx",
  "strum",
  "syn 2.0.117",
+ "tiff",
  "time",
  "tokio",
  "tokio-test",
@@ -2193,6 +2213,7 @@ dependencies = [
  "elicitation",
  "geo-types",
  "geojson",
+ "georaster",
  "jiff",
  "palette",
  "paste",
@@ -2200,6 +2221,7 @@ dependencies = [
  "regex",
  "serde_json",
  "sqlx",
+ "tiff",
  "time",
  "url",
  "uuid",
@@ -2245,6 +2267,7 @@ dependencies = [
  "elicitation",
  "geo-types",
  "geojson",
+ "georaster",
  "jiff",
  "kani-verifier",
  "palette",
@@ -2253,6 +2276,7 @@ dependencies = [
  "regex",
  "serde_json",
  "sqlx",
+ "tiff",
  "time",
  "url",
  "uuid",
@@ -2788,6 +2812,15 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.18",
+]
+
+[[package]]
+name = "georaster"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58c1db0d5e27281bba64d2be3cbe95dcd83adc520c359f775337764dc5244a6f"
+dependencies = [
+ "tiff",
 ]
 
 [[package]]
@@ -3532,6 +3565,12 @@ dependencies = [
  "getrandom 0.3.4",
  "libc",
 ]
+
+[[package]]
+name = "jpeg-decoder"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "00810f1d8b74be64b13dbf3db89ac67740615d6c891f0e7b6179326533011a07"
 
 [[package]]
 name = "js-sys"
@@ -7093,6 +7132,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "tiff"
+version = "0.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba1310fcea54c6a9a4fd1aad794ecc02c31682f6bfbecdf460bf19533eed1e3e"
+dependencies = [
+ "flate2",
+ "jpeg-decoder",
+ "weezl",
+]
+
+[[package]]
 name = "time"
 version = "0.3.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7862,6 +7912,12 @@ checksum = "804f18a4ac2676ffb4e8b5b5fa9ae38af06df08162314f96a68d2a363e21a8ca"
 dependencies = [
  "rustls-pki-types",
 ]
+
+[[package]]
+name = "weezl"
+version = "0.1.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a28ac98ddc8b9274cb41bb4d9d4d5c425b6020c50c46f25559911905610b4a88"
 
 [[package]]
 name = "wezterm-bidi"

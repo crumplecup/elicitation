@@ -597,6 +597,13 @@ pub use primitives::geo_types::{
     GeoRectStyle, GeoTriangle, GeoTriangleStyle,
 };
 
+// georaster types (feature-gated on georaster-types)
+#[cfg(feature = "georaster-types")]
+pub use primitives::georaster_types::{
+    GeoRasterCoordinateStyle, GeoRasterImageInfoStyle, GeoRasterRasterValueStyle,
+    TiffColorTypeStyle, TiffPhotometricInterpretationStyle, TiffPlanarConfigurationStyle,
+};
+
 // geojson types (feature-gated on geojson-types)
 #[cfg(feature = "geojson-types")]
 pub use primitives::geojson_types::{
