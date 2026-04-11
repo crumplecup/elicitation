@@ -9,11 +9,13 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod backend;
 mod dataframe;
 mod expr;
 mod pipeline;
 mod sql;
 
+pub use backend::PolarsDbBackend;
 pub use dataframe::{PolarsDataFramePlugin, PolarsDfCreated, SharedDfRegistry};
 pub use expr::{PolarsExprCreated, PolarsExprPlugin, SharedExprRegistry};
 pub use pipeline::{PolarsPipelineCreated, PolarsPipelinePlugin};
