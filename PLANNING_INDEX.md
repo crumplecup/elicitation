@@ -168,7 +168,7 @@ QuantityBus enables cross-registration arithmetic (Length/Time→Velocity). ~55 
 
 **Document:** [ELICIT_LEPTOS_PLAN.md](ELICIT_LEPTOS_PLAN.md)
 
-**Status:** 📋 Planning (revised)
+**Status:** ✅ Complete (84 tools, 2 plugins)
 
 **Description:** Leptos 0.8 reactive web framework. StatefulPlugin for server-side reactive
 primitives + DescriptorPlugin for code generation. ~75 tools.
@@ -442,3 +442,39 @@ adapter pattern for `Transfer → JournalEntry` conversion
 the structural type graph, the prompt tree, the assembled-prompt flat view, and
 the AccessKit bridge. Explains how the three views interlock, which feature flag
 enables each, and when to reach for each API.
+
+---
+
+### elicit_db Interface Crate
+
+**Document:** [ELICIT_DB_PLAN.md](ELICIT_DB_PLAN.md)
+
+**Status:** 📋 Planning
+
+**Role:** Interface crate (like `elicit_ui`, not a shadow crate). Defines the domain
+boundary for database interactions — Props, typestate markers, and traits that both
+DB implementations and consumers (axum, leptos server fns, UI) program against.
+No DB driver dependency. No MCP tools. Pure contracts vocabulary.
+
+**Standards stack:**
+- ISO/IEC 9075 (SQL semantics — DDL/DML/constraints/views)
+- ANSI isolation model (Read Committed → Serializable, phenomena P0–P3)
+- PostgreSQL docs (MVCC, advisory locks, WAL — execution truth)
+- ISO/IEC 27001 (access control, audit, least privilege, encryption)
+- PostgreSQL wire protocol + IETF RFC 7159 (transport)
+- OpenTelemetry specification (observability)
+
+**Contract modules:** `iso_sql`, `isolation`, `postgres`, `information_schema`,
+`security`, `recovery`, `transport`, `observability`
+
+**Key types:**
+- Props: `TableCreated`, `ConstraintSatisfied`, `Serializable`, `AuditLogged`,
+  `MVCCSnapshotValid`, `AdvisoryLockHeld`, `WALReplayable`, `TraceEmitted`, etc.
+- Typestate: `Transaction<Open/Committed/RolledBack>`, `Query<Prepared/Executed>`
+- Traits: `DbConnection`, `DbTransaction`
+- Composites: `AcidCommitted`, `PgSafeWrite`
+
+**elicitation primitives** (`db-types` feature): `IsolationLevel`, `DbOperation`,
+`DbQueryDescriptor`, `DbSchemaDescriptor`, `DbMigrationDescriptor`
+
+**Deferred:** `elicit_sqlx` (MCP tools), ORM wrappers, migration tooling, connection pooling
