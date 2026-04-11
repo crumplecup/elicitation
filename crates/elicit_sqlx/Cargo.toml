@@ -18,6 +18,7 @@ api = []
 
 [dependencies]
 elicitation = { workspace = true, features = ["sqlx-types", "emit"] }
+elicit_db = { path = "../elicit_db" }
 elicitation_derive.workspace = true
 elicitation_macros.workspace = true
 sqlx = { workspace = true }
