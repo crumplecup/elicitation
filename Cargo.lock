@@ -1682,7 +1682,9 @@ dependencies = [
 name = "elicit_leptos"
 version = "0.10.0"
 dependencies = [
+ "accesskit",
  "derive_more",
+ "elicit_ui",
  "elicitation",
  "futures",
  "rmcp",

@@ -22,12 +22,17 @@
 //!
 //! # Propositions (WCAG Compliance)
 //!
-//! - `HasLabel<T>` — element has non-empty accessible label
-//! - `ValidRole<T>` — element has valid ARIA role
-//! - `MinTargetSize<T>` — interactive element ≥44x44 (Level AAA touch targets)
-//! - `NoOverflow<T>` — element fits within viewport
-//! - `KeyboardAccessible<T>` — element keyboard-navigable
-//! - `AccessibleAA<T>` — composite (all Level AA criteria)
+//! - `HasLabel` — element has non-empty accessible label
+//! - `ValidRole` — element has valid ARIA role
+//! - `MinTargetSize` — interactive element ≥44x44 (Level AAA touch targets)
+//! - `NoOverflow` — element fits within viewport
+//! - `KeyboardAccessible` — element keyboard-navigable
+//! - `AccessibleAA` — composite (all Level AA criteria)
+//! - `SufficientContrast` — color pair meets 4.5:1 ratio (WCAG 1.4.3)
+//! - `FocusVisible` — visible focus indicator (WCAG 2.4.11)
+//! - `AltTextProvided` — text alternative for non-text content (WCAG 1.1.1)
+//! - `StructuredContent` — structure is programmatically determinable (WCAG 1.3.1)
+//! - `RenderComplete` — UI tree successfully rendered
 //!
 //! # Example
 //!
@@ -61,15 +66,16 @@
 //! // Verify WCAG Level AA compliance
 //! let verified = layout.verify_aa(Viewport::new(1920, 1080))?;
 //!
-//! // Render to frontend via RenderBackend
+//! // Render to frontend via UiRenderer
 //! // let backend = elicit_egui::EguiBackend::new(&egui_ctx);
-//! // let (rendered, stats) = verified.render(&backend);
+//! // let (rendered, stats) = verified.render(&backend)?;
 //! # Ok::<(), elicit_ui::VerificationReport>(())
 //! ```
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod accesskit_backend;
 mod builder;
 mod color_contrast;
 pub mod constraints;
@@ -77,12 +83,14 @@ mod contracts;
 mod css_units;
 mod errors;
 mod layout_engine;
-mod render_backend;
 mod spatial;
+pub mod traits;
 mod types;
 mod typestate;
+mod ui_types;
 mod validators;
 
+pub use accesskit_backend::AccessKitUiBackend;
 pub use builder::LayoutBuilder;
 pub use color_contrast::{
     ContrastEnhanced, ContrastMinimum, NonTextContrast, SrgbColor, TextSize, contrast_ratio,
@@ -96,14 +104,23 @@ pub use constraints::{
     ValidRoleConstraint, Violation, WcagLevel,
 };
 pub use contracts::{
-    AccessibleAA, HasLabel, KeyboardAccessible, MinTargetSize, NoOverflow, ValidRole,
+    AccessibleAA, AltTextProvided, FocusVisible, HasLabel, KeyboardAccessible, MinTargetSize,
+    NoOverflow, RenderComplete, StructuredContent, SufficientContrast, ValidRole,
 };
 pub use css_units::{Breakpoint, BreakpointSet, CssLength, CssParseError, is_zoom_invariant};
-pub use errors::{VerificationError, VerificationErrorKind, VerificationReport};
+pub use errors::{
+    UiError, UiErrorKind, UiResult, VerificationError, VerificationErrorKind, VerificationReport,
+};
 pub use layout_engine::LayoutEngineError;
 #[cfg(feature = "layout-engine")]
 pub use layout_engine::{LayoutMode, TaffyBridge};
-pub use render_backend::RenderBackend;
 pub use spatial::{BoundingBox, LayoutContext};
+pub use traits::{
+    UiAccessibilityAuditor, UiBackend, UiEventDispatcher, UiInspector, UiLayoutManager,
+    UiNavigationManager, UiRenderer, UiStyleManager, UiWidgetFactory,
+};
 pub use types::{ElementId, Label, RenderStats, Size, Viewport};
 pub use typestate::{ConstraintProfile, Layout, Pending, Rendered, Verified};
+pub use ui_types::{
+    ContainerId, ContrastViolation, VerifiedTree, WidgetA11y, WidgetId, WidgetInfo,
+};

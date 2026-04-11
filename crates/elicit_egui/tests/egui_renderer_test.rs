@@ -78,7 +78,7 @@ fn render_via_backend_single_button() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (rendered, stats) = verified.render(&backend);
+    let (rendered, stats) = verified.render(&backend).unwrap();
 
     assert!(rendered.root() == root_id);
     assert_eq!(stats.widgets_rendered, 1, "Should render 1 button widget");
@@ -153,7 +153,7 @@ fn render_checkbox() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
 }
@@ -184,7 +184,7 @@ fn render_text_input() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
 }
@@ -217,7 +217,7 @@ fn render_slider() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
 }
@@ -249,7 +249,7 @@ fn render_progress_bar() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
 }
@@ -280,7 +280,7 @@ fn render_heading() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
 }
@@ -356,7 +356,7 @@ fn render_login_form() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (rendered, stats) = verified.render(&backend);
+    let (rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(rendered.root(), root_id);
     assert_eq!(
@@ -395,7 +395,7 @@ fn render_toolbar_with_buttons() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 3, "3 buttons in toolbar");
     assert_eq!(stats.containers_rendered, 2, "window + toolbar");
@@ -422,7 +422,7 @@ fn render_disabled_button() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
 }
@@ -451,7 +451,7 @@ fn render_hidden_node_skipped() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1, "Only visible button renders");
     assert_eq!(stats.nodes_skipped, 1, "Hidden button skipped");
@@ -468,7 +468,7 @@ fn render_empty_tree() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 0);
     assert_eq!(stats.containers_rendered, 1, "Root is still a container");
@@ -504,7 +504,7 @@ fn render_deeply_nested() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1, "1 deep button");
     assert_eq!(stats.containers_rendered, 3, "window + group1 + group2");
@@ -569,7 +569,7 @@ fn render_radio_group() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 3, "3 radio buttons");
     assert_eq!(stats.containers_rendered, 2, "window + group");
@@ -601,7 +601,7 @@ fn render_link() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
 }
@@ -645,7 +645,7 @@ fn builder_verify_render_roundtrip() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (rendered, stats) = verified.render(&backend);
+    let (rendered, stats) = verified.render(&backend).unwrap();
 
     assert!(rendered.root().0 == 0);
     assert_eq!(stats.widgets_rendered, 3, "button + checkbox + text input");
@@ -669,7 +669,7 @@ fn builder_form_verify_render() {
 
     let ctx = egui_ctx();
     let backend = EguiBackend::new(&ctx);
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 3, "2 inputs + 1 button");
     assert_eq!(stats.containers_rendered, 2, "window + form");

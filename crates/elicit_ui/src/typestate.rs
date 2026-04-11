@@ -270,19 +270,36 @@ impl Layout<Verified> {
         &self.nodes
     }
 
-    /// Render the verified layout through a [`RenderBackend`].
+    /// Extract a [`VerifiedTree`] snapshot for rendering.
+    ///
+    /// Converts the typestate layout into a plain data snapshot that
+    /// can be passed to any [`crate::UiRenderer`] backend.
+    pub fn into_verified_tree(self) -> crate::VerifiedTree {
+        crate::VerifiedTree {
+            nodes: self.nodes,
+            root: self.root,
+            viewport: self.viewport.unwrap_or(Viewport::new(1920, 1080)),
+        }
+    }
+
+    /// Render the verified layout through a [`crate::UiRenderer`].
     ///
     /// This is the generic render path. Frontend crates provide their
-    /// own `RenderBackend` implementation (e.g., `EguiBackend`,
+    /// own [`crate::UiRenderer`] implementation (e.g., `EguiBackend`,
     /// `RatatuiBackend`).
     #[tracing::instrument(skip(self, backend), fields(root = ?self.root))]
-    pub fn render<B: crate::RenderBackend>(
+    pub fn render<B: crate::UiRenderer>(
         self,
         backend: &B,
-    ) -> (Layout<Rendered>, crate::RenderStats) {
+    ) -> Result<(Layout<Rendered>, crate::RenderStats), crate::UiError> {
         tracing::debug!("Rendering layout via backend");
 
-        let stats = backend.render_tree(&self.nodes, self.root);
+        let tree = crate::VerifiedTree {
+            nodes: self.nodes.clone(),
+            root: self.root,
+            viewport: self.viewport.unwrap_or(Viewport::new(1920, 1080)),
+        };
+        let (stats, _proof) = backend.render(&tree)?;
 
         let layout = Layout {
             nodes: self.nodes,
@@ -292,7 +309,7 @@ impl Layout<Verified> {
             _state: PhantomData,
         };
 
-        (layout, stats)
+        Ok((layout, stats))
     }
 }
 

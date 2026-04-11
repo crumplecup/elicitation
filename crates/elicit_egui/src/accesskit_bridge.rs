@@ -2,17 +2,18 @@
 //! AccessKit trees and egui widgets.
 //!
 //! Provides:
-//! - [`EguiBackend`] — [`RenderBackend`] implementation for egui
+//! - [`EguiBackend`] — [`UiRenderer`] implementation for egui
 //! - [`render_tree`] — render an AccessKit tree into an `egui::Ui`
 //! - [`bounds_to_size`] — extract pixel size from AccessKit node bounds
 
 use accesskit::{Node, NodeId, Rect, Role, Toggled};
-use elicit_ui::{RenderBackend, RenderStats};
+use elicit_ui::{RenderComplete, RenderStats, UiRenderer, UiResult, VerifiedTree, WidgetId};
+use elicitation::Established;
 use std::collections::HashMap;
 
 /// egui render backend for verified AccessKit trees.
 ///
-/// Wraps an `&egui::Context` and implements [`RenderBackend`] so that
+/// Wraps an `&egui::Context` and implements [`UiRenderer`] so that
 /// `Layout<Verified>::render(&EguiBackend::new(ctx))` works.
 pub struct EguiBackend<'a> {
     ctx: &'a egui::Context,
@@ -25,15 +26,30 @@ impl<'a> EguiBackend<'a> {
     }
 }
 
-impl RenderBackend for EguiBackend<'_> {
-    fn render_tree(&self, nodes: &HashMap<NodeId, Node>, root: NodeId) -> RenderStats {
+impl UiRenderer for EguiBackend<'_> {
+    #[tracing::instrument(skip(self, tree))]
+    fn render(&self, tree: &VerifiedTree) -> UiResult<(RenderStats, Established<RenderComplete>)> {
         let mut stats = RenderStats::default();
-
         let _output = self.ctx.run_ui(egui::RawInput::default(), |ui| {
-            stats = render_tree_inner(ui, nodes, root);
+            stats = render_tree_inner(ui, tree.nodes(), tree.root());
         });
+        Ok((stats, Established::assert()))
+    }
 
-        stats
+    fn render_partial(&self, _node_id: WidgetId, tree: &VerifiedTree) -> UiResult<RenderStats> {
+        let mut stats = RenderStats::default();
+        let _output = self.ctx.run_ui(egui::RawInput::default(), |ui| {
+            stats = render_tree_inner(ui, tree.nodes(), tree.root());
+        });
+        Ok(stats)
+    }
+
+    fn supports_role(&self, _role: Role) -> bool {
+        true
+    }
+
+    fn backend_name(&self) -> &str {
+        "egui"
     }
 }
 

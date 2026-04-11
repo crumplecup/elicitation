@@ -1,11 +1,13 @@
 //! Ratatui render backend for verified AccessKit trees.
 //!
-//! Implements [`RenderBackend`] to convert AccessKit node trees
+//! Implements [`UiRenderer`] to convert AccessKit node trees
 //! into ratatui `TuiNode` structures for terminal rendering.
 
-use accesskit::{Node, NodeId};
-use elicit_ui::{RenderBackend, RenderStats};
+use accesskit::{Node, NodeId, Role};
+use elicit_ui::{RenderComplete, RenderStats, UiRenderer, UiResult, VerifiedTree, WidgetId};
+use elicitation::Established;
 use std::collections::HashMap;
+use std::sync::Mutex;
 
 use crate::serde_types::TuiNode;
 use crate::tui_accesskit_convert;
@@ -24,22 +26,22 @@ use crate::tui_accesskit_convert;
 /// let tui_tree = backend.last_tui_tree();
 /// ```
 pub struct RatatuiBackend {
-    last_tree: std::cell::RefCell<Option<TuiNode>>,
+    last_tree: Mutex<Option<TuiNode>>,
 }
 
 impl RatatuiBackend {
     /// Create a new ratatui render backend.
     pub fn new() -> Self {
         Self {
-            last_tree: std::cell::RefCell::new(None),
+            last_tree: Mutex::new(None),
         }
     }
 
     /// Get the last rendered `TuiNode` tree.
     ///
-    /// Returns `None` if `render_tree` hasn't been called yet.
+    /// Returns `None` if `render` hasn't been called yet.
     pub fn last_tui_tree(&self) -> Option<TuiNode> {
-        self.last_tree.borrow().clone()
+        self.last_tree.lock().unwrap().clone()
     }
 }
 
@@ -49,25 +51,26 @@ impl Default for RatatuiBackend {
     }
 }
 
-impl RenderBackend for RatatuiBackend {
-    fn render_tree(&self, nodes: &HashMap<NodeId, Node>, root: NodeId) -> RenderStats {
+impl UiRenderer for RatatuiBackend {
+    #[tracing::instrument(skip(self, tree))]
+    fn render(&self, tree: &VerifiedTree) -> UiResult<(RenderStats, Established<RenderComplete>)> {
         let mut stats = RenderStats::default();
 
-        // Build a TreeUpdate from the node map for the converter
         let tree_update = accesskit::TreeUpdate {
-            nodes: nodes.iter().map(|(id, n)| (*id, n.clone())).collect(),
-            tree: Some(accesskit::Tree::new(root)),
+            nodes: tree
+                .nodes()
+                .iter()
+                .map(|(id, n)| (*id, n.clone()))
+                .collect(),
+            tree: Some(accesskit::Tree::new(tree.root())),
             tree_id: accesskit::TreeId::ROOT,
-            focus: root,
+            focus: tree.root(),
         };
 
-        // Convert to TuiNode tree
         let tui_tree = tui_accesskit_convert::tree_update_to_tui_node(&tree_update);
+        count_nodes(tree.nodes(), tree.root(), &mut stats);
 
-        // Count stats by walking the original AccessKit tree
-        count_nodes(nodes, root, &mut stats);
-
-        *self.last_tree.borrow_mut() = tui_tree;
+        *self.last_tree.lock().unwrap() = tui_tree;
 
         tracing::debug!(
             visited = stats.nodes_visited,
@@ -77,7 +80,21 @@ impl RenderBackend for RatatuiBackend {
             "Ratatui render pass complete"
         );
 
-        stats
+        Ok((stats, Established::assert()))
+    }
+
+    fn render_partial(&self, _node_id: WidgetId, tree: &VerifiedTree) -> UiResult<RenderStats> {
+        let mut stats = RenderStats::default();
+        count_nodes(tree.nodes(), tree.root(), &mut stats);
+        Ok(stats)
+    }
+
+    fn supports_role(&self, _role: Role) -> bool {
+        true
+    }
+
+    fn backend_name(&self) -> &str {
+        "ratatui"
     }
 }
 
@@ -94,30 +111,29 @@ fn count_nodes(nodes: &HashMap<NodeId, Node>, node_id: NodeId, stats: &mut Rende
     }
 
     let children = node.children();
-    // Container roles are always containers, even without children
     let is_container = matches!(
         node.role(),
-        accesskit::Role::Window
-            | accesskit::Role::Pane
-            | accesskit::Role::Form
-            | accesskit::Role::Group
-            | accesskit::Role::Section
-            | accesskit::Role::Region
-            | accesskit::Role::Main
-            | accesskit::Role::GenericContainer
-            | accesskit::Role::Document
-            | accesskit::Role::Toolbar
-            | accesskit::Role::List
-            | accesskit::Role::ListBox
-            | accesskit::Role::Table
-            | accesskit::Role::Grid
-            | accesskit::Role::TabList
-            | accesskit::Role::Dialog
-            | accesskit::Role::AlertDialog
-            | accesskit::Role::Menu
-            | accesskit::Role::MenuBar
-            | accesskit::Role::Navigation
-            | accesskit::Role::ScrollView
+        Role::Window
+            | Role::Pane
+            | Role::Form
+            | Role::Group
+            | Role::Section
+            | Role::Region
+            | Role::Main
+            | Role::GenericContainer
+            | Role::Document
+            | Role::Toolbar
+            | Role::List
+            | Role::ListBox
+            | Role::Table
+            | Role::Grid
+            | Role::TabList
+            | Role::Dialog
+            | Role::AlertDialog
+            | Role::Menu
+            | Role::MenuBar
+            | Role::Navigation
+            | Role::ScrollView
     ) || !children.is_empty();
 
     if is_container {

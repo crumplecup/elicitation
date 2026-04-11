@@ -63,7 +63,7 @@ fn render_single_button_via_backend() {
     let verified = layout.verify_a(viewport()).expect("should verify");
 
     let backend = RatatuiBackend::new();
-    let (rendered, stats) = verified.render(&backend);
+    let (rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(rendered.root(), root_id);
     assert_eq!(stats.widgets_rendered, 1, "1 button");
@@ -105,7 +105,7 @@ fn render_form_with_multiple_children() {
     let verified = layout.verify_a(viewport()).expect("should verify");
 
     let backend = RatatuiBackend::new();
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 2, "label + button");
     assert_eq!(stats.containers_rendered, 2, "window + form");
@@ -137,7 +137,7 @@ fn render_hidden_nodes_skipped() {
     let verified = layout.verify_a(viewport()).expect("should verify");
 
     let backend = RatatuiBackend::new();
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1, "Only visible button");
     assert_eq!(stats.nodes_skipped, 1, "Hidden node skipped");
@@ -153,7 +153,7 @@ fn render_empty_tree() {
     let verified = layout.verify_a(viewport()).expect("should verify");
 
     let backend = RatatuiBackend::new();
-    let (_rendered, stats) = verified.render(&backend);
+    let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 0);
     assert_eq!(stats.containers_rendered, 1, "Root window is a container");
