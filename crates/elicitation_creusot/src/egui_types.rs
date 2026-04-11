@@ -462,10 +462,10 @@ pub fn verify_margin_concrete() -> egui::Margin {
 #[ensures(result == true)]
 #[trusted]
 pub fn verify_pos2_from_roundtrip() -> bool {
-    let original = egui::Pos2::new(3.14, 2.71);
+    let original = egui::Pos2::new(3.5, 2.6);
     let wrapper = elicitation::EguiPos2::from(original);
     let restored: egui::Pos2 = wrapper.into();
-    restored.x == 3.14 && restored.y == 2.71
+    restored.x == 3.5 && restored.y == 2.6
 }
 
 // ── Vec2 ────────────────────────────────────────────────────────────────

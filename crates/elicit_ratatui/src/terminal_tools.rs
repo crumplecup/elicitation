@@ -45,9 +45,9 @@ fn json_result(value: &impl serde::Serialize) -> CallToolResult {
 }
 
 /// Parse a terminal ID from a string parameter.
-fn parse_terminal_id(id: &str) -> Result<Uuid, CallToolResult> {
+fn parse_terminal_id(id: &str) -> Result<Uuid, Box<CallToolResult>> {
     Uuid::parse_str(id).map_err(|e| {
-        CallToolResult::error(vec![Content::text(format!("invalid terminal_id: {e}"))])
+        Box::new(CallToolResult::error(vec![Content::text(format!("invalid terminal_id: {e}"))]))
     })
 }
 
@@ -128,7 +128,7 @@ pub struct TerminalDestroyParams {
 async fn terminal_destroy(p: TerminalDestroyParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<(), String> = (|| {
         let mut guard = terminals()
@@ -172,7 +172,7 @@ pub struct TerminalClearParams {
 async fn terminal_clear(p: TerminalClearParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<(), String> = (|| {
         let mut guard = terminals()
@@ -216,7 +216,7 @@ pub struct TerminalSizeParams {
 async fn terminal_size(p: TerminalSizeParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<ratatui::layout::Size, String> = (|| {
         let mut guard = terminals()
@@ -257,7 +257,7 @@ pub struct TerminalHideCursorParams {
 async fn terminal_hide_cursor(p: TerminalHideCursorParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<(), String> = (|| {
         let mut guard = terminals()
@@ -299,7 +299,7 @@ pub struct TerminalShowCursorParams {
 async fn terminal_show_cursor(p: TerminalShowCursorParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<(), String> = (|| {
         let mut guard = terminals()
@@ -345,7 +345,7 @@ pub struct TerminalSetCursorParams {
 async fn terminal_set_cursor(p: TerminalSetCursorParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<(), String> = (|| {
         let mut guard = terminals()
@@ -391,7 +391,7 @@ pub struct TerminalDrawParams {
 async fn terminal_draw(p: TerminalDrawParams) -> Result<CallToolResult, ErrorData> {
     let id = match parse_terminal_id(&p.terminal_id) {
         Ok(id) => id,
-        Err(r) => return Ok(r),
+        Err(r) => return Ok(*r),
     };
     let result: Result<(), String> = (|| {
         let mut guard = terminals()

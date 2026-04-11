@@ -89,10 +89,10 @@ impl ChartOfAccounts {
         }
 
         // Verify parent exists if specified
-        if let Some(parent) = account.parent() {
-            if !self.accounts.contains_key(parent) {
-                return Err(ChartError::ParentNotFound(parent.clone()));
-            }
+        if let Some(parent) = account.parent()
+            && !self.accounts.contains_key(parent)
+        {
+            return Err(ChartError::ParentNotFound(parent.clone()));
         }
 
         tracing::debug!(

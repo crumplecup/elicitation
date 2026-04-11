@@ -306,6 +306,7 @@ pub fn verify_bounds_reversed_non_negative() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 #[trusted]
+#[allow(clippy::manual_range_contains)]
 pub fn verify_heading_level_1() -> bool {
     let size: f64 = 28.0;
     size >= 12.0 && size <= 28.0
@@ -317,6 +318,7 @@ pub fn verify_heading_level_1() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 #[trusted]
+#[allow(clippy::manual_range_contains)]
 pub fn verify_heading_default_size() -> bool {
     let size: f64 = 12.0;
     size >= 12.0 && size <= 28.0
@@ -328,6 +330,7 @@ pub fn verify_heading_default_size() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 #[trusted]
+#[allow(clippy::manual_range_contains)]
 pub fn verify_progress_fraction_clamped() -> bool {
     let val: f64 = 75.0;
     let max: f64 = 100.0;
@@ -702,6 +705,7 @@ pub fn verify_contrast_identical_is_one() -> bool {
 #[trusted]
 #[requires(true)]
 #[ensures(result == true)]
+#[allow(clippy::manual_range_contains)]
 pub fn verify_contrast_black_white_max() -> bool {
     let black = elicit_ui::SrgbColor::new(0.0, 0.0, 0.0);
     let white = elicit_ui::SrgbColor::new(1.0, 1.0, 1.0);
