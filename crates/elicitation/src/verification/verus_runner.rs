@@ -501,6 +501,11 @@ impl VerusProof {
             Self::new("ui_types", "verify_profile_aa_count"),
             Self::new("ui_types", "verify_profile_aaa_count"),
             Self::new("ui_types", "verify_profile_monotonicity"),
+            // winit_types: DPI/size/position shadow proofs
+            Self::new("winit_types", "verify_winit_physical_size_fields"),
+            Self::new("winit_types", "verify_winit_logical_size_fields"),
+            Self::new("winit_types", "verify_winit_logical_position_fields"),
+            Self::new("winit_types", "verify_winit_physical_size_zero"),
         ]
     }
 }

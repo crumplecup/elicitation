@@ -146,6 +146,9 @@ mod wkt_types;
 #[cfg(all(kani, feature = "wkb-types"))]
 mod wkb_types;
 
+#[cfg(all(kani, feature = "winit-types"))]
+mod winit_types;
+
 #[cfg(all(kani, feature = "palette"))]
 mod palette_types;
 

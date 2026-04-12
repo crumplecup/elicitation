@@ -64,3 +64,4 @@ pub mod wkt_types;
 pub mod wkb_types;
 pub mod palette_types;
 pub mod ui_types;
+pub mod winit_types;

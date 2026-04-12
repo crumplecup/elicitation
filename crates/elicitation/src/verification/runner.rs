@@ -739,6 +739,11 @@ impl ProofHarness {
             Self::new("ui_types", "verify_profile_monotonicity"),
             Self::new("ui_types", "verify_typestate_markers_zero_sized"),
             Self::new("ui_types", "verify_typestate_markers_eq"),
+            // winit_types: DPI/size/position wrapper proofs
+            Self::new("winit_types", "verify_winit_physical_size_fields"),
+            Self::new("winit_types", "verify_winit_logical_size_fields"),
+            Self::new("winit_types", "verify_winit_logical_position_fields"),
+            Self::new("winit_types", "verify_winit_physical_size_zero"),
         ]
     }
 

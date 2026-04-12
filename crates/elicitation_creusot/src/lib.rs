@@ -122,6 +122,9 @@ mod wkt_types;
 #[cfg(feature = "wkb-types")]
 mod wkb_types;
 
+#[cfg(feature = "winit-types")]
+mod winit_types;
+
 #[cfg(feature = "palette")]
 mod palette_types;
 
@@ -651,4 +654,10 @@ pub use ui_types::{
     verify_typestate_zero_sized,
     verify_viewport_construction,
     verify_wcag_level_display,
+};
+
+#[cfg(feature = "winit-types")]
+pub use winit_types::{
+    verify_winit_logical_position_fields, verify_winit_logical_size_fields,
+    verify_winit_physical_size_fields, verify_winit_physical_size_zero,
 };

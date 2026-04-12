@@ -110,6 +110,7 @@ impl CreusotModule {
             Self::with_feature("wkb_types", "wkb-types"),
             Self::with_feature("palette_types", "palette"),
             Self::with_feature("ui_types", "ui-types"),
+            Self::with_feature("winit_types", "winit-types"),
         ]
     }
 
