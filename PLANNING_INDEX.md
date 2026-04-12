@@ -81,6 +81,36 @@ git show 98ad6f91b10ee273027ea07d5069da4d90a37e97:elicitation_vision.md
 
 ## Current Active Plans
 
+### archive — Feature Parity with pgAdmin / DBeaver
+
+**Document:** [ARCHIVE_PARITY_PLAN.md](ARCHIVE_PARITY_PLAN.md)
+
+**Status:** 🔲 Planning
+
+**Description:** Roadmap to bring the `archive` pgAdmin-style database browser
+from MVP to full feature parity with pgAdmin 4, DBeaver CE, TablePlus, and
+DataGrip.  Six phases: interactive data browsing (data grid, SQL editor, live
+refresh, object search), rich object inspection (DDL, FK relationships,
+constraints, column stats, EXPLAIN), power-user features (row editing, query
+history, saved queries, export, multi-connection), Postgres-specific object
+types (functions, triggers, sequences, enums, extensions), monitoring /
+administration dashboard, and ERD diagram generation.
+
+**Architecture principle:** All actions flow through `Established<P>` proof
+chains via `ArchiveDbBackend` traits. All three frontends (ratatui, browser,
+egui) consume the same `ArchiveNavModel` + descriptor types via the
+AccessKit IR layer.
+
+**Phases:**
+- **Phase 1 — Interactive data browsing:** data grid, SQL editor, live refresh, object search
+- **Phase 2 — Rich object inspection:** DDL viewer, FK descriptors, constraints, column stats, EXPLAIN
+- **Phase 3 — Power-user:** row edit, query history, saved queries, CSV/JSON export, multi-connection
+- **Phase 4 — Advanced PG object types:** functions, triggers, sequences, enums, extensions
+- **Phase 5 — Monitoring & admin:** live activity, role matrix, backup status, server settings
+- **Phase 6 — ERD diagram:** petgraph-based layout, SVG export, interactive egui/browser render
+
+---
+
 ### elicit_geo_types Shadow Crate
 
 **Document:** [ELICIT_GEO_TYPES_PLAN.md](ELICIT_GEO_TYPES_PLAN.md)
