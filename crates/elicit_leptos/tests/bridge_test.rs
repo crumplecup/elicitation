@@ -324,3 +324,188 @@ async fn bridge_plugin_lists_one_tool() {
     assert_eq!(tools.len(), 1, "bridge plugin has exactly one tool");
     assert_eq!(tools[0].name.as_ref(), "leptos_axum_bridge__from_config");
 }
+
+// ── db slot tests ─────────────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn from_config_with_db_slot_emits_with_state() {
+    let leptos = LeptosAxumPlugin::new();
+    let axum_plugin = AxumRouterPlugin::new();
+    let bridge = LeptosAxumBridgePlugin::new(&leptos, &axum_plugin);
+
+    let leptos_id = new_leptos_config(&leptos, "App", "full_ssr", "0.0.0.0:3000").await;
+    let res = bridge
+        .invoke_tool(
+            "from_config",
+            json!({
+                "config_id": leptos_id,
+                "db_pool_type": "sqlx::AnyPool",
+                "db_var_name": "pool",
+                "provide_leptos_context": false
+            }),
+        )
+        .await
+        .unwrap();
+    let v: serde_json::Value = serde_json::from_str(&result_text(&res)).unwrap();
+    let router_id = v["router_id"].as_str().unwrap().to_string();
+    let code = result_text(
+        &axum_plugin
+            .invoke_tool("axum_router__emit", json!({ "router_id": router_id }))
+            .await
+            .unwrap(),
+    );
+
+    assert!(
+        code.contains("Router<sqlx::AnyPool>"),
+        "state type must be pool type:\n{code}"
+    );
+    assert!(
+        code.contains(".with_state(pool)"),
+        "must emit .with_state(pool):\n{code}"
+    );
+    assert!(
+        !code.contains("leptos_routes_with_context"),
+        "provide_leptos_context=false must not use _with_context:\n{code}"
+    );
+}
+
+#[tokio::test]
+async fn from_config_with_db_slot_and_leptos_context() {
+    let leptos = LeptosAxumPlugin::new();
+    let axum_plugin = AxumRouterPlugin::new();
+    let bridge = LeptosAxumBridgePlugin::new(&leptos, &axum_plugin);
+
+    let leptos_id = new_leptos_config(&leptos, "App", "full_ssr", "0.0.0.0:3000").await;
+    let res = bridge
+        .invoke_tool(
+            "from_config",
+            json!({
+                "config_id": leptos_id,
+                "db_pool_type": "sqlx::AnyPool",
+                "db_var_name": "pool",
+                "provide_leptos_context": true
+            }),
+        )
+        .await
+        .unwrap();
+    let v: serde_json::Value = serde_json::from_str(&result_text(&res)).unwrap();
+    let router_id = v["router_id"].as_str().unwrap().to_string();
+    let code = result_text(
+        &axum_plugin
+            .invoke_tool("axum_router__emit", json!({ "router_id": router_id }))
+            .await
+            .unwrap(),
+    );
+
+    assert!(
+        code.contains("leptos_routes_with_context"),
+        "provide_leptos_context=true must use _with_context:\n{code}"
+    );
+    assert!(
+        code.contains("provide_context(pool.clone())"),
+        "must inject provide_context:\n{code}"
+    );
+    assert!(
+        code.contains(".with_state(pool)"),
+        "must emit .with_state(pool):\n{code}"
+    );
+}
+
+#[tokio::test]
+async fn from_config_db_slot_requires_both_fields() {
+    let leptos = LeptosAxumPlugin::new();
+    let axum_plugin = AxumRouterPlugin::new();
+    let bridge = LeptosAxumBridgePlugin::new(&leptos, &axum_plugin);
+
+    let leptos_id = new_leptos_config(&leptos, "App", "full_ssr", "0.0.0.0:3000").await;
+    // Only pool_type, no var_name → should error
+    let res = bridge
+        .invoke_tool(
+            "from_config",
+            json!({ "config_id": leptos_id, "db_pool_type": "sqlx::AnyPool" }),
+        )
+        .await;
+    assert!(res.is_err(), "partial db slot params must return an error");
+}
+
+#[tokio::test]
+async fn axum_router_set_db_slot_tool() {
+    let axum_plugin = AxumRouterPlugin::new();
+
+    // Create a bare router
+    let new_res = axum_plugin
+        .invoke_tool("axum_router__new", json!({ "state_type": "()" }))
+        .await
+        .unwrap();
+    let v: serde_json::Value = serde_json::from_str(&result_text(&new_res)).unwrap();
+    let router_id = v["router_id"].as_str().unwrap().to_string();
+
+    // Set the db slot
+    axum_plugin
+        .invoke_tool(
+            "axum_router__set_db_slot",
+            json!({
+                "router_id": router_id,
+                "pool_type": "sqlx::AnyPool",
+                "var_name": "pool",
+                "provide_leptos_context": false
+            }),
+        )
+        .await
+        .unwrap();
+
+    // Emit and verify
+    let code = result_text(
+        &axum_plugin
+            .invoke_tool("axum_router__emit", json!({ "router_id": router_id }))
+            .await
+            .unwrap(),
+    );
+    assert!(
+        code.contains("Router<sqlx::AnyPool>"),
+        "db_slot overrides state_type in emit:\n{code}"
+    );
+    assert!(
+        code.contains(".with_state(pool)"),
+        "db_slot emits with_state:\n{code}"
+    );
+}
+
+#[tokio::test]
+async fn axum_router_set_custom_state_tool() {
+    let axum_plugin = AxumRouterPlugin::new();
+
+    let new_res = axum_plugin
+        .invoke_tool("axum_router__new", json!({ "state_type": "()" }))
+        .await
+        .unwrap();
+    let v: serde_json::Value = serde_json::from_str(&result_text(&new_res)).unwrap();
+    let router_id = v["router_id"].as_str().unwrap().to_string();
+
+    axum_plugin
+        .invoke_tool(
+            "axum_router__set_custom_state",
+            json!({
+                "router_id": router_id,
+                "state_type": "AppState",
+                "state_expr": "AppState::new(pool, config)"
+            }),
+        )
+        .await
+        .unwrap();
+
+    let code = result_text(
+        &axum_plugin
+            .invoke_tool("axum_router__emit", json!({ "router_id": router_id }))
+            .await
+            .unwrap(),
+    );
+    assert!(
+        code.contains("Router<AppState>"),
+        "custom state type in emit:\n{code}"
+    );
+    assert!(
+        code.contains(".with_state(AppState::new(pool, config))"),
+        "custom state expr in emit:\n{code}"
+    );
+}

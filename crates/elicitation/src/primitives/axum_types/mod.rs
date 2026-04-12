@@ -7,7 +7,7 @@ mod descriptors;
 mod enums;
 
 pub use descriptors::{
-    AxumExtractorEntry, AxumHandlerDescriptor, AxumResponseDescriptor, AxumRouteEntry,
+    AxumDbSlot, AxumExtractorEntry, AxumHandlerDescriptor, AxumResponseDescriptor, AxumRouteEntry,
     AxumRouterDescriptor, AxumServeDescriptor,
 };
 pub use enums::{AxumExtractorKind, AxumHttpMethod, AxumResponseKind};

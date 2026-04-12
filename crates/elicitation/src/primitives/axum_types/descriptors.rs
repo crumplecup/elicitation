@@ -23,6 +23,27 @@ pub struct AxumRouteEntry {
     pub handler: String,
 }
 
+/// Structured description of a db pool (or state struct) injected via
+/// `.with_state()` and optionally threaded into Leptos server functions via
+/// `provide_context`.
+///
+/// This is the common-case sugar.  For fully custom state expressions use
+/// [`AxumRouterDescriptor::custom_state_expr`] instead.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
+pub struct AxumDbSlot {
+    /// Rust type expression for the pool or state struct (e.g. `"sqlx::AnyPool"`
+    /// or `"Arc<AppState>"`).
+    pub pool_type: String,
+    /// Variable name used in generated code (e.g. `"pool"`).
+    ///
+    /// Emitted as `.with_state({var_name})`.
+    pub var_name: String,
+    /// When `true` the bridge emits `leptos_routes_with_context` and injects
+    /// `provide_context({var_name}.clone())` so that every Leptos server
+    /// function can call `use_context::<{pool_type}>()`.
+    pub provide_leptos_context: bool,
+}
+
 /// Descriptor for a `Router<S>` configuration.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
 pub struct AxumRouterDescriptor {
@@ -40,6 +61,16 @@ pub struct AxumRouterDescriptor {
     pub layers: Vec<String>,
     /// Optional fallback handler expression.
     pub fallback: Option<String>,
+    /// Optional db pool / state slot.
+    ///
+    /// When set, `emit_router` appends `.with_state({var_name})` as the
+    /// terminal call and sets `state_type` from `pool_type`.  Takes
+    /// precedence over [`custom_state_expr`][Self::custom_state_expr].
+    pub db_slot: Option<AxumDbSlot>,
+    /// Arbitrary `.with_state(expr)` for non-pool custom state.
+    ///
+    /// Ignored when [`db_slot`][Self::db_slot] is set.
+    pub custom_state_expr: Option<String>,
 }
 
 /// A single extractor argument in a handler signature.

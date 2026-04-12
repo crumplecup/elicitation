@@ -691,7 +691,7 @@ pub use primitives::tower_types::{
 // axum descriptor types (feature-gated on axum-types)
 #[cfg(feature = "axum-types")]
 pub use primitives::axum_types::{
-    AxumExtractorEntry, AxumExtractorKind, AxumHandlerDescriptor, AxumHttpMethod,
+    AxumDbSlot, AxumExtractorEntry, AxumExtractorKind, AxumHandlerDescriptor, AxumHttpMethod,
     AxumResponseDescriptor, AxumResponseKind, AxumRouteEntry, AxumRouterDescriptor,
     AxumServeDescriptor,
 };

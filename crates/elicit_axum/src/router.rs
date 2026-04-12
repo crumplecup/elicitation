@@ -11,6 +11,8 @@
 //! | `add_route` | `router_id, method, path, handler` | `{ route_count }` | `AxumRouteAdded` |
 //! | `add_layer` | `router_id, layer_expr` | `{ layer_count }` | — |
 //! | `set_fallback` | `router_id, handler` | — | — |
+//! | `set_db_slot` | `router_id, pool_type, var_name, provide_leptos_context` | — | — |
+//! | `set_custom_state` | `router_id, state_type, state_expr` | — | — |
 //! | `describe` | `router_id` | JSON descriptor | — |
 //! | `emit` | `router_id` | Rust source string | — |
 
@@ -19,7 +21,8 @@ use std::sync::Arc;
 
 use elicitation::contracts::{Established, Prop};
 use elicitation::{
-    AxumHttpMethod, AxumRouteEntry, AxumRouterDescriptor, Elicit, PluginContext, VerifiedWorkflow,
+    AxumDbSlot, AxumHttpMethod, AxumRouteEntry, AxumRouterDescriptor, Elicit, PluginContext,
+    VerifiedWorkflow,
 };
 use futures::future::BoxFuture;
 use rmcp::{
@@ -172,6 +175,31 @@ pub struct RouterSetFallbackParams {
     pub handler: String,
 }
 
+/// Parameters for `axum_router__set_db_slot`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct RouterSetDbSlotParams {
+    /// UUID returned by `axum_router__new`.
+    pub router_id: String,
+    /// Rust type of the pool or state struct (e.g. `"sqlx::AnyPool"`, `"Arc<AppState>"`).
+    pub pool_type: String,
+    /// Variable name used in `.with_state({var_name})` (e.g. `"pool"`).
+    pub var_name: String,
+    /// When `true`, the bridge emits `leptos_routes_with_context` so that every
+    /// Leptos server function can `use_context::<{pool_type}>()`.
+    pub provide_leptos_context: Option<bool>,
+}
+
+/// Parameters for `axum_router__set_custom_state`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct RouterSetCustomStateParams {
+    /// UUID returned by `axum_router__new`.
+    pub router_id: String,
+    /// Rust type name for the state (e.g. `"AppState"`).
+    pub state_type: String,
+    /// Expression passed to `.with_state(...)` (e.g. `"AppState::new(pool, config)"`).
+    pub state_expr: String,
+}
+
 /// Parameters for `axum_router__describe`.
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct RouterDescribeParams {
@@ -234,11 +262,14 @@ fn method_fn(method: &AxumHttpMethod) -> &'static str {
 }
 
 fn emit_router(desc: &AxumRouterDescriptor) -> String {
+    // Resolve effective state type: db_slot overrides the stored state_type.
+    let state = if let Some(slot) = &desc.db_slot {
+        slot.pool_type.as_str()
+    } else {
+        desc.state_type.as_str()
+    };
     let mut lines = Vec::new();
-    lines.push(format!(
-        "let router: Router<{state}> = Router::new()",
-        state = desc.state_type
-    ));
+    lines.push(format!("let router: Router<{state}> = Router::new()"));
     for route in &desc.routes {
         lines.push(format!(
             "    .route(\"{path}\", {method}({handler}))",
@@ -255,6 +286,12 @@ fn emit_router(desc: &AxumRouterDescriptor) -> String {
     }
     if let Some(fallback) = &desc.fallback {
         lines.push(format!("    .fallback({fallback})"));
+    }
+    // Terminal `.with_state(...)` — db_slot takes precedence.
+    if let Some(slot) = &desc.db_slot {
+        lines.push(format!("    .with_state({})", slot.var_name));
+    } else if let Some(expr) = &desc.custom_state_expr {
+        lines.push(format!("    .with_state({expr})"));
     }
     lines.join("\n") + ";"
 }
@@ -276,6 +313,8 @@ async fn new(ctx: Arc<AxumRouterCtx>, p: RouterNewParams) -> Result<CallToolResu
         raw_method_calls: Vec::new(),
         layers: Vec::new(),
         fallback: None,
+        db_slot: None,
+        custom_state_expr: None,
     };
     let id = Uuid::new_v4();
     ctx.items.lock().await.insert(id, desc);
@@ -350,6 +389,62 @@ async fn set_fallback(
         .get_mut(&id)
         .ok_or_else(|| ErrorData::invalid_params(format!("router_id not found: {id}"), None))?;
     desc.fallback = Some(p.handler);
+    Ok(CallToolResult::success(vec![Content::text("ok")]))
+}
+
+#[elicitation::elicit_tool(
+    plugin = "axum_router",
+    name = "axum_router__set_db_slot",
+    description = "Configure the db pool / state slot for a router descriptor. \
+                   Sets the pool type and variable name so that emit produces \
+                   `.with_state({var_name})` as the terminal call. \
+                   When provide_leptos_context is true, the Leptos bridge will \
+                   emit `leptos_routes_with_context` + `provide_context` so that \
+                   all Leptos server functions can call `use_context`. \
+                   Assumes: router_id is valid, pool_type is a valid Rust type.",
+    emit = Auto
+)]
+async fn set_db_slot(
+    ctx: Arc<AxumRouterCtx>,
+    p: RouterSetDbSlotParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_router_id(&p.router_id)?;
+    let mut guard = ctx.items.lock().await;
+    let desc = guard
+        .get_mut(&id)
+        .ok_or_else(|| ErrorData::invalid_params(format!("router_id not found: {id}"), None))?;
+    desc.db_slot = Some(AxumDbSlot {
+        pool_type: p.pool_type,
+        var_name: p.var_name,
+        provide_leptos_context: p.provide_leptos_context.unwrap_or(false),
+    });
+    // Clear any custom_state_expr so db_slot takes precedence cleanly.
+    desc.custom_state_expr = None;
+    Ok(CallToolResult::success(vec![Content::text("ok")]))
+}
+
+#[elicitation::elicit_tool(
+    plugin = "axum_router",
+    name = "axum_router__set_custom_state",
+    description = "Configure a custom `.with_state(expr)` terminal call on a \
+                   router descriptor. Use this when the state is not a bare pool \
+                   but a user-defined AppState struct. \
+                   Assumes: router_id is valid, state_type and state_expr are valid Rust.",
+    emit = Auto
+)]
+async fn set_custom_state(
+    ctx: Arc<AxumRouterCtx>,
+    p: RouterSetCustomStateParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_router_id(&p.router_id)?;
+    let mut guard = ctx.items.lock().await;
+    let desc = guard
+        .get_mut(&id)
+        .ok_or_else(|| ErrorData::invalid_params(format!("router_id not found: {id}"), None))?;
+    desc.state_type = p.state_type;
+    desc.custom_state_expr = Some(p.state_expr);
+    // db_slot takes precedence, so clear it if the user wants custom state.
+    desc.db_slot = None;
     Ok(CallToolResult::success(vec![Content::text("ok")]))
 }
 
