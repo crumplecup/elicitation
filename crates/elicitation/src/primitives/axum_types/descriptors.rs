@@ -30,6 +30,12 @@ pub struct AxumRouterDescriptor {
     pub state_type: String,
     /// Routes registered on this router.
     pub routes: Vec<AxumRouteEntry>,
+    /// Raw method-call expressions emitted verbatim between routes and layers,
+    /// as `.{expr}` (e.g. `"leptos_routes(&opts, routes, App)"`).
+    ///
+    /// Use this for integration methods that are not standard
+    /// `.route()` calls — such as `.leptos_routes()` or `.nest()`.
+    pub raw_method_calls: Vec<String>,
     /// Layer expressions applied in order (e.g. `"TraceLayer::new_for_http()"`).
     pub layers: Vec<String>,
     /// Optional fallback handler expression.

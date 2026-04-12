@@ -111,6 +111,7 @@ mod leptos_types;
 #[cfg(feature = "leptos-types")]
 pub use leptos_types::{
     LeptosAppDescriptor, LeptosAxumDescriptor, LeptosAxumMode, LeptosClientMode,
-    LeptosComponentDescriptor, LeptosCustomRouteDescriptor, LeptosHtmlTag, LeptosMode,
-    LeptosPropDescriptor, LeptosResponseHeaderDescriptor, LeptosRouteDescriptor, LeptosViewNode,
+    LeptosComponentDescriptor, LeptosCustomRouteDescriptor, LeptosDisplayMode, LeptosHtmlTag,
+    LeptosMode, LeptosPropDescriptor, LeptosResponseHeaderDescriptor, LeptosRouteDescriptor,
+    LeptosViewNode,
 };

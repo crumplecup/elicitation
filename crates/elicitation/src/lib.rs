@@ -710,6 +710,7 @@ pub use primitives::{UomFormula, UomQuantityKind, UomStep, UomUnitSystem};
 #[cfg(feature = "leptos-types")]
 pub use primitives::{
     LeptosAppDescriptor, LeptosAxumDescriptor, LeptosAxumMode, LeptosClientMode,
-    LeptosComponentDescriptor, LeptosCustomRouteDescriptor, LeptosHtmlTag, LeptosMode,
-    LeptosPropDescriptor, LeptosResponseHeaderDescriptor, LeptosRouteDescriptor, LeptosViewNode,
+    LeptosComponentDescriptor, LeptosCustomRouteDescriptor, LeptosDisplayMode, LeptosHtmlTag,
+    LeptosMode, LeptosPropDescriptor, LeptosResponseHeaderDescriptor, LeptosRouteDescriptor,
+    LeptosViewNode,
 };

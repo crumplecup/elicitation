@@ -177,7 +177,37 @@ impl LeptosAxumDescriptor {
     }
 }
 
-// ── ToCodeLiteral ─────────────────────────────────────────────────────────────
+/// Display mode controlling which shell component wraps the Leptos view tree.
+///
+/// Passed to the bridge plugin to select the outer HTML wrapper / theme
+/// applied around the rendered component.  When emitting code the bridge
+/// matches on this enum to expand the correct shell.
+#[derive(
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Eq,
+    Hash,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    strum::EnumIter,
+    derive_more::Display,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum LeptosDisplayMode {
+    /// Minimal wrapper — renders the component with no extra chrome.
+    #[display("bare")]
+    Bare,
+    /// Standard responsive shell with a nav header and content area.
+    #[default]
+    #[display("standard")]
+    Standard,
+    /// Full-page dashboard layout with sidebar and main pane.
+    #[display("dashboard")]
+    Dashboard,
+}
 
 #[cfg(feature = "emit")]
 impl crate::emit_code::ToCodeLiteral for LeptosAxumMode {
@@ -215,5 +245,26 @@ impl crate::emit_code::ToCodeLiteral for LeptosClientMode {
 
     fn type_tokens() -> proc_macro2::TokenStream {
         quote::quote! { elicitation::LeptosClientMode }
+    }
+}
+
+#[cfg(feature = "emit")]
+impl crate::emit_code::ToCodeLiteral for LeptosDisplayMode {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        match self {
+            LeptosDisplayMode::Bare => {
+                quote::quote! { elicitation::LeptosDisplayMode::Bare }
+            }
+            LeptosDisplayMode::Standard => {
+                quote::quote! { elicitation::LeptosDisplayMode::Standard }
+            }
+            LeptosDisplayMode::Dashboard => {
+                quote::quote! { elicitation::LeptosDisplayMode::Dashboard }
+            }
+        }
+    }
+
+    fn type_tokens() -> proc_macro2::TokenStream {
+        quote::quote! { elicitation::LeptosDisplayMode }
     }
 }

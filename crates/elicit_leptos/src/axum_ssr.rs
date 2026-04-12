@@ -83,8 +83,9 @@ impl VerifiedWorkflow for LeptosAxumServerConfigured {}
 // ── Plugin context ────────────────────────────────────────────────────────────
 
 /// Shared state for all `leptos_axum__*` tool calls.
+/// Shared mutable state for [`LeptosAxumPlugin`].
 pub struct LeptosAxumCtx {
-    items: Mutex<HashMap<Uuid, LeptosAxumDescriptor>>,
+    pub(crate) items: Mutex<HashMap<Uuid, LeptosAxumDescriptor>>,
 }
 
 impl LeptosAxumCtx {
@@ -92,6 +93,11 @@ impl LeptosAxumCtx {
         Self {
             items: Mutex::new(HashMap::new()),
         }
+    }
+
+    /// Read a descriptor by UUID — used by bridge plugins.
+    pub async fn get(&self, id: Uuid) -> Option<LeptosAxumDescriptor> {
+        self.items.lock().await.get(&id).cloned()
     }
 }
 
@@ -903,6 +909,14 @@ impl LeptosAxumPlugin {
     /// Create a new `LeptosAxumPlugin` with an empty registry.
     pub fn new() -> Self {
         Self(Arc::new(LeptosAxumCtx::new()))
+    }
+
+    /// Return a shared reference to the underlying context.
+    ///
+    /// Pass this to bridge plugins (e.g. `LeptosAxumBridgePlugin`) so they
+    /// can read leptos descriptors from the same registry.
+    pub fn ctx(&self) -> Arc<LeptosAxumCtx> {
+        Arc::clone(&self.0)
     }
 
     /// Convenience helper for tests and direct integration: invoke a tool by

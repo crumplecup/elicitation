@@ -105,15 +105,28 @@ impl VerifiedWorkflow for AxumRouteAdded {}
 // ── Plugin context ────────────────────────────────────────────────────────────
 
 /// Shared state for all `axum_router__*` tool calls.
+/// Shared mutable state for the [`AxumRouterPlugin`].
+///
+/// Holds a UUID-keyed registry of [`AxumRouterDescriptor`] objects.
+/// Expose via [`AxumRouterPlugin::ctx`] to share the registry with bridge plugins.
 pub struct AxumRouterCtx {
-    items: Mutex<HashMap<Uuid, AxumRouterDescriptor>>,
+    pub(crate) items: Mutex<HashMap<Uuid, AxumRouterDescriptor>>,
 }
 
 impl AxumRouterCtx {
-    fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             items: Mutex::new(HashMap::new()),
         }
+    }
+
+    /// Insert a pre-built descriptor and return its UUID.
+    ///
+    /// Used by bridge plugins to inject descriptors into the shared registry.
+    pub async fn insert(&self, desc: AxumRouterDescriptor) -> Uuid {
+        let id = Uuid::new_v4();
+        self.items.lock().await.insert(id, desc);
+        id
     }
 }
 
@@ -234,6 +247,9 @@ fn emit_router(desc: &AxumRouterDescriptor) -> String {
             handler = route.handler,
         ));
     }
+    for call in &desc.raw_method_calls {
+        lines.push(format!("    .{call}"));
+    }
     for layer in &desc.layers {
         lines.push(format!("    .layer({layer})"));
     }
@@ -257,6 +273,7 @@ async fn new(ctx: Arc<AxumRouterCtx>, p: RouterNewParams) -> Result<CallToolResu
     let desc = AxumRouterDescriptor {
         state_type: p.state_type,
         routes: Vec::new(),
+        raw_method_calls: Vec::new(),
         layers: Vec::new(),
         fallback: None,
     };
@@ -381,6 +398,43 @@ impl AxumRouterPlugin {
     /// Create a new `AxumRouterPlugin` with an empty registry.
     pub fn new() -> Self {
         Self(Arc::new(AxumRouterCtx::new()))
+    }
+
+    /// Return a shared reference to the underlying context.
+    ///
+    /// Pass this to bridge plugins (e.g. `LeptosAxumBridgePlugin`) so they
+    /// can inject descriptors into the same registry.
+    pub fn ctx(&self) -> Arc<AxumRouterCtx> {
+        Arc::clone(&self.0)
+    }
+
+    /// Convenience helper for tests and direct integration: invoke a tool by
+    /// name with a JSON argument object and return the `CallToolResult`.
+    pub async fn invoke_tool(
+        &self,
+        name: &str,
+        args: serde_json::Value,
+    ) -> Result<CallToolResult, ErrorData> {
+        let owned = name.to_string();
+        let params = if let Some(m) = args.as_object().cloned() {
+            CallToolRequestParams::new(owned).with_arguments(m)
+        } else {
+            CallToolRequestParams::new(owned)
+        };
+        let plugin_ctx = self.0.clone();
+        let full_name = if name.starts_with("axum_router__") {
+            name.to_string()
+        } else {
+            format!("axum_router__{name}")
+        };
+        let descriptor = elicitation::inventory::iter::<elicitation::PluginToolRegistration>()
+            .filter(|r| r.plugin == "axum_router")
+            .find(|r| r.name == full_name)
+            .map(|r| (r.constructor)())
+            .ok_or_else(|| ErrorData::invalid_params(format!("unknown tool: {name}"), None))?;
+        descriptor
+            .dispatch(plugin_ctx as Arc<dyn std::any::Any + Send + Sync>, params)
+            .await
     }
 }
 

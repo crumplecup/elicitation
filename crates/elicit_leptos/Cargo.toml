@@ -14,6 +14,7 @@ categories = ["web-programming", "wasm"]
 
 [dependencies]
 elicitation = { workspace = true, features = ["leptos-types", "emit"] }
+elicit_axum.workspace = true
 elicit_ui.workspace = true
 accesskit.workspace = true
 rmcp = { workspace = true }
@@ -30,6 +31,8 @@ futures = { workspace = true }
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serde_json = { workspace = true }
+elicit_axum.workspace = true
+uuid = { workspace = true, features = ["v4"] }
 
 [features]
 default = []
