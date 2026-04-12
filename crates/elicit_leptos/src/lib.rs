@@ -10,17 +10,24 @@
 //! # Renderer
 //!
 //! [`LeptosRenderer`] implements [`elicit_ui::UiRenderer`] for rendering
-//! AccessKit trees to Leptos view descriptors.
+//! AccessKit trees to either semantic HTML5 or Leptos `view!` macro source.
+//!
+//! | Mode | Output | Use case |
+//! |------|--------|----------|
+//! | [`leptos_accesskit_convert::LeptosRenderMode::Html`] | Semantic HTML5 string | SSR via axum/tower |
+//! | [`leptos_accesskit_convert::LeptosRenderMode::ViewMacro`] | Leptos `view!` body | CSR/WASM or codegen |
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
 mod code;
 mod error;
+pub mod leptos_accesskit_convert;
 mod reactive;
-mod renderer;
+pub mod renderer;
 
 pub use code::LeptosCodePlugin;
 pub use error::{LeptosError, LeptosErrorKind, LeptosResult};
+pub use leptos_accesskit_convert::{LeptosRenderMode, render_tree, render_tree_with_stats};
 pub use reactive::LeptosReactivePlugin;
 pub use renderer::LeptosRenderer;

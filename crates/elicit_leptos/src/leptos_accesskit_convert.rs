@@ -1,0 +1,1100 @@
+//! Bidirectional bridge: AccessKit trees ↔ Leptos output.
+//!
+//! Converts a verified AccessKit node tree into either:
+//!
+//! 1. **Semantic HTML5 string** — for SSR delivery via axum/tower.
+//! 2. **Leptos `view!` macro source** — for CSR/WASM compilation or
+//!    code-generation pipelines.
+//!
+//! # Role mapping
+//!
+//! Every [`accesskit::Role`] variant maps to the closest semantic HTML5
+//! element.  When a single correct mapping exists it is used unconditionally.
+//! When multiple layouts are reasonable (e.g. horizontal vs. vertical list),
+//! the AccessKit [`Orientation`] attribute on the node determines the output
+//! and no extra user-facing enum is required.
+//!
+//! # Usage
+//!
+//! ```rust
+//! use accesskit::{Node, NodeId, Role, Tree, TreeId, TreeUpdate};
+//! use std::collections::HashMap;
+//! use elicit_leptos::leptos_accesskit_convert::{render_tree, LeptosRenderMode};
+//!
+//! let root_id = NodeId::from(0u64);
+//! let mut root = Node::new(Role::Main);
+//! root.set_label("My App");
+//!
+//! let mut nodes = HashMap::new();
+//! nodes.insert(root_id, root);
+//!
+//! let html = render_tree(&nodes, root_id, LeptosRenderMode::Html);
+//! assert!(html.contains("<main"));
+//!
+//! let code = render_tree(&nodes, root_id, LeptosRenderMode::ViewMacro);
+//! assert!(code.contains("<main"));
+//! ```
+
+use accesskit::{Node, NodeId, Orientation, Role, Toggled};
+use elicit_ui::RenderStats;
+use std::collections::HashMap;
+
+// ── Render mode ───────────────────────────────────────────────────────────────
+
+/// Output format for Leptos rendering.
+///
+/// Both modes walk the same AccessKit tree; they differ only in how strings
+/// are quoted and whether self-closing tags are `<br />` or `<br>`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum LeptosRenderMode {
+    /// Produce a semantic HTML5 string suitable for SSR via axum/tower.
+    #[default]
+    Html,
+    /// Produce Leptos `view!` macro source code for CSR/WASM or codegen.
+    ///
+    /// Text content is wrapped in `"..."` and the output is ready to paste
+    /// inside a `view! { … }` block.
+    ViewMacro,
+}
+
+// ── Public entry points ───────────────────────────────────────────────────────
+
+/// Render an AccessKit node tree to a Leptos output string.
+///
+/// Returns the rendered string.  Collect [`RenderStats`] by passing a
+/// mutable reference; use `RenderStats::default()` if you don't need them.
+pub fn render_tree(nodes: &HashMap<NodeId, Node>, root: NodeId, mode: LeptosRenderMode) -> String {
+    let mut stats = RenderStats::default();
+    render_node(nodes, root, mode, 0, &mut stats)
+}
+
+/// Render with stats collection.
+pub fn render_tree_with_stats(
+    nodes: &HashMap<NodeId, Node>,
+    root: NodeId,
+    mode: LeptosRenderMode,
+) -> (String, RenderStats) {
+    let mut stats = RenderStats::default();
+    let output = render_node(nodes, root, mode, 0, &mut stats);
+    (output, stats)
+}
+
+// ── Recursive renderer ────────────────────────────────────────────────────────
+
+fn render_node(
+    nodes: &HashMap<NodeId, Node>,
+    node_id: NodeId,
+    mode: LeptosRenderMode,
+    depth: usize,
+    stats: &mut RenderStats,
+) -> String {
+    let Some(node) = nodes.get(&node_id) else {
+        stats.nodes_skipped += 1;
+        return String::new();
+    };
+    if node.is_hidden() {
+        stats.nodes_skipped += 1;
+        return String::new();
+    }
+    stats.nodes_visited += 1;
+
+    let children = node.children();
+    let has_children = !children.is_empty();
+
+    let rendered = match node.role() {
+        // ── Document-level containers ─────────────────────────────────────────
+        Role::Window | Role::Pane | Role::GenericContainer => {
+            stats.containers_rendered += 1;
+            let orient = orientation_class(node);
+            wrap_element(
+                "div",
+                orient.as_deref(),
+                node,
+                nodes,
+                children,
+                mode,
+                depth,
+                stats,
+            )
+        }
+        Role::Document => {
+            stats.containers_rendered += 1;
+            wrap_element("article", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::Main => {
+            stats.containers_rendered += 1;
+            wrap_element("main", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::Banner => {
+            stats.containers_rendered += 1;
+            wrap_element("header", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::ContentInfo => {
+            stats.containers_rendered += 1;
+            wrap_element("footer", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::Navigation => {
+            stats.containers_rendered += 1;
+            wrap_element("nav", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::Complementary => {
+            stats.containers_rendered += 1;
+            wrap_element("aside", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::Section | Role::Region => {
+            stats.containers_rendered += 1;
+            wrap_element("section", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::Article => {
+            stats.containers_rendered += 1;
+            wrap_element("article", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::Form => {
+            stats.containers_rendered += 1;
+            wrap_element("form", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::Search => {
+            stats.containers_rendered += 1;
+            wrap_with_role("div", "search", node, nodes, children, mode, depth, stats)
+        }
+        Role::Group => {
+            stats.containers_rendered += 1;
+            // Fieldset when a label is present (accessible grouping), else div
+            if node.label().is_some() {
+                let label = node.label().unwrap_or("").to_string();
+                let inner = render_children(nodes, children, mode, depth + 1, stats);
+                format!(
+                    "{pad}<fieldset>\n{pad}  <legend>{}</legend>\n{inner}{pad}</fieldset>\n",
+                    text_content(&label, mode),
+                    pad = indent(depth),
+                )
+            } else {
+                wrap_with_role("div", "group", node, nodes, children, mode, depth, stats)
+            }
+        }
+        Role::Dialog => {
+            stats.containers_rendered += 1;
+            wrap_element("dialog", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::AlertDialog => {
+            stats.containers_rendered += 1;
+            wrap_with_role(
+                "dialog",
+                "alertdialog",
+                node,
+                nodes,
+                children,
+                mode,
+                depth,
+                stats,
+            )
+        }
+        Role::ScrollView => {
+            stats.containers_rendered += 1;
+            let class = Some("ak-scroll");
+            wrap_element_class("div", class, node, nodes, children, mode, depth, stats)
+        }
+        Role::SectionHeader | Role::Header => {
+            stats.containers_rendered += 1;
+            wrap_element("header", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::SectionFooter | Role::Footer => {
+            stats.containers_rendered += 1;
+            wrap_element("footer", None, node, nodes, children, mode, depth, stats)
+        }
+
+        // ── Toolbar ───────────────────────────────────────────────────────────
+        Role::Toolbar => {
+            stats.containers_rendered += 1;
+            wrap_with_role("div", "toolbar", node, nodes, children, mode, depth, stats)
+        }
+
+        // ── Lists ─────────────────────────────────────────────────────────────
+        Role::List | Role::Feed => {
+            stats.containers_rendered += 1;
+            // Horizontal orientation → flex row list
+            if is_horizontal(node) {
+                wrap_element_class(
+                    "ul",
+                    Some("ak-hlist"),
+                    node,
+                    nodes,
+                    children,
+                    mode,
+                    depth,
+                    stats,
+                )
+            } else {
+                wrap_element("ul", None, node, nodes, children, mode, depth, stats)
+            }
+        }
+        Role::ListBox => {
+            stats.containers_rendered += 1;
+            wrap_with_role("ul", "listbox", node, nodes, children, mode, depth, stats)
+        }
+        Role::DescriptionList => {
+            stats.containers_rendered += 1;
+            wrap_element("dl", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::ListItem | Role::ListBoxOption => {
+            if has_children {
+                stats.containers_rendered += 1;
+                wrap_element("li", None, node, nodes, children, mode, depth, stats)
+            } else {
+                stats.widgets_rendered += 1;
+                let text = node_text(node);
+                format!("{}<li>{}</li>\n", indent(depth), text_content(&text, mode))
+            }
+        }
+        Role::Term => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            format!("{}<dt>{}</dt>\n", indent(depth), text_content(&text, mode))
+        }
+        Role::Definition => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            format!("{}<dd>{}</dd>\n", indent(depth), text_content(&text, mode))
+        }
+
+        // ── Tables ────────────────────────────────────────────────────────────
+        Role::Table => {
+            stats.containers_rendered += 1;
+            wrap_element("table", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::Grid | Role::TreeGrid | Role::ListGrid => {
+            stats.containers_rendered += 1;
+            wrap_with_role("table", "grid", node, nodes, children, mode, depth, stats)
+        }
+        Role::RowGroup => {
+            stats.containers_rendered += 1;
+            wrap_element("tbody", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::Row => {
+            stats.containers_rendered += 1;
+            wrap_element("tr", None, node, nodes, children, mode, depth, stats)
+        }
+        Role::Cell | Role::GridCell => {
+            if has_children {
+                stats.containers_rendered += 1;
+                wrap_element("td", None, node, nodes, children, mode, depth, stats)
+            } else {
+                stats.widgets_rendered += 1;
+                let text = node_text(node);
+                format!("{}<td>{}</td>\n", indent(depth), text_content(&text, mode))
+            }
+        }
+        Role::ColumnHeader => {
+            if has_children {
+                stats.containers_rendered += 1;
+                wrap_element(
+                    "th",
+                    Some("scope=\"col\""),
+                    node,
+                    nodes,
+                    children,
+                    mode,
+                    depth,
+                    stats,
+                )
+            } else {
+                stats.widgets_rendered += 1;
+                let text = node_text(node);
+                format!(
+                    r#"{}<th scope="col">{}</th>{}"#,
+                    indent(depth),
+                    text_content(&text, mode),
+                    "\n"
+                )
+            }
+        }
+        Role::RowHeader => {
+            if has_children {
+                stats.containers_rendered += 1;
+                wrap_element(
+                    "th",
+                    Some("scope=\"row\""),
+                    node,
+                    nodes,
+                    children,
+                    mode,
+                    depth,
+                    stats,
+                )
+            } else {
+                stats.widgets_rendered += 1;
+                let text = node_text(node);
+                format!(
+                    r#"{}<th scope="row">{}</th>{}"#,
+                    indent(depth),
+                    text_content(&text, mode),
+                    "\n"
+                )
+            }
+        }
+
+        // ── Tabs ──────────────────────────────────────────────────────────────
+        Role::TabList => {
+            stats.containers_rendered += 1;
+            wrap_with_role("div", "tablist", node, nodes, children, mode, depth, stats)
+        }
+        Role::Tab => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            let selected = matches!(node.toggled(), Some(Toggled::True));
+            format!(
+                r#"{}<button role="tab" aria-selected="{}">{}</button>{}"#,
+                indent(depth),
+                selected,
+                text_content(&text, mode),
+                "\n"
+            )
+        }
+        Role::TabPanel => {
+            stats.containers_rendered += 1;
+            wrap_with_role("div", "tabpanel", node, nodes, children, mode, depth, stats)
+        }
+
+        // ── Menus ─────────────────────────────────────────────────────────────
+        Role::MenuBar => {
+            stats.containers_rendered += 1;
+            wrap_with_role("nav", "menubar", node, nodes, children, mode, depth, stats)
+        }
+        Role::Menu | Role::MenuListPopup => {
+            stats.containers_rendered += 1;
+            wrap_with_role("ul", "menu", node, nodes, children, mode, depth, stats)
+        }
+        Role::MenuItem => {
+            if has_children {
+                stats.containers_rendered += 1;
+                wrap_with_role("li", "menuitem", node, nodes, children, mode, depth, stats)
+            } else {
+                stats.widgets_rendered += 1;
+                let text = node_text(node);
+                format!(
+                    r#"{}<li role="menuitem">{}</li>{}"#,
+                    indent(depth),
+                    text_content(&text, mode),
+                    "\n"
+                )
+            }
+        }
+        Role::MenuItemCheckBox => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            let checked = matches!(node.toggled(), Some(Toggled::True));
+            format!(
+                r#"{}<li role="menuitemcheckbox" aria-checked="{}">{}</li>{}"#,
+                indent(depth),
+                checked,
+                text_content(&text, mode),
+                "\n"
+            )
+        }
+        Role::MenuItemRadio => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            let checked = matches!(node.toggled(), Some(Toggled::True));
+            format!(
+                r#"{}<li role="menuitemradio" aria-checked="{}">{}</li>{}"#,
+                indent(depth),
+                checked,
+                text_content(&text, mode),
+                "\n"
+            )
+        }
+        Role::MenuListOption => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            let selected = matches!(node.toggled(), Some(Toggled::True));
+            format!(
+                r#"{}<option value="{}" aria-selected="{}">{}</option>{}"#,
+                indent(depth),
+                html_escape(&text),
+                selected,
+                text_content(&text, mode),
+                "\n"
+            )
+        }
+
+        // ── Interactive controls ───────────────────────────────────────────────
+        Role::Button | Role::DefaultButton => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            let disabled = if node.is_disabled() { " disabled" } else { "" };
+            format!(
+                "{}<button{}>{}</button>\n",
+                indent(depth),
+                disabled,
+                text_content(&text, mode)
+            )
+        }
+        Role::CheckBox => {
+            stats.widgets_rendered += 1;
+            checkbox_html(node, "checkbox", depth, mode)
+        }
+        Role::RadioButton => {
+            stats.widgets_rendered += 1;
+            checkbox_html(node, "radio", depth, mode)
+        }
+        Role::Switch => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            let checked = matches!(node.toggled(), Some(Toggled::True));
+            let disabled = if node.is_disabled() { " disabled" } else { "" };
+            format!(
+                r#"{}<button role="switch" aria-checked="{}"{}>{}</button>{}"#,
+                indent(depth),
+                checked,
+                disabled,
+                text_content(&text, mode),
+                "\n"
+            )
+        }
+        Role::TextInput => {
+            stats.widgets_rendered += 1;
+            text_input_html(node, "text", depth, mode)
+        }
+        Role::SearchInput => {
+            stats.widgets_rendered += 1;
+            text_input_html(node, "search", depth, mode)
+        }
+        Role::EmailInput => {
+            stats.widgets_rendered += 1;
+            text_input_html(node, "email", depth, mode)
+        }
+        Role::UrlInput => {
+            stats.widgets_rendered += 1;
+            text_input_html(node, "url", depth, mode)
+        }
+        Role::PhoneNumberInput => {
+            stats.widgets_rendered += 1;
+            text_input_html(node, "tel", depth, mode)
+        }
+        Role::PasswordInput => {
+            stats.widgets_rendered += 1;
+            text_input_html(node, "password", depth, mode)
+        }
+        Role::NumberInput | Role::SpinButton => {
+            stats.widgets_rendered += 1;
+            numeric_input_html(node, depth, mode)
+        }
+        Role::MultilineTextInput => {
+            stats.widgets_rendered += 1;
+            textarea_html(node, depth, mode)
+        }
+        Role::Slider => {
+            stats.widgets_rendered += 1;
+            range_input_html(node, depth, mode)
+        }
+        Role::ProgressIndicator => {
+            stats.widgets_rendered += 1;
+            progress_html(node, depth, mode)
+        }
+        Role::Meter => {
+            stats.widgets_rendered += 1;
+            meter_html(node, depth, mode)
+        }
+        Role::ComboBox | Role::EditableComboBox => {
+            stats.containers_rendered += 1;
+            let label = node_text(node);
+            let inner = render_children(nodes, children, mode, depth + 1, stats);
+            format!(
+                "{pad}<select aria-label=\"{}\">\n{inner}{pad}</select>\n",
+                html_escape(&label),
+                pad = indent(depth),
+            )
+        }
+        Role::ColorWell => {
+            stats.widgets_rendered += 1;
+            let label = node_text(node);
+            let val = node.value().unwrap_or("#000000");
+            format!(
+                r#"{}<input type="color" aria-label="{}" value="{}"/>"#,
+                indent(depth),
+                html_escape(&label),
+                html_escape(val)
+            ) + "\n"
+        }
+        Role::Link => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            let href = node.url().unwrap_or("#");
+            format!(
+                r#"{}<a href="{}">{}</a>{}"#,
+                indent(depth),
+                html_escape(href),
+                text_content(&text, mode),
+                "\n"
+            )
+        }
+        Role::ScrollBar => {
+            stats.widgets_rendered += 1;
+            range_input_html(node, depth, mode)
+        }
+
+        // ── Text and semantic content ──────────────────────────────────────────
+        Role::Label | Role::Legend => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            let tag = if node.role() == Role::Legend {
+                "legend"
+            } else {
+                "label"
+            };
+            format!(
+                "{}<{}>{}</{}>\n",
+                indent(depth),
+                tag,
+                text_content(&text, mode),
+                tag
+            )
+        }
+        Role::Paragraph => {
+            if has_children {
+                stats.containers_rendered += 1;
+                wrap_element("p", None, node, nodes, children, mode, depth, stats)
+            } else {
+                stats.widgets_rendered += 1;
+                let text = node_text(node);
+                format!("{}<p>{}</p>\n", indent(depth), text_content(&text, mode))
+            }
+        }
+        Role::TextRun => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            format!(
+                "{}<span>{}</span>\n",
+                indent(depth),
+                text_content(&text, mode)
+            )
+        }
+        Role::Heading => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            let level = node.level().unwrap_or(2).clamp(1, 6);
+            format!(
+                "{}<h{}>{}</h{}>\n",
+                indent(depth),
+                level,
+                text_content(&text, mode),
+                level
+            )
+        }
+        Role::Caption => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            format!(
+                "{}<caption>{}</caption>\n",
+                indent(depth),
+                text_content(&text, mode)
+            )
+        }
+        Role::Blockquote => {
+            if has_children {
+                stats.containers_rendered += 1;
+                wrap_element(
+                    "blockquote",
+                    None,
+                    node,
+                    nodes,
+                    children,
+                    mode,
+                    depth,
+                    stats,
+                )
+            } else {
+                stats.widgets_rendered += 1;
+                let text = node_text(node);
+                format!(
+                    "{}<blockquote>{}</blockquote>\n",
+                    indent(depth),
+                    text_content(&text, mode)
+                )
+            }
+        }
+        Role::Code => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            format!(
+                "{}<code>{}</code>\n",
+                indent(depth),
+                text_content(&text, mode)
+            )
+        }
+        Role::Strong => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            format!(
+                "{}<strong>{}</strong>\n",
+                indent(depth),
+                text_content(&text, mode)
+            )
+        }
+        Role::Emphasis => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            format!("{}<em>{}</em>\n", indent(depth), text_content(&text, mode))
+        }
+        Role::Mark => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            format!(
+                "{}<mark>{}</mark>\n",
+                indent(depth),
+                text_content(&text, mode)
+            )
+        }
+        Role::Abbr => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            format!(
+                "{}<abbr>{}</abbr>\n",
+                indent(depth),
+                text_content(&text, mode)
+            )
+        }
+        Role::Note => {
+            if has_children {
+                stats.containers_rendered += 1;
+                wrap_with_role("aside", "note", node, nodes, children, mode, depth, stats)
+            } else {
+                stats.widgets_rendered += 1;
+                let text = node_text(node);
+                format!(
+                    r#"{}<aside role="note">{}</aside>{}"#,
+                    indent(depth),
+                    text_content(&text, mode),
+                    "\n"
+                )
+            }
+        }
+        Role::Status => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            format!(
+                "{}<output>{}</output>\n",
+                indent(depth),
+                text_content(&text, mode)
+            )
+        }
+        Role::Alert => {
+            if has_children {
+                stats.containers_rendered += 1;
+                wrap_with_role("div", "alert", node, nodes, children, mode, depth, stats)
+            } else {
+                stats.widgets_rendered += 1;
+                let text = node_text(node);
+                format!(
+                    r#"{}<div role="alert">{}</div>{}"#,
+                    indent(depth),
+                    text_content(&text, mode),
+                    "\n"
+                )
+            }
+        }
+        Role::Log => {
+            stats.containers_rendered += 1;
+            wrap_with_role("div", "log", node, nodes, children, mode, depth, stats)
+        }
+        Role::Time | Role::Timer => {
+            stats.widgets_rendered += 1;
+            let text = node_text(node);
+            format!(
+                "{}<time>{}</time>\n",
+                indent(depth),
+                text_content(&text, mode)
+            )
+        }
+        Role::Image => {
+            stats.widgets_rendered += 1;
+            let alt = node_text(node);
+            let src = node.url().unwrap_or("");
+            format!(
+                r#"{}<img src="{}" alt="{}"/>{}"#,
+                indent(depth),
+                html_escape(src),
+                html_escape(&alt),
+                "\n"
+            )
+        }
+
+        // ── Structural primitives ──────────────────────────────────────────────
+        Role::Splitter => {
+            stats.widgets_rendered += 1;
+            format!("{}<hr/>\n", indent(depth))
+        }
+        Role::LineBreak => {
+            stats.widgets_rendered += 1;
+            format!("{}<br/>\n", indent(depth))
+        }
+
+        // ── Tree items (rendered as nested lists) ──────────────────────────────
+        Role::Tree => {
+            stats.containers_rendered += 1;
+            wrap_with_role("ul", "tree", node, nodes, children, mode, depth, stats)
+        }
+        Role::TreeItem => {
+            if has_children {
+                stats.containers_rendered += 1;
+                wrap_with_role("li", "treeitem", node, nodes, children, mode, depth, stats)
+            } else {
+                stats.widgets_rendered += 1;
+                let text = node_text(node);
+                format!(
+                    r#"{}<li role="treeitem">{}</li>{}"#,
+                    indent(depth),
+                    text_content(&text, mode),
+                    "\n"
+                )
+            }
+        }
+
+        // ── Fallback ───────────────────────────────────────────────────────────
+        _ => {
+            if has_children {
+                stats.containers_rendered += 1;
+                wrap_element("div", None, node, nodes, children, mode, depth, stats)
+            } else {
+                let text = node_text(node);
+                if text.is_empty() {
+                    stats.nodes_skipped += 1;
+                    String::new()
+                } else {
+                    stats.widgets_rendered += 1;
+                    format!(
+                        "{}<span>{}</span>\n",
+                        indent(depth),
+                        text_content(&text, mode)
+                    )
+                }
+            }
+        }
+    };
+
+    rendered
+}
+
+// ── Element builders ──────────────────────────────────────────────────────────
+
+fn wrap_element(
+    tag: &str,
+    extra_attr: Option<&str>,
+    node: &Node,
+    nodes: &HashMap<NodeId, Node>,
+    children: &[NodeId],
+    mode: LeptosRenderMode,
+    depth: usize,
+    stats: &mut RenderStats,
+) -> String {
+    let aria = aria_label_attr(node);
+    let extra = extra_attr.map(|a| format!(" {a}")).unwrap_or_default();
+    let inner = render_children(nodes, children, mode, depth + 1, stats);
+    if inner.is_empty() {
+        format!("{pad}<{tag}{extra}{aria}></{tag}>\n", pad = indent(depth))
+    } else {
+        format!(
+            "{pad}<{tag}{extra}{aria}>\n{inner}{pad}</{tag}>\n",
+            pad = indent(depth)
+        )
+    }
+}
+
+fn wrap_element_class(
+    tag: &str,
+    class: Option<&str>,
+    node: &Node,
+    nodes: &HashMap<NodeId, Node>,
+    children: &[NodeId],
+    mode: LeptosRenderMode,
+    depth: usize,
+    stats: &mut RenderStats,
+) -> String {
+    let aria = aria_label_attr(node);
+    let cls = class.map(|c| format!(" class=\"{c}\"")).unwrap_or_default();
+    let inner = render_children(nodes, children, mode, depth + 1, stats);
+    if inner.is_empty() {
+        format!("{pad}<{tag}{cls}{aria}></{tag}>\n", pad = indent(depth))
+    } else {
+        format!(
+            "{pad}<{tag}{cls}{aria}>\n{inner}{pad}</{tag}>\n",
+            pad = indent(depth)
+        )
+    }
+}
+
+fn wrap_with_role(
+    tag: &str,
+    role: &str,
+    node: &Node,
+    nodes: &HashMap<NodeId, Node>,
+    children: &[NodeId],
+    mode: LeptosRenderMode,
+    depth: usize,
+    stats: &mut RenderStats,
+) -> String {
+    let aria = aria_label_attr(node);
+    let inner = render_children(nodes, children, mode, depth + 1, stats);
+    if inner.is_empty() {
+        format!(
+            r#"{pad}<{tag} role="{role}"{aria}></{tag}>{nl}"#,
+            pad = indent(depth),
+            nl = "\n"
+        )
+    } else {
+        format!(
+            "{pad}<{tag} role=\"{role}\"{aria}>\n{inner}{pad}</{tag}>\n",
+            pad = indent(depth)
+        )
+    }
+}
+
+fn render_children(
+    nodes: &HashMap<NodeId, Node>,
+    children: &[NodeId],
+    mode: LeptosRenderMode,
+    depth: usize,
+    stats: &mut RenderStats,
+) -> String {
+    children
+        .iter()
+        .map(|id| render_node(nodes, *id, mode, depth, stats))
+        .collect()
+}
+
+// ── Widget builders ───────────────────────────────────────────────────────────
+
+fn checkbox_html(node: &Node, ty: &str, depth: usize, mode: LeptosRenderMode) -> String {
+    let label = node_text(node);
+    let checked = if matches!(node.toggled(), Some(Toggled::True)) {
+        " checked"
+    } else {
+        ""
+    };
+    let disabled = if node.is_disabled() { " disabled" } else { "" };
+    format!(
+        "{}<label><input type=\"{}\"{}{}/> {}</label>\n",
+        indent(depth),
+        ty,
+        checked,
+        disabled,
+        text_content(&label, mode)
+    )
+}
+
+fn text_input_html(node: &Node, ty: &str, depth: usize, mode: LeptosRenderMode) -> String {
+    let label = node_label_text(node);
+    let value = node.value().unwrap_or("");
+    let placeholder = node.placeholder().unwrap_or("");
+    let disabled = if node.is_disabled() { " disabled" } else { "" };
+    let readonly = if node.is_read_only() { " readonly" } else { "" };
+    let aria = if !label.is_empty() {
+        format!(" aria-label=\"{}\"", html_escape(&label))
+    } else {
+        String::new()
+    };
+    let ph = if !placeholder.is_empty() {
+        format!(" placeholder=\"{}\"", html_escape(placeholder))
+    } else {
+        String::new()
+    };
+    let _ = mode; // value display is always plain HTML
+    format!(
+        "{}<input type=\"{}\" value=\"{}\"{}{}{}{}/>\n",
+        indent(depth),
+        ty,
+        html_escape(value),
+        ph,
+        aria,
+        disabled,
+        readonly,
+    )
+}
+
+fn textarea_html(node: &Node, depth: usize, mode: LeptosRenderMode) -> String {
+    let label = node_label_text(node);
+    let value = node.value().unwrap_or("");
+    let placeholder = node.placeholder().unwrap_or("");
+    let disabled = if node.is_disabled() { " disabled" } else { "" };
+    let readonly = if node.is_read_only() { " readonly" } else { "" };
+    let aria = if !label.is_empty() {
+        format!(" aria-label=\"{}\"", html_escape(&label))
+    } else {
+        String::new()
+    };
+    let ph = if !placeholder.is_empty() {
+        format!(" placeholder=\"{}\"", html_escape(placeholder))
+    } else {
+        String::new()
+    };
+    let _ = mode;
+    format!(
+        "{}<textarea{}{}{}{}>\\n{}</textarea>\n",
+        indent(depth),
+        ph,
+        aria,
+        disabled,
+        readonly,
+        html_escape(value),
+    )
+}
+
+fn numeric_input_html(node: &Node, depth: usize, mode: LeptosRenderMode) -> String {
+    let label = node_label_text(node);
+    let value = node.numeric_value().unwrap_or(0.0).to_string();
+    let min = node
+        .min_numeric_value()
+        .map(|v| format!(" min=\"{v}\""))
+        .unwrap_or_default();
+    let max = node
+        .max_numeric_value()
+        .map(|v| format!(" max=\"{v}\""))
+        .unwrap_or_default();
+    let step = node
+        .numeric_value_step()
+        .map(|v| format!(" step=\"{v}\""))
+        .unwrap_or_default();
+    let disabled = if node.is_disabled() { " disabled" } else { "" };
+    let aria = if !label.is_empty() {
+        format!(" aria-label=\"{}\"", html_escape(&label))
+    } else {
+        String::new()
+    };
+    let _ = mode;
+    format!(
+        "{}<input type=\"number\" value=\"{}\"{}{}{}{}{}/>\n",
+        indent(depth),
+        html_escape(&value),
+        min,
+        max,
+        step,
+        aria,
+        disabled,
+    )
+}
+
+fn range_input_html(node: &Node, depth: usize, mode: LeptosRenderMode) -> String {
+    let label = node_label_text(node);
+    let value = node.numeric_value().unwrap_or(0.0).to_string();
+    let min = node
+        .min_numeric_value()
+        .map(|v| format!(" min=\"{v}\""))
+        .unwrap_or_default();
+    let max = node
+        .max_numeric_value()
+        .map(|v| format!(" max=\"{v}\""))
+        .unwrap_or_default();
+    let step = node
+        .numeric_value_step()
+        .map(|v| format!(" step=\"{v}\""))
+        .unwrap_or_default();
+    let disabled = if node.is_disabled() { " disabled" } else { "" };
+    let aria = if !label.is_empty() {
+        format!(" aria-label=\"{}\"", html_escape(&label))
+    } else {
+        String::new()
+    };
+    let _ = mode;
+    format!(
+        "{}<input type=\"range\" value=\"{}\"{}{}{}{}{}/>\n",
+        indent(depth),
+        html_escape(&value),
+        min,
+        max,
+        step,
+        aria,
+        disabled,
+    )
+}
+
+fn progress_html(node: &Node, depth: usize, _mode: LeptosRenderMode) -> String {
+    let val = node.numeric_value().unwrap_or(0.0);
+    let max = node.max_numeric_value().unwrap_or(100.0);
+    let label = node_label_text(node);
+    let aria = if !label.is_empty() {
+        format!(" aria-label=\"{}\"", html_escape(&label))
+    } else {
+        String::new()
+    };
+    format!(
+        "{}<progress value=\"{}\" max=\"{}\"{}/>\n",
+        indent(depth),
+        val,
+        max,
+        aria,
+    )
+}
+
+fn meter_html(node: &Node, depth: usize, _mode: LeptosRenderMode) -> String {
+    let val = node.numeric_value().unwrap_or(0.0);
+    let min = node.min_numeric_value().unwrap_or(0.0);
+    let max = node.max_numeric_value().unwrap_or(100.0);
+    let label = node_label_text(node);
+    let aria = if !label.is_empty() {
+        format!(" aria-label=\"{}\"", html_escape(&label))
+    } else {
+        String::new()
+    };
+    format!(
+        "{}<meter min=\"{}\" max=\"{}\" value=\"{}\"{}/>\n",
+        indent(depth),
+        min,
+        max,
+        val,
+        aria,
+    )
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+fn indent(depth: usize) -> String {
+    "  ".repeat(depth)
+}
+
+fn node_text(node: &Node) -> String {
+    node.value().or(node.label()).unwrap_or("").to_string()
+}
+
+fn node_label_text(node: &Node) -> String {
+    node.label().unwrap_or("").to_string()
+}
+
+/// In `ViewMacro` mode, text must be a quoted string literal.
+fn text_content(text: &str, mode: LeptosRenderMode) -> String {
+    match mode {
+        LeptosRenderMode::Html => html_escape(text),
+        LeptosRenderMode::ViewMacro => {
+            if text.is_empty() {
+                String::new()
+            } else {
+                format!("\"{}\"", text.replace('"', "\\\""))
+            }
+        }
+    }
+}
+
+fn html_escape(s: &str) -> String {
+    s.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+}
+
+fn aria_label_attr(node: &Node) -> String {
+    node.label()
+        .filter(|s| !s.is_empty())
+        .map(|s| format!(" aria-label=\"{}\"", html_escape(s)))
+        .unwrap_or_default()
+}
+
+fn is_horizontal(node: &Node) -> bool {
+    matches!(node.orientation(), Some(Orientation::Horizontal))
+}
+
+fn orientation_class(node: &Node) -> Option<String> {
+    match node.orientation() {
+        Some(Orientation::Horizontal) => Some("ak-hbox".to_string()),
+        Some(Orientation::Vertical) => Some("ak-vbox".to_string()),
+        None => None,
+    }
+}

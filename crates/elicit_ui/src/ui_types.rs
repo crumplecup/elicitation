@@ -102,4 +102,21 @@ impl VerifiedTree {
     pub fn nodes(&self) -> &HashMap<NodeId, accesskit::Node> {
         &self.nodes
     }
+
+    /// Construct a [`VerifiedTree`] directly from raw parts.
+    ///
+    /// This bypasses the typestate verification pipeline and is
+    /// intended for use in renderer tests that need a known-good tree
+    /// without going through the full WCAG verification path.
+    pub fn from_parts(
+        nodes: HashMap<NodeId, accesskit::Node>,
+        root: NodeId,
+        viewport: crate::Viewport,
+    ) -> Self {
+        Self {
+            nodes,
+            root,
+            viewport,
+        }
+    }
 }
