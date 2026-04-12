@@ -646,6 +646,17 @@ pub use primitives::winit_types::{
     WinitTouchPhaseSelect, WinitWindowAttributes, WinitWindowLevelSelect,
 };
 
+// wgpu GPU descriptor types (feature-gated on wgpu-types)
+#[cfg(feature = "wgpu-types")]
+pub use primitives::wgpu_types::{
+    WgpuAddressMode, WgpuBackend, WgpuBlendFactor, WgpuBlendOperation, WgpuBufferUsages, WgpuColor,
+    WgpuColorWrites, WgpuCompareFunctionSelect, WgpuCompositeAlphaMode, WgpuExtent3d, WgpuFace,
+    WgpuFilterMode, WgpuFrontFace, WgpuIndexFormat, WgpuOrigin3d, WgpuPolygonMode,
+    WgpuPowerPreference, WgpuPresentMode, WgpuPrimitiveTopology, WgpuSamplerBorderColor,
+    WgpuShaderStages, WgpuStencilOperation, WgpuTextureDimension, WgpuTextureFormat,
+    WgpuTextureUsages, WgpuTextureViewDimension, WgpuVertexFormat, WgpuVertexStepMode,
+};
+
 #[cfg(feature = "geo")]
 pub mod geo_algorithms;
 #[cfg(feature = "geo")]

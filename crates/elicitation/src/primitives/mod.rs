@@ -82,6 +82,9 @@ pub mod wkb_types;
 #[cfg(feature = "winit-types")]
 pub mod winit_types;
 
+#[cfg(feature = "wgpu-types")]
+pub mod wgpu_types;
+
 #[cfg(feature = "palette")]
 pub mod palette_types;
 

@@ -40,6 +40,7 @@ members = [
   "crates/elicit_geojson",
   "crates/elicit_georaster",
   "crates/elicit_rstar", "crates/elicit_proj", "crates/elicit_winit",
+  "crates/elicit_wgpu",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
@@ -100,6 +101,7 @@ elicit_georaster = { path = "crates/elicit_georaster", version = "0.10.0" }
 elicit_rstar = { path = "crates/elicit_rstar", version = "0.10.0" }
 elicit_proj = { path = "crates/elicit_proj", version = "0.10.0" }
 elicit_winit = { path = "crates/elicit_winit", version = "0.10.0" }
+elicit_wgpu = { path = "crates/elicit_wgpu", version = "0.10.0" }
 
 # ── MCP ───────────────────────────────────────────────────────────────────────
 rmcp = { version = "1.3", features = [
@@ -229,6 +231,7 @@ georaster = { version = "0.2", default-features = false }
 proj = "0.31"
 geojson = { version = "0.24", features = ["geo-types"] }
 winit = { version = "0.30", features = ["serde"] }
+wgpu = { version = "29", default-features = false, features = ["wgsl", "serde"] }
 tiff = "0.9"
 
 # ── Well-Known Text ───────────────────────────────────────────────────────────
