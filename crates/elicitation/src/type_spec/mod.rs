@@ -47,6 +47,8 @@ mod polars_specs;
 mod ratatui_specs;
 mod regex_specs;
 mod registry;
+#[cfg(feature = "rstar-types")]
+mod rstar_specs;
 mod scalars;
 mod sqlx_specs;
 mod std_extras;

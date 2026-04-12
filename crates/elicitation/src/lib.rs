@@ -604,6 +604,12 @@ pub use primitives::georaster_types::{
     TiffColorTypeStyle, TiffPhotometricInterpretationStyle, TiffPlanarConfigurationStyle,
 };
 
+// rstar types (feature-gated on rstar-types)
+#[cfg(feature = "rstar-types")]
+pub use primitives::rstar_types::{
+    RstarAabb, RstarAabbStyle, RstarLine, RstarLineStyle, RstarRectangle, RstarRectangleStyle,
+};
+
 // geojson types (feature-gated on geojson-types)
 #[cfg(feature = "geojson-types")]
 pub use primitives::geojson_types::{
