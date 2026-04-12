@@ -8,8 +8,12 @@
 //! collapsible schema/table tree on the left, a column-detail panel in the
 //! centre, and a keybinding bar at the bottom.
 //!
-//! Calling [`run_egui`] spawns a dedicated OS thread so that the winit event
-//! loop is isolated from the Tokio runtime.
+//! [`run_egui`] runs the event loop directly on the calling thread.
+//! winit on Linux requires the event loop on the OS main thread; callers
+//! must ensure they are not inside a spawned worker thread.  The archive
+//! binary satisfies this because `#[tokio::main]` calls `Runtime::block_on`
+//! on the OS main thread, so the surrounding `async fn main` body (and every
+//! `await`-free call within it) executes there.
 
 use std::sync::Arc;
 
@@ -483,20 +487,16 @@ impl ApplicationHandler for ArchiveEguiApp {
 
 /// Run the egui native-window frontend, blocking until the user closes it.
 ///
-/// Spawns a dedicated OS thread so the winit event loop is isolated from the
-/// Tokio runtime.  The thread joins before this function returns, propagating
-/// any panic as an [`ArchiveError`].
+/// Must be called from the OS main thread.  On Linux, winit refuses to build
+/// an event loop on any other thread.  The archive binary satisfies this
+/// constraint because `#[tokio::main]` drives `async fn main` on the main
+/// OS thread via `Runtime::block_on`.
 #[instrument(skip(nav), fields(db = %nav.db_name))]
 pub fn run_egui(nav: NavTree) -> ArchiveResult<()> {
-    std::thread::Builder::new()
-        .name("archive-egui".to_string())
-        .spawn(move || {
-            let event_loop = EventLoop::new().expect("create event loop");
-            event_loop.set_control_flow(ControlFlow::Poll);
-            let mut app = ArchiveEguiApp::new(nav);
-            event_loop.run_app(&mut app).expect("run egui event loop");
-        })
-        .expect("spawn egui thread")
-        .join()
-        .map_err(|_| ArchiveError::new(ArchiveErrorKind::Frontend("egui thread panicked".into())))
+    let event_loop = EventLoop::new().expect("create event loop");
+    event_loop.set_control_flow(ControlFlow::Poll);
+    let mut app = ArchiveEguiApp::new(nav);
+    event_loop
+        .run_app(&mut app)
+        .map_err(|e| ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string())))
 }
