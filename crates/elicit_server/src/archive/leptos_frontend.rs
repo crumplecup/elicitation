@@ -58,13 +58,75 @@ struct HtmlState {
 
 async fn serve_html(State(state): State<HtmlState>) -> Html<String> {
     Html(format!(
-        "<!DOCTYPE html>\
-         <html lang=\"en\">\
-         <head><meta charset=\"utf-8\"/>\
-         <title>Archive</title>\
-         <style>body{{font-family:sans-serif;padding:1rem}}</style>\
-         </head>\
-         <body>{}</body></html>",
+        r#"<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Archive</title>
+<style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:'Cascadia Code','Fira Code',Consolas,monospace;background:#1e1e2e;color:#cdd6f4;height:100vh;display:flex;flex-direction:column;overflow:hidden}}
+header{{padding:.4rem 1rem;background:#181825;border-bottom:1px solid #45475a;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}}
+header[role="banner"]::before{{content:"📦 "}}
+.nav-scroll{{flex:1;overflow-y:auto;padding:.25rem 0}}
+ul[role="tree"]{{list-style:none;padding:.25rem 0}}
+ul[role="group"]{{list-style:none;padding-left:1.5rem}}
+details.schema-group>summary{{list-style:none;cursor:pointer;padding:.25rem .75rem;display:flex;align-items:center;gap:.5rem;outline:none;font-weight:bold;color:#cdd6f4;user-select:none}}
+details.schema-group>summary::-webkit-details-marker{{display:none}}
+details.schema-group>summary::before{{content:"▶";font-size:.7rem;color:#89dceb;width:1rem;display:inline-block}}
+details.schema-group[open]>summary::before{{content:"▼"}}
+details.schema-group>summary[data-focused]{{background:#313244;border-radius:4px;outline:2px solid #89b4fa;outline-offset:-2px}}
+li[role="treeitem"]{{padding:.2rem .75rem;cursor:pointer;font-size:.9rem;outline:none;color:#a6adc8;white-space:nowrap}}
+li[role="treeitem"][data-focused],li[role="treeitem"]:focus{{background:#313244;border-radius:4px;outline:2px solid #89b4fa;outline-offset:-2px;color:#cdd6f4}}
+footer[role="status"]{{padding:.2rem .5rem;background:#313244;border-top:1px solid #45475a;display:flex;gap:.75rem;flex-wrap:wrap;flex-shrink:0}}
+.keybind{{display:flex;align-items:center;gap:.25rem}}
+kbd{{background:#45475a;border:1px solid #585b70;border-radius:3px;padding:.05rem .35rem;font-size:.75rem;color:#cdd6f4}}
+.action{{color:#a6adc8;font-size:.75rem}}
+</style>
+</head>
+<body>
+{}
+<script>
+document.addEventListener('DOMContentLoaded',()=>{{
+  const tree=document.querySelector('ul[role="tree"]');
+  if(!tree)return;
+  function visible(){{
+    const out=[];
+    tree.querySelectorAll('details.schema-group>summary[role="treeitem"]').forEach(s=>out.push(s));
+    tree.querySelectorAll('details.schema-group[open] ul[role="group"] li[role="treeitem"]').forEach(li=>out.push(li));
+    return out.sort((a,b)=>a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING?-1:1);
+  }}
+  let cur=null;
+  function focus(el){{
+    if(cur){{cur.removeAttribute('data-focused');cur.tabIndex=-1;}}
+    cur=el;
+    if(el){{el.setAttribute('data-focused','');el.tabIndex=0;el.focus();}}
+  }}
+  tree.addEventListener('keydown',e=>{{
+    const v=visible();if(!v.length)return;
+    const i=cur?v.indexOf(cur):-1;
+    if(e.key==='ArrowDown'){{focus(v[Math.min(i+1,v.length-1)]);e.preventDefault();}}
+    else if(e.key==='ArrowUp'){{focus(v[Math.max(i-1,0)]);e.preventDefault();}}
+    else if(e.key==='Enter'||e.key===' '){{
+      if(cur){{
+        const d=cur.closest('details.schema-group');
+        if(d){{d.open=!d.open;e.preventDefault();}}
+      }}
+    }}
+    else if(e.key==='ArrowRight'){{
+      if(cur){{const d=cur.closest('details.schema-group');if(d&&!d.open){{d.open=true;e.preventDefault();}}}}
+    }}
+    else if(e.key==='ArrowLeft'){{
+      if(cur){{const d=cur.closest('details.schema-group');if(d&&d.open){{d.open=false;e.preventDefault();}}}}
+    }}
+  }});
+  const v=visible();if(v.length)focus(v[0]);
+  // Wrap nav tree in scrollable div
+  const ul=document.querySelector('ul[role="tree"]');
+  if(ul){{const wrap=document.createElement('div');wrap.className='nav-scroll';ul.parentNode.insertBefore(wrap,ul);wrap.appendChild(ul);}}
+}});
+</script>
+</body></html>"#,
         state.body
     ))
 }

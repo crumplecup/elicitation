@@ -758,23 +758,47 @@ fn render_node(
             format!("{}<br/>\n", indent(depth))
         }
 
-        // ── Tree items (rendered as nested lists) ──────────────────────────────
+        // ── Tree items (rendered as collapsible details/summary) ──────────────
         Role::Tree => {
             stats.containers_rendered += 1;
-            wrap_with_role("ul", "tree", node, nodes, children, mode, depth, stats)
+            let label = html_escape(node.label().unwrap_or("tree"));
+            let inner = render_children(nodes, children, mode, depth + 1, stats);
+            format!(
+                "{}<ul role=\"tree\" class=\"nav-tree\" aria-label=\"{label}\">\n{}{}</ul>\n",
+                indent(depth),
+                inner,
+                indent(depth),
+            )
         }
         Role::TreeItem => {
             if has_children {
                 stats.containers_rendered += 1;
-                wrap_with_role("li", "treeitem", node, nodes, children, mode, depth, stats)
+                let label = html_escape(&node_text(node));
+                let inner = render_children(nodes, children, mode, depth + 3, stats);
+                format!(
+                    "{}<li role=\"none\">\n\
+                     {}<details class=\"schema-group\">\n\
+                     {}<summary role=\"treeitem\" tabindex=\"0\">{label}</summary>\n\
+                     {}<ul role=\"group\">\n\
+                     {}\
+                     {}</ul>\n\
+                     {}</details>\n\
+                     {}</li>\n",
+                    indent(depth),
+                    indent(depth + 1),
+                    indent(depth + 2),
+                    indent(depth + 2),
+                    inner,
+                    indent(depth + 2),
+                    indent(depth + 1),
+                    indent(depth),
+                )
             } else {
                 stats.widgets_rendered += 1;
-                let text = node_text(node);
+                let text = html_escape(&node_text(node));
                 format!(
-                    r#"{}<li role="treeitem">{}</li>{}"#,
+                    "{}<li role=\"treeitem\" tabindex=\"-1\">{text}</li>\n",
                     indent(depth),
-                    text_content(&text, mode),
-                    "\n"
                 )
             }
         }
