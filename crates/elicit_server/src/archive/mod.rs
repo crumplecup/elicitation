@@ -22,7 +22,10 @@
 mod backend;
 pub mod display;
 mod errors;
-pub mod plugins;
+pub mod frontend_utils;
+pub mod leptos_frontend;
+mod plugins;
+pub mod ratatui_frontend;
 pub mod types;
 
 pub use backend::ArchiveDbBackend;

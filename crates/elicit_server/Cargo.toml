@@ -32,6 +32,10 @@ elicit_accesskit = { workspace = true }
 accesskit = { workspace = true }
 elicit_tokio = { workspace = true }
 elicit_egui = { workspace = true }
+elicit_ratatui = { workspace = true, features = ["runtime"] }
+elicit_leptos = { workspace = true }
+elicit_axum = { workspace = true }
+elicit_ui = { workspace = true }
 
 # Third-party types (needed in cross-crate workflows)
 reqwest = { workspace = true }
@@ -40,6 +44,12 @@ jiff = { workspace = true }
 url = { workspace = true }
 time = { workspace = true }
 sqlx = { workspace = true }
+ratatui = { workspace = true }
+axum = { workspace = true }
+crossterm = { workspace = true }
+
+# CLI
+clap = { workspace = true }
 
 # Serialization
 serde = { workspace = true }
@@ -51,7 +61,7 @@ derive_more = { workspace = true }
 strum = { workspace = true }
 
 # Async
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
 futures = { workspace = true }
 
 # MCP
@@ -59,6 +69,7 @@ rmcp = { workspace = true }
 
 # Tracing
 tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 
 # UUID
 uuid = { workspace = true }
@@ -69,6 +80,7 @@ dotenvy = { workspace = true }
 # Code recovery
 proc-macro2 = { workspace = true }
 quote = { workspace = true }
+anyhow = { workspace = true }
 
 [features]
 emit = [
@@ -89,6 +101,10 @@ tokio = { workspace = true, features = ["full"] }
 tracing-subscriber = { workspace = true }
 tempfile = "3.13"
 reqwest = { workspace = true }
+
+[[bin]]
+name = "archive"
+path = "src/bin/archive.rs"
 
 [[test]]
 name = "ledger_smoke_test"

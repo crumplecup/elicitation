@@ -13,7 +13,7 @@
 
 use elicit_db::{
     AccessAuthorized, AuditLogged, BackupConsistent, ColumnExists, ConnectionEstablished,
-    ConnectionId, DatabaseCreated, DbColumn, DbCommitResult, DbError, DbExecuteResult, DbExplain,
+    ConnectionId, DatabaseCreated, DbColumn, DbCommitResult, DbExecuteResult, DbExplain,
     DbIndexInfo, DbMonitor, DbQueryExecutor, DbQueryRowsResult, DbResult, DbRoleInfo, DbSchema,
     DbSchemaManager, DbServerAdmin, DbSessionInfo, DbSessionManager, DbStatActivity, DbTableInfo,
     DbTableManager, DbTransactor, DbValue, IndexExists, IsolationLevel, LeastPrivilegeEnforced,

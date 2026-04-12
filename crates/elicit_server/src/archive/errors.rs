@@ -36,6 +36,14 @@ pub enum ArchiveErrorKind {
     /// Failed to establish a database connection.
     #[display("connection failed: {}", _0)]
     Connection(String),
+
+    /// A live database query or metadata fetch failed.
+    #[display("query error: {}", _0)]
+    Query(String),
+
+    /// A frontend rendering or I/O error.
+    #[display("frontend error: {}", _0)]
+    Frontend(String),
 }
 
 /// Top-level archive error wrapping a kind with source location.
