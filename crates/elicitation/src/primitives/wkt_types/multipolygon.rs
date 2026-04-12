@@ -18,19 +18,21 @@ pub struct WktMultiPolygon {
 
 impl From<wkt::types::MultiPolygon<f64>> for WktMultiPolygon {
     fn from(mp: wkt::types::MultiPolygon<f64>) -> Self {
+        let (polygons, _dim) = mp.into_inner();
         Self {
-            polygons: mp.0.into_iter().map(WktPolygon::from).collect(),
+            polygons: polygons.into_iter().map(WktPolygon::from).collect(),
         }
     }
 }
 
 impl From<WktMultiPolygon> for wkt::types::MultiPolygon<f64> {
     fn from(mp: WktMultiPolygon) -> Self {
-        wkt::types::MultiPolygon(
+        wkt::types::MultiPolygon::new(
             mp.polygons
                 .into_iter()
                 .map(wkt::types::Polygon::from)
                 .collect(),
+            wkt::types::Dimension::XY,
         )
     }
 }

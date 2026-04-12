@@ -29,7 +29,7 @@ impl Elicitation for Geometry {
         let comm = communicator.clone();
         Box::pin(async move {
             let communicator = &comm;
-            let value = geojson::Value::elicit(communicator).await?;
+            let value = geojson::GeometryValue::elicit(communicator).await?;
             let bbox =
                 elicit_optional_bbox(communicator, "Add a bounding box to this geometry?").await?;
             let foreign_members = elicit_optional_json_object(
@@ -71,7 +71,7 @@ impl ElicitIntrospect for Geometry {
                 fields: vec![
                     FieldInfo {
                         name: "value",
-                        type_name: "geojson::Value",
+                        type_name: "geojson::GeometryValue",
                         prompt: Some("Geometry value:"),
                     },
                     FieldInfo {
@@ -96,7 +96,10 @@ impl crate::ElicitPromptTree for Geometry {
             prompt: Self::prompt().map(|s| s.to_string()),
             type_name: "geojson::Geometry".to_string(),
             fields: vec![
-                ("value".to_string(), Box::new(geojson::Value::prompt_tree())),
+                (
+                    "value".to_string(),
+                    Box::new(geojson::GeometryValue::prompt_tree()),
+                ),
                 (
                     "bbox".to_string(),
                     Box::new(Option::<Vec<f64>>::prompt_tree()),

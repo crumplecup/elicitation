@@ -39,17 +39,17 @@ impl FeatureCollection {
     /// Converts a JSON object into a feature collection.
     #[instrument]
     pub fn from_json_object(object: geojson::JsonObject) -> GeoJsonResult<Self> {
-        geojson::FeatureCollection::from_json_object(object)
-            .map(Self::from)
-            .map_err(Box::new)
+        serde_json::from_value(serde_json::Value::Object(object))
+            .map(|fc: geojson::FeatureCollection| Self::from(fc))
+            .map_err(|e| Box::new(geojson::Error::from(e)))
     }
 
     /// Converts a JSON value into a feature collection.
     #[instrument]
     pub fn from_json_value(value: serde_json::Value) -> GeoJsonResult<Self> {
-        geojson::FeatureCollection::from_json_value(value)
-            .map(Self::from)
-            .map_err(Box::new)
+        serde_json::from_value(value)
+            .map(|fc: geojson::FeatureCollection| Self::from(fc))
+            .map_err(|e| Box::new(geojson::Error::from(e)))
     }
 }
 

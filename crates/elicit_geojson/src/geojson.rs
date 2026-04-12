@@ -74,23 +74,23 @@ impl GeoJson {
     /// Converts a JSON object into a GeoJSON document.
     #[instrument]
     pub fn from_json_object(object: geojson::JsonObject) -> GeoJsonResult<Self> {
-        geojson::GeoJson::from_json_object(object)
-            .map(Self::from)
-            .map_err(Box::new)
+        serde_json::from_value(serde_json::Value::Object(object))
+            .map(|g: geojson::GeoJson| Self::from(g))
+            .map_err(|e| Box::new(geojson::Error::from(e)))
     }
 
     /// Converts a JSON value into a GeoJSON document.
     #[instrument]
     pub fn from_json_value(value: serde_json::Value) -> GeoJsonResult<Self> {
-        geojson::GeoJson::from_json_value(value)
-            .map(Self::from)
-            .map_err(Box::new)
+        serde_json::from_value(value)
+            .map(|g: geojson::GeoJson| Self::from(g))
+            .map_err(|e| Box::new(geojson::Error::from(e)))
     }
 
     /// Converts this document into a JSON value.
     #[instrument(skip(self))]
     pub fn to_json_value(self) -> serde_json::Value {
-        geojson::GeoJson::from(self).to_json_value()
+        serde_json::to_value(geojson::GeoJson::from(self)).unwrap_or(serde_json::Value::Null)
     }
 
     /// Reads a GeoJSON document from a reader.

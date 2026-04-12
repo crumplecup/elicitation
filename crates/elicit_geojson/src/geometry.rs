@@ -8,7 +8,7 @@ elicitation::elicit_newtype_traits!(Geometry, geojson::Geometry, [display, from_
 
 impl From<Value> for Geometry {
     fn from(value: Value) -> Self {
-        Self::from(geojson::Geometry::from(geojson::Value::from(value)))
+        Self::from(geojson::Geometry::from(geojson::GeometryValue::from(value)))
     }
 }
 
@@ -32,23 +32,23 @@ impl Geometry {
     /// Creates a new geometry object from a geometry value.
     #[instrument]
     pub fn new(value: Value) -> Self {
-        Self::from(geojson::Geometry::new(geojson::Value::from(value)))
+        Self::from(geojson::Geometry::new(geojson::GeometryValue::from(value)))
     }
 
     /// Converts a JSON object into a geometry object.
     #[instrument]
     pub fn from_json_object(object: geojson::JsonObject) -> GeoJsonResult<Self> {
-        geojson::Geometry::from_json_object(object)
-            .map(Self::from)
-            .map_err(Box::new)
+        serde_json::from_value(serde_json::Value::Object(object))
+            .map(|g: geojson::Geometry| Self::from(g))
+            .map_err(|e| Box::new(geojson::Error::from(e)))
     }
 
     /// Converts a JSON value into a geometry object.
     #[instrument]
     pub fn from_json_value(value: serde_json::Value) -> GeoJsonResult<Self> {
-        geojson::Geometry::from_json_value(value)
-            .map(Self::from)
-            .map_err(Box::new)
+        serde_json::from_value(value)
+            .map(|g: geojson::Geometry| Self::from(g))
+            .map_err(|e| Box::new(geojson::Error::from(e)))
     }
 }
 

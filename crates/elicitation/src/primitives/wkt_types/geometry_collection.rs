@@ -19,15 +19,19 @@ pub struct WktGeometryCollection {
 
 impl From<wkt::types::GeometryCollection<f64>> for WktGeometryCollection {
     fn from(gc: wkt::types::GeometryCollection<f64>) -> Self {
+        let (geoms, _dim) = gc.into_inner();
         Self {
-            geometries: gc.0.into_iter().map(WktGeom::from).collect(),
+            geometries: geoms.into_iter().map(WktGeom::from).collect(),
         }
     }
 }
 
 impl From<WktGeometryCollection> for wkt::types::GeometryCollection<f64> {
     fn from(gc: WktGeometryCollection) -> Self {
-        wkt::types::GeometryCollection(gc.geometries.into_iter().map(wkt::Wkt::from).collect())
+        wkt::types::GeometryCollection::new(
+            gc.geometries.into_iter().map(wkt::Wkt::from).collect(),
+            wkt::types::Dimension::XY,
+        )
     }
 }
 

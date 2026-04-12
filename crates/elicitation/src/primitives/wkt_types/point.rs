@@ -18,15 +18,19 @@ pub struct WktPoint {
 
 impl From<wkt::types::Point<f64>> for WktPoint {
     fn from(p: wkt::types::Point<f64>) -> Self {
+        let (coord, _dim) = p.into_inner();
         Self {
-            coord: p.0.map(WktCoord::from),
+            coord: coord.map(WktCoord::from),
         }
     }
 }
 
 impl From<WktPoint> for wkt::types::Point<f64> {
     fn from(p: WktPoint) -> Self {
-        wkt::types::Point(p.coord.map(wkt::types::Coord::from))
+        wkt::types::Point::new(
+            p.coord.map(wkt::types::Coord::from),
+            wkt::types::Dimension::XY,
+        )
     }
 }
 

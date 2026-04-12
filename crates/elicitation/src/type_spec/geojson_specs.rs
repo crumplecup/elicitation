@@ -131,8 +131,8 @@ mod geojson_impls {
     );
 
     impl_select_spec!(
-        type    = geojson::Value,
-        name    = "geojson::Value",
+        type    = geojson::GeometryValue,
+        name    = "geojson::GeometryValue",
         summary = "The geometry payload of a GeoJSON Geometry value.",
         variants = [
             ("Point", "A single coordinate position"),

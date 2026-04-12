@@ -18,15 +18,19 @@ pub struct WktMultiPoint {
 
 impl From<wkt::types::MultiPoint<f64>> for WktMultiPoint {
     fn from(mp: wkt::types::MultiPoint<f64>) -> Self {
+        let (points, _dim) = mp.into_inner();
         Self {
-            points: mp.0.into_iter().map(WktPoint::from).collect(),
+            points: points.into_iter().map(WktPoint::from).collect(),
         }
     }
 }
 
 impl From<WktMultiPoint> for wkt::types::MultiPoint<f64> {
     fn from(mp: WktMultiPoint) -> Self {
-        wkt::types::MultiPoint(mp.points.into_iter().map(wkt::types::Point::from).collect())
+        wkt::types::MultiPoint::new(
+            mp.points.into_iter().map(wkt::types::Point::from).collect(),
+            wkt::types::Dimension::XY,
+        )
     }
 }
 

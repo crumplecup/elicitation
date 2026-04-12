@@ -11,7 +11,7 @@ use geo_types::{
     MultiLineString as GeoTypesMultiLineString, MultiPoint as GeoTypesMultiPoint,
     MultiPolygon as GeoTypesMultiPolygon, Point as GeoTypesPoint, Polygon as GeoTypesPolygon,
 };
-use geojson::Value as GeometryValue;
+use geojson::GeometryValue;
 
 use super::helpers::serde_json_code_literal;
 
@@ -134,12 +134,12 @@ impl Elicitation for GeometryValue {
                 Some(GeoJsonGeometryValueKind::GeometryCollection) => {
                     let collection: GeoTypesGeometryCollection<f64> =
                         GeoGeometryCollection::elicit(communicator).await?.into();
-                    Ok(Self::GeometryCollection(
-                        collection
+                    Ok(Self::GeometryCollection {
+                        geometries: collection
                             .into_iter()
                             .map(|geometry| geojson::Geometry::from(&geometry))
                             .collect(),
-                    ))
+                    })
                 }
                 None => Err(ElicitError::new(ElicitErrorKind::InvalidSelection(label))),
             }
@@ -210,6 +210,6 @@ impl crate::ElicitPromptTree for GeometryValue {
 
 impl crate::emit_code::ToCodeLiteral for GeometryValue {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
-        serde_json_code_literal(self, quote::quote!(geojson::Value))
+        serde_json_code_literal(self, quote::quote!(geojson::GeometryValue))
     }
 }

@@ -39,7 +39,9 @@ members = [
   "crates/elicit_wkb",
   "crates/elicit_geojson",
   "crates/elicit_georaster",
-  "crates/elicit_rstar", "crates/elicit_proj", "crates/elicit_winit",
+  "crates/elicit_rstar",
+  "crates/elicit_proj",
+  "crates/elicit_winit",
   "crates/elicit_wgpu",
 ]
 # Verus verification crate - verification only, not buildable with cargo
@@ -229,13 +231,16 @@ geo-types = "0.7"
 rstar = { version = "0.12", features = ["serde"] }
 georaster = { version = "0.2", default-features = false }
 proj = "0.31"
-geojson = { version = "0.24", features = ["geo-types"] }
+geojson = { version = "1", features = ["geo-types"] }
 winit = { version = "0.30", features = ["serde"] }
-wgpu = { version = "29", default-features = false, features = ["wgsl", "serde"] }
-tiff = "0.9"
+wgpu = { version = "29", default-features = false, features = [
+  "wgsl",
+  "serde",
+] }
+tiff = "0.9.1"
 
 # ── Well-Known Text ───────────────────────────────────────────────────────────
-wkt = { version = "0.11", features = ["geo-types"] }
+wkt = { version = "0.14", features = ["geo-types"] }
 wkb = "0.9"
 
 # ── CSS / Color / Layout ──────────────────────────────────────────────────────
@@ -250,7 +255,7 @@ kani-verifier = { version = "0.67" }
 
 # ── Utility ───────────────────────────────────────────────────────────────────
 paste = "1"
-strum = { version = "0.27", features = ["derive"] }
+strum = { version = "0.28", features = ["derive"] }
 inventory = "0.3"
 dirs = "6"
 # Spec annotations (runtime-no-check: specs are purely documentation/static-analysis hooks;

@@ -18,19 +18,21 @@ pub struct WktMultiLineString {
 
 impl From<wkt::types::MultiLineString<f64>> for WktMultiLineString {
     fn from(mls: wkt::types::MultiLineString<f64>) -> Self {
+        let (line_strings, _dim) = mls.into_inner();
         Self {
-            lines: mls.0.into_iter().map(WktLineString::from).collect(),
+            lines: line_strings.into_iter().map(WktLineString::from).collect(),
         }
     }
 }
 
 impl From<WktMultiLineString> for wkt::types::MultiLineString<f64> {
     fn from(mls: WktMultiLineString) -> Self {
-        wkt::types::MultiLineString(
+        wkt::types::MultiLineString::new(
             mls.lines
                 .into_iter()
                 .map(wkt::types::LineString::from)
                 .collect(),
+            wkt::types::Dimension::XY,
         )
     }
 }

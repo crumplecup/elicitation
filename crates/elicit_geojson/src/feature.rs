@@ -14,7 +14,7 @@ impl From<Geometry> for Feature {
 
 impl From<Value> for Feature {
     fn from(value: Value) -> Self {
-        Self::from(geojson::Feature::from(geojson::Value::from(value)))
+        Self::from(geojson::Feature::from(geojson::GeometryValue::from(value)))
     }
 }
 
@@ -31,17 +31,17 @@ impl Feature {
     /// Converts a JSON object into a feature object.
     #[instrument]
     pub fn from_json_object(object: geojson::JsonObject) -> GeoJsonResult<Self> {
-        geojson::Feature::from_json_object(object)
-            .map(Self::from)
-            .map_err(Box::new)
+        serde_json::from_value(serde_json::Value::Object(object))
+            .map(|f: geojson::Feature| Self::from(f))
+            .map_err(|e| Box::new(geojson::Error::from(e)))
     }
 
     /// Converts a JSON value into a feature object.
     #[instrument]
     pub fn from_json_value(value: serde_json::Value) -> GeoJsonResult<Self> {
-        geojson::Feature::from_json_value(value)
-            .map(Self::from)
-            .map_err(Box::new)
+        serde_json::from_value(value)
+            .map(|f: geojson::Feature| Self::from(f))
+            .map_err(|e| Box::new(geojson::Error::from(e)))
     }
 
     /// Returns the property value stored at `key`, if present.

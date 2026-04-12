@@ -20,8 +20,8 @@ pub struct WktPolygon {
 
 impl From<wkt::types::Polygon<f64>> for WktPolygon {
     fn from(p: wkt::types::Polygon<f64>) -> Self {
-        // wkt::types::Polygon is a tuple struct: first ring is exterior, rest are holes.
-        let mut rings = p.0.into_iter();
+        let (rings, _dim) = p.into_inner();
+        let mut rings = rings.into_iter();
         let exterior = rings
             .next()
             .map(WktLineString::from)
@@ -38,7 +38,7 @@ impl From<WktPolygon> for wkt::types::Polygon<f64> {
     fn from(p: WktPolygon) -> Self {
         let mut rings = vec![wkt::types::LineString::from(p.exterior)];
         rings.extend(p.interiors.into_iter().map(wkt::types::LineString::from));
-        wkt::types::Polygon(rings)
+        wkt::types::Polygon::new(rings, wkt::types::Dimension::XY)
     }
 }
 

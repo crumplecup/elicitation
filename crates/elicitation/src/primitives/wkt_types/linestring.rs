@@ -18,15 +18,19 @@ pub struct WktLineString {
 
 impl From<wkt::types::LineString<f64>> for WktLineString {
     fn from(ls: wkt::types::LineString<f64>) -> Self {
+        let (coords, _dim) = ls.into_inner();
         Self {
-            coords: ls.0.into_iter().map(WktCoord::from).collect(),
+            coords: coords.into_iter().map(WktCoord::from).collect(),
         }
     }
 }
 
 impl From<WktLineString> for wkt::types::LineString<f64> {
     fn from(ls: WktLineString) -> Self {
-        wkt::types::LineString(ls.coords.into_iter().map(wkt::types::Coord::from).collect())
+        wkt::types::LineString::new(
+            ls.coords.into_iter().map(wkt::types::Coord::from).collect(),
+            wkt::types::Dimension::XY,
+        )
     }
 }
 
