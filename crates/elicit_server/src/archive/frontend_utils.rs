@@ -13,6 +13,7 @@
 
 use std::collections::HashMap;
 
+use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
 use elicit_accesskit::{NodeJson, StatusBarDescriptor};
 use elicit_ui::{VerifiedTree, Viewport};
 use tracing::instrument;
@@ -21,6 +22,7 @@ use crate::archive::{
     ArchiveResult, DatabaseDescriptor,
     display::{ArchiveDisplay, DatabaseDescriptorMode},
     errors::{ArchiveError, ArchiveErrorKind},
+    nav_tree::NavTree,
 };
 use elicit_db::{DbSchemaManager, DbServerAdmin};
 
@@ -70,6 +72,100 @@ fn with_status_bar(
 }
 
 // ── Public entry points ───────────────────────────────────────────────────────
+
+/// Build a [`VerifiedTree`] from a pre-loaded [`NavTree`].
+///
+/// Constructs a full schema+table AccessKit tree for use in the browser
+/// (leptos/axum) frontend.  The tree layout:
+///
+/// ```text
+/// Window (0)
+///   Tree (1)  — nav panel
+///     TreeItem (schema 0)
+///       TreeItem (table 0.0)
+///       TreeItem (table 0.1)
+///       ...
+///     TreeItem (schema 1)
+///       ...
+///   Status bar (10_000+)
+/// ```
+#[instrument(skip(nav))]
+pub fn nav_tree_to_verified_tree(nav: &NavTree) -> ArchiveResult<VerifiedTree> {
+    let mut nodes: HashMap<AkNodeId, AkNode> = HashMap::new();
+    let mut counter: u64 = 1; // 0 is reserved for Window
+
+    // Nav panel root (Tree)
+    let nav_root_id = AkNodeId::from(counter);
+    counter += 1;
+
+    let mut schema_ids: Vec<AkNodeId> = Vec::new();
+
+    for schema_entry in &nav.schemas {
+        let schema_id = AkNodeId::from(counter);
+        counter += 1;
+        schema_ids.push(schema_id);
+
+        let mut table_ids: Vec<AkNodeId> = Vec::new();
+
+        for table in &schema_entry.tables {
+            let table_id = AkNodeId::from(counter);
+            counter += 1;
+            table_ids.push(table_id);
+
+            let label = format!(
+                "{} [{}]{}",
+                table.table_name,
+                table.table_type,
+                match table.estimated_rows {
+                    Some(n) => format!(" ~{n}"),
+                    None => String::new(),
+                }
+            );
+            let mut table_node = AkNode::new(AkRole::TreeItem);
+            table_node.set_label(label);
+            nodes.insert(table_id, table_node);
+        }
+
+        let schema_label = format!(
+            "{} ({}) — {} table{}",
+            schema_entry.name,
+            schema_entry.owner,
+            schema_entry.tables.len(),
+            if schema_entry.tables.len() == 1 {
+                ""
+            } else {
+                "s"
+            },
+        );
+        let mut schema_node = AkNode::new(AkRole::TreeItem);
+        schema_node.set_label(schema_label);
+        schema_node.set_children(table_ids);
+        nodes.insert(schema_id, schema_node);
+    }
+
+    // DB header node
+    let header_id = AkNodeId::from(counter);
+    let header_label = format!(
+        "{} — {} ({})",
+        nav.db_name,
+        nav.version.as_deref().unwrap_or("unknown"),
+        nav.backend,
+    );
+    let mut header_node = AkNode::new(AkRole::Heading);
+    header_node.set_label(header_label);
+    nodes.insert(header_id, header_node);
+
+    // Nav panel groups header + schema tree items
+    let mut nav_children = vec![header_id];
+    nav_children.extend_from_slice(&schema_ids);
+    let mut nav_node = AkNode::new(AkRole::Tree);
+    nav_node.set_label(format!("{} navigator", nav.db_name));
+    nav_node.set_children(nav_children);
+    nodes.insert(nav_root_id, nav_node);
+
+    let viewport = Viewport::new(800, 600);
+    Ok(with_status_bar(nav_root_id, nodes, viewport))
+}
 
 /// Build a [`VerifiedTree`] from a live [`crate::archive::ArchiveDbBackend`].
 ///
@@ -145,11 +241,5 @@ pub fn verified_tree_from_descriptor(desc: &DatabaseDescriptor) -> ArchiveResult
 /// Constructs a minimal [`DatabaseDescriptor`] for display purposes and
 /// includes the archive keybinding status bar.
 pub fn demo_verified_tree() -> ArchiveResult<VerifiedTree> {
-    let desc = DatabaseDescriptor {
-        connection_id: "demo".to_string(),
-        db_name: "archive (demo)".to_string(),
-        version: Some("PostgreSQL 15.0".to_string()),
-        backend: crate::archive::BackendKind::Postgres,
-    };
-    verified_tree_from_descriptor_with_bar(&desc)
+    nav_tree_to_verified_tree(&NavTree::demo())
 }

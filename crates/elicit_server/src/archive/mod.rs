@@ -32,6 +32,7 @@ pub mod types;
 pub use backend::ArchiveDbBackend;
 
 pub use errors::{ArchiveError, ArchiveErrorKind, ArchiveResult};
+pub use frontend_utils::nav_tree_to_verified_tree;
 pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
 pub use plugins::{
     AkNodeEntry, ArchiveBrowsePlugin, ArchiveDisplayPlugin, ArchiveQueryPlugin,
