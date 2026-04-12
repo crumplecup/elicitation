@@ -113,6 +113,9 @@ mod geojson_types;
 #[cfg(feature = "rstar-types")]
 mod rstar_types;
 
+#[cfg(feature = "proj-types")]
+mod proj_types;
+
 #[cfg(feature = "wkt-types")]
 mod wkt_types;
 
@@ -551,6 +554,11 @@ pub use geojson_types::{
 pub use rstar_types::{
     verify_rstar_aabb_roundtrip, verify_rstar_line_envelope_bounds, verify_rstar_line_roundtrip,
     verify_rstar_rectangle_envelope_bounds, verify_rstar_rectangle_roundtrip,
+};
+
+#[cfg(feature = "proj-types")]
+pub use proj_types::{
+    verify_proj_area_antimeridian, verify_proj_area_new_fields, verify_proj_area_roundtrip,
 };
 
 #[cfg(feature = "georaster-types")]

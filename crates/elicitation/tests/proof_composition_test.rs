@@ -428,6 +428,21 @@ mod egui_types_tests {
     }
 }
 
+// ============================================================================
+// proj — trenchcoat wrapper delegates to scalar bounds
+// ============================================================================
+
+#[cfg(feature = "proj-types")]
+mod proj_tests {
+    use super::assert_kani_contains;
+    use elicitation::ProjArea;
+
+    #[test]
+    fn proj_area_delegates_to_f64() {
+        assert_kani_contains::<ProjArea, f64>("ProjArea → f64");
+    }
+}
+
 #[cfg(feature = "palette")]
 mod palette_types_tests {
     use elicitation::Elicitation;

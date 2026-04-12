@@ -701,6 +701,10 @@ impl ProofHarness {
             Self::new("rstar_types", "verify_rstar_rectangle_envelope_bounds"),
             Self::new("rstar_types", "verify_rstar_line_roundtrip"),
             Self::new("rstar_types", "verify_rstar_line_envelope_bounds"),
+            // proj_types: ProjArea wrapper proofs
+            Self::new("proj_types", "verify_proj_area_new_fields"),
+            Self::new("proj_types", "verify_proj_area_roundtrip"),
+            Self::new("proj_types", "verify_proj_area_antimeridian"),
             // palette_types: color struct proofs
             Self::new("palette_types", "verify_palette_srgb_from_roundtrip"),
             Self::new("palette_types", "verify_palette_srgb_wrapper_fields"),

@@ -105,6 +105,7 @@ impl CreusotModule {
             Self::with_feature("georaster_types", "georaster-types"),
             Self::with_feature("geojson_types", "geojson-types"),
             Self::with_feature("rstar_types", "rstar-types"),
+            Self::with_feature("proj_types", "proj-types"),
             Self::with_feature("wkt_types", "wkt-types"),
             Self::with_feature("wkb_types", "wkb-types"),
             Self::with_feature("palette_types", "palette"),

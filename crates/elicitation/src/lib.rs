@@ -604,6 +604,10 @@ pub use primitives::georaster_types::{
     TiffColorTypeStyle, TiffPhotometricInterpretationStyle, TiffPlanarConfigurationStyle,
 };
 
+// proj types (feature-gated on proj-types)
+#[cfg(feature = "proj-types")]
+pub use primitives::proj_types::{ProjArea, ProjAreaStyle};
+
 // rstar types (feature-gated on rstar-types)
 #[cfg(feature = "rstar-types")]
 pub use primitives::rstar_types::{

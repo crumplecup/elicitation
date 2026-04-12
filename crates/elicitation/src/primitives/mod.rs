@@ -61,6 +61,9 @@ pub mod ratatui_types;
 #[cfg(feature = "geo-types")]
 pub mod geo_types;
 
+#[cfg(feature = "proj-types")]
+pub mod proj_types;
+
 #[cfg(feature = "rstar-types")]
 pub mod rstar_types;
 

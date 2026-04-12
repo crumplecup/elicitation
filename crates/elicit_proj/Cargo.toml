@@ -1,0 +1,30 @@
+[package]
+name = "elicit_proj"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+
+[dependencies]
+elicitation = { workspace = true, features = ["proj-types", "geo-types"] }
+elicitation_derive.workspace = true
+proj.workspace = true
+geo.workspace = true
+rmcp.workspace = true
+serde.workspace = true
+schemars.workspace = true
+tracing.workspace = true
+serde_json.workspace = true
+derive_more = { workspace = true, features = ["display", "error"] }
+proc-macro2.workspace = true
+quote.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+
+[lints]
+workspace = true

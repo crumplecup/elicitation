@@ -44,6 +44,8 @@ mod network_specs;
 mod palette_specs;
 #[cfg(feature = "polars-types")]
 mod polars_specs;
+#[cfg(feature = "proj-types")]
+mod proj_specs;
 mod ratatui_specs;
 mod regex_specs;
 mod registry;
