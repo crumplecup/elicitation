@@ -3,9 +3,10 @@
 > A pgAdmin-style database browser powered by the `elicit_*` ecosystem.
 
 `archive` is a verified command-line tool for exploring and querying databases.
-It ships two display frontends — a crossterm terminal UI and a Leptos/Axum
-browser UI — both driven by the same `VerifiedTree` intermediate representation
-and the same formal `Established<P>` proof chain.
+It ships three parallel display frontends — a crossterm terminal UI, a
+Leptos/Axum browser UI, and a native egui window — all driven by the same
+`ArchiveNavModel` flat-list navigation model and the same `StatusBarDescriptor`
+keybinding definitions from the AccessKit IR layer.
 
 ---
 
@@ -103,7 +104,7 @@ archive query --sql "SELECT id, name FROM users LIMIT 5"
 # id=2 | name="bob"
 ```
 
-### `serve [URL] --mode <ratatui|browser> [--port <P>]`
+### `serve [URL] --mode <ratatui|browser|egui> [--port <P>]`
 
 Serve the archive UI for a live database.
 
@@ -115,6 +116,9 @@ archive serve --mode ratatui
 archive serve --mode browser --port 3000
 # Archive browser frontend: http://localhost:3000/
 
+# Native egui window (GPU-accelerated, winit/wgpu)
+archive serve --mode egui
+
 # Explicit URL overrides .env
 archive serve postgres://localhost/mydb --mode browser
 ```
@@ -125,14 +129,36 @@ to exit.
 **browser mode** — starts an Axum HTTP server. Open the URL in any browser.
 Stop with `Ctrl-C`.
 
-### `demo [--mode <ratatui|browser>] [--port <P>]`
+**egui mode** — opens a native OS window rendered with wgpu. Uses the same
+keyboard navigation as ratatui. Press `q` or `Esc` to exit.
+
+### `demo [--mode <ratatui|browser|egui>] [--port <P>]`
 
 Try the UI without a live database. Uses synthetic metadata.
 
 ```bash
 archive demo --mode browser --port 4000
 # Archive browser frontend: http://localhost:4000/
+
+archive demo --mode egui
+# opens a native window with demo data
 ```
+
+---
+
+## Keyboard navigation
+
+All interactive frontends (ratatui and egui) share the same keybindings,
+sourced from `StatusBarDescriptor::archive_browse()` in the AccessKit IR:
+
+| Key       | Action                          |
+|-----------|---------------------------------|
+| `↑` / `k` | Move selection up               |
+| `↓` / `j` | Move selection down             |
+| `Enter`   | Expand / collapse schema        |
+| `r`       | Refresh                         |
+| `?`       | Toggle keybinding help overlay  |
+| `q` / `Esc` | Quit                          |
 
 ---
 
@@ -158,22 +184,25 @@ ArchiveDbBackend::connect(url)          → ConnectionEstablished proof
   ├─ DbSchemaManager::list_schemas()
   │
   ▼
-DatabaseDescriptor::to_ak_nodes()       → AccessKit IR  (ValidRole + HasLabel)
+NavTree / ArchiveNavModel               → shared flat-list nav state
+  │                                       (cursor, expand/collapse, keybindings)
   │
-  ▼
-VerifiedTree::from_parts()              → Established<RenderComplete>
+  ├─ ratatui path:
+  │    TuiApp (model + ListState)       → crossterm alternate-screen TUI
   │
-  ├─ RatatuiBackend::render(&tree)      → TuiNode  (terminal path)
+  ├─ browser path:
+  │    DatabaseDescriptor → AccessKit IR (ValidRole + HasLabel)
+  │    VerifiedTree::from_parts()       → Established<RenderComplete>
+  │    LeptosRenderer::render(&tree)    → HTML string
+  │    LeptosAxumPlugin                 → Established<LeptosServerConfigured>
+  │    LeptosAxumBridgePlugin           → Established<AxumRouterCreated>
+  │    axum::Router → live server
   │
-  └─ LeptosRenderer::render(&tree)      → HTML string  (browser path)
-       │
-       ├─ LeptosAxumPlugin              → Established<LeptosServerConfigured>
-       ├─ LeptosAxumBridgePlugin        → Established<AxumRouterCreated>
-       └─ axum::Router::new()           → live server (interprets same descriptor
-            .route("/", get(...))         that axum_router__emit() would print)
-            .with_state(html)
+  └─ egui path:
+       ArchiveEguiApp (model + wgpu)    → native OS window (winit 0.30 + egui 0.34)
+       egui-wgpu Renderer               → GPU-accelerated frame output
 ```
 
-The `AxumRouterDescriptor` produced by the plugin composition is identical to
-what `axum_router__emit()` would emit as Rust source code. Runtime interpretation
-and code generation are two views of the same verified specification.
+The `ArchiveNavModel` and `StatusBarDescriptor` keybinding definitions are the
+shared IR that keeps all three frontends consistent: the same cursor logic,
+the same key actions, and the same status-bar chip labels.
