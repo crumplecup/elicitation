@@ -47,6 +47,20 @@ Agent builds workflow → calls emit_binary → gets a main.rs → cargo build �
 The output is not a script. It is idiomatic Rust that compiles and runs without
 the MCP server. The agent's exploration becomes production code.
 
+## Binaries
+
+### `archive`
+
+A pgAdmin-style database browser with a terminal UI and a browser UI.
+
+```bash
+cargo build -p elicit_server --bin archive
+archive serve postgres://localhost/mydb --mode browser
+archive demo --mode ratatui
+```
+
+See [ARCHIVE.md](ARCHIVE.md) for the full quick-start guide.
+
 ## Plugins
 
 | Plugin | Tools | Feature |
