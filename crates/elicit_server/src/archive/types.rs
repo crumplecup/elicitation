@@ -262,7 +262,167 @@ impl DatabaseDescriptor {
     }
 }
 
-// ── IndexDescriptor ───────────────────────────────────────────────────────────
+// ── FkAction ──────────────────────────────────────────────────────────────────
+
+/// Referential action for a foreign key constraint.
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    strum::EnumIter,
+    derive_more::Display,
+)]
+pub enum FkAction {
+    /// Cascade the change to referencing rows.
+    Cascade,
+    /// Set referencing columns to `NULL`.
+    SetNull,
+    /// Prevent the action if referencing rows exist.
+    Restrict,
+    /// Prevent the action after the statement completes.
+    NoAction,
+    /// Set referencing columns to their defaults.
+    SetDefault,
+}
+
+impl FkAction {
+    /// Parse from the `information_schema.referential_constraints` rule string.
+    pub fn from_rule(rule: &str) -> Self {
+        match rule {
+            "CASCADE" => Self::Cascade,
+            "SET NULL" => Self::SetNull,
+            "RESTRICT" => Self::Restrict,
+            "SET DEFAULT" => Self::SetDefault,
+            _ => Self::NoAction,
+        }
+    }
+}
+
+// ── ForeignKeyDescriptor ──────────────────────────────────────────────────────
+
+/// A single foreign-key constraint (one from-column → one to-column mapping).
+///
+/// Multi-column FK constraints are represented as multiple descriptors sharing
+/// the same `constraint_name`.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct ForeignKeyDescriptor {
+    /// Constraint name in the database.
+    pub constraint_name: String,
+    /// Source column in the current table.
+    pub from_column: String,
+    /// Target schema.
+    pub to_schema: String,
+    /// Target table.
+    pub to_table: String,
+    /// Target column.
+    pub to_column: String,
+    /// Action on `DELETE` of the referenced row.
+    pub on_delete: FkAction,
+    /// Action on `UPDATE` of the referenced row.
+    pub on_update: FkAction,
+}
+
+// ── ConstraintKind ────────────────────────────────────────────────────────────
+
+/// Discriminator for database constraint types.
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    strum::EnumIter,
+    derive_more::Display,
+)]
+pub enum ConstraintKind {
+    /// Primary key constraint.
+    PrimaryKey,
+    /// Foreign key constraint.
+    ForeignKey,
+    /// Unique constraint.
+    Unique,
+    /// Check constraint.
+    Check,
+    /// Exclusion constraint (PostgreSQL-specific).
+    Exclusion,
+}
+
+impl ConstraintKind {
+    /// Parse from `information_schema.table_constraints.constraint_type`.
+    pub fn from_pg_type(s: &str) -> Self {
+        match s {
+            "PRIMARY KEY" => Self::PrimaryKey,
+            "FOREIGN KEY" => Self::ForeignKey,
+            "UNIQUE" => Self::Unique,
+            "CHECK" => Self::Check,
+            "EXCLUSION" => Self::Exclusion,
+            _ => Self::Check,
+        }
+    }
+}
+
+// ── ConstraintDescriptor ──────────────────────────────────────────────────────
+
+/// Descriptor for a single table constraint.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct ConstraintDescriptor {
+    /// Constraint name.
+    pub name: String,
+    /// Constraint type.
+    pub kind: ConstraintKind,
+    /// Columns covered by the constraint (ordered).
+    pub columns: Vec<String>,
+    /// For CHECK constraints, the check expression; `None` otherwise.
+    pub definition: Option<String>,
+}
+
+// ── DdlDescriptor ─────────────────────────────────────────────────────────────
+
+/// The DDL text for a schema object (table, view, index, etc.).
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct DdlDescriptor {
+    /// Schema containing the object.
+    pub schema: String,
+    /// Object name.
+    pub object_name: String,
+    /// Full DDL text (e.g. `CREATE TABLE …`).
+    pub ddl: String,
+}
+
+// ── TableInspection ───────────────────────────────────────────────────────────
+
+/// Rich metadata for a table fetched on demand (not loaded at nav-tree time).
+///
+/// Loaded lazily when the user selects a table node. Stored in
+/// `ArchiveNavModel::table_inspections`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct TableInspection {
+    /// Foreign keys defined on this table.
+    pub foreign_keys: Vec<ForeignKeyDescriptor>,
+    /// All constraints on this table.
+    pub constraints: Vec<ConstraintDescriptor>,
+    /// All indexes on this table.
+    pub indexes: Vec<IndexDescriptor>,
+}
+
+impl TableInspection {
+    /// Returns `true` when no FK, constraint, or index data was found.
+    pub fn is_empty(&self) -> bool {
+        self.foreign_keys.is_empty() && self.constraints.is_empty() && self.indexes.is_empty()
+    }
+}
 
 /// Descriptor for a database index.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]

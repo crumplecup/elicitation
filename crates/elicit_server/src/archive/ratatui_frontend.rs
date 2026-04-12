@@ -86,12 +86,19 @@ impl TuiApp {
         self.model.move_up();
         self.model.flash = None;
         self.sync_list_state();
+        // Eagerly kick off an inspection fetch when landing on a table row.
+        if let Some(req) = self.model.inspect_request() {
+            let _ = self.req_tx.try_send(req);
+        }
     }
 
     fn move_down(&mut self) {
         self.model.move_down();
         self.model.flash = None;
         self.sync_list_state();
+        if let Some(req) = self.model.inspect_request() {
+            let _ = self.req_tx.try_send(req);
+        }
     }
 
     /// Toggle expand/select.  If a table is selected, dispatches a fetch request.
@@ -109,6 +116,12 @@ impl TuiApp {
 
     fn toggle_help(&mut self) {
         self.model.toggle_help();
+    }
+
+    fn request_ddl(&mut self) {
+        if let Some(req) = self.model.ddl_request() {
+            let _ = self.req_tx.try_send(req);
+        }
     }
 
     fn apply_panel_event(&mut self, event: PanelEvent) {
@@ -142,6 +155,16 @@ impl TuiApp {
                     page: 0,
                 };
                 self.table_state = TableState::default().with_selected(Some(0));
+            }
+            PanelEvent::TableInspected {
+                schema,
+                table,
+                inspection,
+            } => {
+                self.model.store_inspection(schema, table, inspection);
+            }
+            PanelEvent::DdlReady { schema, table, ddl } => {
+                self.model.panel = PanelMode::Ddl { schema, table, ddl };
             }
         }
     }
@@ -324,6 +347,12 @@ fn draw_content(frame: &mut Frame, area: Rect, app: &mut TuiApp) {
             let running = *running;
             draw_sql_editor(frame, area, &text, result.as_ref(), running);
         }
+        PanelMode::Ddl { schema, table, ddl } => {
+            let schema = schema.clone();
+            let table = table.clone();
+            let ddl = ddl.clone();
+            draw_ddl_panel(frame, area, &schema, &table, &ddl);
+        }
     }
 }
 
@@ -421,9 +450,81 @@ fn draw_column_detail(frame: &mut Frame, area: Rect, model: &ArchiveNavModel) {
             }
             lines.push(Line::default());
             lines.push(Line::from(Span::styled(
-                " Press Enter to preview table data.",
+                " Press Enter to preview table data.  d → DDL",
                 Style::default().fg(Color::DarkGray),
             )));
+            // Enrichment: FK / constraints / indexes (if already loaded)
+            if let Some(inspection) = model.inspection(&t.schema, &t.table_name) {
+                if !inspection.foreign_keys.is_empty() {
+                    lines.push(Line::default());
+                    lines.push(Line::from(Span::styled(
+                        " Foreign Keys:",
+                        Style::default()
+                            .fg(Color::Yellow)
+                            .add_modifier(Modifier::BOLD),
+                    )));
+                    for fk in &inspection.foreign_keys {
+                        lines.push(Line::from(vec![
+                            Span::styled("   ", Style::default()),
+                            Span::styled(fk.from_column.clone(), Style::default().fg(Color::White)),
+                            Span::styled(" → ", Style::default().fg(Color::DarkGray)),
+                            Span::styled(
+                                format!("{}.{}.{}", fk.to_schema, fk.to_table, fk.to_column),
+                                Style::default().fg(Color::Blue),
+                            ),
+                        ]));
+                    }
+                }
+                if !inspection.constraints.is_empty() {
+                    lines.push(Line::default());
+                    lines.push(Line::from(Span::styled(
+                        " Constraints:",
+                        Style::default()
+                            .fg(Color::Yellow)
+                            .add_modifier(Modifier::BOLD),
+                    )));
+                    for c in &inspection.constraints {
+                        let cols = c.columns.join(", ");
+                        lines.push(Line::from(vec![
+                            Span::styled("   ", Style::default()),
+                            Span::styled(
+                                format!("{:?}", c.kind),
+                                Style::default().fg(Color::Magenta),
+                            ),
+                            Span::styled(format!("  {}", c.name), Style::default().fg(Color::Gray)),
+                            Span::styled(
+                                if cols.is_empty() {
+                                    String::new()
+                                } else {
+                                    format!("  ({cols})")
+                                },
+                                Style::default().fg(Color::White),
+                            ),
+                        ]));
+                    }
+                }
+                if !inspection.indexes.is_empty() {
+                    lines.push(Line::default());
+                    lines.push(Line::from(Span::styled(
+                        " Indexes:",
+                        Style::default()
+                            .fg(Color::Yellow)
+                            .add_modifier(Modifier::BOLD),
+                    )));
+                    for idx in &inspection.indexes {
+                        let cols = idx.column_names.join(", ");
+                        let unique = if idx.is_unique { " UNIQUE" } else { "" };
+                        lines.push(Line::from(vec![
+                            Span::styled("   ", Style::default()),
+                            Span::styled(idx.index_name.clone(), Style::default().fg(Color::Gray)),
+                            Span::styled(
+                                format!("  ({cols}){unique} [{}]", idx.index_method),
+                                Style::default().fg(Color::Blue),
+                            ),
+                        ]));
+                    }
+                }
+            }
             lines
         }
         None => vec![Line::from(Span::styled(
@@ -444,6 +545,24 @@ fn draw_column_detail(frame: &mut Frame, area: Rect, model: &ArchiveNavModel) {
                 ),
         )
         .style(Style::default().bg(Color::Black));
+    frame.render_widget(para, area);
+}
+
+fn draw_ddl_panel(frame: &mut Frame, area: Rect, schema: &str, table: &str, ddl: &str) {
+    let lines: Vec<Line> = ddl.lines().map(|l| Line::from(l.to_string())).collect();
+    let para = Paragraph::new(lines)
+        .block(
+            Block::default()
+                .borders(Borders::NONE)
+                .title(format!(" DDL: {schema}.{table} "))
+                .title_style(
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ),
+        )
+        .style(Style::default().bg(Color::Black))
+        .wrap(ratatui::widgets::Wrap { trim: false });
     frame.render_widget(para, area);
 }
 
@@ -742,6 +861,30 @@ fn spawn_fetch_task(
                     };
                     let _ = event_tx.send(ev).await;
                 }
+                FetchRequest::InspectTable { schema, table } => {
+                    use crate::archive::plugins::inspect::inspect_table_direct;
+                    let ev = match inspect_table_direct(url, &schema, &table).await {
+                        Ok(inspection) => PanelEvent::TableInspected {
+                            schema,
+                            table,
+                            inspection,
+                        },
+                        Err(e) => PanelEvent::FetchError(e),
+                    };
+                    let _ = event_tx.send(ev).await;
+                }
+                FetchRequest::GetDdl { schema, table } => {
+                    use crate::archive::plugins::inspect::generate_ddl_direct;
+                    let ev = match generate_ddl_direct(url, &schema, &table).await {
+                        Ok(ddl) => PanelEvent::DdlReady {
+                            schema,
+                            table,
+                            ddl: ddl.ddl,
+                        },
+                        Err(e) => PanelEvent::FetchError(e),
+                    };
+                    let _ = event_tx.send(ev).await;
+                }
             }
         }
     });
@@ -813,6 +956,7 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                 KeyCode::Char('r') => app.refresh(),
                                 KeyCode::Char('?') => app.toggle_help(),
                                 KeyCode::Char('/') => app.model.open_filter(),
+                                KeyCode::Char('d') => app.request_ddl(),
                                 // Data grid navigation
                                 KeyCode::PageDown => {
                                     if let PanelMode::DataGrid { result, .. } = &app.model.panel {

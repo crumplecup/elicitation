@@ -137,6 +137,16 @@ impl ArchiveEguiApp {
                         page: 0,
                     };
                 }
+                PanelEvent::TableInspected {
+                    schema,
+                    table,
+                    inspection,
+                } => {
+                    self.model.store_inspection(schema, table, inspection);
+                }
+                PanelEvent::DdlReady { schema, table, ddl } => {
+                    self.model.panel = PanelMode::Ddl { schema, table, ddl };
+                }
             }
         }
     }
@@ -187,9 +197,15 @@ impl ArchiveEguiApp {
         } else {
             if up {
                 self.model.move_up();
+                if let Some(req) = self.model.inspect_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
             }
             if down {
                 self.model.move_down();
+                if let Some(req) = self.model.inspect_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
             }
             if enter {
                 if let Some(req) = self.model.toggle_expand() {
@@ -205,6 +221,12 @@ impl ArchiveEguiApp {
             }
             if slash {
                 self.model.open_filter();
+            }
+            // d → DDL viewer
+            if ctx.input(|i| i.key_pressed(Key::D)) {
+                if let Some(req) = self.model.ddl_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
             }
             if quit || esc_key {
                 self.should_quit = true;
@@ -406,6 +428,27 @@ impl ArchiveEguiApp {
                             running,
                         };
                     }
+                    PanelMode::Ddl { schema, table, ddl } => {
+                        let schema = schema.clone();
+                        let table = table.clone();
+                        let ddl = ddl.clone();
+                        ui.label(
+                            RichText::new(format!("DDL: {schema}.{table}"))
+                                .color(BLUE)
+                                .size(14.0)
+                                .strong(),
+                        );
+                        ui.separator();
+                        egui::ScrollArea::vertical().show(ui, |ui| {
+                            ui.add(
+                                egui::TextEdit::multiline(&mut ddl.as_str())
+                                    .font(egui::TextStyle::Monospace)
+                                    .desired_width(f32::INFINITY)
+                                    .code_editor(),
+                            );
+                        });
+                        self.model.panel = PanelMode::Ddl { schema, table, ddl };
+                    }
                 }
             });
 
@@ -514,10 +557,87 @@ impl ArchiveEguiApp {
                 }
                 ui.add_space(8.0);
                 ui.label(
-                    RichText::new("Press Enter to preview table rows.")
+                    RichText::new("Enter to preview rows  |  d for DDL")
                         .color(OVERLAY0)
                         .small(),
                 );
+
+                // Enrichment: FK / constraints / indexes
+                if let Some(inspection) = self.model.inspection(&table.schema, &table.table_name) {
+                    if !inspection.foreign_keys.is_empty() {
+                        ui.add_space(8.0);
+                        ui.label(RichText::new("Foreign Keys").color(YELLOW).strong());
+                        ui.separator();
+                        egui::Grid::new("fk_grid")
+                            .num_columns(3)
+                            .spacing([12.0, 2.0])
+                            .show(ui, |ui| {
+                                ui.label(RichText::new("Column").color(SUBTEXT0).small());
+                                ui.label(RichText::new("→ Target").color(SUBTEXT0).small());
+                                ui.label(RichText::new("Actions").color(SUBTEXT0).small());
+                                ui.end_row();
+                                for fk in &inspection.foreign_keys {
+                                    ui.label(RichText::new(&fk.from_column).color(TEXT));
+                                    ui.label(
+                                        RichText::new(format!(
+                                            "{}.{}.{}",
+                                            fk.to_schema, fk.to_table, fk.to_column
+                                        ))
+                                        .color(BLUE)
+                                        .small(),
+                                    );
+                                    ui.label(
+                                        RichText::new(format!(
+                                            "del:{} upd:{}",
+                                            fk.on_delete, fk.on_update
+                                        ))
+                                        .color(OVERLAY0)
+                                        .small(),
+                                    );
+                                    ui.end_row();
+                                }
+                            });
+                    }
+                    if !inspection.constraints.is_empty() {
+                        ui.add_space(8.0);
+                        ui.label(RichText::new("Constraints").color(YELLOW).strong());
+                        ui.separator();
+                        for c in &inspection.constraints {
+                            let cols = c.columns.join(", ");
+                            ui.horizontal(|ui| {
+                                ui.label(
+                                    RichText::new(format!("{:?}", c.kind)).color(MAUVE).small(),
+                                );
+                                ui.label(RichText::new(&c.name).color(TEXT).small());
+                                if !cols.is_empty() {
+                                    ui.label(
+                                        RichText::new(format!("({cols})")).color(SUBTEXT0).small(),
+                                    );
+                                }
+                            });
+                        }
+                    }
+                    if !inspection.indexes.is_empty() {
+                        ui.add_space(8.0);
+                        ui.label(RichText::new("Indexes").color(YELLOW).strong());
+                        ui.separator();
+                        for idx in &inspection.indexes {
+                            let cols = idx.column_names.join(", ");
+                            let unique = if idx.is_unique { " UNIQUE" } else { "" };
+                            ui.horizontal(|ui| {
+                                ui.label(RichText::new(&idx.index_name).color(TEXT).small());
+                                ui.label(
+                                    RichText::new(format!(
+                                        "({cols}){unique} [{}]",
+                                        idx.index_method
+                                    ))
+                                    .color(BLUE)
+                                    .small(),
+                                );
+                            });
+                        }
+                    }
+                }
             }
             None => {
                 ui.centered_and_justified(|ui| {
@@ -860,6 +980,28 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                         },
                         Err(e) => PanelEvent::FetchError(e.to_string()),
                     },
+                    FetchRequest::InspectTable { schema, table } => {
+                        use crate::archive::plugins::inspect::inspect_table_direct;
+                        match inspect_table_direct(&url_str, &schema, &table).await {
+                            Ok(inspection) => PanelEvent::TableInspected {
+                                schema,
+                                table,
+                                inspection,
+                            },
+                            Err(e) => PanelEvent::FetchError(e),
+                        }
+                    }
+                    FetchRequest::GetDdl { schema, table } => {
+                        use crate::archive::plugins::inspect::generate_ddl_direct;
+                        match generate_ddl_direct(&url_str, &schema, &table).await {
+                            Ok(ddl) => PanelEvent::DdlReady {
+                                schema,
+                                table,
+                                ddl: ddl.ddl,
+                            },
+                            Err(e) => PanelEvent::FetchError(e),
+                        }
+                    }
                 };
                 let _ = tx.send(result).await;
             }

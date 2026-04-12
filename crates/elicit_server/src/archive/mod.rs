@@ -39,9 +39,11 @@ pub use frontend_utils::nav_tree_to_verified_tree;
 pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
 pub use plugins::{
     AkNodeEntry, ArchiveBrowsePlugin, ArchiveDisplayPlugin, ArchiveQueryPlugin,
-    ArchiveSpatialPlugin, QueryExecuted, SchemaExists, TableExists,
+    ArchiveSpatialPlugin, QueryExecuted, SchemaExists, TableExists, generate_ddl_direct,
+    inspect_table_direct,
 };
 pub use types::{
-    BackendKind, ColumnDescriptor, DatabaseDescriptor, IndexDescriptor, QueryResult,
-    SchemaDescriptor, TableDescriptor, TableType,
+    BackendKind, ColumnDescriptor, ConstraintDescriptor, ConstraintKind, DatabaseDescriptor,
+    DdlDescriptor, FkAction, ForeignKeyDescriptor, IndexDescriptor, QueryResult, SchemaDescriptor,
+    TableDescriptor, TableInspection, TableType,
 };

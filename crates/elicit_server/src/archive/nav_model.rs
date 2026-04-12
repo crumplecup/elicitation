@@ -18,10 +18,12 @@
 //! items whose name contains the filter string (case-insensitive).  Esc clears
 //! the filter and returns to normal navigation.
 
+use std::collections::HashMap;
+
 use elicit_accesskit::{KeyBinding, StatusBarDescriptor};
 
 use crate::archive::{
-    QueryResult,
+    QueryResult, TableInspection,
     nav_tree::{NavTree, SchemaEntry},
 };
 
@@ -82,6 +84,15 @@ pub enum PanelMode {
         /// Whether a query is running.
         running: bool,
     },
+    /// DDL viewer pane.
+    Ddl {
+        /// Schema containing the object.
+        schema: String,
+        /// Object name.
+        table: String,
+        /// Reconstructed DDL text.
+        ddl: String,
+    },
 }
 
 impl Default for PanelMode {
@@ -116,6 +127,20 @@ pub enum FetchRequest {
         /// Raw SQL to execute.
         sql: String,
     },
+    /// Fetch FK, constraint, and index enrichment for a table.
+    InspectTable {
+        /// Schema containing the table.
+        schema: String,
+        /// Table to inspect.
+        table: String,
+    },
+    /// Generate DDL for a table.
+    GetDdl {
+        /// Schema containing the table.
+        schema: String,
+        /// Table to generate DDL for.
+        table: String,
+    },
 }
 
 /// Response sent from the background fetch task back to the event loop.
@@ -136,6 +161,24 @@ pub enum PanelEvent {
     SqlResult(QueryResult),
     /// An error occurred during a fetch.
     FetchError(String),
+    /// Table inspection (FK/constraints/indexes) completed.
+    TableInspected {
+        /// Schema the table belongs to.
+        schema: String,
+        /// Table name.
+        table: String,
+        /// Enrichment data.
+        inspection: TableInspection,
+    },
+    /// DDL generation completed.
+    DdlReady {
+        /// Schema the table belongs to.
+        schema: String,
+        /// Table name.
+        table: String,
+        /// Reconstructed DDL text.
+        ddl: String,
+    },
 }
 
 // ── ArchiveNavModel ───────────────────────────────────────────────────────────
@@ -175,6 +218,8 @@ pub struct ArchiveNavModel {
     pub filter_active: bool,
     /// Current content panel mode.
     pub panel: PanelMode,
+    /// Cached FK/constraint/index enrichment, keyed by `(schema, table)`.
+    pub table_inspections: HashMap<(String, String), TableInspection>,
 }
 
 impl ArchiveNavModel {
@@ -201,6 +246,7 @@ impl ArchiveNavModel {
             filter: String::new(),
             filter_active: false,
             panel: PanelMode::ColumnDetail,
+            table_inspections: HashMap::new(),
         };
         model.rebuild_flat();
         model
@@ -364,6 +410,66 @@ impl ArchiveNavModel {
     /// Return the currently selected `FlatItem`, if any.
     pub fn selected(&self) -> Option<FlatItem> {
         self.flat.get(self.cursor).copied()
+    }
+
+    /// If the cursor is on a table row, return an [`InspectTable`] request.
+    ///
+    /// Call this whenever the cursor moves to a table row to eagerly load
+    /// FK/constraint/index enrichment data in the background.
+    ///
+    /// [`InspectTable`]: FetchRequest::InspectTable
+    pub fn inspect_request(&self) -> Option<FetchRequest> {
+        match self.selected()? {
+            FlatItem::Table(si, ti) => {
+                let t = &self.schemas[si].entry.tables[ti];
+                Some(FetchRequest::InspectTable {
+                    schema: t.schema.clone(),
+                    table: t.table_name.clone(),
+                })
+            }
+            FlatItem::Schema(_) => None,
+        }
+    }
+
+    /// If the cursor is on a table row, return a [`GetDdl`] request.
+    ///
+    /// Triggered by the `d` key binding.
+    ///
+    /// [`GetDdl`]: FetchRequest::GetDdl
+    pub fn ddl_request(&self) -> Option<FetchRequest> {
+        match self.selected()? {
+            FlatItem::Table(si, ti) => {
+                let t = &self.schemas[si].entry.tables[ti];
+                Some(FetchRequest::GetDdl {
+                    schema: t.schema.clone(),
+                    table: t.table_name.clone(),
+                })
+            }
+            FlatItem::Schema(_) => None,
+        }
+    }
+
+    /// Store enrichment returned by an [`InspectTable`] fetch.
+    ///
+    /// [`InspectTable`]: FetchRequest::InspectTable
+    pub fn store_inspection(
+        &mut self,
+        schema: impl Into<String>,
+        table: impl Into<String>,
+        inspection: crate::archive::TableInspection,
+    ) {
+        self.table_inspections
+            .insert((schema.into(), table.into()), inspection);
+    }
+
+    /// Look up cached enrichment for `(schema, table)`.
+    pub fn inspection(
+        &self,
+        schema: &str,
+        table: &str,
+    ) -> Option<&crate::archive::TableInspection> {
+        self.table_inspections
+            .get(&(schema.to_string(), table.to_string()))
     }
 
     /// Key bindings as declared in the accesskit IR.
