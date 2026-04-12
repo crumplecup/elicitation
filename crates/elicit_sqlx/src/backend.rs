@@ -200,7 +200,7 @@ fn sessions_to_stat_activity(sessions: Vec<DbSessionInfo>) -> DbStatActivity {
 
 async fn list_tables_impl(pool: &AnyPool, schema: &str) -> DbResult<Vec<DbTableInfo>> {
     let rows = sqlx::query(
-        "SELECT table_name FROM information_schema.tables \
+        "SELECT CAST(table_name AS text) FROM information_schema.tables \
          WHERE table_schema = $1 AND table_type = 'BASE TABLE' ORDER BY table_name",
     )
     .bind(schema)
@@ -225,7 +225,8 @@ async fn list_tables_impl(pool: &AnyPool, schema: &str) -> DbResult<Vec<DbTableI
 
 async fn fetch_columns(pool: &AnyPool, schema: &str, table: &str) -> DbResult<Vec<DbColumn>> {
     let rows = sqlx::query(
-        "SELECT column_name, data_type, is_nullable, column_default \
+        "SELECT CAST(column_name AS text), CAST(data_type AS text), \
+                CAST(is_nullable AS text), CAST(column_default AS text) \
          FROM information_schema.columns \
          WHERE table_schema = $1 AND table_name = $2 ORDER BY ordinal_position",
     )
@@ -521,7 +522,7 @@ impl DbSchemaManager for SqlxDbBackend {
     fn list_schemas(&self) -> BoxFuture<'_, DbResult<Vec<String>>> {
         Box::pin(async move {
             let rows = sqlx::query(
-                "SELECT schema_name FROM information_schema.schemata \
+                "SELECT CAST(schema_name AS text) FROM information_schema.schemata \
                  WHERE schema_name NOT LIKE 'pg_%' \
                  AND schema_name != 'information_schema' \
                  ORDER BY schema_name",
@@ -540,7 +541,7 @@ impl DbSchemaManager for SqlxDbBackend {
         let name = name.to_string();
         Box::pin(async move {
             let owner_row = sqlx::query(
-                "SELECT schema_owner FROM information_schema.schemata WHERE schema_name = $1",
+                "SELECT CAST(schema_owner AS text) FROM information_schema.schemata WHERE schema_name = $1",
             )
             .bind(name.as_str())
             .fetch_optional(&self.pool)
@@ -636,7 +637,7 @@ impl DbTableManager for SqlxDbBackend {
         let name = name.to_string();
         Box::pin(async move {
             let exists: Option<_> = sqlx::query(
-                "SELECT table_name FROM information_schema.tables \
+                "SELECT CAST(table_name AS text) FROM information_schema.tables \
                  WHERE table_schema = $1 AND table_name = $2",
             )
             .bind(schema.as_str())
