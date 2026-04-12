@@ -1927,6 +1927,7 @@ dependencies = [
  "elicit_ui",
  "elicitation",
  "futures",
+ "quote",
  "rmcp",
  "schemars",
  "serde",

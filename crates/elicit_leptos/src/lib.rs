@@ -3,9 +3,10 @@
 //! # Plugins
 //!
 //! | Plugin | Namespace | Description |
-//! |---|---|---|
+//! |------|-----------|-------------|
 //! | [`LeptosReactivePlugin`] | `leptos_reactive__*` | Signal/memo/action state management |
 //! | [`LeptosCodePlugin`] | `leptos_code__*` | Component, view, routing, and app scaffolding |
+//! | [`LeptosAxumPlugin`] | `leptos_axum__*` | Axum SSR server configuration (static HTML, full SSR, WASM shell) |
 //!
 //! # Renderer
 //!
@@ -20,12 +21,14 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+pub mod axum_ssr;
 mod code;
 mod error;
 pub mod leptos_accesskit_convert;
 mod reactive;
 pub mod renderer;
 
+pub use axum_ssr::LeptosAxumPlugin;
 pub use code::LeptosCodePlugin;
 pub use error::{LeptosError, LeptosErrorKind, LeptosResult};
 pub use leptos_accesskit_convert::{LeptosRenderMode, render_tree, render_tree_with_stats};

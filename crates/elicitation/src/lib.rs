@@ -709,6 +709,7 @@ pub use primitives::{UomFormula, UomQuantityKind, UomStep, UomUnitSystem};
 // leptos descriptor types (feature-gated on leptos-types)
 #[cfg(feature = "leptos-types")]
 pub use primitives::{
-    LeptosAppDescriptor, LeptosComponentDescriptor, LeptosHtmlTag, LeptosMode,
-    LeptosPropDescriptor, LeptosRouteDescriptor, LeptosViewNode,
+    LeptosAppDescriptor, LeptosAxumDescriptor, LeptosAxumMode, LeptosComponentDescriptor,
+    LeptosCustomRouteDescriptor, LeptosHtmlTag, LeptosMode, LeptosPropDescriptor,
+    LeptosResponseHeaderDescriptor, LeptosRouteDescriptor, LeptosViewNode,
 };
