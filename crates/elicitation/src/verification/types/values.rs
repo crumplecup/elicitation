@@ -128,6 +128,42 @@ impl Elicitation for ValueObject {
     }
 }
 
+#[cfg(all(feature = "serde_json", not(kani)))]
+impl serde::Serialize for ValueObject {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.0.serialize(serializer)
+    }
+}
+
+#[cfg(all(feature = "serde_json", not(kani)))]
+impl<'de> serde::Deserialize<'de> for ValueObject {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = Value::deserialize(deserializer)?;
+        Self::new(value).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(all(feature = "serde_json", not(kani)))]
+impl schemars::JsonSchema for ValueObject {
+    fn schema_name() -> ::std::borrow::Cow<'static, str> {
+        "ValueObject".into()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        Value::json_schema(generator)
+    }
+}
+
+#[cfg(all(feature = "serde_json", not(kani)))]
+impl crate::emit_code::ToCodeLiteral for ValueObject {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let s = self.0.to_string();
+        quote::quote! {
+            serde_json::from_str(#s).expect("valid json object literal")
+        }
+    }
+}
+
 // ValueArray - JSON Value that is guaranteed to be an array
 /// A serde_json::Value that is guaranteed to be an array.
 ///
@@ -240,6 +276,42 @@ impl Elicitation for ValueArray {
     }
 }
 
+#[cfg(all(feature = "serde_json", not(kani)))]
+impl serde::Serialize for ValueArray {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.0.serialize(serializer)
+    }
+}
+
+#[cfg(all(feature = "serde_json", not(kani)))]
+impl<'de> serde::Deserialize<'de> for ValueArray {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = Value::deserialize(deserializer)?;
+        Self::new(value).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(all(feature = "serde_json", not(kani)))]
+impl schemars::JsonSchema for ValueArray {
+    fn schema_name() -> ::std::borrow::Cow<'static, str> {
+        "ValueArray".into()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        Value::json_schema(generator)
+    }
+}
+
+#[cfg(all(feature = "serde_json", not(kani)))]
+impl crate::emit_code::ToCodeLiteral for ValueArray {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let s = self.0.to_string();
+        quote::quote! {
+            serde_json::from_str(#s).expect("valid json array literal")
+        }
+    }
+}
+
 // ValueNonNull - JSON Value that is guaranteed to not be null
 /// A serde_json::Value that is guaranteed to not be null.
 ///
@@ -343,6 +415,42 @@ impl Elicitation for ValueNonNull {
 
     fn creusot_proof() -> proc_macro2::TokenStream {
         proc_macro2::TokenStream::new()
+    }
+}
+
+#[cfg(all(feature = "serde_json", not(kani)))]
+impl serde::Serialize for ValueNonNull {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.0.serialize(serializer)
+    }
+}
+
+#[cfg(all(feature = "serde_json", not(kani)))]
+impl<'de> serde::Deserialize<'de> for ValueNonNull {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = Value::deserialize(deserializer)?;
+        Self::new(value).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(all(feature = "serde_json", not(kani)))]
+impl schemars::JsonSchema for ValueNonNull {
+    fn schema_name() -> ::std::borrow::Cow<'static, str> {
+        "ValueNonNull".into()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        Value::json_schema(generator)
+    }
+}
+
+#[cfg(all(feature = "serde_json", not(kani)))]
+impl crate::emit_code::ToCodeLiteral for ValueNonNull {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let s = self.0.to_string();
+        quote::quote! {
+            serde_json::from_str(#s).expect("valid non-null json literal")
+        }
     }
 }
 

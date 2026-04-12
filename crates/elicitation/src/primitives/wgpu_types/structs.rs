@@ -326,7 +326,7 @@ impl ToCodeLiteral for WgpuColor {
 /// Serializable 3-D texel origin used for copy operations.
 ///
 /// Maps to `wgpu::Origin3d`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, JsonSchema)]
 pub struct WgpuOrigin3d {
     /// X offset in texels.
     pub x: u32,
@@ -334,12 +334,6 @@ pub struct WgpuOrigin3d {
     pub y: u32,
     /// Z offset in texels.
     pub z: u32,
-}
-
-impl Default for WgpuOrigin3d {
-    fn default() -> Self {
-        Self { x: 0, y: 0, z: 0 }
-    }
 }
 
 impl From<WgpuOrigin3d> for wgpu::Origin3d {
