@@ -408,3 +408,95 @@ pub async fn generate_ddl_direct(
         ddl,
     })
 }
+
+// ── column stats query ────────────────────────────────────────────────────────
+
+/// Fetch per-column planner statistics from `pg_stats`.
+///
+/// Returns `Ok(vec![])` for non-PostgreSQL backends (query will fail gracefully).
+#[instrument(skip(url))]
+pub async fn get_column_stats_direct(
+    url: &str,
+    schema: &str,
+    table: &str,
+) -> Result<Vec<crate::archive::ColumnStats>, String> {
+    use crate::archive::ColumnStats;
+
+    let pool = connect(url).await?;
+
+    let sql = r"
+        SELECT
+            attname      AS column_name,
+            null_frac    AS null_fraction,
+            avg_width    AS avg_width_bytes,
+            n_distinct,
+            correlation
+        FROM pg_stats
+        WHERE schemaname = $1
+          AND tablename  = $2
+        ORDER BY attname
+    ";
+
+    let rows = match sqlx::query(sql)
+        .bind(schema)
+        .bind(table)
+        .fetch_all(&pool)
+        .await
+    {
+        Ok(r) => r,
+        Err(_) => {
+            pool.close().await;
+            // Non-Postgres backend — return empty rather than error
+            return Ok(Vec::new());
+        }
+    };
+
+    pool.close().await;
+
+    rows.iter()
+        .map(|r| {
+            Ok(ColumnStats {
+                column_name: r
+                    .try_get::<String, _>("column_name")
+                    .map_err(|e| e.to_string())?,
+                null_fraction: r.try_get::<f32, _>("null_fraction").unwrap_or(0.0) as f64,
+                avg_width_bytes: r.try_get::<i32, _>("avg_width_bytes").unwrap_or(0),
+                n_distinct: r.try_get::<f32, _>("n_distinct").unwrap_or(0.0) as f64,
+                correlation: r.try_get::<f32, _>("correlation").ok().map(|v| v as f64),
+            })
+        })
+        .collect()
+}
+
+// ── EXPLAIN query ─────────────────────────────────────────────────────────────
+
+/// Run `EXPLAIN (ANALYZE, FORMAT JSON)` on a SQL string and parse the plan tree.
+///
+/// Returns an [`ExplainNode`] tree rooted at the top-level plan node.
+#[instrument(skip(url, sql))]
+pub async fn explain_sql_direct(
+    url: &str,
+    sql: &str,
+) -> Result<crate::archive::ExplainNode, String> {
+    use crate::archive::ExplainNode;
+
+    let pool = connect(url).await?;
+
+    let explain_sql = format!("EXPLAIN (ANALYZE, FORMAT JSON) {sql}");
+
+    let rows = sqlx::query(&explain_sql)
+        .fetch_all(&pool)
+        .await
+        .map_err(|e| format!("EXPLAIN failed: {e}"))?;
+
+    pool.close().await;
+
+    // The result is a single row with a single text column containing the JSON
+    let json_text: String = rows
+        .first()
+        .ok_or_else(|| "EXPLAIN returned no rows".to_string())?
+        .try_get::<String, _>(0)
+        .map_err(|e| e.to_string())?;
+
+    ExplainNode::parse_explain_output(&json_text)
+}

@@ -23,7 +23,7 @@ use std::collections::HashMap;
 use elicit_accesskit::{KeyBinding, StatusBarDescriptor};
 
 use crate::archive::{
-    QueryResult, TableInspection,
+    ColumnStats, ExplainNode, QueryResult, TableInspection,
     nav_tree::{NavTree, SchemaEntry},
 };
 
@@ -93,6 +93,15 @@ pub enum PanelMode {
         /// Reconstructed DDL text.
         ddl: String,
     },
+    /// EXPLAIN plan viewer.
+    ExplainPlan {
+        /// Schema containing the table.
+        schema: String,
+        /// Table name (or `"(custom)"` for SQL editor plans).
+        table: String,
+        /// Root node of the parsed plan tree.
+        root: ExplainNode,
+    },
 }
 
 impl Default for PanelMode {
@@ -141,6 +150,22 @@ pub enum FetchRequest {
         /// Table to generate DDL for.
         table: String,
     },
+    /// Fetch per-column planner statistics for a table.
+    GetColumnStats {
+        /// Schema containing the table.
+        schema: String,
+        /// Table to get stats for.
+        table: String,
+    },
+    /// Run `EXPLAIN (ANALYZE, FORMAT JSON)` on a SQL string.
+    ExplainSql {
+        /// Schema context (for display only).
+        schema: String,
+        /// Table context (for display only).
+        table: String,
+        /// SQL to explain.
+        sql: String,
+    },
 }
 
 /// Response sent from the background fetch task back to the event loop.
@@ -178,6 +203,24 @@ pub enum PanelEvent {
         table: String,
         /// Reconstructed DDL text.
         ddl: String,
+    },
+    /// Column stats ready.
+    ColumnStatsReady {
+        /// Schema the table belongs to.
+        schema: String,
+        /// Table name.
+        table: String,
+        /// Per-column statistics.
+        stats: Vec<ColumnStats>,
+    },
+    /// EXPLAIN plan ready.
+    ExplainReady {
+        /// Schema context.
+        schema: String,
+        /// Table context.
+        table: String,
+        /// Parsed plan root.
+        root: ExplainNode,
     },
 }
 
@@ -220,6 +263,8 @@ pub struct ArchiveNavModel {
     pub panel: PanelMode,
     /// Cached FK/constraint/index enrichment, keyed by `(schema, table)`.
     pub table_inspections: HashMap<(String, String), TableInspection>,
+    /// Cached per-column planner statistics, keyed by `(schema, table)`.
+    pub column_stats: HashMap<(String, String), Vec<ColumnStats>>,
 }
 
 impl ArchiveNavModel {
@@ -247,6 +292,7 @@ impl ArchiveNavModel {
             filter_active: false,
             panel: PanelMode::ColumnDetail,
             table_inspections: HashMap::new(),
+            column_stats: HashMap::new(),
         };
         model.rebuild_flat();
         model
@@ -449,6 +495,49 @@ impl ArchiveNavModel {
         }
     }
 
+    /// If the cursor is on a table row, return a [`GetColumnStats`] request.
+    ///
+    /// Triggered eagerly alongside [`inspect_request`].
+    ///
+    /// [`GetColumnStats`]: FetchRequest::GetColumnStats
+    /// [`inspect_request`]: ArchiveNavModel::inspect_request
+    pub fn stats_request(&self) -> Option<FetchRequest> {
+        match self.selected()? {
+            FlatItem::Table(si, ti) => {
+                let t = &self.schemas[si].entry.tables[ti];
+                Some(FetchRequest::GetColumnStats {
+                    schema: t.schema.clone(),
+                    table: t.table_name.clone(),
+                })
+            }
+            FlatItem::Schema(_) => None,
+        }
+    }
+
+    /// If the cursor is on a table row, return an [`ExplainSql`] request for a
+    /// simple `SELECT *` preview.
+    ///
+    /// Triggered by the `e` key binding.
+    ///
+    /// [`ExplainSql`]: FetchRequest::ExplainSql
+    pub fn explain_request(&self) -> Option<FetchRequest> {
+        match self.selected()? {
+            FlatItem::Table(si, ti) => {
+                let t = &self.schemas[si].entry.tables[ti];
+                Some(FetchRequest::ExplainSql {
+                    schema: t.schema.clone(),
+                    table: t.table_name.clone(),
+                    sql: format!(
+                        r#"SELECT * FROM "{}"."{}" LIMIT 100"#,
+                        t.schema.replace('"', ""),
+                        t.table_name.replace('"', "")
+                    ),
+                })
+            }
+            FlatItem::Schema(_) => None,
+        }
+    }
+
     /// Store enrichment returned by an [`InspectTable`] fetch.
     ///
     /// [`InspectTable`]: FetchRequest::InspectTable
@@ -469,6 +558,29 @@ impl ArchiveNavModel {
         table: &str,
     ) -> Option<&crate::archive::TableInspection> {
         self.table_inspections
+            .get(&(schema.to_string(), table.to_string()))
+    }
+
+    /// Store column statistics returned by a [`GetColumnStats`] fetch.
+    ///
+    /// [`GetColumnStats`]: FetchRequest::GetColumnStats
+    pub fn store_column_stats(
+        &mut self,
+        schema: impl Into<String>,
+        table: impl Into<String>,
+        stats: Vec<crate::archive::ColumnStats>,
+    ) {
+        self.column_stats
+            .insert((schema.into(), table.into()), stats);
+    }
+
+    /// Look up cached column statistics for `(schema, table)`.
+    pub fn column_stats_for(
+        &self,
+        schema: &str,
+        table: &str,
+    ) -> Option<&Vec<crate::archive::ColumnStats>> {
+        self.column_stats
             .get(&(schema.to_string(), table.to_string()))
     }
 

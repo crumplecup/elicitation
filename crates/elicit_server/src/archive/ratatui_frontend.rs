@@ -86,8 +86,10 @@ impl TuiApp {
         self.model.move_up();
         self.model.flash = None;
         self.sync_list_state();
-        // Eagerly kick off an inspection fetch when landing on a table row.
         if let Some(req) = self.model.inspect_request() {
+            let _ = self.req_tx.try_send(req);
+        }
+        if let Some(req) = self.model.stats_request() {
             let _ = self.req_tx.try_send(req);
         }
     }
@@ -97,6 +99,9 @@ impl TuiApp {
         self.model.flash = None;
         self.sync_list_state();
         if let Some(req) = self.model.inspect_request() {
+            let _ = self.req_tx.try_send(req);
+        }
+        if let Some(req) = self.model.stats_request() {
             let _ = self.req_tx.try_send(req);
         }
     }
@@ -120,6 +125,12 @@ impl TuiApp {
 
     fn request_ddl(&mut self) {
         if let Some(req) = self.model.ddl_request() {
+            let _ = self.req_tx.try_send(req);
+        }
+    }
+
+    fn request_explain(&mut self) {
+        if let Some(req) = self.model.explain_request() {
             let _ = self.req_tx.try_send(req);
         }
     }
@@ -165,6 +176,24 @@ impl TuiApp {
             }
             PanelEvent::DdlReady { schema, table, ddl } => {
                 self.model.panel = PanelMode::Ddl { schema, table, ddl };
+            }
+            PanelEvent::ColumnStatsReady {
+                schema,
+                table,
+                stats,
+            } => {
+                self.model.store_column_stats(schema, table, stats);
+            }
+            PanelEvent::ExplainReady {
+                schema,
+                table,
+                root,
+            } => {
+                self.model.panel = PanelMode::ExplainPlan {
+                    schema,
+                    table,
+                    root,
+                };
             }
         }
     }
@@ -353,6 +382,16 @@ fn draw_content(frame: &mut Frame, area: Rect, app: &mut TuiApp) {
             let ddl = ddl.clone();
             draw_ddl_panel(frame, area, &schema, &table, &ddl);
         }
+        PanelMode::ExplainPlan {
+            schema,
+            table,
+            root,
+        } => {
+            let schema = schema.clone();
+            let table = table.clone();
+            let root = root.clone();
+            draw_explain_panel(frame, area, &schema, &table, &root);
+        }
     }
 }
 
@@ -447,10 +486,44 @@ fn draw_column_detail(frame: &mut Frame, area: Rect, model: &ArchiveNavModel) {
                     ),
                     Span::styled(flag_str, Style::default().fg(Color::Yellow)),
                 ]));
+                // Inline column stats (if available)
+                if let Some(col_stats) = model
+                    .column_stats_for(&t.schema, &t.table_name)
+                    .and_then(|sv| sv.iter().find(|s| s.column_name == col.name))
+                {
+                    let mut stat_parts = vec![];
+                    let null_pct = (col_stats.null_fraction * 100.0).round() as u8;
+                    if null_pct > 0 {
+                        stat_parts.push(format!("null:{null_pct}%"));
+                    }
+                    if col_stats.avg_width_bytes > 0 {
+                        stat_parts.push(format!("avg:{}B", col_stats.avg_width_bytes));
+                    }
+                    if col_stats.n_distinct != 0.0 {
+                        if col_stats.n_distinct < 0.0 {
+                            stat_parts
+                                .push(format!("~{:.0}%unique", -col_stats.n_distinct * 100.0));
+                        } else {
+                            stat_parts.push(format!("~{:.0}distinct", col_stats.n_distinct));
+                        }
+                    }
+                    if let Some(corr) = col_stats.correlation {
+                        stat_parts.push(format!("corr:{corr:.2}"));
+                    }
+                    if !stat_parts.is_empty() {
+                        lines.push(Line::from(vec![
+                            Span::styled("      ", Style::default()),
+                            Span::styled(
+                                stat_parts.join("  "),
+                                Style::default().fg(Color::DarkGray),
+                            ),
+                        ]));
+                    }
+                }
             }
             lines.push(Line::default());
             lines.push(Line::from(Span::styled(
-                " Press Enter to preview table data.  d → DDL",
+                " Enter: preview  d: DDL  e: explain",
                 Style::default().fg(Color::DarkGray),
             )));
             // Enrichment: FK / constraints / indexes (if already loaded)
@@ -564,6 +637,73 @@ fn draw_ddl_panel(frame: &mut Frame, area: Rect, schema: &str, table: &str, ddl:
         .style(Style::default().bg(Color::Black))
         .wrap(ratatui::widgets::Wrap { trim: false });
     frame.render_widget(para, area);
+}
+
+fn draw_explain_panel(
+    frame: &mut Frame,
+    area: Rect,
+    _schema: &str,
+    _table: &str,
+    root: &crate::archive::ExplainNode,
+) {
+    let mut lines = Vec::new();
+    render_explain_node(&mut lines, root, 0);
+    lines.push(Line::default());
+    lines.push(Line::from(Span::styled(
+        " Esc: back",
+        Style::default().fg(Color::DarkGray),
+    )));
+    let para = Paragraph::new(lines)
+        .block(
+            Block::default()
+                .borders(Borders::NONE)
+                .title(" EXPLAIN Plan ")
+                .title_style(
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ),
+        )
+        .style(Style::default().bg(Color::Black))
+        .wrap(ratatui::widgets::Wrap { trim: false });
+    frame.render_widget(para, area);
+}
+
+fn render_explain_node(
+    lines: &mut Vec<Line<'static>>,
+    node: &crate::archive::ExplainNode,
+    depth: usize,
+) {
+    let indent = "  ".repeat(depth);
+    let relation = node
+        .relation_name
+        .as_deref()
+        .map(|r| format!(" on {r}"))
+        .unwrap_or_default();
+    let alias = node
+        .alias
+        .as_deref()
+        .filter(|a| Some(*a) != node.relation_name.as_deref())
+        .map(|a| format!(" as {a}"))
+        .unwrap_or_default();
+    let header = format!(
+        "{indent}▸ {}{}{}  cost={:.1}..{:.1}  rows={}",
+        node.node_type, relation, alias, node.startup_cost, node.total_cost, node.plan_rows,
+    );
+    lines.push(Line::from(vec![Span::styled(
+        header,
+        Style::default().fg(Color::White),
+    )]));
+    if let (Some(at), Some(ar)) = (node.actual_total_time, node.actual_rows) {
+        let stats = format!("{indent}  actual: {at:.2}ms  rows={ar}");
+        lines.push(Line::from(vec![Span::styled(
+            stats,
+            Style::default().fg(Color::DarkGray),
+        )]));
+    }
+    for child in &node.children {
+        render_explain_node(lines, child, depth + 1);
+    }
 }
 
 fn draw_loading(frame: &mut Frame, area: Rect, schema: &str, table: &str) {
@@ -885,6 +1025,30 @@ fn spawn_fetch_task(
                     };
                     let _ = event_tx.send(ev).await;
                 }
+                FetchRequest::GetColumnStats { schema, table } => {
+                    use crate::archive::plugins::inspect::get_column_stats_direct;
+                    let ev = match get_column_stats_direct(url, &schema, &table).await {
+                        Ok(stats) => PanelEvent::ColumnStatsReady {
+                            schema,
+                            table,
+                            stats,
+                        },
+                        Err(e) => PanelEvent::FetchError(e),
+                    };
+                    let _ = event_tx.send(ev).await;
+                }
+                FetchRequest::ExplainSql { schema, table, sql } => {
+                    use crate::archive::plugins::inspect::explain_sql_direct;
+                    let ev = match explain_sql_direct(url, &sql).await {
+                        Ok(root) => PanelEvent::ExplainReady {
+                            schema,
+                            table,
+                            root,
+                        },
+                        Err(e) => PanelEvent::FetchError(e),
+                    };
+                    let _ = event_tx.send(ev).await;
+                }
             }
         }
     });
@@ -957,6 +1121,7 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                 KeyCode::Char('?') => app.toggle_help(),
                                 KeyCode::Char('/') => app.model.open_filter(),
                                 KeyCode::Char('d') => app.request_ddl(),
+                                KeyCode::Char('e') => app.request_explain(),
                                 // Data grid navigation
                                 KeyCode::PageDown => {
                                     if let PanelMode::DataGrid { result, .. } = &app.model.panel {

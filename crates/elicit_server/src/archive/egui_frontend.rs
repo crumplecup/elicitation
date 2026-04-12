@@ -147,6 +147,24 @@ impl ArchiveEguiApp {
                 PanelEvent::DdlReady { schema, table, ddl } => {
                     self.model.panel = PanelMode::Ddl { schema, table, ddl };
                 }
+                PanelEvent::ColumnStatsReady {
+                    schema,
+                    table,
+                    stats,
+                } => {
+                    self.model.store_column_stats(schema, table, stats);
+                }
+                PanelEvent::ExplainReady {
+                    schema,
+                    table,
+                    root,
+                } => {
+                    self.model.panel = PanelMode::ExplainPlan {
+                        schema,
+                        table,
+                        root,
+                    };
+                }
             }
         }
     }
@@ -200,10 +218,16 @@ impl ArchiveEguiApp {
                 if let Some(req) = self.model.inspect_request() {
                     let _ = self.req_tx.try_send(req);
                 }
+                if let Some(req) = self.model.stats_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
             }
             if down {
                 self.model.move_down();
                 if let Some(req) = self.model.inspect_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
+                if let Some(req) = self.model.stats_request() {
                     let _ = self.req_tx.try_send(req);
                 }
             }
@@ -225,6 +249,12 @@ impl ArchiveEguiApp {
             // d → DDL viewer
             if ctx.input(|i| i.key_pressed(Key::D)) {
                 if let Some(req) = self.model.ddl_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            // e → EXPLAIN viewer
+            if ctx.input(|i| i.key_pressed(Key::E)) {
+                if let Some(req) = self.model.explain_request() {
                     let _ = self.req_tx.try_send(req);
                 }
             }
@@ -449,6 +479,30 @@ impl ArchiveEguiApp {
                         });
                         self.model.panel = PanelMode::Ddl { schema, table, ddl };
                     }
+                    PanelMode::ExplainPlan {
+                        schema,
+                        table,
+                        root,
+                    } => {
+                        let schema = schema.clone();
+                        let table = table.clone();
+                        let root = root.clone();
+                        ui.label(
+                            RichText::new("EXPLAIN Plan")
+                                .color(BLUE)
+                                .size(14.0)
+                                .strong(),
+                        );
+                        ui.separator();
+                        egui::ScrollArea::vertical().show(ui, |ui| {
+                            render_explain_node_egui(ui, &root, 0);
+                        });
+                        self.model.panel = PanelMode::ExplainPlan {
+                            schema,
+                            table,
+                            root,
+                        };
+                    }
                 }
             });
 
@@ -557,10 +611,61 @@ impl ArchiveEguiApp {
                 }
                 ui.add_space(8.0);
                 ui.label(
-                    RichText::new("Enter to preview rows  |  d for DDL")
+                    RichText::new("Enter to preview rows  |  d for DDL  |  e for EXPLAIN")
                         .color(OVERLAY0)
                         .small(),
                 );
+
+                // Column statistics (if already loaded)
+                if let Some(col_stats_vec) = self
+                    .model
+                    .column_stats_for(&table.schema, &table.table_name)
+                {
+                    if !col_stats_vec.is_empty() {
+                        ui.add_space(8.0);
+                        ui.label(RichText::new("Column Statistics").color(YELLOW).strong());
+                        ui.separator();
+                        egui::Grid::new("col_stats_grid")
+                            .num_columns(5)
+                            .spacing([12.0, 2.0])
+                            .striped(true)
+                            .show(ui, |ui| {
+                                ui.label(RichText::new("Column").color(SUBTEXT0).small());
+                                ui.label(RichText::new("Null%").color(SUBTEXT0).small());
+                                ui.label(RichText::new("AvgWidth").color(SUBTEXT0).small());
+                                ui.label(RichText::new("~Distinct").color(SUBTEXT0).small());
+                                ui.label(RichText::new("Correlation").color(SUBTEXT0).small());
+                                ui.end_row();
+                                for s in col_stats_vec {
+                                    ui.label(RichText::new(&s.column_name).color(TEXT).small());
+                                    ui.label(
+                                        RichText::new(format!("{:.1}%", s.null_fraction * 100.0))
+                                            .color(OVERLAY0)
+                                            .small(),
+                                    );
+                                    ui.label(
+                                        RichText::new(format!("{}B", s.avg_width_bytes))
+                                            .color(OVERLAY0)
+                                            .small(),
+                                    );
+                                    let distinct_label = if s.n_distinct < 0.0 {
+                                        format!("{:.0}%", -s.n_distinct * 100.0)
+                                    } else if s.n_distinct == 0.0 {
+                                        "—".to_string()
+                                    } else {
+                                        format!("{:.0}", s.n_distinct)
+                                    };
+                                    ui.label(RichText::new(distinct_label).color(OVERLAY0).small());
+                                    let corr_label = s
+                                        .correlation
+                                        .map(|c| format!("{c:.2}"))
+                                        .unwrap_or_else(|| "—".to_string());
+                                    ui.label(RichText::new(corr_label).color(OVERLAY0).small());
+                                    ui.end_row();
+                                }
+                            });
+                    }
+                }
 
                 // Enrichment: FK / constraints / indexes
                 if let Some(inspection) = self.model.inspection(&table.schema, &table.table_name) {
@@ -734,6 +839,38 @@ fn egui_cell_display(v: &elicit_db::DbValue) -> String {
             elicit_db::DbSpatialValue::Wkb(b) => format!("<geo wkb:{} bytes>", b.len()),
         },
     }
+}
+
+fn render_explain_node_egui(ui: &mut egui::Ui, node: &crate::archive::ExplainNode, depth: usize) {
+    let relation = node
+        .relation_name
+        .as_deref()
+        .map(|r| format!(" on {r}"))
+        .unwrap_or_default();
+    let header = format!(
+        "{}  cost={:.1}..{:.1}  rows={}",
+        node.node_type, node.startup_cost, node.total_cost, node.plan_rows,
+    );
+    let id = egui::Id::new(("explain_node", depth, &node.node_type, &relation));
+    egui::CollapsingHeader::new(
+        egui::RichText::new(format!("{}{header}{relation}", "  ".repeat(depth)))
+            .color(TEXT)
+            .monospace(),
+    )
+    .id_salt(id)
+    .default_open(true)
+    .show(ui, |ui| {
+        if let (Some(at), Some(ar)) = (node.actual_total_time, node.actual_rows) {
+            ui.label(
+                egui::RichText::new(format!("actual: {at:.2}ms  rows={ar}"))
+                    .color(OVERLAY0)
+                    .small(),
+            );
+        }
+        for child in &node.children {
+            render_explain_node_egui(ui, child, depth + 1);
+        }
+    });
 }
 
 // ── winit ApplicationHandler ──────────────────────────────────────────────────
@@ -998,6 +1135,28 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                 schema,
                                 table,
                                 ddl: ddl.ddl,
+                            },
+                            Err(e) => PanelEvent::FetchError(e),
+                        }
+                    }
+                    FetchRequest::GetColumnStats { schema, table } => {
+                        use crate::archive::plugins::inspect::get_column_stats_direct;
+                        match get_column_stats_direct(&url_str, &schema, &table).await {
+                            Ok(stats) => PanelEvent::ColumnStatsReady {
+                                schema,
+                                table,
+                                stats,
+                            },
+                            Err(e) => PanelEvent::FetchError(e),
+                        }
+                    }
+                    FetchRequest::ExplainSql { schema, table, sql } => {
+                        use crate::archive::plugins::inspect::explain_sql_direct;
+                        match explain_sql_direct(&url_str, &sql).await {
+                            Ok(root) => PanelEvent::ExplainReady {
+                                schema,
+                                table,
+                                root,
                             },
                             Err(e) => PanelEvent::FetchError(e),
                         }

@@ -455,7 +455,105 @@ impl IndexDescriptor {
     }
 }
 
-// ── QueryResult ───────────────────────────────────────────────────────────────
+// ── ColumnStats ───────────────────────────────────────────────────────────────
+
+/// PostgreSQL planner statistics for a single column (from `pg_stats`).
+///
+/// Only populated for PostgreSQL backends; other backends return empty stats.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct ColumnStats {
+    /// Column name.
+    pub column_name: String,
+    /// Fraction of NULL values in the column (0.0–1.0).
+    pub null_fraction: f64,
+    /// Average storage size of a non-null value in bytes.
+    pub avg_width_bytes: i32,
+    /// Estimated number of distinct values.
+    ///
+    /// Positive: absolute count.  Negative: fraction of total rows (e.g. `-0.5`
+    /// means 50% of rows are distinct).  `0` means unknown.
+    pub n_distinct: f64,
+    /// Correlation between physical and logical order (-1.0 to 1.0).
+    ///
+    /// Values near ±1 mean sequential scans will be efficient.  Near 0 means
+    /// heap fetches will be scattered (index scan may be slower than seq scan).
+    pub correlation: Option<f64>,
+}
+
+// ── ExplainNode ───────────────────────────────────────────────────────────────
+
+/// One node in a PostgreSQL `EXPLAIN (FORMAT JSON)` plan tree.
+///
+/// Populated by parsing the JSON array returned by PostgreSQL.
+/// Nesting mirrors the `Plans` arrays in the EXPLAIN output.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct ExplainNode {
+    /// Node type, e.g. `"Seq Scan"`, `"Hash Join"`, `"Index Scan"`.
+    pub node_type: String,
+    /// Relation name for scan nodes.
+    pub relation_name: Option<String>,
+    /// Alias used in the query.
+    pub alias: Option<String>,
+    /// Estimated startup cost.
+    pub startup_cost: f64,
+    /// Estimated total cost.
+    pub total_cost: f64,
+    /// Estimated output rows.
+    pub plan_rows: i64,
+    /// Estimated average output row width in bytes.
+    pub plan_width: i32,
+    /// Actual startup time in ms (`EXPLAIN ANALYZE` only).
+    pub actual_startup_time: Option<f64>,
+    /// Actual total time in ms (`EXPLAIN ANALYZE` only).
+    pub actual_total_time: Option<f64>,
+    /// Actual rows output.
+    pub actual_rows: Option<i64>,
+    /// Number of loops executed.
+    pub actual_loops: Option<i64>,
+    /// Child plan nodes.
+    pub children: Vec<ExplainNode>,
+}
+
+impl ExplainNode {
+    /// Parse from a single EXPLAIN JSON plan object.
+    pub fn from_json(v: &serde_json::Value) -> Self {
+        let get_str = |k: &str| v[k].as_str().map(str::to_string);
+        let get_f64 = |k: &str| v[k].as_f64().unwrap_or(0.0);
+        let get_i64 = |k: &str| v[k].as_i64().unwrap_or(0);
+        let get_i32 = |k: &str| v[k].as_i64().unwrap_or(0) as i32;
+
+        let children = v["Plans"]
+            .as_array()
+            .map(|arr| arr.iter().map(ExplainNode::from_json).collect())
+            .unwrap_or_default();
+
+        Self {
+            node_type: get_str("Node Type").unwrap_or_else(|| "Unknown".to_string()),
+            relation_name: get_str("Relation Name"),
+            alias: get_str("Alias"),
+            startup_cost: get_f64("Startup Cost"),
+            total_cost: get_f64("Total Cost"),
+            plan_rows: get_i64("Plan Rows"),
+            plan_width: get_i32("Plan Width"),
+            actual_startup_time: v["Actual Startup Time"].as_f64(),
+            actual_total_time: v["Actual Total Time"].as_f64(),
+            actual_rows: v["Actual Rows"].as_i64(),
+            actual_loops: v["Actual Loops"].as_i64(),
+            children,
+        }
+    }
+
+    /// Parse from the top-level EXPLAIN JSON array (first element's "Plan").
+    pub fn parse_explain_output(json: &str) -> Result<Self, String> {
+        let val: serde_json::Value =
+            serde_json::from_str(json).map_err(|e| format!("JSON parse error: {e}"))?;
+        let plan = &val[0]["Plan"];
+        if plan.is_null() {
+            return Err("EXPLAIN output missing 'Plan' key".to_string());
+        }
+        Ok(Self::from_json(plan))
+    }
+}
 
 /// The result of executing a SQL query: column metadata + row data.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
