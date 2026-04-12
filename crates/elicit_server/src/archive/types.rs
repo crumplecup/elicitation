@@ -11,6 +11,8 @@ use serde::{Deserialize, Serialize};
 
 use elicit_db::{DbIndexInfo, DbRows, DbTableInfo};
 
+use chrono::{DateTime, Utc};
+
 // ── BackendKind ───────────────────────────────────────────────────────────────
 
 /// Database backend detected from the connection URL.
@@ -644,4 +646,23 @@ pub struct ExportResult {
     pub row_count: u64,
     /// Exported content.
     pub content: String,
+}
+
+// ── QueryHistoryEntry ─────────────────────────────────────────────────────────
+
+/// A single entry in the persistent query history log.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct QueryHistoryEntry {
+    /// Auto-increment row ID.
+    pub id: i64,
+    /// UTC timestamp when the query was executed.
+    pub executed_at: DateTime<Utc>,
+    /// The SQL text that was executed.
+    pub sql: String,
+    /// Wall-clock duration in milliseconds.
+    pub duration_ms: u64,
+    /// Number of rows returned or affected (None on error).
+    pub row_count: Option<u64>,
+    /// Error message if the query failed.
+    pub error: Option<String>,
 }

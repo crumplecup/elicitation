@@ -20,7 +20,7 @@
 //! ```
 
 use crossterm::{
-    event::{Event, EventStream, KeyCode, KeyEventKind},
+    event::{Event, EventStream, KeyCode, KeyEventKind, KeyModifiers},
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
@@ -43,7 +43,7 @@ use crate::archive::nav_model::{
 };
 use crate::archive::nav_tree::{NavTree, build_nav_tree};
 use crate::archive::{
-    ArchiveDbBackend, ArchiveResult, ExportFormat, QueryResult, TableType,
+    ArchiveDbBackend, ArchiveResult, ExportFormat, HistoryStore, QueryResult, TableType,
     errors::{ArchiveError, ArchiveErrorKind},
     plugins::export::export_query_result,
     plugins::query::{execute_sql_direct, preview_table_direct},
@@ -62,10 +62,20 @@ struct TuiApp {
     export_picker: bool,
     /// Currently highlighted option in the export picker (0–3).
     export_picker_idx: usize,
+    /// Persistent query history (None if unavailable).
+    history: Option<HistoryStore>,
+    /// Timestamp of the last SQL execution start (for duration tracking).
+    exec_start: Option<std::time::Instant>,
+    /// SQL text of the last `ExecuteSql` dispatch (for history recording).
+    pending_sql: Option<String>,
 }
 
 impl TuiApp {
-    fn new(nav: NavTree, req_tx: mpsc::Sender<FetchRequest>) -> Self {
+    fn new(
+        nav: NavTree,
+        req_tx: mpsc::Sender<FetchRequest>,
+        history: Option<HistoryStore>,
+    ) -> Self {
         let model = ArchiveNavModel::new(nav);
         let mut list_state = ListState::default();
         if !model.flat.is_empty() {
@@ -78,6 +88,9 @@ impl TuiApp {
             req_tx,
             export_picker: false,
             export_picker_idx: 0,
+            history,
+            exec_start: None,
+            pending_sql: None,
         }
     }
 
@@ -155,6 +168,22 @@ impl TuiApp {
         }
     }
 
+    /// Execute the current SQL editor content.
+    fn run_sql(&mut self) {
+        if let PanelMode::SqlEditor { text, running, .. } = &mut self.model.panel {
+            if *running || text.trim().is_empty() {
+                return;
+            }
+            let sql = text.trim().to_string();
+            *running = true;
+            self.exec_start = Some(std::time::Instant::now());
+            self.pending_sql = Some(sql.clone());
+            // Reset history navigation on new execution
+            self.model.history_idx = None;
+            let _ = self.req_tx.try_send(FetchRequest::ExecuteSql { sql });
+        }
+    }
+
     fn apply_panel_event(&mut self, event: PanelEvent) {
         match event {
             PanelEvent::DataGrid {
@@ -175,15 +204,54 @@ impl TuiApp {
                 self.sync_list_state();
             }
             PanelEvent::FetchError(e) => {
-                self.model.panel = PanelMode::ColumnDetail;
+                // If this error is from a SQL execution, record it in history.
+                if let Some(sql) = self.pending_sql.take() {
+                    let duration_ms = self
+                        .exec_start
+                        .take()
+                        .map(|s| s.elapsed().as_millis() as u64)
+                        .unwrap_or(0);
+                    if let Some(ref store) = self.history {
+                        store.append_spawn(sql, duration_ms, None, Some(e.to_string()));
+                    }
+                    // Reset running flag in SqlEditor panel
+                    if let PanelMode::SqlEditor { running, .. } = &mut self.model.panel {
+                        *running = false;
+                    }
+                } else {
+                    self.model.panel = PanelMode::ColumnDetail;
+                }
                 self.model.flash = Some(format!("error: {e}"));
             }
             PanelEvent::SqlResult(result) => {
-                self.model.panel = PanelMode::DataGrid {
-                    schema: String::new(),
-                    table: "(query result)".to_string(),
-                    result,
-                    page: 0,
+                let duration_ms = self
+                    .exec_start
+                    .take()
+                    .map(|s| s.elapsed().as_millis() as u64)
+                    .unwrap_or(0);
+                let row_count = result.row_count;
+                let current_text = match &self.model.panel {
+                    PanelMode::SqlEditor { text, .. } => text.clone(),
+                    _ => String::new(),
+                };
+                if let Some(sql) = self.pending_sql.take() {
+                    let new_entry = crate::archive::QueryHistoryEntry {
+                        id: 0,
+                        executed_at: chrono::Utc::now(),
+                        sql: sql.clone(),
+                        duration_ms,
+                        row_count: Some(row_count),
+                        error: None,
+                    };
+                    self.model.history_cache.insert(0, new_entry);
+                    if let Some(ref store) = self.history {
+                        store.append_spawn(sql, duration_ms, Some(row_count), None);
+                    }
+                }
+                self.model.panel = PanelMode::SqlEditor {
+                    text: current_text,
+                    result: Some(result),
+                    running: false,
                 };
                 self.table_state = TableState::default().with_selected(Some(0));
             }
@@ -1183,7 +1251,19 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
     })?;
 
     let (req_tx, mut event_rx) = spawn_fetch_task(url);
-    let mut app = TuiApp::new(nav, req_tx);
+
+    // Initialize history store (best-effort — None on failure).
+    let history = HistoryStore::open().await.ok();
+    let history_cache = if let Some(ref store) = history {
+        store
+            .recent(crate::archive::plugins::history::MAX_HISTORY)
+            .await
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+    let mut app = TuiApp::new(nav, req_tx, history);
+    app.model.history_cache = history_cache;
     let mut reader = EventStream::new();
     let mut quit = false;
 
@@ -1232,6 +1312,37 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                 KeyCode::Enter => app.confirm_export(),
                                 _ => {}
                             }
+                        } else if matches!(app.model.panel, PanelMode::SqlEditor { .. }) {
+                            let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+                            match (key.code, ctrl) {
+                                // Ctrl+Enter or F5 → execute
+                                (KeyCode::Enter, true) | (KeyCode::F(5), _) => app.run_sql(),
+                                // Ctrl+Up → older history entry
+                                (KeyCode::Up, true) => { app.model.history_prev(); }
+                                // Ctrl+Down → newer history entry
+                                (KeyCode::Down, true) => { app.model.history_next(); }
+                                // Esc → leave SQL editor
+                                (KeyCode::Esc, _) => {
+                                    app.model.panel = PanelMode::ColumnDetail;
+                                }
+                                // Typing updates the SQL text
+                                (KeyCode::Char(c), false) => {
+                                    if let PanelMode::SqlEditor { text, .. } = &mut app.model.panel {
+                                        text.push(c);
+                                    }
+                                }
+                                (KeyCode::Backspace, _) => {
+                                    if let PanelMode::SqlEditor { text, .. } = &mut app.model.panel {
+                                        text.pop();
+                                    }
+                                }
+                                (KeyCode::Enter, false) => {
+                                    if let PanelMode::SqlEditor { text, .. } = &mut app.model.panel {
+                                        text.push('\n');
+                                    }
+                                }
+                                _ => {}
+                            }
                         } else {
                             match key.code {
                                 KeyCode::Char('q') | KeyCode::Esc => quit = true,
@@ -1243,6 +1354,14 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                 KeyCode::Char('/') => app.model.open_filter(),
                                 KeyCode::Char('d') => app.request_ddl(),
                                 KeyCode::Char('e') => app.request_explain(),
+                                // s → open SQL editor
+                                KeyCode::Char('s') => {
+                                    app.model.panel = PanelMode::SqlEditor {
+                                        text: String::new(),
+                                        result: None,
+                                        running: false,
+                                    };
+                                }
                                 KeyCode::Char('x') => {
                                     if app.model.panel.is_data_grid() {
                                         app.export_picker = true;

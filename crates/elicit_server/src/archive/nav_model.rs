@@ -23,7 +23,7 @@ use std::collections::HashMap;
 use elicit_accesskit::{KeyBinding, StatusBarDescriptor};
 
 use crate::archive::{
-    ColumnStats, ExplainNode, ExportFormat, QueryResult, TableInspection,
+    ColumnStats, ExplainNode, ExportFormat, QueryHistoryEntry, QueryResult, TableInspection,
     nav_tree::{NavTree, SchemaEntry},
 };
 
@@ -291,6 +291,11 @@ pub struct ArchiveNavModel {
     pub column_stats: HashMap<(String, String), Vec<ColumnStats>>,
     /// Most recent export result (schema, table, content, format).
     pub last_export: Option<(String, String, String, ExportFormat)>,
+    /// In-memory history cache (newest first), loaded at startup.
+    pub history_cache: Vec<QueryHistoryEntry>,
+    /// Current position in history navigation (0 = most recent).
+    /// `None` means the user has not started cycling history.
+    pub history_idx: Option<usize>,
 }
 
 impl ArchiveNavModel {
@@ -320,6 +325,8 @@ impl ArchiveNavModel {
             table_inspections: HashMap::new(),
             column_stats: HashMap::new(),
             last_export: None,
+            history_cache: Vec::new(),
+            history_idx: None,
         };
         model.rebuild_flat();
         model
@@ -649,6 +656,60 @@ impl ArchiveNavModel {
     /// binding list.
     pub fn bindings() -> Vec<KeyBinding> {
         StatusBarDescriptor::archive_browse().bindings
+    }
+
+    /// Step backward through history (toward older entries) in the SQL editor.
+    ///
+    /// If the panel is a `SqlEditor`, replaces the current SQL with the entry
+    /// at `history_idx`.  Returns `true` if the SQL was updated.
+    pub fn history_prev(&mut self) -> bool {
+        if self.history_cache.is_empty() {
+            return false;
+        }
+        let next_idx = match self.history_idx {
+            None => 0,
+            Some(i) => (i + 1).min(self.history_cache.len().saturating_sub(1)),
+        };
+        self.history_idx = Some(next_idx);
+        self.apply_history_entry(next_idx)
+    }
+
+    /// Step forward through history (toward more recent entries) in the SQL editor.
+    ///
+    /// Returns `true` if the SQL was updated.
+    pub fn history_next(&mut self) -> bool {
+        let idx = match self.history_idx {
+            None => return false,
+            Some(0) => {
+                self.history_idx = None;
+                return false;
+            }
+            Some(i) => i - 1,
+        };
+        self.history_idx = Some(idx);
+        self.apply_history_entry(idx)
+    }
+
+    fn apply_history_entry(&mut self, idx: usize) -> bool {
+        let sql = match self.history_cache.get(idx) {
+            Some(e) => e.sql.clone(),
+            None => return false,
+        };
+        match &mut self.panel {
+            PanelMode::SqlEditor { text, .. } => {
+                *text = sql;
+                true
+            }
+            _ => {
+                // Activate sql editor mode with the chosen history entry.
+                self.panel = PanelMode::SqlEditor {
+                    text: sql,
+                    result: None,
+                    running: false,
+                };
+                true
+            }
+        }
     }
 }
 

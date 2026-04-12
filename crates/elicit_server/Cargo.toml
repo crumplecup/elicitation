@@ -43,6 +43,7 @@ chrono = { workspace = true }
 jiff = { workspace = true }
 url = { workspace = true }
 time = { workspace = true }
+dirs = { workspace = true }
 sqlx = { workspace = true }
 ratatui = { workspace = true }
 axum = { workspace = true }

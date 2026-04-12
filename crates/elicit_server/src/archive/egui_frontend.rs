@@ -23,7 +23,7 @@ use winit::{
 };
 
 use crate::archive::{
-    ArchiveDbBackend, ArchiveResult, ExportFormat,
+    ArchiveDbBackend, ArchiveResult, ExportFormat, HistoryStore,
     errors::{ArchiveError, ArchiveErrorKind},
     nav_model::{ArchiveNavModel, FetchRequest, FlatItem, PanelEvent, PanelMode},
     nav_tree::{NavTree, build_nav_tree},
@@ -59,6 +59,12 @@ struct ArchiveEguiApp {
     export_picker: bool,
     /// Currently highlighted option in the export picker (0–3).
     export_picker_idx: usize,
+    /// SQLite-backed query history store (None if DB unavailable).
+    history: Option<HistoryStore>,
+    /// SQL text that is currently executing (for history recording).
+    pending_sql: Option<String>,
+    /// Instant the current SQL execution started.
+    exec_start: Option<std::time::Instant>,
     // wgpu / egui-winit resources (None until `resumed`)
     window: Option<Arc<Window>>,
     egui_state: Option<EguiWinitState>,
@@ -74,6 +80,7 @@ impl ArchiveEguiApp {
         nav: NavTree,
         req_tx: mpsc::Sender<FetchRequest>,
         event_rx: mpsc::Receiver<PanelEvent>,
+        history: Option<HistoryStore>,
     ) -> Self {
         Self {
             model: ArchiveNavModel::new(nav),
@@ -82,6 +89,9 @@ impl ArchiveEguiApp {
             event_rx,
             export_picker: false,
             export_picker_idx: 0,
+            history,
+            pending_sql: None,
+            exec_start: None,
             window: None,
             egui_state: None,
             surface: None,
@@ -112,6 +122,20 @@ impl ArchiveEguiApp {
         ctx.set_visuals(visuals);
     }
 
+    fn run_sql(&mut self) {
+        if let PanelMode::SqlEditor { text, running, .. } = &mut self.model.panel {
+            if *running || text.trim().is_empty() {
+                return;
+            }
+            let sql = text.trim().to_string();
+            *running = true;
+            self.exec_start = Some(std::time::Instant::now());
+            self.pending_sql = Some(sql.clone());
+            self.model.history_idx = None;
+            let _ = self.req_tx.try_send(FetchRequest::ExecuteSql { sql });
+        }
+    }
+
     /// Drain the event channel and apply any pending panel events.
     fn poll_events(&mut self) {
         while let Ok(ev) = self.event_rx.try_recv() {
@@ -133,16 +157,59 @@ impl ArchiveEguiApp {
                     self.model.apply_refresh(nav);
                 }
                 PanelEvent::FetchError(e) => {
-                    self.model.panel = PanelMode::ColumnDetail;
+                    if self.pending_sql.is_some() {
+                        // SQL execution failed — keep editor open
+                        if let PanelMode::SqlEditor { running, .. } = &mut self.model.panel {
+                            *running = false;
+                        }
+                        self.pending_sql = None;
+                        self.exec_start = None;
+                    } else {
+                        self.model.panel = PanelMode::ColumnDetail;
+                    }
                     self.model.flash = Some(format!("⚠ {e}"));
                 }
                 PanelEvent::SqlResult(result) => {
-                    self.model.panel = PanelMode::DataGrid {
-                        schema: String::new(),
-                        table: "(query result)".to_string(),
-                        result,
-                        page: 0,
-                    };
+                    // Record to history
+                    if let Some(sql) = self.pending_sql.take() {
+                        let duration_ms = self
+                            .exec_start
+                            .take()
+                            .map(|t| t.elapsed().as_millis() as u64)
+                            .unwrap_or(0);
+                        let row_count = result.rows.rows.len() as u64;
+                        let entry = crate::archive::QueryHistoryEntry {
+                            id: 0,
+                            sql: sql.clone(),
+                            executed_at: chrono::Utc::now(),
+                            duration_ms,
+                            row_count: Some(row_count),
+                            error: None,
+                        };
+                        if let Some(store) = &self.history {
+                            store.append_spawn(sql, duration_ms, Some(row_count), None);
+                        }
+                        self.model.history_cache.insert(0, entry);
+                    } else {
+                        self.exec_start = None;
+                    }
+                    // Keep editor open, embed result
+                    if let PanelMode::SqlEditor {
+                        running,
+                        result: res,
+                        ..
+                    } = &mut self.model.panel
+                    {
+                        *running = false;
+                        *res = Some(result);
+                    } else {
+                        self.model.panel = PanelMode::DataGrid {
+                            schema: String::new(),
+                            table: "(query result)".to_string(),
+                            result,
+                            page: 0,
+                        };
+                    }
                 }
                 PanelEvent::TableInspected {
                     schema,
@@ -255,6 +322,56 @@ impl ArchiveEguiApp {
                     let _ = self.req_tx.try_send(req);
                 }
             }
+        } else if matches!(self.model.panel, PanelMode::SqlEditor { .. }) {
+            // SQL editor keyboard handling
+            let (ctrl_enter, ctrl_up, ctrl_down) = ctx.input(|i| {
+                let ctrl = i.modifiers.ctrl;
+                (
+                    ctrl && i.key_pressed(Key::Enter),
+                    ctrl && i.key_pressed(Key::ArrowUp),
+                    ctrl && i.key_pressed(Key::ArrowDown),
+                )
+            });
+            if ctrl_enter || ctx.input(|i| i.key_pressed(Key::F5)) {
+                self.run_sql();
+            }
+            if ctrl_up {
+                self.model.history_prev();
+            }
+            if ctrl_down {
+                self.model.history_next();
+            }
+            if esc_key {
+                self.model.panel = PanelMode::ColumnDetail;
+            }
+            // Text input for SQL editing
+            let typed: String = ctx.input(|i| {
+                i.events
+                    .iter()
+                    .filter_map(|e| {
+                        if let egui::Event::Text(t) = e {
+                            Some(t.clone())
+                        } else {
+                            None
+                        }
+                    })
+                    .collect()
+            });
+            if !typed.is_empty() {
+                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
+                    text.push_str(&typed);
+                }
+            }
+            if ctx.input(|i| i.key_pressed(Key::Backspace)) {
+                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
+                    text.pop();
+                }
+            }
+            if !ctrl_enter && enter {
+                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
+                    text.push('\n');
+                }
+            }
         } else {
             if up {
                 self.model.move_up();
@@ -300,6 +417,14 @@ impl ArchiveEguiApp {
                 if let Some(req) = self.model.explain_request() {
                     let _ = self.req_tx.try_send(req);
                 }
+            }
+            // s → open SQL editor
+            if ctx.input(|i| i.key_pressed(Key::S)) {
+                self.model.panel = PanelMode::SqlEditor {
+                    text: String::new(),
+                    result: None,
+                    running: false,
+                };
             }
             // x → export format picker
             if ctx.input(|i| i.key_pressed(Key::X)) && self.model.panel.is_data_grid() {
@@ -1290,7 +1415,21 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
 
     let event_loop = EventLoop::new().expect("create event loop");
     event_loop.set_control_flow(ControlFlow::Poll);
-    let mut app = ArchiveEguiApp::new(nav, req_tx, event_rx);
+
+    // Initialize history store synchronously using the current tokio runtime.
+    let history = tokio::runtime::Handle::current()
+        .block_on(HistoryStore::open())
+        .ok();
+    let history_cache = if let Some(ref store) = history {
+        tokio::runtime::Handle::current()
+            .block_on(store.recent(crate::archive::plugins::history::MAX_HISTORY))
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+
+    let mut app = ArchiveEguiApp::new(nav, req_tx, event_rx, history);
+    app.model.history_cache = history_cache;
     event_loop
         .run_app(&mut app)
         .map_err(|e| ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string())))
