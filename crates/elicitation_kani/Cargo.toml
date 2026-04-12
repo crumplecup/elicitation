@@ -37,6 +37,7 @@ ratatui = { workspace = true, optional = true }
 geo-types = { workspace = true, optional = true }
 georaster = { workspace = true, optional = true }
 geojson = { workspace = true, optional = true }
+rstar = { workspace = true, optional = true }
 wkb = { workspace = true, optional = true }
 wkt = { workspace = true, optional = true }
 tiff = { workspace = true, optional = true }
@@ -63,6 +64,7 @@ ratatui = ["dep:ratatui", "dep:paste", "elicitation/ratatui"]
 geo-types = ["dep:geo-types", "elicitation/geo-types"]
 georaster-types = ["dep:georaster", "dep:tiff", "elicitation/georaster-types"]
 geojson-types = ["dep:geojson", "dep:serde_json", "elicitation/geojson-types"]
+rstar-types = ["dep:rstar", "elicitation/rstar-types"]
 wkt-types = ["dep:wkt", "elicitation/wkt-types"]
 wkb-types = ["dep:wkb", "elicitation/wkb-types"]
 palette = ["dep:palette", "elicitation/palette"]

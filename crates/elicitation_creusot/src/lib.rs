@@ -110,6 +110,9 @@ mod georaster_types;
 #[cfg(feature = "geojson-types")]
 mod geojson_types;
 
+#[cfg(feature = "rstar-types")]
+mod rstar_types;
+
 #[cfg(feature = "wkt-types")]
 mod wkt_types;
 
@@ -542,6 +545,12 @@ pub use geojson_types::{
     verify_geojson_feature_collection_len, verify_geojson_feature_property_access,
     verify_geojson_geometry_new_point, verify_geojson_id_string_variant,
     verify_geojson_value_point_type_name,
+};
+
+#[cfg(feature = "rstar-types")]
+pub use rstar_types::{
+    verify_rstar_aabb_roundtrip, verify_rstar_line_envelope_bounds, verify_rstar_line_roundtrip,
+    verify_rstar_rectangle_envelope_bounds, verify_rstar_rectangle_roundtrip,
 };
 
 #[cfg(feature = "georaster-types")]

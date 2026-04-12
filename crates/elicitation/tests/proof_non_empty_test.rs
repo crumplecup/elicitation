@@ -302,6 +302,22 @@ mod georaster_tests {
 // GeoJSON
 // ============================================================================
 
+#[cfg(feature = "rstar-types")]
+mod rstar_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn rstar_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::RstarAabb>("RstarAabb");
+        assert_proofs_non_empty::<elicitation::RstarRectangle>("RstarRectangle");
+        assert_proofs_non_empty::<elicitation::RstarLine>("RstarLine");
+    }
+}
+
+// ============================================================================
+// GeoJSON
+// ============================================================================
+
 #[cfg(feature = "geojson-types")]
 mod geojson_tests {
     use super::assert_proofs_non_empty;

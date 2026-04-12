@@ -58,6 +58,7 @@ pub mod ratatui_types;
 pub mod geo_types;
 pub mod georaster_types;
 pub mod geojson_types;
+pub mod rstar_types;
 pub mod wkt_types;
 pub mod wkb_types;
 pub mod palette_types;

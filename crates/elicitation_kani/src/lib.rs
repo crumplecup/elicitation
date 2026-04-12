@@ -134,6 +134,9 @@ mod georaster_types;
 #[cfg(all(kani, feature = "geojson-types"))]
 mod geojson_types;
 
+#[cfg(all(kani, feature = "rstar-types"))]
+mod rstar_types;
+
 #[cfg(all(kani, feature = "wkt-types"))]
 mod wkt_types;
 

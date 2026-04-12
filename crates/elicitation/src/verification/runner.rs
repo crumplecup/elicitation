@@ -695,6 +695,12 @@ impl ProofHarness {
             Self::new("geojson_types", "verify_geojson_feature_property_access"),
             Self::new("geojson_types", "verify_geojson_feature_collection_len"),
             Self::new("geojson_types", "verify_geojson_id_string_variant"),
+            // rstar_types: RTree wrapper proofs
+            Self::new("rstar_types", "verify_rstar_aabb_roundtrip"),
+            Self::new("rstar_types", "verify_rstar_rectangle_roundtrip"),
+            Self::new("rstar_types", "verify_rstar_rectangle_envelope_bounds"),
+            Self::new("rstar_types", "verify_rstar_line_roundtrip"),
+            Self::new("rstar_types", "verify_rstar_line_envelope_bounds"),
             // palette_types: color struct proofs
             Self::new("palette_types", "verify_palette_srgb_from_roundtrip"),
             Self::new("palette_types", "verify_palette_srgb_wrapper_fields"),

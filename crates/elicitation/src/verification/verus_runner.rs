@@ -374,6 +374,12 @@ impl VerusProof {
             Self::new("geojson_types", "verify_geojson_feature_property_access"),
             Self::new("geojson_types", "verify_geojson_feature_collection_len"),
             Self::new("geojson_types", "verify_geojson_id_string_variant"),
+            // rstar_types: shadow struct proofs
+            Self::new("rstar_types", "verify_rstar_aabb_roundtrip"),
+            Self::new("rstar_types", "verify_rstar_rectangle_roundtrip"),
+            Self::new("rstar_types", "verify_rstar_rectangle_envelope_bounds"),
+            Self::new("rstar_types", "verify_rstar_line_roundtrip"),
+            Self::new("rstar_types", "verify_rstar_line_envelope_bounds"),
             // palette_types: shadow struct proofs
             Self::new("palette_types", "verify_palette_srgb_roundtrip"),
             Self::new("palette_types", "verify_palette_srgb_concrete"),
