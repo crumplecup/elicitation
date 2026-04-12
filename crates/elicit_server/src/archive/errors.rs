@@ -32,6 +32,10 @@ pub enum ArchiveErrorKind {
     /// The backend kind could not be detected from the connection URL.
     #[display("unrecognised backend in connection URL")]
     UnknownBackend,
+
+    /// Failed to establish a database connection.
+    #[display("connection failed: {}", _0)]
+    Connection(String),
 }
 
 /// Top-level archive error wrapping a kind with source location.

@@ -65,6 +65,10 @@ mod secure_fetch;
 
 mod emit_plugin;
 
+pub use archive::{
+    ArchiveBrowsePlugin, ArchiveDbBackend, ArchiveDisplayPlugin, ArchiveQueryPlugin,
+    ArchiveSpatialPlugin,
+};
 pub use fetch_and_parse::{FetchAndParsePlugin, http_get};
 pub use secure_fetch::SecureFetchPlugin;
 

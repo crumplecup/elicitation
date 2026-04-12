@@ -19,10 +19,13 @@
 //! | [`display`] | `ArchiveDisplay` trait + `DisplayMode` enums |
 //! | [`plugins`] | Verified workflow plugins (`browse`, `query`, `spatial`, `render`) |
 
+mod backend;
 pub mod display;
 mod errors;
 pub mod plugins;
 pub mod types;
+
+pub use backend::ArchiveDbBackend;
 
 pub use errors::{ArchiveError, ArchiveErrorKind, ArchiveResult};
 pub use plugins::{
