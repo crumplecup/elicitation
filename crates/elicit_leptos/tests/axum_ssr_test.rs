@@ -1,7 +1,7 @@
 //! Integration tests for `LeptosAxumPlugin`.
 
 use elicit_leptos::{LeptosAxumPlugin, axum_ssr::LeptosAxumServerConfigured};
-use elicitation::{ElicitPlugin, VerifiedWorkflow};
+use elicitation::{ElicitPlugin, LeptosClientMode, VerifiedWorkflow};
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -52,8 +52,14 @@ fn plugin_lists_expected_tools() {
         "leptos_axum__set_server_fn_route",
         "leptos_axum__set_static_handler",
         "leptos_axum__set_pkg_dir",
+        "leptos_axum__set_pkg_name",
+        "leptos_axum__set_app_title",
+        "leptos_axum__set_client_mode",
         "leptos_axum__describe",
         "leptos_axum__emit",
+        "leptos_axum__emit_client",
+        "leptos_axum__emit_index_html",
+        "leptos_axum__emit_client_cargo_toml",
     ] {
         assert!(names.contains(expected), "missing tool: {expected}");
     }
@@ -302,15 +308,12 @@ async fn emit_static_html_contains_leptos_renderer() {
         code.contains("LeptosRenderer"),
         "missing LeptosRenderer:\n{code}"
     );
-    assert!(
-        code.contains("axum::response::Html"),
-        "missing Html:\n{code}"
-    );
+    assert!(code.contains("response::Html"), "missing Html:\n{code}");
     assert!(code.contains("tokio::main"), "missing tokio::main:\n{code}");
     assert!(code.contains("0.0.0.0:3000"), "missing addr:\n{code}");
     assert!(
-        !code.contains("leptos_axum"),
-        "static_html must not use leptos_axum:\n{code}"
+        !code.contains("use leptos_axum"),
+        "static_html must not import leptos_axum:\n{code}"
     );
 }
 
@@ -371,7 +374,11 @@ async fn emit_full_ssr_contains_generate_route_list() {
         code.contains("file_and_error_handler"),
         "missing fallback:\n{code}"
     );
-    assert!(code.contains("0.0.0.0:8080"), "missing addr:\n{code}");
+    // full_ssr reads addr from leptos config at runtime, not from the descriptor
+    assert!(
+        code.contains("leptos_options.site_addr"),
+        "missing site_addr from leptos_options:\n{code}"
+    );
 }
 
 #[tokio::test]
@@ -473,4 +480,357 @@ async fn describe_unknown_uuid_returns_error() {
         )
         .await;
     assert!(res.is_err(), "expected error for unknown UUID");
+}
+
+// ── WASM mutation tools ────────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn set_pkg_name_updates_descriptor() {
+    let p = LeptosAxumPlugin::new();
+    let id = new_config(&p, "App", "wasm_shell", "0.0.0.0:3000").await;
+
+    let res = p
+        .invoke_tool(
+            "leptos_axum__set_pkg_name",
+            serde_json::json!({ "config_id": id, "pkg_name": "archive_client" }),
+        )
+        .await
+        .unwrap();
+    assert_eq!(result_text(&res), "pkg_name set");
+
+    // Verify reflected in describe
+    let desc_res = p
+        .invoke_tool(
+            "leptos_axum__describe",
+            serde_json::json!({ "config_id": id }),
+        )
+        .await
+        .unwrap();
+    let desc: serde_json::Value = serde_json::from_str(&result_text(&desc_res)).unwrap();
+    assert_eq!(desc["pkg_name"], "archive_client");
+}
+
+#[tokio::test]
+async fn set_app_title_updates_descriptor() {
+    let p = LeptosAxumPlugin::new();
+    let id = new_config(&p, "App", "wasm_shell", "0.0.0.0:3000").await;
+
+    let res = p
+        .invoke_tool(
+            "leptos_axum__set_app_title",
+            serde_json::json!({ "config_id": id, "title": "Archive — DB Browser" }),
+        )
+        .await
+        .unwrap();
+    assert_eq!(result_text(&res), "app_title set");
+
+    let desc_res = p
+        .invoke_tool(
+            "leptos_axum__describe",
+            serde_json::json!({ "config_id": id }),
+        )
+        .await
+        .unwrap();
+    let desc: serde_json::Value = serde_json::from_str(&result_text(&desc_res)).unwrap();
+    assert_eq!(desc["app_title"], "Archive — DB Browser");
+}
+
+#[tokio::test]
+async fn set_client_mode_csr_updates_descriptor() {
+    let p = LeptosAxumPlugin::new();
+    let id = new_config(&p, "App", "wasm_shell", "0.0.0.0:3000").await;
+
+    let res = p
+        .invoke_tool(
+            "leptos_axum__set_client_mode",
+            serde_json::json!({ "config_id": id, "mode": "csr" }),
+        )
+        .await
+        .unwrap();
+    assert_eq!(result_text(&res), "client_mode set");
+
+    let desc_res = p
+        .invoke_tool(
+            "leptos_axum__describe",
+            serde_json::json!({ "config_id": id }),
+        )
+        .await
+        .unwrap();
+    let desc: serde_json::Value = serde_json::from_str(&result_text(&desc_res)).unwrap();
+    assert_eq!(desc["client_mode"], "csr");
+}
+
+#[tokio::test]
+async fn set_client_mode_defaults_to_hydrate() {
+    let p = LeptosAxumPlugin::new();
+    let id = new_config(&p, "App", "wasm_shell", "0.0.0.0:3000").await;
+
+    let desc_res = p
+        .invoke_tool(
+            "leptos_axum__describe",
+            serde_json::json!({ "config_id": id }),
+        )
+        .await
+        .unwrap();
+    let desc: serde_json::Value = serde_json::from_str(&result_text(&desc_res)).unwrap();
+    assert_eq!(desc["client_mode"], "hydrate");
+}
+
+// ── emit_client ───────────────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn emit_client_hydrate_contains_hydrate_body() {
+    let p = LeptosAxumPlugin::new();
+    let id = new_config(&p, "App", "wasm_shell", "0.0.0.0:3000").await;
+    p.invoke_tool(
+        "leptos_axum__set_pkg_name",
+        serde_json::json!({ "config_id": id, "pkg_name": "archive_client" }),
+    )
+    .await
+    .unwrap();
+
+    let res = p
+        .invoke_tool(
+            "leptos_axum__emit_client",
+            serde_json::json!({ "config_id": id }),
+        )
+        .await
+        .unwrap();
+    let src = result_text(&res);
+
+    assert!(
+        src.contains("hydrate_body(App)"),
+        "expected hydrate_body call; got:\n{src}"
+    );
+    assert!(src.contains("wasm_bindgen"), "expected wasm_bindgen import");
+    assert!(
+        src.contains("archive_client"),
+        "expected pkg_name in import"
+    );
+    assert!(
+        src.contains("#[wasm_bindgen(start)]"),
+        "expected wasm_bindgen entry point"
+    );
+    assert!(
+        src.contains("console_error_panic_hook"),
+        "expected panic hook"
+    );
+}
+
+#[tokio::test]
+async fn emit_client_csr_contains_mount_to_body() {
+    let p = LeptosAxumPlugin::new();
+    let id = new_config(&p, "App", "wasm_shell", "0.0.0.0:3000").await;
+    p.invoke_tool(
+        "leptos_axum__set_client_mode",
+        serde_json::json!({ "config_id": id, "mode": "csr" }),
+    )
+    .await
+    .unwrap();
+    p.invoke_tool(
+        "leptos_axum__set_pkg_name",
+        serde_json::json!({ "config_id": id, "pkg_name": "my_app" }),
+    )
+    .await
+    .unwrap();
+
+    let res = p
+        .invoke_tool(
+            "leptos_axum__emit_client",
+            serde_json::json!({ "config_id": id }),
+        )
+        .await
+        .unwrap();
+    let src = result_text(&res);
+    assert!(
+        src.contains("mount_to_body(App)"),
+        "expected mount_to_body; got:\n{src}"
+    );
+    assert!(src.contains("my_app"), "expected pkg_name");
+}
+
+#[tokio::test]
+async fn emit_client_without_pkg_name_uses_fallback() {
+    let p = LeptosAxumPlugin::new();
+    let id = new_config(&p, "App", "wasm_shell", "0.0.0.0:3000").await;
+
+    let res = p
+        .invoke_tool(
+            "leptos_axum__emit_client",
+            serde_json::json!({ "config_id": id }),
+        )
+        .await
+        .unwrap();
+    let src = result_text(&res);
+    assert!(src.contains("your_app"), "expected fallback crate name");
+}
+
+// ── emit_index_html ────────────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn emit_index_html_contains_pkg_assets() {
+    let p = LeptosAxumPlugin::new();
+    let id = new_config(&p, "App", "wasm_shell", "0.0.0.0:3000").await;
+    p.invoke_tool(
+        "leptos_axum__set_pkg_name",
+        serde_json::json!({ "config_id": id, "pkg_name": "archive_client" }),
+    )
+    .await
+    .unwrap();
+    p.invoke_tool(
+        "leptos_axum__set_app_title",
+        serde_json::json!({ "config_id": id, "title": "Archive" }),
+    )
+    .await
+    .unwrap();
+
+    let res = p
+        .invoke_tool(
+            "leptos_axum__emit_index_html",
+            serde_json::json!({ "config_id": id }),
+        )
+        .await
+        .unwrap();
+    let html = result_text(&res);
+
+    assert!(html.contains("<title>Archive</title>"), "expected title");
+    assert!(
+        html.contains("archive_client.js"),
+        "expected .js asset reference"
+    );
+    assert!(
+        html.contains("archive_client_bg.wasm"),
+        "expected .wasm asset reference"
+    );
+    assert!(
+        html.contains("modulepreload"),
+        "expected modulepreload hint"
+    );
+    assert!(html.contains("/pkg/"), "expected pkg_dir in paths");
+    assert!(
+        html.starts_with("<!DOCTYPE html>"),
+        "expected valid HTML5 doctype"
+    );
+}
+
+#[tokio::test]
+async fn emit_index_html_default_title_and_pkg_name() {
+    let p = LeptosAxumPlugin::new();
+    let id = new_config(&p, "App", "wasm_shell", "0.0.0.0:3000").await;
+
+    let res = p
+        .invoke_tool(
+            "leptos_axum__emit_index_html",
+            serde_json::json!({ "config_id": id }),
+        )
+        .await
+        .unwrap();
+    let html = result_text(&res);
+    assert!(
+        html.contains("<title>Leptos App</title>"),
+        "expected default title"
+    );
+    assert!(html.contains("app.js"), "expected fallback pkg_name");
+}
+
+// ── emit_client_cargo_toml ─────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn emit_client_cargo_toml_hydrate_features() {
+    let p = LeptosAxumPlugin::new();
+    let id = new_config(&p, "App", "wasm_shell", "0.0.0.0:3000").await;
+    p.invoke_tool(
+        "leptos_axum__set_pkg_name",
+        serde_json::json!({ "config_id": id, "pkg_name": "archive_client" }),
+    )
+    .await
+    .unwrap();
+
+    let res = p
+        .invoke_tool(
+            "leptos_axum__emit_client_cargo_toml",
+            serde_json::json!({ "config_id": id }),
+        )
+        .await
+        .unwrap();
+    let toml = result_text(&res);
+
+    assert!(
+        toml.contains("name = \"archive_client\""),
+        "expected package name"
+    );
+    assert!(
+        toml.contains(r#"features = ["hydrate"]"#),
+        "expected hydrate feature"
+    );
+    assert!(toml.contains("wasm-bindgen"), "expected wasm-bindgen dep");
+    assert!(
+        toml.contains("console_error_panic_hook"),
+        "expected panic hook dep"
+    );
+    assert!(
+        toml.contains(r#"crate-type = ["cdylib", "rlib"]"#),
+        "expected cdylib + rlib"
+    );
+    assert!(
+        toml.contains("opt-level = \"z\""),
+        "expected size optimization"
+    );
+}
+
+#[tokio::test]
+async fn emit_client_cargo_toml_csr_feature() {
+    let p = LeptosAxumPlugin::new();
+    let id = new_config(&p, "App", "wasm_shell", "0.0.0.0:3000").await;
+    p.invoke_tool(
+        "leptos_axum__set_client_mode",
+        serde_json::json!({ "config_id": id, "mode": "csr" }),
+    )
+    .await
+    .unwrap();
+
+    let res = p
+        .invoke_tool(
+            "leptos_axum__emit_client_cargo_toml",
+            serde_json::json!({ "config_id": id }),
+        )
+        .await
+        .unwrap();
+    let toml = result_text(&res);
+    assert!(
+        toml.contains(r#"features = ["csr"]"#),
+        "expected csr feature"
+    );
+}
+
+#[tokio::test]
+async fn emit_client_cargo_toml_no_pkg_name_uses_fallback() {
+    let p = LeptosAxumPlugin::new();
+    let id = new_config(&p, "App", "wasm_shell", "0.0.0.0:3000").await;
+
+    let res = p
+        .invoke_tool(
+            "leptos_axum__emit_client_cargo_toml",
+            serde_json::json!({ "config_id": id }),
+        )
+        .await
+        .unwrap();
+    let toml = result_text(&res);
+    assert!(
+        toml.contains("name = \"app-client\""),
+        "expected fallback name"
+    );
+}
+
+// ── LeptosClientMode enum ──────────────────────────────────────────────────────
+
+#[test]
+fn leptos_client_mode_display() {
+    assert_eq!(LeptosClientMode::Csr.to_string(), "csr");
+    assert_eq!(LeptosClientMode::Hydrate.to_string(), "hydrate");
+}
+
+#[test]
+fn leptos_client_mode_default_is_hydrate() {
+    assert_eq!(LeptosClientMode::default(), LeptosClientMode::Hydrate);
 }

@@ -5,6 +5,44 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+/// Client-side Leptos rendering mode for WASM builds.
+///
+/// Controls the feature flag emitted in the client `Cargo.toml` and the
+/// entry-point call in the client `lib.rs`.
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    strum::EnumIter,
+    derive_more::Display,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum LeptosClientMode {
+    /// Pure client-side rendering — no SSR, browser runs everything.
+    ///
+    /// Uses `leptos = { features = ["csr"] }`.  Best for SPAs that don't
+    /// need server-rendered HTML.
+    #[display("csr")]
+    Csr,
+    /// Hydration mode — browser picks up where the server left off.
+    ///
+    /// Uses `leptos = { features = ["hydrate"] }`.  Pair this with
+    /// [`LeptosAxumMode::FullSsr`] or [`LeptosAxumMode::WasmShell`].
+    #[display("hydrate")]
+    Hydrate,
+}
+
+impl Default for LeptosClientMode {
+    fn default() -> Self {
+        Self::Hydrate
+    }
+}
+
 /// Rendering + serving mode for a Leptos + Axum application.
 #[derive(
     Debug,
@@ -18,6 +56,7 @@ use serde::{Deserialize, Serialize};
     strum::EnumIter,
     derive_more::Display,
 )]
+#[serde(rename_all = "snake_case")]
 pub enum LeptosAxumMode {
     /// Serve pre-rendered HTML strings via [`elicit_leptos::LeptosRenderer`].
     ///
@@ -93,6 +132,24 @@ pub struct LeptosAxumDescriptor {
     ///
     /// Defaults to `true` for `FullSsr` and `WasmShell`.
     pub static_file_handler: bool,
+    /// Client-side WASM rendering mode — `Csr` or `Hydrate`.
+    ///
+    /// Controls the feature flag in the emitted client `Cargo.toml` and
+    /// the entry-point call in the emitted client `lib.rs`.
+    /// Defaults to [`LeptosClientMode::Hydrate`].
+    #[serde(default)]
+    pub client_mode: LeptosClientMode,
+    /// Rust crate name for the client WASM library (e.g. `"archive_client"`).
+    ///
+    /// Used in emitted `index.html` asset paths, client `lib.rs` imports, and
+    /// client `Cargo.toml` package name.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pkg_name: Option<String>,
+    /// Page `<title>` for the emitted `index.html`.
+    ///
+    /// Defaults to `"Leptos App"` if not set.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub app_title: Option<String>,
 }
 
 impl LeptosAxumDescriptor {
@@ -113,6 +170,9 @@ impl LeptosAxumDescriptor {
             response_headers: vec![],
             server_fn_route: None,
             static_file_handler,
+            client_mode: LeptosClientMode::default(),
+            pkg_name: None,
+            app_title: None,
         }
     }
 }
@@ -137,5 +197,23 @@ impl crate::emit_code::ToCodeLiteral for LeptosAxumMode {
 
     fn type_tokens() -> proc_macro2::TokenStream {
         quote::quote! { elicitation::LeptosAxumMode }
+    }
+}
+
+#[cfg(feature = "emit")]
+impl crate::emit_code::ToCodeLiteral for LeptosClientMode {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        match self {
+            LeptosClientMode::Csr => {
+                quote::quote! { elicitation::LeptosClientMode::Csr }
+            }
+            LeptosClientMode::Hydrate => {
+                quote::quote! { elicitation::LeptosClientMode::Hydrate }
+            }
+        }
+    }
+
+    fn type_tokens() -> proc_macro2::TokenStream {
+        quote::quote! { elicitation::LeptosClientMode }
     }
 }

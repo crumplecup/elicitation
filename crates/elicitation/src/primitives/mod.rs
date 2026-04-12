@@ -110,7 +110,7 @@ pub use uom_types::{UomFormula, UomQuantityKind, UomStep, UomUnitSystem};
 mod leptos_types;
 #[cfg(feature = "leptos-types")]
 pub use leptos_types::{
-    LeptosAppDescriptor, LeptosAxumDescriptor, LeptosAxumMode, LeptosComponentDescriptor,
-    LeptosCustomRouteDescriptor, LeptosHtmlTag, LeptosMode, LeptosPropDescriptor,
-    LeptosResponseHeaderDescriptor, LeptosRouteDescriptor, LeptosViewNode,
+    LeptosAppDescriptor, LeptosAxumDescriptor, LeptosAxumMode, LeptosClientMode,
+    LeptosComponentDescriptor, LeptosCustomRouteDescriptor, LeptosHtmlTag, LeptosMode,
+    LeptosPropDescriptor, LeptosResponseHeaderDescriptor, LeptosRouteDescriptor, LeptosViewNode,
 };

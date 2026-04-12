@@ -7,7 +7,7 @@ mod descriptors;
 mod enums;
 
 pub use axum_ssr::{
-    LeptosAxumDescriptor, LeptosAxumMode, LeptosCustomRouteDescriptor,
+    LeptosAxumDescriptor, LeptosAxumMode, LeptosClientMode, LeptosCustomRouteDescriptor,
     LeptosResponseHeaderDescriptor,
 };
 pub use descriptors::{

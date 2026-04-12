@@ -167,6 +167,8 @@ async-trait = "0.1"
 # ── UI ────────────────────────────────────────────────────────────────────────
 accesskit = { version = "0.24", features = ["serde", "schemars"] }
 egui = { version = "0.34", features = ["serde"] }
+egui-winit = { version = "0.34" }
+egui-wgpu  = { version = "0.34", features = ["winit"] }
 ratatui = { version = "0.30", default-features = false, features = ["serde"] }
 crossterm = { version = "0.29", default-features = false }
 eframe = { version = "0.34", default-features = false, features = [
@@ -223,6 +225,8 @@ bytes = "1"
 reqwest = { version = "0.13", features = ["json", "cookies", "stream"] }
 leptos = { version = "0.8", features = ["ssr"] }
 leptos_axum = "0.8"
+wasm-bindgen = "0.2"
+console_error_panic_hook = "0.1"
 
 # ── Regex ─────────────────────────────────────────────────────────────────────
 regex = "1.12"
