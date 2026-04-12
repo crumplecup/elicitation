@@ -125,6 +125,9 @@ mod wkb_types;
 #[cfg(feature = "winit-types")]
 mod winit_types;
 
+#[cfg(feature = "wgpu-types")]
+mod wgpu_types;
+
 #[cfg(feature = "palette")]
 mod palette_types;
 
@@ -660,4 +663,10 @@ pub use ui_types::{
 pub use winit_types::{
     verify_winit_logical_position_fields, verify_winit_logical_size_fields,
     verify_winit_physical_size_fields, verify_winit_physical_size_zero,
+};
+
+#[cfg(feature = "wgpu-types")]
+pub use wgpu_types::{
+    verify_wgpu_color_fields, verify_wgpu_extent3d_fields, verify_wgpu_extent3d_zero,
+    verify_wgpu_origin3d_fields,
 };

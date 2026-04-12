@@ -409,6 +409,23 @@ mod winit_tests {
     }
 }
 
+// wgpu
+#[cfg(feature = "wgpu-types")]
+mod wgpu_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn wgpu_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::WgpuExtent3d>("WgpuExtent3d");
+        assert_proofs_non_empty::<elicitation::WgpuColor>("WgpuColor");
+        assert_proofs_non_empty::<elicitation::WgpuOrigin3d>("WgpuOrigin3d");
+        assert_proofs_non_empty::<elicitation::WgpuTextureFormat>("WgpuTextureFormat");
+        assert_proofs_non_empty::<elicitation::WgpuPresentMode>("WgpuPresentMode");
+        assert_proofs_non_empty::<elicitation::WgpuPowerPreference>("WgpuPowerPreference");
+        assert_proofs_non_empty::<elicitation::WgpuBackend>("WgpuBackend");
+    }
+}
+
 // ============================================================================
 // Unit / trivial types
 // ============================================================================

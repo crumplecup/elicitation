@@ -744,6 +744,11 @@ impl ProofHarness {
             Self::new("winit_types", "verify_winit_logical_size_fields"),
             Self::new("winit_types", "verify_winit_logical_position_fields"),
             Self::new("winit_types", "verify_winit_physical_size_zero"),
+            // wgpu_types: GPU struct wrapper proofs
+            Self::new("wgpu_types", "verify_wgpu_extent3d_fields"),
+            Self::new("wgpu_types", "verify_wgpu_extent3d_zero"),
+            Self::new("wgpu_types", "verify_wgpu_color_fields"),
+            Self::new("wgpu_types", "verify_wgpu_origin3d_fields"),
         ]
     }
 

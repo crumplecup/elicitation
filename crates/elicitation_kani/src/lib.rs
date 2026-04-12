@@ -149,6 +149,9 @@ mod wkb_types;
 #[cfg(all(kani, feature = "winit-types"))]
 mod winit_types;
 
+#[cfg(all(kani, feature = "wgpu-types"))]
+mod wgpu_types;
+
 #[cfg(all(kani, feature = "palette"))]
 mod palette_types;
 
