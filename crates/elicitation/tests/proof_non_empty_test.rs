@@ -388,6 +388,27 @@ mod wkb_tests {
     }
 }
 
+// winit
+#[cfg(feature = "winit-types")]
+mod winit_tests {
+    use super::assert_proofs_non_empty;
+
+    #[test]
+    fn winit_proofs_non_empty() {
+        assert_proofs_non_empty::<elicitation::WinitPhysicalSize>("WinitPhysicalSize");
+        assert_proofs_non_empty::<elicitation::WinitLogicalSize>("WinitLogicalSize");
+        assert_proofs_non_empty::<elicitation::WinitLogicalPosition>("WinitLogicalPosition");
+        assert_proofs_non_empty::<elicitation::WinitWindowAttributes>("WinitWindowAttributes");
+        assert_proofs_non_empty::<elicitation::WinitCursorIconSelect>("WinitCursorIconSelect");
+        assert_proofs_non_empty::<elicitation::WinitKeyCodeSelect>("WinitKeyCodeSelect");
+        assert_proofs_non_empty::<elicitation::WinitElementStateSelect>("WinitElementStateSelect");
+        assert_proofs_non_empty::<elicitation::WinitMouseButtonSelect>("WinitMouseButtonSelect");
+        assert_proofs_non_empty::<elicitation::WinitTouchPhaseSelect>("WinitTouchPhaseSelect");
+        assert_proofs_non_empty::<elicitation::WinitThemeSelect>("WinitThemeSelect");
+        assert_proofs_non_empty::<elicitation::WinitWindowLevelSelect>("WinitWindowLevelSelect");
+    }
+}
+
 // ============================================================================
 // Unit / trivial types
 // ============================================================================

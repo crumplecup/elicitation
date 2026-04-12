@@ -638,6 +638,14 @@ pub use primitives::wkb_types::{
     WkbGeometryType, WkbGeometryTypeStyle, WkbWriteOptions, WkbWriteOptionsStyle,
 };
 
+// winit windowing / input types (feature-gated on winit-types)
+#[cfg(feature = "winit-types")]
+pub use primitives::winit_types::{
+    WinitCursorIconSelect, WinitElementStateSelect, WinitKeyCodeSelect, WinitLogicalPosition,
+    WinitLogicalSize, WinitMouseButtonSelect, WinitPhysicalSize, WinitThemeSelect,
+    WinitTouchPhaseSelect, WinitWindowAttributes, WinitWindowLevelSelect,
+};
+
 #[cfg(feature = "geo")]
 pub mod geo_algorithms;
 #[cfg(feature = "geo")]

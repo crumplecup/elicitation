@@ -79,6 +79,9 @@ pub mod wkt_types;
 #[cfg(feature = "wkb-types")]
 pub mod wkb_types;
 
+#[cfg(feature = "winit-types")]
+pub mod winit_types;
+
 #[cfg(feature = "palette")]
 pub mod palette_types;
 

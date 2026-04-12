@@ -61,6 +61,8 @@ pub mod type_spec_plugin;
 mod url_specs;
 mod uuid_specs;
 mod value_specs;
+#[cfg(feature = "winit-types")]
+mod winit_specs;
 #[cfg(feature = "wkb-types")]
 mod wkb_specs;
 mod wkt_specs;
