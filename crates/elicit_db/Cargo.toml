@@ -13,12 +13,13 @@ keywords = ["database", "contracts", "typestate", "sql", "elicitation"]
 categories = ["database", "rust-patterns"]
 
 [dependencies]
-elicitation = { workspace = true }
+elicitation = { workspace = true, features = ["serde_json"] }
 elicitation_derive.workspace = true
 elicit_wkt = { workspace = true, optional = true }
 elicit_wkb = { workspace = true, optional = true }
 elicit_geojson = { workspace = true, optional = true }
 elicit_geo_types = { workspace = true, optional = true }
+rmcp.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 schemars.workspace = true

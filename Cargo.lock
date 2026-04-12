@@ -1801,6 +1801,7 @@ dependencies = [
  "geo-types",
  "proc-macro2",
  "quote",
+ "rmcp",
  "schemars",
  "serde",
  "serde_json",
@@ -2089,12 +2090,16 @@ dependencies = [
 name = "elicit_server"
 version = "0.10.0"
 dependencies = [
+ "accesskit",
  "chrono",
  "derive_more",
  "dotenvy",
+ "elicit_accesskit",
  "elicit_chrono",
+ "elicit_db",
  "elicit_egui",
  "elicit_jiff",
+ "elicit_polars",
  "elicit_regex",
  "elicit_reqwest",
  "elicit_serde_json",
@@ -2113,6 +2118,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sqlx",
+ "strum 0.28.0",
  "tempfile",
  "time",
  "tokio",

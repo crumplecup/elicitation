@@ -58,6 +58,7 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+pub mod archive;
 mod fetch_and_parse;
 pub mod ledger;
 mod secure_fetch;

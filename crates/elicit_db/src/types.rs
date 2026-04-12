@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::{AuditLogged, Committed, DbResult, Durable, TransactionCommitted, TxMarker};
-use elicitation::Established;
+use elicitation::{Elicit, Established, Prompt, Select};
 
 #[cfg(feature = "geo-types")]
 use elicit_geo_types::Geometry as GeoTypesGeometry;
@@ -16,7 +16,7 @@ use elicit_wkb::{WriteOptions as WkbWriteOptions, write_geometry};
 use elicit_wkt::trait_factories::{ToWktF64, TryFromWktF64};
 
 /// A spatial payload encoded as WKT text or WKB bytes.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum DbSpatialValue {
     /// Well-known text representation.
     Wkt(String),
@@ -62,7 +62,7 @@ impl DbSpatialValue {
 }
 
 /// A single scalar database value.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum DbValue {
     /// SQL NULL.
     Null,
@@ -155,7 +155,7 @@ impl DbValue {
 }
 
 /// A single row from a query result — ordered named columns.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbRow(pub Vec<(String, DbValue)>);
 
 impl DbRow {
@@ -166,7 +166,7 @@ impl DbRow {
 }
 
 /// A collection of query rows with affected-row count.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbRows {
     /// The result rows.
     pub rows: Vec<DbRow>,
@@ -195,7 +195,7 @@ pub type DbCommitResult = DbResult<(
 )>;
 
 /// Column definition metadata.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbColumn {
     /// Column name.
     pub name: String,
@@ -210,7 +210,7 @@ pub struct DbColumn {
 }
 
 /// Table metadata including columns and statistics.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbTableInfo {
     /// Schema that owns this table.
     pub schema: String,
@@ -225,7 +225,7 @@ pub struct DbTableInfo {
 }
 
 /// Schema metadata including contained tables.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbSchema {
     /// Schema name.
     pub name: String,
@@ -236,7 +236,7 @@ pub struct DbSchema {
 }
 
 /// Index metadata.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbIndexInfo {
     /// Index name.
     pub name: String,
@@ -251,7 +251,7 @@ pub struct DbIndexInfo {
 }
 
 /// Role / user metadata.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbRoleInfo {
     /// Role name.
     pub name: String,
@@ -266,7 +266,7 @@ pub struct DbRoleInfo {
 }
 
 /// Active session info from `pg_stat_activity`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbSessionInfo {
     /// Backend process ID.
     pub pid: i32,
@@ -283,7 +283,7 @@ pub struct DbSessionInfo {
 }
 
 /// Aggregate session activity from `pg_stat_activity`.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbStatActivity {
     /// All tracked sessions.
     pub sessions: Vec<DbSessionInfo>,
@@ -296,7 +296,7 @@ pub struct DbStatActivity {
 }
 
 /// Result of `EXPLAIN [ANALYZE]`.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DbExplain {
     /// Full plan text.
     pub plan: String,
@@ -314,7 +314,7 @@ pub struct DbExplain {
 ///
 /// The actual connection state lives in the implementation.
 /// This value is an implementation-defined identifier.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct TransactionHandle(pub String);
 
 /// ANSI/ISO transaction isolation level.
@@ -332,6 +332,7 @@ pub struct TransactionHandle(pub String);
     JsonSchema,
     strum::EnumIter,
     derive_more::Display,
+    Elicit,
 )]
 pub enum IsolationLevel {
     /// Allows dirty reads, non-repeatable reads, and phantom reads.
@@ -349,5 +350,5 @@ pub enum IsolationLevel {
 }
 
 /// Connection identifier returned by `connect()`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ConnectionId(pub String);

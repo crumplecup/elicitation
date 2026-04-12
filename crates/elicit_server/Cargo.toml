@@ -24,8 +24,12 @@ elicit_url = { workspace = true }
 elicit_chrono = { workspace = true }
 elicit_jiff = { workspace = true }
 elicit_time = { workspace = true }
+elicit_db = { workspace = true }
 elicit_sqlx = { workspace = true }
+elicit_polars = { workspace = true }
 elicit_regex = { workspace = true }
+elicit_accesskit = { workspace = true }
+accesskit = { workspace = true }
 elicit_tokio = { workspace = true }
 elicit_egui = { workspace = true }
 
@@ -44,6 +48,7 @@ schemars = { workspace = true }
 
 # Derive macros
 derive_more = { workspace = true }
+strum = { workspace = true }
 
 # Async
 tokio = { workspace = true }

@@ -1208,6 +1208,35 @@ mod verification_impls {
         }
     }
 
+    // ---- Plain Rust tuples (Survey: each component is a named positional field) ----
+
+    impl<A: ElicitPromptTree, B: ElicitPromptTree> ElicitPromptTree for (A, B) {
+        fn prompt_tree() -> PromptTree {
+            PromptTree::Survey {
+                prompt: Some("Eliciting 2-tuple:".to_string()),
+                type_name: "(_, _)".to_string(),
+                fields: vec![
+                    ("_0".to_string(), Box::new(A::prompt_tree())),
+                    ("_1".to_string(), Box::new(B::prompt_tree())),
+                ],
+            }
+        }
+    }
+
+    impl<A: ElicitPromptTree, B: ElicitPromptTree, C: ElicitPromptTree> ElicitPromptTree for (A, B, C) {
+        fn prompt_tree() -> PromptTree {
+            PromptTree::Survey {
+                prompt: Some("Eliciting 3-tuple:".to_string()),
+                type_name: "(_, _, _)".to_string(),
+                fields: vec![
+                    ("_0".to_string(), Box::new(A::prompt_tree())),
+                    ("_1".to_string(), Box::new(B::prompt_tree())),
+                    ("_2".to_string(), Box::new(C::prompt_tree())),
+                ],
+            }
+        }
+    }
+
     // ---- Feature-gated types ----
 
     #[cfg(feature = "uuid")]
@@ -1261,6 +1290,7 @@ mod verification_impls {
         leaf_impl!(ValueObject, "ValueObject");
         leaf_impl!(ValueArray, "ValueArray");
         leaf_impl!(ValueNonNull, "ValueNonNull");
+        leaf_impl!(serde_json::Value, "serde_json::Value");
     }
 
     #[cfg(feature = "regex")]

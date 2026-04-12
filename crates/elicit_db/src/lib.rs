@@ -77,6 +77,7 @@ pub use contracts::security::{
 };
 pub use contracts::transport::{ConnectionEstablished, RequestWellFormed, ResponseSerializable};
 
+pub use elicitation::ElicitComplete;
 pub use error::{DbError, DbErrorKind, DbResult};
 pub use traits::{
     DbBackend, DbBackupManager, DbDatabaseManager, DbIndexManager, DbMonitor, DbQueryExecutor,
