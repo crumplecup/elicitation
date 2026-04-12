@@ -40,10 +40,11 @@ pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
 pub use plugins::{
     AkNodeEntry, ArchiveBrowsePlugin, ArchiveDisplayPlugin, ArchiveQueryPlugin,
     ArchiveSpatialPlugin, QueryExecuted, SchemaExists, TableExists, explain_sql_direct,
-    generate_ddl_direct, get_column_stats_direct, inspect_table_direct,
+    export_query_result, generate_ddl_direct, get_column_stats_direct, inspect_table_direct,
 };
 pub use types::{
     BackendKind, ColumnDescriptor, ColumnStats, ConstraintDescriptor, ConstraintKind,
-    DatabaseDescriptor, DdlDescriptor, ExplainNode, FkAction, ForeignKeyDescriptor,
-    IndexDescriptor, QueryResult, SchemaDescriptor, TableDescriptor, TableInspection, TableType,
+    DatabaseDescriptor, DdlDescriptor, ExplainNode, ExportFormat, ExportResult, FkAction,
+    ForeignKeyDescriptor, IndexDescriptor, QueryResult, SchemaDescriptor, TableDescriptor,
+    TableInspection, TableType,
 };

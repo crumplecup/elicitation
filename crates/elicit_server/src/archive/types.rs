@@ -590,3 +590,58 @@ impl QueryResult {
         !self.spatial_column_names.is_empty()
     }
 }
+
+// ── Export ────────────────────────────────────────────────────────────────────
+
+/// Output format for data export.
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    strum::EnumIter,
+    derive_more::Display,
+)]
+pub enum ExportFormat {
+    /// Comma-separated values with header row.
+    #[display("csv")]
+    Csv,
+    /// JSON array of objects.
+    #[display("json")]
+    Json,
+    /// Newline-delimited JSON (one object per line).
+    #[display("ndjson")]
+    Ndjson,
+    /// Tab-separated values with header row.
+    #[display("tsv")]
+    Tsv,
+}
+
+impl ExportFormat {
+    /// File extension for this format.
+    pub fn extension(&self) -> &'static str {
+        match self {
+            Self::Csv => "csv",
+            Self::Tsv => "tsv",
+            Self::Json => "json",
+            Self::Ndjson => "ndjson",
+        }
+    }
+}
+
+/// Result of a data export operation.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct ExportResult {
+    /// Format used.
+    pub format: ExportFormat,
+    /// Number of rows written.
+    pub row_count: u64,
+    /// Exported content.
+    pub content: String,
+}

@@ -23,7 +23,7 @@ use std::collections::HashMap;
 use elicit_accesskit::{KeyBinding, StatusBarDescriptor};
 
 use crate::archive::{
-    ColumnStats, ExplainNode, QueryResult, TableInspection,
+    ColumnStats, ExplainNode, ExportFormat, QueryResult, TableInspection,
     nav_tree::{NavTree, SchemaEntry},
 };
 
@@ -166,6 +166,17 @@ pub enum FetchRequest {
         /// SQL to explain.
         sql: String,
     },
+    /// Export the current data grid or query result.
+    ExportData {
+        /// Schema context (for display only).
+        schema: String,
+        /// Table context (for display only).
+        table: String,
+        /// Query result to export (cloned from the active panel).
+        result: QueryResult,
+        /// Desired output format.
+        format: ExportFormat,
+    },
 }
 
 /// Response sent from the background fetch task back to the event loop.
@@ -222,6 +233,19 @@ pub enum PanelEvent {
         /// Parsed plan root.
         root: ExplainNode,
     },
+    /// Export completed; content ready to write or display.
+    ExportReady {
+        /// Schema context.
+        schema: String,
+        /// Table context.
+        table: String,
+        /// Serialized export content.
+        content: String,
+        /// Format of the content.
+        format: ExportFormat,
+        /// Number of rows exported.
+        row_count: u64,
+    },
 }
 
 // ── ArchiveNavModel ───────────────────────────────────────────────────────────
@@ -265,6 +289,8 @@ pub struct ArchiveNavModel {
     pub table_inspections: HashMap<(String, String), TableInspection>,
     /// Cached per-column planner statistics, keyed by `(schema, table)`.
     pub column_stats: HashMap<(String, String), Vec<ColumnStats>>,
+    /// Most recent export result (schema, table, content, format).
+    pub last_export: Option<(String, String, String, ExportFormat)>,
 }
 
 impl ArchiveNavModel {
@@ -293,6 +319,7 @@ impl ArchiveNavModel {
             panel: PanelMode::ColumnDetail,
             table_inspections: HashMap::new(),
             column_stats: HashMap::new(),
+            last_export: None,
         };
         model.rebuild_flat();
         model
@@ -535,6 +562,37 @@ impl ArchiveNavModel {
                 })
             }
             FlatItem::Schema(_) => None,
+        }
+    }
+
+    /// If the active panel contains a data grid, return an [`ExportData`] request
+    /// for the given format.
+    ///
+    /// Returns `None` when there is no data to export.
+    ///
+    /// [`ExportData`]: FetchRequest::ExportData
+    pub fn export_request(&self, format: ExportFormat) -> Option<FetchRequest> {
+        match &self.panel {
+            PanelMode::DataGrid {
+                schema,
+                table,
+                result,
+                ..
+            } => Some(FetchRequest::ExportData {
+                schema: schema.clone(),
+                table: table.clone(),
+                result: result.clone(),
+                format,
+            }),
+            PanelMode::SqlEditor {
+                result: Some(r), ..
+            } => Some(FetchRequest::ExportData {
+                schema: String::new(),
+                table: "(query result)".to_string(),
+                result: r.clone(),
+                format,
+            }),
+            _ => None,
         }
     }
 

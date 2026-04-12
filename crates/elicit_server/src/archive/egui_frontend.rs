@@ -23,10 +23,11 @@ use winit::{
 };
 
 use crate::archive::{
-    ArchiveDbBackend, ArchiveResult,
+    ArchiveDbBackend, ArchiveResult, ExportFormat,
     errors::{ArchiveError, ArchiveErrorKind},
     nav_model::{ArchiveNavModel, FetchRequest, FlatItem, PanelEvent, PanelMode},
     nav_tree::{NavTree, build_nav_tree},
+    plugins::export::export_query_result,
     plugins::query::{execute_sql_direct, preview_table_direct},
     types::TableType,
 };
@@ -54,6 +55,10 @@ struct ArchiveEguiApp {
     req_tx: mpsc::Sender<FetchRequest>,
     /// Receiver for panel events from the fetch task.
     event_rx: mpsc::Receiver<PanelEvent>,
+    /// When true, the export format picker overlay is shown.
+    export_picker: bool,
+    /// Currently highlighted option in the export picker (0–3).
+    export_picker_idx: usize,
     // wgpu / egui-winit resources (None until `resumed`)
     window: Option<Arc<Window>>,
     egui_state: Option<EguiWinitState>,
@@ -75,6 +80,8 @@ impl ArchiveEguiApp {
             should_quit: false,
             req_tx,
             event_rx,
+            export_picker: false,
+            export_picker_idx: 0,
             window: None,
             egui_state: None,
             surface: None,
@@ -165,6 +172,20 @@ impl ArchiveEguiApp {
                         root,
                     };
                 }
+                PanelEvent::ExportReady {
+                    schema,
+                    table,
+                    content,
+                    format,
+                    row_count,
+                } => {
+                    self.model.last_export =
+                        Some((schema.clone(), table.clone(), content, format.clone()));
+                    let ext = format.extension();
+                    self.model.flash = Some(format!(
+                        "exported {row_count} rows from {schema}.{table} as .{ext}"
+                    ));
+                }
             }
         }
     }
@@ -212,6 +233,28 @@ impl ArchiveEguiApp {
             if esc_key {
                 self.model.close_filter();
             }
+        } else if self.export_picker {
+            if esc_key {
+                self.export_picker = false;
+            }
+            if up && self.export_picker_idx > 0 {
+                self.export_picker_idx -= 1;
+            }
+            if down {
+                self.export_picker_idx = (self.export_picker_idx + 1).min(3);
+            }
+            if enter {
+                let format = match self.export_picker_idx {
+                    0 => ExportFormat::Csv,
+                    1 => ExportFormat::Json,
+                    2 => ExportFormat::Ndjson,
+                    _ => ExportFormat::Tsv,
+                };
+                self.export_picker = false;
+                if let Some(req) = self.model.export_request(format) {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
         } else {
             if up {
                 self.model.move_up();
@@ -257,6 +300,11 @@ impl ArchiveEguiApp {
                 if let Some(req) = self.model.explain_request() {
                     let _ = self.req_tx.try_send(req);
                 }
+            }
+            // x → export format picker
+            if ctx.input(|i| i.key_pressed(Key::X)) && self.model.panel.is_data_grid() {
+                self.export_picker = true;
+                self.export_picker_idx = 0;
             }
             if quit || esc_key {
                 self.should_quit = true;
@@ -533,6 +581,64 @@ impl ArchiveEguiApp {
                     if ui.button("Close").clicked() {
                         self.model.show_help = false;
                     }
+                });
+        }
+
+        // ── Export format picker ──────────────────────────────────────────────
+        if self.export_picker {
+            const FORMATS: &[(&str, &str)] = &[
+                ("CSV", "Comma-separated values (.csv)"),
+                ("JSON", "JSON array of objects (.json)"),
+                ("NDJSON", "Newline-delimited JSON (.ndjson)"),
+                ("TSV", "Tab-separated values (.tsv)"),
+            ];
+            egui::Window::new("Export Format")
+                .collapsible(false)
+                .resizable(false)
+                .anchor(egui::Align2::CENTER_CENTER, Vec2::ZERO)
+                .show(&ctx, |ui| {
+                    ui.label(
+                        RichText::new("Select export format (↑↓ Enter Esc):")
+                            .color(SUBTEXT0)
+                            .small(),
+                    );
+                    ui.separator();
+                    for (i, (fmt, desc)) in FORMATS.iter().enumerate() {
+                        let selected = i == self.export_picker_idx;
+                        let fmt_text = if selected {
+                            RichText::new(format!("▶ {fmt}"))
+                                .color(BLUE)
+                                .strong()
+                                .monospace()
+                        } else {
+                            RichText::new(format!("  {fmt}")).color(TEXT).monospace()
+                        };
+                        let desc_text = RichText::new(*desc).color(SUBTEXT0).small();
+                        ui.horizontal(|ui| {
+                            if ui.selectable_label(selected, fmt_text).clicked() {
+                                self.export_picker_idx = i;
+                            }
+                            ui.label(desc_text);
+                        });
+                    }
+                    ui.separator();
+                    ui.horizontal(|ui| {
+                        if ui.button("Export").clicked() {
+                            let format = match self.export_picker_idx {
+                                0 => ExportFormat::Csv,
+                                1 => ExportFormat::Json,
+                                2 => ExportFormat::Ndjson,
+                                _ => ExportFormat::Tsv,
+                            };
+                            self.export_picker = false;
+                            if let Some(req) = self.model.export_request(format) {
+                                let _ = self.req_tx.try_send(req);
+                            }
+                        }
+                        if ui.button("Cancel").clicked() {
+                            self.export_picker = false;
+                        }
+                    });
                 });
         }
     }
@@ -1159,6 +1265,21 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                 root,
                             },
                             Err(e) => PanelEvent::FetchError(e),
+                        }
+                    }
+                    FetchRequest::ExportData {
+                        schema,
+                        table,
+                        result,
+                        format,
+                    } => {
+                        let export = export_query_result(&result, format.clone());
+                        PanelEvent::ExportReady {
+                            schema,
+                            table,
+                            content: export.content,
+                            row_count: export.row_count,
+                            format,
                         }
                     }
                 };

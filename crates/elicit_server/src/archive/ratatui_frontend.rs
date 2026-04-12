@@ -43,8 +43,9 @@ use crate::archive::nav_model::{
 };
 use crate::archive::nav_tree::{NavTree, build_nav_tree};
 use crate::archive::{
-    ArchiveDbBackend, ArchiveResult, QueryResult, TableType,
+    ArchiveDbBackend, ArchiveResult, ExportFormat, QueryResult, TableType,
     errors::{ArchiveError, ArchiveErrorKind},
+    plugins::export::export_query_result,
     plugins::query::{execute_sql_direct, preview_table_direct},
 };
 
@@ -57,6 +58,10 @@ struct TuiApp {
     table_state: TableState,
     /// Sender to the background fetch task.
     req_tx: mpsc::Sender<FetchRequest>,
+    /// When `Some`, show the export format picker overlay.
+    export_picker: bool,
+    /// Currently highlighted option in the export picker (0–3).
+    export_picker_idx: usize,
 }
 
 impl TuiApp {
@@ -71,6 +76,8 @@ impl TuiApp {
             list_state,
             table_state: TableState::default(),
             req_tx,
+            export_picker: false,
+            export_picker_idx: 0,
         }
     }
 
@@ -135,6 +142,19 @@ impl TuiApp {
         }
     }
 
+    fn confirm_export(&mut self) {
+        let format = match self.export_picker_idx {
+            0 => ExportFormat::Csv,
+            1 => ExportFormat::Json,
+            2 => ExportFormat::Ndjson,
+            _ => ExportFormat::Tsv,
+        };
+        self.export_picker = false;
+        if let Some(req) = self.model.export_request(format) {
+            let _ = self.req_tx.try_send(req);
+        }
+    }
+
     fn apply_panel_event(&mut self, event: PanelEvent) {
         match event {
             PanelEvent::DataGrid {
@@ -195,6 +215,20 @@ impl TuiApp {
                     root,
                 };
             }
+            PanelEvent::ExportReady {
+                schema,
+                table,
+                content,
+                format,
+                row_count,
+            } => {
+                self.model.last_export =
+                    Some((schema.clone(), table.clone(), content, format.clone()));
+                let ext = format.extension();
+                self.model.flash = Some(format!(
+                    "exported {row_count} rows from {schema}.{table} as .{ext}"
+                ));
+            }
         }
     }
 }
@@ -228,6 +262,9 @@ fn draw_app(frame: &mut Frame, app: &mut TuiApp) {
 
     if app.model.show_help {
         draw_help(frame, area);
+    }
+    if app.export_picker {
+        draw_export_picker(frame, area, app.export_picker_idx);
     }
 }
 
@@ -934,6 +971,59 @@ fn draw_help(frame: &mut Frame, area: Rect) {
     frame.render_widget(help, popup);
 }
 
+fn draw_export_picker(frame: &mut Frame, area: Rect, selected: usize) {
+    const FORMATS: &[(&str, &str)] = &[
+        ("CSV  ", "Comma-separated values (.csv)"),
+        ("JSON ", "JSON array of objects (.json)"),
+        ("NDJSON", "Newline-delimited JSON (.ndjson)"),
+        ("TSV  ", "Tab-separated values (.tsv)"),
+    ];
+    let height = FORMATS.len() as u16 + 4;
+    let width = 46u16;
+    let popup = centered_rect(width, height, area);
+
+    let lines: Vec<Line> = FORMATS
+        .iter()
+        .enumerate()
+        .map(|(i, (fmt, desc))| {
+            let (key_style, desc_style) = if i == selected {
+                (
+                    Style::default()
+                        .fg(Color::Black)
+                        .bg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                    Style::default().fg(Color::Black).bg(Color::Cyan),
+                )
+            } else {
+                (
+                    Style::default().fg(Color::Cyan),
+                    Style::default().fg(Color::White),
+                )
+            };
+            Line::from(vec![
+                Span::styled(format!("  {fmt}  "), key_style),
+                Span::styled(*desc, desc_style),
+            ])
+        })
+        .collect();
+
+    let picker = Paragraph::new(lines)
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title(" Export Format (↑↓ Enter Esc) ")
+                .title_style(
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ),
+        )
+        .style(Style::default().bg(Color::Black));
+
+    frame.render_widget(Clear, popup);
+    frame.render_widget(picker, popup);
+}
+
 fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
     let x = area.x + area.width.saturating_sub(width) / 2;
     let y = area.y + area.height.saturating_sub(height) / 2;
@@ -1049,6 +1139,22 @@ fn spawn_fetch_task(
                     };
                     let _ = event_tx.send(ev).await;
                 }
+                FetchRequest::ExportData {
+                    schema,
+                    table,
+                    result,
+                    format,
+                } => {
+                    let export = export_query_result(&result, format.clone());
+                    let ev = PanelEvent::ExportReady {
+                        schema,
+                        table,
+                        content: export.content,
+                        row_count: export.row_count,
+                        format,
+                    };
+                    let _ = event_tx.send(ev).await;
+                }
             }
         }
     });
@@ -1111,6 +1217,21 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                 KeyCode::Char(c) => app.model.filter_push(c),
                                 _ => {}
                             }
+                        } else if app.export_picker {
+                            match key.code {
+                                KeyCode::Esc => app.export_picker = false,
+                                KeyCode::Up | KeyCode::Char('k') => {
+                                    if app.export_picker_idx > 0 {
+                                        app.export_picker_idx -= 1;
+                                    }
+                                }
+                                KeyCode::Down | KeyCode::Char('j') => {
+                                    app.export_picker_idx =
+                                        (app.export_picker_idx + 1).min(3);
+                                }
+                                KeyCode::Enter => app.confirm_export(),
+                                _ => {}
+                            }
                         } else {
                             match key.code {
                                 KeyCode::Char('q') | KeyCode::Esc => quit = true,
@@ -1122,6 +1243,12 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                 KeyCode::Char('/') => app.model.open_filter(),
                                 KeyCode::Char('d') => app.request_ddl(),
                                 KeyCode::Char('e') => app.request_explain(),
+                                KeyCode::Char('x') => {
+                                    if app.model.panel.is_data_grid() {
+                                        app.export_picker = true;
+                                        app.export_picker_idx = 0;
+                                    }
+                                }
                                 // Data grid navigation
                                 KeyCode::PageDown => {
                                     if let PanelMode::DataGrid { result, .. } = &app.model.panel {
