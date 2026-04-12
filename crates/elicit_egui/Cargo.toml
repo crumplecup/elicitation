@@ -13,19 +13,22 @@ keywords = ["mcp", "egui", "gui", "elicitation", "jsonschema"]
 categories = ["gui", "development-tools"]
 
 [dependencies]
-elicitation = { workspace = true, features = ["egui-types"] }
+elicitation = { workspace = true, features = ["egui-types", "egui-winit-types"] }
 elicitation_derive.workspace = true
 elicitation_macros.workspace = true
 elicit_ui.workspace = true
 egui.workspace = true
+egui-winit.workspace = true
 accesskit.workspace = true
 inventory.workspace = true
+futures.workspace = true
 rmcp.workspace = true
 schemars.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
+tokio = { workspace = true }
 tracing.workspace = true
-uuid = { workspace = true, optional = true }
+uuid = { workspace = true, features = ["v4"] }
 quote = { workspace = true }
 
 [dev-dependencies]
@@ -34,8 +37,7 @@ serde_json = { workspace = true }
 
 [features]
 emit = ["elicitation/emit"]
-uuid = ["dep:uuid"]
-runtime = ["uuid"]
+runtime = []
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [

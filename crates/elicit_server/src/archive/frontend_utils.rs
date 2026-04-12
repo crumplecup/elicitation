@@ -94,7 +94,20 @@ pub fn nav_tree_to_verified_tree(nav: &NavTree) -> ArchiveResult<VerifiedTree> {
     let mut nodes: HashMap<AkNodeId, AkNode> = HashMap::new();
     let mut counter: u64 = 1; // 0 is reserved for Window
 
-    // Nav panel root (Tree)
+    // DB header — Banner so it renders as <header>, sits outside the Tree
+    let header_id = AkNodeId::from(counter);
+    counter += 1;
+    let header_label = format!(
+        "{} — {} ({})",
+        nav.db_name,
+        nav.version.as_deref().unwrap_or("unknown"),
+        nav.backend,
+    );
+    let mut header_node = AkNode::new(AkRole::Banner);
+    header_node.set_label(header_label);
+    nodes.insert(header_id, header_node);
+
+    // Nav panel root (Tree) — only schema TreeItems
     let nav_root_id = AkNodeId::from(counter);
     counter += 1;
 
@@ -143,28 +156,25 @@ pub fn nav_tree_to_verified_tree(nav: &NavTree) -> ArchiveResult<VerifiedTree> {
         nodes.insert(schema_id, schema_node);
     }
 
-    // DB header node
-    let header_id = AkNodeId::from(counter);
-    let header_label = format!(
-        "{} — {} ({})",
-        nav.db_name,
-        nav.version.as_deref().unwrap_or("unknown"),
-        nav.backend,
-    );
-    let mut header_node = AkNode::new(AkRole::Heading);
-    header_node.set_label(header_label);
-    nodes.insert(header_id, header_node);
-
-    // Nav panel groups header + schema tree items
-    let mut nav_children = vec![header_id];
-    nav_children.extend_from_slice(&schema_ids);
     let mut nav_node = AkNode::new(AkRole::Tree);
     nav_node.set_label(format!("{} navigator", nav.db_name));
-    nav_node.set_children(nav_children);
+    nav_node.set_children(schema_ids);
     nodes.insert(nav_root_id, nav_node);
 
+    // Window: Banner + Tree + Status (status added by with_status_bar)
+    let status = elicit_accesskit::StatusBarDescriptor::archive_browse();
+    let (status_root_eid, status_pairs) = status.to_ak_nodes(10_000);
+    for (eid, json) in status_pairs {
+        nodes.insert(eid.0, accesskit::Node::from(json));
+    }
+
+    let window_id = AkNodeId::from(0u64);
+    let mut window = AkNode::new(AkRole::Window);
+    window.set_children(vec![header_id, nav_root_id, status_root_eid.0]);
+    nodes.insert(window_id, window);
+
     let viewport = Viewport::new(800, 600);
-    Ok(with_status_bar(nav_root_id, nodes, viewport))
+    Ok(VerifiedTree::from_parts(nodes, window_id, viewport))
 }
 
 /// Build a [`VerifiedTree`] from a live [`crate::archive::ArchiveDbBackend`].

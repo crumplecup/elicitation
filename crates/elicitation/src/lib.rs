@@ -657,6 +657,10 @@ pub use primitives::wgpu_types::{
     WgpuTextureUsages, WgpuTextureViewDimension, WgpuVertexFormat, WgpuVertexStepMode,
 };
 
+// egui + winit integration descriptor types (feature-gated on egui-winit-types)
+#[cfg(feature = "egui-winit-types")]
+pub use primitives::{EguiWinitDescriptor, EguiWinitRenderer, EguiWinitTheme};
+
 #[cfg(feature = "geo")]
 pub mod geo_algorithms;
 #[cfg(feature = "geo")]

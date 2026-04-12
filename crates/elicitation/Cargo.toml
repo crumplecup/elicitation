@@ -106,6 +106,7 @@ elicitation_derive = { workspace = true }
 elicitation_macros = { workspace = true }
 accesskit = { workspace = true, optional = true }
 egui = { workspace = true, optional = true }
+egui-winit = { workspace = true, optional = true }
 ratatui = { workspace = true, optional = true }
 strum = { workspace = true, optional = true }
 
@@ -125,7 +126,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "proj-types", "rstar-types", "georaster-types", "geojson-types", "tower-types", "axum-types", "polars-types", "uom-types", "leptos-types", "wkt-types", "wkb-types", "winit-types", "wgpu-types", "emit"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "proj-types", "rstar-types", "georaster-types", "geojson-types", "tower-types", "axum-types", "polars-types", "uom-types", "leptos-types", "wkt-types", "wkb-types", "winit-types", "wgpu-types", "egui-winit-types", "emit"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -196,6 +197,8 @@ wkb-types = ["dep:wkb", "dep:hex"]
 winit-types = ["dep:winit"]
 # Enable wgpu GPU descriptor type elicitation
 wgpu-types = ["dep:wgpu"]
+# Enable egui + winit integration descriptor type elicitation
+egui-winit-types = ["dep:egui-winit", "egui-types", "winit-types", "strum"]
 # Enable tower middleware type elicitation
 tower-types = ["dep:tower", "dep:tower-http"]
 # Enable axum descriptor type support (router, handler, response, serve descriptors)
