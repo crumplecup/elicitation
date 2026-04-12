@@ -25,6 +25,10 @@ pub mod plugins;
 pub mod types;
 
 pub use errors::{ArchiveError, ArchiveErrorKind, ArchiveResult};
+pub use plugins::{
+    AkNodeEntry, ArchiveBrowsePlugin, ArchiveDisplayPlugin, ArchiveQueryPlugin,
+    ArchiveSpatialPlugin, QueryExecuted, SchemaExists, TableExists,
+};
 pub use types::{
     BackendKind, ColumnDescriptor, DatabaseDescriptor, IndexDescriptor, QueryResult,
     SchemaDescriptor, TableDescriptor, TableType,
