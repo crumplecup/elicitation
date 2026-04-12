@@ -11,10 +11,19 @@
 //! the frontends render as a scrollable list.  A single `usize` cursor tracks
 //! the selected row.  Schema rows can be expanded/collapsed; when a schema is
 //! collapsed its child table rows are removed from the flat list.
+//!
+//! ## Filter
+//!
+//! Press `/` to activate the filter bar.  Typing narrows the flat list to
+//! items whose name contains the filter string (case-insensitive).  Esc clears
+//! the filter and returns to normal navigation.
 
 use elicit_accesskit::{KeyBinding, StatusBarDescriptor};
 
-use crate::archive::nav_tree::{NavTree, SchemaEntry};
+use crate::archive::{
+    QueryResult,
+    nav_tree::{NavTree, SchemaEntry},
+};
 
 // ── FlatItem ──────────────────────────────────────────────────────────────────
 
@@ -39,6 +48,96 @@ pub struct SchemaWithExpand {
     pub expanded: bool,
 }
 
+// ── PanelMode ─────────────────────────────────────────────────────────────────
+
+/// What the central content panel should display.
+#[derive(Debug, Clone)]
+pub enum PanelMode {
+    /// Column detail for the currently selected schema or table (default).
+    ColumnDetail,
+    /// A data grid for a previewed table.
+    DataGrid {
+        /// Schema the table belongs to.
+        schema: String,
+        /// Table name.
+        table: String,
+        /// Query result holding columns + rows.
+        result: QueryResult,
+        /// Current page index (0-based).
+        page: u32,
+    },
+    /// A data fetch is in progress (spinner state).
+    Loading {
+        /// Schema being loaded.
+        schema: String,
+        /// Table being loaded.
+        table: String,
+    },
+    /// SQL editor pane (Phase 1.2).
+    SqlEditor {
+        /// Current editor text.
+        text: String,
+        /// Most recent query result, if any.
+        result: Option<QueryResult>,
+        /// Whether a query is running.
+        running: bool,
+    },
+}
+
+impl Default for PanelMode {
+    fn default() -> Self {
+        Self::ColumnDetail
+    }
+}
+
+impl PanelMode {
+    /// Returns `true` when the panel is showing a data grid.
+    pub fn is_data_grid(&self) -> bool {
+        matches!(self, Self::DataGrid { .. })
+    }
+}
+
+// ── Fetch messaging ───────────────────────────────────────────────────────────
+
+/// Request sent from the event loop to the background fetch task.
+#[derive(Debug, Clone)]
+pub enum FetchRequest {
+    /// Fetch the first N rows of a table.
+    PreviewTable {
+        /// Schema containing the table.
+        schema: String,
+        /// Table to preview.
+        table: String,
+    },
+    /// Re-query the schema/table tree.
+    Refresh,
+    /// Execute arbitrary SQL.
+    ExecuteSql {
+        /// Raw SQL to execute.
+        sql: String,
+    },
+}
+
+/// Response sent from the background fetch task back to the event loop.
+#[derive(Debug, Clone)]
+pub enum PanelEvent {
+    /// Data grid ready.
+    DataGrid {
+        /// Schema the table belongs to.
+        schema: String,
+        /// Table name.
+        table: String,
+        /// Fetched query result.
+        result: QueryResult,
+    },
+    /// Refreshed nav tree.
+    NavRefreshed(NavTree),
+    /// SQL query result.
+    SqlResult(QueryResult),
+    /// An error occurred during a fetch.
+    FetchError(String),
+}
+
 // ── ArchiveNavModel ───────────────────────────────────────────────────────────
 
 /// Frontend-agnostic keyboard-navigation state for the archive tree view.
@@ -60,7 +159,7 @@ pub struct ArchiveNavModel {
     pub backend_label: String,
     /// All schemas with their expand state.
     pub schemas: Vec<SchemaWithExpand>,
-    /// Flattened visible rows (rebuilt after every expand/collapse).
+    /// Flattened visible rows (rebuilt after every expand/collapse or filter change).
     pub flat: Vec<FlatItem>,
     /// Index into [`flat`] of the currently highlighted row.
     ///
@@ -70,6 +169,12 @@ pub struct ArchiveNavModel {
     pub show_help: bool,
     /// Ephemeral status flash (e.g. refresh confirmation).
     pub flash: Option<String>,
+    /// Current filter string (empty means no filter).
+    pub filter: String,
+    /// Whether the filter bar is active (accepting keystrokes).
+    pub filter_active: bool,
+    /// Current content panel mode.
+    pub panel: PanelMode,
 }
 
 impl ArchiveNavModel {
@@ -93,19 +198,64 @@ impl ArchiveNavModel {
             cursor: 0,
             show_help: false,
             flash: None,
+            filter: String::new(),
+            filter_active: false,
+            panel: PanelMode::ColumnDetail,
         };
         model.rebuild_flat();
         model
     }
 
-    /// Rebuild the flat list from the current expand state.
+    /// Replace the nav tree after a live refresh, preserving cursor position.
+    pub fn apply_refresh(&mut self, nav: NavTree) {
+        let old_cursor_item = self.flat.get(self.cursor).copied();
+        self.schemas = nav
+            .schemas
+            .into_iter()
+            .map(|e| SchemaWithExpand {
+                entry: e,
+                expanded: false,
+            })
+            .collect();
+        self.db_name = nav.db_name;
+        self.version = nav.version;
+        self.backend_label = nav.backend.to_string();
+        self.rebuild_flat();
+        // Try to preserve the old cursor position.
+        if let Some(item) = old_cursor_item {
+            if let Some(pos) = self.flat.iter().position(|f| *f == item) {
+                self.cursor = pos;
+            }
+        }
+        self.flash = Some("↺ Refreshed".to_string());
+    }
+
+    /// Rebuild the flat list from the current expand state, applying any active filter.
     pub fn rebuild_flat(&mut self) {
         self.flat.clear();
+        let filter = self.filter.to_lowercase();
+        let active = self.filter_active && !filter.is_empty();
+
         for (i, s) in self.schemas.iter().enumerate() {
-            self.flat.push(FlatItem::Schema(i));
-            if s.expanded {
+            let schema_matches = !active || s.entry.name.to_lowercase().contains(&filter);
+            // Include tables that match even if schema doesn't (show their parent schema too).
+            let any_table_matches = s
+                .entry
+                .tables
+                .iter()
+                .any(|t| !active || t.table_name.to_lowercase().contains(&filter));
+
+            if schema_matches || any_table_matches {
+                self.flat.push(FlatItem::Schema(i));
+            }
+
+            if s.expanded || (active && any_table_matches) {
                 for j in 0..s.entry.tables.len() {
-                    self.flat.push(FlatItem::Table(i, j));
+                    let t = &s.entry.tables[j];
+                    let table_matches = !active || t.table_name.to_lowercase().contains(&filter);
+                    if table_matches {
+                        self.flat.push(FlatItem::Table(i, j));
+                    }
                 }
             }
         }
@@ -136,16 +286,18 @@ impl ArchiveNavModel {
         };
     }
 
-    /// Expand/collapse a schema row, or select a table row.
-    pub fn toggle_expand(&mut self) {
+    /// Expand/collapse a schema row, or open a data grid for a table row.
+    ///
+    /// Returns a [`FetchRequest`] when the caller should initiate an async
+    /// data fetch (table row was selected).
+    pub fn toggle_expand(&mut self) -> Option<FetchRequest> {
         let Some(&item) = self.flat.get(self.cursor) else {
-            return;
+            return None;
         };
         match item {
             FlatItem::Schema(i) => {
                 self.schemas[i].expanded = !self.schemas[i].expanded;
                 self.rebuild_flat();
-                // Keep cursor on the same schema after rebuild.
                 if let Some(pos) = self
                     .flat
                     .iter()
@@ -153,25 +305,54 @@ impl ArchiveNavModel {
                 {
                     self.cursor = pos;
                 }
+                None
             }
             FlatItem::Table(si, ti) => {
                 let t = &self.schemas[si].entry.tables[ti];
-                let cols = t.columns.len();
-                let rows = t
-                    .estimated_rows
-                    .map(|r| format!("~{r} rows"))
-                    .unwrap_or_else(|| "rows: ?".to_string());
-                self.flash = Some(format!(
-                    "{}.{} — {cols} columns, {rows}",
-                    t.schema, t.table_name
-                ));
+                let schema = t.schema.clone();
+                let table = t.table_name.clone();
+                self.panel = PanelMode::Loading {
+                    schema: schema.clone(),
+                    table: table.clone(),
+                };
+                self.flash = None;
+                Some(FetchRequest::PreviewTable { schema, table })
             }
         }
     }
 
-    /// Trigger a refresh (no-op in demo; frontends may override).
-    pub fn refresh(&mut self) {
-        self.flash = Some("↺ Refreshed (demo)".to_string());
+    /// Activate the filter bar.
+    pub fn open_filter(&mut self) {
+        self.filter_active = true;
+        self.filter.clear();
+        self.rebuild_flat();
+    }
+
+    /// Push a character into the filter string.
+    pub fn filter_push(&mut self, ch: char) {
+        self.filter.push(ch);
+        self.cursor = 0;
+        self.rebuild_flat();
+    }
+
+    /// Delete the last character from the filter string.
+    pub fn filter_backspace(&mut self) {
+        self.filter.pop();
+        self.cursor = 0;
+        self.rebuild_flat();
+    }
+
+    /// Close and clear the filter bar, returning to normal navigation.
+    pub fn close_filter(&mut self) {
+        self.filter_active = false;
+        self.filter.clear();
+        self.rebuild_flat();
+    }
+
+    /// Signal a refresh (async backends send a [`FetchRequest::Refresh`]).
+    pub fn request_refresh(&mut self) -> FetchRequest {
+        self.flash = Some("↺ Refreshing…".to_string());
+        FetchRequest::Refresh
     }
 
     /// Toggle the help overlay.
@@ -193,4 +374,31 @@ impl ArchiveNavModel {
     pub fn bindings() -> Vec<KeyBinding> {
         StatusBarDescriptor::archive_browse().bindings
     }
+}
+
+// ── Column width helpers for data-grid rendering ──────────────────────────────
+
+/// Compute column display widths from a [`QueryResult`] for table rendering.
+pub fn column_widths(result: &QueryResult, max_col_width: usize) -> Vec<usize> {
+    result
+        .columns
+        .iter()
+        .enumerate()
+        .map(|(ci, col)| {
+            let header_w = col.name.len();
+            let data_w = result
+                .rows
+                .rows
+                .iter()
+                .map(|row| {
+                    row.0
+                        .get(ci)
+                        .map(|(_, v)| format!("{v:?}").len().min(max_col_width))
+                        .unwrap_or(0)
+                })
+                .max()
+                .unwrap_or(0);
+            header_w.max(data_w).min(max_col_width)
+        })
+        .collect()
 }

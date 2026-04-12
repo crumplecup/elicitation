@@ -179,8 +179,8 @@ async fn main() -> anyhow::Result<()> {
             let backend = ArchiveDbBackend::connect(&url).await?;
             let nav = build_nav_tree(&backend, &url).await?;
             match mode {
-                ServeMode::Ratatui => run_tui(nav)?,
-                ServeMode::Egui => run_egui(nav)?,
+                ServeMode::Ratatui => run_tui(nav, Some(url)).await?,
+                ServeMode::Egui => run_egui(nav, Some(url))?,
                 ServeMode::Browser => {
                     let tree = nav_tree_to_verified_tree(&nav)?;
                     run_browser(tree, port).await?;
@@ -191,8 +191,8 @@ async fn main() -> anyhow::Result<()> {
         Cmd::Demo { mode, port } => {
             let nav = NavTree::demo();
             match mode {
-                ServeMode::Ratatui => run_tui(nav)?,
-                ServeMode::Egui => run_egui(nav)?,
+                ServeMode::Ratatui => run_tui(nav, None).await?,
+                ServeMode::Egui => run_egui(nav, None)?,
                 ServeMode::Browser => {
                     let tree = nav_tree_to_verified_tree(&nav)?;
                     run_browser(tree, port).await?;

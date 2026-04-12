@@ -4,24 +4,16 @@
 //! winit 0.30 `ApplicationHandler` pattern, `egui-winit` for event
 //! integration, and `egui-wgpu` for GPU-accelerated rendering.
 //!
-//! The UI mirrors the ratatui frontend: Catppuccin Mocha dark theme, a
-//! collapsible schema/table tree on the left, a column-detail panel in the
-//! centre, and a keybinding bar at the bottom.
-//!
 //! Key bindings are sourced from [`ArchiveNavModel::bindings`] (the AccessKit
 //! IR), keeping all frontends consistent.
 //!
 //! [`run_egui`] runs the event loop directly on the calling thread.
-//! winit on Linux requires the event loop on the OS main thread; callers
-//! must ensure they are not inside a spawned worker thread.  The archive
-//! binary satisfies this because `#[tokio::main]` calls `Runtime::block_on`
-//! on the OS main thread, so the surrounding `async fn main` body (and every
-//! `await`-free call within it) executes there.
 
 use std::sync::Arc;
 
 use egui::{Color32, Key, RichText, ScrollArea, Vec2};
 use egui_winit::State as EguiWinitState;
+use tokio::sync::mpsc;
 use tracing::instrument;
 use winit::{
     application::ApplicationHandler,
@@ -31,10 +23,11 @@ use winit::{
 };
 
 use crate::archive::{
-    ArchiveResult,
+    ArchiveDbBackend, ArchiveResult,
     errors::{ArchiveError, ArchiveErrorKind},
-    nav_model::{ArchiveNavModel, FlatItem},
-    nav_tree::NavTree,
+    nav_model::{ArchiveNavModel, FetchRequest, FlatItem, PanelEvent, PanelMode},
+    nav_tree::{NavTree, build_nav_tree},
+    plugins::query::{execute_sql_direct, preview_table_direct},
     types::TableType,
 };
 
@@ -49,12 +42,18 @@ const BLUE: Color32 = Color32::from_rgb(137, 180, 250);
 const MAUVE: Color32 = Color32::from_rgb(203, 166, 247);
 const YELLOW: Color32 = Color32::from_rgb(249, 226, 175);
 const OVERLAY0: Color32 = Color32::from_rgb(108, 112, 134);
+const GREEN: Color32 = Color32::from_rgb(166, 227, 161);
+const RED: Color32 = Color32::from_rgb(243, 139, 168);
 
 // ── Application state ─────────────────────────────────────────────────────────
 
 struct ArchiveEguiApp {
     model: ArchiveNavModel,
     should_quit: bool,
+    /// Sender to the background fetch task.
+    req_tx: mpsc::Sender<FetchRequest>,
+    /// Receiver for panel events from the fetch task.
+    event_rx: mpsc::Receiver<PanelEvent>,
     // wgpu / egui-winit resources (None until `resumed`)
     window: Option<Arc<Window>>,
     egui_state: Option<EguiWinitState>,
@@ -66,10 +65,16 @@ struct ArchiveEguiApp {
 }
 
 impl ArchiveEguiApp {
-    fn new(nav: NavTree) -> Self {
+    fn new(
+        nav: NavTree,
+        req_tx: mpsc::Sender<FetchRequest>,
+        event_rx: mpsc::Receiver<PanelEvent>,
+    ) -> Self {
         Self {
             model: ArchiveNavModel::new(nav),
             should_quit: false,
+            req_tx,
+            event_rx,
             window: None,
             egui_state: None,
             surface: None,
@@ -100,40 +105,113 @@ impl ArchiveEguiApp {
         ctx.set_visuals(visuals);
     }
 
+    /// Drain the event channel and apply any pending panel events.
+    fn poll_events(&mut self) {
+        while let Ok(ev) = self.event_rx.try_recv() {
+            match ev {
+                PanelEvent::DataGrid {
+                    schema,
+                    table,
+                    result,
+                } => {
+                    self.model.panel = PanelMode::DataGrid {
+                        schema,
+                        table,
+                        result,
+                        page: 0,
+                    };
+                    self.model.flash = None;
+                }
+                PanelEvent::NavRefreshed(nav) => {
+                    self.model.apply_refresh(nav);
+                }
+                PanelEvent::FetchError(e) => {
+                    self.model.panel = PanelMode::ColumnDetail;
+                    self.model.flash = Some(format!("⚠ {e}"));
+                }
+                PanelEvent::SqlResult(result) => {
+                    self.model.panel = PanelMode::DataGrid {
+                        schema: String::new(),
+                        table: "(query result)".to_string(),
+                        result,
+                        page: 0,
+                    };
+                }
+            }
+        }
+    }
+
     fn render_ui(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
 
+        // Drain pending data events before rendering.
+        self.poll_events();
+
         // ── Keyboard navigation (sourced from AccessKit IR) ───────────────────
-        let (up, down, enter, refresh, toggle_help, quit) = ctx.input(|i| {
+        let (up, down, enter, refresh_key, toggle_help, quit, slash, esc_key) = ctx.input(|i| {
             (
                 i.key_pressed(Key::ArrowUp) || i.key_pressed(Key::K),
                 i.key_pressed(Key::ArrowDown) || i.key_pressed(Key::J),
                 i.key_pressed(Key::Enter),
                 i.key_pressed(Key::R),
                 i.key_pressed(Key::Questionmark),
-                i.key_pressed(Key::Q) || i.key_pressed(Key::Escape),
+                i.key_pressed(Key::Q),
+                i.key_pressed(Key::Slash),
+                i.key_pressed(Key::Escape),
             )
         });
-        if up {
-            self.model.move_up();
-        }
-        if down {
-            self.model.move_down();
-        }
-        if enter {
-            self.model.toggle_expand();
-        }
-        if refresh {
-            self.model.refresh();
-        }
-        if toggle_help {
-            self.model.toggle_help();
-        }
-        if quit {
-            self.should_quit = true;
+
+        if self.model.filter_active {
+            // In filter mode: collect typed characters
+            let typed: String = ctx.input(|i| {
+                i.events
+                    .iter()
+                    .filter_map(|e| {
+                        if let egui::Event::Text(t) = e {
+                            Some(t.clone())
+                        } else {
+                            None
+                        }
+                    })
+                    .collect()
+            });
+            for ch in typed.chars() {
+                self.model.filter_push(ch);
+            }
+            if ctx.input(|i| i.key_pressed(Key::Backspace)) {
+                self.model.filter_backspace();
+            }
+            if esc_key {
+                self.model.close_filter();
+            }
+        } else {
+            if up {
+                self.model.move_up();
+            }
+            if down {
+                self.model.move_down();
+            }
+            if enter {
+                if let Some(req) = self.model.toggle_expand() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            if refresh_key {
+                let req = self.model.request_refresh();
+                let _ = self.req_tx.try_send(req);
+            }
+            if toggle_help {
+                self.model.toggle_help();
+            }
+            if slash {
+                self.model.open_filter();
+            }
+            if quit || esc_key {
+                self.should_quit = true;
+            }
         }
 
-        // ── Status bar (chips from AccessKit IR) ──────────────────────────────
+        // ── Status bar ────────────────────────────────────────────────────────
         egui::Panel::bottom("status")
             .frame(
                 egui::Frame::new()
@@ -152,21 +230,26 @@ impl ArchiveEguiApp {
                         );
                         ui.add_space(8.0);
                     }
-                    // Flash message in the status bar
+                    // Extra bindings not in the core IR
+                    ui.label(RichText::new("/").color(YELLOW).monospace());
+                    ui.add_space(2.0);
+                    ui.label(RichText::new("filter").color(SUBTEXT0).small());
+                    ui.add_space(8.0);
+
                     if let Some(flash) = &self.model.flash {
+                        let color = if flash.starts_with('⚠') { RED } else { GREEN };
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                            ui.label(
-                                RichText::new(flash)
-                                    .color(Color32::from_rgb(166, 227, 161))
-                                    .small(),
-                            );
+                            ui.label(RichText::new(flash).color(color).small());
                         });
                     }
                 });
             });
 
-        // ── Navigation panel (flat keyboard-navigable list) ───────────────────
+        // ── Navigation panel ──────────────────────────────────────────────────
         let cursor = self.model.cursor;
+        let filter_active = self.model.filter_active;
+        let filter_text = self.model.filter.clone();
+
         egui::Panel::left("nav")
             .resizable(true)
             .default_size(260.0)
@@ -188,10 +271,22 @@ impl ArchiveEguiApp {
                         ui.label(RichText::new(format!("({})", v)).color(SUBTEXT0).small());
                     }
                 });
+
+                // Filter bar
+                if filter_active {
+                    ui.horizontal(|ui| {
+                        ui.label(RichText::new("/").color(YELLOW).monospace());
+                        ui.label(
+                            RichText::new(format!("{filter_text}_"))
+                                .color(GREEN)
+                                .monospace()
+                                .small(),
+                        );
+                    });
+                }
+
                 ui.separator();
 
-                // Flat list with keyboard selection highlight
-                // Collect any mouse-clicked row index first to avoid borrow conflicts.
                 let mut clicked_row: Option<usize> = None;
                 ScrollArea::vertical().show(ui, |ui| {
                     ui.set_width(ui.available_width());
@@ -238,10 +333,12 @@ impl ArchiveEguiApp {
                         }
                     }
                 });
-                // Apply any mouse-click after the borrow on flat ends.
+                // Mouse click: set cursor then toggle expand
                 if let Some(row) = clicked_row {
                     self.model.cursor = row;
-                    self.model.toggle_expand();
+                    if let Some(req) = self.model.toggle_expand() {
+                        let _ = self.req_tx.try_send(req);
+                    }
                 }
             });
 
@@ -250,81 +347,65 @@ impl ArchiveEguiApp {
             .frame(
                 egui::Frame::new()
                     .fill(BASE)
-                    .inner_margin(egui::Margin::same(16i8)),
+                    .inner_margin(egui::Margin::same(12i8)),
             )
-            .show_inside(ui, |ui| match self.model.selected() {
-                Some(FlatItem::Schema(si)) => {
-                    let s = &self.model.schemas[si];
-                    ui.label(
-                        RichText::new(format!("schema: {}", s.entry.name))
-                            .color(BLUE)
-                            .heading(),
-                    );
-                    ui.separator();
-                    ui.label(RichText::new(format!("Owner: {}", s.entry.owner)).color(SUBTEXT0));
-                    ui.label(
-                        RichText::new(format!("{} tables / views", s.entry.tables.len()))
-                            .color(SUBTEXT0),
-                    );
-                    ui.add_space(8.0);
-                    ui.label(
-                        RichText::new("Press Enter to expand/collapse")
-                            .color(OVERLAY0)
-                            .small(),
-                    );
-                }
-                Some(FlatItem::Table(si, ti)) => {
-                    let schema = &self.model.schemas[si];
-                    let table = &schema.entry.tables[ti];
-                    ui.label(
-                        RichText::new(format!("{}.{}", schema.entry.name, table.table_name))
-                            .color(BLUE)
-                            .heading(),
-                    );
-                    ui.separator();
-                    ui.label(RichText::new(format!("Type: {}", table.table_type)).color(SUBTEXT0));
-                    if let Some(rows) = table.estimated_rows {
-                        ui.label(RichText::new(format!("~{} rows", rows)).color(SUBTEXT0));
+            .show_inside(ui, |ui| {
+                // Clone to avoid borrow issues on panel match
+                let panel = std::mem::replace(&mut self.model.panel, PanelMode::ColumnDetail);
+                match &panel {
+                    PanelMode::ColumnDetail => {
+                        self.model.panel = panel;
+                        self.render_column_detail(ui);
                     }
-                    if !table.columns.is_empty() {
-                        ui.add_space(8.0);
-                        ui.label(RichText::new("Columns").color(MAUVE).strong());
-                        ui.separator();
-                        egui::Grid::new("columns")
-                            .num_columns(3)
-                            .spacing([16.0, 2.0])
-                            .striped(true)
-                            .show(ui, |ui| {
-                                ui.label(RichText::new("Name").color(SUBTEXT0).small());
-                                ui.label(RichText::new("Type").color(SUBTEXT0).small());
-                                ui.label(RichText::new("Nullable").color(SUBTEXT0).small());
-                                ui.end_row();
-                                for col in &table.columns {
-                                    ui.label(RichText::new(&col.name).color(TEXT));
-                                    ui.label(
-                                        RichText::new(&col.sql_type)
-                                            .color(BLUE)
-                                            .monospace()
-                                            .small(),
-                                    );
-                                    ui.label(if col.nullable {
-                                        RichText::new("yes").color(OVERLAY0).small()
-                                    } else {
-                                        RichText::new("no").color(YELLOW).small()
-                                    });
-                                    ui.end_row();
-                                }
-                            });
+                    PanelMode::Loading { schema, table } => {
+                        ui.centered_and_justified(|ui| {
+                            ui.label(
+                                RichText::new(format!("⟳ Loading {schema}.{table}…"))
+                                    .color(YELLOW)
+                                    .size(16.0),
+                            );
+                        });
+                        self.model.panel = PanelMode::Loading {
+                            schema: schema.clone(),
+                            table: table.clone(),
+                        };
+                        // Request redraw to poll for the result
+                        ctx.request_repaint();
                     }
-                }
-                None => {
-                    ui.centered_and_justified(|ui| {
-                        ui.label(
-                            RichText::new("← Select a schema or table to inspect")
-                                .color(OVERLAY0)
-                                .size(16.0),
-                        );
-                    });
+                    PanelMode::DataGrid {
+                        schema,
+                        table,
+                        result,
+                        page,
+                    } => {
+                        let schema = schema.clone();
+                        let table = table.clone();
+                        let result = result.clone();
+                        let page = *page;
+                        self.render_data_grid(ui, &schema, &table, &result, page);
+                        self.model.panel = PanelMode::DataGrid {
+                            schema,
+                            table,
+                            result,
+                            page,
+                        };
+                    }
+                    PanelMode::SqlEditor {
+                        text,
+                        result,
+                        running,
+                    } => {
+                        let text = text.clone();
+                        let result = result.clone();
+                        let running = *running;
+                        // Minimal SQL editor — Phase 1.2
+                        ui.label(RichText::new("SQL Editor (Phase 1.2)").color(MAUVE));
+                        self.model.panel = PanelMode::SqlEditor {
+                            text,
+                            result,
+                            running,
+                        };
+                    }
                 }
             });
 
@@ -344,6 +425,12 @@ impl ArchiveEguiApp {
                                 ui.label(RichText::new(&binding.action).color(TEXT));
                                 ui.end_row();
                             }
+                            ui.label(RichText::new("/").color(YELLOW).monospace());
+                            ui.label(RichText::new("Filter nav tree").color(TEXT));
+                            ui.end_row();
+                            ui.label(RichText::new("Esc").color(YELLOW).monospace());
+                            ui.label(RichText::new("Close filter / Quit").color(TEXT));
+                            ui.end_row();
                         });
                     ui.separator();
                     if ui.button("Close").clicked() {
@@ -351,6 +438,181 @@ impl ArchiveEguiApp {
                     }
                 });
         }
+    }
+
+    fn render_column_detail(&self, ui: &mut egui::Ui) {
+        match self.model.selected() {
+            Some(FlatItem::Schema(si)) => {
+                let s = &self.model.schemas[si];
+                ui.label(
+                    RichText::new(format!("schema: {}", s.entry.name))
+                        .color(BLUE)
+                        .heading(),
+                );
+                ui.separator();
+                ui.label(RichText::new(format!("Owner: {}", s.entry.owner)).color(SUBTEXT0));
+                ui.label(
+                    RichText::new(format!("{} tables / views", s.entry.tables.len()))
+                        .color(SUBTEXT0),
+                );
+                ui.add_space(8.0);
+                ui.label(
+                    RichText::new("Press Enter to expand/collapse")
+                        .color(OVERLAY0)
+                        .small(),
+                );
+            }
+            Some(FlatItem::Table(si, ti)) => {
+                let schema = &self.model.schemas[si];
+                let table = &schema.entry.tables[ti];
+                ui.label(
+                    RichText::new(format!("{}.{}", schema.entry.name, table.table_name))
+                        .color(BLUE)
+                        .heading(),
+                );
+                ui.separator();
+                ui.label(RichText::new(format!("Type: {}", table.table_type)).color(SUBTEXT0));
+                if let Some(rows) = table.estimated_rows {
+                    ui.label(RichText::new(format!("~{rows} rows")).color(SUBTEXT0));
+                }
+                if !table.columns.is_empty() {
+                    ui.add_space(8.0);
+                    ui.label(RichText::new("Columns").color(MAUVE).strong());
+                    ui.separator();
+                    egui::Grid::new("columns")
+                        .num_columns(4)
+                        .spacing([16.0, 2.0])
+                        .striped(true)
+                        .show(ui, |ui| {
+                            ui.label(RichText::new("Name").color(SUBTEXT0).small());
+                            ui.label(RichText::new("Type").color(SUBTEXT0).small());
+                            ui.label(RichText::new("Nullable").color(SUBTEXT0).small());
+                            ui.label(RichText::new("Flags").color(SUBTEXT0).small());
+                            ui.end_row();
+                            for col in &table.columns {
+                                ui.label(RichText::new(&col.name).color(TEXT));
+                                ui.label(
+                                    RichText::new(&col.sql_type).color(BLUE).monospace().small(),
+                                );
+                                ui.label(if col.nullable {
+                                    RichText::new("yes").color(OVERLAY0).small()
+                                } else {
+                                    RichText::new("no").color(YELLOW).small()
+                                });
+                                let flags: Vec<&str> = [
+                                    col.is_primary_key.then_some("PK"),
+                                    col.is_foreign_key.then_some("FK"),
+                                    col.is_spatial.then_some("spatial"),
+                                ]
+                                .into_iter()
+                                .flatten()
+                                .collect();
+                                ui.label(RichText::new(flags.join(" ")).color(YELLOW).small());
+                                ui.end_row();
+                            }
+                        });
+                }
+                ui.add_space(8.0);
+                ui.label(
+                    RichText::new("Press Enter to preview table rows.")
+                        .color(OVERLAY0)
+                        .small(),
+                );
+            }
+            None => {
+                ui.centered_and_justified(|ui| {
+                    ui.label(
+                        RichText::new("← Select a schema or table to inspect")
+                            .color(OVERLAY0)
+                            .size(16.0),
+                    );
+                });
+            }
+        }
+    }
+
+    fn render_data_grid(
+        &self,
+        ui: &mut egui::Ui,
+        schema: &str,
+        table: &str,
+        result: &crate::archive::QueryResult,
+        _page: u32,
+    ) {
+        let title = if schema.is_empty() {
+            format!("{table}  ({} rows)", result.row_count)
+        } else {
+            format!("{schema}.{table}  ({} rows)", result.row_count)
+        };
+        ui.label(RichText::new(title).color(BLUE).heading());
+        ui.separator();
+
+        // Column headers
+        egui::Grid::new("data_grid_headers")
+            .num_columns(result.columns.len())
+            .spacing([8.0, 2.0])
+            .show(ui, |ui| {
+                for col in &result.columns {
+                    ui.label(
+                        RichText::new(&col.name)
+                            .color(MAUVE)
+                            .monospace()
+                            .small()
+                            .strong(),
+                    );
+                }
+                ui.end_row();
+            });
+
+        ui.separator();
+
+        ScrollArea::both().id_salt("data_grid_body").show(ui, |ui| {
+            egui::Grid::new("data_grid_rows")
+                .num_columns(result.columns.len())
+                .spacing([8.0, 1.0])
+                .striped(true)
+                .show(ui, |ui| {
+                    for row in &result.rows.rows {
+                        for (ci, _col) in result.columns.iter().enumerate() {
+                            let val = row
+                                .0
+                                .get(ci)
+                                .map(|(_, v)| egui_cell_display(v))
+                                .unwrap_or_default();
+                            let truncated = if val.len() > 40 {
+                                format!("{}…", &val[..39])
+                            } else {
+                                val
+                            };
+                            ui.label(RichText::new(truncated).color(TEXT).monospace().small());
+                        }
+                        ui.end_row();
+                    }
+                });
+        });
+    }
+}
+
+fn egui_cell_display(v: &elicit_db::DbValue) -> String {
+    use elicit_db::DbValue;
+    match v {
+        DbValue::Null => "NULL".to_string(),
+        DbValue::Bool(b) => if *b { "true" } else { "false" }.to_string(),
+        DbValue::Int(n) => n.to_string(),
+        DbValue::Float(f) => format!("{f:.4}"),
+        DbValue::Text(s) => s.clone(),
+        DbValue::Bytes(b) => format!(
+            "\\x{}",
+            b.iter()
+                .take(8)
+                .map(|x| format!("{x:02x}"))
+                .collect::<String>()
+        ),
+        DbValue::Json(j) => j.to_string(),
+        DbValue::Geometry(s) | DbValue::Geography(s) => match s {
+            elicit_db::DbSpatialValue::Wkt(w) => format!("<geo wkt:{}>", &w[..w.len().min(20)]),
+            elicit_db::DbSpatialValue::Wkb(b) => format!("<geo wkb:{} bytes>", b.len()),
+        },
     }
 }
 
@@ -548,21 +810,65 @@ impl ApplicationHandler for ArchiveEguiApp {
             _ => {}
         }
     }
+
+    fn about_to_wait(&mut self, _event_loop: &ActiveEventLoop) {
+        // Non-blocking channel drain — if data arrived, request a repaint.
+        if !self.event_rx.is_empty() {
+            if let Some(window) = self.window.as_ref() {
+                window.request_redraw();
+            }
+        }
+    }
 }
 
 // ── Public entry point ────────────────────────────────────────────────────────
 
 /// Run the egui native-window frontend, blocking until the user closes it.
 ///
-/// Must be called from the OS main thread.  On Linux, winit refuses to build
-/// an event loop on any other thread.  The archive binary satisfies this
-/// constraint because `#[tokio::main]` drives `async fn main` on the main
-/// OS thread via `Runtime::block_on`.
+/// Must be called from the OS main thread.
 #[instrument(skip(nav), fields(db = %nav.db_name))]
-pub fn run_egui(nav: NavTree) -> ArchiveResult<()> {
+pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
+    let (req_tx, mut req_rx) = mpsc::channel::<FetchRequest>(32);
+    let (event_tx, event_rx) = mpsc::channel::<PanelEvent>(32);
+
+    // Spawn the background fetch task if we have a URL.
+    if let Some(url_str) = url.clone() {
+        let tx = event_tx.clone();
+        tokio::spawn(async move {
+            while let Some(req) = req_rx.recv().await {
+                let result = match req {
+                    FetchRequest::PreviewTable { schema, table } => {
+                        match preview_table_direct(&url_str, &schema, &table, 200).await {
+                            Ok(r) => PanelEvent::DataGrid {
+                                schema,
+                                table,
+                                result: r,
+                            },
+                            Err(e) => PanelEvent::FetchError(e),
+                        }
+                    }
+                    FetchRequest::ExecuteSql { sql } => {
+                        match execute_sql_direct(&url_str, &sql).await {
+                            Ok(r) => PanelEvent::SqlResult(r),
+                            Err(e) => PanelEvent::FetchError(e),
+                        }
+                    }
+                    FetchRequest::Refresh => match ArchiveDbBackend::connect(&url_str).await {
+                        Ok(b) => match build_nav_tree(&b, &url_str).await {
+                            Ok(t) => PanelEvent::NavRefreshed(t),
+                            Err(e) => PanelEvent::FetchError(e.to_string()),
+                        },
+                        Err(e) => PanelEvent::FetchError(e.to_string()),
+                    },
+                };
+                let _ = tx.send(result).await;
+            }
+        });
+    }
+
     let event_loop = EventLoop::new().expect("create event loop");
     event_loop.set_control_flow(ControlFlow::Poll);
-    let mut app = ArchiveEguiApp::new(nav);
+    let mut app = ArchiveEguiApp::new(nav, req_tx, event_rx);
     event_loop
         .run_app(&mut app)
         .map_err(|e| ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string())))

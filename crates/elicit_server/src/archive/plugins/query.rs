@@ -235,3 +235,64 @@ impl Default for ArchiveQueryPlugin {
         Self::new()
     }
 }
+
+// ── Direct async helpers (used by frontend fetch tasks) ───────────────────────
+
+/// Fetch up to `limit` rows from a table directly, without going through the
+/// MCP tool layer.  Returns a `QueryResult` or an error string.
+///
+/// Used by the ratatui and egui frontend background fetch tasks.
+pub async fn preview_table_direct(
+    url: &str,
+    schema: &str,
+    table: &str,
+    limit: u32,
+) -> Result<crate::archive::QueryResult, String> {
+    sqlx::any::install_default_drivers();
+    let pool = sqlx::any::AnyPoolOptions::new()
+        .max_connections(3)
+        .connect(url)
+        .await
+        .map_err(|e| format!("connection failed: {e}"))?;
+
+    let effective_limit = if limit == 0 { 200 } else { limit };
+    let sql = format!(
+        r#"SELECT * FROM "{}"."{}" LIMIT {}"#,
+        schema.replace('"', ""),
+        table.replace('"', ""),
+        effective_limit
+    );
+
+    let rows = sqlx::query(&sql)
+        .fetch_all(&pool)
+        .await
+        .map_err(|e| format!("query failed: {e}"))?;
+
+    pool.close().await;
+    let (col_descs, db_rows) = decode_rows(&rows);
+    Ok(crate::archive::QueryResult::new(col_descs, db_rows))
+}
+
+/// Execute arbitrary SQL directly, without going through the MCP tool layer.
+///
+/// Used by the SQL editor in the frontend fetch tasks.
+pub async fn execute_sql_direct(
+    url: &str,
+    sql: &str,
+) -> Result<crate::archive::QueryResult, String> {
+    sqlx::any::install_default_drivers();
+    let pool = sqlx::any::AnyPoolOptions::new()
+        .max_connections(3)
+        .connect(url)
+        .await
+        .map_err(|e| format!("connection failed: {e}"))?;
+
+    let rows = sqlx::query(sql)
+        .fetch_all(&pool)
+        .await
+        .map_err(|e| format!("query failed: {e}"))?;
+
+    pool.close().await;
+    let (col_descs, db_rows) = decode_rows(&rows);
+    Ok(crate::archive::QueryResult::new(col_descs, db_rows))
+}
