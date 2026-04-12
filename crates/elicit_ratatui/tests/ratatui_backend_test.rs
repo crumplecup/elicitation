@@ -77,6 +77,7 @@ fn render_single_button_via_backend() {
             assert_eq!(children.len(), 1);
         }
         TuiNode::Widget { .. } => panic!("Root should be Layout, not Widget"),
+        TuiNode::StatusBar { .. } => panic!("Root should be Layout, not StatusBar"),
     }
 }
 

@@ -1718,6 +1718,7 @@ name = "elicit_accesskit"
 version = "0.10.0"
 dependencies = [
  "accesskit",
+ "derive_more",
  "elicitation",
  "elicitation_derive",
  "elicitation_macros",
@@ -1727,6 +1728,7 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
+ "strum 0.28.0",
  "tokio",
  "tracing",
 ]

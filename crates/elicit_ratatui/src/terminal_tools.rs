@@ -23,6 +23,7 @@ use tracing::instrument;
 use uuid::Uuid;
 
 use crate::serde_types::{BlockJson, ParagraphText, TuiNode, WidgetJson};
+use elicit_ui::ColorTheme;
 use elicitation::elicit_tool;
 
 /// Crossterm terminal type alias.
@@ -454,7 +455,49 @@ pub fn render_node(frame: &mut Frame, area: Rect, node: &TuiNode) {
                 }
             }
         }
+        TuiNode::StatusBar { chips, theme } => render_status_bar(frame, area, chips, *theme),
     }
+}
+
+/// Render a Zellij-style status bar into a single-line area.
+///
+/// Each chip pair `(key, action)` is rendered as a styled key label followed
+/// by the action description.  Colors are chosen by `theme`.
+fn render_status_bar(frame: &mut Frame, area: Rect, chips: &[(String, String)], theme: ColorTheme) {
+    use ratatui::style::{Color, Modifier, Style};
+    use ratatui::text::{Line, Span};
+    use ratatui::widgets::Paragraph;
+
+    let (key_bg, key_fg, action_fg, bar_bg) = match theme {
+        ColorTheme::Dark => (Color::Cyan, Color::Black, Color::Gray, Color::DarkGray),
+        ColorTheme::Light => (Color::Blue, Color::White, Color::DarkGray, Color::Gray),
+        ColorTheme::HighContrast => (Color::Yellow, Color::Black, Color::White, Color::Black),
+        ColorTheme::Solarized => (
+            Color::Rgb(38, 139, 210),
+            Color::White,
+            Color::Rgb(147, 161, 161),
+            Color::Rgb(0, 43, 54),
+        ),
+    };
+
+    let mut spans: Vec<Span<'static>> = vec![Span::styled(" ", Style::default().bg(bar_bg))];
+    for (key, action) in chips {
+        spans.push(Span::styled(
+            format!(" {key} "),
+            Style::default()
+                .bg(key_bg)
+                .fg(key_fg)
+                .add_modifier(Modifier::BOLD),
+        ));
+        spans.push(Span::styled(
+            format!(" {action}  "),
+            Style::default().fg(action_fg).bg(bar_bg),
+        ));
+    }
+
+    let line = Line::from(spans);
+    let bar = Paragraph::new(line).style(Style::default().bg(bar_bg));
+    frame.render_widget(bar, area);
 }
 
 /// Render a single `WidgetJson` into a frame area.

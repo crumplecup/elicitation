@@ -284,6 +284,16 @@ fn tui_node_to_code(node: &TuiNode, indent: usize) -> String {
             }
             code
         }
+        TuiNode::StatusBar { chips, theme } => {
+            let chips_code = chips
+                .iter()
+                .map(|(k, a)| format!("({:?}.to_string(), {:?}.to_string())", k, a))
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!(
+                "{pad}render_status_bar(frame, area, &[{chips_code}], ColorTheme::{theme:?});\n"
+            )
+        }
     }
 }
 

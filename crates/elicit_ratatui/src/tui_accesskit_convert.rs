@@ -7,6 +7,7 @@
 
 use crate::serde_types::{BlockJson, BordersJson, DirectionJson, TuiNode, WidgetJson};
 use accesskit::{Node, NodeId, Role, Tree, TreeId, TreeUpdate};
+use elicit_ui::ColorTheme;
 
 /// Convert a `TuiNode` tree into an AccessKit `TreeUpdate`.
 ///
@@ -78,6 +79,22 @@ fn convert_node(tui_node: &TuiNode, nodes: &mut Vec<(NodeId, Node)>, next_id: &m
             }
             node.set_children(child_ids);
             nodes.push((my_id, node));
+        }
+        TuiNode::StatusBar { chips, theme } => {
+            let mut child_ids = Vec::with_capacity(chips.len());
+            for (key, action) in chips {
+                let cid = NodeId::from(*next_id);
+                *next_id += 1;
+                let mut chip = Node::new(Role::Group);
+                chip.set_label(key.as_str());
+                chip.set_description(action.as_str());
+                nodes.push((cid, chip));
+                child_ids.push(cid);
+            }
+            let mut bar = Node::new(Role::Status);
+            bar.set_class_name(theme.css_class());
+            bar.set_children(child_ids);
+            nodes.push((my_id, bar));
         }
     }
 }
@@ -223,6 +240,25 @@ fn convert_accesskit_node(
 
     let children_ids = node.children();
 
+    // Role::Status → StatusBar (extract chips from Group children)
+    if node.role() == Role::Status {
+        let chips: Vec<(String, String)> = children_ids
+            .iter()
+            .filter_map(|cid| node_map.get(cid))
+            .map(|child| {
+                (
+                    child.label().unwrap_or("").to_string(),
+                    child.description().unwrap_or("").to_string(),
+                )
+            })
+            .collect();
+        let theme = node
+            .class_name()
+            .and_then(|cn| cn.parse::<ColorTheme>().ok())
+            .unwrap_or_default();
+        return TuiNode::StatusBar { chips, theme };
+    }
+
     if children_ids.is_empty() {
         // Leaf → Widget
         let widget = accesskit_to_widget(node);
@@ -230,7 +266,9 @@ fn convert_accesskit_node(
             widget: Box::new(widget),
         }
     } else {
-        // Container → Layout with children
+        // Container → Layout with children.
+        // If the last child is a StatusBar we inject [Min(0), Length(1)] constraints
+        // so ratatui reserves exactly one line for it.
         let children: Vec<TuiNode> = children_ids
             .iter()
             .map(|cid| convert_accesskit_node(*cid, node_map))
@@ -241,9 +279,21 @@ fn convert_accesskit_node(
             _ => DirectionJson::Vertical,
         };
 
+        let has_status_bar = matches!(children.last(), Some(TuiNode::StatusBar { .. }));
+        let constraints = if has_status_bar {
+            let mut c: Vec<crate::serde_types::ConstraintJson> = children[..children.len() - 1]
+                .iter()
+                .map(|_| crate::serde_types::ConstraintJson::Min { value: 0 })
+                .collect();
+            c.push(crate::serde_types::ConstraintJson::Length { value: 1 });
+            c
+        } else {
+            Vec::new()
+        };
+
         TuiNode::Layout {
             direction,
-            constraints: Vec::new(),
+            constraints,
             children,
             margin: None,
         }

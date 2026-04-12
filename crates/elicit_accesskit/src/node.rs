@@ -540,6 +540,12 @@ impl NodeJson {
         self
     }
 
+    /// Sets the CSS class name.
+    pub fn with_class_name(mut self, v: String) -> Self {
+        self.class_name = Some(v);
+        self
+    }
+
     /// Sets the value.
     pub fn with_value(mut self, v: String) -> Self {
         self.value = Some(v);

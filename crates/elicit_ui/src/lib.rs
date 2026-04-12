@@ -108,6 +108,7 @@ pub use contracts::{
     NoOverflow, RenderComplete, StructuredContent, SufficientContrast, ValidRole,
 };
 pub use css_units::{Breakpoint, BreakpointSet, CssLength, CssParseError, is_zoom_invariant};
+pub use elicit_accesskit::ColorTheme;
 pub use errors::{
     UiError, UiErrorKind, UiResult, VerificationError, VerificationErrorKind, VerificationReport,
 };

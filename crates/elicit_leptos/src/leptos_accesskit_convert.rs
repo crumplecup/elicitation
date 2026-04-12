@@ -36,7 +36,7 @@
 //! ```
 
 use accesskit::{Node, NodeId, Orientation, Role, Toggled};
-use elicit_ui::RenderStats;
+use elicit_ui::{ColorTheme, RenderStats};
 use std::collections::HashMap;
 
 // ── Render mode ───────────────────────────────────────────────────────────────
@@ -670,13 +670,42 @@ fn render_node(
             }
         }
         Role::Status => {
-            stats.widgets_rendered += 1;
-            let text = node_text(node);
-            format!(
-                "{}<output>{}</output>\n",
-                indent(depth),
-                text_content(&text, mode)
-            )
+            stats.containers_rendered += 1;
+            // Render as a keybinding status bar if children are Group chips,
+            // otherwise fall back to a plain <output> for backwards compat.
+            if has_children {
+                let theme = node
+                    .class_name()
+                    .and_then(|cn| cn.parse::<ColorTheme>().ok())
+                    .unwrap_or_default();
+                let css_class = theme.css_class();
+                let mut inner = String::new();
+                for cid in children {
+                    let Some(chip) = nodes.get(&cid) else {
+                        continue;
+                    };
+                    let key = html_escape(chip.label().unwrap_or(""));
+                    let action = html_escape(chip.description().unwrap_or(""));
+                    inner += &format!(
+                        "{}<span class=\"keybind\"><kbd>{key}</kbd><span class=\"action\">{action}</span></span>\n",
+                        indent(depth + 1)
+                    );
+                }
+                format!(
+                    "{}<footer role=\"status\" class=\"status-bar {css_class}\">\n{}{}</footer>\n",
+                    indent(depth),
+                    inner,
+                    indent(depth)
+                )
+            } else {
+                stats.widgets_rendered += 1;
+                let text = node_text(node);
+                format!(
+                    "{}<output>{}</output>\n",
+                    indent(depth),
+                    text_content(&text, mode)
+                )
+            }
         }
         Role::Alert => {
             if has_children {
