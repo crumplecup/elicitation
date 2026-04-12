@@ -27,9 +27,10 @@
 use clap::{Parser, Subcommand, ValueEnum};
 use elicit_db::{DbQueryExecutor, DbSchemaManager, DbServerAdmin, DbTableManager};
 use elicit_server::archive::{
-    ArchiveDbBackend,
+    ArchiveDbBackend, NavTree,
     frontend_utils::{build_verified_tree, demo_verified_tree},
     leptos_frontend::run_browser,
+    nav_tree::build_nav_tree,
     ratatui_frontend::run_tui,
 };
 use tracing_subscriber::EnvFilter;
@@ -177,20 +178,25 @@ async fn main() -> anyhow::Result<()> {
         Cmd::Serve { url, mode, port } => {
             let url = resolve_url(url)?;
             let backend = ArchiveDbBackend::connect(&url).await?;
-            let tree = build_verified_tree(&backend).await?;
             match mode {
-                ServeMode::Ratatui => run_tui(tree)?,
-                ServeMode::Browser => run_browser(tree, port).await?,
+                ServeMode::Ratatui => {
+                    let nav = build_nav_tree(&backend, &url).await?;
+                    run_tui(nav)?;
+                }
+                ServeMode::Browser => {
+                    let tree = build_verified_tree(&backend).await?;
+                    run_browser(tree, port).await?;
+                }
             }
         }
 
-        Cmd::Demo { mode, port } => {
-            let tree = demo_verified_tree()?;
-            match mode {
-                ServeMode::Ratatui => run_tui(tree)?,
-                ServeMode::Browser => run_browser(tree, port).await?,
+        Cmd::Demo { mode, port } => match mode {
+            ServeMode::Ratatui => run_tui(NavTree::demo())?,
+            ServeMode::Browser => {
+                let tree = demo_verified_tree()?;
+                run_browser(tree, port).await?;
             }
-        }
+        },
     }
 
     Ok(())

@@ -24,6 +24,7 @@ pub mod display;
 mod errors;
 pub mod frontend_utils;
 pub mod leptos_frontend;
+pub mod nav_tree;
 mod plugins;
 pub mod ratatui_frontend;
 pub mod types;
@@ -31,6 +32,7 @@ pub mod types;
 pub use backend::ArchiveDbBackend;
 
 pub use errors::{ArchiveError, ArchiveErrorKind, ArchiveResult};
+pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
 pub use plugins::{
     AkNodeEntry, ArchiveBrowsePlugin, ArchiveDisplayPlugin, ArchiveQueryPlugin,
     ArchiveSpatialPlugin, QueryExecuted, SchemaExists, TableExists,
