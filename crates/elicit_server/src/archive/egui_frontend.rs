@@ -8,6 +8,9 @@
 //! collapsible schema/table tree on the left, a column-detail panel in the
 //! centre, and a keybinding bar at the bottom.
 //!
+//! Key bindings are sourced from [`ArchiveNavModel::bindings`] (the AccessKit
+//! IR), keeping all frontends consistent.
+//!
 //! [`run_egui`] runs the event loop directly on the calling thread.
 //! winit on Linux requires the event loop on the OS main thread; callers
 //! must ensure they are not inside a spawned worker thread.  The archive
@@ -30,6 +33,7 @@ use winit::{
 use crate::archive::{
     ArchiveResult,
     errors::{ArchiveError, ArchiveErrorKind},
+    nav_model::{ArchiveNavModel, FlatItem},
     nav_tree::NavTree,
     types::TableType,
 };
@@ -49,10 +53,7 @@ const OVERLAY0: Color32 = Color32::from_rgb(108, 112, 134);
 // ── Application state ─────────────────────────────────────────────────────────
 
 struct ArchiveEguiApp {
-    nav: NavTree,
-    /// Currently highlighted (schema_idx, table_idx).
-    selected_table: Option<(usize, usize)>,
-    show_help: bool,
+    model: ArchiveNavModel,
     should_quit: bool,
     // wgpu / egui-winit resources (None until `resumed`)
     window: Option<Arc<Window>>,
@@ -67,9 +68,7 @@ struct ArchiveEguiApp {
 impl ArchiveEguiApp {
     fn new(nav: NavTree) -> Self {
         Self {
-            nav,
-            selected_table: None,
-            show_help: false,
+            model: ArchiveNavModel::new(nav),
             should_quit: false,
             window: None,
             egui_state: None,
@@ -104,20 +103,37 @@ impl ArchiveEguiApp {
     fn render_ui(&mut self, ui: &mut egui::Ui) {
         let ctx = ui.ctx().clone();
 
-        // Keyboard shortcuts
-        let (toggle_help, quit) = ctx.input(|i| {
-            let toggle = i.key_pressed(Key::Questionmark);
-            let quit = i.key_pressed(Key::Q) || i.key_pressed(Key::Escape);
-            (toggle, quit)
+        // ── Keyboard navigation (sourced from AccessKit IR) ───────────────────
+        let (up, down, enter, refresh, toggle_help, quit) = ctx.input(|i| {
+            (
+                i.key_pressed(Key::ArrowUp) || i.key_pressed(Key::K),
+                i.key_pressed(Key::ArrowDown) || i.key_pressed(Key::J),
+                i.key_pressed(Key::Enter),
+                i.key_pressed(Key::R),
+                i.key_pressed(Key::Questionmark),
+                i.key_pressed(Key::Q) || i.key_pressed(Key::Escape),
+            )
         });
+        if up {
+            self.model.move_up();
+        }
+        if down {
+            self.model.move_down();
+        }
+        if enter {
+            self.model.toggle_expand();
+        }
+        if refresh {
+            self.model.refresh();
+        }
         if toggle_help {
-            self.show_help = !self.show_help;
+            self.model.toggle_help();
         }
         if quit {
             self.should_quit = true;
         }
 
-        // ── Status bar ────────────────────────────────────────────────────────
+        // ── Status bar (chips from AccessKit IR) ──────────────────────────────
         egui::Panel::bottom("status")
             .frame(
                 egui::Frame::new()
@@ -126,22 +142,31 @@ impl ArchiveEguiApp {
             )
             .show_inside(ui, |ui| {
                 ui.horizontal(|ui| {
-                    for (key, label) in &[
-                        ("↑↓", "navigate"),
-                        ("Enter", "select"),
-                        ("r", "refresh"),
-                        ("?", "help"),
-                        ("q", "quit"),
-                    ] {
-                        ui.label(RichText::new(*key).color(YELLOW).monospace());
+                    for binding in ArchiveNavModel::bindings() {
+                        ui.label(RichText::new(&binding.key).color(YELLOW).monospace());
                         ui.add_space(2.0);
-                        ui.label(RichText::new(*label).color(SUBTEXT0).small());
+                        ui.label(
+                            RichText::new(binding.action.to_lowercase())
+                                .color(SUBTEXT0)
+                                .small(),
+                        );
                         ui.add_space(8.0);
+                    }
+                    // Flash message in the status bar
+                    if let Some(flash) = &self.model.flash {
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            ui.label(
+                                RichText::new(flash)
+                                    .color(Color32::from_rgb(166, 227, 161))
+                                    .small(),
+                            );
+                        });
                     }
                 });
             });
 
-        // ── Navigation tree ───────────────────────────────────────────────────
+        // ── Navigation panel (flat keyboard-navigable list) ───────────────────
+        let cursor = self.model.cursor;
         egui::Panel::left("nav")
             .resizable(true)
             .default_size(260.0)
@@ -151,46 +176,73 @@ impl ArchiveEguiApp {
                     .inner_margin(egui::Margin::same(8i8)),
             )
             .show_inside(ui, |ui| {
+                // Header: db name + version
                 ui.horizontal(|ui| {
                     ui.label(
-                        RichText::new(&self.nav.db_name)
+                        RichText::new(&self.model.db_name)
                             .color(BLUE)
                             .strong()
                             .size(14.0),
                     );
-                    if let Some(v) = &self.nav.version {
+                    if let Some(v) = &self.model.version {
                         ui.label(RichText::new(format!("({})", v)).color(SUBTEXT0).small());
                     }
                 });
                 ui.separator();
+
+                // Flat list with keyboard selection highlight
+                // Collect any mouse-clicked row index first to avoid borrow conflicts.
+                let mut clicked_row: Option<usize> = None;
                 ScrollArea::vertical().show(ui, |ui| {
-                    for (si, schema) in self.nav.schemas.iter().enumerate() {
-                        egui::CollapsingHeader::new(
-                            RichText::new(format!("🗂 {}", schema.name)).color(MAUVE),
-                        )
-                        .id_salt(si)
-                        .default_open(false)
-                        .show(ui, |ui| {
-                            for (ti, table) in schema.tables.iter().enumerate() {
-                                let icon = match table.table_type {
+                    ui.set_width(ui.available_width());
+                    for (row_idx, item) in self.model.flat.iter().enumerate() {
+                        let is_selected = row_idx == cursor;
+                        match item {
+                            FlatItem::Schema(si) => {
+                                let s = &self.model.schemas[*si];
+                                let arrow = if s.expanded { "▼ " } else { "▶ " };
+                                let label = RichText::new(format!(
+                                    "{arrow}{}  ({})",
+                                    s.entry.name,
+                                    s.entry.tables.len()
+                                ))
+                                .color(if is_selected { BLUE } else { MAUVE })
+                                .strong();
+                                let resp = ui.selectable_label(is_selected, label);
+                                if resp.clicked() {
+                                    clicked_row = Some(row_idx);
+                                }
+                                if is_selected {
+                                    resp.scroll_to_me(Some(egui::Align::Center));
+                                }
+                            }
+                            FlatItem::Table(si, ti) => {
+                                let t = &self.model.schemas[*si].entry.tables[*ti];
+                                let icon = match t.table_type {
                                     TableType::Table => "📋",
                                     TableType::View => "👁",
                                     TableType::MaterializedView => "💾",
                                     TableType::Unknown => "•",
                                 };
-                                let is_sel = self.selected_table == Some((si, ti));
-                                let row = ui.selectable_label(
-                                    is_sel,
-                                    RichText::new(format!("{icon} {}", table.table_name))
-                                        .color(if is_sel { BLUE } else { TEXT }),
-                                );
-                                if row.clicked() {
-                                    self.selected_table = Some((si, ti));
+                                let label = RichText::new(format!("   {icon} {}", t.table_name))
+                                    .color(if is_selected { BLUE } else { TEXT })
+                                    .small();
+                                let resp = ui.selectable_label(is_selected, label);
+                                if resp.clicked() {
+                                    clicked_row = Some(row_idx);
+                                }
+                                if is_selected {
+                                    resp.scroll_to_me(Some(egui::Align::Center));
                                 }
                             }
-                        });
+                        }
                     }
                 });
+                // Apply any mouse-click after the borrow on flat ends.
+                if let Some(row) = clicked_row {
+                    self.model.cursor = row;
+                    self.model.toggle_expand();
+                }
             });
 
         // ── Central panel ─────────────────────────────────────────────────────
@@ -200,12 +252,32 @@ impl ArchiveEguiApp {
                     .fill(BASE)
                     .inner_margin(egui::Margin::same(16i8)),
             )
-            .show_inside(ui, |ui| {
-                if let Some((si, ti)) = self.selected_table {
-                    let schema = &self.nav.schemas[si];
-                    let table = &schema.tables[ti];
+            .show_inside(ui, |ui| match self.model.selected() {
+                Some(FlatItem::Schema(si)) => {
+                    let s = &self.model.schemas[si];
                     ui.label(
-                        RichText::new(format!("{}.{}", schema.name, table.table_name))
+                        RichText::new(format!("schema: {}", s.entry.name))
+                            .color(BLUE)
+                            .heading(),
+                    );
+                    ui.separator();
+                    ui.label(RichText::new(format!("Owner: {}", s.entry.owner)).color(SUBTEXT0));
+                    ui.label(
+                        RichText::new(format!("{} tables / views", s.entry.tables.len()))
+                            .color(SUBTEXT0),
+                    );
+                    ui.add_space(8.0);
+                    ui.label(
+                        RichText::new("Press Enter to expand/collapse")
+                            .color(OVERLAY0)
+                            .small(),
+                    );
+                }
+                Some(FlatItem::Table(si, ti)) => {
+                    let schema = &self.model.schemas[si];
+                    let table = &schema.entry.tables[ti];
+                    ui.label(
+                        RichText::new(format!("{}.{}", schema.entry.name, table.table_name))
                             .color(BLUE)
                             .heading(),
                     );
@@ -244,10 +316,11 @@ impl ArchiveEguiApp {
                                 }
                             });
                     }
-                } else {
+                }
+                None => {
                     ui.centered_and_justified(|ui| {
                         ui.label(
-                            RichText::new("← Select a table to inspect")
+                            RichText::new("← Select a schema or table to inspect")
                                 .color(OVERLAY0)
                                 .size(16.0),
                         );
@@ -256,7 +329,7 @@ impl ArchiveEguiApp {
             });
 
         // ── Help modal ────────────────────────────────────────────────────────
-        if self.show_help {
+        if self.model.show_help {
             egui::Window::new("Keyboard Shortcuts")
                 .collapsible(false)
                 .resizable(false)
@@ -266,21 +339,15 @@ impl ArchiveEguiApp {
                         .num_columns(2)
                         .spacing([16.0, 4.0])
                         .show(ui, |ui| {
-                            for (key, desc) in &[
-                                ("↑ / ↓", "Navigate tree"),
-                                ("Enter", "Expand / select"),
-                                ("r", "Refresh from database"),
-                                ("?", "Toggle this help"),
-                                ("q / Esc", "Quit"),
-                            ] {
-                                ui.label(RichText::new(*key).color(YELLOW).monospace());
-                                ui.label(RichText::new(*desc).color(TEXT));
+                            for binding in ArchiveNavModel::bindings() {
+                                ui.label(RichText::new(&binding.key).color(YELLOW).monospace());
+                                ui.label(RichText::new(&binding.action).color(TEXT));
                                 ui.end_row();
                             }
                         });
                     ui.separator();
                     if ui.button("Close").clicked() {
-                        self.show_help = false;
+                        self.model.show_help = false;
                     }
                 });
         }
@@ -296,7 +363,7 @@ impl ApplicationHandler for ArchiveEguiApp {
         }
 
         let attrs = WindowAttributes::default()
-            .with_title(format!("Archive — {}", self.nav.db_name))
+            .with_title(format!("Archive — {}", self.model.db_name))
             .with_inner_size(winit::dpi::LogicalSize::new(1280_f64, 720_f64));
         let window = Arc::new(event_loop.create_window(attrs).expect("create window"));
 

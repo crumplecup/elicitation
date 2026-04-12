@@ -25,6 +25,7 @@ pub mod egui_frontend;
 mod errors;
 pub mod frontend_utils;
 pub mod leptos_frontend;
+pub mod nav_model;
 pub mod nav_tree;
 mod plugins;
 pub mod ratatui_frontend;

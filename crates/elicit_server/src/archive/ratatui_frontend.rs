@@ -3,6 +3,9 @@
 //! Provides an interactive pgAdmin-style database browser with keyboard
 //! navigation: `↑`/`↓` move selection, `Enter` expands/collapses schemas,
 //! `r` refreshes, `?` toggles the keybinding help overlay, `q`/`Esc` quits.
+//!
+//! Key bindings are sourced from [`ArchiveNavModel::bindings`] (the
+//! AccessKit IR), keeping all frontends consistent.
 
 use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind},
@@ -18,146 +21,69 @@ use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragra
 use ratatui::{Frame, Terminal, backend::CrosstermBackend};
 use tracing::instrument;
 
-use crate::archive::nav_tree::{NavTree, SchemaEntry};
+use crate::archive::nav_model::{ArchiveNavModel, FlatItem};
+use crate::archive::nav_tree::NavTree;
 use crate::archive::{
     ArchiveResult, TableType,
     errors::{ArchiveError, ArchiveErrorKind},
 };
 
-// ── Flat navigation item ──────────────────────────────────────────────────────
+// ── Thin ratatui wrapper ──────────────────────────────────────────────────────
 
-/// One visible row in the navigation list.
-#[derive(Clone)]
-enum FlatItem {
-    /// A schema row.  Carries the schema index so we can look it up.
-    Schema(usize),
-    /// A table/view row.  Carries (schema_idx, table_idx).
-    Table(usize, usize),
-}
-
-// ── App state ────────────────────────────────────────────────────────────────
-
-struct AppState {
-    db_name: String,
-    version: Option<String>,
-    backend_label: String,
-    schemas: Vec<SchemaWithExpand>,
-    flat: Vec<FlatItem>,
+/// Wraps the frontend-agnostic [`ArchiveNavModel`] with the ratatui-specific
+/// [`ListState`] needed for stateful list rendering.
+struct TuiApp {
+    model: ArchiveNavModel,
     list_state: ListState,
-    show_help: bool,
-    flash: Option<String>,
 }
 
-struct SchemaWithExpand {
-    entry: SchemaEntry,
-    expanded: bool,
-}
-
-impl AppState {
+impl TuiApp {
     fn new(nav: NavTree) -> Self {
-        let schemas: Vec<SchemaWithExpand> = nav
-            .schemas
-            .into_iter()
-            .map(|e| SchemaWithExpand {
-                entry: e,
-                expanded: false,
-            })
-            .collect();
-
-        let mut app = Self {
-            db_name: nav.db_name,
-            version: nav.version,
-            backend_label: nav.backend.to_string(),
-            schemas,
-            flat: Vec::new(),
-            list_state: ListState::default(),
-            show_help: false,
-            flash: None,
-        };
-        app.rebuild_flat();
-        if !app.flat.is_empty() {
-            app.list_state.select(Some(0));
+        let model = ArchiveNavModel::new(nav);
+        let mut list_state = ListState::default();
+        if !model.flat.is_empty() {
+            list_state.select(Some(model.cursor));
         }
-        app
+        Self { model, list_state }
     }
 
-    fn rebuild_flat(&mut self) {
-        self.flat.clear();
-        for (i, s) in self.schemas.iter().enumerate() {
-            self.flat.push(FlatItem::Schema(i));
-            if s.expanded {
-                for j in 0..s.entry.tables.len() {
-                    self.flat.push(FlatItem::Table(i, j));
-                }
-            }
+    fn sync_list_state(&mut self) {
+        if self.model.flat.is_empty() {
+            self.list_state.select(None);
+        } else {
+            self.list_state.select(Some(self.model.cursor));
         }
     }
 
     fn move_up(&mut self) {
-        let cur = self.list_state.selected().unwrap_or(0);
-        let next = if cur == 0 {
-            self.flat.len().saturating_sub(1)
-        } else {
-            cur - 1
-        };
-        self.list_state.select(Some(next));
+        self.model.move_up();
+        self.model.flash = None;
+        self.sync_list_state();
     }
 
     fn move_down(&mut self) {
-        let cur = self.list_state.selected().unwrap_or(0);
-        let next = if cur + 1 >= self.flat.len() {
-            0
-        } else {
-            cur + 1
-        };
-        self.list_state.select(Some(next));
+        self.model.move_down();
+        self.model.flash = None;
+        self.sync_list_state();
     }
 
     fn toggle_expand(&mut self) {
-        let selected = self.list_state.selected().unwrap_or(0);
-        let Some(item) = self.flat.get(selected).cloned() else {
-            return;
-        };
-        match item {
-            FlatItem::Schema(i) => {
-                self.schemas[i].expanded = !self.schemas[i].expanded;
-                self.rebuild_flat();
-                // Keep cursor on the same schema row after rebuild.
-                let new_pos = self
-                    .flat
-                    .iter()
-                    .position(|f| matches!(f, FlatItem::Schema(j) if *j == i))
-                    .unwrap_or(0);
-                self.list_state.select(Some(new_pos));
-            }
-            FlatItem::Table(si, ti) => {
-                let t = &self.schemas[si].entry.tables[ti];
-                let cols = t.columns.len();
-                let rows = t
-                    .estimated_rows
-                    .map(|r| format!("~{r} rows"))
-                    .unwrap_or_else(|| "rows: ?".to_string());
-                self.flash = Some(format!(
-                    "{}.{} — {cols} columns, {rows}",
-                    t.schema, t.table_name
-                ));
-            }
-        }
-    }
-
-    fn toggle_help(&mut self) {
-        self.show_help = !self.show_help;
-        self.flash = None;
+        self.model.toggle_expand();
+        self.sync_list_state();
     }
 
     fn refresh(&mut self) {
-        self.flash = Some("↺ Refreshed (demo)".to_string());
+        self.model.refresh();
+    }
+
+    fn toggle_help(&mut self) {
+        self.model.toggle_help();
     }
 }
 
 // ── Drawing ───────────────────────────────────────────────────────────────────
 
-fn draw_app(frame: &mut Frame, app: &mut AppState) {
+fn draw_app(frame: &mut Frame, app: &mut TuiApp) {
     let area = frame.area();
 
     // Three-row vertical split: header | nav list | status bar
@@ -170,21 +96,21 @@ fn draw_app(frame: &mut Frame, app: &mut AppState) {
         ])
         .split(area);
 
-    draw_header(frame, chunks[0], app);
+    draw_header(frame, chunks[0], &app.model);
     draw_nav(frame, chunks[1], app);
     draw_status_bar(frame, chunks[2]);
 
-    if app.show_help {
+    if app.model.show_help {
         draw_help(frame, area);
     }
 }
 
-fn draw_header(frame: &mut Frame, area: Rect, app: &AppState) {
-    let ver = app.version.as_deref().unwrap_or("unknown");
-    let flash = app.flash.as_deref().unwrap_or("");
+fn draw_header(frame: &mut Frame, area: Rect, model: &ArchiveNavModel) {
+    let ver = model.version.as_deref().unwrap_or("unknown");
+    let flash = model.flash.as_deref().unwrap_or("");
     let title_line = Line::from(vec![
         Span::styled(
-            format!(" {} ", app.backend_label),
+            format!(" {} ", model.backend_label),
             Style::default()
                 .fg(Color::Cyan)
                 .add_modifier(Modifier::BOLD),
@@ -193,7 +119,7 @@ fn draw_header(frame: &mut Frame, area: Rect, app: &AppState) {
         Span::styled(format!("{ver} "), Style::default().fg(Color::White)),
         Span::styled("│ ", Style::default().fg(Color::DarkGray)),
         Span::styled(
-            format!("{} ", app.db_name),
+            format!("{} ", model.db_name),
             Style::default().fg(Color::Yellow),
         ),
     ]);
@@ -220,13 +146,14 @@ fn draw_header(frame: &mut Frame, area: Rect, app: &AppState) {
     frame.render_widget(header, area);
 }
 
-fn draw_nav(frame: &mut Frame, area: Rect, app: &mut AppState) {
+fn draw_nav(frame: &mut Frame, area: Rect, app: &mut TuiApp) {
     let items: Vec<ListItem> = app
+        .model
         .flat
         .iter()
         .map(|fi| match fi {
             FlatItem::Schema(i) => {
-                let s = &app.schemas[*i];
+                let s = &app.model.schemas[*i];
                 let arrow = if s.expanded { "▼" } else { "▶" };
                 let table_count = s.entry.tables.len();
                 let count_label = if table_count == 0 {
@@ -251,7 +178,7 @@ fn draw_nav(frame: &mut Frame, area: Rect, app: &mut AppState) {
                 ]))
             }
             FlatItem::Table(si, ti) => {
-                let s = &app.schemas[*si];
+                let s = &app.model.schemas[*si];
                 let t = &s.entry.tables[*ti];
                 let is_last = *ti + 1 == s.entry.tables.len();
                 let prefix = if is_last { "   └─" } else { "   ├─" };
@@ -285,14 +212,13 @@ fn draw_nav(frame: &mut Frame, area: Rect, app: &mut AppState) {
 
 fn draw_status_bar(frame: &mut Frame, area: Rect) {
     use elicit_ratatui::TuiNode;
+    // Chips sourced from the AccessKit IR — single source of truth.
+    let chips = ArchiveNavModel::bindings()
+        .into_iter()
+        .map(|b| (b.key, b.action))
+        .collect();
     let bar = TuiNode::StatusBar {
-        chips: vec![
-            ("q".to_string(), "Quit".to_string()),
-            ("↑↓".to_string(), "Navigate".to_string()),
-            ("Enter".to_string(), "Select".to_string()),
-            ("r".to_string(), "Refresh".to_string()),
-            ("?".to_string(), "Help".to_string()),
-        ],
+        chips,
         theme: ColorTheme::Dark,
     };
     render_node(frame, area, &bar);
@@ -375,7 +301,7 @@ pub fn run_tui(nav: NavTree) -> ArchiveResult<()> {
         ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string()))
     })?;
 
-    let mut app = AppState::new(nav);
+    let mut app = TuiApp::new(nav);
 
     let result = (|| -> ArchiveResult<()> {
         loop {
@@ -396,14 +322,8 @@ pub fn run_tui(nav: NavTree) -> ArchiveResult<()> {
                     }
                     match key.code {
                         KeyCode::Char('q') | KeyCode::Esc => break,
-                        KeyCode::Up | KeyCode::Char('k') => {
-                            app.move_up();
-                            app.flash = None;
-                        }
-                        KeyCode::Down | KeyCode::Char('j') => {
-                            app.move_down();
-                            app.flash = None;
-                        }
+                        KeyCode::Up | KeyCode::Char('k') => app.move_up(),
+                        KeyCode::Down | KeyCode::Char('j') => app.move_down(),
                         KeyCode::Enter => app.toggle_expand(),
                         KeyCode::Char('r') => app.refresh(),
                         KeyCode::Char('?') => app.toggle_help(),
