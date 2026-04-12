@@ -9,6 +9,36 @@ and the same formal `Established<P>` proof chain.
 
 ---
 
+## URL resolution
+
+Every command that connects to a database accepts an **optional** URL
+argument.  When omitted, `DATABASE_URL` is used:
+
+```
+archive connect [DB_URL]
+```
+
+**Priority order:**
+1. Explicit positional argument
+2. `DATABASE_URL` environment variable
+
+`archive` calls `dotenvy::dotenv()` at startup, so a `.env` file in the
+working directory is loaded automatically.  A minimal `.env` looks like:
+
+```dotenv
+DATABASE_URL=postgres://user:pass@localhost/mydb
+```
+
+Once `.env` is in place, every command works without arguments:
+
+```bash
+archive connect           # uses DATABASE_URL from .env
+archive list-schemas      # same
+archive serve             # same
+```
+
+---
+
 ## Quick start
 
 ### Build
@@ -32,57 +62,61 @@ Supported URL schemes: `postgres://`, `sqlite:`, `mysql://`
 
 ## Commands
 
-### `connect <URL>`
+### `connect [URL]`
 
 Print the server version and confirm the connection is live.
 
 ```bash
-archive connect postgres://localhost/mydb
+archive connect                              # uses DATABASE_URL
+archive connect postgres://localhost/mydb   # explicit override
 ```
 
-### `list-schemas <URL>`
+### `list-schemas [URL]`
 
 List all schema names in the database.
 
 ```bash
-archive list-schemas postgres://localhost/mydb
+archive list-schemas
 # public
 # analytics
 # staging
 ```
 
-### `list-tables <URL> [--schema <S>]`
+### `list-tables [URL] [--schema <S>]`
 
 List tables in a schema (default: `public`).
 
 ```bash
-archive list-tables postgres://localhost/mydb --schema analytics
+archive list-tables --schema analytics
 # analytics.events
 # analytics.sessions
 # analytics.users
 ```
 
-### `query <URL> --sql <SQL>`
+### `query [URL] --sql <SQL>`
 
 Execute a SQL statement and print each row.
 
 ```bash
-archive query postgres://localhost/mydb --sql "SELECT id, name FROM users LIMIT 5"
+archive query --sql "SELECT id, name FROM users LIMIT 5"
 # id=1 | name="alice"
 # id=2 | name="bob"
 ```
 
-### `serve <URL> --mode <ratatui|browser> [--port <P>]`
+### `serve [URL] --mode <ratatui|browser> [--port <P>]`
 
 Serve the archive UI for a live database.
 
 ```bash
-# Terminal UI (default)
-archive serve postgres://localhost/mydb --mode ratatui
+# Terminal UI (default mode)
+archive serve --mode ratatui
 
 # Browser UI on port 3000 (default)
-archive serve postgres://localhost/mydb --mode browser --port 3000
+archive serve --mode browser --port 3000
 # Archive browser frontend: http://localhost:3000/
+
+# Explicit URL overrides .env
+archive serve postgres://localhost/mydb --mode browser
 ```
 
 **ratatui mode** — opens a crossterm alternate-screen TUI. Press `q` or `Esc`

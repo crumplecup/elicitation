@@ -7,14 +7,20 @@
 //! through the live runtime paths, because both consume the same descriptor
 //! types.
 //!
+//! # URL resolution
+//!
+//! Every command that needs a database URL accepts an optional positional
+//! argument.  If omitted, the `DATABASE_URL` environment variable is used
+//! (loaded from `.env` automatically via dotenvy).
+//!
 //! # Usage
 //!
 //! ```text
-//! archive connect <DB_URL>
-//! archive list-schemas <DB_URL>
-//! archive list-tables <DB_URL> [--schema <S>]
-//! archive query <DB_URL> --sql <SQL>
-//! archive serve <DB_URL> --mode <ratatui|browser> [--port <P>]
+//! archive connect [DB_URL]
+//! archive list-schemas [DB_URL]
+//! archive list-tables [DB_URL] [--schema <S>]
+//! archive query [DB_URL] --sql <SQL>
+//! archive serve [DB_URL] --mode <ratatui|browser> [--port <P>]
 //! archive demo --mode <ratatui|browser> [--port <P>]   # no live DB required
 //! ```
 
@@ -28,11 +34,34 @@ use elicit_server::archive::{
 };
 use tracing_subscriber::EnvFilter;
 
+// ── URL resolution ────────────────────────────────────────────────────────────
+
+/// Resolve a database URL from an explicit argument or `DATABASE_URL` env var.
+///
+/// Priority:
+/// 1. Explicit `url` argument (if `Some`)
+/// 2. `DATABASE_URL` environment variable (may come from `.env`)
+fn resolve_url(url: Option<String>) -> anyhow::Result<String> {
+    if let Some(u) = url {
+        return Ok(u);
+    }
+    std::env::var("DATABASE_URL").map_err(|_| {
+        anyhow::anyhow!(
+            "No database URL provided and DATABASE_URL is not set.\n\
+             Pass a URL as the first argument or add DATABASE_URL to your .env file."
+        )
+    })
+}
+
 // ── CLI types ─────────────────────────────────────────────────────────────────
 
 /// Archive — verified database browser powered by the elicit_* ecosystem.
 #[derive(Parser)]
-#[command(name = "archive", about = "Verified database browser")]
+#[command(
+    name = "archive",
+    about = "Verified database browser",
+    after_help = "DATABASE_URL is read from .env if not provided as an argument."
+)]
 struct Cli {
     #[command(subcommand)]
     cmd: Cmd,
@@ -42,34 +71,34 @@ struct Cli {
 enum Cmd {
     /// Print the server version for the given database URL.
     Connect {
-        /// Database connection URL.
-        url: String,
+        /// Database connection URL (falls back to DATABASE_URL env var).
+        url: Option<String>,
     },
     /// List schema names in the database.
     ListSchemas {
-        /// Database connection URL.
-        url: String,
+        /// Database connection URL (falls back to DATABASE_URL env var).
+        url: Option<String>,
     },
     /// List tables in a schema.
     ListTables {
-        /// Database connection URL.
-        url: String,
+        /// Database connection URL (falls back to DATABASE_URL env var).
+        url: Option<String>,
         /// Schema to list (default: public).
         #[arg(long, default_value = "public")]
         schema: String,
     },
     /// Execute a SQL query and print the rows.
     Query {
-        /// Database connection URL.
-        url: String,
+        /// Database connection URL (falls back to DATABASE_URL env var).
+        url: Option<String>,
         /// SQL statement to execute.
         #[arg(long)]
         sql: String,
     },
     /// Serve the archive UI for a live database.
     Serve {
-        /// Database connection URL.
-        url: String,
+        /// Database connection URL (falls back to DATABASE_URL env var).
+        url: Option<String>,
         /// Display mode.
         #[arg(long, default_value = "ratatui")]
         mode: ServeMode,
@@ -100,6 +129,9 @@ enum ServeMode {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    // Load .env (non-fatal: missing file is fine)
+    dotenvy::dotenv().ok();
+
     tracing_subscriber::fmt()
         .with_env_filter(EnvFilter::from_default_env())
         .init();
@@ -108,12 +140,14 @@ async fn main() -> anyhow::Result<()> {
 
     match cli.cmd {
         Cmd::Connect { url } => {
+            let url = resolve_url(url)?;
             let backend = ArchiveDbBackend::connect(&url).await?;
             let version = backend.server_version().await?;
             println!("{version}");
         }
 
         Cmd::ListSchemas { url } => {
+            let url = resolve_url(url)?;
             let backend = ArchiveDbBackend::connect(&url).await?;
             let schemas = backend.list_schemas().await?;
             for s in schemas {
@@ -122,6 +156,7 @@ async fn main() -> anyhow::Result<()> {
         }
 
         Cmd::ListTables { url, schema } => {
+            let url = resolve_url(url)?;
             let backend = ArchiveDbBackend::connect(&url).await?;
             let tables = backend.list_tables(&schema).await?;
             for t in tables {
@@ -130,6 +165,7 @@ async fn main() -> anyhow::Result<()> {
         }
 
         Cmd::Query { url, sql } => {
+            let url = resolve_url(url)?;
             let backend = ArchiveDbBackend::connect(&url).await?;
             let (rows, _proof) = backend.query_rows(&sql, &[]).await?;
             for row in &rows.rows {
@@ -139,6 +175,7 @@ async fn main() -> anyhow::Result<()> {
         }
 
         Cmd::Serve { url, mode, port } => {
+            let url = resolve_url(url)?;
             let backend = ArchiveDbBackend::connect(&url).await?;
             let tree = build_verified_tree(&backend).await?;
             match mode {
@@ -158,3 +195,4 @@ async fn main() -> anyhow::Result<()> {
 
     Ok(())
 }
+
