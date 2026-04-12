@@ -20,15 +20,15 @@
 //! archive list-schemas [DB_URL]
 //! archive list-tables [DB_URL] [--schema <S>]
 //! archive query [DB_URL] --sql <SQL>
-//! archive serve [DB_URL] --mode <ratatui|browser> [--port <P>]
-//! archive demo --mode <ratatui|browser> [--port <P>]   # no live DB required
+//! archive serve [DB_URL] --mode <ratatui|browser|egui> [--port <P>]
+//! archive demo --mode <ratatui|browser|egui> [--port <P>]   # no live DB required
 //! ```
 
 use clap::{Parser, Subcommand, ValueEnum};
 use elicit_db::{DbQueryExecutor, DbSchemaManager, DbServerAdmin, DbTableManager};
 use elicit_server::archive::{
-    ArchiveDbBackend, NavTree, leptos_frontend::run_browser, nav_tree::build_nav_tree,
-    nav_tree_to_verified_tree, ratatui_frontend::run_tui,
+    ArchiveDbBackend, NavTree, egui_frontend::run_egui, leptos_frontend::run_browser,
+    nav_tree::build_nav_tree, nav_tree_to_verified_tree, ratatui_frontend::run_tui,
 };
 use tracing_subscriber::EnvFilter;
 
@@ -121,6 +121,8 @@ enum ServeMode {
     Ratatui,
     /// Leptos/Axum browser UI served on HTTP.
     Browser,
+    /// Native egui window (winit + wgpu).
+    Egui,
 }
 
 // ── main ──────────────────────────────────────────────────────────────────────
@@ -178,6 +180,7 @@ async fn main() -> anyhow::Result<()> {
             let nav = build_nav_tree(&backend, &url).await?;
             match mode {
                 ServeMode::Ratatui => run_tui(nav)?,
+                ServeMode::Egui => run_egui(nav)?,
                 ServeMode::Browser => {
                     let tree = nav_tree_to_verified_tree(&nav)?;
                     run_browser(tree, port).await?;
@@ -189,6 +192,7 @@ async fn main() -> anyhow::Result<()> {
             let nav = NavTree::demo();
             match mode {
                 ServeMode::Ratatui => run_tui(nav)?,
+                ServeMode::Egui => run_egui(nav)?,
                 ServeMode::Browser => {
                     let tree = nav_tree_to_verified_tree(&nav)?;
                     run_browser(tree, port).await?;

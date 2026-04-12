@@ -21,6 +21,7 @@
 
 mod backend;
 pub mod display;
+pub mod egui_frontend;
 mod errors;
 pub mod frontend_utils;
 pub mod leptos_frontend;
@@ -31,6 +32,7 @@ pub mod types;
 
 pub use backend::ArchiveDbBackend;
 
+pub use egui_frontend::run_egui;
 pub use errors::{ArchiveError, ArchiveErrorKind, ArchiveResult};
 pub use frontend_utils::nav_tree_to_verified_tree;
 pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
