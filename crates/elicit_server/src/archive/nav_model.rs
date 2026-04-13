@@ -825,6 +825,33 @@ impl ArchiveNavModel {
         }
     }
 
+    /// Set the nav filter string and rebuild the flat list.
+    ///
+    /// Used by the browser frontend to apply query-param filters.
+    pub fn set_filter_str(&mut self, filter: &str) {
+        self.filter = filter.to_string();
+        self.filter_active = !filter.is_empty();
+        self.rebuild_flat();
+    }
+
+    /// Move the cursor to the first flat item matching the given schema + table.
+    ///
+    /// Returns `true` if the item was found and the cursor moved.  Used by the
+    /// browser frontend to update selection highlighting after an API preview.
+    pub fn select_table(&mut self, schema: &str, table: &str) -> bool {
+        for (idx, item) in self.flat.iter().enumerate() {
+            if let FlatItem::Table(si, ti) = item {
+                let s = &self.schemas[*si].entry.name;
+                let t = &self.schemas[*si].entry.tables[*ti].table_name;
+                if s == schema && t == table {
+                    self.cursor = idx;
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
     // ── IR pipeline ───────────────────────────────────────────────────────────
 
     /// Build a fully-described [`VerifiedTree`] from the current model state.
@@ -884,8 +911,22 @@ impl ArchiveNavModel {
                 }
             };
 
+            // Machine-readable metadata carried in description for browser frontends.
+            // Format: "schema:NAME" for schema rows, "schema:S,table:T" for table rows.
+            let meta = match item {
+                FlatItem::Schema(si) => {
+                    format!("schema:{}", self.schemas[*si].entry.name)
+                }
+                FlatItem::Table(si, ti) => {
+                    let s = &self.schemas[*si].entry.name;
+                    let t = &self.schemas[*si].entry.tables[*ti].table_name;
+                    format!("schema:{s},table:{t}")
+                }
+            };
+
             let mut tree_item = AkNode::new(AkRole::TreeItem);
             tree_item.set_label(label);
+            tree_item.set_description(meta);
             if idx == self.cursor {
                 tree_item.set_selected(true);
             }

@@ -820,8 +820,38 @@ fn render_node(
                 } else {
                     ""
                 };
+                // Emit HTMX interaction attrs when description carries schema/table metadata.
+                let htmx_attrs = if let Some(desc) = node.description() {
+                    if desc.contains(",table:") {
+                        // Table item: clicking previews the table in the content panel.
+                        // description format: "schema:S,table:T"
+                        let parts: std::collections::HashMap<_, _> = desc
+                            .split(',')
+                            .filter_map(|kv| {
+                                let mut it = kv.splitn(2, ':');
+                                Some((it.next()?, it.next()?))
+                            })
+                            .collect();
+                        if let (Some(s), Some(t)) = (parts.get("schema"), parts.get("table")) {
+                            let s = html_escape(s);
+                            let t = html_escape(t);
+                            format!(
+                                r##" data-meta="{}" hx-get="/api/preview?schema={}&amp;table={}" hx-target="#content" hx-swap="innerHTML""##,
+                                html_escape(desc),
+                                s,
+                                t,
+                            )
+                        } else {
+                            String::new()
+                        }
+                    } else {
+                        String::new()
+                    }
+                } else {
+                    String::new()
+                };
                 format!(
-                    "{}<li role=\"treeitem\" tabindex=\"-1\"{selected}>{text}</li>\n",
+                    "{}<li role=\"treeitem\" tabindex=\"-1\"{selected}{htmx_attrs}>{text}</li>\n",
                     indent(depth),
                 )
             }

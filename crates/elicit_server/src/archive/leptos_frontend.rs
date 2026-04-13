@@ -122,15 +122,27 @@ type ApiResult<T> = Result<T, ApiError>;
 // ── GET / ─────────────────────────────────────────────────────────────────────
 
 async fn serve_page(State(state): State<AppState>) -> Html<String> {
+    // body_html renders the full IR tree; for the initial page load we embed
+    // it into the nav panel — the content panel is populated on first click.
     match body_html(&state) {
-        Ok(body) => Html(wrap_page(&body)),
+        Ok(nav_html) => Html(wrap_page(&nav_html)),
         Err(e) => Html(format!("<pre>render error: {e}</pre>")),
     }
 }
 
 // ── GET /api/nav ──────────────────────────────────────────────────────────────
 
-async fn api_nav(State(state): State<AppState>) -> Html<String> {
+#[derive(Debug, Deserialize)]
+struct NavParams {
+    #[serde(default)]
+    filter: String,
+}
+
+async fn api_nav(State(state): State<AppState>, Query(p): Query<NavParams>) -> Html<String> {
+    {
+        let mut model = state.model.lock().await;
+        model.set_filter_str(&p.filter);
+    }
     match body_html(&state) {
         Ok(html) => Html(html),
         Err(e) => Html(format!("<pre>nav error: {e}</pre>")),
@@ -202,6 +214,7 @@ async fn api_preview(
         .map_err(ApiError::internal)?;
     {
         let mut model = state.model.lock().await;
+        model.select_table(&p.schema, &p.table);
         model.panel = PanelMode::DataGrid {
             schema: p.schema,
             table: p.table,
@@ -518,14 +531,21 @@ fn wrap_page(body: &str) -> String {
         "main{flex:1;display:flex;overflow:hidden}",
         "nav.nav-panel{width:22rem;min-width:12rem;border-right:1px solid #45475a;",
         "display:flex;flex-direction:column;overflow:hidden}",
-        ".nav-scroll{flex:1;overflow-y:auto;padding:.25rem 0}",
+        ".filter-wrap{padding:.35rem .5rem;border-bottom:1px solid #313244;flex-shrink:0}",
+        ".filter-wrap input{width:100%;background:#313244;color:#cdd6f4;",
+        "border:1px solid #45475a;border-radius:3px;padding:.2rem .4rem;",
+        "font-family:inherit;font-size:.85rem;outline:none}",
+        ".filter-wrap input:focus{border-color:#89b4fa}",
+        "#nav-tree{flex:1;overflow-y:auto;padding:.25rem 0}",
         "section.content-panel{flex:1;overflow:auto;padding:.5rem 1rem}",
+        "#content{min-height:4rem}",
         "ul[role='tree']{list-style:none;padding:.25rem 0}",
         "ul[role='group']{list-style:none;padding-left:1.5rem}",
         "details.schema-group>summary{padding:.2rem .75rem;cursor:pointer;",
         "font-size:.9rem;color:#89b4fa;list-style:none;outline:none}",
         "li[role='treeitem']{padding:.2rem .75rem;cursor:pointer;",
-        "font-size:.9rem;color:#a6adc8}",
+        "font-size:.9rem;color:#a6adc8;user-select:none}",
+        "li[role='treeitem']:hover{background:#313244;border-radius:3px}",
         "li[role='treeitem'].selected{background:#313244;border-radius:4px;",
         "outline:2px solid #89b4fa;color:#cdd6f4}",
         "table{border-collapse:collapse;width:100%;font-size:.85rem}",
@@ -537,16 +557,46 @@ fn wrap_page(body: &str) -> String {
         "border:1px solid #45475a;padding:.5rem;font-family:inherit;",
         "font-size:.9rem;resize:vertical;min-height:6rem}",
         "h2,h3{color:#cba6f7;margin:.5rem 0 .25rem}",
+        ".htmx-request .spinner{display:inline-block}",
+        ".spinner{display:none;margin-left:.5rem}",
         "footer[role='status']{padding:.2rem .5rem;background:#313244;",
         "border-top:1px solid #45475a;font-size:.75rem;flex-shrink:0}"
+    );
+    // JS: forward / key to filter input focus; Ctrl+Enter in textarea to run SQL
+    let js = concat!(
+        "document.addEventListener('keydown',function(e){",
+        "var inp=document.getElementById('nav-filter');",
+        "if(e.key==='/'&&document.activeElement!==inp&&document.activeElement.tagName!=='TEXTAREA'){",
+        "e.preventDefault();inp&&inp.focus();",
+        "}",
+        "if(e.key==='Escape'&&document.activeElement===inp){",
+        "inp.value='';",
+        "htmx.trigger(inp,'change');",
+        "inp.blur();",
+        "}",
+        "});",
     );
     format!(
         "<!DOCTYPE html><html lang=\"en\"><head>\
 <meta charset=\"utf-8\"/>\
 <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\
 <title>Archive</title>\
+<script src=\"https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js\"></script>\
 <style>{css}</style>\
-</head><body>{body}</body></html>"
+</head><body>\
+<main>\
+<nav class=\"nav-panel\">\
+<div class=\"filter-wrap\">\
+<input id=\"nav-filter\" type=\"search\" placeholder=\"/ filter…\" autocomplete=\"off\" \
+ hx-get=\"/api/nav\" hx-trigger=\"keyup changed delay:250ms\" hx-target=\"#nav-tree\" hx-swap=\"innerHTML\" \
+ name=\"filter\"/>\
+</div>\
+<div id=\"nav-tree\">{body}</div>\
+</nav>\
+<section class=\"content-panel\"><div id=\"content\"></div></section>\
+</main>\
+<script>{js}</script>\
+</body></html>"
     )
 }
 
