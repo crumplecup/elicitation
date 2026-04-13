@@ -232,11 +232,14 @@ fn render_node_recursive(
         | Role::RowHeader
         | Role::ColumnHeader
         | Role::RowGroup
-        | Role::TreeItem
         | Role::ListBoxOption
         | Role::MenuItem
         | Role::MenuListOption => {
             render_container(ui, nodes, node, stats);
+        }
+        // TreeItem: leaf node with label; highlight selected row.
+        Role::TreeItem => {
+            render_tree_item(ui, nodes, node, stats);
         }
         Role::Dialog | Role::AlertDialog => {
             render_container(ui, nodes, node, stats);
@@ -373,6 +376,33 @@ fn render_button(ui: &mut egui::Ui, node: &Node) {
         btn = btn.sense(egui::Sense::hover());
     }
     ui.add(btn);
+}
+
+/// Render a tree item leaf.  If the node has children it falls through to
+/// `render_container`, otherwise the label text is drawn directly with a
+/// highlighted background for the currently-selected row.
+fn render_tree_item(
+    ui: &mut egui::Ui,
+    nodes: &std::collections::HashMap<NodeId, Node>,
+    node: &Node,
+    stats: &mut RenderStats,
+) {
+    if !node.children().is_empty() {
+        render_container(ui, nodes, node, stats);
+        return;
+    }
+    let text = node_label(node);
+    let selected = node.is_selected().unwrap_or(false);
+    if selected {
+        let highlight = ui.visuals().selection.bg_fill;
+        let fg = ui.visuals().selection.stroke.color;
+        ui.painter()
+            .rect_filled(ui.available_rect_before_wrap(), 0.0, highlight);
+        ui.colored_label(fg, &text);
+    } else {
+        ui.label(&text);
+    }
+    stats.widgets_rendered += 1;
 }
 
 fn render_checkbox(ui: &mut egui::Ui, node: &Node) {

@@ -841,28 +841,26 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
     let event_loop = EventLoop::new().expect("create event loop");
     event_loop.set_control_flow(ControlFlow::Poll);
 
-    // Initialize history store synchronously using the current tokio runtime.
-    let history = tokio::runtime::Handle::current()
-        .block_on(HistoryStore::open())
-        .ok();
-    let history_cache = if let Some(ref store) = history {
-        tokio::runtime::Handle::current()
-            .block_on(store.recent(crate::archive::plugins::history::MAX_HISTORY))
-            .unwrap_or_default()
-    } else {
-        Vec::new()
-    };
-    // Saved-query store reuses the same SQLite file.
-    let saved = tokio::runtime::Handle::current()
-        .block_on(SavedQueryStore::open())
-        .ok();
-    let saved_cache = if let Some(ref store) = saved {
-        tokio::runtime::Handle::current()
-            .block_on(store.all())
-            .unwrap_or_default()
-    } else {
-        Vec::new()
-    };
+    // Initialize history store synchronously. `block_in_place` yields the
+    // tokio thread so `block_on` doesn't panic inside an async runtime.
+    let (history, history_cache, saved, saved_cache) = tokio::task::block_in_place(|| {
+        let handle = tokio::runtime::Handle::current();
+        let history = handle.block_on(HistoryStore::open()).ok();
+        let history_cache = if let Some(ref store) = history {
+            handle
+                .block_on(store.recent(crate::archive::plugins::history::MAX_HISTORY))
+                .unwrap_or_default()
+        } else {
+            Vec::new()
+        };
+        let saved = handle.block_on(SavedQueryStore::open()).ok();
+        let saved_cache = if let Some(ref store) = saved {
+            handle.block_on(store.all()).unwrap_or_default()
+        } else {
+            Vec::new()
+        };
+        (history, history_cache, saved, saved_cache)
+    });
 
     let mut app = ArchiveEguiApp::new(nav, req_tx, event_rx, history, saved);
     app.model.history_cache = history_cache;

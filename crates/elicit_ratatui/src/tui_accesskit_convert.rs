@@ -288,7 +288,13 @@ fn convert_accesskit_node(
             c.push(crate::serde_types::ConstraintJson::Length { value: 1 });
             c
         } else {
-            Vec::new()
+            // Equal-fill distribution: each child gets an equal share of the space.
+            // Without explicit constraints, ratatui::Layout returns 0 chunks and
+            // nothing renders.
+            children
+                .iter()
+                .map(|_| crate::serde_types::ConstraintJson::Fill { value: 1 })
+                .collect()
         };
 
         TuiNode::Layout {

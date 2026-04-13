@@ -961,6 +961,8 @@ impl ArchiveNavModel {
         // ── main split ────────────────────────────────────────────────────────
         let main_id = AkNodeId::from(counter);
         let mut main_node = AkNode::new(AkRole::Main);
+        // Horizontal so the ratatui bridge lays out nav (left) + content (right).
+        main_node.set_orientation(accesskit::Orientation::Horizontal);
         main_node.set_children(vec![nav_id, content_id]);
         nodes.insert(main_id, main_node);
 
@@ -1132,6 +1134,8 @@ impl ArchiveNavModel {
 
         let toolbar_id = alloc();
         let mut toolbar = AkNode::new(AkRole::Toolbar);
+        // Horizontal so the ratatui bridge lays out buttons left-to-right.
+        toolbar.set_orientation(accesskit::Orientation::Horizontal);
         toolbar.set_children(vec![
             title_id,
             sql_btn_id,
