@@ -104,8 +104,8 @@ pub use constraints::{
     ValidRoleConstraint, Violation, WcagLevel,
 };
 pub use contracts::{
-    AccessibleAA, AltTextProvided, FocusVisible, HasLabel, KeyboardAccessible, MinTargetSize,
-    NoOverflow, RenderComplete, StructuredContent, SufficientContrast, ValidRole,
+    AccessibleAA, AltTextProvided, FocusVisible, HasLabel, IrSourced, KeyboardAccessible,
+    MinTargetSize, NoOverflow, RenderComplete, StructuredContent, SufficientContrast, ValidRole,
 };
 pub use css_units::{Breakpoint, BreakpointSet, CssLength, CssParseError, is_zoom_invariant};
 pub use elicit_accesskit::ColorTheme;

@@ -24,27 +24,17 @@ use crossterm::{
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
-use elicit_db::DbValue;
-use elicit_ratatui::render_node;
-use elicit_ui::ColorTheme;
+use elicit_ratatui::{RatatuiBackend, render_node};
+use elicit_ui::UiRenderer as _;
 use futures::StreamExt as _;
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::style::{Color, Modifier, Style};
-use ratatui::text::{Line, Span};
-use ratatui::widgets::{
-    Block, Borders, Cell, Clear, List, ListItem, ListState, Paragraph, Row, Table, TableState,
-};
-use ratatui::{Frame, Terminal, backend::CrosstermBackend};
+use ratatui::{Terminal, backend::CrosstermBackend};
 use tokio::sync::mpsc;
 use tracing::instrument;
 
-use crate::archive::nav_model::{
-    ArchiveNavModel, FetchRequest, FlatItem, PanelEvent, PanelMode, column_widths,
-};
+use crate::archive::nav_model::{ArchiveNavModel, FetchRequest, PanelEvent, PanelMode};
 use crate::archive::nav_tree::{NavTree, build_nav_tree};
 use crate::archive::{
-    ArchiveDbBackend, ArchiveResult, ExportFormat, HistoryStore, QueryResult, SavedQueryStore,
-    TableType,
+    ArchiveDbBackend, ArchiveResult, HistoryStore, SavedQueryStore,
     errors::{ArchiveError, ArchiveErrorKind},
     plugins::export::export_query_result,
     plugins::query::{execute_sql_direct, preview_table_direct},
@@ -52,17 +42,16 @@ use crate::archive::{
 
 // ── Thin ratatui wrapper ──────────────────────────────────────────────────────
 
-/// Wraps [`ArchiveNavModel`] with ratatui-specific stateful widgets.
+/// Wraps [`ArchiveNavModel`] with the ratatui bridge backend.
+///
+/// Rendering uses the IR pipeline: `model.to_verified_tree()` →
+/// `backend.render_from_ir()` → `render_node()`.  Event handling remains
+/// in this module; only presentation logic has moved into the IR.
 struct TuiApp {
     model: ArchiveNavModel,
-    list_state: ListState,
-    table_state: TableState,
+    backend: RatatuiBackend,
     /// Sender to the background fetch task.
     req_tx: mpsc::Sender<FetchRequest>,
-    /// When `Some`, show the export format picker overlay.
-    export_picker: bool,
-    /// Currently highlighted option in the export picker (0–3).
-    export_picker_idx: usize,
     /// Persistent query history (None if unavailable).
     history: Option<HistoryStore>,
     /// Saved-query store (None if unavailable).
@@ -71,14 +60,6 @@ struct TuiApp {
     exec_start: Option<std::time::Instant>,
     /// SQL text of the last `ExecuteSql` dispatch (for history recording).
     pending_sql: Option<String>,
-    /// When true the save-name prompt modal is shown.
-    save_prompt_active: bool,
-    /// Text being typed into the save-name prompt.
-    save_prompt_text: String,
-    /// When true the saved-queries browser overlay is shown.
-    saved_browser_active: bool,
-    /// Currently highlighted row in the saved-queries browser.
-    saved_browser_idx: usize,
 }
 
 impl TuiApp {
@@ -89,40 +70,20 @@ impl TuiApp {
         saved: Option<SavedQueryStore>,
     ) -> Self {
         let model = ArchiveNavModel::new(nav);
-        let mut list_state = ListState::default();
-        if !model.flat.is_empty() {
-            list_state.select(Some(model.cursor));
-        }
         Self {
             model,
-            list_state,
-            table_state: TableState::default(),
+            backend: RatatuiBackend::new(),
             req_tx,
-            export_picker: false,
-            export_picker_idx: 0,
             history,
             saved,
             exec_start: None,
             pending_sql: None,
-            save_prompt_active: false,
-            save_prompt_text: String::new(),
-            saved_browser_active: false,
-            saved_browser_idx: 0,
-        }
-    }
-
-    fn sync_list_state(&mut self) {
-        if self.model.flat.is_empty() {
-            self.list_state.select(None);
-        } else {
-            self.list_state.select(Some(self.model.cursor));
         }
     }
 
     fn move_up(&mut self) {
         self.model.move_up();
         self.model.flash = None;
-        self.sync_list_state();
         if let Some(req) = self.model.inspect_request() {
             let _ = self.req_tx.try_send(req);
         }
@@ -134,7 +95,6 @@ impl TuiApp {
     fn move_down(&mut self) {
         self.model.move_down();
         self.model.flash = None;
-        self.sync_list_state();
         if let Some(req) = self.model.inspect_request() {
             let _ = self.req_tx.try_send(req);
         }
@@ -148,7 +108,6 @@ impl TuiApp {
         if let Some(req) = self.model.toggle_expand() {
             let _ = self.req_tx.try_send(req);
         }
-        self.sync_list_state();
     }
 
     fn refresh(&mut self) {
@@ -173,13 +132,7 @@ impl TuiApp {
     }
 
     fn confirm_export(&mut self) {
-        let format = match self.export_picker_idx {
-            0 => ExportFormat::Csv,
-            1 => ExportFormat::Json,
-            2 => ExportFormat::Ndjson,
-            _ => ExportFormat::Tsv,
-        };
-        self.export_picker = false;
+        let format = self.model.confirm_export_picker();
         if let Some(req) = self.model.export_request(format) {
             let _ = self.req_tx.try_send(req);
         }
@@ -214,11 +167,9 @@ impl TuiApp {
                     result,
                     page: 0,
                 };
-                self.table_state = TableState::default().with_selected(Some(0));
             }
             PanelEvent::NavRefreshed(nav) => {
                 self.model.apply_refresh(nav);
-                self.sync_list_state();
             }
             PanelEvent::FetchError(e) => {
                 // If this error is from a SQL execution, record it in history.
@@ -270,7 +221,6 @@ impl TuiApp {
                     result: Some(result),
                     running: false,
                 };
-                self.table_state = TableState::default().with_selected(Some(0));
             }
             PanelEvent::TableInspected {
                 schema,
@@ -315,904 +265,6 @@ impl TuiApp {
                 ));
             }
         }
-    }
-}
-
-// ── Drawing ───────────────────────────────────────────────────────────────────
-
-fn draw_app(frame: &mut Frame, app: &mut TuiApp) {
-    let area = frame.area();
-
-    // Outer: header | body | status
-    let outer = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Length(3),
-            Constraint::Min(0),
-            Constraint::Length(1),
-        ])
-        .split(area);
-
-    draw_header(frame, outer[0], &app.model);
-
-    // Body: nav (30%) | content (70%)
-    let body = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(30), Constraint::Percentage(70)])
-        .split(outer[1]);
-
-    draw_nav(frame, body[0], app);
-    draw_content(frame, body[1], app);
-    draw_status_bar(frame, outer[2]);
-
-    if app.model.show_help {
-        draw_help(frame, area);
-    }
-    if app.export_picker {
-        draw_export_picker(frame, area, app.export_picker_idx);
-    }
-    if app.save_prompt_active {
-        draw_save_prompt(frame, area, &app.save_prompt_text);
-    }
-    if app.saved_browser_active {
-        draw_saved_browser(frame, area, &app.model.saved_cache, app.saved_browser_idx);
-    }
-}
-
-fn draw_header(frame: &mut Frame, area: Rect, model: &ArchiveNavModel) {
-    let ver = model.version.as_deref().unwrap_or("unknown");
-    let flash = model.flash.as_deref().unwrap_or("");
-    let filter_hint = if model.filter_active {
-        format!("  /filter: {}_", model.filter)
-    } else {
-        String::new()
-    };
-    let title_line = Line::from(vec![
-        Span::styled(
-            format!(" {} ", model.backend_label),
-            Style::default()
-                .fg(Color::Cyan)
-                .add_modifier(Modifier::BOLD),
-        ),
-        Span::styled("│ ", Style::default().fg(Color::DarkGray)),
-        Span::styled(format!("{ver} "), Style::default().fg(Color::White)),
-        Span::styled("│ ", Style::default().fg(Color::DarkGray)),
-        Span::styled(
-            format!("{} ", model.db_name),
-            Style::default().fg(Color::Yellow),
-        ),
-        Span::styled(filter_hint, Style::default().fg(Color::Green)),
-    ]);
-    let flash_line = if flash.is_empty() {
-        Line::default()
-    } else {
-        Line::from(Span::styled(
-            format!(" {flash}"),
-            Style::default().fg(Color::Green),
-        ))
-    };
-    let header = Paragraph::new(vec![title_line, flash_line])
-        .block(
-            Block::default()
-                .borders(Borders::BOTTOM)
-                .title(" Archive ")
-                .title_style(
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                ),
-        )
-        .style(Style::default().bg(Color::Black));
-    frame.render_widget(header, area);
-}
-
-fn draw_nav(frame: &mut Frame, area: Rect, app: &mut TuiApp) {
-    let items: Vec<ListItem> = app
-        .model
-        .flat
-        .iter()
-        .map(|fi| match fi {
-            FlatItem::Schema(i) => {
-                let s = &app.model.schemas[*i];
-                let arrow = if s.expanded { "▼" } else { "▶" };
-                let table_count = s.entry.tables.len();
-                let count_label = if table_count == 0 {
-                    "empty".to_string()
-                } else if table_count == 1 {
-                    "1 table".to_string()
-                } else {
-                    format!("{table_count} tables")
-                };
-                ListItem::new(Line::from(vec![
-                    Span::styled(format!(" {arrow} "), Style::default().fg(Color::Cyan)),
-                    Span::styled(
-                        s.entry.name.clone(),
-                        Style::default()
-                            .fg(Color::White)
-                            .add_modifier(Modifier::BOLD),
-                    ),
-                    Span::styled(
-                        format!("  {count_label}"),
-                        Style::default().fg(Color::DarkGray),
-                    ),
-                ]))
-            }
-            FlatItem::Table(si, ti) => {
-                let s = &app.model.schemas[*si];
-                let t = &s.entry.tables[*ti];
-                let is_last = *ti + 1 == s.entry.tables.len();
-                let prefix = if is_last { "   └─" } else { "   ├─" };
-                let (type_label, type_color) = match t.table_type {
-                    TableType::Table => ("TABLE", Color::Blue),
-                    TableType::View => ("VIEW ", Color::Magenta),
-                    TableType::MaterializedView => ("MATV ", Color::Yellow),
-                    TableType::Unknown => ("?    ", Color::DarkGray),
-                };
-                ListItem::new(Line::from(vec![
-                    Span::styled(format!("{prefix} "), Style::default().fg(Color::DarkGray)),
-                    Span::styled(format!("{type_label} "), Style::default().fg(type_color)),
-                    Span::styled(t.table_name.clone(), Style::default().fg(Color::Gray)),
-                ]))
-            }
-        })
-        .collect();
-
-    let block = Block::default()
-        .borders(Borders::RIGHT)
-        .title(" Navigator ")
-        .title_style(
-            Style::default()
-                .fg(Color::Cyan)
-                .add_modifier(Modifier::BOLD),
-        );
-
-    let list = List::new(items)
-        .block(block)
-        .highlight_style(
-            Style::default()
-                .bg(Color::Blue)
-                .fg(Color::White)
-                .add_modifier(Modifier::BOLD),
-        )
-        .highlight_symbol("▌");
-
-    frame.render_stateful_widget(list, area, &mut app.list_state);
-}
-
-fn draw_content(frame: &mut Frame, area: Rect, app: &mut TuiApp) {
-    match &app.model.panel {
-        PanelMode::ColumnDetail => draw_column_detail(frame, area, &app.model),
-        PanelMode::Loading { schema, table } => draw_loading(frame, area, schema, table),
-        PanelMode::DataGrid {
-            schema,
-            table,
-            result,
-            ..
-        } => {
-            let result = result.clone();
-            let schema = schema.clone();
-            let table = table.clone();
-            draw_data_grid(frame, area, &schema, &table, &result, &mut app.table_state);
-        }
-        PanelMode::SqlEditor {
-            text,
-            result,
-            running,
-        } => {
-            let text = text.clone();
-            let result = result.clone();
-            let running = *running;
-            draw_sql_editor(frame, area, &text, result.as_ref(), running);
-        }
-        PanelMode::Ddl { schema, table, ddl } => {
-            let schema = schema.clone();
-            let table = table.clone();
-            let ddl = ddl.clone();
-            draw_ddl_panel(frame, area, &schema, &table, &ddl);
-        }
-        PanelMode::ExplainPlan {
-            schema,
-            table,
-            root,
-        } => {
-            let schema = schema.clone();
-            let table = table.clone();
-            let root = root.clone();
-            draw_explain_panel(frame, area, &schema, &table, &root);
-        }
-    }
-}
-
-fn draw_column_detail(frame: &mut Frame, area: Rect, model: &ArchiveNavModel) {
-    let content = match model.selected() {
-        Some(FlatItem::Schema(si)) => {
-            let s = &model.schemas[si];
-            let mut lines = vec![
-                Line::from(vec![
-                    Span::styled(" schema: ", Style::default().fg(Color::DarkGray)),
-                    Span::styled(
-                        s.entry.name.clone(),
-                        Style::default()
-                            .fg(Color::Cyan)
-                            .add_modifier(Modifier::BOLD),
-                    ),
-                ]),
-                Line::from(vec![
-                    Span::styled(" owner:  ", Style::default().fg(Color::DarkGray)),
-                    Span::styled(s.entry.owner.clone(), Style::default().fg(Color::White)),
-                ]),
-                Line::from(vec![
-                    Span::styled(" tables: ", Style::default().fg(Color::DarkGray)),
-                    Span::styled(
-                        s.entry.tables.len().to_string(),
-                        Style::default().fg(Color::White),
-                    ),
-                ]),
-                Line::default(),
-                Line::from(Span::styled(
-                    " Press Enter to expand / collapse.",
-                    Style::default().fg(Color::DarkGray),
-                )),
-            ];
-            for t in &s.entry.tables {
-                lines.push(Line::from(vec![
-                    Span::styled("   • ", Style::default().fg(Color::DarkGray)),
-                    Span::styled(t.table_name.clone(), Style::default().fg(Color::Gray)),
-                ]));
-            }
-            lines
-        }
-        Some(FlatItem::Table(si, ti)) => {
-            let s = &model.schemas[si];
-            let t = &s.entry.tables[ti];
-            let mut lines = vec![
-                Line::from(vec![Span::styled(
-                    format!(" {}.{}", t.schema, t.table_name),
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                )]),
-                Line::from(vec![
-                    Span::styled(" type:   ", Style::default().fg(Color::DarkGray)),
-                    Span::styled(t.table_type.to_string(), Style::default().fg(Color::White)),
-                ]),
-            ];
-            if let Some(rows) = t.estimated_rows {
-                lines.push(Line::from(vec![
-                    Span::styled(" ~rows:  ", Style::default().fg(Color::DarkGray)),
-                    Span::styled(rows.to_string(), Style::default().fg(Color::White)),
-                ]));
-            }
-            lines.push(Line::default());
-            lines.push(Line::from(Span::styled(
-                " Columns:",
-                Style::default()
-                    .fg(Color::Magenta)
-                    .add_modifier(Modifier::BOLD),
-            )));
-            for col in &t.columns {
-                let flags: Vec<&str> = [
-                    col.is_primary_key.then_some("PK"),
-                    col.is_foreign_key.then_some("FK"),
-                    col.is_spatial.then_some("spatial"),
-                    (!col.nullable).then_some("NOT NULL"),
-                ]
-                .into_iter()
-                .flatten()
-                .collect();
-                let flag_str = if flags.is_empty() {
-                    String::new()
-                } else {
-                    format!("  [{}]", flags.join(", "))
-                };
-                lines.push(Line::from(vec![
-                    Span::styled("   ", Style::default()),
-                    Span::styled(col.name.clone(), Style::default().fg(Color::White)),
-                    Span::styled(
-                        format!("  {}", col.sql_type),
-                        Style::default().fg(Color::Blue),
-                    ),
-                    Span::styled(flag_str, Style::default().fg(Color::Yellow)),
-                ]));
-                // Inline column stats (if available)
-                if let Some(col_stats) = model
-                    .column_stats_for(&t.schema, &t.table_name)
-                    .and_then(|sv| sv.iter().find(|s| s.column_name == col.name))
-                {
-                    let mut stat_parts = vec![];
-                    let null_pct = (col_stats.null_fraction * 100.0).round() as u8;
-                    if null_pct > 0 {
-                        stat_parts.push(format!("null:{null_pct}%"));
-                    }
-                    if col_stats.avg_width_bytes > 0 {
-                        stat_parts.push(format!("avg:{}B", col_stats.avg_width_bytes));
-                    }
-                    if col_stats.n_distinct != 0.0 {
-                        if col_stats.n_distinct < 0.0 {
-                            stat_parts
-                                .push(format!("~{:.0}%unique", -col_stats.n_distinct * 100.0));
-                        } else {
-                            stat_parts.push(format!("~{:.0}distinct", col_stats.n_distinct));
-                        }
-                    }
-                    if let Some(corr) = col_stats.correlation {
-                        stat_parts.push(format!("corr:{corr:.2}"));
-                    }
-                    if !stat_parts.is_empty() {
-                        lines.push(Line::from(vec![
-                            Span::styled("      ", Style::default()),
-                            Span::styled(
-                                stat_parts.join("  "),
-                                Style::default().fg(Color::DarkGray),
-                            ),
-                        ]));
-                    }
-                }
-            }
-            lines.push(Line::default());
-            lines.push(Line::from(Span::styled(
-                " Enter: preview  d: DDL  e: explain",
-                Style::default().fg(Color::DarkGray),
-            )));
-            // Enrichment: FK / constraints / indexes (if already loaded)
-            if let Some(inspection) = model.inspection(&t.schema, &t.table_name) {
-                if !inspection.foreign_keys.is_empty() {
-                    lines.push(Line::default());
-                    lines.push(Line::from(Span::styled(
-                        " Foreign Keys:",
-                        Style::default()
-                            .fg(Color::Yellow)
-                            .add_modifier(Modifier::BOLD),
-                    )));
-                    for fk in &inspection.foreign_keys {
-                        lines.push(Line::from(vec![
-                            Span::styled("   ", Style::default()),
-                            Span::styled(fk.from_column.clone(), Style::default().fg(Color::White)),
-                            Span::styled(" → ", Style::default().fg(Color::DarkGray)),
-                            Span::styled(
-                                format!("{}.{}.{}", fk.to_schema, fk.to_table, fk.to_column),
-                                Style::default().fg(Color::Blue),
-                            ),
-                        ]));
-                    }
-                }
-                if !inspection.constraints.is_empty() {
-                    lines.push(Line::default());
-                    lines.push(Line::from(Span::styled(
-                        " Constraints:",
-                        Style::default()
-                            .fg(Color::Yellow)
-                            .add_modifier(Modifier::BOLD),
-                    )));
-                    for c in &inspection.constraints {
-                        let cols = c.columns.join(", ");
-                        lines.push(Line::from(vec![
-                            Span::styled("   ", Style::default()),
-                            Span::styled(
-                                format!("{:?}", c.kind),
-                                Style::default().fg(Color::Magenta),
-                            ),
-                            Span::styled(format!("  {}", c.name), Style::default().fg(Color::Gray)),
-                            Span::styled(
-                                if cols.is_empty() {
-                                    String::new()
-                                } else {
-                                    format!("  ({cols})")
-                                },
-                                Style::default().fg(Color::White),
-                            ),
-                        ]));
-                    }
-                }
-                if !inspection.indexes.is_empty() {
-                    lines.push(Line::default());
-                    lines.push(Line::from(Span::styled(
-                        " Indexes:",
-                        Style::default()
-                            .fg(Color::Yellow)
-                            .add_modifier(Modifier::BOLD),
-                    )));
-                    for idx in &inspection.indexes {
-                        let cols = idx.column_names.join(", ");
-                        let unique = if idx.is_unique { " UNIQUE" } else { "" };
-                        lines.push(Line::from(vec![
-                            Span::styled("   ", Style::default()),
-                            Span::styled(idx.index_name.clone(), Style::default().fg(Color::Gray)),
-                            Span::styled(
-                                format!("  ({cols}){unique} [{}]", idx.index_method),
-                                Style::default().fg(Color::Blue),
-                            ),
-                        ]));
-                    }
-                }
-            }
-            lines
-        }
-        None => vec![Line::from(Span::styled(
-            " No selection.",
-            Style::default().fg(Color::DarkGray),
-        ))],
-    };
-
-    let para = Paragraph::new(content)
-        .block(
-            Block::default()
-                .borders(Borders::NONE)
-                .title(" Detail ")
-                .title_style(
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                ),
-        )
-        .style(Style::default().bg(Color::Black));
-    frame.render_widget(para, area);
-}
-
-fn draw_ddl_panel(frame: &mut Frame, area: Rect, schema: &str, table: &str, ddl: &str) {
-    let lines: Vec<Line> = ddl.lines().map(|l| Line::from(l.to_string())).collect();
-    let para = Paragraph::new(lines)
-        .block(
-            Block::default()
-                .borders(Borders::NONE)
-                .title(format!(" DDL: {schema}.{table} "))
-                .title_style(
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                ),
-        )
-        .style(Style::default().bg(Color::Black))
-        .wrap(ratatui::widgets::Wrap { trim: false });
-    frame.render_widget(para, area);
-}
-
-fn draw_explain_panel(
-    frame: &mut Frame,
-    area: Rect,
-    _schema: &str,
-    _table: &str,
-    root: &crate::archive::ExplainNode,
-) {
-    let mut lines = Vec::new();
-    render_explain_node(&mut lines, root, 0);
-    lines.push(Line::default());
-    lines.push(Line::from(Span::styled(
-        " Esc: back",
-        Style::default().fg(Color::DarkGray),
-    )));
-    let para = Paragraph::new(lines)
-        .block(
-            Block::default()
-                .borders(Borders::NONE)
-                .title(" EXPLAIN Plan ")
-                .title_style(
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                ),
-        )
-        .style(Style::default().bg(Color::Black))
-        .wrap(ratatui::widgets::Wrap { trim: false });
-    frame.render_widget(para, area);
-}
-
-fn render_explain_node(
-    lines: &mut Vec<Line<'static>>,
-    node: &crate::archive::ExplainNode,
-    depth: usize,
-) {
-    let indent = "  ".repeat(depth);
-    let relation = node
-        .relation_name
-        .as_deref()
-        .map(|r| format!(" on {r}"))
-        .unwrap_or_default();
-    let alias = node
-        .alias
-        .as_deref()
-        .filter(|a| Some(*a) != node.relation_name.as_deref())
-        .map(|a| format!(" as {a}"))
-        .unwrap_or_default();
-    let header = format!(
-        "{indent}▸ {}{}{}  cost={:.1}..{:.1}  rows={}",
-        node.node_type, relation, alias, node.startup_cost, node.total_cost, node.plan_rows,
-    );
-    lines.push(Line::from(vec![Span::styled(
-        header,
-        Style::default().fg(Color::White),
-    )]));
-    if let (Some(at), Some(ar)) = (node.actual_total_time, node.actual_rows) {
-        let stats = format!("{indent}  actual: {at:.2}ms  rows={ar}");
-        lines.push(Line::from(vec![Span::styled(
-            stats,
-            Style::default().fg(Color::DarkGray),
-        )]));
-    }
-    for child in &node.children {
-        render_explain_node(lines, child, depth + 1);
-    }
-}
-
-fn draw_loading(frame: &mut Frame, area: Rect, schema: &str, table: &str) {
-    let para = Paragraph::new(Line::from(vec![
-        Span::styled("  ⟳ Loading ", Style::default().fg(Color::Yellow)),
-        Span::styled(
-            format!("{schema}.{table}"),
-            Style::default()
-                .fg(Color::Cyan)
-                .add_modifier(Modifier::BOLD),
-        ),
-        Span::styled("…", Style::default().fg(Color::Yellow)),
-    ]))
-    .block(Block::default().borders(Borders::NONE))
-    .style(Style::default().bg(Color::Black));
-    frame.render_widget(para, area);
-}
-
-fn draw_data_grid(
-    frame: &mut Frame,
-    area: Rect,
-    schema: &str,
-    table: &str,
-    result: &QueryResult,
-    table_state: &mut TableState,
-) {
-    const MAX_COL_W: usize = 30;
-    let widths = column_widths(result, MAX_COL_W);
-
-    let header_cells: Vec<Cell> = result
-        .columns
-        .iter()
-        .map(|col| {
-            Cell::from(col.name.clone()).style(
-                Style::default()
-                    .fg(Color::Cyan)
-                    .add_modifier(Modifier::BOLD),
-            )
-        })
-        .collect();
-    let header = Row::new(header_cells)
-        .style(Style::default().bg(Color::DarkGray))
-        .height(1);
-
-    let rows: Vec<Row> = result
-        .rows
-        .rows
-        .iter()
-        .map(|row| {
-            let cells: Vec<Cell> = result
-                .columns
-                .iter()
-                .enumerate()
-                .map(|(ci, _)| {
-                    let val = row
-                        .0
-                        .get(ci)
-                        .map(|(_, v)| cell_display(v))
-                        .unwrap_or_default();
-                    let truncated = if val.len() > MAX_COL_W {
-                        format!("{}…", &val[..MAX_COL_W - 1])
-                    } else {
-                        val
-                    };
-                    Cell::from(truncated).style(Style::default().fg(Color::White))
-                })
-                .collect();
-            Row::new(cells).height(1)
-        })
-        .collect();
-
-    let constraints: Vec<Constraint> = widths
-        .iter()
-        .map(|&w| Constraint::Length(w as u16 + 2))
-        .collect();
-
-    let title = format!(
-        " {}{}.{}  ({} rows) ",
-        if schema.is_empty() { "" } else { "" },
-        schema,
-        table,
-        result.row_count
-    );
-    let tbl = Table::new(rows, constraints)
-        .header(header)
-        .block(
-            Block::default()
-                .borders(Borders::NONE)
-                .title(title)
-                .title_style(
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                ),
-        )
-        .row_highlight_style(
-            Style::default()
-                .bg(Color::Blue)
-                .fg(Color::White)
-                .add_modifier(Modifier::BOLD),
-        )
-        .style(Style::default().bg(Color::Black));
-
-    frame.render_stateful_widget(tbl, area, table_state);
-}
-
-fn draw_sql_editor(
-    frame: &mut Frame,
-    area: Rect,
-    text: &str,
-    result: Option<&QueryResult>,
-    running: bool,
-) {
-    let header = if running {
-        "⟳ Running…"
-    } else {
-        "SQL Editor — Ctrl+Enter to run"
-    };
-    let para = Paragraph::new(text)
-        .block(
-            Block::default()
-                .borders(Borders::BOTTOM)
-                .title(format!(" {header} "))
-                .title_style(
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                ),
-        )
-        .style(Style::default().bg(Color::Black).fg(Color::White));
-
-    if let Some(res) = result {
-        let split = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([Constraint::Percentage(40), Constraint::Percentage(60)])
-            .split(area);
-        frame.render_widget(para, split[0]);
-        let mut ts = TableState::default();
-        draw_data_grid(frame, split[1], "", "(result)", res, &mut ts);
-    } else {
-        frame.render_widget(para, area);
-    }
-}
-
-fn cell_display(v: &DbValue) -> String {
-    match v {
-        DbValue::Null => "NULL".to_string(),
-        DbValue::Bool(b) => if *b { "t" } else { "f" }.to_string(),
-        DbValue::Int(n) => n.to_string(),
-        DbValue::Float(f) => format!("{f:.4}"),
-        DbValue::Text(s) => s.clone(),
-        DbValue::Bytes(b) => format!("\\x{}", hex_short(b)),
-        DbValue::Json(j) => j.to_string(),
-        DbValue::Geometry(s) | DbValue::Geography(s) => match s {
-            elicit_db::DbSpatialValue::Wkt(w) => format!("<geo wkt:{}>", &w[..w.len().min(20)]),
-            elicit_db::DbSpatialValue::Wkb(b) => format!("<geo wkb:{} bytes>", b.len()),
-        },
-    }
-}
-
-fn hex_short(bytes: &[u8]) -> String {
-    let s: String = bytes.iter().take(8).map(|b| format!("{b:02x}")).collect();
-    if bytes.len() > 8 {
-        format!("{s}…")
-    } else {
-        s
-    }
-}
-
-fn draw_status_bar(frame: &mut Frame, area: Rect) {
-    use elicit_ratatui::TuiNode;
-    let chips = ArchiveNavModel::bindings()
-        .into_iter()
-        .map(|b| (b.key, b.action))
-        .collect();
-    let bar = TuiNode::StatusBar {
-        chips,
-        theme: ColorTheme::Dark,
-    };
-    render_node(frame, area, &bar);
-}
-
-fn draw_help(frame: &mut Frame, area: Rect) {
-    let bindings: &[(&str, &str)] = &[
-        ("q / Esc  ", "Quit"),
-        ("↑ / k    ", "Move up"),
-        ("↓ / j    ", "Move down"),
-        ("Enter    ", "Expand schema / preview table"),
-        ("r        ", "Refresh tree"),
-        ("/        ", "Filter / search"),
-        ("Esc      ", "(in filter) clear filter"),
-        ("?        ", "Toggle this help"),
-    ];
-
-    let height = bindings.len() as u16 + 4;
-    let width = 48u16;
-    let popup = centered_rect(width, height, area);
-
-    let lines: Vec<Line> = bindings
-        .iter()
-        .map(|(k, a)| {
-            Line::from(vec![
-                Span::styled(
-                    format!("  {k}  "),
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                ),
-                Span::styled(*a, Style::default().fg(Color::White)),
-            ])
-        })
-        .collect();
-
-    let help = Paragraph::new(lines)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(" Keybindings ")
-                .title_style(
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                ),
-        )
-        .style(Style::default().bg(Color::Black));
-
-    frame.render_widget(Clear, popup);
-    frame.render_widget(help, popup);
-}
-
-fn draw_export_picker(frame: &mut Frame, area: Rect, selected: usize) {
-    const FORMATS: &[(&str, &str)] = &[
-        ("CSV  ", "Comma-separated values (.csv)"),
-        ("JSON ", "JSON array of objects (.json)"),
-        ("NDJSON", "Newline-delimited JSON (.ndjson)"),
-        ("TSV  ", "Tab-separated values (.tsv)"),
-    ];
-    let height = FORMATS.len() as u16 + 4;
-    let width = 46u16;
-    let popup = centered_rect(width, height, area);
-
-    let lines: Vec<Line> = FORMATS
-        .iter()
-        .enumerate()
-        .map(|(i, (fmt, desc))| {
-            let (key_style, desc_style) = if i == selected {
-                (
-                    Style::default()
-                        .fg(Color::Black)
-                        .bg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                    Style::default().fg(Color::Black).bg(Color::Cyan),
-                )
-            } else {
-                (
-                    Style::default().fg(Color::Cyan),
-                    Style::default().fg(Color::White),
-                )
-            };
-            Line::from(vec![
-                Span::styled(format!("  {fmt}  "), key_style),
-                Span::styled(*desc, desc_style),
-            ])
-        })
-        .collect();
-
-    let picker = Paragraph::new(lines)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(" Export Format (↑↓ Enter Esc) ")
-                .title_style(
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                ),
-        )
-        .style(Style::default().bg(Color::Black));
-
-    frame.render_widget(Clear, popup);
-    frame.render_widget(picker, popup);
-}
-
-/// Draw the save-name prompt modal.
-fn draw_save_prompt(frame: &mut Frame, area: Rect, prompt_text: &str) {
-    let width = 50u16;
-    let height = 5u16;
-    let popup = centered_rect(width, height, area);
-
-    let body = Paragraph::new(vec![
-        Line::from(""),
-        Line::from(vec![
-            Span::raw("  Name: "),
-            Span::styled(format!("{prompt_text}_"), Style::default().fg(Color::Cyan)),
-        ]),
-    ])
-    .block(
-        Block::default()
-            .borders(Borders::ALL)
-            .title(" Save Query (Enter=confirm  Esc=cancel) ")
-            .title_style(
-                Style::default()
-                    .fg(Color::Cyan)
-                    .add_modifier(Modifier::BOLD),
-            ),
-    )
-    .style(Style::default().bg(Color::Black));
-
-    frame.render_widget(Clear, popup);
-    frame.render_widget(body, popup);
-}
-
-/// Draw the saved-queries browser overlay.
-fn draw_saved_browser(
-    frame: &mut Frame,
-    area: Rect,
-    saved: &[crate::archive::SavedQuery],
-    selected: usize,
-) {
-    let height = (saved.len() as u16 + 4)
-        .max(6)
-        .min(area.height.saturating_sub(4));
-    let width = 60u16;
-    let popup = centered_rect(width, height, area);
-
-    let lines: Vec<Line> = if saved.is_empty() {
-        vec![Line::from(Span::styled(
-            "  (no saved queries)",
-            Style::default().fg(Color::DarkGray),
-        ))]
-    } else {
-        saved
-            .iter()
-            .enumerate()
-            .map(|(i, q)| {
-                let style = if i == selected {
-                    Style::default()
-                        .fg(Color::Black)
-                        .bg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD)
-                } else {
-                    Style::default().fg(Color::White)
-                };
-                let preview = q
-                    .sql
-                    .lines()
-                    .next()
-                    .unwrap_or("")
-                    .chars()
-                    .take(40)
-                    .collect::<String>();
-                Line::from(Span::styled(format!("  {:20}  {preview}", q.name), style))
-            })
-            .collect()
-    };
-
-    let browser = Paragraph::new(lines)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(" Saved Queries (Enter=load  d=delete  Esc) ")
-                .title_style(
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
-                ),
-        )
-        .style(Style::default().bg(Color::Black));
-
-    frame.render_widget(Clear, popup);
-    frame.render_widget(browser, popup);
-}
-
-fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
-    let x = area.x + area.width.saturating_sub(width) / 2;
-    let y = area.y + area.height.saturating_sub(height) / 2;
-    Rect {
-        x,
-        y,
-        width: width.min(area.width),
-        height: height.min(area.height),
     }
 }
 
@@ -1365,7 +417,6 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
 
     let (req_tx, mut event_rx) = spawn_fetch_task(url);
 
-    // Initialize history store (best-effort — None on failure).
     let history = HistoryStore::open().await.ok();
     let history_cache = if let Some(ref store) = history {
         store
@@ -1375,7 +426,6 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
     } else {
         Vec::new()
     };
-    // Initialize saved-query store (reuses same SQLite file).
     let saved = SavedQueryStore::open().await.ok();
     let saved_cache = if let Some(ref store) = saved {
         store.all().await.unwrap_or_default()
@@ -1390,8 +440,19 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
 
     let result: ArchiveResult<()> = async {
         loop {
+            // IR pipeline: mint verified tree → bridge render → draw frame.
+            let (tree, ir_proof) = app.model.to_verified_tree().map_err(|e| {
+                ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string()))
+            })?;
+            app.backend.render_from_ir(&tree, ir_proof).map_err(|e| {
+                ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string()))
+            })?;
             terminal
-                .draw(|frame| draw_app(frame, &mut app))
+                .draw(|frame| {
+                    if let Some(tui_node) = app.backend.last_tui_tree() {
+                        render_node(frame, frame.area(), &tui_node);
+                    }
+                })
                 .map_err(|e: std::io::Error| {
                     ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string()))
                 })?;
@@ -1401,11 +462,9 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
             }
 
             tokio::select! {
-                // Panel data from background task
                 Some(ev) = event_rx.recv() => {
                     app.apply_panel_event(ev);
                 }
-                // Terminal events
                 Some(Ok(event)) = reader.next() => {
                     if let Event::Key(key) = event {
                         if key.kind != KeyEventKind::Press {
@@ -1418,16 +477,12 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                 KeyCode::Char(c) => app.model.filter_push(c),
                                 _ => {}
                             }
-                        } else if app.save_prompt_active {
+                        } else if app.model.save_prompt_active {
                             match key.code {
-                                KeyCode::Esc => {
-                                    app.save_prompt_active = false;
-                                    app.save_prompt_text.clear();
-                                }
-                                KeyCode::Backspace => { app.save_prompt_text.pop(); }
+                                KeyCode::Esc => app.model.close_save_prompt(),
+                                KeyCode::Backspace => app.model.save_prompt_backspace(),
                                 KeyCode::Enter => {
-                                    let name = app.save_prompt_text.trim().to_string();
-                                    if !name.is_empty() {
+                                    if let Some(name) = app.model.take_save_prompt() {
                                         if let PanelMode::SqlEditor { text, .. } = &app.model.panel {
                                             let sql = text.trim().to_string();
                                             if let Some(ref store) = app.saved {
@@ -1456,69 +511,61 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                             app.model.flash = Some(format!("saved \"{name}\""));
                                         }
                                     }
-                                    app.save_prompt_active = false;
-                                    app.save_prompt_text.clear();
                                 }
-                                KeyCode::Char(c) => app.save_prompt_text.push(c),
+                                KeyCode::Char(c) => app.model.save_prompt_push(c),
                                 _ => {}
                             }
-                        } else if app.saved_browser_active {
+                        } else if app.model.saved_browser_active {
                             let len = app.model.saved_cache.len();
                             match key.code {
                                 KeyCode::Esc | KeyCode::Char('q') => {
-                                    app.saved_browser_active = false;
+                                    app.model.toggle_saved_browser();
                                 }
                                 KeyCode::Up | KeyCode::Char('k') => {
-                                    if app.saved_browser_idx > 0 {
-                                        app.saved_browser_idx -= 1;
-                                    }
+                                    app.model.saved_browser_prev();
                                 }
                                 KeyCode::Down | KeyCode::Char('j') => {
                                     if len > 0 {
-                                        app.saved_browser_idx =
-                                            (app.saved_browser_idx + 1).min(len - 1);
+                                        app.model.saved_browser_next();
                                     }
                                 }
                                 KeyCode::Enter => {
-                                    if let Some(q) = app.model.saved_cache.get(app.saved_browser_idx) {
+                                    let idx = app.model.saved_browser_idx;
+                                    if let Some(q) = app.model.saved_cache.get(idx) {
                                         let sql = q.sql.clone();
                                         app.model.panel = PanelMode::SqlEditor {
                                             text: sql,
                                             result: None,
                                             running: false,
                                         };
-                                        app.saved_browser_active = false;
+                                        app.model.toggle_saved_browser();
                                     }
                                 }
                                 KeyCode::Char('d') | KeyCode::Delete => {
-                                    if let Some(q) = app.model.saved_cache.get(app.saved_browser_idx) {
+                                    let idx = app.model.saved_browser_idx;
+                                    if let Some(q) = app.model.saved_cache.get(idx) {
                                         let id = q.id;
                                         let name = q.name.clone();
                                         if let Some(ref store) = app.saved {
                                             store.delete_spawn(id);
                                         }
-                                        app.model.saved_cache.remove(app.saved_browser_idx);
-                                        if app.saved_browser_idx > 0
-                                            && app.saved_browser_idx >= app.model.saved_cache.len()
-                                        {
-                                            app.saved_browser_idx -= 1;
+                                        app.model.saved_cache.remove(idx);
+                                        if idx > 0 && idx >= app.model.saved_cache.len() {
+                                            app.model.saved_browser_prev();
                                         }
                                         app.model.flash = Some(format!("deleted \"{name}\""));
                                     }
                                 }
                                 _ => {}
                             }
-                        } else if app.export_picker {
+                        } else if app.model.export_picker {
                             match key.code {
-                                KeyCode::Esc => app.export_picker = false,
+                                KeyCode::Esc => app.model.toggle_export_picker(),
                                 KeyCode::Up | KeyCode::Char('k') => {
-                                    if app.export_picker_idx > 0 {
-                                        app.export_picker_idx -= 1;
-                                    }
+                                    app.model.export_picker_prev();
                                 }
                                 KeyCode::Down | KeyCode::Char('j') => {
-                                    app.export_picker_idx =
-                                        (app.export_picker_idx + 1).min(3);
+                                    app.model.export_picker_next();
                                 }
                                 KeyCode::Enter => app.confirm_export(),
                                 _ => {}
@@ -1527,11 +574,7 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                             let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
                             match (key.code, ctrl) {
                                 (KeyCode::Enter, true) | (KeyCode::F(5), _) => app.run_sql(),
-                                // Ctrl+S → save prompt
-                                (KeyCode::Char('s'), true) => {
-                                    app.save_prompt_active = true;
-                                    app.save_prompt_text.clear();
-                                }
+                                (KeyCode::Char('s'), true) => app.model.open_save_prompt(),
                                 (KeyCode::Up, true) => { app.model.history_prev(); }
                                 (KeyCode::Down, true) => { app.model.history_next(); }
                                 (KeyCode::Esc, _) => {
@@ -1572,28 +615,10 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                         running: false,
                                     };
                                 }
-                                // F2 → saved-queries browser
-                                KeyCode::F(2) => {
-                                    app.saved_browser_active = true;
-                                    app.saved_browser_idx = 0;
-                                }
+                                KeyCode::F(2) => app.model.toggle_saved_browser(),
                                 KeyCode::Char('x') => {
                                     if app.model.panel.is_data_grid() {
-                                        app.export_picker = true;
-                                        app.export_picker_idx = 0;
-                                    }
-                                }
-                                KeyCode::PageDown => {
-                                    if let PanelMode::DataGrid { result, .. } = &app.model.panel {
-                                        let max = result.rows.rows.len().saturating_sub(1);
-                                        let sel = app.table_state.selected().unwrap_or(0);
-                                        app.table_state.select(Some((sel + 10).min(max)));
-                                    }
-                                }
-                                KeyCode::PageUp => {
-                                    if app.model.panel.is_data_grid() {
-                                        let sel = app.table_state.selected().unwrap_or(0);
-                                        app.table_state.select(Some(sel.saturating_sub(10)));
+                                        app.model.toggle_export_picker();
                                     }
                                 }
                                 _ => {}

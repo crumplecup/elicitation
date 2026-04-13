@@ -61,11 +61,21 @@ pub struct StructuredContent;
 /// Proposition: UI tree has been successfully rendered to a backend.
 pub struct RenderComplete;
 
+/// Proposition: The `VerifiedTree` passed to a renderer was produced by a
+/// canonical model's `to_verified_tree()` call, not constructed ad-hoc or
+/// bypassed.
+///
+/// Any frontend renderer that requires this proof can only be invoked after
+/// `to_verified_tree()` has been called, giving all frontends contractually
+/// enforced equivalency at the type level.
+pub struct IrSourced;
+
 // Implement elicitation::contracts::Prop for each proposition when emit feature is enabled
 mod emit_impls {
     use super::{
-        AccessibleAA, AltTextProvided, FocusVisible, HasLabel, KeyboardAccessible, MinTargetSize,
-        NoOverflow, RenderComplete, StructuredContent, SufficientContrast, ValidRole,
+        AccessibleAA, AltTextProvided, FocusVisible, HasLabel, IrSourced, KeyboardAccessible,
+        MinTargetSize, NoOverflow, RenderComplete, StructuredContent, SufficientContrast,
+        ValidRole,
     };
     use elicitation::contracts::Prop;
     use elicitation::proc_macro2::TokenStream;
@@ -431,6 +441,34 @@ mod emit_impls {
         fn creusot_proof() -> TokenStream {
             quote! {
                 fn verify_render_complete() -> bool {
+                    true
+                }
+            }
+        }
+    }
+
+    impl Prop for IrSourced {
+        fn kani_proof() -> TokenStream {
+            quote! {
+                #[kani::proof]
+                fn verify_ir_sourced() {
+                    // VerifiedTree was produced from canonical model state
+                }
+            }
+        }
+
+        fn verus_proof() -> TokenStream {
+            quote! {
+                #[verus::proof]
+                fn verify_ir_sourced() {
+                    // VerifiedTree was produced from canonical model state
+                }
+            }
+        }
+
+        fn creusot_proof() -> TokenStream {
+            quote! {
+                fn verify_ir_sourced() -> bool {
                     true
                 }
             }

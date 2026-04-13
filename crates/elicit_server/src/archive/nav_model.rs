@@ -299,6 +299,18 @@ pub struct ArchiveNavModel {
     pub history_idx: Option<usize>,
     /// In-memory saved-query cache (alphabetical), loaded at startup.
     pub saved_cache: Vec<SavedQuery>,
+    /// Whether the export format picker overlay is shown.
+    pub export_picker: bool,
+    /// Currently highlighted option in the export picker (0–3).
+    pub export_picker_idx: usize,
+    /// Whether the save-name prompt modal is shown.
+    pub save_prompt_active: bool,
+    /// Text being typed into the save-name prompt.
+    pub save_prompt_text: String,
+    /// Whether the saved-queries browser overlay is shown.
+    pub saved_browser_active: bool,
+    /// Currently highlighted row in the saved-queries browser.
+    pub saved_browser_idx: usize,
 }
 
 impl ArchiveNavModel {
@@ -331,6 +343,12 @@ impl ArchiveNavModel {
             history_cache: Vec::new(),
             history_idx: None,
             saved_cache: Vec::new(),
+            export_picker: false,
+            export_picker_idx: 0,
+            save_prompt_active: false,
+            save_prompt_text: String::new(),
+            saved_browser_active: false,
+            saved_browser_idx: 0,
         };
         model.rebuild_flat();
         model
@@ -714,6 +732,633 @@ impl ArchiveNavModel {
                 true
             }
         }
+    }
+
+    // ── Overlay state helpers ─────────────────────────────────────────────────
+
+    /// Toggle the export format picker overlay.
+    pub fn toggle_export_picker(&mut self) {
+        self.export_picker = !self.export_picker;
+        if self.export_picker {
+            self.export_picker_idx = 0;
+        }
+    }
+
+    /// Move the export picker selection up.
+    pub fn export_picker_prev(&mut self) {
+        if self.export_picker_idx > 0 {
+            self.export_picker_idx -= 1;
+        }
+    }
+
+    /// Move the export picker selection down (max 3).
+    pub fn export_picker_next(&mut self) {
+        if self.export_picker_idx < 3 {
+            self.export_picker_idx += 1;
+        }
+    }
+
+    /// Confirm the export picker — returns the chosen [`ExportFormat`].
+    pub fn confirm_export_picker(&mut self) -> ExportFormat {
+        self.export_picker = false;
+        match self.export_picker_idx {
+            0 => ExportFormat::Csv,
+            1 => ExportFormat::Json,
+            2 => ExportFormat::Tsv,
+            _ => ExportFormat::Ndjson,
+        }
+    }
+
+    /// Open the save-name prompt (SQL editor context).
+    pub fn open_save_prompt(&mut self) {
+        self.save_prompt_active = true;
+        self.save_prompt_text.clear();
+    }
+
+    /// Append a character to the save-name prompt text.
+    pub fn save_prompt_push(&mut self, ch: char) {
+        self.save_prompt_text.push(ch);
+    }
+
+    /// Delete the last character from the save-name prompt text.
+    pub fn save_prompt_backspace(&mut self) {
+        self.save_prompt_text.pop();
+    }
+
+    /// Close the save-name prompt, discarding any typed text.
+    pub fn close_save_prompt(&mut self) {
+        self.save_prompt_active = false;
+        self.save_prompt_text.clear();
+    }
+
+    /// Consume the save-name prompt text, closing the prompt.
+    ///
+    /// Returns `None` if the prompt is not active or the text is blank.
+    pub fn take_save_prompt(&mut self) -> Option<String> {
+        if !self.save_prompt_active {
+            return None;
+        }
+        let name = self.save_prompt_text.trim().to_string();
+        self.close_save_prompt();
+        if name.is_empty() { None } else { Some(name) }
+    }
+
+    /// Toggle the saved-queries browser overlay.
+    pub fn toggle_saved_browser(&mut self) {
+        self.saved_browser_active = !self.saved_browser_active;
+        if self.saved_browser_active {
+            self.saved_browser_idx = 0;
+        }
+    }
+
+    /// Move the saved-browser selection up.
+    pub fn saved_browser_prev(&mut self) {
+        if self.saved_browser_idx > 0 {
+            self.saved_browser_idx -= 1;
+        }
+    }
+
+    /// Move the saved-browser selection down.
+    pub fn saved_browser_next(&mut self) {
+        if !self.saved_cache.is_empty() {
+            self.saved_browser_idx = (self.saved_browser_idx + 1).min(self.saved_cache.len() - 1);
+        }
+    }
+
+    // ── IR pipeline ───────────────────────────────────────────────────────────
+
+    /// Build a fully-described [`VerifiedTree`] from the current model state.
+    ///
+    /// This is the **only** authorised way to obtain an
+    /// [`elicit_ui::IrSourced`] proof token.  Every frontend renderer must
+    /// call this before rendering — the token is a compile-time contract that
+    /// all frontends share the same AccessKit IR source.
+    ///
+    /// The returned tree encodes:
+    /// - The navigation panel (flat tree with cursor, filter, expand state)
+    /// - The current content panel (DataGrid / SqlEditor / DDL / EXPLAIN /
+    ///   ColumnDetail / Loading)
+    /// - Any active overlay (export picker, save prompt, saved browser, help)
+    /// - The standard archive status bar
+    #[tracing::instrument(skip(self))]
+    pub fn to_verified_tree(
+        &self,
+    ) -> crate::archive::ArchiveResult<(
+        elicit_ui::VerifiedTree,
+        elicitation::Established<elicit_ui::IrSourced>,
+    )> {
+        use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
+        use elicit_accesskit::StatusBarDescriptor;
+        use elicit_ui::{VerifiedTree, Viewport};
+        use std::collections::HashMap;
+
+        let mut nodes: HashMap<AkNodeId, AkNode> = HashMap::new();
+        let mut counter: u64 = 1; // NodeId(0) reserved for Window
+
+        // ── nav panel ─────────────────────────────────────────────────────────
+        let nav_tree_id = AkNodeId::from(counter);
+        counter += 1;
+        let mut nav_children: Vec<AkNodeId> = Vec::new();
+
+        for (idx, item) in self.flat.iter().enumerate() {
+            let item_id = AkNodeId::from(counter);
+            counter += 1;
+            nav_children.push(item_id);
+
+            let label = match item {
+                FlatItem::Schema(si) => {
+                    let s = &self.schemas[*si];
+                    let arrow = if s.expanded { "▾" } else { "▸" };
+                    format!(
+                        "{} {} ({}) — {} table{}",
+                        arrow,
+                        s.entry.name,
+                        s.entry.owner,
+                        s.entry.tables.len(),
+                        if s.entry.tables.len() == 1 { "" } else { "s" },
+                    )
+                }
+                FlatItem::Table(si, ti) => {
+                    let t = &self.schemas[*si].entry.tables[*ti];
+                    format!("  {} [{}]", t.table_name, t.table_type)
+                }
+            };
+
+            let mut tree_item = AkNode::new(AkRole::TreeItem);
+            tree_item.set_label(label);
+            if idx == self.cursor {
+                tree_item.set_selected(true);
+            }
+            nodes.insert(item_id, tree_item);
+        }
+
+        // Filter bar as a TextInput child when active
+        if self.filter_active || !self.filter.is_empty() {
+            let filter_id = AkNodeId::from(counter);
+            counter += 1;
+            nav_children.push(filter_id);
+            let mut filter_node = AkNode::new(AkRole::TextInput);
+            filter_node.set_label(format!("Filter: {}", self.filter));
+            filter_node.set_value(self.filter.clone());
+            nodes.insert(filter_id, filter_node);
+        }
+
+        let mut nav_node = AkNode::new(AkRole::Tree);
+        nav_node.set_label(format!("{} navigator", self.db_name));
+        nav_node.set_children(nav_children);
+        nodes.insert(nav_tree_id, nav_node);
+
+        // ── content panel ─────────────────────────────────────────────────────
+        let content_id = AkNodeId::from(counter);
+        counter += 1;
+        let content_children = self.build_content_nodes(&mut nodes, &mut counter);
+
+        let mut content_node = AkNode::new(AkRole::Group);
+        content_node.set_label("content panel".to_string());
+        content_node.set_children(content_children);
+        nodes.insert(content_id, content_node);
+
+        // ── split-panel group ─────────────────────────────────────────────────
+        let split_id = AkNodeId::from(counter);
+        counter += 1;
+        let mut split_node = AkNode::new(AkRole::Group);
+        split_node.set_label(format!("{} — {}", self.db_name, self.backend_label));
+        split_node.set_children(vec![nav_tree_id, content_id]);
+        nodes.insert(split_id, split_node);
+
+        // ── active overlay (at most one) ──────────────────────────────────────
+        let mut window_children = vec![split_id];
+        if let Some(overlay_id) = self.build_overlay_node(&mut nodes, &mut counter) {
+            window_children.push(overlay_id);
+        }
+
+        // ── status bar ────────────────────────────────────────────────────────
+        let status = StatusBarDescriptor::archive_browse();
+        let (status_root_eid, status_pairs) = status.to_ak_nodes(10_000);
+        for (eid, json) in status_pairs {
+            nodes.insert(eid.0, accesskit::Node::from(json));
+        }
+        window_children.push(status_root_eid.0);
+
+        // ── window root ───────────────────────────────────────────────────────
+        let window_id = AkNodeId::from(0u64);
+        let mut window = AkNode::new(AkRole::Window);
+        window.set_children(window_children);
+        nodes.insert(window_id, window);
+
+        let viewport = Viewport::new(800, 600);
+        let tree = VerifiedTree::from_parts(nodes, window_id, viewport);
+        Ok((tree, elicitation::Established::assert()))
+    }
+
+    /// Build AccessKit nodes for the current content panel.  Returns the list
+    /// of direct children of the content group.
+    fn build_content_nodes(
+        &self,
+        nodes: &mut std::collections::HashMap<accesskit::NodeId, accesskit::Node>,
+        counter: &mut u64,
+    ) -> Vec<accesskit::NodeId> {
+        use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
+
+        let mut children: Vec<AkNodeId> = Vec::new();
+        let mut alloc = || {
+            let id = AkNodeId::from(*counter);
+            *counter += 1;
+            id
+        };
+
+        match &self.panel {
+            PanelMode::ColumnDetail => {
+                let heading_id = alloc();
+                let label = self
+                    .selected()
+                    .map(|item| match item {
+                        FlatItem::Schema(si) => {
+                            format!("Schema: {}", self.schemas[si].entry.name)
+                        }
+                        FlatItem::Table(si, ti) => {
+                            let t = &self.schemas[si].entry.tables[ti];
+                            format!(
+                                "Column detail — {}.{}",
+                                self.schemas[si].entry.name, t.table_name
+                            )
+                        }
+                    })
+                    .unwrap_or_else(|| "Select a table".to_string());
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label(label);
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                // Column list from cached inspection
+                if let Some(FlatItem::Table(si, ti)) = self.selected() {
+                    let key = (
+                        self.schemas[si].entry.name.clone(),
+                        self.schemas[si].entry.tables[ti].table_name.clone(),
+                    );
+                    if let Some(stats) = self.column_stats.get(&key) {
+                        let list_id = alloc();
+                        let mut list_children: Vec<AkNodeId> = Vec::new();
+                        for cs in stats {
+                            let item_id = alloc();
+                            let mut item = AkNode::new(AkRole::ListItem);
+                            item.set_label(format!(
+                                "{} — {:.0} distinct, null_frac {:.1}%",
+                                cs.column_name,
+                                cs.n_distinct,
+                                cs.null_fraction * 100.0,
+                            ));
+                            nodes.insert(item_id, item);
+                            list_children.push(item_id);
+                        }
+                        let mut list = AkNode::new(AkRole::List);
+                        list.set_label("columns");
+                        list.set_children(list_children);
+                        nodes.insert(list_id, list);
+                        children.push(list_id);
+                    }
+                }
+            }
+
+            PanelMode::Loading { schema, table } => {
+                let prog_id = alloc();
+                let mut prog = AkNode::new(AkRole::ProgressIndicator);
+                prog.set_label(format!("Loading {schema}.{table}…"));
+                nodes.insert(prog_id, prog);
+                children.push(prog_id);
+            }
+
+            PanelMode::DataGrid {
+                schema,
+                table,
+                result,
+                page,
+            } => {
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label(format!("{schema}.{table} — page {}", page + 1));
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                let grid_id = alloc();
+                let mut grid_children: Vec<AkNodeId> = Vec::new();
+
+                // Header row
+                let hdr_id = alloc();
+                let mut hdr_cells: Vec<AkNodeId> = Vec::new();
+                for col in &result.columns {
+                    let cell_id = alloc();
+                    let mut cell = AkNode::new(AkRole::ColumnHeader);
+                    cell.set_label(col.name.clone());
+                    nodes.insert(cell_id, cell);
+                    hdr_cells.push(cell_id);
+                }
+                let mut hdr_row = AkNode::new(AkRole::Row);
+                hdr_row.set_children(hdr_cells);
+                nodes.insert(hdr_id, hdr_row);
+                grid_children.push(hdr_id);
+
+                // Data rows (cap to 200 for IR size)
+                for row in result.rows.rows.iter().take(200) {
+                    let row_id = alloc();
+                    let mut row_cells: Vec<AkNodeId> = Vec::new();
+                    for (_, val) in &row.0 {
+                        let cell_id = alloc();
+                        let mut cell = AkNode::new(AkRole::Cell);
+                        cell.set_label(format!("{val:?}"));
+                        nodes.insert(cell_id, cell);
+                        row_cells.push(cell_id);
+                    }
+                    let mut data_row = AkNode::new(AkRole::Row);
+                    data_row.set_children(row_cells);
+                    nodes.insert(row_id, data_row);
+                    grid_children.push(row_id);
+                }
+
+                let mut grid = AkNode::new(AkRole::Grid);
+                grid.set_label(format!("{schema}.{table}"));
+                grid.set_children(grid_children);
+                nodes.insert(grid_id, grid);
+                children.push(grid_id);
+            }
+
+            PanelMode::SqlEditor {
+                text,
+                result,
+                running,
+            } => {
+                let editor_id = alloc();
+                let mut editor = AkNode::new(AkRole::MultilineTextInput);
+                editor.set_label("SQL editor".to_string());
+                editor.set_value(text.clone());
+                nodes.insert(editor_id, editor);
+                children.push(editor_id);
+
+                if *running {
+                    let prog_id = alloc();
+                    let mut prog = AkNode::new(AkRole::ProgressIndicator);
+                    prog.set_label("Query running…".to_string());
+                    nodes.insert(prog_id, prog);
+                    children.push(prog_id);
+                }
+
+                if let Some(res) = result {
+                    let grid_id = alloc();
+                    let mut grid_children: Vec<AkNodeId> = Vec::new();
+
+                    let hdr_id = alloc();
+                    let mut hdr_cells: Vec<AkNodeId> = Vec::new();
+                    for col in &res.columns {
+                        let cell_id = alloc();
+                        let mut cell = AkNode::new(AkRole::ColumnHeader);
+                        cell.set_label(col.name.clone());
+                        nodes.insert(cell_id, cell);
+                        hdr_cells.push(cell_id);
+                    }
+                    let mut hdr_row = AkNode::new(AkRole::Row);
+                    hdr_row.set_children(hdr_cells);
+                    nodes.insert(hdr_id, hdr_row);
+                    grid_children.push(hdr_id);
+
+                    for row in res.rows.rows.iter().take(200) {
+                        let row_id = alloc();
+                        let mut row_cells: Vec<AkNodeId> = Vec::new();
+                        for (_, val) in &row.0 {
+                            let cell_id = alloc();
+                            let mut cell = AkNode::new(AkRole::Cell);
+                            cell.set_label(format!("{val:?}"));
+                            nodes.insert(cell_id, cell);
+                            row_cells.push(cell_id);
+                        }
+                        let mut data_row = AkNode::new(AkRole::Row);
+                        data_row.set_children(row_cells);
+                        nodes.insert(row_id, data_row);
+                        grid_children.push(row_id);
+                    }
+
+                    let mut grid = AkNode::new(AkRole::Grid);
+                    grid.set_label("query results".to_string());
+                    grid.set_children(grid_children);
+                    nodes.insert(grid_id, grid);
+                    children.push(grid_id);
+                }
+            }
+
+            PanelMode::Ddl { schema, table, ddl } => {
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label(format!("DDL: {schema}.{table}"));
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                let code_id = alloc();
+                let mut code = AkNode::new(AkRole::Code);
+                code.set_label(ddl.clone());
+                nodes.insert(code_id, code);
+                children.push(code_id);
+            }
+
+            PanelMode::ExplainPlan {
+                schema,
+                table,
+                root,
+            } => {
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label(format!("EXPLAIN: {schema}.{table}"));
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                let plan_root_id = alloc();
+                let plan_id = self.build_explain_node(root, nodes, counter);
+                let mut plan_tree = AkNode::new(AkRole::Tree);
+                plan_tree.set_label("query plan".to_string());
+                plan_tree.set_children(vec![plan_id]);
+                nodes.insert(plan_root_id, plan_tree);
+                children.push(plan_root_id);
+            }
+        }
+
+        children
+    }
+
+    /// Recursively build AccessKit nodes for an [`ExplainNode`] subtree.
+    fn build_explain_node(
+        &self,
+        node: &ExplainNode,
+        nodes: &mut std::collections::HashMap<accesskit::NodeId, accesskit::Node>,
+        counter: &mut u64,
+    ) -> accesskit::NodeId {
+        use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
+
+        let id = AkNodeId::from(*counter);
+        *counter += 1;
+
+        let mut child_ids: Vec<AkNodeId> = Vec::new();
+        for child in &node.children {
+            child_ids.push(self.build_explain_node(child, nodes, counter));
+        }
+
+        let label = format!(
+            "{} (cost {:.1}..{:.1} rows {})",
+            node.node_type, node.startup_cost, node.total_cost, node.plan_rows,
+        );
+        let mut ak_node = AkNode::new(AkRole::TreeItem);
+        ak_node.set_label(label);
+        if !child_ids.is_empty() {
+            ak_node.set_children(child_ids);
+        }
+        nodes.insert(id, ak_node);
+        id
+    }
+
+    /// Build an AccessKit [`Role::Dialog`] node for the currently active
+    /// overlay, if any.  Returns `None` when no overlay is open.
+    fn build_overlay_node(
+        &self,
+        nodes: &mut std::collections::HashMap<accesskit::NodeId, accesskit::Node>,
+        counter: &mut u64,
+    ) -> Option<accesskit::NodeId> {
+        use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
+
+        let mut alloc = || {
+            let id = AkNodeId::from(*counter);
+            *counter += 1;
+            id
+        };
+
+        if self.show_help {
+            let dialog_id = alloc();
+            let mut dialog_children: Vec<AkNodeId> = Vec::new();
+
+            let heading_id = alloc();
+            let mut h = AkNode::new(AkRole::Heading);
+            h.set_label("Key Bindings".to_string());
+            nodes.insert(heading_id, h);
+            dialog_children.push(heading_id);
+
+            let list_id = alloc();
+            let mut list_items: Vec<AkNodeId> = Vec::new();
+            for kb in Self::bindings() {
+                let item_id = alloc();
+                let mut item = AkNode::new(AkRole::ListItem);
+                item.set_label(format!("{} — {}", kb.key, kb.action));
+                nodes.insert(item_id, item);
+                list_items.push(item_id);
+            }
+            let mut list = AkNode::new(AkRole::List);
+            list.set_label("bindings".to_string());
+            list.set_children(list_items);
+            nodes.insert(list_id, list);
+            dialog_children.push(list_id);
+
+            let mut dialog = AkNode::new(AkRole::Dialog);
+            dialog.set_label("Key Bindings".to_string());
+            dialog.set_children(dialog_children);
+            nodes.insert(dialog_id, dialog);
+            return Some(dialog_id);
+        }
+
+        if self.export_picker {
+            let dialog_id = alloc();
+            let mut dialog_children: Vec<AkNodeId> = Vec::new();
+
+            let heading_id = alloc();
+            let mut h = AkNode::new(AkRole::Heading);
+            h.set_label("Export Format".to_string());
+            nodes.insert(heading_id, h);
+            dialog_children.push(heading_id);
+
+            let list_id = alloc();
+            let formats = ["CSV", "JSON", "TSV", "SQL"];
+            let mut list_items: Vec<AkNodeId> = Vec::new();
+            for (i, fmt) in formats.iter().enumerate() {
+                let item_id = alloc();
+                let mut item = AkNode::new(AkRole::ListItem);
+                let label = if i == self.export_picker_idx {
+                    format!("▶ {fmt}")
+                } else {
+                    fmt.to_string()
+                };
+                item.set_label(label);
+                nodes.insert(item_id, item);
+                list_items.push(item_id);
+            }
+            let mut list = AkNode::new(AkRole::List);
+            list.set_label("export formats".to_string());
+            list.set_children(list_items);
+            nodes.insert(list_id, list);
+            dialog_children.push(list_id);
+
+            let mut dialog = AkNode::new(AkRole::Dialog);
+            dialog.set_label("Export Format".to_string());
+            dialog.set_children(dialog_children);
+            nodes.insert(dialog_id, dialog);
+            return Some(dialog_id);
+        }
+
+        if self.save_prompt_active {
+            let dialog_id = alloc();
+            let mut dialog_children: Vec<AkNodeId> = Vec::new();
+
+            let label_id = alloc();
+            let mut label = AkNode::new(AkRole::Label);
+            label.set_label("Save query as:".to_string());
+            nodes.insert(label_id, label);
+            dialog_children.push(label_id);
+
+            let input_id = alloc();
+            let mut input = AkNode::new(AkRole::TextInput);
+            input.set_label("Query name".to_string());
+            input.set_value(self.save_prompt_text.clone());
+            nodes.insert(input_id, input);
+            dialog_children.push(input_id);
+
+            let mut dialog = AkNode::new(AkRole::Dialog);
+            dialog.set_label("Save Query".to_string());
+            dialog.set_children(dialog_children);
+            nodes.insert(dialog_id, dialog);
+            return Some(dialog_id);
+        }
+
+        if self.saved_browser_active {
+            let dialog_id = alloc();
+            let mut dialog_children: Vec<AkNodeId> = Vec::new();
+
+            let heading_id = alloc();
+            let mut h = AkNode::new(AkRole::Heading);
+            h.set_label("Saved Queries".to_string());
+            nodes.insert(heading_id, h);
+            dialog_children.push(heading_id);
+
+            let list_id = alloc();
+            let mut list_items: Vec<AkNodeId> = Vec::new();
+            for (i, sq) in self.saved_cache.iter().enumerate() {
+                let item_id = alloc();
+                let mut item = AkNode::new(AkRole::ListItem);
+                let label = if i == self.saved_browser_idx {
+                    format!("▶ {}", sq.name)
+                } else {
+                    sq.name.clone()
+                };
+                item.set_label(label);
+                nodes.insert(item_id, item);
+                list_items.push(item_id);
+            }
+            let mut list = AkNode::new(AkRole::List);
+            list.set_label("saved queries".to_string());
+            list.set_children(list_items);
+            nodes.insert(list_id, list);
+            dialog_children.push(list_id);
+
+            let mut dialog = AkNode::new(AkRole::Dialog);
+            dialog.set_label("Saved Queries".to_string());
+            dialog.set_children(dialog_children);
+            nodes.insert(dialog_id, dialog);
+            return Some(dialog_id);
+        }
+
+        None
     }
 }
 

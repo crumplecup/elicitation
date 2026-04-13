@@ -28,7 +28,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use elicit_db::{DbQueryExecutor, DbSchemaManager, DbServerAdmin, DbTableManager};
 use elicit_server::archive::{
     ArchiveDbBackend, NavTree, egui_frontend::run_egui, leptos_frontend::run_browser,
-    nav_tree::build_nav_tree, nav_tree_to_verified_tree, ratatui_frontend::run_tui,
+    nav_tree::build_nav_tree, ratatui_frontend::run_tui,
 };
 use tracing_subscriber::EnvFilter;
 
@@ -181,10 +181,7 @@ async fn main() -> anyhow::Result<()> {
             match mode {
                 ServeMode::Ratatui => run_tui(nav, Some(url)).await?,
                 ServeMode::Egui => run_egui(nav, Some(url))?,
-                ServeMode::Browser => {
-                    let tree = nav_tree_to_verified_tree(&nav)?;
-                    run_browser(tree, port).await?;
-                }
+                ServeMode::Browser => run_browser(nav, port).await?,
             }
         }
 
@@ -193,10 +190,7 @@ async fn main() -> anyhow::Result<()> {
             match mode {
                 ServeMode::Ratatui => run_tui(nav, None).await?,
                 ServeMode::Egui => run_egui(nav, None)?,
-                ServeMode::Browser => {
-                    let tree = nav_tree_to_verified_tree(&nav)?;
-                    run_browser(tree, port).await?;
-                }
+                ServeMode::Browser => run_browser(nav, port).await?,
             }
         }
     }

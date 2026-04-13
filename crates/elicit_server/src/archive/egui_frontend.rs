@@ -11,7 +11,7 @@
 
 use std::sync::Arc;
 
-use egui::{Color32, Key, RichText, ScrollArea, Vec2};
+use egui::Key;
 use egui_winit::State as EguiWinitState;
 use tokio::sync::mpsc;
 use tracing::instrument;
@@ -23,28 +23,23 @@ use winit::{
 };
 
 use crate::archive::{
-    ArchiveDbBackend, ArchiveResult, ExportFormat, HistoryStore, SavedQueryStore,
+    ArchiveDbBackend, ArchiveResult, HistoryStore, SavedQueryStore,
     errors::{ArchiveError, ArchiveErrorKind},
-    nav_model::{ArchiveNavModel, FetchRequest, FlatItem, PanelEvent, PanelMode},
+    nav_model::{ArchiveNavModel, FetchRequest, PanelEvent, PanelMode},
     nav_tree::{NavTree, build_nav_tree},
     plugins::export::export_query_result,
     plugins::query::{execute_sql_direct, preview_table_direct},
-    types::TableType,
 };
 
-// ── Catppuccin Mocha palette ──────────────────────────────────────────────────
+// ── Catppuccin Mocha palette (used by apply_theme) ────────────────────────────
 
+use egui::Color32;
 const BASE: Color32 = Color32::from_rgb(30, 30, 46);
 const SURFACE0: Color32 = Color32::from_rgb(49, 50, 68);
 const SURFACE1: Color32 = Color32::from_rgb(69, 71, 90);
 const TEXT: Color32 = Color32::from_rgb(205, 214, 244);
 const SUBTEXT0: Color32 = Color32::from_rgb(166, 173, 200);
 const BLUE: Color32 = Color32::from_rgb(137, 180, 250);
-const MAUVE: Color32 = Color32::from_rgb(203, 166, 247);
-const YELLOW: Color32 = Color32::from_rgb(249, 226, 175);
-const OVERLAY0: Color32 = Color32::from_rgb(108, 112, 134);
-const GREEN: Color32 = Color32::from_rgb(166, 227, 161);
-const RED: Color32 = Color32::from_rgb(243, 139, 168);
 
 // ── Application state ─────────────────────────────────────────────────────────
 
@@ -55,10 +50,6 @@ struct ArchiveEguiApp {
     req_tx: mpsc::Sender<FetchRequest>,
     /// Receiver for panel events from the fetch task.
     event_rx: mpsc::Receiver<PanelEvent>,
-    /// When true, the export format picker overlay is shown.
-    export_picker: bool,
-    /// Currently highlighted option in the export picker (0–3).
-    export_picker_idx: usize,
     /// SQLite-backed query history store (None if DB unavailable).
     history: Option<HistoryStore>,
     /// SQL text that is currently executing (for history recording).
@@ -67,14 +58,6 @@ struct ArchiveEguiApp {
     exec_start: Option<std::time::Instant>,
     /// Saved-query store (None if DB unavailable).
     saved: Option<SavedQueryStore>,
-    /// When true the save-name prompt modal is shown.
-    save_prompt_active: bool,
-    /// Text being typed into the save-name prompt.
-    save_prompt_text: String,
-    /// When true the saved-queries browser window is shown.
-    saved_browser_active: bool,
-    /// Currently highlighted row in the saved-queries browser.
-    saved_browser_idx: usize,
     // wgpu / egui-winit resources (None until `resumed`)
     window: Option<Arc<Window>>,
     egui_state: Option<EguiWinitState>,
@@ -98,16 +81,10 @@ impl ArchiveEguiApp {
             should_quit: false,
             req_tx,
             event_rx,
-            export_picker: false,
-            export_picker_idx: 0,
             history,
             pending_sql: None,
             exec_start: None,
             saved,
-            save_prompt_active: false,
-            save_prompt_text: String::new(),
-            saved_browser_active: false,
-            saved_browser_idx: 0,
             window: None,
             egui_state: None,
             surface: None,
@@ -279,7 +256,7 @@ impl ArchiveEguiApp {
         // Drain pending data events before rendering.
         self.poll_events();
 
-        // ── Keyboard navigation (sourced from AccessKit IR) ───────────────────
+        // ── Keyboard navigation ───────────────────────────────────────────────
         let (up, down, enter, refresh_key, toggle_help, quit, slash, esc_key) = ctx.input(|i| {
             (
                 i.key_pressed(Key::ArrowUp) || i.key_pressed(Key::K),
@@ -294,7 +271,6 @@ impl ArchiveEguiApp {
         });
 
         if self.model.filter_active {
-            // In filter mode: collect typed characters
             let typed: String = ctx.input(|i| {
                 i.events
                     .iter()
@@ -316,8 +292,7 @@ impl ArchiveEguiApp {
             if esc_key {
                 self.model.close_filter();
             }
-        } else if self.save_prompt_active {
-            // Save-name prompt
+        } else if self.model.save_prompt_active {
             let typed: String = ctx.input(|i| {
                 i.events
                     .iter()
@@ -330,17 +305,17 @@ impl ArchiveEguiApp {
                     })
                     .collect()
             });
-            self.save_prompt_text.push_str(&typed);
+            for ch in typed.chars() {
+                self.model.save_prompt_push(ch);
+            }
             if ctx.input(|i| i.key_pressed(Key::Backspace)) {
-                self.save_prompt_text.pop();
+                self.model.save_prompt_backspace();
             }
             if esc_key {
-                self.save_prompt_active = false;
-                self.save_prompt_text.clear();
+                self.model.close_save_prompt();
             }
             if enter {
-                let name = self.save_prompt_text.trim().to_string();
-                if !name.is_empty() {
+                if let Some(name) = self.model.take_save_prompt() {
                     if let PanelMode::SqlEditor { text, .. } = &self.model.panel {
                         let sql = text.trim().to_string();
                         if let Some(ref store) = self.saved {
@@ -366,72 +341,62 @@ impl ArchiveEguiApp {
                         self.model.flash = Some(format!("saved \"{name}\""));
                     }
                 }
-                self.save_prompt_active = false;
-                self.save_prompt_text.clear();
             }
-        } else if self.saved_browser_active {
-            // Saved-queries browser keyboard
+        } else if self.model.saved_browser_active {
             let len = self.model.saved_cache.len();
             if esc_key || quit {
-                self.saved_browser_active = false;
+                self.model.toggle_saved_browser();
             }
-            if up && self.saved_browser_idx > 0 {
-                self.saved_browser_idx -= 1;
+            if up {
+                self.model.saved_browser_prev();
             }
             if down && len > 0 {
-                self.saved_browser_idx = (self.saved_browser_idx + 1).min(len - 1);
+                self.model.saved_browser_next();
             }
             if enter {
-                if let Some(q) = self.model.saved_cache.get(self.saved_browser_idx) {
+                let idx = self.model.saved_browser_idx;
+                if let Some(q) = self.model.saved_cache.get(idx) {
                     let sql = q.sql.clone();
                     self.model.panel = PanelMode::SqlEditor {
                         text: sql,
                         result: None,
                         running: false,
                     };
-                    self.saved_browser_active = false;
+                    self.model.toggle_saved_browser();
                 }
             }
             if ctx.input(|i| i.key_pressed(Key::D)) {
-                if let Some(q) = self.model.saved_cache.get(self.saved_browser_idx) {
+                let idx = self.model.saved_browser_idx;
+                if let Some(q) = self.model.saved_cache.get(idx) {
                     let id = q.id;
                     let name = q.name.clone();
                     if let Some(ref store) = self.saved {
                         store.delete_spawn(id);
                     }
-                    self.model.saved_cache.remove(self.saved_browser_idx);
-                    if self.saved_browser_idx > 0
-                        && self.saved_browser_idx >= self.model.saved_cache.len()
-                    {
-                        self.saved_browser_idx -= 1;
+                    self.model.saved_cache.remove(idx);
+                    if idx > 0 && idx >= self.model.saved_cache.len() {
+                        self.model.saved_browser_prev();
                     }
                     self.model.flash = Some(format!("deleted \"{name}\""));
                 }
             }
-        } else if self.export_picker {
+        } else if self.model.export_picker {
             if esc_key {
-                self.export_picker = false;
+                self.model.toggle_export_picker();
             }
-            if up && self.export_picker_idx > 0 {
-                self.export_picker_idx -= 1;
+            if up {
+                self.model.export_picker_prev();
             }
             if down {
-                self.export_picker_idx = (self.export_picker_idx + 1).min(3);
+                self.model.export_picker_next();
             }
             if enter {
-                let format = match self.export_picker_idx {
-                    0 => ExportFormat::Csv,
-                    1 => ExportFormat::Json,
-                    2 => ExportFormat::Ndjson,
-                    _ => ExportFormat::Tsv,
-                };
-                self.export_picker = false;
+                let format = self.model.confirm_export_picker();
                 if let Some(req) = self.model.export_request(format) {
                     let _ = self.req_tx.try_send(req);
                 }
             }
         } else if matches!(self.model.panel, PanelMode::SqlEditor { .. }) {
-            // SQL editor keyboard handling
             let (ctrl_enter, ctrl_up, ctrl_down) = ctx.input(|i| {
                 let ctrl = i.modifiers.ctrl;
                 (
@@ -452,7 +417,6 @@ impl ArchiveEguiApp {
             if esc_key {
                 self.model.panel = PanelMode::ColumnDetail;
             }
-            // Text input for SQL editing
             let typed: String = ctx.input(|i| {
                 i.events
                     .iter()
@@ -480,10 +444,8 @@ impl ArchiveEguiApp {
                     text.push('\n');
                 }
             }
-            // Ctrl+S → save prompt
             if ctx.input(|i| i.modifiers.ctrl && i.key_pressed(Key::S)) {
-                self.save_prompt_active = true;
-                self.save_prompt_text.clear();
+                self.model.open_save_prompt();
             }
         } else {
             if up {
@@ -519,19 +481,16 @@ impl ArchiveEguiApp {
             if slash {
                 self.model.open_filter();
             }
-            // d → DDL viewer
             if ctx.input(|i| i.key_pressed(Key::D)) {
                 if let Some(req) = self.model.ddl_request() {
                     let _ = self.req_tx.try_send(req);
                 }
             }
-            // e → EXPLAIN viewer
             if ctx.input(|i| i.key_pressed(Key::E)) {
                 if let Some(req) = self.model.explain_request() {
                     let _ = self.req_tx.try_send(req);
                 }
             }
-            // s → open SQL editor
             if ctx.input(|i| i.key_pressed(Key::S)) {
                 self.model.panel = PanelMode::SqlEditor {
                     text: String::new(),
@@ -539,851 +498,36 @@ impl ArchiveEguiApp {
                     running: false,
                 };
             }
-            // F2 → saved queries browser
             if ctx.input(|i| i.key_pressed(Key::F2)) {
-                self.saved_browser_active = true;
-                self.saved_browser_idx = 0;
+                self.model.toggle_saved_browser();
             }
-            // x → export format picker
             if ctx.input(|i| i.key_pressed(Key::X)) && self.model.panel.is_data_grid() {
-                self.export_picker = true;
-                self.export_picker_idx = 0;
+                self.model.toggle_export_picker();
             }
             if quit || esc_key {
                 self.should_quit = true;
             }
         }
 
-        // ── Status bar ────────────────────────────────────────────────────────
-        egui::Panel::bottom("status")
-            .frame(
-                egui::Frame::new()
-                    .fill(SURFACE1)
-                    .inner_margin(egui::Margin::symmetric(12i8, 4i8)),
-            )
-            .show_inside(ui, |ui| {
-                ui.horizontal(|ui| {
-                    for binding in ArchiveNavModel::bindings() {
-                        ui.label(RichText::new(&binding.key).color(YELLOW).monospace());
-                        ui.add_space(2.0);
-                        ui.label(
-                            RichText::new(binding.action.to_lowercase())
-                                .color(SUBTEXT0)
-                                .small(),
-                        );
-                        ui.add_space(8.0);
-                    }
-                    // Extra bindings not in the core IR
-                    ui.label(RichText::new("/").color(YELLOW).monospace());
-                    ui.add_space(2.0);
-                    ui.label(RichText::new("filter").color(SUBTEXT0).small());
-                    ui.add_space(8.0);
-
-                    if let Some(flash) = &self.model.flash {
-                        let color = if flash.starts_with('⚠') { RED } else { GREEN };
-                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                            ui.label(RichText::new(flash).color(color).small());
-                        });
-                    }
-                });
-            });
-
-        // ── Navigation panel ──────────────────────────────────────────────────
-        let cursor = self.model.cursor;
-        let filter_active = self.model.filter_active;
-        let filter_text = self.model.filter.clone();
-
-        egui::Panel::left("nav")
-            .resizable(true)
-            .default_size(260.0)
-            .frame(
-                egui::Frame::new()
-                    .fill(BASE)
-                    .inner_margin(egui::Margin::same(8i8)),
-            )
-            .show_inside(ui, |ui| {
-                // Header: db name + version
-                ui.horizontal(|ui| {
-                    ui.label(
-                        RichText::new(&self.model.db_name)
-                            .color(BLUE)
-                            .strong()
-                            .size(14.0),
-                    );
-                    if let Some(v) = &self.model.version {
-                        ui.label(RichText::new(format!("({})", v)).color(SUBTEXT0).small());
-                    }
-                });
-
-                // Filter bar
-                if filter_active {
-                    ui.horizontal(|ui| {
-                        ui.label(RichText::new("/").color(YELLOW).monospace());
-                        ui.label(
-                            RichText::new(format!("{filter_text}_"))
-                                .color(GREEN)
-                                .monospace()
-                                .small(),
-                        );
-                    });
-                }
-
-                ui.separator();
-
-                let mut clicked_row: Option<usize> = None;
-                ScrollArea::vertical().show(ui, |ui| {
-                    ui.set_width(ui.available_width());
-                    for (row_idx, item) in self.model.flat.iter().enumerate() {
-                        let is_selected = row_idx == cursor;
-                        match item {
-                            FlatItem::Schema(si) => {
-                                let s = &self.model.schemas[*si];
-                                let arrow = if s.expanded { "▼ " } else { "▶ " };
-                                let label = RichText::new(format!(
-                                    "{arrow}{}  ({})",
-                                    s.entry.name,
-                                    s.entry.tables.len()
-                                ))
-                                .color(if is_selected { BLUE } else { MAUVE })
-                                .strong();
-                                let resp = ui.selectable_label(is_selected, label);
-                                if resp.clicked() {
-                                    clicked_row = Some(row_idx);
-                                }
-                                if is_selected {
-                                    resp.scroll_to_me(Some(egui::Align::Center));
-                                }
-                            }
-                            FlatItem::Table(si, ti) => {
-                                let t = &self.model.schemas[*si].entry.tables[*ti];
-                                let icon = match t.table_type {
-                                    TableType::Table => "📋",
-                                    TableType::View => "👁",
-                                    TableType::MaterializedView => "💾",
-                                    TableType::Unknown => "•",
-                                };
-                                let label = RichText::new(format!("   {icon} {}", t.table_name))
-                                    .color(if is_selected { BLUE } else { TEXT })
-                                    .small();
-                                let resp = ui.selectable_label(is_selected, label);
-                                if resp.clicked() {
-                                    clicked_row = Some(row_idx);
-                                }
-                                if is_selected {
-                                    resp.scroll_to_me(Some(egui::Align::Center));
-                                }
-                            }
-                        }
-                    }
-                });
-                // Mouse click: set cursor then toggle expand
-                if let Some(row) = clicked_row {
-                    self.model.cursor = row;
-                    if let Some(req) = self.model.toggle_expand() {
-                        let _ = self.req_tx.try_send(req);
-                    }
-                }
-            });
-
-        // ── Central panel ─────────────────────────────────────────────────────
-        egui::CentralPanel::default()
-            .frame(
-                egui::Frame::new()
-                    .fill(BASE)
-                    .inner_margin(egui::Margin::same(12i8)),
-            )
-            .show_inside(ui, |ui| {
-                // Clone to avoid borrow issues on panel match
-                let panel = std::mem::replace(&mut self.model.panel, PanelMode::ColumnDetail);
-                match &panel {
-                    PanelMode::ColumnDetail => {
-                        self.model.panel = panel;
-                        self.render_column_detail(ui);
-                    }
-                    PanelMode::Loading { schema, table } => {
-                        ui.centered_and_justified(|ui| {
-                            ui.label(
-                                RichText::new(format!("⟳ Loading {schema}.{table}…"))
-                                    .color(YELLOW)
-                                    .size(16.0),
-                            );
-                        });
-                        self.model.panel = PanelMode::Loading {
-                            schema: schema.clone(),
-                            table: table.clone(),
-                        };
-                        // Request redraw to poll for the result
-                        ctx.request_repaint();
-                    }
-                    PanelMode::DataGrid {
-                        schema,
-                        table,
-                        result,
-                        page,
-                    } => {
-                        let schema = schema.clone();
-                        let table = table.clone();
-                        let result = result.clone();
-                        let page = *page;
-                        self.render_data_grid(ui, &schema, &table, &result, page);
-                        self.model.panel = PanelMode::DataGrid {
-                            schema,
-                            table,
-                            result,
-                            page,
-                        };
-                    }
-                    PanelMode::SqlEditor {
-                        text,
-                        result,
-                        running,
-                    } => {
-                        let text = text.clone();
-                        let result = result.clone();
-                        let running = *running;
-                        // Minimal SQL editor — Phase 1.2
-                        ui.label(RichText::new("SQL Editor (Phase 1.2)").color(MAUVE));
-                        self.model.panel = PanelMode::SqlEditor {
-                            text,
-                            result,
-                            running,
-                        };
-                    }
-                    PanelMode::Ddl { schema, table, ddl } => {
-                        let schema = schema.clone();
-                        let table = table.clone();
-                        let ddl = ddl.clone();
-                        ui.label(
-                            RichText::new(format!("DDL: {schema}.{table}"))
-                                .color(BLUE)
-                                .size(14.0)
-                                .strong(),
-                        );
-                        ui.separator();
-                        egui::ScrollArea::vertical().show(ui, |ui| {
-                            ui.add(
-                                egui::TextEdit::multiline(&mut ddl.as_str())
-                                    .font(egui::TextStyle::Monospace)
-                                    .desired_width(f32::INFINITY)
-                                    .code_editor(),
-                            );
-                        });
-                        self.model.panel = PanelMode::Ddl { schema, table, ddl };
-                    }
-                    PanelMode::ExplainPlan {
-                        schema,
-                        table,
-                        root,
-                    } => {
-                        let schema = schema.clone();
-                        let table = table.clone();
-                        let root = root.clone();
-                        ui.label(
-                            RichText::new("EXPLAIN Plan")
-                                .color(BLUE)
-                                .size(14.0)
-                                .strong(),
-                        );
-                        ui.separator();
-                        egui::ScrollArea::vertical().show(ui, |ui| {
-                            render_explain_node_egui(ui, &root, 0);
-                        });
-                        self.model.panel = PanelMode::ExplainPlan {
-                            schema,
-                            table,
-                            root,
-                        };
-                    }
-                }
-            });
-
-        // ── Help modal ────────────────────────────────────────────────────────
-        if self.model.show_help {
-            egui::Window::new("Keyboard Shortcuts")
-                .collapsible(false)
-                .resizable(false)
-                .anchor(egui::Align2::CENTER_CENTER, Vec2::ZERO)
-                .show(&ctx, |ui| {
-                    egui::Grid::new("help_grid")
-                        .num_columns(2)
-                        .spacing([16.0, 4.0])
-                        .show(ui, |ui| {
-                            for binding in ArchiveNavModel::bindings() {
-                                ui.label(RichText::new(&binding.key).color(YELLOW).monospace());
-                                ui.label(RichText::new(&binding.action).color(TEXT));
-                                ui.end_row();
-                            }
-                            ui.label(RichText::new("/").color(YELLOW).monospace());
-                            ui.label(RichText::new("Filter nav tree").color(TEXT));
-                            ui.end_row();
-                            ui.label(RichText::new("Esc").color(YELLOW).monospace());
-                            ui.label(RichText::new("Close filter / Quit").color(TEXT));
-                            ui.end_row();
-                        });
-                    ui.separator();
-                    if ui.button("Close").clicked() {
-                        self.model.show_help = false;
-                    }
-                });
-        }
-
-        // ── Export format picker ──────────────────────────────────────────────
-        if self.export_picker {
-            const FORMATS: &[(&str, &str)] = &[
-                ("CSV", "Comma-separated values (.csv)"),
-                ("JSON", "JSON array of objects (.json)"),
-                ("NDJSON", "Newline-delimited JSON (.ndjson)"),
-                ("TSV", "Tab-separated values (.tsv)"),
-            ];
-            egui::Window::new("Export Format")
-                .collapsible(false)
-                .resizable(false)
-                .anchor(egui::Align2::CENTER_CENTER, Vec2::ZERO)
-                .show(&ctx, |ui| {
-                    ui.label(
-                        RichText::new("Select export format (↑↓ Enter Esc):")
-                            .color(SUBTEXT0)
-                            .small(),
-                    );
-                    ui.separator();
-                    for (i, (fmt, desc)) in FORMATS.iter().enumerate() {
-                        let selected = i == self.export_picker_idx;
-                        let fmt_text = if selected {
-                            RichText::new(format!("▶ {fmt}"))
-                                .color(BLUE)
-                                .strong()
-                                .monospace()
-                        } else {
-                            RichText::new(format!("  {fmt}")).color(TEXT).monospace()
-                        };
-                        let desc_text = RichText::new(*desc).color(SUBTEXT0).small();
-                        ui.horizontal(|ui| {
-                            if ui.selectable_label(selected, fmt_text).clicked() {
-                                self.export_picker_idx = i;
-                            }
-                            ui.label(desc_text);
-                        });
-                    }
-                    ui.separator();
-                    ui.horizontal(|ui| {
-                        if ui.button("Export").clicked() {
-                            let format = match self.export_picker_idx {
-                                0 => ExportFormat::Csv,
-                                1 => ExportFormat::Json,
-                                2 => ExportFormat::Ndjson,
-                                _ => ExportFormat::Tsv,
-                            };
-                            self.export_picker = false;
-                            if let Some(req) = self.model.export_request(format) {
-                                let _ = self.req_tx.try_send(req);
-                            }
-                        }
-                        if ui.button("Cancel").clicked() {
-                            self.export_picker = false;
-                        }
-                    });
-                });
-        }
-
-        // ── Save-query prompt ─────────────────────────────────────────────────
-        if self.save_prompt_active {
-            egui::Window::new("Save Query")
-                .collapsible(false)
-                .resizable(false)
-                .anchor(egui::Align2::CENTER_CENTER, Vec2::ZERO)
-                .show(&ctx, |ui| {
-                    ui.label(
-                        RichText::new(
-                            "Enter a name for this query (Enter to save, Esc to cancel):",
-                        )
-                        .color(SUBTEXT0)
-                        .small(),
-                    );
-                    ui.separator();
-                    let response = ui.text_edit_singleline(&mut self.save_prompt_text);
-                    response.request_focus();
-                    ui.separator();
-                    ui.horizontal(|ui| {
-                        let can_save = !self.save_prompt_text.trim().is_empty();
-                        if ui
-                            .add_enabled(can_save, egui::Button::new("Save"))
-                            .clicked()
-                        {
-                            let name = self.save_prompt_text.trim().to_string();
-                            if let PanelMode::SqlEditor { text, .. } = &self.model.panel {
-                                let sql = text.trim().to_string();
-                                if let Some(ref store) = self.saved {
-                                    store.save_spawn(name.clone(), sql.clone());
-                                }
-                                use crate::archive::SavedQuery;
-                                let existing =
-                                    self.model.saved_cache.iter().position(|q| q.name == name);
-                                let now = chrono::Utc::now();
-                                if let Some(idx) = existing {
-                                    self.model.saved_cache[idx].sql = sql;
-                                    self.model.saved_cache[idx].updated_at = now;
-                                } else {
-                                    let new_q = SavedQuery {
-                                        id: 0,
-                                        name: name.clone(),
-                                        sql,
-                                        created_at: now,
-                                        updated_at: now,
-                                    };
-                                    let ins =
-                                        self.model.saved_cache.partition_point(|q| q.name < name);
-                                    self.model.saved_cache.insert(ins, new_q);
-                                }
-                                self.model.flash = Some(format!("saved \"{name}\""));
-                            }
-                            self.save_prompt_active = false;
-                            self.save_prompt_text.clear();
-                        }
-                        if ui.button("Cancel").clicked() {
-                            self.save_prompt_active = false;
-                            self.save_prompt_text.clear();
-                        }
-                    });
-                });
-        }
-
-        // ── Saved queries browser ─────────────────────────────────────────────
-        if self.saved_browser_active {
-            egui::Window::new("Saved Queries")
-                .collapsible(false)
-                .resizable(true)
-                .min_width(480.0)
-                .anchor(egui::Align2::CENTER_CENTER, Vec2::ZERO)
-                .show(&ctx, |ui| {
-                    ui.label(
-                        RichText::new("↑↓ navigate  Enter load  D delete  Esc close")
-                            .color(SUBTEXT0)
-                            .small(),
-                    );
-                    ui.separator();
-                    if self.model.saved_cache.is_empty() {
-                        ui.label(
-                            RichText::new("(no saved queries)")
-                                .color(SUBTEXT0)
-                                .italics(),
-                        );
-                    } else {
-                        egui::ScrollArea::vertical()
-                            .max_height(300.0)
-                            .show(ui, |ui| {
-                                let len = self.model.saved_cache.len();
-                                let mut load_idx: Option<usize> = None;
-                                let mut del_idx: Option<usize> = None;
-                                for (i, q) in self.model.saved_cache.iter().enumerate() {
-                                    let selected = i == self.saved_browser_idx;
-                                    let preview: String = q
-                                        .sql
-                                        .lines()
-                                        .next()
-                                        .unwrap_or("")
-                                        .chars()
-                                        .take(48)
-                                        .collect();
-                                    ui.horizontal(|ui| {
-                                        let name_text = if selected {
-                                            RichText::new(format!("▶ {:.<20}", q.name))
-                                                .color(BLUE)
-                                                .strong()
-                                                .monospace()
-                                        } else {
-                                            RichText::new(format!("  {:.<20}", q.name))
-                                                .color(TEXT)
-                                                .monospace()
-                                        };
-                                        if ui.selectable_label(selected, name_text).clicked() {
-                                            self.saved_browser_idx = i;
-                                        }
-                                        ui.label(RichText::new(&preview).color(SUBTEXT0).small());
-                                        if ui
-                                            .small_button(RichText::new("load").color(BLUE))
-                                            .clicked()
-                                        {
-                                            load_idx = Some(i);
-                                        }
-                                        if ui
-                                            .small_button(RichText::new("del").color(RED))
-                                            .clicked()
-                                        {
-                                            del_idx = Some(i);
-                                        }
-                                    });
-                                }
-                                if let Some(i) = load_idx {
-                                    if let Some(q) = self.model.saved_cache.get(i) {
-                                        let sql = q.sql.clone();
-                                        self.model.panel = PanelMode::SqlEditor {
-                                            text: sql,
-                                            result: None,
-                                            running: false,
-                                        };
-                                        self.saved_browser_active = false;
-                                    }
-                                }
-                                if let Some(i) = del_idx {
-                                    if let Some(q) = self.model.saved_cache.get(i) {
-                                        let id = q.id;
-                                        let name = q.name.clone();
-                                        if let Some(ref store) = self.saved {
-                                            store.delete_spawn(id);
-                                        }
-                                        self.model.saved_cache.remove(i);
-                                        if self.saved_browser_idx > 0
-                                            && self.saved_browser_idx >= len - 1
-                                        {
-                                            self.saved_browser_idx -= 1;
-                                        }
-                                        self.model.flash = Some(format!("deleted \"{name}\""));
-                                    }
-                                }
-                            });
-                    }
-                    ui.separator();
-                    if ui.button("Close").clicked() {
-                        self.saved_browser_active = false;
-                    }
-                });
-        }
-    }
-
-    fn render_column_detail(&self, ui: &mut egui::Ui) {
-        match self.model.selected() {
-            Some(FlatItem::Schema(si)) => {
-                let s = &self.model.schemas[si];
-                ui.label(
-                    RichText::new(format!("schema: {}", s.entry.name))
-                        .color(BLUE)
-                        .heading(),
-                );
-                ui.separator();
-                ui.label(RichText::new(format!("Owner: {}", s.entry.owner)).color(SUBTEXT0));
-                ui.label(
-                    RichText::new(format!("{} tables / views", s.entry.tables.len()))
-                        .color(SUBTEXT0),
-                );
-                ui.add_space(8.0);
-                ui.label(
-                    RichText::new("Press Enter to expand/collapse")
-                        .color(OVERLAY0)
-                        .small(),
-                );
+        // ── IR pipeline: verified tree → egui bridge ─────────────────────────
+        match self.model.to_verified_tree() {
+            Ok((tree, ir_proof)) => {
+                render_egui_from_ir(ui, &tree, ir_proof);
             }
-            Some(FlatItem::Table(si, ti)) => {
-                let schema = &self.model.schemas[si];
-                let table = &schema.entry.tables[ti];
-                ui.label(
-                    RichText::new(format!("{}.{}", schema.entry.name, table.table_name))
-                        .color(BLUE)
-                        .heading(),
-                );
-                ui.separator();
-                ui.label(RichText::new(format!("Type: {}", table.table_type)).color(SUBTEXT0));
-                if let Some(rows) = table.estimated_rows {
-                    ui.label(RichText::new(format!("~{rows} rows")).color(SUBTEXT0));
-                }
-                if !table.columns.is_empty() {
-                    ui.add_space(8.0);
-                    ui.label(RichText::new("Columns").color(MAUVE).strong());
-                    ui.separator();
-                    egui::Grid::new("columns")
-                        .num_columns(4)
-                        .spacing([16.0, 2.0])
-                        .striped(true)
-                        .show(ui, |ui| {
-                            ui.label(RichText::new("Name").color(SUBTEXT0).small());
-                            ui.label(RichText::new("Type").color(SUBTEXT0).small());
-                            ui.label(RichText::new("Nullable").color(SUBTEXT0).small());
-                            ui.label(RichText::new("Flags").color(SUBTEXT0).small());
-                            ui.end_row();
-                            for col in &table.columns {
-                                ui.label(RichText::new(&col.name).color(TEXT));
-                                ui.label(
-                                    RichText::new(&col.sql_type).color(BLUE).monospace().small(),
-                                );
-                                ui.label(if col.nullable {
-                                    RichText::new("yes").color(OVERLAY0).small()
-                                } else {
-                                    RichText::new("no").color(YELLOW).small()
-                                });
-                                let flags: Vec<&str> = [
-                                    col.is_primary_key.then_some("PK"),
-                                    col.is_foreign_key.then_some("FK"),
-                                    col.is_spatial.then_some("spatial"),
-                                ]
-                                .into_iter()
-                                .flatten()
-                                .collect();
-                                ui.label(RichText::new(flags.join(" ")).color(YELLOW).small());
-                                ui.end_row();
-                            }
-                        });
-                }
-                ui.add_space(8.0);
-                ui.label(
-                    RichText::new("Enter to preview rows  |  d for DDL  |  e for EXPLAIN")
-                        .color(OVERLAY0)
-                        .small(),
-                );
-
-                // Column statistics (if already loaded)
-                if let Some(col_stats_vec) = self
-                    .model
-                    .column_stats_for(&table.schema, &table.table_name)
-                {
-                    if !col_stats_vec.is_empty() {
-                        ui.add_space(8.0);
-                        ui.label(RichText::new("Column Statistics").color(YELLOW).strong());
-                        ui.separator();
-                        egui::Grid::new("col_stats_grid")
-                            .num_columns(5)
-                            .spacing([12.0, 2.0])
-                            .striped(true)
-                            .show(ui, |ui| {
-                                ui.label(RichText::new("Column").color(SUBTEXT0).small());
-                                ui.label(RichText::new("Null%").color(SUBTEXT0).small());
-                                ui.label(RichText::new("AvgWidth").color(SUBTEXT0).small());
-                                ui.label(RichText::new("~Distinct").color(SUBTEXT0).small());
-                                ui.label(RichText::new("Correlation").color(SUBTEXT0).small());
-                                ui.end_row();
-                                for s in col_stats_vec {
-                                    ui.label(RichText::new(&s.column_name).color(TEXT).small());
-                                    ui.label(
-                                        RichText::new(format!("{:.1}%", s.null_fraction * 100.0))
-                                            .color(OVERLAY0)
-                                            .small(),
-                                    );
-                                    ui.label(
-                                        RichText::new(format!("{}B", s.avg_width_bytes))
-                                            .color(OVERLAY0)
-                                            .small(),
-                                    );
-                                    let distinct_label = if s.n_distinct < 0.0 {
-                                        format!("{:.0}%", -s.n_distinct * 100.0)
-                                    } else if s.n_distinct == 0.0 {
-                                        "—".to_string()
-                                    } else {
-                                        format!("{:.0}", s.n_distinct)
-                                    };
-                                    ui.label(RichText::new(distinct_label).color(OVERLAY0).small());
-                                    let corr_label = s
-                                        .correlation
-                                        .map(|c| format!("{c:.2}"))
-                                        .unwrap_or_else(|| "—".to_string());
-                                    ui.label(RichText::new(corr_label).color(OVERLAY0).small());
-                                    ui.end_row();
-                                }
-                            });
-                    }
-                }
-
-                // Enrichment: FK / constraints / indexes
-                if let Some(inspection) = self.model.inspection(&table.schema, &table.table_name) {
-                    if !inspection.foreign_keys.is_empty() {
-                        ui.add_space(8.0);
-                        ui.label(RichText::new("Foreign Keys").color(YELLOW).strong());
-                        ui.separator();
-                        egui::Grid::new("fk_grid")
-                            .num_columns(3)
-                            .spacing([12.0, 2.0])
-                            .show(ui, |ui| {
-                                ui.label(RichText::new("Column").color(SUBTEXT0).small());
-                                ui.label(RichText::new("→ Target").color(SUBTEXT0).small());
-                                ui.label(RichText::new("Actions").color(SUBTEXT0).small());
-                                ui.end_row();
-                                for fk in &inspection.foreign_keys {
-                                    ui.label(RichText::new(&fk.from_column).color(TEXT));
-                                    ui.label(
-                                        RichText::new(format!(
-                                            "{}.{}.{}",
-                                            fk.to_schema, fk.to_table, fk.to_column
-                                        ))
-                                        .color(BLUE)
-                                        .small(),
-                                    );
-                                    ui.label(
-                                        RichText::new(format!(
-                                            "del:{} upd:{}",
-                                            fk.on_delete, fk.on_update
-                                        ))
-                                        .color(OVERLAY0)
-                                        .small(),
-                                    );
-                                    ui.end_row();
-                                }
-                            });
-                    }
-                    if !inspection.constraints.is_empty() {
-                        ui.add_space(8.0);
-                        ui.label(RichText::new("Constraints").color(YELLOW).strong());
-                        ui.separator();
-                        for c in &inspection.constraints {
-                            let cols = c.columns.join(", ");
-                            ui.horizontal(|ui| {
-                                ui.label(
-                                    RichText::new(format!("{:?}", c.kind)).color(MAUVE).small(),
-                                );
-                                ui.label(RichText::new(&c.name).color(TEXT).small());
-                                if !cols.is_empty() {
-                                    ui.label(
-                                        RichText::new(format!("({cols})")).color(SUBTEXT0).small(),
-                                    );
-                                }
-                            });
-                        }
-                    }
-                    if !inspection.indexes.is_empty() {
-                        ui.add_space(8.0);
-                        ui.label(RichText::new("Indexes").color(YELLOW).strong());
-                        ui.separator();
-                        for idx in &inspection.indexes {
-                            let cols = idx.column_names.join(", ");
-                            let unique = if idx.is_unique { " UNIQUE" } else { "" };
-                            ui.horizontal(|ui| {
-                                ui.label(RichText::new(&idx.index_name).color(TEXT).small());
-                                ui.label(
-                                    RichText::new(format!(
-                                        "({cols}){unique} [{}]",
-                                        idx.index_method
-                                    ))
-                                    .color(BLUE)
-                                    .small(),
-                                );
-                            });
-                        }
-                    }
-                }
-            }
-            None => {
-                ui.centered_and_justified(|ui| {
-                    ui.label(
-                        RichText::new("← Select a schema or table to inspect")
-                            .color(OVERLAY0)
-                            .size(16.0),
-                    );
-                });
+            Err(e) => {
+                ui.label(format!("IR error: {e}"));
             }
         }
-    }
-
-    fn render_data_grid(
-        &self,
-        ui: &mut egui::Ui,
-        schema: &str,
-        table: &str,
-        result: &crate::archive::QueryResult,
-        _page: u32,
-    ) {
-        let title = if schema.is_empty() {
-            format!("{table}  ({} rows)", result.row_count)
-        } else {
-            format!("{schema}.{table}  ({} rows)", result.row_count)
-        };
-        ui.label(RichText::new(title).color(BLUE).heading());
-        ui.separator();
-
-        // Column headers
-        egui::Grid::new("data_grid_headers")
-            .num_columns(result.columns.len())
-            .spacing([8.0, 2.0])
-            .show(ui, |ui| {
-                for col in &result.columns {
-                    ui.label(
-                        RichText::new(&col.name)
-                            .color(MAUVE)
-                            .monospace()
-                            .small()
-                            .strong(),
-                    );
-                }
-                ui.end_row();
-            });
-
-        ui.separator();
-
-        ScrollArea::both().id_salt("data_grid_body").show(ui, |ui| {
-            egui::Grid::new("data_grid_rows")
-                .num_columns(result.columns.len())
-                .spacing([8.0, 1.0])
-                .striped(true)
-                .show(ui, |ui| {
-                    for row in &result.rows.rows {
-                        for (ci, _col) in result.columns.iter().enumerate() {
-                            let val = row
-                                .0
-                                .get(ci)
-                                .map(|(_, v)| egui_cell_display(v))
-                                .unwrap_or_default();
-                            let truncated = if val.len() > 40 {
-                                format!("{}…", &val[..39])
-                            } else {
-                                val
-                            };
-                            ui.label(RichText::new(truncated).color(TEXT).monospace().small());
-                        }
-                        ui.end_row();
-                    }
-                });
-        });
     }
 }
 
-fn egui_cell_display(v: &elicit_db::DbValue) -> String {
-    use elicit_db::DbValue;
-    match v {
-        DbValue::Null => "NULL".to_string(),
-        DbValue::Bool(b) => if *b { "true" } else { "false" }.to_string(),
-        DbValue::Int(n) => n.to_string(),
-        DbValue::Float(f) => format!("{f:.4}"),
-        DbValue::Text(s) => s.clone(),
-        DbValue::Bytes(b) => format!(
-            "\\x{}",
-            b.iter()
-                .take(8)
-                .map(|x| format!("{x:02x}"))
-                .collect::<String>()
-        ),
-        DbValue::Json(j) => j.to_string(),
-        DbValue::Geometry(s) | DbValue::Geography(s) => match s {
-            elicit_db::DbSpatialValue::Wkt(w) => format!("<geo wkt:{}>", &w[..w.len().min(20)]),
-            elicit_db::DbSpatialValue::Wkb(b) => format!("<geo wkb:{} bytes>", b.len()),
-        },
-    }
-}
-
-fn render_explain_node_egui(ui: &mut egui::Ui, node: &crate::archive::ExplainNode, depth: usize) {
-    let relation = node
-        .relation_name
-        .as_deref()
-        .map(|r| format!(" on {r}"))
-        .unwrap_or_default();
-    let header = format!(
-        "{}  cost={:.1}..{:.1}  rows={}",
-        node.node_type, node.startup_cost, node.total_cost, node.plan_rows,
-    );
-    let id = egui::Id::new(("explain_node", depth, &node.node_type, &relation));
-    egui::CollapsingHeader::new(
-        egui::RichText::new(format!("{}{header}{relation}", "  ".repeat(depth)))
-            .color(TEXT)
-            .monospace(),
-    )
-    .id_salt(id)
-    .default_open(true)
-    .show(ui, |ui| {
-        if let (Some(at), Some(ar)) = (node.actual_total_time, node.actual_rows) {
-            ui.label(
-                egui::RichText::new(format!("actual: {at:.2}ms  rows={ar}"))
-                    .color(OVERLAY0)
-                    .small(),
-            );
-        }
-        for child in &node.children {
-            render_explain_node_egui(ui, child, depth + 1);
-        }
-    });
+/// Gate function: proof token ensures the tree was minted by [`ArchiveNavModel::to_verified_tree`].
+fn render_egui_from_ir(
+    ui: &mut egui::Ui,
+    tree: &elicit_ui::VerifiedTree,
+    _proof: elicitation::Established<elicit_ui::IrSourced>,
+) {
+    elicit_egui::render_tree(ui, tree.nodes(), tree.root());
 }
 
 // ── winit ApplicationHandler ──────────────────────────────────────────────────
