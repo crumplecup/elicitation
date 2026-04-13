@@ -23,7 +23,8 @@ use std::collections::HashMap;
 use elicit_accesskit::{KeyBinding, StatusBarDescriptor};
 
 use crate::archive::{
-    ColumnStats, ExplainNode, ExportFormat, QueryHistoryEntry, QueryResult, TableInspection,
+    ColumnStats, ExplainNode, ExportFormat, QueryHistoryEntry, QueryResult, SavedQuery,
+    TableInspection,
     nav_tree::{NavTree, SchemaEntry},
 };
 
@@ -296,6 +297,8 @@ pub struct ArchiveNavModel {
     /// Current position in history navigation (0 = most recent).
     /// `None` means the user has not started cycling history.
     pub history_idx: Option<usize>,
+    /// In-memory saved-query cache (alphabetical), loaded at startup.
+    pub saved_cache: Vec<SavedQuery>,
 }
 
 impl ArchiveNavModel {
@@ -327,6 +330,7 @@ impl ArchiveNavModel {
             last_export: None,
             history_cache: Vec::new(),
             history_idx: None,
+            saved_cache: Vec::new(),
         };
         model.rebuild_flat();
         model

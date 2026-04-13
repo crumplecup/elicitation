@@ -9,6 +9,7 @@ pub mod history;
 pub mod inspect;
 pub mod query;
 pub mod render;
+pub mod saved;
 pub mod spatial;
 
 pub use browse::{ArchiveBrowsePlugin, SchemaExists, TableExists};
@@ -19,4 +20,5 @@ pub use inspect::{
 };
 pub use query::{ArchiveQueryPlugin, QueryExecuted};
 pub use render::{AkNodeEntry, ArchiveDisplayPlugin};
+pub use saved::SavedQueryStore;
 pub use spatial::ArchiveSpatialPlugin;

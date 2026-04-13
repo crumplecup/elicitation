@@ -666,3 +666,18 @@ pub struct QueryHistoryEntry {
     /// Error message if the query failed.
     pub error: Option<String>,
 }
+
+/// A user-saved SQL snippet stored in the local SQLite database.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+pub struct SavedQuery {
+    /// Auto-increment row ID.
+    pub id: i64,
+    /// User-assigned name for this snippet.
+    pub name: String,
+    /// The SQL text.
+    pub sql: String,
+    /// UTC timestamp when first saved.
+    pub created_at: DateTime<Utc>,
+    /// UTC timestamp of the most recent update.
+    pub updated_at: DateTime<Utc>,
+}

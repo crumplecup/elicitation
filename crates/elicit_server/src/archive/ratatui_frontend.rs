@@ -43,7 +43,8 @@ use crate::archive::nav_model::{
 };
 use crate::archive::nav_tree::{NavTree, build_nav_tree};
 use crate::archive::{
-    ArchiveDbBackend, ArchiveResult, ExportFormat, HistoryStore, QueryResult, TableType,
+    ArchiveDbBackend, ArchiveResult, ExportFormat, HistoryStore, QueryResult, SavedQueryStore,
+    TableType,
     errors::{ArchiveError, ArchiveErrorKind},
     plugins::export::export_query_result,
     plugins::query::{execute_sql_direct, preview_table_direct},
@@ -64,10 +65,20 @@ struct TuiApp {
     export_picker_idx: usize,
     /// Persistent query history (None if unavailable).
     history: Option<HistoryStore>,
+    /// Saved-query store (None if unavailable).
+    saved: Option<SavedQueryStore>,
     /// Timestamp of the last SQL execution start (for duration tracking).
     exec_start: Option<std::time::Instant>,
     /// SQL text of the last `ExecuteSql` dispatch (for history recording).
     pending_sql: Option<String>,
+    /// When true the save-name prompt modal is shown.
+    save_prompt_active: bool,
+    /// Text being typed into the save-name prompt.
+    save_prompt_text: String,
+    /// When true the saved-queries browser overlay is shown.
+    saved_browser_active: bool,
+    /// Currently highlighted row in the saved-queries browser.
+    saved_browser_idx: usize,
 }
 
 impl TuiApp {
@@ -75,6 +86,7 @@ impl TuiApp {
         nav: NavTree,
         req_tx: mpsc::Sender<FetchRequest>,
         history: Option<HistoryStore>,
+        saved: Option<SavedQueryStore>,
     ) -> Self {
         let model = ArchiveNavModel::new(nav);
         let mut list_state = ListState::default();
@@ -89,8 +101,13 @@ impl TuiApp {
             export_picker: false,
             export_picker_idx: 0,
             history,
+            saved,
             exec_start: None,
             pending_sql: None,
+            save_prompt_active: false,
+            save_prompt_text: String::new(),
+            saved_browser_active: false,
+            saved_browser_idx: 0,
         }
     }
 
@@ -333,6 +350,12 @@ fn draw_app(frame: &mut Frame, app: &mut TuiApp) {
     }
     if app.export_picker {
         draw_export_picker(frame, area, app.export_picker_idx);
+    }
+    if app.save_prompt_active {
+        draw_save_prompt(frame, area, &app.save_prompt_text);
+    }
+    if app.saved_browser_active {
+        draw_saved_browser(frame, area, &app.model.saved_cache, app.saved_browser_idx);
     }
 }
 
@@ -1092,6 +1115,96 @@ fn draw_export_picker(frame: &mut Frame, area: Rect, selected: usize) {
     frame.render_widget(picker, popup);
 }
 
+/// Draw the save-name prompt modal.
+fn draw_save_prompt(frame: &mut Frame, area: Rect, prompt_text: &str) {
+    let width = 50u16;
+    let height = 5u16;
+    let popup = centered_rect(width, height, area);
+
+    let body = Paragraph::new(vec![
+        Line::from(""),
+        Line::from(vec![
+            Span::raw("  Name: "),
+            Span::styled(format!("{prompt_text}_"), Style::default().fg(Color::Cyan)),
+        ]),
+    ])
+    .block(
+        Block::default()
+            .borders(Borders::ALL)
+            .title(" Save Query (Enter=confirm  Esc=cancel) ")
+            .title_style(
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            ),
+    )
+    .style(Style::default().bg(Color::Black));
+
+    frame.render_widget(Clear, popup);
+    frame.render_widget(body, popup);
+}
+
+/// Draw the saved-queries browser overlay.
+fn draw_saved_browser(
+    frame: &mut Frame,
+    area: Rect,
+    saved: &[crate::archive::SavedQuery],
+    selected: usize,
+) {
+    let height = (saved.len() as u16 + 4)
+        .max(6)
+        .min(area.height.saturating_sub(4));
+    let width = 60u16;
+    let popup = centered_rect(width, height, area);
+
+    let lines: Vec<Line> = if saved.is_empty() {
+        vec![Line::from(Span::styled(
+            "  (no saved queries)",
+            Style::default().fg(Color::DarkGray),
+        ))]
+    } else {
+        saved
+            .iter()
+            .enumerate()
+            .map(|(i, q)| {
+                let style = if i == selected {
+                    Style::default()
+                        .fg(Color::Black)
+                        .bg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default().fg(Color::White)
+                };
+                let preview = q
+                    .sql
+                    .lines()
+                    .next()
+                    .unwrap_or("")
+                    .chars()
+                    .take(40)
+                    .collect::<String>();
+                Line::from(Span::styled(format!("  {:20}  {preview}", q.name), style))
+            })
+            .collect()
+    };
+
+    let browser = Paragraph::new(lines)
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title(" Saved Queries (Enter=load  d=delete  Esc) ")
+                .title_style(
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ),
+        )
+        .style(Style::default().bg(Color::Black));
+
+    frame.render_widget(Clear, popup);
+    frame.render_widget(browser, popup);
+}
+
 fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
     let x = area.x + area.width.saturating_sub(width) / 2;
     let y = area.y + area.height.saturating_sub(height) / 2;
@@ -1262,8 +1375,16 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
     } else {
         Vec::new()
     };
-    let mut app = TuiApp::new(nav, req_tx, history);
+    // Initialize saved-query store (reuses same SQLite file).
+    let saved = SavedQueryStore::open().await.ok();
+    let saved_cache = if let Some(ref store) = saved {
+        store.all().await.unwrap_or_default()
+    } else {
+        Vec::new()
+    };
+    let mut app = TuiApp::new(nav, req_tx, history, saved);
     app.model.history_cache = history_cache;
+    app.model.saved_cache = saved_cache;
     let mut reader = EventStream::new();
     let mut quit = false;
 
@@ -1297,6 +1418,96 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                 KeyCode::Char(c) => app.model.filter_push(c),
                                 _ => {}
                             }
+                        } else if app.save_prompt_active {
+                            match key.code {
+                                KeyCode::Esc => {
+                                    app.save_prompt_active = false;
+                                    app.save_prompt_text.clear();
+                                }
+                                KeyCode::Backspace => { app.save_prompt_text.pop(); }
+                                KeyCode::Enter => {
+                                    let name = app.save_prompt_text.trim().to_string();
+                                    if !name.is_empty() {
+                                        if let PanelMode::SqlEditor { text, .. } = &app.model.panel {
+                                            let sql = text.trim().to_string();
+                                            if let Some(ref store) = app.saved {
+                                                store.save_spawn(name.clone(), sql.clone());
+                                            }
+                                            use crate::archive::SavedQuery;
+                                            let existing = app.model.saved_cache
+                                                .iter()
+                                                .position(|q| q.name == name);
+                                            let now = chrono::Utc::now();
+                                            if let Some(idx) = existing {
+                                                app.model.saved_cache[idx].sql = sql;
+                                                app.model.saved_cache[idx].updated_at = now;
+                                            } else {
+                                                let new_q = SavedQuery {
+                                                    id: 0,
+                                                    name: name.clone(),
+                                                    sql,
+                                                    created_at: now,
+                                                    updated_at: now,
+                                                };
+                                                let ins = app.model.saved_cache
+                                                    .partition_point(|q| q.name < name);
+                                                app.model.saved_cache.insert(ins, new_q);
+                                            }
+                                            app.model.flash = Some(format!("saved \"{name}\""));
+                                        }
+                                    }
+                                    app.save_prompt_active = false;
+                                    app.save_prompt_text.clear();
+                                }
+                                KeyCode::Char(c) => app.save_prompt_text.push(c),
+                                _ => {}
+                            }
+                        } else if app.saved_browser_active {
+                            let len = app.model.saved_cache.len();
+                            match key.code {
+                                KeyCode::Esc | KeyCode::Char('q') => {
+                                    app.saved_browser_active = false;
+                                }
+                                KeyCode::Up | KeyCode::Char('k') => {
+                                    if app.saved_browser_idx > 0 {
+                                        app.saved_browser_idx -= 1;
+                                    }
+                                }
+                                KeyCode::Down | KeyCode::Char('j') => {
+                                    if len > 0 {
+                                        app.saved_browser_idx =
+                                            (app.saved_browser_idx + 1).min(len - 1);
+                                    }
+                                }
+                                KeyCode::Enter => {
+                                    if let Some(q) = app.model.saved_cache.get(app.saved_browser_idx) {
+                                        let sql = q.sql.clone();
+                                        app.model.panel = PanelMode::SqlEditor {
+                                            text: sql,
+                                            result: None,
+                                            running: false,
+                                        };
+                                        app.saved_browser_active = false;
+                                    }
+                                }
+                                KeyCode::Char('d') | KeyCode::Delete => {
+                                    if let Some(q) = app.model.saved_cache.get(app.saved_browser_idx) {
+                                        let id = q.id;
+                                        let name = q.name.clone();
+                                        if let Some(ref store) = app.saved {
+                                            store.delete_spawn(id);
+                                        }
+                                        app.model.saved_cache.remove(app.saved_browser_idx);
+                                        if app.saved_browser_idx > 0
+                                            && app.saved_browser_idx >= app.model.saved_cache.len()
+                                        {
+                                            app.saved_browser_idx -= 1;
+                                        }
+                                        app.model.flash = Some(format!("deleted \"{name}\""));
+                                    }
+                                }
+                                _ => {}
+                            }
                         } else if app.export_picker {
                             match key.code {
                                 KeyCode::Esc => app.export_picker = false,
@@ -1315,17 +1526,17 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                         } else if matches!(app.model.panel, PanelMode::SqlEditor { .. }) {
                             let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
                             match (key.code, ctrl) {
-                                // Ctrl+Enter or F5 → execute
                                 (KeyCode::Enter, true) | (KeyCode::F(5), _) => app.run_sql(),
-                                // Ctrl+Up → older history entry
+                                // Ctrl+S → save prompt
+                                (KeyCode::Char('s'), true) => {
+                                    app.save_prompt_active = true;
+                                    app.save_prompt_text.clear();
+                                }
                                 (KeyCode::Up, true) => { app.model.history_prev(); }
-                                // Ctrl+Down → newer history entry
                                 (KeyCode::Down, true) => { app.model.history_next(); }
-                                // Esc → leave SQL editor
                                 (KeyCode::Esc, _) => {
                                     app.model.panel = PanelMode::ColumnDetail;
                                 }
-                                // Typing updates the SQL text
                                 (KeyCode::Char(c), false) => {
                                     if let PanelMode::SqlEditor { text, .. } = &mut app.model.panel {
                                         text.push(c);
@@ -1354,7 +1565,6 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                 KeyCode::Char('/') => app.model.open_filter(),
                                 KeyCode::Char('d') => app.request_ddl(),
                                 KeyCode::Char('e') => app.request_explain(),
-                                // s → open SQL editor
                                 KeyCode::Char('s') => {
                                     app.model.panel = PanelMode::SqlEditor {
                                         text: String::new(),
@@ -1362,13 +1572,17 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                         running: false,
                                     };
                                 }
+                                // F2 → saved-queries browser
+                                KeyCode::F(2) => {
+                                    app.saved_browser_active = true;
+                                    app.saved_browser_idx = 0;
+                                }
                                 KeyCode::Char('x') => {
                                     if app.model.panel.is_data_grid() {
                                         app.export_picker = true;
                                         app.export_picker_idx = 0;
                                     }
                                 }
-                                // Data grid navigation
                                 KeyCode::PageDown => {
                                     if let PanelMode::DataGrid { result, .. } = &app.model.panel {
                                         let max = result.rows.rows.len().saturating_sub(1);

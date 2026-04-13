@@ -23,7 +23,7 @@ use winit::{
 };
 
 use crate::archive::{
-    ArchiveDbBackend, ArchiveResult, ExportFormat, HistoryStore,
+    ArchiveDbBackend, ArchiveResult, ExportFormat, HistoryStore, SavedQueryStore,
     errors::{ArchiveError, ArchiveErrorKind},
     nav_model::{ArchiveNavModel, FetchRequest, FlatItem, PanelEvent, PanelMode},
     nav_tree::{NavTree, build_nav_tree},
@@ -65,6 +65,16 @@ struct ArchiveEguiApp {
     pending_sql: Option<String>,
     /// Instant the current SQL execution started.
     exec_start: Option<std::time::Instant>,
+    /// Saved-query store (None if DB unavailable).
+    saved: Option<SavedQueryStore>,
+    /// When true the save-name prompt modal is shown.
+    save_prompt_active: bool,
+    /// Text being typed into the save-name prompt.
+    save_prompt_text: String,
+    /// When true the saved-queries browser window is shown.
+    saved_browser_active: bool,
+    /// Currently highlighted row in the saved-queries browser.
+    saved_browser_idx: usize,
     // wgpu / egui-winit resources (None until `resumed`)
     window: Option<Arc<Window>>,
     egui_state: Option<EguiWinitState>,
@@ -81,6 +91,7 @@ impl ArchiveEguiApp {
         req_tx: mpsc::Sender<FetchRequest>,
         event_rx: mpsc::Receiver<PanelEvent>,
         history: Option<HistoryStore>,
+        saved: Option<SavedQueryStore>,
     ) -> Self {
         Self {
             model: ArchiveNavModel::new(nav),
@@ -92,6 +103,11 @@ impl ArchiveEguiApp {
             history,
             pending_sql: None,
             exec_start: None,
+            saved,
+            save_prompt_active: false,
+            save_prompt_text: String::new(),
+            saved_browser_active: false,
+            saved_browser_idx: 0,
             window: None,
             egui_state: None,
             surface: None,
@@ -300,6 +316,98 @@ impl ArchiveEguiApp {
             if esc_key {
                 self.model.close_filter();
             }
+        } else if self.save_prompt_active {
+            // Save-name prompt
+            let typed: String = ctx.input(|i| {
+                i.events
+                    .iter()
+                    .filter_map(|e| {
+                        if let egui::Event::Text(t) = e {
+                            Some(t.clone())
+                        } else {
+                            None
+                        }
+                    })
+                    .collect()
+            });
+            self.save_prompt_text.push_str(&typed);
+            if ctx.input(|i| i.key_pressed(Key::Backspace)) {
+                self.save_prompt_text.pop();
+            }
+            if esc_key {
+                self.save_prompt_active = false;
+                self.save_prompt_text.clear();
+            }
+            if enter {
+                let name = self.save_prompt_text.trim().to_string();
+                if !name.is_empty() {
+                    if let PanelMode::SqlEditor { text, .. } = &self.model.panel {
+                        let sql = text.trim().to_string();
+                        if let Some(ref store) = self.saved {
+                            store.save_spawn(name.clone(), sql.clone());
+                        }
+                        use crate::archive::SavedQuery;
+                        let existing = self.model.saved_cache.iter().position(|q| q.name == name);
+                        let now = chrono::Utc::now();
+                        if let Some(idx) = existing {
+                            self.model.saved_cache[idx].sql = sql;
+                            self.model.saved_cache[idx].updated_at = now;
+                        } else {
+                            let new_q = SavedQuery {
+                                id: 0,
+                                name: name.clone(),
+                                sql,
+                                created_at: now,
+                                updated_at: now,
+                            };
+                            let ins = self.model.saved_cache.partition_point(|q| q.name < name);
+                            self.model.saved_cache.insert(ins, new_q);
+                        }
+                        self.model.flash = Some(format!("saved \"{name}\""));
+                    }
+                }
+                self.save_prompt_active = false;
+                self.save_prompt_text.clear();
+            }
+        } else if self.saved_browser_active {
+            // Saved-queries browser keyboard
+            let len = self.model.saved_cache.len();
+            if esc_key || quit {
+                self.saved_browser_active = false;
+            }
+            if up && self.saved_browser_idx > 0 {
+                self.saved_browser_idx -= 1;
+            }
+            if down && len > 0 {
+                self.saved_browser_idx = (self.saved_browser_idx + 1).min(len - 1);
+            }
+            if enter {
+                if let Some(q) = self.model.saved_cache.get(self.saved_browser_idx) {
+                    let sql = q.sql.clone();
+                    self.model.panel = PanelMode::SqlEditor {
+                        text: sql,
+                        result: None,
+                        running: false,
+                    };
+                    self.saved_browser_active = false;
+                }
+            }
+            if ctx.input(|i| i.key_pressed(Key::D)) {
+                if let Some(q) = self.model.saved_cache.get(self.saved_browser_idx) {
+                    let id = q.id;
+                    let name = q.name.clone();
+                    if let Some(ref store) = self.saved {
+                        store.delete_spawn(id);
+                    }
+                    self.model.saved_cache.remove(self.saved_browser_idx);
+                    if self.saved_browser_idx > 0
+                        && self.saved_browser_idx >= self.model.saved_cache.len()
+                    {
+                        self.saved_browser_idx -= 1;
+                    }
+                    self.model.flash = Some(format!("deleted \"{name}\""));
+                }
+            }
         } else if self.export_picker {
             if esc_key {
                 self.export_picker = false;
@@ -372,6 +480,11 @@ impl ArchiveEguiApp {
                     text.push('\n');
                 }
             }
+            // Ctrl+S → save prompt
+            if ctx.input(|i| i.modifiers.ctrl && i.key_pressed(Key::S)) {
+                self.save_prompt_active = true;
+                self.save_prompt_text.clear();
+            }
         } else {
             if up {
                 self.model.move_up();
@@ -425,6 +538,11 @@ impl ArchiveEguiApp {
                     result: None,
                     running: false,
                 };
+            }
+            // F2 → saved queries browser
+            if ctx.input(|i| i.key_pressed(Key::F2)) {
+                self.saved_browser_active = true;
+                self.saved_browser_idx = 0;
             }
             // x → export format picker
             if ctx.input(|i| i.key_pressed(Key::X)) && self.model.panel.is_data_grid() {
@@ -764,6 +882,170 @@ impl ArchiveEguiApp {
                             self.export_picker = false;
                         }
                     });
+                });
+        }
+
+        // ── Save-query prompt ─────────────────────────────────────────────────
+        if self.save_prompt_active {
+            egui::Window::new("Save Query")
+                .collapsible(false)
+                .resizable(false)
+                .anchor(egui::Align2::CENTER_CENTER, Vec2::ZERO)
+                .show(&ctx, |ui| {
+                    ui.label(
+                        RichText::new(
+                            "Enter a name for this query (Enter to save, Esc to cancel):",
+                        )
+                        .color(SUBTEXT0)
+                        .small(),
+                    );
+                    ui.separator();
+                    let response = ui.text_edit_singleline(&mut self.save_prompt_text);
+                    response.request_focus();
+                    ui.separator();
+                    ui.horizontal(|ui| {
+                        let can_save = !self.save_prompt_text.trim().is_empty();
+                        if ui
+                            .add_enabled(can_save, egui::Button::new("Save"))
+                            .clicked()
+                        {
+                            let name = self.save_prompt_text.trim().to_string();
+                            if let PanelMode::SqlEditor { text, .. } = &self.model.panel {
+                                let sql = text.trim().to_string();
+                                if let Some(ref store) = self.saved {
+                                    store.save_spawn(name.clone(), sql.clone());
+                                }
+                                use crate::archive::SavedQuery;
+                                let existing =
+                                    self.model.saved_cache.iter().position(|q| q.name == name);
+                                let now = chrono::Utc::now();
+                                if let Some(idx) = existing {
+                                    self.model.saved_cache[idx].sql = sql;
+                                    self.model.saved_cache[idx].updated_at = now;
+                                } else {
+                                    let new_q = SavedQuery {
+                                        id: 0,
+                                        name: name.clone(),
+                                        sql,
+                                        created_at: now,
+                                        updated_at: now,
+                                    };
+                                    let ins =
+                                        self.model.saved_cache.partition_point(|q| q.name < name);
+                                    self.model.saved_cache.insert(ins, new_q);
+                                }
+                                self.model.flash = Some(format!("saved \"{name}\""));
+                            }
+                            self.save_prompt_active = false;
+                            self.save_prompt_text.clear();
+                        }
+                        if ui.button("Cancel").clicked() {
+                            self.save_prompt_active = false;
+                            self.save_prompt_text.clear();
+                        }
+                    });
+                });
+        }
+
+        // ── Saved queries browser ─────────────────────────────────────────────
+        if self.saved_browser_active {
+            egui::Window::new("Saved Queries")
+                .collapsible(false)
+                .resizable(true)
+                .min_width(480.0)
+                .anchor(egui::Align2::CENTER_CENTER, Vec2::ZERO)
+                .show(&ctx, |ui| {
+                    ui.label(
+                        RichText::new("↑↓ navigate  Enter load  D delete  Esc close")
+                            .color(SUBTEXT0)
+                            .small(),
+                    );
+                    ui.separator();
+                    if self.model.saved_cache.is_empty() {
+                        ui.label(
+                            RichText::new("(no saved queries)")
+                                .color(SUBTEXT0)
+                                .italics(),
+                        );
+                    } else {
+                        egui::ScrollArea::vertical()
+                            .max_height(300.0)
+                            .show(ui, |ui| {
+                                let len = self.model.saved_cache.len();
+                                let mut load_idx: Option<usize> = None;
+                                let mut del_idx: Option<usize> = None;
+                                for (i, q) in self.model.saved_cache.iter().enumerate() {
+                                    let selected = i == self.saved_browser_idx;
+                                    let preview: String = q
+                                        .sql
+                                        .lines()
+                                        .next()
+                                        .unwrap_or("")
+                                        .chars()
+                                        .take(48)
+                                        .collect();
+                                    ui.horizontal(|ui| {
+                                        let name_text = if selected {
+                                            RichText::new(format!("▶ {:.<20}", q.name))
+                                                .color(BLUE)
+                                                .strong()
+                                                .monospace()
+                                        } else {
+                                            RichText::new(format!("  {:.<20}", q.name))
+                                                .color(TEXT)
+                                                .monospace()
+                                        };
+                                        if ui.selectable_label(selected, name_text).clicked() {
+                                            self.saved_browser_idx = i;
+                                        }
+                                        ui.label(RichText::new(&preview).color(SUBTEXT0).small());
+                                        if ui
+                                            .small_button(RichText::new("load").color(BLUE))
+                                            .clicked()
+                                        {
+                                            load_idx = Some(i);
+                                        }
+                                        if ui
+                                            .small_button(RichText::new("del").color(RED))
+                                            .clicked()
+                                        {
+                                            del_idx = Some(i);
+                                        }
+                                    });
+                                }
+                                if let Some(i) = load_idx {
+                                    if let Some(q) = self.model.saved_cache.get(i) {
+                                        let sql = q.sql.clone();
+                                        self.model.panel = PanelMode::SqlEditor {
+                                            text: sql,
+                                            result: None,
+                                            running: false,
+                                        };
+                                        self.saved_browser_active = false;
+                                    }
+                                }
+                                if let Some(i) = del_idx {
+                                    if let Some(q) = self.model.saved_cache.get(i) {
+                                        let id = q.id;
+                                        let name = q.name.clone();
+                                        if let Some(ref store) = self.saved {
+                                            store.delete_spawn(id);
+                                        }
+                                        self.model.saved_cache.remove(i);
+                                        if self.saved_browser_idx > 0
+                                            && self.saved_browser_idx >= len - 1
+                                        {
+                                            self.saved_browser_idx -= 1;
+                                        }
+                                        self.model.flash = Some(format!("deleted \"{name}\""));
+                                    }
+                                }
+                            });
+                    }
+                    ui.separator();
+                    if ui.button("Close").clicked() {
+                        self.saved_browser_active = false;
+                    }
                 });
         }
     }
@@ -1427,9 +1709,21 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
     } else {
         Vec::new()
     };
+    // Saved-query store reuses the same SQLite file.
+    let saved = tokio::runtime::Handle::current()
+        .block_on(SavedQueryStore::open())
+        .ok();
+    let saved_cache = if let Some(ref store) = saved {
+        tokio::runtime::Handle::current()
+            .block_on(store.all())
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
 
-    let mut app = ArchiveEguiApp::new(nav, req_tx, event_rx, history);
+    let mut app = ArchiveEguiApp::new(nav, req_tx, event_rx, history, saved);
     app.model.history_cache = history_cache;
+    app.model.saved_cache = saved_cache;
     event_loop
         .run_app(&mut app)
         .map_err(|e| ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string())))

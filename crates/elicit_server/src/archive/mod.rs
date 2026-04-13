@@ -39,13 +39,13 @@ pub use frontend_utils::nav_tree_to_verified_tree;
 pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
 pub use plugins::{
     AkNodeEntry, ArchiveBrowsePlugin, ArchiveDisplayPlugin, ArchiveQueryPlugin,
-    ArchiveSpatialPlugin, HistoryStore, QueryExecuted, SchemaExists, TableExists,
+    ArchiveSpatialPlugin, HistoryStore, QueryExecuted, SavedQueryStore, SchemaExists, TableExists,
     explain_sql_direct, export_query_result, generate_ddl_direct, get_column_stats_direct,
     inspect_table_direct,
 };
 pub use types::{
     BackendKind, ColumnDescriptor, ColumnStats, ConstraintDescriptor, ConstraintKind,
     DatabaseDescriptor, DdlDescriptor, ExplainNode, ExportFormat, ExportResult, FkAction,
-    ForeignKeyDescriptor, IndexDescriptor, QueryHistoryEntry, QueryResult, SchemaDescriptor,
-    TableDescriptor, TableInspection, TableType,
+    ForeignKeyDescriptor, IndexDescriptor, QueryHistoryEntry, QueryResult, SavedQuery,
+    SchemaDescriptor, TableDescriptor, TableInspection, TableType,
 };
