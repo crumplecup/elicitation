@@ -608,8 +608,10 @@ fn wrap_page(body: &str) -> String {
         "padding:.3rem .6rem;text-align:left;color:#89b4fa;position:sticky;top:0}",
         "tbody tr:nth-child(even){background:#181825}",
         "tbody td{padding:.25rem .6rem;border-bottom:1px solid #313244}",
-        // SQL textarea
-        "textarea{width:100%;background:#181825;color:#cdd6f4;",
+        // code/pre (DDL display)
+        "code,pre{white-space:pre;display:block;overflow-x:auto;",
+        "background:#181825;border:1px solid #45475a;border-radius:3px;",
+        "padding:.5rem;font-size:.8rem;color:#a6e3a1;line-height:1.5}",
         "border:1px solid #45475a;padding:.5rem;font-family:inherit;",
         "font-size:.9rem;resize:vertical;min-height:8rem}",
         "textarea:focus{border-color:#89b4fa;outline:none}",
@@ -620,14 +622,24 @@ fn wrap_page(body: &str) -> String {
         "border-top:1px solid #45475a;font-size:.75rem;flex-shrink:0}"
     );
 
-    // JS: keyboard shortcuts + Ctrl+Enter SQL execution + history/saved sidepanels
+    // JS: keyboard shortcuts + Ctrl+Enter SQL execution + DDL/explain + history/saved sidepanels
     let js = concat!(
+        // ── context state ──
+        "var _curSchema='';",
+        "var _curTable='';",
+        // Track schema/table from preview requests so DDL/explain can use it.
+        "document.addEventListener('htmx:afterRequest',function(evt){",
+        "var path=evt.detail&&evt.detail.requestConfig&&evt.detail.requestConfig.path;",
+        "if(path&&path.startsWith('/api/preview')){",
+        "var params=new URLSearchParams(path.split('?')[1]||'');",
+        "_curSchema=params.get('schema')||'';",
+        "_curTable=params.get('table')||'';",
+        "}}); ",
         // ── keyboard shortcuts ──
         "document.addEventListener('keydown',function(e){",
         "var inp=document.getElementById('nav-filter');",
         "var ta=document.querySelector('#content textarea');",
-        "var inInput=document.activeElement==='INPUT'||",
-        "document.activeElement.tagName==='INPUT'||",
+        "var inInput=document.activeElement.tagName==='INPUT'||",
         "document.activeElement.tagName==='TEXTAREA';",
         // '/' → focus nav filter
         "if(e.key==='/'&&!inInput){e.preventDefault();inp&&inp.focus();}",
@@ -639,9 +651,27 @@ fn wrap_page(body: &str) -> String {
         "e.preventDefault();",
         "htmx.ajax('GET','/api/open-sql-editor',{target:'#content',swap:'innerHTML'});",
         "}",
+        // 'd' → show DDL
+        "if(e.key==='d'&&!inInput){e.preventDefault();showDdl();}",
         // Ctrl+Enter → run SQL
         "if(e.ctrlKey&&e.key==='Enter'&&ta){e.preventDefault();runSql();}",
         "});",
+        // ── DDL viewer ──
+        "function showDdl(){",
+        "if(!_curSchema||!_curTable){alert('Select a table first (click one in the nav tree).');return;}",
+        "htmx.ajax('GET','/api/ddl?schema='+encodeURIComponent(_curSchema)+'&table='+encodeURIComponent(_curTable),",
+        "{target:'#content',swap:'innerHTML'});",
+        "}",
+        // ── EXPLAIN viewer ──
+        "function showExplain(){",
+        "var ta=document.querySelector('#content textarea');",
+        "var sql=ta&&ta.value.trim()?ta.value:'SELECT * FROM '+_curSchema+'.'+_curTable+' LIMIT 10';",
+        "if((!_curSchema||!_curTable)&&!ta){alert('Select a table or open the SQL editor first.');return;}",
+        "var schema=_curSchema||'public';",
+        "var table=_curTable||'query';",
+        "var url='/api/explain?schema='+encodeURIComponent(schema)+'&table='+encodeURIComponent(table)+'&sql='+encodeURIComponent(sql);",
+        "htmx.ajax('GET',url,{target:'#content',swap:'innerHTML'});",
+        "}",
         // ── run SQL via fetch ──
         "function runSql(){",
         "var ta=document.querySelector('#content textarea');",
@@ -772,6 +802,8 @@ fn wrap_page(body: &str) -> String {
 <span class=\"title\">▦ Archive</span>\
 <button onclick=\"htmx.ajax('GET','/api/open-sql-editor',{{target:'#content',swap:'innerHTML'}})\" \
  title=\"SQL Editor (s)\">SQL Editor</button>\
+<button onclick=\"showDdl()\" title=\"DDL viewer (d)\">DDL</button>\
+<button onclick=\"showExplain()\" title=\"EXPLAIN plan\">EXPLAIN</button>\
 <button onclick=\"openHistoryPanel()\" title=\"Query history\">History</button>\
 <button onclick=\"openSavedPanel()\" title=\"Saved queries\">Saved</button>\
 <button onclick=\"saveCurrentSql()\" title=\"Save current SQL\">Save SQL</button>\
