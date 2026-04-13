@@ -613,6 +613,10 @@ fn wrap_page(body: &str) -> String {
         "text-align:left;padding:0}",
         ".side-panel-body .del-btn{background:none;border:none;color:#f38ba8;",
         "cursor:pointer;font-family:inherit;font-size:.8rem;padding:0}",
+        // export format buttons inside side panel
+        ".export-btn{background:#313244;color:#cdd6f4;border:1px solid #45475a;",
+        "border-radius:3px;padding:.3rem .7rem;font-family:inherit;font-size:.85rem;cursor:pointer}",
+        ".export-btn:hover{background:#45475a}",
         // SQL results feedback
         ".sql-status{font-size:.8rem;color:#a6adc8;margin:.25rem 0}",
         ".sql-status.ok{color:#a6e3a1}",
@@ -680,6 +684,8 @@ fn wrap_page(body: &str) -> String {
         "if(e.key==='d'&&!inInput){e.preventDefault();showDdl();}",
         // 'i' → column detail
         "if(e.key==='i'&&!inInput){e.preventDefault();showColDetail();}",
+        // 'x' → export picker
+        "if(e.key==='x'&&!inInput){e.preventDefault();openExportPanel();}",
         // Ctrl+Enter → run SQL
         "if(e.ctrlKey&&e.key==='Enter'&&ta){e.preventDefault();runSql();}",
         "});",
@@ -820,6 +826,45 @@ fn wrap_page(body: &str) -> String {
         "function escHtml(s){",
         "return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')",
         ".replace(/\"/g,'&quot;');",
+        "}",
+
+        // ── export panel ──
+        "function openExportPanel(){",
+        "closeSidePanel();",
+        "if(!_curSchema||!_curTable){alert('Select a table first.');return;}",
+        "var html='<div class=\"side-panel\" id=\"side-panel\">'",
+        "+'<div class=\"side-panel-header\"><h3>Export Data</h3>'",
+        "+'<button onclick=\"closeSidePanel()\" title=\"Close\">✕</button></div>'",
+        "+'<div class=\"side-panel-body\" style=\"padding:1rem\">'",
+        "+'<p style=\"color:#a6adc8;font-size:.85rem;margin-bottom:.75rem\">'",
+        "+escHtml(_curSchema+'.'+_curTable)+'</p>'",
+        "+'<div style=\"display:flex;gap:.6rem;flex-wrap:wrap\">'",
+        "+'<button class=\"export-btn\" onclick=\"exportData(\\\"Csv\\\")\">CSV</button>'",
+        "+'<button class=\"export-btn\" onclick=\"exportData(\\\"Json\\\")\">JSON</button>'",
+        "+'<button class=\"export-btn\" onclick=\"exportData(\\\"Tsv\\\")\">TSV</button>'",
+        "+'<button class=\"export-btn\" onclick=\"exportData(\\\"Ndjson\\\")\">NDJSON</button>'",
+        "+'</div></div></div>';",
+        "document.body.insertAdjacentHTML('beforeend',html);",
+        "}",
+
+        "function exportData(format){",
+        "fetch('/api/export',{",
+        "method:'POST',",
+        "headers:{'Content-Type':'application/json'},",
+        "body:JSON.stringify({schema:_curSchema,table:_curTable,format:format})",
+        "}).then(function(r){",
+        "if(!r.ok)return r.text().then(function(t){throw new Error(t);});",
+        "var cd=r.headers.get('Content-Disposition')||'';",
+        "var m=cd.match(/filename=\"([^\"]+)\"/);",
+        "var fname=m?m[1]:(_curSchema+'_'+_curTable+'.'+format.toLowerCase());",
+        "return r.blob().then(function(b){return{blob:b,fname:fname};});",
+        "}).then(function(obj){",
+        "var url=URL.createObjectURL(obj.blob);",
+        "var a=document.createElement('a');",
+        "a.href=url;a.download=obj.fname;a.click();",
+        "URL.revokeObjectURL(url);",
+        "closeSidePanel();",
+        "}).catch(function(err){alert('Export failed: '+err.message);});",
         "}"
     );
 
@@ -841,6 +886,7 @@ fn wrap_page(body: &str) -> String {
 <button onclick=\"openHistoryPanel()\" title=\"Query history\">History</button>\
 <button onclick=\"openSavedPanel()\" title=\"Saved queries\">Saved</button>\
 <button onclick=\"saveCurrentSql()\" title=\"Save current SQL\">Save SQL</button>\
+<button onclick=\"openExportPanel()\" title=\"Export data\">Export</button>\
 <button onclick=\"htmx.ajax('POST','/api/refresh',{{target:'#content',swap:'innerHTML'}})\" \
  title=\"Refresh nav tree\">⟳ Refresh</button>\
 </header>\
