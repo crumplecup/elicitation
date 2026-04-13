@@ -24,7 +24,7 @@
 //! | POST | `/api/saved` | Save a query |
 //! | DELETE | `/api/saved/:id` | Delete a saved query |
 //! | POST | `/api/export` | Export data (file download) |
-//! | POST | `/api/refresh` | Rebuild nav tree from live DB |
+//! | GET | `/api/open-sql-editor` | Open SQL editor panel |
 
 use std::sync::Arc;
 
@@ -240,10 +240,6 @@ async fn api_sql(
     let row_count = result.row_count;
     {
         let mut model = state.model.lock().await;
-        let current_text = match &model.panel {
-            PanelMode::SqlEditor { text, .. } => text.clone(),
-            _ => body.sql.clone(),
-        };
         let entry = QueryHistoryEntry {
             id: 0,
             executed_at: chrono::Utc::now(),
@@ -253,8 +249,10 @@ async fn api_sql(
             error: None,
         };
         model.history_cache.insert(0, entry);
+        // Use the submitted SQL as the displayed text so the textarea reflects
+        // what was actually run, not the stale model state.
         model.panel = PanelMode::SqlEditor {
-            text: current_text,
+            text: body.sql.clone(),
             result: Some(result),
             running: false,
         };
@@ -480,6 +478,26 @@ async fn api_export(
     Ok((headers, export.content).into_response())
 }
 
+// ── GET /api/open-sql-editor ──────────────────────────────────────────────────
+
+async fn api_open_sql_editor(State(state): State<AppState>) -> Html<String> {
+    {
+        let mut model = state.model.lock().await;
+        // Preserve text if already in SQL editor mode, else start fresh.
+        if !matches!(model.panel, PanelMode::SqlEditor { .. }) {
+            model.panel = PanelMode::SqlEditor {
+                text: String::new(),
+                result: None,
+                running: false,
+            };
+        }
+    }
+    match body_html(&state) {
+        Ok(html) => Html(html),
+        Err(e) => Html(format!("<pre>sql editor error: {e}</pre>")),
+    }
+}
+
 // ── POST /api/refresh ─────────────────────────────────────────────────────────
 
 async fn api_refresh(State(state): State<AppState>) -> ApiResult<Html<String>> {
@@ -517,6 +535,7 @@ fn build_router(state: AppState) -> Router {
         .route("/api/saved/{id}", delete(api_saved_delete))
         .route("/api/export", post(api_export))
         .route("/api/refresh", post(api_refresh))
+        .route("/api/open-sql-editor", get(api_open_sql_editor))
         .with_state(state)
 }
 
@@ -528,6 +547,17 @@ fn wrap_page(body: &str) -> String {
         "body{font-family:'Cascadia Code','Fira Code',Consolas,monospace;",
         "background:#1e1e2e;color:#cdd6f4;height:100vh;display:flex;",
         "flex-direction:column;overflow:hidden}",
+        // toolbar
+        "header.toolbar{display:flex;gap:.4rem;padding:.3rem .6rem;",
+        "background:#181825;border-bottom:1px solid #45475a;flex-shrink:0;",
+        "align-items:center}",
+        "header.toolbar span.title{color:#cba6f7;font-weight:bold;",
+        "margin-right:.6rem;font-size:.9rem}",
+        "header.toolbar button{background:#313244;color:#cdd6f4;border:1px solid #45475a;",
+        "border-radius:3px;padding:.15rem .55rem;font-family:inherit;font-size:.8rem;",
+        "cursor:pointer}",
+        "header.toolbar button:hover{background:#45475a}",
+        "header.toolbar button.active{border-color:#89b4fa;color:#89b4fa}",
         "main{flex:1;display:flex;overflow:hidden}",
         "nav.nav-panel{width:22rem;min-width:12rem;border-right:1px solid #45475a;",
         "display:flex;flex-direction:column;overflow:hidden}",
@@ -539,6 +569,30 @@ fn wrap_page(body: &str) -> String {
         "#nav-tree{flex:1;overflow-y:auto;padding:.25rem 0}",
         "section.content-panel{flex:1;overflow:auto;padding:.5rem 1rem}",
         "#content{min-height:4rem}",
+        // history/saved overlay panel
+        ".side-panel{position:fixed;top:0;right:0;bottom:0;width:28rem;",
+        "background:#1e1e2e;border-left:1px solid #45475a;",
+        "display:flex;flex-direction:column;z-index:100;padding:0}",
+        ".side-panel-header{display:flex;justify-content:space-between;align-items:center;",
+        "padding:.4rem .7rem;background:#181825;border-bottom:1px solid #45475a}",
+        ".side-panel-header h3{color:#cba6f7;font-size:.9rem}",
+        ".side-panel-header button{background:none;border:none;color:#a6adc8;",
+        "cursor:pointer;font-size:1rem;padding:0 .2rem}",
+        ".side-panel-body{flex:1;overflow-y:auto;padding:.5rem}",
+        ".side-panel-body table{width:100%;font-size:.8rem}",
+        ".side-panel-body td,.side-panel-body th{padding:.25rem .5rem;",
+        "border-bottom:1px solid #313244;vertical-align:top}",
+        ".side-panel-body th{color:#89b4fa;background:#181825}",
+        ".side-panel-body .load-btn{background:none;border:none;color:#89b4fa;",
+        "cursor:pointer;text-decoration:underline;font-family:inherit;font-size:.8rem;",
+        "text-align:left;padding:0}",
+        ".side-panel-body .del-btn{background:none;border:none;color:#f38ba8;",
+        "cursor:pointer;font-family:inherit;font-size:.8rem;padding:0}",
+        // SQL results feedback
+        ".sql-status{font-size:.8rem;color:#a6adc8;margin:.25rem 0}",
+        ".sql-status.ok{color:#a6e3a1}",
+        ".sql-status.err{color:#f38ba8}",
+        // nav tree
         "ul[role='tree']{list-style:none;padding:.25rem 0}",
         "ul[role='group']{list-style:none;padding-left:1.5rem}",
         "details.schema-group>summary{padding:.2rem .75rem;cursor:pointer;",
@@ -548,34 +602,164 @@ fn wrap_page(body: &str) -> String {
         "li[role='treeitem']:hover{background:#313244;border-radius:3px}",
         "li[role='treeitem'].selected{background:#313244;border-radius:4px;",
         "outline:2px solid #89b4fa;color:#cdd6f4}",
+        // data table
         "table{border-collapse:collapse;width:100%;font-size:.85rem}",
         "thead th{background:#181825;border-bottom:2px solid #45475a;",
         "padding:.3rem .6rem;text-align:left;color:#89b4fa;position:sticky;top:0}",
         "tbody tr:nth-child(even){background:#181825}",
         "tbody td{padding:.25rem .6rem;border-bottom:1px solid #313244}",
+        // SQL textarea
         "textarea{width:100%;background:#181825;color:#cdd6f4;",
         "border:1px solid #45475a;padding:.5rem;font-family:inherit;",
-        "font-size:.9rem;resize:vertical;min-height:6rem}",
+        "font-size:.9rem;resize:vertical;min-height:8rem}",
+        "textarea:focus{border-color:#89b4fa;outline:none}",
         "h2,h3{color:#cba6f7;margin:.5rem 0 .25rem}",
         ".htmx-request .spinner{display:inline-block}",
         ".spinner{display:none;margin-left:.5rem}",
         "footer[role='status']{padding:.2rem .5rem;background:#313244;",
         "border-top:1px solid #45475a;font-size:.75rem;flex-shrink:0}"
     );
-    // JS: forward / key to filter input focus; Ctrl+Enter in textarea to run SQL
+
+    // JS: keyboard shortcuts + Ctrl+Enter SQL execution + history/saved sidepanels
     let js = concat!(
+        // ── keyboard shortcuts ──
         "document.addEventListener('keydown',function(e){",
         "var inp=document.getElementById('nav-filter');",
-        "if(e.key==='/'&&document.activeElement!==inp&&document.activeElement.tagName!=='TEXTAREA'){",
-        "e.preventDefault();inp&&inp.focus();",
-        "}",
+        "var ta=document.querySelector('#content textarea');",
+        "var inInput=document.activeElement==='INPUT'||",
+        "document.activeElement.tagName==='INPUT'||",
+        "document.activeElement.tagName==='TEXTAREA';",
+        // '/' → focus nav filter
+        "if(e.key==='/'&&!inInput){e.preventDefault();inp&&inp.focus();}",
+        // Esc on nav filter → clear + blur
         "if(e.key==='Escape'&&document.activeElement===inp){",
-        "inp.value='';",
-        "htmx.trigger(inp,'change');",
-        "inp.blur();",
+        "inp.value='';htmx.trigger(inp,'change');inp.blur();}",
+        // 's' → open SQL editor
+        "if(e.key==='s'&&!inInput){",
+        "e.preventDefault();",
+        "htmx.ajax('GET','/api/open-sql-editor',{target:'#content',swap:'innerHTML'});",
         "}",
+        // Ctrl+Enter → run SQL
+        "if(e.ctrlKey&&e.key==='Enter'&&ta){e.preventDefault();runSql();}",
         "});",
+        // ── run SQL via fetch ──
+        "function runSql(){",
+        "var ta=document.querySelector('#content textarea');",
+        "if(!ta)return;",
+        "var sql=ta.value;",
+        "if(!sql.trim())return;",
+        "var status=document.getElementById('sql-status');",
+        "if(status){status.textContent='Running…';status.className='sql-status';}",
+        "fetch('/api/sql',{",
+        "method:'POST',",
+        "headers:{'Content-Type':'application/json'},",
+        "body:JSON.stringify({sql:sql})",
+        "}).then(function(r){",
+        "if(!r.ok)return r.text().then(function(t){throw new Error(t);});",
+        "return r.text();",
+        "}).then(function(html){",
+        "document.getElementById('content').innerHTML=html;",
+        "htmx.process(document.getElementById('content'));",
+        "}).catch(function(err){",
+        "var c=document.getElementById('content');",
+        "c.innerHTML='<p class=\"sql-status err\">Error: '+err.message+'</p>'+",
+        "(ta?'<textarea style=\"width:100%;min-height:8rem;background:#181825;color:#cdd6f4;border:1px solid #45475a;padding:.5rem;font-family:inherit;font-size:.9rem;resize:vertical\">'+ta.value+'</textarea>':'');",
+        "});",
+        "}",
+        // ── side panel helpers ──
+        "function closeSidePanel(){",
+        "var p=document.getElementById('side-panel');",
+        "if(p)p.remove();",
+        "}",
+        "function openHistoryPanel(){",
+        "closeSidePanel();",
+        "fetch('/api/history').then(function(r){return r.json();}).then(function(entries){",
+        "var rows=entries.map(function(e,i){",
+        "var ts=new Date(e.executed_at).toLocaleTimeString();",
+        "var sql=e.sql.length>60?e.sql.substring(0,60)+'…':e.sql;",
+        "var rowCount=e.row_count!=null?e.row_count:'—';",
+        "var dur=e.duration_ms!=null?(e.duration_ms+'ms'):'—';",
+        "return '<tr><td><button class=\"load-btn\" onclick=\"loadSql('+i+')\">Load</button></td>'",
+        "+'<td title=\"'+escHtml(e.sql)+'\">'+escHtml(sql)+'</td>'",
+        "+'<td>'+rowCount+'</td><td>'+dur+'</td><td>'+ts+'</td></tr>';",
+        "}).join('');",
+        "_historyEntries=entries;",
+        "var html='<div class=\"side-panel\" id=\"side-panel\">'",
+        "+'<div class=\"side-panel-header\"><h3>Query History</h3>'",
+        "+'<button onclick=\"closeSidePanel()\" title=\"Close\">✕</button></div>'",
+        "+'<div class=\"side-panel-body\">'",
+        "+(rows?'<table><thead><tr><th></th><th>SQL</th><th>Rows</th><th>Time</th><th>At</th></tr></thead><tbody>'+rows+'</tbody></table>'",
+        ":'<p style=\"color:#a6adc8;padding:.5rem\">No history yet.</p>')",
+        "+'</div></div>';",
+        "document.body.insertAdjacentHTML('beforeend',html);",
+        "}).catch(function(e){console.error('history load failed',e);});",
+        "}",
+        "var _historyEntries=[];",
+        "function loadSql(idx){",
+        "var e=_historyEntries[idx];",
+        "if(!e)return;",
+        "closeSidePanel();",
+        "htmx.ajax('GET','/api/open-sql-editor',{target:'#content',swap:'innerHTML'}).then(function(){",
+        "var ta=document.querySelector('#content textarea');",
+        "if(ta){ta.value=e.sql;ta.focus();}",
+        "});",
+        "}",
+        "function openSavedPanel(){",
+        "closeSidePanel();",
+        "fetch('/api/saved').then(function(r){return r.json();}).then(function(entries){",
+        "_savedEntries=entries;",
+        "var rows=entries.map(function(e,i){",
+        "var sql=e.sql.length>50?e.sql.substring(0,50)+'…':e.sql;",
+        "return '<tr>'",
+        "+'<td><strong>'+escHtml(e.name)+'</strong></td>'",
+        "+'<td title=\"'+escHtml(e.sql)+'\">'+escHtml(sql)+'</td>'",
+        "+'<td><button class=\"load-btn\" onclick=\"loadSavedSql('+i+')\">Load</button></td>'",
+        "+'<td><button class=\"del-btn\" onclick=\"deleteSaved('+i+')\">Del</button></td>'",
+        "+'</tr>';",
+        "}).join('');",
+        "var html='<div class=\"side-panel\" id=\"side-panel\">'",
+        "+'<div class=\"side-panel-header\"><h3>Saved Queries</h3>'",
+        "+'<button onclick=\"closeSidePanel()\" title=\"Close\">✕</button></div>'",
+        "+'<div class=\"side-panel-body\">'",
+        "+(rows?'<table><thead><tr><th>Name</th><th>SQL</th><th></th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'",
+        ":'<p style=\"color:#a6adc8;padding:.5rem\">No saved queries.</p>')",
+        "+'</div></div>';",
+        "document.body.insertAdjacentHTML('beforeend',html);",
+        "}).catch(function(e){console.error('saved load failed',e);});",
+        "}",
+        "var _savedEntries=[];",
+        "function loadSavedSql(idx){",
+        "var e=_savedEntries[idx];",
+        "if(!e)return;",
+        "closeSidePanel();",
+        "htmx.ajax('GET','/api/open-sql-editor',{target:'#content',swap:'innerHTML'}).then(function(){",
+        "var ta=document.querySelector('#content textarea');",
+        "if(ta){ta.value=e.sql;ta.focus();}",
+        "});",
+        "}",
+        "function deleteSaved(idx){",
+        "var e=_savedEntries[idx];",
+        "if(!e)return;",
+        "if(!confirm('Delete \"'+e.name+'\"?'))return;",
+        "fetch('/api/saved/'+e.id,{method:'DELETE'})",
+        ".then(function(){closeSidePanel();openSavedPanel();});",
+        "}",
+        "function saveCurrentSql(){",
+        "var ta=document.querySelector('#content textarea');",
+        "if(!ta||!ta.value.trim()){alert('No SQL to save.');return;}",
+        "var name=prompt('Save query as:');",
+        "if(!name)return;",
+        "fetch('/api/saved',{method:'POST',",
+        "headers:{'Content-Type':'application/json'},",
+        "body:JSON.stringify({name:name,sql:ta.value})})",
+        ".then(function(r){if(r.ok)alert('Saved!');else r.text().then(function(t){alert('Error: '+t);});});",
+        "}",
+        "function escHtml(s){",
+        "return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')",
+        ".replace(/\"/g,'&quot;');",
+        "}"
     );
+
     format!(
         "<!DOCTYPE html><html lang=\"en\"><head>\
 <meta charset=\"utf-8\"/>\
@@ -584,6 +768,16 @@ fn wrap_page(body: &str) -> String {
 <script src=\"https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js\"></script>\
 <style>{css}</style>\
 </head><body>\
+<header class=\"toolbar\">\
+<span class=\"title\">▦ Archive</span>\
+<button onclick=\"htmx.ajax('GET','/api/open-sql-editor',{{target:'#content',swap:'innerHTML'}})\" \
+ title=\"SQL Editor (s)\">SQL Editor</button>\
+<button onclick=\"openHistoryPanel()\" title=\"Query history\">History</button>\
+<button onclick=\"openSavedPanel()\" title=\"Saved queries\">Saved</button>\
+<button onclick=\"saveCurrentSql()\" title=\"Save current SQL\">Save SQL</button>\
+<button onclick=\"htmx.ajax('POST','/api/refresh',{{target:'#content',swap:'innerHTML'}})\" \
+ title=\"Refresh nav tree\">⟳ Refresh</button>\
+</header>\
 <main>\
 <nav class=\"nav-panel\">\
 <div class=\"filter-wrap\">\
@@ -593,7 +787,7 @@ fn wrap_page(body: &str) -> String {
 </div>\
 <div id=\"nav-tree\">{body}</div>\
 </nav>\
-<section class=\"content-panel\"><div id=\"content\"></div></section>\
+<section class=\"content-panel\"><div id=\"content\"><p style=\"color:#6c7086;padding:1rem;font-size:.9rem\">Select a table in the nav tree, or press <kbd>s</kbd> to open the SQL editor.</p></div></section>\
 </main>\
 <script>{js}</script>\
 </body></html>"

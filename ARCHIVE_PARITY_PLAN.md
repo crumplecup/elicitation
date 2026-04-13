@@ -52,6 +52,16 @@
 ✅ Basic SQL execute (MCP tool) — ✅ Spatial column detection — ✅ Backend traits
 for all operations (not yet surfaced in UI)
 
+**IR bridge contract (complete):** `IrSourced` proof token added to `elicit_ui`.
+`ArchiveNavModel::to_verified_tree()` is the sole mint point.  All three frontends
+(ratatui, egui, leptos) now gate rendering on `Established<IrSourced>` — divergence
+from the AccessKit IR is a compile error.  ~2 700 lines of per-frontend draw code
+replaced by bridge calls; overlay state consolidated in `ArchiveNavModel`.
+
+The browser frontend is now a **dynamic axum server** (rebuilds IR per request)
+rather than a one-shot static render.  Remaining leptos work is feature parity
+for the 7 feature panels (see leptos-* todos below).
+
 ---
 
 ## Architecture Principles
