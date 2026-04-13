@@ -220,6 +220,7 @@ impl TuiApp {
                     text: current_text,
                     result: Some(result),
                     running: false,
+                    error: None,
                 };
             }
             PanelEvent::TableInspected {
@@ -537,6 +538,7 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                             text: sql,
                                             result: None,
                                             running: false,
+                                            error: None,
                                         };
                                         app.model.toggle_saved_browser();
                                     }
@@ -613,6 +615,7 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                         text: String::new(),
                                         result: None,
                                         running: false,
+                                        error: None,
                                     };
                                 }
                                 KeyCode::F(2) => app.model.toggle_saved_browser(),

@@ -15,16 +15,25 @@
 //! | GET | `/api/preview` | Fetch table rows, return content fragment |
 //! | POST | `/api/sql` | Execute SQL, return content fragment |
 //! | GET | `/api/inspect` | Table inspection JSON |
-//! | GET | `/api/ddl` | DDL viewer content fragment |
 //! | GET | `/api/stats` | Column statistics JSON |
-//! | GET | `/api/explain` | EXPLAIN viewer content fragment |
+//! | GET | `/api/explain` | EXPLAIN viewer content fragment (with params) |
 //! | GET | `/api/history` | Query history JSON |
 //! | POST | `/api/history` | Append history entry |
 //! | GET | `/api/saved` | Saved queries JSON |
 //! | POST | `/api/saved` | Save a query |
 //! | DELETE | `/api/saved/:id` | Delete a saved query |
-//! | POST | `/api/export` | Export data (file download) |
-//! | GET | `/api/open-sql-editor` | Open SQL editor panel |
+//! | GET | `/api/export` | Export data file download |
+//! | GET | `/api/open-sql-editor` | Open SQL editor panel (content fragment) |
+//! | GET | `/api/history-panel` | History browser panel (content fragment) |
+//! | GET | `/api/saved-panel` | Saved queries panel (content fragment) |
+//! | GET | `/api/export-panel` | Export picker panel (content fragment) |
+//! | GET | `/api/ddl-panel` | DDL viewer panel (content fragment) |
+//! | GET | `/api/explain-panel` | EXPLAIN viewer panel (content fragment) |
+//! | GET | `/api/col-detail-panel` | Column detail panel (content fragment) |
+//! | GET | `/api/load-history` | Load history entry into SQL editor |
+//! | GET | `/api/load-saved` | Load saved query into SQL editor |
+//! | GET | `/api/open-help` | Help / key bindings panel (content fragment) |
+//! | POST | `/api/refresh` | Reload nav tree from DB |
 
 use std::sync::Arc;
 
@@ -69,7 +78,7 @@ struct AppState {
     saved: Arc<Mutex<Option<SavedQueryStore>>>,
 }
 
-// ── IR gate ───────────────────────────────────────────────────────────────────
+// ── IR gate helpers ───────────────────────────────────────────────────────────
 
 fn render_leptos_from_ir(
     renderer: &LeptosRenderer,
@@ -80,12 +89,39 @@ fn render_leptos_from_ir(
     Ok(renderer.last_html())
 }
 
-fn body_html(state: &AppState) -> Result<String, String> {
+/// Render the full page IR tree.  Used by `serve_page` for the initial page load.
+fn full_html(state: &AppState) -> Result<String, String> {
     let model = state
         .model
         .try_lock()
         .map_err(|_| "model locked".to_string())?;
     let (tree, proof) = model.to_verified_tree().map_err(|e| e.to_string())?;
+    render_leptos_from_ir(&state.renderer, &tree, proof)
+}
+
+/// Render only the content panel fragment (`<div id="content">…</div>`).
+///
+/// All content-swapping endpoints return this instead of the full page so that
+/// HTMX `hx-target="#content" hx-swap="outerHTML"` can find `#content` on the
+/// next swap as well.
+fn content_html(state: &AppState) -> Result<String, String> {
+    let model = state
+        .model
+        .try_lock()
+        .map_err(|_| "model locked".to_string())?;
+    let (tree, proof) = model.to_content_tree().map_err(|e| e.to_string())?;
+    render_leptos_from_ir(&state.renderer, &tree, proof)
+}
+
+/// Render only the nav-tree fragment (`<ul role="tree" id="nav-tree">…</ul>`).
+///
+/// Used by `/api/nav` with `hx-target="#nav-tree" hx-swap="outerHTML"`.
+fn nav_items_html(state: &AppState) -> Result<String, String> {
+    let model = state
+        .model
+        .try_lock()
+        .map_err(|_| "model locked".to_string())?;
+    let (tree, proof) = model.to_nav_tree().map_err(|e| e.to_string())?;
     render_leptos_from_ir(&state.renderer, &tree, proof)
 }
 
@@ -122,10 +158,8 @@ type ApiResult<T> = Result<T, ApiError>;
 // ── GET / ─────────────────────────────────────────────────────────────────────
 
 async fn serve_page(State(state): State<AppState>) -> Html<String> {
-    // body_html renders the full IR tree; for the initial page load we embed
-    // it into the nav panel — the content panel is populated on first click.
-    match body_html(&state) {
-        Ok(nav_html) => Html(wrap_page(&nav_html)),
+    match full_html(&state) {
+        Ok(body) => Html(wrap_page(&body)),
         Err(e) => Html(format!("<pre>render error: {e}</pre>")),
     }
 }
@@ -143,9 +177,11 @@ async fn api_nav(State(state): State<AppState>, Query(p): Query<NavParams>) -> H
         let mut model = state.model.lock().await;
         model.set_filter_str(&p.filter);
     }
-    match body_html(&state) {
+    match nav_items_html(&state) {
         Ok(html) => Html(html),
-        Err(e) => Html(format!("<pre>nav error: {e}</pre>")),
+        Err(e) => Html(format!(
+            "<ul role=\"tree\" id=\"nav-tree\"><li>{e}</li></ul>"
+        )),
     }
 }
 
@@ -174,6 +210,23 @@ fn default_history_limit() -> i64 {
     50
 }
 
+#[derive(Debug, Deserialize)]
+struct LoadHistoryParams {
+    idx: usize,
+}
+
+#[derive(Debug, Deserialize)]
+struct LoadSavedParams {
+    id: i64,
+}
+
+#[derive(Debug, Deserialize)]
+struct ExportDownloadParams {
+    schema: String,
+    table: String,
+    format: ExportFormat,
+}
+
 // ── Request body structs ──────────────────────────────────────────────────────
 
 #[derive(Debug, Deserialize)]
@@ -193,13 +246,6 @@ struct AppendHistoryBody {
 struct SaveQueryBody {
     name: String,
     sql: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct ExportBody {
-    schema: String,
-    table: String,
-    format: ExportFormat,
 }
 
 // ── GET /api/preview ──────────────────────────────────────────────────────────
@@ -222,48 +268,98 @@ async fn api_preview(
             page: 0,
         };
     }
-    Ok(Html(body_html(&state).map_err(ApiError::internal)?))
+    Ok(Html(content_html(&state).map_err(ApiError::internal)?))
 }
 
 // ── POST /api/sql ─────────────────────────────────────────────────────────────
+//
+// Always returns 200 Ok with Html<String> — errors are embedded in the IR as
+// an Alert node so the content fragment remains self-contained.
 
 async fn api_sql(
     State(state): State<AppState>,
     axum::Json(body): axum::Json<SqlBody>,
-) -> ApiResult<Html<String>> {
-    let url = state.db_url.clone().ok_or_else(ApiError::no_db)?;
+) -> Html<String> {
+    let url = match state.db_url.clone() {
+        Some(u) => u,
+        None => {
+            let mut model = state.model.lock().await;
+            model.panel = PanelMode::SqlEditor {
+                text: body.sql.clone(),
+                result: None,
+                running: false,
+                error: Some(
+                    "No database URL configured — run 'archive serve' instead of 'archive demo'."
+                        .to_string(),
+                ),
+            };
+            drop(model);
+            return Html(
+                content_html(&state)
+                    .unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")),
+            );
+        }
+    };
     let start = std::time::Instant::now();
-    let result = execute_sql_direct(&url, &body.sql)
-        .await
-        .map_err(ApiError::internal)?;
-    let duration_ms = start.elapsed().as_millis() as u64;
-    let row_count = result.row_count;
-    {
-        let mut model = state.model.lock().await;
-        let entry = QueryHistoryEntry {
-            id: 0,
-            executed_at: chrono::Utc::now(),
-            sql: body.sql.clone(),
-            duration_ms,
-            row_count: Some(row_count),
-            error: None,
-        };
-        model.history_cache.insert(0, entry);
-        // Use the submitted SQL as the displayed text so the textarea reflects
-        // what was actually run, not the stale model state.
-        model.panel = PanelMode::SqlEditor {
-            text: body.sql.clone(),
-            result: Some(result),
-            running: false,
-        };
-    }
-    {
-        let history = state.history.lock().await;
-        if let Some(ref store) = *history {
-            store.append_spawn(body.sql, duration_ms, Some(row_count), None);
+    match execute_sql_direct(&url, &body.sql).await {
+        Ok(result) => {
+            let duration_ms = start.elapsed().as_millis() as u64;
+            let row_count = result.row_count;
+            {
+                let mut model = state.model.lock().await;
+                let entry = QueryHistoryEntry {
+                    id: 0,
+                    executed_at: chrono::Utc::now(),
+                    sql: body.sql.clone(),
+                    duration_ms,
+                    row_count: Some(row_count),
+                    error: None,
+                };
+                model.history_cache.insert(0, entry);
+                model.panel = PanelMode::SqlEditor {
+                    text: body.sql.clone(),
+                    result: Some(result),
+                    running: false,
+                    error: None,
+                };
+            }
+            {
+                let history = state.history.lock().await;
+                if let Some(ref store) = *history {
+                    store.append_spawn(body.sql, duration_ms, Some(row_count), None);
+                }
+            }
+        }
+        Err(e) => {
+            let duration_ms = start.elapsed().as_millis() as u64;
+            let err_msg = e.to_string();
+            {
+                let mut model = state.model.lock().await;
+                let entry = QueryHistoryEntry {
+                    id: 0,
+                    executed_at: chrono::Utc::now(),
+                    sql: body.sql.clone(),
+                    duration_ms,
+                    row_count: None,
+                    error: Some(err_msg.clone()),
+                };
+                model.history_cache.insert(0, entry);
+                model.panel = PanelMode::SqlEditor {
+                    text: body.sql.clone(),
+                    result: None,
+                    running: false,
+                    error: Some(err_msg),
+                };
+            }
+            {
+                let history = state.history.lock().await;
+                if let Some(ref store) = *history {
+                    store.append_spawn(body.sql, duration_ms, None, Some(e.to_string()));
+                }
+            }
         }
     }
-    Ok(Html(body_html(&state).map_err(ApiError::internal)?))
+    Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
 }
 
 // ── GET /api/inspect ──────────────────────────────────────────────────────────
@@ -285,27 +381,6 @@ async fn api_inspect(
     ))
 }
 
-// ── GET /api/ddl ──────────────────────────────────────────────────────────────
-
-async fn api_ddl(
-    State(state): State<AppState>,
-    Query(p): Query<SchemaTable>,
-) -> ApiResult<Html<String>> {
-    let url = state.db_url.clone().ok_or_else(ApiError::no_db)?;
-    let ddl_result = generate_ddl_direct(&url, &p.schema, &p.table)
-        .await
-        .map_err(ApiError::internal)?;
-    {
-        let mut model = state.model.lock().await;
-        model.panel = PanelMode::Ddl {
-            schema: p.schema,
-            table: p.table,
-            ddl: ddl_result.ddl,
-        };
-    }
-    Ok(Html(body_html(&state).map_err(ApiError::internal)?))
-}
-
 // ── GET /api/stats ────────────────────────────────────────────────────────────
 
 async fn api_stats(
@@ -325,7 +400,7 @@ async fn api_stats(
     ))
 }
 
-// ── GET /api/explain ──────────────────────────────────────────────────────────
+// ── GET /api/explain (parametric, for old clients) ────────────────────────────
 
 async fn api_explain(
     State(state): State<AppState>,
@@ -343,7 +418,7 @@ async fn api_explain(
             root,
         };
     }
-    Ok(Html(body_html(&state).map_err(ApiError::internal)?))
+    Ok(Html(content_html(&state).map_err(ApiError::internal)?))
 }
 
 // ── GET /api/history ──────────────────────────────────────────────────────────
@@ -437,11 +512,11 @@ async fn api_saved_delete(
     Ok(StatusCode::OK)
 }
 
-// ── POST /api/export ──────────────────────────────────────────────────────────
+// ── GET /api/export (file download) ───────────────────────────────────────────
 
 async fn api_export(
     State(state): State<AppState>,
-    axum::Json(body): axum::Json<ExportBody>,
+    Query(p): Query<ExportDownloadParams>,
 ) -> ApiResult<Response> {
     let result = {
         let model = state.model.lock().await;
@@ -457,14 +532,9 @@ async fn api_export(
             }
         }
     };
-    let export = export_query_result(&result, body.format);
-    let filename = format!(
-        "{}__{}.{}",
-        body.schema,
-        body.table,
-        body.format.extension()
-    );
-    let content_type = match body.format {
+    let export = export_query_result(&result, p.format);
+    let filename = format!("{}__{}.{}", p.schema, p.table, p.format.extension());
+    let content_type = match p.format {
         ExportFormat::Csv | ExportFormat::Tsv => "text/plain; charset=utf-8",
         ExportFormat::Json | ExportFormat::Ndjson => "application/json",
     };
@@ -489,37 +559,284 @@ async fn api_open_sql_editor(State(state): State<AppState>) -> Html<String> {
                 text: String::new(),
                 result: None,
                 running: false,
+                error: None,
             };
         }
     }
-    match body_html(&state) {
-        Ok(html) => Html(html),
-        Err(e) => Html(format!("<pre>sql editor error: {e}</pre>")),
-    }
+    Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
 }
 
-// ── GET /api/col-detail ───────────────────────────────────────────────────────
+// ── GET /api/history-panel ───────────────────────────────────────────────────
 
-async fn api_col_detail(
-    State(state): State<AppState>,
-    Query(p): Query<SchemaTable>,
-) -> ApiResult<Html<String>> {
-    let url = state.db_url.clone().ok_or_else(ApiError::no_db)?;
-    // Fetch inspection and column stats concurrently.
-    let (inspect_res, stats_res) = tokio::join!(
-        inspect_table_direct(&url, &p.schema, &p.table),
-        get_column_stats_direct(&url, &p.schema, &p.table),
-    );
-    let inspection = inspect_res.map_err(ApiError::internal)?;
-    let stats = stats_res.map_err(ApiError::internal)?;
+async fn api_history_panel(State(state): State<AppState>) -> Html<String> {
+    let entries = {
+        let history = state.history.lock().await;
+        if let Some(ref store) = *history {
+            store.recent(50).await.unwrap_or_default()
+        } else {
+            state
+                .model
+                .lock()
+                .await
+                .history_cache
+                .iter()
+                .take(50)
+                .cloned()
+                .collect()
+        }
+    };
     {
         let mut model = state.model.lock().await;
-        model.store_inspection(p.schema.clone(), p.table.clone(), inspection);
-        model.store_column_stats(p.schema.clone(), p.table.clone(), stats);
-        model.select_table(&p.schema, &p.table);
+        model.panel = PanelMode::HistoryPanel { entries };
+    }
+    Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
+}
+
+// ── GET /api/saved-panel ──────────────────────────────────────────────────────
+
+async fn api_saved_panel(State(state): State<AppState>) -> Html<String> {
+    let entries = {
+        let saved = state.saved.lock().await;
+        if let Some(ref store) = *saved {
+            store.all().await.unwrap_or_default()
+        } else {
+            vec![]
+        }
+    };
+    {
+        let mut model = state.model.lock().await;
+        model.panel = PanelMode::SavedPanel { entries };
+    }
+    Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
+}
+
+// ── GET /api/export-panel ─────────────────────────────────────────────────────
+
+async fn api_export_panel(State(state): State<AppState>) -> Html<String> {
+    let pair = state.model.lock().await.selected_schema_table();
+    let (schema, table) = match pair {
+        Some(p) => p,
+        None => {
+            return Html(
+                "<div id='content'><p style='padding:1rem;color:#f38ba8'>Select a table first.</p></div>".to_string(),
+            );
+        }
+    };
+    {
+        let mut model = state.model.lock().await;
+        model.panel = PanelMode::ExportPanel { schema, table };
+    }
+    Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
+}
+
+// ── GET /api/ddl-panel ────────────────────────────────────────────────────────
+
+async fn api_ddl_panel(State(state): State<AppState>) -> Html<String> {
+    let url = match state.db_url.clone() {
+        Some(u) => u,
+        None => {
+            return Html(
+                "<div id='content'><p style='padding:1rem;color:#f38ba8'>No database connected.</p></div>".to_string(),
+            );
+        }
+    };
+    let pair = state.model.lock().await.selected_schema_table();
+    let (schema, table) = match pair {
+        Some(p) => p,
+        None => {
+            return Html(
+                "<div id='content'><p style='padding:1rem;color:#f38ba8'>Select a table first.</p></div>".to_string(),
+            );
+        }
+    };
+    match generate_ddl_direct(&url, &schema, &table).await {
+        Ok(ddl_result) => {
+            let mut model = state.model.lock().await;
+            model.panel = PanelMode::Ddl {
+                schema,
+                table,
+                ddl: ddl_result.ddl,
+            };
+        }
+        Err(e) => {
+            return Html(format!(
+                "<div id='content'><pre style='color:#f38ba8'>{e}</pre></div>"
+            ));
+        }
+    }
+    Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
+}
+
+// ── GET /api/explain-panel ────────────────────────────────────────────────────
+
+async fn api_explain_panel(State(state): State<AppState>) -> Html<String> {
+    let url = match state.db_url.clone() {
+        Some(u) => u,
+        None => {
+            return Html(
+                "<div id='content'><p style='padding:1rem;color:#f38ba8'>No database connected.</p></div>".to_string(),
+            );
+        }
+    };
+    let (schema, table, sql) = {
+        let model = state.model.lock().await;
+        let pair = model.selected_schema_table();
+        let sql = if let PanelMode::SqlEditor { text, .. } = &model.panel {
+            if !text.trim().is_empty() {
+                text.clone()
+            } else {
+                pair.as_ref()
+                    .map(|(s, t)| format!("SELECT * FROM {s}.{t} LIMIT 10"))
+                    .unwrap_or_default()
+            }
+        } else {
+            pair.as_ref()
+                .map(|(s, t)| format!("SELECT * FROM {s}.{t} LIMIT 10"))
+                .unwrap_or_default()
+        };
+        let (s, t) = pair.unwrap_or_else(|| ("public".to_string(), "query".to_string()));
+        (s, t, sql)
+    };
+    if sql.is_empty() {
+        return Html(
+            "<div id='content'><p style='padding:1rem;color:#f38ba8'>Select a table or open the SQL editor first.</p></div>".to_string(),
+        );
+    }
+    match explain_sql_direct(&url, &sql).await {
+        Ok(root) => {
+            let mut model = state.model.lock().await;
+            model.panel = PanelMode::ExplainPlan {
+                schema,
+                table,
+                root,
+            };
+        }
+        Err(e) => {
+            return Html(format!(
+                "<div id='content'><pre style='color:#f38ba8'>{e}</pre></div>"
+            ));
+        }
+    }
+    Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
+}
+
+// ── GET /api/col-detail-panel ─────────────────────────────────────────────────
+
+async fn api_col_detail_panel(State(state): State<AppState>) -> Html<String> {
+    let url = match state.db_url.clone() {
+        Some(u) => u,
+        None => {
+            return Html(
+                "<div id='content'><p style='padding:1rem;color:#f38ba8'>No database connected.</p></div>".to_string(),
+            );
+        }
+    };
+    let pair = state.model.lock().await.selected_schema_table();
+    let (schema, table) = match pair {
+        Some(p) => p,
+        None => {
+            return Html(
+                "<div id='content'><p style='padding:1rem;color:#f38ba8'>Select a table first.</p></div>".to_string(),
+            );
+        }
+    };
+    let (inspect_res, stats_res) = tokio::join!(
+        inspect_table_direct(&url, &schema, &table),
+        get_column_stats_direct(&url, &schema, &table),
+    );
+    {
+        let mut model = state.model.lock().await;
+        if let Ok(inspection) = inspect_res {
+            model.store_inspection(schema.clone(), table.clone(), inspection);
+        }
+        if let Ok(stats) = stats_res {
+            model.store_column_stats(schema.clone(), table.clone(), stats);
+        }
+        model.select_table(&schema, &table);
         model.panel = PanelMode::ColumnDetail;
     }
-    Ok(Html(body_html(&state).map_err(ApiError::internal)?))
+    Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
+}
+
+// ── GET /api/load-history ─────────────────────────────────────────────────────
+
+async fn api_load_history(
+    State(state): State<AppState>,
+    Query(p): Query<LoadHistoryParams>,
+) -> Html<String> {
+    let sql = {
+        let history = state.history.lock().await;
+        if let Some(ref store) = *history {
+            let entries = store.recent(p.idx as i64 + 1).await.unwrap_or_default();
+            entries.into_iter().nth(p.idx).map(|e| e.sql)
+        } else {
+            let model = state.model.lock().await;
+            model.history_cache.iter().nth(p.idx).map(|e| e.sql.clone())
+        }
+    };
+    let sql = match sql {
+        Some(s) => s,
+        None => {
+            return Html(
+                "<div id='content'><p style='padding:1rem;color:#f38ba8'>History entry not found.</p></div>".to_string(),
+            );
+        }
+    };
+    {
+        let mut model = state.model.lock().await;
+        model.panel = PanelMode::SqlEditor {
+            text: sql,
+            result: None,
+            running: false,
+            error: None,
+        };
+    }
+    Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
+}
+
+// ── GET /api/load-saved ───────────────────────────────────────────────────────
+
+async fn api_load_saved(
+    State(state): State<AppState>,
+    Query(p): Query<LoadSavedParams>,
+) -> Html<String> {
+    let sql = {
+        let saved = state.saved.lock().await;
+        if let Some(ref store) = *saved {
+            let entries = store.all().await.unwrap_or_default();
+            entries.into_iter().find(|q| q.id == p.id).map(|q| q.sql)
+        } else {
+            None
+        }
+    };
+    let sql = match sql {
+        Some(s) => s,
+        None => {
+            return Html(
+                "<div id='content'><p style='padding:1rem;color:#f38ba8'>Saved query not found.</p></div>".to_string(),
+            );
+        }
+    };
+    {
+        let mut model = state.model.lock().await;
+        model.panel = PanelMode::SqlEditor {
+            text: sql,
+            result: None,
+            running: false,
+            error: None,
+        };
+    }
+    Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
+}
+
+// ── GET /api/open-help ────────────────────────────────────────────────────────
+
+async fn api_open_help(State(state): State<AppState>) -> Html<String> {
+    {
+        let mut model = state.model.lock().await;
+        model.panel = PanelMode::HelpPanel;
+    }
+    Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
 }
 
 // ── POST /api/refresh ─────────────────────────────────────────────────────────
@@ -536,7 +853,7 @@ async fn api_refresh(State(state): State<AppState>) -> ApiResult<Html<String>> {
         let mut model = state.model.lock().await;
         model.apply_refresh(nav);
     }
-    Ok(Html(body_html(&state).map_err(ApiError::internal)?))
+    Ok(Html(content_html(&state).map_err(ApiError::internal)?))
 }
 
 // ── Router assembly ───────────────────────────────────────────────────────────
@@ -548,7 +865,6 @@ fn build_router(state: AppState) -> Router {
         .route("/api/preview", get(api_preview))
         .route("/api/sql", post(api_sql))
         .route("/api/inspect", get(api_inspect))
-        .route("/api/ddl", get(api_ddl))
         .route("/api/stats", get(api_stats))
         .route("/api/explain", get(api_explain))
         .route(
@@ -557,10 +873,18 @@ fn build_router(state: AppState) -> Router {
         )
         .route("/api/saved", get(api_saved_list).post(api_saved_create))
         .route("/api/saved/{id}", delete(api_saved_delete))
-        .route("/api/export", post(api_export))
+        .route("/api/export", get(api_export))
         .route("/api/refresh", post(api_refresh))
         .route("/api/open-sql-editor", get(api_open_sql_editor))
-        .route("/api/col-detail", get(api_col_detail))
+        .route("/api/open-help", get(api_open_help))
+        .route("/api/history-panel", get(api_history_panel))
+        .route("/api/saved-panel", get(api_saved_panel))
+        .route("/api/export-panel", get(api_export_panel))
+        .route("/api/ddl-panel", get(api_ddl_panel))
+        .route("/api/explain-panel", get(api_explain_panel))
+        .route("/api/col-detail-panel", get(api_col_detail_panel))
+        .route("/api/load-history", get(api_load_history))
+        .route("/api/load-saved", get(api_load_saved))
         .with_state(state)
 }
 
@@ -576,7 +900,7 @@ fn wrap_page(body: &str) -> String {
         "header.toolbar{display:flex;gap:.4rem;padding:.3rem .6rem;",
         "background:#181825;border-bottom:1px solid #45475a;flex-shrink:0;",
         "align-items:center}",
-        "header.toolbar span.title{color:#cba6f7;font-weight:bold;",
+        "header.toolbar [data-role='statictext']{color:#cba6f7;font-weight:bold;",
         "margin-right:.6rem;font-size:.9rem}",
         "header.toolbar button{background:#313244;color:#cdd6f4;border:1px solid #45475a;",
         "border-radius:3px;padding:.15rem .55rem;font-family:inherit;font-size:.8rem;",
@@ -584,39 +908,14 @@ fn wrap_page(body: &str) -> String {
         "header.toolbar button:hover{background:#45475a}",
         "header.toolbar button.active{border-color:#89b4fa;color:#89b4fa}",
         "main{flex:1;display:flex;overflow:hidden}",
-        "nav.nav-panel{width:22rem;min-width:12rem;border-right:1px solid #45475a;",
+        "nav{width:22rem;min-width:12rem;border-right:1px solid #45475a;",
         "display:flex;flex-direction:column;overflow:hidden}",
-        ".filter-wrap{padding:.35rem .5rem;border-bottom:1px solid #313244;flex-shrink:0}",
-        ".filter-wrap input{width:100%;background:#313244;color:#cdd6f4;",
-        "border:1px solid #45475a;border-radius:3px;padding:.2rem .4rem;",
-        "font-family:inherit;font-size:.85rem;outline:none}",
-        ".filter-wrap input:focus{border-color:#89b4fa}",
+        "#nav-filter{width:100%;background:#313244;color:#cdd6f4;",
+        "border:none;border-bottom:1px solid #313244;padding:.35rem .5rem;",
+        "font-family:inherit;font-size:.85rem;outline:none;flex-shrink:0}",
+        "#nav-filter:focus{border-bottom-color:#89b4fa}",
         "#nav-tree{flex:1;overflow-y:auto;padding:.25rem 0}",
-        "section.content-panel{flex:1;overflow:auto;padding:.5rem 1rem}",
-        "#content{min-height:4rem}",
-        // history/saved overlay panel
-        ".side-panel{position:fixed;top:0;right:0;bottom:0;width:28rem;",
-        "background:#1e1e2e;border-left:1px solid #45475a;",
-        "display:flex;flex-direction:column;z-index:100;padding:0}",
-        ".side-panel-header{display:flex;justify-content:space-between;align-items:center;",
-        "padding:.4rem .7rem;background:#181825;border-bottom:1px solid #45475a}",
-        ".side-panel-header h3{color:#cba6f7;font-size:.9rem}",
-        ".side-panel-header button{background:none;border:none;color:#a6adc8;",
-        "cursor:pointer;font-size:1rem;padding:0 .2rem}",
-        ".side-panel-body{flex:1;overflow-y:auto;padding:.5rem}",
-        ".side-panel-body table{width:100%;font-size:.8rem}",
-        ".side-panel-body td,.side-panel-body th{padding:.25rem .5rem;",
-        "border-bottom:1px solid #313244;vertical-align:top}",
-        ".side-panel-body th{color:#89b4fa;background:#181825}",
-        ".side-panel-body .load-btn{background:none;border:none;color:#89b4fa;",
-        "cursor:pointer;text-decoration:underline;font-family:inherit;font-size:.8rem;",
-        "text-align:left;padding:0}",
-        ".side-panel-body .del-btn{background:none;border:none;color:#f38ba8;",
-        "cursor:pointer;font-family:inherit;font-size:.8rem;padding:0}",
-        // export format buttons inside side panel
-        ".export-btn{background:#313244;color:#cdd6f4;border:1px solid #45475a;",
-        "border-radius:3px;padding:.3rem .7rem;font-family:inherit;font-size:.85rem;cursor:pointer}",
-        ".export-btn:hover{background:#45475a}",
+        "#content{flex:1;overflow:auto;padding:.5rem 1rem}",
         // SQL results feedback
         ".sql-status{font-size:.8rem;color:#a6adc8;margin:.25rem 0}",
         ".sql-status.ok{color:#a6e3a1}",
@@ -641,6 +940,7 @@ fn wrap_page(body: &str) -> String {
         "code,pre{white-space:pre;display:block;overflow-x:auto;",
         "background:#181825;border:1px solid #45475a;border-radius:3px;",
         "padding:.5rem;font-size:.8rem;color:#a6e3a1;line-height:1.5}",
+        "textarea{width:100%;background:#181825;color:#cdd6f4;",
         "border:1px solid #45475a;padding:.5rem;font-family:inherit;",
         "font-size:.9rem;resize:vertical;min-height:8rem}",
         "textarea:focus{border-color:#89b4fa;outline:none}",
@@ -648,171 +948,34 @@ fn wrap_page(body: &str) -> String {
         ".htmx-request .spinner{display:inline-block}",
         ".spinner{display:none;margin-left:.5rem}",
         "footer[role='status']{padding:.2rem .5rem;background:#313244;",
-        "border-top:1px solid #45475a;font-size:.75rem;flex-shrink:0}"
+        "border-top:1px solid #45475a;font-size:.75rem;flex-shrink:0}",
+        // export buttons inside the ExportPanel content
+        ".export-fmt-btn{background:#313244;color:#cdd6f4;border:1px solid #45475a;",
+        "border-radius:3px;padding:.3rem .7rem;font-family:inherit;font-size:.85rem;cursor:pointer}",
+        ".export-fmt-btn:hover{background:#45475a}"
     );
 
-    // JS: keyboard shortcuts + Ctrl+Enter SQL execution + DDL/explain + history/saved sidepanels
+    // JS: only IR-safe helpers — no HTML building, no side panels.
     let js = concat!(
-        // ── context state ──
-        "var _curSchema='';",
-        "var _curTable='';",
-        // Track schema/table from preview requests so DDL/explain can use it.
-        "document.addEventListener('htmx:afterRequest',function(evt){",
-        "var path=evt.detail&&evt.detail.requestConfig&&evt.detail.requestConfig.path;",
-        "if(path&&path.startsWith('/api/preview')){",
-        "var params=new URLSearchParams(path.split('?')[1]||'');",
-        "_curSchema=params.get('schema')||'';",
-        "_curTable=params.get('table')||'';",
-        "}}); ",
-        // ── keyboard shortcuts ──
-        "document.addEventListener('keydown',function(e){",
-        "var inp=document.getElementById('nav-filter');",
-        "var ta=document.querySelector('#content textarea');",
-        "var inInput=document.activeElement.tagName==='INPUT'||",
-        "document.activeElement.tagName==='TEXTAREA';",
-        // '/' → focus nav filter
-        "if(e.key==='/'&&!inInput){e.preventDefault();inp&&inp.focus();}",
-        // Esc on nav filter → clear + blur
-        "if(e.key==='Escape'&&document.activeElement===inp){",
-        "inp.value='';htmx.trigger(inp,'change');inp.blur();}",
-        // 's' → open SQL editor
-        "if(e.key==='s'&&!inInput){",
-        "e.preventDefault();",
-        "htmx.ajax('GET','/api/open-sql-editor',{target:'#content',swap:'innerHTML'});",
-        "}",
-        // 'd' → show DDL
-        "if(e.key==='d'&&!inInput){e.preventDefault();showDdl();}",
-        // 'i' → column detail
-        "if(e.key==='i'&&!inInput){e.preventDefault();showColDetail();}",
-        // 'x' → export picker
-        "if(e.key==='x'&&!inInput){e.preventDefault();openExportPanel();}",
-        // Ctrl+Enter → run SQL
-        "if(e.ctrlKey&&e.key==='Enter'&&ta){e.preventDefault();runSql();}",
-        "});",
-        // ── column detail ──
-        "function showColDetail(){",
-        "if(!_curSchema||!_curTable){alert('Select a table first (click one in the nav tree).');return;}",
-        "htmx.ajax('GET','/api/col-detail?schema='+encodeURIComponent(_curSchema)+'&table='+encodeURIComponent(_curTable),",
-        "{target:'#content',swap:'innerHTML'});",
-        "}",
-        // ── DDL viewer ──
-        "function showDdl(){",
-        "if(!_curSchema||!_curTable){alert('Select a table first (click one in the nav tree).');return;}",
-        "htmx.ajax('GET','/api/ddl?schema='+encodeURIComponent(_curSchema)+'&table='+encodeURIComponent(_curTable),",
-        "{target:'#content',swap:'innerHTML'});",
-        "}",
-        // ── EXPLAIN viewer ──
-        "function showExplain(){",
-        "var ta=document.querySelector('#content textarea');",
-        "var sql=ta&&ta.value.trim()?ta.value:'SELECT * FROM '+_curSchema+'.'+_curTable+' LIMIT 10';",
-        "if((!_curSchema||!_curTable)&&!ta){alert('Select a table or open the SQL editor first.');return;}",
-        "var schema=_curSchema||'public';",
-        "var table=_curTable||'query';",
-        "var url='/api/explain?schema='+encodeURIComponent(schema)+'&table='+encodeURIComponent(table)+'&sql='+encodeURIComponent(sql);",
-        "htmx.ajax('GET',url,{target:'#content',swap:'innerHTML'});",
-        "}",
-        // ── run SQL via fetch ──
+        // ── run SQL via fetch (200 always; IR embeds errors as Alert nodes) ──
         "function runSql(){",
         "var ta=document.querySelector('#content textarea');",
         "if(!ta)return;",
         "var sql=ta.value;",
         "if(!sql.trim())return;",
-        "var status=document.getElementById('sql-status');",
-        "if(status){status.textContent='Running…';status.className='sql-status';}",
         "fetch('/api/sql',{",
         "method:'POST',",
         "headers:{'Content-Type':'application/json'},",
         "body:JSON.stringify({sql:sql})",
-        "}).then(function(r){",
-        "if(!r.ok)return r.text().then(function(t){throw new Error(t);});",
-        "return r.text();",
-        "}).then(function(html){",
-        "document.getElementById('content').innerHTML=html;",
-        "htmx.process(document.getElementById('content'));",
+        "}).then(function(r){return r.text();}).then(function(html){",
+        "var el=document.getElementById('content');",
+        "if(el){el.outerHTML=html;htmx.process(document.body);}",
         "}).catch(function(err){",
-        "var c=document.getElementById('content');",
-        "c.innerHTML='<p class=\"sql-status err\">Error: '+err.message+'</p>'+",
-        "(ta?'<textarea style=\"width:100%;min-height:8rem;background:#181825;color:#cdd6f4;border:1px solid #45475a;padding:.5rem;font-family:inherit;font-size:.9rem;resize:vertical\">'+ta.value+'</textarea>':'');",
+        "var el=document.getElementById('content');",
+        "if(el)el.innerHTML='<p class=\"sql-status err\">Network error: '+err.message+'</p>';",
         "});",
         "}",
-        // ── side panel helpers ──
-        "function closeSidePanel(){",
-        "var p=document.getElementById('side-panel');",
-        "if(p)p.remove();",
-        "}",
-        "function openHistoryPanel(){",
-        "closeSidePanel();",
-        "fetch('/api/history').then(function(r){return r.json();}).then(function(entries){",
-        "var rows=entries.map(function(e,i){",
-        "var ts=new Date(e.executed_at).toLocaleTimeString();",
-        "var sql=e.sql.length>60?e.sql.substring(0,60)+'…':e.sql;",
-        "var rowCount=e.row_count!=null?e.row_count:'—';",
-        "var dur=e.duration_ms!=null?(e.duration_ms+'ms'):'—';",
-        "return '<tr><td><button class=\"load-btn\" onclick=\"loadSql('+i+')\">Load</button></td>'",
-        "+'<td title=\"'+escHtml(e.sql)+'\">'+escHtml(sql)+'</td>'",
-        "+'<td>'+rowCount+'</td><td>'+dur+'</td><td>'+ts+'</td></tr>';",
-        "}).join('');",
-        "_historyEntries=entries;",
-        "var html='<div class=\"side-panel\" id=\"side-panel\">'",
-        "+'<div class=\"side-panel-header\"><h3>Query History</h3>'",
-        "+'<button onclick=\"closeSidePanel()\" title=\"Close\">✕</button></div>'",
-        "+'<div class=\"side-panel-body\">'",
-        "+(rows?'<table><thead><tr><th></th><th>SQL</th><th>Rows</th><th>Time</th><th>At</th></tr></thead><tbody>'+rows+'</tbody></table>'",
-        ":'<p style=\"color:#a6adc8;padding:.5rem\">No history yet.</p>')",
-        "+'</div></div>';",
-        "document.body.insertAdjacentHTML('beforeend',html);",
-        "}).catch(function(e){console.error('history load failed',e);});",
-        "}",
-        "var _historyEntries=[];",
-        "function loadSql(idx){",
-        "var e=_historyEntries[idx];",
-        "if(!e)return;",
-        "closeSidePanel();",
-        "htmx.ajax('GET','/api/open-sql-editor',{target:'#content',swap:'innerHTML'}).then(function(){",
-        "var ta=document.querySelector('#content textarea');",
-        "if(ta){ta.value=e.sql;ta.focus();}",
-        "});",
-        "}",
-        "function openSavedPanel(){",
-        "closeSidePanel();",
-        "fetch('/api/saved').then(function(r){return r.json();}).then(function(entries){",
-        "_savedEntries=entries;",
-        "var rows=entries.map(function(e,i){",
-        "var sql=e.sql.length>50?e.sql.substring(0,50)+'…':e.sql;",
-        "return '<tr>'",
-        "+'<td><strong>'+escHtml(e.name)+'</strong></td>'",
-        "+'<td title=\"'+escHtml(e.sql)+'\">'+escHtml(sql)+'</td>'",
-        "+'<td><button class=\"load-btn\" onclick=\"loadSavedSql('+i+')\">Load</button></td>'",
-        "+'<td><button class=\"del-btn\" onclick=\"deleteSaved('+i+')\">Del</button></td>'",
-        "+'</tr>';",
-        "}).join('');",
-        "var html='<div class=\"side-panel\" id=\"side-panel\">'",
-        "+'<div class=\"side-panel-header\"><h3>Saved Queries</h3>'",
-        "+'<button onclick=\"closeSidePanel()\" title=\"Close\">✕</button></div>'",
-        "+'<div class=\"side-panel-body\">'",
-        "+(rows?'<table><thead><tr><th>Name</th><th>SQL</th><th></th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'",
-        ":'<p style=\"color:#a6adc8;padding:.5rem\">No saved queries.</p>')",
-        "+'</div></div>';",
-        "document.body.insertAdjacentHTML('beforeend',html);",
-        "}).catch(function(e){console.error('saved load failed',e);});",
-        "}",
-        "var _savedEntries=[];",
-        "function loadSavedSql(idx){",
-        "var e=_savedEntries[idx];",
-        "if(!e)return;",
-        "closeSidePanel();",
-        "htmx.ajax('GET','/api/open-sql-editor',{target:'#content',swap:'innerHTML'}).then(function(){",
-        "var ta=document.querySelector('#content textarea');",
-        "if(ta){ta.value=e.sql;ta.focus();}",
-        "});",
-        "}",
-        "function deleteSaved(idx){",
-        "var e=_savedEntries[idx];",
-        "if(!e)return;",
-        "if(!confirm('Delete \"'+e.name+'\"?'))return;",
-        "fetch('/api/saved/'+e.id,{method:'DELETE'})",
-        ".then(function(){closeSidePanel();openSavedPanel();});",
-        "}",
+        // ── save current SQL via native prompt ──
         "function saveCurrentSql(){",
         "var ta=document.querySelector('#content textarea');",
         "if(!ta||!ta.value.trim()){alert('No SQL to save.');return;}",
@@ -823,49 +986,48 @@ fn wrap_page(body: &str) -> String {
         "body:JSON.stringify({name:name,sql:ta.value})})",
         ".then(function(r){if(r.ok)alert('Saved!');else r.text().then(function(t){alert('Error: '+t);});});",
         "}",
-        "function escHtml(s){",
-        "return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')",
-        ".replace(/\"/g,'&quot;');",
-        "}",
-
-        // ── export panel ──
-        "function openExportPanel(){",
-        "closeSidePanel();",
-        "if(!_curSchema||!_curTable){alert('Select a table first.');return;}",
-        "var html='<div class=\"side-panel\" id=\"side-panel\">'",
-        "+'<div class=\"side-panel-header\"><h3>Export Data</h3>'",
-        "+'<button onclick=\"closeSidePanel()\" title=\"Close\">✕</button></div>'",
-        "+'<div class=\"side-panel-body\" style=\"padding:1rem\">'",
-        "+'<p style=\"color:#a6adc8;font-size:.85rem;margin-bottom:.75rem\">'",
-        "+escHtml(_curSchema+'.'+_curTable)+'</p>'",
-        "+'<div style=\"display:flex;gap:.6rem;flex-wrap:wrap\">'",
-        "+'<button class=\"export-btn\" onclick=\"exportData(\\\"Csv\\\")\">CSV</button>'",
-        "+'<button class=\"export-btn\" onclick=\"exportData(\\\"Json\\\")\">JSON</button>'",
-        "+'<button class=\"export-btn\" onclick=\"exportData(\\\"Tsv\\\")\">TSV</button>'",
-        "+'<button class=\"export-btn\" onclick=\"exportData(\\\"Ndjson\\\")\">NDJSON</button>'",
-        "+'</div></div></div>';",
-        "document.body.insertAdjacentHTML('beforeend',html);",
-        "}",
-
-        "function exportData(format){",
-        "fetch('/api/export',{",
-        "method:'POST',",
-        "headers:{'Content-Type':'application/json'},",
-        "body:JSON.stringify({schema:_curSchema,table:_curTable,format:format})",
-        "}).then(function(r){",
-        "if(!r.ok)return r.text().then(function(t){throw new Error(t);});",
-        "var cd=r.headers.get('Content-Disposition')||'';",
-        "var m=cd.match(/filename=\"([^\"]+)\"/);",
-        "var fname=m?m[1]:(_curSchema+'_'+_curTable+'.'+format.toLowerCase());",
-        "return r.blob().then(function(b){return{blob:b,fname:fname};});",
-        "}).then(function(obj){",
-        "var url=URL.createObjectURL(obj.blob);",
-        "var a=document.createElement('a');",
-        "a.href=url;a.download=obj.fname;a.click();",
-        "URL.revokeObjectURL(url);",
-        "closeSidePanel();",
-        "}).catch(function(err){alert('Export failed: '+err.message);});",
-        "}"
+        // ── data-action button dispatcher ──
+        "document.addEventListener('click',function(e){",
+        "var btn=e.target.closest('[data-action]');",
+        "if(!btn)return;",
+        "var action=btn.getAttribute('data-action');",
+        "if(action==='run-sql'){e.preventDefault();runSql();}",
+        "if(action==='save-sql'){e.preventDefault();saveCurrentSql();}",
+        "});",
+        // ── keyboard shortcuts ──
+        "document.addEventListener('keydown',function(e){",
+        "var inp=document.getElementById('nav-filter');",
+        "var ta=document.querySelector('#content textarea');",
+        "var inInput=document.activeElement.tagName==='INPUT'||",
+        "document.activeElement.tagName==='TEXTAREA';",
+        // '/' → focus nav filter
+        "if(e.key==='/'&&!inInput){e.preventDefault();inp&&inp.focus();}",
+        // Esc on nav filter → clear + trigger HTMX nav refresh
+        "if(e.key==='Escape'&&document.activeElement===inp){",
+        "inp.value='';htmx.trigger(inp,'change');inp.blur();}",
+        // 's' → SQL editor panel
+        "if(e.key==='s'&&!inInput){",
+        "e.preventDefault();",
+        "htmx.ajax('GET','/api/open-sql-editor',{target:'#content',swap:'outerHTML'});}",
+        // 'd' → DDL panel
+        "if(e.key==='d'&&!inInput){",
+        "e.preventDefault();",
+        "htmx.ajax('GET','/api/ddl-panel',{target:'#content',swap:'outerHTML'});}",
+        // 'i' → column detail panel
+        "if(e.key==='i'&&!inInput){",
+        "e.preventDefault();",
+        "htmx.ajax('GET','/api/col-detail-panel',{target:'#content',swap:'outerHTML'});}",
+        // 'x' → export panel
+        "if(e.key==='x'&&!inInput){",
+        "e.preventDefault();",
+        "htmx.ajax('GET','/api/export-panel',{target:'#content',swap:'outerHTML'});}",
+        // '?' → help panel
+        "if(e.key==='?'&&!inInput){",
+        "e.preventDefault();",
+        "htmx.ajax('GET','/api/open-help',{target:'#content',swap:'outerHTML'});}",
+        // Ctrl+Enter → run SQL
+        "if(e.ctrlKey&&e.key==='Enter'&&ta){e.preventDefault();runSql();}",
+        "});"
     );
 
     format!(
@@ -876,31 +1038,7 @@ fn wrap_page(body: &str) -> String {
 <script src=\"https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js\"></script>\
 <style>{css}</style>\
 </head><body>\
-<header class=\"toolbar\">\
-<span class=\"title\">▦ Archive</span>\
-<button onclick=\"htmx.ajax('GET','/api/open-sql-editor',{{target:'#content',swap:'innerHTML'}})\" \
- title=\"SQL Editor (s)\">SQL Editor</button>\
-<button onclick=\"showDdl()\" title=\"DDL viewer (d)\">DDL</button>\
-<button onclick=\"showExplain()\" title=\"EXPLAIN plan\">EXPLAIN</button>\
-<button onclick=\"showColDetail()\" title=\"Column detail + stats (i)\">Col Detail</button>\
-<button onclick=\"openHistoryPanel()\" title=\"Query history\">History</button>\
-<button onclick=\"openSavedPanel()\" title=\"Saved queries\">Saved</button>\
-<button onclick=\"saveCurrentSql()\" title=\"Save current SQL\">Save SQL</button>\
-<button onclick=\"openExportPanel()\" title=\"Export data\">Export</button>\
-<button onclick=\"htmx.ajax('POST','/api/refresh',{{target:'#content',swap:'innerHTML'}})\" \
- title=\"Refresh nav tree\">⟳ Refresh</button>\
-</header>\
-<main>\
-<nav class=\"nav-panel\">\
-<div class=\"filter-wrap\">\
-<input id=\"nav-filter\" type=\"search\" placeholder=\"/ filter…\" autocomplete=\"off\" \
- hx-get=\"/api/nav\" hx-trigger=\"keyup changed delay:250ms\" hx-target=\"#nav-tree\" hx-swap=\"innerHTML\" \
- name=\"filter\"/>\
-</div>\
-<div id=\"nav-tree\">{body}</div>\
-</nav>\
-<section class=\"content-panel\"><div id=\"content\"><p style=\"color:#6c7086;padding:1rem;font-size:.9rem\">Select a table in the nav tree, or press <kbd>s</kbd> to open the SQL editor.</p></div></section>\
-</main>\
+{body}\
 <script>{js}</script>\
 </body></html>"
     )

@@ -103,19 +103,35 @@ fn render_node(
 
     let rendered = match node.role() {
         // ── Document-level containers ─────────────────────────────────────────
-        Role::Window | Role::Pane | Role::GenericContainer => {
+        Role::Window => {
+            // Transparent: render children at the same depth without a wrapper.
+            render_children(nodes, children, mode, depth, stats)
+        }
+        Role::Pane | Role::GenericContainer => {
             stats.containers_rendered += 1;
-            let orient = orientation_class(node);
-            wrap_element(
-                "div",
-                orient.as_deref(),
-                node,
-                nodes,
-                children,
-                mode,
-                depth,
-                stats,
-            )
+            let desc_attrs = desc_attrs_str(node);
+            if !desc_attrs.is_empty() {
+                let aria = aria_label_attr(node);
+                let inner = render_children(nodes, children, mode, depth + 1, stats);
+                let pad = indent(depth);
+                if inner.is_empty() {
+                    format!("{pad}<div{desc_attrs}{aria}></div>\n")
+                } else {
+                    format!("{pad}<div{desc_attrs}{aria}>\n{inner}{pad}</div>\n")
+                }
+            } else {
+                let orient = orientation_class(node);
+                wrap_element(
+                    "div",
+                    orient.as_deref(),
+                    node,
+                    nodes,
+                    children,
+                    mode,
+                    depth,
+                    stats,
+                )
+            }
         }
         Role::Document => {
             stats.containers_rendered += 1;
@@ -135,7 +151,15 @@ fn render_node(
         }
         Role::Navigation => {
             stats.containers_rendered += 1;
-            wrap_element("nav", None, node, nodes, children, mode, depth, stats)
+            let desc_attrs = desc_attrs_str(node);
+            let aria = aria_label_attr(node);
+            let inner = render_children(nodes, children, mode, depth + 1, stats);
+            let pad = indent(depth);
+            if inner.is_empty() {
+                format!("{pad}<nav{desc_attrs}{aria}></nav>\n")
+            } else {
+                format!("{pad}<nav{desc_attrs}{aria}>\n{inner}{pad}</nav>\n")
+            }
         }
         Role::Complementary => {
             stats.containers_rendered += 1;
@@ -159,8 +183,18 @@ fn render_node(
         }
         Role::Group => {
             stats.containers_rendered += 1;
-            // Fieldset when a label is present (accessible grouping), else div
-            if node.label().is_some() {
+            let desc_attrs = desc_attrs_str(node);
+            if !desc_attrs.is_empty() {
+                // desc_attrs encoding takes priority: render as <div> with those attrs.
+                let aria = aria_label_attr(node);
+                let inner = render_children(nodes, children, mode, depth + 1, stats);
+                let pad = indent(depth);
+                if inner.is_empty() {
+                    format!("{pad}<div{desc_attrs}{aria}></div>\n")
+                } else {
+                    format!("{pad}<div{desc_attrs}{aria}>\n{inner}{pad}</div>\n")
+                }
+            } else if node.label().is_some() {
                 let label = node.label().unwrap_or("").to_string();
                 let inner = render_children(nodes, children, mode, depth + 1, stats);
                 format!(
@@ -206,7 +240,17 @@ fn render_node(
         // ── Toolbar ───────────────────────────────────────────────────────────
         Role::Toolbar => {
             stats.containers_rendered += 1;
-            wrap_with_role("div", "toolbar", node, nodes, children, mode, depth, stats)
+            let desc_attrs = desc_attrs_str(node);
+            let aria = aria_label_attr(node);
+            let inner = render_children(nodes, children, mode, depth + 1, stats);
+            let pad = indent(depth);
+            if inner.is_empty() {
+                format!("{pad}<header class=\"toolbar\"{desc_attrs}{aria}></header>\n")
+            } else {
+                format!(
+                    "{pad}<header class=\"toolbar\"{desc_attrs}{aria}>\n{inner}{pad}</header>\n"
+                )
+            }
         }
 
         // ── Lists ─────────────────────────────────────────────────────────────
@@ -431,9 +475,11 @@ fn render_node(
             stats.widgets_rendered += 1;
             let text = node_text(node);
             let disabled = if node.is_disabled() { " disabled" } else { "" };
+            let desc_attrs = desc_attrs_str(node);
             format!(
-                "{}<button{}>{}</button>\n",
+                "{}<button{}{}>{}</button>\n",
                 indent(depth),
+                desc_attrs,
                 disabled,
                 text_content(&text, mode)
             )
@@ -529,10 +575,12 @@ fn render_node(
             stats.widgets_rendered += 1;
             let text = node_text(node);
             let href = node.url().unwrap_or("#");
+            let desc_attrs = desc_attrs_str(node);
             format!(
-                r#"{}<a href="{}">{}</a>{}"#,
+                r#"{}<a href="{}"{}>{}</a>{}"#,
                 indent(depth),
                 html_escape(href),
+                desc_attrs,
                 text_content(&text, mode),
                 "\n"
             )
@@ -771,9 +819,10 @@ fn render_node(
         Role::Tree => {
             stats.containers_rendered += 1;
             let label = html_escape(node.label().unwrap_or("tree"));
+            let desc_attrs = desc_attrs_str(node);
             let inner = render_children(nodes, children, mode, depth + 1, stats);
             format!(
-                "{}<ul role=\"tree\" class=\"nav-tree\" aria-label=\"{label}\">\n{}{}</ul>\n",
+                "{}<ul role=\"tree\" class=\"nav-tree\"{desc_attrs} aria-label=\"{label}\">\n{}{}</ul>\n",
                 indent(depth),
                 inner,
                 indent(depth),
@@ -836,7 +885,7 @@ fn render_node(
                             let s = html_escape(s);
                             let t = html_escape(t);
                             format!(
-                                r##" data-meta="{}" hx-get="/api/preview?schema={}&amp;table={}" hx-target="#content" hx-swap="innerHTML""##,
+                                r##" data-meta="{}" hx-get="/api/preview?schema={}&amp;table={}" hx-target="#content" hx-swap="outerHTML""##,
                                 html_escape(desc),
                                 s,
                                 t,
@@ -861,7 +910,19 @@ fn render_node(
         _ => {
             if has_children {
                 stats.containers_rendered += 1;
-                wrap_element("div", None, node, nodes, children, mode, depth, stats)
+                let desc_attrs = desc_attrs_str(node);
+                if !desc_attrs.is_empty() {
+                    let aria = aria_label_attr(node);
+                    let inner = render_children(nodes, children, mode, depth + 1, stats);
+                    let pad = indent(depth);
+                    if inner.is_empty() {
+                        format!("{pad}<div{desc_attrs}{aria}></div>\n")
+                    } else {
+                        format!("{pad}<div{desc_attrs}{aria}>\n{inner}{pad}</div>\n")
+                    }
+                } else {
+                    wrap_element("div", None, node, nodes, children, mode, depth, stats)
+                }
             } else {
                 let text = node_text(node);
                 if text.is_empty() {
@@ -869,9 +930,11 @@ fn render_node(
                     String::new()
                 } else {
                     stats.widgets_rendered += 1;
+                    let desc_attrs = desc_attrs_str(node);
                     format!(
-                        "{}<span>{}</span>\n",
+                        "{}<span{}>{}</span>\n",
                         indent(depth),
+                        desc_attrs,
                         text_content(&text, mode)
                     )
                 }
@@ -1094,13 +1157,15 @@ fn text_input_html(node: &Node, ty: &str, depth: usize, mode: LeptosRenderMode) 
     } else {
         String::new()
     };
+    let desc_attrs = desc_attrs_str(node);
     let _ = mode; // value display is always plain HTML
     format!(
-        "{}<input type=\"{}\" value=\"{}\"{}{}{}{}/>\n",
+        "{}<input type=\"{}\" value=\"{}\"{}{}{}{}{}/>\n",
         indent(depth),
         ty,
         html_escape(value),
         ph,
+        desc_attrs,
         aria,
         disabled,
         readonly,
@@ -1242,6 +1307,53 @@ fn meter_html(node: &Node, depth: usize, _mode: LeptosRenderMode) -> String {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+/// Parses a semicolon-separated `key=val;key=val` encoding from the node's
+/// description and returns a string of HTML attributes ready to splice into a
+/// tag (e.g., `" id=\"nav-tree\" hx-get=\"/api/nav\"`).
+///
+/// Returns an empty string when the description is absent, or when it contains
+/// no `=` character (legacy `schema:S,table:T` tree-item descriptions are left
+/// to the dedicated tree-item handler).
+fn desc_attrs_str(node: &Node) -> String {
+    const ALLOWED: &[&str] = &[
+        "id",
+        "class",
+        "name",
+        "autocomplete",
+        "placeholder",
+        "download",
+        "hx-get",
+        "hx-post",
+        "hx-put",
+        "hx-delete",
+        "hx-patch",
+        "hx-target",
+        "hx-swap",
+        "hx-trigger",
+        "hx-push-url",
+        "hx-indicator",
+        "hx-confirm",
+        "data-action",
+    ];
+    let Some(desc) = node.description() else {
+        return String::new();
+    };
+    if !desc.contains('=') {
+        return String::new();
+    }
+    desc.split(';')
+        .filter_map(|part| {
+            let (k, v) = part.split_once('=')?;
+            let k = k.trim();
+            if ALLOWED.contains(&k) {
+                Some(format!(" {}=\"{}\"", k, html_escape(v)))
+            } else {
+                None
+            }
+        })
+        .collect()
+}
 
 fn indent(depth: usize) -> String {
     "  ".repeat(depth)

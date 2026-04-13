@@ -361,8 +361,8 @@ impl ArchiveEguiApp {
                         text: sql,
                         result: None,
                         running: false,
+                        error: None,
                     };
-                    self.model.toggle_saved_browser();
                 }
             }
             if ctx.input(|i| i.key_pressed(Key::D)) {
@@ -496,9 +496,8 @@ impl ArchiveEguiApp {
                     text: String::new(),
                     result: None,
                     running: false,
+                    error: None,
                 };
-            }
-            if ctx.input(|i| i.key_pressed(Key::F2)) {
                 self.model.toggle_saved_browser();
             }
             if ctx.input(|i| i.key_pressed(Key::X)) && self.model.panel.is_data_grid() {

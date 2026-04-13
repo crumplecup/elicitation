@@ -84,6 +84,8 @@ pub enum PanelMode {
         result: Option<QueryResult>,
         /// Whether a query is running.
         running: bool,
+        /// Last execution error, if any (web frontend only).
+        error: Option<String>,
     },
     /// DDL viewer pane.
     Ddl {
@@ -103,6 +105,25 @@ pub enum PanelMode {
         /// Root node of the parsed plan tree.
         root: ExplainNode,
     },
+    /// Query history browser panel (web frontend).
+    HistoryPanel {
+        /// Cached history entries to display.
+        entries: Vec<QueryHistoryEntry>,
+    },
+    /// Saved queries browser panel (web frontend).
+    SavedPanel {
+        /// Cached saved queries to display.
+        entries: Vec<SavedQuery>,
+    },
+    /// Export format picker panel (web frontend).
+    ExportPanel {
+        /// Schema of the table to export.
+        schema: String,
+        /// Table name to export.
+        table: String,
+    },
+    /// Key bindings / help panel (web frontend).
+    HelpPanel,
 }
 
 impl Default for PanelMode {
@@ -514,6 +535,19 @@ impl ArchiveNavModel {
         self.flat.get(self.cursor).copied()
     }
 
+    /// Return `(schema, table)` for the currently selected table row.
+    ///
+    /// Returns `None` if the cursor is on a schema row or the flat list is empty.
+    pub fn selected_schema_table(&self) -> Option<(String, String)> {
+        match self.selected()? {
+            FlatItem::Table(si, ti) => {
+                let entry = &self.schemas[si].entry;
+                Some((entry.name.clone(), entry.tables[ti].table_name.clone()))
+            }
+            FlatItem::Schema(_) => None,
+        }
+    }
+
     /// If the cursor is on a table row, return an [`InspectTable`] request.
     ///
     /// Call this whenever the cursor moves to a table row to eagerly load
@@ -728,6 +762,7 @@ impl ArchiveNavModel {
                     text: sql,
                     result: None,
                     running: false,
+                    error: None,
                 };
                 true
             }
@@ -861,12 +896,11 @@ impl ArchiveNavModel {
     /// call this before rendering — the token is a compile-time contract that
     /// all frontends share the same AccessKit IR source.
     ///
-    /// The returned tree encodes:
-    /// - The navigation panel (flat tree with cursor, filter, expand state)
-    /// - The current content panel (DataGrid / SqlEditor / DDL / EXPLAIN /
-    ///   ColumnDetail / Loading)
-    /// - Any active overlay (export picker, save prompt, saved browser, help)
-    /// - The standard archive status bar
+    /// The returned tree encodes the full page structure:
+    /// - Toolbar with all action buttons
+    /// - Navigation panel (filter input + flat tree)
+    /// - Content panel (current PanelMode)
+    /// - Status bar
     #[tracing::instrument(skip(self))]
     pub fn to_verified_tree(
         &self,
@@ -882,14 +916,254 @@ impl ArchiveNavModel {
         let mut nodes: HashMap<AkNodeId, AkNode> = HashMap::new();
         let mut counter: u64 = 1; // NodeId(0) reserved for Window
 
-        // ── nav panel ─────────────────────────────────────────────────────────
-        let nav_tree_id = AkNodeId::from(counter);
-        counter += 1;
-        let mut nav_children: Vec<AkNodeId> = Vec::new();
+        // ── toolbar ───────────────────────────────────────────────────────────
+        let toolbar_id = self.build_toolbar_nodes(&mut nodes, &mut counter);
 
+        // ── nav panel ─────────────────────────────────────────────────────────
+        let filter_id = AkNodeId::from(counter);
+        counter += 1;
+        let mut filter_node = AkNode::new(AkRole::SearchInput);
+        filter_node.set_label("nav filter".to_string());
+        filter_node.set_value(self.filter.clone());
+        filter_node.set_description(
+            "id=nav-filter;name=filter;\
+             hx-get=/api/nav;hx-target=#nav-tree;hx-swap=outerHTML;\
+             hx-trigger=keyup changed delay:250ms;autocomplete=off;\
+             placeholder=/ filter..."
+                .to_string(),
+        );
+        nodes.insert(filter_id, filter_node);
+
+        let (nav_tree_id, nav_item_nodes) = self.build_nav_item_nodes(&mut nodes, &mut counter);
+
+        let mut nav_tree_node = AkNode::new(AkRole::Tree);
+        nav_tree_node.set_label(self.db_name.clone());
+        nav_tree_node.set_description("id=nav-tree".to_string());
+        nav_tree_node.set_children(nav_item_nodes);
+        nodes.insert(nav_tree_id, nav_tree_node);
+
+        let nav_id = AkNodeId::from(counter);
+        counter += 1;
+        let mut nav_node = AkNode::new(AkRole::Navigation);
+        nav_node.set_description("class=nav-panel".to_string());
+        nav_node.set_children(vec![filter_id, nav_tree_id]);
+        nodes.insert(nav_id, nav_node);
+
+        // ── content panel ─────────────────────────────────────────────────────
+        let content_id = AkNodeId::from(counter);
+        counter += 1;
+        let content_children = self.build_content_nodes(&mut nodes, &mut counter);
+        let mut content_node = AkNode::new(AkRole::GenericContainer);
+        content_node.set_description("id=content".to_string());
+        content_node.set_children(content_children);
+        nodes.insert(content_id, content_node);
+
+        // ── main split ────────────────────────────────────────────────────────
+        let main_id = AkNodeId::from(counter);
+        let mut main_node = AkNode::new(AkRole::Main);
+        main_node.set_children(vec![nav_id, content_id]);
+        nodes.insert(main_id, main_node);
+
+        // ── status bar ────────────────────────────────────────────────────────
+        let status = StatusBarDescriptor::archive_browse();
+        let (status_root_eid, status_pairs) = status.to_ak_nodes(10_000);
+        for (eid, json) in status_pairs {
+            nodes.insert(eid.0, accesskit::Node::from(json));
+        }
+
+        // ── window root ───────────────────────────────────────────────────────
+        let window_id = AkNodeId::from(0u64);
+        let mut window = AkNode::new(AkRole::Window);
+        let mut window_children = vec![toolbar_id, main_id, status_root_eid.0];
+        // Append overlay dialog (TUI help/export/save/saved-browser overlays).
+        if let Some(overlay_id) = self.build_overlay_node(&mut nodes, &mut counter) {
+            window_children.push(overlay_id);
+        }
+        window.set_children(window_children);
+        nodes.insert(window_id, window);
+
+        let viewport = Viewport::new(800, 600);
+        let tree = VerifiedTree::from_parts(nodes, window_id, viewport);
+        Ok((tree, elicitation::Established::assert()))
+    }
+
+    /// Build the content-only subtree (root = `GenericContainer id=content`).
+    ///
+    /// Used by browser API endpoints that return only the content panel fragment.
+    #[tracing::instrument(skip(self))]
+    pub fn to_content_tree(
+        &self,
+    ) -> crate::archive::ArchiveResult<(
+        elicit_ui::VerifiedTree,
+        elicitation::Established<elicit_ui::IrSourced>,
+    )> {
+        use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
+        use elicit_ui::{VerifiedTree, Viewport};
+        use std::collections::HashMap;
+
+        let mut nodes: HashMap<AkNodeId, AkNode> = HashMap::new();
+        let mut counter: u64 = 1;
+        let content_children = self.build_content_nodes(&mut nodes, &mut counter);
+
+        let root_id = AkNodeId::from(0u64);
+        let mut content_node = AkNode::new(AkRole::GenericContainer);
+        content_node.set_description("id=content".to_string());
+        content_node.set_children(content_children);
+        nodes.insert(root_id, content_node);
+
+        let viewport = Viewport::new(800, 600);
+        let tree = VerifiedTree::from_parts(nodes, root_id, viewport);
+        Ok((tree, elicitation::Established::assert()))
+    }
+
+    /// Build the nav-tree-only subtree (root = `Tree id=nav-tree`).
+    ///
+    /// Used by `/api/nav` to return the nav tree items for HTMX outerHTML swap.
+    #[tracing::instrument(skip(self))]
+    pub fn to_nav_tree(
+        &self,
+    ) -> crate::archive::ArchiveResult<(
+        elicit_ui::VerifiedTree,
+        elicitation::Established<elicit_ui::IrSourced>,
+    )> {
+        use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
+        use elicit_ui::{VerifiedTree, Viewport};
+        use std::collections::HashMap;
+
+        let mut nodes: HashMap<AkNodeId, AkNode> = HashMap::new();
+        let mut counter: u64 = 1;
+        let (root_id, nav_item_nodes) = self.build_nav_item_nodes(&mut nodes, &mut counter);
+
+        let mut tree_node = AkNode::new(AkRole::Tree);
+        tree_node.set_label(self.db_name.clone());
+        tree_node.set_description("id=nav-tree".to_string());
+        tree_node.set_children(nav_item_nodes);
+        nodes.insert(root_id, tree_node);
+
+        let viewport = Viewport::new(800, 600);
+        let tree = VerifiedTree::from_parts(nodes, root_id, viewport);
+        Ok((tree, elicitation::Established::assert()))
+    }
+
+    /// Build toolbar AccessKit nodes and return the toolbar root `NodeId`.
+    fn build_toolbar_nodes(
+        &self,
+        nodes: &mut std::collections::HashMap<accesskit::NodeId, accesskit::Node>,
+        counter: &mut u64,
+    ) -> accesskit::NodeId {
+        use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
+
+        let mut alloc = || {
+            let id = AkNodeId::from(*counter);
+            *counter += 1;
+            id
+        };
+
+        let title_id = alloc();
+        let mut title = AkNode::new(AkRole::Label);
+        title.set_label("▦ Archive".to_string());
+        title.set_description("class=title".to_string());
+        nodes.insert(title_id, title);
+
+        let mut btn = |label: &str, desc: &str| {
+            let id = alloc();
+            let mut n = AkNode::new(AkRole::Button);
+            n.set_label(label.to_string());
+            n.set_description(desc.to_string());
+            (id, n)
+        };
+
+        let (sql_btn_id, sql_btn) = btn(
+            "SQL Editor",
+            "hx-get=/api/open-sql-editor;hx-target=#content;hx-swap=outerHTML",
+        );
+        nodes.insert(sql_btn_id, sql_btn);
+
+        let (ddl_btn_id, ddl_btn) = btn(
+            "DDL",
+            "hx-get=/api/ddl-panel;hx-target=#content;hx-swap=outerHTML",
+        );
+        nodes.insert(ddl_btn_id, ddl_btn);
+
+        let (explain_btn_id, explain_btn) = btn(
+            "EXPLAIN",
+            "hx-get=/api/explain-panel;hx-target=#content;hx-swap=outerHTML",
+        );
+        nodes.insert(explain_btn_id, explain_btn);
+
+        let (col_btn_id, col_btn) = btn(
+            "Col Detail",
+            "hx-get=/api/col-detail-panel;hx-target=#content;hx-swap=outerHTML",
+        );
+        nodes.insert(col_btn_id, col_btn);
+
+        let (hist_btn_id, hist_btn) = btn(
+            "History",
+            "hx-get=/api/history-panel;hx-target=#content;hx-swap=outerHTML",
+        );
+        nodes.insert(hist_btn_id, hist_btn);
+
+        let (saved_btn_id, saved_btn) = btn(
+            "Saved",
+            "hx-get=/api/saved-panel;hx-target=#content;hx-swap=outerHTML",
+        );
+        nodes.insert(saved_btn_id, saved_btn);
+
+        let (save_sql_btn_id, save_sql_btn) = btn("Save SQL", "data-action=save-sql");
+        nodes.insert(save_sql_btn_id, save_sql_btn);
+
+        let (export_btn_id, export_btn) = btn(
+            "Export",
+            "hx-get=/api/export-panel;hx-target=#content;hx-swap=outerHTML",
+        );
+        nodes.insert(export_btn_id, export_btn);
+
+        let (refresh_btn_id, refresh_btn) = btn(
+            "⟳ Refresh",
+            "hx-post=/api/refresh;hx-target=#content;hx-swap=outerHTML",
+        );
+        nodes.insert(refresh_btn_id, refresh_btn);
+
+        let (help_btn_id, help_btn) = btn(
+            "?",
+            "hx-get=/api/open-help;hx-target=#content;hx-swap=outerHTML",
+        );
+        nodes.insert(help_btn_id, help_btn);
+
+        let toolbar_id = alloc();
+        let mut toolbar = AkNode::new(AkRole::Toolbar);
+        toolbar.set_children(vec![
+            title_id,
+            sql_btn_id,
+            ddl_btn_id,
+            explain_btn_id,
+            col_btn_id,
+            hist_btn_id,
+            saved_btn_id,
+            save_sql_btn_id,
+            export_btn_id,
+            refresh_btn_id,
+            help_btn_id,
+        ]);
+        nodes.insert(toolbar_id, toolbar);
+        toolbar_id
+    }
+
+    /// Build the flat nav items and return `(tree_node_id, item_ids)`.
+    fn build_nav_item_nodes(
+        &self,
+        nodes: &mut std::collections::HashMap<accesskit::NodeId, accesskit::Node>,
+        counter: &mut u64,
+    ) -> (accesskit::NodeId, Vec<accesskit::NodeId>) {
+        use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
+
+        let tree_id = AkNodeId::from(*counter);
+        *counter += 1;
+
+        let mut nav_children: Vec<AkNodeId> = Vec::new();
         for (idx, item) in self.flat.iter().enumerate() {
-            let item_id = AkNodeId::from(counter);
-            counter += 1;
+            let item_id = AkNodeId::from(*counter);
+            *counter += 1;
             nav_children.push(item_id);
 
             let label = match item {
@@ -911,8 +1185,7 @@ impl ArchiveNavModel {
                 }
             };
 
-            // Machine-readable metadata carried in description for browser frontends.
-            // Format: "schema:NAME" for schema rows, "schema:S,table:T" for table rows.
+            // Machine-readable metadata in description for browser frontends.
             let meta = match item {
                 FlatItem::Schema(si) => {
                     format!("schema:{}", self.schemas[*si].entry.name)
@@ -933,63 +1206,7 @@ impl ArchiveNavModel {
             nodes.insert(item_id, tree_item);
         }
 
-        // Filter bar as a TextInput child when active
-        if self.filter_active || !self.filter.is_empty() {
-            let filter_id = AkNodeId::from(counter);
-            counter += 1;
-            nav_children.push(filter_id);
-            let mut filter_node = AkNode::new(AkRole::TextInput);
-            filter_node.set_label(format!("Filter: {}", self.filter));
-            filter_node.set_value(self.filter.clone());
-            nodes.insert(filter_id, filter_node);
-        }
-
-        let mut nav_node = AkNode::new(AkRole::Tree);
-        nav_node.set_label(format!("{} navigator", self.db_name));
-        nav_node.set_children(nav_children);
-        nodes.insert(nav_tree_id, nav_node);
-
-        // ── content panel ─────────────────────────────────────────────────────
-        let content_id = AkNodeId::from(counter);
-        counter += 1;
-        let content_children = self.build_content_nodes(&mut nodes, &mut counter);
-
-        let mut content_node = AkNode::new(AkRole::Group);
-        content_node.set_label("content panel".to_string());
-        content_node.set_children(content_children);
-        nodes.insert(content_id, content_node);
-
-        // ── split-panel group ─────────────────────────────────────────────────
-        let split_id = AkNodeId::from(counter);
-        counter += 1;
-        let mut split_node = AkNode::new(AkRole::Group);
-        split_node.set_label(format!("{} — {}", self.db_name, self.backend_label));
-        split_node.set_children(vec![nav_tree_id, content_id]);
-        nodes.insert(split_id, split_node);
-
-        // ── active overlay (at most one) ──────────────────────────────────────
-        let mut window_children = vec![split_id];
-        if let Some(overlay_id) = self.build_overlay_node(&mut nodes, &mut counter) {
-            window_children.push(overlay_id);
-        }
-
-        // ── status bar ────────────────────────────────────────────────────────
-        let status = StatusBarDescriptor::archive_browse();
-        let (status_root_eid, status_pairs) = status.to_ak_nodes(10_000);
-        for (eid, json) in status_pairs {
-            nodes.insert(eid.0, accesskit::Node::from(json));
-        }
-        window_children.push(status_root_eid.0);
-
-        // ── window root ───────────────────────────────────────────────────────
-        let window_id = AkNodeId::from(0u64);
-        let mut window = AkNode::new(AkRole::Window);
-        window.set_children(window_children);
-        nodes.insert(window_id, window);
-
-        let viewport = Viewport::new(800, 600);
-        let tree = VerifiedTree::from_parts(nodes, window_id, viewport);
-        Ok((tree, elicitation::Established::assert()))
+        (tree_id, nav_children)
     }
 
     /// Build AccessKit nodes for the current content panel.  Returns the list
@@ -1127,7 +1344,17 @@ impl ArchiveNavModel {
                 text,
                 result,
                 running,
+                error,
             } => {
+                // Show error banner if present
+                if let Some(err_msg) = error {
+                    let err_id = alloc();
+                    let mut err = AkNode::new(AkRole::Alert);
+                    err.set_label(err_msg.clone());
+                    nodes.insert(err_id, err);
+                    children.push(err_id);
+                }
+
                 let editor_id = alloc();
                 let mut editor = AkNode::new(AkRole::MultilineTextInput);
                 editor.set_label("SQL editor".to_string());
@@ -1217,6 +1444,131 @@ impl ArchiveNavModel {
                 plan_tree.set_children(vec![plan_id]);
                 nodes.insert(plan_root_id, plan_tree);
                 children.push(plan_root_id);
+            }
+
+            PanelMode::HistoryPanel { entries } => {
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label("Query History".to_string());
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                let list_id = alloc();
+                let mut list_children: Vec<AkNodeId> = Vec::new();
+                for (i, entry) in entries.iter().enumerate() {
+                    let item_id = alloc();
+                    let mut item = AkNode::new(AkRole::ListItem);
+                    let short = entry.sql.lines().next().unwrap_or("").trim();
+                    item.set_label(format!("{i}. {short}"));
+                    item.set_description(format!(
+                        "hx-get=/api/load-history?idx={i};hx-target=#content;hx-swap=outerHTML"
+                    ));
+                    nodes.insert(item_id, item);
+                    list_children.push(item_id);
+                }
+                let mut list = AkNode::new(AkRole::List);
+                list.set_label("history".to_string());
+                list.set_children(list_children);
+                nodes.insert(list_id, list);
+                children.push(list_id);
+            }
+
+            PanelMode::SavedPanel { entries } => {
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label("Saved Queries".to_string());
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                let list_id = alloc();
+                let mut list_children: Vec<AkNodeId> = Vec::new();
+                for sq in entries.iter() {
+                    let row_id = alloc();
+                    let mut row = AkNode::new(AkRole::Group);
+                    row.set_label(sq.name.clone());
+
+                    let load_id = alloc();
+                    let mut load_btn = AkNode::new(AkRole::Button);
+                    load_btn.set_label(sq.name.clone());
+                    load_btn.set_description(format!(
+                        "hx-get=/api/load-saved?id={};hx-target=#content;hx-swap=outerHTML",
+                        sq.id
+                    ));
+                    nodes.insert(load_id, load_btn);
+
+                    let del_id = alloc();
+                    let mut del_btn = AkNode::new(AkRole::Button);
+                    del_btn.set_label("delete".to_string());
+                    del_btn.set_description(format!(
+                        "hx-delete=/api/saved/{};hx-target=#content;hx-swap=outerHTML",
+                        sq.id
+                    ));
+                    nodes.insert(del_id, del_btn);
+
+                    row.set_children(vec![load_id, del_id]);
+                    nodes.insert(row_id, row);
+                    list_children.push(row_id);
+                }
+                let mut list = AkNode::new(AkRole::List);
+                list.set_label("saved queries".to_string());
+                list.set_children(list_children);
+                nodes.insert(list_id, list);
+                children.push(list_id);
+            }
+
+            PanelMode::ExportPanel { schema, table } => {
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label(format!("Export: {schema}.{table}"));
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                let list_id = alloc();
+                let formats = [
+                    ("CSV", "csv"),
+                    ("JSON", "json"),
+                    ("TSV", "tsv"),
+                    ("SQL", "sql"),
+                ];
+                let mut list_items: Vec<AkNodeId> = Vec::new();
+                for (label, fmt) in formats {
+                    let btn_id = alloc();
+                    let mut btn = AkNode::new(AkRole::Button);
+                    btn.set_label(label.to_string());
+                    btn.set_description(format!(
+                        "hx-get=/api/export?schema={schema}&table={table}&format={fmt}"
+                    ));
+                    nodes.insert(btn_id, btn);
+                    list_items.push(btn_id);
+                }
+                let mut list = AkNode::new(AkRole::List);
+                list.set_label("export formats".to_string());
+                list.set_children(list_items);
+                nodes.insert(list_id, list);
+                children.push(list_id);
+            }
+
+            PanelMode::HelpPanel => {
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label("Key Bindings".to_string());
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                let list_id = alloc();
+                let mut list_items: Vec<AkNodeId> = Vec::new();
+                for kb in Self::bindings() {
+                    let item_id = alloc();
+                    let mut item = AkNode::new(AkRole::ListItem);
+                    item.set_label(format!("{} — {}", kb.key, kb.action));
+                    nodes.insert(item_id, item);
+                    list_items.push(item_id);
+                }
+                let mut list = AkNode::new(AkRole::List);
+                list.set_label("bindings".to_string());
+                list.set_children(list_items);
+                nodes.insert(list_id, list);
+                children.push(list_id);
             }
         }
 
