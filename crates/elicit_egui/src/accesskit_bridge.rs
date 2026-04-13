@@ -31,7 +31,8 @@ impl UiRenderer for EguiBackend<'_> {
     fn render(&self, tree: &VerifiedTree) -> UiResult<(RenderStats, Established<RenderComplete>)> {
         let mut stats = RenderStats::default();
         let _output = self.ctx.run_ui(egui::RawInput::default(), |ui| {
-            stats = render_tree_inner(ui, tree.nodes(), tree.root());
+            let (s, _clicked) = render_tree_inner(ui, tree.nodes(), tree.root());
+            stats = s;
         });
         Ok((stats, Established::assert()))
     }
@@ -39,7 +40,8 @@ impl UiRenderer for EguiBackend<'_> {
     fn render_partial(&self, _node_id: WidgetId, tree: &VerifiedTree) -> UiResult<RenderStats> {
         let mut stats = RenderStats::default();
         let _output = self.ctx.run_ui(egui::RawInput::default(), |ui| {
-            stats = render_tree_inner(ui, tree.nodes(), tree.root());
+            let (s, _clicked) = render_tree_inner(ui, tree.nodes(), tree.root());
+            stats = s;
         });
         Ok(stats)
     }
@@ -59,9 +61,13 @@ impl UiRenderer for EguiBackend<'_> {
 /// for each node based on its role. Container nodes create nested
 /// layouts; leaf nodes create widgets.
 ///
-/// Returns [`RenderStats`] summarizing what was rendered.
+/// Returns [`RenderStats`] and the [`NodeId`]s of any buttons clicked this frame.
 #[tracing::instrument(skip(ui, nodes), fields(root = ?root))]
-pub fn render_tree(ui: &mut egui::Ui, nodes: &HashMap<NodeId, Node>, root: NodeId) -> RenderStats {
+pub fn render_tree(
+    ui: &mut egui::Ui,
+    nodes: &HashMap<NodeId, Node>,
+    root: NodeId,
+) -> (RenderStats, Vec<NodeId>) {
     render_tree_inner(ui, nodes, root)
 }
 
@@ -69,9 +75,10 @@ fn render_tree_inner(
     ui: &mut egui::Ui,
     nodes: &HashMap<NodeId, Node>,
     root: NodeId,
-) -> RenderStats {
+) -> (RenderStats, Vec<NodeId>) {
     let mut stats = RenderStats::default();
-    render_node_recursive(ui, nodes, root, &mut stats);
+    let mut clicked: Vec<NodeId> = Vec::new();
+    render_node_recursive(ui, nodes, root, &mut stats, &mut clicked);
     tracing::debug!(
         visited = stats.nodes_visited,
         widgets = stats.widgets_rendered,
@@ -79,7 +86,7 @@ fn render_tree_inner(
         skipped = stats.nodes_skipped,
         "Render pass complete"
     );
-    stats
+    (stats, clicked)
 }
 
 /// Compute minimum desired size from AccessKit bounds.
@@ -99,6 +106,7 @@ fn render_node_recursive(
     nodes: &HashMap<NodeId, Node>,
     node_id: NodeId,
     stats: &mut RenderStats,
+    clicked: &mut Vec<NodeId>,
 ) {
     let Some(node) = nodes.get(&node_id) else {
         stats.nodes_skipped += 1;
@@ -123,12 +131,12 @@ fn render_node_recursive(
         | Role::Main
         | Role::GenericContainer
         | Role::Document => {
-            render_container(ui, nodes, node, stats);
+            render_container(ui, nodes, node, stats, clicked);
         }
 
         // ── Interactive widgets ─────────────────────────────
         Role::Button | Role::DefaultButton => {
-            render_button(ui, node);
+            render_button(ui, node_id, node, clicked);
             stats.widgets_rendered += 1;
         }
         Role::CheckBox | Role::MenuItemCheckBox => {
@@ -212,16 +220,16 @@ fn render_node_recursive(
 
         // ── Structural containers that recurse ──────────────
         Role::Toolbar => {
-            render_toolbar(ui, nodes, node, stats);
+            render_toolbar(ui, nodes, node, stats, clicked);
         }
         Role::List | Role::ListBox | Role::Feed | Role::DescriptionList => {
-            render_list(ui, nodes, node, stats);
+            render_list(ui, nodes, node, stats, clicked);
         }
         Role::Table | Role::Grid | Role::TreeGrid | Role::ListGrid => {
-            render_table(ui, nodes, node, stats);
+            render_table(ui, nodes, node, stats, clicked);
         }
         Role::TabList => {
-            render_tab_list(ui, nodes, node, stats);
+            render_tab_list(ui, nodes, node, stats, clicked);
         }
         Role::Tab
         | Role::TabPanel
@@ -235,17 +243,17 @@ fn render_node_recursive(
         | Role::ListBoxOption
         | Role::MenuItem
         | Role::MenuListOption => {
-            render_container(ui, nodes, node, stats);
+            render_container(ui, nodes, node, stats, clicked);
         }
         // TreeItem: leaf node with label; highlight selected row.
         Role::TreeItem => {
-            render_tree_item(ui, nodes, node, stats);
+            render_tree_item(ui, nodes, node, stats, clicked);
         }
         Role::Dialog | Role::AlertDialog => {
-            render_container(ui, nodes, node, stats);
+            render_container(ui, nodes, node, stats, clicked);
         }
         Role::Menu | Role::MenuBar | Role::MenuListPopup => {
-            render_container(ui, nodes, node, stats);
+            render_container(ui, nodes, node, stats, clicked);
         }
         Role::Navigation
         | Role::Banner
@@ -257,10 +265,10 @@ fn render_node_recursive(
         | Role::SectionFooter
         | Role::Search
         | Role::Article => {
-            render_container(ui, nodes, node, stats);
+            render_container(ui, nodes, node, stats, clicked);
         }
         Role::ScrollView | Role::ScrollBar => {
-            render_container(ui, nodes, node, stats);
+            render_container(ui, nodes, node, stats, clicked);
         }
 
         // ── Separators / breaks ─────────────────────────────
@@ -278,7 +286,7 @@ fn render_node_recursive(
             if node.children().is_empty() {
                 stats.nodes_skipped += 1;
             } else {
-                render_container(ui, nodes, node, stats);
+                render_container(ui, nodes, node, stats, clicked);
             }
         }
     }
@@ -291,6 +299,7 @@ fn render_container(
     nodes: &HashMap<NodeId, Node>,
     node: &Node,
     stats: &mut RenderStats,
+    clicked: &mut Vec<NodeId>,
 ) {
     stats.containers_rendered += 1;
     let children = node.children();
@@ -300,7 +309,7 @@ fn render_container(
 
     ui.group(|ui| {
         for child_id in children {
-            render_node_recursive(ui, nodes, *child_id, stats);
+            render_node_recursive(ui, nodes, *child_id, stats, clicked);
         }
     });
 }
@@ -310,11 +319,12 @@ fn render_toolbar(
     nodes: &HashMap<NodeId, Node>,
     node: &Node,
     stats: &mut RenderStats,
+    clicked: &mut Vec<NodeId>,
 ) {
     stats.containers_rendered += 1;
     ui.horizontal(|ui| {
         for child_id in node.children() {
-            render_node_recursive(ui, nodes, *child_id, stats);
+            render_node_recursive(ui, nodes, *child_id, stats, clicked);
         }
     });
 }
@@ -324,11 +334,12 @@ fn render_list(
     nodes: &HashMap<NodeId, Node>,
     node: &Node,
     stats: &mut RenderStats,
+    clicked: &mut Vec<NodeId>,
 ) {
     stats.containers_rendered += 1;
     ui.vertical(|ui| {
         for child_id in node.children() {
-            render_node_recursive(ui, nodes, *child_id, stats);
+            render_node_recursive(ui, nodes, *child_id, stats, clicked);
         }
     });
 }
@@ -338,13 +349,14 @@ fn render_table(
     nodes: &HashMap<NodeId, Node>,
     node: &Node,
     stats: &mut RenderStats,
+    clicked: &mut Vec<NodeId>,
 ) {
     stats.containers_rendered += 1;
     egui::Grid::new(format!("grid_{:?}", node.role()))
         .striped(true)
         .show(ui, |ui| {
             for child_id in node.children() {
-                render_node_recursive(ui, nodes, *child_id, stats);
+                render_node_recursive(ui, nodes, *child_id, stats, clicked);
             }
         });
 }
@@ -354,11 +366,12 @@ fn render_tab_list(
     nodes: &HashMap<NodeId, Node>,
     node: &Node,
     stats: &mut RenderStats,
+    clicked: &mut Vec<NodeId>,
 ) {
     stats.containers_rendered += 1;
     ui.horizontal(|ui| {
         for child_id in node.children() {
-            render_node_recursive(ui, nodes, *child_id, stats);
+            render_node_recursive(ui, nodes, *child_id, stats, clicked);
         }
     });
 }
@@ -369,13 +382,15 @@ fn node_label(node: &Node) -> String {
     node.label().or(node.value()).unwrap_or("").to_string()
 }
 
-fn render_button(ui: &mut egui::Ui, node: &Node) {
+fn render_button(ui: &mut egui::Ui, node_id: NodeId, node: &Node, clicked: &mut Vec<NodeId>) {
     let text = node_label(node);
     let mut btn = egui::Button::new(&text);
     if node.is_disabled() {
         btn = btn.sense(egui::Sense::hover());
     }
-    ui.add(btn);
+    if ui.add(btn).clicked() {
+        clicked.push(node_id);
+    }
 }
 
 /// Render a tree item leaf.  If the node has children it falls through to
@@ -386,9 +401,10 @@ fn render_tree_item(
     nodes: &std::collections::HashMap<NodeId, Node>,
     node: &Node,
     stats: &mut RenderStats,
+    clicked: &mut Vec<NodeId>,
 ) {
     if !node.children().is_empty() {
-        render_container(ui, nodes, node, stats);
+        render_container(ui, nodes, node, stats, clicked);
         return;
     }
     let text = node_label(node);

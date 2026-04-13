@@ -53,7 +53,7 @@ use tracing::instrument;
 use crate::archive::{
     ArchiveDbBackend, ArchiveResult,
     errors::{ArchiveError, ArchiveErrorKind},
-    nav_model::{ArchiveNavModel, PanelMode},
+    nav_model::{ArchiveNavModel, FetchRequest, PanelMode},
     nav_tree::{NavTree, build_nav_tree},
     plugins::{
         export::export_query_result,
@@ -185,7 +185,73 @@ async fn api_nav(State(state): State<AppState>, Query(p): Query<NavParams>) -> H
     }
 }
 
-// ── Query param structs ───────────────────────────────────────────────────────
+// ── GET /api/nav-up ───────────────────────────────────────────────────────────
+
+async fn api_nav_up(State(state): State<AppState>) -> Html<String> {
+    {
+        let mut model = state.model.lock().await;
+        model.move_up();
+    }
+    match nav_items_html(&state) {
+        Ok(html) => Html(html),
+        Err(e) => Html(format!(
+            "<ul role=\"tree\" id=\"nav-tree\"><li>{e}</li></ul>"
+        )),
+    }
+}
+
+// ── GET /api/nav-down ─────────────────────────────────────────────────────────
+
+async fn api_nav_down(State(state): State<AppState>) -> Html<String> {
+    {
+        let mut model = state.model.lock().await;
+        model.move_down();
+    }
+    match nav_items_html(&state) {
+        Ok(html) => Html(html),
+        Err(e) => Html(format!(
+            "<ul role=\"tree\" id=\"nav-tree\"><li>{e}</li></ul>"
+        )),
+    }
+}
+
+// ── GET /api/nav-enter ────────────────────────────────────────────────────────
+
+async fn api_nav_enter(State(state): State<AppState>) -> Html<String> {
+    let fetch_req = {
+        let mut model = state.model.lock().await;
+        model.toggle_expand()
+    };
+    match fetch_req {
+        None => {
+            // Schema toggle: only nav tree changed.
+            match nav_items_html(&state) {
+                Ok(html) => Html(html),
+                Err(e) => Html(format!(
+                    "<ul role=\"tree\" id=\"nav-tree\"><li>{e}</li></ul>"
+                )),
+            }
+        }
+        Some(FetchRequest::PreviewTable { schema, table }) => {
+            // Table selected: return updated nav tree plus an OOB content update.
+            let nav_html = nav_items_html(&state)
+                .unwrap_or_else(|e| format!("<ul role=\"tree\" id=\"nav-tree\"><li>{e}</li></ul>"));
+            // HTMX out-of-band swap for the content panel.
+            let content_oob = format!(
+                "<div id=\"content\" hx-swap-oob=\"outerHTML\" \
+                 hx-get=\"/api/preview?schema={schema}&table={table}\" \
+                 hx-trigger=\"load\">Loading {schema}.{table}…</div>"
+            );
+            Html(format!("{nav_html}{content_oob}"))
+        }
+        Some(_) => match nav_items_html(&state) {
+            Ok(html) => Html(html),
+            Err(e) => Html(format!(
+                "<ul role=\"tree\" id=\"nav-tree\"><li>{e}</li></ul>"
+            )),
+        },
+    }
+}
 
 #[derive(Debug, Deserialize)]
 struct SchemaTable {
@@ -862,6 +928,9 @@ fn build_router(state: AppState) -> Router {
     Router::new()
         .route("/", get(serve_page))
         .route("/api/nav", get(api_nav))
+        .route("/api/nav-up", get(api_nav_up))
+        .route("/api/nav-down", get(api_nav_down))
+        .route("/api/nav-enter", get(api_nav_enter))
         .route("/api/preview", get(api_preview))
         .route("/api/sql", post(api_sql))
         .route("/api/inspect", get(api_inspect))
@@ -1000,6 +1069,18 @@ fn wrap_page(body: &str) -> String {
         "var ta=document.querySelector('#content textarea');",
         "var inInput=document.activeElement.tagName==='INPUT'||",
         "document.activeElement.tagName==='TEXTAREA';",
+        // ArrowUp → move cursor up in nav tree
+        "if(e.key==='ArrowUp'&&!inInput){",
+        "e.preventDefault();",
+        "htmx.ajax('GET','/api/nav-up',{target:'#nav-tree',swap:'outerHTML'});}",
+        // ArrowDown → move cursor down in nav tree
+        "if(e.key==='ArrowDown'&&!inInput){",
+        "e.preventDefault();",
+        "htmx.ajax('GET','/api/nav-down',{target:'#nav-tree',swap:'outerHTML'});}",
+        // Enter → expand schema / select table
+        "if(e.key==='Enter'&&!inInput){",
+        "e.preventDefault();",
+        "htmx.ajax('GET','/api/nav-enter',{target:'#nav-tree',swap:'outerHTML'});}",
         // '/' → focus nav filter
         "if(e.key==='/'&&!inInput){e.preventDefault();inp&&inp.focus();}",
         // Esc on nav filter → clear + trigger HTMX nav refresh

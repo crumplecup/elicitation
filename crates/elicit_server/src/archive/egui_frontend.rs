@@ -511,22 +511,86 @@ impl ArchiveEguiApp {
         // ── IR pipeline: verified tree → egui bridge ─────────────────────────
         match self.model.to_verified_tree() {
             Ok((tree, ir_proof)) => {
-                render_egui_from_ir(ui, &tree, ir_proof);
+                let clicked = render_egui_from_ir(ui, &tree, ir_proof);
+                for node_id in clicked {
+                    if let Some(node) = tree.nodes().get(&node_id) {
+                        self.dispatch_toolbar_click(node);
+                    }
+                }
             }
             Err(e) => {
                 ui.label(format!("IR error: {e}"));
             }
         }
     }
+
+    /// Dispatch a toolbar button click to the appropriate model action.
+    fn dispatch_toolbar_click(&mut self, node: &accesskit::Node) {
+        use crate::archive::nav_model::PanelMode;
+        let label = node.label().unwrap_or("").to_string();
+        match label.as_str() {
+            "SQL Editor" => {
+                let text = if let PanelMode::SqlEditor { text, .. } = &self.model.panel {
+                    text.clone()
+                } else {
+                    String::new()
+                };
+                self.model.panel = PanelMode::SqlEditor {
+                    text,
+                    result: None,
+                    running: false,
+                    error: None,
+                };
+            }
+            "DDL" => {
+                if let Some(req) = self.model.ddl_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            "EXPLAIN" => {
+                if let Some(req) = self.model.explain_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            "Col Detail" => {
+                self.model.panel = PanelMode::ColumnDetail;
+            }
+            "History" => {
+                self.model.panel = PanelMode::HistoryPanel {
+                    entries: self.model.history_cache.clone(),
+                };
+            }
+            "Saved" => {
+                self.model.toggle_saved_browser();
+            }
+            "Save SQL" => {
+                self.model.open_save_prompt();
+            }
+            "Export" => {
+                self.model.toggle_export_picker();
+            }
+            "⟳ Refresh" => {
+                let req = self.model.request_refresh();
+                let _ = self.req_tx.try_send(req);
+            }
+            "?" => {
+                self.model.toggle_help();
+            }
+            _ => {}
+        }
+    }
 }
 
 /// Gate function: proof token ensures the tree was minted by [`ArchiveNavModel::to_verified_tree`].
+///
+/// Returns the [`accesskit::NodeId`]s of any toolbar buttons clicked this frame.
 fn render_egui_from_ir(
     ui: &mut egui::Ui,
     tree: &elicit_ui::VerifiedTree,
     _proof: elicitation::Established<elicit_ui::IrSourced>,
-) {
-    elicit_egui::render_tree(ui, tree.nodes(), tree.root());
+) -> Vec<accesskit::NodeId> {
+    let (_stats, clicked) = elicit_egui::render_tree(ui, tree.nodes(), tree.root());
+    clicked
 }
 
 // ── winit ApplicationHandler ──────────────────────────────────────────────────

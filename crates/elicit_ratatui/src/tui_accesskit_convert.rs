@@ -338,7 +338,7 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
             wrap: true,
             scroll: None,
             alignment: None,
-            block: block_from_label(&label),
+            block: None,
         },
         Role::Heading | Role::Strong | Role::Emphasis | Role::Code | Role::Mark => {
             WidgetJson::Paragraph {
@@ -347,7 +347,7 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
                 wrap: true,
                 scroll: None,
                 alignment: None,
-                block: block_from_label(&label),
+                block: None,
             }
         }
         Role::List | Role::ListBox | Role::Feed | Role::DescriptionList => {
@@ -437,14 +437,14 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
             track_style: None,
             state: None,
         },
-        // Fallback: Paragraph with text
+        // Fallback: Paragraph with text (label IS the content, so no block title)
         _ => WidgetJson::Paragraph {
             text: text_str.into(),
             style: None,
             wrap: true,
             scroll: None,
             alignment: None,
-            block: block_from_label(&label),
+            block: None,
         },
     }
 }
