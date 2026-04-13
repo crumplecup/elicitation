@@ -498,6 +498,30 @@ async fn api_open_sql_editor(State(state): State<AppState>) -> Html<String> {
     }
 }
 
+// ── GET /api/col-detail ───────────────────────────────────────────────────────
+
+async fn api_col_detail(
+    State(state): State<AppState>,
+    Query(p): Query<SchemaTable>,
+) -> ApiResult<Html<String>> {
+    let url = state.db_url.clone().ok_or_else(ApiError::no_db)?;
+    // Fetch inspection and column stats concurrently.
+    let (inspect_res, stats_res) = tokio::join!(
+        inspect_table_direct(&url, &p.schema, &p.table),
+        get_column_stats_direct(&url, &p.schema, &p.table),
+    );
+    let inspection = inspect_res.map_err(ApiError::internal)?;
+    let stats = stats_res.map_err(ApiError::internal)?;
+    {
+        let mut model = state.model.lock().await;
+        model.store_inspection(p.schema.clone(), p.table.clone(), inspection);
+        model.store_column_stats(p.schema.clone(), p.table.clone(), stats);
+        model.select_table(&p.schema, &p.table);
+        model.panel = PanelMode::ColumnDetail;
+    }
+    Ok(Html(body_html(&state).map_err(ApiError::internal)?))
+}
+
 // ── POST /api/refresh ─────────────────────────────────────────────────────────
 
 async fn api_refresh(State(state): State<AppState>) -> ApiResult<Html<String>> {
@@ -536,6 +560,7 @@ fn build_router(state: AppState) -> Router {
         .route("/api/export", post(api_export))
         .route("/api/refresh", post(api_refresh))
         .route("/api/open-sql-editor", get(api_open_sql_editor))
+        .route("/api/col-detail", get(api_col_detail))
         .with_state(state)
 }
 
@@ -653,9 +678,17 @@ fn wrap_page(body: &str) -> String {
         "}",
         // 'd' → show DDL
         "if(e.key==='d'&&!inInput){e.preventDefault();showDdl();}",
+        // 'i' → column detail
+        "if(e.key==='i'&&!inInput){e.preventDefault();showColDetail();}",
         // Ctrl+Enter → run SQL
         "if(e.ctrlKey&&e.key==='Enter'&&ta){e.preventDefault();runSql();}",
         "});",
+        // ── column detail ──
+        "function showColDetail(){",
+        "if(!_curSchema||!_curTable){alert('Select a table first (click one in the nav tree).');return;}",
+        "htmx.ajax('GET','/api/col-detail?schema='+encodeURIComponent(_curSchema)+'&table='+encodeURIComponent(_curTable),",
+        "{target:'#content',swap:'innerHTML'});",
+        "}",
         // ── DDL viewer ──
         "function showDdl(){",
         "if(!_curSchema||!_curTable){alert('Select a table first (click one in the nav tree).');return;}",
@@ -804,6 +837,7 @@ fn wrap_page(body: &str) -> String {
  title=\"SQL Editor (s)\">SQL Editor</button>\
 <button onclick=\"showDdl()\" title=\"DDL viewer (d)\">DDL</button>\
 <button onclick=\"showExplain()\" title=\"EXPLAIN plan\">EXPLAIN</button>\
+<button onclick=\"showColDetail()\" title=\"Column detail + stats (i)\">Col Detail</button>\
 <button onclick=\"openHistoryPanel()\" title=\"Query history\">History</button>\
 <button onclick=\"openSavedPanel()\" title=\"Saved queries\">Saved</button>\
 <button onclick=\"saveCurrentSql()\" title=\"Save current SQL\">Save SQL</button>\
