@@ -5,8 +5,11 @@
 `archive` is a verified command-line tool for exploring and querying databases.
 It ships three parallel display frontends — a crossterm terminal UI, a
 Leptos/Axum browser UI, and a native egui window — all driven by the same
-`ArchiveNavModel` flat-list navigation model and the same `StatusBarDescriptor`
-keybinding definitions from the AccessKit IR layer.
+`ArchiveNavModel` and rendered through the AccessKit IR pipeline.
+
+Every HTML response and every TUI/egui frame is gated by an
+`Established<IrSourced>` proof token minted by `ArchiveNavModel`, guaranteeing
+that all three frontends are contractually equivalent and IR-sourced.
 
 ---
 
@@ -114,7 +117,7 @@ archive serve --mode ratatui
 
 # Browser UI on port 3000 (default)
 archive serve --mode browser --port 3000
-# Archive browser frontend: http://localhost:3000/
+# Archive browser: http://localhost:3000/
 
 # Native egui window (GPU-accelerated, winit/wgpu)
 archive serve --mode egui
@@ -138,7 +141,7 @@ Try the UI without a live database. Uses synthetic metadata.
 
 ```bash
 archive demo --mode browser --port 4000
-# Archive browser frontend: http://localhost:4000/
+# Archive browser: http://localhost:4000/
 
 archive demo --mode egui
 # opens a native window with demo data
@@ -148,17 +151,70 @@ archive demo --mode egui
 
 ## Keyboard navigation
 
-All interactive frontends (ratatui and egui) share the same keybindings,
-sourced from `StatusBarDescriptor::archive_browse()` in the AccessKit IR:
+### TUI frontends (ratatui + egui)
 
-| Key       | Action                          |
-|-----------|---------------------------------|
-| `↑` / `k` | Move selection up               |
-| `↓` / `j` | Move selection down             |
-| `Enter`   | Expand / collapse schema        |
-| `r`       | Refresh                         |
-| `?`       | Toggle keybinding help overlay  |
-| `q` / `Esc` | Quit                          |
+Keybindings are sourced from `StatusBarDescriptor::archive_browse()` in the
+AccessKit IR — the same data that populates the status bar chips:
+
+| Key          | Action                            |
+|--------------|-----------------------------------|
+| `↑` / `k`   | Move selection up                 |
+| `↓` / `j`   | Move selection down               |
+| `Enter`      | Expand / collapse schema          |
+| `r`          | Refresh nav tree                  |
+| `?`          | Toggle keybinding help overlay    |
+| `q` / `Esc`  | Quit                              |
+
+### Browser frontend
+
+Keyboard shortcuts trigger HTMX panel swaps via JS event listener. All
+resulting HTML is IR-sourced (same `ArchiveNavModel` pipeline):
+
+| Key            | Action                            |
+|----------------|-----------------------------------|
+| `/`            | Focus nav filter                  |
+| `Esc`          | Clear nav filter                  |
+| `s`            | Open SQL editor panel             |
+| `d`            | Open DDL panel for selected table |
+| `i`            | Open column detail panel          |
+| `x`            | Open export picker panel          |
+| `?`            | Open help / keybindings panel     |
+| `Ctrl+Enter`   | Run SQL (when editor is open)     |
+
+---
+
+## Browser API routes
+
+All content-returning routes respond with IR-sourced HTML fragments.
+HTMX swaps use `hx-target="#content" hx-swap="outerHTML"` so the `<div
+id="content">` wrapper is always present for the next swap.
+
+| Method | Path                    | Description                              |
+|--------|-------------------------|------------------------------------------|
+| GET    | `/`                     | Full page (IR-sourced)                   |
+| GET    | `/api/nav`              | Nav-tree fragment (filter param)         |
+| GET    | `/api/preview`          | Table data grid panel                    |
+| POST   | `/api/sql`              | Execute SQL, return content fragment     |
+| GET    | `/api/inspect`          | Table inspection JSON                    |
+| GET    | `/api/stats`            | Column statistics JSON                   |
+| GET    | `/api/explain`          | EXPLAIN plan panel (with params)         |
+| GET    | `/api/history`          | Query history JSON                       |
+| POST   | `/api/history`          | Append history entry                     |
+| GET    | `/api/saved`            | Saved queries JSON                       |
+| POST   | `/api/saved`            | Save a query                             |
+| DELETE | `/api/saved/:id`        | Delete a saved query                     |
+| GET    | `/api/export`           | Download exported data file              |
+| POST   | `/api/refresh`          | Reload nav tree from DB                  |
+| GET    | `/api/open-sql-editor`  | SQL editor panel fragment                |
+| GET    | `/api/open-help`        | Help / keybindings panel fragment        |
+| GET    | `/api/history-panel`    | History browser panel fragment           |
+| GET    | `/api/saved-panel`      | Saved queries panel fragment             |
+| GET    | `/api/export-panel`     | Export picker panel fragment             |
+| GET    | `/api/ddl-panel`        | DDL viewer panel fragment                |
+| GET    | `/api/explain-panel`    | EXPLAIN plan panel fragment              |
+| GET    | `/api/col-detail-panel` | Column detail + stats panel fragment     |
+| GET    | `/api/load-history`     | Load history entry into SQL editor       |
+| GET    | `/api/load-saved`       | Load saved query into SQL editor         |
 
 ---
 
@@ -185,24 +241,54 @@ ArchiveDbBackend::connect(url)          → ConnectionEstablished proof
   │
   ▼
 NavTree / ArchiveNavModel               → shared flat-list nav state
-  │                                       (cursor, expand/collapse, keybindings)
+  │                                       (cursor, PanelMode, keybindings)
   │
-  ├─ ratatui path:
-  │    TuiApp (model + ListState)       → crossterm alternate-screen TUI
-  │
-  ├─ browser path:
-  │    DatabaseDescriptor → AccessKit IR (ValidRole + HasLabel)
-  │    VerifiedTree::from_parts()       → Established<RenderComplete>
-  │    LeptosRenderer::render(&tree)    → HTML string
-  │    LeptosAxumPlugin                 → Established<LeptosServerConfigured>
-  │    LeptosAxumBridgePlugin           → Established<AxumRouterCreated>
-  │    axum::Router → live server
-  │
-  └─ egui path:
-       ArchiveEguiApp (model + wgpu)    → native OS window (winit 0.30 + egui 0.34)
-       egui-wgpu Renderer               → GPU-accelerated frame output
+  ▼  ArchiveNavModel::to_verified_tree()
+     ├─ Window → [Toolbar, Main[Nav+Content], StatusBar, (overlay?)]
+     │    All structure defined in AccessKit IR (no hardcoded HTML)
+     └─ Returns (VerifiedTree, Established<IrSourced>) proof token
+          │
+          ├─ ratatui path:
+          │    TuiAccessKitConverter::convert(tree) → ratatui widgets
+          │    crossterm alternate-screen TUI
+          │
+          ├─ browser path:
+          │    to_content_tree() / to_nav_tree() for fragment responses
+          │    LeptosRenderer::render(&tree) → HTML fragment
+          │    axum::Router → live HTMX-powered server
+          │    All HTMX panel swaps outerHTML → IR fragment always present
+          │
+          └─ egui path:
+               EguiAccessKitConverter::convert(tree) → egui widgets
+               native OS window (winit 0.30 + egui 0.34 + wgpu)
 ```
 
-The `ArchiveNavModel` and `StatusBarDescriptor` keybinding definitions are the
-shared IR that keeps all three frontends consistent: the same cursor logic,
-the same key actions, and the same status-bar chip labels.
+### IR contract
+
+The `Established<IrSourced>` proof token, returned alongside every
+`VerifiedTree`, is the compile-time guarantee that all rendered output
+originates from the AccessKit IR. No frontend may produce HTML or widgets
+without going through `ArchiveNavModel`'s tree-building methods. This keeps
+all three frontends contractually equivalent.
+
+### PanelMode
+
+`PanelMode` is the central content-area state machine, shared by all frontends:
+
+| Variant         | Renders                              | Frontends      |
+|-----------------|--------------------------------------|----------------|
+| `Welcome`       | Welcome / prompt message             | all            |
+| `DataGrid`      | Paginated table data                 | all            |
+| `SqlEditor`     | SQL editor + results (+ error)       | all            |
+| `Ddl`           | DDL source for selected table        | all            |
+| `ExplainPlan`   | Visual EXPLAIN plan tree             | all            |
+| `ColumnDetail`  | Column type + stats table            | all            |
+| `HistoryPanel`  | Query history list with load links   | browser        |
+| `SavedPanel`    | Saved queries with load/delete       | browser        |
+| `ExportPanel`   | Export format picker (download links)| browser        |
+| `HelpPanel`     | Keybinding reference                 | browser        |
+
+TUI overlays (help, export picker, save prompt, saved browser) are rendered
+as AccessKit `Role::Dialog` nodes appended to the Window root in
+`to_verified_tree()`, driven by the same boolean flags used for event routing.
+
