@@ -181,7 +181,7 @@ async fn main() -> anyhow::Result<()> {
             match mode {
                 ServeMode::Ratatui => run_tui(nav, Some(url)).await?,
                 ServeMode::Egui => run_egui(nav, Some(url))?,
-                ServeMode::Browser => run_browser(nav, port).await?,
+                ServeMode::Browser => run_browser(nav, Some(url), port).await?,
             }
         }
 
@@ -190,7 +190,7 @@ async fn main() -> anyhow::Result<()> {
             match mode {
                 ServeMode::Ratatui => run_tui(nav, None).await?,
                 ServeMode::Egui => run_egui(nav, None)?,
-                ServeMode::Browser => run_browser(nav, port).await?,
+                ServeMode::Browser => run_browser(nav, None, port).await?,
             }
         }
     }
