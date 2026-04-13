@@ -260,11 +260,20 @@ fn render_node(
         // ── Tables ────────────────────────────────────────────────────────────
         Role::Table => {
             stats.containers_rendered += 1;
-            wrap_element("table", None, node, nodes, children, mode, depth, stats)
+            render_table(nodes, node, children, "table", None, mode, depth, stats)
         }
         Role::Grid | Role::TreeGrid | Role::ListGrid => {
             stats.containers_rendered += 1;
-            wrap_with_role("table", "grid", node, nodes, children, mode, depth, stats)
+            render_table(
+                nodes,
+                node,
+                children,
+                "table",
+                Some("grid"),
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::RowGroup => {
             stats.containers_rendered += 1;
@@ -774,11 +783,21 @@ fn render_node(
             if has_children {
                 stats.containers_rendered += 1;
                 let label = html_escape(&node_text(node));
+                let selected = if node.is_selected() == Some(true) {
+                    r#" aria-selected="true" class="selected""#
+                } else {
+                    ""
+                };
+                let open = if matches!(node.toggled(), Some(Toggled::True)) {
+                    " open"
+                } else {
+                    ""
+                };
                 let inner = render_children(nodes, children, mode, depth + 3, stats);
                 format!(
                     "{}<li role=\"none\">\n\
-                     {}<details class=\"schema-group\">\n\
-                     {}<summary role=\"treeitem\" tabindex=\"0\">{label}</summary>\n\
+                     {}<details class=\"schema-group\"{open}>\n\
+                     {}<summary role=\"treeitem\" tabindex=\"0\"{selected}>{label}</summary>\n\
                      {}<ul role=\"group\">\n\
                      {}\
                      {}</ul>\n\
@@ -796,8 +815,13 @@ fn render_node(
             } else {
                 stats.widgets_rendered += 1;
                 let text = html_escape(&node_text(node));
+                let selected = if node.is_selected() == Some(true) {
+                    r#" aria-selected="true" class="selected""#
+                } else {
+                    ""
+                };
                 format!(
-                    "{}<li role=\"treeitem\" tabindex=\"-1\">{text}</li>\n",
+                    "{}<li role=\"treeitem\" tabindex=\"-1\"{selected}>{text}</li>\n",
                     indent(depth),
                 )
             }
@@ -915,6 +939,95 @@ fn render_children(
         .collect()
 }
 
+// ── Table helpers ─────────────────────────────────────────────────────────────
+
+/// Returns `true` when every child of `row_id` is a [`Role::ColumnHeader`].
+fn is_header_row(nodes: &HashMap<NodeId, Node>, row_id: NodeId) -> bool {
+    let Some(row) = nodes.get(&row_id) else {
+        return false;
+    };
+    if row.role() != Role::Row {
+        return false;
+    }
+    let children = row.children();
+    !children.is_empty()
+        && children.iter().all(|id| {
+            nodes
+                .get(id)
+                .map(|n| n.role() == Role::ColumnHeader)
+                .unwrap_or(false)
+        })
+}
+
+/// Render a `Table` or `Grid` node with automatic `<thead>`/`<tbody>` split.
+///
+/// If the children already contain [`Role::RowGroup`] nodes (explicit
+/// `<tbody>`/`<thead>` structure), falls back to a plain wrapper and lets
+/// those groups render themselves.  Otherwise, rows whose children are all
+/// [`Role::ColumnHeader`] are lifted into `<thead>`; the rest go into
+/// `<tbody>`.
+fn render_table(
+    nodes: &HashMap<NodeId, Node>,
+    node: &Node,
+    children: &[NodeId],
+    tag: &str,
+    role: Option<&str>,
+    mode: LeptosRenderMode,
+    depth: usize,
+    stats: &mut RenderStats,
+) -> String {
+    let aria = aria_label_attr(node);
+    let role_attr = role.map(|r| format!(" role=\"{r}\"")).unwrap_or_default();
+
+    // If caller already wrapped rows in RowGroup, render flat and let those
+    // groups produce <thead>/<tbody> themselves.
+    let has_row_groups = children.iter().any(|id| {
+        nodes
+            .get(id)
+            .map(|n| n.role() == Role::RowGroup)
+            .unwrap_or(false)
+    });
+    if has_row_groups {
+        let inner = render_children(nodes, children, mode, depth + 1, stats);
+        return if inner.is_empty() {
+            format!(
+                "{pad}<{tag}{role_attr}{aria}></{tag}>\n",
+                pad = indent(depth)
+            )
+        } else {
+            format!(
+                "{pad}<{tag}{role_attr}{aria}>\n{inner}{pad}</{tag}>\n",
+                pad = indent(depth)
+            )
+        };
+    }
+
+    // Split rows: header rows (all ColumnHeader children) vs body rows.
+    let (header_ids, body_ids): (Vec<&NodeId>, Vec<&NodeId>) =
+        children.iter().partition(|id| is_header_row(nodes, **id));
+
+    let mut out = format!("{pad}<{tag}{role_attr}{aria}>\n", pad = indent(depth));
+
+    if !header_ids.is_empty() {
+        out.push_str(&format!("{}<thead>\n", indent(depth + 1)));
+        for id in &header_ids {
+            out.push_str(&render_node(nodes, **id, mode, depth + 2, stats));
+        }
+        out.push_str(&format!("{}</thead>\n", indent(depth + 1)));
+    }
+
+    if !body_ids.is_empty() {
+        out.push_str(&format!("{}<tbody>\n", indent(depth + 1)));
+        for id in &body_ids {
+            out.push_str(&render_node(nodes, **id, mode, depth + 2, stats));
+        }
+        out.push_str(&format!("{}</tbody>\n", indent(depth + 1)));
+    }
+
+    out.push_str(&format!("{pad}</{tag}>\n", pad = indent(depth)));
+    out
+}
+
 // ── Widget builders ───────────────────────────────────────────────────────────
 
 fn checkbox_html(node: &Node, ty: &str, depth: usize, mode: LeptosRenderMode) -> String {
@@ -982,7 +1095,7 @@ fn textarea_html(node: &Node, depth: usize, mode: LeptosRenderMode) -> String {
     };
     let _ = mode;
     format!(
-        "{}<textarea{}{}{}{}>\\n{}</textarea>\n",
+        "{}<textarea{}{}{}{}>\n{}</textarea>\n",
         indent(depth),
         ph,
         aria,

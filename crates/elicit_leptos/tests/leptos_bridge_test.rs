@@ -569,3 +569,168 @@ fn renderer_backend_name_is_leptos() {
     let r = LeptosRenderer::html();
     assert_eq!(r.backend_name(), "leptos");
 }
+
+// ── TreeItem: selection + expansion ──────────────────────────────────────────
+
+#[test]
+fn tree_item_leaf_selected_has_aria_selected() {
+    use accesskit::Toggled;
+    let root_id = nid(0);
+    let mut node = Node::new(Role::TreeItem);
+    node.set_value("users");
+    node.set_selected(true);
+    let mut nodes = HashMap::new();
+    nodes.insert(root_id, node);
+    let html = render_tree(&nodes, root_id, LeptosRenderMode::Html);
+    assert!(html.contains(r#"aria-selected="true""#), "got: {html}");
+    assert!(html.contains(r#"class="selected""#), "got: {html}");
+}
+
+#[test]
+fn tree_item_leaf_not_selected_has_no_aria_selected() {
+    let root_id = nid(0);
+    let mut node = Node::new(Role::TreeItem);
+    node.set_value("users");
+    let mut nodes = HashMap::new();
+    nodes.insert(root_id, node);
+    let html = render_tree(&nodes, root_id, LeptosRenderMode::Html);
+    assert!(!html.contains("aria-selected"), "got: {html}");
+}
+
+#[test]
+fn tree_item_group_expanded_has_open_attribute() {
+    use accesskit::Toggled;
+    // Parent TreeItem (expandable) with one child leaf
+    let parent_id = nid(0);
+    let child_id = nid(1);
+    let mut parent = Node::new(Role::TreeItem);
+    parent.set_value("public");
+    parent.set_toggled(Toggled::True);
+    parent.set_children(vec![child_id]);
+    let mut child = Node::new(Role::TreeItem);
+    child.set_value("users");
+    let mut nodes = HashMap::new();
+    nodes.insert(parent_id, parent);
+    nodes.insert(child_id, child);
+    let html = render_tree(&nodes, parent_id, LeptosRenderMode::Html);
+    assert!(html.contains("<details"), "got: {html}");
+    assert!(
+        html.contains(" open"),
+        "expected open attribute, got: {html}"
+    );
+}
+
+#[test]
+fn tree_item_group_collapsed_has_no_open_attribute() {
+    let parent_id = nid(0);
+    let child_id = nid(1);
+    let mut parent = Node::new(Role::TreeItem);
+    parent.set_value("public");
+    parent.set_children(vec![child_id]);
+    let mut child = Node::new(Role::TreeItem);
+    child.set_value("users");
+    let mut nodes = HashMap::new();
+    nodes.insert(parent_id, parent);
+    nodes.insert(child_id, child);
+    let html = render_tree(&nodes, parent_id, LeptosRenderMode::Html);
+    assert!(html.contains("<details"), "got: {html}");
+    assert!(
+        !html.contains(" open"),
+        "should not have open attribute, got: {html}"
+    );
+}
+
+// ── Table: thead / tbody split ────────────────────────────────────────────────
+
+#[test]
+fn grid_with_header_and_body_rows_gets_thead_tbody() {
+    // root: Grid
+    //   hdr: Row → [ColumnHeader("id"), ColumnHeader("name")]
+    //   r1:  Row → [Cell("1"), Cell("Alice")]
+    let root_id = nid(0);
+    let hdr_id = nid(1);
+    let ch1_id = nid(2);
+    let ch2_id = nid(3);
+    let r1_id = nid(4);
+    let c1_id = nid(5);
+    let c2_id = nid(6);
+
+    let mut root = Node::new(Role::Grid);
+    root.set_children(vec![hdr_id, r1_id]);
+
+    let mut hdr = Node::new(Role::Row);
+    hdr.set_children(vec![ch1_id, ch2_id]);
+
+    let mut ch1 = Node::new(Role::ColumnHeader);
+    ch1.set_value("id");
+    let mut ch2 = Node::new(Role::ColumnHeader);
+    ch2.set_value("name");
+
+    let mut r1 = Node::new(Role::Row);
+    r1.set_children(vec![c1_id, c2_id]);
+
+    let mut c1 = Node::new(Role::Cell);
+    c1.set_value("1");
+    let mut c2 = Node::new(Role::Cell);
+    c2.set_value("Alice");
+
+    let mut nodes = HashMap::new();
+    nodes.insert(root_id, root);
+    nodes.insert(hdr_id, hdr);
+    nodes.insert(ch1_id, ch1);
+    nodes.insert(ch2_id, ch2);
+    nodes.insert(r1_id, r1);
+    nodes.insert(c1_id, c1);
+    nodes.insert(c2_id, c2);
+
+    let html = render_tree(&nodes, root_id, LeptosRenderMode::Html);
+    assert!(html.contains("<thead>"), "missing <thead>, got: {html}");
+    assert!(html.contains("</thead>"), "missing </thead>, got: {html}");
+    assert!(html.contains("<tbody>"), "missing <tbody>, got: {html}");
+    assert!(html.contains("</tbody>"), "missing </tbody>, got: {html}");
+    // Header must appear before body
+    let thead_pos = html.find("<thead>").unwrap();
+    let tbody_pos = html.find("<tbody>").unwrap();
+    assert!(thead_pos < tbody_pos, "thead should come before tbody");
+}
+
+#[test]
+fn table_without_column_headers_has_no_thead() {
+    let root_id = nid(0);
+    let r1_id = nid(1);
+    let c1_id = nid(2);
+
+    let mut root = Node::new(Role::Table);
+    root.set_children(vec![r1_id]);
+    let mut r1 = Node::new(Role::Row);
+    r1.set_children(vec![c1_id]);
+    let mut c1 = Node::new(Role::Cell);
+    c1.set_value("foo");
+
+    let mut nodes = HashMap::new();
+    nodes.insert(root_id, root);
+    nodes.insert(r1_id, r1);
+    nodes.insert(c1_id, c1);
+
+    let html = render_tree(&nodes, root_id, LeptosRenderMode::Html);
+    assert!(!html.contains("<thead>"), "unexpected <thead>, got: {html}");
+    assert!(html.contains("<tbody>"), "missing <tbody>, got: {html}");
+}
+
+// ── MultilineTextInput: value is rendered ─────────────────────────────────────
+
+#[test]
+fn textarea_renders_value_as_content() {
+    let (nodes, root) = with_value(Role::MultilineTextInput, "SELECT * FROM users;");
+    let html = render_tree(&nodes, root, LeptosRenderMode::Html);
+    assert!(html.contains("<textarea"), "got: {html}");
+    assert!(
+        html.contains("SELECT * FROM users;"),
+        "textarea value missing, got: {html}"
+    );
+    // Must not contain the literal two-character sequence backslash-n
+    assert!(
+        !html.contains(r"\n"),
+        "literal \\n escape found in output, got: {html}"
+    );
+}
