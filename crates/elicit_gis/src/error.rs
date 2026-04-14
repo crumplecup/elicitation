@@ -32,6 +32,21 @@ pub enum GisErrorKind {
     /// Axis order could not be determined or normalized.
     #[display("Axis order error: {}", _0)]
     AxisOrderError(String),
+    /// Geometry violates §6.1.3 validity rules.
+    #[display("Invalid geometry: {}", _0)]
+    InvalidGeometry(String),
+    /// WKT or WKB serialization failed.
+    #[display("Encode error: {}", _0)]
+    EncodeError(String),
+    /// WKT or WKB parsing failed.
+    #[display("Decode error: {}", _0)]
+    DecodeError(String),
+    /// Spatial operation failed (e.g., intersection, buffer).
+    #[display("Spatial operation failed: {}", _0)]
+    SpatialOperationFailed(String),
+    /// DE-9IM relate pattern is malformed.
+    #[display("Invalid relate pattern: {}", _0)]
+    InvalidRelatePattern(String),
     /// Operation is not supported by this backend.
     #[display("Unsupported operation: {}", _0)]
     Unsupported(String),

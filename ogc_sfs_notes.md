@@ -1794,10 +1794,455 @@ structural_prop!(DimensionConsistencyInHierarchy, "DimensionConsistencyInHierarc
 
 ---
 
+## §6.1.2 Constructive / Set Operations [GAP FILL]
+
+OGC 06-103r4 §6.1.2 (the Geometry class interface table) specifies six
+constructive operations that produce new geometry instances. These were absent
+from the earlier §6.1.1 notes.
+
+### buffer()
+
+`buffer(distance : Double) : Geometry`
+
+Expands (or contracts for negative distance) the geometry by `distance` in SRS
+units.
+
+```rust
+/// buffer(distance) returns a geometry containing all points within distance of self.
+///
+/// Source: OGC 06-103r4 §6.1.2 — buffer(distance).
+pub struct BufferReturnsContainingGeometry;
+structural_prop!(BufferReturnsContainingGeometry, "BufferReturnsContainingGeometry");
+
+/// buffer(0) produces a result that contains self.
+///
+/// Source: OGC 06-103r4 §6.1.2 — buffer(distance).
+pub struct BufferZeroContainsSelf;
+structural_prop!(BufferZeroContainsSelf, "BufferZeroContainsSelf");
+
+/// buffer(d) with d > 0 produces a result with area >= area of self.
+///
+/// Source: OGC 06-103r4 §6.1.2 — buffer(distance).
+pub struct BufferPositiveDistanceIncreasesArea;
+structural_prop!(BufferPositiveDistanceIncreasesArea, "BufferPositiveDistanceIncreasesArea");
+
+/// buffer(d) with d < 0 contracts the geometry inward.
+///
+/// Source: OGC 06-103r4 §6.1.2 — buffer(distance).
+pub struct BufferNegativeDistanceShrinks;
+structural_prop!(BufferNegativeDistanceShrinks, "BufferNegativeDistanceShrinks");
+
+/// The result of buffer() is always a valid geometry.
+///
+/// Source: OGC 06-103r4 §6.1.2 — buffer(distance).
+pub struct BufferResultIsValid;
+structural_prop!(BufferResultIsValid, "BufferResultIsValid");
+```
+
+### convexHull()
+
+`convexHull() : Geometry`
+
+The smallest convex polygon (or lower-dimensional degenerate) that contains all
+points of the geometry.
+
+```rust
+/// convexHull() returns the smallest convex geometry containing all points of self.
+///
+/// Source: OGC 06-103r4 §6.1.2 — convexHull().
+pub struct ConvexHullReturnsSmallestConvex;
+structural_prop!(ConvexHullReturnsSmallestConvex, "ConvexHullReturnsSmallestConvex");
+
+/// The result of convexHull() contains all points of self.
+///
+/// Source: OGC 06-103r4 §6.1.2 — convexHull().
+pub struct ConvexHullContainsSelf;
+structural_prop!(ConvexHullContainsSelf, "ConvexHullContainsSelf");
+
+/// convexHull is idempotent: convexHull(convexHull(g)) == convexHull(g).
+///
+/// Source: OGC 06-103r4 §6.1.2 — convexHull().
+pub struct ConvexHullIdempotent;
+structural_prop!(ConvexHullIdempotent, "ConvexHullIdempotent");
+
+/// The convexHull of a convex polygon is that polygon itself.
+///
+/// Source: OGC 06-103r4 §6.1.2 — convexHull().
+pub struct ConvexHullOfConvexPolygonIsSelf;
+structural_prop!(ConvexHullOfConvexPolygonIsSelf, "ConvexHullOfConvexPolygonIsSelf");
+```
+
+### intersection()
+
+`intersection(another : Geometry) : Geometry`
+
+Returns only the point set common to both geometries.
+
+```rust
+/// intersection(g) returns a geometry containing only points in both self and g.
+///
+/// Source: OGC 06-103r4 §6.1.2 — intersection(g).
+pub struct IntersectionSubsetOfBothInputs;
+structural_prop!(IntersectionSubsetOfBothInputs, "IntersectionSubsetOfBothInputs");
+
+/// intersection is commutative: A.intersection(B) == B.intersection(A).
+///
+/// Source: OGC 06-103r4 §6.1.2 — intersection(g).
+pub struct IntersectionIsCommutative;
+structural_prop!(IntersectionIsCommutative, "IntersectionIsCommutative");
+
+/// The intersection of two disjoint geometries is empty.
+///
+/// Source: OGC 06-103r4 §6.1.2 — intersection(g).
+pub struct IntersectionOfDisjointIsEmpty;
+structural_prop!(IntersectionOfDisjointIsEmpty, "IntersectionOfDisjointIsEmpty");
+
+/// intersection(g) has dimension <= min(dim(self), dim(g)).
+///
+/// Source: OGC 06-103r4 §6.1.2 — intersection(g).
+pub struct IntersectionDimensionAtMostMin;
+structural_prop!(IntersectionDimensionAtMostMin, "IntersectionDimensionAtMostMin");
+```
+
+### union()
+
+`union(another : Geometry) : Geometry`
+
+```rust
+/// union(g) returns a geometry containing all points of self or g.
+///
+/// Source: OGC 06-103r4 §6.1.2 — union(g).
+pub struct UnionSupersetOfBothInputs;
+structural_prop!(UnionSupersetOfBothInputs, "UnionSupersetOfBothInputs");
+
+/// union is commutative: A.union(B) == B.union(A).
+///
+/// Source: OGC 06-103r4 §6.1.2 — union(g).
+pub struct UnionIsCommutative;
+structural_prop!(UnionIsCommutative, "UnionIsCommutative");
+
+/// union is associative: A.union(B.union(C)) == (A.union(B)).union(C).
+///
+/// Source: OGC 06-103r4 §6.1.2 — union(g).
+pub struct UnionIsAssociative;
+structural_prop!(UnionIsAssociative, "UnionIsAssociative");
+
+/// union has dimension == max(dim(self), dim(g)) when both inputs are non-empty.
+///
+/// Source: OGC 06-103r4 §6.1.2 — union(g).
+pub struct UnionDimensionIsMax;
+structural_prop!(UnionDimensionIsMax, "UnionDimensionIsMax");
+```
+
+### difference()
+
+`difference(another : Geometry) : Geometry`
+
+```rust
+/// difference(g) is asymmetric: A.difference(B) != B.difference(A) in general.
+///
+/// Source: OGC 06-103r4 §6.1.2 — difference(g).
+pub struct DifferenceAsymmetric;
+structural_prop!(DifferenceAsymmetric, "DifferenceAsymmetric");
+
+/// A.difference(B) and B are disjoint.
+///
+/// Source: OGC 06-103r4 §6.1.2 — difference(g).
+pub struct DifferenceDisjointFromSubtracted;
+structural_prop!(DifferenceDisjointFromSubtracted, "DifferenceDisjointFromSubtracted");
+
+/// A.difference(B) is a subset of A.
+///
+/// Source: OGC 06-103r4 §6.1.2 — difference(g).
+pub struct DifferenceSubsetOfSelf;
+structural_prop!(DifferenceSubsetOfSelf, "DifferenceSubsetOfSelf");
+
+/// difference(g) has dimension <= dim(self).
+///
+/// Source: OGC 06-103r4 §6.1.2 — difference(g).
+pub struct DifferenceDimensionAtMostSelf;
+structural_prop!(DifferenceDimensionAtMostSelf, "DifferenceDimensionAtMostSelf");
+```
+
+### symDifference()
+
+`symDifference(another : Geometry) : Geometry`
+
+```rust
+/// symDifference is commutative: A.symDifference(B) == B.symDifference(A).
+///
+/// Source: OGC 06-103r4 §6.1.2 — symDifference(g).
+pub struct SymDifferenceIsCommutative;
+structural_prop!(SymDifferenceIsCommutative, "SymDifferenceIsCommutative");
+
+/// A.symDifference(B) == A.union(B).difference(A.intersection(B)).
+///
+/// Source: OGC 06-103r4 §6.1.2 — symDifference(g).
+pub struct SymDifferenceEqualsUnionMinusIntersection;
+structural_prop!(SymDifferenceEqualsUnionMinusIntersection, "SymDifferenceEqualsUnionMinusIntersection");
+
+/// A.union(B) == A.intersection(B).union(A.symDifference(B)).
+///
+/// Source: OGC 06-103r4 §6.1.2 — symDifference(g).
+pub struct UnionEqualsIntersectionPlusSymDifference;
+structural_prop!(UnionEqualsIntersectionPlusSymDifference, "UnionEqualsIntersectionPlusSymDifference");
+```
+
+---
+
+## §6.1.4 boundary() Per-Type Semantics [GAP FILL]
+
+OGC 06-103r4 §6.1.1 states that `boundary()` is defined per geometry subtype.
+The earlier notes stated "defined per type" without listing the actual rules.
+
+```rust
+/// The boundary of a Point is the empty set (GeometryCollection EMPTY).
+///
+/// Source: OGC 06-103r4 §6.1.1 — boundary() for Point.
+pub struct PointBoundaryIsEmpty;
+structural_prop!(PointBoundaryIsEmpty, "PointBoundaryIsEmpty");
+
+/// The boundary of a non-closed LineString is the MultiPoint of its two endpoints
+/// (as a MultiPoint, not just a two-element set).
+///
+/// Source: OGC 06-103r4 §6.1.1 — boundary() for LineString.
+pub struct LineStringNonClosedBoundaryIsEndpointMultiPoint;
+structural_prop!(LineStringNonClosedBoundaryIsEndpointMultiPoint, "LineStringNonClosedBoundaryIsEndpointMultiPoint");
+
+/// The boundary of a closed LinearRing is the empty set.
+///
+/// Source: OGC 06-103r4 §6.1.1 — boundary() for LinearRing.
+pub struct LinearRingBoundaryIsEmptySet;
+structural_prop!(LinearRingBoundaryIsEmptySet, "LinearRingBoundaryIsEmptySet");
+
+/// The boundary of a Polygon is the MultiLineString of all its rings (exterior + holes).
+///
+/// Source: OGC 06-103r4 §6.1.1 — boundary() for Polygon.
+pub struct PolygonBoundaryIsAllRings;
+structural_prop!(PolygonBoundaryIsAllRings, "PolygonBoundaryIsAllRings");
+
+/// The boundary of a MultiPolygon is the union of all component Polygon boundaries.
+///
+/// Source: OGC 06-103r4 §6.1.1 — boundary() for MultiPolygon.
+pub struct MultiPolygonBoundaryIsAllRings;
+structural_prop!(MultiPolygonBoundaryIsAllRings, "MultiPolygonBoundaryIsAllRings");
+
+/// The boundary of a GeometryCollection follows the mod-2 rule for curve components.
+///
+/// Source: OGC 06-103r4 §6.1.1 — boundary() for GeometryCollection.
+pub struct GeometryCollectionBoundaryMod2Rule;
+structural_prop!(GeometryCollectionBoundaryMod2Rule, "GeometryCollectionBoundaryMod2Rule");
+
+/// The boundary of a boundary is always empty: ∂(∂g) = ∅.
+///
+/// Source: OGC 06-103r4 §6.1.1 — topological axiom.
+pub struct BoundaryOfBoundaryIsEmpty;
+structural_prop!(BoundaryOfBoundaryIsEmpty, "BoundaryOfBoundaryIsEmpty");
+
+/// The boundary of any empty geometry is itself an empty geometry.
+///
+/// Source: OGC 06-103r4 §6.1.1 — boundary() for empty inputs.
+pub struct EmptyGeometryBoundaryIsEmptyGeometry;
+structural_prop!(EmptyGeometryBoundaryIsEmptyGeometry, "EmptyGeometryBoundaryIsEmptyGeometry");
+```
+
+---
+
+## §6.1.5 Per-Type Accessor Invariants [GAP FILL]
+
+OGC 06-103r4 §6.1.1 and the per-type sections define accessor methods with
+normative invariants.
+
+### Point accessors
+
+```rust
+/// x() returns the x ordinate of a Point.
+///
+/// Source: OGC 06-103r4 §6.1.1 — Point.x().
+pub struct PointXReturnsXOrdinate;
+structural_prop!(PointXReturnsXOrdinate, "PointXReturnsXOrdinate");
+
+/// y() returns the y ordinate of a Point.
+///
+/// Source: OGC 06-103r4 §6.1.1 — Point.y().
+pub struct PointYReturnsYOrdinate;
+structural_prop!(PointYReturnsYOrdinate, "PointYReturnsYOrdinate");
+
+/// z() is defined and returns the z ordinate when coord dimension >= 3.
+///
+/// Source: OGC 06-103r4 §6.1.2 — Point.z().
+pub struct PointZDefinedWhen3D;
+structural_prop!(PointZDefinedWhen3D, "PointZDefinedWhen3D");
+
+/// m() is defined and returns the m ordinate when the geometry has M.
+///
+/// Source: OGC 06-103r4 §6.1.2 — Point.m().
+pub struct PointMDefinedWhenMPresent;
+structural_prop!(PointMDefinedWhenMPresent, "PointMDefinedWhenMPresent");
+```
+
+### LineString accessors
+
+```rust
+/// startPoint() == pointN(0) for a LineString.
+///
+/// Source: OGC 06-103r4 §6.1.1 — LineString.startPoint().
+pub struct LineStringStartPointIsPointNZero;
+structural_prop!(LineStringStartPointIsPointNZero, "LineStringStartPointIsPointNZero");
+
+/// endPoint() == pointN(numPoints() - 1) for a LineString.
+///
+/// Source: OGC 06-103r4 §6.1.1 — LineString.endPoint().
+pub struct LineStringEndPointIsPointNLast;
+structural_prop!(LineStringEndPointIsPointNLast, "LineStringEndPointIsPointNLast");
+
+/// pointN(i) is defined for i in 0..numPoints()-1.
+///
+/// Source: OGC 06-103r4 §6.1.1 — LineString.pointN(n).
+pub struct LineStringPointNInRange;
+structural_prop!(LineStringPointNInRange, "LineStringPointNInRange");
+
+/// numPoints() equals the number of coordinate positions in the LineString.
+///
+/// Source: OGC 06-103r4 §6.1.1 — LineString.numPoints().
+pub struct LineStringNumPointsMatchesCoordCount;
+structural_prop!(LineStringNumPointsMatchesCoordCount, "LineStringNumPointsMatchesCoordCount");
+
+/// isClosed() is true iff startPoint() coordinates equal endPoint() coordinates.
+///
+/// Source: OGC 06-103r4 §6.1.1 — LineString.isClosed().
+pub struct LineStringIsClosedStartEqualsEnd;
+structural_prop!(LineStringIsClosedStartEqualsEnd, "LineStringIsClosedStartEqualsEnd");
+
+/// isRing() is true iff isClosed() AND isSimple().
+///
+/// Source: OGC 06-103r4 §6.1.1 — LineString.isRing().
+pub struct LineStringIsRingImpliesClosedAndSimple;
+structural_prop!(LineStringIsRingImpliesClosedAndSimple, "LineStringIsRingImpliesClosedAndSimple");
+```
+
+### Polygon accessors
+
+```rust
+/// exteriorRing() is never null for a non-empty Polygon.
+///
+/// Source: OGC 06-103r4 §6.1.1 — Polygon.exteriorRing().
+pub struct PolygonExteriorRingNeverNull;
+structural_prop!(PolygonExteriorRingNeverNull, "PolygonExteriorRingNeverNull");
+
+/// interiorRingN(n) returns the nth hole (zero-indexed).
+///
+/// Source: OGC 06-103r4 §6.1.1 — Polygon.interiorRingN(n).
+pub struct PolygonInteriorRingNReturnsHole;
+structural_prop!(PolygonInteriorRingNReturnsHole, "PolygonInteriorRingNReturnsHole");
+
+/// numInteriorRings() >= 0.
+///
+/// Source: OGC 06-103r4 §6.1.1 — Polygon.numInteriorRings().
+pub struct PolygonNumInteriorRingsNonNegative;
+structural_prop!(PolygonNumInteriorRingsNonNegative, "PolygonNumInteriorRingsNonNegative");
+
+/// interiorRingN(i) is defined for i in 0..numInteriorRings()-1.
+///
+/// Source: OGC 06-103r4 §6.1.1 — Polygon.interiorRingN(n).
+pub struct PolygonInteriorRingNInRange;
+structural_prop!(PolygonInteriorRingNInRange, "PolygonInteriorRingNInRange");
+```
+
+### GeometryCollection accessors
+
+```rust
+/// numGeometries() returns the number of component geometries.
+///
+/// Source: OGC 06-103r4 §6.1.1 — GeometryCollection.numGeometries().
+pub struct CollectionNumGeometriesCount;
+structural_prop!(CollectionNumGeometriesCount, "CollectionNumGeometriesCount");
+
+/// geometryN(i) is defined for i in 0..numGeometries()-1.
+///
+/// Source: OGC 06-103r4 §6.1.1 — GeometryCollection.geometryN(n).
+pub struct CollectionGeometryNIndexed;
+structural_prop!(CollectionGeometryNIndexed, "CollectionGeometryNIndexed");
+
+/// numGeometries() >= 0.
+///
+/// Source: OGC 06-103r4 §6.1.1 — GeometryCollection.numGeometries().
+pub struct CollectionNumGeometriesNonNegative;
+structural_prop!(CollectionNumGeometriesNonNegative, "CollectionNumGeometriesNonNegative");
+
+/// geometryN(i) is never null for any valid index.
+///
+/// Source: OGC 06-103r4 §6.1.1 — GeometryCollection.geometryN(n).
+pub struct CollectionGeometryNNeverNull;
+structural_prop!(CollectionGeometryNNeverNull, "CollectionGeometryNNeverNull");
+```
+
+### Derived collection accessors
+
+```rust
+/// A MultiLineString isClosed() iff all component LineStrings are closed.
+///
+/// Source: OGC 06-103r4 §6.1.1 — MultiLineString.isClosed().
+pub struct MultiLineStringIsClosedAllClosed2;
+structural_prop!(MultiLineStringIsClosedAllClosed2, "MultiLineStringIsClosedAllClosed2");
+
+/// A GeometryCollection isSimple() iff all components are simple.
+///
+/// Source: OGC 06-103r4 §6.1.1 — GeometryCollection.isSimple().
+pub struct GeometryCollectionIsSimpleAllSimple;
+structural_prop!(GeometryCollectionIsSimpleAllSimple, "GeometryCollectionIsSimpleAllSimple");
+```
+
+---
+
+## §1.4 Conformance Classes [GAP FILL]
+
+OGC 06-103r4 §1.4 defines two conformance classes that partition the
+implementation requirements.
+
+**Conformance Class 0 (CC0)** — Minimum: all seven geometry types, SRID
+support, WKB and WKT serialization/deserialization.
+
+**Conformance Class 1 (CC1)** — Full: CC0 plus DE-9IM spatial predicates
+(§6.2), metric operations (§6.3), and constructive set operations (§6.1.2
+interface table).
+
+```rust
+/// OGC SFS Conformance Class 0 requires support for all seven geometry types,
+/// SRID assignment, and WKB/WKT serialization.
+///
+/// Source: OGC 06-103r4 §1.4 — Conformance Class 0.
+pub struct ConformanceClass0RequiresSevenTypes;
+structural_prop!(ConformanceClass0RequiresSevenTypes, "ConformanceClass0RequiresSevenTypes");
+
+/// OGC SFS CC0 mandates WKB and WKT serialization/deserialization for all seven
+/// geometry types.
+///
+/// Source: OGC 06-103r4 §1.4 — Conformance Class 0.
+pub struct ConformanceClass0RequiresWkbWkt;
+structural_prop!(ConformanceClass0RequiresWkbWkt, "ConformanceClass0RequiresWkbWkt");
+
+/// OGC SFS Conformance Class 1 adds all DE-9IM spatial predicates (§6.2) and
+/// metric operations (§6.3) over CC0.
+///
+/// Source: OGC 06-103r4 §1.4 — Conformance Class 1.
+pub struct ConformanceClass1AddsPredicates;
+structural_prop!(ConformanceClass1AddsPredicates, "ConformanceClass1AddsPredicates");
+
+/// OGC SFS Conformance Class 1 adds constructive geometry operations: buffer,
+/// convexHull, union, intersection, difference, symDifference.
+///
+/// Source: OGC 06-103r4 §1.4 — Conformance Class 1.
+pub struct ConformanceClass1AddsSetOps;
+structural_prop!(ConformanceClass1AddsSetOps, "ConformanceClass1AddsSetOps");
+```
+
+---
+
 ## Summary Table
 
 The table below lists all props defined in this file, grouped by category.
-Total: **193 props**.
+Total: **261 props** (205 original + 56 gap fill).
 
 | # | Prop | Section |
 |---|------|---------|
