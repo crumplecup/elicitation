@@ -2213,6 +2213,482 @@ structural_prop!(CrsTypeMemberOfDefinedTypes, "CrsTypeMemberOfDefinedTypes");
 
 ---
 
-*Total props: 193*  
+## §21 IO_IdentifiedObject (base class of all named objects)
+
+Every CRS type, CS type, datum type, operation type, and unit of measure in
+ISO 19111 inherits from `IO_IdentifiedObject`. Contracts on this base apply to
+all subclasses.
+
+```rust
+/// Every IO_IdentifiedObject has at least one primary name.
+///
+/// Source: ISO 19111:2019 §6.2.1 — IO_IdentifiedObject.name
+pub struct IdentifiedObjectPrimaryNameNonEmpty;
+structural_prop!(IdentifiedObjectPrimaryNameNonEmpty, "IdentifiedObjectPrimaryNameNonEmpty");
+
+/// The alias array of an IO_IdentifiedObject may be empty but must not contain
+/// null entries.
+///
+/// Source: ISO 19111:2019 §6.2.1 — IO_IdentifiedObject.alias
+pub struct IdentifiedObjectAliasNoNullEntries;
+structural_prop!(IdentifiedObjectAliasNoNullEntries, "IdentifiedObjectAliasNoNullEntries");
+
+/// The identifier array (RS_Identifier[]) may be empty; when present, each
+/// entry must have a non-empty authority and a non-empty code.
+///
+/// Source: ISO 19111:2019 §6.2.1 — IO_IdentifiedObject.identifier
+pub struct IdentifiedObjectIdentifierEntryComplete;
+structural_prop!(IdentifiedObjectIdentifierEntryComplete, "IdentifiedObjectIdentifierEntryComplete");
+
+/// Remarks on an IO_IdentifiedObject are optional; when present, must be
+/// a non-null CharacterString.
+///
+/// Source: ISO 19111:2019 §6.2.1 — IO_IdentifiedObject.remarks
+pub struct IdentifiedObjectRemarksWhenPresentNonNull;
+structural_prop!(IdentifiedObjectRemarksWhenPresentNonNull, "IdentifiedObjectRemarksWhenPresentNonNull");
+
+/// All concrete CRS types are subclasses of IO_IdentifiedObject, inheriting
+/// name and identifier obligations.
+///
+/// Source: ISO 19111:2019 §6.2 — class hierarchy
+pub struct CrsInheritsIdentifiedObjectInterface;
+structural_prop!(CrsInheritsIdentifiedObjectInterface, "CrsInheritsIdentifiedObjectInterface");
+
+/// All datum types are subclasses of IO_IdentifiedObject.
+///
+/// Source: ISO 19111:2019 §6.2 — class hierarchy
+pub struct DatumInheritsIdentifiedObjectInterface;
+structural_prop!(DatumInheritsIdentifiedObjectInterface, "DatumInheritsIdentifiedObjectInterface");
+
+/// All coordinate operation types are subclasses of IO_IdentifiedObject.
+///
+/// Source: ISO 19111:2019 §6.2 — class hierarchy
+pub struct CoordinateOperationInheritsIdentifiedObjectInterface;
+structural_prop!(CoordinateOperationInheritsIdentifiedObjectInterface, "CoordinateOperationInheritsIdentifiedObjectInterface");
+```
+
+---
+
+## §22 CD_DatumEnsemble (ISO 19111:2019 addition)
+
+`CD_DatumEnsemble` is a major concept added in the 2019 revision (absent from
+ISO 19111:2007). Many well-known CRS identifiers (including EPSG:4326) are now
+associated with a datum ensemble rather than a single datum realization.
+
+```rust
+/// A CD_DatumEnsemble groups multiple related datum realizations that are
+/// compatible within a stated ensemble accuracy.
+///
+/// Source: ISO 19111:2019 §6.5 — CD_DatumEnsemble
+pub struct DatumEnsembleGroupsRelatedDatums;
+structural_prop!(DatumEnsembleGroupsRelatedDatums, "DatumEnsembleGroupsRelatedDatums");
+
+/// CD_DatumEnsemble.name is a non-empty CharacterString identifying the
+/// ensemble (e.g., "World Geodetic System 1984 ensemble").
+///
+/// Source: ISO 19111:2019 §6.5 — CD_DatumEnsemble.name
+pub struct DatumEnsembleNameNonEmpty;
+structural_prop!(DatumEnsembleNameNonEmpty, "DatumEnsembleNameNonEmpty");
+
+/// CD_DatumEnsemble.member is an array of CD_Datum references with
+/// multiplicity 2..* — at least two realizations must be listed.
+///
+/// Source: ISO 19111:2019 §6.5 — CD_DatumEnsemble.member
+pub struct DatumEnsembleHasAtLeastTwoMembers;
+structural_prop!(DatumEnsembleHasAtLeastTwoMembers, "DatumEnsembleHasAtLeastTwoMembers");
+
+/// Each member of a CD_DatumEnsemble references a concrete datum (e.g. a
+/// specific ITRF realization). No member may be null.
+///
+/// Source: ISO 19111:2019 §6.5 — CD_DatumEnsemble.member
+pub struct DatumEnsembleMemberNoNullEntries;
+structural_prop!(DatumEnsembleMemberNoNullEntries, "DatumEnsembleMemberNoNullEntries");
+
+/// CD_DatumEnsemble.ensembleAccuracy is a positive real number (in metres
+/// for horizontal CRS) stating the positional accuracy within which all
+/// member datums agree.
+///
+/// Source: ISO 19111:2019 §6.5 — CD_DatumEnsemble.ensembleAccuracy
+pub struct DatumEnsembleAccuracyPositive;
+structural_prop!(DatumEnsembleAccuracyPositive, "DatumEnsembleAccuracyPositive");
+
+/// A CRS whose datum is a CD_DatumEnsemble cannot be used for sub-metre
+/// positioning without selecting a specific member datum and providing a
+/// coordinate epoch.
+///
+/// Source: ISO 19111:2019 §6.5 — usage note
+pub struct DatumEnsembleSubMetreRequiresMemberSelection;
+structural_prop!(DatumEnsembleSubMetreRequiresMemberSelection, "DatumEnsembleSubMetreRequiresMemberSelection");
+
+/// The WGS 84 datum ensemble (EPSG:6326) has ensemble accuracy 2 m (the
+/// max inter-realization difference over WGS84 history).
+///
+/// Source: ISO 19111:2019 §6.5 / EPSG registry code 6326
+pub struct DatumEnsembleWgs84EpsgCode6326;
+structural_prop!(DatumEnsembleWgs84EpsgCode6326, "DatumEnsembleWgs84EpsgCode6326");
+
+/// EPSG:4326 (WGS 84 geographic 2D) uses the WGS 84 datum ensemble
+/// (EPSG:6326), not a single-realization datum.
+///
+/// Source: ISO 19111:2019 §6.5 / EPSG registry
+pub struct Epsg4326UsesDatumEnsemble;
+structural_prop!(Epsg4326UsesDatumEnsemble, "Epsg4326UsesDatumEnsemble");
+
+/// EPSG:6267 is the NAD27 datum ensemble; EPSG:6269 is the NAD83 datum
+/// ensemble.
+///
+/// Source: ISO 19111:2019 §6.5 / EPSG registry
+pub struct Nad27EnsembleEpsg6267;
+structural_prop!(Nad27EnsembleEpsg6267, "Nad27EnsembleEpsg6267");
+
+/// Datum ensemble member datums must all be of the same datum subtype
+/// (all geodetic, all vertical, etc.).
+///
+/// Source: ISO 19111:2019 §6.5 — type consistency rule
+pub struct DatumEnsembleMembersHomogeneous;
+structural_prop!(DatumEnsembleMembersHomogeneous, "DatumEnsembleMembersHomogeneous");
+```
+
+---
+
+## §23 SC_CoordinateMetadata (ISO 19111:2019 addition)
+
+`SC_CoordinateMetadata` is the other major addition in the 2019 revision. It
+bundles a CRS with an optional coordinate epoch to fully describe a coordinate
+set — critical for GNSS and ITRF-based data.
+
+```rust
+/// SC_CoordinateMetadata associates a coordinate set with its CRS and an
+/// optional coordinate epoch.
+///
+/// Source: ISO 19111:2019 §7.4 — SC_CoordinateMetadata
+pub struct CoordinateMetadataHasCrs;
+structural_prop!(CoordinateMetadataHasCrs, "CoordinateMetadataHasCrs");
+
+/// SC_CoordinateMetadata.crs references a valid SC_CRS object.
+///
+/// Source: ISO 19111:2019 §7.4 — SC_CoordinateMetadata.crs
+pub struct CoordinateMetadataCrsNonNull;
+structural_prop!(CoordinateMetadataCrsNonNull, "CoordinateMetadataCrsNonNull");
+
+/// SC_CoordinateMetadata.coordinateEpoch is optional; when present, it is
+/// a decimal year (positive finite real, e.g. 2023.5).
+///
+/// Source: ISO 19111:2019 §7.4 — SC_CoordinateMetadata.coordinateEpoch
+pub struct CoordinateMetadataEpochIsDecimalYear;
+structural_prop!(CoordinateMetadataEpochIsDecimalYear, "CoordinateMetadataEpochIsDecimalYear");
+
+/// When the CRS is dynamic, SC_CoordinateMetadata.coordinateEpoch MUST be
+/// provided; omitting it makes coordinates ambiguous at centimetre level.
+///
+/// Source: ISO 19111:2019 §7.4 — dynamic CRS requirement
+pub struct CoordinateMetadataDynamicCrsRequiresEpoch;
+structural_prop!(CoordinateMetadataDynamicCrsRequiresEpoch, "CoordinateMetadataDynamicCrsRequiresEpoch");
+
+/// When the CRS is static, SC_CoordinateMetadata.coordinateEpoch SHOULD be
+/// omitted (epoch is meaningless for plate-fixed static CRS).
+///
+/// Source: ISO 19111:2019 §7.4 — static CRS note
+pub struct CoordinateMetadataStaticCrsEpochShouldBeAbsent;
+structural_prop!(CoordinateMetadataStaticCrsEpochShouldBeAbsent, "CoordinateMetadataStaticCrsEpochShouldBeAbsent");
+
+/// SC_CoordinateMetadata may appear at the coordinate set level (e.g. a
+/// GML file header) or at the individual coordinate tuple level.
+///
+/// Source: ISO 19111:2019 §7.4 — usage contexts
+pub struct CoordinateMetadataApplicableAtSetOrTupleLevel;
+structural_prop!(CoordinateMetadataApplicableAtSetOrTupleLevel, "CoordinateMetadataApplicableAtSetOrTupleLevel");
+
+/// The coordinateEpoch in SC_CoordinateMetadata and the
+/// frameReferenceEpoch in a dynamic datum are distinct concepts — the
+/// former tags the coordinates, the latter defines the datum realization.
+///
+/// Source: ISO 19111:2019 §7.4 + §6.4 — epoch distinction
+pub struct CoordinateEpochDistinctFromFrameReferenceEpoch;
+structural_prop!(CoordinateEpochDistinctFromFrameReferenceEpoch, "CoordinateEpochDistinctFromFrameReferenceEpoch");
+```
+
+---
+
+## §24 CC_PassThroughOperation
+
+`CC_PassThroughOperation` is the missing member of the coordinate operation
+hierarchy, bridging single-axis operations with compound CRS transforms.
+
+```rust
+/// CC_PassThroughOperation passes some coordinate tuple dimensions unchanged
+/// while applying an operation to the remaining dimensions.
+///
+/// Source: ISO 19111:2019 §11.5 — CC_PassThroughOperation
+pub struct PassThroughOperationPreservesSomeAxes;
+structural_prop!(PassThroughOperationPreservesSomeAxes, "PassThroughOperationPreservesSomeAxes");
+
+/// CC_PassThroughOperation.modifiedCoordinates lists the 1-based ordinal
+/// positions of the axes affected by the inner operation.
+///
+/// Source: ISO 19111:2019 §11.5 — CC_PassThroughOperation.modifiedCoordinates
+pub struct PassThroughOperationModifiedCoordinatesNonEmpty;
+structural_prop!(PassThroughOperationModifiedCoordinatesNonEmpty, "PassThroughOperationModifiedCoordinatesNonEmpty");
+
+/// Each index in modifiedCoordinates must be ≥ 1 and ≤ the total dimension
+/// of the source CRS.
+///
+/// Source: ISO 19111:2019 §11.5 — index range constraint
+pub struct PassThroughOperationIndexInRange;
+structural_prop!(PassThroughOperationIndexInRange, "PassThroughOperationIndexInRange");
+
+/// CC_PassThroughOperation.operation references a CC_SingleOperation applied
+/// to the modified axes.
+///
+/// Source: ISO 19111:2019 §11.5 — CC_PassThroughOperation.operation
+pub struct PassThroughOperationInnerOperationNonNull;
+structural_prop!(PassThroughOperationInnerOperationNonNull, "PassThroughOperationInnerOperationNonNull");
+
+/// The dimension count of the inner operation's source CRS must equal the
+/// count of modifiedCoordinates indices.
+///
+/// Source: ISO 19111:2019 §11.5 — dimension consistency
+pub struct PassThroughOperationDimensionConsistency;
+structural_prop!(PassThroughOperationDimensionConsistency, "PassThroughOperationDimensionConsistency");
+
+/// Typical use: apply a horizontal 2D datum shift to (easting, northing)
+/// while passing elevation unchanged in a compound CRS operation.
+///
+/// Source: ISO 19111:2019 §11.5 — usage example
+pub struct PassThroughOperationCompoundCrsUsage;
+structural_prop!(PassThroughOperationCompoundCrsUsage, "PassThroughOperationCompoundCrsUsage");
+```
+
+---
+
+## §25 CS_SphericalCS
+
+`CS_SphericalCS` was omitted from §8.4. It is a valid CS type in ISO 19111
+for 3D geocentric/spherical coordinates.
+
+```rust
+/// CS_SphericalCS has exactly three axes: two angular (spherical latitude
+/// and longitude) and one distance (radius).
+///
+/// Source: ISO 19111:2019 §8.4 — CS_SphericalCS
+pub struct SphericalCsHasThreeAxes;
+structural_prop!(SphericalCsHasThreeAxes, "SphericalCsHasThreeAxes");
+
+/// The first two axes of a CS_SphericalCS use angular units (degrees or
+/// radians); the third (radius) uses a linear unit.
+///
+/// Source: ISO 19111:2019 §8.4 — CS_SphericalCS axis units
+pub struct SphericalCsAngularAxesThenLinear;
+structural_prop!(SphericalCsAngularAxesThenLinear, "SphericalCsAngularAxesThenLinear");
+
+/// CS_SphericalCS is applicable to geocentric CRS and astronomical
+/// coordinates but is rarely used in GIS software.
+///
+/// Source: ISO 19111:2019 §8.4 — CS_SphericalCS applicability
+pub struct SphericalCsApplicableToGeocentricContext;
+structural_prop!(SphericalCsApplicableToGeocentricContext, "SphericalCsApplicableToGeocentricContext");
+```
+
+---
+
+## §26 Helmert Transformation Rotation Conventions
+
+Two incompatible conventions exist for the 7-parameter Helmert transformation.
+Mixing them silently produces errors of up to metres.
+
+```rust
+/// The 7-parameter Helmert transform uses: 3 translation parameters (tx,
+/// ty, tz), 3 rotation parameters (rx, ry, rz), and a scale factor (ds).
+///
+/// Source: ISO 19111:2019 §11.4 / EPSG Guidance Note 7-2
+pub struct HelmertSevenParameterStructure;
+structural_prop!(HelmertSevenParameterStructure, "HelmertSevenParameterStructure");
+
+/// Position Vector (ISO) convention: rotation parameters rotate the
+/// coordinate frame; signs are opposite to the Coordinate Frame convention.
+///
+/// Source: ISO 19111:2019 §11.4 — position vector rotation (ISO method 9606-1)
+pub struct HelmertPositionVectorConvention;
+structural_prop!(HelmertPositionVectorConvention, "HelmertPositionVectorConvention");
+
+/// Coordinate Frame (EPSG pre-2002) convention: rotation parameters rotate
+/// the coordinate system around the origin; signs opposite to Position Vector.
+///
+/// Source: EPSG Guidance Note 7-2 §2.4 — coordinate frame rotation (method 1033)
+pub struct HelmertCoordinateFrameConvention;
+structural_prop!(HelmertCoordinateFrameConvention, "HelmertCoordinateFrameConvention");
+
+/// The two Helmert rotation conventions are numerically identical only
+/// when all rotation parameters are zero (3-parameter translation case).
+///
+/// Source: EPSG Guidance Note 7-2 §2.4 — convention equivalence condition
+pub struct HelmertConventionsEquivalentOnlyForZeroRotation;
+structural_prop!(HelmertConventionsEquivalentOnlyForZeroRotation, "HelmertConventionsEquivalentOnlyForZeroRotation");
+
+/// A transformation record MUST identify which rotation convention is used;
+/// applying the wrong convention introduces systematic errors proportional
+/// to the rotation magnitude.
+///
+/// Source: ISO 19111:2019 §11.4 — convention identification requirement
+pub struct HelmertConventionMustBeIdentified;
+structural_prop!(HelmertConventionMustBeIdentified, "HelmertConventionMustBeIdentified");
+
+/// EPSG operation method 9607 = Coordinate Frame rotation (Bursa-Wolf);
+/// EPSG operation method 9606 = Position Vector transformation (ISO).
+///
+/// Source: EPSG registry — methods 9606, 9607
+pub struct HelmertEpsgMethodCodes9606And9607;
+structural_prop!(HelmertEpsgMethodCodes9606And9607, "HelmertEpsgMethodCodes9606And9607");
+
+/// Molodensky-Badekas is a 10-parameter variant referencing a pivot point
+/// near the datum centroid rather than the coordinate origin.
+///
+/// Source: ISO 19111:2019 §11.4 — Molodensky-Badekas method
+pub struct MolodenskyBadenkasTenParameter;
+structural_prop!(MolodenskyBadenkasTenParameter, "MolodenskyBadenkasTenParameter");
+```
+
+---
+
+## §27 Grid-Based Datum Shift Methods
+
+```rust
+/// Grid-based datum shifts (NADCON5, NTv2, VERTCON) reference an external
+/// file of shift values rather than analytic parameters.
+///
+/// Source: ISO 19111:2019 §11.4 / EPSG methods 9613, 9615
+pub struct GridBasedDatumShiftUsesExternalFile;
+structural_prop!(GridBasedDatumShiftUsesExternalFile, "GridBasedDatumShiftUsesExternalFile");
+
+/// NADCON5 (EPSG method 1075) is the US official horizontal datum shift
+/// grid between NAD83 realizations.
+///
+/// Source: EPSG registry method 1075
+pub struct Nadcon5IsUsHorizontalDatumShift;
+structural_prop!(Nadcon5IsUsHorizontalDatumShift, "Nadcon5IsUsHorizontalDatumShift");
+
+/// NTv2 (EPSG method 9615) is a grid-based horizontal datum shift format
+/// used in Canada, Australia, and many EU countries.
+///
+/// Source: EPSG registry method 9615
+pub struct Ntv2IsGridHorizontalShift;
+structural_prop!(Ntv2IsGridHorizontalShift, "Ntv2IsGridHorizontalShift");
+
+/// VERTCON (EPSG method 9661) is the US vertical datum shift grid
+/// between NGVD29 and NAVD88.
+///
+/// Source: EPSG registry method 9661
+pub struct VertconIsUsVerticalDatumShift;
+structural_prop!(VertconIsUsVerticalDatumShift, "VertconIsUsVerticalDatumShift");
+
+/// A PARAMETERFILE operation parameter stores a filename, not a numeric
+/// value; the software must locate and load the referenced grid file.
+///
+/// Source: ISO 19111:2019 §11.4 — PARAMETERFILE concept
+pub struct ParameterFileStoresFilenameNotValue;
+structural_prop!(ParameterFileStoresFilenameNotValue, "ParameterFileStoresFilenameNotValue");
+```
+
+---
+
+## §28 Unit of Measure (UoM) Constraints
+
+```rust
+/// Every UoM has a non-empty name string.
+///
+/// Source: ISO 19111:2019 §6.6 — UoM.name
+pub struct UomNameNonEmpty;
+structural_prop!(UomNameNonEmpty, "UomNameNonEmpty");
+
+/// UoM.conversionFactor is a positive real number giving the conversion
+/// to the SI base unit for the quantity type.
+///
+/// Source: ISO 19111:2019 §6.6 — UoM.conversionFactor
+pub struct UomConversionFactorPositive;
+structural_prop!(UomConversionFactorPositive, "UomConversionFactorPositive");
+
+/// Angular units convert to radians; 1 degree = π/180 ≈ 0.017453292519943278.
+///
+/// Source: ISO 19111:2019 §6.6 — angular UoM SI base is radians
+pub struct UomAngularConvertToRadians;
+structural_prop!(UomAngularConvertToRadians, "UomAngularConvertToRadians");
+
+/// Linear units convert to metres; 1 foot = 0.3048 m exactly
+/// (international foot); US survey foot = 0.304800609601219...
+///
+/// Source: ISO 19111:2019 §6.6 — linear UoM SI base is metres
+pub struct UomLinearConvertToMetres;
+structural_prop!(UomLinearConvertToMetres, "UomLinearConvertToMetres");
+
+/// Time units convert to seconds.
+///
+/// Source: ISO 19111:2019 §6.6 — temporal UoM SI base is seconds
+pub struct UomTimeConvertToSeconds;
+structural_prop!(UomTimeConvertToSeconds, "UomTimeConvertToSeconds");
+
+/// Scale units are dimensionless; conversionFactor = 1.0 (unity) for
+/// parts-per-million variants: 1 ppm = 1e-6.
+///
+/// Source: ISO 19111:2019 §6.6 — scale UoM
+pub struct UomScaleDimensionless;
+structural_prop!(UomScaleDimensionless, "UomScaleDimensionless");
+
+/// The international foot and the US survey foot differ; confusion between
+/// them produces ~3mm/km error (significant in cadastral/engineering work).
+///
+/// Source: EPSG registry — EPSG:9002 vs EPSG:9003
+pub struct UomFeetAmbiguityInternationalVsSurvey;
+structural_prop!(UomFeetAmbiguityInternationalVsSurvey, "UomFeetAmbiguityInternationalVsSurvey");
+```
+
+---
+
+## §29 UTM South Zone False Northing
+
+```rust
+/// UTM south zones (EPSG:32701–32760) use a false northing of 10,000,000 m
+/// to keep all northing values positive within the southern hemisphere.
+///
+/// Source: ISO 19111:2019 / EPSG Guidance Note 7-2 §3 — UTM south zones
+pub struct UtmSouthZoneFalseNorthing10000000;
+structural_prop!(UtmSouthZoneFalseNorthing10000000, "UtmSouthZoneFalseNorthing10000000");
+
+/// UTM north zones (EPSG:32601–32660) use false northing = 0 m; the
+/// equator is the natural origin for northing.
+///
+/// Source: ISO 19111:2019 / EPSG Guidance Note 7-2 §3 — UTM north zones
+pub struct UtmNorthZoneFalseNorthing0;
+structural_prop!(UtmNorthZoneFalseNorthing0, "UtmNorthZoneFalseNorthing0");
+
+/// All UTM zones (north and south) share false easting = 500,000 m and
+/// scale factor at central meridian k₀ = 0.9996.
+///
+/// Source: EPSG Guidance Note 7-2 §3 — UTM common parameters
+pub struct UtmCommonParametersFalseEastingAndScale;
+structural_prop!(UtmCommonParametersFalseEastingAndScale, "UtmCommonParametersFalseEastingAndScale");
+```
+
+---
+
+## Summary Supplement — Props Added in §21–29
+
+| Section | Props added |
+|---------|-------------|
+| §21 IO_IdentifiedObject base class | 7 |
+| §22 CD_DatumEnsemble | 10 |
+| §23 SC_CoordinateMetadata | 7 |
+| §24 CC_PassThroughOperation | 6 |
+| §25 CS_SphericalCS | 3 |
+| §26 Helmert rotation conventions | 7 |
+| §27 Grid-based datum shifts | 5 |
+| §28 Unit of Measure constraints | 7 |
+| §29 UTM south zone false northing | 3 |
+| **Supplement total** | **55** |
+| **Previous total** | **247** |
+| **Grand total** | **302** |
+
+---
+
+*Total props: 302*  
 *Standard: ISO 19111:2019 — Geographic information — Referencing by coordinates*  
 *Generated for use in `crates/elicit_gis/src/contracts/iso_19111.rs`*
