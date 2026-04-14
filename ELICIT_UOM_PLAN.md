@@ -132,6 +132,7 @@ Each registration `{name}` generates:
 ```
 
 Example for "length":
+
 ```
 length__new(100.0, "foot") → uuid-1     // stores Length::new::<foot>(100.0) → typed HashMap
 length__emit([uuid-1]) → "let length_0 = Length::new::<foot>(100.0);"
@@ -214,7 +215,7 @@ catalog__physics_constants() → Vec<{name, symbol, value, unit, quantity_type}>
 catalog__base_quantities() → Vec<{name, si_unit}>
 ```
 
-### Physics constants (via `catalog__physics_constants`):
+### Physics constants (via `catalog__physics_constants`)
 
 | Constant | Value | Units |
 |---|---|---|
@@ -226,7 +227,7 @@ catalog__base_quantities() → Vec<{name, si_unit}>
 | Elementary charge | 1.602176×10⁻¹⁹ | C |
 | Standard gravity | 9.80665 | m/s² |
 
-### Named physics formulas (via `code__emit_physics_formula`):
+### Named physics formulas (via `code__emit_physics_formula`)
 
 - `KineticEnergy`: E = ½mv²
 - `GravitationalPE`: E = mgh
@@ -264,6 +265,7 @@ fn main() {
 ```
 
 Cargo.toml snippet emitted alongside:
+
 ```toml
 [dependencies]
 uom = { version = "0.38", default-features = true }

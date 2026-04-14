@@ -24,21 +24,17 @@ use serde::{Deserialize, Serialize};
     JsonSchema,
     strum::EnumIter,
     derive_more::Display,
+    Default,
 )]
 #[serde(rename_all = "snake_case")]
 pub enum EguiWinitRenderer {
     /// Cross-platform wgpu (WebGPU) backend — the recommended choice.
     #[display("wgpu")]
+    #[default]
     Wgpu,
     /// OpenGL via glow — simpler setup, fewer dependencies.
     #[display("glow")]
     Glow,
-}
-
-impl Default for EguiWinitRenderer {
-    fn default() -> Self {
-        Self::Wgpu
-    }
 }
 
 /// Colour theme preference for the egui context.
@@ -54,11 +50,13 @@ impl Default for EguiWinitRenderer {
     JsonSchema,
     strum::EnumIter,
     derive_more::Display,
+    Default,
 )]
 #[serde(rename_all = "snake_case")]
 pub enum EguiWinitTheme {
     /// Force dark mode regardless of OS setting.
     #[display("dark")]
+    #[default]
     Dark,
     /// Force light mode regardless of OS setting.
     #[display("light")]
@@ -66,12 +64,6 @@ pub enum EguiWinitTheme {
     /// Follow the OS / system preference.
     #[display("system")]
     System,
-}
-
-impl Default for EguiWinitTheme {
-    fn default() -> Self {
-        Self::Dark
-    }
 }
 
 /// Descriptor for a native egui + winit application.

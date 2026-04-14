@@ -87,11 +87,13 @@ wkt = { version = "0.11", features = ["geo-types"] }
 ### 1.2 Add `elicit_wkt` workspace member and dep
 
 In `[workspace] members`:
+
 ```toml
 "crates/elicit_wkt",
 ```
 
 In `[workspace.dependencies]`:
+
 ```toml
 elicit_wkt = { path = "crates/elicit_wkt", version = "0.10" }
 ```
@@ -99,6 +101,7 @@ elicit_wkt = { path = "crates/elicit_wkt", version = "0.10" }
 ### 1.3 Add `wkt-types` feature to `elicitation`
 
 `crates/elicitation/Cargo.toml`:
+
 ```toml
 [dependencies]
 wkt = { workspace = true, optional = true }
@@ -185,6 +188,7 @@ Each derives `Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema`.
 ### 2.4 Wire into `primitives/mod.rs` and `lib.rs`
 
 `primitives/mod.rs`:
+
 ```rust
 #[cfg(feature = "wkt-types")]
 pub mod wkt_types;
@@ -429,6 +433,7 @@ impl VerifiedWorkflow for PointParsed {}
 ```
 
 Tools mirror constructors and key methods:
+
 - `wkt_coord__new` — `(x, y)` → `(Coord, Established<CoordCreated>)`
 - `wkt_coord__new_3d` — `(x, y, z)` → `(Coord, Established<CoordCreated>)`
 - `wkt_coord__x` — `(Coord,)` → `f64`
@@ -443,6 +448,7 @@ Tools mirror constructors and key methods:
 ### 3.9 `workflow/compound_plugin.rs` — `WktCompoundPlugin`
 
 Propositions:
+
 ```rust
 #[derive(Prop)] pub struct LineStringCreated;
 impl VerifiedWorkflow for LineStringCreated {}
@@ -452,6 +458,7 @@ impl VerifiedWorkflow for PolygonCreated {}
 ```
 
 Tools:
+
 - `wkt_linestring__new` — `(Vec<Coord>,)` → `(LineString, Established<LineStringCreated>)`
 - `wkt_linestring__coords` — `(LineString,)` → `Vec<Coord>`
 - `wkt_linestring__len` — `(LineString,)` → `usize`
@@ -472,12 +479,14 @@ Propositions: `MultiPointCreated`, `MultiLineStringCreated`, `MultiPolygonCreate
 The main entry point: parse and serialize WKT.
 
 Propositions:
+
 ```rust
 #[derive(Prop)] pub struct WktParsed;   // a WKT string was successfully parsed
 impl VerifiedWorkflow for WktParsed {}
 ```
 
 Tools:
+
 - `wkt__from_str` — `(wkt_string: String,)` → `(WktItem, Established<WktParsed>)`
   Mirrors `Wkt::<f64>::from_str`. Returns error if string is not valid WKT.
 - `wkt__wkt_string` — `(WktItem,)` → `String`
@@ -492,6 +501,7 @@ Trait factory for `wkt::ToWkt<f64>`. Registered types: all geo_types wrappers
 `GeoMultiPolygon`, `GeoGeometryCollection`).
 
 Exposed methods per registered type:
+
 - `to_wkt()` — `T` → `WktItem`
 - `wkt_string()` — `T` → `String`
 
@@ -502,6 +512,7 @@ Tool namespace: `to_wkt__{type}__to_wkt`, `to_wkt__{type}__wkt_string`.
 Trait factory for `wkt::TryFromWkt<f64>`. Same registered types as `ToWktFactory`.
 
 Exposed methods per registered type:
+
 - `try_from_wkt_str(s: &str)` → `Result<T, String>`
 
 Tool namespace: `try_from_wkt__{type}__try_from_wkt_str`.
@@ -673,6 +684,7 @@ impl VerifiedWorkflow for WktParsed {}
 ```
 
 Additional props per plugin:
+
 - `CoordCreated`, `PointParsed`, `LineStringCreated`, `PolygonCreated`
 - `MultiPointCreated`, `MultiLineStringCreated`, `MultiPolygonCreated`
 

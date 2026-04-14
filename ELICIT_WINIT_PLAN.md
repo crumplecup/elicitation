@@ -3,6 +3,7 @@
 ## Goal
 
 Add winit support to elicitation as the windowing/input alphabet:
+
 1. **Core type integration** — winit types in `elicitation` with `winit-types` feature
 2. **Shadow crate** — `elicit_winit` with code-generation MCP tools for windowing and input
 3. **Proof wiring** — Kani / Creusot / Verus structural proofs for the core types
@@ -81,6 +82,7 @@ derive `Serialize` / `Deserialize` when `winit/serde` is enabled.
 | `WinitKeyCodeSelect` | `winit::keyboard::KeyCode` |
 
 Pattern (same as `egui_types/trenchcoats.rs`):
+
 ```rust
 crate::select_trenchcoat!(winit::window::WindowLevel, as WinitWindowLevelSelect, serde);
 crate::select_trenchcoat_traits!(WinitWindowLevelSelect, winit::window::WindowLevel, [copy, eq, hash]);
@@ -268,15 +270,17 @@ cargo check --manifest-path crates/elicitation_verus/Cargo.toml
 4. Phase 4: proof wiring
 5. Phase 5: validate + commit
 
-
 ## Goal
+
 Add complete winit support to elicitation as windowing alphabet:
+
 1. **Core type integration** — winit types in `elicitation` with feature gating
 2. **Shadow crate** — `elicit_winit` with MCP tools for windowing and input
 
 ## Architecture Overview
 
 Following established patterns from elicit_chrono, elicit_tokio, elicit_url:
+
 - **Core**: Feature-gated winit types with Select enums and Elicitation impls
 - **Shadow crate**: ~6-8 workflow plugins covering window management, events, input
 - **Windowing alphabet**: Foundation for native PC applications (pair with elicit_wgpu for rendering)
@@ -284,6 +288,7 @@ Following established patterns from elicit_chrono, elicit_tokio, elicit_url:
 ## API Coverage
 
 winit provides:
+
 - **Window management** (~40 methods): creation, configuration, sizing, decorations
 - **Event loop** (~15 types): WindowEvent, DeviceEvent, lifecycle
 - **Input handling** (~25 types): keyboard, mouse, touch, gamepad
@@ -293,42 +298,49 @@ winit provides:
 
 ## Phase 1: Workspace Configuration
 
-### Files to modify:
+### Files to modify
+
 - `Cargo.toml` (workspace root)
 - `crates/elicitation/Cargo.toml`
 
-### Changes:
+### Changes
 
 **1.1 Add winit to workspace dependencies**:
+
 ```toml
 # Windowing
 winit = { version = "0.30" }
 ```
 
 **1.2 Add elicit_winit member**:
+
 ```toml
   "crates/elicit_winit",
 ```
 
 **1.3 Add elicit_winit workspace dependency**:
+
 ```toml
 elicit_winit = { path = "crates/elicit_winit", version = "0.9.1" }
 ```
 
 **1.4 Add winit feature to elicitation**:
+
 - Add optional dependency: `winit = { workspace = true, optional = true }`
 - Add feature: `winit = ["dep:winit"]`
 - Update `full` feature to include `"winit"`
 
 ## Phase 2: Core Type Integration
 
-### Files to create/modify:
+### Files to create/modify
+
 - `crates/elicitation/src/winit_types.rs` (new)
 - `crates/elicitation/src/lib.rs` (modify)
 
-### Type Support Strategy:
+### Type Support Strategy
 
 **2.1 Simple Enums** (use `select_trenchcoat!` macro):
+
 - CursorIcon (~20 variants)
 - WindowLevel (AlwaysOnBottom, Normal, AlwaysOnTop)
 - Fullscreen (Exclusive, Borderless)
@@ -337,13 +349,14 @@ elicit_winit = { path = "crates/elicit_winit", version = "0.9.1" }
 - ElementState (Pressed, Released)
 
 **2.2 Complex Types** (manual `Elicitation` impl):
+
 - WindowAttributes (builder pattern)
 - PhysicalSize/PhysicalPosition
 - LogicalSize/LogicalPosition
 - KeyEvent (with modifiers)
 - MouseScrollDelta
 
-### Implementation Pattern:
+### Implementation Pattern
 
 ```rust
 // crates/elicitation/src/winit_types.rs
@@ -365,6 +378,7 @@ impl Elicitation for winit::dpi::PhysicalSize<u32> {
 ```
 
 **2.3 Export from lib.rs**:
+
 ```rust
 #[cfg(feature = "winit")]
 pub mod winit_types;
@@ -375,7 +389,7 @@ pub use winit_types::{CursorIconSelect, WindowLevelSelect, /* ... */};
 
 ## Phase 3: Create elicit_winit Shadow Crate
 
-### Directory Structure:
+### Directory Structure
 
 ```
 crates/elicit_winit/
@@ -398,7 +412,7 @@ crates/elicit_winit/
     └── winit_test.rs
 ```
 
-### Cargo.toml:
+### Cargo.toml
 
 ```toml
 [package]
@@ -438,7 +452,7 @@ emit = ["dep:proc-macro2", "dep:quote", "elicitation/emit"]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
 ```
 
-### lib.rs structure:
+### lib.rs structure
 
 ```rust
 //! `elicit_winit` — comprehensive winit API exposure via MCP tools.
@@ -479,7 +493,7 @@ pub use workflow::{
 
 ## Phase 4: Implement Core Type Wrappers
 
-### 4.1 Window wrapper (window.rs):
+### 4.1 Window wrapper (window.rs)
 
 ```rust
 use elicitation::{elicit_newtype, elicit_newtype_traits};
@@ -503,7 +517,7 @@ impl Window {
 }
 ```
 
-### 4.2 EventLoop wrapper (event_loop.rs):
+### 4.2 EventLoop wrapper (event_loop.rs)
 
 ```rust
 elicit_newtype!(winit::event_loop::EventLoop<()>, as EventLoop, serde);
@@ -521,7 +535,7 @@ impl EventLoop {
 
 ## Phase 5: Implement MCP Tools
 
-### 5.1 Window Plugin (workflow/window_plugin.rs):
+### 5.1 Window Plugin (workflow/window_plugin.rs)
 
 ```rust
 use elicitation_derive::elicit_tool;
@@ -551,7 +565,7 @@ async fn window_create(p: CreateWindowParams) -> Result<CallToolResult, ErrorDat
 // ... 11 more tools: set_title, resize, maximize, minimize, etc.
 ```
 
-### 5.2 Event Plugin (workflow/event_plugin.rs):
+### 5.2 Event Plugin (workflow/event_plugin.rs)
 
 ```rust
 #[elicit_tool(
@@ -570,7 +584,7 @@ async fn event_run_loop(p: RunLoopParams) -> Result<CallToolResult, ErrorData> {
 // ... 9 more tools: poll_events, handle_window_event, etc.
 ```
 
-### 5.3 Input Plugin (workflow/input_plugin.rs):
+### 5.3 Input Plugin (workflow/input_plugin.rs)
 
 ```rust
 #[elicit_tool(
@@ -591,10 +605,11 @@ async fn input_handle_keyboard(p: KeyboardParams) -> Result<CallToolResult, Erro
 
 ## Phase 6: Testing
 
-### File to create:
+### File to create
+
 - `crates/elicit_winit/tests/winit_test.rs`
 
-### Test Coverage:
+### Test Coverage
 
 ```rust
 #[test]
@@ -621,10 +636,11 @@ fn test_window_attributes_serialization() {
 
 ## Phase 7: Documentation
 
-### File to create:
+### File to create
+
 - `crates/elicit_winit/README.md`
 
-### Content:
+### Content
 
 ```markdown
 # elicit_winit
@@ -691,6 +707,7 @@ event_loop.run(move |event, target| {
     }
 })?;
 ```
+
 ```
 
 ## Verification Steps

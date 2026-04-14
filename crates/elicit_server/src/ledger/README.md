@@ -22,7 +22,9 @@
 The ledger serves as a **reference implementation** demonstrating elicitation framework patterns:
 
 ### 1. Real-World Complexity
+
 Unlike toy examples (counters, todos), a ledger has:
+
 - **Transactions** - Atomic multi-step operations (debit + credit must balance)
 - **Constraints** - Business rules (positive amounts, sufficient funds, distinct accounts)
 - **State transitions** - Pending → Validated → Committed/Rejected
@@ -30,20 +32,26 @@ Unlike toy examples (counters, todos), a ledger has:
 - **Invariants** - Double-entry bookkeeping (sum of all balances unchanged)
 
 ### 2. Proof Composition
+
 Demonstrates how multiple preconditions combine:
+
 ```rust
 type ValidTransfer = And<AmountPositive, And<SufficientFunds, AccountsDistinct>>;
 ```
 
 ### 3. Database Integration
+
 Shows typestate working with real database operations:
+
 - Validation queries (SELECT balance)
 - Transactional commits (BEGIN/INSERT/COMMIT)
 - Connection pooling
 - Error handling
 
 ### 4. Compile-Time Guarantees
+
 The type system **prevents** invalid operations:
+
 ```rust
 // ❌ Compiler error: can't commit without validation
 let transfer: Transfer<Pending> = Transfer::new(...);
@@ -252,11 +260,13 @@ Proofs compile away completely - **zero runtime overhead**.
 ### Formal Verification
 
 Each proposition includes proof methods for:
+
 - **Kani** - Bounded model checking
 - **Verus** - SMT-based verification
 - **Creusot** - Deductive verification (Why3 backend)
 
 Example (AmountPositive):
+
 ```rust
 impl Prop for AmountPositive {
     fn kani_proof() -> TokenStream {
@@ -373,6 +383,7 @@ CREATE TABLE ledger_entries (
 ### Double-Entry Bookkeeping
 
 Every transfer creates **two entries**:
+
 ```sql
 -- Alice sends 50 to Bob
 INSERT INTO ledger_entries (account_name, amount, transfer_id, created_at)
@@ -396,6 +407,7 @@ WHERE account_name = ?;
 ### Validation Query
 
 Before commit, the `validate()` method queries the balance:
+
 ```rust
 let row = sqlx::query(
     "SELECT COALESCE(SUM(amount), 0) as balance
@@ -420,6 +432,7 @@ if balance < transfer.amount.0 {
 ### Transactional Commit
 
 The `commit()` method uses a transaction:
+
 ```rust
 let mut tx = pool.begin().await?;
 
@@ -447,6 +460,7 @@ tx.commit().await?;
 ### Error Conversion
 
 SQLx errors automatically convert:
+
 ```rust
 impl From<sqlx::Error> for ValidationError {
     fn from(err: sqlx::Error) -> Self {
@@ -460,6 +474,7 @@ impl From<sqlx::Error> for ValidationError {
 ## Testing Strategy
 
 ### Phase 1: Smoke Test
+
 **Goal:** Verify basic emit pipeline
 
 - Create table
@@ -470,6 +485,7 @@ impl From<sqlx::Error> for ValidationError {
 **Status:** ✅ Complete
 
 ### Phase 2: Balance Queries
+
 **Goal:** Test SQL aggregation
 
 - Query balances before/after transfers
@@ -479,6 +495,7 @@ impl From<sqlx::Error> for ValidationError {
 **Status:** ✅ Complete
 
 ### Phase 3: Dynamic Transfers
+
 **Goal:** Parameterized queries
 
 - Runtime binding of account names
@@ -488,6 +505,7 @@ impl From<sqlx::Error> for ValidationError {
 **Status:** ✅ Complete
 
 ### Phase 4: Constraint Validation
+
 **Goal:** Pre-transfer validation pattern
 
 - Query balance before transfer
@@ -498,6 +516,7 @@ impl From<sqlx::Error> for ValidationError {
 **Status:** ✅ Complete
 
 ### Phase 5: Typestate Integration
+
 **Goal:** Full typestate API with database
 
 - Transfer<Pending> → validate() → Transfer<Validated>
@@ -506,6 +525,7 @@ impl From<sqlx::Error> for ValidationError {
 - Manual rejection and rollback
 
 **Tests:**
+
 - `test_ledger_typestate_valid_transfer` - Happy path
 - `test_ledger_typestate_insufficient_funds` - Validation failure
 - `test_ledger_typestate_same_account` - AccountsDistinct violation
@@ -517,6 +537,7 @@ impl From<sqlx::Error> for ValidationError {
 **Status:** ✅ Complete (7 tests, all passing)
 
 ### Phase 6: Concurrent Transfers
+
 **Goal:** Verify behavior under concurrent load
 
 - Multiple concurrent transfers from same account
@@ -525,6 +546,7 @@ impl From<sqlx::Error> for ValidationError {
 - Overdraft scenarios
 
 **Tests:**
+
 - `test_ledger_concurrent_transfers_from_same_account` - 5 concurrent transfers
 - `test_ledger_concurrent_transfers_no_overdraft` - 10 concurrent transfers
 - `test_ledger_concurrent_bidirectional_transfers` - Alice ↔ Bob
@@ -537,6 +559,7 @@ impl From<sqlx::Error> for ValidationError {
 ### Test Summary
 
 **Total:** 6 test files covering smoke → concurrent
+
 - Phase 1: 1 test (smoke)
 - Phase 2: 1 test (queries)
 - Phase 3: 1 test (dynamic)
@@ -553,12 +576,14 @@ impl From<sqlx::Error> for ValidationError {
 ### 1. Transaction Isolation
 
 **SQLite Default (DEFERRED):**
+
 - Locks acquired on first write, not BEGIN
 - Validation queries may see stale balances
 - Multiple transactions can pass validation and all commit
 - **Result:** Overdrafts possible
 
 **Recommended for Production:**
+
 ```rust
 // Option 1: BEGIN IMMEDIATE
 sqlx::query("BEGIN IMMEDIATE").execute(&mut tx).await?;
@@ -572,6 +597,7 @@ sqlx::query("BEGIN IMMEDIATE").execute(&mut tx).await?;
 ### 2. Unique Transfer IDs
 
 Enforce uniqueness to prevent duplicate transfers:
+
 ```sql
 CREATE UNIQUE INDEX idx_transfer_id ON ledger_entries(transfer_id, account_name);
 ```
@@ -579,11 +605,13 @@ CREATE UNIQUE INDEX idx_transfer_id ON ledger_entries(transfer_id, account_name)
 ### 3. Audit Trail
 
 The current schema provides basic audit:
+
 - `created_at` - Timestamp
 - `transfer_id` - Links debit/credit entries
 - `amount` - Signed integer (+ credit, - debit)
 
 **Enhancement:** Add audit columns:
+
 ```sql
 ALTER TABLE ledger_entries ADD COLUMN created_by TEXT;
 ALTER TABLE ledger_entries ADD COLUMN metadata JSON;
@@ -592,6 +620,7 @@ ALTER TABLE ledger_entries ADD COLUMN metadata JSON;
 ### 4. Balance Snapshots
 
 For high-volume systems, consider materializing balances:
+
 ```sql
 CREATE TABLE account_balances (
     account_name TEXT PRIMARY KEY,
@@ -605,6 +634,7 @@ Update via triggers or application code.
 ### 5. Archival
 
 Partition or archive old entries:
+
 ```sql
 CREATE TABLE ledger_entries_archive (
     LIKE ledger_entries INCLUDING ALL
@@ -619,6 +649,7 @@ WHERE created_at < ?;
 ### 6. Monitoring
 
 Track:
+
 - Failed validations (insufficient funds, same account)
 - Commit latency
 - Transaction retry rates
@@ -627,6 +658,7 @@ Track:
 ### 7. Idempotency
 
 For distributed systems, ensure transfers are idempotent:
+
 ```rust
 // Check if transfer_id already exists
 let exists = sqlx::query("SELECT 1 FROM ledger_entries WHERE transfer_id = ?")
@@ -642,6 +674,7 @@ if exists.is_some() {
 ### 8. Rate Limiting
 
 Prevent abuse:
+
 ```rust
 // Check recent transfer count
 let count: i64 = sqlx::query_scalar(
@@ -661,6 +694,7 @@ if count > MAX_TRANSFERS_PER_HOUR {
 ### 9. Negative Balance Prevention
 
 For strict constraints:
+
 ```rust
 // Add check constraint
 CREATE TABLE ledger_entries (
@@ -674,6 +708,7 @@ CREATE TABLE ledger_entries (
 ```
 
 Or use application-level locking:
+
 ```rust
 // Acquire advisory lock per account
 sqlx::query("SELECT pg_advisory_lock(hashtext(?))")
@@ -692,6 +727,7 @@ sqlx::query("SELECT pg_advisory_unlock(hashtext(?))")
 ### 10. Testing
 
 Always test:
+
 - Concurrent transfers (Phase 6 tests)
 - Edge cases (zero balance, max int64)
 - Failure recovery (what if commit fails?)
@@ -702,6 +738,7 @@ Always test:
 ## Comparison to Other Patterns
 
 ### Traditional Approach
+
 ```rust
 struct Transfer {
     from: String,
@@ -716,6 +753,7 @@ transfer.committed = true; // Oops, forgot to validate
 ```
 
 ### Typestate Approach
+
 ```rust
 struct Transfer<Pending> { ... }
 struct Transfer<Validated> { ... }
@@ -730,6 +768,7 @@ validated.commit(&pool).await?; // OK
 ```
 
 **Benefits:**
+
 - Impossible states are unrepresentable
 - State transitions enforced at compile time
 - No runtime checks needed

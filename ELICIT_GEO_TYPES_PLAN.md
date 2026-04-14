@@ -105,6 +105,7 @@ impl ElicitComplete for $wrapper {}  // ← compiler validates ALL bounds here
 ```
 
 **For each new type, the workflow is:**
+
 1. Write the primitive module (`primitives/geo_types/foo.rs`) — all traits except
    `ElicitSpec` and `ElicitComplete`
 2. Add the type to `geo_specs.rs` — the macro adds `ElicitSpec` + `ElicitComplete`
@@ -113,6 +114,7 @@ impl ElicitComplete for $wrapper {}  // ← compiler validates ALL bounds here
 4. The compiler cannot lie: if it compiles, the type is genuinely complete
 
 **Per-module checklist (for the primitive module itself):**
+
 - Wrapper struct with `pub` fields (or pub accessors)
 - `From<geo_types::T>` and `From<Wrapper> for geo_types::T`
 - `default_style!` macro
@@ -495,6 +497,7 @@ async fn primitives_create_point(
 ### `elicitation_kani` — `geo_types.rs`
 
 Harnesses verify:
+
 - `GeoPoint` roundtrip: `geo_types::Point → GeoPoint → geo_types::Point`
 - `GeoRect` constructor normalisation (min ≤ max guaranteed)
 - `GeoLineString` delegation: proof composes from `Vec<GeoCoord>` harness
@@ -535,6 +538,7 @@ Verify: every `GeoGeometry` variant discriminant maps to a unique string label.
 ## Phase 7: Documentation
 
 `crates/elicit_geo_types/README.md` covers:
+
 - Purpose (geometry primitives alphabet, foundation for elicit_geo + elicit_geojson)
 - Plugin/tool table
 - Type hierarchy diagram
@@ -544,6 +548,7 @@ Verify: every `GeoGeometry` variant discriminant maps to a unique string label.
 ## File Checklist
 
 ### Create
+
 - `crates/elicit_geo_types/Cargo.toml`
 - `crates/elicit_geo_types/README.md`
 - `crates/elicit_geo_types/src/lib.rs`
@@ -568,6 +573,7 @@ Verify: every `GeoGeometry` variant discriminant maps to a unique string label.
 - `crates/elicitation/src/primitives/geo_types/geometry.rs`
 
 ### Modify
+
 - `Cargo.toml` — add workspace member + dep
 - `crates/elicitation/Cargo.toml` — add `geo-types` to `full`
 - `crates/elicitation/src/primitives/geo_types/mod.rs` — export 9 new types

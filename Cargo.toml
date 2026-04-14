@@ -41,6 +41,7 @@ members = [
   "crates/elicit_georaster",
   "crates/elicit_rstar",
   "crates/elicit_proj",
+  "crates/elicit_gis",
   "crates/elicit_winit",
   "crates/elicit_wgpu",
 ]
@@ -102,6 +103,7 @@ elicit_geojson = { path = "crates/elicit_geojson", version = "0.10.0" }
 elicit_georaster = { path = "crates/elicit_georaster", version = "0.10.0" }
 elicit_rstar = { path = "crates/elicit_rstar", version = "0.10.0" }
 elicit_proj = { path = "crates/elicit_proj", version = "0.10.0" }
+elicit_gis = { path = "crates/elicit_gis", version = "0.10.0" }
 elicit_winit = { path = "crates/elicit_winit", version = "0.10.0" }
 elicit_wgpu = { path = "crates/elicit_wgpu", version = "0.10.0" }
 

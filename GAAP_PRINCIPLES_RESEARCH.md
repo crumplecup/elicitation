@@ -33,6 +33,7 @@ This document identifies **8 core GAAP principles** directly applicable to doubl
 The [FASB Accounting Standards Codification](https://asc.fasb.org/) (ASC) is the single source of authoritative U.S. GAAP. It reorganizes thousands of GAAP pronouncements into ~90 accounting topics using a consistent structure:
 
 **Structure:**
+
 - **Topics** - Three-digit numbers (e.g., 606, 820)
 - **Subtopics** - Two-digit suffixes (e.g., 606-10)
 - **Sections** - Two-digit codes:
@@ -47,6 +48,7 @@ The [FASB Accounting Standards Codification](https://asc.fasb.org/) (ASC) is the
 **Example:** ASC 606-10-25-1 = Topic 606 (Revenue), Subtopic 10 (Overall), Section 25 (Recognition), Paragraph 1
 
 **Key topics for ledger operations:**
+
 - **ASC 105** - Generally Accepted Accounting Principles
 - **ASC 606** - Revenue from Contracts with Customers
 - **ASC 820** - Fair Value Measurement
@@ -67,6 +69,7 @@ Assets = Liabilities + Equity
 ```
 
 **Requirements:**
+
 - Total debits = Total credits for every transaction
 - At least two accounts affected per transaction
 - Self-balancing general ledger
@@ -85,6 +88,7 @@ Public companies must use double-entry bookkeeping and follow GAAP/IFRS rules. T
 **Principle:** Transactions are recorded when they occur, not when cash changes hands. Combines revenue recognition principle and matching principle.
 
 **Requirements:**
+
 - Record transactions at occurrence time
 - Recognize revenue when earned
 - Recognize expenses when incurred
@@ -103,6 +107,7 @@ The accrual basis is the only method allowed under GAAP and is required by the S
 **Principle:** Expenses should be recognized in the same period as the revenue they help generate. Part of accrual accounting that ensures accurate profit tracking.
 
 **Requirements:**
+
 - Associated costs recorded in same period as revenues
 - Maintains consistency in profitability tracking
 - Prevents artificial inflation/deflation of profits
@@ -120,6 +125,7 @@ Developed jointly with FASB's ASC Topic 606, the matching principle traces back 
 **Principle:** Assets recorded at their original purchase price (cost), not current market value. Provides conservative, reliable, easily calculated basis for asset valuation.
 
 **Requirements:**
+
 - Assets recorded at acquisition cost
 - No revaluation to market value (unless impaired or specific rules apply)
 - Depreciation/amortization applied over time
@@ -140,6 +146,7 @@ Under U.S. GAAP, historical cost is a conservative and reliable way to account f
 **Principle:** When faced with uncertainty, choose the option that results in lower net income or smaller asset values. "Recognize losses when probable, gains when realized."
 
 **Requirements:**
+
 - Loss contingencies accrued if probable and estimable
 - Gain contingencies not recognized until realized
 - If two acceptable methods exist, choose the more conservative
@@ -158,6 +165,7 @@ Losses must be recognized when their occurrence becomes probable, whether or not
 **Principle:** The business is separate and distinct from its owners, managers, and employees. Owner's personal transactions excluded from company books.
 
 **Requirements:**
+
 - Business transactions recorded separately
 - Personal expenses excluded
 - Clear boundary between entity and owners
@@ -176,6 +184,7 @@ The Economic Entity Assumption states that the company or business entity is sep
 **Principle:** All business transactions measured and recorded in a common monetary unit (e.g., USD). Assumes stable currency as unit of record, unadjusted for inflation.
 
 **Requirements:**
+
 - Transactions recorded in single currency
 - Monetary unit is stable and consistent
 - Non-monetary items excluded (e.g., employee morale)
@@ -194,6 +203,7 @@ The Monetary Unit Assumption states that all business transactions must be measu
 **Principle:** Financial statements prepared assuming the business will continue operating indefinitely. Validates capitalization, depreciation, and amortization methods.
 
 **Requirements:**
+
 - Business expected to continue operations
 - Assets valued under ongoing use, not liquidation
 - Liabilities paid in normal course
@@ -212,6 +222,7 @@ Going Concern assumes that the business will be in operation indefinitely, which
 **Principle:** Significant items affecting financial decisions must be reported; insignificant items may be treated more flexibly. Based on professional judgment, not mechanical rules.
 
 **Requirements:**
+
 - Quantitative benchmarks (common: 5% pre-tax income, 0.5% total assets)
 - Qualitative factors (fraud, covenant compliance, analyst expectations)
 - Total mix of information evaluated
@@ -230,6 +241,7 @@ FASB has intentionally avoided creating a rigid, universal formula for materiali
 **Scope:** Establishes FASB Codification as authoritative source of GAAP
 
 **Key sections:**
+
 - ASC 105-10-05: Overview of GAAP hierarchy
 - Contains fundamental assumptions (economic entity, monetary unit, going concern)
 
@@ -246,6 +258,7 @@ ASC Topic 105 establishes the FASB Accounting Standards Codification as the sour
 **Core principle:** Recognize revenue to depict the transfer of promised goods or services in an amount reflecting the consideration expected.
 
 **Five-step model:**
+
 1. Identify the contract(s) with customer
 2. Identify performance obligations
 3. Determine transaction price
@@ -253,6 +266,7 @@ ASC Topic 105 establishes the FASB Accounting Standards Codification as the sour
 5. Recognize revenue when performance obligation satisfied
 
 **Key sections:**
+
 - ASC 606-10-25: Recognition criteria
 - ASC 606-10-25-23: Timing of revenue recognition (related to matching principle)
 
@@ -271,6 +285,7 @@ ASC 606 replaced almost all pre-existing revenue recognition guidance. FASB's 20
 **Core principle:** Fair value is an exit price - the price to sell an asset or transfer a liability in an orderly transaction.
 
 **Key sections:**
+
 - ASC 820-10-05: Definition of fair value
 - ASC 820-10-35: Measurement framework
 
@@ -279,6 +294,7 @@ ASC 606 replaced almost all pre-existing revenue recognition guidance. FASB's 20
 ASC 820 is the American accounting standard for Fair Value Measurements issued by FASB in 2011. The definition is based on an exit price notion, representing the price to sell an asset or transfer a liability.
 
 **Recent updates:**
+
 - ASU 2022-03: Equity securities with contractual sale restrictions
 - 2023: Joint ventures required to measure assets/liabilities at fair value
 - 2023: Crypto assets measured at fair value each reporting period
@@ -292,6 +308,7 @@ ASC 820 is the American accounting standard for Fair Value Measurements issued b
 **Scope:** Accounting for changes in principles, estimates, and error corrections
 
 **Key sections:**
+
 - Contains guidance on materiality
 - Cross-referenced with SEC SAB 99
 
@@ -316,6 +333,7 @@ ASC 250 provides guidance on evaluating and correcting accounting errors, incorp
 | **Materiality** | ASC 250, SAB 99 | **LOW** | P2 | Error thresholds |
 
 **Priority levels:**
+
 - **P0** - Core ledger operations (implement first)
 - **P1** - Enhanced compliance (implement second)
 - **P2** - Policy/configuration (implement later)
@@ -329,6 +347,7 @@ ASC 250 provides guidance on evaluating and correcting accounting errors, incorp
 These principles can be verified at transaction time through typestate proofs:
 
 #### 1. Double-Entry Bookkeeping
+
 ```rust
 /// GAAP Double-Entry Requirement
 ///
@@ -350,6 +369,7 @@ pub struct DoubleEntryBookkeeping;
 ```
 
 **Validation:**
+
 - Check that debit entry amount = credit entry amount
 - Verify both entries share same `transfer_id`
 - Confirm total balance sum unchanged (invariant preservation)
@@ -357,6 +377,7 @@ pub struct DoubleEntryBookkeeping;
 ---
 
 #### 2. Accrual Basis
+
 ```rust
 /// GAAP Accrual Basis Accounting
 ///
@@ -381,6 +402,7 @@ pub struct AccrualBasis;
 ```
 
 **Validation:**
+
 - Verify `created_at` timestamp is set at transaction time
 - Check that transaction is atomic (both entries recorded simultaneously)
 - Confirm no dependency on cash settlement status
@@ -388,6 +410,7 @@ pub struct AccrualBasis;
 ---
 
 #### 3. Monetary Unit Assumption
+
 ```rust
 /// GAAP Monetary Unit Assumption
 ///
@@ -412,6 +435,7 @@ pub struct MonetaryUnitAssumption;
 ```
 
 **Validation:**
+
 - Verify amount is expressed in consistent unit (e.g., cents as i64)
 - Check no currency conversion applied
 - Confirm simple arithmetic operations valid
@@ -421,6 +445,7 @@ pub struct MonetaryUnitAssumption;
 ### Enhanced Compliance (P1)
 
 #### 4. Matching Principle
+
 ```rust
 /// GAAP Matching Principle
 ///
@@ -446,6 +471,7 @@ pub struct MatchingPrinciple;
 ```
 
 **Validation:**
+
 - Verify debit and credit entries have same `transfer_id`
 - Check timestamps are identical
 - Confirm transactional atomicity (database transaction)
@@ -453,6 +479,7 @@ pub struct MatchingPrinciple;
 ---
 
 #### 5. Economic Entity Assumption
+
 ```rust
 /// GAAP Economic Entity Assumption
 ///
@@ -473,6 +500,7 @@ pub struct EconomicEntityAssumption;
 ```
 
 **Validation:**
+
 - Verify accounts belong to defined entities
 - Check account naming conventions enforce separation
 - Confirm no cross-entity contamination
@@ -480,6 +508,7 @@ pub struct EconomicEntityAssumption;
 ---
 
 #### 6. Historical Cost Principle
+
 ```rust
 /// GAAP Historical Cost Principle
 ///
@@ -504,6 +533,7 @@ pub struct HistoricalCostPrinciple;
 ```
 
 **Validation:**
+
 - Verify initial transfer amount reflects original cost
 - Check no fair value adjustments applied
 - Confirm amounts are immutable (entries never updated)
@@ -513,6 +543,7 @@ pub struct HistoricalCostPrinciple;
 ### Policy/Configuration (P2)
 
 #### 7. Conservatism Principle
+
 ```rust
 /// GAAP Conservatism Principle
 ///
@@ -534,6 +565,7 @@ pub struct ConservatismPrinciple;
 ```
 
 **Validation:**
+
 - Prefer rejection over questionable acceptance
 - Round down for asset increases, round up for liability increases
 - Log warnings for near-threshold scenarios
@@ -541,6 +573,7 @@ pub struct ConservatismPrinciple;
 ---
 
 #### 8. Going Concern Assumption
+
 ```rust
 /// GAAP Going Concern Assumption
 ///
@@ -563,6 +596,7 @@ pub struct GoingConcernAssumption;
 ```
 
 **Validation:**
+
 - System-level flag (not per-transaction)
 - Check system not in shutdown/liquidation mode
 - Primarily documentation/disclosure requirement
@@ -570,6 +604,7 @@ pub struct GoingConcernAssumption;
 ---
 
 #### 9. Materiality Principle
+
 ```rust
 /// GAAP Materiality Principle
 ///
@@ -597,6 +632,7 @@ pub struct MaterialityPrinciple;
 ```
 
 **Validation:**
+
 - Configuration-driven thresholds
 - Apply to error correction decisions
 - Document threshold rationale
@@ -610,6 +646,7 @@ pub struct MaterialityPrinciple;
 **Create 9 proposition types** (P0-P2 priorities):
 
 **P0 - Critical (Implement first):**
+
 1. `DoubleEntryBookkeeping` - Debit = Credit invariant
 2. `AccrualBasis` - Transaction timing
 3. `MonetaryUnitAssumption` - Amount representation
@@ -642,6 +679,7 @@ fn validate_double_entry_bookkeeping(
 ### Phase 4: Composite Proofs
 
 **Option A: Full GAAP Compliance (All 9)**
+
 ```rust
 pub type GaapCompliant = And<
     DoubleEntryBookkeeping,
@@ -657,6 +695,7 @@ pub type GaapCompliant = And<
 ```
 
 **Option B: Core Compliance (P0 only)**
+
 ```rust
 pub type GaapCoreCompliant = And<
     DoubleEntryBookkeeping,
@@ -665,6 +704,7 @@ pub type GaapCoreCompliant = And<
 ```
 
 **Option C: Enhanced Compliance (P0 + P1)**
+
 ```rust
 pub type GaapEnhancedCompliant = And<
     GaapCoreCompliant,
@@ -689,6 +729,7 @@ Many GAAP principles (revenue recognition, fair value, lease accounting) apply t
 ### 2. Priority-Based Implementation
 
 **P0 principles** are non-negotiable for GAAP compliance:
+
 - Double-entry bookkeeping (foundational)
 - Accrual basis (required by SEC)
 - Monetary unit (data representation)
@@ -700,12 +741,14 @@ Many GAAP principles (revenue recognition, fair value, lease accounting) apply t
 ### 3. Typestate Advantage
 
 Traditional accounting systems verify GAAP compliance through:
+
 - Manual review
 - Post-hoc audits
 - Runtime validation
 - Periodic reconciliation
 
 **Typestate ledger provides:**
+
 - Compile-time proof that violations are impossible
 - Zero-cost runtime enforcement (proofs compile away)
 - Audit trail baked into type system
@@ -714,12 +757,14 @@ Traditional accounting systems verify GAAP compliance through:
 ### 4. ASC References Are Documentation
 
 ASC codification doesn't provide formulas or algorithms - it provides:
+
 - Definitions and concepts
 - Recognition criteria
 - Disclosure requirements
 - Scope and applicability
 
 **Our propositions** translate these conceptual requirements into:
+
 - Concrete validation logic
 - Type-safe state transitions
 - Formally verified proofs

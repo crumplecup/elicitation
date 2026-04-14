@@ -23,6 +23,7 @@ These serve different purposes and must remain separate tools. "Dual-mode" and `
 **Target:** polars 0.53.0 (current stable)
 
 **Required features:**
+
 - `lazy` — LazyFrame support
 - `serde` — DataFrame, Schema, DataType serialization
 - `serde-lazy` — **Expr and LazyFrame plan serialization** (the key feature)
@@ -45,6 +46,7 @@ Rust code.
 This is **not** the `body: String` pattern — we store and execute real Expr ASTs.
 
 **Construction tools:**
+
 - `expr__col(name: String)` → col("name")
 - `expr__lit_int(value: i64)` → lit(42)
 - `expr__lit_float(value: f64)` → lit(3.14)
@@ -56,23 +58,29 @@ This is **not** the `body: String` pattern — we store and execute real Expr AS
 - `expr__count_all()` → len()
 
 **Binary comparison tools** (take `left_id`, `right_id`):
+
 - `expr__eq`, `expr__neq`, `expr__gt`, `expr__lt`, `expr__gte`, `expr__lte`
 
 **Logical combinator tools** (take two expr_ids):
+
 - `expr__and`, `expr__or`, `expr__not(expr_id)`
 
 **Aggregation tools** (take one expr_id):
+
 - `expr__sum`, `expr__mean`, `expr__min`, `expr__max`, `expr__count`, `expr__n_unique`
 - `expr__median`, `expr__std`, `expr__var`, `expr__first_val`, `expr__last_val`
 
 **String ops** (take one expr_id + pattern: String):
+
 - `expr__str_contains`, `expr__str_starts_with`, `expr__str_ends_with`
 - `expr__str_to_lowercase`, `expr__str_to_uppercase`, `expr__str_replace`
 
 **Temporal ops** (take one expr_id, extract field):
+
 - `expr__dt_year`, `expr__dt_month`, `expr__dt_day`, `expr__dt_hour`
 
 **Modifier tools** (take one expr_id):
+
 - `expr__alias(expr_id, name: String)` — emit .alias("new_name")
 - `expr__cast(expr_id, dtype: String)` — emit .cast(DataType::Int32)
 - `expr__fill_null(expr_id, fill: String)` — emit .fill_null(0)
@@ -82,6 +90,7 @@ This is **not** the `body: String` pattern — we store and execute real Expr AS
 - `expr__is_not_null(expr_id)` — emit .is_not_null()
 
 **Meta tools:**
+
 - `expr__describe(expr_id)` → describe stored Expr
 - `expr__emit(expr_id)` → emit Expr as Rust code string
 - `expr__list()` → list all registered Expr UUIDs
@@ -97,6 +106,7 @@ operations at tool-call time and return results as JSON. Analogous to elicit_geo
 happens on the server.
 
 **I/O tools** (produce df_id):
+
 - `df__read_csv(path: String, has_header: bool, delimiter: Option<String>)` → `{ df_id }`
 - `df__read_parquet(path: String)` → `{ df_id }`
 - `df__read_json(path: String)` → `{ df_id }`
@@ -104,6 +114,7 @@ happens on the server.
 - `df__from_json_string(json: String)` → `{ df_id }` (create from inline JSON records)
 
 **Exploration tools** (take df_id, return data):
+
 - `df__schema(df_id)` → `{ columns: [{name, dtype}] }`
 - `df__shape(df_id)` → `{ rows, cols }`
 - `df__head(df_id, n: usize)` → rows as JSON
@@ -113,6 +124,7 @@ happens on the server.
 - `df__sample(df_id, n: usize, seed: Option<u64>)` → rows as JSON
 
 **Transform tools** (take df_id, produce new df_id):
+
 - `df__select(df_id, expr_ids: Vec<Uuid>)` → new df_id
 - `df__filter(df_id, predicate_expr_id: Uuid)` → new df_id
 - `df__with_columns(df_id, expr_ids: Vec<Uuid>)` → new df_id
@@ -123,17 +135,21 @@ happens on the server.
 - `df__drop_nulls(df_id, subset: Option<Vec<String>>)` → new df_id
 
 **Join tool:**
+
 - `df__join(left_id, right_id, left_on: Vec<String>, right_on: Vec<String>, how: String)` → new df_id
 
 **Group/aggregate tool:**
+
 - `df__group_by_agg(df_id, by: Vec<String>, agg_expr_ids: Vec<Uuid>)` → new df_id
 
 **Output tools:**
+
 - `df__write_csv(df_id, path: String)` → ok/error
 - `df__write_parquet(df_id, path: String)` → ok/error
 - `df__to_json_string(df_id, n: Option<usize>)` → JSON string of rows (for agent to read results)
 
 **Propositions:**
+
 - `DataFrameLoaded { df_id: Uuid, source: String, rows: usize, cols: usize }`
 - `DataFrameTransformed { df_id: Uuid, op: String, from_id: Uuid }`
 - `DataFrameWritten { df_id: Uuid, path: String }`
@@ -146,6 +162,7 @@ Descriptor-registry pattern (tower/axum style). Builds a LazyFrame pipeline as a
 steps, then emits a complete `main.rs` Rust program. No live polars at tool-call time — pure code generation.
 
 **Descriptor types (in `elicitation` crate, `polars-types` feature):**
+
 ```rust
 pub enum PolarsPipelineOp {
     ReadCsv { path: String, has_header: bool },
@@ -166,6 +183,7 @@ pub enum PolarsPipelineOp {
 ```
 
 **Tools:**
+
 - `pipeline__new(name: String)` → `{ pipeline_id }`
 - `pipeline__set_read_csv(pipeline_id, path, has_header)` → ok
 - `pipeline__set_read_parquet(pipeline_id, path)` → ok
@@ -183,6 +201,7 @@ pub enum PolarsPipelineOp {
 - `pipeline__list()` → list all pipelines
 
 **`emit_main` output example:**
+
 ```rust
 use polars::prelude::*;
 
@@ -209,6 +228,7 @@ fn main() -> PolarsResult<()> {
 Uses polars `SQLContext` to run SQL strings against registered DataFrames. Purely runtime.
 
 **Tools:**
+
 - `sql__new_context()` → `{ ctx_id }`
 - `sql__register(ctx_id, frame_name: String, df_id: Uuid)` → ok
 - `sql__execute(ctx_id, query: String)` → `{ df_id }` (registers result as new df)
@@ -258,6 +278,7 @@ ElicitSpec/ElicitComplete impls: `PolarsJoinType`, `PolarsDType`, `PolarsPipelin
 ## Implementation Phases
 
 ### Phase 1: Elicitation types + PolarsExprPlugin
+
 1. Add `polars-types` feature to `crates/elicitation/Cargo.toml`
 2. Add enum/descriptor types in `crates/elicitation/src/primitives/polars_types/`
 3. Add ElicitSpec/ElicitComplete in `crates/elicitation/src/type_spec/polars_specs.rs`
@@ -266,15 +287,17 @@ ElicitSpec/ElicitComplete impls: `PolarsJoinType`, `PolarsDType`, `PolarsPipelin
 6. Tests: expr composition, emit
 
 ### Phase 2: PolarsDataFramePlugin
-7. Implement `PolarsDataFramePlugin` (~28 tools)
-8. Tests: read CSV, filter, join, group_by_agg, write
+
+1. Implement `PolarsDataFramePlugin` (~28 tools)
+2. Tests: read CSV, filter, join, group_by_agg, write
 
 ### Phase 3: PolarsPipelinePlugin + PolarsSqlPlugin + README
-9. Implement `PolarsPipelinePlugin` (~15 tools)
-10. Implement `PolarsSqlPlugin` (~5 tools)
-11. Tests: pipeline emit_main, SQL execute
-12. Write README
-13. Commit and push
+
+1. Implement `PolarsPipelinePlugin` (~15 tools)
+2. Implement `PolarsSqlPlugin` (~5 tools)
+3. Tests: pipeline emit_main, SQL execute
+4. Write README
+5. Commit and push
 
 ---
 

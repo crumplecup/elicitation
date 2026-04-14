@@ -20,6 +20,7 @@ use serde::{Deserialize, Serialize};
     JsonSchema,
     strum::EnumIter,
     derive_more::Display,
+    Default,
 )]
 #[serde(rename_all = "snake_case")]
 pub enum LeptosClientMode {
@@ -34,13 +35,8 @@ pub enum LeptosClientMode {
     /// Uses `leptos = { features = ["hydrate"] }`.  Pair this with
     /// [`LeptosAxumMode::FullSsr`] or [`LeptosAxumMode::WasmShell`].
     #[display("hydrate")]
+    #[default]
     Hydrate,
-}
-
-impl Default for LeptosClientMode {
-    fn default() -> Self {
-        Self::Hydrate
-    }
 }
 
 /// Rendering + serving mode for a Leptos + Axum application.

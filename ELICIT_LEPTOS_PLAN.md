@@ -18,6 +18,7 @@
 of the macro surface.
 
 ### What runs at runtime (server-side, in `Owner` scope)
+
 - `RwSignal<serde_json::Value>` — typed values via JSON, UUID-keyed
 - `Memo` — derived computed values
 - `Effect` — side-effect tracking
@@ -25,6 +26,7 @@ of the macro surface.
 - `Action` — async operations via tokio
 
 ### What is code-generation only
+
 - `#[component]` — emit tools generate correct `fn Foo(props) -> impl IntoView` source
 - `view!` macro — emit tools generate RSX syntax blocks
 - `#[server]` — emit tools generate server function stubs
@@ -41,7 +43,6 @@ of the macro surface.
 | Closures as emit tools | `LeptosCodePlugin` | Phase 3E.5 (event handlers, effects) |
 
 ---
-
 
 ## Architecture: 2 Plugins, ~75 Tools
 
@@ -303,6 +304,7 @@ Wraps `leptos_meta` crate components.
 | `leptos_code__app_emit_all` | `app_id` | JSON map of all files → complete project |
 
 `emit_cargo_toml` generates:
+
 ```toml
 [dependencies]
 leptos = { version = "0.8", features = ["csr"] }  # or ssr/hydrate/islands
@@ -463,4 +465,3 @@ pulling in browser/WASM dependencies. The `ssr` feature includes `reactive_graph
 | 140 HTML element tools | 1 `element_emit(tag, ...)` tool | Parametric is more useful |
 | No API for `#[island]` | `component_set_island(true)` | Handled in component descriptor |
 | Missing `leptos_meta` | 4 meta tools | Covers `<Title>`, `<Meta>`, `<Link>`, `<Stylesheet>` |
-

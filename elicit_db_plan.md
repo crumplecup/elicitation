@@ -3,6 +3,7 @@
 ## Objective
 
 Anchor DB contracts to **real normative sources**, equivalent in rigor to:
+
 - WCAG → UI
 - GAAP → Ledger
 
@@ -13,6 +14,7 @@ We construct a **composite standards stack** and map each layer → `Prop`.
 # 1. Core SQL Semantics (FOUNDATION)
 
 ## Standard
+
 - ISO/IEC 9075 — SQL Standard (multi-part)
   - Part 1: Framework (9075-1)
   - Part 2: Foundation / SQL/Foundation (9075-2)
@@ -21,9 +23,11 @@ We construct a **composite standards stack** and map each layer → `Prop`.
   - Part 14: XML-related (9075-14)
 
 ## Public entry point
-- https://www.iso.org/standard/76583.html (latest catalog entry)
+
+- <https://www.iso.org/standard/76583.html> (latest catalog entry)
 
 ## What it defines
+
 - DDL / DML semantics
 - Constraints (PK, FK, CHECK)
 - Views
@@ -50,6 +54,7 @@ pub struct ReferentialIntegrityMaintained;
 ```
 
 ## Notes
+
 - ISO text is paywalled → use:
   - PostgreSQL docs (reference implementation)
   - publicly summarized behavior
@@ -62,15 +67,19 @@ pub struct ReferentialIntegrityMaintained;
 ## Standards / Sources
 
 ### A. ISO SQL (9075-2)
+
 Defines transactional structure
 
 ### B. ANSI/ISO Isolation Levels
+
 Formalized phenomena:
+
 - Dirty read
 - Non-repeatable read
 - Phantom read
 
 ### C. Classic reference (non-ISO but canonical)
+
 - Jim Gray, "Transaction Processing: Concepts and Techniques"
 
 ## Contract extraction
@@ -97,10 +106,12 @@ pub struct NoPhantomReads;
 # 3. Isolation Levels (PRECISE BEHAVIORAL LAYER)
 
 ## Standard
-- Defined in SQL standard + widely summarized here:
-  https://en.wikipedia.org/wiki/Isolation_(database_systems)
 
-## Formal phenomena model:
+- Defined in SQL standard + widely summarized here:
+  <https://en.wikipedia.org/wiki/Isolation_(database_systems)>
+
+## Formal phenomena model
+
 - P0: Dirty write
 - P1: Dirty read
 - P2: Non-repeatable read
@@ -131,17 +142,20 @@ pub struct PreventsPhenomenon<const P: u8>;
 # 4. PostgreSQL (DE FACTO EXECUTION STANDARD)
 
 ## Authoritative docs
-- https://www.postgresql.org/docs/current/index.html
+
+- <https://www.postgresql.org/docs/current/index.html>
 
 Critical sections:
+
 - MVCC:
-  https://www.postgresql.org/docs/current/mvcc.html
+  <https://www.postgresql.org/docs/current/mvcc.html>
 - Transactions:
-  https://www.postgresql.org/docs/current/tutorial-transactions.html
+  <https://www.postgresql.org/docs/current/tutorial-transactions.html>
 - Explicit locking:
-  https://www.postgresql.org/docs/current/explicit-locking.html
+  <https://www.postgresql.org/docs/current/explicit-locking.html>
 
 ## Why this matters
+
 ISO defines intent.
 PostgreSQL defines **actual behavior you must match**.
 
@@ -168,12 +182,15 @@ pub struct RowVisible;
 # 5. Information Schema (INTROSPECTION STANDARD)
 
 ## Standard
+
 - ISO/IEC 9075-11 (Information and Definition Schemas)
 
 ## PostgreSQL reference
-- https://www.postgresql.org/docs/current/information-schema.html
+
+- <https://www.postgresql.org/docs/current/information-schema.html>
 
 ## What it gives you
+
 - Portable schema inspection layer
 
 ## Contract extraction
@@ -196,13 +213,16 @@ pub struct ColumnExists {
 # 6. Security & Access Control
 
 ## Standard
+
 - ISO/IEC 27001 — Information Security Management
-  https://www.iso.org/isoiec-27001-information-security.html
+  <https://www.iso.org/isoiec-27001-information-security.html>
 
 ## Supporting standard
+
 - ISO/IEC 27002 (controls catalogue)
 
 ## What it defines
+
 - Access control
 - Audit logging
 - Least privilege
@@ -230,12 +250,15 @@ pub struct LeastPrivilegeEnforced;
 ## Standards / references
 
 ### A. ISO SQL (partial)
+
 - Backup not deeply standardized
 
 ### B. PostgreSQL WAL + backup docs
-- https://www.postgresql.org/docs/current/continuous-archiving.html
+
+- <https://www.postgresql.org/docs/current/continuous-archiving.html>
 
 ### C. Industry practice (de facto)
+
 - Point-in-time recovery (PITR)
 
 ## Contract extraction
@@ -260,7 +283,8 @@ If your traits cross process boundaries:
 ## Standards
 
 ### A. PostgreSQL Wire Protocol
-- https://www.postgresql.org/docs/current/protocol.html
+
+- <https://www.postgresql.org/docs/current/protocol.html>
 
 ### B. IETF RFCs (if HTTP/JSON transport used)
 
@@ -282,8 +306,9 @@ pub struct ResponseSerializable;
 # 9. Observability (OPTIONAL BUT POWERFUL)
 
 ## Standard / Spec
+
 - :contentReference[oaicite:2]{index=2}
-  https://opentelemetry.io/docs/
+  <https://opentelemetry.io/docs/>
 
 ## Contract extraction
 
@@ -350,6 +375,7 @@ db-contracts/
 └── observability.rs
 
 Each file:
+
 - cites standard
 - defines Props
 - documents invariants
@@ -389,6 +415,7 @@ Stack:
 - OpenTelemetry (observability)
 
 This gives you:
+
 - Normative grounding
 - Practical implementability
 - Verifiable semantics

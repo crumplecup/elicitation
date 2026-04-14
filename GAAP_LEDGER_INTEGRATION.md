@@ -5,6 +5,7 @@
 ## Overview
 
 Extend the typestate ledger with GAAP-compliant propositions that:
+
 1. Reference specific FASB Accounting Standards Codification (ASC) sections
 2. Establish compile-time proof chains for accounting compliance
 3. Demonstrate audit-traceable workflows
@@ -13,6 +14,7 @@ Extend the typestate ledger with GAAP-compliant propositions that:
 ## Motivation
 
 The UI system applies WCAG standards to accessibility verification:
+
 ```rust
 // elicit_ui pattern
 pub struct HasLabelConstraint;  // WCAG 4.1.2 Level A
@@ -20,6 +22,7 @@ pub struct NoOverflowConstraint; // WCAG 1.4.10 Level AA
 ```
 
 The ledger should apply GAAP standards to accounting verification:
+
 ```rust
 // ledger pattern (proposed)
 #[derive(elicitation::Prop)]
@@ -32,12 +35,14 @@ pub struct AccrualBasis;  // ASC 606-10-25-1
 ## Current State
 
 **Existing propositions:**
+
 - `AmountPositive` - Basic validation (amount > 0)
 - `SufficientFunds` - Balance check
 - `AccountsDistinct` - Source ≠ destination
 - `BalancedEntries` - Double-entry invariant (debit + credit = 0)
 
 **Missing:**
+
 - GAAP standard references
 - Formal accounting principle documentation
 - Audit-traceable compliance
@@ -49,6 +54,7 @@ pub struct AccrualBasis;  // ASC 606-10-25-1
 **Goal:** Identify applicable GAAP principles for double-entry bookkeeping.
 
 **Research tasks:**
+
 1. Review FASB ASC Topic 606 (Revenue Recognition)
 2. Review FASB ASC Topic 820 (Fair Value Measurement)
 3. Review FASB ASC Topic 842 (Leases) - if applicable
@@ -64,6 +70,7 @@ pub struct AccrualBasis;  // ASC 606-10-25-1
    - Conservatism Principle
 
 **Deliverables:**
+
 - [x] Document: `GAAP_PRINCIPLES_RESEARCH.md`
 - [x] Table mapping GAAP principles → ASC references
 - [x] Applicability analysis for each principle to ledger operations
@@ -73,6 +80,7 @@ pub struct AccrualBasis;  // ASC 606-10-25-1
 **Goal:** Create proposition types with accurate documentation.
 
 **Tasks:**
+
 1. Create `src/ledger/gaap.rs` module
 2. Define proposition structs with `#[derive(elicitation::Prop)]`
 3. Write comprehensive doc comments with:
@@ -83,12 +91,14 @@ pub struct AccrualBasis;  // ASC 606-10-25-1
    - Examples
 
 **Implementation:**
+
 - 9 GAAP proposition types with priority levels (P0/P1/P2)
 - P0 Critical: DoubleEntryBookkeeping, AccrualBasis, MonetaryUnitAssumption
 - P1 Enhanced: MatchingPrinciple, EconomicEntityAssumption, HistoricalCostPrinciple
 - P2 Policy: ConservatismPrinciple, GoingConcernAssumption, MaterialityPrinciple
 
 **Deliverables:**
+
 - [x] `crates/elicit_server/src/ledger/gaap.rs` (887 lines)
 - [x] Proposition types (9 implemented)
 - [x] Comprehensive doc comments with ASC references
@@ -99,17 +109,20 @@ pub struct AccrualBasis;  // ASC 606-10-25-1
 **Goal:** Implement validation logic that establishes GAAP propositions.
 
 **Tasks:**
+
 1. Create validation functions returning `Result<Established<P>, ValidationError>`
 2. Implement business logic checking GAAP compliance
 3. Add new `ValidationError` variants for GAAP violations
 4. Document validation criteria
 
 **Implementation:**
+
 - 9 validation functions (one per proposition)
 - Comprehensive error types for each GAAP violation
 - Documentation for each validation criterion
 
 **Deliverables:**
+
 - [x] Validation functions in `gaap.rs`
 - [x] New `ValidationError` variants (9 GAAP error types)
 - [x] Unit tests for each validation function (16 tests)
@@ -125,6 +138,7 @@ Integration with Transfer typestate can be added when needed for production work
 into composite proofs as shown in test suite.
 
 **Example from tests:**
+
 ```rust
 // P0 core composite
 let p0 = both(double_entry, both(accrual, monetary));
@@ -140,11 +154,13 @@ let full_gaap = both(both(p0, p1), p2);
 ```
 
 **Future integration options:**
+
 - Option A: Add `Transfer::validate_gaap()` method returning composite proof
 - Option B: Add `Transfer::with_gaap_proof()` for post-validation verification
 - Option C: Extend existing `Transfer::validate()` to optionally return GAAP proofs
 
 **Deliverables:**
+
 - [x] Composite proof examples in test suite
 - [ ] Integration method on `Transfer<T>` (deferred)
 - [ ] Updated Transfer documentation (deferred)
@@ -155,24 +171,28 @@ let full_gaap = both(both(p0, p1), p2);
 **Goal:** Comprehensive testing and documentation updates.
 
 **Testing tasks:**
+
 1. Unit tests for each proposition validation
 2. Integration tests for composite proofs
 3. Test GAAP violation scenarios
 4. Document failure cases
 
 **Implementation:**
+
 - 23 tests verifying zero-cost proofs (all propositions)
 - 16 tests verifying validation function behavior
 - 3 composite proof tests (P0 core, P1 enhanced, full compliance)
 - Error scenario tests (empty accounts, zero amounts)
 
 **Documentation tasks:**
+
 1. Update `ledger/README.md` with GAAP section (deferred - not critical)
 2. Add GAAP examples to ledger tests (completed in test files)
 3. Create `GAAP_COMPLIANCE_GUIDE.md` user documentation (deferred - can be extracted from gaap.rs docs)
 4. Update workspace README with GAAP mention (deferred)
 
 **Deliverables:**
+
 - [x] Test suite (39 tests total)
 - [x] Comprehensive inline documentation in gaap.rs
 - [ ] User guide with examples (deferred - inline docs sufficient)
@@ -192,6 +212,7 @@ let full_gaap = both(both(p0, p1), p2);
 ## Implementation Status: ✅ PHASES 1-3 & 5 COMPLETE
 
 **Completed work (commit: 2d64d721):**
+
 - ✅ Phase 1: GAAP principles research with ASC references
 - ✅ Phase 2: 9 proposition types with priority levels (P0/P1/P2)
 - ✅ Phase 3: 9 validation functions with comprehensive error types
@@ -200,6 +221,7 @@ let full_gaap = both(both(p0, p1), p2);
 - ✅ All checks passing (cargo check, clippy, fmt, test)
 
 **Deferred work (future enhancement):**
+
 - ⏸️ Phase 4: Transfer typestate integration (validation functions work independently)
 - ⏸️ User guide (inline documentation is comprehensive and audit-quality)
 - ⏸️ README updates (not critical for core functionality)
@@ -214,6 +236,7 @@ building blocks for GAAP compliance verification.
 ## Future Extensions
 
 **Potential additions:**
+
 1. **Materiality thresholds** - Configurable significance levels
 2. **Period-end adjustments** - Accrual entries, deferrals
 3. **Financial statement generation** - Balance sheet, income statement
@@ -224,17 +247,20 @@ building blocks for GAAP compliance verification.
 ## References
 
 **Primary sources:**
+
 - FASB Accounting Standards Codification (ASC)
 - GAAP Conceptual Framework
 - AICPA Professional Standards
 
 **Key ASC topics:**
+
 - ASC 606: Revenue Recognition
 - ASC 820: Fair Value Measurement
 - ASC 830: Foreign Currency
 - ASC 842: Leases
 
 **Implementation references:**
+
 - `crates/elicit_ui/src/constraints.rs` - Constraint pattern
 - `crates/elicit_server/src/ledger/README.md` - Ledger documentation
 - `crates/elicitation/src/contracts.rs` - Prop trait, Established<P>
@@ -244,6 +270,7 @@ building blocks for GAAP compliance verification.
 **Original estimate:** 10 days (5 phases)
 
 **Actual completion:**
+
 - Phase 1 (Research): Completed - GAAP_PRINCIPLES_RESEARCH.md (816 lines)
 - Phase 2 (Propositions): Completed - 9 proposition types with ASC references
 - Phase 3 (Validation): Completed - 9 validation functions + error types
@@ -267,6 +294,7 @@ as non-critical (validation functions are usable without Transfer integration).
 **Message:** feat: add GAAP propositions for audit-traceable ledger operations
 **Files changed:** 11 files, 2822 insertions, 11 deletions
 **New files:**
+
 - GAAP_LEDGER_INTEGRATION.md (291 lines)
 - GAAP_PRINCIPLES_RESEARCH.md (816 lines)
 - crates/elicit_server/src/ledger/gaap.rs (887 lines)
@@ -274,11 +302,13 @@ as non-critical (validation functions are usable without Transfer integration).
 - crates/elicit_server/tests/ledger_gaap_validation_test.rs (351 lines)
 
 **Test results:**
+
 - 23 proof tests: All passing (zero-cost verification)
 - 16 validation tests: All passing (behavior verification)
 - Total: 39 tests, 0 failures
 
 **Checks:**
+
 - ✅ `cargo check`: Passed
 - ✅ `cargo clippy`: 0 warnings
 - ✅ `cargo fmt`: Formatted

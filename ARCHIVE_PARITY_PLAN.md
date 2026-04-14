@@ -93,6 +93,7 @@ to all three renderers.
 ---
 
 ## Phase 1 — Interactive Data Browsing
+>
 > Closes every "critical blocking" gap. Brings basic daily-driver usability.
 
 ### 1.1  Data Grid Panel
@@ -101,6 +102,7 @@ to all three renderers.
 `DbQueryExecutor::query_rows` and render them in a paginated grid panel.
 
 **New types:**
+
 ```rust
 pub struct DataGridDescriptor {
     pub table: TableDescriptor,
@@ -116,11 +118,13 @@ pub struct DataGridDescriptor {
 discarding it.
 
 **Frontend work:**
+
 - ratatui: `Table` widget with column widths, scrollable, page up/down
 - egui: `egui_extras::TableBuilder` (add `egui_extras` dep with `table` feature)
 - browser: `<table>` rendered from AccessKit `Role::Grid` / `Role::Row` nodes
 
 **Key bindings (add to `StatusBarDescriptor::archive_browse`):**
+
 - `PgDn` / `PgUp` — next/previous page
 - `g` / `G` — first / last page
 
@@ -132,6 +136,7 @@ discarding it.
 or `F5` runs the query; results appear in the data grid panel below.
 
 **New types:**
+
 ```rust
 pub struct SqlEditorState {
     pub text: String,
@@ -145,6 +150,7 @@ pub struct SqlEditorState {
 **New MCP tool:** (reuse `archive_query__execute`)
 
 **Frontend work:**
+
 - ratatui: `tui-textarea` crate (already used in the ecosystem) or manual
   multi-line `TextArea` widget wrapping a `String` buffer; `Ctrl+Enter` runs
 - egui: `egui::TextEdit::multiline` in a resizable panel; capture
@@ -155,6 +161,7 @@ pub struct SqlEditorState {
 bottom half = result grid.  Toggle with `Tab` or a toolbar button.
 
 **Key bindings:**
+
 - `Ctrl+Enter` / `F5` — execute
 - `Ctrl+L` — clear editor
 - `↑` / `↓` in empty editor — cycle query history
@@ -168,6 +175,7 @@ bottom half = result grid.  Toggle with `Tab` or a toolbar button.
 
 **Change:** `ArchiveNavModel::refresh()` currently sets a flash string. Replace
 with an async callback pattern:
+
 - ratatui / egui: `refresh()` signals a `needs_refresh: bool` flag; the event
   loop calls `build_nav_tree(&backend).await` and replaces `model.schemas`
 - browser: POST `/api/refresh` which re-runs the SSR pipeline
@@ -180,6 +188,7 @@ with an async callback pattern:
 filters the flat list to matching schema/table names (substring, case-insensitive).
 
 **Change to `ArchiveNavModel`:**
+
 ```rust
 pub struct ArchiveNavModel {
     // ... existing fields ...
@@ -188,15 +197,18 @@ pub struct ArchiveNavModel {
     pub flat_unfiltered: Vec<FlatItem>,   // full flat list
 }
 ```
+
 `rebuild_flat()` applies the filter when `filter_active` and `!filter.is_empty()`.
 
 **Key bindings (add to `StatusBarDescriptor`):**
+
 - `/` — open filter
 - `Esc` (in filter) — clear and close filter
 
 ---
 
 ## Phase 2 — Rich Object Inspection
+>
 > Surfaces the object metadata already queryable via `ArchiveDbBackend` traits.
 
 ### 2.1  DDL Viewer
@@ -211,6 +223,7 @@ PK, FK, NOT NULL, defaults, indexes). For PostgreSQL, can also run
 `pg_get_tabledef` or reconstruct from `information_schema`.
 
 **New type:**
+
 ```rust
 pub struct DdlDescriptor {
     pub schema: String,
@@ -229,6 +242,7 @@ pub struct DdlDescriptor {
 panel. Navigate to the referenced table with Enter.
 
 **New type:**
+
 ```rust
 pub struct ForeignKeyDescriptor {
     pub constraint_name: String,
@@ -262,6 +276,7 @@ column.
 EXCLUSION (PG-specific).
 
 **New type:**
+
 ```rust
 pub struct ConstraintDescriptor {
     pub name: String,
@@ -293,6 +308,7 @@ Render `Vec<IndexDescriptor>` as a table showing name, columns, type, unique.
 distinct count, most-common values, histogram.
 
 **New type:**
+
 ```rust
 pub struct ColumnStats {
     pub column_name: String,
@@ -316,6 +332,7 @@ shows the plan in the result panel. A tree-structured text render for ratatui/eg
 a collapsible `<details>` tree for the browser.
 
 **New type:**
+
 ```rust
 pub struct ExplainNode {
     pub node_type: String,
@@ -347,6 +364,7 @@ to insert a new row, `Delete` to mark a row for deletion.  Changes are staged
 and committed with `Ctrl+S`, rolled back with `Esc`.
 
 **Architecture:** Uses `DbTransactor::begin` typestate machine:
+
 ```text
 begin(ReadCommitted) → TxMarker<Open>
   ├─ execute(UPDATE …) → DbExecuteResult
@@ -359,6 +377,7 @@ begin(ReadCommitted) → TxMarker<Open>
 **New MCP tool:** `archive_query__edit_row` (wraps execute in transaction)
 
 **Key bindings:**
+
 - `e` — edit selected cell
 - `i` — insert new row
 - `Delete` — mark row for deletion
@@ -377,6 +396,7 @@ SQL editor.
 (SQLite). Schema: `(id, timestamp, sql_text, duration_ms, row_count, error)`.
 
 **New type:**
+
 ```rust
 pub struct QueryHistoryEntry {
     pub id: i64,
@@ -404,6 +424,7 @@ pub struct QueryHistoryEntry {
 ### 3.4  CSV / JSON / TSV Export
 
 **What:** In the data grid, `x` opens an export dialog:
+
 - Format: CSV, JSON array, NDJSON, TSV
 - Destination: clipboard, file path, stdout
 
@@ -417,6 +438,7 @@ pub struct QueryHistoryEntry {
 `Ctrl+Tab`. Each connection has its own `ArchiveDbBackend` + `ArchiveNavModel`.
 
 **New type:**
+
 ```rust
 pub struct ConnectionProfile {
     pub name: String,
@@ -494,6 +516,7 @@ queries, lock waits, cache hit ratio in real time (polling interval: 5s).
 `cache_hit_ratio`.
 
 **Frontend:**  
+
 - ratatui: sparkline widgets for cache hit ratio, table for sessions  
 - egui: `egui::plot` (or `egui_plot`) for time-series metrics  
 - browser: SSE-driven live update via Axum
@@ -537,6 +560,7 @@ an interactive layout. Use `petgraph` for the graph + a simple force-directed
 layout algorithm.
 
 **Frontend:**
+
 - ratatui: text-art boxes connected by ASCII lines (minimal, opt-in)
 - egui: `egui_graphs` or custom `egui::Painter` rendering
 - browser: SVG embedded in HTML (clickable `<a>` anchors on table boxes)

@@ -8,24 +8,28 @@
 ## Why Parley is Straightforward
 
 **Shares characteristics with taffy:**
+
 - **Natural serialization**: Style properties are enums/primitives
 - **Synchronous operations**: Text shaping is deterministic
 - **Stateful by nature**: FontContext/LayoutContext manage state
 - **Clear API flow**: Create context → Build layout → Break lines → Position glyphs
 
 **Similar to other "straightforward" crates:**
+
 - No async/lifetimes in core API
 - All inputs/outputs serializable
 - CSS-like style properties
 - Visual domain (text layout)
 
 **Domain-specific characteristics:**
+
 - **Text shaping complexity**: HarfBuzz integration, OpenType features
 - **Bidirectional text**: RTL/LTR handling, Unicode normalization
 - **Typography details**: Kerning, ligatures, variation axes
 - **Line breaking**: Unicode line break algorithm
 
 **Perfect fit for:**
+
 - Rich text editors (AI-assisted text layout)
 - Document generation (PDF, HTML rendering)
 - Typography tools (font preview, style exploration)
@@ -62,6 +66,7 @@ pub struct Layout<B> { /* output */ }
 | Glyph data | Positioned glyphs, metrics | ✅ Dual-mode (serialize coordinates/IDs) |
 
 **Key insight:** Like taffy, parley is **stateful** (contexts, builders) but all **inputs and outputs** are serializable:
+
 - **Input**: Text + StyleProperty spans
 - **Output**: Lines with positioned glyphs (coordinates, metrics, indices)
 - **State**: FontContext/LayoutContext via UUID handles
@@ -75,6 +80,7 @@ pub struct Layout<B> { /* output */ }
 UUID-keyed handles for persistent contexts and layouts:
 
 #### Context Management (20)
+
 - `context_create_font` — Create FontContext with default fonts
 - `context_create_font_from_paths` — Load specific font files
 - `context_create_layout` — Create LayoutContext
@@ -85,6 +91,7 @@ UUID-keyed handles for persistent contexts and layouts:
 - And 13 more for context lifecycle
 
 #### Builder Lifecycle (30)
+
 - `builder_create_ranged` — Create RangedBuilder
 - `builder_create_tree` — Create TreeBuilder
 - `builder_add_text` — Set text content
@@ -98,6 +105,7 @@ UUID-keyed handles for persistent contexts and layouts:
 - And 20 more for builder operations
 
 #### Layout Operations (40)
+
 - `layout_create` — Create empty Layout
 - `layout_delete` — Remove Layout
 - `layout_break_lines` — Compute line breaks with max width
@@ -112,6 +120,7 @@ UUID-keyed handles for persistent contexts and layouts:
 - And 29 more for layout queries
 
 #### Line Queries (25)
+
 - `line_metrics` — Get baseline, ascent, descent
 - `line_text_range` — Get character range for line
 - `line_break_reason` — Why line broke
@@ -122,6 +131,7 @@ UUID-keyed handles for persistent contexts and layouts:
 - And 18 more for line inspection
 
 #### Glyph/Run Queries (25)
+
 - `run_metrics` — Get run metrics
 - `run_font_size` — Get font size for run
 - `run_text_range` — Get character range
@@ -133,6 +143,7 @@ UUID-keyed handles for persistent contexts and layouts:
 - And 17 more for glyph data
 
 #### Font Queries (20)
+
 - `font_query_by_family` — Find fonts by family name
 - `font_query_by_weight` — Find fonts by weight
 - `font_metrics` — Get font metrics (ascent, descent, cap height)
@@ -146,6 +157,7 @@ UUID-keyed handles for persistent contexts and layouts:
 Tools that both create style/layout JSON AND generate code:
 
 #### Style Property Creation (50)
+
 - `style_font_stack` — Set font family stack
 - `style_font_size` — Set font size (f32)
 - `style_font_weight` — Set weight (100-900)
@@ -172,6 +184,7 @@ Tools that both create style/layout JSON AND generate code:
 - And 27 more for style combinations
 
 #### Brush/Color Types (20)
+
 - `brush_solid` — Create solid color brush
 - `brush_rgba` — RGBA color
 - `brush_rgb` — RGB color
@@ -180,6 +193,7 @@ Tools that both create style/layout JSON AND generate code:
 - And 15 more for color types
 
 #### Font Property Types (30)
+
 - `font_weight_thin` — Weight 100
 - `font_weight_normal` — Weight 400
 - `font_weight_bold` — Weight 700
@@ -193,6 +207,7 @@ Tools that both create style/layout JSON AND generate code:
 - And 20 more for font property values
 
 #### Layout Result Serialization (40)
+
 - `layout_to_json` — Serialize entire Layout
 - `layout_lines_to_json` — Lines with metrics
 - `layout_glyphs_to_json` — All positioned glyphs
@@ -204,6 +219,7 @@ Tools that both create style/layout JSON AND generate code:
 - And 32 more for serialization patterns
 
 #### Text Range Types (20)
+
 - `text_range_all` — Entire text
 - `text_range_from_to` — Start to end indices
 - `text_range_from` — Start to text end
@@ -213,6 +229,7 @@ Tools that both create style/layout JSON AND generate code:
 - And 14 more for range patterns
 
 #### Alignment Types (10)
+
 - `align_start` — Left/right based on direction
 - `align_center` — Center alignment
 - `align_end` — Right/left based on direction
@@ -220,6 +237,7 @@ Tools that both create style/layout JSON AND generate code:
 - And 6 more for alignment options
 
 #### Line Break Types (10)
+
 - `line_break_auto` — Default Unicode rules
 - `line_break_loose` — More permissive
 - `line_break_normal` — Standard rules
@@ -232,12 +250,14 @@ Tools that both create style/layout JSON AND generate code:
 Code generation for text layout computations:
 
 #### Context Construction Code (10)
+
 - `emit_font_context` — Generate FontContext::new()
 - `emit_layout_context` — Generate LayoutContext::new()
 - `emit_context_setup` — Complete context initialization
 - And 7 more for context setup patterns
 
 #### Builder Code Generation (15)
+
 - `emit_ranged_builder` — Generate RangedBuilder code
 - `emit_tree_builder` — Generate TreeBuilder code
 - `emit_push_default_style` — Generate default style code
@@ -246,12 +266,14 @@ Code generation for text layout computations:
 - And 10 more for builder patterns
 
 #### Layout Computation Code (10)
+
 - `emit_break_lines` — Generate line breaking code
 - `emit_align` — Generate alignment code
 - `emit_layout_query` — Generate layout access code
 - And 7 more for layout computation patterns
 
 #### Complete Assembly (5)
+
 - `assemble_parley_binary` — Generate complete executable
 - `emit_text_renderer` — Generate rendering code
 - `emit_layout_test` — Generate layout test
@@ -1033,12 +1055,14 @@ fn main() {{
 | **Use case** | UI layout | Text rendering |
 
 **Both are stateful and "straightforward":**
+
 - Natural JSON serialization for inputs/outputs
 - Synchronous operations
 - CSS-like properties
 - Visual domains (UI vs text)
 
 **Parley adds typography complexity:**
+
 - Font shaping (HarfBuzz)
 - OpenType features/variations
 - Bidirectional text
@@ -1051,6 +1075,7 @@ fn main() {{
 ### xilem/masonry
 
 xilem uses parley for text. elicit_parley enables:
+
 - AI-generated rich text layouts
 - Typography exploration tools
 - Font feature testing
@@ -1058,12 +1083,14 @@ xilem uses parley for text. elicit_parley enables:
 ### vello
 
 vello renders parley layouts. elicit_parley enables:
+
 - GPU-rendered text generation
 - Vector text for design tools
 
 ### Custom Renderers
 
 Any renderer can use parley's positioned glyphs:
+
 - PDF generation
 - Canvas rendering
 - Game engine text

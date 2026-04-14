@@ -102,6 +102,7 @@ egui) consume the same `ArchiveNavModel` + descriptor types via the
 AccessKit IR layer.
 
 **Phases:**
+
 - **Phase 1 — Interactive data browsing:** data grid, SQL editor, live refresh, object search
 - **Phase 2 — Rich object inspection:** DDL viewer, FK descriptors, constraints, column stats, EXPLAIN
 - **Phase 3 — Power-user:** row edit, query history, saved queries, CSV/JSON export, multi-connection
@@ -128,6 +129,7 @@ enum) all compose cleanly from existing primitives: variable-length types delega
 pattern needed; pure value-type composition throughout.
 
 **Coverage:**
+
 - **Phase 2 (elicitation):** 9 new primitives in `crates/elicitation/src/primitives/geo_types/`
 - **Phase 4 (shadow crate):** `elicit_newtype!` + `reflect_methods` for all 12 types
 - **Phase 5 (MCP tools):** ~32 tools across 4 plugins (primitives, shapes, collections, geometry)
@@ -155,6 +157,7 @@ display, constructor, property, and conversion behavior rather than inventing a
 parallel model.
 
 **Coverage:**
+
 - **Phase 2 (elicitation):** feature-gated support for upstream GeoJSON document/value types
 - **Phase 3 (shadow crate):** `elicit_geojson` wrappers + upstream-shaped workflow plugins
 - **Phase 4 (verification):** Kani / Creusot / Verus wrapper proofs and runner wiring
@@ -178,6 +181,7 @@ upstream crate. This integration should start with the actual reader/value API a
 defer aspirational raster processing abstractions.
 
 **Coverage:**
+
 - **Phase 2 (elicitation):** feature-gated support for upstream value types such as
   `RasterValue` and `ImageInfo`
 - **Phase 3 (shadow crate):** `elicit_georaster` wrappers + reader/sampling MCP tools
@@ -234,6 +238,7 @@ runtime execution, pipeline descriptor + emit_main, SQLContext.
 QuantityBus enables cross-registration arithmetic (Length/Time→Velocity). ~55 tools.
 
 **Coverage:**
+
 - **UomQuantityPlugin (~40 tools):** 36 per-registration (18×new+emit), 5 query, 12 arithmetic, 1 convert
 - **UomCodePlugin (~15 tools):** 5 emit (conversion, calculation, formula, main, snippet) + 10 catalog
 - **Physics constants:** c, G, h, kB, NA, e, g, ε0
@@ -251,6 +256,7 @@ QuantityBus enables cross-registration arithmetic (Length/Time→Velocity). ~55 
 primitives + DescriptorPlugin for code generation. ~75 tools.
 
 **Architecture:**
+
 - **`LeptosReactivePlugin`** (StatefulPlugin): `LeptosReactiveContext` holds an `Owner` scope,
   `HashMap<Uuid, RwSignal<Value>>` signals, memos, actions. Uses `leptos ssr` feature — fully
   server-side, no WASM. Tools: signal CRUD, memo derivation, context provide/use, actions.
@@ -259,6 +265,7 @@ primitives + DescriptorPlugin for code generation. ~75 tools.
   descriptors feed into emit tools.
 
 **Coverage:**
+
 - **Reactive (~22 tools):** signals (8), memos (4), context (4), actions (4), owner (2)
 - **Components (~8 tools):** descriptor create/build/emit, `#[component]`, `#[island]`
 - **View (~12 tools):** parametric `element_emit`, Show, For, Suspense, Transition, ErrorBoundary, bindings, closures
@@ -269,16 +276,17 @@ primitives + DescriptorPlugin for code generation. ~75 tools.
 - **Catalog (~6 tools):** HTML tags, leptos components, events, features, starter templates
 
 **Key decisions:**
+
 - One parametric `element_emit(tag, attrs, events, children)` replaces 140 per-element tools
 - `leptos features = ["ssr"]` — reactive_graph works server-side, no browser/WASM needed
 - Macros (`#[component]`, `view!`, `#[server]`, `#[island]`) are emit tools, not runtime wrappers
 - Closures (`on:click`, `class:active`, `{move || ...}`) follow closure-as-fragment pattern
 
-
 complex queries by composing JSON-serializable expressions. No code generation needed,
 just data structure composition.
 
 **Coverage:**
+
 - **DataFrame (eager):** 40+ operations - select, filter, join, group_by, I/O (CSV/Parquet/JSON/IPC)
 - **LazyFrame (lazy):** 25+ operations - scan, transform, optimize, collect, streaming
 - **Expr DSL:** 30+ tools - col, lit, binary ops, aggregations, string/temporal/list methods
@@ -286,6 +294,7 @@ just data structure composition.
 - **Data Types:** Full dtype system (numeric, temporal, nested, categorical)
 
 **What's Serializable:**
+
 - ✅ All DataFrame/LazyFrame operations (params are primitives/structs)
 - ✅ Expr is `#[derive(Serialize, Deserialize)]` - full AST composition
 - ✅ ~200 built-in functions (sum, mean, string ops, temporal ops)
@@ -293,11 +302,13 @@ just data structure composition.
 - ✅ I/O operations (file paths + option structs)
 
 **What's NOT (closures):**
+
 - ❌ `df.apply(|series| custom(series))` - ~20% of API
 - ❌ `expr.map(|col| custom(col))` - custom UDFs
 - ❌ Object columns (require trait impls)
 
 **Strategy:**
+
 - UUID-keyed registries for DataFrame/LazyFrame handles
 - Direct Expr serialization (agents build JSON ASTs)
 - SQL as high-level escape hatch for complex queries
@@ -325,6 +336,7 @@ Leptos), no trait-heavy API requiring factory pattern (unlike num-traits), no as
 are dual-mode (both runtime execution and code emission).
 
 **Coverage:**
+
 - **Matrix Operations (120 dual-mode):** Creation, arithmetic, transformations, slicing, properties, solvers, norms
 - **Vector Operations (80 dual-mode):** Creation, arithmetic, geometric (dot, cross, normalize), properties
 - **Geometric Types (80 dual-mode):** Rotations (2D/3D, quaternions, Euler angles), translations, isometries, similarities, transforms, projections
@@ -333,6 +345,7 @@ are dual-mode (both runtime execution and code emission).
 - **Runtime Handles (60):** UUID registries for persistent matrices, vectors, decompositions, transforms
 
 **Strategy:**
+
 - Single shadow crate: `elicit_nalgebra`
 - Dual-mode dominance: 350/480 tools (73%) with `emit = Auto` + CustomEmit
 - Natural JSON serialization: matrices → nested arrays, vectors → arrays, rotations → quaternions
@@ -361,6 +374,7 @@ N-dimensional arrays like NumPy rather than linear algebra. Wider adoption as th
 Rust's scientific computing ecosystem (ndarray-linalg, ndarray-stats, polars).
 
 **Coverage:**
+
 - **Array Creation (60 dual-mode):** From data, ranges, special values (zeros/ones/eye), random, iterators
 - **Indexing & Slicing (50 dual-mode):** Element access, slicing with s! macro, views, iteration
 - **Arithmetic (50 dual-mode):** Element-wise binary/unary ops, scalar ops, comparisons, logical
@@ -373,6 +387,7 @@ Rust's scientific computing ecosystem (ndarray-linalg, ndarray-stats, polars).
 - **Runtime Handles (40):** UUID registries for persistent arrays (ArcArray), views, iterators
 
 **Strategy:**
+
 - Single shadow crate: `elicit_ndarray`
 - Dual-mode dominance: 400/520 tools (77%) with `emit = Auto` + CustomEmit
 - Natural JSON serialization: arrays → nested arrays, shape metadata, row-major layout
@@ -383,6 +398,7 @@ Rust's scientific computing ecosystem (ndarray-linalg, ndarray-stats, polars).
 - NumPy compatibility: Familiar API for Python → Rust migrations
 
 **Comparison to nalgebra:**
+
 - nalgebra: Linear algebra focus, geometric types (rotations, quaternions), decompositions
 - ndarray: General N-D arrays, broadcasting, NumPy-style API, scientific computing foundation
 - Both "straightforward": Natural serialization, synchronous ops, concrete methods, clear taxonomy
@@ -408,11 +424,13 @@ OpenType features/variations, bidirectional text (RTL/LTR), Unicode line breakin
 Foundation for linebender ecosystem (xilem, masonry, vello).
 
 **Coverage:**
+
 - **Runtime Context Management (160 tools):** FontContext/LayoutContext creation, builder workflow (one-shot operations due to lifetimes), layout operations (break lines, align), line/run/glyph queries, font database inspection
 - **Dual-Mode Style Tools (180 tools):** 23 StyleProperty variants (font family, size, weight, style, variations, features, underline, strikethrough, line height, letter spacing, word spacing, locale, brush/color), text ranges, alignment types, line break rules, layout serialization (positioned glyphs with coordinates)
 - **Fragment Tools (40 tools):** Context construction code, builder code generation, layout computation code, complete assembly
 
 **Strategy:**
+
 - Single shadow crate: `elicit_parley`
 - Runtime-heavy: 160/380 tools (42%) due to stateful contexts + lifetime-bound builders
 - Dual-mode emphasis: 180/380 (47%) for style creation and layout serialization
@@ -421,6 +439,7 @@ Foundation for linebender ecosystem (xilem, masonry, vello).
 - SimpleBrush: Fixed RGBA color type (avoids generic Brush trait complexity)
 
 **Typography Features:**
+
 - **Text Shaping:** HarfBuzz integration, glyph positioning, kerning, ligatures
 - **OpenType:** Font features (kern, liga, calt, etc.), variation axes (weight, width)
 - **Bidirectional:** RTL/LTR text, Arabic, Hebrew, Unicode normalization
@@ -428,6 +447,7 @@ Foundation for linebender ecosystem (xilem, masonry, vello).
 - **Font Control:** Font family stacks, weight (100-900), style (normal/italic/oblique), stretch
 
 **Comparison to taffy:**
+
 - **Shared traits:** Stateful by design, CSS-like properties, synchronous operations, natural JSON serialization, visual domains
 - **Different domains:** Box layout (flexbox/grid) vs text layout (shaping/breaking)
 - **Output:** Box positions (x/y/width/height) vs glyph positions (x/y/advance/cluster)
@@ -435,6 +455,7 @@ Foundation for linebender ecosystem (xilem, masonry, vello).
 - **Tool distribution:** taffy runtime 53%, parley runtime 42%; taffy dual-mode 35%, parley dual-mode 47%
 
 **Integration:**
+
 - xilem/masonry: AI-generated rich text layouts, typography exploration
 - vello: GPU-rendered text generation, vector text for design tools
 - Custom renderers: PDF generation, canvas rendering, game engine text, terminal UI
@@ -459,6 +480,7 @@ comprehensive test suite (39 tests), research document. Phase 4 (Transfer integr
 deferred - validation functions work independently and can be integrated when needed.
 
 **Key Deliverables:**
+
 - ✅ Research document: GAAP principles applicable to double-entry bookkeeping
 - ✅ `src/ledger/gaap.rs`: Proposition types with ASC references (887 lines)
 - ✅ Validation functions returning `Result<Established<P>, ValidationError>`
@@ -484,6 +506,7 @@ accounting services: chart of accounts, financial statements, period closing, mu
 AI-assisted classification, audit trail.
 
 **Vision:**
+
 1. **GAAP as IR** - Account classes are foundational types, not post-hoc validation
 2. **Typesafe state machines** - `JournalEntry<Draft/Balanced/Posted/Closed>`
 3. **Double-entry by construction** - Builder pattern enforces balance before creation
@@ -492,6 +515,7 @@ AI-assisted classification, audit trail.
 6. **Audit-ready** - Every entry carries GAAP proof from construction through commit
 
 **Architecture:**
+
 - Chart of Accounts with GAAP account types (Asset/Liability/Equity/Revenue/Expense)
 - Journal Entry builder enforcing double-entry balance
 - Financial statements by projection (Balance Sheet, Income Statement, Cash Flow)
@@ -534,6 +558,7 @@ DB implementations and consumers (axum, leptos server fns, UI) program against.
 No DB driver dependency. No MCP tools. Pure contracts vocabulary.
 
 **Standards stack:**
+
 - ISO/IEC 9075 (SQL semantics — DDL/DML/constraints/views)
 - ANSI isolation model (Read Committed → Serializable, phenomena P0–P3)
 - PostgreSQL docs (MVCC, advisory locks, WAL — execution truth)
@@ -545,6 +570,7 @@ No DB driver dependency. No MCP tools. Pure contracts vocabulary.
 `security`, `recovery`, `transport`, `observability`
 
 **Key types:**
+
 - Props: `TableCreated`, `ConstraintSatisfied`, `Serializable`, `AuditLogged`,
   `MVCCSnapshotValid`, `AdvisoryLockHeld`, `WALReplayable`, `TraceEmitted`, etc.
 - Typestate: `Transaction<Open/Committed/RolledBack>`, `Query<Prepared/Executed>`

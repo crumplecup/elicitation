@@ -23,6 +23,7 @@ let code = LeptosCodePlugin::new();
 ## Reactive Tools (`leptos_reactive__*`)
 
 ### Signal tools
+
 | Tool | Description |
 |---|---|
 | `leptos_reactive__signal_new` | Create an `RwSignal` with initial value, returns UUID |
@@ -35,6 +36,7 @@ let code = LeptosCodePlugin::new();
 | `leptos_reactive__signal_track` | Get change count for dependency tracking |
 
 ### Memo tools
+
 | Tool | Description |
 |---|---|
 | `leptos_reactive__memo_new` | Create a derived memo with ops: `upper`, `lower`, `negate`, `to_number`, `to_bool`, `length`, `abs`, `not` |
@@ -43,6 +45,7 @@ let code = LeptosCodePlugin::new();
 | `leptos_reactive__memo_delete` | Remove memo by UUID |
 
 ### Context tools
+
 | Tool | Description |
 |---|---|
 | `leptos_reactive__ctx_provide` | Store key/value in context |
@@ -51,6 +54,7 @@ let code = LeptosCodePlugin::new();
 | `leptos_reactive__ctx_remove` | Remove entry by key |
 
 ### Action tools
+
 | Tool | Description |
 |---|---|
 | `leptos_reactive__action_new` | Create a server action entry |
@@ -59,6 +63,7 @@ let code = LeptosCodePlugin::new();
 | `leptos_reactive__action_list` | List all actions |
 
 ### Owner tools
+
 | Tool | Description |
 |---|---|
 | `leptos_reactive__owner_reset` | Clear all reactive state |
@@ -67,6 +72,7 @@ let code = LeptosCodePlugin::new();
 ## Code Tools (`leptos_code__*`)
 
 ### Component tools
+
 | Tool | Description |
 |---|---|
 | `leptos_code__component_new` | Create component descriptor |
@@ -81,6 +87,7 @@ let code = LeptosCodePlugin::new();
 | `leptos_code__component_file_emit` | Emit complete source file |
 
 ### View tools
+
 | Tool | Description |
 |---|---|
 | `leptos_code__view_emit` | Emit `view! { ... }` |
@@ -97,6 +104,7 @@ let code = LeptosCodePlugin::new();
 | `leptos_code__router_link_emit` | Emit `<A href="...">` |
 
 ### Server function tools
+
 | Tool | Description |
 |---|---|
 | `leptos_code__server_fn_new` | Create server function descriptor |
@@ -111,6 +119,7 @@ let code = LeptosCodePlugin::new();
 | `leptos_code__action_form_emit` | Emit `<ActionForm action={...}>` |
 
 ### Routing tools
+
 | Tool | Description |
 |---|---|
 | `leptos_code__route_new` | Create route descriptor |
@@ -126,6 +135,7 @@ let code = LeptosCodePlugin::new();
 | `leptos_code__outlet_emit` | Emit `<Outlet />` |
 
 ### Meta tools
+
 | Tool | Description |
 |---|---|
 | `leptos_code__meta_title_emit` | Emit `<Title text="..."/>` |
@@ -134,6 +144,7 @@ let code = LeptosCodePlugin::new();
 | `leptos_code__meta_stylesheet_emit` | Emit `<Stylesheet href="..."/>` |
 
 ### App scaffolding tools
+
 | Tool | Description |
 |---|---|
 | `leptos_code__app_new` | Create app descriptor |
@@ -149,6 +160,7 @@ let code = LeptosCodePlugin::new();
 | `leptos_code__app_emit_all` | Emit all scaffold files as JSON map |
 
 ### Catalog tools
+
 | Tool | Description |
 |---|---|
 | `leptos_code__catalog_html_tags` | List all supported HTML5 tags |

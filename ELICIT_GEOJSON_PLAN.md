@@ -15,6 +15,7 @@ This is a **dictionary, not a redesign**. The plan must mirror upstream names an
 capabilities instead of inventing a parallel “layout export” model.
 
 Reference guides:
+
 - `SHADOW_CRATE_MOTIVATION.md`
 - `THIRD_PARTY_SUPPORT_GUIDE.md`
 - `crates/elicit_wkt/`
@@ -290,6 +291,7 @@ crates/elicitation_kani/src/geojson_types.rs
 ```
 
 Focus on:
+
 - enum coverage for `GeoJson`, `Value`, and `Id`
 - wrapper roundtrips
 - known-value parse/format checks

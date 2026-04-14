@@ -1461,6 +1461,7 @@ valid longitude and latitude ranges, south-north ordering, and antimeridian sema
 | `northBoundLatitude` | M | 1 | Decimal | [-90, 90] |
 
 **Constraints:**
+
 - `southBoundLatitude` ≤ `northBoundLatitude`
 - `westBoundLongitude` ≤ `eastBoundLongitude` (antimeridian crossing allowed)
 
@@ -2090,6 +2091,7 @@ a specific quality dimension with quantitative or qualitative results.
 **`DQ_Element` subclasses (quality dimensions):**
 
 Each subclass captures a specific quality concept. Every `DQ_Element` has:
+
 - `nameOfMeasure` (O): name of the measure used
 - `measureIdentification` (O): reference to a quality measure registry
 - `measureDescription` (O): description of the measure
@@ -2337,6 +2339,7 @@ of text. `PT_Locale` instances are referenced from `MD_Metadata.locale`.
 | `characterEncoding` | M | 1 | MD_CharacterSetCode |
 
 **Value constraints:**
+
 - `language` shall be a three-letter lowercase ISO 639-2/T code (e.g., `eng`, `fra`).
 - `country` shall be an ISO 3166-1 alpha-2 (e.g., `US`) or alpha-3 (e.g., `USA`) code.
 
@@ -2965,5 +2968,3 @@ grouped by the ISO 19115-1:2014 class or code list from which they derive.
 
 All props use the `structural_prop!` macro pattern. Convert to
 `crates/elicit_gis/src/contracts/iso19115.rs` before use.
-
-

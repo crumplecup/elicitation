@@ -16,6 +16,7 @@
 standards-anchored vocabulary of database contracts. Users reach for what they need.
 
 Analogies:
+
 - `elicit_ui` → WCAG Props + accessibility typestate + rendering traits
 - `elicit_db` → ISO SQL + ANSI isolation + PostgreSQL + ISO 27001 Props + **management traits**
 
@@ -25,6 +26,7 @@ Prop. Every Prop maps to either an ISO clause or a documented PostgreSQL guarant
 ### Why contract return types instead of associated types
 
 Traditional trait design uses associated types for result shapes:
+
 ```rust
 // NOT this — associated types break object safety
 trait DbExecutor {
@@ -35,6 +37,7 @@ trait DbExecutor {
 ```
 
 `elicit_db` uses `Established<P>` tuples instead:
+
 ```rust
 // THIS — object-safe, self-documenting
 trait DbQueryExecutor: Send + Sync {
@@ -45,6 +48,7 @@ trait DbQueryExecutor: Send + Sync {
 ```
 
 Benefits:
+
 - `dyn DbTableManager` works — no associated types to bind
 - The return type IS the contract: callers know exactly what was proven
 - Composable: `(Established<RowInserted>, Established<AuditLogged>)` reads like prose

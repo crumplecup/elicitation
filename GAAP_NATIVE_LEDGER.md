@@ -23,12 +23,14 @@ Transfer<Pending> → Transfer<Validated> → Transfer<Committed>
 ```
 
 **Strengths:**
+
 - ✅ Typestate transitions work
 - ✅ Proof-carrying validation established
 - ✅ Double-entry bookkeeping enforced
 - ✅ GAAP propositions defined (Phase 1-3 complete)
 
 **Limitations:**
+
 - ❌ Transfer-centric (not journal-entry-centric)
 - ❌ No chart of accounts
 - ❌ No account types (Asset/Liability/Equity/Revenue/Expense)
@@ -47,6 +49,7 @@ JournalEntry<Draft> → JournalEntry<Balanced> → JournalEntry<Posted> → Jour
 ```
 
 **Capabilities:**
+
 - ✅ GAAP account types are primitive (Asset, Liability, Equity, Revenue, Expense)
 - ✅ Chart of accounts with hierarchical structure
 - ✅ Normal balances by account type (debit/credit)
@@ -95,6 +98,7 @@ pub enum FixedAsset {
 ```
 
 **Normal balance by type:**
+
 - Assets: Debit
 - Expenses: Debit
 - Liabilities: Credit
@@ -125,6 +129,7 @@ pub struct JournalLine {
 ```
 
 **Typestates:**
+
 - `Draft` - Being constructed, not balanced yet
 - `Balanced` - Debits = Credits, ready to post
 - `Posted` - Committed to ledger, affects account balances
@@ -477,6 +482,7 @@ impl TransactionClassifier {
 **Goal:** Define GAAP account types and chart of accounts.
 
 **Tasks:**
+
 1. Define `AccountClass` enum (Asset/Liability/Equity/Revenue/Expense)
 2. Define sub-types for each class (CurrentAsset, FixedAsset, etc.)
 3. Define `Account` struct with account number, name, class
@@ -485,12 +491,14 @@ impl TransactionClassifier {
 6. Add normal balance rules (debit/credit by account class)
 
 **Deliverables:**
+
 - `crates/elicit_server/src/ledger2/account_types.rs`
 - `crates/elicit_server/src/ledger2/chart_of_accounts.rs`
 - Tests for account classification and normal balances
 - Standard chart templates
 
 **Success criteria:**
+
 - All GAAP account classes defined
 - Normal balance rules encoded
 - Standard chart of accounts templates
@@ -501,6 +509,7 @@ impl TransactionClassifier {
 **Goal:** Implement journal entry types with typestate state machine.
 
 **Tasks:**
+
 1. ✅ Define `JournalEntry<S>` with state markers (Draft/Balanced/Posted/Closed)
 2. ✅ Define `JournalLine` with account, debit, credit
 3. ✅ Implement `JournalEntryBuilder` with double-entry enforcement
@@ -509,6 +518,7 @@ impl TransactionClassifier {
 6. ✅ Integrate existing GAAP propositions (proof structure ready)
 
 **Deliverables:**
+
 - ✅ `crates/elicit_server/src/ledger2/journal_entry.rs` (370 lines)
 - ✅ `crates/elicit_server/src/ledger2/journal_line.rs` (280 lines)
 - ✅ `crates/elicit_server/src/ledger2/builder.rs` (170 lines)
@@ -518,6 +528,7 @@ impl TransactionClassifier {
 - ✅ Error types for imbalance, invalid transitions, GAAP validation
 
 **Implementation:**
+
 - **Amount type**: Monetary amounts in cents (i64) to avoid floating-point errors
 - **JournalLine**: Either debit OR credit (mutually exclusive), with account and memo
 - **State markers**: Draft, Balanced, Posted, Closed (zero-cost PhantomData)
@@ -528,6 +539,7 @@ impl TransactionClassifier {
 - **GaapProof**: Carries list of established propositions with timestamp
 
 **Test coverage:**
+
 - 18 tests covering:
   - Amount arithmetic and display
   - Builder validation (balance, entity, active accounts, description)
@@ -536,6 +548,7 @@ impl TransactionClassifier {
   - Entry properties (unique IDs, display formatting)
 
 **Success criteria:**
+
 - ✅ Builder enforces double-entry by construction (debits = credits)
 - ✅ Typestate transitions work correctly (no invalid transitions possible)
 - ✅ GAAP proofs carried through lifecycle (GaapProof struct in every entry)
@@ -548,6 +561,7 @@ impl TransactionClassifier {
 **Goal:** Implement ledger storage with account balances and queries.
 
 **Tasks:**
+
 1. ✅ Define `Ledger` struct with journal entries and account balances
 2. ✅ Implement posting (JournalEntry<Balanced> → JournalEntry<Posted>)
 3. ✅ Update account balances on posting
@@ -557,6 +571,7 @@ impl TransactionClassifier {
 7. ⏸️ Implement SQLx queries for persistence (deferred - not needed yet)
 
 **Deliverables:**
+
 - ✅ `crates/elicit_server/src/ledger2/ledger.rs` (295 lines)
 - ✅ `crates/elicit_server/src/ledger2/balance.rs` (305 lines)
 - ✅ `crates/elicit_server/tests/ledger2_ledger_test.rs` (450 lines)
@@ -564,6 +579,7 @@ impl TransactionClassifier {
 - ✅ Tests for posting, queries, balance tracking (13 tests)
 
 **Implementation:**
+
 - **AccountBalance**: Tracks debits/credits for individual account with as-of date
 - **BalanceSheet**: Assets, Liabilities, Equity with equation verification (A = L + E)
 - **Ledger**: Central repository managing posted entries and balances
@@ -572,12 +588,14 @@ impl TransactionClassifier {
 - **Activity queries**: Revenue, expenses, net income by period
 
 **Balance tracking:**
+
 - Debits/credits accumulated per account
 - Normal balance rules enforced (Assets/Expenses = Debit, Liabilities/Equity/Revenue = Credit)
 - As-of-date queries for point-in-time balances
 - Entry count tracking for audit trail
 
 **Ledger operations:**
+
 - Post entries (Balanced → Posted with balance updates)
 - Entity validation (entries must belong to ledger's entity)
 - Chronological storage (entries ordered by posting time)
@@ -585,6 +603,7 @@ impl TransactionClassifier {
 - Balance sheet generation with equation verification
 
 **Query capabilities:**
+
 - `account_balance(account, date)` - Balance for specific account as of date
 - `all_balances(date)` - All account balances as of date
 - `entries_as_of(date)` - Entries posted on or before date
@@ -594,6 +613,7 @@ impl TransactionClassifier {
 - `net_income(start, end)` - Net income (revenue - expenses)
 
 **Test coverage (13 tests):**
+
 - Account balance initialization and updates
 - Multiple entries affecting same account
 - As-of-date balance queries
@@ -604,6 +624,7 @@ impl TransactionClassifier {
 - Balance sheet generation
 
 **Success criteria:**
+
 - ✅ Account balances calculated correctly from journal lines
 - ✅ Queries work efficiently (in-memory for now)
 - ✅ Balance sheet equation verified
@@ -621,6 +642,7 @@ methods without changing the public API.
 **Goal:** Generate GAAP-compliant financial statements.
 
 **Tasks:**
+
 1. ✅ Implement `BalanceSheet` with assets/liabilities/equity grouping (basic version in Phase 3)
 2. ✅ Implement `IncomeStatement` with revenue/expenses/net income
 3. ⏸️ Implement `CashFlowStatement` (deferred - complex, low priority)
@@ -629,24 +651,28 @@ methods without changing the public API.
 6. ✅ Add financial ratios (current ratio, debt-to-equity, profit margin)
 
 **Deliverables:**
+
 - ✅ `crates/elicit_server/src/ledger2/statements.rs` (480 lines - unified module)
 - ✅ `crates/elicit_server/tests/ledger2_statements_test.rs` (370 lines)
 - ⏸️ Cash flow statement (deferred)
 - ✅ Tests for statement generation and accuracy (19 tests)
 
 **Implementation:**
+
 - **StatementPeriod**: Defines time ranges for financial reporting (monthly, quarterly, annual)
 - **IncomeStatement**: Revenue, expenses, net income with profit margin calculation
 - **ComparativeIncomeStatement**: Side-by-side comparison of current vs. prior periods with variance analysis
 - **FinancialRatios**: Profitability, liquidity, and leverage ratios
 
 **Statement Period:**
+
 - Monthly periods with proper month-end dates
 - Quarterly periods (Q1-Q4)
 - Annual (fiscal year) periods
 - Custom date ranges with descriptions
 
 **Income Statement:**
+
 - Revenue accounts aggregated by account number
 - Expense accounts aggregated by account number
 - Net income computed as revenue - expenses
@@ -654,24 +680,28 @@ methods without changing the public API.
 - Integration with Ledger via `income_statement(period)` method
 
 **Comparative Statements:**
+
 - Current vs. prior period comparison
 - Revenue, expense, and net income variance
 - Revenue growth percentage calculation
 - Formatted display for analysis
 
 **Financial Ratios:**
+
 - **Profit margin**: Net income / revenue (profitability)
 - **Current ratio**: Current assets / current liabilities (liquidity)
 - **Debt-to-equity**: Total liabilities / total equity (leverage)
 - None handling for zero divisors
 
 **Ledger integration:**
+
 - `Ledger::income_statement(&period)` generates statement from posted entries
 - Filters entries by date range
 - Aggregates revenue and expenses by account
 - Handles normal balance rules (revenue=credit, expense=debit)
 
 **Test coverage (19 tests):**
+
 - Statement period creation (monthly, quarterly, annual)
 - Income statement operations (add revenue, add expense, net income)
 - Profit margin calculation
@@ -681,6 +711,7 @@ methods without changing the public API.
 - Financial ratios (all three ratios, zero divisor handling)
 
 **Success criteria:**
+
 - ✅ Balance sheet equation verified (from Phase 3)
 - ✅ Income statement generated from ledger entries
 - ⏸️ Cash flow statement (deferred - not critical for MVP)
@@ -698,6 +729,7 @@ financing activities) and lower priority. Can be added in future phase if needed
 **Goal:** Enforce matching principle for revenue recognition.
 
 **Tasks:**
+
 1. Define `RevenueRecognition` type with matched expenses
 2. Implement revenue recognition rules (ASC 606 five-step model)
 3. Add validation that revenue and COGS are in same period
@@ -706,12 +738,14 @@ financing activities) and lower priority. Can be added in future phase if needed
 6. Add matching proof establishment
 
 **Deliverables:**
+
 - `crates/elicit_server/src/ledger2/revenue_recognition.rs`
 - `crates/elicit_server/src/ledger2/deferrals.rs`
 - `crates/elicit_server/src/ledger2/accruals.rs`
 - Tests for revenue recognition, deferrals, accruals
 
 **Success criteria:**
+
 - Matching principle enforced by type system
 - Revenue recognition follows ASC 606
 - Deferred revenue and accrued expenses handled correctly
@@ -722,6 +756,7 @@ financing activities) and lower priority. Can be added in future phase if needed
 **Goal:** Implement accounting period closing with retained earnings.
 
 **Tasks:**
+
 1. Define `ClosingEntry` type with closing journal entries
 2. Implement temporary account closing (revenue/expenses)
 3. Implement income summary to retained earnings transfer
@@ -730,11 +765,13 @@ financing activities) and lower priority. Can be added in future phase if needed
 6. Implement re-opening entries if needed
 
 **Deliverables:**
+
 - `crates/elicit_server/src/ledger2/closing.rs`
 - `crates/elicit_server/src/ledger2/period.rs`
 - Tests for period closing, re-opening, immutability
 
 **Success criteria:**
+
 - Period closing zeroes temporary accounts
 - Net income flows to retained earnings
 - Closed periods immutable
@@ -745,6 +782,7 @@ financing activities) and lower priority. Can be added in future phase if needed
 **Goal:** Support multiple entities with consolidation.
 
 **Tasks:**
+
 1. Add `Entity` type with entity ID, name, type (parent/subsidiary)
 2. Add entity ID to all journal entries and accounts
 3. Implement inter-company transactions
@@ -753,11 +791,13 @@ financing activities) and lower priority. Can be added in future phase if needed
 6. Add non-controlling interest handling
 
 **Deliverables:**
+
 - `crates/elicit_server/src/ledger2/entity.rs`
 - `crates/elicit_server/src/ledger2/consolidation.rs`
 - Tests for multi-entity, consolidation, eliminations
 
 **Success criteria:**
+
 - Each entity has separate books
 - Inter-company transactions tracked
 - Consolidated statements eliminate inter-company
@@ -768,6 +808,7 @@ financing activities) and lower priority. Can be added in future phase if needed
 **Goal:** AI-assisted transaction classification and suggestions.
 
 **Tasks:**
+
 1. Define `TransactionClassifier` with AI model integration
 2. Implement classification API (description → account suggestion)
 3. Implement revenue recognition suggestions (revenue → COGS match)
@@ -776,12 +817,14 @@ financing activities) and lower priority. Can be added in future phase if needed
 6. Add batch classification for imports (bank statements, invoices)
 
 **Deliverables:**
+
 - `crates/elicit_server/src/ledger2/ai/classifier.rs`
 - `crates/elicit_server/src/ledger2/ai/suggestions.rs`
 - `crates/elicit_server/src/ledger2/ai/feedback.rs`
 - Tests for classification, suggestions, feedback
 
 **Success criteria:**
+
 - AI suggests correct account 80%+ of time
 - Revenue recognition suggestions follow ASC 606
 - User feedback improves model
@@ -792,6 +835,7 @@ financing activities) and lower priority. Can be added in future phase if needed
 **Goal:** Complete audit trail with GAAP compliance tracking.
 
 **Tasks:**
+
 1. Add audit log for all ledger operations
 2. Track user, timestamp, operation type for each entry
 3. Add GAAP compliance metadata (which propositions satisfied)
@@ -800,12 +844,14 @@ financing activities) and lower priority. Can be added in future phase if needed
 6. Implement reversal entries for corrections
 
 **Deliverables:**
+
 - `crates/elicit_server/src/ledger2/audit.rs`
 - `crates/elicit_server/src/ledger2/reversal.rs`
 - Audit report templates
 - Tests for audit trail, reversals, immutability
 
 **Success criteria:**
+
 - Every operation logged with user/timestamp
 - GAAP compliance tracked per entry
 - Audit reports generated
@@ -816,6 +862,7 @@ financing activities) and lower priority. Can be added in future phase if needed
 **Goal:** Migrate from POC ledger to GAAP-native ledger.
 
 **Tasks:**
+
 1. Write migration script (Transfer → JournalEntry)
 2. Migrate existing test data
 3. Update tests to use new ledger
@@ -824,6 +871,7 @@ financing activities) and lower priority. Can be added in future phase if needed
 6. Performance benchmarks (old vs. new)
 
 **Deliverables:**
+
 - Migration script
 - Updated tests
 - Performance comparison
@@ -831,6 +879,7 @@ financing activities) and lower priority. Can be added in future phase if needed
 - Updated documentation
 
 **Success criteria:**
+
 - All existing functionality migrated
 - Tests passing with new ledger
 - Performance >= old ledger
@@ -1025,18 +1074,21 @@ impl From<Transfer<Committed>> for JournalEntry<Posted> {
 ## Future Extensions
 
 ### Year 1
+
 - **Tax reporting:** Generate 1099, W-2, 1120, 1065
 - **Payroll:** Integrate payroll with GAAP journal entries
 - **Fixed assets:** Depreciation schedules, asset tracking
 - **Budgeting:** Budget vs. actual reporting
 
 ### Year 2
+
 - **Multi-currency:** ASC 830 foreign currency translation
 - **Revenue recognition:** Full ASC 606 five-step model
 - **Lease accounting:** ASC 842 right-of-use assets
 - **Fair value:** ASC 820 fair value measurements
 
 ### Year 3
+
 - **Consolidation:** Full multi-entity with non-controlling interest
 - **Segment reporting:** ASC 280 segment disclosures
 - **IFRS support:** Dual reporting (GAAP + IFRS)
@@ -1058,6 +1110,7 @@ impl From<Transfer<Committed>> for JournalEntry<Posted> {
 - Weeks 19-20: Migration
 
 **Milestones:**
+
 - Month 1: Foundation complete (GAAP types, journal entries)
 - Month 2: Core ledger functional (posting, queries, statements)
 - Month 3: GAAP enforcement (matching, closing)
@@ -1067,6 +1120,7 @@ impl From<Transfer<Committed>> for JournalEntry<Posted> {
 ## References
 
 ### GAAP Standards
+
 - FASB ASC 105: Generally Accepted Accounting Principles
 - FASB ASC 205-40: Going Concern
 - FASB ASC 250: Accounting Changes
@@ -1077,6 +1131,7 @@ impl From<Transfer<Committed>> for JournalEntry<Posted> {
 - FASB ASC 842: Leases
 
 ### Implementation References
+
 - GAAP_PRINCIPLES_RESEARCH.md: Detailed GAAP principle documentation
 - GAAP_LEDGER_INTEGRATION.md: Current GAAP proposition implementation
 - elicit_server/src/ledger/: POC ledger (to be deprecated)

@@ -1097,6 +1097,7 @@ plugin can live in `crates/elicit_foo/` without a workflow module. Use a single 
 with one or more plugin modules.
 
 For libraries with a mix of config types and live resources, split:
+
 - Descriptor plugins in `crates/elicit_foo/src/` (one file per domain)
 - Workflow plugin in `crates/elicit_foo/src/workflow.rs` (Phase 3C pattern)
 
@@ -1369,6 +1370,7 @@ let router_plugin = AxumRouterPlugin::builder()
 ```
 
 This generates tools at runtime:
+
 - `axum_router__app_state__new`
 - `axum_router__app_state__route`
 - `axum_router__app_state__layer`
@@ -1417,6 +1419,7 @@ independently to tool naming, schema, and code generation.
 #### Canonical example: `uom::Quantity<D, U, V>`
 
 `uom` represents physical quantities as `Quantity<D, U, V>` where:
+
 - `D: Dimension` — type-level dimensional powers (Length, Mass, Velocity, …)
 - `U: Units<V>` — unit system (SI, CGS, …)
 - `V: Num + Conversion<V>` — underlying storage (f64, f32, i32, …)
@@ -1512,6 +1515,7 @@ time_id    ──bus──> 9.58 s            } qty__div resolves → Velocity
 ```
 
 Both storage layers coexist:
+
 - **Typed HashMap** — used by `{name}__emit` (knows the uom type, emits perfect code)
 - **QuantityBus** — used by cross-type arithmetic (works on f64 SI values)
 
@@ -1530,8 +1534,6 @@ With multi-param factory the registration name encodes all parameters that matte
 - Cross-registration arithmetic is the primary operation (bus overhead dominates)
 
 ---
-
-
 
 ### 4.1 `Cargo.toml`
 
@@ -1863,6 +1865,7 @@ impl ElicitComplete for Bar {}
 ```
 
 `ElicitComplete` requires:
+
 - `Elicitation` — with non-defaulted `kani_proof`, `verus_proof`, `creusot_proof`
 - `ElicitIntrospect` — structural metadata
 - `ElicitSpec` — agent-browsable contract spec

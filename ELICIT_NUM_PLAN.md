@@ -20,12 +20,14 @@
 ### Pattern 1: Runtime Tools (Concrete Types)
 
 **What works at runtime:**
+
 - BigInt/BigUint arithmetic operations (fully serializable)
 - Rational number operations (numerator/denominator as JSON)
 - Complex number operations (re/im as JSON)
 - All operations with concrete, serializable inputs/outputs
 
 **Example:**
+
 ```rust
 #[elicit_tool(plugin = "bigint_runtime", name = "add")]
 async fn bigint_add(p: BigIntAddParams) -> Result<CallToolResult, ErrorData> {
@@ -39,11 +41,13 @@ async fn bigint_add(p: BigIntAddParams) -> Result<CallToolResult, ErrorData> {
 ### Pattern 2: Fragment Tools (Generic Code Generation)
 
 **What becomes fragments:**
+
 - Generic functions with trait bounds (`T: Num`, `T: Integer`, etc.)
 - Emit code like `fn add<T: Num>(a: T, b: T) -> T { a + b }`
 - Polymorphic number code that works for any numeric type
 
 **Example:**
+
 ```rust
 #[elicit_tool(
     plugin = "num_fragments",
@@ -64,6 +68,7 @@ async fn emit_add_generic(p: EmitAddGenericParams) -> Result<CallToolResult, Err
 ### Pattern 3: Factory Pattern (Trait Methods)
 
 **Traits to expose:**
+
 - `Num` - basic numeric trait (add, sub, mul, zero, one)
 - `Zero` / `One` - identity elements
 - `Integer` - integer-specific operations
@@ -75,6 +80,7 @@ async fn emit_add_generic(p: EmitAddGenericParams) -> Result<CallToolResult, Err
 - `WrappingOps` - wrapping arithmetic
 
 **Example:**
+
 ```rust
 // Wrapper trait with blanket impl (erases generic T)
 pub trait NumJson: Sized {
@@ -121,6 +127,7 @@ pub trait NumJsonTools: Sized {
 **Patterns:** Factory (all traits) + Fragment (generic code generation)
 
 **Harvest:**
+
 - 20+ num-traits traits via factory pattern
 - Fragment tools for generic function generation
 - Type alias generators for trait-bounded types
@@ -131,6 +138,7 @@ pub trait NumJsonTools: Sized {
 **Patterns:** Runtime (concrete types) + Dual (operations) + Workflow (propositions)
 
 **Harvest:**
+
 - BigInt/BigUint operations (200+ tools)
 - Workflow tools with propositions (ValidBigInt, NonZero, etc.)
 - Code generation for bigint literals and operations
@@ -141,6 +149,7 @@ pub trait NumJsonTools: Sized {
 **Patterns:** Runtime + Dual + Workflow
 
 **Harvest:**
+
 - Rational/BigRational operations (100+ tools)
 - Fraction manipulation tools
 - Workflow tools with propositions (ValidRational, ReducedForm, etc.)
@@ -151,6 +160,7 @@ pub trait NumJsonTools: Sized {
 **Patterns:** Runtime + Dual
 
 **Harvest:**
+
 - Complex32/Complex64 operations (80+ tools)
 - Polar/Cartesian conversions
 - Mathematical operations (sin, cos, exp, etc.)
@@ -162,6 +172,7 @@ pub trait NumJsonTools: Sized {
 ### 1.1 Core Trait: Num (Factory Pattern)
 
 **Wrapper trait:**
+
 ```rust
 pub trait NumJson: Sized + 'static {
     fn type_name() -> &'static str;
@@ -215,6 +226,7 @@ pub trait NumJsonTools: Sized + 'static {
 ### 1.2 Integer Trait (Factory Pattern)
 
 **Wrapper trait:**
+
 ```rust
 pub trait IntegerJson: NumJson {
     fn div_floor_json(a: &str, b: &str) -> Result<String, String>;
@@ -321,6 +333,7 @@ pub trait FloatJson: NumJson {
 ### 1.4 Additional Traits (Factory Pattern)
 
 **Zero/One:**
+
 ```rust
 pub trait ZeroJson: Sized + 'static {
     fn zero_json() -> String;
@@ -336,6 +349,7 @@ pub trait OneJson: Sized + 'static {
 ```
 
 **Signed/Unsigned:**
+
 ```rust
 pub trait SignedJson: NumJson {
     fn abs_json(val: &str) -> Result<String, String>;
@@ -351,6 +365,7 @@ pub trait UnsignedJson: NumJson {
 ```
 
 **Bounded:**
+
 ```rust
 pub trait BoundedJson: Sized + 'static {
     fn min_value_json() -> String;
@@ -359,6 +374,7 @@ pub trait BoundedJson: Sized + 'static {
 ```
 
 **Checked/Saturating/Wrapping Ops:**
+
 ```rust
 pub trait CheckedAddJson: Sized + 'static {
     fn checked_add_json(a: &str, b: &str) -> Result<Option<String>, String>;
@@ -384,6 +400,7 @@ pub trait CheckedDivJson: Sized + 'static {
 ### 1.5 Fragment Tools (Generic Code Generation)
 
 **Emit generic functions with trait bounds:**
+
 ```rust
 #[elicit_tool(
     plugin = "num_fragments",
@@ -472,6 +489,7 @@ impl<T: {}> {} T> {{
 ### 2.1 BigInt Type (Runtime + Dual)
 
 **Custom serialization** (string-based, not tuple):
+
 ```rust
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BigInt(num_bigint::BigInt);
@@ -500,6 +518,7 @@ impl<'de> Deserialize<'de> for BigInt {
 ### 2.2 All BigInt Operations (Dual-Mode)
 
 **Arithmetic (~20 tools):**
+
 ```rust
 #[elicit_tool(plugin = "bigint", name = "add", emit = Auto)]
 async fn bigint_add(p: BigIntBinaryParams) -> Result<CallToolResult, ErrorData>
@@ -544,6 +563,7 @@ async fn bigint_signum(p: BigIntUnaryParams) -> Result<CallToolResult, ErrorData
 ```
 
 **Bitwise (~20 tools):**
+
 ```rust
 #[elicit_tool(plugin = "bigint", name = "bitand", emit = Auto)]
 async fn bigint_bitand(p: BigIntBinaryParams) -> Result<CallToolResult, ErrorData>
@@ -579,6 +599,7 @@ async fn bigint_trailing_ones(p: BigIntUnaryParams) -> Result<CallToolResult, Er
 ```
 
 **Comparison (~10 tools):**
+
 ```rust
 #[elicit_tool(plugin = "bigint", name = "eq", emit = Auto)]
 async fn bigint_eq(p: BigIntBinaryParams) -> Result<CallToolResult, ErrorData>
@@ -608,6 +629,7 @@ async fn bigint_is_odd(p: BigIntUnaryParams) -> Result<CallToolResult, ErrorData
 ```
 
 **Conversion (~20 tools):**
+
 ```rust
 #[elicit_tool(plugin = "bigint", name = "from_i64", emit = Auto)]
 async fn bigint_from_i64(p: FromI64Params) -> Result<CallToolResult, ErrorData>
@@ -646,6 +668,7 @@ async fn bigint_from_str_radix(p: FromStrRadixParams) -> Result<CallToolResult, 
 ```
 
 **Number theory (~30 tools):**
+
 ```rust
 #[elicit_tool(plugin = "bigint", name = "factorial", emit = Auto)]
 async fn bigint_factorial(p: FactorialParams) -> Result<CallToolResult, ErrorData>
@@ -675,6 +698,7 @@ async fn bigint_next_prime(p: NextPrimeParams) -> Result<CallToolResult, ErrorDa
 ```
 
 **Workflow tools (~20 tools with propositions):**
+
 ```rust
 #[elicit_tool(
     plugin = "bigint_workflow",
@@ -722,6 +746,7 @@ Same categories as BigInt, ~100 tools (no sign operations).
 ### 3.1 Rational Type (Runtime + Dual)
 
 **Serialization:**
+
 ```rust
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 pub struct Rational {
@@ -748,6 +773,7 @@ impl From<Rational> for num_rational::Ratio<i64> {
 ### 3.2 All Rational Operations (Dual-Mode)
 
 **Arithmetic (~15 tools):**
+
 ```rust
 #[elicit_tool(plugin = "rational", name = "add", emit = Auto)]
 async fn rational_add(p: RationalBinaryParams) -> Result<CallToolResult, ErrorData>
@@ -777,6 +803,7 @@ async fn rational_negate(p: RationalUnaryParams) -> Result<CallToolResult, Error
 ```
 
 **Rounding & Integer Parts (~10 tools):**
+
 ```rust
 #[elicit_tool(plugin = "rational", name = "floor", emit = Auto)]
 async fn rational_floor(p: RationalUnaryParams) -> Result<CallToolResult, ErrorData>
@@ -803,6 +830,7 @@ async fn rational_from_mixed(p: FromMixedParams) -> Result<CallToolResult, Error
 ```
 
 **Properties (~10 tools):**
+
 ```rust
 #[elicit_tool(plugin = "rational", name = "is_integer", emit = Auto)]
 async fn rational_is_integer(p: RationalUnaryParams) -> Result<CallToolResult, ErrorData>
@@ -826,6 +854,7 @@ async fn rational_denominator(p: RationalUnaryParams) -> Result<CallToolResult, 
 ```
 
 **Conversion (~10 tools):**
+
 ```rust
 #[elicit_tool(plugin = "rational", name = "to_f64", emit = Auto)]
 async fn rational_to_f64(p: RationalUnaryParams) -> Result<CallToolResult, ErrorData>
@@ -843,6 +872,7 @@ async fn rational_to_decimal(p: ToDecimalParams) -> Result<CallToolResult, Error
 ```
 
 **Workflow tools (~10 tools):**
+
 ```rust
 #[elicit_tool(
     plugin = "rational_workflow",
@@ -872,6 +902,7 @@ async fn reduce_rational(p: ReduceParams) -> Result<CallToolResult, ErrorData>
 ### 4.1 Complex Type (Runtime + Dual)
 
 **Serialization:**
+
 ```rust
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 pub struct Complex {
@@ -895,6 +926,7 @@ impl From<Complex> for num_complex::Complex<f64> {
 ### 4.2 All Complex Operations (Dual-Mode)
 
 **Arithmetic (~10 tools):**
+
 ```rust
 #[elicit_tool(plugin = "complex", name = "add", emit = Auto)]
 async fn complex_add(p: ComplexBinaryParams) -> Result<CallToolResult, ErrorData>
@@ -921,6 +953,7 @@ async fn complex_norm(p: ComplexUnaryParams) -> Result<CallToolResult, ErrorData
 ```
 
 **Polar/Cartesian (~10 tools):**
+
 ```rust
 #[elicit_tool(plugin = "complex", name = "from_polar", emit = Auto)]
 async fn complex_from_polar(p: FromPolarParams) -> Result<CallToolResult, ErrorData>
@@ -938,6 +971,7 @@ async fn complex_scale(p: ScaleParams) -> Result<CallToolResult, ErrorData>
 ```
 
 **Transcendental Functions (~30 tools):**
+
 ```rust
 #[elicit_tool(plugin = "complex", name = "exp", emit = Auto)]
 async fn complex_exp(p: ComplexUnaryParams) -> Result<CallToolResult, ErrorData>
@@ -1011,6 +1045,7 @@ async fn complex_atanh(p: ComplexUnaryParams) -> Result<CallToolResult, ErrorDat
 | **Total** | **110** | **0** | **355** | **60** | **525** |
 
 **Breakdown:**
+
 - Factory tools: trait methods exposed via wrapper traits
 - Dual-mode tools: concrete type operations (runtime + emit)
 - Fragment tools: generic code generation with trait bounds

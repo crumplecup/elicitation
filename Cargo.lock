@@ -2019,6 +2019,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_gis"
+version = "0.10.0"
+dependencies = [
+ "derive_more",
+ "elicitation",
+ "elicitation_derive",
+ "futures",
+ "proc-macro2",
+ "quote",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "strum 0.28.0",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "elicit_jiff"
 version = "0.10.0"
 dependencies = [

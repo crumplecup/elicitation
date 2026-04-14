@@ -34,6 +34,7 @@ trait DbQueryExecutor: Send + Sync {
 ```
 
 Benefits:
+
 - `dyn DbTableManager` works — no associated types to bind
 - The return type IS the contract: callers know exactly what was proven
 - Composable: `(Established<RowInserted>, Established<AuditLogged>)` reads like prose

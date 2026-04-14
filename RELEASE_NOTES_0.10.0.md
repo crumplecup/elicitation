@@ -418,5 +418,3 @@ dependency caught by `check-features`.
 - **711 formal verification proofs** (494 Kani + 31 Creusot modules + 186
   Verus)
 - **537 markdownlint errors** fixed across 34 files
-
-

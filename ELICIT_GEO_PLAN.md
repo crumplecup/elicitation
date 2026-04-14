@@ -1,13 +1,16 @@
 # ELICIT_GEO_PLAN.md
 
 ## Goal
+
 Add complete geo support to elicitation as geometric algorithms alphabet:
+
 1. **Core type integration** — geo algorithms in `elicitation` with feature gating
 2. **Shadow crate** — `elicit_geo` with MCP tools for geometric operations
 
 ## Architecture Overview
 
 Following established patterns from elicit_tokio, elicit_reqwest:
+
 - **Core**: Feature-gated geo with trait-based algorithm support
 - **Shadow crate**: ~8-10 workflow plugins covering geometric algorithms
 - **Algorithms alphabet**: Operations on geo-types primitives (predicates, measurements, transformations)
@@ -15,6 +18,7 @@ Following established patterns from elicit_tokio, elicit_reqwest:
 ## API Coverage
 
 geo provides geometric algorithms operating on geo-types:
+
 - **Predicates**: `Contains`, `Intersects`, `Within`, `Crosses`
 - **Measurements**: `Area`, `Length`, `EuclideanDistance`, `HaversineDistance`
 - **Calculations**: `Centroid`, `BoundingRect`, `ConvexHull`, `Bearing`
@@ -26,44 +30,51 @@ geo provides geometric algorithms operating on geo-types:
 
 ## Phase 1: Workspace Configuration
 
-### Files to modify:
+### Files to modify
+
 - `Cargo.toml` (workspace root)
 - `crates/elicitation/Cargo.toml`
 
-### Changes:
+### Changes
 
 **1.1 Add geo to workspace dependencies**:
+
 ```toml
 # Geometric algorithms
 geo = "0.28"
 ```
 
 **1.2 Add elicit_geo member**:
+
 ```toml
   "crates/elicit_geo",
 ```
 
 **1.3 Add elicit_geo workspace dependency**:
+
 ```toml
 elicit_geo = { path = "crates/elicit_geo", version = "0.9.1" }
 ```
 
 **1.4 Add geo feature to elicitation**:
+
 - Add optional dependency: `geo = { workspace = true, optional = true }`
 - Add feature: `geo = ["dep:geo", "geo_types"]`
 - Update `full` feature to include `"geo"`
 
 ## Phase 2: Core Algorithm Integration
 
-### Files to create/modify:
+### Files to create/modify
+
 - `crates/elicitation/src/geo_algorithms.rs` (new)
 - `crates/elicitation/src/lib.rs` (modify)
 
-### Algorithm Support Strategy:
+### Algorithm Support Strategy
 
 **2.1 Trait-Based Algorithms** (re-export, no custom impl needed):
 
 geo uses extension traits on geo-types:
+
 ```rust
 use geo::{Area, Contains, EuclideanDistance};
 use geo_types::{Point, Rect, Polygon};
@@ -106,7 +117,7 @@ point.euclidean_distance(&other); // f64
   - `IsConvex` - is_convex()
   - `HasDimensions` - has_dimensions()
 
-### Implementation Pattern:
+### Implementation Pattern
 
 ```rust
 // crates/elicitation/src/geo_algorithms.rs
@@ -132,6 +143,7 @@ pub use geo::{
 ```
 
 **2.3 Export from lib.rs**:
+
 ```rust
 #[cfg(feature = "geo")]
 pub mod geo_algorithms;
@@ -142,7 +154,7 @@ pub use geo_algorithms::*;
 
 ## Phase 3: Create elicit_geo Shadow Crate
 
-### Directory Structure:
+### Directory Structure
 
 ```
 crates/elicit_geo/
@@ -164,7 +176,7 @@ crates/elicit_geo/
     └── geo_test.rs
 ```
 
-### Cargo.toml:
+### Cargo.toml
 
 ```toml
 [package]
@@ -206,7 +218,7 @@ emit = ["dep:proc-macro2", "dep:quote", "elicitation/emit"]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
 ```
 
-### lib.rs structure:
+### lib.rs structure
 
 ```rust
 //! `elicit_geo` — comprehensive geo algorithms API exposure via MCP tools.
@@ -246,7 +258,7 @@ pub use workflow::{
 
 ## Phase 4: Implement MCP Tools
 
-### 4.1 Predicates Plugin (workflow/predicates_plugin.rs):
+### 4.1 Predicates Plugin (workflow/predicates_plugin.rs)
 
 ```rust
 use elicitation_derive::elicit_tool;
@@ -297,7 +309,7 @@ async fn predicates_intersects(p: IntersectsParams) -> Result<CallToolResult, Er
 // ... 10 more tools: within, crosses, disjoint, touches, overlaps, etc.
 ```
 
-### 4.2 Measurements Plugin (workflow/measurements_plugin.rs):
+### 4.2 Measurements Plugin (workflow/measurements_plugin.rs)
 
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -362,7 +374,7 @@ async fn measurements_length(p: LengthParams) -> Result<CallToolResult, ErrorDat
 // ... 7 more tools: haversine_distance, vincenty_distance, perimeter, etc.
 ```
 
-### 4.3 Calculations Plugin (workflow/calculations_plugin.rs):
+### 4.3 Calculations Plugin (workflow/calculations_plugin.rs)
 
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -422,7 +434,7 @@ async fn calculations_convex_hull(p: ConvexHullParams) -> Result<CallToolResult,
 // ... 5 more tools: extreme_points, envelope, closest_point, etc.
 ```
 
-### 4.4 Transformations Plugin (workflow/transformations_plugin.rs):
+### 4.4 Transformations Plugin (workflow/transformations_plugin.rs)
 
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -512,7 +524,7 @@ async fn transformations_simplify(p: SimplifyParams) -> Result<CallToolResult, E
 // ... 6 more tools: simplify_vw, affine_transform, etc.
 ```
 
-### 4.5 Workflow Plugin (workflow/workflow_plugin.rs):
+### 4.5 Workflow Plugin (workflow/workflow_plugin.rs)
 
 ```rust
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -559,10 +571,11 @@ async fn workflow_point_in_polygon(p: PointInPolygonParams) -> Result<CallToolRe
 
 ## Phase 5: Testing
 
-### File to create:
+### File to create
+
 - `crates/elicit_geo/tests/geo_test.rs`
 
-### Test Coverage:
+### Test Coverage
 
 ```rust
 use geo::{Area, Contains, EuclideanDistance};
@@ -607,10 +620,11 @@ fn test_point_distance() {
 
 ## Phase 6: Documentation
 
-### File to create:
+### File to create
+
 - `crates/elicit_geo/README.md`
 
-### Content:
+### Content
 
 ```markdown
 # elicit_geo
@@ -677,6 +691,7 @@ if !viewport.contains(&element_bounds) {
     return Err(/* overflow error */);
 }
 ```
+
 ```
 
 ## Verification Steps

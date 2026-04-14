@@ -23,6 +23,7 @@ archive connect [DB_URL]
 ```
 
 **Priority order:**
+
 1. Explicit positional argument
 2. `DATABASE_URL` environment variable
 
@@ -291,4 +292,3 @@ all three frontends contractually equivalent.
 TUI overlays (help, export picker, save prompt, saved browser) are rendered
 as AccessKit `Role::Dialog` nodes appended to the Window root in
 `to_verified_tree()`, driven by the same boolean flags used for event routing.
-
