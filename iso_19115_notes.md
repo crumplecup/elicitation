@@ -2525,6 +2525,2496 @@ structural_prop!(CiOnlineFunctionFileAccess, "CiOnlineFunctionFileAccess");
 
 ---
 
+
+## §6.7-companion CI_Party / CI_Individual / CI_Organisation — Party Hierarchy
+
+`CI_Party` is the abstract base class for entities responsible for a resource. Concrete
+subtypes are `CI_Individual` (a person) and `CI_Organisation` (a corporate body, agency,
+or project team). Every `CI_Responsibility.party` reference points to one or more
+`CI_Party` instances. At least one party in every `CI_Responsibility` shall carry a
+non-null name so that the responsible entity can be identified.
+
+**CI_Individual attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `name` | O | 0..1 | CharacterString |
+| `positionName` | O | 0..1 | CharacterString |
+| `contactInfo` | O | 0..* | CI_Contact |
+| `partyIdentifier` | O | 0..* | MD_Identifier |
+
+**CI_Organisation attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `name` | O | 0..1 | CharacterString |
+| `logo` | O | 0..* | MD_BrowseGraphic |
+| `contactInfo` | O | 0..* | CI_Contact |
+| `individual` | O | 0..* | CI_Individual |
+| `partyIdentifier` | O | 0..* | MD_Identifier |
+
+```rust
+/// CI_Party is abstract; only CI_Individual or CI_Organisation are instantiated;
+/// no direct CI_Party instances shall appear in a metadata record.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Party {abstract}
+pub struct CiPartyIsAbstract;
+structural_prop!(CiPartyIsAbstract, "CiPartyIsAbstract");
+
+/// name is optional (0..1) on CI_Individual; when absent, positionName should
+/// be provided; together they identify the person.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Individual / name
+pub struct CiIndividualNameOptional;
+structural_prop!(CiIndividualNameOptional, "CiIndividualNameOptional");
+
+/// positionName is optional (0..1); used when the individual name is confidential
+/// or when the role is identified by position rather than person.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Individual / positionName
+pub struct CiIndividualPositionNameOptional;
+structural_prop!(CiIndividualPositionNameOptional, "CiIndividualPositionNameOptional");
+
+/// At least one of CI_Individual.name or CI_Individual.positionName should be
+/// non-null so that the individual can be identified or contacted.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Individual / name + positionName
+pub struct CiIndividualNameOrPositionRequired;
+structural_prop!(CiIndividualNameOrPositionRequired, "CiIndividualNameOrPositionRequired");
+
+/// contactInfo is optional (0..*) on CI_Individual; zero or more CI_Contact entries
+/// providing phone, address, email, and online resource details.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Individual / contactInfo
+pub struct CiIndividualContactInfoOptional;
+structural_prop!(CiIndividualContactInfoOptional, "CiIndividualContactInfoOptional");
+
+/// name is optional (0..1) on CI_Organisation; when provided it shall be non-empty;
+/// identifies the corporate body, agency, or project team.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Organisation / name
+pub struct CiOrganisationNameOptional;
+structural_prop!(CiOrganisationNameOptional, "CiOrganisationNameOptional");
+
+/// individual is optional (0..*); specific persons within the organisation who are
+/// relevant to the responsibility; may be empty when only the org is identified.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Organisation / individual
+pub struct CiOrganisationIndividualOptional;
+structural_prop!(CiOrganisationIndividualOptional, "CiOrganisationIndividualOptional");
+
+/// contactInfo is optional (0..*) on CI_Organisation; zero or more CI_Contact entries
+/// providing the organisation's phone, address, email, and online resources.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Organisation / contactInfo
+pub struct CiOrganisationContactInfoOptional;
+structural_prop!(CiOrganisationContactInfoOptional, "CiOrganisationContactInfoOptional");
+```
+
+---
+
+## §6.8-companion CI_Contact / CI_Address / CI_Telephone — Contact Details
+
+`CI_Contact` aggregates all the ways to reach a party: phone, postal address, online
+resource, and free-text instructions. It is referenced from `CI_Individual.contactInfo`
+and `CI_Organisation.contactInfo`. `CI_Address` holds postal coordinates; `CI_Telephone`
+holds a single phone number with its type code.
+
+**CI_Contact attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `phone` | O | 0..* | CI_Telephone |
+| `address` | O | 0..* | CI_Address |
+| `onlineResource` | O | 0..* | CI_OnlineResource |
+| `hoursOfService` | O | 0..1 | CharacterString |
+| `contactInstructions` | O | 0..1 | CharacterString |
+| `contactType` | O | 0..1 | CharacterString |
+
+**CI_Telephone attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `number` | M | 1 | CharacterString |
+| `numberType` | O | 0..1 | CI_TelephoneTypeCode |
+
+**CI_TelephoneTypeCode values:** voice, facsimile, sms
+
+**CI_Address attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `deliveryPoint` | O | 0..* | CharacterString |
+| `city` | O | 0..1 | CharacterString |
+| `administrativeArea` | O | 0..1 | CharacterString |
+| `postalCode` | O | 0..1 | CharacterString |
+| `country` | O | 0..1 | CharacterString (ISO 3166) |
+| `electronicMailAddress` | O | 0..* | CharacterString |
+
+```rust
+/// phone is optional (0..*) on CI_Contact; zero or more CI_Telephone entries;
+/// each entry covers one phone number and its type.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Contact / phone
+pub struct CiContactPhoneOptional;
+structural_prop!(CiContactPhoneOptional, "CiContactPhoneOptional");
+
+/// address is optional (0..*) on CI_Contact; zero or more CI_Address entries
+/// providing the postal address of the party.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Contact / address
+pub struct CiContactAddressOptional;
+structural_prop!(CiContactAddressOptional, "CiContactAddressOptional");
+
+/// onlineResource is optional (0..*) on CI_Contact; links to the party's
+/// website, data portal, or other online presence.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Contact / onlineResource
+pub struct CiContactOnlineResourceOptional;
+structural_prop!(CiContactOnlineResourceOptional, "CiContactOnlineResourceOptional");
+
+/// hoursOfService is optional (0..1); free-text description of periods when
+/// the party can be contacted (e.g., "Mon-Fri 09:00-17:00 UTC").
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Contact / hoursOfService
+pub struct CiContactHoursOfServiceOptional;
+structural_prop!(CiContactHoursOfServiceOptional, "CiContactHoursOfServiceOptional");
+
+/// contactInstructions is optional (0..1); supplementary instructions on how
+/// to reach the party (e.g., preferred channel, escalation procedure).
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Contact / contactInstructions
+pub struct CiContactInstructionsOptional;
+structural_prop!(CiContactInstructionsOptional, "CiContactInstructionsOptional");
+
+/// number is mandatory (1) on CI_Telephone; the telephone number string shall
+/// be non-empty; E.164 format is recommended.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Telephone / number
+pub struct CiTelephoneNumberMandatory;
+structural_prop!(CiTelephoneNumberMandatory, "CiTelephoneNumberMandatory");
+
+/// A CI_Telephone.number value shall not be the empty string; a telephone
+/// record with an empty number conveys no contact information.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Telephone / number non-empty
+pub struct CiTelephoneNumberNonEmpty;
+structural_prop!(CiTelephoneNumberNonEmpty, "CiTelephoneNumberNonEmpty");
+
+/// CI_TelephoneTypeCode: voice — a voice telephone number for direct speech.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_TelephoneTypeCode / voice
+pub struct CiTelephoneTypeVoice;
+structural_prop!(CiTelephoneTypeVoice, "CiTelephoneTypeVoice");
+
+/// CI_TelephoneTypeCode: facsimile — a facsimile (fax) telephone number.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_TelephoneTypeCode / facsimile
+pub struct CiTelephoneFacsimile;
+structural_prop!(CiTelephoneFacsimile, "CiTelephoneFacsimile");
+
+/// CI_TelephoneTypeCode: sms — a short-message-service (SMS/text) number.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_TelephoneTypeCode / sms
+pub struct CiTelephoneSms;
+structural_prop!(CiTelephoneSms, "CiTelephoneSms");
+
+/// deliveryPoint is optional (0..*) on CI_Address; street address lines such
+/// as building name, street number, and street name.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / deliveryPoint
+pub struct CiAddressDeliveryPointOptional;
+structural_prop!(CiAddressDeliveryPointOptional, "CiAddressDeliveryPointOptional");
+
+/// city is optional (0..1) on CI_Address; the name of the city or locality
+/// as it would appear on a postal envelope.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / city
+pub struct CiAddressCityOptional;
+structural_prop!(CiAddressCityOptional, "CiAddressCityOptional");
+
+/// administrativeArea is optional (0..1); state, province, county, or
+/// equivalent administrative subdivision of the country.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / administrativeArea
+pub struct CiAddressAdministrativeAreaOptional;
+structural_prop!(CiAddressAdministrativeAreaOptional, "CiAddressAdministrativeAreaOptional");
+
+/// postalCode is optional (0..1); the postal/ZIP code for the address;
+/// format varies by country.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / postalCode
+pub struct CiAddressPostalCodeOptional;
+structural_prop!(CiAddressPostalCodeOptional, "CiAddressPostalCodeOptional");
+
+/// country is optional (0..1) on CI_Address; when provided shall be an
+/// ISO 3166-1 alpha-2 or alpha-3 country code.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / country
+pub struct CiAddressCountryOptional;
+structural_prop!(CiAddressCountryOptional, "CiAddressCountryOptional");
+
+/// electronicMailAddress is optional (0..*); one or more email addresses for
+/// the party; each entry shall follow RFC 5321 syntax.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / electronicMailAddress
+pub struct CiAddressEmailOptional;
+structural_prop!(CiAddressEmailOptional, "CiAddressEmailOptional");
+
+/// When CI_Address.country is provided its value shall be an ISO 3166-1
+/// alpha-2 (two uppercase letters) or alpha-3 (three uppercase letters) code.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / country ISO 3166 constraint
+pub struct CiAddressCountryIsIso3166;
+structural_prop!(CiAddressCountryIsIso3166, "CiAddressCountryIsIso3166");
+```
+
+---
+
+## §6.11-companion MD_BrowseGraphic — Browse Graphic
+
+`MD_BrowseGraphic` captures a graphic that provides an illustration of the resource,
+such as a thumbnail map image or product preview. It is referenced from
+`MD_Identification.graphicOverview` and `CI_Organisation.logo`. The `fileName`
+attribute is mandatory; it may be a file path or a URI.
+
+**Attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `fileName` | M | 1 | CharacterString (URI or path) |
+| `fileDescription` | O | 0..1 | CharacterString |
+| `fileType` | O | 0..1 | CharacterString (MIME type recommended) |
+| `imageConstraints` | O | 0..* | MD_Constraints |
+| `linkage` | O | 0..* | CI_OnlineResource |
+
+```rust
+/// fileName is mandatory (1) on MD_BrowseGraphic; the URI or file-system path
+/// of the graphic file shall be provided.
+///
+/// Source: ISO 19115-1:2014 §6.11 — MD_BrowseGraphic / fileName
+pub struct MdBrowseGraphicFileNameMandatory;
+structural_prop!(MdBrowseGraphicFileNameMandatory, "MdBrowseGraphicFileNameMandatory");
+
+/// MD_BrowseGraphic.fileName shall not be an empty string; an empty path
+/// cannot be resolved to a graphic resource.
+///
+/// Source: ISO 19115-1:2014 §6.11 — MD_BrowseGraphic / fileName non-empty
+pub struct MdBrowseGraphicFileNameNonEmpty;
+structural_prop!(MdBrowseGraphicFileNameNonEmpty, "MdBrowseGraphicFileNameNonEmpty");
+
+/// fileDescription is optional (0..1); a plain-language caption or description
+/// of what the graphic depicts.
+///
+/// Source: ISO 19115-1:2014 §6.11 — MD_BrowseGraphic / fileDescription
+pub struct MdBrowseGraphicFileDescriptionOptional;
+structural_prop!(MdBrowseGraphicFileDescriptionOptional, "MdBrowseGraphicFileDescriptionOptional");
+
+/// fileType is optional (0..1); when provided, should be a MIME type string
+/// (e.g., "image/png", "image/jpeg", "image/svg+xml").
+///
+/// Source: ISO 19115-1:2014 §6.11 — MD_BrowseGraphic / fileType
+pub struct MdBrowseGraphicFileTypeOptional;
+structural_prop!(MdBrowseGraphicFileTypeOptional, "MdBrowseGraphicFileTypeOptional");
+
+/// linkage is optional (0..*); CI_OnlineResource entries giving alternative
+/// online access paths to the browse graphic.
+///
+/// Source: ISO 19115-1:2014 §6.11 — MD_BrowseGraphic / linkage
+pub struct MdBrowseGraphicLinkageOptional;
+structural_prop!(MdBrowseGraphicLinkageOptional, "MdBrowseGraphicLinkageOptional");
+```
+
+---
+
+## §6.15 MD_AssociatedResource — Associated Resource
+
+`MD_AssociatedResource` (new in ISO 19115-1:2014) associates the described resource
+with related resources — such as a series it belongs to, a platform it was acquired
+from, or a previous version. Either `name` (a CI_Citation) or `metadataReference`
+(a CI_Citation pointing to another metadata record) is conditional; at least one
+shall be provided.
+
+**Attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `name` | C | 0..1 | CI_Citation — required when metadataReference absent |
+| `metadataReference` | C | 0..1 | CI_Citation — required when name absent |
+| `associationType` | M | 1 | DS_AssociationTypeCode |
+| `initiativeType` | O | 0..1 | DS_InitiativeTypeCode |
+
+**`DS_AssociationTypeCode` values:** crossReference, largerWorkCitation,
+partOfSeamlessDatabase, stereoMate, isComposedOf, collectiveTitle, series,
+dependency, revisionOf
+
+**`DS_InitiativeTypeCode` values:** campaign, collection, exercise, experiment,
+investigation, mission, sensor, operation, platform, process, program, project,
+study, task, trial
+
+```rust
+/// name is conditional (0..1) on MD_AssociatedResource; required when
+/// metadataReference is absent; identifies the associated resource by citation.
+///
+/// Source: ISO 19115-1:2014 §6.15 — MD_AssociatedResource / name
+pub struct MdAssociatedResourceNameConditional;
+structural_prop!(MdAssociatedResourceNameConditional, "MdAssociatedResourceNameConditional");
+
+/// metadataReference is conditional (0..1); required when name is absent;
+/// points to the metadata record of the associated resource.
+///
+/// Source: ISO 19115-1:2014 §6.15 — MD_AssociatedResource / metadataReference
+pub struct MdAssociatedResourceMetadataRefConditional;
+structural_prop!(MdAssociatedResourceMetadataRefConditional, "MdAssociatedResourceMetadataRefConditional");
+
+/// At least one of name or metadataReference shall be present in every
+/// MD_AssociatedResource instance.
+///
+/// Source: ISO 19115-1:2014 §6.15 — MD_AssociatedResource / name+metadataReference
+pub struct MdAssociatedResourceNameOrMetaRefRequired;
+structural_prop!(MdAssociatedResourceNameOrMetaRefRequired, "MdAssociatedResourceNameOrMetaRefRequired");
+
+/// associationType is mandatory (1); the DS_AssociationTypeCode value shall
+/// be drawn from the defined enumeration.
+///
+/// Source: ISO 19115-1:2014 §6.15 — MD_AssociatedResource / associationType
+pub struct MdAssociatedResourceAssociationTypeMandatory;
+structural_prop!(MdAssociatedResourceAssociationTypeMandatory, "MdAssociatedResourceAssociationTypeMandatory");
+
+/// initiativeType is optional (0..1); when provided, a DS_InitiativeTypeCode
+/// value classifying the type of scientific initiative.
+///
+/// Source: ISO 19115-1:2014 §6.15 — MD_AssociatedResource / initiativeType
+pub struct MdAssociatedResourceInitiativeTypeOptional;
+structural_prop!(MdAssociatedResourceInitiativeTypeOptional, "MdAssociatedResourceInitiativeTypeOptional");
+
+/// DS_AssociationTypeCode: crossReference — reference from one dataset to
+/// another that is not a hierarchical relationship.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_AssociationTypeCode / crossReference
+pub struct DsAssociationTypeCrossReference;
+structural_prop!(DsAssociationTypeCrossReference, "DsAssociationTypeCrossReference");
+
+/// DS_AssociationTypeCode: largerWorkCitation — the described resource is
+/// a component of the cited larger work.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_AssociationTypeCode / largerWorkCitation
+pub struct DsAssociationTypeLargerWorkCitation;
+structural_prop!(DsAssociationTypeLargerWorkCitation, "DsAssociationTypeLargerWorkCitation");
+
+/// DS_AssociationTypeCode: partOfSeamlessDatabase — the resource is a tile
+/// or partition of a seamless multi-tile database.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_AssociationTypeCode / partOfSeamlessDatabase
+pub struct DsAssociationTypePartOfSeamlessDatabase;
+structural_prop!(DsAssociationTypePartOfSeamlessDatabase, "DsAssociationTypePartOfSeamlessDatabase");
+
+/// DS_AssociationTypeCode: isComposedOf — the described resource is composed
+/// of the cited component resources.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_AssociationTypeCode / isComposedOf
+pub struct DsAssociationTypeIsComposedOf;
+structural_prop!(DsAssociationTypeIsComposedOf, "DsAssociationTypeIsComposedOf");
+
+/// DS_AssociationTypeCode: revisionOf — the described resource is a revision
+/// or update of the cited earlier resource.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_AssociationTypeCode / revisionOf
+pub struct DsAssociationTypeRevisionOf;
+structural_prop!(DsAssociationTypeRevisionOf, "DsAssociationTypeRevisionOf");
+
+/// DS_InitiativeTypeCode: project — a project with defined scope, budget,
+/// and timeline.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_InitiativeTypeCode / project
+pub struct DsInitiativeTypeProject;
+structural_prop!(DsInitiativeTypeProject, "DsInitiativeTypeProject");
+
+/// DS_InitiativeTypeCode: mission — a scientific or operational mission,
+/// typically a satellite or field campaign.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_InitiativeTypeCode / mission
+pub struct DsInitiativeTypeMission;
+structural_prop!(DsInitiativeTypeMission, "DsInitiativeTypeMission");
+
+/// DS_InitiativeTypeCode: platform — a specific sensor platform (satellite,
+/// aircraft, vessel).
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_InitiativeTypeCode / platform
+pub struct DsInitiativeTypePlatform;
+structural_prop!(DsInitiativeTypePlatform, "DsInitiativeTypePlatform");
+```
+
+---
+
+## §6.20 EX_BoundingPolygon — Bounding Polygon Extent
+
+`EX_BoundingPolygon` is a subtype of `EX_GeographicExtent` providing geographic
+coverage expressed as one or more geometry objects rather than a bounding rectangle.
+It allows non-rectangular extents (e.g., a country outline, an irregular survey
+boundary) to be recorded at full precision. `polygon` is the only mandatory attribute.
+
+**Attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `extentTypeCode` | O | 0..1 | Boolean (true = inclusion, false = exclusion) |
+| `polygon` | M | 1..* | GM_Object (geometry) |
+
+```rust
+/// polygon is mandatory (1..*) on EX_BoundingPolygon; at least one geometry
+/// object shall be provided; the polygon array shall be non-empty.
+///
+/// Source: ISO 19115-1:2014 §6.20 — EX_BoundingPolygon / polygon
+pub struct ExBoundingPolygonPolygonMandatory;
+structural_prop!(ExBoundingPolygonPolygonMandatory, "ExBoundingPolygonPolygonMandatory");
+
+/// The polygon array of EX_BoundingPolygon shall contain at least one non-null
+/// geometry; an empty array cannot define a geographic extent.
+///
+/// Source: ISO 19115-1:2014 §6.20 — EX_BoundingPolygon / polygon multiplicity
+pub struct ExBoundingPolygonAtLeastOneGeometry;
+structural_prop!(ExBoundingPolygonAtLeastOneGeometry, "ExBoundingPolygonAtLeastOneGeometry");
+
+/// extentTypeCode is optional (0..1); when true the polygon describes an inclusion
+/// area; when false it describes an exclusion zone within a larger extent.
+///
+/// Source: ISO 19115-1:2014 §6.20 — EX_BoundingPolygon / extentTypeCode
+pub struct ExBoundingPolygonExtentTypeCodeOptional;
+structural_prop!(ExBoundingPolygonExtentTypeCodeOptional, "ExBoundingPolygonExtentTypeCodeOptional");
+
+/// Each element of the polygon array shall be a valid GM_Object geometry;
+/// invalid or degenerate geometries shall not be recorded as bounding polygons.
+///
+/// Source: ISO 19115-1:2014 §6.20 — EX_BoundingPolygon / polygon validity
+pub struct ExBoundingPolygonGeometryIsValid;
+structural_prop!(ExBoundingPolygonGeometryIsValid, "ExBoundingPolygonGeometryIsValid");
+```
+
+---
+
+## §6.24 MD_SecurityConstraints — Security Constraints
+
+`MD_SecurityConstraints` extends `MD_Constraints` (§6.22) with security-classification
+fields. `classification` is the only mandatory attribute; the other three are optional
+supplementary notes. The `MD_ClassificationCode` code list uses terms from government
+classification frameworks (e.g., NATO, national equivalents).
+
+**Additional attributes (beyond MD_Constraints):**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `classification` | M | 1 | MD_ClassificationCode |
+| `userNote` | O | 0..1 | CharacterString |
+| `classificationSystem` | O | 0..1 | CharacterString |
+| `handlingDescription` | O | 0..1 | CharacterString |
+
+**`MD_ClassificationCode` values:** unclassified, restricted, confidential, secret,
+topSecret, sensitiveButUnclassified, forOfficialUseOnly, protected, limitedDistribution
+
+```rust
+/// classification is mandatory (1) on MD_SecurityConstraints; the security
+/// classification level shall be drawn from MD_ClassificationCode.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_SecurityConstraints / classification
+pub struct MdSecurityConstraintsClassificationMandatory;
+structural_prop!(MdSecurityConstraintsClassificationMandatory, "MdSecurityConstraintsClassificationMandatory");
+
+/// userNote is optional (0..1); a plain-text caveat or declassification
+/// instruction associated with the security classification.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_SecurityConstraints / userNote
+pub struct MdSecurityConstraintsUserNoteOptional;
+structural_prop!(MdSecurityConstraintsUserNoteOptional, "MdSecurityConstraintsUserNoteOptional");
+
+/// classificationSystem is optional (0..1); the name of the classification
+/// system under which the code was assigned.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_SecurityConstraints / classificationSystem
+pub struct MdSecurityConstraintsClassSystemOptional;
+structural_prop!(MdSecurityConstraintsClassSystemOptional, "MdSecurityConstraintsClassSystemOptional");
+
+/// handlingDescription is optional (0..1); additional instructions for handling,
+/// dissemination, or storage of the classified resource.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_SecurityConstraints / handlingDescription
+pub struct MdSecurityConstraintsHandlingDescOptional;
+structural_prop!(MdSecurityConstraintsHandlingDescOptional, "MdSecurityConstraintsHandlingDescOptional");
+
+/// MD_ClassificationCode: unclassified — no restrictions on access or use;
+/// the resource may be freely distributed.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / unclassified
+pub struct MdClassificationUnclassified;
+structural_prop!(MdClassificationUnclassified, "MdClassificationUnclassified");
+
+/// MD_ClassificationCode: restricted — distribution limited to specific parties
+/// or purposes; not for general public release.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / restricted
+pub struct MdClassificationRestricted;
+structural_prop!(MdClassificationRestricted, "MdClassificationRestricted");
+
+/// MD_ClassificationCode: confidential — sensitive information whose disclosure
+/// could damage national interests or personal privacy.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / confidential
+pub struct MdClassificationConfidential;
+structural_prop!(MdClassificationConfidential, "MdClassificationConfidential");
+
+/// MD_ClassificationCode: secret — highly sensitive; unauthorised disclosure
+/// could cause serious damage to national security.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / secret
+pub struct MdClassificationSecret;
+structural_prop!(MdClassificationSecret, "MdClassificationSecret");
+
+/// MD_ClassificationCode: topSecret — the highest civilian classification level;
+/// unauthorised disclosure could cause exceptionally grave damage.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / topSecret
+pub struct MdClassificationTopSecret;
+structural_prop!(MdClassificationTopSecret, "MdClassificationTopSecret");
+
+/// MD_ClassificationCode: sensitiveButUnclassified — not formally classified
+/// but requires controlled handling to protect sensitive content.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / sensitiveButUnclassified
+pub struct MdClassificationSensitiveButUnclassified;
+structural_prop!(MdClassificationSensitiveButUnclassified, "MdClassificationSensitiveButUnclassified");
+
+/// MD_ClassificationCode: forOfficialUseOnly — for internal government use;
+/// not to be released outside the originating department without authorisation.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / forOfficialUseOnly
+pub struct MdClassificationForOfficialUseOnly;
+structural_prop!(MdClassificationForOfficialUseOnly, "MdClassificationForOfficialUseOnly");
+
+/// MD_ClassificationCode: protected — resource is protected under specific
+/// legislation or regulation restricting distribution.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / protected
+pub struct MdClassificationProtected;
+structural_prop!(MdClassificationProtected, "MdClassificationProtected");
+
+/// MD_ClassificationCode: limitedDistribution — distribution is limited to
+/// a named set of authorised recipients or organisations.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / limitedDistribution
+pub struct MdClassificationLimitedDistribution;
+structural_prop!(MdClassificationLimitedDistribution, "MdClassificationLimitedDistribution");
+```
+
+---
+
+## §6.25-companion MD_Resolution / MD_RepresentativeFraction — Spatial Resolution
+
+`MD_Resolution` is a union type: exactly one of its five forms shall be used per
+instance — equivalentScale (`MD_RepresentativeFraction`), distance, vertical,
+angularDistance, or levelOfDetail (CharacterString). The most common is
+`equivalentScale`, which records the denominator of the representative fraction
+(e.g., 50000 for 1:50 000 scale data).
+
+**MD_Resolution (union — choose exactly one):**
+
+| Form | Type |
+|------|------|
+| `equivalentScale` | MD_RepresentativeFraction |
+| `distance` | Measure (with UoM) |
+| `vertical` | Measure (with UoM) |
+| `angularDistance` | Measure (angle) |
+| `levelOfDetail` | CharacterString |
+
+**MD_RepresentativeFraction attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `denominator` | M | 1 | Integer (> 0) |
+
+```rust
+/// MD_Resolution is a union type; exactly one resolution form shall be
+/// present — equivalentScale, distance, vertical, angularDistance, or levelOfDetail.
+///
+/// Source: ISO 19115-1:2014 §6.25 — MD_Resolution / union constraint
+pub struct MdResolutionEquivalentScaleOrDistance;
+structural_prop!(MdResolutionEquivalentScaleOrDistance, "MdResolutionEquivalentScaleOrDistance");
+
+/// denominator is mandatory (1) on MD_RepresentativeFraction; the integer
+/// scale denominator shall be provided (e.g., 50000 for 1:50 000).
+///
+/// Source: ISO 19115-1:2014 §6.25 — MD_RepresentativeFraction / denominator
+pub struct MdRepresentativeFractionDenominatorMandatory;
+structural_prop!(MdRepresentativeFractionDenominatorMandatory, "MdRepresentativeFractionDenominatorMandatory");
+
+/// MD_RepresentativeFraction.denominator shall be a positive integer (> 0);
+/// a denominator of zero or less is not a valid scale.
+///
+/// Source: ISO 19115-1:2014 §6.25 — MD_RepresentativeFraction / denominator positive
+pub struct MdRepresentativeFractionDenominatorPositive;
+structural_prop!(MdRepresentativeFractionDenominatorPositive, "MdRepresentativeFractionDenominatorPositive");
+
+/// When the distance form of MD_Resolution is used, the distance value shall
+/// be a positive real number with an associated unit of measure.
+///
+/// Source: ISO 19115-1:2014 §6.25 — MD_Resolution / distance positive
+pub struct MdResolutionDistanceIsPositive;
+structural_prop!(MdResolutionDistanceIsPositive, "MdResolutionDistanceIsPositive");
+
+/// A larger equivalentScale denominator indicates coarser resolution:
+/// 1:1 000 000 is less detailed than 1:25 000 (denominator 25000 < 1000000).
+///
+/// Source: ISO 19115-1:2014 §6.25 — MD_Resolution / scale semantics
+pub struct MdResolutionScaleImpliesSmallIsCoarse;
+structural_prop!(MdResolutionScaleImpliesSmallIsCoarse, "MdResolutionScaleImpliesSmallIsCoarse");
+```
+
+---
+
+## §6.30-companion MD_Dimension — Grid Spatial Dimension
+
+`MD_Dimension` describes one axis (dimension) of a grid dataset. It is referenced from
+`MD_GridSpatialRepresentation.axisDimensionProperties`. `dimensionName` and
+`dimensionSize` are mandatory; `resolution` is optional.
+
+**Attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `dimensionName` | M | 1 | MD_DimensionNameTypeCode |
+| `dimensionSize` | M | 1 | Integer (> 0) |
+| `resolution` | O | 0..1 | Measure |
+
+**`MD_DimensionNameTypeCode` values:** row, column, vertical, track, crossTrack,
+line, sample, time
+
+```rust
+/// dimensionName is mandatory (1) on MD_Dimension; value shall be drawn from
+/// MD_DimensionNameTypeCode (row, column, vertical, track, crossTrack, line,
+/// sample, time).
+///
+/// Source: ISO 19115-1:2014 §6.30 — MD_Dimension / dimensionName
+pub struct MdDimensionNameMandatory;
+structural_prop!(MdDimensionNameMandatory, "MdDimensionNameMandatory");
+
+/// dimensionSize is mandatory (1) on MD_Dimension; the number of elements along
+/// this axis shall be provided as a positive integer.
+///
+/// Source: ISO 19115-1:2014 §6.30 — MD_Dimension / dimensionSize
+pub struct MdDimensionSizeMandatory;
+structural_prop!(MdDimensionSizeMandatory, "MdDimensionSizeMandatory");
+
+/// MD_Dimension.dimensionSize shall be a positive integer (> 0); a grid axis
+/// with zero or fewer cells is not physically meaningful.
+///
+/// Source: ISO 19115-1:2014 §6.30 — MD_Dimension / dimensionSize positive
+pub struct MdDimensionSizePositive;
+structural_prop!(MdDimensionSizePositive, "MdDimensionSizePositive");
+
+/// resolution is optional (0..1) on MD_Dimension; when provided, gives the
+/// ground sample distance or time step for the axis (with unit of measure).
+///
+/// Source: ISO 19115-1:2014 §6.30 — MD_Dimension / resolution
+pub struct MdDimensionResolutionOptional;
+structural_prop!(MdDimensionResolutionOptional, "MdDimensionResolutionOptional");
+
+/// MD_DimensionNameTypeCode: row — y-direction axis in image/grid coordinates.
+///
+/// Source: ISO 19115-1:2014 §6.30 — MD_DimensionNameTypeCode / row
+pub struct MdDimensionNameRow;
+structural_prop!(MdDimensionNameRow, "MdDimensionNameRow");
+
+/// MD_DimensionNameTypeCode: column — x-direction axis in image/grid coordinates.
+///
+/// Source: ISO 19115-1:2014 §6.30 — MD_DimensionNameTypeCode / column
+pub struct MdDimensionNameColumn;
+structural_prop!(MdDimensionNameColumn, "MdDimensionNameColumn");
+
+/// MD_DimensionNameTypeCode: vertical — altitude or depth axis (z-direction).
+///
+/// Source: ISO 19115-1:2014 §6.30 — MD_DimensionNameTypeCode / vertical
+pub struct MdDimensionNameVertical;
+structural_prop!(MdDimensionNameVertical, "MdDimensionNameVertical");
+
+/// MD_DimensionNameTypeCode: time — temporal axis; used in time-series grids.
+///
+/// Source: ISO 19115-1:2014 §6.30 — MD_DimensionNameTypeCode / time
+pub struct MdDimensionNameTime;
+structural_prop!(MdDimensionNameTime, "MdDimensionNameTime");
+```
+
+---
+
+## §6.37 MD_MaintenanceInformation — Maintenance Information
+
+`MD_MaintenanceInformation` documents the frequency and schedule of updates to a
+resource or its metadata. It is referenced from `MD_Metadata.metadataMaintenance`
+(O, 0..1) and `MD_Identification.resourceMaintenance` (O, 0..*). The frequency code
+is mandatory; all other attributes are optional or conditional.
+
+**Attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `maintenanceAndUpdateFrequency` | M | 1 | MD_MaintenanceFrequencyCode |
+| `maintenanceDate` | O | 0..* | CI_Date |
+| `userDefinedMaintenanceFrequency` | C | 0..1 | TM_PeriodDuration |
+| `maintenanceScope` | O | 0..* | MD_Scope |
+| `maintenanceNote` | O | 0..* | CharacterString |
+| `contact` | O | 0..* | CI_Responsibility |
+
+**Conditional rule:** `userDefinedMaintenanceFrequency` is required when
+`maintenanceAndUpdateFrequency` = `userDefined`.
+
+**`MD_MaintenanceFrequencyCode` values:** continual, daily, weekly, fortnightly,
+monthly, quarterly, biannually, annually, asNeeded, irregular, notPlanned, unknown,
+periodic, semimonthly, biennially
+
+```rust
+/// maintenanceAndUpdateFrequency is mandatory (1); the frequency code governs
+/// expected update cadence; shall be drawn from MD_MaintenanceFrequencyCode.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceInformation / maintenanceAndUpdateFrequency
+pub struct MdMaintenanceFrequencyMandatory;
+structural_prop!(MdMaintenanceFrequencyMandatory, "MdMaintenanceFrequencyMandatory");
+
+/// maintenanceDate is optional (0..*); CI_Date entries documenting when
+/// past or planned updates occurred or are scheduled.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceInformation / maintenanceDate
+pub struct MdMaintenanceDateOptional;
+structural_prop!(MdMaintenanceDateOptional, "MdMaintenanceDateOptional");
+
+/// userDefinedMaintenanceFrequency is conditional (0..1); required when
+/// maintenanceAndUpdateFrequency = userDefined; provides a TM_PeriodDuration.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceInformation / userDefinedMaintenanceFrequency
+pub struct MdMaintenanceUserDefinedFreqConditional;
+structural_prop!(MdMaintenanceUserDefinedFreqConditional, "MdMaintenanceUserDefinedFreqConditional");
+
+/// maintenanceScope is optional (0..*); MD_Scope entries restricting which
+/// part of the resource the maintenance schedule applies to.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceInformation / maintenanceScope
+pub struct MdMaintenanceScopeOptional;
+structural_prop!(MdMaintenanceScopeOptional, "MdMaintenanceScopeOptional");
+
+/// maintenanceNote is optional (0..*); free-text descriptions of maintenance
+/// activities performed or planned for the resource.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceInformation / maintenanceNote
+pub struct MdMaintenanceNoteOptional;
+structural_prop!(MdMaintenanceNoteOptional, "MdMaintenanceNoteOptional");
+
+/// contact is optional (0..*); CI_Responsibility entries for parties responsible
+/// for maintaining the resource on the stated schedule.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceInformation / contact
+pub struct MdMaintenanceContactOptional;
+structural_prop!(MdMaintenanceContactOptional, "MdMaintenanceContactOptional");
+
+/// MD_MaintenanceFrequencyCode: continual — data is repeatedly and frequently
+/// updated; changes are made as soon as new information is available.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / continual
+pub struct MdMaintenanceFrequencyContinual;
+structural_prop!(MdMaintenanceFrequencyContinual, "MdMaintenanceFrequencyContinual");
+
+/// MD_MaintenanceFrequencyCode: daily — data is updated each day.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / daily
+pub struct MdMaintenanceFrequencyDaily;
+structural_prop!(MdMaintenanceFrequencyDaily, "MdMaintenanceFrequencyDaily");
+
+/// MD_MaintenanceFrequencyCode: weekly — data is updated on a weekly basis.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / weekly
+pub struct MdMaintenanceFrequencyWeekly;
+structural_prop!(MdMaintenanceFrequencyWeekly, "MdMaintenanceFrequencyWeekly");
+
+/// MD_MaintenanceFrequencyCode: monthly — data is updated each month.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / monthly
+pub struct MdMaintenanceFrequencyMonthly;
+structural_prop!(MdMaintenanceFrequencyMonthly, "MdMaintenanceFrequencyMonthly");
+
+/// MD_MaintenanceFrequencyCode: quarterly — data is updated every three months.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / quarterly
+pub struct MdMaintenanceFrequencyQuarterly;
+structural_prop!(MdMaintenanceFrequencyQuarterly, "MdMaintenanceFrequencyQuarterly");
+
+/// MD_MaintenanceFrequencyCode: annually — data is updated once a year.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / annually
+pub struct MdMaintenanceFrequencyAnnually;
+structural_prop!(MdMaintenanceFrequencyAnnually, "MdMaintenanceFrequencyAnnually");
+
+/// MD_MaintenanceFrequencyCode: asNeeded — data is updated when deemed necessary
+/// by the data custodian; no fixed schedule.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / asNeeded
+pub struct MdMaintenanceFrequencyAsNeeded;
+structural_prop!(MdMaintenanceFrequencyAsNeeded, "MdMaintenanceFrequencyAsNeeded");
+
+/// MD_MaintenanceFrequencyCode: irregular — data is updated at irregular
+/// intervals; the intervals are not predictable.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / irregular
+pub struct MdMaintenanceFrequencyIrregular;
+structural_prop!(MdMaintenanceFrequencyIrregular, "MdMaintenanceFrequencyIrregular");
+
+/// MD_MaintenanceFrequencyCode: notPlanned — no further updates are planned;
+/// the dataset is considered complete and closed.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / notPlanned
+pub struct MdMaintenanceFrequencyNotPlanned;
+structural_prop!(MdMaintenanceFrequencyNotPlanned, "MdMaintenanceFrequencyNotPlanned");
+
+/// MD_MaintenanceFrequencyCode: unknown — the update frequency is not known
+/// to the metadata author.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / unknown
+pub struct MdMaintenanceFrequencyUnknown;
+structural_prop!(MdMaintenanceFrequencyUnknown, "MdMaintenanceFrequencyUnknown");
+```
+
+---
+
+## §6.39-companion MD_Distribution — Distribution Information
+
+`MD_Distribution` describes how the resource may be obtained. It is referenced from
+`MD_Metadata.distributionInfo` (O, 0..*). At least one of `distributionFormat`,
+`distributor`, or `transferOptions` should be provided.
+
+**MD_Distribution attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `distributionFormat` | O | 0..* | MD_Format |
+| `distributor` | O | 0..* | MD_Distributor |
+| `transferOptions` | O | 0..* | MD_DigitalTransferOptions |
+
+**MD_Distributor attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `distributorContact` | M | 1 | CI_Responsibility |
+| `distributionOrderProcess` | O | 0..* | MD_StandardOrderProcess |
+| `distributorFormat` | O | 0..* | MD_Format |
+| `distributorTransferOptions` | O | 0..* | MD_DigitalTransferOptions |
+
+**MD_DigitalTransferOptions attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `unitsOfDistribution` | O | 0..1 | CharacterString |
+| `transferSize` | O | 0..1 | Real (> 0, in MB) |
+| `onLine` | O | 0..* | CI_OnlineResource |
+| `offLine` | O | 0..* | MD_Medium |
+| `transferFrequency` | O | 0..1 | TM_PeriodDuration |
+| `distributionFormat` | O | 0..* | MD_Format |
+
+**MD_Medium attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `name` | O | 0..1 | MD_MediumNameCode |
+| `density` | O | 0..* | Real |
+| `densityUnits` | C | 0..1 | CharacterString (required when density present) |
+| `volumes` | O | 0..1 | Integer |
+| `mediumFormat` | O | 0..* | MD_MediumFormatCode |
+| `mediumNote` | O | 0..1 | CharacterString |
+
+```rust
+/// distributionFormat is optional (0..*) on MD_Distribution; zero or more
+/// MD_Format entries describing the available distribution formats.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distribution / distributionFormat
+pub struct MdDistributionFormatOptional;
+structural_prop!(MdDistributionFormatOptional, "MdDistributionFormatOptional");
+
+/// distributor is optional (0..*) on MD_Distribution; zero or more
+/// MD_Distributor entries documenting who distributes the resource.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distribution / distributor
+pub struct MdDistributionDistributorOptional;
+structural_prop!(MdDistributionDistributorOptional, "MdDistributionDistributorOptional");
+
+/// transferOptions is optional (0..*) on MD_Distribution; zero or more
+/// MD_DigitalTransferOptions entries describing available download methods.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distribution / transferOptions
+pub struct MdDistributionTransferOptionsOptional;
+structural_prop!(MdDistributionTransferOptionsOptional, "MdDistributionTransferOptionsOptional");
+
+/// An MD_Distribution with no format, distributor, or transferOptions provides
+/// no actionable access information; at least one element should be populated.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distribution / non-empty constraint
+pub struct MdDistributionAtLeastOneElement;
+structural_prop!(MdDistributionAtLeastOneElement, "MdDistributionAtLeastOneElement");
+
+/// distributorContact is mandatory (1) on MD_Distributor; a CI_Responsibility
+/// identifying the distributing party shall be provided.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distributor / distributorContact
+pub struct MdDistributorContactMandatory;
+structural_prop!(MdDistributorContactMandatory, "MdDistributorContactMandatory");
+
+/// distributionOrderProcess is optional (0..*) on MD_Distributor; information
+/// about the process for ordering the resource from this distributor.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distributor / distributionOrderProcess
+pub struct MdDistributorOrderProcessOptional;
+structural_prop!(MdDistributorOrderProcessOptional, "MdDistributorOrderProcessOptional");
+
+/// distributorFormat is optional (0..*) on MD_Distributor; MD_Format entries
+/// specific to what this distributor provides.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distributor / distributorFormat
+pub struct MdDistributorFormatOptional;
+structural_prop!(MdDistributorFormatOptional, "MdDistributorFormatOptional");
+
+/// distributorTransferOptions is optional (0..*) on MD_Distributor; transfer
+/// options specific to what this distributor can provide.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distributor / distributorTransferOptions
+pub struct MdDistributorTransferOptionsOptional;
+structural_prop!(MdDistributorTransferOptionsOptional, "MdDistributorTransferOptionsOptional");
+
+/// When transferSize is provided on MD_DigitalTransferOptions, its value shall
+/// be a positive real number expressed in megabytes (MB).
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_DigitalTransferOptions / transferSize positive
+pub struct MdTransferOptionsSizePositive;
+structural_prop!(MdTransferOptionsSizePositive, "MdTransferOptionsSizePositive");
+
+/// onLine is optional (0..*) on MD_DigitalTransferOptions; CI_OnlineResource
+/// entries giving URLs or endpoints for downloading the resource.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_DigitalTransferOptions / onLine
+pub struct MdTransferOptionsOnlineOptional;
+structural_prop!(MdTransferOptionsOnlineOptional, "MdTransferOptionsOnlineOptional");
+
+/// offLine is optional (0..*) on MD_DigitalTransferOptions; MD_Medium entries
+/// documenting physical media on which the resource may be distributed.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_DigitalTransferOptions / offLine
+pub struct MdTransferOptionsOfflineOptional;
+structural_prop!(MdTransferOptionsOfflineOptional, "MdTransferOptionsOfflineOptional");
+
+/// densityUnits on MD_Medium is conditional (0..1); required when density is
+/// provided; specifies the unit of the density measurement.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Medium / densityUnits conditional
+pub struct MdMediumDensityUnitsConditional;
+structural_prop!(MdMediumDensityUnitsConditional, "MdMediumDensityUnitsConditional");
+
+/// volumes is optional (0..1) on MD_Medium; when provided, the number of items
+/// in the media collection shall be a non-negative integer.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Medium / volumes
+pub struct MdMediumVolumesOptional;
+structural_prop!(MdMediumVolumesOptional, "MdMediumVolumesOptional");
+```
+
+---
+
+## MD_ScopeCode — Scope Code List (Annex B)
+
+`MD_ScopeCode` is used in `MD_Metadata.hierarchyLevel` and `DQ_DataQuality.scope` to
+indicate what level of the data hierarchy the metadata or quality report applies to.
+Values are defined in ISO 19115-1:2014 Annex B.
+
+```rust
+/// MD_ScopeCode: dataset — the scope is a single geographic dataset;
+/// the most common value for standard GIS data files.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / dataset
+pub struct MdScopeDataset;
+structural_prop!(MdScopeDataset, "MdScopeDataset");
+
+/// MD_ScopeCode: series — the scope is an aggregate series of related datasets
+/// (e.g., a national topographic series).
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / series
+pub struct MdScopeSeries;
+structural_prop!(MdScopeSeries, "MdScopeSeries");
+
+/// MD_ScopeCode: service — the scope is a service interface (OWS, WMS, WFS,
+/// etc.) rather than a data file.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / service
+pub struct MdScopeService;
+structural_prop!(MdScopeService, "MdScopeService");
+
+/// MD_ScopeCode: software — the scope is a computer program or application
+/// that processes or generates geographic data.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / software
+pub struct MdScopeSoftware;
+structural_prop!(MdScopeSoftware, "MdScopeSoftware");
+
+/// MD_ScopeCode: model — the scope is a copy of data with altered structure
+/// or content, typically a processed derivative product.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / model
+pub struct MdScopeModel;
+structural_prop!(MdScopeModel, "MdScopeModel");
+
+/// MD_ScopeCode: initiative — the scope is a broad-scale scientific or
+/// operational data collection initiative.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / initiative
+pub struct MdScopeInitiative;
+structural_prop!(MdScopeInitiative, "MdScopeInitiative");
+
+/// MD_ScopeCode: featureType — the scope is a geographic feature type
+/// definition (schema / class level).
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / featureType
+pub struct MdScopeFeatureType;
+structural_prop!(MdScopeFeatureType, "MdScopeFeatureType");
+
+/// MD_ScopeCode: feature — the scope is an individual geographic feature
+/// instance.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / feature
+pub struct MdScopeFeature;
+structural_prop!(MdScopeFeature, "MdScopeFeature");
+
+/// MD_ScopeCode: attributeType — the scope is a feature attribute type
+/// definition.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / attributeType
+pub struct MdScopeAttributeType;
+structural_prop!(MdScopeAttributeType, "MdScopeAttributeType");
+
+/// MD_ScopeCode: attribute — the scope is an individual feature attribute
+/// value.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / attribute
+pub struct MdScopeAttribute;
+structural_prop!(MdScopeAttribute, "MdScopeAttribute");
+
+/// MD_ScopeCode: tile — the scope is a tile or sheet of a larger tiled
+/// dataset.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / tile
+pub struct MdScopeTile;
+structural_prop!(MdScopeTile, "MdScopeTile");
+
+/// MD_ScopeCode: fieldSession — the scope is a single field data collection
+/// session or survey event.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / fieldSession
+pub struct MdScopeFieldSession;
+structural_prop!(MdScopeFieldSession, "MdScopeFieldSession");
+
+/// MD_ScopeCode: collectionSession — the scope is a collection session
+/// encompassing multiple field events.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / collectionSession
+pub struct MdScopeCollectionSession;
+structural_prop!(MdScopeCollectionSession, "MdScopeCollectionSession");
+
+/// MD_ScopeCode: nonGeographicDataset — the scope is a dataset that has no
+/// geographic extent (tabular, statistical, or thematic non-spatial data).
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / nonGeographicDataset
+pub struct MdScopeNonGeographicDataset;
+structural_prop!(MdScopeNonGeographicDataset, "MdScopeNonGeographicDataset");
+
+/// MD_ScopeCode: dimensionGroup — the scope is a dimension group within a
+/// multidimensional grid dataset.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / dimensionGroup
+pub struct MdScopeDimensionGroup;
+structural_prop!(MdScopeDimensionGroup, "MdScopeDimensionGroup");
+```
+
+---
+
+## MD_CharacterSetCode — Character Set Code List (Annex B)
+
+`MD_CharacterSetCode` is used in `MD_Metadata.characterSet`,
+`MD_DataIdentification.characterSet`, and `PT_Locale.characterEncoding`. Values are
+drawn from the IANA character set registry as profiled by ISO 19115-1:2014 Annex B.
+
+```rust
+/// MD_CharacterSetCode: utf8 — UTF-8 variable-width Unicode encoding;
+/// the default encoding assumed when characterSet is absent.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / utf8
+pub struct MdCharsetUtf8;
+structural_prop!(MdCharsetUtf8, "MdCharsetUtf8");
+
+/// MD_CharacterSetCode: utf16 — UTF-16 wide-character Unicode encoding;
+/// used when BOM-marked UTF-16 files are distributed.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / utf16
+pub struct MdCharsetUtf16;
+structural_prop!(MdCharsetUtf16, "MdCharsetUtf16");
+
+/// MD_CharacterSetCode: utf32 — UTF-32 fixed-width Unicode encoding.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / utf32
+pub struct MdCharsetUtf32;
+structural_prop!(MdCharsetUtf32, "MdCharsetUtf32");
+
+/// MD_CharacterSetCode: 8859part1 — ISO-8859-1 Latin-1, Western European;
+/// covers English, French, German, Spanish, Portuguese, and others.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part1
+pub struct MdCharsetLatin1;
+structural_prop!(MdCharsetLatin1, "MdCharsetLatin1");
+
+/// MD_CharacterSetCode: 8859part2 — ISO-8859-2 Latin-2, Central European;
+/// covers Czech, Polish, Slovak, Hungarian, Romanian.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part2
+pub struct MdCharsetLatin2;
+structural_prop!(MdCharsetLatin2, "MdCharsetLatin2");
+
+/// MD_CharacterSetCode: 8859part5 — ISO-8859-5, Cyrillic script; covers
+/// Russian, Bulgarian, Serbian, and other Cyrillic-script languages.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part5
+pub struct MdCharsetCyrillic;
+structural_prop!(MdCharsetCyrillic, "MdCharsetCyrillic");
+
+/// MD_CharacterSetCode: 8859part6 — ISO-8859-6, Arabic script.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part6
+pub struct MdCharsetArabic;
+structural_prop!(MdCharsetArabic, "MdCharsetArabic");
+
+/// MD_CharacterSetCode: 8859part7 — ISO-8859-7, Greek script.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part7
+pub struct MdCharsetGreek;
+structural_prop!(MdCharsetGreek, "MdCharsetGreek");
+
+/// MD_CharacterSetCode: 8859part8 — ISO-8859-8, Hebrew script.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part8
+pub struct MdCharsetHebrew;
+structural_prop!(MdCharsetHebrew, "MdCharsetHebrew");
+
+/// MD_CharacterSetCode: 8859part9 — ISO-8859-9 Latin-5, Turkish; replaces
+/// rarely used Icelandic letters with Turkish-specific characters.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part9
+pub struct MdCharsetLatin5;
+structural_prop!(MdCharsetLatin5, "MdCharsetLatin5");
+
+/// MD_CharacterSetCode: ucs2 — ISO/IEC 10646-1 UCS-2 fixed 2-byte encoding;
+/// covers the Basic Multilingual Plane.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / ucs2
+pub struct MdCharsetUcs2;
+structural_prop!(MdCharsetUcs2, "MdCharsetUcs2");
+
+/// MD_CharacterSetCode: ucs4 — ISO/IEC 10646-1 UCS-4 fixed 4-byte encoding;
+/// covers the full Unicode character space.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / ucs4
+pub struct MdCharsetUcs4;
+structural_prop!(MdCharsetUcs4, "MdCharsetUcs4");
+
+/// MD_CharacterSetCode: shiftJIS — Shift-JIS double-byte encoding for
+/// Japanese; widely used in Japanese GIS data from legacy systems.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / shiftJIS
+pub struct MdCharsetShiftJis;
+structural_prop!(MdCharsetShiftJis, "MdCharsetShiftJis");
+
+/// MD_CharacterSetCode: eucJP — EUC-JP encoding for Japanese; common in
+/// Unix/Linux Japanese environments.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / eucJP
+pub struct MdCharsetEucJp;
+structural_prop!(MdCharsetEucJp, "MdCharsetEucJp");
+
+/// MD_CharacterSetCode: big5 — Big5 double-byte encoding for Traditional
+/// Chinese; used in Taiwan and Hong Kong.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / big5
+pub struct MdCharsetBig5;
+structural_prop!(MdCharsetBig5, "MdCharsetBig5");
+
+/// MD_CharacterSetCode: GB2312 — GB-2312 encoding for Simplified Chinese;
+/// used in mainland China GIS data.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / GB2312
+pub struct MdCharsetGb2312;
+structural_prop!(MdCharsetGb2312, "MdCharsetGb2312");
+
+/// MD_CharacterSetCode: usAscii — 7-bit US-ASCII; the most restrictive
+/// encoding; suitable only for plain English metadata.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / usAscii
+pub struct MdCharsetUsAscii;
+structural_prop!(MdCharsetUsAscii, "MdCharsetUsAscii");
+```
+
+---
+
+## §6.7a CI_Party / CI_Individual / CI_Organisation — Party Hierarchy
+
+`CI_Party` is the abstract base class for parties involved in a `CI_Responsibility`.
+`CI_Individual` represents a named person; `CI_Organisation` represents a corporate
+body or institution. Only the concrete subtypes are instantiated.
+
+**CI_Individual attributes (beyond CI_Party):**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `name` | O | 0..1 | CharacterString |
+| `positionName` | O | 0..1 | CharacterString |
+| `contactInfo` | O | 0..* | CI_Contact |
+| `partyIdentifier` | O | 0..* | MD_Identifier |
+
+**CI_Organisation attributes (beyond CI_Party):**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `name` | O | 0..1 | CharacterString |
+| `logo` | O | 0..* | MD_BrowseGraphic |
+| `contactInfo` | O | 0..* | CI_Contact |
+| `individual` | O | 0..* | CI_Individual |
+| `partyIdentifier` | O | 0..* | MD_Identifier |
+
+```rust
+/// CI_Party is abstract; only CI_Individual or CI_Organisation are instantiated.
+/// No metadata record may reference CI_Party directly.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Party (abstract)
+pub struct CiPartyIsAbstract;
+structural_prop!(CiPartyIsAbstract, "CiPartyIsAbstract");
+
+/// name is optional (0..1) for CI_Individual; when absent, positionName should
+/// be provided to identify the person.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Individual / name
+pub struct CiIndividualNameOptional;
+structural_prop!(CiIndividualNameOptional, "CiIndividualNameOptional");
+
+/// positionName is optional (0..1); used when the individual's personal name is
+/// confidential or unknown, identifying their role instead.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Individual / positionName
+pub struct CiIndividualPositionNameOptional;
+structural_prop!(CiIndividualPositionNameOptional, "CiIndividualPositionNameOptional");
+
+/// At least one of name or positionName should be non-null so that the individual
+/// can be identified; both being absent makes the record unresolvable.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Individual / name + positionName
+pub struct CiIndividualNameOrPositionRequired;
+structural_prop!(CiIndividualNameOrPositionRequired, "CiIndividualNameOrPositionRequired");
+
+/// contactInfo is optional (0..*) for CI_Individual; zero or more CI_Contact
+/// entries providing telephone, address, or online contact details.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Individual / contactInfo
+pub struct CiIndividualContactInfoOptional;
+structural_prop!(CiIndividualContactInfoOptional, "CiIndividualContactInfoOptional");
+
+/// name is optional (0..1) for CI_Organisation; when provided it should be a
+/// non-empty string identifying the corporate body.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Organisation / name
+pub struct CiOrganisationNameOptional;
+structural_prop!(CiOrganisationNameOptional, "CiOrganisationNameOptional");
+
+/// individual is optional (0..*); references specific named persons who are
+/// members or representatives of the organisation.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Organisation / individual
+pub struct CiOrganisationIndividualOptional;
+structural_prop!(CiOrganisationIndividualOptional, "CiOrganisationIndividualOptional");
+
+/// contactInfo is optional (0..*) for CI_Organisation; zero or more CI_Contact
+/// entries providing the organisation's contact details.
+///
+/// Source: ISO 19115-1:2014 §6.7 — CI_Organisation / contactInfo
+pub struct CiOrganisationContactInfoOptional;
+structural_prop!(CiOrganisationContactInfoOptional, "CiOrganisationContactInfoOptional");
+```
+
+---
+
+## §6.8 CI_Contact / CI_Telephone / CI_Address — Contact Details
+
+`CI_Contact` bundles all contact channels for a party. `CI_Telephone` carries a
+telephone number and its type. `CI_Address` holds a postal or electronic address.
+
+**CI_Contact attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `phone` | O | 0..* | CI_Telephone |
+| `address` | O | 0..* | CI_Address |
+| `onlineResource` | O | 0..* | CI_OnlineResource |
+| `hoursOfService` | O | 0..1 | CharacterString |
+| `contactInstructions` | O | 0..1 | CharacterString |
+| `contactType` | O | 0..1 | CharacterString |
+
+**CI_Telephone attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `number` | M | 1 | CharacterString |
+| `numberType` | O | 0..1 | CI_TelephoneTypeCode |
+
+**CI_Address attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `deliveryPoint` | O | 0..* | CharacterString |
+| `city` | O | 0..1 | CharacterString |
+| `administrativeArea` | O | 0..1 | CharacterString |
+| `postalCode` | O | 0..1 | CharacterString |
+| `country` | O | 0..1 | CharacterString (ISO 3166) |
+| `electronicMailAddress` | O | 0..* | CharacterString |
+
+```rust
+/// phone is optional (0..*) in CI_Contact; zero or more CI_Telephone entries.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Contact / phone
+pub struct CiContactPhoneOptional;
+structural_prop!(CiContactPhoneOptional, "CiContactPhoneOptional");
+
+/// address is optional (0..*) in CI_Contact; zero or more CI_Address entries.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Contact / address
+pub struct CiContactAddressOptional;
+structural_prop!(CiContactAddressOptional, "CiContactAddressOptional");
+
+/// onlineResource is optional (0..*) in CI_Contact; web-accessible contact points.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Contact / onlineResource
+pub struct CiContactOnlineResourceOptional;
+structural_prop!(CiContactOnlineResourceOptional, "CiContactOnlineResourceOptional");
+
+/// hoursOfService is optional (0..1); free-text description of when the contact
+/// is available (e.g., "Mon-Fri 09:00-17:00 UTC").
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Contact / hoursOfService
+pub struct CiContactHoursOfServiceOptional;
+structural_prop!(CiContactHoursOfServiceOptional, "CiContactHoursOfServiceOptional");
+
+/// contactInstructions is optional (0..1); supplementary instructions on how or
+/// when to contact the individual or organisation.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Contact / contactInstructions
+pub struct CiContactInstructionsOptional;
+structural_prop!(CiContactInstructionsOptional, "CiContactInstructionsOptional");
+
+/// number is mandatory (1) in CI_Telephone; the telephone number string shall
+/// be present.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Telephone / number
+pub struct CiTelephoneNumberMandatory;
+structural_prop!(CiTelephoneNumberMandatory, "CiTelephoneNumberMandatory");
+
+/// number shall be non-empty; a CI_Telephone with an empty string number is
+/// not meaningful.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Telephone / number (non-empty)
+pub struct CiTelephoneNumberNonEmpty;
+structural_prop!(CiTelephoneNumberNonEmpty, "CiTelephoneNumberNonEmpty");
+
+/// CI_TelephoneTypeCode: voice — telephone number for voice communication.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_TelephoneTypeCode / voice
+pub struct CiTelephoneTypeVoice;
+structural_prop!(CiTelephoneTypeVoice, "CiTelephoneTypeVoice");
+
+/// CI_TelephoneTypeCode: facsimile — telephone number for facsimile (fax)
+/// transmission.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_TelephoneTypeCode / facsimile
+pub struct CiTelephoneFacsimile;
+structural_prop!(CiTelephoneFacsimile, "CiTelephoneFacsimile");
+
+/// CI_TelephoneTypeCode: sms — telephone number capable of receiving short
+/// message service (SMS/text) messages.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_TelephoneTypeCode / sms
+pub struct CiTelephoneSms;
+structural_prop!(CiTelephoneSms, "CiTelephoneSms");
+
+/// deliveryPoint is optional (0..*) in CI_Address; one or more lines of a
+/// street or postal delivery address.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / deliveryPoint
+pub struct CiAddressDeliveryPointOptional;
+structural_prop!(CiAddressDeliveryPointOptional, "CiAddressDeliveryPointOptional");
+
+/// city is optional (0..1) in CI_Address; name of the city or locality.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / city
+pub struct CiAddressCityOptional;
+structural_prop!(CiAddressCityOptional, "CiAddressCityOptional");
+
+/// administrativeArea is optional (0..1) in CI_Address; state, province, or
+/// other administrative subdivision.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / administrativeArea
+pub struct CiAddressAdministrativeAreaOptional;
+structural_prop!(CiAddressAdministrativeAreaOptional, "CiAddressAdministrativeAreaOptional");
+
+/// postalCode is optional (0..1) in CI_Address; ZIP code or other postal code.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / postalCode
+pub struct CiAddressPostalCodeOptional;
+structural_prop!(CiAddressPostalCodeOptional, "CiAddressPostalCodeOptional");
+
+/// country is optional (0..1) in CI_Address; country name or ISO 3166 code.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / country
+pub struct CiAddressCountryOptional;
+structural_prop!(CiAddressCountryOptional, "CiAddressCountryOptional");
+
+/// electronicMailAddress is optional (0..*) in CI_Address; one or more e-mail
+/// addresses for the party.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / electronicMailAddress
+pub struct CiAddressEmailOptional;
+structural_prop!(CiAddressEmailOptional, "CiAddressEmailOptional");
+
+/// When the country field is provided it should conform to ISO 3166-1 alpha-2
+/// or alpha-3 codes for interoperability.
+///
+/// Source: ISO 19115-1:2014 §6.8 — CI_Address / country (ISO 3166)
+pub struct CiAddressCountryIsIso3166;
+structural_prop!(CiAddressCountryIsIso3166, "CiAddressCountryIsIso3166");
+```
+
+---
+
+## §6.11 MD_BrowseGraphic — Graphic Overview
+
+`MD_BrowseGraphic` provides a small illustration or thumbnail that gives users a
+quick visual preview of a dataset. Referenced from `MD_Identification.graphicOverview`.
+
+**Attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `fileName` | M | 1 | CharacterString (URI/path) |
+| `fileDescription` | O | 0..1 | CharacterString |
+| `fileType` | O | 0..1 | CharacterString (MIME type) |
+| `imageConstraints` | O | 0..* | MD_Constraints |
+| `linkage` | O | 0..* | CI_OnlineResource |
+
+```rust
+/// fileName is mandatory (1); the URI or file path pointing to the graphic
+/// overview image.
+///
+/// Source: ISO 19115-1:2014 §6.11 — MD_BrowseGraphic / fileName
+pub struct MdBrowseGraphicFileNameMandatory;
+structural_prop!(MdBrowseGraphicFileNameMandatory, "MdBrowseGraphicFileNameMandatory");
+
+/// fileName shall be non-empty; a browse graphic record with a blank fileName
+/// cannot be resolved.
+///
+/// Source: ISO 19115-1:2014 §6.11 — MD_BrowseGraphic / fileName (non-empty)
+pub struct MdBrowseGraphicFileNameNonEmpty;
+structural_prop!(MdBrowseGraphicFileNameNonEmpty, "MdBrowseGraphicFileNameNonEmpty");
+
+/// fileDescription is optional (0..1); a short caption describing the content
+/// of the graphic overview.
+///
+/// Source: ISO 19115-1:2014 §6.11 — MD_BrowseGraphic / fileDescription
+pub struct MdBrowseGraphicFileDescriptionOptional;
+structural_prop!(MdBrowseGraphicFileDescriptionOptional, "MdBrowseGraphicFileDescriptionOptional");
+
+/// fileType is optional (0..1); when provided it should be a MIME media type
+/// string (e.g., image/png, image/jpeg) identifying the graphic format.
+///
+/// Source: ISO 19115-1:2014 §6.11 — MD_BrowseGraphic / fileType
+pub struct MdBrowseGraphicFileTypeOptional;
+structural_prop!(MdBrowseGraphicFileTypeOptional, "MdBrowseGraphicFileTypeOptional");
+
+/// linkage is optional (0..*); CI_OnlineResource entries pointing to the
+/// browse graphic via network protocols.
+///
+/// Source: ISO 19115-1:2014 §6.11 — MD_BrowseGraphic / linkage
+pub struct MdBrowseGraphicLinkageOptional;
+structural_prop!(MdBrowseGraphicLinkageOptional, "MdBrowseGraphicLinkageOptional");
+```
+
+---
+
+## §6.15 MD_AssociatedResource — Associated Resources
+
+`MD_AssociatedResource` links a resource to related resources (e.g., a larger
+work, a series, or a revision). Either `name` or `metadataReference` is required;
+both may be present simultaneously.
+
+**Attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `name` | C | 0..1 | CI_Citation |
+| `metadataReference` | C | 0..1 | CI_Citation |
+| `associationType` | M | 1 | DS_AssociationTypeCode |
+| `initiativeType` | O | 0..1 | DS_InitiativeTypeCode |
+
+**Conditional rule:** at least one of `name` or `metadataReference` shall be present.
+
+```rust
+/// name is conditional (0..1); a CI_Citation identifying the associated resource
+/// by title. Required when metadataReference is absent.
+///
+/// Source: ISO 19115-1:2014 §6.15 — MD_AssociatedResource / name
+pub struct MdAssociatedResourceNameConditional;
+structural_prop!(MdAssociatedResourceNameConditional, "MdAssociatedResourceNameConditional");
+
+/// metadataReference is conditional (0..1); a CI_Citation pointing to the
+/// metadata record of the associated resource. Required when name is absent.
+///
+/// Source: ISO 19115-1:2014 §6.15 — MD_AssociatedResource / metadataReference
+pub struct MdAssociatedResourceMetadataRefConditional;
+structural_prop!(MdAssociatedResourceMetadataRefConditional, "MdAssociatedResourceMetadataRefConditional");
+
+/// At least one of name or metadataReference shall be present in an
+/// MD_AssociatedResource instance; both being null is not conformant.
+///
+/// Source: ISO 19115-1:2014 §6.15 — MD_AssociatedResource (conditional rule)
+pub struct MdAssociatedResourceNameOrMetaRefRequired;
+structural_prop!(MdAssociatedResourceNameOrMetaRefRequired, "MdAssociatedResourceNameOrMetaRefRequired");
+
+/// associationType is mandatory (1); the DS_AssociationTypeCode value
+/// classifying how the resources are related.
+///
+/// Source: ISO 19115-1:2014 §6.15 — MD_AssociatedResource / associationType
+pub struct MdAssociatedResourceAssociationTypeMandatory;
+structural_prop!(MdAssociatedResourceAssociationTypeMandatory, "MdAssociatedResourceAssociationTypeMandatory");
+
+/// initiativeType is optional (0..1); a DS_InitiativeTypeCode describing the
+/// type of initiative that produced the associated resource.
+///
+/// Source: ISO 19115-1:2014 §6.15 — MD_AssociatedResource / initiativeType
+pub struct MdAssociatedResourceInitiativeTypeOptional;
+structural_prop!(MdAssociatedResourceInitiativeTypeOptional, "MdAssociatedResourceInitiativeTypeOptional");
+
+/// DS_AssociationTypeCode: crossReference — reference from one dataset to
+/// another dataset.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_AssociationTypeCode / crossReference
+pub struct DsAssociationTypeCrossReference;
+structural_prop!(DsAssociationTypeCrossReference, "DsAssociationTypeCrossReference");
+
+/// DS_AssociationTypeCode: largerWorkCitation — reference to a master dataset
+/// of which this resource is a part.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_AssociationTypeCode / largerWorkCitation
+pub struct DsAssociationTypeLargerWorkCitation;
+structural_prop!(DsAssociationTypeLargerWorkCitation, "DsAssociationTypeLargerWorkCitation");
+
+/// DS_AssociationTypeCode: partOfSeamlessDatabase — part of a seamless database
+/// formed by combining datasets that share the same schema.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_AssociationTypeCode / partOfSeamlessDatabase
+pub struct DsAssociationTypePartOfSeamlessDatabase;
+structural_prop!(DsAssociationTypePartOfSeamlessDatabase, "DsAssociationTypePartOfSeamlessDatabase");
+
+/// DS_AssociationTypeCode: stereoMate — part of a stereo pair of images;
+/// the associated resource is the complementary stereo image.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_AssociationTypeCode / stereoMate
+pub struct DsAssociationTypeStereoMate;
+structural_prop!(DsAssociationTypeStereoMate, "DsAssociationTypeStereoMate");
+
+/// DS_AssociationTypeCode: isComposedOf — the resource is an aggregate composed
+/// of the associated resource as a component part.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_AssociationTypeCode / isComposedOf
+pub struct DsAssociationTypeIsComposedOf;
+structural_prop!(DsAssociationTypeIsComposedOf, "DsAssociationTypeIsComposedOf");
+
+/// DS_AssociationTypeCode: revisionOf — the resource is a revision or updated
+/// version of the associated resource.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_AssociationTypeCode / revisionOf
+pub struct DsAssociationTypeRevisionOf;
+structural_prop!(DsAssociationTypeRevisionOf, "DsAssociationTypeRevisionOf");
+
+/// DS_InitiativeTypeCode: project — the initiative is a coordinated effort to
+/// achieve defined objectives within a defined time and resource budget.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_InitiativeTypeCode / project
+pub struct DsInitiativeTypeProject;
+structural_prop!(DsInitiativeTypeProject, "DsInitiativeTypeProject");
+
+/// DS_InitiativeTypeCode: mission — the initiative is a specific task or
+/// assignment carried out as part of a larger program.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_InitiativeTypeCode / mission
+pub struct DsInitiativeTypeMission;
+structural_prop!(DsInitiativeTypeMission, "DsInitiativeTypeMission");
+
+/// DS_InitiativeTypeCode: platform — the initiative is associated with the
+/// platform (aircraft, satellite, vessel) that collected the data.
+///
+/// Source: ISO 19115-1:2014 §6.15 — DS_InitiativeTypeCode / platform
+pub struct DsInitiativeTypePlatform;
+structural_prop!(DsInitiativeTypePlatform, "DsInitiativeTypePlatform");
+```
+
+---
+
+## §6.20 EX_BoundingPolygon — Polygon Geographic Extent
+
+`EX_BoundingPolygon` is a subtype of `EX_GeographicExtent` that expresses a
+geographic extent as one or more general geometry objects (polygons). It is more
+precise than an axis-aligned bounding box and supports non-rectangular regions,
+holes, and exclusion zones.
+
+**Attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `extentTypeCode` | O | 0..1 | Boolean |
+| `polygon` | M | 1..* | GM_Object |
+
+```rust
+/// polygon is mandatory (1..*); at least one geometry object shall be provided
+/// to define the geographic extent.
+///
+/// Source: ISO 19115-1:2014 §6.20 — EX_BoundingPolygon / polygon
+pub struct ExBoundingPolygonPolygonMandatory;
+structural_prop!(ExBoundingPolygonPolygonMandatory, "ExBoundingPolygonPolygonMandatory");
+
+/// The polygon array shall be non-empty; an EX_BoundingPolygon with zero
+/// geometry elements does not define a geographic extent.
+///
+/// Source: ISO 19115-1:2014 §6.20 — EX_BoundingPolygon / polygon (1..*)
+pub struct ExBoundingPolygonAtLeastOneGeometry;
+structural_prop!(ExBoundingPolygonAtLeastOneGeometry, "ExBoundingPolygonAtLeastOneGeometry");
+
+/// extentTypeCode is optional (0..1); when present, true means the polygon
+/// defines an inclusion area and false means an exclusion zone.
+///
+/// Source: ISO 19115-1:2014 §6.20 — EX_BoundingPolygon / extentTypeCode
+pub struct ExBoundingPolygonExtentTypeCodeOptional;
+structural_prop!(ExBoundingPolygonExtentTypeCodeOptional, "ExBoundingPolygonExtentTypeCodeOptional");
+
+/// Each element in the polygon array shall be a valid GM_Object geometry; null
+/// or degenerate geometries are not conformant.
+///
+/// Source: ISO 19115-1:2014 §6.20 — EX_BoundingPolygon / polygon (validity)
+pub struct ExBoundingPolygonGeometryIsValid;
+structural_prop!(ExBoundingPolygonGeometryIsValid, "ExBoundingPolygonGeometryIsValid");
+```
+
+---
+
+## §6.24 MD_SecurityConstraints — Security Classification
+
+`MD_SecurityConstraints` extends `MD_Constraints` with a mandatory security
+classification and optional supplementary notes. Used where access must be
+controlled for national security, defence, or similar reasons.
+
+**Additional attributes (beyond MD_Constraints):**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `classification` | M | 1 | MD_ClassificationCode |
+| `userNote` | O | 0..1 | CharacterString |
+| `classificationSystem` | O | 0..1 | CharacterString |
+| `handlingDescription` | O | 0..1 | CharacterString |
+
+**`MD_ClassificationCode` enumeration (9 values):**
+
+```rust
+/// classification is mandatory (1) in MD_SecurityConstraints; a
+/// MD_ClassificationCode value shall always be present.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_SecurityConstraints / classification
+pub struct MdSecurityConstraintsClassificationMandatory;
+structural_prop!(MdSecurityConstraintsClassificationMandatory, "MdSecurityConstraintsClassificationMandatory");
+
+/// userNote is optional (0..1); free-text caveats or handling instructions
+/// supplementing the formal classification code.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_SecurityConstraints / userNote
+pub struct MdSecurityConstraintsUserNoteOptional;
+structural_prop!(MdSecurityConstraintsUserNoteOptional, "MdSecurityConstraintsUserNoteOptional");
+
+/// classificationSystem is optional (0..1); the name of the classification
+/// system used (e.g., "NATO", "UK GPMS").
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_SecurityConstraints / classificationSystem
+pub struct MdSecurityConstraintsClassSystemOptional;
+structural_prop!(MdSecurityConstraintsClassSystemOptional, "MdSecurityConstraintsClassSystemOptional");
+
+/// handlingDescription is optional (0..1); additional guidance on how the
+/// resource shall be handled, distributed, or stored.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_SecurityConstraints / handlingDescription
+pub struct MdSecurityConstraintsHandlingDescOptional;
+structural_prop!(MdSecurityConstraintsHandlingDescOptional, "MdSecurityConstraintsHandlingDescOptional");
+
+/// MD_ClassificationCode: unclassified — available for general disclosure;
+/// no protective marking required.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / unclassified
+pub struct MdClassificationUnclassified;
+structural_prop!(MdClassificationUnclassified, "MdClassificationUnclassified");
+
+/// MD_ClassificationCode: restricted — not for general disclosure; limited
+/// to authorised recipients.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / restricted
+pub struct MdClassificationRestricted;
+structural_prop!(MdClassificationRestricted, "MdClassificationRestricted");
+
+/// MD_ClassificationCode: confidential — very sensitive; disclosure limited
+/// to persons with a defined need to know.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / confidential
+pub struct MdClassificationConfidential;
+structural_prop!(MdClassificationConfidential, "MdClassificationConfidential");
+
+/// MD_ClassificationCode: secret — national security information; unauthorised
+/// disclosure could cause serious damage to national security.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / secret
+pub struct MdClassificationSecret;
+structural_prop!(MdClassificationSecret, "MdClassificationSecret");
+
+/// MD_ClassificationCode: topSecret — highest classification level;
+/// unauthorised disclosure could cause exceptionally grave damage.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / topSecret
+pub struct MdClassificationTopSecret;
+structural_prop!(MdClassificationTopSecret, "MdClassificationTopSecret");
+
+/// MD_ClassificationCode: sensitiveButUnclassified — sensitive but not
+/// formally classified; often used in US federal contexts (SBU).
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / sensitiveButUnclassified
+pub struct MdClassificationSensitiveButUnclassified;
+structural_prop!(MdClassificationSensitiveButUnclassified, "MdClassificationSensitiveButUnclassified");
+
+/// MD_ClassificationCode: forOfficialUseOnly — restricted to official use
+/// only; not releasable to the general public (FOUO).
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / forOfficialUseOnly
+pub struct MdClassificationForOfficialUseOnly;
+structural_prop!(MdClassificationForOfficialUseOnly, "MdClassificationForOfficialUseOnly");
+
+/// MD_ClassificationCode: protected — applies a protective marking below
+/// confidential, often used in Australian Government classification schemes.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / protected
+pub struct MdClassificationProtected;
+structural_prop!(MdClassificationProtected, "MdClassificationProtected");
+
+/// MD_ClassificationCode: limitedDistribution — distribution is limited to
+/// a defined group; similar to restricted but with explicit distribution list.
+///
+/// Source: ISO 19115-1:2014 §6.24 — MD_ClassificationCode / limitedDistribution
+pub struct MdClassificationLimitedDistribution;
+structural_prop!(MdClassificationLimitedDistribution, "MdClassificationLimitedDistribution");
+```
+
+---
+
+## §6.25 MD_Resolution / MD_RepresentativeFraction — Spatial Resolution
+
+`MD_Resolution` is a union type used in `MD_DataIdentification.spatialResolution`.
+Exactly one of its alternatives shall be provided: an equivalent map scale
+(`MD_RepresentativeFraction`) or a ground distance / angular distance / level of
+detail. `MD_RepresentativeFraction` carries the scale denominator of a map
+(e.g., 50 000 for 1:50 000).
+
+**MD_RepresentativeFraction attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `denominator` | M | 1 | Integer (> 0) |
+
+```rust
+/// Exactly one resolution alternative shall be provided in MD_Resolution; the
+/// union constraint means equivalentScale and distance forms are mutually exclusive.
+///
+/// Source: ISO 19115-1:2014 §6.25 — MD_Resolution (union constraint)
+pub struct MdResolutionEquivalentScaleOrDistance;
+structural_prop!(MdResolutionEquivalentScaleOrDistance, "MdResolutionEquivalentScaleOrDistance");
+
+/// denominator is mandatory (1) in MD_RepresentativeFraction; the scale
+/// denominator integer shall be present.
+///
+/// Source: ISO 19115-1:2014 §6.25 — MD_RepresentativeFraction / denominator
+pub struct MdRepresentativeFractionDenominatorMandatory;
+structural_prop!(MdRepresentativeFractionDenominatorMandatory, "MdRepresentativeFractionDenominatorMandatory");
+
+/// denominator shall be a positive integer (> 0); a zero or negative value is
+/// not a meaningful map scale denominator.
+///
+/// Source: ISO 19115-1:2014 §6.25 — MD_RepresentativeFraction / denominator (> 0)
+pub struct MdRepresentativeFractionDenominatorPositive;
+structural_prop!(MdRepresentativeFractionDenominatorPositive, "MdRepresentativeFractionDenominatorPositive");
+
+/// When the distance form of MD_Resolution is used the distance value shall be
+/// a positive real number; zero or negative distance is not meaningful.
+///
+/// Source: ISO 19115-1:2014 §6.25 — MD_Resolution / distance (> 0)
+pub struct MdResolutionDistanceIsPositive;
+structural_prop!(MdResolutionDistanceIsPositive, "MdResolutionDistanceIsPositive");
+
+/// A larger denominator implies coarser spatial resolution: 1:1 000 000 is less
+/// detailed than 1:25 000. Applications comparing resolutions shall account for
+/// this inverse relationship.
+///
+/// Source: ISO 19115-1:2014 §6.25 — MD_RepresentativeFraction (scale semantics)
+pub struct MdResolutionScaleImpliesSmallIsCoarse;
+structural_prop!(MdResolutionScaleImpliesSmallIsCoarse, "MdResolutionScaleImpliesSmallIsCoarse");
+```
+
+---
+
+## §6.32 MD_Dimension — Grid Axis Description
+
+`MD_Dimension` describes one axis of a grid spatial representation. Referenced
+from `MD_GridSpatialRepresentation.axisDimensionProperties`.
+
+**Attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `dimensionName` | M | 1 | MD_DimensionNameTypeCode |
+| `dimensionSize` | M | 1 | Integer (> 0) |
+| `resolution` | O | 0..1 | Measure |
+
+**`MD_DimensionNameTypeCode` values:** row, column, vertical, track, crossTrack,
+line, sample, time
+
+```rust
+/// dimensionName is mandatory (1); the MD_DimensionNameTypeCode identifying
+/// which axis this dimension describes.
+///
+/// Source: ISO 19115-1:2014 §6.32 — MD_Dimension / dimensionName
+pub struct MdDimensionNameMandatory;
+structural_prop!(MdDimensionNameMandatory, "MdDimensionNameMandatory");
+
+/// dimensionSize is mandatory (1); the number of elements along this axis.
+///
+/// Source: ISO 19115-1:2014 §6.32 — MD_Dimension / dimensionSize
+pub struct MdDimensionSizeMandatory;
+structural_prop!(MdDimensionSizeMandatory, "MdDimensionSizeMandatory");
+
+/// dimensionSize shall be a positive integer (> 0); a grid with zero or fewer
+/// cells in any dimension is degenerate.
+///
+/// Source: ISO 19115-1:2014 §6.32 — MD_Dimension / dimensionSize (> 0)
+pub struct MdDimensionSizePositive;
+structural_prop!(MdDimensionSizePositive, "MdDimensionSizePositive");
+
+/// resolution is optional (0..1); the ground sample distance or time step
+/// represented by one cell along this axis.
+///
+/// Source: ISO 19115-1:2014 §6.32 — MD_Dimension / resolution
+pub struct MdDimensionResolutionOptional;
+structural_prop!(MdDimensionResolutionOptional, "MdDimensionResolutionOptional");
+
+/// MD_DimensionNameTypeCode: row — the row axis (typically the y-direction
+/// in image or raster coordinates).
+///
+/// Source: ISO 19115-1:2014 §6.32 — MD_DimensionNameTypeCode / row
+pub struct MdDimensionNameRow;
+structural_prop!(MdDimensionNameRow, "MdDimensionNameRow");
+
+/// MD_DimensionNameTypeCode: column — the column axis (typically the
+/// x-direction in image or raster coordinates).
+///
+/// Source: ISO 19115-1:2014 §6.32 — MD_DimensionNameTypeCode / column
+pub struct MdDimensionNameColumn;
+structural_prop!(MdDimensionNameColumn, "MdDimensionNameColumn");
+
+/// MD_DimensionNameTypeCode: vertical — the vertical axis representing
+/// altitude, depth, or pressure level.
+///
+/// Source: ISO 19115-1:2014 §6.32 — MD_DimensionNameTypeCode / vertical
+pub struct MdDimensionNameVertical;
+structural_prop!(MdDimensionNameVertical, "MdDimensionNameVertical");
+
+/// MD_DimensionNameTypeCode: time — the temporal axis of a time-series or
+/// multi-temporal grid dataset.
+///
+/// Source: ISO 19115-1:2014 §6.32 — MD_DimensionNameTypeCode / time
+pub struct MdDimensionNameTime;
+structural_prop!(MdDimensionNameTime, "MdDimensionNameTime");
+```
+
+---
+
+## §6.37 MD_MaintenanceInformation — Maintenance Information
+
+`MD_MaintenanceInformation` documents how and when a resource is maintained.
+Referenced from `MD_Metadata.metadataMaintenance` and
+`MD_Identification.resourceMaintenance`.
+
+**Attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `maintenanceAndUpdateFrequency` | M | 1 | MD_MaintenanceFrequencyCode |
+| `maintenanceDate` | O | 0..* | CI_Date |
+| `userDefinedMaintenanceFrequency` | C | 0..1 | TM_PeriodDuration |
+| `maintenanceScope` | O | 0..* | MD_Scope |
+| `maintenanceNote` | O | 0..* | CharacterString |
+| `contact` | O | 0..* | CI_Responsibility |
+
+**Conditional rule:** `userDefinedMaintenanceFrequency` is required when
+`maintenanceAndUpdateFrequency` = `userDefined`.
+
+**`MD_MaintenanceFrequencyCode` values (15):** continual, daily, weekly,
+fortnightly, monthly, quarterly, biannually, annually, asNeeded, irregular,
+notPlanned, unknown, periodic, semimonthly, biennially
+
+```rust
+/// maintenanceAndUpdateFrequency is mandatory (1); the MD_MaintenanceFrequencyCode
+/// describing how often the resource is updated.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceInformation / maintenanceAndUpdateFrequency
+pub struct MdMaintenanceFrequencyMandatory;
+structural_prop!(MdMaintenanceFrequencyMandatory, "MdMaintenanceFrequencyMandatory");
+
+/// maintenanceDate is optional (0..*); zero or more CI_Date entries recording
+/// when maintenance actions occurred or are planned.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceInformation / maintenanceDate
+pub struct MdMaintenanceDateOptional;
+structural_prop!(MdMaintenanceDateOptional, "MdMaintenanceDateOptional");
+
+/// userDefinedMaintenanceFrequency is conditional (0..1); required when
+/// maintenanceAndUpdateFrequency equals userDefined; provides the custom period.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceInformation / userDefinedMaintenanceFrequency
+pub struct MdMaintenanceUserDefinedFreqConditional;
+structural_prop!(MdMaintenanceUserDefinedFreqConditional, "MdMaintenanceUserDefinedFreqConditional");
+
+/// maintenanceScope is optional (0..*); MD_Scope values specifying which part
+/// of the resource or metadata the maintenance applies to.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceInformation / maintenanceScope
+pub struct MdMaintenanceScopeOptional;
+structural_prop!(MdMaintenanceScopeOptional, "MdMaintenanceScopeOptional");
+
+/// maintenanceNote is optional (0..*); free-text notes about the maintenance
+/// history or planned actions.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceInformation / maintenanceNote
+pub struct MdMaintenanceNoteOptional;
+structural_prop!(MdMaintenanceNoteOptional, "MdMaintenanceNoteOptional");
+
+/// contact is optional (0..*); CI_Responsibility entries identifying parties
+/// responsible for maintaining the resource.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceInformation / contact
+pub struct MdMaintenanceContactOptional;
+structural_prop!(MdMaintenanceContactOptional, "MdMaintenanceContactOptional");
+
+/// MD_MaintenanceFrequencyCode: continual — data is repeatedly and frequently
+/// updated; the update cycle is continuous.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / continual
+pub struct MdMaintenanceFrequencyContinual;
+structural_prop!(MdMaintenanceFrequencyContinual, "MdMaintenanceFrequencyContinual");
+
+/// MD_MaintenanceFrequencyCode: daily — data is updated each day.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / daily
+pub struct MdMaintenanceFrequencyDaily;
+structural_prop!(MdMaintenanceFrequencyDaily, "MdMaintenanceFrequencyDaily");
+
+/// MD_MaintenanceFrequencyCode: weekly — data is updated on a weekly basis.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / weekly
+pub struct MdMaintenanceFrequencyWeekly;
+structural_prop!(MdMaintenanceFrequencyWeekly, "MdMaintenanceFrequencyWeekly");
+
+/// MD_MaintenanceFrequencyCode: monthly — data is updated each month.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / monthly
+pub struct MdMaintenanceFrequencyMonthly;
+structural_prop!(MdMaintenanceFrequencyMonthly, "MdMaintenanceFrequencyMonthly");
+
+/// MD_MaintenanceFrequencyCode: quarterly — data is updated every three months.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / quarterly
+pub struct MdMaintenanceFrequencyQuarterly;
+structural_prop!(MdMaintenanceFrequencyQuarterly, "MdMaintenanceFrequencyQuarterly");
+
+/// MD_MaintenanceFrequencyCode: annually — data is updated once per year.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / annually
+pub struct MdMaintenanceFrequencyAnnually;
+structural_prop!(MdMaintenanceFrequencyAnnually, "MdMaintenanceFrequencyAnnually");
+
+/// MD_MaintenanceFrequencyCode: asNeeded — data is updated as required with
+/// no fixed schedule.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / asNeeded
+pub struct MdMaintenanceFrequencyAsNeeded;
+structural_prop!(MdMaintenanceFrequencyAsNeeded, "MdMaintenanceFrequencyAsNeeded");
+
+/// MD_MaintenanceFrequencyCode: irregular — data is updated at irregular
+/// intervals; no predictable schedule.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / irregular
+pub struct MdMaintenanceFrequencyIrregular;
+structural_prop!(MdMaintenanceFrequencyIrregular, "MdMaintenanceFrequencyIrregular");
+
+/// MD_MaintenanceFrequencyCode: notPlanned — no further updates are planned;
+/// the dataset is frozen.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / notPlanned
+pub struct MdMaintenanceFrequencyNotPlanned;
+structural_prop!(MdMaintenanceFrequencyNotPlanned, "MdMaintenanceFrequencyNotPlanned");
+
+/// MD_MaintenanceFrequencyCode: unknown — the update frequency is not known.
+///
+/// Source: ISO 19115-1:2014 §6.37 — MD_MaintenanceFrequencyCode / unknown
+pub struct MdMaintenanceFrequencyUnknown;
+structural_prop!(MdMaintenanceFrequencyUnknown, "MdMaintenanceFrequencyUnknown");
+```
+
+---
+
+## §6.39 MD_Distribution / MD_Distributor / MD_DigitalTransferOptions / MD_Medium — Distribution Information
+
+`MD_Distribution` is the top-level class for describing how a resource can be
+obtained. `MD_Distributor` identifies a distributor and the ordering process.
+`MD_DigitalTransferOptions` describes download size and online/offline channels.
+`MD_Medium` describes physical storage media.
+
+**MD_Distribution attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `distributionFormat` | O | 0..* | MD_Format |
+| `distributor` | O | 0..* | MD_Distributor |
+| `transferOptions` | O | 0..* | MD_DigitalTransferOptions |
+
+**MD_Distributor attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `distributorContact` | M | 1 | CI_Responsibility |
+| `distributionOrderProcess` | O | 0..* | MD_StandardOrderProcess |
+| `distributorFormat` | O | 0..* | MD_Format |
+| `distributorTransferOptions` | O | 0..* | MD_DigitalTransferOptions |
+
+**MD_DigitalTransferOptions attributes:**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `unitsOfDistribution` | O | 0..1 | CharacterString |
+| `transferSize` | O | 0..1 | Real (> 0, MB) |
+| `onLine` | O | 0..* | CI_OnlineResource |
+| `offLine` | O | 0..* | MD_Medium |
+| `transferFrequency` | O | 0..1 | TM_PeriodDuration |
+| `distributionFormat` | O | 0..* | MD_Format |
+
+**MD_Medium attributes (selected):**
+
+| Attribute | Obligation | Multiplicity | Type |
+|-----------|-----------|-------------|------|
+| `name` | O | 0..1 | MD_MediumNameCode |
+| `density` | O | 0..* | Real |
+| `densityUnits` | C | 0..1 | CharacterString |
+| `volumes` | O | 0..1 | Integer |
+| `mediumFormat` | O | 0..* | MD_MediumFormatCode |
+| `mediumNote` | O | 0..1 | CharacterString |
+| `identifier` | O | 0..1 | MD_Identifier |
+
+```rust
+/// distributionFormat is optional (0..*) in MD_Distribution; zero or more
+/// MD_Format entries describing the format(s) in which the resource is available.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distribution / distributionFormat
+pub struct MdDistributionFormatOptional;
+structural_prop!(MdDistributionFormatOptional, "MdDistributionFormatOptional");
+
+/// distributor is optional (0..*) in MD_Distribution; zero or more
+/// MD_Distributor entries identifying parties that distribute the resource.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distribution / distributor
+pub struct MdDistributionDistributorOptional;
+structural_prop!(MdDistributionDistributorOptional, "MdDistributionDistributorOptional");
+
+/// transferOptions is optional (0..*) in MD_Distribution; zero or more
+/// MD_DigitalTransferOptions entries describing transfer channels.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distribution / transferOptions
+pub struct MdDistributionTransferOptionsOptional;
+structural_prop!(MdDistributionTransferOptionsOptional, "MdDistributionTransferOptionsOptional");
+
+/// At least one of distributionFormat, distributor, or transferOptions should
+/// be provided; an MD_Distribution with no elements conveys no useful information.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distribution (usability constraint)
+pub struct MdDistributionAtLeastOneElement;
+structural_prop!(MdDistributionAtLeastOneElement, "MdDistributionAtLeastOneElement");
+
+/// distributorContact is mandatory (1) in MD_Distributor; a CI_Responsibility
+/// identifying the distributing party shall always be present.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distributor / distributorContact
+pub struct MdDistributorContactMandatory;
+structural_prop!(MdDistributorContactMandatory, "MdDistributorContactMandatory");
+
+/// distributionOrderProcess is optional (0..*) in MD_Distributor; ordering
+/// instructions and fees for obtaining the resource.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distributor / distributionOrderProcess
+pub struct MdDistributorOrderProcessOptional;
+structural_prop!(MdDistributorOrderProcessOptional, "MdDistributorOrderProcessOptional");
+
+/// distributorFormat is optional (0..*) in MD_Distributor; the formats this
+/// specific distributor can supply (may differ from resource-level formats).
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distributor / distributorFormat
+pub struct MdDistributorFormatOptional;
+structural_prop!(MdDistributorFormatOptional, "MdDistributorFormatOptional");
+
+/// distributorTransferOptions is optional (0..*) in MD_Distributor; transfer
+/// channels specific to this distributor.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Distributor / distributorTransferOptions
+pub struct MdDistributorTransferOptionsOptional;
+structural_prop!(MdDistributorTransferOptionsOptional, "MdDistributorTransferOptionsOptional");
+
+/// When transferSize is provided in MD_DigitalTransferOptions it shall be a
+/// positive real number (size in megabytes); zero or negative is not valid.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_DigitalTransferOptions / transferSize (> 0)
+pub struct MdTransferOptionsSizePositive;
+structural_prop!(MdTransferOptionsSizePositive, "MdTransferOptionsSizePositive");
+
+/// onLine is optional (0..*) in MD_DigitalTransferOptions; zero or more
+/// CI_OnlineResource entries providing network download or access links.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_DigitalTransferOptions / onLine
+pub struct MdTransferOptionsOnlineOptional;
+structural_prop!(MdTransferOptionsOnlineOptional, "MdTransferOptionsOnlineOptional");
+
+/// offLine is optional (0..*) in MD_DigitalTransferOptions; zero or more
+/// MD_Medium entries describing physical media on which the resource is available.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_DigitalTransferOptions / offLine
+pub struct MdTransferOptionsOfflineOptional;
+structural_prop!(MdTransferOptionsOfflineOptional, "MdTransferOptionsOfflineOptional");
+
+/// densityUnits is conditional in MD_Medium; required when one or more density
+/// values are present; specifies the unit of measure for storage density.
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Medium / densityUnits (conditional)
+pub struct MdMediumDensityUnitsConditional;
+structural_prop!(MdMediumDensityUnitsConditional, "MdMediumDensityUnitsConditional");
+
+/// volumes is optional (0..1) in MD_Medium; the number of physical media units
+/// required to hold the resource (e.g., number of DVDs).
+///
+/// Source: ISO 19115-1:2014 §6.39 — MD_Medium / volumes
+pub struct MdMediumVolumesOptional;
+structural_prop!(MdMediumVolumesOptional, "MdMediumVolumesOptional");
+```
+
+---
+
+## MD_ScopeCode — Scope Code List (Cross-Cutting)
+
+`MD_ScopeCode` is used in `MD_Metadata.hierarchyLevel` and in
+`DQ_DataQuality.scope` to indicate what kind of resource or resource component
+is described by the metadata or quality report. Values from ISO 19115-1:2014
+Annex B.
+
+```rust
+/// MD_ScopeCode: dataset — the scope is a single, identifiable geographic dataset.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / dataset
+pub struct MdScopeDataset;
+structural_prop!(MdScopeDataset, "MdScopeDataset");
+
+/// MD_ScopeCode: series — the scope is an aggregate or named series of datasets
+/// that share common specifications.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / series
+pub struct MdScopeSeries;
+structural_prop!(MdScopeSeries, "MdScopeSeries");
+
+/// MD_ScopeCode: service — the scope is a capability provided by a server for
+/// accessing or processing data (e.g., WMS, WFS).
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / service
+pub struct MdScopeService;
+structural_prop!(MdScopeService, "MdScopeService");
+
+/// MD_ScopeCode: software — the scope is a computer program or software
+/// application used to process or analyse data.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / software
+pub struct MdScopeSoftware;
+structural_prop!(MdScopeSoftware, "MdScopeSoftware");
+
+/// MD_ScopeCode: model — the scope is a copy or version of data with a changed
+/// structure or content model.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / model
+pub struct MdScopeModel;
+structural_prop!(MdScopeModel, "MdScopeModel");
+
+/// MD_ScopeCode: initiative — the scope is a broad-scale data collection
+/// initiative (cf. DS_InitiativeTypeCode).
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / initiative
+pub struct MdScopeInitiative;
+structural_prop!(MdScopeInitiative, "MdScopeInitiative");
+
+/// MD_ScopeCode: featureType — the scope is a feature type definition in a
+/// geographic information model.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / featureType
+pub struct MdScopeFeatureType;
+structural_prop!(MdScopeFeatureType, "MdScopeFeatureType");
+
+/// MD_ScopeCode: feature — the scope is an individual feature instance within
+/// a dataset.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / feature
+pub struct MdScopeFeature;
+structural_prop!(MdScopeFeature, "MdScopeFeature");
+
+/// MD_ScopeCode: attributeType — the scope is a feature attribute type
+/// definition (a property of a feature type).
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / attributeType
+pub struct MdScopeAttributeType;
+structural_prop!(MdScopeAttributeType, "MdScopeAttributeType");
+
+/// MD_ScopeCode: attribute — the scope is an individual feature attribute value
+/// within a feature instance.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / attribute
+pub struct MdScopeAttribute;
+structural_prop!(MdScopeAttribute, "MdScopeAttribute");
+
+/// MD_ScopeCode: tile — the scope is a geographic tile or map sheet that is
+/// part of a tiled dataset.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / tile
+pub struct MdScopeTile;
+structural_prop!(MdScopeTile, "MdScopeTile");
+
+/// MD_ScopeCode: fieldSession — the scope is a field data collection session
+/// (a specific measurement campaign in the field).
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / fieldSession
+pub struct MdScopeFieldSession;
+structural_prop!(MdScopeFieldSession, "MdScopeFieldSession");
+
+/// MD_ScopeCode: collectionSession — the scope is a data collection session
+/// (broader than fieldSession; may include remote sensing acquisition).
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / collectionSession
+pub struct MdScopeCollectionSession;
+structural_prop!(MdScopeCollectionSession, "MdScopeCollectionSession");
+
+/// MD_ScopeCode: nonGeographicDataset — the scope is a dataset without an
+/// explicit geographic component (e.g., a tabular data table).
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / nonGeographicDataset
+pub struct MdScopeNonGeographicDataset;
+structural_prop!(MdScopeNonGeographicDataset, "MdScopeNonGeographicDataset");
+
+/// MD_ScopeCode: dimensionGroup — the scope is a dimension group in a
+/// multidimensional grid (e.g., a specific time slice or band).
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_ScopeCode / dimensionGroup
+pub struct MdScopeDimensionGroup;
+structural_prop!(MdScopeDimensionGroup, "MdScopeDimensionGroup");
+```
+
+---
+
+## MD_CharacterSetCode — Character Set Code List (Cross-Cutting)
+
+`MD_CharacterSetCode` identifies the character encoding used in
+`MD_Metadata.characterSet`, `MD_DataIdentification.characterSet`, and
+`PT_Locale.characterEncoding`. Values are derived from the IANA character set
+registry and ISO 10646.
+
+```rust
+/// MD_CharacterSetCode: utf8 — ISO/IEC 10646 UTF-8 encoding; the default
+/// Unicode encoding and most widely used in modern metadata records.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / utf8
+pub struct MdCharsetUtf8;
+structural_prop!(MdCharsetUtf8, "MdCharsetUtf8");
+
+/// MD_CharacterSetCode: utf16 — ISO/IEC 10646 UTF-16 encoding; variable-width
+/// Unicode encoding using 16-bit code units.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / utf16
+pub struct MdCharsetUtf16;
+structural_prop!(MdCharsetUtf16, "MdCharsetUtf16");
+
+/// MD_CharacterSetCode: utf32 — ISO/IEC 10646 UTF-32 encoding; fixed-width
+/// Unicode encoding using 32-bit code units.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / utf32
+pub struct MdCharsetUtf32;
+structural_prop!(MdCharsetUtf32, "MdCharsetUtf32");
+
+/// MD_CharacterSetCode: 8859part1 — ISO 8859-1 (Latin-1); covers Western
+/// European languages.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part1
+pub struct MdCharsetLatin1;
+structural_prop!(MdCharsetLatin1, "MdCharsetLatin1");
+
+/// MD_CharacterSetCode: 8859part2 — ISO 8859-2 (Latin-2); covers Central
+/// European languages.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part2
+pub struct MdCharsetLatin2;
+structural_prop!(MdCharsetLatin2, "MdCharsetLatin2");
+
+/// MD_CharacterSetCode: 8859part3 — ISO 8859-3 (Latin-3); covers South
+/// European languages.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part3
+pub struct MdCharsetLatin3;
+structural_prop!(MdCharsetLatin3, "MdCharsetLatin3");
+
+/// MD_CharacterSetCode: 8859part4 — ISO 8859-4 (Latin-4); covers North
+/// European languages.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part4
+pub struct MdCharsetLatin4;
+structural_prop!(MdCharsetLatin4, "MdCharsetLatin4");
+
+/// MD_CharacterSetCode: 8859part9 — ISO 8859-9 (Latin-5); covers Turkish
+/// and related languages.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part9
+pub struct MdCharsetLatin5;
+structural_prop!(MdCharsetLatin5, "MdCharsetLatin5");
+
+/// MD_CharacterSetCode: 8859part10 — ISO 8859-10 (Latin-6); covers Nordic
+/// languages.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part10
+pub struct MdCharsetLatin6;
+structural_prop!(MdCharsetLatin6, "MdCharsetLatin6");
+
+/// MD_CharacterSetCode: 8859part13 — ISO 8859-13 (Latin-7); covers Baltic
+/// Rim languages.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part13
+pub struct MdCharsetLatin7;
+structural_prop!(MdCharsetLatin7, "MdCharsetLatin7");
+
+/// MD_CharacterSetCode: 8859part14 — ISO 8859-14 (Latin-8); covers Celtic
+/// languages.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part14
+pub struct MdCharsetLatin8;
+structural_prop!(MdCharsetLatin8, "MdCharsetLatin8");
+
+/// MD_CharacterSetCode: 8859part15 — ISO 8859-15 (Latin-9); similar to
+/// Latin-1 but replaces some characters to include the Euro sign.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part15
+pub struct MdCharsetLatin9;
+structural_prop!(MdCharsetLatin9, "MdCharsetLatin9");
+
+/// MD_CharacterSetCode: 8859part5 — ISO 8859-5; covers Cyrillic script
+/// (Russian, Bulgarian, Serbian, etc.).
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part5
+pub struct MdCharsetCyrillic;
+structural_prop!(MdCharsetCyrillic, "MdCharsetCyrillic");
+
+/// MD_CharacterSetCode: 8859part6 — ISO 8859-6; covers Arabic script.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part6
+pub struct MdCharsetArabic;
+structural_prop!(MdCharsetArabic, "MdCharsetArabic");
+
+/// MD_CharacterSetCode: 8859part7 — ISO 8859-7; covers modern Greek script.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part7
+pub struct MdCharsetGreek;
+structural_prop!(MdCharsetGreek, "MdCharsetGreek");
+
+/// MD_CharacterSetCode: 8859part8 — ISO 8859-8; covers Hebrew script.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / 8859part8
+pub struct MdCharsetHebrew;
+structural_prop!(MdCharsetHebrew, "MdCharsetHebrew");
+
+/// MD_CharacterSetCode: ucs2 — ISO/IEC 10646 UCS-2; fixed-width 2-byte
+/// Universal Character Set (predecessor to UTF-16).
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / ucs2
+pub struct MdCharsetUcs2;
+structural_prop!(MdCharsetUcs2, "MdCharsetUcs2");
+
+/// MD_CharacterSetCode: ucs4 — ISO/IEC 10646 UCS-4; fixed-width 4-byte
+/// Universal Character Set.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / ucs4
+pub struct MdCharsetUcs4;
+structural_prop!(MdCharsetUcs4, "MdCharsetUcs4");
+
+/// MD_CharacterSetCode: shiftJIS — Shift-JIS encoding for Japanese text;
+/// a variable-width encoding widely used in Japan.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / shiftJIS
+pub struct MdCharsetShiftJis;
+structural_prop!(MdCharsetShiftJis, "MdCharsetShiftJis");
+
+/// MD_CharacterSetCode: eucJP — EUC-JP (Extended Unix Code for Japanese);
+/// a variable-width encoding commonly used on Unix/Linux systems.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / eucJP
+pub struct MdCharsetEucJp;
+structural_prop!(MdCharsetEucJp, "MdCharsetEucJp");
+
+/// MD_CharacterSetCode: big5 — Big5 encoding for Traditional Chinese text;
+/// widely used in Taiwan and Hong Kong.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / big5
+pub struct MdCharsetBig5;
+structural_prop!(MdCharsetBig5, "MdCharsetBig5");
+
+/// MD_CharacterSetCode: GB2312 — GB-2312 encoding for Simplified Chinese text;
+/// the legacy standard encoding used in mainland China.
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / GB2312
+pub struct MdCharsetGb2312;
+structural_prop!(MdCharsetGb2312, "MdCharsetGb2312");
+
+/// MD_CharacterSetCode: usAscii — US-ASCII 7-bit encoding; the base ASCII
+/// character set (128 characters).
+///
+/// Source: ISO 19115-1:2014 Annex B — MD_CharacterSetCode / usAscii
+pub struct MdCharsetUsAscii;
+structural_prop!(MdCharsetUsAscii, "MdCharsetUsAscii");
+```
+
+---
+
 ## Cross-Cutting Constraints and Value Rules
 
 These propositions capture constraints that span multiple classes throughout ISO
@@ -2949,6 +5439,183 @@ grouped by the ISO 19115-1:2014 class or code list from which they derive.
 - `CiOnlineFunctionBrowsing`
 - `CiOnlineFunctionFileAccess`
 
+### CI_Party / CI_Individual / CI_Organisation (§6.7a) — 8 props
+
+- `CiPartyIsAbstract`
+- `CiIndividualNameOptional`
+- `CiIndividualPositionNameOptional`
+- `CiIndividualNameOrPositionRequired`
+- `CiIndividualContactInfoOptional`
+- `CiOrganisationNameOptional`
+- `CiOrganisationIndividualOptional`
+- `CiOrganisationContactInfoOptional`
+
+### CI_Contact / CI_Telephone / CI_Address (§6.8) — 17 props
+
+- `CiContactPhoneOptional`
+- `CiContactAddressOptional`
+- `CiContactOnlineResourceOptional`
+- `CiContactHoursOfServiceOptional`
+- `CiContactInstructionsOptional`
+- `CiTelephoneNumberMandatory`
+- `CiTelephoneNumberNonEmpty`
+- `CiTelephoneTypeVoice`
+- `CiTelephoneFacsimile`
+- `CiTelephoneSms`
+- `CiAddressDeliveryPointOptional`
+- `CiAddressCityOptional`
+- `CiAddressAdministrativeAreaOptional`
+- `CiAddressPostalCodeOptional`
+- `CiAddressCountryOptional`
+- `CiAddressEmailOptional`
+- `CiAddressCountryIsIso3166`
+
+### MD_BrowseGraphic (§6.11) — 5 props
+
+- `MdBrowseGraphicFileNameMandatory`
+- `MdBrowseGraphicFileNameNonEmpty`
+- `MdBrowseGraphicFileDescriptionOptional`
+- `MdBrowseGraphicFileTypeOptional`
+- `MdBrowseGraphicLinkageOptional`
+
+### MD_AssociatedResource + DS_AssociationTypeCode + DS_InitiativeTypeCode (§6.15) — 14 props
+
+- `MdAssociatedResourceNameConditional`
+- `MdAssociatedResourceMetadataRefConditional`
+- `MdAssociatedResourceNameOrMetaRefRequired`
+- `MdAssociatedResourceAssociationTypeMandatory`
+- `MdAssociatedResourceInitiativeTypeOptional`
+- `DsAssociationTypeCrossReference`
+- `DsAssociationTypeLargerWorkCitation`
+- `DsAssociationTypePartOfSeamlessDatabase`
+- `DsAssociationTypeStereoMate`
+- `DsAssociationTypeIsComposedOf`
+- `DsAssociationTypeRevisionOf`
+- `DsInitiativeTypeProject`
+- `DsInitiativeTypeMission`
+- `DsInitiativeTypePlatform`
+
+### EX_BoundingPolygon (§6.20) — 4 props
+
+- `ExBoundingPolygonPolygonMandatory`
+- `ExBoundingPolygonAtLeastOneGeometry`
+- `ExBoundingPolygonExtentTypeCodeOptional`
+- `ExBoundingPolygonGeometryIsValid`
+
+### MD_SecurityConstraints + MD_ClassificationCode (§6.24) — 13 props
+
+- `MdSecurityConstraintsClassificationMandatory`
+- `MdSecurityConstraintsUserNoteOptional`
+- `MdSecurityConstraintsClassSystemOptional`
+- `MdSecurityConstraintsHandlingDescOptional`
+- `MdClassificationUnclassified`
+- `MdClassificationRestricted`
+- `MdClassificationConfidential`
+- `MdClassificationSecret`
+- `MdClassificationTopSecret`
+- `MdClassificationSensitiveButUnclassified`
+- `MdClassificationForOfficialUseOnly`
+- `MdClassificationProtected`
+- `MdClassificationLimitedDistribution`
+
+### MD_Resolution / MD_RepresentativeFraction (§6.25) — 5 props
+
+- `MdResolutionEquivalentScaleOrDistance`
+- `MdRepresentativeFractionDenominatorMandatory`
+- `MdRepresentativeFractionDenominatorPositive`
+- `MdResolutionDistanceIsPositive`
+- `MdResolutionScaleImpliesSmallIsCoarse`
+
+### MD_Dimension + MD_DimensionNameTypeCode (§6.32) — 8 props
+
+- `MdDimensionNameMandatory`
+- `MdDimensionSizeMandatory`
+- `MdDimensionSizePositive`
+- `MdDimensionResolutionOptional`
+- `MdDimensionNameRow`
+- `MdDimensionNameColumn`
+- `MdDimensionNameVertical`
+- `MdDimensionNameTime`
+
+### MD_MaintenanceInformation + MD_MaintenanceFrequencyCode (§6.37) — 16 props
+
+- `MdMaintenanceFrequencyMandatory`
+- `MdMaintenanceDateOptional`
+- `MdMaintenanceUserDefinedFreqConditional`
+- `MdMaintenanceScopeOptional`
+- `MdMaintenanceNoteOptional`
+- `MdMaintenanceContactOptional`
+- `MdMaintenanceFrequencyContinual`
+- `MdMaintenanceFrequencyDaily`
+- `MdMaintenanceFrequencyWeekly`
+- `MdMaintenanceFrequencyMonthly`
+- `MdMaintenanceFrequencyQuarterly`
+- `MdMaintenanceFrequencyAnnually`
+- `MdMaintenanceFrequencyAsNeeded`
+- `MdMaintenanceFrequencyIrregular`
+- `MdMaintenanceFrequencyNotPlanned`
+- `MdMaintenanceFrequencyUnknown`
+
+### MD_Distribution / MD_Distributor / MD_DigitalTransferOptions / MD_Medium (§6.39) — 13 props
+
+- `MdDistributionFormatOptional`
+- `MdDistributionDistributorOptional`
+- `MdDistributionTransferOptionsOptional`
+- `MdDistributionAtLeastOneElement`
+- `MdDistributorContactMandatory`
+- `MdDistributorOrderProcessOptional`
+- `MdDistributorFormatOptional`
+- `MdDistributorTransferOptionsOptional`
+- `MdTransferOptionsSizePositive`
+- `MdTransferOptionsOnlineOptional`
+- `MdTransferOptionsOfflineOptional`
+- `MdMediumDensityUnitsConditional`
+- `MdMediumVolumesOptional`
+
+### MD_ScopeCode (Annex B) — 15 props
+
+- `MdScopeDataset`
+- `MdScopeSeries`
+- `MdScopeService`
+- `MdScopeSoftware`
+- `MdScopeModel`
+- `MdScopeInitiative`
+- `MdScopeFeatureType`
+- `MdScopeFeature`
+- `MdScopeAttributeType`
+- `MdScopeAttribute`
+- `MdScopeTile`
+- `MdScopeFieldSession`
+- `MdScopeCollectionSession`
+- `MdScopeNonGeographicDataset`
+- `MdScopeDimensionGroup`
+
+### MD_CharacterSetCode (Annex B) — 23 props
+
+- `MdCharsetUtf8`
+- `MdCharsetUtf16`
+- `MdCharsetUtf32`
+- `MdCharsetLatin1`
+- `MdCharsetLatin2`
+- `MdCharsetLatin3`
+- `MdCharsetLatin4`
+- `MdCharsetLatin5`
+- `MdCharsetLatin6`
+- `MdCharsetLatin7`
+- `MdCharsetLatin8`
+- `MdCharsetLatin9`
+- `MdCharsetCyrillic`
+- `MdCharsetArabic`
+- `MdCharsetGreek`
+- `MdCharsetHebrew`
+- `MdCharsetUcs2`
+- `MdCharsetUcs4`
+- `MdCharsetShiftJis`
+- `MdCharsetEucJp`
+- `MdCharsetBig5`
+- `MdCharsetGb2312`
+- `MdCharsetUsAscii`
+
 ### Cross-Cutting Constraints — 10 props
 
 - `Iso19115DateIso8601Format`
@@ -2964,7 +5631,178 @@ grouped by the ISO 19115-1:2014 class or code list from which they derive.
 
 ---
 
-**Total props: 257** across 20 classes / code lists.
+### CI_Party / CI_Individual / CI_Organisation (§6.7-companion) — 8 props
+
+- `CiPartyIsAbstract`
+- `CiIndividualNameOptional`
+- `CiIndividualPositionNameOptional`
+- `CiIndividualNameOrPositionRequired`
+- `CiIndividualContactInfoOptional`
+- `CiOrganisationNameOptional`
+- `CiOrganisationIndividualOptional`
+- `CiOrganisationContactInfoOptional`
+
+### CI_Contact / CI_Address / CI_Telephone (§6.8-companion) — 17 props
+
+- `CiContactPhoneOptional`
+- `CiContactAddressOptional`
+- `CiContactOnlineResourceOptional`
+- `CiContactHoursOfServiceOptional`
+- `CiContactInstructionsOptional`
+- `CiTelephoneNumberMandatory`
+- `CiTelephoneNumberNonEmpty`
+- `CiTelephoneTypeVoice`
+- `CiTelephoneFacsimile`
+- `CiTelephoneSms`
+- `CiAddressDeliveryPointOptional`
+- `CiAddressCityOptional`
+- `CiAddressAdministrativeAreaOptional`
+- `CiAddressPostalCodeOptional`
+- `CiAddressCountryOptional`
+- `CiAddressEmailOptional`
+- `CiAddressCountryIsIso3166`
+
+### MD_BrowseGraphic (§6.11-companion) — 5 props
+
+- `MdBrowseGraphicFileNameMandatory`
+- `MdBrowseGraphicFileNameNonEmpty`
+- `MdBrowseGraphicFileDescriptionOptional`
+- `MdBrowseGraphicFileTypeOptional`
+- `MdBrowseGraphicLinkageOptional`
+
+### MD_AssociatedResource + DS_AssociationTypeCode + DS_InitiativeTypeCode (§6.15) — 13 props
+
+- `MdAssociatedResourceNameConditional`
+- `MdAssociatedResourceMetadataRefConditional`
+- `MdAssociatedResourceNameOrMetaRefRequired`
+- `MdAssociatedResourceAssociationTypeMandatory`
+- `MdAssociatedResourceInitiativeTypeOptional`
+- `DsAssociationTypeCrossReference`
+- `DsAssociationTypeLargerWorkCitation`
+- `DsAssociationTypePartOfSeamlessDatabase`
+- `DsAssociationTypeIsComposedOf`
+- `DsAssociationTypeRevisionOf`
+- `DsInitiativeTypeProject`
+- `DsInitiativeTypeMission`
+- `DsInitiativeTypePlatform`
+
+### EX_BoundingPolygon (§6.20) — 4 props
+
+- `ExBoundingPolygonPolygonMandatory`
+- `ExBoundingPolygonAtLeastOneGeometry`
+- `ExBoundingPolygonExtentTypeCodeOptional`
+- `ExBoundingPolygonGeometryIsValid`
+
+### MD_SecurityConstraints + MD_ClassificationCode (§6.24) — 13 props
+
+- `MdSecurityConstraintsClassificationMandatory`
+- `MdSecurityConstraintsUserNoteOptional`
+- `MdSecurityConstraintsClassSystemOptional`
+- `MdSecurityConstraintsHandlingDescOptional`
+- `MdClassificationUnclassified`
+- `MdClassificationRestricted`
+- `MdClassificationConfidential`
+- `MdClassificationSecret`
+- `MdClassificationTopSecret`
+- `MdClassificationSensitiveButUnclassified`
+- `MdClassificationForOfficialUseOnly`
+- `MdClassificationProtected`
+- `MdClassificationLimitedDistribution`
+
+### MD_Resolution + MD_RepresentativeFraction (§6.25-companion) — 5 props
+
+- `MdResolutionEquivalentScaleOrDistance`
+- `MdRepresentativeFractionDenominatorMandatory`
+- `MdRepresentativeFractionDenominatorPositive`
+- `MdResolutionDistanceIsPositive`
+- `MdResolutionScaleImpliesSmallIsCoarse`
+
+### MD_Dimension + MD_DimensionNameTypeCode (§6.30-companion) — 8 props
+
+- `MdDimensionNameMandatory`
+- `MdDimensionSizeMandatory`
+- `MdDimensionSizePositive`
+- `MdDimensionResolutionOptional`
+- `MdDimensionNameRow`
+- `MdDimensionNameColumn`
+- `MdDimensionNameVertical`
+- `MdDimensionNameTime`
+
+### MD_MaintenanceInformation + MD_MaintenanceFrequencyCode (§6.37) — 16 props
+
+- `MdMaintenanceFrequencyMandatory`
+- `MdMaintenanceDateOptional`
+- `MdMaintenanceUserDefinedFreqConditional`
+- `MdMaintenanceScopeOptional`
+- `MdMaintenanceNoteOptional`
+- `MdMaintenanceContactOptional`
+- `MdMaintenanceFrequencyContinual`
+- `MdMaintenanceFrequencyDaily`
+- `MdMaintenanceFrequencyWeekly`
+- `MdMaintenanceFrequencyMonthly`
+- `MdMaintenanceFrequencyQuarterly`
+- `MdMaintenanceFrequencyAnnually`
+- `MdMaintenanceFrequencyAsNeeded`
+- `MdMaintenanceFrequencyIrregular`
+- `MdMaintenanceFrequencyNotPlanned`
+- `MdMaintenanceFrequencyUnknown`
+
+### MD_Distribution + subtypes (§6.39-companion) — 13 props
+
+- `MdDistributionFormatOptional`
+- `MdDistributionDistributorOptional`
+- `MdDistributionTransferOptionsOptional`
+- `MdDistributionAtLeastOneElement`
+- `MdDistributorContactMandatory`
+- `MdDistributorOrderProcessOptional`
+- `MdDistributorFormatOptional`
+- `MdDistributorTransferOptionsOptional`
+- `MdTransferOptionsSizePositive`
+- `MdTransferOptionsOnlineOptional`
+- `MdTransferOptionsOfflineOptional`
+- `MdMediumDensityUnitsConditional`
+- `MdMediumVolumesOptional`
+
+### MD_ScopeCode (Annex B) — 15 props
+
+- `MdScopeDataset`
+- `MdScopeSeries`
+- `MdScopeService`
+- `MdScopeSoftware`
+- `MdScopeModel`
+- `MdScopeInitiative`
+- `MdScopeFeatureType`
+- `MdScopeFeature`
+- `MdScopeAttributeType`
+- `MdScopeAttribute`
+- `MdScopeTile`
+- `MdScopeFieldSession`
+- `MdScopeCollectionSession`
+- `MdScopeNonGeographicDataset`
+- `MdScopeDimensionGroup`
+
+### MD_CharacterSetCode (Annex B) — 17 props
+
+- `MdCharsetUtf8`
+- `MdCharsetUtf16`
+- `MdCharsetUtf32`
+- `MdCharsetLatin1`
+- `MdCharsetLatin2`
+- `MdCharsetCyrillic`
+- `MdCharsetArabic`
+- `MdCharsetGreek`
+- `MdCharsetHebrew`
+- `MdCharsetLatin5`
+- `MdCharsetUcs2`
+- `MdCharsetUcs4`
+- `MdCharsetShiftJis`
+- `MdCharsetEucJp`
+- `MdCharsetBig5`
+- `MdCharsetGb2312`
+- `MdCharsetUsAscii`
+
+
+**Total props: 374** across 20 classes / code lists.
 
 All props use the `structural_prop!` macro pattern. Convert to
 `crates/elicit_gis/src/contracts/iso19115.rs` before use.
