@@ -411,12 +411,20 @@ impl<P: Prop> Established<P> {
         }
     }
 
-    /// Assert that proposition P holds without a credential.
+    /// Assert that proposition `P` holds without a credential.
     ///
-    /// Internal use only — available within the `elicitation` crate and for
-    /// blanket impls (e.g. `Elicitation::elicit`, `ToCodeLiteral`).
+    /// This is the unchecked escape hatch: callers take responsibility for
+    /// ensuring `P` genuinely holds.  Prefer
+    /// [`prove`][Established::prove] when a credential type exists, since
+    /// `prove` encodes the check in the type system.
+    ///
+    /// WCAG proposition types are protected by their credential types being
+    /// `pub(crate)` within `elicit_ui` — even with `assert()` available,
+    /// external code cannot construct the required credential to call
+    /// `prove()`, and calling `assert()` on a WCAG type directly is a clear
+    /// audit-trail violation.
     #[inline(always)]
-    pub(crate) fn assert() -> Self {
+    pub fn assert() -> Self {
         Self {
             _marker: PhantomData,
         }
