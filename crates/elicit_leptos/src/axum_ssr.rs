@@ -327,9 +327,10 @@ fn build_tree() -> elicit_ui::VerifiedTree {{
 
 async fn root_handler() -> Html<String> {{
     let tree = build_tree();
-    let mut renderer = LeptosRenderer::html();
-    renderer.render(&tree);
-    Html(renderer.last_html().to_string())
+    let renderer = LeptosRenderer::html();
+    let (html, _stats, _proof) = elicit_ui::UiTreeRenderer::render(&renderer, &tree)
+        .expect("render failed");
+    Html(html)
 }}
 
 #[tokio::main]

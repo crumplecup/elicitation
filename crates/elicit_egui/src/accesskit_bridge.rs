@@ -2,58 +2,1235 @@
 //! AccessKit trees and egui widgets.
 //!
 //! Provides:
-//! - [`EguiBackend`] — [`UiRenderer`] implementation for egui
-//! - [`render_tree`] — render an AccessKit tree into an `egui::Ui`
+//! - [`EguiBackend`] — [`UiNodeBridge`] + [`UiRenderBackend`] for egui
+//! - [`render_tree`] — render an AccessKit tree directly into an `egui::Ui`
 //! - [`bounds_to_size`] — extract pixel size from AccessKit node bounds
 
 use accesskit::{Node, NodeId, Rect, Role, Toggled};
-use elicit_ui::{RenderComplete, RenderStats, UiRenderer, UiResult, VerifiedTree, WidgetId};
-use elicitation::Established;
+use elicit_ui::{UiNodeBridge, UiRenderBackend};
 use std::collections::HashMap;
+
+// ── EguiBackend ───────────────────────────────────────────────────────────────
 
 /// egui render backend for verified AccessKit trees.
 ///
-/// Wraps an `&egui::Context` and implements [`UiRenderer`] so that
-/// `Layout<Verified>::render(&EguiBackend::new(ctx))` works.
-pub struct EguiBackend<'a> {
-    ctx: &'a egui::Context,
-}
+/// Implements [`UiNodeBridge`] — one method per [`accesskit::Role`] —
+/// producing `Box<dyn FnOnce(&mut egui::Ui)>` closures assembled by the
+/// blanket [`UiTreeRenderer`](elicit_ui::UiTreeRenderer) DFS.
+///
+/// The returned root closure can be called inside any egui frame to execute
+/// the full widget tree.  Use [`render_tree`] for direct immediate-mode
+/// rendering when you already have a `&mut egui::Ui`.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use elicit_egui::EguiBackend;
+/// use elicit_ui::UiRenderBackend;
+/// let backend = EguiBackend::new();
+/// assert_eq!(backend.backend_name(), "egui");
+/// ```
+#[derive(Default)]
+pub struct EguiBackend;
 
-impl<'a> EguiBackend<'a> {
+impl EguiBackend {
     /// Create a new egui render backend.
-    pub fn new(ctx: &'a egui::Context) -> Self {
-        Self { ctx }
+    pub fn new() -> Self {
+        Self
     }
 }
 
-impl UiRenderer for EguiBackend<'_> {
-    #[tracing::instrument(skip(self, tree))]
-    fn render(&self, tree: &VerifiedTree) -> UiResult<(RenderStats, Established<RenderComplete>)> {
-        let mut stats = RenderStats::default();
-        let _output = self.ctx.run_ui(egui::RawInput::default(), |ui| {
-            let (s, _clicked) = render_tree_inner(ui, tree.nodes(), tree.root());
-            stats = s;
-        });
-        Ok((stats, Established::assert()))
-    }
+// ── UiRenderBackend ───────────────────────────────────────────────────────────
 
-    fn render_partial(&self, _node_id: WidgetId, tree: &VerifiedTree) -> UiResult<RenderStats> {
-        let mut stats = RenderStats::default();
-        let _output = self.ctx.run_ui(egui::RawInput::default(), |ui| {
-            let (s, _clicked) = render_tree_inner(ui, tree.nodes(), tree.root());
-            stats = s;
-        });
-        Ok(stats)
+impl UiRenderBackend for EguiBackend {
+    fn backend_name(&self) -> &'static str {
+        "egui"
     }
 
     fn supports_role(&self, _role: Role) -> bool {
         true
     }
+}
 
-    fn backend_name(&self) -> &str {
-        "egui"
+// ── UiNodeBridge ─────────────────────────────────────────────────────────────
+
+impl UiNodeBridge for EguiBackend {
+    type Widget = Box<dyn FnOnce(&mut egui::Ui)>;
+
+    // ── Unknown / generic ─────────────────────────────────────────────────
+
+    fn bridge_unknown(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            if children.is_empty() {
+                ui.label(&text);
+            } else {
+                ui.group(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            }
+        })
+    }
+
+    fn bridge_generic_container(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.group(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_pane(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.group(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_window(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_document(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_root_web_area(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_application(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_terminal(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.monospace(&text);
+        })
+    }
+
+    // ── Interactive widgets ───────────────────────────────────────────────
+
+    fn bridge_button(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        let disabled = node.is_disabled();
+        Box::new(move |ui| {
+            ui.add_enabled(!disabled, egui::Button::new(&text));
+        })
+    }
+
+    fn bridge_default_button(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_button(node, id, children)
+    }
+
+    fn bridge_link(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
+        let text = node_label(node);
+        let url = node.url().unwrap_or("#").to_string();
+        Box::new(move |ui| {
+            ui.add(egui::Hyperlink::from_label_and_url(&text, &url));
+        })
+    }
+
+    fn bridge_check_box(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        let disabled = node.is_disabled();
+        let mut checked = matches!(node.toggled(), Some(Toggled::True));
+        Box::new(move |ui| {
+            ui.add_enabled(!disabled, egui::Checkbox::new(&mut checked, &text));
+        })
+    }
+
+    fn bridge_radio_button(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        let disabled = node.is_disabled();
+        let selected = matches!(node.toggled(), Some(Toggled::True));
+        Box::new(move |ui| {
+            ui.add_enabled(!disabled, egui::RadioButton::new(selected, &text));
+        })
+    }
+
+    fn bridge_switch(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        let disabled = node.is_disabled();
+        let mut on = matches!(node.toggled(), Some(Toggled::True));
+        Box::new(move |ui| {
+            ui.horizontal(|ui| {
+                ui.add_enabled(!disabled, egui::Checkbox::new(&mut on, &text));
+            });
+        })
+    }
+
+    fn bridge_color_well(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        let disabled = node.is_disabled();
+        Box::new(move |ui| {
+            ui.add_enabled(!disabled, egui::Button::new(format!("🎨 {text}")));
+        })
+    }
+
+    fn bridge_disclosure_triangle(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        let open = matches!(node.toggled(), Some(Toggled::True));
+        let arrow = if open { "▼" } else { "▶" };
+        Box::new(move |ui| {
+            ui.label(format!("{arrow} {text}"));
+        })
+    }
+
+    fn bridge_combo_box(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        let val = node.value().unwrap_or("").to_string();
+        Box::new(move |ui| {
+            egui::ComboBox::from_label(&text)
+                .selected_text(&val)
+                .show_ui(ui, |_ui| {});
+        })
+    }
+
+    fn bridge_editable_combo_box(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_combo_box(node, id, children)
+    }
+
+    fn bridge_list_box(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_slider(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        let disabled = node.is_disabled();
+        let mut val = node.numeric_value().unwrap_or(0.0);
+        let min = node.min_numeric_value().unwrap_or(0.0);
+        let max = node.max_numeric_value().unwrap_or(100.0);
+        Box::new(move |ui| {
+            let mut slider = egui::Slider::new(&mut val, min..=max);
+            if !text.is_empty() {
+                slider = slider.text(&text);
+            }
+            ui.add_enabled(!disabled, slider);
+        })
+    }
+
+    fn bridge_spin_button(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let disabled = node.is_disabled();
+        let mut val = node.numeric_value().unwrap_or(0.0);
+        let min = node.min_numeric_value().unwrap_or(f64::MIN);
+        let max = node.max_numeric_value().unwrap_or(f64::MAX);
+        let step = node.numeric_value_step().unwrap_or(1.0);
+        Box::new(move |ui| {
+            ui.add_enabled(
+                !disabled,
+                egui::DragValue::new(&mut val).range(min..=max).speed(step),
+            );
+        })
+    }
+
+    fn bridge_progress_indicator(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        let val = node.numeric_value().unwrap_or(0.0);
+        let max = node.max_numeric_value().unwrap_or(100.0);
+        let fraction = if max > 0.0 { (val / max) as f32 } else { 0.0 };
+        Box::new(move |ui| {
+            let mut pb = egui::ProgressBar::new(fraction.clamp(0.0, 1.0));
+            if !text.is_empty() {
+                pb = pb.text(&text);
+            }
+            ui.add(pb);
+        })
+    }
+
+    fn bridge_scroll_bar(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_progress_indicator(node, id, children)
+    }
+
+    fn bridge_scroll_view(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            egui::ScrollArea::vertical().show(ui, |ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_splitter(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(|ui| {
+            ui.separator();
+        })
+    }
+
+    // ── Text input ───────────────────────────────────────────────────────
+
+    fn bridge_text_input(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let mut buf = node.value().unwrap_or("").to_string();
+        let hint = node.placeholder().map(|s| s.to_string());
+        let readonly = node.is_read_only() || node.is_disabled();
+        Box::new(move |ui| {
+            let mut te = egui::TextEdit::singleline(&mut buf);
+            if let Some(h) = &hint {
+                te = te.hint_text(h.as_str());
+            }
+            if readonly {
+                te = te.interactive(false);
+            }
+            ui.add(te);
+        })
+    }
+
+    fn bridge_multiline_text_input(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let mut buf = node.value().unwrap_or("").to_string();
+        let hint = node.placeholder().map(|s| s.to_string());
+        let readonly = node.is_read_only() || node.is_disabled();
+        Box::new(move |ui| {
+            let mut te = egui::TextEdit::multiline(&mut buf);
+            if let Some(h) = &hint {
+                te = te.hint_text(h.as_str());
+            }
+            if readonly {
+                te = te.interactive(false);
+            }
+            ui.add(te);
+        })
+    }
+
+    fn bridge_search_input(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_text_input(node, id, children)
+    }
+
+    fn bridge_date_input(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_text_input(node, id, children)
+    }
+
+    fn bridge_date_time_input(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_text_input(node, id, children)
+    }
+
+    fn bridge_week_input(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_text_input(node, id, children)
+    }
+
+    fn bridge_month_input(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_text_input(node, id, children)
+    }
+
+    fn bridge_time_input(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_text_input(node, id, children)
+    }
+
+    fn bridge_email_input(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_text_input(node, id, children)
+    }
+
+    fn bridge_number_input(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_spin_button(node, id, children)
+    }
+
+    fn bridge_password_input(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_text_input(node, id, children)
+    }
+
+    fn bridge_phone_number_input(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_text_input(node, id, children)
+    }
+
+    fn bridge_url_input(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        self.bridge_text_input(node, id, children)
+    }
+
+    // ── Text display ─────────────────────────────────────────────────────
+
+    fn bridge_text_run(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.label(&text);
+        })
+    }
+
+    fn bridge_paragraph(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.label(&text);
+        })
+    }
+
+    fn bridge_label(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.label(&text);
+        })
+    }
+
+    fn bridge_heading(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        let size = heading_size(node);
+        Box::new(move |ui| {
+            ui.add(egui::Label::new(
+                egui::RichText::new(&text).strong().size(size),
+            ));
+        })
+    }
+
+    fn bridge_line_break(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(|ui| {
+            ui.end_row();
+        })
+    }
+
+    fn bridge_blockquote(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.add(egui::Label::new(
+                egui::RichText::new(format!("│ {text}")).italics(),
+            ));
+        })
+    }
+
+    fn bridge_code(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.add(egui::Label::new(egui::RichText::new(&text).monospace()));
+        })
+    }
+
+    fn bridge_math(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.label(&text);
+        })
+    }
+
+    fn bridge_note(&self, node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
+        if children.is_empty() {
+            let text = node_label(node);
+            Box::new(move |ui| {
+                ui.label(&text);
+            })
+        } else {
+            Box::new(move |ui| {
+                ui.group(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        }
+    }
+
+    fn bridge_term(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.add(egui::Label::new(egui::RichText::new(&text).strong()));
+        })
+    }
+
+    fn bridge_definition(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.label(&text);
+        })
+    }
+
+    // ── Media ────────────────────────────────────────────────────────────
+
+    fn bridge_image(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
+        let alt = node_label(node);
+        let text = if alt.is_empty() {
+            "🖼 [image]".to_string()
+        } else {
+            format!("🖼 {alt}")
+        };
+        Box::new(move |ui| {
+            ui.label(&text);
+        })
+    }
+
+    fn bridge_figure(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_figure_caption(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.add(egui::Label::new(egui::RichText::new(&text).italics()));
+        })
+    }
+
+    fn bridge_canvas(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.label(format!("[canvas: {text}]"));
+        })
+    }
+
+    fn bridge_video(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.label(format!("[video: {text}]"));
+        })
+    }
+
+    fn bridge_audio(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.label(format!("[audio: {text}]"));
+        })
+    }
+
+    // ── Landmark sections ─────────────────────────────────────────────────
+
+    fn bridge_main(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_navigation(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.horizontal(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_banner(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.horizontal(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_content_info(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.horizontal(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_complementary(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_form(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.group(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_search(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.horizontal(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_region(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.group(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_section(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.group(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_section_header(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.horizontal(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_section_footer(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.horizontal(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_article(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.group(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_group(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.group(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_dialog(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.group(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_details(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.group(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_tooltip(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.label(&text);
+        })
+    }
+
+    fn bridge_alert(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.add(egui::Label::new(
+                egui::RichText::new(&text).color(egui::Color32::YELLOW),
+            ));
+        })
+    }
+
+    fn bridge_status(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.label(&text);
+        })
+    }
+
+    fn bridge_timer(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.label(&text);
+        })
+    }
+
+    // ── Lists ─────────────────────────────────────────────────────────────
+
+    fn bridge_list(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_list_item(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.label(format!("• {text}"));
+        })
+    }
+
+    fn bridge_description_list(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    // ── Tables ────────────────────────────────────────────────────────────
+
+    fn bridge_table(&self, node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
+        let role_str = format!("{:?}", node.role());
+        Box::new(move |ui| {
+            egui::Grid::new(format!("grid_{role_str}"))
+                .striped(true)
+                .show(ui, |ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+        })
+    }
+
+    fn bridge_row(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
+        Box::new(move |ui| {
+            for c in children {
+                c(ui);
+            }
+            ui.end_row();
+        })
+    }
+
+    fn bridge_cell(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.label(&text);
+        })
+    }
+
+    fn bridge_caption(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            ui.add(egui::Label::new(egui::RichText::new(&text).italics()));
+        })
+    }
+
+    fn bridge_row_group(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    // ── Trees ─────────────────────────────────────────────────────────────
+
+    fn bridge_tree(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_tree_item(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        if children.is_empty() {
+            let text = node_label(node);
+            let selected = node.is_selected().unwrap_or(false);
+            Box::new(move |ui| {
+                if selected {
+                    let hl = ui.visuals().selection.bg_fill;
+                    let fg = ui.visuals().selection.stroke.color;
+                    ui.painter()
+                        .rect_filled(ui.available_rect_before_wrap(), 0.0, hl);
+                    let _ = ui.colored_label(fg, &text);
+                } else {
+                    ui.label(&text);
+                }
+            })
+        } else {
+            Box::new(move |ui| {
+                ui.group(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        }
+    }
+
+    // ── Tabs ─────────────────────────────────────────────────────────────
+
+    fn bridge_tab(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            let _ = ui.selectable_label(false, &text);
+        })
+    }
+
+    fn bridge_tab_list(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.horizontal(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_tab_panel(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.group(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    // ── Menus ─────────────────────────────────────────────────────────────
+
+    fn bridge_menu(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_menu_item(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        let text = node_label(node);
+        Box::new(move |ui| {
+            let _ = ui.selectable_label(false, &text);
+        })
+    }
+
+    fn bridge_toolbar(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.horizontal(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
+    }
+
+    fn bridge_radio_group(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<Self::Widget>,
+    ) -> Self::Widget {
+        Box::new(move |ui| {
+            ui.vertical(|ui| {
+                for c in children {
+                    c(ui);
+                }
+            });
+        })
     }
 }
+
+// ── Public helpers ────────────────────────────────────────────────────────────
 
 /// Render a verified AccessKit tree into an `egui::Ui`.
 ///
@@ -61,24 +1238,15 @@ impl UiRenderer for EguiBackend<'_> {
 /// for each node based on its role. Container nodes create nested
 /// layouts; leaf nodes create widgets.
 ///
-/// Returns [`RenderStats`] and the [`NodeId`]s of any buttons clicked this frame.
+/// Returns [`elicit_ui::RenderStats`] for the render pass.
 #[tracing::instrument(skip(ui, nodes), fields(root = ?root))]
 pub fn render_tree(
     ui: &mut egui::Ui,
     nodes: &HashMap<NodeId, Node>,
     root: NodeId,
-) -> (RenderStats, Vec<NodeId>) {
-    render_tree_inner(ui, nodes, root)
-}
-
-fn render_tree_inner(
-    ui: &mut egui::Ui,
-    nodes: &HashMap<NodeId, Node>,
-    root: NodeId,
-) -> (RenderStats, Vec<NodeId>) {
-    let mut stats = RenderStats::default();
-    let mut clicked: Vec<NodeId> = Vec::new();
-    render_node_recursive(ui, nodes, root, &mut stats, &mut clicked);
+) -> elicit_ui::RenderStats {
+    let mut stats = elicit_ui::RenderStats::default();
+    render_node_recursive(ui, nodes, root, &mut stats);
     tracing::debug!(
         visited = stats.nodes_visited,
         widgets = stats.widgets_rendered,
@@ -86,7 +1254,7 @@ fn render_tree_inner(
         skipped = stats.nodes_skipped,
         "Render pass complete"
     );
-    (stats, clicked)
+    stats
 }
 
 /// Compute minimum desired size from AccessKit bounds.
@@ -99,14 +1267,28 @@ pub fn bounds_to_size(node: &Node) -> Option<(f32, f32)> {
     Some((w, h))
 }
 
-// ── Recursive rendering engine ──────────────────────────────────
+// ── Internal rendering helpers ────────────────────────────────────────────────
+
+fn node_label(node: &Node) -> String {
+    node.label().or(node.value()).unwrap_or("").to_string()
+}
+
+fn heading_size(node: &Node) -> f32 {
+    match node.level() {
+        Some(1) => 28.0,
+        Some(2) => 22.0,
+        Some(3) => 18.0,
+        Some(4) => 16.0,
+        Some(5) => 14.0,
+        _ => 12.0,
+    }
+}
 
 fn render_node_recursive(
     ui: &mut egui::Ui,
     nodes: &HashMap<NodeId, Node>,
     node_id: NodeId,
-    stats: &mut RenderStats,
-    clicked: &mut Vec<NodeId>,
+    stats: &mut elicit_ui::RenderStats,
 ) {
     let Some(node) = nodes.get(&node_id) else {
         stats.nodes_skipped += 1;
@@ -121,7 +1303,6 @@ fn render_node_recursive(
 
     let role = node.role();
     match role {
-        // ── Containers ──────────────────────────────────────
         Role::Window
         | Role::Pane
         | Role::Form
@@ -131,24 +1312,35 @@ fn render_node_recursive(
         | Role::Main
         | Role::GenericContainer
         | Role::Document => {
-            render_container(ui, nodes, node, stats, clicked);
+            render_container(ui, nodes, node, stats);
         }
-
-        // ── Interactive widgets ─────────────────────────────
         Role::Button | Role::DefaultButton => {
-            render_button(ui, node_id, node, clicked);
+            let text = node_label(node);
+            let disabled = node.is_disabled();
+            ui.add_enabled(!disabled, egui::Button::new(&text));
             stats.widgets_rendered += 1;
         }
         Role::CheckBox | Role::MenuItemCheckBox => {
-            render_checkbox(ui, node);
+            let text = node_label(node);
+            let disabled = node.is_disabled();
+            let mut checked = matches!(node.toggled(), Some(Toggled::True));
+            ui.add_enabled(!disabled, egui::Checkbox::new(&mut checked, &text));
             stats.widgets_rendered += 1;
         }
         Role::RadioButton | Role::MenuItemRadio => {
-            render_radio(ui, node);
+            let text = node_label(node);
+            let disabled = node.is_disabled();
+            let selected = matches!(node.toggled(), Some(Toggled::True));
+            ui.add_enabled(!disabled, egui::RadioButton::new(selected, &text));
             stats.widgets_rendered += 1;
         }
         Role::Switch => {
-            render_switch(ui, node);
+            let text = node_label(node);
+            let disabled = node.is_disabled();
+            let mut on = matches!(node.toggled(), Some(Toggled::True));
+            ui.horizontal(|ui| {
+                ui.add_enabled(!disabled, egui::Checkbox::new(&mut on, &text));
+            });
             stats.widgets_rendered += 1;
         }
         Role::TextInput
@@ -157,39 +1349,85 @@ fn render_node_recursive(
         | Role::UrlInput
         | Role::PhoneNumberInput
         | Role::PasswordInput => {
-            render_text_input(ui, node);
+            let mut buf = node.value().unwrap_or("").to_string();
+            let mut te = egui::TextEdit::singleline(&mut buf);
+            if let Some(hint) = node.placeholder() {
+                te = te.hint_text(hint);
+            }
+            if node.is_read_only() || node.is_disabled() {
+                te = te.interactive(false);
+            }
+            ui.add(te);
             stats.widgets_rendered += 1;
         }
         Role::MultilineTextInput => {
-            render_multiline_input(ui, node);
+            let mut buf = node.value().unwrap_or("").to_string();
+            let mut te = egui::TextEdit::multiline(&mut buf);
+            if let Some(hint) = node.placeholder() {
+                te = te.hint_text(hint);
+            }
+            if node.is_read_only() || node.is_disabled() {
+                te = te.interactive(false);
+            }
+            ui.add(te);
             stats.widgets_rendered += 1;
         }
         Role::NumberInput | Role::SpinButton => {
-            render_number_input(ui, node);
+            let mut val = node.numeric_value().unwrap_or(0.0);
+            let min = node.min_numeric_value().unwrap_or(f64::MIN);
+            let max = node.max_numeric_value().unwrap_or(f64::MAX);
+            let step = node.numeric_value_step().unwrap_or(1.0);
+            ui.add_enabled(
+                !node.is_disabled(),
+                egui::DragValue::new(&mut val).range(min..=max).speed(step),
+            );
             stats.widgets_rendered += 1;
         }
         Role::Slider => {
-            render_slider(ui, node);
+            let text = node_label(node);
+            let disabled = node.is_disabled();
+            let mut val = node.numeric_value().unwrap_or(0.0);
+            let min = node.min_numeric_value().unwrap_or(0.0);
+            let max = node.max_numeric_value().unwrap_or(100.0);
+            let mut slider = egui::Slider::new(&mut val, min..=max);
+            if !text.is_empty() {
+                slider = slider.text(&text);
+            }
+            ui.add_enabled(!disabled, slider);
             stats.widgets_rendered += 1;
         }
         Role::ProgressIndicator | Role::Meter => {
-            render_progress(ui, node);
+            let text = node_label(node);
+            let val = node.numeric_value().unwrap_or(0.0);
+            let max = node.max_numeric_value().unwrap_or(100.0);
+            let fraction = if max > 0.0 { (val / max) as f32 } else { 0.0 };
+            let mut pb = egui::ProgressBar::new(fraction.clamp(0.0, 1.0));
+            if !text.is_empty() {
+                pb = pb.text(&text);
+            }
+            ui.add(pb);
             stats.widgets_rendered += 1;
         }
         Role::ComboBox | Role::EditableComboBox => {
-            render_combobox(ui, node);
+            let text = node_label(node);
+            let val = node.value().unwrap_or("").to_string();
+            egui::ComboBox::from_label(&text)
+                .selected_text(&val)
+                .show_ui(ui, |_ui| {});
             stats.widgets_rendered += 1;
         }
         Role::Link => {
-            render_link(ui, node);
+            let text = node_label(node);
+            let url = node.url().unwrap_or("#");
+            ui.add(egui::Hyperlink::from_label_and_url(&text, url));
             stats.widgets_rendered += 1;
         }
         Role::ColorWell => {
-            render_color_well(ui, node);
+            let text = node_label(node);
+            let disabled = node.is_disabled();
+            ui.add_enabled(!disabled, egui::Button::new(format!("🎨 {text}")));
             stats.widgets_rendered += 1;
         }
-
-        // ── Text / semantic ─────────────────────────────────
         Role::Label
         | Role::Paragraph
         | Role::TextRun
@@ -214,22 +1452,48 @@ fn render_node_recursive(
             stats.widgets_rendered += 1;
         }
         Role::Image => {
-            render_image_placeholder(ui, node);
+            let alt = node_label(node);
+            let text = if alt.is_empty() {
+                "🖼 [image]".to_string()
+            } else {
+                format!("🖼 {alt}")
+            };
+            ui.label(text);
             stats.widgets_rendered += 1;
         }
-
-        // ── Structural containers that recurse ──────────────
         Role::Toolbar => {
-            render_toolbar(ui, nodes, node, stats, clicked);
+            stats.containers_rendered += 1;
+            ui.horizontal(|ui| {
+                for child_id in node.children() {
+                    render_node_recursive(ui, nodes, *child_id, stats);
+                }
+            });
         }
         Role::List | Role::ListBox | Role::Feed | Role::DescriptionList => {
-            render_list(ui, nodes, node, stats, clicked);
+            stats.containers_rendered += 1;
+            ui.vertical(|ui| {
+                for child_id in node.children() {
+                    render_node_recursive(ui, nodes, *child_id, stats);
+                }
+            });
         }
         Role::Table | Role::Grid | Role::TreeGrid | Role::ListGrid => {
-            render_table(ui, nodes, node, stats, clicked);
+            stats.containers_rendered += 1;
+            egui::Grid::new(format!("grid_{:?}", node.role()))
+                .striped(true)
+                .show(ui, |ui| {
+                    for child_id in node.children() {
+                        render_node_recursive(ui, nodes, *child_id, stats);
+                    }
+                });
         }
         Role::TabList => {
-            render_tab_list(ui, nodes, node, stats, clicked);
+            stats.containers_rendered += 1;
+            ui.horizontal(|ui| {
+                for child_id in node.children() {
+                    render_node_recursive(ui, nodes, *child_id, stats);
+                }
+            });
         }
         Role::Tab
         | Role::TabPanel
@@ -243,17 +1507,31 @@ fn render_node_recursive(
         | Role::ListBoxOption
         | Role::MenuItem
         | Role::MenuListOption => {
-            render_container(ui, nodes, node, stats, clicked);
+            render_container(ui, nodes, node, stats);
         }
-        // TreeItem: leaf node with label; highlight selected row.
         Role::TreeItem => {
-            render_tree_item(ui, nodes, node, stats, clicked);
+            if !node.children().is_empty() {
+                render_container(ui, nodes, node, stats);
+            } else {
+                let text = node_label(node);
+                let selected = node.is_selected().unwrap_or(false);
+                if selected {
+                    let hl = ui.visuals().selection.bg_fill;
+                    let fg = ui.visuals().selection.stroke.color;
+                    ui.painter()
+                        .rect_filled(ui.available_rect_before_wrap(), 0.0, hl);
+                    let _ = ui.colored_label(fg, &text);
+                } else {
+                    ui.label(&text);
+                }
+                stats.widgets_rendered += 1;
+            }
         }
         Role::Dialog | Role::AlertDialog => {
-            render_container(ui, nodes, node, stats, clicked);
+            render_container(ui, nodes, node, stats);
         }
         Role::Menu | Role::MenuBar | Role::MenuListPopup => {
-            render_container(ui, nodes, node, stats, clicked);
+            render_container(ui, nodes, node, stats);
         }
         Role::Navigation
         | Role::Banner
@@ -265,13 +1543,11 @@ fn render_node_recursive(
         | Role::SectionFooter
         | Role::Search
         | Role::Article => {
-            render_container(ui, nodes, node, stats, clicked);
+            render_container(ui, nodes, node, stats);
         }
         Role::ScrollView | Role::ScrollBar => {
-            render_container(ui, nodes, node, stats, clicked);
+            render_container(ui, nodes, node, stats);
         }
-
-        // ── Separators / breaks ─────────────────────────────
         Role::Splitter => {
             ui.separator();
             stats.widgets_rendered += 1;
@@ -280,288 +1556,43 @@ fn render_node_recursive(
             ui.end_row();
             stats.widgets_rendered += 1;
         }
-
-        // ── Unsupported / unknown ───────────────────────────
         _ => {
             if node.children().is_empty() {
                 stats.nodes_skipped += 1;
             } else {
-                render_container(ui, nodes, node, stats, clicked);
+                render_container(ui, nodes, node, stats);
             }
         }
     }
 }
 
-// ── Container rendering ──────────────────────────────────────
-
 fn render_container(
     ui: &mut egui::Ui,
     nodes: &HashMap<NodeId, Node>,
     node: &Node,
-    stats: &mut RenderStats,
-    clicked: &mut Vec<NodeId>,
+    stats: &mut elicit_ui::RenderStats,
 ) {
     stats.containers_rendered += 1;
     let children = node.children();
     if children.is_empty() {
         return;
     }
-
     ui.group(|ui| {
         for child_id in children {
-            render_node_recursive(ui, nodes, *child_id, stats, clicked);
+            render_node_recursive(ui, nodes, *child_id, stats);
         }
     });
-}
-
-fn render_toolbar(
-    ui: &mut egui::Ui,
-    nodes: &HashMap<NodeId, Node>,
-    node: &Node,
-    stats: &mut RenderStats,
-    clicked: &mut Vec<NodeId>,
-) {
-    stats.containers_rendered += 1;
-    ui.horizontal(|ui| {
-        for child_id in node.children() {
-            render_node_recursive(ui, nodes, *child_id, stats, clicked);
-        }
-    });
-}
-
-fn render_list(
-    ui: &mut egui::Ui,
-    nodes: &HashMap<NodeId, Node>,
-    node: &Node,
-    stats: &mut RenderStats,
-    clicked: &mut Vec<NodeId>,
-) {
-    stats.containers_rendered += 1;
-    ui.vertical(|ui| {
-        for child_id in node.children() {
-            render_node_recursive(ui, nodes, *child_id, stats, clicked);
-        }
-    });
-}
-
-fn render_table(
-    ui: &mut egui::Ui,
-    nodes: &HashMap<NodeId, Node>,
-    node: &Node,
-    stats: &mut RenderStats,
-    clicked: &mut Vec<NodeId>,
-) {
-    stats.containers_rendered += 1;
-    egui::Grid::new(format!("grid_{:?}", node.role()))
-        .striped(true)
-        .show(ui, |ui| {
-            for child_id in node.children() {
-                render_node_recursive(ui, nodes, *child_id, stats, clicked);
-            }
-        });
-}
-
-fn render_tab_list(
-    ui: &mut egui::Ui,
-    nodes: &HashMap<NodeId, Node>,
-    node: &Node,
-    stats: &mut RenderStats,
-    clicked: &mut Vec<NodeId>,
-) {
-    stats.containers_rendered += 1;
-    ui.horizontal(|ui| {
-        for child_id in node.children() {
-            render_node_recursive(ui, nodes, *child_id, stats, clicked);
-        }
-    });
-}
-
-// ── Widget rendering ─────────────────────────────────────────
-
-fn node_label(node: &Node) -> String {
-    node.label().or(node.value()).unwrap_or("").to_string()
-}
-
-fn render_button(ui: &mut egui::Ui, node_id: NodeId, node: &Node, clicked: &mut Vec<NodeId>) {
-    let text = node_label(node);
-    let mut btn = egui::Button::new(&text);
-    if node.is_disabled() {
-        btn = btn.sense(egui::Sense::hover());
-    }
-    if ui.add(btn).clicked() {
-        clicked.push(node_id);
-    }
-}
-
-/// Render a tree item leaf.  If the node has children it falls through to
-/// `render_container`, otherwise the label text is drawn directly with a
-/// highlighted background for the currently-selected row.
-fn render_tree_item(
-    ui: &mut egui::Ui,
-    nodes: &std::collections::HashMap<NodeId, Node>,
-    node: &Node,
-    stats: &mut RenderStats,
-    clicked: &mut Vec<NodeId>,
-) {
-    if !node.children().is_empty() {
-        render_container(ui, nodes, node, stats, clicked);
-        return;
-    }
-    let text = node_label(node);
-    let selected = node.is_selected().unwrap_or(false);
-    if selected {
-        let highlight = ui.visuals().selection.bg_fill;
-        let fg = ui.visuals().selection.stroke.color;
-        ui.painter()
-            .rect_filled(ui.available_rect_before_wrap(), 0.0, highlight);
-        ui.colored_label(fg, &text);
-    } else {
-        ui.label(&text);
-    }
-    stats.widgets_rendered += 1;
-}
-
-fn render_checkbox(ui: &mut egui::Ui, node: &Node) {
-    let text = node_label(node);
-    let mut checked = matches!(node.toggled(), Some(Toggled::True));
-    ui.add_enabled(
-        !node.is_disabled(),
-        egui::Checkbox::new(&mut checked, &text),
-    );
-}
-
-fn render_radio(ui: &mut egui::Ui, node: &Node) {
-    let text = node_label(node);
-    let selected = matches!(node.toggled(), Some(Toggled::True));
-    ui.add_enabled(!node.is_disabled(), egui::RadioButton::new(selected, &text));
-}
-
-fn render_switch(ui: &mut egui::Ui, node: &Node) {
-    let text = node_label(node);
-    let mut on = matches!(node.toggled(), Some(Toggled::True));
-    ui.horizontal(|ui| {
-        ui.add_enabled(!node.is_disabled(), egui::Checkbox::new(&mut on, &text));
-    });
-}
-
-fn render_text_input(ui: &mut egui::Ui, node: &Node) {
-    let mut buf = node.value().unwrap_or("").to_string();
-    let mut te = egui::TextEdit::singleline(&mut buf);
-    if let Some(hint) = node.placeholder() {
-        te = te.hint_text(hint);
-    }
-    if node.is_read_only() || node.is_disabled() {
-        te = te.interactive(false);
-    }
-    ui.add(te);
-}
-
-fn render_multiline_input(ui: &mut egui::Ui, node: &Node) {
-    let mut buf = node.value().unwrap_or("").to_string();
-    let mut te = egui::TextEdit::multiline(&mut buf);
-    if let Some(hint) = node.placeholder() {
-        te = te.hint_text(hint);
-    }
-    if node.is_read_only() || node.is_disabled() {
-        te = te.interactive(false);
-    }
-    ui.add(te);
-}
-
-fn render_number_input(ui: &mut egui::Ui, node: &Node) {
-    let mut val = node.numeric_value().unwrap_or(0.0);
-    let min = node.min_numeric_value().unwrap_or(f64::MIN);
-    let max = node.max_numeric_value().unwrap_or(f64::MAX);
-    let step = node.numeric_value_step().unwrap_or(1.0);
-    ui.add_enabled(
-        !node.is_disabled(),
-        egui::DragValue::new(&mut val).range(min..=max).speed(step),
-    );
-}
-
-fn render_slider(ui: &mut egui::Ui, node: &Node) {
-    let mut val = node.numeric_value().unwrap_or(0.0);
-    let min = node.min_numeric_value().unwrap_or(0.0);
-    let max = node.max_numeric_value().unwrap_or(100.0);
-    let text = node_label(node);
-    let mut slider = egui::Slider::new(&mut val, min..=max);
-    if !text.is_empty() {
-        slider = slider.text(&text);
-    }
-    ui.add_enabled(!node.is_disabled(), slider);
-}
-
-fn render_progress(ui: &mut egui::Ui, node: &Node) {
-    let val = node.numeric_value().unwrap_or(0.0);
-    let max = node.max_numeric_value().unwrap_or(100.0);
-    let fraction = if max > 0.0 { (val / max) as f32 } else { 0.0 };
-    let text = node_label(node);
-    let mut pb = egui::ProgressBar::new(fraction.clamp(0.0, 1.0));
-    if !text.is_empty() {
-        pb = pb.text(&text);
-    }
-    ui.add(pb);
-}
-
-fn render_combobox(ui: &mut egui::Ui, node: &Node) {
-    let text = node_label(node);
-    let selected = node.value().unwrap_or("").to_string();
-    egui::ComboBox::from_label(&text)
-        .selected_text(&selected)
-        .show_ui(ui, |_ui| {
-            // Children would provide options — rendered from tree children
-        });
-}
-
-fn render_link(ui: &mut egui::Ui, node: &Node) {
-    let text = node_label(node);
-    let url = node.url().unwrap_or("#");
-    ui.add(egui::Hyperlink::from_label_and_url(&text, url));
-}
-
-fn render_color_well(ui: &mut egui::Ui, node: &Node) {
-    let text = node_label(node);
-    let btn = egui::Button::new(format!("🎨 {text}"));
-    ui.add_enabled(!node.is_disabled(), btn);
 }
 
 fn render_label(ui: &mut egui::Ui, node: &Node) {
     let text = node.value().or(node.label()).unwrap_or("");
-    let role = node.role();
-
-    let rt = match role {
-        Role::Heading => {
-            let size = heading_size(node);
-            egui::RichText::new(text).strong().size(size)
-        }
+    let rt = match node.role() {
+        Role::Heading => egui::RichText::new(text).strong().size(heading_size(node)),
         Role::Strong => egui::RichText::new(text).strong(),
         Role::Emphasis | Role::Mark => egui::RichText::new(text).italics(),
         Role::Code => egui::RichText::new(text).monospace(),
         Role::Alert | Role::Status => egui::RichText::new(text).color(egui::Color32::YELLOW),
         _ => egui::RichText::new(text),
     };
-
     ui.add(egui::Label::new(rt));
-}
-
-fn render_image_placeholder(ui: &mut egui::Ui, node: &Node) {
-    let alt = node_label(node);
-    let text = if alt.is_empty() {
-        "🖼 [image]".to_string()
-    } else {
-        format!("🖼 {alt}")
-    };
-    ui.label(text);
-}
-
-/// Determine heading font size from the hierarchical level property.
-fn heading_size(node: &Node) -> f32 {
-    match node.level() {
-        Some(1) => 28.0,
-        Some(2) => 22.0,
-        Some(3) => 18.0,
-        Some(4) => 16.0,
-        Some(5) => 14.0,
-        _ => 12.0,
-    }
 }

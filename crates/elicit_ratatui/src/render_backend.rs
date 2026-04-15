@@ -1,147 +1,870 @@
-//! Ratatui render backend for verified AccessKit trees.
+//! Ratatui `UiNodeBridge` implementation.
 //!
-//! Implements [`UiRenderer`] to convert AccessKit node trees
-//! into ratatui `TuiNode` structures for terminal rendering.
+//! [`RatatuiBackend`] implements [`UiNodeBridge`] — one method per
+//! [`accesskit::Role`] — producing [`TuiNode`] values for each tree node.
+//! The blanket [`UiTreeRenderer`](elicit_ui::UiTreeRenderer) assembles the
+//! full tree via DFS and returns the root [`TuiNode`] directly.
+//!
+//! Container roles produce [`TuiNode::Layout`]; leaf roles produce
+//! [`TuiNode::Widget`].
 
-use accesskit::{Node, NodeId, Role};
-use elicit_ui::{RenderComplete, RenderStats, UiRenderer, UiResult, VerifiedTree, WidgetId};
-use elicitation::Established;
-use std::collections::HashMap;
-use std::sync::Mutex;
+use accesskit::{Node, NodeId, Role, Toggled};
+use elicit_ui::{UiNodeBridge, UiRenderBackend};
 
-use crate::serde_types::TuiNode;
-use crate::tui_accesskit_convert;
+use crate::serde_types::{
+    ConstraintJson, DirectionJson, ParagraphText, RowJson, TuiNode, WidgetJson,
+};
+
+// ── RatatuiBackend ────────────────────────────────────────────────────────────
 
 /// Ratatui render backend for verified AccessKit trees.
 ///
-/// Converts the AccessKit tree to a [`TuiNode`] tree on each render call.
-/// The resulting `TuiNode` can then be rendered to a ratatui `Frame`.
+/// Implements [`UiNodeBridge`] — one method per [`accesskit::Role`] — so the
+/// blanket [`UiTreeRenderer`](elicit_ui::UiTreeRenderer) provides full-tree DFS
+/// rendering for free.  Call `.render(tree)` (from `UiTreeRenderer`) to receive
+/// the root [`TuiNode`] alongside statistics and the render proof.
 ///
 /// # Example
 ///
 /// ```rust,no_run
 /// use elicit_ratatui::RatatuiBackend;
+/// use elicit_ui::UiRenderBackend;
 ///
 /// let backend = RatatuiBackend::new();
-/// let tui_tree = backend.last_tui_tree();
+/// assert_eq!(backend.backend_name(), "ratatui");
 /// ```
-pub struct RatatuiBackend {
-    last_tree: Mutex<Option<TuiNode>>,
-}
+#[derive(Default)]
+pub struct RatatuiBackend;
 
 impl RatatuiBackend {
     /// Create a new ratatui render backend.
     pub fn new() -> Self {
-        Self {
-            last_tree: Mutex::new(None),
-        }
-    }
-
-    /// Get the last rendered `TuiNode` tree.
-    ///
-    /// Returns `None` if `render` hasn't been called yet.
-    pub fn last_tui_tree(&self) -> Option<TuiNode> {
-        self.last_tree.lock().unwrap().clone()
+        Self
     }
 }
 
-impl Default for RatatuiBackend {
-    fn default() -> Self {
-        Self::new()
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+fn titled_block(title: String) -> crate::serde_types::BlockJson {
+    crate::serde_types::BlockJson {
+        title: Some(title),
+        borders: crate::serde_types::BordersJson::All,
+        border_type: None,
+        style: None,
+        border_style: None,
+        padding: None,
     }
 }
 
-impl UiRenderer for RatatuiBackend {
-    #[tracing::instrument(skip(self, tree))]
-    fn render(&self, tree: &VerifiedTree) -> UiResult<(RenderStats, Established<RenderComplete>)> {
-        let mut stats = RenderStats::default();
+fn node_label(node: &Node) -> String {
+    node.label().or(node.value()).unwrap_or("").to_string()
+}
 
-        let tree_update = accesskit::TreeUpdate {
-            nodes: tree
-                .nodes()
-                .iter()
-                .map(|(id, n)| (*id, n.clone()))
-                .collect(),
-            tree: Some(accesskit::Tree::new(tree.root())),
-            tree_id: accesskit::TreeId::ROOT,
-            focus: tree.root(),
-        };
-
-        let tui_tree = tui_accesskit_convert::tree_update_to_tui_node(&tree_update);
-        count_nodes(tree.nodes(), tree.root(), &mut stats);
-
-        *self.last_tree.lock().unwrap() = tui_tree;
-
-        tracing::debug!(
-            visited = stats.nodes_visited,
-            widgets = stats.widgets_rendered,
-            containers = stats.containers_rendered,
-            skipped = stats.nodes_skipped,
-            "Ratatui render pass complete"
-        );
-
-        Ok((stats, Established::assert()))
+fn text_widget(node: &Node) -> TuiNode {
+    TuiNode::Widget {
+        widget: Box::new(WidgetJson::Paragraph {
+            text: ParagraphText::Plain(node_label(node)),
+            style: None,
+            wrap: true,
+            scroll: None,
+            alignment: None,
+            block: None,
+        }),
     }
+}
 
-    fn render_partial(&self, _node_id: WidgetId, tree: &VerifiedTree) -> UiResult<RenderStats> {
-        let mut stats = RenderStats::default();
-        count_nodes(tree.nodes(), tree.root(), &mut stats);
-        Ok(stats)
+fn vertical_layout(children: Vec<TuiNode>) -> TuiNode {
+    let constraints = vec![ConstraintJson::Min { value: 0 }; children.len().max(1)];
+    TuiNode::Layout {
+        direction: DirectionJson::Vertical,
+        constraints,
+        children,
+        margin: None,
+    }
+}
+
+fn horizontal_layout(children: Vec<TuiNode>) -> TuiNode {
+    let constraints = vec![ConstraintJson::Fill { value: 1 }; children.len().max(1)];
+    TuiNode::Layout {
+        direction: DirectionJson::Horizontal,
+        constraints,
+        children,
+        margin: None,
+    }
+}
+
+// ── UiRenderBackend ───────────────────────────────────────────────────────────
+
+impl UiRenderBackend for RatatuiBackend {
+    fn backend_name(&self) -> &'static str {
+        "ratatui"
     }
 
     fn supports_role(&self, _role: Role) -> bool {
         true
     }
-
-    fn backend_name(&self) -> &str {
-        "ratatui"
-    }
 }
 
-fn count_nodes(nodes: &HashMap<NodeId, Node>, node_id: NodeId, stats: &mut RenderStats) {
-    let Some(node) = nodes.get(&node_id) else {
-        stats.nodes_skipped += 1;
-        return;
-    };
-    stats.nodes_visited += 1;
+// ── UiNodeBridge ─────────────────────────────────────────────────────────────
 
-    if node.is_hidden() {
-        stats.nodes_skipped += 1;
-        return;
+impl UiNodeBridge for RatatuiBackend {
+    type Widget = TuiNode;
+
+    // ── Unknown / generic ─────────────────────────────────────────────────
+
+    fn bridge_unknown(&self, node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        if children.is_empty() {
+            text_widget(node)
+        } else {
+            vertical_layout(children)
+        }
     }
 
-    let children = node.children();
-    let is_container = matches!(
-        node.role(),
-        Role::Window
-            | Role::Pane
-            | Role::Form
-            | Role::Group
-            | Role::Section
-            | Role::Region
-            | Role::Main
-            | Role::GenericContainer
-            | Role::Document
-            | Role::Toolbar
-            | Role::List
-            | Role::ListBox
-            | Role::Table
-            | Role::Grid
-            | Role::TabList
-            | Role::Dialog
-            | Role::AlertDialog
-            | Role::Menu
-            | Role::MenuBar
-            | Role::Navigation
-            | Role::ScrollView
-    ) || !children.is_empty();
+    fn bridge_generic_container(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<TuiNode>,
+    ) -> TuiNode {
+        vertical_layout(children)
+    }
 
-    if is_container {
-        stats.containers_rendered += 1;
-        for child_id in children {
-            count_nodes(nodes, *child_id, stats);
+    fn bridge_pane(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_window(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_document(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_root_web_area(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_application(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_terminal(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    // ── Interactive widgets ───────────────────────────────────────────────
+
+    fn bridge_button(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let lbl = node_label(node);
+        let text = format!("[ {lbl} ]");
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(text),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: Some("Center".to_string()),
+                block: None,
+            }),
         }
-    } else {
-        stats.widgets_rendered += 1;
+    }
+
+    fn bridge_default_button(&self, node: &Node, id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        self.bridge_button(node, id, children)
+    }
+
+    fn bridge_link(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let lbl = node_label(node);
+        let url = node.url().unwrap_or("#");
+        let text = format!("{lbl} ({url})");
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(text),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_check_box(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let lbl = node_label(node);
+        let mark = if node.toggled() == Some(Toggled::True) {
+            "[x]"
+        } else {
+            "[ ]"
+        };
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("{mark} {lbl}")),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_radio_button(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let lbl = node_label(node);
+        let mark = if node.toggled() == Some(Toggled::True) {
+            "(•)"
+        } else {
+            "( )"
+        };
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("{mark} {lbl}")),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_switch(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let lbl = node_label(node);
+        let state = if node.toggled() == Some(Toggled::True) {
+            "ON"
+        } else {
+            "OFF"
+        };
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("{lbl}: {state}")),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_color_well(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let val = node.value().unwrap_or("#000000");
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("Color: {val}")),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_disclosure_triangle(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<TuiNode>,
+    ) -> TuiNode {
+        let lbl = node_label(node);
+        let arrow = if node.toggled() == Some(Toggled::True) {
+            "▼"
+        } else {
+            "▶"
+        };
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("{arrow} {lbl}")),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_combo_box(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let val = node_label(node);
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("▼ {val}")),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_editable_combo_box(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<TuiNode>,
+    ) -> TuiNode {
+        self.bridge_combo_box(node, id, children)
+    }
+
+    fn bridge_list_box(&self, node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        let items: Vec<String> = children
+            .iter()
+            .map(|c| match c {
+                TuiNode::Widget { widget } => match widget.as_ref() {
+                    WidgetJson::Paragraph { text, .. } => text.to_plain_string(),
+                    _ => String::new(),
+                },
+                _ => String::new(),
+            })
+            .collect();
+        let lbl = node.label().map(|s| s.to_string());
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::List {
+                items,
+                block: lbl.map(titled_block),
+                style: None,
+                highlight_style: None,
+                highlight_symbol: None,
+                state: None,
+            }),
+        }
+    }
+
+    fn bridge_slider(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let val = node.numeric_value().unwrap_or(0.0);
+        let max = node.max_numeric_value().unwrap_or(100.0);
+        let ratio = if max > 0.0 {
+            (val / max).clamp(0.0, 1.0)
+        } else {
+            0.0
+        };
+        let lbl = node.label().map(|s| s.to_string());
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Gauge {
+                ratio,
+                label: lbl,
+                block: None,
+                style: None,
+                gauge_style: None,
+            }),
+        }
+    }
+
+    fn bridge_spin_button(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let val = node.numeric_value().unwrap_or(0.0);
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("◂ {val} ▸")),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: Some("Center".to_string()),
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_progress_indicator(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<TuiNode>,
+    ) -> TuiNode {
+        let val = node.numeric_value().unwrap_or(0.0);
+        let max = node.max_numeric_value().unwrap_or(100.0);
+        let ratio = if max > 0.0 {
+            (val / max).clamp(0.0, 1.0)
+        } else {
+            0.0
+        };
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Gauge {
+                ratio,
+                label: None,
+                block: None,
+                style: None,
+                gauge_style: None,
+            }),
+        }
+    }
+
+    fn bridge_scroll_bar(&self, node: &Node, id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        self.bridge_progress_indicator(node, id, children)
+    }
+
+    fn bridge_scroll_view(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_splitter(&self, _node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain("─".repeat(40)),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    // ── Text input ───────────────────────────────────────────────────────
+
+    fn bridge_text_input(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let val = node.value().unwrap_or("");
+        let placeholder = node.placeholder().unwrap_or("...");
+        let display = if val.is_empty() { placeholder } else { val };
+        let lbl = node.label().map(|s| s.to_string());
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(display.to_string()),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: lbl.map(titled_block),
+            }),
+        }
+    }
+
+    fn bridge_multiline_text_input(
+        &self,
+        node: &Node,
+        id: NodeId,
+        children: Vec<TuiNode>,
+    ) -> TuiNode {
+        let mut result = self.bridge_text_input(node, id, children);
+        if let TuiNode::Widget { widget } = &mut result {
+            if let WidgetJson::Paragraph { wrap, .. } = widget.as_mut() {
+                *wrap = true;
+            }
+        }
+        result
+    }
+
+    // ── Text display ─────────────────────────────────────────────────────
+
+    fn bridge_text_run(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    fn bridge_paragraph(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(node_label(node)),
+                style: None,
+                wrap: true,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_label(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    fn bridge_heading(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let text = node_label(node);
+        let level = node.level().unwrap_or(2);
+        let prefix = "#".repeat(level as usize);
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("{prefix} {text}")),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_line_break(&self, _node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(String::new()),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_blockquote(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let text = node_label(node);
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("│ {text}")),
+                style: None,
+                wrap: true,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_code(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    fn bridge_math(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    fn bridge_note(&self, node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        if children.is_empty() {
+            text_widget(node)
+        } else {
+            vertical_layout(children)
+        }
+    }
+
+    fn bridge_term(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    fn bridge_definition(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    // ── Media ────────────────────────────────────────────────────────────
+
+    fn bridge_image(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let alt = node_label(node);
+        let text = if alt.is_empty() {
+            "[image]".to_string()
+        } else {
+            format!("[image: {alt}]")
+        };
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(text),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_figure(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_figure_caption(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    fn bridge_canvas(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let lbl = node_label(node);
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("[canvas: {lbl}]")),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_video(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let lbl = node_label(node);
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("[video: {lbl}]")),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_audio(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let lbl = node_label(node);
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("[audio: {lbl}]")),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    // ── Landmark sections ─────────────────────────────────────────────────
+
+    fn bridge_main(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_navigation(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        horizontal_layout(children)
+    }
+
+    fn bridge_banner(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        horizontal_layout(children)
+    }
+
+    fn bridge_content_info(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        horizontal_layout(children)
+    }
+
+    fn bridge_complementary(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_form(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_search(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_region(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_section(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_section_header(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        horizontal_layout(children)
+    }
+
+    fn bridge_section_footer(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        horizontal_layout(children)
+    }
+
+    fn bridge_article(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_group(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_dialog(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_details(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_tooltip(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    fn bridge_alert(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let lbl = node_label(node);
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("⚠ {lbl}")),
+                style: None,
+                wrap: true,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    fn bridge_status(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    fn bridge_timer(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    // ── Lists ─────────────────────────────────────────────────────────────
+
+    fn bridge_list(&self, node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        let items: Vec<String> = children
+            .iter()
+            .map(|c| match c {
+                TuiNode::Widget { widget } => match widget.as_ref() {
+                    WidgetJson::Paragraph { text, .. } => text.to_plain_string(),
+                    _ => String::new(),
+                },
+                _ => String::new(),
+            })
+            .collect();
+        let lbl = node.label().map(|s| s.to_string());
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::List {
+                items,
+                block: lbl.map(titled_block),
+                style: None,
+                highlight_style: None,
+                highlight_symbol: None,
+                state: None,
+            }),
+        }
+    }
+
+    fn bridge_list_item(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    fn bridge_description_list(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<TuiNode>,
+    ) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    // ── Tables ────────────────────────────────────────────────────────────
+
+    fn bridge_table(&self, node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        let rows: Vec<RowJson> = children
+            .into_iter()
+            .map(|child| match child {
+                TuiNode::Widget { widget } => match *widget {
+                    WidgetJson::Paragraph { text, .. } => RowJson {
+                        cells: vec![crate::serde_types::CellJson {
+                            content: text.to_plain_string(),
+                            style: None,
+                        }],
+                        style: None,
+                        height: None,
+                    },
+                    _ => RowJson {
+                        cells: vec![],
+                        style: None,
+                        height: None,
+                    },
+                },
+                _ => RowJson {
+                    cells: vec![],
+                    style: None,
+                    height: None,
+                },
+            })
+            .collect();
+        let lbl = node.label().map(|s| s.to_string());
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Table {
+                header: None,
+                rows,
+                widths: vec![ConstraintJson::Fill { value: 1 }],
+                column_spacing: None,
+                block: lbl.map(titled_block),
+                highlight_style: None,
+                highlight_symbol: None,
+                state: None,
+            }),
+        }
+    }
+
+    fn bridge_row(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        horizontal_layout(children)
+    }
+
+    fn bridge_cell(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    fn bridge_caption(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    fn bridge_row_group(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    // ── Trees ─────────────────────────────────────────────────────────────
+
+    fn bridge_tree(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_tree_item(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        let lbl = node_label(node);
+        let prefix = if node.is_selected().unwrap_or(false) {
+            "▶ "
+        } else {
+            "  "
+        };
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Paragraph {
+                text: ParagraphText::Plain(format!("{prefix}{lbl}")),
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: None,
+            }),
+        }
+    }
+
+    // ── Tabs ─────────────────────────────────────────────────────────────
+
+    fn bridge_tab(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    fn bridge_tab_list(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        let titles: Vec<String> = children
+            .iter()
+            .map(|c| match c {
+                TuiNode::Widget { widget } => match widget.as_ref() {
+                    WidgetJson::Paragraph { text, .. } => text.to_plain_string(),
+                    _ => String::new(),
+                },
+                _ => String::new(),
+            })
+            .collect();
+        TuiNode::Widget {
+            widget: Box::new(WidgetJson::Tabs {
+                titles,
+                selected: None,
+                block: None,
+                style: None,
+                highlight_style: None,
+                divider: None,
+            }),
+        }
+    }
+
+    fn bridge_tab_panel(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    // ── Menus ─────────────────────────────────────────────────────────────
+
+    fn bridge_menu(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
+    }
+
+    fn bridge_menu_item(&self, node: &Node, _id: NodeId, _children: Vec<TuiNode>) -> TuiNode {
+        text_widget(node)
+    }
+
+    fn bridge_toolbar(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        horizontal_layout(children)
+    }
+
+    fn bridge_radio_group(&self, _node: &Node, _id: NodeId, children: Vec<TuiNode>) -> TuiNode {
+        vertical_layout(children)
     }
 }

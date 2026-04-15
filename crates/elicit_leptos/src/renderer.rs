@@ -1,36 +1,36 @@
-//! Leptos `UiRenderer` implementation.
+//! Leptos `UiNodeBridge` implementation.
 //!
 //! [`LeptosRenderer`] is the concrete backend that walks a verified AccessKit
 //! tree and converts it to either semantic HTML5 (for SSR via axum/tower) or
 //! Leptos `view!` macro source code (for CSR/WASM or codegen pipelines).
 //!
+//! Each [`accesskit::Role`] maps to one `bridge_*` method that returns a
+//! `String` fragment.  The blanket [`UiTreeRenderer`] impl assembles the
+//! full tree via DFS — parents receive pre-rendered child strings.
+//!
 //! # Example
 //!
-//! ```rust
+//! ```rust,no_run
 //! use elicit_leptos::{LeptosRenderer, LeptosRenderMode};
-//! use elicit_ui::UiRenderer;
+//! use elicit_ui::UiRenderBackend;
 //!
 //! let renderer = LeptosRenderer::new(LeptosRenderMode::Html);
 //! assert_eq!(renderer.backend_name(), "leptos");
 //! ```
 
-use accesskit::Role;
-use elicit_ui::{RenderComplete, RenderStats, UiRenderer, UiResult, VerifiedTree, WidgetId};
-use elicitation::Established;
-use std::sync::Mutex;
-use tracing::instrument;
+use accesskit::{Node, NodeId, Role};
+use elicit_ui::{UiNodeBridge, UiRenderBackend};
 
-use crate::leptos_accesskit_convert::{self, LeptosRenderMode};
+use crate::leptos_accesskit_convert::LeptosRenderMode;
 
 // ── LeptosRenderer ────────────────────────────────────────────────────────────
 
 /// Leptos rendering backend for verified AccessKit trees.
 ///
-/// Implements [`UiRenderer`] by converting the AccessKit node tree to the
-/// selected output format on each [`render`](UiRenderer::render) call.
-/// The last rendered output is retained and can be retrieved via
-/// [`last_html`](LeptosRenderer::last_html) or
-/// [`last_view_code`](LeptosRenderer::last_view_code).
+/// Implements [`UiNodeBridge`] — one method per [`accesskit::Role`] — so the
+/// blanket [`UiTreeRenderer`](elicit_ui::UiTreeRenderer) provides full-tree DFS
+/// rendering for free.  Call `.render(tree)` (from `UiTreeRenderer`) to receive
+/// the root HTML/view-macro string alongside statistics and the render proof.
 ///
 /// # Modes
 ///
@@ -41,25 +41,21 @@ use crate::leptos_accesskit_convert::{self, LeptosRenderMode};
 ///
 /// # Example
 ///
-/// ```rust
+/// ```rust,no_run
 /// use elicit_leptos::{LeptosRenderer, LeptosRenderMode};
-/// use elicit_ui::UiRenderer;
+/// use elicit_ui::UiRenderBackend;
 ///
 /// let renderer = LeptosRenderer::new(LeptosRenderMode::Html);
 /// assert_eq!(renderer.backend_name(), "leptos");
 /// ```
 pub struct LeptosRenderer {
     mode: LeptosRenderMode,
-    last_output: Mutex<String>,
 }
 
 impl LeptosRenderer {
     /// Create a new renderer with the given output mode.
     pub fn new(mode: LeptosRenderMode) -> Self {
-        Self {
-            mode,
-            last_output: Mutex::new(String::new()),
-        }
+        Self { mode }
     }
 
     /// Shorthand: renderer targeting SSR HTML output.
@@ -76,35 +72,6 @@ impl LeptosRenderer {
     pub fn mode(&self) -> LeptosRenderMode {
         self.mode
     }
-
-    /// Return the last rendered HTML string.
-    ///
-    /// Returns an empty string if [`render`](UiRenderer::render) has not been
-    /// called yet, or if the renderer is in [`LeptosRenderMode::ViewMacro`] mode.
-    pub fn last_html(&self) -> String {
-        if self.mode == LeptosRenderMode::Html {
-            self.last_output.lock().unwrap().clone()
-        } else {
-            String::new()
-        }
-    }
-
-    /// Return the last rendered Leptos `view!` macro body.
-    ///
-    /// Returns an empty string if [`render`](UiRenderer::render) has not been
-    /// called yet, or if the renderer is in [`LeptosRenderMode::Html`] mode.
-    pub fn last_view_code(&self) -> String {
-        if self.mode == LeptosRenderMode::ViewMacro {
-            self.last_output.lock().unwrap().clone()
-        } else {
-            String::new()
-        }
-    }
-
-    /// Return the last output regardless of mode.
-    pub fn last_output(&self) -> String {
-        self.last_output.lock().unwrap().clone()
-    }
 }
 
 impl Default for LeptosRenderer {
@@ -113,38 +80,886 @@ impl Default for LeptosRenderer {
     }
 }
 
-impl UiRenderer for LeptosRenderer {
-    #[instrument(skip(self, tree), fields(mode = ?self.mode))]
-    fn render(&self, tree: &VerifiedTree) -> UiResult<(RenderStats, Established<RenderComplete>)> {
-        let (output, stats) =
-            leptos_accesskit_convert::render_tree_with_stats(tree.nodes(), tree.root(), self.mode);
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-        tracing::debug!(
-            visited = stats.nodes_visited,
-            widgets = stats.widgets_rendered,
-            containers = stats.containers_rendered,
-            skipped = stats.nodes_skipped,
-            mode = ?self.mode,
-            "Leptos render pass complete"
-        );
+fn node_label(node: &Node) -> String {
+    node.label().or(node.value()).unwrap_or("").to_string()
+}
 
-        *self.last_output.lock().unwrap() = output;
-        Ok((stats, Established::assert()))
+fn join_children(children: Vec<String>) -> String {
+    children.join("")
+}
+
+/// Build a quoted attribute string for the current render mode.
+fn attr(mode: LeptosRenderMode, key: &str, val: &str) -> String {
+    match mode {
+        LeptosRenderMode::Html => format!(r#" {key}="{val}""#),
+        LeptosRenderMode::ViewMacro => format!(r#" {key}="{val}""#),
     }
+}
 
-    #[instrument(skip(self, tree), fields(mode = ?self.mode))]
-    fn render_partial(&self, _node_id: WidgetId, tree: &VerifiedTree) -> UiResult<RenderStats> {
-        let (output, stats) =
-            leptos_accesskit_convert::render_tree_with_stats(tree.nodes(), tree.root(), self.mode);
-        *self.last_output.lock().unwrap() = output;
-        Ok(stats)
+fn aria_label_attr(mode: LeptosRenderMode, node: &Node) -> String {
+    let lbl = node.label().unwrap_or("");
+    if lbl.is_empty() {
+        String::new()
+    } else {
+        attr(mode, "aria-label", lbl)
+    }
+}
+
+fn disabled_attr(node: &Node) -> &'static str {
+    if node.is_disabled() { " disabled" } else { "" }
+}
+
+fn wrap_element(tag: &str, extra: &str, body: &str) -> String {
+    format!("<{tag}{extra}>{body}</{tag}>")
+}
+
+fn self_closing(tag: &str, extra: &str) -> String {
+    format!("<{tag}{extra} />")
+}
+
+fn role_attr(mode: LeptosRenderMode, role: &str) -> String {
+    attr(mode, "role", role)
+}
+
+fn hidden_attr(node: &Node) -> &'static str {
+    if node.is_hidden() {
+        r#" aria-hidden="true""#
+    } else {
+        ""
+    }
+}
+
+// ── UiRenderBackend ───────────────────────────────────────────────────────────
+
+impl UiRenderBackend for LeptosRenderer {
+    fn backend_name(&self) -> &'static str {
+        "leptos"
     }
 
     fn supports_role(&self, _role: Role) -> bool {
         true
     }
+}
 
-    fn backend_name(&self) -> &str {
-        "leptos"
+// ── UiNodeBridge ─────────────────────────────────────────────────────────────
+
+impl UiNodeBridge for LeptosRenderer {
+    type Widget = String;
+
+    // ── Unknown / generic ─────────────────────────────────────────────────
+
+    fn bridge_unknown(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "div",
+            &format!("{}", role_attr(m, "none")),
+            &join_children(children),
+        ) + &hidden_attr(node).to_string()
+    }
+
+    fn bridge_generic_container(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element("div", &aria_label_attr(m, node), &join_children(children))
+    }
+
+    fn bridge_pane(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "div",
+            &format!("{}{}", role_attr(m, "region"), aria_label_attr(m, node)),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_window(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "div",
+            &format!("{}{}", role_attr(m, "dialog"), aria_label_attr(m, node)),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_document(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "article",
+            &aria_label_attr(m, node),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_root_web_area(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element("main", &aria_label_attr(m, node), &join_children(children))
+    }
+
+    fn bridge_application(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "div",
+            &format!(
+                "{}{}",
+                role_attr(m, "application"),
+                aria_label_attr(m, node)
+            ),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_terminal(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "pre",
+            &format!("{}{}", role_attr(m, "log"), aria_label_attr(m, node)),
+            &join_children(children),
+        )
+    }
+
+    // ── Interactive widgets ───────────────────────────────────────────────
+
+    fn bridge_button(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let text = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element(
+            "button",
+            &format!(
+                " type=\"button\"{}{}",
+                aria_label_attr(m, node),
+                disabled_attr(node)
+            ),
+            &text,
+        )
+    }
+
+    fn bridge_default_button(&self, node: &Node, id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let text = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        let _ = id;
+        wrap_element(
+            "button",
+            &format!(
+                " type=\"submit\"{}{}",
+                aria_label_attr(m, node),
+                disabled_attr(node)
+            ),
+            &text,
+        )
+    }
+
+    fn bridge_link(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let text = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        let href = node.url().unwrap_or("#");
+        wrap_element(
+            "a",
+            &format!(" href=\"{href}\"{}", aria_label_attr(m, node)),
+            &text,
+        )
+    }
+
+    fn bridge_check_box(&self, node: &Node, _id: NodeId, _children: Vec<String>) -> String {
+        let m = self.mode;
+        let lbl = node_label(node);
+        let checked = if node.toggled() == Some(accesskit::Toggled::True) {
+            " checked"
+        } else {
+            ""
+        };
+        format!(
+            "<label><input type=\"checkbox\"{checked}{dis}{} />{lbl}</label>",
+            aria_label_attr(m, node),
+            dis = disabled_attr(node),
+        )
+    }
+
+    fn bridge_radio_button(&self, node: &Node, _id: NodeId, _children: Vec<String>) -> String {
+        let m = self.mode;
+        let lbl = node_label(node);
+        let checked = if node.toggled() == Some(accesskit::Toggled::True) {
+            " checked"
+        } else {
+            ""
+        };
+        format!(
+            "<label><input type=\"radio\"{checked}{dis}{} />{lbl}</label>",
+            aria_label_attr(m, node),
+            dis = disabled_attr(node),
+        )
+    }
+
+    fn bridge_switch(&self, node: &Node, _id: NodeId, _children: Vec<String>) -> String {
+        let m = self.mode;
+        let lbl = node_label(node);
+        let checked = if node.toggled() == Some(accesskit::Toggled::True) {
+            " checked"
+        } else {
+            ""
+        };
+        format!(
+            "<button type=\"button\" role=\"switch\"{checked}{dis}{}>{lbl}</button>",
+            aria_label_attr(m, node),
+            dis = disabled_attr(node),
+        )
+    }
+
+    fn bridge_color_well(&self, node: &Node, _id: NodeId, _children: Vec<String>) -> String {
+        let m = self.mode;
+        let val = node.value().unwrap_or("#000000");
+        format!(
+            "<input type=\"color\" value=\"{val}\"{}{} />",
+            aria_label_attr(m, node),
+            disabled_attr(node)
+        )
+    }
+
+    fn bridge_disclosure_triangle(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<String>,
+    ) -> String {
+        let m = self.mode;
+        let lbl = node_label(node);
+        let expanded = node.toggled() == Some(accesskit::Toggled::True);
+        let aria_expanded = if expanded { "true" } else { "false" };
+        format!(
+            "<button type=\"button\" aria-expanded=\"{aria_expanded}\"{}>▶ {lbl}</button>",
+            aria_label_attr(m, node)
+        )
+    }
+
+    fn bridge_combo_box(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let lbl = node_label(node);
+        let opts = join_children(children);
+        wrap_element(
+            "select",
+            &format!("{}{}", aria_label_attr(m, node), disabled_attr(node)),
+            &format!("{opts}<option>{lbl}</option>"),
+        )
+    }
+
+    fn bridge_editable_combo_box(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<String>,
+    ) -> String {
+        let m = self.mode;
+        let val = node.value().unwrap_or("");
+        format!(
+            "<input type=\"text\" list=\"\" value=\"{val}\"{}{} />",
+            aria_label_attr(m, node),
+            disabled_attr(node)
+        )
+    }
+
+    fn bridge_list_box(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "ul",
+            &format!("{}{}", role_attr(m, "listbox"), aria_label_attr(m, node)),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_slider(&self, node: &Node, _id: NodeId, _children: Vec<String>) -> String {
+        let m = self.mode;
+        let val = node.numeric_value().unwrap_or(0.0);
+        let min = node.min_numeric_value().unwrap_or(0.0);
+        let max = node.max_numeric_value().unwrap_or(100.0);
+        format!(
+            "<input type=\"range\" min=\"{min}\" max=\"{max}\" value=\"{val}\"{}{} />",
+            aria_label_attr(m, node),
+            disabled_attr(node)
+        )
+    }
+
+    fn bridge_spin_button(&self, node: &Node, _id: NodeId, _children: Vec<String>) -> String {
+        let m = self.mode;
+        let val = node.numeric_value().unwrap_or(0.0);
+        let min = node.min_numeric_value().unwrap_or(f64::MIN);
+        let max = node.max_numeric_value().unwrap_or(f64::MAX);
+        let step = node.numeric_value_step().unwrap_or(1.0);
+        format!(
+            "<input type=\"number\" min=\"{min}\" max=\"{max}\" step=\"{step}\" value=\"{val}\"{}{} />",
+            aria_label_attr(m, node),
+            disabled_attr(node)
+        )
+    }
+
+    fn bridge_progress_indicator(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<String>,
+    ) -> String {
+        let m = self.mode;
+        let val = node.numeric_value().unwrap_or(0.0);
+        let max = node.max_numeric_value().unwrap_or(100.0);
+        format!(
+            "<progress value=\"{val}\" max=\"{max}\"{} />",
+            aria_label_attr(m, node)
+        )
+    }
+
+    fn bridge_scroll_bar(&self, node: &Node, _id: NodeId, _children: Vec<String>) -> String {
+        let m = self.mode;
+        let val = node.numeric_value().unwrap_or(0.0);
+        let min = node.min_numeric_value().unwrap_or(0.0);
+        let max = node.max_numeric_value().unwrap_or(100.0);
+        format!(
+            "<input type=\"range\" role=\"scrollbar\" min=\"{min}\" max=\"{max}\" value=\"{val}\"{}/>",
+            aria_label_attr(m, node)
+        )
+    }
+
+    fn bridge_scroll_view(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "div",
+            &format!(" style=\"overflow:auto\"{}", aria_label_attr(m, node)),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_splitter(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let body = join_children(children);
+        format!("<hr{} />{body}", aria_label_attr(m, node))
+    }
+
+    // ── Text input ───────────────────────────────────────────────────────
+
+    fn bridge_text_input(&self, node: &Node, _id: NodeId, _children: Vec<String>) -> String {
+        let m = self.mode;
+        let val = node.value().unwrap_or("");
+        let placeholder = node.placeholder().unwrap_or("");
+        let readonly = if node.is_read_only() { " readonly" } else { "" };
+        format!(
+            "<input type=\"text\" value=\"{val}\" placeholder=\"{placeholder}\"{}{}{readonly} />",
+            aria_label_attr(m, node),
+            disabled_attr(node)
+        )
+    }
+
+    fn bridge_multiline_text_input(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<String>,
+    ) -> String {
+        let m = self.mode;
+        let val = node.value().unwrap_or("");
+        let placeholder = node.placeholder().unwrap_or("");
+        let readonly = if node.is_read_only() { " readonly" } else { "" };
+        let dis = disabled_attr(node);
+        format!(
+            "<textarea placeholder=\"{placeholder}\"{}{readonly}{dis}>{val}</textarea>",
+            aria_label_attr(m, node)
+        )
+    }
+
+    // ── Text display ─────────────────────────────────────────────────────
+
+    fn bridge_text_run(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("span", "", &body)
+    }
+
+    fn bridge_paragraph(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("p", "", &body)
+    }
+
+    fn bridge_label(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("label", "", &body)
+    }
+
+    fn bridge_heading(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let level = node.level().unwrap_or(2).clamp(1, 6);
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element(&format!("h{level}"), "", &body)
+    }
+
+    fn bridge_line_break(&self, _node: &Node, _id: NodeId, _children: Vec<String>) -> String {
+        self_closing("br", "")
+    }
+
+    fn bridge_blockquote(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("blockquote", "", &body)
+    }
+
+    fn bridge_code(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("code", "", &body)
+    }
+
+    fn bridge_math(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("span", &role_attr(m, "math"), &body)
+    }
+
+    fn bridge_note(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("aside", &role_attr(m, "note"), &body)
+    }
+
+    fn bridge_term(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("dt", "", &body)
+    }
+
+    fn bridge_definition(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("dd", "", &body)
+    }
+
+    // ── Media ────────────────────────────────────────────────────────────
+
+    fn bridge_image(&self, node: &Node, _id: NodeId, _children: Vec<String>) -> String {
+        let m = self.mode;
+        let alt = node_label(node);
+        let src = node.url().unwrap_or("");
+        format!(
+            "<img src=\"{src}\" alt=\"{alt}\"{}/>",
+            aria_label_attr(m, node)
+        )
+    }
+
+    fn bridge_figure(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "figure",
+            &aria_label_attr(m, node),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_figure_caption(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("figcaption", "", &body)
+    }
+
+    fn bridge_canvas(&self, node: &Node, _id: NodeId, _children: Vec<String>) -> String {
+        let m = self.mode;
+        let lbl = node_label(node);
+        wrap_element("canvas", &aria_label_attr(m, node), &lbl)
+    }
+
+    fn bridge_video(&self, node: &Node, _id: NodeId, _children: Vec<String>) -> String {
+        let m = self.mode;
+        let src = node.url().unwrap_or("");
+        let lbl = node_label(node);
+        format!(
+            "<video src=\"{src}\" controls{}>{lbl}</video>",
+            aria_label_attr(m, node)
+        )
+    }
+
+    fn bridge_audio(&self, node: &Node, _id: NodeId, _children: Vec<String>) -> String {
+        let m = self.mode;
+        let src = node.url().unwrap_or("");
+        let lbl = node_label(node);
+        format!(
+            "<audio src=\"{src}\" controls{}>{lbl}</audio>",
+            aria_label_attr(m, node)
+        )
+    }
+
+    // ── Landmark sections ─────────────────────────────────────────────────
+
+    fn bridge_main(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element("main", &aria_label_attr(m, node), &join_children(children))
+    }
+
+    fn bridge_navigation(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element("nav", &aria_label_attr(m, node), &join_children(children))
+    }
+
+    fn bridge_banner(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "header",
+            &aria_label_attr(m, node),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_content_info(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "footer",
+            &aria_label_attr(m, node),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_complementary(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element("aside", &aria_label_attr(m, node), &join_children(children))
+    }
+
+    fn bridge_form(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element("form", &aria_label_attr(m, node), &join_children(children))
+    }
+
+    fn bridge_search(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "search",
+            &aria_label_attr(m, node),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_region(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "section",
+            &aria_label_attr(m, node),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_section(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "section",
+            &aria_label_attr(m, node),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_section_header(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "div",
+            &format!(
+                "{}{}",
+                role_attr(m, "sectionhead"),
+                aria_label_attr(m, node)
+            ),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_section_footer(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "div",
+            &format!(
+                "{}{}",
+                role_attr(m, "contentinfo"),
+                aria_label_attr(m, node)
+            ),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_article(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "article",
+            &aria_label_attr(m, node),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_group(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        if node.label().is_some() {
+            wrap_element(
+                "fieldset",
+                &aria_label_attr(m, node),
+                &join_children(children),
+            )
+        } else {
+            wrap_element("div", &role_attr(m, "group"), &join_children(children))
+        }
+    }
+
+    fn bridge_dialog(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "dialog",
+            &aria_label_attr(m, node),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_details(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "details",
+            &aria_label_attr(m, node),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_tooltip(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("span", &role_attr(m, "tooltip"), &body)
+    }
+
+    fn bridge_alert(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("div", &role_attr(m, "alert"), &body)
+    }
+
+    fn bridge_status(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("div", &role_attr(m, "status"), &body)
+    }
+
+    fn bridge_timer(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("div", &role_attr(m, "timer"), &body)
+    }
+
+    // ── Lists ─────────────────────────────────────────────────────────────
+
+    fn bridge_list(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let orientation = node.orientation();
+        let tag = if orientation == Some(accesskit::Orientation::Horizontal) {
+            "ol"
+        } else {
+            "ul"
+        };
+        wrap_element(tag, &aria_label_attr(m, node), &join_children(children))
+    }
+
+    fn bridge_list_item(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("li", "", &body)
+    }
+
+    fn bridge_description_list(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element("dl", &aria_label_attr(m, node), &join_children(children))
+    }
+
+    // ── Tables ────────────────────────────────────────────────────────────
+
+    fn bridge_table(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element("table", &aria_label_attr(m, node), &join_children(children))
+    }
+
+    fn bridge_row(&self, _node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        wrap_element("tr", "", &join_children(children))
+    }
+
+    fn bridge_cell(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("td", "", &body)
+    }
+
+    fn bridge_caption(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("caption", "", &body)
+    }
+
+    fn bridge_row_group(&self, _node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        wrap_element("tbody", "", &join_children(children))
+    }
+
+    // ── Trees ─────────────────────────────────────────────────────────────
+
+    fn bridge_tree(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "ul",
+            &format!("{}{}", role_attr(m, "tree"), aria_label_attr(m, node)),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_tree_item(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("li", &role_attr(m, "treeitem"), &body)
+    }
+
+    // ── Tabs ─────────────────────────────────────────────────────────────
+
+    fn bridge_tab(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        let selected = node.is_selected().unwrap_or(false);
+        let aria_sel = if selected {
+            " aria-selected=\"true\""
+        } else {
+            " aria-selected=\"false\""
+        };
+        wrap_element(
+            "button",
+            &format!("{}{aria_sel}", role_attr(m, "tab")),
+            &body,
+        )
+    }
+
+    fn bridge_tab_list(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "div",
+            &format!("{}{}", role_attr(m, "tablist"), aria_label_attr(m, node)),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_tab_panel(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "div",
+            &format!("{}{}", role_attr(m, "tabpanel"), aria_label_attr(m, node)),
+            &join_children(children),
+        )
+    }
+
+    // ── Menus ─────────────────────────────────────────────────────────────
+
+    fn bridge_menu(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "ul",
+            &format!("{}{}", role_attr(m, "menu"), aria_label_attr(m, node)),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_menu_item(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        let body = if children.is_empty() {
+            node_label(node)
+        } else {
+            join_children(children)
+        };
+        wrap_element("li", &role_attr(m, "menuitem"), &body)
+    }
+
+    fn bridge_toolbar(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "div",
+            &format!("{}{}", role_attr(m, "toolbar"), aria_label_attr(m, node)),
+            &join_children(children),
+        )
+    }
+
+    fn bridge_radio_group(&self, node: &Node, _id: NodeId, children: Vec<String>) -> String {
+        let m = self.mode;
+        wrap_element(
+            "fieldset",
+            &format!("{}{}", role_attr(m, "radiogroup"), aria_label_attr(m, node)),
+            &join_children(children),
+        )
     }
 }

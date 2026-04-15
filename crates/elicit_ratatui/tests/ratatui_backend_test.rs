@@ -2,6 +2,7 @@
 
 use accesskit::{Node, NodeId, Rect, Role, Tree, TreeId, TreeUpdate};
 use elicit_ratatui::{RatatuiBackend, TuiNode};
+use elicit_ui::traits::UiTreeRenderer;
 use elicit_ui::{Layout, Viewport};
 
 fn node_id(n: u64) -> NodeId {
@@ -69,9 +70,29 @@ fn render_single_button_via_backend() {
     assert_eq!(stats.widgets_rendered, 1, "1 button");
     assert_eq!(stats.containers_rendered, 1, "root window");
     assert_eq!(stats.nodes_visited, 2);
+}
 
-    // Check the TuiNode tree was produced
-    let tui_tree = backend.last_tui_tree().expect("Should have TuiNode tree");
+#[test]
+fn render_produces_tui_node_tree() {
+    let root_id = node_id(0);
+    let btn_id = node_id(1);
+
+    let update = make_update(
+        root_id,
+        vec![
+            (root_id, window_root(vec![btn_id])),
+            (btn_id, make_button("Click me")),
+        ],
+        root_id,
+    );
+
+    let layout = Layout::from_update(update);
+    let verified = layout.verify_a(viewport()).expect("should verify");
+
+    let backend = RatatuiBackend::new();
+    let tree = verified.into_verified_tree();
+    let (tui_tree, _stats, _proof) = backend.render(&tree).unwrap();
+
     match tui_tree {
         TuiNode::Layout { children, .. } => {
             assert_eq!(children.len(), 1);
@@ -111,8 +132,6 @@ fn render_form_with_multiple_children() {
     assert_eq!(stats.widgets_rendered, 2, "label + button");
     assert_eq!(stats.containers_rendered, 2, "window + form");
     assert_eq!(stats.nodes_visited, 4);
-
-    assert!(backend.last_tui_tree().is_some());
 }
 
 #[test]
@@ -163,5 +182,5 @@ fn render_empty_tree() {
 #[test]
 fn default_backend_works() {
     let backend = RatatuiBackend::default();
-    assert!(backend.last_tui_tree().is_none());
+    assert_eq!(backend.backend_name(), "ratatui");
 }

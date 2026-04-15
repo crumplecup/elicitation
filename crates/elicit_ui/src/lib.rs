@@ -245,11 +245,12 @@ pub use layout_engine::LayoutEngineError;
 pub use layout_engine::{LayoutMode, TaffyBridge};
 pub use spatial::{BoundingBox, LayoutContext};
 pub use traits::{
-    UiBackend, UiEventDispatcher, UiInspector, UiLayoutManager, UiNavigationManager, WcagBackend,
-    WcagContrastFactory, WcagElementMeta, WcagErrorFactory, WcagFocusFactory, WcagKeyboardFactory,
-    WcagLabelFactory, WcagLanguageFactory, WcagMediaFactory, WcagOperableFactory, WcagPageMeta,
-    WcagPerceivedFactory, WcagRobustFactory, WcagStructureFactory, WcagTargetFactory,
-    WcagTimingFactory, WcagUnderstandableFactory,
+    UiBackend, UiEventBridge, UiEventDispatcher, UiInspector, UiLayoutManager, UiNavigationManager,
+    UiNodeBridge, UiRenderBackend, UiRenderer, UiTreeRenderer, WcagBackend, WcagContrastFactory,
+    WcagElementMeta, WcagErrorFactory, WcagFocusFactory, WcagKeyboardFactory, WcagLabelFactory,
+    WcagLanguageFactory, WcagMediaFactory, WcagOperableFactory, WcagPageMeta, WcagPerceivedFactory,
+    WcagRobustFactory, WcagStructureFactory, WcagTargetFactory, WcagTimingFactory,
+    WcagUnderstandableFactory,
 };
 pub use types::{ElementId, Label, RenderStats, Size, Viewport};
 pub use typestate::{ConstraintProfile, Layout, Pending, Verified};

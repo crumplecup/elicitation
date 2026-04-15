@@ -4,12 +4,14 @@ mod events;
 mod inspector;
 mod layout_manager;
 mod navigation;
+mod renderer;
 mod wcag;
 
 pub use events::UiEventDispatcher;
 pub use inspector::UiInspector;
 pub use layout_manager::UiLayoutManager;
 pub use navigation::UiNavigationManager;
+pub use renderer::{UiEventBridge, UiNodeBridge, UiRenderBackend, UiRenderer, UiTreeRenderer};
 pub use wcag::{
     WcagBackend, WcagContrastFactory, WcagElementMeta, WcagErrorFactory, WcagFocusFactory,
     WcagKeyboardFactory, WcagLabelFactory, WcagLanguageFactory, WcagMediaFactory,

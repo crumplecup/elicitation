@@ -277,8 +277,25 @@ impl Layout<Verified> {
             viewport: self.viewport.unwrap_or(Viewport::new(1920, 1080)),
         }
     }
-}
 
+    /// Render this layout using any [`UiNodeBridge`] frontend.
+    ///
+    /// Returns the [`VerifiedTree`] (for further inspection or diffing) and
+    /// [`RenderStats`] from the DFS render pass.
+    ///
+    /// # Errors
+    ///
+    /// Propagates any error returned by the bridge's render implementation.
+    pub fn render<B: crate::traits::UiNodeBridge>(
+        self,
+        backend: &B,
+    ) -> crate::UiResult<(crate::VerifiedTree, crate::RenderStats)> {
+        use crate::traits::UiTreeRenderer;
+        let tree = self.into_verified_tree();
+        let (_widget, stats, _proof) = backend.render(&tree)?;
+        Ok((tree, stats))
+    }
+}
 /// Pre-built constraint profiles for common verification scenarios.
 ///
 /// Each profile maps to a specific set of constraints from the constraint system.

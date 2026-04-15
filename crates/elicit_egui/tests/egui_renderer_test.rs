@@ -76,8 +76,7 @@ fn render_via_backend_single_button() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (rendered, stats) = verified.render(&backend).unwrap();
 
     assert!(rendered.root() == root_id);
@@ -151,8 +150,7 @@ fn render_checkbox() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
@@ -182,8 +180,7 @@ fn render_text_input() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
@@ -215,8 +212,7 @@ fn render_slider() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
@@ -247,8 +243,7 @@ fn render_progress_bar() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
@@ -278,8 +273,7 @@ fn render_heading() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
@@ -354,8 +348,7 @@ fn render_login_form() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(rendered.root(), root_id);
@@ -393,8 +386,7 @@ fn render_toolbar_with_buttons() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 3, "3 buttons in toolbar");
@@ -420,8 +412,7 @@ fn render_disabled_button() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
@@ -449,8 +440,7 @@ fn render_hidden_node_skipped() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1, "Only visible button renders");
@@ -466,8 +456,7 @@ fn render_empty_tree() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 0);
@@ -502,8 +491,7 @@ fn render_deeply_nested() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1, "1 deep button");
@@ -567,8 +555,7 @@ fn render_radio_group() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 3, "3 radio buttons");
@@ -599,8 +586,7 @@ fn render_link() {
     let layout = Layout::from_update(update);
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 1);
@@ -643,8 +629,7 @@ fn builder_verify_render_roundtrip() {
 
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (rendered, stats) = verified.render(&backend).unwrap();
 
     assert!(rendered.root().0 == 0);
@@ -667,8 +652,7 @@ fn builder_form_verify_render() {
 
     let verified = layout.verify_a(viewport()).expect("should verify");
 
-    let ctx = egui_ctx();
-    let backend = EguiBackend::new(&ctx);
+    let backend = EguiBackend::new();
     let (_rendered, stats) = verified.render(&backend).unwrap();
 
     assert_eq!(stats.widgets_rendered, 3, "2 inputs + 1 button");
