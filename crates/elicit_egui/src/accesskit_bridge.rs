@@ -66,7 +66,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<UnknownNodeValid>,
+        proof: Established<UnknownNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -83,7 +83,7 @@ impl UiNodeBridge for EguiBackend {
                 }
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_generic_container(
@@ -91,7 +91,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<GenericContainerNodeValid>,
+        proof: Established<GenericContainerNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -103,7 +103,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_pane(
@@ -111,7 +111,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<PaneNodeValid>,
+        proof: Established<PaneNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -123,7 +123,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_window(
@@ -131,7 +131,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<WindowNodeValid>,
+        proof: Established<WindowNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -143,7 +143,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_document(
@@ -151,7 +151,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<DocumentNodeValid>,
+        proof: Established<DocumentNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -163,7 +163,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_root_web_area(
@@ -171,7 +171,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<RootWebAreaNodeValid>,
+        proof: Established<RootWebAreaNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -183,7 +183,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_application(
@@ -191,7 +191,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ApplicationNodeValid>,
+        proof: Established<ApplicationNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -203,7 +203,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_terminal(
@@ -211,7 +211,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<TerminalNodeValid>,
+        proof: Established<TerminalNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -219,7 +219,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.monospace(&text);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Interactive widgets ───────────────────────────────────────────────
@@ -229,7 +229,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ButtonNodeValid>,
+        proof: Established<ButtonNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -238,17 +238,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.add_enabled(!disabled, egui::Button::new(&text));
             })
         };
-        (__w, Established::assert())
-    }
-
-    fn bridge_default_button(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<DefaultButtonNodeValid>,
-    ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_button(node, id, children, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_link(
@@ -256,7 +246,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<LinkNodeValid>,
+        proof: Established<LinkNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -265,7 +255,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.add(egui::Hyperlink::from_label_and_url(&text, &url));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_check_box(
@@ -273,7 +263,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<CheckBoxNodeValid>,
+        proof: Established<CheckBoxNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -283,7 +273,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.add_enabled(!disabled, egui::Checkbox::new(&mut checked, &text));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_radio_button(
@@ -291,7 +281,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<RadioButtonNodeValid>,
+        proof: Established<RadioButtonNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -301,7 +291,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.add_enabled(!disabled, egui::RadioButton::new(selected, &text));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_switch(
@@ -309,7 +299,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<SwitchNodeValid>,
+        proof: Established<SwitchNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -321,7 +311,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_color_well(
@@ -329,7 +319,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ColorWellNodeValid>,
+        proof: Established<ColorWellNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -338,7 +328,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.add_enabled(!disabled, egui::Button::new(format!("🎨 {text}")));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_disclosure_triangle(
@@ -346,7 +336,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<DisclosureTriangleNodeValid>,
+        proof: Established<DisclosureTriangleNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -356,7 +346,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(format!("{arrow} {text}"));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_combo_box(
@@ -364,7 +354,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ComboBoxNodeValid>,
+        proof: Established<ComboBoxNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -375,17 +365,7 @@ impl UiNodeBridge for EguiBackend {
                     .show_ui(ui, |_ui| {});
             })
         };
-        (__w, Established::assert())
-    }
-
-    fn bridge_editable_combo_box(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<EditableComboBoxNodeValid>,
-    ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_combo_box(node, id, children, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_list_box(
@@ -393,7 +373,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ListBoxNodeValid>,
+        proof: Established<ListBoxNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -405,7 +385,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_slider(
@@ -413,7 +393,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<SliderNodeValid>,
+        proof: Established<SliderNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -429,7 +409,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.add_enabled(!disabled, slider);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_spin_button(
@@ -437,7 +417,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<SpinButtonNodeValid>,
+        proof: Established<SpinButtonNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let disabled = node.is_disabled();
@@ -452,7 +432,7 @@ impl UiNodeBridge for EguiBackend {
                 );
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_progress_indicator(
@@ -460,7 +440,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ProgressIndicatorNodeValid>,
+        proof: Established<ProgressIndicatorNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -475,17 +455,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.add(pb);
             })
         };
-        (__w, Established::assert())
-    }
-
-    fn bridge_scroll_bar(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ScrollBarNodeValid>,
-    ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_progress_indicator(node, id, children, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_scroll_view(
@@ -493,7 +463,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ScrollViewNodeValid>,
+        proof: Established<ScrollViewNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -505,7 +475,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_splitter(
@@ -513,14 +483,14 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<SplitterNodeValid>,
+        proof: Established<SplitterNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             Box::new(|ui: &mut egui::Ui| {
                 ui.separator();
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Text input ───────────────────────────────────────────────────────
@@ -530,7 +500,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<TextInputNodeValid>,
+        proof: Established<TextInputNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let mut buf = node.value().unwrap_or("").to_string();
@@ -547,7 +517,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.add(te);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_multiline_text_input(
@@ -555,7 +525,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<MultilineTextInputNodeValid>,
+        proof: Established<MultilineTextInputNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let mut buf = node.value().unwrap_or("").to_string();
@@ -572,77 +542,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.add(te);
             })
         };
-        (__w, Established::assert())
-    }
-
-    fn bridge_search_input(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<SearchInputNodeValid>,
-    ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_text_input(node, id, children, Established::assert())
-    }
-
-    fn bridge_date_input(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<DateInputNodeValid>,
-    ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_text_input(node, id, children, Established::assert())
-    }
-
-    fn bridge_date_time_input(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<DateTimeInputNodeValid>,
-    ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_text_input(node, id, children, Established::assert())
-    }
-
-    fn bridge_week_input(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<WeekInputNodeValid>,
-    ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_text_input(node, id, children, Established::assert())
-    }
-
-    fn bridge_month_input(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<MonthInputNodeValid>,
-    ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_text_input(node, id, children, Established::assert())
-    }
-
-    fn bridge_time_input(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<TimeInputNodeValid>,
-    ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_text_input(node, id, children, Established::assert())
-    }
-
-    fn bridge_email_input(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<EmailInputNodeValid>,
-    ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_text_input(node, id, children, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_number_input(
@@ -650,39 +550,14 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<NumberInputNodeValid>,
+        proof: Established<NumberInputNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_spin_button(node, id, children, Established::assert())
-    }
-
-    fn bridge_password_input(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<PasswordInputNodeValid>,
-    ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_text_input(node, id, children, Established::assert())
-    }
-
-    fn bridge_phone_number_input(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<PhoneNumberInputNodeValid>,
-    ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_text_input(node, id, children, Established::assert())
-    }
-
-    fn bridge_url_input(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<UrlInputNodeValid>,
-    ) -> (Self::Widget, Established<RolePreserved>) {
-        self.bridge_text_input(node, id, children, Established::assert())
+        self.bridge_spin_button(
+            node,
+            id,
+            children,
+            Established::<SpinButtonNodeValid>::prove(&proof),
+        )
     }
 
     // ── Text display ─────────────────────────────────────────────────────
@@ -692,7 +567,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<TextRunNodeValid>,
+        proof: Established<TextRunNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -700,7 +575,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(&text);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_paragraph(
@@ -708,7 +583,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ParagraphNodeValid>,
+        proof: Established<ParagraphNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -716,7 +591,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(&text);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_label(
@@ -724,7 +599,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<LabelNodeValid>,
+        proof: Established<LabelNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -732,7 +607,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(&text);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_heading(
@@ -740,7 +615,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<HeadingNodeValid>,
+        proof: Established<HeadingNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -751,7 +626,7 @@ impl UiNodeBridge for EguiBackend {
                 ));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_line_break(
@@ -759,14 +634,14 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<LineBreakNodeValid>,
+        proof: Established<LineBreakNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             Box::new(|ui: &mut egui::Ui| {
                 ui.end_row();
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_blockquote(
@@ -774,7 +649,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<BlockquoteNodeValid>,
+        proof: Established<BlockquoteNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -784,7 +659,7 @@ impl UiNodeBridge for EguiBackend {
                 ));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_code(
@@ -792,7 +667,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<CodeNodeValid>,
+        proof: Established<CodeNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -800,7 +675,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.add(egui::Label::new(egui::RichText::new(&text).monospace()));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_math(
@@ -808,7 +683,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<MathNodeValid>,
+        proof: Established<MathNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -816,7 +691,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(&text);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_note(
@@ -824,7 +699,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<NoteNodeValid>,
+        proof: Established<NoteNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w: Self::Widget = {
@@ -843,7 +718,7 @@ impl UiNodeBridge for EguiBackend {
                 })
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_term(
@@ -851,7 +726,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<TermNodeValid>,
+        proof: Established<TermNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -859,7 +734,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.add(egui::Label::new(egui::RichText::new(&text).strong()));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_definition(
@@ -867,7 +742,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<DefinitionNodeValid>,
+        proof: Established<DefinitionNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -875,7 +750,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(&text);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Media ────────────────────────────────────────────────────────────
@@ -885,7 +760,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ImageNodeValid>,
+        proof: Established<ImageNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let alt = node_label(node);
@@ -898,7 +773,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(&text);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_figure(
@@ -906,7 +781,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<FigureNodeValid>,
+        proof: Established<FigureNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -918,7 +793,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_figure_caption(
@@ -926,7 +801,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<FigureCaptionNodeValid>,
+        proof: Established<FigureCaptionNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -934,7 +809,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.add(egui::Label::new(egui::RichText::new(&text).italics()));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_canvas(
@@ -942,7 +817,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<CanvasNodeValid>,
+        proof: Established<CanvasNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -950,7 +825,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(format!("[canvas: {text}]"));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_video(
@@ -958,7 +833,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<VideoNodeValid>,
+        proof: Established<VideoNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -966,7 +841,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(format!("[video: {text}]"));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_audio(
@@ -974,7 +849,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<AudioNodeValid>,
+        proof: Established<AudioNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -982,7 +857,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(format!("[audio: {text}]"));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Landmark sections ─────────────────────────────────────────────────
@@ -992,7 +867,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<MainNodeValid>,
+        proof: Established<MainNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1004,7 +879,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_navigation(
@@ -1012,7 +887,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<NavigationNodeValid>,
+        proof: Established<NavigationNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1024,7 +899,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_banner(
@@ -1032,7 +907,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<BannerNodeValid>,
+        proof: Established<BannerNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1044,7 +919,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_content_info(
@@ -1052,7 +927,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ContentInfoNodeValid>,
+        proof: Established<ContentInfoNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1064,7 +939,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_complementary(
@@ -1072,7 +947,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ComplementaryNodeValid>,
+        proof: Established<ComplementaryNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1084,7 +959,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_form(
@@ -1092,7 +967,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<FormNodeValid>,
+        proof: Established<FormNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1104,7 +979,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_search(
@@ -1112,7 +987,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<SearchNodeValid>,
+        proof: Established<SearchNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1124,7 +999,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_region(
@@ -1132,7 +1007,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<RegionNodeValid>,
+        proof: Established<RegionNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1144,7 +1019,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_section(
@@ -1152,7 +1027,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<SectionNodeValid>,
+        proof: Established<SectionNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1164,7 +1039,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_section_header(
@@ -1172,7 +1047,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<SectionHeaderNodeValid>,
+        proof: Established<SectionHeaderNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1184,7 +1059,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_section_footer(
@@ -1192,7 +1067,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<SectionFooterNodeValid>,
+        proof: Established<SectionFooterNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1204,7 +1079,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_article(
@@ -1212,7 +1087,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ArticleNodeValid>,
+        proof: Established<ArticleNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1224,7 +1099,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_group(
@@ -1232,7 +1107,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<GroupNodeValid>,
+        proof: Established<GroupNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1244,7 +1119,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_dialog(
@@ -1252,7 +1127,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<DialogNodeValid>,
+        proof: Established<DialogNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1264,7 +1139,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_details(
@@ -1272,7 +1147,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<DetailsNodeValid>,
+        proof: Established<DetailsNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1284,7 +1159,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_tooltip(
@@ -1292,7 +1167,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<TooltipNodeValid>,
+        proof: Established<TooltipNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -1300,7 +1175,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(&text);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_alert(
@@ -1308,7 +1183,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<AlertNodeValid>,
+        proof: Established<AlertNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -1318,7 +1193,7 @@ impl UiNodeBridge for EguiBackend {
                 ));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_status(
@@ -1326,7 +1201,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<StatusNodeValid>,
+        proof: Established<StatusNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -1334,7 +1209,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(&text);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_timer(
@@ -1342,7 +1217,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<TimerNodeValid>,
+        proof: Established<TimerNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -1350,7 +1225,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(&text);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Lists ─────────────────────────────────────────────────────────────
@@ -1360,7 +1235,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ListNodeValid>,
+        proof: Established<ListNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1372,7 +1247,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_list_item(
@@ -1380,7 +1255,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ListItemNodeValid>,
+        proof: Established<ListItemNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -1388,7 +1263,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(format!("• {text}"));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_description_list(
@@ -1396,7 +1271,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<DescriptionListNodeValid>,
+        proof: Established<DescriptionListNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1408,7 +1283,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Tables ────────────────────────────────────────────────────────────
@@ -1418,7 +1293,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<TableNodeValid>,
+        proof: Established<TableNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1433,7 +1308,7 @@ impl UiNodeBridge for EguiBackend {
                     });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_row(
@@ -1441,7 +1316,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<RowNodeValid>,
+        proof: Established<RowNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1452,7 +1327,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.end_row();
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_cell(
@@ -1460,7 +1335,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<CellNodeValid>,
+        proof: Established<CellNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -1468,7 +1343,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.label(&text);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_caption(
@@ -1476,7 +1351,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<CaptionNodeValid>,
+        proof: Established<CaptionNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -1484,7 +1359,7 @@ impl UiNodeBridge for EguiBackend {
                 ui.add(egui::Label::new(egui::RichText::new(&text).italics()));
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_row_group(
@@ -1492,7 +1367,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<RowGroupNodeValid>,
+        proof: Established<RowGroupNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1504,7 +1379,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Trees ─────────────────────────────────────────────────────────────
@@ -1514,7 +1389,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<TreeNodeValid>,
+        proof: Established<TreeNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1526,7 +1401,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_tree_item(
@@ -1534,7 +1409,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<TreeItemNodeValid>,
+        proof: Established<TreeItemNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w: Self::Widget = {
@@ -1562,7 +1437,7 @@ impl UiNodeBridge for EguiBackend {
                 })
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Tabs ─────────────────────────────────────────────────────────────
@@ -1572,7 +1447,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<TabNodeValid>,
+        proof: Established<TabNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -1580,7 +1455,7 @@ impl UiNodeBridge for EguiBackend {
                 let _ = ui.selectable_label(false, &text);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_tab_list(
@@ -1588,7 +1463,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<TabListNodeValid>,
+        proof: Established<TabListNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1600,7 +1475,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_tab_panel(
@@ -1608,7 +1483,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<TabPanelNodeValid>,
+        proof: Established<TabPanelNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1620,7 +1495,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Menus ─────────────────────────────────────────────────────────────
@@ -1630,7 +1505,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<MenuNodeValid>,
+        proof: Established<MenuNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1642,7 +1517,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_menu_item(
@@ -1650,7 +1525,7 @@ impl UiNodeBridge for EguiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<MenuItemNodeValid>,
+        proof: Established<MenuItemNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -1658,7 +1533,7 @@ impl UiNodeBridge for EguiBackend {
                 let _ = ui.selectable_label(false, &text);
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_toolbar(
@@ -1666,7 +1541,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<ToolbarNodeValid>,
+        proof: Established<ToolbarNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1678,7 +1553,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_radio_group(
@@ -1686,7 +1561,7 @@ impl UiNodeBridge for EguiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(Self::Widget, Established<RolePreserved>)>,
-        _proof: Established<RadioGroupNodeValid>,
+        proof: Established<RadioGroupNodeValid>,
     ) -> (Self::Widget, Established<RolePreserved>) {
         let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1698,7 +1573,7 @@ impl UiNodeBridge for EguiBackend {
                 });
             })
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 }
 

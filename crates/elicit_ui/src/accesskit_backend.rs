@@ -7,6 +7,19 @@ use accesskit::{Node, NodeId, Role, Toggled, Tree, TreeId, TreeUpdate};
 use elicitation::Established;
 use tracing::instrument;
 
+use crate::proof_credentials::{
+    AccessibleNameVerified, AudioDescriptionVerified, CaptionsVerified,
+    EnhancedLargeTextContrastVerified, EnhancedNormalTextContrastVerified, ErrorIdentifiedVerified,
+    ErrorPreventionVerified, ErrorSuggestionVerified, FocusActivated,
+    FocusAppearanceEnhancedVerified, FocusAppearanceMinimumVerified, FocusOrderSet,
+    FocusVisibleVerified, FormLabelVerified, HeadingCreated, KeyboardEscapeVerified,
+    KeyboardOperableVerified, LabelInNameVerified, LabelsAndInstructionsVerified,
+    LargeTextContrastVerified, LayoutContainerCreated, ListCreated, NonTextContrastVerified,
+    NormalTextContrastVerified, PageLanguageVerified, PartLanguageVerified,
+    PointerCancellationVerified, PointerGestureAlternativeVerified, RemappableShortcutVerified,
+    ResizableTextCreated, ShortcutRegistered, SkipLinkAdded, TableCreated,
+    TargetSizeEnhancedVerified, TargetSizeMinimumVerified, TimingAdjustableVerified,
+};
 use crate::{
     CaptionedMedia, ContainerId, ContrastDescriptor, ContrastPair, ErrorDescriptor, ErrorField,
     FocusDescriptor, FocusIndicator, FocusVisible, KeyboardAccessible, KeyboardDescriptor,
@@ -122,14 +135,12 @@ impl WcagContrastFactory for AccessKitUiBackend {
                 "contrast {ratio:.2} < 4.5:1 (WCAG 1.4.3 normal text)"
             ))));
         }
-        Ok((
-            ContrastPair {
-                foreground: input.foreground,
-                background: input.background,
-                ratio: ratio.into(),
-            },
-            Established::assert(),
-        ))
+        let pair = ContrastPair {
+            foreground: input.foreground,
+            background: input.background,
+            ratio: ratio.into(),
+        };
+        Ok((pair, Established::prove(&NormalTextContrastVerified)))
     }
 
     #[instrument(skip(self, input))]
@@ -143,14 +154,12 @@ impl WcagContrastFactory for AccessKitUiBackend {
                 "contrast {ratio:.2} < 3:1 (WCAG 1.4.3 large text)"
             ))));
         }
-        Ok((
-            ContrastPair {
-                foreground: input.foreground,
-                background: input.background,
-                ratio: ratio.into(),
-            },
-            Established::assert(),
-        ))
+        let pair = ContrastPair {
+            foreground: input.foreground,
+            background: input.background,
+            ratio: ratio.into(),
+        };
+        Ok((pair, Established::prove(&LargeTextContrastVerified)))
     }
 
     #[instrument(skip(self, input))]
@@ -164,13 +173,14 @@ impl WcagContrastFactory for AccessKitUiBackend {
                 "contrast {ratio:.2} < 7:1 (WCAG 1.4.6 enhanced normal text)"
             ))));
         }
+        let pair = ContrastPair {
+            foreground: input.foreground,
+            background: input.background,
+            ratio: ratio.into(),
+        };
         Ok((
-            ContrastPair {
-                foreground: input.foreground,
-                background: input.background,
-                ratio: ratio.into(),
-            },
-            Established::assert(),
+            pair,
+            Established::prove(&EnhancedNormalTextContrastVerified),
         ))
     }
 
@@ -185,14 +195,12 @@ impl WcagContrastFactory for AccessKitUiBackend {
                 "contrast {ratio:.2} < 4.5:1 (WCAG 1.4.6 enhanced large text)"
             ))));
         }
-        Ok((
-            ContrastPair {
-                foreground: input.foreground,
-                background: input.background,
-                ratio: ratio.into(),
-            },
-            Established::assert(),
-        ))
+        let pair = ContrastPair {
+            foreground: input.foreground,
+            background: input.background,
+            ratio: ratio.into(),
+        };
+        Ok((pair, Established::prove(&EnhancedLargeTextContrastVerified)))
     }
 
     #[instrument(skip(self, input))]
@@ -206,14 +214,12 @@ impl WcagContrastFactory for AccessKitUiBackend {
                 "contrast {ratio:.2} < 3:1 (WCAG 1.4.11 non-text component)"
             ))));
         }
-        Ok((
-            ContrastPair {
-                foreground: input.foreground,
-                background: input.background,
-                ratio: ratio.into(),
-            },
-            Established::assert(),
-        ))
+        let pair = ContrastPair {
+            foreground: input.foreground,
+            background: input.background,
+            ratio: ratio.into(),
+        };
+        Ok((pair, Established::prove(&NonTextContrastVerified)))
     }
 }
 
@@ -242,13 +248,11 @@ impl WcagLabelFactory for AccessKitUiBackend {
             state.focus_order.push(id);
         }
         state.nodes.insert(id, node);
-        Ok((
-            LabeledElement {
-                id: WidgetId::from_node(id),
-                name: input.name,
-            },
-            Established::assert(),
-        ))
+        let element = LabeledElement {
+            id: WidgetId::from_node(id),
+            name: input.name,
+        };
+        Ok((element, Established::prove(&AccessibleNameVerified)))
     }
 
     #[instrument(skip(self, input), fields(role = %input.role))]
@@ -276,13 +280,11 @@ impl WcagLabelFactory for AccessKitUiBackend {
         }
         state.focus_order.push(id);
         state.nodes.insert(id, node);
-        Ok((
-            LabeledElement {
-                id: WidgetId::from_node(id),
-                name: input.name,
-            },
-            Established::assert(),
-        ))
+        let element = LabeledElement {
+            id: WidgetId::from_node(id),
+            name: input.name,
+        };
+        Ok((element, Established::prove(&FormLabelVerified)))
     }
 
     #[instrument(skip(self, input), fields(role = %input.role))]
@@ -306,13 +308,11 @@ impl WcagLabelFactory for AccessKitUiBackend {
             state.focus_order.push(id);
         }
         state.nodes.insert(id, node);
-        Ok((
-            LabeledElement {
-                id: WidgetId::from_node(id),
-                name: input.name,
-            },
-            Established::assert(),
-        ))
+        let element = LabeledElement {
+            id: WidgetId::from_node(id),
+            name: input.name,
+        };
+        Ok((element, Established::prove(&LabelInNameVerified)))
     }
 }
 
@@ -337,14 +337,12 @@ impl WcagFocusFactory for AccessKitUiBackend {
                 input.indicator_contrast
             ))));
         }
-        Ok((
-            FocusIndicator {
-                widget: input.widget,
-                area_px: input.indicator_area_px,
-                contrast: input.indicator_contrast,
-            },
-            Established::assert(),
-        ))
+        let indicator = FocusIndicator {
+            widget: input.widget,
+            area_px: input.indicator_area_px,
+            contrast: input.indicator_contrast,
+        };
+        Ok((indicator, Established::prove(&FocusVisibleVerified)))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -370,13 +368,14 @@ impl WcagFocusFactory for AccessKitUiBackend {
                 "focus indicator area must be positive (WCAG 2.4.11)".into(),
             )));
         }
+        let indicator = FocusIndicator {
+            widget: input.widget,
+            area_px: input.indicator_area_px,
+            contrast: input.indicator_contrast,
+        };
         Ok((
-            FocusIndicator {
-                widget: input.widget,
-                area_px: input.indicator_area_px,
-                contrast: input.indicator_contrast,
-            },
-            Established::assert(),
+            indicator,
+            Established::prove(&FocusAppearanceMinimumVerified),
         ))
     }
 
@@ -404,13 +403,14 @@ impl WcagFocusFactory for AccessKitUiBackend {
                 "focus indicator area must be positive (WCAG 2.4.12)".into(),
             )));
         }
+        let indicator = FocusIndicator {
+            widget: input.widget,
+            area_px: input.indicator_area_px,
+            contrast: input.indicator_contrast,
+        };
         Ok((
-            FocusIndicator {
-                widget: input.widget,
-                area_px: input.indicator_area_px,
-                contrast: input.indicator_contrast,
-            },
-            Established::assert(),
+            indicator,
+            Established::prove(&FocusAppearanceEnhancedVerified),
         ))
     }
 }
@@ -436,13 +436,11 @@ impl WcagKeyboardFactory for AccessKitUiBackend {
         if !state.focus_order.contains(&input.widget.to_node_id()) {
             state.focus_order.push(input.widget.to_node_id());
         }
-        Ok((
-            KeyboardPath {
-                widget: input.widget,
-                tab_index: input.tab_index,
-            },
-            Established::assert(),
-        ))
+        let path = KeyboardPath {
+            widget: input.widget,
+            tab_index: input.tab_index,
+        };
+        Ok((path, Established::prove(&KeyboardOperableVerified)))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -457,13 +455,11 @@ impl WcagKeyboardFactory for AccessKitUiBackend {
                 input.widget.0
             ))));
         }
-        Ok((
-            KeyboardPath {
-                widget: input.widget,
-                tab_index: input.tab_index,
-            },
-            Established::assert(),
-        ))
+        let path = KeyboardPath {
+            widget: input.widget,
+            tab_index: input.tab_index,
+        };
+        Ok((path, Established::prove(&KeyboardEscapeVerified)))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -479,14 +475,11 @@ impl WcagKeyboardFactory for AccessKitUiBackend {
             ))));
         }
         // WCAG 2.1.4: shortcuts must be remappable or focus-restricted.
-        // Declaration is sufficient — the caller asserts the mechanism exists.
-        Ok((
-            KeyboardPath {
-                widget: input.widget,
-                tab_index: input.tab_index,
-            },
-            Established::assert(),
-        ))
+        let path = KeyboardPath {
+            widget: input.widget,
+            tab_index: input.tab_index,
+        };
+        Ok((path, Established::prove(&RemappableShortcutVerified)))
     }
 }
 
@@ -515,13 +508,11 @@ impl WcagTimingFactory for AccessKitUiBackend {
                 input.element.0
             ))));
         }
-        Ok((
-            TimedElement {
-                widget: input.element,
-                max_seconds: input.max_seconds,
-            },
-            Established::assert(),
-        ))
+        let element = TimedElement {
+            widget: input.element,
+            max_seconds: input.max_seconds,
+        };
+        Ok((element, Established::prove(&TimingAdjustableVerified)))
     }
 }
 
@@ -564,14 +555,12 @@ impl WcagTargetFactory for AccessKitUiBackend {
                 y1: input.height_px,
             });
         }
-        Ok((
-            PointerTarget {
-                id: input.widget,
-                width_px: input.width_px,
-                height_px: input.height_px,
-            },
-            Established::assert(),
-        ))
+        let target = PointerTarget {
+            id: input.widget,
+            width_px: input.width_px,
+            height_px: input.height_px,
+        };
+        Ok((target, Established::prove(&TargetSizeMinimumVerified)))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -605,14 +594,12 @@ impl WcagTargetFactory for AccessKitUiBackend {
                 y1: input.height_px,
             });
         }
-        Ok((
-            PointerTarget {
-                id: input.widget,
-                width_px: input.width_px,
-                height_px: input.height_px,
-            },
-            Established::assert(),
-        ))
+        let target = PointerTarget {
+            id: input.widget,
+            width_px: input.width_px,
+            height_px: input.height_px,
+        };
+        Ok((target, Established::prove(&TargetSizeEnhancedVerified)))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -631,13 +618,14 @@ impl WcagTargetFactory for AccessKitUiBackend {
             ))));
         }
         // Caller asserts the single-pointer alternative exists (WCAG 2.5.7).
+        let target = PointerTarget {
+            id: input.widget,
+            width_px: input.width_px,
+            height_px: input.height_px,
+        };
         Ok((
-            PointerTarget {
-                id: input.widget,
-                width_px: input.width_px,
-                height_px: input.height_px,
-            },
-            Established::assert(),
+            target,
+            Established::prove(&PointerGestureAlternativeVerified),
         ))
     }
 
@@ -654,14 +642,12 @@ impl WcagTargetFactory for AccessKitUiBackend {
             ))));
         }
         // Caller asserts up-event / abort mechanism is in place (WCAG 2.5.2).
-        Ok((
-            PointerTarget {
-                id: input.widget,
-                width_px: input.width_px,
-                height_px: input.height_px,
-            },
-            Established::assert(),
-        ))
+        let target = PointerTarget {
+            id: input.widget,
+            width_px: input.width_px,
+            height_px: input.height_px,
+        };
+        Ok((target, Established::prove(&PointerCancellationVerified)))
     }
 }
 
@@ -688,13 +674,11 @@ impl WcagStructureFactory for AccessKitUiBackend {
         node.set_label(input.label.as_str());
         node.set_level(usize::from(level));
         state.nodes.insert(id, node);
-        Ok((
-            StructuredElement {
-                id: WidgetId::from_node(id),
-                role: "heading".to_string(),
-            },
-            Established::assert(),
-        ))
+        let element = StructuredElement {
+            id: WidgetId::from_node(id),
+            role: "heading".to_string(),
+        };
+        Ok((element, Established::prove(&HeadingCreated)))
     }
 
     #[instrument(skip(self, input), fields(label = %input.label))]
@@ -712,13 +696,11 @@ impl WcagStructureFactory for AccessKitUiBackend {
             node.set_label(input.label.as_str());
         }
         state.nodes.insert(id, node);
-        Ok((
-            StructuredElement {
-                id: WidgetId::from_node(id),
-                role: "list".to_string(),
-            },
-            Established::assert(),
-        ))
+        let element = StructuredElement {
+            id: WidgetId::from_node(id),
+            role: "list".to_string(),
+        };
+        Ok((element, Established::prove(&ListCreated)))
     }
 
     #[instrument(skip(self, input), fields(label = %input.label))]
@@ -736,13 +718,11 @@ impl WcagStructureFactory for AccessKitUiBackend {
         let mut node = Node::new(Role::Table);
         node.set_label(input.label.as_str());
         state.nodes.insert(id, node);
-        Ok((
-            StructuredElement {
-                id: WidgetId::from_node(id),
-                role: "table".to_string(),
-            },
-            Established::assert(),
-        ))
+        let element = StructuredElement {
+            id: WidgetId::from_node(id),
+            role: "table".to_string(),
+        };
+        Ok((element, Established::prove(&TableCreated)))
     }
 
     #[instrument(skip(self, input), fields(label = %input.label))]
@@ -757,13 +737,11 @@ impl WcagStructureFactory for AccessKitUiBackend {
             node.set_label(input.label.as_str());
         }
         state.nodes.insert(id, node);
-        Ok((
-            StructuredElement {
-                id: WidgetId::from_node(id),
-                role: "paragraph".to_string(),
-            },
-            Established::assert(),
-        ))
+        let element = StructuredElement {
+            id: WidgetId::from_node(id),
+            role: "paragraph".to_string(),
+        };
+        Ok((element, Established::prove(&ResizableTextCreated)))
     }
 }
 
@@ -790,12 +768,10 @@ impl WcagMediaFactory for AccessKitUiBackend {
         let mut node = Node::new(Role::Video);
         node.set_label(input.label.as_str());
         state.nodes.insert(id, node);
-        Ok((
-            CaptionedMedia {
-                id: WidgetId::from_node(id),
-            },
-            Established::assert(),
-        ))
+        let media = CaptionedMedia {
+            id: WidgetId::from_node(id),
+        };
+        Ok((media, Established::prove(&CaptionsVerified)))
     }
 
     #[instrument(skip(self, input), fields(label = %input.label))]
@@ -818,12 +794,10 @@ impl WcagMediaFactory for AccessKitUiBackend {
         let mut node = Node::new(Role::Video);
         node.set_label(input.label.as_str());
         state.nodes.insert(id, node);
-        Ok((
-            CaptionedMedia {
-                id: WidgetId::from_node(id),
-            },
-            Established::assert(),
-        ))
+        let media = CaptionedMedia {
+            id: WidgetId::from_node(id),
+        };
+        Ok((media, Established::prove(&AudioDescriptionVerified)))
     }
 }
 
@@ -842,12 +816,10 @@ impl WcagLanguageFactory for AccessKitUiBackend {
         }
         let mut state = self.state.lock().unwrap();
         state.page_lang = input.page_lang.clone();
-        Ok((
-            LanguagePage {
-                lang: input.page_lang,
-            },
-            Established::assert(),
-        ))
+        let page = LanguagePage {
+            lang: input.page_lang,
+        };
+        Ok((page, Established::prove(&PageLanguageVerified)))
     }
 
     #[instrument(skip(self, input))]
@@ -863,7 +835,8 @@ impl WcagLanguageFactory for AccessKitUiBackend {
                     "element language tag is empty (WCAG 3.1.2)".into(),
                 ))
             })?;
-        Ok((LanguagePage { lang }, Established::assert()))
+        let page = LanguagePage { lang };
+        Ok((page, Established::prove(&PartLanguageVerified)))
     }
 }
 
@@ -894,13 +867,11 @@ impl WcagErrorFactory for AccessKitUiBackend {
         if let Some(node) = state.nodes.get_mut(&node_id) {
             node.set_value(description.as_str());
         }
-        Ok((
-            ErrorField {
-                id: input.widget,
-                description,
-            },
-            Established::assert(),
-        ))
+        let field = ErrorField {
+            id: input.widget,
+            description,
+        };
+        Ok((field, Established::prove(&ErrorIdentifiedVerified)))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -924,13 +895,11 @@ impl WcagErrorFactory for AccessKitUiBackend {
             .map(|l| l.to_string())
             .or_else(|| input.error_text.clone())
             .unwrap_or_else(|| "label present".to_string());
-        Ok((
-            ErrorField {
-                id: input.widget,
-                description,
-            },
-            Established::assert(),
-        ))
+        let field = ErrorField {
+            id: input.widget,
+            description,
+        };
+        Ok((field, Established::prove(&LabelsAndInstructionsVerified)))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -954,13 +923,11 @@ impl WcagErrorFactory for AccessKitUiBackend {
             ))
         })?;
         let description = input.error_text.unwrap_or_else(|| suggestion.clone());
-        Ok((
-            ErrorField {
-                id: input.widget,
-                description,
-            },
-            Established::assert(),
-        ))
+        let field = ErrorField {
+            id: input.widget,
+            description,
+        };
+        Ok((field, Established::prove(&ErrorSuggestionVerified)))
     }
 
     #[instrument(skip(self, input), fields(widget = input.widget.0))]
@@ -979,13 +946,11 @@ impl WcagErrorFactory for AccessKitUiBackend {
         let description = input
             .error_text
             .unwrap_or_else(|| "error prevention mechanism present".to_string());
-        Ok((
-            ErrorField {
-                id: input.widget,
-                description,
-            },
-            Established::assert(),
-        ))
+        let field = ErrorField {
+            id: input.widget,
+            description,
+        };
+        Ok((field, Established::prove(&ErrorPreventionVerified)))
     }
 }
 
@@ -994,14 +959,14 @@ impl WcagErrorFactory for AccessKitUiBackend {
 impl WcagPerceivedFactory for AccessKitUiBackend {
     fn build_perceivable(
         &self,
-        _evidence: PerceivedEvidence,
+        evidence: PerceivedEvidence,
     ) -> (PerceivedSection, Established<WcagPerceivedValid>) {
         let count = self.state.lock().unwrap().nodes.len();
         (
             PerceivedSection {
                 validated_count: count,
             },
-            Established::assert(),
+            Established::prove(&evidence),
         )
     }
 }
@@ -1009,14 +974,14 @@ impl WcagPerceivedFactory for AccessKitUiBackend {
 impl WcagOperableFactory for AccessKitUiBackend {
     fn build_operable(
         &self,
-        _evidence: OperableEvidence,
+        evidence: OperableEvidence,
     ) -> (OperableInterface, Established<WcagOperableValid>) {
         let count = self.state.lock().unwrap().focus_order.len();
         (
             OperableInterface {
                 validated_count: count,
             },
-            Established::assert(),
+            Established::prove(&evidence),
         )
     }
 }
@@ -1024,7 +989,7 @@ impl WcagOperableFactory for AccessKitUiBackend {
 impl WcagUnderstandableFactory for AccessKitUiBackend {
     fn build_understandable(
         &self,
-        _evidence: UnderstandableEvidence,
+        evidence: UnderstandableEvidence,
     ) -> (
         UnderstandableInterface,
         Established<WcagUnderstandableValid>,
@@ -1034,7 +999,7 @@ impl WcagUnderstandableFactory for AccessKitUiBackend {
             UnderstandableInterface {
                 validated_count: count,
             },
-            Established::assert(),
+            Established::prove(&evidence),
         )
     }
 }
@@ -1042,14 +1007,14 @@ impl WcagUnderstandableFactory for AccessKitUiBackend {
 impl WcagRobustFactory for AccessKitUiBackend {
     fn build_robust(
         &self,
-        _evidence: RobustEvidence,
+        evidence: RobustEvidence,
     ) -> (RobustWidget, Established<WcagRobustValid>) {
         let count = self.state.lock().unwrap().nodes.len();
         (
             RobustWidget {
                 validated_count: count,
             },
-            Established::assert(),
+            Established::prove(&evidence),
         )
     }
 }
@@ -1197,7 +1162,8 @@ impl UiLayoutManager for AccessKitUiBackend {
             }
         }
         state.nodes.insert(id, node);
-        Ok((ContainerId::from_node(id), Established::assert()))
+        let container = ContainerId::from_node(id);
+        Ok((container, Established::prove(&LayoutContainerCreated)))
     }
 
     #[instrument(skip(self, children), fields(columns))]
@@ -1218,7 +1184,8 @@ impl UiLayoutManager for AccessKitUiBackend {
             }
         }
         state.nodes.insert(id, node);
-        Ok((ContainerId::from_node(id), Established::assert()))
+        let container = ContainerId::from_node(id);
+        Ok((container, Established::prove(&LayoutContainerCreated)))
     }
 
     #[instrument(skip(self), fields(child = child.0))]
@@ -1232,7 +1199,8 @@ impl UiLayoutManager for AccessKitUiBackend {
         node.set_children(vec![child.to_node_id()]);
         state.parent_map.insert(child.to_node_id(), id);
         state.nodes.insert(id, node);
-        Ok((ContainerId::from_node(id), Established::assert()))
+        let container = ContainerId::from_node(id);
+        Ok((container, Established::prove(&LayoutContainerCreated)))
     }
 
     #[instrument(skip(self, content), fields(name))]
@@ -1310,7 +1278,7 @@ impl UiNavigationManager for AccessKitUiBackend {
     fn set_focus_order(&self, ids: Vec<WidgetId>) -> UiResult<Established<KeyboardAccessible>> {
         let mut state = self.state.lock().unwrap();
         state.focus_order = ids.iter().map(|w| w.to_node_id()).collect();
-        Ok(Established::assert())
+        Ok(Established::prove(&FocusOrderSet))
     }
 
     #[instrument(skip(self), fields(id = id.0))]
@@ -1323,7 +1291,7 @@ impl UiNavigationManager for AccessKitUiBackend {
                 node_id
             ))));
         }
-        Ok(Established::assert())
+        Ok(Established::prove(&FocusActivated))
     }
 
     #[instrument(skip(self), fields(key, action_id, label))]
@@ -1339,7 +1307,7 @@ impl UiNavigationManager for AccessKitUiBackend {
             )));
         }
         let _ = (key, action_id);
-        Ok(Established::assert())
+        Ok(Established::prove(&ShortcutRegistered))
     }
 
     #[instrument(skip(self), fields(target_id = target_id.0))]
@@ -1351,7 +1319,7 @@ impl UiNavigationManager for AccessKitUiBackend {
                 target_id.to_node_id()
             ))));
         }
-        Ok(Established::assert())
+        Ok(Established::prove(&SkipLinkAdded))
     }
 
     #[instrument(skip(self))]

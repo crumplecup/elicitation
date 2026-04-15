@@ -49,6 +49,7 @@ mod contracts;
 mod css_units;
 mod errors;
 mod layout_engine;
+pub(crate) mod proof_credentials;
 /// Per-role proof tokens for the [`UiNodeBridge`] chain of custody.
 ///
 /// Each `XxxNodeValid` type is issued by `dispatch_role` after the WCAG
@@ -78,6 +79,7 @@ pub use constraints::{
     TerminalAccessible, TerminalBreakpoint, TerminalBreakpointSet, TerminalNoOverflow, TextSpacing,
     ValidRoleConstraint, Violation, WcagLevel,
 };
+pub use contracts::NodeRoleProof;
 pub use contracts::{
     // ── Legacy aliases (API back-compat) ──────────────────────────────────
     AccessibleAA,

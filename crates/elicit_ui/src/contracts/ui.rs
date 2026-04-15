@@ -1,7 +1,7 @@
 //! UI-pipeline proof tokens (not tied to any external standard).
 
 mod emit_impls {
-    use elicitation::contracts::Prop;
+    use elicitation::contracts::{Prop, ProvableFrom};
     use elicitation::proc_macro2::TokenStream;
     use elicitation::quote::quote;
 
@@ -20,6 +20,12 @@ mod emit_impls {
             }
         };
     }
+
+    /// Marker: all 182 per-role `XxxNodeValid` proof types implement this.
+    ///
+    /// Enables blanket `ProvableFrom` impls: any role token can mint `RolePreserved`,
+    /// and any role token can be minted from `Established<WcagVerified>`.
+    pub trait NodeRoleProof: Prop {}
 
     /// Proposition: UI tree has been successfully rendered to a backend.
     pub struct RenderComplete;
@@ -45,6 +51,18 @@ mod emit_impls {
     /// during validation and dispatch.
     pub struct RolePreserved;
     structural_prop!(RolePreserved, "RolePreserved");
+
+    use crate::VerifiedTree;
+    use elicitation::contracts::Established;
+
+    // `WcagVerified` is minted from a `VerifiedTree` — the tree is the credential.
+    impl ProvableFrom<VerifiedTree> for WcagVerified {}
+
+    // Any role proof can mint `RolePreserved` — the role token is the credential.
+    impl<T: NodeRoleProof> ProvableFrom<Established<T>> for RolePreserved {}
+
+    // `RenderComplete` is minted once the wcag-gated render pass finishes.
+    impl ProvableFrom<Established<WcagVerified>> for RenderComplete {}
 }
 
-pub use emit_impls::{IrSourced, RenderComplete, RolePreserved, WcagVerified};
+pub use emit_impls::{IrSourced, NodeRoleProof, RenderComplete, RolePreserved, WcagVerified};

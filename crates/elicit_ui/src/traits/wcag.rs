@@ -589,7 +589,7 @@ where
         + Send
         + Sync,
 {
-    fn build_level_aa(&self, _evidence: LevelAaEvidence) -> Established<WcagLevelAAValid> {
-        Established::assert()
+    fn build_level_aa(&self, evidence: LevelAaEvidence) -> Established<WcagLevelAAValid> {
+        Established::prove(&evidence)
     }
 }

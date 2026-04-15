@@ -9,9 +9,10 @@
 pub mod node_roles;
 pub mod ui;
 pub mod wcag;
+pub(crate) mod wcag_proofs;
 
 // Re-export everything so call sites use `elicit_ui::{WcagLevelAAValid, ...}`.
-pub use ui::{IrSourced, RenderComplete, RolePreserved, WcagVerified};
+pub use ui::{IrSourced, NodeRoleProof, RenderComplete, RolePreserved, WcagVerified};
 pub use wcag::{
     // ── Legacy aliases (API back-compat) ──────────────────────────────────
     AccessibleAA,

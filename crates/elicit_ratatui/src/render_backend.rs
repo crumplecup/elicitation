@@ -119,7 +119,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<UnknownNodeValid>,
+        proof: Established<UnknownNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -129,7 +129,7 @@ impl UiNodeBridge for RatatuiBackend {
                 vertical_layout(children)
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_generic_container(
@@ -137,11 +137,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<GenericContainerNodeValid>,
+        proof: Established<GenericContainerNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_pane(
@@ -149,11 +149,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<PaneNodeValid>,
+        proof: Established<PaneNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_window(
@@ -161,11 +161,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<WindowNodeValid>,
+        proof: Established<WindowNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_document(
@@ -173,11 +173,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<DocumentNodeValid>,
+        proof: Established<DocumentNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_root_web_area(
@@ -185,11 +185,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<RootWebAreaNodeValid>,
+        proof: Established<RootWebAreaNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_application(
@@ -197,11 +197,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ApplicationNodeValid>,
+        proof: Established<ApplicationNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_terminal(
@@ -209,10 +209,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<TerminalNodeValid>,
+        proof: Established<TerminalNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Interactive widgets ───────────────────────────────────────────────
@@ -222,7 +222,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ButtonNodeValid>,
+        proof: Established<ButtonNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let lbl = node_label(node);
@@ -238,17 +238,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
-    }
-
-    fn bridge_default_button(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<DefaultButtonNodeValid>,
-    ) -> (TuiNode, Established<RolePreserved>) {
-        self.bridge_button(node, id, children, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_link(
@@ -256,7 +246,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<LinkNodeValid>,
+        proof: Established<LinkNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let lbl = node_label(node);
@@ -273,7 +263,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_check_box(
@@ -281,7 +271,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<CheckBoxNodeValid>,
+        proof: Established<CheckBoxNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let lbl = node_label(node);
@@ -301,7 +291,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_radio_button(
@@ -309,7 +299,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<RadioButtonNodeValid>,
+        proof: Established<RadioButtonNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let lbl = node_label(node);
@@ -329,7 +319,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_switch(
@@ -337,7 +327,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<SwitchNodeValid>,
+        proof: Established<SwitchNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let lbl = node_label(node);
@@ -357,7 +347,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_color_well(
@@ -365,7 +355,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ColorWellNodeValid>,
+        proof: Established<ColorWellNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let val = node.value().unwrap_or("#000000");
@@ -380,7 +370,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_disclosure_triangle(
@@ -388,7 +378,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<DisclosureTriangleNodeValid>,
+        proof: Established<DisclosureTriangleNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let lbl = node_label(node);
@@ -408,7 +398,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_combo_box(
@@ -416,7 +406,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ComboBoxNodeValid>,
+        proof: Established<ComboBoxNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let val = node_label(node);
@@ -431,17 +421,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
-    }
-
-    fn bridge_editable_combo_box(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<EditableComboBoxNodeValid>,
-    ) -> (TuiNode, Established<RolePreserved>) {
-        self.bridge_combo_box(node, id, children, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_list_box(
@@ -449,7 +429,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ListBoxNodeValid>,
+        proof: Established<ListBoxNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -475,7 +455,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_slider(
@@ -483,7 +463,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<SliderNodeValid>,
+        proof: Established<SliderNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let val = node.numeric_value().unwrap_or(0.0);
@@ -504,7 +484,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_spin_button(
@@ -512,7 +492,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<SpinButtonNodeValid>,
+        proof: Established<SpinButtonNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let val = node.numeric_value().unwrap_or(0.0);
@@ -527,7 +507,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_progress_indicator(
@@ -535,7 +515,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ProgressIndicatorNodeValid>,
+        proof: Established<ProgressIndicatorNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let val = node.numeric_value().unwrap_or(0.0);
@@ -555,17 +535,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
-    }
-
-    fn bridge_scroll_bar(
-        &self,
-        node: &Node,
-        id: NodeId,
-        children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ScrollBarNodeValid>,
-    ) -> (TuiNode, Established<RolePreserved>) {
-        self.bridge_progress_indicator(node, id, children, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_scroll_view(
@@ -573,11 +543,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ScrollViewNodeValid>,
+        proof: Established<ScrollViewNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_splitter(
@@ -585,7 +555,7 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<SplitterNodeValid>,
+        proof: Established<SplitterNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             TuiNode::Widget {
@@ -599,7 +569,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Text input ───────────────────────────────────────────────────────
@@ -609,7 +579,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<TextInputNodeValid>,
+        proof: Established<TextInputNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let val = node.value().unwrap_or("");
@@ -627,7 +597,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_multiline_text_input(
@@ -635,15 +605,20 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<MultilineTextInputNodeValid>,
+        proof: Established<MultilineTextInputNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
-        let (mut result, _) = self.bridge_text_input(node, id, children, Established::assert());
+        let (mut result, _) = self.bridge_text_input(
+            node,
+            id,
+            children,
+            Established::<TextInputNodeValid>::prove(&proof),
+        );
         if let TuiNode::Widget { widget } = &mut result
             && let WidgetJson::Paragraph { wrap, .. } = widget.as_mut()
         {
             *wrap = true;
         }
-        (result, Established::assert())
+        (result, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Text display ─────────────────────────────────────────────────────
@@ -653,10 +628,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<TextRunNodeValid>,
+        proof: Established<TextRunNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_paragraph(
@@ -664,7 +639,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ParagraphNodeValid>,
+        proof: Established<ParagraphNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             TuiNode::Widget {
@@ -678,7 +653,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_label(
@@ -686,10 +661,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<LabelNodeValid>,
+        proof: Established<LabelNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_heading(
@@ -697,7 +672,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<HeadingNodeValid>,
+        proof: Established<HeadingNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -714,7 +689,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_line_break(
@@ -722,7 +697,7 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<LineBreakNodeValid>,
+        proof: Established<LineBreakNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             TuiNode::Widget {
@@ -736,7 +711,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_blockquote(
@@ -744,7 +719,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<BlockquoteNodeValid>,
+        proof: Established<BlockquoteNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let text = node_label(node);
@@ -759,7 +734,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_code(
@@ -767,10 +742,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<CodeNodeValid>,
+        proof: Established<CodeNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_math(
@@ -778,10 +753,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<MathNodeValid>,
+        proof: Established<MathNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_note(
@@ -789,7 +764,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<NoteNodeValid>,
+        proof: Established<NoteNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -799,7 +774,7 @@ impl UiNodeBridge for RatatuiBackend {
                 vertical_layout(children)
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_term(
@@ -807,10 +782,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<TermNodeValid>,
+        proof: Established<TermNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_definition(
@@ -818,10 +793,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<DefinitionNodeValid>,
+        proof: Established<DefinitionNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Media ────────────────────────────────────────────────────────────
@@ -831,7 +806,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ImageNodeValid>,
+        proof: Established<ImageNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let alt = node_label(node);
@@ -851,7 +826,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_figure(
@@ -859,11 +834,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<FigureNodeValid>,
+        proof: Established<FigureNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_figure_caption(
@@ -871,10 +846,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<FigureCaptionNodeValid>,
+        proof: Established<FigureCaptionNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_canvas(
@@ -882,7 +857,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<CanvasNodeValid>,
+        proof: Established<CanvasNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let lbl = node_label(node);
@@ -897,7 +872,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_video(
@@ -905,7 +880,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<VideoNodeValid>,
+        proof: Established<VideoNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let lbl = node_label(node);
@@ -920,7 +895,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_audio(
@@ -928,7 +903,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<AudioNodeValid>,
+        proof: Established<AudioNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let lbl = node_label(node);
@@ -943,7 +918,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Landmark sections ─────────────────────────────────────────────────
@@ -953,11 +928,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<MainNodeValid>,
+        proof: Established<MainNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_navigation(
@@ -965,11 +940,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<NavigationNodeValid>,
+        proof: Established<NavigationNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { horizontal_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_banner(
@@ -977,11 +952,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<BannerNodeValid>,
+        proof: Established<BannerNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { horizontal_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_content_info(
@@ -989,11 +964,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ContentInfoNodeValid>,
+        proof: Established<ContentInfoNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { horizontal_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_complementary(
@@ -1001,11 +976,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ComplementaryNodeValid>,
+        proof: Established<ComplementaryNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_form(
@@ -1013,11 +988,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<FormNodeValid>,
+        proof: Established<FormNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_search(
@@ -1025,11 +1000,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<SearchNodeValid>,
+        proof: Established<SearchNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_region(
@@ -1037,11 +1012,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<RegionNodeValid>,
+        proof: Established<RegionNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_section(
@@ -1049,11 +1024,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<SectionNodeValid>,
+        proof: Established<SectionNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_section_header(
@@ -1061,11 +1036,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<SectionHeaderNodeValid>,
+        proof: Established<SectionHeaderNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { horizontal_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_section_footer(
@@ -1073,11 +1048,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<SectionFooterNodeValid>,
+        proof: Established<SectionFooterNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { horizontal_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_article(
@@ -1085,11 +1060,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ArticleNodeValid>,
+        proof: Established<ArticleNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_group(
@@ -1097,11 +1072,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<GroupNodeValid>,
+        proof: Established<GroupNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_dialog(
@@ -1109,11 +1084,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<DialogNodeValid>,
+        proof: Established<DialogNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_details(
@@ -1121,11 +1096,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<DetailsNodeValid>,
+        proof: Established<DetailsNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_tooltip(
@@ -1133,10 +1108,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<TooltipNodeValid>,
+        proof: Established<TooltipNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_alert(
@@ -1144,7 +1119,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<AlertNodeValid>,
+        proof: Established<AlertNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let lbl = node_label(node);
@@ -1159,7 +1134,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_status(
@@ -1167,10 +1142,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<StatusNodeValid>,
+        proof: Established<StatusNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_timer(
@@ -1178,10 +1153,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<TimerNodeValid>,
+        proof: Established<TimerNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Lists ─────────────────────────────────────────────────────────────
@@ -1191,7 +1166,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ListNodeValid>,
+        proof: Established<ListNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1217,7 +1192,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_list_item(
@@ -1225,10 +1200,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ListItemNodeValid>,
+        proof: Established<ListItemNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_description_list(
@@ -1236,11 +1211,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<DescriptionListNodeValid>,
+        proof: Established<DescriptionListNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Tables ────────────────────────────────────────────────────────────
@@ -1250,7 +1225,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<TableNodeValid>,
+        proof: Established<TableNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1293,7 +1268,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_row(
@@ -1301,11 +1276,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<RowNodeValid>,
+        proof: Established<RowNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { horizontal_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_cell(
@@ -1313,10 +1288,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<CellNodeValid>,
+        proof: Established<CellNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_caption(
@@ -1324,10 +1299,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<CaptionNodeValid>,
+        proof: Established<CaptionNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_row_group(
@@ -1335,11 +1310,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<RowGroupNodeValid>,
+        proof: Established<RowGroupNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Trees ─────────────────────────────────────────────────────────────
@@ -1349,11 +1324,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<TreeNodeValid>,
+        proof: Established<TreeNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_tree_item(
@@ -1361,7 +1336,7 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<TreeItemNodeValid>,
+        proof: Established<TreeItemNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = {
             let lbl = node_label(node);
@@ -1381,7 +1356,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Tabs ─────────────────────────────────────────────────────────────
@@ -1391,10 +1366,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<TabNodeValid>,
+        proof: Established<TabNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_tab_list(
@@ -1402,7 +1377,7 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<TabListNodeValid>,
+        proof: Established<TabListNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1427,7 +1402,7 @@ impl UiNodeBridge for RatatuiBackend {
                 }),
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_tab_panel(
@@ -1435,11 +1410,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<TabPanelNodeValid>,
+        proof: Established<TabPanelNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Menus ─────────────────────────────────────────────────────────────
@@ -1449,11 +1424,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<MenuNodeValid>,
+        proof: Established<MenuNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_menu_item(
@@ -1461,10 +1436,10 @@ impl UiNodeBridge for RatatuiBackend {
         node: &Node,
         _id: NodeId,
         _children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<MenuItemNodeValid>,
+        proof: Established<MenuItemNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let __w = { text_widget(node) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_toolbar(
@@ -1472,11 +1447,11 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<ToolbarNodeValid>,
+        proof: Established<ToolbarNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { horizontal_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_radio_group(
@@ -1484,10 +1459,10 @@ impl UiNodeBridge for RatatuiBackend {
         _node: &Node,
         _id: NodeId,
         children: Vec<(TuiNode, Established<RolePreserved>)>,
-        _proof: Established<RadioGroupNodeValid>,
+        proof: Established<RadioGroupNodeValid>,
     ) -> (TuiNode, Established<RolePreserved>) {
         let children: Vec<TuiNode> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { vertical_layout(children) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 }

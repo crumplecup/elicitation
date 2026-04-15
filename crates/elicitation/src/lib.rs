@@ -208,7 +208,7 @@ pub use type_spec::{
 
 // Contracts (proof-carrying composition)
 pub use contracts::{
-    And, Established, Implies, InVariant, Is, Prop, Refines, both, downcast, fst, snd,
+    And, Established, Implies, InVariant, Is, Prop, ProvableFrom, Refines, both, downcast, fst, snd,
 };
 
 // Completion marker — enforces all elicitation obligations at compile time

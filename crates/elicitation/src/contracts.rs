@@ -374,24 +374,49 @@ pub struct Established<P: Prop> {
     _marker: PhantomData<fn() -> P>,
 }
 
+/// Relation: proposition `P` can be proven from credential `C`.
+///
+/// Implement this on a `Prop` type to declare which credentials can mint it.
+/// The only way to construct `Established<P>` externally is via
+/// `Established::<P>::prove(&credential)` where `P: ProvableFrom<C>`.
+pub trait ProvableFrom<C>: Prop {}
+
 impl<P: Prop> Established<P> {
-    /// Assert that proposition P holds.
+    /// Mint a proof token by presenting a valid credential.
     ///
-    /// This is a semantic assertion - the caller asserts that P is true
-    /// in the current context. Typically called by elicitation internals
-    /// after successful validation.
+    /// The credential type `C` must implement `ProvableFrom<C>` for `P`,
+    /// establishing a declared relationship between the two.
     ///
     /// # Examples
     ///
     /// ```rust
-    /// use elicitation::contracts::{Established, Is};
+    /// use elicitation::contracts::{Established, Is, Prop, ProvableFrom};
     ///
-    /// // After validating a String
-    /// let s = String::from("valid");
-    /// let proof: Established<Is<String>> = Established::assert();
+    /// #[derive(elicitation::Prop)]
+    /// struct InputValidated;
+    ///
+    /// struct ValidInput(String);
+    /// impl ProvableFrom<ValidInput> for InputValidated {}
+    ///
+    /// let input = ValidInput("hello".to_string());
+    /// let proof: Established<InputValidated> = Established::prove(&input);
     /// ```
     #[inline(always)]
-    pub fn assert() -> Self {
+    pub fn prove<C>(_credential: &C) -> Self
+    where
+        P: ProvableFrom<C>,
+    {
+        Self {
+            _marker: PhantomData,
+        }
+    }
+
+    /// Assert that proposition P holds without a credential.
+    ///
+    /// Internal use only — available within the `elicitation` crate and for
+    /// blanket impls (e.g. `Elicitation::elicit`, `ToCodeLiteral`).
+    #[inline(always)]
+    pub(crate) fn assert() -> Self {
         Self {
             _marker: PhantomData,
         }

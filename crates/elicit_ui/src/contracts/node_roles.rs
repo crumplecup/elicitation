@@ -8,7 +8,8 @@
 //! after holding an `Established<WcagVerified>`.
 
 mod emit_impls {
-    use elicitation::contracts::Prop;
+    use crate::contracts::ui::{NodeRoleProof, WcagVerified};
+    use elicitation::contracts::{Established, Prop, ProvableFrom};
     use elicitation::proc_macro2::TokenStream;
     use elicitation::quote::quote;
 
@@ -25,6 +26,8 @@ mod emit_impls {
                     quote! { /* structural: $name */ }
                 }
             }
+            impl NodeRoleProof for $t {}
+            impl ProvableFrom<Established<WcagVerified>> for $t {}
         };
     }
 
@@ -762,6 +765,127 @@ mod emit_impls {
     pub struct DocTocNodeValid;
     structural_prop!(DocTocNodeValid, "DocTocNodeValid");
 }
+
+/// Declares that `Src` is an ARIA subtype of `Dst`, allowing an
+/// `Established<Src>` to mint an `Established<Dst>`.
+macro_rules! role_alias {
+    ($src:ty => $dst:ty) => {
+        impl elicitation::contracts::ProvableFrom<elicitation::contracts::Established<$src>>
+            for $dst
+        {
+        }
+    };
+}
+
+// Role-alias ProvableFrom impls — ARIA subtype relationships.
+// Each line declares: holding proof of Src is sufficient credential to prove Dst.
+role_alias!(emit_impls::SearchInputNodeValid => emit_impls::TextInputNodeValid);
+role_alias!(emit_impls::DateInputNodeValid => emit_impls::TextInputNodeValid);
+role_alias!(emit_impls::DateTimeInputNodeValid => emit_impls::TextInputNodeValid);
+role_alias!(emit_impls::WeekInputNodeValid => emit_impls::TextInputNodeValid);
+role_alias!(emit_impls::MonthInputNodeValid => emit_impls::TextInputNodeValid);
+role_alias!(emit_impls::TimeInputNodeValid => emit_impls::TextInputNodeValid);
+role_alias!(emit_impls::EmailInputNodeValid => emit_impls::TextInputNodeValid);
+role_alias!(emit_impls::NumberInputNodeValid => emit_impls::TextInputNodeValid);
+role_alias!(emit_impls::PasswordInputNodeValid => emit_impls::TextInputNodeValid);
+role_alias!(emit_impls::PhoneNumberInputNodeValid => emit_impls::TextInputNodeValid);
+role_alias!(emit_impls::UrlInputNodeValid => emit_impls::TextInputNodeValid);
+role_alias!(emit_impls::AbbrNodeValid => emit_impls::LabelNodeValid);
+role_alias!(emit_impls::EmphasisNodeValid => emit_impls::LabelNodeValid);
+role_alias!(emit_impls::StrongNodeValid => emit_impls::LabelNodeValid);
+role_alias!(emit_impls::MarkNodeValid => emit_impls::LabelNodeValid);
+role_alias!(emit_impls::TimeNodeValid => emit_impls::LabelNodeValid);
+role_alias!(emit_impls::RubyNodeValid => emit_impls::LabelNodeValid);
+role_alias!(emit_impls::RubyAnnotationNodeValid => emit_impls::LabelNodeValid);
+role_alias!(emit_impls::SuggestionNodeValid => emit_impls::ParagraphNodeValid);
+role_alias!(emit_impls::CommentNodeValid => emit_impls::ParagraphNodeValid);
+role_alias!(emit_impls::ContentDeletionNodeValid => emit_impls::LabelNodeValid);
+role_alias!(emit_impls::ContentInsertionNodeValid => emit_impls::LabelNodeValid);
+role_alias!(emit_impls::LegendNodeValid => emit_impls::LabelNodeValid);
+role_alias!(emit_impls::SvgRootNodeValid => emit_impls::ImageNodeValid);
+role_alias!(emit_impls::EmbeddedObjectNodeValid => emit_impls::UnknownNodeValid);
+role_alias!(emit_impls::PluginObjectNodeValid => emit_impls::UnknownNodeValid);
+role_alias!(emit_impls::WebViewNodeValid => emit_impls::UnknownNodeValid);
+role_alias!(emit_impls::IframeNodeValid => emit_impls::UnknownNodeValid);
+role_alias!(emit_impls::IframePresentationalNodeValid => emit_impls::GenericContainerNodeValid);
+role_alias!(emit_impls::HeaderNodeValid => emit_impls::SectionHeaderNodeValid);
+role_alias!(emit_impls::FooterNodeValid => emit_impls::SectionFooterNodeValid);
+role_alias!(emit_impls::AlertDialogNodeValid => emit_impls::DialogNodeValid);
+role_alias!(emit_impls::LogNodeValid => emit_impls::StatusNodeValid);
+role_alias!(emit_impls::MarqueeNodeValid => emit_impls::StatusNodeValid);
+role_alias!(emit_impls::ListMarkerNodeValid => emit_impls::LabelNodeValid);
+role_alias!(emit_impls::FeedNodeValid => emit_impls::ListNodeValid);
+role_alias!(emit_impls::ListBoxOptionNodeValid => emit_impls::ListItemNodeValid);
+role_alias!(emit_impls::RowHeaderNodeValid => emit_impls::CellNodeValid);
+role_alias!(emit_impls::ColumnHeaderNodeValid => emit_impls::CellNodeValid);
+role_alias!(emit_impls::GridNodeValid => emit_impls::TableNodeValid);
+role_alias!(emit_impls::GridCellNodeValid => emit_impls::CellNodeValid);
+role_alias!(emit_impls::TreeGridNodeValid => emit_impls::TreeNodeValid);
+role_alias!(emit_impls::ListGridNodeValid => emit_impls::GridNodeValid);
+role_alias!(emit_impls::LayoutTableNodeValid => emit_impls::GenericContainerNodeValid);
+role_alias!(emit_impls::LayoutTableRowNodeValid => emit_impls::RowNodeValid);
+role_alias!(emit_impls::LayoutTableCellNodeValid => emit_impls::GenericContainerNodeValid);
+role_alias!(emit_impls::MenuBarNodeValid => emit_impls::MenuNodeValid);
+role_alias!(emit_impls::MenuListOptionNodeValid => emit_impls::MenuItemNodeValid);
+role_alias!(emit_impls::MenuListPopupNodeValid => emit_impls::MenuNodeValid);
+role_alias!(emit_impls::MenuItemCheckBoxNodeValid => emit_impls::CheckBoxNodeValid);
+role_alias!(emit_impls::MenuItemRadioNodeValid => emit_impls::RadioButtonNodeValid);
+role_alias!(emit_impls::TitleBarNodeValid => emit_impls::ToolbarNodeValid);
+role_alias!(emit_impls::MeterNodeValid => emit_impls::ProgressIndicatorNodeValid);
+role_alias!(emit_impls::KeyboardNodeValid => emit_impls::UnknownNodeValid);
+role_alias!(emit_impls::CaretNodeValid => emit_impls::UnknownNodeValid);
+role_alias!(emit_impls::ImeCandidateNodeValid => emit_impls::UnknownNodeValid);
+role_alias!(emit_impls::PdfRootNodeValid => emit_impls::DocumentNodeValid);
+role_alias!(emit_impls::PdfActionableHighlightNodeValid => emit_impls::LinkNodeValid);
+role_alias!(emit_impls::GraphicsDocumentNodeValid => emit_impls::DocumentNodeValid);
+role_alias!(emit_impls::GraphicsObjectNodeValid => emit_impls::GroupNodeValid);
+role_alias!(emit_impls::GraphicsSymbolNodeValid => emit_impls::ImageNodeValid);
+role_alias!(emit_impls::DocAbstractNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocAcknowledgementsNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocAfterwordNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocAppendixNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocBackLinkNodeValid => emit_impls::LinkNodeValid);
+role_alias!(emit_impls::DocBiblioEntryNodeValid => emit_impls::ListItemNodeValid);
+role_alias!(emit_impls::DocBibliographyNodeValid => emit_impls::ListNodeValid);
+role_alias!(emit_impls::DocBiblioRefNodeValid => emit_impls::LinkNodeValid);
+role_alias!(emit_impls::DocChapterNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocColophonNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocConclusionNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocCoverNodeValid => emit_impls::FigureNodeValid);
+role_alias!(emit_impls::DocCreditNodeValid => emit_impls::ParagraphNodeValid);
+role_alias!(emit_impls::DocCreditsNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocDedicationNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocEndnoteNodeValid => emit_impls::NoteNodeValid);
+role_alias!(emit_impls::DocEndnotesNodeValid => emit_impls::ListNodeValid);
+role_alias!(emit_impls::DocEpigraphNodeValid => emit_impls::BlockquoteNodeValid);
+role_alias!(emit_impls::DocEpilogueNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocErrataNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocExampleNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocFootnoteNodeValid => emit_impls::NoteNodeValid);
+role_alias!(emit_impls::DocForewordNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocGlossaryNodeValid => emit_impls::DescriptionListNodeValid);
+role_alias!(emit_impls::DocGlossRefNodeValid => emit_impls::LinkNodeValid);
+role_alias!(emit_impls::DocIndexNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocIntroductionNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocNoteRefNodeValid => emit_impls::LinkNodeValid);
+role_alias!(emit_impls::DocNoticeNodeValid => emit_impls::AlertNodeValid);
+role_alias!(emit_impls::DocPageBreakNodeValid => emit_impls::LineBreakNodeValid);
+role_alias!(emit_impls::DocPageFooterNodeValid => emit_impls::SectionFooterNodeValid);
+role_alias!(emit_impls::DocPageHeaderNodeValid => emit_impls::SectionHeaderNodeValid);
+role_alias!(emit_impls::DocPageListNodeValid => emit_impls::ListNodeValid);
+role_alias!(emit_impls::DocPartNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocPrefaceNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocPrologueNodeValid => emit_impls::SectionNodeValid);
+role_alias!(emit_impls::DocPullquoteNodeValid => emit_impls::BlockquoteNodeValid);
+role_alias!(emit_impls::DocQnaNodeValid => emit_impls::GroupNodeValid);
+role_alias!(emit_impls::DocSubtitleNodeValid => emit_impls::HeadingNodeValid);
+role_alias!(emit_impls::DocTipNodeValid => emit_impls::NoteNodeValid);
+role_alias!(emit_impls::DocTocNodeValid => emit_impls::NavigationNodeValid);
+role_alias!(emit_impls::DefaultButtonNodeValid => emit_impls::ButtonNodeValid);
+role_alias!(emit_impls::EditableComboBoxNodeValid => emit_impls::ComboBoxNodeValid);
+role_alias!(emit_impls::ScrollBarNodeValid => emit_impls::ProgressIndicatorNodeValid);
+role_alias!(emit_impls::MultilineTextInputNodeValid => emit_impls::TextInputNodeValid);
+role_alias!(emit_impls::NumberInputNodeValid => emit_impls::SpinButtonNodeValid);
 
 pub use emit_impls::{
     AbbrNodeValid, AlertDialogNodeValid, AlertNodeValid, ApplicationNodeValid, ArticleNodeValid,

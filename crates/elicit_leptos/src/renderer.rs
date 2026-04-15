@@ -157,7 +157,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<UnknownNodeValid>,
+        proof: Established<UnknownNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -168,7 +168,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             ) + &hidden_attr(node).to_string()
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_generic_container(
@@ -176,14 +176,14 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<GenericContainerNodeValid>,
+        proof: Established<GenericContainerNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
             let m = self.mode;
             wrap_element("div", &aria_label_attr(m, node), &join_children(children))
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_pane(
@@ -191,7 +191,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<PaneNodeValid>,
+        proof: Established<PaneNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -202,7 +202,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_window(
@@ -210,7 +210,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<WindowNodeValid>,
+        proof: Established<WindowNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -221,7 +221,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_document(
@@ -229,7 +229,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<DocumentNodeValid>,
+        proof: Established<DocumentNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -240,7 +240,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_root_web_area(
@@ -248,14 +248,14 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<RootWebAreaNodeValid>,
+        proof: Established<RootWebAreaNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
             let m = self.mode;
             wrap_element("main", &aria_label_attr(m, node), &join_children(children))
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_application(
@@ -263,7 +263,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ApplicationNodeValid>,
+        proof: Established<ApplicationNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -278,7 +278,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_terminal(
@@ -286,7 +286,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<TerminalNodeValid>,
+        proof: Established<TerminalNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -297,7 +297,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Interactive widgets ───────────────────────────────────────────────
@@ -307,7 +307,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ButtonNodeValid>,
+        proof: Established<ButtonNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -327,7 +327,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &text,
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_default_button(
@@ -335,7 +335,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<DefaultButtonNodeValid>,
+        proof: Established<DefaultButtonNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -356,7 +356,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &text,
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_link(
@@ -364,7 +364,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<LinkNodeValid>,
+        proof: Established<LinkNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -381,7 +381,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &text,
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_check_box(
@@ -389,7 +389,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<CheckBoxNodeValid>,
+        proof: Established<CheckBoxNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -405,7 +405,7 @@ impl UiNodeBridge for LeptosRenderer {
                 dis = disabled_attr(node),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_radio_button(
@@ -413,7 +413,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<RadioButtonNodeValid>,
+        proof: Established<RadioButtonNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -429,7 +429,7 @@ impl UiNodeBridge for LeptosRenderer {
                 dis = disabled_attr(node),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_switch(
@@ -437,7 +437,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<SwitchNodeValid>,
+        proof: Established<SwitchNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -453,7 +453,7 @@ impl UiNodeBridge for LeptosRenderer {
                 dis = disabled_attr(node),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_color_well(
@@ -461,7 +461,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ColorWellNodeValid>,
+        proof: Established<ColorWellNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -472,7 +472,7 @@ impl UiNodeBridge for LeptosRenderer {
                 disabled_attr(node)
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_disclosure_triangle(
@@ -480,7 +480,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<DisclosureTriangleNodeValid>,
+        proof: Established<DisclosureTriangleNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -492,7 +492,7 @@ impl UiNodeBridge for LeptosRenderer {
                 aria_label_attr(m, node)
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_combo_box(
@@ -500,7 +500,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ComboBoxNodeValid>,
+        proof: Established<ComboBoxNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -513,7 +513,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &format!("{opts}<option>{lbl}</option>"),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_editable_combo_box(
@@ -521,7 +521,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<EditableComboBoxNodeValid>,
+        proof: Established<EditableComboBoxNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -532,7 +532,7 @@ impl UiNodeBridge for LeptosRenderer {
                 disabled_attr(node)
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_list_box(
@@ -540,7 +540,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ListBoxNodeValid>,
+        proof: Established<ListBoxNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -551,7 +551,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_slider(
@@ -559,7 +559,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<SliderNodeValid>,
+        proof: Established<SliderNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -572,7 +572,7 @@ impl UiNodeBridge for LeptosRenderer {
                 disabled_attr(node)
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_spin_button(
@@ -580,7 +580,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<SpinButtonNodeValid>,
+        proof: Established<SpinButtonNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -594,7 +594,7 @@ impl UiNodeBridge for LeptosRenderer {
                 disabled_attr(node)
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_progress_indicator(
@@ -602,7 +602,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ProgressIndicatorNodeValid>,
+        proof: Established<ProgressIndicatorNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -613,7 +613,7 @@ impl UiNodeBridge for LeptosRenderer {
                 aria_label_attr(m, node)
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_scroll_bar(
@@ -621,7 +621,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ScrollBarNodeValid>,
+        proof: Established<ScrollBarNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -633,7 +633,7 @@ impl UiNodeBridge for LeptosRenderer {
                 aria_label_attr(m, node)
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_scroll_view(
@@ -641,7 +641,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ScrollViewNodeValid>,
+        proof: Established<ScrollViewNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -652,7 +652,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_splitter(
@@ -660,7 +660,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<SplitterNodeValid>,
+        proof: Established<SplitterNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -668,7 +668,7 @@ impl UiNodeBridge for LeptosRenderer {
             let body = join_children(children);
             format!("<hr{} />{body}", aria_label_attr(m, node))
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Text input ───────────────────────────────────────────────────────
@@ -678,7 +678,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<TextInputNodeValid>,
+        proof: Established<TextInputNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -691,7 +691,7 @@ impl UiNodeBridge for LeptosRenderer {
                 disabled_attr(node)
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_multiline_text_input(
@@ -699,7 +699,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<MultilineTextInputNodeValid>,
+        proof: Established<MultilineTextInputNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -712,7 +712,7 @@ impl UiNodeBridge for LeptosRenderer {
                 aria_label_attr(m, node)
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Text display ─────────────────────────────────────────────────────
@@ -722,7 +722,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<TextRunNodeValid>,
+        proof: Established<TextRunNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -733,7 +733,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("span", "", &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_paragraph(
@@ -741,7 +741,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ParagraphNodeValid>,
+        proof: Established<ParagraphNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -752,7 +752,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("p", "", &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_label(
@@ -760,7 +760,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<LabelNodeValid>,
+        proof: Established<LabelNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -771,7 +771,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("label", "", &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_heading(
@@ -779,7 +779,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<HeadingNodeValid>,
+        proof: Established<HeadingNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -791,7 +791,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element(&format!("h{level}"), "", &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_line_break(
@@ -799,10 +799,10 @@ impl UiNodeBridge for LeptosRenderer {
         _node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<LineBreakNodeValid>,
+        proof: Established<LineBreakNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = { self_closing("br", "") };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_blockquote(
@@ -810,7 +810,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<BlockquoteNodeValid>,
+        proof: Established<BlockquoteNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -821,7 +821,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("blockquote", "", &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_code(
@@ -829,7 +829,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<CodeNodeValid>,
+        proof: Established<CodeNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -840,7 +840,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("code", "", &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_math(
@@ -848,7 +848,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<MathNodeValid>,
+        proof: Established<MathNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -860,7 +860,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("span", &role_attr(m, "math"), &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_note(
@@ -868,7 +868,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<NoteNodeValid>,
+        proof: Established<NoteNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -880,7 +880,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("aside", &role_attr(m, "note"), &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_term(
@@ -888,7 +888,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<TermNodeValid>,
+        proof: Established<TermNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -899,7 +899,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("dt", "", &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_definition(
@@ -907,7 +907,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<DefinitionNodeValid>,
+        proof: Established<DefinitionNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -918,7 +918,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("dd", "", &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Media ────────────────────────────────────────────────────────────
@@ -928,7 +928,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ImageNodeValid>,
+        proof: Established<ImageNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -939,7 +939,7 @@ impl UiNodeBridge for LeptosRenderer {
                 aria_label_attr(m, node)
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_figure(
@@ -947,7 +947,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<FigureNodeValid>,
+        proof: Established<FigureNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -958,7 +958,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_figure_caption(
@@ -966,7 +966,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<FigureCaptionNodeValid>,
+        proof: Established<FigureCaptionNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -977,7 +977,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("figcaption", "", &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_canvas(
@@ -985,14 +985,14 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<CanvasNodeValid>,
+        proof: Established<CanvasNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
             let lbl = node_label(node);
             wrap_element("canvas", &aria_label_attr(m, node), &lbl)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_video(
@@ -1000,7 +1000,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<VideoNodeValid>,
+        proof: Established<VideoNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -1011,7 +1011,7 @@ impl UiNodeBridge for LeptosRenderer {
                 aria_label_attr(m, node)
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_audio(
@@ -1019,7 +1019,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         _children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<AudioNodeValid>,
+        proof: Established<AudioNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let __w = {
             let m = self.mode;
@@ -1030,7 +1030,7 @@ impl UiNodeBridge for LeptosRenderer {
                 aria_label_attr(m, node)
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Landmark sections ─────────────────────────────────────────────────
@@ -1040,14 +1040,14 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<MainNodeValid>,
+        proof: Established<MainNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
             let m = self.mode;
             wrap_element("main", &aria_label_attr(m, node), &join_children(children))
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_navigation(
@@ -1055,14 +1055,14 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<NavigationNodeValid>,
+        proof: Established<NavigationNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
             let m = self.mode;
             wrap_element("nav", &aria_label_attr(m, node), &join_children(children))
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_banner(
@@ -1070,7 +1070,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<BannerNodeValid>,
+        proof: Established<BannerNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1081,7 +1081,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_content_info(
@@ -1089,7 +1089,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ContentInfoNodeValid>,
+        proof: Established<ContentInfoNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1100,7 +1100,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_complementary(
@@ -1108,14 +1108,14 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ComplementaryNodeValid>,
+        proof: Established<ComplementaryNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
             let m = self.mode;
             wrap_element("aside", &aria_label_attr(m, node), &join_children(children))
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_form(
@@ -1123,14 +1123,14 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<FormNodeValid>,
+        proof: Established<FormNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
             let m = self.mode;
             wrap_element("form", &aria_label_attr(m, node), &join_children(children))
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_search(
@@ -1138,7 +1138,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<SearchNodeValid>,
+        proof: Established<SearchNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1149,7 +1149,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_region(
@@ -1157,7 +1157,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<RegionNodeValid>,
+        proof: Established<RegionNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1168,7 +1168,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_section(
@@ -1176,7 +1176,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<SectionNodeValid>,
+        proof: Established<SectionNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1187,7 +1187,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_section_header(
@@ -1195,7 +1195,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<SectionHeaderNodeValid>,
+        proof: Established<SectionHeaderNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1210,7 +1210,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_section_footer(
@@ -1218,7 +1218,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<SectionFooterNodeValid>,
+        proof: Established<SectionFooterNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1233,7 +1233,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_article(
@@ -1241,7 +1241,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ArticleNodeValid>,
+        proof: Established<ArticleNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1252,7 +1252,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_group(
@@ -1260,7 +1260,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<GroupNodeValid>,
+        proof: Established<GroupNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1275,7 +1275,7 @@ impl UiNodeBridge for LeptosRenderer {
                 wrap_element("div", &role_attr(m, "group"), &join_children(children))
             }
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_dialog(
@@ -1283,7 +1283,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<DialogNodeValid>,
+        proof: Established<DialogNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1294,7 +1294,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_details(
@@ -1302,7 +1302,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<DetailsNodeValid>,
+        proof: Established<DetailsNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1313,7 +1313,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_tooltip(
@@ -1321,7 +1321,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<TooltipNodeValid>,
+        proof: Established<TooltipNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1333,7 +1333,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("span", &role_attr(m, "tooltip"), &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_alert(
@@ -1341,7 +1341,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<AlertNodeValid>,
+        proof: Established<AlertNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1353,7 +1353,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("div", &role_attr(m, "alert"), &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_status(
@@ -1361,7 +1361,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<StatusNodeValid>,
+        proof: Established<StatusNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1373,7 +1373,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("div", &role_attr(m, "status"), &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_timer(
@@ -1381,7 +1381,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<TimerNodeValid>,
+        proof: Established<TimerNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1393,7 +1393,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("div", &role_attr(m, "timer"), &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Lists ─────────────────────────────────────────────────────────────
@@ -1403,7 +1403,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ListNodeValid>,
+        proof: Established<ListNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1416,7 +1416,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element(tag, &aria_label_attr(m, node), &join_children(children))
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_list_item(
@@ -1424,7 +1424,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ListItemNodeValid>,
+        proof: Established<ListItemNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1435,7 +1435,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("li", "", &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_description_list(
@@ -1443,14 +1443,14 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<DescriptionListNodeValid>,
+        proof: Established<DescriptionListNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
             let m = self.mode;
             wrap_element("dl", &aria_label_attr(m, node), &join_children(children))
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Tables ────────────────────────────────────────────────────────────
@@ -1460,14 +1460,14 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<TableNodeValid>,
+        proof: Established<TableNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
             let m = self.mode;
             wrap_element("table", &aria_label_attr(m, node), &join_children(children))
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_row(
@@ -1475,11 +1475,11 @@ impl UiNodeBridge for LeptosRenderer {
         _node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<RowNodeValid>,
+        proof: Established<RowNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { wrap_element("tr", "", &join_children(children)) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_cell(
@@ -1487,7 +1487,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<CellNodeValid>,
+        proof: Established<CellNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1498,7 +1498,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("td", "", &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_caption(
@@ -1506,7 +1506,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<CaptionNodeValid>,
+        proof: Established<CaptionNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1517,7 +1517,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("caption", "", &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_row_group(
@@ -1525,11 +1525,11 @@ impl UiNodeBridge for LeptosRenderer {
         _node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<RowGroupNodeValid>,
+        proof: Established<RowGroupNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = { wrap_element("tbody", "", &join_children(children)) };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Trees ─────────────────────────────────────────────────────────────
@@ -1539,7 +1539,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<TreeNodeValid>,
+        proof: Established<TreeNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1550,7 +1550,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_tree_item(
@@ -1558,7 +1558,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<TreeItemNodeValid>,
+        proof: Established<TreeItemNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1570,7 +1570,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("li", &role_attr(m, "treeitem"), &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Tabs ─────────────────────────────────────────────────────────────
@@ -1580,7 +1580,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<TabNodeValid>,
+        proof: Established<TabNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1602,7 +1602,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &body,
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_tab_list(
@@ -1610,7 +1610,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<TabListNodeValid>,
+        proof: Established<TabListNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1621,7 +1621,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_tab_panel(
@@ -1629,7 +1629,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<TabPanelNodeValid>,
+        proof: Established<TabPanelNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1640,7 +1640,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     // ── Menus ─────────────────────────────────────────────────────────────
@@ -1650,7 +1650,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<MenuNodeValid>,
+        proof: Established<MenuNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1661,7 +1661,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_menu_item(
@@ -1669,7 +1669,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<MenuItemNodeValid>,
+        proof: Established<MenuItemNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1681,7 +1681,7 @@ impl UiNodeBridge for LeptosRenderer {
             };
             wrap_element("li", &role_attr(m, "menuitem"), &body)
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_toolbar(
@@ -1689,7 +1689,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<ToolbarNodeValid>,
+        proof: Established<ToolbarNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1700,7 +1700,7 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 
     fn bridge_radio_group(
@@ -1708,7 +1708,7 @@ impl UiNodeBridge for LeptosRenderer {
         node: &Node,
         _id: NodeId,
         children: Vec<(String, Established<RolePreserved>)>,
-        _proof: Established<RadioGroupNodeValid>,
+        proof: Established<RadioGroupNodeValid>,
     ) -> (String, Established<RolePreserved>) {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
@@ -1719,6 +1719,6 @@ impl UiNodeBridge for LeptosRenderer {
                 &join_children(children),
             )
         };
-        (__w, Established::assert())
+        (__w, Established::<RolePreserved>::prove(&proof))
     }
 }
