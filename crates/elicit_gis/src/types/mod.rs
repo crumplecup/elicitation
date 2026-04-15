@@ -6,6 +6,7 @@ mod crs;
 mod iso_19111;
 mod iso_19115;
 mod ogc_sfs;
+mod rfc7946;
 
 pub use authority::{AuthorityCode, CrsInfo, DatumEnsembleInfo, EllipsoidParams, EpsgCode};
 pub use axis::{AxisDirection, CsType};
@@ -23,4 +24,8 @@ pub use iso_19115::{
 pub use ogc_sfs::{
     GeometryCollectionDescriptor, LineStringDescriptor, LinearRingDescriptor,
     MultiGeometryDescriptor, PointDescriptor, PolygonDescriptor, SfsCoordinate, SfsCoordinate3D,
+};
+pub use rfc7946::{
+    GeoJsonDocumentDescriptor, GeoJsonFeatureCollectionDescriptor, GeoJsonFeatureDescriptor,
+    GeoJsonFeatureId, GeoJsonGeometryDescriptor, GeoJsonGeometryKind, GeoJsonPosition,
 };

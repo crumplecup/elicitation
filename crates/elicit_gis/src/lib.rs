@@ -479,15 +479,19 @@ pub use contracts::{
 
 pub use error::{GisError, GisErrorKind, GisResult};
 pub use traits::{
-    GisBackend, GisCrsBuilder, GisCrsLookup, GisCrsTransformer, Iso19111Identified, Iso19111Scoped,
-    Iso19115CitationFactory, Iso19115ContactMeta, Iso19115DateMeta, Iso19115ExtentFactory,
-    Iso19115LineageFactory, Iso19115QualityMeta, Iso19115RecordFactory, SfsGeometryFactory,
-    SfsGeometryIo, SfsGeometryMeta, SfsSetOps, SfsTopology,
+    GeoJsonBackend, GeoJsonFeatureFactory, GeoJsonFeatureMeta, GeoJsonGeometryFactory,
+    GeoJsonObjectMeta, GisBackend, GisCrsBuilder, GisCrsLookup, GisCrsTransformer,
+    Iso19111Identified, Iso19111Scoped, Iso19115CitationFactory, Iso19115ContactMeta,
+    Iso19115DateMeta, Iso19115ExtentFactory, Iso19115LineageFactory, Iso19115QualityMeta,
+    Iso19115RecordFactory, SfsGeometryFactory, SfsGeometryIo, SfsGeometryMeta, SfsSetOps,
+    SfsTopology,
 };
 pub use types::{
     AuthorityCode, AxisDirection, CitationDescriptor, CoordinateAxisInfo, CoordinateMetadata,
     CoordinateSystemParams, CrsInfo, CrsType, CsType, DataQualityDescriptor, DataQualityReport,
     DatumEnsembleInfo, DecimalYear, DomainExtent, EllipsoidParams, EpsgCode, ExtentDescriptor,
+    GeoJsonDocumentDescriptor, GeoJsonFeatureCollectionDescriptor, GeoJsonFeatureDescriptor,
+    GeoJsonFeatureId, GeoJsonGeometryDescriptor, GeoJsonGeometryKind, GeoJsonPosition,
     GeodeticFrameParams, GeographicBboxDescriptor, GeographicBoundingBox,
     GeometryCollectionDescriptor, HelmertConvention, IdentificationDescriptor, Iso19115Date,
     LineStringDescriptor, LineageDescriptor, LineageProcessStep, LinearRingDescriptor,

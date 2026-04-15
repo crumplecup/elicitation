@@ -3,6 +3,7 @@
 mod crs;
 mod iso_19111;
 mod iso_19115;
+mod rfc7946;
 mod set_ops;
 mod sfs;
 mod topology;
@@ -12,6 +13,10 @@ pub use iso_19111::{Iso19111Identified, Iso19111Scoped};
 pub use iso_19115::{
     Iso19115CitationFactory, Iso19115ContactMeta, Iso19115DateMeta, Iso19115ExtentFactory,
     Iso19115LineageFactory, Iso19115QualityMeta, Iso19115RecordFactory,
+};
+pub use rfc7946::{
+    GeoJsonBackend, GeoJsonFeatureFactory, GeoJsonFeatureMeta, GeoJsonGeometryFactory,
+    GeoJsonObjectMeta,
 };
 pub use set_ops::SfsSetOps;
 pub use sfs::{SfsGeometryFactory, SfsGeometryIo, SfsGeometryMeta};
@@ -36,6 +41,10 @@ pub trait GisBackend:
     + Iso19115LineageFactory
     + Iso19115QualityMeta
     + Iso19115RecordFactory
+    + GeoJsonGeometryFactory
+    + GeoJsonFeatureFactory
+    + GeoJsonObjectMeta
+    + GeoJsonFeatureMeta
     + SfsGeometryFactory
     + SfsGeometryMeta
     + SfsGeometryIo
@@ -59,6 +68,10 @@ impl<T> GisBackend for T where
         + Iso19115LineageFactory
         + Iso19115QualityMeta
         + Iso19115RecordFactory
+        + GeoJsonGeometryFactory
+        + GeoJsonFeatureFactory
+        + GeoJsonObjectMeta
+        + GeoJsonFeatureMeta
         + SfsGeometryFactory
         + SfsGeometryMeta
         + SfsGeometryIo
