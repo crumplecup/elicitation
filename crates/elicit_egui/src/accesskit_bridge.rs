@@ -7,7 +7,9 @@
 //! - [`bounds_to_size`] — extract pixel size from AccessKit node bounds
 
 use accesskit::{Node, NodeId, Rect, Role, Toggled};
-use elicit_ui::{UiNodeBridge, UiRenderBackend};
+use elicit_ui::node_roles::*;
+use elicit_ui::{RolePreserved, UiNodeBridge, UiRenderBackend};
+use elicitation::Established;
 use std::collections::HashMap;
 
 // ── EguiBackend ───────────────────────────────────────────────────────────────
@@ -63,117 +65,161 @@ impl UiNodeBridge for EguiBackend {
         &self,
         node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            if children.is_empty() {
-                ui.label(&text);
-            } else {
-                ui.group(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
-            }
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<UnknownNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                if children.is_empty() {
+                    ui.label(&text);
+                } else {
+                    ui.group(|ui| {
+                        for c in children {
+                            c(ui);
+                        }
+                    });
+                }
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_generic_container(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.group(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<GenericContainerNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.group(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
-    fn bridge_pane(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.group(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+    fn bridge_pane(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<PaneNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.group(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_window(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<WindowNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_document(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<DocumentNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_root_web_area(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<RootWebAreaNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_application(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ApplicationNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_terminal(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.monospace(&text);
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<TerminalNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.monospace(&text);
+            })
+        };
+        (__w, Established::assert())
     }
 
     // ── Interactive widgets ───────────────────────────────────────────────
@@ -182,233 +228,299 @@ impl UiNodeBridge for EguiBackend {
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        let disabled = node.is_disabled();
-        Box::new(move |ui| {
-            ui.add_enabled(!disabled, egui::Button::new(&text));
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ButtonNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            let disabled = node.is_disabled();
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.add_enabled(!disabled, egui::Button::new(&text));
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_default_button(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_button(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<DefaultButtonNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_button(node, id, children, Established::assert())
     }
 
-    fn bridge_link(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
-        let text = node_label(node);
-        let url = node.url().unwrap_or("#").to_string();
-        Box::new(move |ui| {
-            ui.add(egui::Hyperlink::from_label_and_url(&text, &url));
-        })
+    fn bridge_link(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<LinkNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            let url = node.url().unwrap_or("#").to_string();
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.add(egui::Hyperlink::from_label_and_url(&text, &url));
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_check_box(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        let disabled = node.is_disabled();
-        let mut checked = matches!(node.toggled(), Some(Toggled::True));
-        Box::new(move |ui| {
-            ui.add_enabled(!disabled, egui::Checkbox::new(&mut checked, &text));
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<CheckBoxNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            let disabled = node.is_disabled();
+            let mut checked = matches!(node.toggled(), Some(Toggled::True));
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.add_enabled(!disabled, egui::Checkbox::new(&mut checked, &text));
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_radio_button(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        let disabled = node.is_disabled();
-        let selected = matches!(node.toggled(), Some(Toggled::True));
-        Box::new(move |ui| {
-            ui.add_enabled(!disabled, egui::RadioButton::new(selected, &text));
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<RadioButtonNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            let disabled = node.is_disabled();
+            let selected = matches!(node.toggled(), Some(Toggled::True));
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.add_enabled(!disabled, egui::RadioButton::new(selected, &text));
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_switch(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        let disabled = node.is_disabled();
-        let mut on = matches!(node.toggled(), Some(Toggled::True));
-        Box::new(move |ui| {
-            ui.horizontal(|ui| {
-                ui.add_enabled(!disabled, egui::Checkbox::new(&mut on, &text));
-            });
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<SwitchNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            let disabled = node.is_disabled();
+            let mut on = matches!(node.toggled(), Some(Toggled::True));
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.horizontal(|ui| {
+                    ui.add_enabled(!disabled, egui::Checkbox::new(&mut on, &text));
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_color_well(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        let disabled = node.is_disabled();
-        Box::new(move |ui| {
-            ui.add_enabled(!disabled, egui::Button::new(format!("🎨 {text}")));
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ColorWellNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            let disabled = node.is_disabled();
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.add_enabled(!disabled, egui::Button::new(format!("🎨 {text}")));
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_disclosure_triangle(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        let open = matches!(node.toggled(), Some(Toggled::True));
-        let arrow = if open { "▼" } else { "▶" };
-        Box::new(move |ui| {
-            ui.label(format!("{arrow} {text}"));
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<DisclosureTriangleNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            let open = matches!(node.toggled(), Some(Toggled::True));
+            let arrow = if open { "▼" } else { "▶" };
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(format!("{arrow} {text}"));
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_combo_box(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        let val = node.value().unwrap_or("").to_string();
-        Box::new(move |ui| {
-            egui::ComboBox::from_label(&text)
-                .selected_text(&val)
-                .show_ui(ui, |_ui| {});
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ComboBoxNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            let val = node.value().unwrap_or("").to_string();
+            Box::new(move |ui: &mut egui::Ui| {
+                egui::ComboBox::from_label(&text)
+                    .selected_text(&val)
+                    .show_ui(ui, |_ui| {});
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_editable_combo_box(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_combo_box(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<EditableComboBoxNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_combo_box(node, id, children, Established::assert())
     }
 
     fn bridge_list_box(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ListBoxNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_slider(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        let disabled = node.is_disabled();
-        let mut val = node.numeric_value().unwrap_or(0.0);
-        let min = node.min_numeric_value().unwrap_or(0.0);
-        let max = node.max_numeric_value().unwrap_or(100.0);
-        Box::new(move |ui| {
-            let mut slider = egui::Slider::new(&mut val, min..=max);
-            if !text.is_empty() {
-                slider = slider.text(&text);
-            }
-            ui.add_enabled(!disabled, slider);
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<SliderNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            let disabled = node.is_disabled();
+            let mut val = node.numeric_value().unwrap_or(0.0);
+            let min = node.min_numeric_value().unwrap_or(0.0);
+            let max = node.max_numeric_value().unwrap_or(100.0);
+            Box::new(move |ui: &mut egui::Ui| {
+                let mut slider = egui::Slider::new(&mut val, min..=max);
+                if !text.is_empty() {
+                    slider = slider.text(&text);
+                }
+                ui.add_enabled(!disabled, slider);
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_spin_button(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let disabled = node.is_disabled();
-        let mut val = node.numeric_value().unwrap_or(0.0);
-        let min = node.min_numeric_value().unwrap_or(f64::MIN);
-        let max = node.max_numeric_value().unwrap_or(f64::MAX);
-        let step = node.numeric_value_step().unwrap_or(1.0);
-        Box::new(move |ui| {
-            ui.add_enabled(
-                !disabled,
-                egui::DragValue::new(&mut val).range(min..=max).speed(step),
-            );
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<SpinButtonNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let disabled = node.is_disabled();
+            let mut val = node.numeric_value().unwrap_or(0.0);
+            let min = node.min_numeric_value().unwrap_or(f64::MIN);
+            let max = node.max_numeric_value().unwrap_or(f64::MAX);
+            let step = node.numeric_value_step().unwrap_or(1.0);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.add_enabled(
+                    !disabled,
+                    egui::DragValue::new(&mut val).range(min..=max).speed(step),
+                );
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_progress_indicator(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        let val = node.numeric_value().unwrap_or(0.0);
-        let max = node.max_numeric_value().unwrap_or(100.0);
-        let fraction = if max > 0.0 { (val / max) as f32 } else { 0.0 };
-        Box::new(move |ui| {
-            let mut pb = egui::ProgressBar::new(fraction.clamp(0.0, 1.0));
-            if !text.is_empty() {
-                pb = pb.text(&text);
-            }
-            ui.add(pb);
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ProgressIndicatorNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            let val = node.numeric_value().unwrap_or(0.0);
+            let max = node.max_numeric_value().unwrap_or(100.0);
+            let fraction = if max > 0.0 { (val / max) as f32 } else { 0.0 };
+            Box::new(move |ui: &mut egui::Ui| {
+                let mut pb = egui::ProgressBar::new(fraction.clamp(0.0, 1.0));
+                if !text.is_empty() {
+                    pb = pb.text(&text);
+                }
+                ui.add(pb);
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_scroll_bar(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_progress_indicator(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ScrollBarNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_progress_indicator(node, id, children, Established::assert())
     }
 
     fn bridge_scroll_view(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            egui::ScrollArea::vertical().show(ui, |ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ScrollViewNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                egui::ScrollArea::vertical().show(ui, |ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_splitter(
         &self,
         _node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(|ui| {
-            ui.separator();
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<SplitterNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            Box::new(|ui: &mut egui::Ui| {
+                ui.separator();
+            })
+        };
+        (__w, Established::assert())
     }
 
     // ── Text input ───────────────────────────────────────────────────────
@@ -417,141 +529,160 @@ impl UiNodeBridge for EguiBackend {
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let mut buf = node.value().unwrap_or("").to_string();
-        let hint = node.placeholder().map(|s| s.to_string());
-        let readonly = node.is_read_only() || node.is_disabled();
-        Box::new(move |ui| {
-            let mut te = egui::TextEdit::singleline(&mut buf);
-            if let Some(h) = &hint {
-                te = te.hint_text(h.as_str());
-            }
-            if readonly {
-                te = te.interactive(false);
-            }
-            ui.add(te);
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<TextInputNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let mut buf = node.value().unwrap_or("").to_string();
+            let hint = node.placeholder().map(|s| s.to_string());
+            let readonly = node.is_read_only() || node.is_disabled();
+            Box::new(move |ui: &mut egui::Ui| {
+                let mut te = egui::TextEdit::singleline(&mut buf);
+                if let Some(h) = &hint {
+                    te = te.hint_text(h.as_str());
+                }
+                if readonly {
+                    te = te.interactive(false);
+                }
+                ui.add(te);
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_multiline_text_input(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let mut buf = node.value().unwrap_or("").to_string();
-        let hint = node.placeholder().map(|s| s.to_string());
-        let readonly = node.is_read_only() || node.is_disabled();
-        Box::new(move |ui| {
-            let mut te = egui::TextEdit::multiline(&mut buf);
-            if let Some(h) = &hint {
-                te = te.hint_text(h.as_str());
-            }
-            if readonly {
-                te = te.interactive(false);
-            }
-            ui.add(te);
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<MultilineTextInputNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let mut buf = node.value().unwrap_or("").to_string();
+            let hint = node.placeholder().map(|s| s.to_string());
+            let readonly = node.is_read_only() || node.is_disabled();
+            Box::new(move |ui: &mut egui::Ui| {
+                let mut te = egui::TextEdit::multiline(&mut buf);
+                if let Some(h) = &hint {
+                    te = te.hint_text(h.as_str());
+                }
+                if readonly {
+                    te = te.interactive(false);
+                }
+                ui.add(te);
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_search_input(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_text_input(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<SearchInputNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_text_input(node, id, children, Established::assert())
     }
 
     fn bridge_date_input(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_text_input(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<DateInputNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_text_input(node, id, children, Established::assert())
     }
 
     fn bridge_date_time_input(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_text_input(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<DateTimeInputNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_text_input(node, id, children, Established::assert())
     }
 
     fn bridge_week_input(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_text_input(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<WeekInputNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_text_input(node, id, children, Established::assert())
     }
 
     fn bridge_month_input(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_text_input(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<MonthInputNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_text_input(node, id, children, Established::assert())
     }
 
     fn bridge_time_input(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_text_input(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<TimeInputNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_text_input(node, id, children, Established::assert())
     }
 
     fn bridge_email_input(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_text_input(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<EmailInputNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_text_input(node, id, children, Established::assert())
     }
 
     fn bridge_number_input(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_spin_button(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<NumberInputNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_spin_button(node, id, children, Established::assert())
     }
 
     fn bridge_password_input(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_text_input(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<PasswordInputNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_text_input(node, id, children, Established::assert())
     }
 
     fn bridge_phone_number_input(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_text_input(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<PhoneNumberInputNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_text_input(node, id, children, Established::assert())
     }
 
     fn bridge_url_input(
         &self,
         node: &Node,
         id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        self.bridge_text_input(node, id, children)
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<UrlInputNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        self.bridge_text_input(node, id, children, Established::assert())
     }
 
     // ── Text display ─────────────────────────────────────────────────────
@@ -560,673 +691,1014 @@ impl UiNodeBridge for EguiBackend {
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.label(&text);
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<TextRunNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(&text);
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_paragraph(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.label(&text);
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ParagraphNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(&text);
+            })
+        };
+        (__w, Established::assert())
     }
 
-    fn bridge_label(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.label(&text);
-        })
+    fn bridge_label(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<LabelNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(&text);
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_heading(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        let size = heading_size(node);
-        Box::new(move |ui| {
-            ui.add(egui::Label::new(
-                egui::RichText::new(&text).strong().size(size),
-            ));
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<HeadingNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            let size = heading_size(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.add(egui::Label::new(
+                    egui::RichText::new(&text).strong().size(size),
+                ));
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_line_break(
         &self,
         _node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(|ui| {
-            ui.end_row();
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<LineBreakNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            Box::new(|ui: &mut egui::Ui| {
+                ui.end_row();
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_blockquote(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.add(egui::Label::new(
-                egui::RichText::new(format!("│ {text}")).italics(),
-            ));
-        })
-    }
-
-    fn bridge_code(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.add(egui::Label::new(egui::RichText::new(&text).monospace()));
-        })
-    }
-
-    fn bridge_math(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.label(&text);
-        })
-    }
-
-    fn bridge_note(&self, node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
-        if children.is_empty() {
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<BlockquoteNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
             let text = node_label(node);
-            Box::new(move |ui| {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.add(egui::Label::new(
+                    egui::RichText::new(format!("│ {text}")).italics(),
+                ));
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_code(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<CodeNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.add(egui::Label::new(egui::RichText::new(&text).monospace()));
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_math(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<MathNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
                 ui.label(&text);
             })
-        } else {
-            Box::new(move |ui| {
-                ui.group(|ui| {
-                    for c in children {
-                        c(ui);
-                    }
-                });
-            })
-        }
+        };
+        (__w, Established::assert())
     }
 
-    fn bridge_term(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.add(egui::Label::new(egui::RichText::new(&text).strong()));
-        })
+    fn bridge_note(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<NoteNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w: Self::Widget = {
+            if children.is_empty() {
+                let text = node_label(node);
+                Box::new(move |ui: &mut egui::Ui| {
+                    ui.label(&text);
+                })
+            } else {
+                Box::new(move |ui: &mut egui::Ui| {
+                    ui.group(|ui| {
+                        for c in children {
+                            c(ui);
+                        }
+                    });
+                })
+            }
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_term(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<TermNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.add(egui::Label::new(egui::RichText::new(&text).strong()));
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_definition(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.label(&text);
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<DefinitionNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(&text);
+            })
+        };
+        (__w, Established::assert())
     }
 
     // ── Media ────────────────────────────────────────────────────────────
 
-    fn bridge_image(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
-        let alt = node_label(node);
-        let text = if alt.is_empty() {
-            "🖼 [image]".to_string()
-        } else {
-            format!("🖼 {alt}")
+    fn bridge_image(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ImageNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let alt = node_label(node);
+            let text = if alt.is_empty() {
+                "🖼 [image]".to_string()
+            } else {
+                format!("🖼 {alt}")
+            };
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(&text);
+            })
         };
-        Box::new(move |ui| {
-            ui.label(&text);
-        })
+        (__w, Established::assert())
     }
 
     fn bridge_figure(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<FigureNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_figure_caption(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.add(egui::Label::new(egui::RichText::new(&text).italics()));
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<FigureCaptionNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.add(egui::Label::new(egui::RichText::new(&text).italics()));
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_canvas(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.label(format!("[canvas: {text}]"));
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<CanvasNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(format!("[canvas: {text}]"));
+            })
+        };
+        (__w, Established::assert())
     }
 
-    fn bridge_video(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.label(format!("[video: {text}]"));
-        })
+    fn bridge_video(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<VideoNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(format!("[video: {text}]"));
+            })
+        };
+        (__w, Established::assert())
     }
 
-    fn bridge_audio(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.label(format!("[audio: {text}]"));
-        })
+    fn bridge_audio(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<AudioNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(format!("[audio: {text}]"));
+            })
+        };
+        (__w, Established::assert())
     }
 
     // ── Landmark sections ─────────────────────────────────────────────────
 
-    fn bridge_main(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+    fn bridge_main(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<MainNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_navigation(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.horizontal(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<NavigationNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.horizontal(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_banner(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.horizontal(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<BannerNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.horizontal(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_content_info(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.horizontal(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ContentInfoNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.horizontal(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_complementary(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    fn bridge_form(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.group(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    fn bridge_search(
-        &self,
-        _node: &Node,
-        _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.horizontal(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    fn bridge_region(
-        &self,
-        _node: &Node,
-        _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.group(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    fn bridge_section(
-        &self,
-        _node: &Node,
-        _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.group(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    fn bridge_section_header(
-        &self,
-        _node: &Node,
-        _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.horizontal(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    fn bridge_section_footer(
-        &self,
-        _node: &Node,
-        _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.horizontal(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    fn bridge_article(
-        &self,
-        _node: &Node,
-        _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.group(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    fn bridge_group(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.group(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    fn bridge_dialog(
-        &self,
-        _node: &Node,
-        _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.group(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    fn bridge_details(
-        &self,
-        _node: &Node,
-        _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.group(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    fn bridge_tooltip(
-        &self,
-        node: &Node,
-        _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.label(&text);
-        })
-    }
-
-    fn bridge_alert(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.add(egui::Label::new(
-                egui::RichText::new(&text).color(egui::Color32::YELLOW),
-            ));
-        })
-    }
-
-    fn bridge_status(
-        &self,
-        node: &Node,
-        _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.label(&text);
-        })
-    }
-
-    fn bridge_timer(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.label(&text);
-        })
-    }
-
-    // ── Lists ─────────────────────────────────────────────────────────────
-
-    fn bridge_list(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    fn bridge_list_item(
-        &self,
-        node: &Node,
-        _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.label(format!("• {text}"));
-        })
-    }
-
-    fn bridge_description_list(
-        &self,
-        _node: &Node,
-        _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    // ── Tables ────────────────────────────────────────────────────────────
-
-    fn bridge_table(&self, node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
-        let role_str = format!("{:?}", node.role());
-        Box::new(move |ui| {
-            egui::Grid::new(format!("grid_{role_str}"))
-                .striped(true)
-                .show(ui, |ui| {
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ComplementaryNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
                     for c in children {
                         c(ui);
                     }
                 });
-        })
+            })
+        };
+        (__w, Established::assert())
     }
 
-    fn bridge_row(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
-        Box::new(move |ui| {
-            for c in children {
-                c(ui);
-            }
-            ui.end_row();
-        })
-    }
-
-    fn bridge_cell(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.label(&text);
-        })
-    }
-
-    fn bridge_caption(
-        &self,
-        node: &Node,
-        _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            ui.add(egui::Label::new(egui::RichText::new(&text).italics()));
-        })
-    }
-
-    fn bridge_row_group(
+    fn bridge_form(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    // ── Trees ─────────────────────────────────────────────────────────────
-
-    fn bridge_tree(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
-    }
-
-    fn bridge_tree_item(
-        &self,
-        node: &Node,
-        _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        if children.is_empty() {
-            let text = node_label(node);
-            let selected = node.is_selected().unwrap_or(false);
-            Box::new(move |ui| {
-                if selected {
-                    let hl = ui.visuals().selection.bg_fill;
-                    let fg = ui.visuals().selection.stroke.color;
-                    ui.painter()
-                        .rect_filled(ui.available_rect_before_wrap(), 0.0, hl);
-                    let _ = ui.colored_label(fg, &text);
-                } else {
-                    ui.label(&text);
-                }
-            })
-        } else {
-            Box::new(move |ui| {
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<FormNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
                 ui.group(|ui| {
                     for c in children {
                         c(ui);
                     }
                 });
             })
-        }
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_search(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<SearchNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.horizontal(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_region(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<RegionNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.group(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_section(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<SectionNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.group(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_section_header(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<SectionHeaderNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.horizontal(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_section_footer(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<SectionFooterNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.horizontal(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_article(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ArticleNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.group(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_group(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<GroupNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.group(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_dialog(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<DialogNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.group(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_details(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<DetailsNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.group(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_tooltip(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<TooltipNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(&text);
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_alert(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<AlertNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.add(egui::Label::new(
+                    egui::RichText::new(&text).color(egui::Color32::YELLOW),
+                ));
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_status(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<StatusNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(&text);
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_timer(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<TimerNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(&text);
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    // ── Lists ─────────────────────────────────────────────────────────────
+
+    fn bridge_list(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ListNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_list_item(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ListItemNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(format!("• {text}"));
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_description_list(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<DescriptionListNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    // ── Tables ────────────────────────────────────────────────────────────
+
+    fn bridge_table(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<TableNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            let role_str = format!("{:?}", node.role());
+            Box::new(move |ui: &mut egui::Ui| {
+                egui::Grid::new(format!("grid_{role_str}"))
+                    .striped(true)
+                    .show(ui, |ui| {
+                        for c in children {
+                            c(ui);
+                        }
+                    });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_row(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<RowNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                for c in children {
+                    c(ui);
+                }
+                ui.end_row();
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_cell(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<CellNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.label(&text);
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_caption(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<CaptionNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.add(egui::Label::new(egui::RichText::new(&text).italics()));
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_row_group(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<RowGroupNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    // ── Trees ─────────────────────────────────────────────────────────────
+
+    fn bridge_tree(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<TreeNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
+    }
+
+    fn bridge_tree_item(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<TreeItemNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w: Self::Widget = {
+            if children.is_empty() {
+                let text = node_label(node);
+                let selected = node.is_selected().unwrap_or(false);
+                Box::new(move |ui: &mut egui::Ui| {
+                    if selected {
+                        let hl = ui.visuals().selection.bg_fill;
+                        let fg = ui.visuals().selection.stroke.color;
+                        ui.painter()
+                            .rect_filled(ui.available_rect_before_wrap(), 0.0, hl);
+                        let _ = ui.colored_label(fg, &text);
+                    } else {
+                        ui.label(&text);
+                    }
+                })
+            } else {
+                Box::new(move |ui: &mut egui::Ui| {
+                    ui.group(|ui| {
+                        for c in children {
+                            c(ui);
+                        }
+                    });
+                })
+            }
+        };
+        (__w, Established::assert())
     }
 
     // ── Tabs ─────────────────────────────────────────────────────────────
 
-    fn bridge_tab(&self, node: &Node, _id: NodeId, _children: Vec<Self::Widget>) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            let _ = ui.selectable_label(false, &text);
-        })
+    fn bridge_tab(
+        &self,
+        node: &Node,
+        _id: NodeId,
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<TabNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                let _ = ui.selectable_label(false, &text);
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_tab_list(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.horizontal(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<TabListNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.horizontal(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_tab_panel(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.group(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<TabPanelNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.group(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     // ── Menus ─────────────────────────────────────────────────────────────
 
-    fn bridge_menu(&self, _node: &Node, _id: NodeId, children: Vec<Self::Widget>) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+    fn bridge_menu(
+        &self,
+        _node: &Node,
+        _id: NodeId,
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<MenuNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_menu_item(
         &self,
         node: &Node,
         _id: NodeId,
-        _children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        let text = node_label(node);
-        Box::new(move |ui| {
-            let _ = ui.selectable_label(false, &text);
-        })
+        _children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<MenuItemNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let __w = {
+            let text = node_label(node);
+            Box::new(move |ui: &mut egui::Ui| {
+                let _ = ui.selectable_label(false, &text);
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_toolbar(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.horizontal(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<ToolbarNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.horizontal(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 
     fn bridge_radio_group(
         &self,
         _node: &Node,
         _id: NodeId,
-        children: Vec<Self::Widget>,
-    ) -> Self::Widget {
-        Box::new(move |ui| {
-            ui.vertical(|ui| {
-                for c in children {
-                    c(ui);
-                }
-            });
-        })
+        children: Vec<(Self::Widget, Established<RolePreserved>)>,
+        _proof: Established<RadioGroupNodeValid>,
+    ) -> (Self::Widget, Established<RolePreserved>) {
+        let children: Vec<Self::Widget> = children.into_iter().map(|(w, _)| w).collect();
+        let __w = {
+            Box::new(move |ui: &mut egui::Ui| {
+                ui.vertical(|ui| {
+                    for c in children {
+                        c(ui);
+                    }
+                });
+            })
+        };
+        (__w, Established::assert())
     }
 }
 

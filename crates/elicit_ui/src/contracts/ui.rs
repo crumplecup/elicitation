@@ -34,6 +34,17 @@ mod emit_impls {
     /// enforced equivalency at the type level.
     pub struct IrSourced;
     structural_prop!(IrSourced, "IrSourced");
+
+    /// Proof that the [`accesskit`] tree was issued from a `Layout<Verified>`
+    /// and all WCAG Level AA constraints have been satisfied by construction.
+    pub struct WcagVerified;
+    structural_prop!(WcagVerified, "WcagVerified");
+
+    /// Proof that a frontend bridge method honoured all role guarantees carried
+    /// into it — the produced widget preserves every invariant established
+    /// during validation and dispatch.
+    pub struct RolePreserved;
+    structural_prop!(RolePreserved, "RolePreserved");
 }
 
-pub use emit_impls::{IrSourced, RenderComplete};
+pub use emit_impls::{IrSourced, RenderComplete, RolePreserved, WcagVerified};

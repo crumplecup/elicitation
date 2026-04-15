@@ -3,13 +3,15 @@
 //! # Modules
 //!
 //! - [`wcag`] — WCAG 2.2 (78 Success Criteria + sub-invariants + legacy aliases)
-//! - [`ui`] — UI-pipeline propositions (`RenderComplete`, `IrSourced`)
+//! - [`ui`] — UI-pipeline propositions (`RenderComplete`, `IrSourced`, `WcagVerified`, `RolePreserved`)
+//! - [`node_roles`] — per-role proof tokens for the `UiNodeBridge` chain of custody
 
+pub mod node_roles;
 pub mod ui;
 pub mod wcag;
 
 // Re-export everything so call sites use `elicit_ui::{WcagLevelAAValid, ...}`.
-pub use ui::{IrSourced, RenderComplete};
+pub use ui::{IrSourced, RenderComplete, RolePreserved, WcagVerified};
 pub use wcag::{
     // ── Legacy aliases (API back-compat) ──────────────────────────────────
     AccessibleAA,

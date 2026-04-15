@@ -3,7 +3,7 @@
 use accesskit::{Node, NodeId, Rect, Role, Tree, TreeId, TreeUpdate};
 use elicit_ratatui::{RatatuiBackend, TuiNode};
 use elicit_ui::traits::UiTreeRenderer;
-use elicit_ui::{Layout, Viewport};
+use elicit_ui::{Layout, UiRenderBackend, Viewport};
 
 fn node_id(n: u64) -> NodeId {
     NodeId::from(n)

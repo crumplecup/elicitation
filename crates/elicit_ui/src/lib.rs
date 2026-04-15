@@ -49,6 +49,14 @@ mod contracts;
 mod css_units;
 mod errors;
 mod layout_engine;
+/// Per-role proof tokens for the [`UiNodeBridge`] chain of custody.
+///
+/// Each `XxxNodeValid` type is issued by `dispatch_role` after the WCAG
+/// tree has been verified, and is required as a parameter to the
+/// corresponding `bridge_xxx` method.
+pub mod node_roles {
+    pub use crate::contracts::node_roles::*;
+}
 mod spatial;
 pub mod traits;
 mod types;
@@ -82,6 +90,7 @@ pub use contracts::{
     MinTargetSize,
     NoOverflow,
     RenderComplete,
+    RolePreserved,
     StructuredContent,
     SufficientContrast,
     ValidRole,
@@ -231,6 +240,7 @@ pub use contracts::{
     WcagUnderstandableValid,
     WcagUnusualWordsDefined,
     WcagValueStatesProgrammatic,
+    WcagVerified,
     WcagVideoOnlyAlternativeProvided,
     WcagVisualPresentationCustomizable,
     WcagWordSpacingAdjustable,
