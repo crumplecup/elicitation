@@ -1,6 +1,7 @@
 //! Trait re-exports and the [`GisBackend`] supertrait.
 
 mod crs;
+mod fgdc;
 mod iso_19111;
 mod iso_19115;
 mod rfc7946;
@@ -9,6 +10,15 @@ mod sfs;
 mod topology;
 
 pub use crs::{GisCrsBuilder, GisCrsLookup, GisCrsTransformer};
+pub use fgdc::{
+    FgdcBackend, FgdcBoundingMeta, FgdcBoundingValidator, FgdcCitationFactory, FgdcContactFactory,
+    FgdcContactMeta, FgdcContactValidator, FgdcDataQualityFactory, FgdcDateValidator,
+    FgdcDistributionFactory, FgdcDistributionMeta, FgdcDistributionParamValidator,
+    FgdcEntityAttrFactory, FgdcEntityAttrValidator, FgdcIdentificationFactory, FgdcKeywordMeta,
+    FgdcMapProjValidator, FgdcMetadataMeta, FgdcMetadataRefFactory, FgdcRecordFactory,
+    FgdcSecurityValidator, FgdcSpatialOrgFactory, FgdcSpatialParamValidator, FgdcSpatialRefFactory,
+    FgdcStatusValidator, FgdcTimePeriodFactory, FgdcVertRefValidator,
+};
 pub use iso_19111::{Iso19111Identified, Iso19111Scoped};
 pub use iso_19115::{
     Iso19115CitationFactory, Iso19115ContactMeta, Iso19115DateMeta, Iso19115ExtentFactory,
@@ -50,6 +60,7 @@ pub trait GisBackend:
     + SfsGeometryIo
     + SfsTopology
     + SfsSetOps
+    + FgdcBackend
     + Send
     + Sync
 {
@@ -77,6 +88,7 @@ impl<T> GisBackend for T where
         + SfsGeometryIo
         + SfsTopology
         + SfsSetOps
+        + FgdcBackend
         + Send
         + Sync
 {
