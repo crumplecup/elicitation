@@ -18,16 +18,12 @@ pub struct Pending;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Verified;
 
-/// Typestate marker: Layout rendered to a specific frontend.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Rendered;
-
 /// UI layout with typestate tracking.
 ///
 /// State transitions:
 /// - `Layout<Pending>` — awaiting verification
-/// - `Layout<Verified>` — verified against WCAG Level AA
-/// - `Layout<Rendered>` — rendered to frontend
+/// - `Layout<Verified>` — verified against WCAG Level AA; call [`Layout::into_verified_tree`]
+///   to obtain a [`crate::VerifiedTree`] for a frontend bridge
 #[derive(Debug, Clone)]
 pub struct Layout<State> {
     nodes: HashMap<NodeId, Node>,
@@ -273,50 +269,13 @@ impl Layout<Verified> {
     /// Extract a [`VerifiedTree`] snapshot for rendering.
     ///
     /// Converts the typestate layout into a plain data snapshot that
-    /// can be passed to any [`crate::UiRenderer`] backend.
+    /// can be passed to any frontend bridge.
     pub fn into_verified_tree(self) -> crate::VerifiedTree {
         crate::VerifiedTree {
             nodes: self.nodes,
             root: self.root,
             viewport: self.viewport.unwrap_or(Viewport::new(1920, 1080)),
         }
-    }
-
-    /// Render the verified layout through a [`crate::UiRenderer`].
-    ///
-    /// This is the generic render path. Frontend crates provide their
-    /// own [`crate::UiRenderer`] implementation (e.g., `EguiBackend`,
-    /// `RatatuiBackend`).
-    #[tracing::instrument(skip(self, backend), fields(root = ?self.root))]
-    pub fn render<B: crate::UiRenderer>(
-        self,
-        backend: &B,
-    ) -> Result<(Layout<Rendered>, crate::RenderStats), crate::UiError> {
-        tracing::debug!("Rendering layout via backend");
-
-        let tree = crate::VerifiedTree {
-            nodes: self.nodes.clone(),
-            root: self.root,
-            viewport: self.viewport.unwrap_or(Viewport::new(1920, 1080)),
-        };
-        let (stats, _proof) = backend.render(&tree)?;
-
-        let layout = Layout {
-            nodes: self.nodes,
-            root: self.root,
-            viewport: self.viewport,
-            report: self.report,
-            _state: PhantomData,
-        };
-
-        Ok((layout, stats))
-    }
-}
-
-impl Layout<Rendered> {
-    /// Get the root node ID.
-    pub fn root(&self) -> NodeId {
-        self.root
     }
 }
 

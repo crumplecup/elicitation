@@ -1092,6 +1092,42 @@ mod emit_impls {
     pub struct WcagStatusMessagesLiveRegion;
     structural_prop!(WcagStatusMessagesLiveRegion, "WcagStatusMessagesLiveRegion");
 
+    // ── Principle-level conformance seams ────────────────────────────────────
+
+    /// Composite: all WCAG Principle 1 (Perceivable) Level AA criteria satisfied.
+    ///
+    /// Produced by [`WcagPerceivedFactory::build_perceivable`] when all required
+    /// leaf-factory proofs (contrast, labels, structure, etc.) are supplied as
+    /// evidence.  Consumed by [`LevelAaEvidence::perceived`].
+    ///
+    /// Source: WCAG 2.2 Principle 1 — Perceivable
+    pub struct WcagPerceivedValid;
+    structural_prop!(WcagPerceivedValid, "WcagPerceivedValid");
+
+    /// Composite: all WCAG Principle 2 (Operable) Level AA criteria satisfied.
+    ///
+    /// Produced by [`WcagOperableFactory::build_operable`].
+    ///
+    /// Source: WCAG 2.2 Principle 2 — Operable
+    pub struct WcagOperableValid;
+    structural_prop!(WcagOperableValid, "WcagOperableValid");
+
+    /// Composite: all WCAG Principle 3 (Understandable) Level AA criteria satisfied.
+    ///
+    /// Produced by [`WcagUnderstandableFactory::build_understandable`].
+    ///
+    /// Source: WCAG 2.2 Principle 3 — Understandable
+    pub struct WcagUnderstandableValid;
+    structural_prop!(WcagUnderstandableValid, "WcagUnderstandableValid");
+
+    /// Composite: all WCAG Principle 4 (Robust) criteria satisfied.
+    ///
+    /// Produced by [`WcagRobustFactory::build_robust`].
+    ///
+    /// Source: WCAG 2.2 Principle 4 — Robust
+    pub struct WcagRobustValid;
+    structural_prop!(WcagRobustValid, "WcagRobustValid");
+
     // ── Aggregate conformance seams ──────────────────────────────────────────
 
     /// Composite: all WCAG 2.2 Level A Success Criteria are satisfied.
@@ -1314,6 +1350,7 @@ pub use emit_impls::{
     // 1.1 Text Alternatives
     WcagNonTextContentAltPresent,
     WcagNonTextContrastMinimum,
+    WcagOperableValid,
     WcagOrientationNotRestricted,
     // ── Principle 3: Understandable ───────────────────────────────────────
     // 3.1 Readable
@@ -1325,6 +1362,8 @@ pub use emit_impls::{
     WcagParsingValid,
     WcagPartLanguageIdentified,
     WcagPauseStopHideAvailable,
+    // ── Principle-level conformance seams ────────────────────────────────
+    WcagPerceivedValid,
     WcagPointerCancellationAbortable,
     WcagPointerCancellationReversible,
     WcagPointerCancellationUpEvent,
@@ -1335,6 +1374,7 @@ pub use emit_impls::{
     WcagReauthWithoutDataLoss,
     WcagReducedMotionRespected,
     WcagRedundantEntryMinimized,
+    WcagRobustValid,
     WcagRoleProgrammatic,
     WcagSectionHeadingsPresent,
     WcagSensoryNotExclusive,
@@ -1359,6 +1399,7 @@ pub use emit_impls::{
     WcagTimingAdjustable,
     WcagTimingExtendWarning,
     WcagTimingTurnOffAvailable,
+    WcagUnderstandableValid,
     WcagUnusualWordsDefined,
     WcagValueStatesProgrammatic,
     WcagVideoOnlyAlternativeProvided,

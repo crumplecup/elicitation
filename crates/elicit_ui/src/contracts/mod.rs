@@ -127,6 +127,7 @@ pub use wcag::{
     // 1.1 Text Alternatives
     WcagNonTextContentAltPresent,
     WcagNonTextContrastMinimum,
+    WcagOperableValid,
     WcagOrientationNotRestricted,
     // ── Principle 3: Understandable ───────────────────────────────────────
     // 3.1 Readable
@@ -138,6 +139,8 @@ pub use wcag::{
     WcagParsingValid,
     WcagPartLanguageIdentified,
     WcagPauseStopHideAvailable,
+    // ── Principle-level conformance seams ────────────────────────────────────
+    WcagPerceivedValid,
     WcagPointerCancellationAbortable,
     WcagPointerCancellationReversible,
     WcagPointerCancellationUpEvent,
@@ -148,6 +151,7 @@ pub use wcag::{
     WcagReauthWithoutDataLoss,
     WcagReducedMotionRespected,
     WcagRedundantEntryMinimized,
+    WcagRobustValid,
     WcagRoleProgrammatic,
     WcagSectionHeadingsPresent,
     WcagSensoryNotExclusive,
@@ -172,6 +176,7 @@ pub use wcag::{
     WcagTimingAdjustable,
     WcagTimingExtendWarning,
     WcagTimingTurnOffAvailable,
+    WcagUnderstandableValid,
     WcagUnusualWordsDefined,
     WcagValueStatesProgrammatic,
     WcagVideoOnlyAlternativeProvided,

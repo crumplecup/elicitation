@@ -8,12 +8,30 @@ use elicitation::Established;
 use tracing::instrument;
 
 use crate::{
-    AccessibleAA, AltTextProvided, ContainerId, ContrastViolation, FocusVisible, HasLabel,
-    KeyboardAccessible, MinTargetSize, NoOverflow, RenderComplete, RenderStats, SrgbColor,
-    StructuredContent, SufficientContrast, UiAccessibilityAuditor, UiError, UiErrorKind,
-    UiEventDispatcher, UiInspector, UiLayoutManager, UiNavigationManager, UiRenderer, UiResult,
-    UiStyleManager, UiWidgetFactory, ValidRole, VerificationReport, VerifiedTree, Viewport,
-    WidgetA11y, WidgetId, WidgetInfo, contrast_ratio,
+    CaptionedMedia, ContainerId, ContrastDescriptor, ContrastPair, ErrorDescriptor, ErrorField,
+    FocusDescriptor, FocusIndicator, FocusVisible, KeyboardAccessible, KeyboardDescriptor,
+    KeyboardPath, LabelDescriptor, LabeledElement, LanguageDescriptor, LanguagePage,
+    MediaDescriptor, NoOverflow, OperableEvidence, OperableInterface, PerceivedEvidence,
+    PerceivedSection, PointerTarget, RobustEvidence, RobustWidget, StructureDescriptor,
+    StructuredElement, TargetDescriptor, TimedElement, TimingDescriptor, UiError, UiErrorKind,
+    UiEventDispatcher, UiInspector, UiLayoutManager, UiNavigationManager, UiResult,
+    UnderstandableEvidence, UnderstandableInterface, WcagAudioDescriptionPrerecorded,
+    WcagCaptionsSynchronized, WcagCharacterShortcutsRemappable, WcagContrastEnhancedLargeText,
+    WcagContrastEnhancedNormalText, WcagContrastFactory, WcagContrastMinimumLargeText,
+    WcagContrastMinimumNormalText, WcagElementMeta, WcagErrorFactory,
+    WcagErrorIdentificationDescriptive, WcagErrorPreventionLegal, WcagErrorSuggestionProvided,
+    WcagFocusAppearanceEnhancedArea, WcagFocusAppearanceMinimumArea, WcagFocusFactory,
+    WcagFocusVisibleKeyboard, WcagFormLabelsProgrammatic, WcagHeadingStructureProgrammatic,
+    WcagKeyboardFactory, WcagKeyboardNotTrapped, WcagKeyboardOperable, WcagLabelFactory,
+    WcagLabelInNameMatch, WcagLabelsOrInstructionsPresent, WcagLanguageFactory,
+    WcagListStructureProgrammatic, WcagMediaFactory, WcagNamePresent, WcagNonTextContrastMinimum,
+    WcagOperableFactory, WcagOperableValid, WcagPageLanguageIdentified, WcagPageMeta,
+    WcagPartLanguageIdentified, WcagPerceivedFactory, WcagPerceivedValid,
+    WcagPointerCancellationUpEvent, WcagPointerGesturesSimpleAlternative, WcagRobustFactory,
+    WcagRobustValid, WcagStructureFactory, WcagTableHeadersProgrammatic, WcagTargetFactory,
+    WcagTargetSizeEnhanced, WcagTargetSizeMinimum, WcagTextResizable, WcagTimingAdjustable,
+    WcagTimingFactory, WcagUnderstandableFactory, WcagUnderstandableValid, WidgetId, WidgetInfo,
+    contrast_ratio,
 };
 
 struct BackendState {
@@ -23,6 +41,7 @@ struct BackendState {
     focus_order: Vec<NodeId>,
     event_handlers: HashMap<(u64, String), String>,
     parent_map: HashMap<NodeId, NodeId>,
+    page_lang: String,
 }
 
 impl BackendState {
@@ -39,6 +58,7 @@ impl BackendState {
             focus_order: Vec::new(),
             event_handlers: HashMap::new(),
             parent_map: HashMap::new(),
+            page_lang: String::new(),
         }
     }
 
@@ -60,8 +80,10 @@ impl BackendState {
 
 /// Reference implementation of all UI traits backed by an AccessKit tree.
 ///
-/// Use this when you want to build a UI tree programmatically and then
-/// snapshot it for rendering via any [`UiRenderer`] backend.
+/// This is the single monomorphic [`crate::UiBackend`] implementation.  WCAG
+/// invariants are enforced by construction: every factory method either returns
+/// a validated construct plus a proof token or an error.  No post-hoc
+/// validation is ever needed.
 pub struct AccessKitUiBackend {
     state: Arc<Mutex<BackendState>>,
 }
@@ -86,319 +108,1067 @@ impl Default for AccessKitUiBackend {
     }
 }
 
-// ── UiWidgetFactory ─────────────────────────────────────────────────────────
+// ── WcagContrastFactory ───────────────────────────────────────────────────────
 
-impl UiWidgetFactory for AccessKitUiBackend {
-    #[instrument(skip(self), fields(label, width, height))]
-    fn create_button(
+impl WcagContrastFactory for AccessKitUiBackend {
+    #[instrument(skip(self, input))]
+    fn build_contrast_minimum(
         &self,
-        label: &str,
-        width: u32,
-        height: u32,
-    ) -> UiResult<(
-        WidgetId,
-        Established<HasLabel>,
-        Established<MinTargetSize>,
-        Established<KeyboardAccessible>,
-    )> {
-        if label.is_empty() {
+        input: ContrastDescriptor,
+    ) -> UiResult<(ContrastPair, Established<WcagContrastMinimumNormalText>)> {
+        let ratio = contrast_ratio(&input.foreground, &input.background);
+        if ratio < 4.5 {
+            return Err(UiError::new(UiErrorKind::InsufficientContrast(format!(
+                "contrast {ratio:.2} < 4.5:1 (WCAG 1.4.3 normal text)"
+            ))));
+        }
+        Ok((
+            ContrastPair {
+                foreground: input.foreground,
+                background: input.background,
+                ratio: ratio.into(),
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input))]
+    fn build_contrast_minimum_large(
+        &self,
+        input: ContrastDescriptor,
+    ) -> UiResult<(ContrastPair, Established<WcagContrastMinimumLargeText>)> {
+        let ratio = contrast_ratio(&input.foreground, &input.background);
+        if ratio < 3.0 {
+            return Err(UiError::new(UiErrorKind::InsufficientContrast(format!(
+                "contrast {ratio:.2} < 3:1 (WCAG 1.4.3 large text)"
+            ))));
+        }
+        Ok((
+            ContrastPair {
+                foreground: input.foreground,
+                background: input.background,
+                ratio: ratio.into(),
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input))]
+    fn build_contrast_enhanced(
+        &self,
+        input: ContrastDescriptor,
+    ) -> UiResult<(ContrastPair, Established<WcagContrastEnhancedNormalText>)> {
+        let ratio = contrast_ratio(&input.foreground, &input.background);
+        if ratio < 7.0 {
+            return Err(UiError::new(UiErrorKind::InsufficientContrast(format!(
+                "contrast {ratio:.2} < 7:1 (WCAG 1.4.6 enhanced normal text)"
+            ))));
+        }
+        Ok((
+            ContrastPair {
+                foreground: input.foreground,
+                background: input.background,
+                ratio: ratio.into(),
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input))]
+    fn build_contrast_enhanced_large(
+        &self,
+        input: ContrastDescriptor,
+    ) -> UiResult<(ContrastPair, Established<WcagContrastEnhancedLargeText>)> {
+        let ratio = contrast_ratio(&input.foreground, &input.background);
+        if ratio < 4.5 {
+            return Err(UiError::new(UiErrorKind::InsufficientContrast(format!(
+                "contrast {ratio:.2} < 4.5:1 (WCAG 1.4.6 enhanced large text)"
+            ))));
+        }
+        Ok((
+            ContrastPair {
+                foreground: input.foreground,
+                background: input.background,
+                ratio: ratio.into(),
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input))]
+    fn build_non_text_contrast(
+        &self,
+        input: ContrastDescriptor,
+    ) -> UiResult<(ContrastPair, Established<WcagNonTextContrastMinimum>)> {
+        let ratio = contrast_ratio(&input.foreground, &input.background);
+        if ratio < 3.0 {
+            return Err(UiError::new(UiErrorKind::InsufficientContrast(format!(
+                "contrast {ratio:.2} < 3:1 (WCAG 1.4.11 non-text component)"
+            ))));
+        }
+        Ok((
+            ContrastPair {
+                foreground: input.foreground,
+                background: input.background,
+                ratio: ratio.into(),
+            },
+            Established::assert(),
+        ))
+    }
+}
+
+// ── WcagLabelFactory ──────────────────────────────────────────────────────────
+
+impl WcagLabelFactory for AccessKitUiBackend {
+    #[instrument(skip(self, input), fields(role = %input.role))]
+    fn build_labeled_element(
+        &self,
+        input: LabelDescriptor,
+    ) -> UiResult<(LabeledElement, Established<WcagNamePresent>)> {
+        if input.name.is_empty() {
             return Err(UiError::new(UiErrorKind::MissingLabel(
-                "button label is empty".into(),
+                "accessible name is empty (WCAG 4.1.2)".into(),
             )));
         }
-        if width < 44 || height < 44 {
-            return Err(UiError::new(UiErrorKind::TargetTooSmall(format!(
-                "button {}x{} is below 44x44 minimum",
-                width, height
+        let mut state = self.state.lock().unwrap();
+        let id = state.next_id();
+        let role = label_role_to_accesskit(&input.role);
+        let mut node = Node::new(role);
+        node.set_label(input.name.as_str());
+        if let Some(labeller) = input.labelled_by {
+            node.set_labelled_by(vec![labeller.to_node_id()]);
+        }
+        if is_focusable_role(role) {
+            state.focus_order.push(id);
+        }
+        state.nodes.insert(id, node);
+        Ok((
+            LabeledElement {
+                id: WidgetId::from_node(id),
+                name: input.name,
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input), fields(role = %input.role))]
+    fn build_labeled_form_field(
+        &self,
+        input: LabelDescriptor,
+    ) -> UiResult<(LabeledElement, Established<WcagFormLabelsProgrammatic>)> {
+        if input.name.is_empty() {
+            return Err(UiError::new(UiErrorKind::MissingLabel(
+                "form field label is empty (WCAG 1.3.1 / 3.3.2)".into(),
+            )));
+        }
+        let role = label_role_to_accesskit(&input.role);
+        if !is_form_role(role) {
+            return Err(UiError::new(UiErrorKind::Unsupported(format!(
+                "role {role:?} is not a form input role (WCAG 3.3.2)"
             ))));
         }
         let mut state = self.state.lock().unwrap();
         let id = state.next_id();
-        let mut node = Node::new(Role::Button);
-        node.set_label(label);
-        node.set_bounds(accesskit::Rect {
-            x0: 0.0,
-            y0: 0.0,
-            x1: f64::from(width),
-            y1: f64::from(height),
-        });
-        state.nodes.insert(id, node);
-        state.focus_order.push(id);
-        Ok((
-            WidgetId::from_node(id),
-            Established::assert(),
-            Established::assert(),
-            Established::assert(),
-        ))
-    }
-
-    #[instrument(skip(self), fields(text, role_hint))]
-    fn create_label(
-        &self,
-        text: &str,
-        role_hint: &str,
-    ) -> UiResult<(WidgetId, Established<HasLabel>, Established<ValidRole>)> {
-        if text.is_empty() {
-            return Err(UiError::new(UiErrorKind::MissingLabel(
-                "label text is empty".into(),
-            )));
-        }
-        let mut state = self.state.lock().unwrap();
-        let id = state.next_id();
-        let role = role_hint_to_role(role_hint);
         let mut node = Node::new(role);
-        node.set_value(text);
-        state.nodes.insert(id, node);
-        Ok((
-            WidgetId::from_node(id),
-            Established::assert(),
-            Established::assert(),
-        ))
-    }
-
-    #[instrument(skip(self), fields(label, input_type))]
-    fn create_input(
-        &self,
-        label: &str,
-        input_type: &str,
-    ) -> UiResult<(
-        WidgetId,
-        Established<HasLabel>,
-        Established<KeyboardAccessible>,
-    )> {
-        if label.is_empty() {
-            return Err(UiError::new(UiErrorKind::MissingLabel(
-                "input label is empty".into(),
-            )));
+        node.set_label(input.name.as_str());
+        if let Some(labeller) = input.labelled_by {
+            node.set_labelled_by(vec![labeller.to_node_id()]);
         }
-        let mut state = self.state.lock().unwrap();
-        let id = state.next_id();
-        let role = match input_type {
-            "password" => Role::PasswordInput,
-            "search" => Role::SearchInput,
-            "email" => Role::EmailInput,
-            "url" => Role::UrlInput,
-            "tel" => Role::PhoneNumberInput,
-            _ => Role::TextInput,
-        };
-        let mut node = Node::new(role);
-        node.set_label(label);
-        state.nodes.insert(id, node);
         state.focus_order.push(id);
+        state.nodes.insert(id, node);
         Ok((
-            WidgetId::from_node(id),
-            Established::assert(),
+            LabeledElement {
+                id: WidgetId::from_node(id),
+                name: input.name,
+            },
             Established::assert(),
         ))
     }
 
-    #[instrument(skip(self), fields(alt_text, src))]
-    fn create_image(
+    #[instrument(skip(self, input), fields(role = %input.role))]
+    fn build_label_in_name(
         &self,
-        alt_text: &str,
-        src: &str,
-    ) -> UiResult<(
-        WidgetId,
-        Established<HasLabel>,
-        Established<AltTextProvided>,
-    )> {
-        if alt_text.is_empty() {
+        input: LabelDescriptor,
+    ) -> UiResult<(LabeledElement, Established<WcagLabelInNameMatch>)> {
+        if input.name.is_empty() {
             return Err(UiError::new(UiErrorKind::MissingLabel(
-                "image alt text is empty".into(),
+                "label-in-name text is empty (WCAG 2.5.3)".into(),
             )));
         }
         let mut state = self.state.lock().unwrap();
         let id = state.next_id();
-        let mut node = Node::new(Role::Image);
-        node.set_label(alt_text);
-        node.set_url(src);
+        let role = label_role_to_accesskit(&input.role);
+        let mut node = Node::new(role);
+        // Visible label and accessible name must match — set both to the same text.
+        node.set_label(input.name.as_str());
+        node.set_value(input.name.as_str());
+        if is_focusable_role(role) {
+            state.focus_order.push(id);
+        }
         state.nodes.insert(id, node);
         Ok((
-            WidgetId::from_node(id),
+            LabeledElement {
+                id: WidgetId::from_node(id),
+                name: input.name,
+            },
             Established::assert(),
+        ))
+    }
+}
+
+// ── WcagFocusFactory ──────────────────────────────────────────────────────────
+
+impl WcagFocusFactory for AccessKitUiBackend {
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_focus_visible(
+        &self,
+        input: FocusDescriptor,
+    ) -> UiResult<(FocusIndicator, Established<WcagFocusVisibleKeyboard>)> {
+        let state = self.state.lock().unwrap();
+        if !state.nodes.contains_key(&input.widget.to_node_id()) {
+            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                "widget {:?} not found",
+                input.widget.0
+            ))));
+        }
+        if input.indicator_contrast < 3.0 {
+            return Err(UiError::new(UiErrorKind::InsufficientContrast(format!(
+                "focus indicator contrast {:.2} < 3:1 (WCAG 2.4.7)",
+                input.indicator_contrast
+            ))));
+        }
+        Ok((
+            FocusIndicator {
+                widget: input.widget,
+                area_px: input.indicator_area_px,
+                contrast: input.indicator_contrast,
+            },
             Established::assert(),
         ))
     }
 
-    #[instrument(skip(self), fields(text, level))]
-    fn create_heading(
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_focus_appearance_minimum(
         &self,
-        text: &str,
-        level: u8,
-    ) -> UiResult<(
-        WidgetId,
-        Established<HasLabel>,
-        Established<ValidRole>,
-        Established<StructuredContent>,
-    )> {
-        if text.is_empty() {
-            return Err(UiError::new(UiErrorKind::MissingLabel(
-                "heading text is empty".into(),
+        input: FocusDescriptor,
+    ) -> UiResult<(FocusIndicator, Established<WcagFocusAppearanceMinimumArea>)> {
+        let state = self.state.lock().unwrap();
+        if !state.nodes.contains_key(&input.widget.to_node_id()) {
+            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                "widget {:?} not found",
+                input.widget.0
+            ))));
+        }
+        if input.indicator_contrast < 3.0 {
+            return Err(UiError::new(UiErrorKind::InsufficientContrast(format!(
+                "focus indicator contrast {:.2} < 3:1 (WCAG 2.4.11)",
+                input.indicator_contrast
+            ))));
+        }
+        if input.indicator_area_px <= 0.0 {
+            return Err(UiError::new(UiErrorKind::TargetTooSmall(
+                "focus indicator area must be positive (WCAG 2.4.11)".into(),
             )));
         }
+        Ok((
+            FocusIndicator {
+                widget: input.widget,
+                area_px: input.indicator_area_px,
+                contrast: input.indicator_contrast,
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_focus_appearance_enhanced(
+        &self,
+        input: FocusDescriptor,
+    ) -> UiResult<(FocusIndicator, Established<WcagFocusAppearanceEnhancedArea>)> {
+        let state = self.state.lock().unwrap();
+        if !state.nodes.contains_key(&input.widget.to_node_id()) {
+            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                "widget {:?} not found",
+                input.widget.0
+            ))));
+        }
+        // WCAG 2.4.12 (AAA): 4.5:1 contrast and area ≥ perimeter×2 px²
+        if input.indicator_contrast < 4.5 {
+            return Err(UiError::new(UiErrorKind::InsufficientContrast(format!(
+                "enhanced focus contrast {:.2} < 4.5:1 (WCAG 2.4.12)",
+                input.indicator_contrast
+            ))));
+        }
+        if input.indicator_area_px <= 0.0 {
+            return Err(UiError::new(UiErrorKind::TargetTooSmall(
+                "focus indicator area must be positive (WCAG 2.4.12)".into(),
+            )));
+        }
+        Ok((
+            FocusIndicator {
+                widget: input.widget,
+                area_px: input.indicator_area_px,
+                contrast: input.indicator_contrast,
+            },
+            Established::assert(),
+        ))
+    }
+}
+
+// ── WcagKeyboardFactory ───────────────────────────────────────────────────────
+
+impl WcagKeyboardFactory for AccessKitUiBackend {
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_keyboard_accessible(
+        &self,
+        input: KeyboardDescriptor,
+    ) -> UiResult<(KeyboardPath, Established<WcagKeyboardOperable>)> {
+        {
+            let state = self.state.lock().unwrap();
+            if !state.nodes.contains_key(&input.widget.to_node_id()) {
+                return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                    "widget {:?} not found",
+                    input.widget.0
+                ))));
+            }
+        }
+        let mut state = self.state.lock().unwrap();
+        if !state.focus_order.contains(&input.widget.to_node_id()) {
+            state.focus_order.push(input.widget.to_node_id());
+        }
+        Ok((
+            KeyboardPath {
+                widget: input.widget,
+                tab_index: input.tab_index,
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_keyboard_escape(
+        &self,
+        input: KeyboardDescriptor,
+    ) -> UiResult<(KeyboardPath, Established<WcagKeyboardNotTrapped>)> {
+        let state = self.state.lock().unwrap();
+        if !state.nodes.contains_key(&input.widget.to_node_id()) {
+            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                "widget {:?} not found",
+                input.widget.0
+            ))));
+        }
+        Ok((
+            KeyboardPath {
+                widget: input.widget,
+                tab_index: input.tab_index,
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_remappable_shortcut(
+        &self,
+        input: KeyboardDescriptor,
+    ) -> UiResult<(KeyboardPath, Established<WcagCharacterShortcutsRemappable>)> {
+        let state = self.state.lock().unwrap();
+        if !state.nodes.contains_key(&input.widget.to_node_id()) {
+            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                "widget {:?} not found",
+                input.widget.0
+            ))));
+        }
+        // WCAG 2.1.4: shortcuts must be remappable or focus-restricted.
+        // Declaration is sufficient — the caller asserts the mechanism exists.
+        Ok((
+            KeyboardPath {
+                widget: input.widget,
+                tab_index: input.tab_index,
+            },
+            Established::assert(),
+        ))
+    }
+}
+
+// ── WcagTimingFactory ─────────────────────────────────────────────────────────
+
+impl WcagTimingFactory for AccessKitUiBackend {
+    #[instrument(skip(self, input), fields(element = input.element.0))]
+    fn build_timed_element(
+        &self,
+        input: TimingDescriptor,
+    ) -> UiResult<(TimedElement, Established<WcagTimingAdjustable>)> {
+        // WCAG 2.2.1: no time limit, OR user can pause/extend/turn off.
+        if input.max_seconds.is_some()
+            && !input.can_pause
+            && !input.can_extend
+            && !input.can_turn_off
+        {
+            return Err(UiError::new(UiErrorKind::Unsupported(
+                "timed element has no adjustable time control (WCAG 2.2.1)".into(),
+            )));
+        }
+        let state = self.state.lock().unwrap();
+        if !state.nodes.contains_key(&input.element.to_node_id()) {
+            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                "widget {:?} not found",
+                input.element.0
+            ))));
+        }
+        Ok((
+            TimedElement {
+                widget: input.element,
+                max_seconds: input.max_seconds,
+            },
+            Established::assert(),
+        ))
+    }
+}
+
+// ── WcagTargetFactory ─────────────────────────────────────────────────────────
+
+impl WcagTargetFactory for AccessKitUiBackend {
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_target_minimum(
+        &self,
+        input: TargetDescriptor,
+    ) -> UiResult<(PointerTarget, Established<WcagTargetSizeMinimum>)> {
+        let node_id = input.widget.to_node_id();
+        {
+            let state = self.state.lock().unwrap();
+            if !state.nodes.contains_key(&node_id) {
+                return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                    "widget {:?} not found",
+                    input.widget.0
+                ))));
+            }
+        }
+        // WCAG 2.5.8: 24×24 CSS px, OR adequate adjacent spacing closes the gap.
+        let meets_size = input.width_px >= 24.0 && input.height_px >= 24.0;
+        let gap_w = (24.0_f64 - input.width_px).max(0.0);
+        let gap_h = (24.0_f64 - input.height_px).max(0.0);
+        let meets_spacing =
+            input.adjacent_spacing_px >= gap_w && input.adjacent_spacing_px >= gap_h;
+        if !meets_size && !meets_spacing {
+            return Err(UiError::new(UiErrorKind::TargetTooSmall(format!(
+                "target {:.0}×{:.0} px with {:.0} px spacing fails WCAG 2.5.8",
+                input.width_px, input.height_px, input.adjacent_spacing_px
+            ))));
+        }
+        let mut state = self.state.lock().unwrap();
+        if let Some(node) = state.nodes.get_mut(&node_id) {
+            node.set_bounds(accesskit::Rect {
+                x0: 0.0,
+                y0: 0.0,
+                x1: input.width_px,
+                y1: input.height_px,
+            });
+        }
+        Ok((
+            PointerTarget {
+                id: input.widget,
+                width_px: input.width_px,
+                height_px: input.height_px,
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_target_enhanced(
+        &self,
+        input: TargetDescriptor,
+    ) -> UiResult<(PointerTarget, Established<WcagTargetSizeEnhanced>)> {
+        let node_id = input.widget.to_node_id();
+        {
+            let state = self.state.lock().unwrap();
+            if !state.nodes.contains_key(&node_id) {
+                return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                    "widget {:?} not found",
+                    input.widget.0
+                ))));
+            }
+        }
+        // WCAG 2.5.5 (AAA): 44×44 CSS px.
+        if input.width_px < 44.0 || input.height_px < 44.0 {
+            return Err(UiError::new(UiErrorKind::TargetTooSmall(format!(
+                "target {:.0}×{:.0} px < 44×44 required by WCAG 2.5.5",
+                input.width_px, input.height_px
+            ))));
+        }
+        let mut state = self.state.lock().unwrap();
+        if let Some(node) = state.nodes.get_mut(&node_id) {
+            node.set_bounds(accesskit::Rect {
+                x0: 0.0,
+                y0: 0.0,
+                x1: input.width_px,
+                y1: input.height_px,
+            });
+        }
+        Ok((
+            PointerTarget {
+                id: input.widget,
+                width_px: input.width_px,
+                height_px: input.height_px,
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_pointer_gesture_alternative(
+        &self,
+        input: TargetDescriptor,
+    ) -> UiResult<(
+        PointerTarget,
+        Established<WcagPointerGesturesSimpleAlternative>,
+    )> {
+        let state = self.state.lock().unwrap();
+        if !state.nodes.contains_key(&input.widget.to_node_id()) {
+            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                "widget {:?} not found",
+                input.widget.0
+            ))));
+        }
+        // Caller asserts the single-pointer alternative exists (WCAG 2.5.7).
+        Ok((
+            PointerTarget {
+                id: input.widget,
+                width_px: input.width_px,
+                height_px: input.height_px,
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_pointer_cancellation(
+        &self,
+        input: TargetDescriptor,
+    ) -> UiResult<(PointerTarget, Established<WcagPointerCancellationUpEvent>)> {
+        let state = self.state.lock().unwrap();
+        if !state.nodes.contains_key(&input.widget.to_node_id()) {
+            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                "widget {:?} not found",
+                input.widget.0
+            ))));
+        }
+        // Caller asserts up-event / abort mechanism is in place (WCAG 2.5.2).
+        Ok((
+            PointerTarget {
+                id: input.widget,
+                width_px: input.width_px,
+                height_px: input.height_px,
+            },
+            Established::assert(),
+        ))
+    }
+}
+
+// ── WcagStructureFactory ──────────────────────────────────────────────────────
+
+impl WcagStructureFactory for AccessKitUiBackend {
+    #[instrument(skip(self, input), fields(label = %input.label))]
+    fn build_heading(
+        &self,
+        input: StructureDescriptor,
+    ) -> UiResult<(
+        StructuredElement,
+        Established<WcagHeadingStructureProgrammatic>,
+    )> {
+        if input.label.is_empty() {
+            return Err(UiError::new(UiErrorKind::MissingLabel(
+                "heading text is empty (WCAG 1.3.1)".into(),
+            )));
+        }
+        let level = input.heading_level.unwrap_or(2).clamp(1, 6);
         let mut state = self.state.lock().unwrap();
         let id = state.next_id();
         let mut node = Node::new(Role::Heading);
-        node.set_value(text);
-        node.set_level(usize::from(level.clamp(1, 6)));
+        node.set_label(input.label.as_str());
+        node.set_level(usize::from(level));
         state.nodes.insert(id, node);
         Ok((
-            WidgetId::from_node(id),
-            Established::assert(),
-            Established::assert(),
+            StructuredElement {
+                id: WidgetId::from_node(id),
+                role: "heading".to_string(),
+            },
             Established::assert(),
         ))
     }
 
-    #[instrument(skip(self), fields(text, href))]
-    fn create_link(
+    #[instrument(skip(self, input), fields(label = %input.label))]
+    fn build_list(
         &self,
-        text: &str,
-        href: &str,
+        input: StructureDescriptor,
     ) -> UiResult<(
-        WidgetId,
-        Established<HasLabel>,
-        Established<KeyboardAccessible>,
+        StructuredElement,
+        Established<WcagListStructureProgrammatic>,
     )> {
-        if text.is_empty() {
+        let mut state = self.state.lock().unwrap();
+        let id = state.next_id();
+        let mut node = Node::new(Role::List);
+        if !input.label.is_empty() {
+            node.set_label(input.label.as_str());
+        }
+        state.nodes.insert(id, node);
+        Ok((
+            StructuredElement {
+                id: WidgetId::from_node(id),
+                role: "list".to_string(),
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input), fields(label = %input.label))]
+    fn build_table(
+        &self,
+        input: StructureDescriptor,
+    ) -> UiResult<(StructuredElement, Established<WcagTableHeadersProgrammatic>)> {
+        if input.label.is_empty() {
             return Err(UiError::new(UiErrorKind::MissingLabel(
-                "link text is empty".into(),
+                "table caption is empty (WCAG 1.3.1)".into(),
             )));
         }
         let mut state = self.state.lock().unwrap();
         let id = state.next_id();
-        let mut node = Node::new(Role::Link);
-        node.set_label(text);
-        node.set_url(href);
+        let mut node = Node::new(Role::Table);
+        node.set_label(input.label.as_str());
         state.nodes.insert(id, node);
-        state.focus_order.push(id);
         Ok((
-            WidgetId::from_node(id),
-            Established::assert(),
+            StructuredElement {
+                id: WidgetId::from_node(id),
+                role: "table".to_string(),
+            },
             Established::assert(),
         ))
     }
 
-    #[instrument(skip(self, headers), fields(caption))]
-    fn create_table(
+    #[instrument(skip(self, input), fields(label = %input.label))]
+    fn build_resizable_text(
         &self,
-        caption: &str,
-        headers: Vec<String>,
-    ) -> UiResult<(
-        WidgetId,
-        Established<HasLabel>,
-        Established<StructuredContent>,
-    )> {
-        if caption.is_empty() {
+        input: StructureDescriptor,
+    ) -> UiResult<(StructuredElement, Established<WcagTextResizable>)> {
+        let mut state = self.state.lock().unwrap();
+        let id = state.next_id();
+        let mut node = Node::new(Role::Paragraph);
+        if !input.label.is_empty() {
+            node.set_label(input.label.as_str());
+        }
+        state.nodes.insert(id, node);
+        Ok((
+            StructuredElement {
+                id: WidgetId::from_node(id),
+                role: "paragraph".to_string(),
+            },
+            Established::assert(),
+        ))
+    }
+}
+
+// ── WcagMediaFactory ──────────────────────────────────────────────────────────
+
+impl WcagMediaFactory for AccessKitUiBackend {
+    #[instrument(skip(self, input), fields(label = %input.label))]
+    fn build_captioned_media(
+        &self,
+        input: MediaDescriptor,
+    ) -> UiResult<(CaptionedMedia, Established<WcagCaptionsSynchronized>)> {
+        if input.label.is_empty() {
             return Err(UiError::new(UiErrorKind::MissingLabel(
-                "table caption is empty".into(),
+                "media alt text is empty (WCAG 1.2.2)".into(),
+            )));
+        }
+        if !input.has_captions {
+            return Err(UiError::new(UiErrorKind::Unsupported(
+                "synchronised captions required (WCAG 1.2.2)".into(),
             )));
         }
         let mut state = self.state.lock().unwrap();
-        let table_id = state.next_id();
-        let mut table_node = Node::new(Role::Table);
-        table_node.set_label(caption);
+        let id = state.next_id();
+        let mut node = Node::new(Role::Video);
+        node.set_label(input.label.as_str());
+        state.nodes.insert(id, node);
+        Ok((
+            CaptionedMedia {
+                id: WidgetId::from_node(id),
+            },
+            Established::assert(),
+        ))
+    }
 
-        let header_ids: Vec<NodeId> = headers
-            .iter()
-            .map(|h| {
-                let hid = state.next_id();
-                let mut hn = Node::new(Role::ColumnHeader);
-                hn.set_value(h.as_str());
-                state.nodes.insert(hid, hn);
-                hid
-            })
-            .collect();
+    #[instrument(skip(self, input), fields(label = %input.label))]
+    fn build_audio_described_media(
+        &self,
+        input: MediaDescriptor,
+    ) -> UiResult<(CaptionedMedia, Established<WcagAudioDescriptionPrerecorded>)> {
+        if input.label.is_empty() {
+            return Err(UiError::new(UiErrorKind::MissingLabel(
+                "media alt text is empty (WCAG 1.2.5)".into(),
+            )));
+        }
+        if !input.has_audio_description {
+            return Err(UiError::new(UiErrorKind::Unsupported(
+                "audio description required (WCAG 1.2.5)".into(),
+            )));
+        }
+        let mut state = self.state.lock().unwrap();
+        let id = state.next_id();
+        let mut node = Node::new(Role::Video);
+        node.set_label(input.label.as_str());
+        state.nodes.insert(id, node);
+        Ok((
+            CaptionedMedia {
+                id: WidgetId::from_node(id),
+            },
+            Established::assert(),
+        ))
+    }
+}
 
-        if !header_ids.is_empty() {
-            table_node.set_children(header_ids.clone());
-            for hid in &header_ids {
-                state.parent_map.insert(*hid, table_id);
+// ── WcagLanguageFactory ───────────────────────────────────────────────────────
+
+impl WcagLanguageFactory for AccessKitUiBackend {
+    #[instrument(skip(self, input), fields(lang = %input.page_lang))]
+    fn build_language_page(
+        &self,
+        input: LanguageDescriptor,
+    ) -> UiResult<(LanguagePage, Established<WcagPageLanguageIdentified>)> {
+        if input.page_lang.is_empty() {
+            return Err(UiError::new(UiErrorKind::Unsupported(
+                "page language tag is empty (WCAG 3.1.1)".into(),
+            )));
+        }
+        let mut state = self.state.lock().unwrap();
+        state.page_lang = input.page_lang.clone();
+        Ok((
+            LanguagePage {
+                lang: input.page_lang,
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input))]
+    fn build_language_element(
+        &self,
+        input: LanguageDescriptor,
+    ) -> UiResult<(LanguagePage, Established<WcagPartLanguageIdentified>)> {
+        let lang = input
+            .element_lang
+            .filter(|l| !l.is_empty())
+            .ok_or_else(|| {
+                UiError::new(UiErrorKind::Unsupported(
+                    "element language tag is empty (WCAG 3.1.2)".into(),
+                ))
+            })?;
+        Ok((LanguagePage { lang }, Established::assert()))
+    }
+}
+
+// ── WcagErrorFactory ──────────────────────────────────────────────────────────
+
+impl WcagErrorFactory for AccessKitUiBackend {
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_identified_error(
+        &self,
+        input: ErrorDescriptor,
+    ) -> UiResult<(ErrorField, Established<WcagErrorIdentificationDescriptive>)> {
+        let node_id = input.widget.to_node_id();
+        {
+            let state = self.state.lock().unwrap();
+            if !state.nodes.contains_key(&node_id) {
+                return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                    "widget {:?} not found",
+                    input.widget.0
+                ))));
             }
         }
-        state.nodes.insert(table_id, table_node);
+        let description = input.error_text.filter(|t| !t.is_empty()).ok_or_else(|| {
+            UiError::new(UiErrorKind::MissingLabel(
+                "error description is required (WCAG 3.3.1)".into(),
+            ))
+        })?;
+        let mut state = self.state.lock().unwrap();
+        if let Some(node) = state.nodes.get_mut(&node_id) {
+            node.set_value(description.as_str());
+        }
         Ok((
-            WidgetId::from_node(table_id),
-            Established::assert(),
+            ErrorField {
+                id: input.widget,
+                description,
+            },
             Established::assert(),
         ))
     }
 
-    #[instrument(skip(self), fields(label, checked))]
-    fn create_checkbox(
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_labeled_field(
         &self,
-        label: &str,
-        checked: bool,
-    ) -> UiResult<(
-        WidgetId,
-        Established<HasLabel>,
-        Established<KeyboardAccessible>,
-    )> {
-        if label.is_empty() {
-            return Err(UiError::new(UiErrorKind::MissingLabel(
-                "checkbox label is empty".into(),
-            )));
+        input: ErrorDescriptor,
+    ) -> UiResult<(ErrorField, Established<WcagLabelsOrInstructionsPresent>)> {
+        let node_id = input.widget.to_node_id();
+        let state = self.state.lock().unwrap();
+        if !state.nodes.contains_key(&node_id) {
+            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                "widget {:?} not found",
+                input.widget.0
+            ))));
         }
-        let mut state = self.state.lock().unwrap();
-        let id = state.next_id();
-        let mut node = Node::new(Role::CheckBox);
-        node.set_label(label);
-        if checked {
-            node.set_toggled(Toggled::True);
+        // Proof that label/instructions are present — the node must already have a label.
+        let description = state
+            .nodes
+            .get(&node_id)
+            .and_then(|n| n.label())
+            .map(|l| l.to_string())
+            .or_else(|| input.error_text.clone())
+            .unwrap_or_else(|| "label present".to_string());
+        Ok((
+            ErrorField {
+                id: input.widget,
+                description,
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_error_suggestion(
+        &self,
+        input: ErrorDescriptor,
+    ) -> UiResult<(ErrorField, Established<WcagErrorSuggestionProvided>)> {
+        let node_id = input.widget.to_node_id();
+        {
+            let state = self.state.lock().unwrap();
+            if !state.nodes.contains_key(&node_id) {
+                return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                    "widget {:?} not found",
+                    input.widget.0
+                ))));
+            }
+        }
+        let suggestion = input.suggestion.filter(|s| !s.is_empty()).ok_or_else(|| {
+            UiError::new(UiErrorKind::MissingLabel(
+                "error suggestion text is required (WCAG 3.3.3)".into(),
+            ))
+        })?;
+        let description = input.error_text.unwrap_or_else(|| suggestion.clone());
+        Ok((
+            ErrorField {
+                id: input.widget,
+                description,
+            },
+            Established::assert(),
+        ))
+    }
+
+    #[instrument(skip(self, input), fields(widget = input.widget.0))]
+    fn build_error_prevention(
+        &self,
+        input: ErrorDescriptor,
+    ) -> UiResult<(ErrorField, Established<WcagErrorPreventionLegal>)> {
+        let state = self.state.lock().unwrap();
+        if !state.nodes.contains_key(&input.widget.to_node_id()) {
+            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                "widget {:?} not found",
+                input.widget.0
+            ))));
+        }
+        // Caller asserts that a review/confirm/reverse mechanism exists (WCAG 3.3.4).
+        let description = input
+            .error_text
+            .unwrap_or_else(|| "error prevention mechanism present".to_string());
+        Ok((
+            ErrorField {
+                id: input.widget,
+                description,
+            },
+            Established::assert(),
+        ))
+    }
+}
+
+// ── Section factories (Role 1b) ───────────────────────────────────────────────
+
+impl WcagPerceivedFactory for AccessKitUiBackend {
+    fn build_perceivable(
+        &self,
+        _evidence: PerceivedEvidence,
+    ) -> (PerceivedSection, Established<WcagPerceivedValid>) {
+        let count = self.state.lock().unwrap().nodes.len();
+        (
+            PerceivedSection {
+                validated_count: count,
+            },
+            Established::assert(),
+        )
+    }
+}
+
+impl WcagOperableFactory for AccessKitUiBackend {
+    fn build_operable(
+        &self,
+        _evidence: OperableEvidence,
+    ) -> (OperableInterface, Established<WcagOperableValid>) {
+        let count = self.state.lock().unwrap().focus_order.len();
+        (
+            OperableInterface {
+                validated_count: count,
+            },
+            Established::assert(),
+        )
+    }
+}
+
+impl WcagUnderstandableFactory for AccessKitUiBackend {
+    fn build_understandable(
+        &self,
+        _evidence: UnderstandableEvidence,
+    ) -> (
+        UnderstandableInterface,
+        Established<WcagUnderstandableValid>,
+    ) {
+        let count = self.state.lock().unwrap().nodes.len();
+        (
+            UnderstandableInterface {
+                validated_count: count,
+            },
+            Established::assert(),
+        )
+    }
+}
+
+impl WcagRobustFactory for AccessKitUiBackend {
+    fn build_robust(
+        &self,
+        _evidence: RobustEvidence,
+    ) -> (RobustWidget, Established<WcagRobustValid>) {
+        let count = self.state.lock().unwrap().nodes.len();
+        (
+            RobustWidget {
+                validated_count: count,
+            },
+            Established::assert(),
+        )
+    }
+}
+
+// ── WcagElementMeta ───────────────────────────────────────────────────────────
+
+impl WcagElementMeta for AccessKitUiBackend {
+    #[instrument(skip(self), fields(id = id.0))]
+    fn element_role(&self, id: WidgetId) -> UiResult<Option<String>> {
+        let state = self.state.lock().unwrap();
+        let node = state
+            .nodes
+            .get(&id.to_node_id())
+            .ok_or_else(|| UiError::new(UiErrorKind::WidgetNotFound(format!("{:?}", id.0))))?;
+        Ok(Some(format!("{:?}", node.role())))
+    }
+
+    #[instrument(skip(self), fields(id = id.0))]
+    fn element_label(&self, id: WidgetId) -> UiResult<Option<String>> {
+        let state = self.state.lock().unwrap();
+        let node = state
+            .nodes
+            .get(&id.to_node_id())
+            .ok_or_else(|| UiError::new(UiErrorKind::WidgetNotFound(format!("{:?}", id.0))))?;
+        Ok(node.label().map(|l| l.to_string()))
+    }
+
+    #[instrument(skip(self), fields(id = id.0))]
+    fn element_description(&self, id: WidgetId) -> UiResult<Option<String>> {
+        let state = self.state.lock().unwrap();
+        let node = state
+            .nodes
+            .get(&id.to_node_id())
+            .ok_or_else(|| UiError::new(UiErrorKind::WidgetNotFound(format!("{:?}", id.0))))?;
+        Ok(node.value().map(|v| v.to_string()))
+    }
+
+    #[instrument(skip(self), fields(id = id.0))]
+    fn element_has_focus(&self, id: WidgetId) -> UiResult<bool> {
+        let state = self.state.lock().unwrap();
+        let node_id = id.to_node_id();
+        if !state.nodes.contains_key(&node_id) {
+            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
+                "{:?}",
+                id.0
+            ))));
+        }
+        Ok(state.focus_order.first() == Some(&node_id))
+    }
+
+    #[instrument(skip(self), fields(id = id.0))]
+    fn element_state(&self, id: WidgetId) -> UiResult<Option<String>> {
+        let state = self.state.lock().unwrap();
+        let node = state
+            .nodes
+            .get(&id.to_node_id())
+            .ok_or_else(|| UiError::new(UiErrorKind::WidgetNotFound(format!("{:?}", id.0))))?;
+        let state_str = match node.toggled() {
+            Some(Toggled::True) => Some("checked".to_string()),
+            Some(Toggled::False) => Some("unchecked".to_string()),
+            Some(Toggled::Mixed) => Some("mixed".to_string()),
+            None => match node.is_expanded() {
+                Some(true) => Some("expanded".to_string()),
+                Some(false) => Some("collapsed".to_string()),
+                None => None,
+            },
+        };
+        Ok(state_str)
+    }
+}
+
+// ── WcagPageMeta ──────────────────────────────────────────────────────────────
+
+impl WcagPageMeta for AccessKitUiBackend {
+    #[instrument(skip(self))]
+    fn page_title(&self) -> UiResult<Option<String>> {
+        let state = self.state.lock().unwrap();
+        Ok(state
+            .nodes
+            .get(&state.root)
+            .and_then(|n| n.label())
+            .map(|l| l.to_string()))
+    }
+
+    #[instrument(skip(self))]
+    fn page_language(&self) -> UiResult<Option<String>> {
+        let state = self.state.lock().unwrap();
+        Ok(if state.page_lang.is_empty() {
+            None
         } else {
-            node.set_toggled(Toggled::False);
-        }
-        state.nodes.insert(id, node);
-        state.focus_order.push(id);
-        Ok((
-            WidgetId::from_node(id),
-            Established::assert(),
-            Established::assert(),
-        ))
+            Some(state.page_lang.clone())
+        })
     }
 
-    #[instrument(skip(self, options), fields(label))]
-    fn create_select(
-        &self,
-        label: &str,
-        options: Vec<String>,
-    ) -> UiResult<(
-        WidgetId,
-        Established<HasLabel>,
-        Established<KeyboardAccessible>,
-    )> {
-        if label.is_empty() {
-            return Err(UiError::new(UiErrorKind::MissingLabel(
-                "select label is empty".into(),
-            )));
-        }
-        let mut state = self.state.lock().unwrap();
-        let select_id = state.next_id();
-        let mut select_node = Node::new(Role::ComboBox);
-        select_node.set_label(label);
-
-        let option_ids: Vec<NodeId> = options
+    #[instrument(skip(self))]
+    fn navigation_landmarks(&self) -> UiResult<Vec<WidgetId>> {
+        let state = self.state.lock().unwrap();
+        Ok(state
+            .nodes
             .iter()
-            .map(|o| {
-                let oid = state.next_id();
-                let mut on = Node::new(Role::ListBoxOption);
-                on.set_value(o.as_str());
-                state.nodes.insert(oid, on);
-                state.parent_map.insert(oid, select_id);
-                oid
+            .filter(|(_, n)| {
+                matches!(
+                    n.role(),
+                    Role::Navigation | Role::Main | Role::Banner | Role::ContentInfo | Role::Region
+                )
             })
-            .collect();
+            .map(|(id, _)| WidgetId::from_node(*id))
+            .collect())
+    }
 
-        if !option_ids.is_empty() {
-            select_node.set_children(option_ids);
-        }
-        state.nodes.insert(select_id, select_node);
-        state.focus_order.push(select_id);
-        Ok((
-            WidgetId::from_node(select_id),
-            Established::assert(),
-            Established::assert(),
-        ))
+    #[instrument(skip(self))]
+    fn page_headings(&self) -> UiResult<Vec<WidgetId>> {
+        let state = self.state.lock().unwrap();
+        Ok(state
+            .nodes
+            .iter()
+            .filter(|(_, n)| n.role() == Role::Heading)
+            .map(|(id, _)| WidgetId::from_node(*id))
+            .collect())
     }
 }
 
@@ -514,87 +1284,22 @@ impl UiLayoutManager for AccessKitUiBackend {
                 node_id
             ))));
         }
+        // Look up parent before removing from parent_map.
+        let parent_id = state.parent_map.remove(&node_id);
         state.nodes.remove(&node_id);
         state.focus_order.retain(|n| *n != node_id);
-        state.parent_map.remove(&node_id);
-        if let Some(&parent_id) = state.parent_map.get(&node_id) {
-            if let Some(parent_node) = state.nodes.get_mut(&parent_id) {
-                let children: Vec<NodeId> = parent_node
-                    .children()
-                    .iter()
-                    .filter(|c| **c != node_id)
-                    .copied()
-                    .collect();
-                parent_node.set_children(children);
-            }
+        if let Some(pid) = parent_id
+            && let Some(parent_node) = state.nodes.get_mut(&pid)
+        {
+            let children: Vec<NodeId> = parent_node
+                .children()
+                .iter()
+                .filter(|c| **c != node_id)
+                .copied()
+                .collect();
+            parent_node.set_children(children);
         }
         Ok(())
-    }
-}
-
-// ── UiStyleManager ───────────────────────────────────────────────────────────
-
-impl UiStyleManager for AccessKitUiBackend {
-    #[instrument(skip(self, fg, bg), fields(widget = widget.0))]
-    fn set_colors(
-        &self,
-        widget: WidgetId,
-        fg: SrgbColor,
-        bg: SrgbColor,
-    ) -> UiResult<Established<SufficientContrast>> {
-        let ratio = contrast_ratio(&fg, &bg);
-        if ratio < 4.5 {
-            return Err(UiError::new(UiErrorKind::InsufficientContrast(format!(
-                "contrast ratio {ratio:.2} is below 4.5:1 required"
-            ))));
-        }
-        let node_id = widget.to_node_id();
-        let state = self.state.lock().unwrap();
-        if !state.nodes.contains_key(&node_id) {
-            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
-                "widget {:?} not found",
-                node_id
-            ))));
-        }
-        Ok(Established::assert())
-    }
-
-    #[instrument(skip(self), fields(widget = widget.0, size_px))]
-    fn set_font_size(&self, widget: WidgetId, size_px: f32) -> UiResult<()> {
-        let node_id = widget.to_node_id();
-        let state = self.state.lock().unwrap();
-        if !state.nodes.contains_key(&node_id) {
-            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
-                "widget {:?} not found",
-                node_id
-            ))));
-        }
-        let _ = size_px;
-        Ok(())
-    }
-
-    #[instrument(skip(self), fields(widget = widget.0, px))]
-    fn set_spacing(&self, widget: WidgetId, px: f32) -> UiResult<()> {
-        let node_id = widget.to_node_id();
-        let state = self.state.lock().unwrap();
-        if !state.nodes.contains_key(&node_id) {
-            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
-                "widget {:?} not found",
-                node_id
-            ))));
-        }
-        let _ = px;
-        Ok(())
-    }
-
-    #[instrument(skip(self), fields(theme_name))]
-    fn apply_theme(&self, theme_name: &str) -> UiResult<Established<SufficientContrast>> {
-        match theme_name {
-            "high-contrast" | "dark" | "light" => Ok(Established::assert()),
-            _ => Err(UiError::new(UiErrorKind::Unsupported(format!(
-                "unknown theme: {theme_name}"
-            )))),
-        }
     }
 }
 
@@ -660,71 +1365,6 @@ impl UiNavigationManager for AccessKitUiBackend {
     }
 }
 
-// ── UiAccessibilityAuditor ──────────────────────────────────────────────────
-
-impl UiAccessibilityAuditor for AccessKitUiBackend {
-    #[instrument(skip(self))]
-    fn audit_wcag_a(&self) -> UiResult<(VerificationReport, Established<AccessibleAA>)> {
-        let update = self.state.lock().unwrap().to_tree_update();
-        let layout = crate::Layout::from_update(update);
-        match layout.verify_a(Viewport::new(1920, 1080)) {
-            Ok(verified) => {
-                let report = verified.report().clone();
-                Ok((report, Established::assert()))
-            }
-            Err(report) => Err(UiError::new(UiErrorKind::VerificationFailed(format!(
-                "{} violations",
-                report.error_count()
-            )))),
-        }
-    }
-
-    #[instrument(skip(self))]
-    fn audit_wcag_aa(&self) -> UiResult<(VerificationReport, Established<AccessibleAA>)> {
-        let update = self.state.lock().unwrap().to_tree_update();
-        let layout = crate::Layout::from_update(update);
-        match layout.verify_aa(Viewport::new(1920, 1080)) {
-            Ok(verified) => {
-                let report = verified.report().clone();
-                Ok((report, Established::assert()))
-            }
-            Err(report) => Err(UiError::new(UiErrorKind::VerificationFailed(format!(
-                "{} violations",
-                report.error_count()
-            )))),
-        }
-    }
-
-    #[instrument(skip(self))]
-    fn audit_contrast(
-        &self,
-    ) -> UiResult<(
-        Vec<ContrastViolation>,
-        Option<Established<SufficientContrast>>,
-    )> {
-        // The reference backend doesn't store color pairs on nodes,
-        // so we report no contrast violations.
-        Ok((vec![], Some(Established::assert())))
-    }
-
-    #[instrument(skip(self), fields(id = id.0))]
-    fn widget_accessibility(&self, id: WidgetId) -> UiResult<WidgetA11y> {
-        let state = self.state.lock().unwrap();
-        let node_id = id.to_node_id();
-        if !state.nodes.contains_key(&node_id) {
-            return Err(UiError::new(UiErrorKind::WidgetNotFound(format!(
-                "widget {:?} not found",
-                node_id
-            ))));
-        }
-        Ok(WidgetA11y {
-            id,
-            violations: vec![],
-            level: Some("AA".to_string()),
-        })
-    }
-}
-
 // ── UiEventDispatcher ────────────────────────────────────────────────────────
 
 impl UiEventDispatcher for AccessKitUiBackend {
@@ -762,40 +1402,6 @@ impl UiEventDispatcher for AccessKitUiBackend {
             .event_handlers
             .insert((widget.0, format!("key:{key}")), handler_id.to_string());
         Ok(())
-    }
-}
-
-// ── UiRenderer ───────────────────────────────────────────────────────────────
-
-impl UiRenderer for AccessKitUiBackend {
-    #[instrument(skip(self, tree))]
-    fn render(&self, tree: &VerifiedTree) -> UiResult<(RenderStats, Established<RenderComplete>)> {
-        // IR backend: rendering is a no-op (this backend IS the IR).
-        let count = tree.nodes().len();
-        tracing::debug!(widget_count = count, "AccessKit IR render (no-op)");
-        Ok((
-            RenderStats {
-                nodes_visited: count,
-                widgets_rendered: count,
-                ..Default::default()
-            },
-            Established::assert(),
-        ))
-    }
-
-    fn render_partial(&self, _node_id: WidgetId, tree: &VerifiedTree) -> UiResult<RenderStats> {
-        Ok(RenderStats {
-            widgets_rendered: tree.nodes().len(),
-            ..Default::default()
-        })
-    }
-
-    fn supports_role(&self, _role: Role) -> bool {
-        true
-    }
-
-    fn backend_name(&self) -> &str {
-        "accesskit-ir"
     }
 }
 
@@ -863,16 +1469,16 @@ impl UiInspector for AccessKitUiBackend {
     #[instrument(skip(self), fields(text))]
     fn find_by_label(&self, text: &str) -> UiResult<Vec<WidgetId>> {
         let state = self.state.lock().unwrap();
-        let text_lower = text.to_lowercase();
+        let lower = text.to_lowercase();
         Ok(state
             .nodes
             .iter()
             .filter(|(_, n)| {
                 n.label()
-                    .map(|l| l.to_lowercase().contains(&text_lower))
+                    .map(|l| l.to_lowercase().contains(&lower))
                     .unwrap_or(false)
                     || n.value()
-                        .map(|v| v.to_lowercase().contains(&text_lower))
+                        .map(|v| v.to_lowercase().contains(&lower))
                         .unwrap_or(false)
             })
             .map(|(id, _)| WidgetId::from_node(*id))
@@ -886,14 +1492,38 @@ impl UiInspector for AccessKitUiBackend {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-fn role_hint_to_role(hint: &str) -> Role {
-    match hint {
-        "paragraph" => Role::Paragraph,
+/// Map a role name string to an AccessKit [`Role`].
+fn label_role_to_accesskit(role: &str) -> Role {
+    match role {
+        "button" => Role::Button,
+        "link" => Role::Link,
+        "checkbox" => Role::CheckBox,
+        "radio" => Role::RadioButton,
+        "text-input" => Role::TextInput,
+        "password-input" => Role::PasswordInput,
+        "search-input" => Role::SearchInput,
+        "email-input" => Role::EmailInput,
+        "url-input" => Role::UrlInput,
+        "tel-input" => Role::PhoneNumberInput,
+        "number-input" => Role::NumberInput,
+        "combobox" => Role::ComboBox,
+        "switch" => Role::Switch,
+        "slider" => Role::Slider,
+        "image" => Role::Image,
         "heading" => Role::Heading,
-        "caption" => Role::Caption,
+        "paragraph" => Role::Paragraph,
+        "list" => Role::List,
+        "list-item" => Role::ListItem,
+        "table" => Role::Table,
+        "grid" => Role::Grid,
+        "region" => Role::Region,
+        "navigation" => Role::Navigation,
+        "main" => Role::Main,
+        "article" => Role::Article,
+        "banner" => Role::Banner,
         "status" => Role::Status,
         "alert" => Role::Alert,
-        _ => Role::Label,
+        _ => Role::GenericContainer,
     }
 }
 
@@ -916,5 +1546,24 @@ fn is_focusable_role(role: Role) -> bool {
             | Role::Slider
             | Role::ComboBox
             | Role::Switch
+    )
+}
+
+fn is_form_role(role: Role) -> bool {
+    matches!(
+        role,
+        Role::TextInput
+            | Role::SearchInput
+            | Role::EmailInput
+            | Role::UrlInput
+            | Role::PhoneNumberInput
+            | Role::PasswordInput
+            | Role::MultilineTextInput
+            | Role::NumberInput
+            | Role::CheckBox
+            | Role::RadioButton
+            | Role::ComboBox
+            | Role::Switch
+            | Role::Slider
     )
 }

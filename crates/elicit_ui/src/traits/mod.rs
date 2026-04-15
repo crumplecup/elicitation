@@ -1,55 +1,42 @@
 //! Trait re-exports and the [`UiBackend`] supertrait.
 
-mod auditor;
 mod events;
 mod inspector;
 mod layout_manager;
 mod navigation;
-mod renderer;
-mod style_manager;
-mod widget_factory;
+mod wcag;
 
-pub use auditor::UiAccessibilityAuditor;
 pub use events::UiEventDispatcher;
 pub use inspector::UiInspector;
 pub use layout_manager::UiLayoutManager;
 pub use navigation::UiNavigationManager;
-pub use renderer::UiRenderer;
-pub use style_manager::UiStyleManager;
-pub use widget_factory::UiWidgetFactory;
+pub use wcag::{
+    WcagBackend, WcagContrastFactory, WcagElementMeta, WcagErrorFactory, WcagFocusFactory,
+    WcagKeyboardFactory, WcagLabelFactory, WcagLanguageFactory, WcagMediaFactory,
+    WcagOperableFactory, WcagPageMeta, WcagPerceivedFactory, WcagRobustFactory,
+    WcagStructureFactory, WcagTargetFactory, WcagTimingFactory, WcagUnderstandableFactory,
+};
 
-/// Complete UI backend — blanket impl for anything implementing all 8 traits.
+/// Complete UI backend — blanket impl for anything implementing all required traits.
 ///
 /// Use `dyn UiBackend` to accept any fully-capable implementation, or constrain
 /// generics with `T: UiBackend`.
 ///
 /// # Object safety
 ///
-/// `UiBackend` is not itself object-safe (supertrait of 8 traits), but each
+/// `UiBackend` is not itself object-safe (supertrait of many traits), but each
 /// individual sub-trait is object-safe and accepts `&dyn SubTrait` directly.
 pub trait UiBackend:
-    UiWidgetFactory
-    + UiLayoutManager
-    + UiStyleManager
-    + UiNavigationManager
-    + UiAccessibilityAuditor
-    + UiEventDispatcher
-    + UiRenderer
-    + UiInspector
-    + Send
-    + Sync
+    UiLayoutManager + UiNavigationManager + UiEventDispatcher + UiInspector + WcagBackend + Send + Sync
 {
 }
 
 impl<T> UiBackend for T where
-    T: UiWidgetFactory
-        + UiLayoutManager
-        + UiStyleManager
+    T: UiLayoutManager
         + UiNavigationManager
-        + UiAccessibilityAuditor
         + UiEventDispatcher
-        + UiRenderer
         + UiInspector
+        + WcagBackend
         + Send
         + Sync
 {
