@@ -1360,6 +1360,14 @@ structural_prop!(OperationMethodFormulaOptional, "OperationMethodFormulaOptional
 /// Source: ISO 19111:2019 §14.5 — Operation method parameters
 pub struct OperationMethodHasParameterList;
 structural_prop!(OperationMethodHasParameterList, "OperationMethodHasParameterList");
+
+/// No two CC_OperationParameter entries in a CC_OperationMethod.parameter list
+/// may share the same name; duplicate parameter names would make value look-up
+/// ambiguous.
+///
+/// Source: ISO 19111:2019 §14.5 — Operation method parameter uniqueness
+pub struct OperationMethodParameterNoDuplicates;
+structural_prop!(OperationMethodParameterNoDuplicates, "OperationMethodParameterNoDuplicates");
 ```
 
 ### §14.6 CC_OperationParameter
@@ -1376,6 +1384,13 @@ structural_prop!(OperationParameterNameNonEmpty, "OperationParameterNameNonEmpty
 /// Source: ISO 19111:2019 §14.6 — Operation parameter value with unit
 pub struct OperationParameterValueHasUnit;
 structural_prop!(OperationParameterValueHasUnit, "OperationParameterValueHasUnit");
+
+/// CC_OperationParameterValue.parameterValue shall be a finite real number;
+/// NaN and ±Infinity are not valid coordinate operation parameters.
+///
+/// Source: ISO 19111:2019 §14.6 — Operation parameter value finite real
+pub struct OperationParameterValueFiniteReal;
+structural_prop!(OperationParameterValueFiniteReal, "OperationParameterValueFiniteReal");
 ```
 
 ---
@@ -1596,6 +1611,14 @@ structural_prop!(DynamicCrsOmittingEpochIntroducesError, "DynamicCrsOmittingEpoc
 /// Source: ISO 19111:2019 §17.3 — Dynamic reference frame epoch attribute
 pub struct DynamicReferenceFrameHasFrameReferenceEpoch;
 structural_prop!(DynamicReferenceFrameHasFrameReferenceEpoch, "DynamicReferenceFrameHasFrameReferenceEpoch");
+
+/// A dynamic reference frame should reference an associated velocity model (deformation
+/// model) that describes secular plate-motion and crustal deformation rates; when absent
+/// consumers cannot propagate coordinates between epochs.
+///
+/// Source: ISO 19111:2019 §17.3 — Dynamic datum velocity model indicator
+pub struct DynamicReferenceFrameVelocityModelReferenced;
+structural_prop!(DynamicReferenceFrameVelocityModelReferenced, "DynamicReferenceFrameVelocityModelReferenced");
 ```
 
 ---
@@ -1688,6 +1711,13 @@ structural_prop!(CrsDomainOfValidityExtentTypes, "CrsDomainOfValidityExtentTypes
 /// Source: ISO 19111:2019 §6.2 — Identified object alias
 pub struct IdentifiedObjectAliasOptionalList;
 structural_prop!(IdentifiedObjectAliasOptionalList, "IdentifiedObjectAliasOptionalList");
+
+/// No two entries in SC_IdentifiedObject.alias shall be identical strings; duplicate
+/// aliases add no information and can confuse authority-based look-up.
+///
+/// Source: ISO 19111:2019 §6.2 — Identified object alias uniqueness
+pub struct IdentifiedObjectAliasNoDuplicates;
+structural_prop!(IdentifiedObjectAliasNoDuplicates, "IdentifiedObjectAliasNoDuplicates");
 
 /// SC_IdentifiedObject.remarks is an optional CharacterString for informative notes.
 ///

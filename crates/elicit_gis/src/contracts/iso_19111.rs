@@ -636,6 +636,12 @@ mod emit_impls {
     /// Source: ISO 19111:2019 §16.6 — parameter.
     pub struct OperationMethodHasParameterList;
 
+    /// No two parameters within a CC_OperationMethod share the same name;
+    /// duplicate parameter names make value look-up ambiguous.
+    ///
+    /// Source: ISO 19111:2019 §14.5 — operation method parameter uniqueness.
+    pub struct OperationMethodParameterNoDuplicates;
+
     /// Operation parameter name is non-empty.
     ///
     /// Source: ISO 19111:2019 §16.7 — OperationParameter.name.
@@ -645,6 +651,12 @@ mod emit_impls {
     ///
     /// Source: ISO 19111:2019 §16.7 — parameterValue.unit.
     pub struct OperationParameterValueHasUnit;
+
+    /// CC_OperationParameterValue.parameterValue is a finite real number;
+    /// NaN and ±Infinity are not valid coordinate operation parameters.
+    ///
+    /// Source: ISO 19111:2019 §14.6 — operation parameter value finite real.
+    pub struct OperationParameterValueFiniteReal;
 
     // ── §15 Axis order ───────────────────────────────────────────────────
 
@@ -797,6 +809,13 @@ mod emit_impls {
     /// Source: ISO 19111:2019 §17.3 — frameReferenceEpoch.
     pub struct DynamicReferenceFrameHasFrameReferenceEpoch;
 
+    /// A dynamic reference frame should reference an associated velocity model
+    /// describing secular plate-motion and crustal deformation rates; without it,
+    /// consumers cannot propagate coordinates between epochs.
+    ///
+    /// Source: ISO 19111:2019 §17.3 — dynamic datum velocity model indicator.
+    pub struct DynamicReferenceFrameVelocityModelReferenced;
+
     // ── §18 Cross-cutting rules ──────────────────────────────────────────
 
     /// The authority + code pair uniquely identifies a CRS within a registry.
@@ -858,6 +877,12 @@ mod emit_impls {
     ///
     /// Source: ISO 19111:2019 §6.4 — alias multiplicity 0..*.
     pub struct IdentifiedObjectAliasOptionalList;
+
+    /// No two entries in SC_IdentifiedObject.alias are identical strings;
+    /// duplicate aliases add no information and confuse authority-based look-up.
+    ///
+    /// Source: ISO 19111:2019 §6.2 — identified object alias uniqueness.
+    pub struct IdentifiedObjectAliasNoDuplicates;
 
     /// Identified object remarks are optional free text.
     ///
@@ -1675,12 +1700,20 @@ mod emit_impls {
         "OperationMethodHasParameterList"
     );
     structural_prop!(
+        OperationMethodParameterNoDuplicates,
+        "OperationMethodParameterNoDuplicates"
+    );
+    structural_prop!(
         OperationParameterNameNonEmpty,
         "OperationParameterNameNonEmpty"
     );
     structural_prop!(
         OperationParameterValueHasUnit,
         "OperationParameterValueHasUnit"
+    );
+    structural_prop!(
+        OperationParameterValueFiniteReal,
+        "OperationParameterValueFiniteReal"
     );
     // §15
     structural_prop!(
@@ -1774,6 +1807,10 @@ mod emit_impls {
         DynamicReferenceFrameHasFrameReferenceEpoch,
         "DynamicReferenceFrameHasFrameReferenceEpoch"
     );
+    structural_prop!(
+        DynamicReferenceFrameVelocityModelReferenced,
+        "DynamicReferenceFrameVelocityModelReferenced"
+    );
     // §18
     structural_prop!(
         CrsIdentityAuthorityPlusCodeUnique,
@@ -1810,6 +1847,10 @@ mod emit_impls {
     structural_prop!(
         IdentifiedObjectAliasOptionalList,
         "IdentifiedObjectAliasOptionalList"
+    );
+    structural_prop!(
+        IdentifiedObjectAliasNoDuplicates,
+        "IdentifiedObjectAliasNoDuplicates"
     );
     structural_prop!(
         IdentifiedObjectRemarksOptional,
@@ -2174,6 +2215,7 @@ pub use emit_impls::{
     DynamicCrsOmittingEpochIntroducesError,
     DynamicCrsRequiresCoordinateEpoch,
     DynamicReferenceFrameHasFrameReferenceEpoch,
+    DynamicReferenceFrameVelocityModelReferenced,
     EllipsoidInverseFlatteningPositiveWhenNonSphere,
     EllipsoidInverseFlatteningZeroMeansSphere,
     EllipsoidIsSphereConsistentWithParameters,
@@ -2233,6 +2275,7 @@ pub use emit_impls::{
     HelmertPositionVectorConvention,
     // §26
     HelmertSevenParameterStructure,
+    IdentifiedObjectAliasNoDuplicates,
     IdentifiedObjectAliasNoNullEntries,
     IdentifiedObjectAliasOptionalList,
     IdentifiedObjectIdentifierEntryComplete,
@@ -2259,7 +2302,9 @@ pub use emit_impls::{
     OperationMethodFormulaOptional,
     OperationMethodHasParameterList,
     OperationMethodNameNonEmpty,
+    OperationMethodParameterNoDuplicates,
     OperationParameterNameNonEmpty,
+    OperationParameterValueFiniteReal,
     OperationParameterValueHasUnit,
     OtherAuthorityNamesEsriIgnf,
     ParameterFileStoresFilenameNotValue,
