@@ -940,6 +940,16 @@ mod emit_impls {
     pub struct AreaNonNegative;
     structural_prop!(AreaNonNegative, "AreaNonNegative");
 
+    /// area() returns a finite (non-NaN, non-infinite) value for any non-empty geometry.
+    ///
+    /// IEEE 754 precondition required by AreaNonNegative and Area2DReturnsPositive in
+    /// formal verification: ordering comparisons (`>= 0`, `> 0`) are only provable
+    /// when the operand is finite.
+    ///
+    /// Source: OGC 06-103r4 §6.3 — area().
+    pub struct AreaIsFinite;
+    structural_prop!(AreaIsFinite, "AreaIsFinite");
+
     /// area() is expressed in squared SRS units.
     ///
     /// Source: OGC 06-103r4 §6.3 — area().
@@ -978,6 +988,15 @@ mod emit_impls {
     pub struct LengthNonNegative;
     structural_prop!(LengthNonNegative, "LengthNonNegative");
 
+    /// length() returns a finite (non-NaN, non-infinite) value for any non-empty geometry.
+    ///
+    /// IEEE 754 precondition required by LengthNonNegative and Length1DReturnsPositive in
+    /// formal verification: ordering comparisons are only provable when the operand is finite.
+    ///
+    /// Source: OGC 06-103r4 §6.3 — length().
+    pub struct LengthIsFinite;
+    structural_prop!(LengthIsFinite, "LengthIsFinite");
+
     /// length() is expressed in SRS linear units.
     ///
     /// Source: OGC 06-103r4 §6.3 — length().
@@ -997,6 +1016,16 @@ mod emit_impls {
     /// Source: OGC 06-103r4 §6.3 — distance(g).
     pub struct DistanceNonNegative;
     structural_prop!(DistanceNonNegative, "DistanceNonNegative");
+
+    /// distance(g) returns a finite (non-NaN, non-infinite) value for any geometry pair.
+    ///
+    /// IEEE 754 precondition required by DistanceNonNegative and DistanceTriangleInequality
+    /// in formal verification: ordering comparisons and arithmetic are only provable when
+    /// both operands are finite.
+    ///
+    /// Source: OGC 06-103r4 §6.3 — distance(g).
+    pub struct DistanceIsFinite;
+    structural_prop!(DistanceIsFinite, "DistanceIsFinite");
 
     /// distance(g) == 0.0 iff the geometries intersect.
     ///
@@ -1882,12 +1911,113 @@ mod emit_impls {
     /// Source: OGC 06-103r4 §1.4 — Conformance Class 1.
     pub struct ConformanceClass1AddsSetOps;
     structural_prop!(ConformanceClass1AddsSetOps, "ConformanceClass1AddsSetOps");
+
+    // -- Aggregate validity props (formal-verification seams) --
+
+    /// A Point geometry is valid: its coordinates are finite (or it is the empty point).
+    ///
+    /// Composes PointXIsFinite + PointYIsFinite + PointZIsFiniteWhenPresent.
+    /// Used as a precondition seam in Kani/Verus proofs of any computation that
+    /// receives a point operand.
+    ///
+    /// Source: OGC 06-103r4 §6.1.4 — Point validity.
+    pub struct PointValid;
+    structural_prop!(PointValid, "PointValid");
+
+    /// A LineString geometry is valid: two or more distinct points, finite coordinates,
+    /// no self-intersection beyond common boundary points.
+    ///
+    /// Composes LineStringHasTwoOrMorePoints + PointXIsFinite + PointYIsFinite
+    /// + LineStringSimpleNoSelfIntersection.
+    ///
+    /// Used as a precondition seam in formal verification of curve operations.
+    ///
+    /// Source: OGC 06-103r4 §6.1.6 — LineString validity.
+    pub struct LineStringValid;
+    structural_prop!(LineStringValid, "LineStringValid");
+
+    /// A LinearRing geometry is valid: closed, simple, four or more positions, finite
+    /// coordinates, non-degenerate area.
+    ///
+    /// Composes LinearRingIsClosedLineString + LinearRingIsSimple
+    /// + LinearRingMinimumFourPositions + LinearRingNonDegenerate.
+    ///
+    /// Used as a precondition seam in formal verification of ring and polygon operations.
+    ///
+    /// Source: OGC 06-103r4 §6.1.7 — LinearRing validity.
+    pub struct LinearRingValid;
+    structural_prop!(LinearRingValid, "LinearRingValid");
+
+    /// A Polygon geometry is valid: valid rings, CCW exterior, CW holes, no crossing
+    /// rings, holes strictly inside the exterior.
+    ///
+    /// Composes PolygonExteriorIsCCW + PolygonHolesAreCW + PolygonHolesInsideExterior
+    /// + PolygonHolesDontContainEachOther + PolygonNoRingSelfIntersects
+    /// + PolygonRingsDontCross + LinearRingValid (for each ring).
+    ///
+    /// Used as a precondition seam in formal verification of area and overlay operations.
+    ///
+    /// Source: OGC 06-103r4 §6.1.11 — Polygon validity.
+    pub struct PolygonValid;
+    structural_prop!(PolygonValid, "PolygonValid");
+
+    /// A MultiPoint geometry is valid: all component Points satisfy PointValid.
+    ///
+    /// Composes MultiPointComponentsArePoints + PointValid for each element.
+    /// Used as a precondition seam in formal verification of multi-geometry operations.
+    ///
+    /// Source: OGC 06-103r4 §6.1.8 — MultiPoint validity.
+    pub struct MultiPointValid;
+    structural_prop!(MultiPointValid, "MultiPointValid");
+
+    /// A MultiLineString geometry is valid: all component LineStrings satisfy
+    /// LineStringValid.
+    ///
+    /// Composes MultiLineStringComponentsAreLineStrings + LineStringValid for each element.
+    /// Used as a precondition seam in formal verification of multi-curve operations.
+    ///
+    /// Source: OGC 06-103r4 §6.1.9 — MultiLineString validity.
+    pub struct MultiLineStringValid;
+    structural_prop!(MultiLineStringValid, "MultiLineStringValid");
+
+    /// A MultiPolygon geometry is valid: all component Polygons satisfy PolygonValid,
+    /// interiors are disjoint, boundaries touch only at finite points.
+    ///
+    /// Composes MultiPolygonComponentsArePolygons + PolygonValid for each element
+    /// + MultiPolygonInteriorsDisjoint + MultiPolygonBoundariesTouchAtPoints.
+    ///
+    /// Used as a precondition seam in formal verification of multi-surface operations.
+    ///
+    /// Source: OGC 06-103r4 §6.1.13 — MultiPolygon validity.
+    pub struct MultiPolygonValid;
+    structural_prop!(MultiPolygonValid, "MultiPolygonValid");
+
+    /// A GeometryCollection is valid: every component geometry satisfies its
+    /// type-specific validity aggregate prop.
+    ///
+    /// Composes GeometryCollectionAllComponentsValid paired with the appropriate
+    /// per-type validity prop for each element.
+    /// Used as a precondition seam in formal verification of collection operations.
+    ///
+    /// Source: OGC 06-103r4 §6.1.14 — GeometryCollection validity.
+    pub struct GeometryCollectionValid;
+    structural_prop!(GeometryCollectionValid, "GeometryCollectionValid");
+
+    /// Any SFS geometry instance is valid per the OGC SFS §6 rules for its concrete type.
+    ///
+    /// Top-level aggregate: the union of all type-specific validity props.
+    /// Used as the primary precondition in formal verification of any geometry operation
+    /// when the concrete type is not known statically.
+    ///
+    /// Source: OGC 06-103r4 §6.1 — geometry validity.
+    pub struct SfsGeometryValid;
+    structural_prop!(SfsGeometryValid, "SfsGeometryValid");
 }
 
 pub use emit_impls::{
     Area0DReturnsZero, Area1DReturnsZero, Area2DReturnsPositive, AreaEmptyGeometryIsZero,
-    AreaNonNegative, AreaUnitsSquaredSrsUnits, AsBinaryMethodDefined, AsBinaryReturnsWkb,
-    AsTextMethodDefined, AsTextReturnsWkt, BoundaryOfBoundaryIsEmpty,
+    AreaIsFinite, AreaNonNegative, AreaUnitsSquaredSrsUnits, AsBinaryMethodDefined,
+    AsBinaryReturnsWkb, AsTextMethodDefined, AsTextReturnsWkt, BoundaryOfBoundaryIsEmpty,
     BufferNegativeDistanceShrinks, BufferPositiveDistanceIncreasesArea, BufferResultIsValid,
     BufferReturnsContainingGeometry, BufferZeroContainsSelf, CentroidDefinedForAll,
     CentroidReturnsPoint, CentroidWithinConvexHull, CentroidXIsFinite, CentroidYIsFinite,
@@ -1906,7 +2036,7 @@ pub use emit_impls::{
     De9ImRelatePatternIsNineChars, DifferenceAsymmetric, DifferenceDimensionAtMostSelf,
     DifferenceDisjointFromSubtracted, DifferenceSubsetOfSelf, DimensionConsistencyInHierarchy,
     DisjointDe9ImPattern, DisjointIsInverseOfIntersects, DisjointIsSymmetric, DistanceInSrsUnits,
-    DistanceNonNegative, DistanceSymmetric, DistanceTriangleInequality,
+    DistanceIsFinite, DistanceNonNegative, DistanceSymmetric, DistanceTriangleInequality,
     DistanceZeroIffIntersecting, EmptyGeometryBoundaryIsEmpty,
     EmptyGeometryBoundaryIsEmptyGeometry, EmptyGeometryEnvelopeIsEmpty, EmptyHandlingConsistent,
     EnvelopeEmptyWhenGeometryEmpty, EnvelopeIsPointWhenDegenerate, EnvelopeIsPolygon,
@@ -1914,57 +2044,58 @@ pub use emit_impls::{
     EwkbSridIsUint32, EwkbSridPresent, GeometryBoundaryDefinedPerType,
     GeometryCollectionAllComponentsValid, GeometryCollectionBoundaryMod2Rule,
     GeometryCollectionHeterogeneousAllowed, GeometryCollectionIsSimpleAllSimple,
-    GeometryCollectionMayBeEmpty, GeometryDimension0ForPoint, GeometryDimension1ForLine,
-    GeometryDimension2ForSurface, GeometryDimensionMinus1WhenEmpty, GeometryEnvelopeReturnsMbr,
-    GeometryHasSrs, GeometryIsEmptyPredicate, GeometryIsSimpleAndIsValidDistinct,
-    GeometryIsSimplePredicate, GeometryIsValidPredicate, GeometrySridReturnsInteger,
-    GeometrySrsNotNull, GeometryTypeMatchesConcreteName, GeometryTypeReturnsString,
-    IntersectionDimensionAtMostMin, IntersectionIsCommutative, IntersectionOfDisjointIsEmpty,
-    IntersectionSubsetOfBothInputs, IntersectsAtLeastOneSharedPoint, IntersectsIsNotDisjoint,
-    IntersectsIsSymmetric, IsEmptyFalseForNonEmpty, IsEmptyTrueForEmpty,
+    GeometryCollectionMayBeEmpty, GeometryCollectionValid, GeometryDimension0ForPoint,
+    GeometryDimension1ForLine, GeometryDimension2ForSurface, GeometryDimensionMinus1WhenEmpty,
+    GeometryEnvelopeReturnsMbr, GeometryHasSrs, GeometryIsEmptyPredicate,
+    GeometryIsSimpleAndIsValidDistinct, GeometryIsSimplePredicate, GeometryIsValidPredicate,
+    GeometrySridReturnsInteger, GeometrySrsNotNull, GeometryTypeMatchesConcreteName,
+    GeometryTypeReturnsString, IntersectionDimensionAtMostMin, IntersectionIsCommutative,
+    IntersectionOfDisjointIsEmpty, IntersectionSubsetOfBothInputs, IntersectsAtLeastOneSharedPoint,
+    IntersectsIsNotDisjoint, IntersectsIsSymmetric, IsEmptyFalseForNonEmpty, IsEmptyTrueForEmpty,
     IsSimpleNoSelfIntersection, IsValidImpliesSubComponentsValid, IsValidWellFormed,
     Length0DReturnsZero, Length1DReturnsPositive, Length2DReturnsZero, LengthEmptyGeometryIsZero,
-    LengthInSrsUnits, LengthNonNegative, LineStringAdjacentPointsDistinct,
+    LengthInSrsUnits, LengthIsFinite, LengthNonNegative, LineStringAdjacentPointsDistinct,
     LineStringBoundaryIsEndpoints, LineStringClosedBoundaryEmpty, LineStringClosedEqualsLinearRing,
     LineStringEndPointIsPointNLast, LineStringHasTwoOrMorePoints, LineStringIsClosedStartEqualsEnd,
     LineStringIsRingImpliesClosedAndSimple, LineStringMinimumTwoPositions,
     LineStringNonClosedBoundaryIsEndpointMultiPoint, LineStringNumPointsMatchesCoordCount,
     LineStringOpenBoundaryTwoPoints, LineStringPointNInRange, LineStringSimpleNoSelfIntersection,
-    LineStringStartPointIsPointNZero, LinearRingBoundaryIsEmpty, LinearRingBoundaryIsEmptySet,
-    LinearRingFirstPositionEqualsLast, LinearRingIsClosedLineString, LinearRingIsSimple,
-    LinearRingMinimumFourPositions, LinearRingNonDegenerate,
+    LineStringStartPointIsPointNZero, LineStringValid, LinearRingBoundaryIsEmpty,
+    LinearRingBoundaryIsEmptySet, LinearRingFirstPositionEqualsLast, LinearRingIsClosedLineString,
+    LinearRingIsSimple, LinearRingMinimumFourPositions, LinearRingNonDegenerate, LinearRingValid,
     MultiLineStringComponentsAreLineStrings, MultiLineStringIsClosedAllClosed2,
     MultiLineStringMayBeEmpty, MultiLineStringSimpleWhenIntersectAtEndpointsOnly,
-    MultiPointComponentsArePoints, MultiPointMayBeEmpty, MultiPointSimpleWhenNoTwoEqual,
-    MultiPolygonBoundariesDontOverlap, MultiPolygonBoundariesTouchAtPoints,
-    MultiPolygonBoundaryIsAllRings, MultiPolygonComponentsArePolygons,
-    MultiPolygonInteriorsDisjoint, MultiPolygonMayBeEmpty, OverlapsDe9ImPattern2D,
-    OverlapsDe9ImPatternLowDim, OverlapsDimensionConstraint, OverlapsIsSymmetric, PointAlwaysValid,
-    PointBoundaryIsEmpty, PointEmptyHasNoCoords, PointEmptyIsEmpty, PointMDefinedWhenMPresent,
+    MultiLineStringValid, MultiPointComponentsArePoints, MultiPointMayBeEmpty,
+    MultiPointSimpleWhenNoTwoEqual, MultiPointValid, MultiPolygonBoundariesDontOverlap,
+    MultiPolygonBoundariesTouchAtPoints, MultiPolygonBoundaryIsAllRings,
+    MultiPolygonComponentsArePolygons, MultiPolygonInteriorsDisjoint, MultiPolygonMayBeEmpty,
+    MultiPolygonValid, OverlapsDe9ImPattern2D, OverlapsDe9ImPatternLowDim,
+    OverlapsDimensionConstraint, OverlapsIsSymmetric, PointAlwaysValid, PointBoundaryIsEmpty,
+    PointEmptyHasNoCoords, PointEmptyIsEmpty, PointMDefinedWhenMPresent,
     PointOnSurfaceDefinedForAll, PointOnSurfaceIsOnGeometry, PointOnSurfaceReturnsPoint,
-    PointXIsFinite, PointXReturnsXOrdinate, PointYIsFinite, PointYReturnsYOrdinate,
+    PointValid, PointXIsFinite, PointXReturnsXOrdinate, PointYIsFinite, PointYReturnsYOrdinate,
     PointZDefinedWhen3D, PointZIsFiniteWhenPresent, PolygonBoundaryIsAllRings,
     PolygonExteriorIsCCW, PolygonExteriorIsLinearRing, PolygonExteriorRingNeverNull,
     PolygonHasExactlyOneExteriorRing, PolygonHoleCountNonNegative, PolygonHolesAreCW,
     PolygonHolesDontContainEachOther, PolygonHolesInsideExterior, PolygonInteriorRingNInRange,
     PolygonInteriorRingNReturnsHole, PolygonInteriorRingsAreLinearRings,
     PolygonNoRingSelfIntersects, PolygonNumInteriorRingsNonNegative, PolygonRingsDontCross,
-    PolygonRingsDontTouchAlongSegment, PolygonRingsTouchAtPoints, RelatePatternCharacters,
-    RelatePatternLength9, RelateReturnsBooleanMatchingPattern, SridAssignedAtConstruction,
-    SridIsInteger, SridNonNegative, SrsConsistentInCollection,
-    SymDifferenceEqualsUnionMinusIntersection, SymDifferenceIsCommutative, TouchesDe9ImPattern,
-    TouchesInteriorsDisjoint, TouchesIsSymmetric, UnionDimensionIsMax,
-    UnionEqualsIntersectionPlusSymDifference, UnionIsAssociative, UnionIsCommutative,
-    UnionSupersetOfBothInputs, WithinDe9ImPattern, WithinIsInverseOfContains, WithinIsNotSymmetric,
-    WkbByteOrderBigEndian, WkbByteOrderLittleEndian, WkbByteOrderMarkerPresent,
-    WkbByteOrderMarkerTwoValues, WkbCoordinateIsDouble, WkbCoordinatesByteOrderMatches,
-    WkbCountFieldsAreUint32, WkbLengthValid, WkbMVariant, WkbPointLength21Bytes2D, WkbRingHasCount,
-    WkbRoundTrip, WkbSubGeometriesAreCompleteBlobs, WkbTypeCodeGeometryCollection,
-    WkbTypeCodeLineString, WkbTypeCodeMultiLineString, WkbTypeCodeMultiPoint,
-    WkbTypeCodeMultiPolygon, WkbTypeCodePoint, WkbTypeCodePolygon, WkbTypeCodeValid, WkbZMVariant,
-    WkbZVariant, WktCoordinateListInParens, WktCoordsSeparatedBySpace,
-    WktDimensionTagPrecedesParens, WktEmptyApplicableToAllTypes, WktEmptyGeometry,
-    WktGeometryCollectionProduction, WktKeywordCaseInsensitive, WktKeywordValid,
+    PolygonRingsDontTouchAlongSegment, PolygonRingsTouchAtPoints, PolygonValid,
+    RelatePatternCharacters, RelatePatternLength9, RelateReturnsBooleanMatchingPattern,
+    SfsGeometryValid, SridAssignedAtConstruction, SridIsInteger, SridNonNegative,
+    SrsConsistentInCollection, SymDifferenceEqualsUnionMinusIntersection,
+    SymDifferenceIsCommutative, TouchesDe9ImPattern, TouchesInteriorsDisjoint, TouchesIsSymmetric,
+    UnionDimensionIsMax, UnionEqualsIntersectionPlusSymDifference, UnionIsAssociative,
+    UnionIsCommutative, UnionSupersetOfBothInputs, WithinDe9ImPattern, WithinIsInverseOfContains,
+    WithinIsNotSymmetric, WkbByteOrderBigEndian, WkbByteOrderLittleEndian,
+    WkbByteOrderMarkerPresent, WkbByteOrderMarkerTwoValues, WkbCoordinateIsDouble,
+    WkbCoordinatesByteOrderMatches, WkbCountFieldsAreUint32, WkbLengthValid, WkbMVariant,
+    WkbPointLength21Bytes2D, WkbRingHasCount, WkbRoundTrip, WkbSubGeometriesAreCompleteBlobs,
+    WkbTypeCodeGeometryCollection, WkbTypeCodeLineString, WkbTypeCodeMultiLineString,
+    WkbTypeCodeMultiPoint, WkbTypeCodeMultiPolygon, WkbTypeCodePoint, WkbTypeCodePolygon,
+    WkbTypeCodeValid, WkbZMVariant, WkbZVariant, WktCoordinateListInParens,
+    WktCoordsSeparatedBySpace, WktDimensionTagPrecedesParens, WktEmptyApplicableToAllTypes,
+    WktEmptyGeometry, WktGeometryCollectionProduction, WktKeywordCaseInsensitive, WktKeywordValid,
     WktLineStringProduction, WktMVariant, WktMultiLineStringProduction, WktMultiPointProduction,
     WktMultiPolygonProduction, WktNestingForMultiTypes, WktPointProduction,
     WktPolygonExteriorFirstRing, WktPolygonProduction, WktPositionsSeparatedByComma,
