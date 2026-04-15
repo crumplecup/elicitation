@@ -60,6 +60,7 @@
 
 pub mod archive;
 mod fetch_and_parse;
+pub mod gaap;
 pub mod ledger;
 mod secure_fetch;
 
