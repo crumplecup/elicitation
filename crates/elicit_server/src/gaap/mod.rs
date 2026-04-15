@@ -30,11 +30,14 @@ mod asc_606;
 mod asc_700;
 mod asc_800;
 mod disclosure;
+pub mod errors;
 mod internal_controls;
 mod mathematical;
 mod principles;
 mod proof_composition;
 mod temporal;
+pub mod traits;
+pub mod types;
 
 pub use asc_200::{
     AccountingChangeJustified, BalanceSheetClassified, BasicEpsDeclared, CashFlowMethodDisclosed,
@@ -166,4 +169,31 @@ pub use temporal::{
     LeaseCommencementDateCorrect, RevenueEarnedInPeriod, RevenueTransferDateCorrect,
     StockOptionGrantDateCorrect, SubsequentEventDateBound, TaxPeriodAligned,
     TemporaryDifferenceTimingCorrect, TransactionCutoffRespected,
+};
+
+// ── Error, type, and trait re-exports ─────────────────────────────────────────
+
+pub use errors::{GaapError, GaapErrorKind, GaapResult};
+pub use traits::{
+    BalanceSheetEvidence, CashFlowEvidence, FullFinancialStatementsEvidence, GaapAssetFactory,
+    GaapAssetMeta, GaapBackend, GaapBookkeeping, GaapDerivativeFactory, GaapDisclosureFactory,
+    GaapDisclosureMeta, GaapEquityFactory, GaapFairValueFactory, GaapIcfrFactory, GaapIcfrMeta,
+    GaapLeaseFactory, GaapLedgerMeta, GaapLiabilityFactory, GaapPeriodFactory, GaapPeriodReporter,
+    GaapPresentationFactory, GaapRevenueFactory, GaapRevenueMeta, GaapTaxFactory,
+    IncomeStatementEvidence,
+};
+pub use types::{
+    AccountDescriptor, AccountId, AccountType, AccrualDescriptor, AllocationDescriptor,
+    BalanceSheetDescriptor, BalanceSheetTotals, CashFlowDescriptor, CashFlowMethod,
+    ContingencyDescriptor, ContingencyProbability, ContractStatus, ControlTestDescriptor,
+    CostFlowMethod, CreditEntry, CurrencyCode, DebitEntry, DebtDescriptor, DeferralDescriptor,
+    DeferredTaxDescriptor, DepreciationMethod, DerivativeDescriptor, DisclosureRequirement,
+    EntityId, EpsDescriptor, EquityDescriptor, FairValueDescriptor, FairValueLevel,
+    FinancialPeriod, FootnoteDescriptor, HedgeDesignation, IcfrDescriptor,
+    IncomeStatementDescriptor, InventoryDescriptor, JournalEntryDescriptor, LeaseClassification,
+    LeaseDescriptor, LiabilityDescriptor, ManagementAssertionDescriptor, MonetaryAmount,
+    NormalBalance, OciDescriptor, OciItem, PerformanceObligationDescriptor, PeriodDate, PeriodType,
+    PpeDescriptor, ReceivableDescriptor, RevenueContractDescriptor, RevenueRecognitionDescriptor,
+    SecurityClassification, SecurityDescriptor, TaxRateDescriptor, TaxReconciliationItem,
+    TransactionPriceDescriptor, TreasuryStockDescriptor, TreasuryStockMethod,
 };
