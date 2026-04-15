@@ -1022,10 +1022,12 @@ pub use contracts::{
 pub use error::{GisError, GisErrorKind, GisResult};
 pub use traits::{
     GisBackend, GisCrsBuilder, GisCrsLookup, GisCrsTransformer, Iso19111Identified, Iso19111Scoped,
-    SfsGeometry, SfsSetOps, SfsTopology,
+    SfsGeometryFactory, SfsGeometryIo, SfsGeometryMeta, SfsSetOps, SfsTopology,
 };
 pub use types::{
     AuthorityCode, AxisDirection, CoordinateAxisInfo, CoordinateMetadata, CoordinateSystemParams,
     CrsInfo, CrsType, CsType, DatumEnsembleInfo, DecimalYear, DomainExtent, EllipsoidParams,
-    EpsgCode, GeodeticFrameParams, GeographicBoundingBox, HelmertConvention, PrimeMeridianParams,
+    EpsgCode, GeodeticFrameParams, GeographicBoundingBox, GeometryCollectionDescriptor,
+    HelmertConvention, LineStringDescriptor, LinearRingDescriptor, MultiGeometryDescriptor,
+    PointDescriptor, PolygonDescriptor, PrimeMeridianParams, SfsCoordinate, SfsCoordinate3D,
 };
