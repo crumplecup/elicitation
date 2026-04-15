@@ -2475,3 +2475,66 @@ pub use emit_impls::{
     VerticalReferenceFrameNameNonEmpty,
     VerticalReferenceFrameRealizationEpochIsIso8601,
 };
+
+// ── Proof composition: ISO 19111 CRS construction chain ──────────────────────
+
+use elicitation::{Established, contracts::ProvableFrom};
+
+/// Evidence that a geodetic reference frame is valid.
+///
+/// Requires proven validity of the defining ellipsoid and prime meridian.
+///
+/// Source: ISO 19111:2019 §9.4 — GeodeticReferenceFrame.
+pub struct GeodeticFrameEvidence {
+    /// Proof that the reference ellipsoid satisfies §9.5.
+    pub ellipsoid: Established<EllipsoidValid>,
+    /// Proof that the prime meridian is well-defined (§9.6).
+    pub prime_meridian: Established<PrimeMeridianValid>,
+}
+
+impl ProvableFrom<GeodeticFrameEvidence> for GeodeticReferenceFrameValid {}
+
+/// Evidence that a geodetic CRS is valid.
+///
+/// Requires a proven geodetic reference frame and a coordinate system.
+///
+/// Source: ISO 19111:2019 §10.3 — GeodeticCRS.
+pub struct GeodeticCrsEvidence {
+    /// Proof that the geodetic reference frame is fully specified.
+    pub frame: Established<GeodeticReferenceFrameValid>,
+    /// Proof that the coordinate system axes are well-defined.
+    pub cs: Established<CoordinateSystemValid>,
+}
+
+impl ProvableFrom<GeodeticCrsEvidence> for CrsValid {}
+
+/// Evidence that a projected CRS is valid.
+///
+/// Requires a proven geodetic base CRS and a Cartesian coordinate system.
+///
+/// Source: ISO 19111:2019 §10.5 — ProjectedCRS.
+pub struct ProjectedCrsEvidence {
+    /// Proof that the base geodetic CRS satisfies §10.3.
+    pub base: Established<CrsValid>,
+    /// Proof that the target coordinate system is well-defined.
+    pub cs: Established<CoordinateSystemValid>,
+}
+
+impl ProvableFrom<ProjectedCrsEvidence> for CrsValid {}
+
+/// Evidence that a compound CRS is valid.
+///
+/// Requires proven validity for each component CRS.
+///
+/// Source: ISO 19111:2019 §10.9 — CompoundCRS.
+pub struct CompoundCrsEvidence {
+    /// Proofs for each component CRS (typically 2–3 components).
+    pub components: Vec<Established<CrsValid>>,
+}
+
+impl ProvableFrom<CompoundCrsEvidence> for CrsValid {}
+
+// Single-dependency upcast: a proven CRS also proves coordinate metadata valid.
+//
+// Source: ISO 19111:2019 §7 — CoordinateMetadata.
+impl ProvableFrom<Established<CrsValid>> for CoordinateMetadataValid {}

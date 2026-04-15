@@ -1483,3 +1483,70 @@ pub use emit_impls::{
     FgdcUpsZoneIdentifierCodeValid, FgdcUseConstraintsPresent, FgdcUtmZoneNumberInRange,
     FgdcVertAccuracyAssessmentPaired, FgdcVpfObjectTypeCodeValid, FgdcVpfTopologyLevelZeroToThree,
 };
+
+// ── Proof composition: FGDC CSDGM section aggregation chain ──────────────────
+
+use elicitation::{Established, contracts::ProvableFrom};
+
+/// Evidence that the FGDC Identification_Information section is complete.
+///
+/// Requires a proven citation and a proven time period.
+///
+/// Source: FGDC-STD-001-1998 §1 — Identification_Information.
+pub struct FgdcIdentificationEvidence {
+    /// Proof that the Citation sub-section is fully specified.
+    pub citation: Established<FgdcCitationInfoValid>,
+    /// Proof that the Time_Period_of_Content sub-section is valid.
+    pub time_period: Established<FgdcTimePeriodInfoValid>,
+}
+
+impl ProvableFrom<FgdcIdentificationEvidence> for FgdcIdentificationSectionValid {}
+
+/// Evidence that the FGDC Distribution_Information section is complete.
+///
+/// Requires a proven distributor contact.
+///
+/// Source: FGDC-STD-001-1998 §6 — Distribution_Information.
+pub struct FgdcDistributionEvidence {
+    /// Proof that the distributor Contact_Information sub-section is valid.
+    pub contact: Established<FgdcContactInfoValid>,
+}
+
+impl ProvableFrom<FgdcDistributionEvidence> for FgdcDistributionSectionValid {}
+
+/// Evidence that the FGDC Metadata_Reference_Information section is complete.
+///
+/// Requires a proven metadata contact.
+///
+/// Source: FGDC-STD-001-1998 §7 — Metadata_Reference_Information.
+pub struct FgdcMetadataRefEvidence {
+    /// Proof that the metadata contact Contact_Information is valid.
+    pub contact: Established<FgdcContactInfoValid>,
+}
+
+impl ProvableFrom<FgdcMetadataRefEvidence> for FgdcMetadataReferenceSectionValid {}
+
+/// Evidence that a complete FGDC metadata record is valid.
+///
+/// The two mandatory sections (identification and metadata reference) are
+/// required; the remaining five sections are optional.
+///
+/// Source: FGDC-STD-001-1998 §0 — Record structure.
+pub struct FgdcRecordEvidence {
+    /// Proof for the mandatory Identification_Information section.
+    pub identification: Established<FgdcIdentificationSectionValid>,
+    /// Proof for the mandatory Metadata_Reference_Information section.
+    pub metadata_ref: Established<FgdcMetadataReferenceSectionValid>,
+    /// Proof for Data_Quality_Information, if present.
+    pub data_quality: Option<Established<FgdcDataQualitySectionValid>>,
+    /// Proof for Spatial_Data_Organization_Information, if present.
+    pub spatial_org: Option<Established<FgdcSpatialDataOrgSectionValid>>,
+    /// Proof for Spatial_Reference_Information, if present.
+    pub spatial_ref: Option<Established<FgdcSpatialReferenceSectionValid>>,
+    /// Proof for Entity_and_Attribute_Information, if present.
+    pub entity_attr: Option<Established<FgdcEntityAttributeSectionValid>>,
+    /// Proof for Distribution_Information, if present.
+    pub distribution: Option<Established<FgdcDistributionSectionValid>>,
+}
+
+impl ProvableFrom<FgdcRecordEvidence> for FgdcRecordValid {}

@@ -1783,3 +1783,133 @@ pub use emit_impls::{
     PositionLongitudeInRange, PositionLongitudeIsFinite, PositionShouldNotExceedThreeElements,
     PositionValid, PropertiesIsPreferredLocationForAppData,
 };
+
+// ── Proof composition: RFC 7946 GeoJSON validity chain ───────────────────────
+
+use elicitation::{Established, contracts::ProvableFrom};
+
+// Single-dependency: a valid Position proves a GeoJSON Point valid.
+//
+// Source: RFC 7946 §3.1.2 — Point.
+impl ProvableFrom<Established<PositionValid>> for GeoJsonPointValid {}
+
+/// Evidence that a GeoJSON MultiPoint is valid.
+///
+/// Requires proven position validity for each element.
+///
+/// Source: RFC 7946 §3.1.5 — MultiPoint.
+pub struct GeoJsonMultiPointEvidence {
+    /// Proof for each position.
+    pub positions: Vec<Established<PositionValid>>,
+}
+
+impl ProvableFrom<GeoJsonMultiPointEvidence> for GeoJsonMultiPointValid {}
+
+/// Evidence that a GeoJSON LineString is valid.
+///
+/// Requires at least two proven valid positions.
+///
+/// Source: RFC 7946 §3.1.4 — LineString.
+pub struct GeoJsonLineStringEvidence {
+    /// Proof for each position (≥ 2).
+    pub positions: Vec<Established<PositionValid>>,
+}
+
+impl ProvableFrom<GeoJsonLineStringEvidence> for GeoJsonLineStringValid {}
+
+/// Evidence that a GeoJSON MultiLineString is valid.
+///
+/// Requires proven line-string validity for each member.
+///
+/// Source: RFC 7946 §3.1.5 — MultiLineString.
+pub struct GeoJsonMultiLineStringEvidence {
+    /// Proof for each line string.
+    pub lines: Vec<Established<GeoJsonLineStringValid>>,
+}
+
+impl ProvableFrom<GeoJsonMultiLineStringEvidence> for GeoJsonMultiLineStringValid {}
+
+/// Evidence that a GeoJSON Polygon is valid.
+///
+/// Requires proven position validity for the exterior ring positions and for
+/// each interior ring.
+///
+/// Source: RFC 7946 §3.1.6 — Polygon.
+pub struct GeoJsonPolygonEvidence {
+    /// Proofs for the exterior ring positions (≥ 4, first == last).
+    pub exterior: Vec<Established<PositionValid>>,
+    /// Proofs for each hole's positions (≥ 4, first == last).
+    pub holes: Vec<Vec<Established<PositionValid>>>,
+}
+
+impl ProvableFrom<GeoJsonPolygonEvidence> for GeoJsonPolygonValid {}
+
+/// Evidence that a GeoJSON MultiPolygon is valid.
+///
+/// Requires proven polygon validity for each member.
+///
+/// Source: RFC 7946 §3.1.7 — MultiPolygon.
+pub struct GeoJsonMultiPolygonEvidence {
+    /// Proof for each polygon.
+    pub polygons: Vec<Established<GeoJsonPolygonValid>>,
+}
+
+impl ProvableFrom<GeoJsonMultiPolygonEvidence> for GeoJsonMultiPolygonValid {}
+
+/// Evidence that a GeoJSON GeometryCollection is valid.
+///
+/// Requires proven geometry validity for each member.
+///
+/// Source: RFC 7946 §3.1.8 — GeometryCollection.
+pub struct GeoJsonGeometryCollectionEvidence {
+    /// Proof for each member geometry.
+    pub geometries: Vec<Established<GeoJsonGeometryValid>>,
+}
+
+impl ProvableFrom<GeoJsonGeometryCollectionEvidence> for GeoJsonGeometryCollectionValid {}
+
+/// Evidence that a GeoJSON Feature is valid.
+///
+/// The `geometry` field is optional; `None` represents a null geometry.
+///
+/// Source: RFC 7946 §3.2 — Feature.
+pub struct GeoJsonFeatureEvidence {
+    /// Proof that the geometry object is valid, if present.
+    pub geometry: Option<Established<GeoJsonGeometryValid>>,
+}
+
+impl ProvableFrom<GeoJsonFeatureEvidence> for FeatureValid {}
+
+/// Evidence that a GeoJSON FeatureCollection is valid.
+///
+/// Requires proven feature validity for each member.
+///
+/// Source: RFC 7946 §3.3 — FeatureCollection.
+pub struct GeoJsonFeatureCollectionEvidence {
+    /// Proof for each feature.
+    pub features: Vec<Established<FeatureValid>>,
+}
+
+impl ProvableFrom<GeoJsonFeatureCollectionEvidence> for FeatureCollectionValid {}
+
+// ── Upcasts: concrete geometry proofs → GeoJsonGeometryValid ─────────────────
+//
+// Any proven concrete GeoJSON geometry type also proves the abstract
+// GeoJsonGeometryValid superprop.
+
+impl ProvableFrom<Established<GeoJsonPointValid>> for GeoJsonGeometryValid {}
+impl ProvableFrom<Established<GeoJsonMultiPointValid>> for GeoJsonGeometryValid {}
+impl ProvableFrom<Established<GeoJsonLineStringValid>> for GeoJsonGeometryValid {}
+impl ProvableFrom<Established<GeoJsonMultiLineStringValid>> for GeoJsonGeometryValid {}
+impl ProvableFrom<Established<GeoJsonPolygonValid>> for GeoJsonGeometryValid {}
+impl ProvableFrom<Established<GeoJsonMultiPolygonValid>> for GeoJsonGeometryValid {}
+impl ProvableFrom<Established<GeoJsonGeometryCollectionValid>> for GeoJsonGeometryValid {}
+
+// ── Upcasts: root GeoJSON object types → GeoJsonDocumentValid ────────────────
+//
+// A valid geometry object, feature, or feature collection each proves the
+// document-level superprop.
+
+impl ProvableFrom<Established<GeoJsonGeometryValid>> for GeoJsonDocumentValid {}
+impl ProvableFrom<Established<FeatureValid>> for GeoJsonDocumentValid {}
+impl ProvableFrom<Established<FeatureCollectionValid>> for GeoJsonDocumentValid {}

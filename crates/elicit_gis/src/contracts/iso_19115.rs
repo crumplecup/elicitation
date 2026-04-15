@@ -3872,3 +3872,48 @@ pub use emit_impls::{
     PtLocaleCharacterEncodingMandatory, PtLocaleCountryOptional,
     PtLocaleLanguageCodeThreeLetterLowercase, PtLocaleLanguageMandatory,
 };
+
+// ── Proof composition: ISO 19115 metadata quality chain ──────────────────────
+
+use elicitation::{Established, contracts::ProvableFrom};
+
+/// Evidence that an EX_Extent is valid.
+///
+/// Requires at least one proven geographic bounding box.
+///
+/// Source: ISO 19115-1:2014 §6.6.1 — EX_Extent.
+pub struct ExExtentEvidence {
+    /// Proof for each geographic bounding box element.
+    pub geographic: Vec<Established<ExGeographicBoundingBoxValid>>,
+}
+
+impl ProvableFrom<ExExtentEvidence> for ExExtentValid {}
+
+/// Evidence that an MD_Identification section is valid.
+///
+/// Requires a proven citation and at least one proven extent.
+///
+/// Source: ISO 19115-1:2014 §6.5 — MD_Identification.
+pub struct MdIdentificationEvidence {
+    /// Proof that the CI_Citation satisfies mandatory elements.
+    pub citation: Established<CiCitationValid>,
+    /// Proof for each declared spatial or temporal extent.
+    pub extents: Vec<Established<ExExtentValid>>,
+}
+
+impl ProvableFrom<MdIdentificationEvidence> for MdIdentificationValid {}
+
+/// Evidence that an MD_Metadata record is valid.
+///
+/// Requires a proven responsible party contact and a proven identification
+/// section.
+///
+/// Source: ISO 19115-1:2014 §6.2 — MD_Metadata.
+pub struct MdMetadataEvidence {
+    /// Proof that the mandatory contact CI_Responsibility is valid.
+    pub contact: Established<CiResponsibilityValid>,
+    /// Proof that the primary identification section is complete.
+    pub identification: Established<MdIdentificationValid>,
+}
+
+impl ProvableFrom<MdMetadataEvidence> for MdMetadataValid {}

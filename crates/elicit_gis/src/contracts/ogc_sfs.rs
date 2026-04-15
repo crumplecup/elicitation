@@ -2101,3 +2101,90 @@ pub use emit_impls::{
     WktPolygonExteriorFirstRing, WktPolygonProduction, WktPositionsSeparatedByComma,
     WktRingsParenthesized, WktRingsSeparatedByComma, WktRoundTrip, WktZMVariant, WktZVariant,
 };
+
+// ── Proof composition: OGC SFS geometry validity chain ───────────────────────
+//
+// Each evidence bundle declares what must be proven before a composite
+// proposition can be asserted.  Backends call `Established::prove(&bundle)`
+// for composites; `Established::assert()` remains available for leaf
+// propositions verified at runtime.
+
+use elicitation::{Established, contracts::ProvableFrom};
+
+/// Evidence that a polygon is topologically valid.
+///
+/// Requires proven linear-ring validity for the exterior ring and for
+/// each interior hole.
+///
+/// Source: OGC 06-103r4 §6.1.11 — Polygon.
+pub struct PolygonEvidence {
+    /// Proof that the exterior ring is a valid closed simple linear ring.
+    pub exterior: Established<LinearRingValid>,
+    /// Proof for each interior ring (hole), if any.
+    pub holes: Vec<Established<LinearRingValid>>,
+}
+
+impl ProvableFrom<PolygonEvidence> for PolygonValid {}
+
+/// Evidence that a MultiPoint is valid.
+///
+/// Requires proven point validity for each component point.
+///
+/// Source: OGC 06-103r4 §6.1.14 — MultiPoint.
+pub struct MultiPointEvidence {
+    /// Proof for each component point.
+    pub points: Vec<Established<PointValid>>,
+}
+
+impl ProvableFrom<MultiPointEvidence> for MultiPointValid {}
+
+/// Evidence that a MultiLineString is valid.
+///
+/// Requires proven line-string validity for each component.
+///
+/// Source: OGC 06-103r4 §6.1.15 — MultiLineString.
+pub struct MultiLineStringEvidence {
+    /// Proof for each component line string.
+    pub lines: Vec<Established<LineStringValid>>,
+}
+
+impl ProvableFrom<MultiLineStringEvidence> for MultiLineStringValid {}
+
+/// Evidence that a MultiPolygon is valid.
+///
+/// Requires proven polygon validity for each component.
+///
+/// Source: OGC 06-103r4 §6.1.16 — MultiPolygon.
+pub struct MultiPolygonEvidence {
+    /// Proof for each component polygon.
+    pub polygons: Vec<Established<PolygonValid>>,
+}
+
+impl ProvableFrom<MultiPolygonEvidence> for MultiPolygonValid {}
+
+/// Evidence that a GeometryCollection is valid.
+///
+/// Requires proven SFS geometry validity for each component.
+///
+/// Source: OGC 06-103r4 §6.1.13 — GeometryCollection.
+pub struct GeometryCollectionEvidence {
+    /// Proof for each component geometry.
+    pub geoms: Vec<Established<SfsGeometryValid>>,
+}
+
+impl ProvableFrom<GeometryCollectionEvidence> for GeometryCollectionValid {}
+
+// ── Upcasts: concrete geometry proofs → SfsGeometryValid ─────────────────────
+//
+// Any proven concrete geometry type also proves the abstract SfsGeometryValid
+// superprop.  These single-dependency impls let backends upcast without an
+// explicit bundle struct.
+
+impl ProvableFrom<Established<PointValid>> for SfsGeometryValid {}
+impl ProvableFrom<Established<LineStringValid>> for SfsGeometryValid {}
+impl ProvableFrom<Established<LinearRingValid>> for SfsGeometryValid {}
+impl ProvableFrom<Established<PolygonValid>> for SfsGeometryValid {}
+impl ProvableFrom<Established<MultiPointValid>> for SfsGeometryValid {}
+impl ProvableFrom<Established<MultiLineStringValid>> for SfsGeometryValid {}
+impl ProvableFrom<Established<MultiPolygonValid>> for SfsGeometryValid {}
+impl ProvableFrom<Established<GeometryCollectionValid>> for SfsGeometryValid {}
