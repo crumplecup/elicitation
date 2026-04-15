@@ -1350,6 +1350,23 @@ mod emit_impls {
     /// An ellipsoid definition passed all ISO 19111 §7.3 validity checks.
     pub struct EllipsoidValid;
 
+    /// A prime meridian definition passed all ISO 19111 §7.4 validity checks.
+    ///
+    /// Source: ISO 19111:2019 §7.4 — CD_PrimeMeridian.
+    pub struct PrimeMeridianValid;
+
+    /// A geodetic reference frame passed all ISO 19111 §7.2 validity checks:
+    /// name non-empty, exactly one ellipsoid, exactly one prime meridian.
+    ///
+    /// Source: ISO 19111:2019 §7.2 — CD_GeodeticReferenceFrame.
+    pub struct GeodeticReferenceFrameValid;
+
+    /// A coordinate system passed all ISO 19111 §8 validity checks:
+    /// at least one axis, unique abbreviations, valid directions, units match axis type.
+    ///
+    /// Source: ISO 19111:2019 §8 — CS_CoordinateSystem.
+    pub struct CoordinateSystemValid;
+
     /// Coordinate metadata passed completeness checks (CRS present; epoch present iff dynamic).
     pub struct CoordinateMetadataValid;
 
@@ -2157,6 +2174,9 @@ mod emit_impls {
     structural_prop!(DatumEnsembleResolved, "DatumEnsembleResolved");
     structural_prop!(CrsValid, "CrsValid");
     structural_prop!(EllipsoidValid, "EllipsoidValid");
+    structural_prop!(PrimeMeridianValid, "PrimeMeridianValid");
+    structural_prop!(GeodeticReferenceFrameValid, "GeodeticReferenceFrameValid");
+    structural_prop!(CoordinateSystemValid, "CoordinateSystemValid");
     structural_prop!(CoordinateMetadataValid, "CoordinateMetadataValid");
     structural_prop!(CoordinatesTransformed, "CoordinatesTransformed");
 }
@@ -2220,6 +2240,8 @@ pub use emit_impls::{
     // §20
     CoordinateSystemMinimumOneAxis,
     CoordinateSystemNameNonEmpty,
+    // §8 aggregate
+    CoordinateSystemValid,
     CoordinateTupleDimensionMatchesAxes,
     CoordinateTupleElementCountEqualsAxisCount,
     CoordinatesTransformed,
@@ -2314,6 +2336,8 @@ pub use emit_impls::{
     // §7.2
     GeodeticReferenceFrameNameNonEmpty,
     GeodeticReferenceFrameRealizationEpochIsIso8601,
+    // §7.2 aggregate
+    GeodeticReferenceFrameValid,
     Geographic2dCrsHasTwoAxes,
     // §15
     Geographic2dIsoAxisOrderLatitudeFirst,
@@ -2380,6 +2404,8 @@ pub use emit_impls::{
     // §7.4
     PrimeMeridianNameNonEmpty,
     PrimeMeridianNonGreenwichAllowed,
+    // §7.4 aggregate
+    PrimeMeridianValid,
     ProjectedConventionalAxisOrderEastingFirst,
     ProjectedCrsAxesUseLinearUnit,
     // §9

@@ -63,6 +63,8 @@ pub use iso_19111::{
     // §20 Additional value constraints
     CoordinateSystemMinimumOneAxis,
     CoordinateSystemNameNonEmpty,
+    // §8 aggregate
+    CoordinateSystemValid,
     CoordinateTupleDimensionMatchesAxes,
     CoordinateTupleElementCountEqualsAxisCount,
     CoordinatesTransformed,
@@ -157,6 +159,8 @@ pub use iso_19111::{
     // §7.2 Reference frame
     GeodeticReferenceFrameNameNonEmpty,
     GeodeticReferenceFrameRealizationEpochIsIso8601,
+    // §7.2 aggregate
+    GeodeticReferenceFrameValid,
     Geographic2dCrsHasTwoAxes,
     // §15 Axis order
     Geographic2dIsoAxisOrderLatitudeFirst,
@@ -223,6 +227,8 @@ pub use iso_19111::{
     // §7.4 Prime meridian
     PrimeMeridianNameNonEmpty,
     PrimeMeridianNonGreenwichAllowed,
+    // §7.4 aggregate
+    PrimeMeridianValid,
     ProjectedConventionalAxisOrderEastingFirst,
     ProjectedCrsAxesUseLinearUnit,
     // §9 Projected CRS

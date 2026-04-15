@@ -243,6 +243,8 @@ pub use contracts::{
     // §20
     CoordinateSystemMinimumOneAxis,
     CoordinateSystemNameNonEmpty,
+    // §8 aggregate
+    CoordinateSystemValid,
     CoordinateTupleDimensionMatchesAxes,
     CoordinateTupleElementCountEqualsAxisCount,
     CoordinatesTransformed,
@@ -423,6 +425,8 @@ pub use contracts::{
     // §7.2
     GeodeticReferenceFrameNameNonEmpty,
     GeodeticReferenceFrameRealizationEpochIsIso8601,
+    // §7.2 aggregate
+    GeodeticReferenceFrameValid,
     Geographic2dCrsHasTwoAxes,
     // §15
     Geographic2dIsoAxisOrderLatitudeFirst,
@@ -861,6 +865,8 @@ pub use contracts::{
     // §7.4
     PrimeMeridianNameNonEmpty,
     PrimeMeridianNonGreenwichAllowed,
+    // §7.4 aggregate
+    PrimeMeridianValid,
     ProjectedConventionalAxisOrderEastingFirst,
     ProjectedCrsAxesUseLinearUnit,
     // §9
@@ -1003,10 +1009,11 @@ pub use contracts::{
 
 pub use error::{GisError, GisErrorKind, GisResult};
 pub use traits::{
-    GisBackend, GisCrsLookup, GisCrsTransformer, GisCrsValidator, SfsGeometry, SfsSetOps,
-    SfsTopology,
+    GisBackend, GisCrsBuilder, GisCrsLookup, GisCrsTransformer, Iso19111Identified, Iso19111Scoped,
+    SfsGeometry, SfsSetOps, SfsTopology,
 };
 pub use types::{
-    AuthorityCode, AxisDirection, CoordinateMetadata, CrsInfo, CrsType, CsType, DatumEnsembleInfo,
-    DecimalYear, EllipsoidParams, EpsgCode, HelmertConvention,
+    AuthorityCode, AxisDirection, CoordinateAxisInfo, CoordinateMetadata, CoordinateSystemParams,
+    CrsInfo, CrsType, CsType, DatumEnsembleInfo, DecimalYear, DomainExtent, EllipsoidParams,
+    EpsgCode, GeodeticFrameParams, GeographicBoundingBox, HelmertConvention, PrimeMeridianParams,
 };
