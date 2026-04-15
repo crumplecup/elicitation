@@ -1416,6 +1416,43 @@ mod emit_impls {
         "ExBboxWestLeEastOrAntimeridian"
     );
 
+    /// westBoundLongitude shall be an IEEE 754 finite value (not NaN, not ±Inf).
+    ///
+    /// Required as a precondition before ExBboxLongitudeRange or ExBboxWestLeEastOrAntimeridian
+    /// in formal proofs: NaN comparisons return false in Rust, so a NaN value would
+    /// silently satisfy `x >= -180.0` only vacuously.
+    ///
+    /// Source: ISO 19115-1:2014 §6.17 — EX_GeographicBoundingBox / westBoundLongitude
+    pub struct ExBboxWestBoundIsFinite;
+    structural_prop!(ExBboxWestBoundIsFinite, "ExBboxWestBoundIsFinite");
+
+    /// eastBoundLongitude shall be an IEEE 754 finite value (not NaN, not ±Inf).
+    ///
+    /// Required as a precondition before ExBboxLongitudeRange or ExBboxWestLeEastOrAntimeridian
+    /// in formal proofs.
+    ///
+    /// Source: ISO 19115-1:2014 §6.17 — EX_GeographicBoundingBox / eastBoundLongitude
+    pub struct ExBboxEastBoundIsFinite;
+    structural_prop!(ExBboxEastBoundIsFinite, "ExBboxEastBoundIsFinite");
+
+    /// southBoundLatitude shall be an IEEE 754 finite value (not NaN, not ±Inf).
+    ///
+    /// Required as a precondition before ExBboxLatitudeRange and ExBboxSouthLeNorth
+    /// in formal proofs.
+    ///
+    /// Source: ISO 19115-1:2014 §6.17 — EX_GeographicBoundingBox / southBoundLatitude
+    pub struct ExBboxSouthBoundIsFinite;
+    structural_prop!(ExBboxSouthBoundIsFinite, "ExBboxSouthBoundIsFinite");
+
+    /// northBoundLatitude shall be an IEEE 754 finite value (not NaN, not ±Inf).
+    ///
+    /// Required as a precondition before ExBboxLatitudeRange and ExBboxSouthLeNorth
+    /// in formal proofs.
+    ///
+    /// Source: ISO 19115-1:2014 §6.17 — EX_GeographicBoundingBox / northBoundLatitude
+    pub struct ExBboxNorthBoundIsFinite;
+    structural_prop!(ExBboxNorthBoundIsFinite, "ExBboxNorthBoundIsFinite");
+
     /// extent is mandatory (1); shall be a TM_Instant (single point) or TM_Period
     /// (begin/end interval); temporal values shall conform to ISO 8601.
     ///
@@ -1469,6 +1506,24 @@ mod emit_impls {
     /// Source: ISO 19115-1:2014 §6.19 — EX_VerticalExtent (constraint)
     pub struct ExVerticalExtentMinLeMax;
     structural_prop!(ExVerticalExtentMinLeMax, "ExVerticalExtentMinLeMax");
+
+    /// minimumValue shall be an IEEE 754 finite value (not NaN, not ±Inf).
+    ///
+    /// Required as a precondition before ExVerticalExtentMinLeMax in formal proofs:
+    /// `NaN <= x` is false in Rust, so a NaN minimum would make the ordering
+    /// check vacuously pass.
+    ///
+    /// Source: ISO 19115-1:2014 §6.19 — EX_VerticalExtent / minimumValue
+    pub struct ExVerticalExtentMinIsFinite;
+    structural_prop!(ExVerticalExtentMinIsFinite, "ExVerticalExtentMinIsFinite");
+
+    /// maximumValue shall be an IEEE 754 finite value (not NaN, not ±Inf).
+    ///
+    /// Required as a precondition before ExVerticalExtentMinLeMax in formal proofs.
+    ///
+    /// Source: ISO 19115-1:2014 §6.19 — EX_VerticalExtent / maximumValue
+    pub struct ExVerticalExtentMaxIsFinite;
+    structural_prop!(ExVerticalExtentMaxIsFinite, "ExVerticalExtentMaxIsFinite");
 
     /// formatSpecificationCitation is mandatory (1); a CI_Citation identifying the
     /// standard, specification, or document that defines this format.
@@ -1910,6 +1965,54 @@ mod emit_impls {
         "DqDataQualityStandaloneOptional"
     );
 
+    /// Each DQ_Element shall carry at least one DQ_Result; a quality report entry
+    /// with no result is structurally incomplete and cannot support any claim.
+    ///
+    /// Source: ISO 19115-1:2014 §6.29 — DQ_Element / result (1..*)
+    pub struct DqElementResultMandatory;
+    structural_prop!(DqElementResultMandatory, "DqElementResultMandatory");
+
+    /// When a DQ_QuantitativeResult is present, its `value` sequence shall contain
+    /// at least one entry; an empty value sequence conveys no quality measurement.
+    ///
+    /// Source: ISO 19115-1:2014 §6.29 — DQ_QuantitativeResult / value (1..*)
+    pub struct DqQuantitativeResultValueNonEmpty;
+    structural_prop!(
+        DqQuantitativeResultValueNonEmpty,
+        "DqQuantitativeResultValueNonEmpty"
+    );
+
+    /// When a DQ_QuantitativeResult is present, `valueUnit` is mandatory (1);
+    /// a numeric quality measure without a unit of measure is uninterpretable.
+    ///
+    /// Source: ISO 19115-1:2014 §6.29 — DQ_QuantitativeResult / valueUnit
+    pub struct DqQuantitativeResultValueUnitMandatory;
+    structural_prop!(
+        DqQuantitativeResultValueUnitMandatory,
+        "DqQuantitativeResultValueUnitMandatory"
+    );
+
+    /// When a DQ_ConformanceResult is present, `pass` is mandatory (1);
+    /// a conformance test without a pass/fail outcome is meaningless.
+    ///
+    /// Source: ISO 19115-1:2014 §6.29 — DQ_ConformanceResult / pass
+    pub struct DqConformanceResultPassMandatory;
+    structural_prop!(
+        DqConformanceResultPassMandatory,
+        "DqConformanceResultPassMandatory"
+    );
+
+    /// When a DQ_ConformanceResult is present, `specification` is mandatory (1);
+    /// the citation identifies the standard or specification against which
+    /// conformance was evaluated.
+    ///
+    /// Source: ISO 19115-1:2014 §6.29 — DQ_ConformanceResult / specification
+    pub struct DqConformanceResultSpecificationMandatory;
+    structural_prop!(
+        DqConformanceResultSpecificationMandatory,
+        "DqConformanceResultSpecificationMandatory"
+    );
+
     /// DQ_CompletenessOmission — measures the absence of features, attributes,
     /// or relationships that exist in the real world but are missing from the dataset.
     ///
@@ -2054,6 +2157,20 @@ mod emit_impls {
     structural_prop!(
         MdGridSpatialRepNumberOfDimensions,
         "MdGridSpatialRepNumberOfDimensions"
+    );
+
+    /// numberOfDimensions shall be a positive integer (> 0); a grid with zero or
+    /// fewer axes is not physically meaningful.
+    ///
+    /// Complements MdGridSpatialRepNumberOfDimensions (mandatory) with a separate
+    /// value-level positivity guard, matching the MdDimensionSizeMandatory /
+    /// MdDimensionSizePositive split for MD_Dimension.
+    ///
+    /// Source: ISO 19115-1:2014 §6.30 — MD_GridSpatialRepresentation / numberOfDimensions
+    pub struct MdGridSpatialRepNumberOfDimensionsPositive;
+    structural_prop!(
+        MdGridSpatialRepNumberOfDimensionsPositive,
+        "MdGridSpatialRepNumberOfDimensionsPositive"
     );
 
     /// axisDimensionProperties is optional (0..*) in MD_GridSpatialRepresentation;
@@ -2852,6 +2969,17 @@ mod emit_impls {
         "MdResolutionDistanceIsPositive"
     );
 
+    /// When the distance form of MD_Resolution is used, the distance value shall
+    /// be an IEEE 754 finite value (not NaN, not ±Inf).
+    ///
+    /// Required as a precondition before MdResolutionDistanceIsPositive in formal
+    /// proofs: `NaN > 0.0` is false in Rust, so NaN would silently fail the
+    /// positivity check rather than being caught as an invalid input.
+    ///
+    /// Source: ISO 19115-1:2014 §6.25 — MD_Resolution / distance
+    pub struct MdResolutionDistanceIsFinite;
+    structural_prop!(MdResolutionDistanceIsFinite, "MdResolutionDistanceIsFinite");
+
     /// A larger equivalentScale denominator indicates coarser resolution:
     /// 1:1 000 000 is less detailed than 1:25 000 (denominator 25000 < 1000000).
     ///
@@ -3137,6 +3265,20 @@ mod emit_impls {
     structural_prop!(
         MdTransferOptionsSizePositive,
         "MdTransferOptionsSizePositive"
+    );
+
+    /// When transferSize is provided on MD_DigitalTransferOptions, the value shall
+    /// be an IEEE 754 finite value (not NaN, not ±Inf).
+    ///
+    /// Required as a precondition before MdTransferOptionsSizePositive in formal
+    /// proofs: a NaN transfer size would fail `NaN > 0.0` without being caught
+    /// as an invalid input.
+    ///
+    /// Source: ISO 19115-1:2014 §6.39 — MD_DigitalTransferOptions / transferSize
+    pub struct MdTransferOptionsSizeIsFinite;
+    structural_prop!(
+        MdTransferOptionsSizeIsFinite,
+        "MdTransferOptionsSizeIsFinite"
     );
 
     /// onLine is optional (0..*) on MD_DigitalTransferOptions; CI_OnlineResource
@@ -3487,6 +3629,85 @@ mod emit_impls {
         Iso19115MultiplicityConstraintsMet,
         "Iso19115MultiplicityConstraintsMet"
     );
+
+    // ── Per-section aggregate validity seams ──────────────────────────────────
+    //
+    // Each seam composes the mandatory + conditional + value-level constraints
+    // for one metadata class into a single precondition token.  FV harnesses use
+    // these to express "this section is structurally valid" without enumerating
+    // every atomic prop.
+
+    /// All mandatory attributes of MD_Metadata are present and all conditional
+    /// attributes triggered by their respective conditions are also present.
+    ///
+    /// Composes: MdMetadataContactMandatory, MdMetadataDateInfoMandatory,
+    /// MdMetadataIdentificationInfoMandatory, MdMetadataHierarchyLevelNameMatchesLevel,
+    /// MdMetadataCharacterSetConditional, MdMetadataLanguageConditional.
+    ///
+    /// Source: ISO 19115-1:2014 §6.2 — MD_Metadata validity
+    pub struct MdMetadataValid;
+    structural_prop!(MdMetadataValid, "MdMetadataValid");
+
+    /// All mandatory attributes of MD_Identification (and its concrete subclass
+    /// MD_DataIdentification) are present and value-level constraints are met.
+    ///
+    /// Composes: MdIdentificationCitationMandatory, MdIdentificationAbstractMandatory,
+    /// MdIdentificationAbstractNonEmpty, MdDataIdentificationLanguageConditional,
+    /// MdDataIdentificationTopicCategoryConditional, MdDataIdentificationExtentConditional.
+    ///
+    /// Source: ISO 19115-1:2014 §6.12 — MD_Identification validity
+    pub struct MdIdentificationValid;
+    structural_prop!(MdIdentificationValid, "MdIdentificationValid");
+
+    /// All structural and value-level constraints on EX_GeographicBoundingBox are met.
+    ///
+    /// Composes: ExBboxWestBoundIsFinite, ExBboxEastBoundIsFinite,
+    /// ExBboxSouthBoundIsFinite, ExBboxNorthBoundIsFinite,
+    /// ExBboxLongitudeRange, ExBboxLatitudeRange,
+    /// ExBboxSouthLeNorth, ExBboxWestLeEastOrAntimeridian.
+    ///
+    /// Source: ISO 19115-1:2014 §6.17 — EX_GeographicBoundingBox validity
+    pub struct ExGeographicBoundingBoxValid;
+    structural_prop!(ExGeographicBoundingBoxValid, "ExGeographicBoundingBoxValid");
+
+    /// All structural constraints on EX_Extent are met.
+    ///
+    /// Composes: ExExtentAtLeastOneElementRequired and, for each sub-element type
+    /// present, its corresponding atomic constraints (ExGeographicBoundingBoxValid,
+    /// ExVerticalExtentMinIsFinite, ExVerticalExtentMaxIsFinite, ExVerticalExtentMinLeMax,
+    /// ExTemporalExtentPeriodBeginLeEnd).
+    ///
+    /// Source: ISO 19115-1:2014 §6.16 — EX_Extent validity
+    pub struct ExExtentValid;
+    structural_prop!(ExExtentValid, "ExExtentValid");
+
+    /// All structural and conditional constraints on LI_Lineage are met.
+    ///
+    /// Composes: LiLineageAtLeastOneProvided, LiLineageStatementConditional,
+    /// LiProcessStepDescriptionMandatory, LiProcessStepDescriptionNonEmpty,
+    /// LiSourceDescriptionOrCitationRequired.
+    ///
+    /// Source: ISO 19115-1:2014 §6.28 — LI_Lineage validity
+    pub struct LiLineageValid;
+    structural_prop!(LiLineageValid, "LiLineageValid");
+
+    /// All mandatory and value-level constraints on CI_Citation are met.
+    ///
+    /// Composes: CiCitationTitleMandatory, CiCitationTitleNonEmpty,
+    /// CiCitationDateMandatory.
+    ///
+    /// Source: ISO 19115-1:2014 §6.11 — CI_Citation validity
+    pub struct CiCitationValid;
+    structural_prop!(CiCitationValid, "CiCitationValid");
+
+    /// All mandatory and value-level constraints on CI_Responsibility are met.
+    ///
+    /// Composes: CiResponsibilityPartyMandatory, CiResponsibilityPartyNameNonNull,
+    /// CiResponsibilityRoleMandatory.
+    ///
+    /// Source: ISO 19115-1:2014 §6.11 — CI_Responsibility validity
+    pub struct CiResponsibilityValid;
+    structural_prop!(CiResponsibilityValid, "CiResponsibilityValid");
 }
 
 pub use emit_impls::{
@@ -3497,12 +3718,13 @@ pub use emit_impls::{
     CiCitationEditionOptional, CiCitationIdentifierOptional, CiCitationIsbnFormatValid,
     CiCitationIssnFormatValid, CiCitationOtherDetailsOptional, CiCitationPresentationFormOptional,
     CiCitationResponsiblePartyOptional, CiCitationSeriesOptional, CiCitationTitleMandatory,
-    CiCitationTitleNonEmpty, CiContactAddressOptional, CiContactHoursOfServiceOptional,
-    CiContactInstructionsOptional, CiContactOnlineResourceOptional, CiContactPhoneOptional,
-    CiDateTypeAdopted, CiDateTypeCodeMandatory, CiDateTypeCreation, CiDateTypeDeprecated,
-    CiDateTypeDistribution, CiDateTypeExpiry, CiDateTypeInForce, CiDateTypeLastRevision,
-    CiDateTypeLastUpdate, CiDateTypeNextUpdate, CiDateTypePublication, CiDateTypeReleased,
-    CiDateTypeRevision, CiDateTypeSuperseded, CiDateTypeUnavailable, CiDateTypeValidityBegins,
+    CiCitationTitleNonEmpty, CiCitationValid, CiContactAddressOptional,
+    CiContactHoursOfServiceOptional, CiContactInstructionsOptional,
+    CiContactOnlineResourceOptional, CiContactPhoneOptional, CiDateTypeAdopted,
+    CiDateTypeCodeMandatory, CiDateTypeCreation, CiDateTypeDeprecated, CiDateTypeDistribution,
+    CiDateTypeExpiry, CiDateTypeInForce, CiDateTypeLastRevision, CiDateTypeLastUpdate,
+    CiDateTypeNextUpdate, CiDateTypePublication, CiDateTypeReleased, CiDateTypeRevision,
+    CiDateTypeSuperseded, CiDateTypeUnavailable, CiDateTypeValidityBegins,
     CiDateTypeValidityExpires, CiDateValueMandatory, CiIndividualContactInfoOptional,
     CiIndividualNameOptional, CiIndividualNameOrPositionRequired, CiIndividualPositionNameOptional,
     CiOnlineFunctionBrowseGraphic, CiOnlineFunctionBrowsing, CiOnlineFunctionCompleteMetadata,
@@ -3515,38 +3737,43 @@ pub use emit_impls::{
     CiOrganisationContactInfoOptional, CiOrganisationIndividualOptional,
     CiOrganisationNameOptional, CiPartyIsAbstract, CiResponsibilityExtentOptional,
     CiResponsibilityPartyMandatory, CiResponsibilityPartyNameNonNull,
-    CiResponsibilityRoleMandatory, CiRoleAuthor, CiRoleCoAuthor, CiRoleCollaborator,
-    CiRoleContributor, CiRoleCustodian, CiRoleDistributor, CiRoleEditor, CiRoleFunder,
-    CiRoleMediator, CiRoleOriginator, CiRoleOwner, CiRolePointOfContact,
+    CiResponsibilityRoleMandatory, CiResponsibilityValid, CiRoleAuthor, CiRoleCoAuthor,
+    CiRoleCollaborator, CiRoleContributor, CiRoleCustodian, CiRoleDistributor, CiRoleEditor,
+    CiRoleFunder, CiRoleMediator, CiRoleOriginator, CiRoleOwner, CiRolePointOfContact,
     CiRolePrincipalInvestigator, CiRoleProcessor, CiRolePublisher, CiRoleResourceProvider,
     CiRoleRightsHolder, CiRoleSponsor, CiRoleStakeholder, CiRoleUser, CiTelephoneFacsimile,
     CiTelephoneNumberMandatory, CiTelephoneNumberNonEmpty, CiTelephoneSms, CiTelephoneTypeVoice,
     DqAbsoluteExternalPositionalAccuracy, DqCompletenessCommission, DqCompletenessOmission,
-    DqConceptualConsistency, DqDataQualityReportOptional, DqDataQualityScopeMandatory,
-    DqDataQualityStandaloneOptional, DqDomainConsistency, DqFormatConsistency,
-    DqGriddedDataPositionalAccuracy, DqNonQuantitativeAttributeCorrectness,
-    DqQuantitativeAttributeAccuracy, DqRelativeInternalPositionalAccuracy, DqTemporalConsistency,
-    DqTemporalValidity, DqThematicClassificationCorrectness, DqTopologicalConsistency,
-    DsAssociationTypeCrossReference, DsAssociationTypeIsComposedOf,
-    DsAssociationTypeLargerWorkCitation, DsAssociationTypePartOfSeamlessDatabase,
-    DsAssociationTypeRevisionOf, DsInitiativeTypeMission, DsInitiativeTypePlatform,
-    DsInitiativeTypeProject, ExBboxEastBoundMandatory, ExBboxExtentTypeCodeOptional,
-    ExBboxLatitudeRange, ExBboxLongitudeRange, ExBboxNorthBoundMandatory,
-    ExBboxSouthBoundMandatory, ExBboxSouthLeNorth, ExBboxWestBoundMandatory,
-    ExBboxWestLeEastOrAntimeridian, ExBoundingPolygonAtLeastOneGeometry,
-    ExBoundingPolygonExtentTypeCodeOptional, ExBoundingPolygonGeometryIsValid,
-    ExBoundingPolygonPolygonMandatory, ExExtentAtLeastOneElementRequired,
-    ExExtentDescriptionOptional, ExExtentGeographicElementConditional,
-    ExExtentTemporalElementOptional, ExExtentVerticalElementOptional,
-    ExTemporalExtentExtentMandatory, ExTemporalExtentPeriodBeginLeEnd, ExVerticalExtentCrsOptional,
-    ExVerticalExtentMaximumMandatory, ExVerticalExtentMinLeMax, ExVerticalExtentMinimumMandatory,
-    Iso19115AllMandatoryElementsPresent, Iso19115CitationTitleNeverEmpty,
-    Iso19115ConditionalElementsTriggered, Iso19115ContactPartyNameNonNull,
-    Iso19115CountryCodeIso3166, Iso19115DateIso8601Format, Iso19115EnumerationValuesValid,
-    Iso19115LanguageCodeIso6392, Iso19115MultiplicityConstraintsMet,
-    Iso19115ProcessStepDescriptionNeverEmpty, LiLineageAdditionalDocumentationOptional,
-    LiLineageAtLeastOneProvided, LiLineageProcessStepOptional, LiLineageScopeOptional,
-    LiLineageSourceOptional, LiLineageStatementConditional, LiProcessStepDateTimeOptional,
+    DqConceptualConsistency, DqConformanceResultPassMandatory,
+    DqConformanceResultSpecificationMandatory, DqDataQualityReportOptional,
+    DqDataQualityScopeMandatory, DqDataQualityStandaloneOptional, DqDomainConsistency,
+    DqElementResultMandatory, DqFormatConsistency, DqGriddedDataPositionalAccuracy,
+    DqNonQuantitativeAttributeCorrectness, DqQuantitativeAttributeAccuracy,
+    DqQuantitativeResultValueNonEmpty, DqQuantitativeResultValueUnitMandatory,
+    DqRelativeInternalPositionalAccuracy, DqTemporalConsistency, DqTemporalValidity,
+    DqThematicClassificationCorrectness, DqTopologicalConsistency, DsAssociationTypeCrossReference,
+    DsAssociationTypeIsComposedOf, DsAssociationTypeLargerWorkCitation,
+    DsAssociationTypePartOfSeamlessDatabase, DsAssociationTypeRevisionOf, DsInitiativeTypeMission,
+    DsInitiativeTypePlatform, DsInitiativeTypeProject, ExBboxEastBoundIsFinite,
+    ExBboxEastBoundMandatory, ExBboxExtentTypeCodeOptional, ExBboxLatitudeRange,
+    ExBboxLongitudeRange, ExBboxNorthBoundIsFinite, ExBboxNorthBoundMandatory,
+    ExBboxSouthBoundIsFinite, ExBboxSouthBoundMandatory, ExBboxSouthLeNorth,
+    ExBboxWestBoundIsFinite, ExBboxWestBoundMandatory, ExBboxWestLeEastOrAntimeridian,
+    ExBoundingPolygonAtLeastOneGeometry, ExBoundingPolygonExtentTypeCodeOptional,
+    ExBoundingPolygonGeometryIsValid, ExBoundingPolygonPolygonMandatory,
+    ExExtentAtLeastOneElementRequired, ExExtentDescriptionOptional,
+    ExExtentGeographicElementConditional, ExExtentTemporalElementOptional, ExExtentValid,
+    ExExtentVerticalElementOptional, ExGeographicBoundingBoxValid, ExTemporalExtentExtentMandatory,
+    ExTemporalExtentPeriodBeginLeEnd, ExVerticalExtentCrsOptional, ExVerticalExtentMaxIsFinite,
+    ExVerticalExtentMaximumMandatory, ExVerticalExtentMinIsFinite, ExVerticalExtentMinLeMax,
+    ExVerticalExtentMinimumMandatory, Iso19115AllMandatoryElementsPresent,
+    Iso19115CitationTitleNeverEmpty, Iso19115ConditionalElementsTriggered,
+    Iso19115ContactPartyNameNonNull, Iso19115CountryCodeIso3166, Iso19115DateIso8601Format,
+    Iso19115EnumerationValuesValid, Iso19115LanguageCodeIso6392,
+    Iso19115MultiplicityConstraintsMet, Iso19115ProcessStepDescriptionNeverEmpty,
+    LiLineageAdditionalDocumentationOptional, LiLineageAtLeastOneProvided,
+    LiLineageProcessStepOptional, LiLineageScopeOptional, LiLineageSourceOptional,
+    LiLineageStatementConditional, LiLineageValid, LiProcessStepDateTimeOptional,
     LiProcessStepDescriptionMandatory, LiProcessStepDescriptionNonEmpty,
     LiProcessStepProcessorOptional, LiProcessStepRationaleOptional, LiProcessStepReferenceOptional,
     LiProcessStepScopeOptional, LiProcessStepSourceOptional, LiSourceCitationOptional,
@@ -3577,13 +3804,14 @@ pub use emit_impls::{
     MdFormatDistributorOptional, MdFormatFileDecompressionOptional, MdFormatMediumOptional,
     MdFormatSpecificationCitationMandatory, MdGridSpatialRepAxisDimensionProperties,
     MdGridSpatialRepCellGeometry, MdGridSpatialRepNumberOfDimensions,
-    MdGridSpatialRepTransformationAvailable, MdIdentificationAbstractMandatory,
-    MdIdentificationAbstractNonEmpty, MdIdentificationCitationMandatory,
-    MdIdentificationCreditOptional, MdIdentificationDescriptiveKeywordsOptional,
-    MdIdentificationGraphicOverviewOptional, MdIdentificationPointOfContactOptional,
-    MdIdentificationPurposeOptional, MdIdentificationResourceConstraintsOptional,
-    MdIdentificationResourceFormatOptional, MdIdentificationResourceMaintenanceOptional,
-    MdIdentificationStatusOptional, MdKeywordTypeDataCentre, MdKeywordTypeDiscipline,
+    MdGridSpatialRepNumberOfDimensionsPositive, MdGridSpatialRepTransformationAvailable,
+    MdIdentificationAbstractMandatory, MdIdentificationAbstractNonEmpty,
+    MdIdentificationCitationMandatory, MdIdentificationCreditOptional,
+    MdIdentificationDescriptiveKeywordsOptional, MdIdentificationGraphicOverviewOptional,
+    MdIdentificationPointOfContactOptional, MdIdentificationPurposeOptional,
+    MdIdentificationResourceConstraintsOptional, MdIdentificationResourceFormatOptional,
+    MdIdentificationResourceMaintenanceOptional, MdIdentificationStatusOptional,
+    MdIdentificationValid, MdKeywordTypeDataCentre, MdKeywordTypeDiscipline,
     MdKeywordTypeFeatureType, MdKeywordTypeInstrument, MdKeywordTypePlace, MdKeywordTypePlatform,
     MdKeywordTypeProcess, MdKeywordTypeProduct, MdKeywordTypeProject, MdKeywordTypeService,
     MdKeywordTypeStratum, MdKeywordTypeSubTopicCategory, MdKeywordTypeTaxon, MdKeywordTypeTemporal,
@@ -3606,17 +3834,17 @@ pub use emit_impls::{
     MdMetadataMaintenanceOptional, MdMetadataParentIdentifierOptional,
     MdMetadataReferenceSystemInfoOptional, MdMetadataResourceLineageOptional,
     MdMetadataSpatialRepresentationInfoOptional, MdMetadataStandardNameOptional,
-    MdMetadataStandardVersionOptional, MdProgressCodeAccepted, MdProgressCodeCompleted,
-    MdProgressCodeDeprecated, MdProgressCodeFinal, MdProgressCodeHistoricalArchive,
-    MdProgressCodeNotAccepted, MdProgressCodeObsolete, MdProgressCodeOnGoing,
-    MdProgressCodePending, MdProgressCodePlanned, MdProgressCodeProposed, MdProgressCodeRequired,
-    MdProgressCodeRetired, MdProgressCodeSuperseded, MdProgressCodeTentative,
-    MdProgressCodeUnderDevelopment, MdProgressCodeValid, MdProgressCodeWithdrawn,
-    MdReferenceSystemIdentifierOptional, MdReferenceSystemTypeOptional,
+    MdMetadataStandardVersionOptional, MdMetadataValid, MdProgressCodeAccepted,
+    MdProgressCodeCompleted, MdProgressCodeDeprecated, MdProgressCodeFinal,
+    MdProgressCodeHistoricalArchive, MdProgressCodeNotAccepted, MdProgressCodeObsolete,
+    MdProgressCodeOnGoing, MdProgressCodePending, MdProgressCodePlanned, MdProgressCodeProposed,
+    MdProgressCodeRequired, MdProgressCodeRetired, MdProgressCodeSuperseded,
+    MdProgressCodeTentative, MdProgressCodeUnderDevelopment, MdProgressCodeValid,
+    MdProgressCodeWithdrawn, MdReferenceSystemIdentifierOptional, MdReferenceSystemTypeOptional,
     MdRepresentativeFractionDenominatorMandatory, MdRepresentativeFractionDenominatorPositive,
-    MdResolutionDistanceIsPositive, MdResolutionEquivalentScaleOrDistance,
-    MdResolutionScaleImpliesSmallIsCoarse, MdRestrictionConfidentialCode,
-    MdRestrictionCopyrightCode, MdRestrictionInConfidenceCode,
+    MdResolutionDistanceIsFinite, MdResolutionDistanceIsPositive,
+    MdResolutionEquivalentScaleOrDistance, MdResolutionScaleImpliesSmallIsCoarse,
+    MdRestrictionConfidentialCode, MdRestrictionCopyrightCode, MdRestrictionInConfidenceCode,
     MdRestrictionIntellectualPropertyCode, MdRestrictionLicenceCode,
     MdRestrictionLicenceDistributorCode, MdRestrictionLicenceEndUserCode,
     MdRestrictionLicenceUnrestrictedCode, MdRestrictionOtherRestrictionsCode,
@@ -3639,7 +3867,8 @@ pub use emit_impls::{
     MdTopicCategoryPlanningCadastre, MdTopicCategorySociety, MdTopicCategoryStructure,
     MdTopicCategoryTransportation, MdTopicCategoryUtilitiesCommunication,
     MdTransferOptionsOfflineOptional, MdTransferOptionsOnlineOptional,
-    MdTransferOptionsSizePositive, MdVectorSpatialRepGeometricObjects,
-    MdVectorSpatialRepTopologyLevel, PtLocaleCharacterEncodingMandatory, PtLocaleCountryOptional,
+    MdTransferOptionsSizeIsFinite, MdTransferOptionsSizePositive,
+    MdVectorSpatialRepGeometricObjects, MdVectorSpatialRepTopologyLevel,
+    PtLocaleCharacterEncodingMandatory, PtLocaleCountryOptional,
     PtLocaleLanguageCodeThreeLetterLowercase, PtLocaleLanguageMandatory,
 };
