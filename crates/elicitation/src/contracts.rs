@@ -381,6 +381,61 @@ pub struct Established<P: Prop> {
 /// `Established::<P>::prove(&credential)` where `P: ProvableFrom<C>`.
 pub trait ProvableFrom<C>: Prop {}
 
+/// Declare one or more proof-credential ZST types and wire each to its proposition.
+///
+/// # Syntax
+///
+/// ```text
+/// proof_credential! {
+///     /// Optional doc comment.
+///     VISIBILITY CredentialName => PropositionType;
+///     ...
+/// }
+/// ```
+///
+/// Each entry emits:
+/// 1. A zero-sized struct `CredentialName` with the given visibility and doc comments.
+/// 2. `impl ProvableFrom<CredentialName> for PropositionType {}`
+///
+/// Credentials are typically `pub(crate)` so only the factory method that
+/// performed the runtime check can construct them.  External code cannot call
+/// `Established::prove(&CredentialName)` without access to the type.
+///
+/// # Example
+///
+/// ```rust
+/// use elicitation::contracts::{Established, Prop, ProvableFrom};
+/// use elicitation::proof_credential;
+///
+/// #[derive(elicitation::Prop)]
+/// pub struct ContrastChecked;
+///
+/// proof_credential! {
+///     /// Witness that a colour pair was verified for WCAG contrast.
+///     pub(crate) NormalContrastVerified => ContrastChecked;
+/// }
+///
+/// // Inside the factory (same crate):
+/// let proof: Established<ContrastChecked> =
+///     Established::prove(&NormalContrastVerified);
+/// ```
+#[macro_export]
+macro_rules! proof_credential {
+    (
+        $(
+            $(#[$meta:meta])*
+            $vis:vis $cred:ident => $prop:ty;
+        )*
+    ) => {
+        $(
+            $(#[$meta])*
+            $vis struct $cred;
+
+            impl $crate::contracts::ProvableFrom<$cred> for $prop {}
+        )*
+    };
+}
+
 impl<P: Prop> Established<P> {
     /// Mint a proof token by presenting a valid credential.
     ///

@@ -9,7 +9,6 @@
 pub mod node_roles;
 pub mod ui;
 pub mod wcag;
-pub(crate) mod wcag_proofs;
 
 // Re-export everything so call sites use `elicit_ui::{WcagLevelAAValid, ...}`.
 pub use ui::{IrSourced, NodeRoleProof, RenderComplete, RolePreserved, WcagVerified};
