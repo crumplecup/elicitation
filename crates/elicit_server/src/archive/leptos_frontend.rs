@@ -45,7 +45,7 @@ use axum::{
     routing::{delete, get, post},
 };
 use elicit_leptos::LeptosRenderer;
-use elicit_ui::{UiRenderer, VerifiedTree};
+use elicit_ui::{UiTreeRenderer as _, VerifiedTree};
 use serde::Deserialize;
 use tokio::sync::Mutex;
 use tracing::instrument;
@@ -85,8 +85,8 @@ fn render_leptos_from_ir(
     tree: &VerifiedTree,
     _proof: elicitation::Established<elicit_ui::IrSourced>,
 ) -> Result<String, String> {
-    renderer.render(tree).map_err(|e| e.to_string())?;
-    Ok(renderer.last_html())
+    let (html, _stats, _proof) = renderer.render(tree).map_err(|e| e.to_string())?;
+    Ok(html)
 }
 
 /// Render the full page IR tree.  Used by `serve_page` for the initial page load.

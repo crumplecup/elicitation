@@ -1710,15 +1710,17 @@ impl UiNodeBridge for EguiBackend {
 /// for each node based on its role. Container nodes create nested
 /// layouts; leaf nodes create widgets.
 ///
-/// Returns [`elicit_ui::RenderStats`] for the render pass.
+/// Returns [`elicit_ui::RenderStats`] and the [`NodeId`]s of any
+/// [`Role::Button`] / [`Role::DefaultButton`] nodes clicked this frame.
 #[tracing::instrument(skip(ui, nodes), fields(root = ?root))]
 pub fn render_tree(
     ui: &mut egui::Ui,
     nodes: &HashMap<NodeId, Node>,
     root: NodeId,
-) -> elicit_ui::RenderStats {
+) -> (elicit_ui::RenderStats, Vec<NodeId>) {
     let mut stats = elicit_ui::RenderStats::default();
-    render_node_recursive(ui, nodes, root, &mut stats);
+    let mut clicked_nodes: Vec<NodeId> = Vec::new();
+    render_node_recursive(ui, nodes, root, &mut stats, &mut clicked_nodes);
     tracing::debug!(
         visited = stats.nodes_visited,
         widgets = stats.widgets_rendered,
@@ -1726,7 +1728,7 @@ pub fn render_tree(
         skipped = stats.nodes_skipped,
         "Render pass complete"
     );
-    stats
+    (stats, clicked_nodes)
 }
 
 /// Compute minimum desired size from AccessKit bounds.
@@ -1761,6 +1763,7 @@ fn render_node_recursive(
     nodes: &HashMap<NodeId, Node>,
     node_id: NodeId,
     stats: &mut elicit_ui::RenderStats,
+    clicked_nodes: &mut Vec<NodeId>,
 ) {
     let Some(node) = nodes.get(&node_id) else {
         stats.nodes_skipped += 1;
@@ -1784,12 +1787,15 @@ fn render_node_recursive(
         | Role::Main
         | Role::GenericContainer
         | Role::Document => {
-            render_container(ui, nodes, node, stats);
+            render_container(ui, nodes, node, stats, clicked_nodes);
         }
         Role::Button | Role::DefaultButton => {
             let text = node_label(node);
             let disabled = node.is_disabled();
-            ui.add_enabled(!disabled, egui::Button::new(&text));
+            let resp = ui.add_enabled(!disabled, egui::Button::new(&text));
+            if resp.clicked() {
+                clicked_nodes.push(node_id);
+            }
             stats.widgets_rendered += 1;
         }
         Role::CheckBox | Role::MenuItemCheckBox => {
@@ -1937,7 +1943,7 @@ fn render_node_recursive(
             stats.containers_rendered += 1;
             ui.horizontal(|ui| {
                 for child_id in node.children() {
-                    render_node_recursive(ui, nodes, *child_id, stats);
+                    render_node_recursive(ui, nodes, *child_id, stats, clicked_nodes);
                 }
             });
         }
@@ -1945,7 +1951,7 @@ fn render_node_recursive(
             stats.containers_rendered += 1;
             ui.vertical(|ui| {
                 for child_id in node.children() {
-                    render_node_recursive(ui, nodes, *child_id, stats);
+                    render_node_recursive(ui, nodes, *child_id, stats, clicked_nodes);
                 }
             });
         }
@@ -1955,7 +1961,7 @@ fn render_node_recursive(
                 .striped(true)
                 .show(ui, |ui| {
                     for child_id in node.children() {
-                        render_node_recursive(ui, nodes, *child_id, stats);
+                        render_node_recursive(ui, nodes, *child_id, stats, clicked_nodes);
                     }
                 });
         }
@@ -1963,7 +1969,7 @@ fn render_node_recursive(
             stats.containers_rendered += 1;
             ui.horizontal(|ui| {
                 for child_id in node.children() {
-                    render_node_recursive(ui, nodes, *child_id, stats);
+                    render_node_recursive(ui, nodes, *child_id, stats, clicked_nodes);
                 }
             });
         }
@@ -1979,11 +1985,11 @@ fn render_node_recursive(
         | Role::ListBoxOption
         | Role::MenuItem
         | Role::MenuListOption => {
-            render_container(ui, nodes, node, stats);
+            render_container(ui, nodes, node, stats, clicked_nodes);
         }
         Role::TreeItem => {
             if !node.children().is_empty() {
-                render_container(ui, nodes, node, stats);
+                render_container(ui, nodes, node, stats, clicked_nodes);
             } else {
                 let text = node_label(node);
                 let selected = node.is_selected().unwrap_or(false);
@@ -2000,10 +2006,10 @@ fn render_node_recursive(
             }
         }
         Role::Dialog | Role::AlertDialog => {
-            render_container(ui, nodes, node, stats);
+            render_container(ui, nodes, node, stats, clicked_nodes);
         }
         Role::Menu | Role::MenuBar | Role::MenuListPopup => {
-            render_container(ui, nodes, node, stats);
+            render_container(ui, nodes, node, stats, clicked_nodes);
         }
         Role::Navigation
         | Role::Banner
@@ -2015,10 +2021,10 @@ fn render_node_recursive(
         | Role::SectionFooter
         | Role::Search
         | Role::Article => {
-            render_container(ui, nodes, node, stats);
+            render_container(ui, nodes, node, stats, clicked_nodes);
         }
         Role::ScrollView | Role::ScrollBar => {
-            render_container(ui, nodes, node, stats);
+            render_container(ui, nodes, node, stats, clicked_nodes);
         }
         Role::Splitter => {
             ui.separator();
@@ -2032,7 +2038,7 @@ fn render_node_recursive(
             if node.children().is_empty() {
                 stats.nodes_skipped += 1;
             } else {
-                render_container(ui, nodes, node, stats);
+                render_container(ui, nodes, node, stats, clicked_nodes);
             }
         }
     }
@@ -2043,6 +2049,7 @@ fn render_container(
     nodes: &HashMap<NodeId, Node>,
     node: &Node,
     stats: &mut elicit_ui::RenderStats,
+    clicked_nodes: &mut Vec<NodeId>,
 ) {
     stats.containers_rendered += 1;
     let children = node.children();
@@ -2051,7 +2058,7 @@ fn render_container(
     }
     ui.group(|ui| {
         for child_id in children {
-            render_node_recursive(ui, nodes, *child_id, stats);
+            render_node_recursive(ui, nodes, *child_id, stats, clicked_nodes);
         }
     });
 }

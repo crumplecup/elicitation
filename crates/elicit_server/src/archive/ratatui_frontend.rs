@@ -25,7 +25,7 @@ use crossterm::{
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
 use elicit_ratatui::{RatatuiBackend, render_node};
-use elicit_ui::UiRenderer as _;
+use elicit_ui::UiTreeRenderer as _;
 use futures::StreamExt as _;
 use ratatui::{Terminal, backend::CrosstermBackend};
 use tokio::sync::mpsc;
@@ -442,17 +442,16 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
     let result: ArchiveResult<()> = async {
         loop {
             // IR pipeline: mint verified tree → bridge render → draw frame.
-            let (tree, ir_proof) = app.model.to_verified_tree().map_err(|e| {
+            let (tree, _ir_proof) = app.model.to_verified_tree().map_err(|e| {
                 ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string()))
             })?;
-            app.backend.render_from_ir(&tree, ir_proof).map_err(|e| {
-                ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string()))
-            })?;
+            let (tui_node, _stats, _render_proof) =
+                app.backend.render(&tree).map_err(|e| {
+                    ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string()))
+                })?;
             terminal
                 .draw(|frame| {
-                    if let Some(tui_node) = app.backend.last_tui_tree() {
-                        render_node(frame, frame.area(), &tui_node);
-                    }
+                    render_node(frame, frame.area(), &tui_node);
                 })
                 .map_err(|e: std::io::Error| {
                     ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string()))
