@@ -4,6 +4,7 @@ mod authority;
 mod axis;
 mod crs;
 mod iso_19111;
+mod iso_19115;
 mod ogc_sfs;
 
 pub use authority::{AuthorityCode, CrsInfo, DatumEnsembleInfo, EllipsoidParams, EpsgCode};
@@ -12,6 +13,12 @@ pub use crs::{CoordinateMetadata, CrsType, DecimalYear, HelmertConvention};
 pub use iso_19111::{
     CoordinateAxisInfo, CoordinateSystemParams, DomainExtent, GeodeticFrameParams,
     GeographicBoundingBox, PrimeMeridianParams,
+};
+pub use iso_19115::{
+    CitationDescriptor, DataQualityDescriptor, DataQualityReport, ExtentDescriptor,
+    GeographicBboxDescriptor, IdentificationDescriptor, Iso19115Date, LineageDescriptor,
+    LineageProcessStep, MetadataDescriptor, ResponsibilityDescriptor, TemporalExtentDescriptor,
+    VerticalExtentDescriptor,
 };
 pub use ogc_sfs::{
     GeometryCollectionDescriptor, LineStringDescriptor, LinearRingDescriptor,

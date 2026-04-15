@@ -2,12 +2,17 @@
 
 mod crs;
 mod iso_19111;
+mod iso_19115;
 mod set_ops;
 mod sfs;
 mod topology;
 
 pub use crs::{GisCrsBuilder, GisCrsLookup, GisCrsTransformer};
 pub use iso_19111::{Iso19111Identified, Iso19111Scoped};
+pub use iso_19115::{
+    Iso19115CitationFactory, Iso19115ContactMeta, Iso19115DateMeta, Iso19115ExtentFactory,
+    Iso19115LineageFactory, Iso19115QualityMeta, Iso19115RecordFactory,
+};
 pub use set_ops::SfsSetOps;
 pub use sfs::{SfsGeometryFactory, SfsGeometryIo, SfsGeometryMeta};
 pub use topology::SfsTopology;
@@ -24,6 +29,13 @@ pub trait GisBackend:
     + GisCrsTransformer
     + Iso19111Identified
     + Iso19111Scoped
+    + Iso19115CitationFactory
+    + Iso19115ContactMeta
+    + Iso19115DateMeta
+    + Iso19115ExtentFactory
+    + Iso19115LineageFactory
+    + Iso19115QualityMeta
+    + Iso19115RecordFactory
     + SfsGeometryFactory
     + SfsGeometryMeta
     + SfsGeometryIo
@@ -40,6 +52,13 @@ impl<T> GisBackend for T where
         + GisCrsTransformer
         + Iso19111Identified
         + Iso19111Scoped
+        + Iso19115CitationFactory
+        + Iso19115ContactMeta
+        + Iso19115DateMeta
+        + Iso19115ExtentFactory
+        + Iso19115LineageFactory
+        + Iso19115QualityMeta
+        + Iso19115RecordFactory
         + SfsGeometryFactory
         + SfsGeometryMeta
         + SfsGeometryIo
