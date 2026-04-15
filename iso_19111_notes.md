@@ -279,6 +279,13 @@ structural_prop!(EllipsoidNameNonEmpty, "EllipsoidNameNonEmpty");
 pub struct EllipsoidSemiMajorAxisPositive;
 structural_prop!(EllipsoidSemiMajorAxisPositive, "EllipsoidSemiMajorAxisPositive");
 
+/// CD_Ellipsoid.semiMajorAxis is a finite real number (not NaN or ±Infinity); IEEE 754
+/// finiteness precondition required before positivity or axis-ratio proofs.
+///
+/// Source: ISO 19111:2019 §7.5.2 — Semi-major axis finite
+pub struct EllipsoidSemiMajorAxisFinite;
+structural_prop!(EllipsoidSemiMajorAxisFinite, "EllipsoidSemiMajorAxisFinite");
+
 /// CD_Ellipsoid.semiMajorAxis unit is always metres.
 ///
 /// Source: ISO 19111:2019 §7.5.2 — Semi-major axis
@@ -326,6 +333,14 @@ structural_prop!(EllipsoidIsSphereConsistentWithParameters, "EllipsoidIsSphereCo
 /// Source: ISO 19111:2019 §7.5.3 — Semi-minor axis
 pub struct EllipsoidSemiMinorAxisInMetres;
 structural_prop!(EllipsoidSemiMinorAxisInMetres, "EllipsoidSemiMinorAxisInMetres");
+
+/// CD_Ellipsoid.semiMinorAxis is a finite real number (not NaN or ±Infinity); required as
+/// a precondition before `EllipsoidSemiMinorAxisLessThanSemiMajor` can be asserted in proofs
+/// — comparisons involving NaN are always false under IEEE 754.
+///
+/// Source: ISO 19111:2019 §7.5.3 — Semi-minor axis finite
+pub struct EllipsoidSemiMinorAxisFinite;
+structural_prop!(EllipsoidSemiMinorAxisFinite, "EllipsoidSemiMinorAxisFinite");
 ```
 
 ---
@@ -1634,6 +1649,14 @@ structural_prop!(DynamicReferenceFrameVelocityModelReferenced, "DynamicReference
 pub struct CrsIdentityAuthorityPlusCodeUnique;
 structural_prop!(CrsIdentityAuthorityPlusCodeUnique, "CrsIdentityAuthorityPlusCodeUnique");
 
+/// The reference graph of CRS components (compound CRS → component CRS, derived CRS →
+/// base CRS) is acyclic; a CRS must not transitively reference itself as a component or
+/// base. Cycle-freedom is a precondition for all terminating graph traversal proofs.
+///
+/// Source: ISO 19111:2019 §13 / §14 — well-formedness of CRS component graphs
+pub struct CrsComponentGraphAcyclic;
+structural_prop!(CrsComponentGraphAcyclic, "CrsComponentGraphAcyclic");
+
 /// A valid compound CRS requires orthogonal component CRS axes (no axis represented twice).
 ///
 /// Source: ISO 19111:2019 §12.2 — Compound CRS component orthogonality
@@ -1860,6 +1883,13 @@ structural_prop!(LongitudeNegative180Excluded, "LongitudeNegative180Excluded");
 /// Source: ISO 19111:2019 §9 — Map projection scale factor
 pub struct MapProjectionScaleFactorPositive;
 structural_prop!(MapProjectionScaleFactorPositive, "MapProjectionScaleFactorPositive");
+
+/// Map projection scale factor is a finite real number (not NaN or ±Infinity);
+/// IEEE 754 finiteness precondition required before positivity or ratio proofs.
+///
+/// Source: ISO 19111:2019 §9 — Map projection scale factor finite
+pub struct MapProjectionScaleFactorFinite;
+structural_prop!(MapProjectionScaleFactorFinite, "MapProjectionScaleFactorFinite");
 
 /// False easting and false northing in a map projection may be any finite real number.
 ///
@@ -2342,6 +2372,13 @@ structural_prop!(DatumEnsembleMemberNoNullEntries, "DatumEnsembleMemberNoNullEnt
 pub struct DatumEnsembleAccuracyPositive;
 structural_prop!(DatumEnsembleAccuracyPositive, "DatumEnsembleAccuracyPositive");
 
+/// CD_DatumEnsemble.ensembleAccuracy is a finite real number (not NaN or ±Infinity);
+/// finiteness precondition needed before range comparisons in formal proofs.
+///
+/// Source: ISO 19111:2019 §6.5 — CD_DatumEnsemble.ensembleAccuracy finite
+pub struct DatumEnsembleAccuracyFinite;
+structural_prop!(DatumEnsembleAccuracyFinite, "DatumEnsembleAccuracyFinite");
+
 /// A CRS whose datum is a CD_DatumEnsemble cannot be used for sub-metre
 /// positioning without selecting a specific member datum and providing a
 /// coordinate epoch.
@@ -2636,6 +2673,14 @@ structural_prop!(UomNameNonEmpty, "UomNameNonEmpty");
 /// Source: ISO 19111:2019 §6.6 — UoM.conversionFactor
 pub struct UomConversionFactorPositive;
 structural_prop!(UomConversionFactorPositive, "UomConversionFactorPositive");
+
+/// UoM.conversionFactor is a finite real number (not NaN or ±Infinity); finiteness
+/// precondition for any proof that uses the factor in arithmetic (e.g., unit conversion
+/// chains must terminate without overflow or undefined result).
+///
+/// Source: ISO 19111:2019 §6.6 — UoM.conversionFactor finite
+pub struct UomConversionFactorFinite;
+structural_prop!(UomConversionFactorFinite, "UomConversionFactorFinite");
 
 /// Angular units convert to radians; 1 degree = π/180 ≈ 0.017453292519943278.
 ///

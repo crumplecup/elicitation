@@ -253,6 +253,7 @@ pub use contracts::{
     CrossesDimIntersectionLessThanMax,
     CrossesDimensionConstraint,
     CrossesIsNotSymmetric,
+    CrsComponentGraphAcyclic,
     // §6
     CrsConsistsOfCsAndDatum,
     CrsDomainOfValidityExtentTypes,
@@ -272,6 +273,7 @@ pub use contracts::{
     CrsValid,
     CsAxisCountMatchesTupleDimensionality,
     CsTypeMemberOfDefinedTypes,
+    DatumEnsembleAccuracyFinite,
     DatumEnsembleAccuracyPositive,
     // §22
     DatumEnsembleGroupsRelatedDatums,
@@ -343,8 +345,10 @@ pub use contracts::{
     // §7.3
     EllipsoidNameNonEmpty,
     EllipsoidSecondParameterEitherInverseFlatteningOrSemiMinor,
+    EllipsoidSemiMajorAxisFinite,
     EllipsoidSemiMajorAxisInMetres,
     EllipsoidSemiMajorAxisPositive,
+    EllipsoidSemiMinorAxisFinite,
     EllipsoidSemiMinorAxisInMetres,
     EllipsoidSemiMinorAxisLessThanSemiMajor,
     EllipsoidValid,
@@ -540,6 +544,7 @@ pub use contracts::{
     LongitudeNegative180Excluded,
     LongitudeRangeNegative180To180,
     MapProjectionFalseOriginFiniteReal,
+    MapProjectionScaleFactorFinite,
     MapProjectionScaleFactorPositive,
     MdAssociatedResourceAssociationTypeMandatory,
     MdAssociatedResourceInitiativeTypeOptional,
@@ -912,6 +917,7 @@ pub use contracts::{
     UnionIsCommutative,
     UnionSupersetOfBothInputs,
     UomAngularConvertToRadians,
+    UomConversionFactorFinite,
     UomConversionFactorPositive,
     UomFeetAmbiguityInternationalVsSurvey,
     UomLinearConvertToMetres,

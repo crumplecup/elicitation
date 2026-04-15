@@ -160,6 +160,13 @@ mod emit_impls {
     /// Source: ISO 19111:2019 §8.3 — semiMajorAxis > 0.
     pub struct EllipsoidSemiMajorAxisPositive;
 
+    /// Ellipsoid semi-major axis is a finite real number (not NaN or ±Infinity);
+    /// paired with `EllipsoidSemiMajorAxisPositive` to establish a full numeric precondition
+    /// for verifiers (Kani, Creusot) that reason over IEEE 754 floating-point.
+    ///
+    /// Source: ISO 19111:2019 §8.3 — semiMajorAxis finite.
+    pub struct EllipsoidSemiMajorAxisFinite;
+
     /// Ellipsoid semi-major axis is measured in metres.
     ///
     /// Source: ISO 19111:2019 §8.3 — uom.
@@ -199,6 +206,13 @@ mod emit_impls {
     ///
     /// Source: ISO 19111:2019 §8.3 — uom.
     pub struct EllipsoidSemiMinorAxisInMetres;
+
+    /// Semi-minor axis is a finite real number (not NaN or ±Infinity); establishes
+    /// the IEEE 754 precondition required before ordering comparisons such as
+    /// `EllipsoidSemiMinorAxisLessThanSemiMajor` can be asserted in proofs.
+    ///
+    /// Source: ISO 19111:2019 §8.3 — semiMinorAxis finite.
+    pub struct EllipsoidSemiMinorAxisFinite;
 
     // ── §7.4 Prime Meridian ───────────────────────────────────────────────
 
@@ -823,6 +837,14 @@ mod emit_impls {
     /// Source: ISO 19111:2019 §6.2 — identifier uniqueness.
     pub struct CrsIdentityAuthorityPlusCodeUnique;
 
+    /// The reference graph of CRS components (compound CRS → component CRS,
+    /// derived CRS → base CRS) is acyclic; a CRS must not transitively reference
+    /// itself as a component or base.  Cycle-freedom is a precondition for
+    /// terminating traversal algorithms used in formal proofs.
+    ///
+    /// Source: ISO 19111:2019 §13 / §14 — well-formedness of CRS graphs.
+    pub struct CrsComponentGraphAcyclic;
+
     /// Component CRSes in a compound CRS are orthogonal (non-overlapping axes).
     ///
     /// Source: ISO 19111:2019 §13.2 — orthogonality.
@@ -983,6 +1005,12 @@ mod emit_impls {
     /// Source: ISO 19111:2019 §16.3 — scaleFactor > 0.
     pub struct MapProjectionScaleFactorPositive;
 
+    /// Map projection scale factor is a finite real number (not NaN or ±Infinity);
+    /// IEEE 754 finiteness precondition required before positivity or ratio proofs.
+    ///
+    /// Source: ISO 19111:2019 §16.3 — scaleFactor finite.
+    pub struct MapProjectionScaleFactorFinite;
+
     /// Map projection false origin values are finite real numbers.
     ///
     /// Source: ISO 19111:2019 §16.3.
@@ -1066,6 +1094,12 @@ mod emit_impls {
     ///
     /// Source: ISO 19111:2019 §6.5 — ensembleAccuracy.
     pub struct DatumEnsembleAccuracyPositive;
+
+    /// Datum ensemble accuracy is a finite real number (not NaN or ±Infinity);
+    /// IEEE 754 finiteness precondition needed before range comparisons in proofs.
+    ///
+    /// Source: ISO 19111:2019 §6.5 — ensembleAccuracy finite.
+    pub struct DatumEnsembleAccuracyFinite;
 
     /// Sub-metre accuracy requires selecting a specific ensemble member.
     ///
@@ -1254,6 +1288,12 @@ mod emit_impls {
     /// Source: ISO 19111:2019 §8.5 — conversionFactor.
     pub struct UomConversionFactorPositive;
 
+    /// Unit of measure conversion factor is a finite real number (not NaN or ±Infinity);
+    /// finiteness precondition for any proof that uses the factor in arithmetic.
+    ///
+    /// Source: ISO 19111:2019 §8.5 — conversionFactor finite.
+    pub struct UomConversionFactorFinite;
+
     /// Angular unit conversion factor converts to radians.
     ///
     /// Source: ISO 19111:2019 §8.5 — angular UoM.
@@ -1407,6 +1447,7 @@ mod emit_impls {
         EllipsoidSemiMajorAxisPositive,
         "EllipsoidSemiMajorAxisPositive"
     );
+    structural_prop!(EllipsoidSemiMajorAxisFinite, "EllipsoidSemiMajorAxisFinite");
     structural_prop!(
         EllipsoidSemiMajorAxisInMetres,
         "EllipsoidSemiMajorAxisInMetres"
@@ -1439,6 +1480,7 @@ mod emit_impls {
         EllipsoidSemiMinorAxisInMetres,
         "EllipsoidSemiMinorAxisInMetres"
     );
+    structural_prop!(EllipsoidSemiMinorAxisFinite, "EllipsoidSemiMinorAxisFinite");
     // §7.4
     structural_prop!(PrimeMeridianNameNonEmpty, "PrimeMeridianNameNonEmpty");
     structural_prop!(
@@ -1816,6 +1858,7 @@ mod emit_impls {
         CrsIdentityAuthorityPlusCodeUnique,
         "CrsIdentityAuthorityPlusCodeUnique"
     );
+    structural_prop!(CrsComponentGraphAcyclic, "CrsComponentGraphAcyclic");
     structural_prop!(
         CompoundCrsComponentsOrthogonal,
         "CompoundCrsComponentsOrthogonal"
@@ -1907,6 +1950,10 @@ mod emit_impls {
         "MapProjectionScaleFactorPositive"
     );
     structural_prop!(
+        MapProjectionScaleFactorFinite,
+        "MapProjectionScaleFactorFinite"
+    );
+    structural_prop!(
         MapProjectionFalseOriginFiniteReal,
         "MapProjectionFalseOriginFiniteReal"
     );
@@ -1963,6 +2010,7 @@ mod emit_impls {
         DatumEnsembleAccuracyPositive,
         "DatumEnsembleAccuracyPositive"
     );
+    structural_prop!(DatumEnsembleAccuracyFinite, "DatumEnsembleAccuracyFinite");
     structural_prop!(
         DatumEnsembleSubMetreRequiresMemberSelection,
         "DatumEnsembleSubMetreRequiresMemberSelection"
@@ -2085,6 +2133,7 @@ mod emit_impls {
     // §28
     structural_prop!(UomNameNonEmpty, "UomNameNonEmpty");
     structural_prop!(UomConversionFactorPositive, "UomConversionFactorPositive");
+    structural_prop!(UomConversionFactorFinite, "UomConversionFactorFinite");
     structural_prop!(UomAngularConvertToRadians, "UomAngularConvertToRadians");
     structural_prop!(UomLinearConvertToMetres, "UomLinearConvertToMetres");
     structural_prop!(UomTimeConvertToSeconds, "UomTimeConvertToSeconds");
@@ -2174,6 +2223,7 @@ pub use emit_impls::{
     CoordinateTupleDimensionMatchesAxes,
     CoordinateTupleElementCountEqualsAxisCount,
     CoordinatesTransformed,
+    CrsComponentGraphAcyclic,
     // §6
     CrsConsistsOfCsAndDatum,
     CrsDomainOfValidityExtentTypes,
@@ -2193,6 +2243,7 @@ pub use emit_impls::{
     CrsValid,
     CsAxisCountMatchesTupleDimensionality,
     CsTypeMemberOfDefinedTypes,
+    DatumEnsembleAccuracyFinite,
     DatumEnsembleAccuracyPositive,
     // §22
     DatumEnsembleGroupsRelatedDatums,
@@ -2222,8 +2273,10 @@ pub use emit_impls::{
     // §7.3
     EllipsoidNameNonEmpty,
     EllipsoidSecondParameterEitherInverseFlatteningOrSemiMinor,
+    EllipsoidSemiMajorAxisFinite,
     EllipsoidSemiMajorAxisInMetres,
     EllipsoidSemiMajorAxisPositive,
+    EllipsoidSemiMinorAxisFinite,
     EllipsoidSemiMinorAxisInMetres,
     EllipsoidSemiMinorAxisLessThanSemiMajor,
     EllipsoidValid,
@@ -2292,6 +2345,7 @@ pub use emit_impls::{
     LongitudeNegative180Excluded,
     LongitudeRangeNegative180To180,
     MapProjectionFalseOriginFiniteReal,
+    MapProjectionScaleFactorFinite,
     MapProjectionScaleFactorPositive,
     MolodenskyBadenkasTenParameter,
     Nad27EnsembleEpsg6267,
@@ -2361,6 +2415,7 @@ pub use emit_impls::{
     TransformationInvolvesDatumChange,
     TransformationNad27ToWgs84UsesHelmert,
     UomAngularConvertToRadians,
+    UomConversionFactorFinite,
     UomConversionFactorPositive,
     UomFeetAmbiguityInternationalVsSurvey,
     UomLinearConvertToMetres,

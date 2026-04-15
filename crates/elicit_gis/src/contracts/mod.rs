@@ -66,6 +66,7 @@ pub use iso_19111::{
     CoordinateTupleDimensionMatchesAxes,
     CoordinateTupleElementCountEqualsAxisCount,
     CoordinatesTransformed,
+    CrsComponentGraphAcyclic,
     // §6 CRS general
     CrsConsistsOfCsAndDatum,
     CrsDomainOfValidityExtentTypes,
@@ -85,6 +86,7 @@ pub use iso_19111::{
     CrsValid,
     CsAxisCountMatchesTupleDimensionality,
     CsTypeMemberOfDefinedTypes,
+    DatumEnsembleAccuracyFinite,
     DatumEnsembleAccuracyPositive,
     // §22 DatumEnsemble
     DatumEnsembleGroupsRelatedDatums,
@@ -114,8 +116,10 @@ pub use iso_19111::{
     // §7.3 Ellipsoid
     EllipsoidNameNonEmpty,
     EllipsoidSecondParameterEitherInverseFlatteningOrSemiMinor,
+    EllipsoidSemiMajorAxisFinite,
     EllipsoidSemiMajorAxisInMetres,
     EllipsoidSemiMajorAxisPositive,
+    EllipsoidSemiMinorAxisFinite,
     EllipsoidSemiMinorAxisInMetres,
     EllipsoidSemiMinorAxisLessThanSemiMajor,
     EllipsoidValid,
@@ -184,6 +188,7 @@ pub use iso_19111::{
     LongitudeNegative180Excluded,
     LongitudeRangeNegative180To180,
     MapProjectionFalseOriginFiniteReal,
+    MapProjectionScaleFactorFinite,
     MapProjectionScaleFactorPositive,
     MolodenskyBadenkasTenParameter,
     Nad27EnsembleEpsg6267,
@@ -253,6 +258,7 @@ pub use iso_19111::{
     TransformationInvolvesDatumChange,
     TransformationNad27ToWgs84UsesHelmert,
     UomAngularConvertToRadians,
+    UomConversionFactorFinite,
     UomConversionFactorPositive,
     UomFeetAmbiguityInternationalVsSurvey,
     UomLinearConvertToMetres,
