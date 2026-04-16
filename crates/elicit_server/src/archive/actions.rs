@@ -146,6 +146,14 @@ pub enum ArchiveAction {
     OpenSqlEditor,
     /// Open or close the saved-query browser.
     OpenSavedBrowser,
+    /// Open or close the live monitor panel.
+    OpenMonitor,
+    /// Open or close the admin panel (roles, backups, settings).
+    OpenAdmin,
+    /// Cycle forward to the next admin panel tab.
+    AdminTabNext,
+    /// Cycle backward to the previous admin panel tab.
+    AdminTabPrev,
     /// Toggle the export format picker (effective only in DataGrid mode).
     ToggleExportPicker,
     /// Request DDL source for the selected table.
@@ -304,6 +312,10 @@ impl ArchiveKeyMap {
             KeyMapEntry::nav(p(K::Char('e')), A::RequestExplain, "e", "Explain", true),
             KeyMapEntry::nav(p(K::Char('s')), A::OpenSqlEditor, "s", "SQL", true),
             KeyMapEntry::nav(p(K::F(2)), A::OpenSavedBrowser, "F2", "Saved", true),
+            KeyMapEntry::nav(p(K::Char('m')), A::OpenMonitor, "m", "Monitor", true),
+            KeyMapEntry::nav(p(K::Char('a')), A::OpenAdmin, "a", "Admin", true),
+            KeyMapEntry::nav(p(K::Char(']')), A::AdminTabNext, "]", "Next tab", true),
+            KeyMapEntry::nav(p(K::Char('[')), A::AdminTabPrev, "[", "Prev tab", true),
             KeyMapEntry::nav(p(K::Char('x')), A::ToggleExportPicker, "x", "Export", true),
             KeyMapEntry::nav(c(K::Tab), A::ConnNext, "Ctrl+Tab", "Next conn.", true),
             KeyMapEntry::nav(cs(K::Tab), A::ConnPrev, "Ctrl+⇧Tab", "Prev conn.", true),

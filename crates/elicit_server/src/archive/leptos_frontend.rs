@@ -1041,6 +1041,12 @@ fn dispatch_action_on_model(
             // Monitor panel toggle — actual fetch is handled server-side via /api/monitor
             let _ = model.toggle_monitor_panel();
         }
+        A::OpenAdmin => {
+            // Admin panel toggle — actual fetch is handled server-side via /api/admin
+            let _ = model.toggle_admin_panel();
+        }
+        A::AdminTabNext => model.admin_tab_next(),
+        A::AdminTabPrev => model.admin_tab_prev(),
         A::ToggleExportPicker => {
             if model.panel.is_data_grid() {
                 model.toggle_export_picker();

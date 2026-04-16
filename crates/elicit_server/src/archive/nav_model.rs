@@ -23,8 +23,9 @@ use std::collections::HashMap;
 use elicit_accesskit::KeyBinding;
 
 use crate::archive::{
-    ColumnStats, ConnectionProfile, ExplainNode, ExportFormat, QueryHistoryEntry, QueryResult,
-    RowEditState, SavedQuery, StagedEdit, TableInspection,
+    AdminSnapshot, AdminTab, ColumnStats, ConnectionProfile, ExplainNode, ExportFormat,
+    MonitorSnapshot, QueryHistoryEntry, QueryResult, RowEditState, SavedQuery, StagedEdit,
+    TableInspection,
     actions::{ArchiveKeyMap, KeyMapMode},
     nav_tree::{NavTree, SchemaEntry},
 };
@@ -150,6 +151,20 @@ pub enum PanelMode {
     },
     /// Key bindings / help panel (web frontend).
     HelpPanel,
+    /// Live database monitoring panel — sessions, roles, cache hit, backups.
+    MonitorPanel {
+        /// Cached monitoring snapshot; empty until first fetch completes.
+        snapshot: MonitorSnapshot,
+        /// Whether a fetch is currently in progress.
+        loading: bool,
+    },
+    /// Database administration panel — roles, backups/WAL, server settings.
+    AdminPanel {
+        /// Cached administration snapshot; empty until first fetch completes.
+        snapshot: AdminSnapshot,
+        /// Whether a fetch is currently in progress.
+        loading: bool,
+    },
 }
 
 impl Default for PanelMode {
@@ -231,6 +246,10 @@ pub enum FetchRequest {
     ///
     /// [`Refresh`]: FetchRequest::Refresh
     UpdateUrl(String),
+    /// Fetch a live monitoring snapshot (sessions, roles, cache hit, backups).
+    FetchMonitor,
+    /// Fetch an administration snapshot (roles, backups/WAL, settings, extensions).
+    FetchAdmin,
 }
 
 /// Response sent from the background fetch task back to the event loop.
@@ -300,6 +319,10 @@ pub enum PanelEvent {
         /// Number of rows exported.
         row_count: u64,
     },
+    /// Live monitoring snapshot ready.
+    MonitorReady(MonitorSnapshot),
+    /// Administration snapshot ready.
+    AdminReady(AdminSnapshot),
 }
 
 // ── ArchiveNavModel ───────────────────────────────────────────────────────────
@@ -985,6 +1008,89 @@ impl ArchiveNavModel {
         self.saved_browser_active = !self.saved_browser_active;
         if self.saved_browser_active {
             self.saved_browser_idx = 0;
+        }
+    }
+
+    // ── Phase 5 — Monitor panel ───────────────────────────────────────────────
+
+    /// Open the live monitor panel (or close it if already open).
+    ///
+    /// Returns `Some(FetchRequest::FetchMonitor)` when opening so the caller
+    /// can dispatch a data fetch; returns `None` when closing.
+    pub fn toggle_monitor_panel(&mut self) -> Option<FetchRequest> {
+        if matches!(self.panel, PanelMode::MonitorPanel { .. }) {
+            self.panel = PanelMode::ColumnDetail;
+            return None;
+        }
+        self.panel = PanelMode::MonitorPanel {
+            snapshot: MonitorSnapshot::default(),
+            loading: true,
+        };
+        Some(FetchRequest::FetchMonitor)
+    }
+
+    /// Apply a completed monitoring snapshot to the monitor panel.
+    ///
+    /// No-ops if the panel is no longer in `MonitorPanel` mode (e.g. the user
+    /// navigated away before the fetch completed).
+    pub fn apply_monitor_snapshot(&mut self, snapshot: MonitorSnapshot) {
+        if let PanelMode::MonitorPanel {
+            snapshot: s,
+            loading,
+        } = &mut self.panel
+        {
+            *s = snapshot;
+            *loading = false;
+        }
+    }
+
+    // ── Phase 5.2 — Admin panel ───────────────────────────────────────────────
+
+    /// Open the admin panel (or close it if already open).
+    ///
+    /// Returns `Some(FetchRequest::FetchAdmin)` when opening so the caller can
+    /// dispatch a data fetch; returns `None` when closing.
+    pub fn toggle_admin_panel(&mut self) -> Option<FetchRequest> {
+        if matches!(self.panel, PanelMode::AdminPanel { .. }) {
+            self.panel = PanelMode::ColumnDetail;
+            return None;
+        }
+        self.panel = PanelMode::AdminPanel {
+            snapshot: AdminSnapshot::default(),
+            loading: true,
+        };
+        Some(FetchRequest::FetchAdmin)
+    }
+
+    /// Apply a completed administration snapshot to the admin panel.
+    ///
+    /// No-ops if the panel is no longer in `AdminPanel` mode.
+    pub fn apply_admin_snapshot(&mut self, snapshot: AdminSnapshot) {
+        if let PanelMode::AdminPanel {
+            snapshot: s,
+            loading,
+        } = &mut self.panel
+        {
+            *s = snapshot;
+            *loading = false;
+        }
+    }
+
+    /// Cycle to the next admin panel tab (`]` key).
+    ///
+    /// No-ops when not in `AdminPanel` mode.
+    pub fn admin_tab_next(&mut self) {
+        if let PanelMode::AdminPanel { snapshot, .. } = &mut self.panel {
+            snapshot.active_tab = snapshot.active_tab.next();
+        }
+    }
+
+    /// Cycle to the previous admin panel tab (`[` key).
+    ///
+    /// No-ops when not in `AdminPanel` mode.
+    pub fn admin_tab_prev(&mut self) {
+        if let PanelMode::AdminPanel { snapshot, .. } = &mut self.panel {
+            snapshot.active_tab = snapshot.active_tab.prev();
         }
     }
 
@@ -2121,6 +2227,189 @@ impl ArchiveNavModel {
                 list.set_children(list_items);
                 nodes.insert(list_id, list);
                 children.push(list_id);
+            }
+            PanelMode::MonitorPanel { snapshot, loading } => {
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label(if *loading {
+                    "Monitor — loading…".to_string()
+                } else {
+                    format!(
+                        "Monitor — {} sessions, {} roles, cache hit {}",
+                        snapshot.sessions.len(),
+                        snapshot.roles.len(),
+                        snapshot
+                            .cache_hit
+                            .map(|r| format!("{:.1}%", r * 100.0))
+                            .unwrap_or_else(|| "n/a".to_string()),
+                    )
+                });
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                // Sessions list
+                let list_id = alloc();
+                let mut list_items: Vec<AkNodeId> = Vec::new();
+                for s in &snapshot.sessions {
+                    let item_id = alloc();
+                    let mut item = AkNode::new(AkRole::ListItem);
+                    item.set_label(format!("pid={} {} [{}]", s.pid, s.app_name, s.state,));
+                    nodes.insert(item_id, item);
+                    list_items.push(item_id);
+                }
+                let mut list = AkNode::new(AkRole::List);
+                list.set_label("sessions".to_string());
+                list.set_children(list_items);
+                nodes.insert(list_id, list);
+                children.push(list_id);
+
+                // Roles list
+                let roles_id = alloc();
+                let mut role_items: Vec<AkNodeId> = Vec::new();
+                for r in &snapshot.roles {
+                    let item_id = alloc();
+                    let mut item = AkNode::new(AkRole::ListItem);
+                    item.set_label(format!(
+                        "{}{}{} ",
+                        r.name,
+                        if r.superuser { " [superuser]" } else { "" },
+                        if r.can_login { " [login]" } else { "" },
+                    ));
+                    nodes.insert(item_id, item);
+                    role_items.push(item_id);
+                }
+                let mut roles_list = AkNode::new(AkRole::List);
+                roles_list.set_label("roles".to_string());
+                roles_list.set_children(role_items);
+                nodes.insert(roles_id, roles_list);
+                children.push(roles_id);
+            }
+            PanelMode::AdminPanel { snapshot, loading } => {
+                use crate::archive::AdminTab;
+
+                // Heading: tab bar
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label(if *loading {
+                    "Admin — loading…".to_string()
+                } else {
+                    format!(
+                        "Admin [{}] — {} | {} | {}{}",
+                        snapshot.active_tab.label(),
+                        "Roles",
+                        "Backups",
+                        "Settings",
+                        if snapshot.server_version.is_empty() {
+                            String::new()
+                        } else {
+                            format!(" — {}", snapshot.server_version)
+                        }
+                    )
+                });
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                match snapshot.active_tab {
+                    AdminTab::Roles => {
+                        let list_id = alloc();
+                        let mut items: Vec<AkNodeId> = Vec::new();
+                        for r in &snapshot.roles {
+                            let item_id = alloc();
+                            let mut item = AkNode::new(AkRole::ListItem);
+                            let attrs: Vec<&str> = [
+                                r.superuser.then_some("superuser"),
+                                r.can_login.then_some("login"),
+                                r.can_create_db.then_some("createdb"),
+                                r.can_create_role.then_some("createrole"),
+                            ]
+                            .into_iter()
+                            .flatten()
+                            .collect();
+                            item.set_label(if attrs.is_empty() {
+                                r.name.clone()
+                            } else {
+                                format!("{} [{}]", r.name, attrs.join(", "))
+                            });
+                            nodes.insert(item_id, item);
+                            items.push(item_id);
+                        }
+                        let mut list = AkNode::new(AkRole::List);
+                        list.set_label("Roles".to_string());
+                        list.set_children(items);
+                        nodes.insert(list_id, list);
+                        children.push(list_id);
+                    }
+                    AdminTab::Backups => {
+                        let backup_id = alloc();
+                        let mut items: Vec<AkNodeId> = Vec::new();
+                        // WAL status item
+                        let wal_id = alloc();
+                        let mut wal_item = AkNode::new(AkRole::ListItem);
+                        wal_item.set_label(format!(
+                            "WAL: {}",
+                            if snapshot.wal_ready {
+                                "ready"
+                            } else {
+                                "unavailable"
+                            }
+                        ));
+                        nodes.insert(wal_id, wal_item);
+                        items.push(wal_id);
+                        // Backup labels
+                        for label in &snapshot.backups {
+                            let item_id = alloc();
+                            let mut item = AkNode::new(AkRole::ListItem);
+                            item.set_label(label.clone());
+                            nodes.insert(item_id, item);
+                            items.push(item_id);
+                        }
+                        if snapshot.backups.is_empty() {
+                            let item_id = alloc();
+                            let mut item = AkNode::new(AkRole::ListItem);
+                            item.set_label("No backups found".to_string());
+                            nodes.insert(item_id, item);
+                            items.push(item_id);
+                        }
+                        let mut list = AkNode::new(AkRole::List);
+                        list.set_label("Backups".to_string());
+                        list.set_children(items);
+                        nodes.insert(backup_id, list);
+                        children.push(backup_id);
+                    }
+                    AdminTab::Settings => {
+                        // Extensions sub-list
+                        let ext_id = alloc();
+                        let mut ext_items: Vec<AkNodeId> = Vec::new();
+                        for ext in &snapshot.extensions {
+                            let item_id = alloc();
+                            let mut item = AkNode::new(AkRole::ListItem);
+                            item.set_label(ext.clone());
+                            nodes.insert(item_id, item);
+                            ext_items.push(item_id);
+                        }
+                        let mut ext_list = AkNode::new(AkRole::List);
+                        ext_list.set_label("Extensions".to_string());
+                        ext_list.set_children(ext_items);
+                        nodes.insert(ext_id, ext_list);
+                        children.push(ext_id);
+
+                        // GUC settings sub-list (top 20)
+                        let settings_id = alloc();
+                        let mut setting_items: Vec<AkNodeId> = Vec::new();
+                        for (name, val) in snapshot.settings.iter().take(20) {
+                            let item_id = alloc();
+                            let mut item = AkNode::new(AkRole::ListItem);
+                            item.set_label(format!("{} = {}", name, val));
+                            nodes.insert(item_id, item);
+                            setting_items.push(item_id);
+                        }
+                        let mut settings_list = AkNode::new(AkRole::List);
+                        settings_list.set_label("GUC Settings".to_string());
+                        settings_list.set_children(setting_items);
+                        nodes.insert(settings_id, settings_list);
+                        children.push(settings_id);
+                    }
+                }
             }
         }
 

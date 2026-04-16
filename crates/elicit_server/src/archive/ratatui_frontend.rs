@@ -276,6 +276,9 @@ impl TuiApp {
             PanelEvent::MonitorReady(snapshot) => {
                 self.model.apply_monitor_snapshot(snapshot);
             }
+            PanelEvent::AdminReady(snapshot) => {
+                self.model.apply_admin_snapshot(snapshot);
+            }
         }
     }
 }
@@ -311,6 +314,13 @@ impl crate::archive::ArchiveFrontend for TuiApp {
                     let _ = self.req_tx.try_send(req);
                 }
             }
+            A::OpenAdmin => {
+                if let Some(req) = self.model.toggle_admin_panel() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            A::AdminTabNext => self.model.admin_tab_next(),
+            A::AdminTabPrev => self.model.admin_tab_prev(),
             A::ToggleExportPicker => {
                 if self.model.panel.is_data_grid() {
                     self.model.toggle_export_picker();
@@ -604,6 +614,31 @@ fn spawn_fetch_task(
                                 roles,
                                 cache_hit,
                                 backups: Vec::new(),
+                            })
+                        }
+                        Err(e) => PanelEvent::FetchError(e.to_string()),
+                    };
+                    let _ = event_tx.send(ev).await;
+                }
+                FetchRequest::FetchAdmin => {
+                    use crate::archive::{AdminSnapshot, AdminTab};
+                    use elicit_db::{DbBackupManager, DbRoleManager, DbServerAdmin};
+                    let ev = match ArchiveDbBackend::connect(url).await {
+                        Ok(backend) => {
+                            let roles = backend.list_roles().await.unwrap_or_default();
+                            let backups = backend.list_backups().await.unwrap_or_default();
+                            let wal_ready = backend.wal_status().await.is_ok();
+                            let server_version = backend.server_version().await.unwrap_or_default();
+                            let extensions = backend.list_extensions().await.unwrap_or_default();
+                            let settings = backend.list_settings().await.unwrap_or_default();
+                            PanelEvent::AdminReady(AdminSnapshot {
+                                roles,
+                                backups,
+                                wal_ready,
+                                server_version,
+                                extensions,
+                                settings,
+                                active_tab: AdminTab::Roles,
                             })
                         }
                         Err(e) => PanelEvent::FetchError(e.to_string()),

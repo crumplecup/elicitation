@@ -9,7 +9,7 @@ use elicitation::{Elicit, Prompt, Select};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use elicit_db::{DbIndexInfo, DbRows, DbTableInfo};
+use elicit_db::{DbIndexInfo, DbRoleInfo, DbRows, DbSessionInfo, DbTableInfo};
 
 use chrono::{DateTime, Utc};
 
@@ -951,4 +951,87 @@ pub struct CompositeTypeDescriptor {
     pub name: String,
     /// Ordered list of attributes.
     pub attributes: Vec<CompositeTypeAttribute>,
+}
+
+// ── MonitorSnapshot ───────────────────────────────────────────────────────────
+
+/// A point-in-time snapshot of live database monitoring data.
+///
+/// Populated by `ArchiveMonitorPlugin` tools and cached in
+/// `PanelMode::MonitorPanel`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct MonitorSnapshot {
+    /// Active sessions from `pg_stat_activity`.
+    pub sessions: Vec<DbSessionInfo>,
+    /// Roles from `pg_roles`.
+    pub roles: Vec<DbRoleInfo>,
+    /// Buffer cache hit ratio (0.0–1.0), or `None` if not yet fetched.
+    pub cache_hit: Option<f64>,
+    /// Available backup labels.
+    pub backups: Vec<String>,
+}
+
+// ── AdminPanel types ──────────────────────────────────────────────────────────
+
+/// Which tab is active inside the admin panel.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub enum AdminTab {
+    /// Role and privilege matrix.
+    #[default]
+    Roles,
+    /// Backup inventory and WAL status.
+    Backups,
+    /// Server configuration settings and extensions.
+    Settings,
+}
+
+impl AdminTab {
+    /// Cycle forward through tabs: Roles → Backups → Settings → Roles.
+    pub fn next(&self) -> Self {
+        match self {
+            Self::Roles => Self::Backups,
+            Self::Backups => Self::Settings,
+            Self::Settings => Self::Roles,
+        }
+    }
+
+    /// Cycle backward through tabs: Roles → Settings → Backups → Roles.
+    pub fn prev(&self) -> Self {
+        match self {
+            Self::Roles => Self::Settings,
+            Self::Backups => Self::Roles,
+            Self::Settings => Self::Backups,
+        }
+    }
+
+    /// Human-readable label for display.
+    pub fn label(&self) -> &'static str {
+        match self {
+            Self::Roles => "Roles",
+            Self::Backups => "Backups",
+            Self::Settings => "Settings",
+        }
+    }
+}
+
+/// A point-in-time snapshot of database administration data.
+///
+/// Populated by `ArchiveAdminPlugin` tools and cached in
+/// `PanelMode::AdminPanel`.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct AdminSnapshot {
+    /// All cluster roles from `pg_roles`.
+    pub roles: Vec<DbRoleInfo>,
+    /// Available backup labels.
+    pub backups: Vec<String>,
+    /// Whether WAL archiving is healthy (from `pg_backup_start` probe).
+    pub wal_ready: bool,
+    /// PostgreSQL server version string.
+    pub server_version: String,
+    /// Installed extension names from `pg_available_extensions`.
+    pub extensions: Vec<String>,
+    /// Top GUC settings (name → current value pairs).
+    pub settings: Vec<(String, String)>,
+    /// Currently active admin tab.
+    pub active_tab: AdminTab,
 }

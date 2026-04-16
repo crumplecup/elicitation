@@ -256,6 +256,9 @@ impl ArchiveEguiApp {
                 PanelEvent::MonitorReady(snapshot) => {
                     self.model.apply_monitor_snapshot(snapshot);
                 }
+                PanelEvent::AdminReady(snapshot) => {
+                    self.model.apply_admin_snapshot(snapshot);
+                }
             }
         }
     }
@@ -502,6 +505,13 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
                     let _ = self.req_tx.try_send(req);
                 }
             }
+            A::OpenAdmin => {
+                if let Some(req) = self.model.toggle_admin_panel() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            A::AdminTabNext => self.model.admin_tab_next(),
+            A::AdminTabPrev => self.model.admin_tab_prev(),
             A::ToggleExportPicker => {
                 if self.model.panel.is_data_grid() {
                     self.model.toggle_export_picker();
@@ -1003,6 +1013,32 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                     roles,
                                     cache_hit,
                                     backups: Vec::new(),
+                                })
+                            }
+                            Err(e) => PanelEvent::FetchError(e.to_string()),
+                        }
+                    }
+                    FetchRequest::FetchAdmin => {
+                        use crate::archive::{AdminSnapshot, AdminTab};
+                        use elicit_db::{DbBackupManager, DbRoleManager, DbServerAdmin};
+                        match ArchiveDbBackend::connect(url_str).await {
+                            Ok(backend) => {
+                                let roles = backend.list_roles().await.unwrap_or_default();
+                                let backups = backend.list_backups().await.unwrap_or_default();
+                                let wal_ready = backend.wal_status().await.is_ok();
+                                let server_version =
+                                    backend.server_version().await.unwrap_or_default();
+                                let extensions =
+                                    backend.list_extensions().await.unwrap_or_default();
+                                let settings = backend.list_settings().await.unwrap_or_default();
+                                PanelEvent::AdminReady(AdminSnapshot {
+                                    roles,
+                                    backups,
+                                    wal_ready,
+                                    server_version,
+                                    extensions,
+                                    settings,
+                                    active_tab: AdminTab::Roles,
                                 })
                             }
                             Err(e) => PanelEvent::FetchError(e.to_string()),

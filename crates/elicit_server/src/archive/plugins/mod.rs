@@ -3,6 +3,7 @@
 //! Each plugin composes calls to the existing `elicit_sqlx`, `elicit_polars`,
 //! and `elicit_geo` tools — no direct driver calls are made here.
 
+pub mod admin;
 pub mod browse;
 pub mod constraint;
 pub mod export;
@@ -17,6 +18,7 @@ pub mod saved;
 pub mod security;
 pub mod spatial;
 
+pub use admin::ArchiveAdminPlugin;
 pub use browse::{ArchiveBrowsePlugin, SchemaExists, TableExists};
 pub use constraint::ArchiveConstraintPlugin;
 pub use export::export_query_result;

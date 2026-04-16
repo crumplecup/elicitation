@@ -43,18 +43,18 @@ pub use frontend_utils::nav_tree_to_verified_tree;
 pub use nav_model::ConnectionSet;
 pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
 pub use plugins::{
-    AkNodeEntry, ArchiveBrowsePlugin, ArchiveConstraintPlugin, ArchiveDisplayPlugin,
-    ArchiveMonitorPlugin, ArchiveQueryPlugin, ArchiveReplicationPlugin, ArchiveRoutinePlugin,
-    ArchiveSecurityPlugin, ArchiveSpatialPlugin, HistoryStore, QueryExecuted, SavedQueryStore,
-    SchemaExists, TableExists, explain_sql_direct, export_query_result, generate_ddl_direct,
-    get_column_stats_direct, inspect_table_direct,
+    AkNodeEntry, ArchiveAdminPlugin, ArchiveBrowsePlugin, ArchiveConstraintPlugin,
+    ArchiveDisplayPlugin, ArchiveMonitorPlugin, ArchiveQueryPlugin, ArchiveReplicationPlugin,
+    ArchiveRoutinePlugin, ArchiveSecurityPlugin, ArchiveSpatialPlugin, HistoryStore, QueryExecuted,
+    SavedQueryStore, SchemaExists, TableExists, explain_sql_direct, export_query_result,
+    generate_ddl_direct, get_column_stats_direct, inspect_table_direct,
 };
 pub use types::{
-    BackendKind, ColumnDescriptor, ColumnStats, CompositeTypeAttribute, CompositeTypeDescriptor,
-    ConnectionProfile, ConstraintDescriptor, ConstraintKind, DatabaseDescriptor, DdlDescriptor,
-    DomainDescriptor, EnumDescriptor, ExplainNode, ExportFormat, ExportResult, FkAction,
-    ForeignKeyDescriptor, FunctionDescriptor, FunctionVolatility, IndexDescriptor,
-    QueryHistoryEntry, QueryResult, RowEditKind, RowEditState, SavedQuery, SchemaDescriptor,
-    SequenceDescriptor, StagedEdit, TableDescriptor, TableInspection, TableType, TriggerDescriptor,
-    TriggerEvents,
+    AdminSnapshot, AdminTab, BackendKind, ColumnDescriptor, ColumnStats, CompositeTypeAttribute,
+    CompositeTypeDescriptor, ConnectionProfile, ConstraintDescriptor, ConstraintKind,
+    DatabaseDescriptor, DdlDescriptor, DomainDescriptor, EnumDescriptor, ExplainNode, ExportFormat,
+    ExportResult, FkAction, ForeignKeyDescriptor, FunctionDescriptor, FunctionVolatility,
+    IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult, RowEditKind, RowEditState,
+    SavedQuery, SchemaDescriptor, SequenceDescriptor, StagedEdit, TableDescriptor, TableInspection,
+    TableType, TriggerDescriptor, TriggerEvents,
 };
