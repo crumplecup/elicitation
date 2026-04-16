@@ -8,6 +8,7 @@ pub mod constraint;
 pub mod export;
 pub mod history;
 pub mod inspect;
+pub mod monitor;
 pub mod query;
 pub mod render;
 pub mod replication;
@@ -23,6 +24,7 @@ pub use history::HistoryStore;
 pub use inspect::{
     explain_sql_direct, generate_ddl_direct, get_column_stats_direct, inspect_table_direct,
 };
+pub use monitor::ArchiveMonitorPlugin;
 pub use query::{ArchiveQueryPlugin, QueryExecuted};
 pub use render::{AkNodeEntry, ArchiveDisplayPlugin};
 pub use replication::ArchiveReplicationPlugin;

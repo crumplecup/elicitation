@@ -44,15 +44,17 @@ pub use nav_model::ConnectionSet;
 pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
 pub use plugins::{
     AkNodeEntry, ArchiveBrowsePlugin, ArchiveConstraintPlugin, ArchiveDisplayPlugin,
-    ArchiveQueryPlugin, ArchiveReplicationPlugin, ArchiveRoutinePlugin, ArchiveSecurityPlugin,
-    ArchiveSpatialPlugin, HistoryStore, QueryExecuted, SavedQueryStore, SchemaExists, TableExists,
-    explain_sql_direct, export_query_result, generate_ddl_direct, get_column_stats_direct,
-    inspect_table_direct,
+    ArchiveMonitorPlugin, ArchiveQueryPlugin, ArchiveReplicationPlugin, ArchiveRoutinePlugin,
+    ArchiveSecurityPlugin, ArchiveSpatialPlugin, HistoryStore, QueryExecuted, SavedQueryStore,
+    SchemaExists, TableExists, explain_sql_direct, export_query_result, generate_ddl_direct,
+    get_column_stats_direct, inspect_table_direct,
 };
 pub use types::{
-    BackendKind, ColumnDescriptor, ColumnStats, ConnectionProfile, ConstraintDescriptor,
-    ConstraintKind, DatabaseDescriptor, DdlDescriptor, ExplainNode, ExportFormat, ExportResult,
-    FkAction, ForeignKeyDescriptor, IndexDescriptor, QueryHistoryEntry, QueryResult, RowEditKind,
-    RowEditState, SavedQuery, SchemaDescriptor, StagedEdit, TableDescriptor, TableInspection,
-    TableType,
+    BackendKind, ColumnDescriptor, ColumnStats, CompositeTypeAttribute, CompositeTypeDescriptor,
+    ConnectionProfile, ConstraintDescriptor, ConstraintKind, DatabaseDescriptor, DdlDescriptor,
+    DomainDescriptor, EnumDescriptor, ExplainNode, ExportFormat, ExportResult, FkAction,
+    ForeignKeyDescriptor, FunctionDescriptor, FunctionVolatility, IndexDescriptor,
+    QueryHistoryEntry, QueryResult, RowEditKind, RowEditState, SavedQuery, SchemaDescriptor,
+    SequenceDescriptor, StagedEdit, TableDescriptor, TableInspection, TableType, TriggerDescriptor,
+    TriggerEvents,
 };

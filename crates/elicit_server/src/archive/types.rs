@@ -795,3 +795,160 @@ pub struct ConnectionProfile {
     /// Optional Catppuccin accent colour for the tab badge (e.g. `"blue"`).
     pub color: Option<String>,
 }
+
+// ── Phase 4 — Advanced Object Types ──────────────────────────────────────────
+
+/// Volatility classification for PostgreSQL functions.
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    strum::EnumIter,
+    derive_more::Display,
+)]
+pub enum FunctionVolatility {
+    /// Result depends only on arguments (safe for optimisation).
+    #[display("immutable")]
+    Immutable,
+    /// Result may vary between calls within the same statement.
+    #[display("stable")]
+    Stable,
+    /// Result may change across any call (default for most functions).
+    #[display("volatile")]
+    Volatile,
+}
+
+/// A PostgreSQL function or stored procedure.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct FunctionDescriptor {
+    /// OID of the function in `pg_proc`.
+    pub oid: i64,
+    /// Containing schema.
+    pub schema: String,
+    /// Function name.
+    pub name: String,
+    /// Full SQL argument list (e.g. `"IN x integer, IN y text"`).
+    pub arguments: String,
+    /// Return type declaration (e.g. `"TABLE(id integer, name text)"`).
+    pub return_type: String,
+    /// Implementation language (`plpgsql`, `sql`, `c`, …).
+    pub language: String,
+    /// Volatility classification.
+    pub volatility: FunctionVolatility,
+    /// Whether this is a procedure (no return value).
+    pub is_procedure: bool,
+    /// First 512 characters of the function body for quick inspection.
+    pub body_preview: String,
+}
+
+/// The DML event(s) a trigger fires on.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct TriggerEvents {
+    /// Fires on `INSERT`.
+    pub on_insert: bool,
+    /// Fires on `UPDATE`.
+    pub on_update: bool,
+    /// Fires on `DELETE`.
+    pub on_delete: bool,
+    /// Fires on `TRUNCATE`.
+    pub on_truncate: bool,
+}
+
+/// A PostgreSQL trigger attached to a table.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct TriggerDescriptor {
+    /// Containing schema.
+    pub schema: String,
+    /// Table the trigger is attached to.
+    pub table: String,
+    /// Trigger name.
+    pub name: String,
+    /// Fires `BEFORE` or `AFTER` (or `INSTEAD OF`).
+    pub timing: String,
+    /// Which DML events fire this trigger.
+    pub events: TriggerEvents,
+    /// Whether the trigger fires per-row (`true`) or per-statement (`false`).
+    pub row_level: bool,
+    /// Fully-qualified name of the trigger function.
+    pub function: String,
+    /// Whether the trigger is currently enabled.
+    pub enabled: bool,
+}
+
+/// A PostgreSQL sequence object.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct SequenceDescriptor {
+    /// Containing schema.
+    pub schema: String,
+    /// Sequence name.
+    pub name: String,
+    /// Most recently returned value (may be `None` if never called).
+    pub current_value: Option<i64>,
+    /// Starting value.
+    pub start_value: i64,
+    /// Increment per call.
+    pub increment_by: i64,
+    /// Minimum value.
+    pub min_value: i64,
+    /// Maximum value.
+    pub max_value: i64,
+    /// Whether the sequence wraps on overflow.
+    pub cycle: bool,
+    /// Table.column this sequence is owned by (if any).
+    pub owned_by: Option<String>,
+}
+
+/// A PostgreSQL enum type with its ordered labels.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct EnumDescriptor {
+    /// Containing schema.
+    pub schema: String,
+    /// Type name.
+    pub name: String,
+    /// Ordered list of enum labels.
+    pub labels: Vec<String>,
+}
+
+/// A PostgreSQL domain type (scalar with constraints).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct DomainDescriptor {
+    /// Containing schema.
+    pub schema: String,
+    /// Domain name.
+    pub name: String,
+    /// Underlying base type (e.g. `"integer"`, `"text"`).
+    pub base_type: String,
+    /// `NOT NULL` constraint present.
+    pub not_null: bool,
+    /// Default expression if any.
+    pub default_expr: Option<String>,
+    /// CHECK constraint expressions.
+    pub check_constraints: Vec<String>,
+}
+
+/// One column of a PostgreSQL composite type.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct CompositeTypeAttribute {
+    /// Attribute (column) name.
+    pub name: String,
+    /// Data type name.
+    pub type_name: String,
+}
+
+/// A PostgreSQL composite (record) type.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct CompositeTypeDescriptor {
+    /// Containing schema.
+    pub schema: String,
+    /// Type name.
+    pub name: String,
+    /// Ordered list of attributes.
+    pub attributes: Vec<CompositeTypeAttribute>,
+}

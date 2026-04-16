@@ -39,6 +39,19 @@ pub enum FlatItem {
     Schema(usize),
     /// A table/view row.  The payload is `(schema_idx, table_idx)`.
     Table(usize, usize),
+    /// Collapsible group header for functions within a schema.
+    FunctionsGroup(usize),
+    /// A function row under its schema's functions group.  `(schema_idx, fn_idx)`.
+    Function(usize, usize),
+    /// Collapsible group header for sequences within a schema.
+    SequencesGroup(usize),
+    /// A sequence row under its schema's sequences group.  `(schema_idx, seq_idx)`.
+    Sequence(usize, usize),
+    /// Collapsible group header for user-defined types within a schema.
+    TypesGroup(usize),
+    /// A type row.  `(schema_idx, kind, idx)` where `kind` is
+    /// `0` = enum, `1` = domain, `2` = composite.
+    TypeEntry(usize, u8, usize),
 }
 
 // ── SchemaWithExpand ──────────────────────────────────────────────────────────
@@ -50,6 +63,12 @@ pub struct SchemaWithExpand {
     pub entry: SchemaEntry,
     /// Whether child tables are currently visible.
     pub expanded: bool,
+    /// Whether the functions group is expanded.
+    pub functions_expanded: bool,
+    /// Whether the sequences group is expanded.
+    pub sequences_expanded: bool,
+    /// Whether the types group is expanded.
+    pub types_expanded: bool,
 }
 
 // ── PanelMode ─────────────────────────────────────────────────────────────────
@@ -355,6 +374,9 @@ impl ArchiveNavModel {
             .map(|e| SchemaWithExpand {
                 entry: e,
                 expanded: false,
+                functions_expanded: false,
+                sequences_expanded: false,
+                types_expanded: false,
             })
             .collect();
 
@@ -396,6 +418,9 @@ impl ArchiveNavModel {
             .map(|e| SchemaWithExpand {
                 entry: e,
                 expanded: false,
+                functions_expanded: false,
+                sequences_expanded: false,
+                types_expanded: false,
             })
             .collect();
         self.db_name = nav.db_name;
@@ -439,6 +464,42 @@ impl ArchiveNavModel {
                     }
                 }
             }
+
+            // Phase 4 groups — only when explicitly expanded (not just filter mode)
+            if s.expanded {
+                if !s.entry.functions.is_empty() {
+                    self.flat.push(FlatItem::FunctionsGroup(i));
+                    if s.functions_expanded {
+                        for j in 0..s.entry.functions.len() {
+                            self.flat.push(FlatItem::Function(i, j));
+                        }
+                    }
+                }
+                if !s.entry.sequences.is_empty() {
+                    self.flat.push(FlatItem::SequencesGroup(i));
+                    if s.sequences_expanded {
+                        for j in 0..s.entry.sequences.len() {
+                            self.flat.push(FlatItem::Sequence(i, j));
+                        }
+                    }
+                }
+                let type_count =
+                    s.entry.enums.len() + s.entry.domains.len() + s.entry.composites.len();
+                if type_count > 0 {
+                    self.flat.push(FlatItem::TypesGroup(i));
+                    if s.types_expanded {
+                        for j in 0..s.entry.enums.len() {
+                            self.flat.push(FlatItem::TypeEntry(i, 0, j));
+                        }
+                        for j in 0..s.entry.domains.len() {
+                            self.flat.push(FlatItem::TypeEntry(i, 1, j));
+                        }
+                        for j in 0..s.entry.composites.len() {
+                            self.flat.push(FlatItem::TypeEntry(i, 2, j));
+                        }
+                    }
+                }
+            }
         }
         self.cursor = self.cursor.min(self.flat.len().saturating_sub(1));
     }
@@ -467,7 +528,7 @@ impl ArchiveNavModel {
         };
     }
 
-    /// Expand/collapse a schema row, or open a data grid for a table row.
+    /// Expand/collapse a schema row or group header, or open a data grid for a table row.
     ///
     /// Returns a [`FetchRequest`] when the caller should initiate an async
     /// data fetch (table row was selected).
@@ -499,6 +560,23 @@ impl ArchiveNavModel {
                 self.flash = None;
                 Some(FetchRequest::PreviewTable { schema, table })
             }
+            FlatItem::FunctionsGroup(si) => {
+                self.schemas[si].functions_expanded = !self.schemas[si].functions_expanded;
+                self.rebuild_flat();
+                None
+            }
+            FlatItem::SequencesGroup(si) => {
+                self.schemas[si].sequences_expanded = !self.schemas[si].sequences_expanded;
+                self.rebuild_flat();
+                None
+            }
+            FlatItem::TypesGroup(si) => {
+                self.schemas[si].types_expanded = !self.schemas[si].types_expanded;
+                self.rebuild_flat();
+                None
+            }
+            // Leaf nodes: Enter does nothing for now (detail panel in a future phase).
+            FlatItem::Function(..) | FlatItem::Sequence(..) | FlatItem::TypeEntry(..) => None,
         }
     }
 
@@ -556,7 +634,7 @@ impl ArchiveNavModel {
                 let entry = &self.schemas[si].entry;
                 Some((entry.name.clone(), entry.tables[ti].table_name.clone()))
             }
-            FlatItem::Schema(_) => None,
+            _ => None,
         }
     }
 
@@ -575,7 +653,7 @@ impl ArchiveNavModel {
                     table: t.table_name.clone(),
                 })
             }
-            FlatItem::Schema(_) => None,
+            _ => None,
         }
     }
 
@@ -593,7 +671,7 @@ impl ArchiveNavModel {
                     table: t.table_name.clone(),
                 })
             }
-            FlatItem::Schema(_) => None,
+            _ => None,
         }
     }
 
@@ -612,7 +690,7 @@ impl ArchiveNavModel {
                     table: t.table_name.clone(),
                 })
             }
-            FlatItem::Schema(_) => None,
+            _ => None,
         }
     }
 
@@ -636,7 +714,7 @@ impl ArchiveNavModel {
                     ),
                 })
             }
-            FlatItem::Schema(_) => None,
+            _ => None,
         }
     }
 
@@ -1593,6 +1671,39 @@ impl ArchiveNavModel {
                     let t = &self.schemas[*si].entry.tables[*ti];
                     format!("  {} [{}]", t.table_name, t.table_type)
                 }
+                FlatItem::FunctionsGroup(si) => {
+                    let s = &self.schemas[*si];
+                    let arrow = if s.functions_expanded { "▾" } else { "▸" };
+                    format!("  {} Functions ({})", arrow, s.entry.functions.len())
+                }
+                FlatItem::Function(si, fi) => {
+                    let f = &self.schemas[*si].entry.functions[*fi];
+                    format!("    {} ({})", f.name, f.arguments)
+                }
+                FlatItem::SequencesGroup(si) => {
+                    let s = &self.schemas[*si];
+                    let arrow = if s.sequences_expanded { "▾" } else { "▸" };
+                    format!("  {} Sequences ({})", arrow, s.entry.sequences.len())
+                }
+                FlatItem::Sequence(si, qi) => {
+                    let q = &self.schemas[*si].entry.sequences[*qi];
+                    format!("    {}", q.name)
+                }
+                FlatItem::TypesGroup(si) => {
+                    let s = &self.schemas[*si];
+                    let arrow = if s.types_expanded { "▾" } else { "▸" };
+                    let total =
+                        s.entry.enums.len() + s.entry.domains.len() + s.entry.composites.len();
+                    format!("  {} Types ({})", arrow, total)
+                }
+                FlatItem::TypeEntry(si, kind, idx) => {
+                    let entry = &self.schemas[*si].entry;
+                    match kind {
+                        0 => format!("    {} [enum]", entry.enums[*idx].name),
+                        1 => format!("    {} [domain]", entry.domains[*idx].name),
+                        _ => format!("    {} [composite]", entry.composites[*idx].name),
+                    }
+                }
             };
 
             // Machine-readable metadata in description for browser frontends.
@@ -1604,6 +1715,35 @@ impl ArchiveNavModel {
                     let s = &self.schemas[*si].entry.name;
                     let t = &self.schemas[*si].entry.tables[*ti].table_name;
                     format!("schema:{s},table:{t}")
+                }
+                FlatItem::FunctionsGroup(si) => {
+                    format!("schema:{},group:functions", self.schemas[*si].entry.name)
+                }
+                FlatItem::Function(si, fi) => {
+                    let s = &self.schemas[*si].entry.name;
+                    let f = &self.schemas[*si].entry.functions[*fi].name;
+                    format!("schema:{s},function:{f}")
+                }
+                FlatItem::SequencesGroup(si) => {
+                    format!("schema:{},group:sequences", self.schemas[*si].entry.name)
+                }
+                FlatItem::Sequence(si, qi) => {
+                    let s = &self.schemas[*si].entry.name;
+                    let q = &self.schemas[*si].entry.sequences[*qi].name;
+                    format!("schema:{s},sequence:{q}")
+                }
+                FlatItem::TypesGroup(si) => {
+                    format!("schema:{},group:types", self.schemas[*si].entry.name)
+                }
+                FlatItem::TypeEntry(si, kind, idx) => {
+                    let s = &self.schemas[*si].entry.name;
+                    let entry = &self.schemas[*si].entry;
+                    let type_name = match kind {
+                        0 => entry.enums[*idx].name.as_str(),
+                        1 => entry.domains[*idx].name.as_str(),
+                        _ => entry.composites[*idx].name.as_str(),
+                    };
+                    format!("schema:{s},type:{type_name}")
                 }
             };
 
@@ -1651,6 +1791,7 @@ impl ArchiveNavModel {
                                 self.schemas[si].entry.name, t.table_name
                             )
                         }
+                        _ => "Select a table or object".to_string(),
                     })
                     .unwrap_or_else(|| "Select a table".to_string());
                 let mut h = AkNode::new(AkRole::Heading);
