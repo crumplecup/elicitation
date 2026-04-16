@@ -1,628 +1,656 @@
-# archive — Feature Parity Plan
+# archive — Feature Parity Plan (Phase 7+)
 
 > **Goal:** Bring `archive` to feature parity with pgAdmin 4, DBeaver CE,
 > TablePlus, and DataGrip across all three frontends (ratatui, browser, egui).
 >
 > **Constraint:** Every user-visible action must flow through the
-> `Established<P>` proof chain. UI layers read descriptors and invoke
-> `ArchiveDbBackend` traits; they never issue raw SQL directly.
+> `Established<P>` proof chain and the AccessKit IR. UI layers read
+> `ArchiveDisplay::to_ak_nodes` output; they never produce widgets or HTML
+> from raw data. Adding a new feature means: implement `ArchiveDisplay` for
+> the type, extend `PanelMode` or the nav tree, wire `build_content_nodes`,
+> done — all three frontends pick it up for free.
 
 ---
 
-## Competitor Snapshot
+## Current Status (as of Phase 6)
 
-| Feature area | pgAdmin 4 | DBeaver CE | TablePlus | DataGrip |
-|---|:---:|:---:|:---:|:---:|
-| Schema/table tree | ✅ | ✅ | ✅ | ✅ |
-| Data grid (row viewer) | ✅ | ✅ | ✅ | ✅ |
-| Inline row edit/insert/delete | ✅ | ✅ | ✅ | ✅ |
-| SQL editor + run | ✅ | ✅ | ✅ | ✅ |
-| Syntax highlighting | ✅ | ✅ | ✅ | ✅ |
-| Query history | ✅ | ✅ | ✅ | ✅ |
-| Saved queries / snippets | ✅ | ✅ | ✅ | ✅ |
-| EXPLAIN plan (text) | ✅ | ✅ | ✅ | ✅ |
-| EXPLAIN plan (visual) | ✅ | ✅ | ✅ | ✅ |
-| DDL viewer | ✅ | ✅ | ✅ | ✅ |
-| FK relationship display | ✅ | ✅ | ✅ | ✅ |
-| ERD diagram | ✅ | ✅ | ❌ | ✅ |
-| Index details panel | ✅ | ✅ | ✅ | ✅ |
-| Column statistics (pg_stats) | ✅ | ✅ | ❌ | ✅ |
-| Constraint viewer | ✅ | ✅ | ✅ | ✅ |
-| Object search | ✅ | ✅ | ✅ | ✅ |
-| CSV / JSON export | ✅ | ✅ | ✅ | ✅ |
-| Multi-connection | ✅ | ✅ | ✅ | ✅ |
-| Function / procedure browser | ✅ | ✅ | ✅ | ✅ |
-| Trigger browser | ✅ | ✅ | ✅ | ✅ |
-| Sequence browser | ✅ | ✅ | ❌ | ✅ |
-| Extension browser | ✅ | ✅ | ❌ | ✅ |
-| Enum / domain browser | ✅ | ✅ | ❌ | ✅ |
-| Role / privilege matrix | ✅ | ✅ | ❌ | ✅ |
-| Live server monitoring | ✅ | ✅ | ❌ | ❌ |
-| Lock wait viewer | ✅ | ✅ | ❌ | ❌ |
-| Backup / restore UI | ✅ | ✅ | ❌ | ❌ |
-| Replication status | ✅ | ❌ | ❌ | ❌ |
-| SSH tunnel | ✅ | ✅ | ✅ | ✅ |
-| SSL connection config | ✅ | ✅ | ✅ | ✅ |
-| Query plan comparison | ❌ | ✅ | ❌ | ✅ |
-| Dark theme | ✅ | ✅ | ✅ | ✅ |
+### ✅ Completed phases
 
-### Current `archive` status
+| Phase | Feature |
+|---|---|
+| 1.1 | Data grid with pagination |
+| 1.2 | SQL editor + results |
+| 1.3 | Live tree refresh (`r`) |
+| 1.4 | Nav filter (`/`) |
+| 2.1 | DDL viewer (`d`) |
+| 2.2 | FK descriptors (`ForeignKeyDescriptor`) |
+| 2.5 | Column statistics (`ColumnStats`) |
+| 2.6 | EXPLAIN plan viewer |
+| 3.1 | Inline row edit/insert/delete |
+| 3.2 | Query history |
+| 3.3 | Saved queries |
+| 3.4 | CSV/JSON export |
+| 3.5 | Multi-connection (`Ctrl+Tab`) |
+| 4.1 | Function browser (nav tree + MCP) |
+| 4.3 | Sequence browser (nav tree + MCP) |
+| 4.4 | Type browser — enum, domain, composite (nav tree + MCP) |
+| 4.5 | Extension list (in Admin panel) |
+| 5.1 | Monitor panel — sessions, roles, cache, backups (`m`) |
+| 5.2–5.4 | Admin panel — roles, backups, WAL, extensions, settings (`a`) |
+| 6 | ERD diagram — table list + FK edges (`g`) |
 
-✅ Schema/table tree (all 3 frontends) — ✅ Column metadata — ✅ Index metadata
-✅ Basic SQL execute (MCP tool) — ✅ Spatial column detection — ✅ Backend traits
-for all operations (not yet surfaced in UI)
+### ⚠️ Partial (MCP tools exist, UI not surfaced)
 
-**IR bridge contract (complete):** `IrSourced` proof token added to `elicit_ui`.
-`ArchiveNavModel::to_verified_tree()` is the sole mint point.  All three frontends
-(ratatui, egui, leptos) now gate rendering on `Established<IrSourced>` — divergence
-from the AccessKit IR is a compile error.  ~2 700 lines of per-frontend draw code
-replaced by bridge calls; overlay state consolidated in `ArchiveNavModel`.
+- **2.3 Constraint viewer** — `ConstraintDescriptor` + `ArchiveConstraintPlugin` exist; no panel
+- **2.4 Index details panel** — `IndexDescriptor` fetched inside inspect path; never rendered standalone
+- **4.2 Trigger browser** — `TriggerDescriptor` + `list_triggers` MCP tool exist; no nav tree node
+- **4.5 Extension nav node** — extensions visible in admin panel only; no top-level nav tree node
+- **5.1 Monitor depth** — `MonitorSnapshot` only shows sessions/roles/cache/backups; `slow_queries`,
+  `lock_waits`, `table_bloat`, `index_usage` are MCP tools but not in the panel UI
+- **6 ERD is_fk** — `ErdColumn.is_fk` hardcoded `false`; FK participation not back-propagated from edges
 
-The browser frontend is now a **dynamic axum server** (rebuilds IR per request)
-rather than a one-shot static render.  Remaining leptos work is feature parity
-for the 7 feature panels (see leptos-* todos below).
+### ❌ Not yet implemented
+
+- Data-grid pagination keybindings (`PgDn`/`PgUp`, first/last page)
+- SSE live polling for monitor (browser frontend only)
+- Syntax highlighting in SQL editor (all frontends)
+- SSH tunnel + SSL cert fields in `ConnectionProfile`
+- Visual ERD layout (petgraph + force-directed, SVG browser, egui Painter)
+- Query plan comparison (DBeaver/DataGrip feature)
+- Theme toggle (dark/light; currently hardcoded Catppuccin Mocha in egui, none in ratatui/browser)
+
+### ❌ `ArchiveDisplay` gap — the core deficit
+
+The `ArchiveDisplay` trait (`to_ak_nodes`) is the contract that lets the IR
+pipeline surface any type in all three frontends. Only **5 of ~25 types** in
+`types.rs` implement it. Every type without an impl is invisible to the UI and
+to `ArchiveDisplayPlugin` (MCP rendering). This is the root cause of most
+"partial" items above.
+
+| Type | Has `ArchiveDisplay` |
+|---|:---:|
+| `ColumnDescriptor` | ✅ |
+| `DatabaseDescriptor` | ✅ |
+| `QueryResult` | ✅ |
+| `SchemaDescriptor` | ✅ |
+| `TableDescriptor` | ✅ |
+| `ForeignKeyDescriptor` | ❌ |
+| `ConstraintDescriptor` | ❌ |
+| `DdlDescriptor` | ❌ |
+| `TableInspection` | ❌ |
+| `IndexDescriptor` | ❌ |
+| `ColumnStats` | ❌ |
+| `ExplainNode` | ❌ |
+| `QueryHistoryEntry` | ❌ |
+| `SavedQuery` | ❌ |
+| `StagedEdit` / `RowEditState` | ❌ |
+| `ConnectionProfile` | ❌ |
+| `FunctionDescriptor` | ❌ |
+| `TriggerDescriptor` | ❌ |
+| `SequenceDescriptor` | ❌ |
+| `EnumDescriptor` | ❌ |
+| `DomainDescriptor` | ❌ |
+| `CompositeTypeDescriptor` | ❌ |
+| `MonitorSnapshot` | ❌ |
+| `AdminSnapshot` | ❌ |
+| `ErdDiagram` / `ErdNode` / `ErdEdge` / `ErdColumn` | ❌ |
 
 ---
 
-## Architecture Principles
+## Architecture Reminder
 
-All phases follow the same composition pattern:
+The display pipeline is:
 
 ```text
-User action (keypress / click)
+Descriptor type
   │
-  ▼
-ArchiveNavModel / UI action handler
-  │  (calls ArchiveDbBackend trait method)
-  ▼
-Established<P> proof returned
-  │
-  ▼
-Descriptor type (ElicitComplete)
-  │
-  ├─ ratatui: TuiNode rendered inline
-  ├─ browser: AccessKit IR → Leptos HTML
-  └─ egui: rendered in central panel
+  └── impl ArchiveDisplay { to_ak_nodes(&self, mode, id_base) }
+        │
+        ▼
+  build_content_nodes()   ← inserts nodes into the shared tree map
+        │
+        ▼
+  to_verified_tree()      ← mints Established<IrSourced> proof token
+        │
+  ┌─────┼──────────────────────────┐
+  │     │                          │
+ratatui egui                    leptos
+bridge  bridge           (Axum server — rebuilds IR per HTTP request)
 ```
 
-New descriptor types are added to `types.rs` and implement `ElicitComplete`.
-New MCP plugins follow the `#[elicit_tool]` + `ElicitPlugin` pattern.
-UI changes are made once to `ArchiveNavModel` / layout helpers and propagate
-to all three renderers.
+Every new feature follows this flow. Implementing `ArchiveDisplay` is the
+first step for any type. Once the impl exists, `build_content_nodes` can
+call it and all three frontends render it. However, **Leptos is not free** —
+it is a server-side request cycle, not a live event loop. Every new
+`PanelMode` variant requires explicit Leptos work:
+
+1. A new `A::Open*` arm in `dispatch_action_on_model()`
+2. A new `async fn api_*` handler function
+3. A new `GET /api/*` route registered in `build_router()`
+
+ratatui and egui pick up new `PanelMode` arms automatically from
+`build_content_nodes` via the shared in-process model. Leptos must be
+wired separately for each panel variant.
 
 ---
 
-## Phase 1 — Interactive Data Browsing
->
-> Closes every "critical blocking" gap. Brings basic daily-driver usability.
+## Phase 7 — `ArchiveDisplay` for all descriptor types
 
-### 1.1  Data Grid Panel
+This is the prerequisite for Phases 8–10. Each type gets a new file in
+`crates/elicit_server/src/archive/display/` and is registered in `display/mod.rs`.
 
-**What:** When a table row is selected (Enter), fetch up to N rows via
-`DbQueryExecutor::query_rows` and render them in a paginated grid panel.
-
-**New types:**
+### Pattern
 
 ```rust
-pub struct DataGridDescriptor {
-    pub table: TableDescriptor,
-    pub rows: DbRows,
-    pub page: u32,
-    pub page_size: u32,
-    pub total_estimate: Option<i64>,
+// display/index.rs
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+pub enum IndexDescriptorMode {
+    #[default]
+    Row,        // single list item for embedding in a parent list
+    Detailed,   // expanded: name + columns + type + unique flag
+}
+
+impl ArchiveDisplay for IndexDescriptor {
+    type Mode = IndexDescriptorMode;
+    fn root_role(mode: &Self::Mode) -> Role { … }
+    fn to_ak_nodes(&self, mode: &Self::Mode, id_base: u64) -> (NodeId, Vec<(NodeId, NodeJson)>) { … }
 }
 ```
 
-**New MCP tool:** `archive_browse__preview_table` already exists in
-`plugins/query.rs` — wire its output to the central panel instead of
-discarding it.
+### Types and their natural modes
 
-**Frontend work:**
+| Type | Modes | Root role |
+|---|---|---|
+| `ForeignKeyDescriptor` | `Inline` / `Detailed` | `Row` / `Group` |
+| `ConstraintDescriptor` | `Inline` / `Detailed` | `Row` / `Group` |
+| `DdlDescriptor` | `Block` | `GenericContainer` (preformatted text) |
+| `TableInspection` | `FkList` / `ConstraintList` / `IndexList` | `List` |
+| `IndexDescriptor` | `Row` / `Detailed` | `Row` / `Group` |
+| `ColumnStats` | `Summary` / `Detailed` | `Article` / `Group` |
+| `ExplainNode` | `TreeNode` (recursive) | `TreeItem` |
+| `QueryHistoryEntry` | `Row` / `Detailed` | `Row` / `Article` |
+| `SavedQuery` | `Row` / `Detailed` | `Row` / `Article` |
+| `StagedEdit` | `Row` | `Row` |
+| `ConnectionProfile` | `Card` / `Row` | `Article` / `Row` |
+| `FunctionDescriptor` | `Row` / `Detailed` | `Row` / `Group` |
+| `TriggerDescriptor` | `Row` / `Detailed` | `Row` / `Group` |
+| `SequenceDescriptor` | `Row` / `Detailed` | `Row` / `Group` |
+| `EnumDescriptor` | `Row` / `Detailed` | `Row` / `Group` |
+| `DomainDescriptor` | `Row` / `Detailed` | `Row` / `Group` |
+| `CompositeTypeDescriptor` | `Row` / `Detailed` | `Row` / `Group` |
+| `MonitorSnapshot` | `Dashboard` / `SessionList` | `Group` / `List` |
+| `AdminSnapshot` | `RoleList` / `BackupList` / `WalStatus` / `ExtList` / `Settings` | `List` / `Group` |
+| `ErdDiagram` | `NodeList` / `EdgeList` / `Visual` | `List` / `Group` / `Figure` |
+| `ErdNode` | `TableBox` | `Group` |
+| `ErdEdge` | `Row` | `Row` |
+| `ErdColumn` | `Row` | `Row` |
 
-- ratatui: `Table` widget with column widths, scrollable, page up/down
-- egui: `egui_extras::TableBuilder` (add `egui_extras` dep with `table` feature)
-- browser: `<table>` rendered from AccessKit `Role::Grid` / `Role::Row` nodes
+### Key design notes
 
-**Key bindings (add to `StatusBarDescriptor::archive_browse`):**
+**`ExplainNode` is recursive.** The impl must allocate a block of `id_base`
+space large enough to cover the subtree, or use a counter passed by mutable
+reference. Recommended: pass a `&mut u64` counter through a private helper:
 
-- `PgDn` / `PgUp` — next/previous page
-- `g` / `G` — first / last page
+```rust
+fn node_to_ak(node: &ExplainNode, counter: &mut u64) -> (NodeId, Vec<(NodeId, NodeJson)>) { … }
+```
+
+**`DdlDescriptor` is verbatim text.** Use `Role::GenericContainer` with the
+DDL as the label. Syntax highlighting is a Phase 12 concern — Phase 7 just
+gets the text into the tree.
+
+**`MonitorSnapshot` and `AdminSnapshot`** should produce self-contained
+subtrees so that `build_content_nodes` can call them directly without
+rebuilding the entire panel by hand.
+
+**`ErdDiagram::Visual` mode** is a placeholder in Phase 7 — it emits a
+`Role::Figure` with a `description` field containing a text summary. Phase 10
+replaces it with actual coordinate data.
+
+### `ArchiveDisplayPlugin` extension
+
+Once impls are added, register them as new MCP display tools:
+
+```rust
+archive_display__foreign_keys    → Vec<ForeignKeyDescriptor>
+archive_display__constraints     → Vec<ConstraintDescriptor>
+archive_display__indexes         → Vec<IndexDescriptor>
+archive_display__column_stats    → ColumnStats
+archive_display__explain         → ExplainNode (recursive tree)
+archive_display__history         → Vec<QueryHistoryEntry>
+archive_display__saved           → Vec<SavedQuery>
+archive_display__function        → FunctionDescriptor
+archive_display__trigger         → TriggerDescriptor
+archive_display__sequence        → SequenceDescriptor
+archive_display__type            → EnumDescriptor | DomainDescriptor | CompositeTypeDescriptor
+archive_display__monitor         → MonitorSnapshot
+archive_display__admin           → AdminSnapshot
+archive_display__erd             → ErdDiagram
+```
 
 ---
 
-### 1.2  SQL Editor Pane
+## Phase 8 — Surface all partial features in the UI
 
-**What:** A multi-line text input area the user can type SQL into. `Ctrl+Enter`
-or `F5` runs the query; results appear in the data grid panel below.
+With Phase 7 done, wiring each feature into the UI is a `build_content_nodes`
+arm + optional `PanelMode` variant + key binding. Each item below is a
+self-contained diff.
 
-**New types:**
+### 8.1 — Constraint panel
+
+**Key binding:** `c` — show constraints for selected table
+**New `PanelMode`:** `ConstraintPanel { table: TableDescriptor, constraints: Vec<ConstraintDescriptor> }`
+**New `FetchRequest`:** `FetchConstraints { schema: String, table: String }`
+**New `PanelEvent`:** `ConstraintsReady(Vec<ConstraintDescriptor>)`
+**New HTMX route:** `GET /api/constraints?schema=&table=`
+**`build_content_nodes` arm:** call `ConstraintDescriptor::to_ak_nodes` per row in a `Role::List`
+
+### 8.2 — Index panel
+
+**Key binding:** `i` — show indexes for selected table (currently `i` = column detail; remap or use `I`)
+**New `PanelMode`:** `IndexPanel { table: TableDescriptor, indexes: Vec<IndexDescriptor> }`
+**New `FetchRequest`:** `FetchIndexes { schema: String, table: String }`
+**New HTMX route:** `GET /api/indexes?schema=&table=`
+**`build_content_nodes` arm:** call `IndexDescriptor::to_ak_nodes` per row in a `Role::List`
+
+### 8.3 — Trigger browser in nav tree
+
+`TriggerDescriptor` already fetched by `inspect_table_direct`. The nav tree needs:
+
+- `FlatItem::TriggersGroup(si)` — collapsible group under each schema
+- `FlatItem::Trigger(si, ti)` — individual trigger
+- `SchemaEntry` extended with `triggers: Vec<TriggerDescriptor>`
+- `nav_tree.rs`: query `information_schema.triggers` alongside functions/sequences/types
+- `toggle_expand` covers `TriggersGroup` via the same expand-flag pattern as `FunctionsGroup`
+- `build_nav_nodes` arm for `Trigger` → calls `TriggerDescriptor::to_ak_nodes(&mode, id_base)`
+- **Leptos:** `A::ExpandTriggers` action + `dispatch_action_on_model` arm; no dedicated panel, so no new `/api/` route needed (nav tree is rebuilt on tree-expand events shared across all three frontends)
+
+### 8.4 — Extension nav tree node
+
+Extensions are global (not per-schema). The plan calls for a top-level
+"Extensions" node under the database node:
+
+- `FlatItem::ExtensionsGroup` — top-level collapsible
+- `FlatItem::Extension(idx)` — one per installed extension
+- `DatabaseEntry` extended with `extensions: Vec<(String, String)>` (name, version)
+- `nav_tree.rs`: populate from `DbServerAdmin::list_extensions()` in `build_nav_tree`
+- `build_nav_nodes` arm: list items using `Role::ListItem`
+- **Leptos:** same as 8.3 — nav tree expand is a model-side action; no separate `/api/` route needed since extensions are loaded at tree build time
+
+### 8.5 — Data-grid pagination keybindings
+
+Currently page navigation in `DataGrid` exists in the model
+(`page_next`, `page_prev`) but has no key bindings. Add to `ArchiveKeyMap`:
 
 ```rust
-pub struct SqlEditorState {
-    pub text: String,
-    pub cursor_line: u32,
-    pub cursor_col: u32,
-    pub history: Vec<String>,      // last N queries
-    pub history_cursor: Option<usize>,
+KeyMapEntry::nav(p(K::PageDown), A::PageNext, "PgDn", "Next page", true),
+KeyMapEntry::nav(p(K::PageUp),   A::PagePrev, "PgUp", "Prev page", true),
+KeyMapEntry::nav(p(K::Home),     A::PageFirst, "Home", "First page", false),
+KeyMapEntry::nav(p(K::End),      A::PageLast,  "End",  "Last page",  false),
+```
+
+Add `PageNext`, `PagePrev`, `PageFirst`, `PageLast` to `ArchiveAction`.
+All three frontends pick up the bindings automatically via `resolve()`.
+
+### 8.6 — FK is_fk enrichment in ERD
+
+In `nav_tree::fetch_erd`, after building edges, enrich `ErdColumn.is_fk`:
+
+```rust
+for edge in &edges {
+    if let Some(node) = nodes.iter_mut().find(|n| n.table_name == edge.from_table) {
+        if let Some(col) = node.columns.iter_mut().find(|c| c.name == edge.from_col) {
+            col.is_fk = true;
+        }
+    }
 }
 ```
 
-**New MCP tool:** (reuse `archive_query__execute`)
-
-**Frontend work:**
-
-- ratatui: `tui-textarea` crate (already used in the ecosystem) or manual
-  multi-line `TextArea` widget wrapping a `String` buffer; `Ctrl+Enter` runs
-- egui: `egui::TextEdit::multiline` in a resizable panel; capture
-  `Modifiers::CTRL + Key::Enter`
-- browser: `<textarea>` + JS `keydown` handler for Ctrl+Enter
-
-**Panel layout change:** Split central panel vertically — top half = editor,
-bottom half = result grid.  Toggle with `Tab` or a toolbar button.
-
-**Key bindings:**
-
-- `Ctrl+Enter` / `F5` — execute
-- `Ctrl+L` — clear editor
-- `↑` / `↓` in empty editor — cycle query history
-
 ---
 
-### 1.3  Live Tree Refresh
+## Phase 9 — Monitor panel depth
 
-**What:** `r` in the nav panel re-queries the backend and rebuilds
-`ArchiveNavModel` without restarting the frontend.
+The `MonitorSnapshot` today only captures sessions, roles, cache hit, and
+backups. `ArchiveMonitorPlugin` already has MCP tools for `slow_queries`,
+`lock_waits`, `table_bloat`, and `index_usage`. Phase 9 brings these into the
+panel UI.
 
-**Change:** `ArchiveNavModel::refresh()` currently sets a flash string. Replace
-with an async callback pattern:
-
-- ratatui / egui: `refresh()` signals a `needs_refresh: bool` flag; the event
-  loop calls `build_nav_tree(&backend).await` and replaces `model.schemas`
-- browser: POST `/api/refresh` which re-runs the SSR pipeline
-
----
-
-### 1.4  Object Search / Filter
-
-**What:** `/` or `Ctrl+F` opens a search bar above the nav panel. Typing
-filters the flat list to matching schema/table names (substring, case-insensitive).
-
-**Change to `ArchiveNavModel`:**
+### 9.1 — Extend `MonitorSnapshot`
 
 ```rust
-pub struct ArchiveNavModel {
-    // ... existing fields ...
-    pub filter: String,          // current filter text
-    pub filter_active: bool,     // whether search bar is open
-    pub flat_unfiltered: Vec<FlatItem>,   // full flat list
+pub struct MonitorSnapshot {
+    // existing fields …
+    pub slow_queries: Vec<DbSlowQuery>,
+    pub lock_waits: Vec<DbLockWait>,
+    pub table_bloat: Vec<DbTableBloat>,
+    pub index_usage: Vec<DbIndexUsage>,
 }
 ```
 
-`rebuild_flat()` applies the filter when `filter_active` and `!filter.is_empty()`.
+Add the four sub-types to `types.rs` with `#[derive(Elicit)]` and
+`ArchiveDisplay` impls in Phase 7.
 
-**Key bindings (add to `StatusBarDescriptor`):**
-
-- `/` — open filter
-- `Esc` (in filter) — clear and close filter
-
----
-
-## Phase 2 — Rich Object Inspection
->
-> Surfaces the object metadata already queryable via `ArchiveDbBackend` traits.
-
-### 2.1  DDL Viewer
-
-**What:** Press `d` on any selected table/view to show the `CREATE TABLE` DDL
-in the central panel.
-
-**New MCP tool:** `archive_browse__generate_ddl`
-
-**Implementation:** Build DDL string from `TableDescriptor` (column definitions,
-PK, FK, NOT NULL, defaults, indexes). For PostgreSQL, can also run
-`pg_get_tabledef` or reconstruct from `information_schema`.
-
-**New type:**
+### 9.2 — `MonitorTab` enum (mirrors `AdminTab`)
 
 ```rust
-pub struct DdlDescriptor {
-    pub schema: String,
-    pub object_name: String,
-    pub ddl: String,   // CREATE TABLE … AS TEXT
+pub enum MonitorTab {
+    Sessions,
+    SlowQueries,
+    LockWaits,
+    TableBloat,
+    IndexUsage,
 }
 ```
 
-**Key binding:** `d` — show DDL for selected object
+`MonitorPanel` variant gains `active_tab: MonitorTab`. `[`/`]` cycle tabs
+(same key bindings already used for AdminPanel — they're mode-aware).
+
+### 9.3 — Fetch in all three frontends
+
+`FetchMonitor` tasks in ratatui + egui call the four new backend methods.
+
+**Leptos:** `GET /api/monitor` already exists (Phase 5). Extend the handler to call the four
+new `ArchiveMonitorPlugin` tools and populate the new `MonitorSnapshot` fields. Add a
+`MonitorTab` query param so the response renders the correct tab. No new route needed —
+existing route gains tab-aware rendering.
+
+### 9.4 — `build_content_nodes` arm update
+
+The `MonitorPanel` arm calls `MonitorSnapshot::to_ak_nodes` with the active
+tab as the mode discriminant, producing a `Role::List` per tab.
 
 ---
 
-### 2.2  Foreign Key Relationships
+## Phase 10 — Visual ERD layout
 
-**What:** Show FK references (both inbound and outbound) in the table detail
-panel. Navigate to the referenced table with Enter.
+The current ERD is a text IR: a list of table nodes and a list of FK edges.
+Phase 10 replaces `ErdDiagram::Visual` mode with a real spatial layout.
 
-**New type:**
+### 10.1 — Layout algorithm
+
+Add `petgraph` (already a transitive dep via `elicit_rstar`; confirm direct
+dep) to `elicit_server`. Use `petgraph::Graph<ErdNode, ErdEdge>` as the
+intermediate representation.
+
+Layout: **Sugiyama/layer-based** (for DAG-like FK graphs) or a simple
+**grid layout** (row × col based on table count) as a first pass.
+Force-directed is visually nicer but harder to implement stably — defer to a
+later polish iteration.
 
 ```rust
-pub struct ForeignKeyDescriptor {
-    pub constraint_name: String,
-    pub from_schema: String,
-    pub from_table: String,
-    pub from_columns: Vec<String>,
-    pub to_schema: String,
-    pub to_table: String,
-    pub to_columns: Vec<String>,
-    pub on_delete: FkAction,  // Cascade | SetNull | Restrict | NoAction
-    pub on_update: FkAction,
-}
-
-pub enum FkAction { Cascade, SetNull, Restrict, NoAction, SetDefault }
-```
-
-**`ColumnDescriptor` change:** Replace `is_foreign_key: bool` with
-`foreign_key: Option<FkTarget>` where `FkTarget` names the referenced table +
-column.
-
-**New MCP tool:** `archive_browse__list_foreign_keys`
-
-**New query:** `information_schema.referential_constraints` +
-`key_column_usage`.
-
----
-
-### 2.3  Constraint Viewer
-
-**What:** Panel tab showing all constraints on a table: PK, FK, UNIQUE, CHECK,
-EXCLUSION (PG-specific).
-
-**New type:**
-
-```rust
-pub struct ConstraintDescriptor {
-    pub name: String,
-    pub kind: ConstraintKind,
-    pub columns: Vec<String>,
-    pub definition: Option<String>,   // CHECK expression etc.
-}
-
-pub enum ConstraintKind { PrimaryKey, ForeignKey, Unique, Check, Exclusion }
-```
-
-**New MCP tool:** `archive_browse__list_constraints`
-
----
-
-### 2.4  Index Details in Panel
-
-**What:** Index tab in the table detail panel.  Already queryable via
-`DbIndexManager::list_indexes` — just wire to UI.
-
-**Frontend change:** Add "Indexes" tab in central panel alongside "Columns".
-Render `Vec<IndexDescriptor>` as a table showing name, columns, type, unique.
-
----
-
-### 2.5  Column Statistics (PostgreSQL)
-
-**What:** For PostgreSQL, show `pg_stats` data per column: null fraction,
-distinct count, most-common values, histogram.
-
-**New type:**
-
-```rust
-pub struct ColumnStats {
-    pub column_name: String,
-    pub null_fraction: f64,
-    pub avg_width: i32,
-    pub n_distinct: f64,         // negative = fraction of total rows
-    pub most_common_vals: Vec<String>,
-    pub histogram_bounds: Vec<String>,
-    pub correlation: Option<f64>,
+pub struct ErdLayout {
+    pub positions: HashMap<String, (f32, f32)>,  // table_name → (x, y)
+    pub diagram: ErdDiagram,
 }
 ```
 
-**New MCP tool:** `archive_browse__column_stats`  (queries `pg_stats`)
+### 10.2 — Browser frontend: SVG rendering
 
----
-
-### 2.6  EXPLAIN Plan Viewer
-
-**What:** `Ctrl+E` in the SQL editor runs `EXPLAIN (ANALYZE, FORMAT TEXT)` and
-shows the plan in the result panel. A tree-structured text render for ratatui/egui,
-a collapsible `<details>` tree for the browser.
-
-**New type:**
-
-```rust
-pub struct ExplainNode {
-    pub node_type: String,
-    pub relation: Option<String>,
-    pub startup_cost: f64,
-    pub total_cost: f64,
-    pub plan_rows: u64,
-    pub actual_rows: Option<u64>,
-    pub actual_time_ms: Option<f64>,
-    pub children: Vec<ExplainNode>,
-    pub extra: Vec<(String, String)>,   // filter, index cond, etc.
-}
-```
-
-**New MCP tool:** `archive_query__explain` (wraps `DbQueryExecutor::explain`)
-
-**Parsing:** Parse `EXPLAIN (FORMAT JSON)` output into `ExplainNode` tree.
-
-**Key binding:** `Ctrl+E` — explain current SQL editor contents
-
----
-
-## Phase 3 — Power-User Features
-
-### 3.1  Inline Row Edit / Insert / Delete
-
-**What:** In the data grid, press `e` to edit the selected cell in-place, `i`
-to insert a new row, `Delete` to mark a row for deletion.  Changes are staged
-and committed with `Ctrl+S`, rolled back with `Esc`.
-
-**Architecture:** Uses `DbTransactor::begin` typestate machine:
+`ErdDiagram::to_ak_nodes` in `Visual` mode produces:
 
 ```text
-begin(ReadCommitted) → TxMarker<Open>
-  ├─ execute(UPDATE …) → DbExecuteResult
-  ├─ execute(INSERT …) → DbExecuteResult
-  ├─ execute(DELETE …) → DbExecuteResult
-  └─ commit(handle)   → TxMarker<Committed>
-              or rollback → TxMarker<RolledBack>
+Role::Figure
+  ├─ Role::Group (table box for each ErdNode)
+  │    label: "<table_name>\n<col1>: <type>\n…"
+  │    value: "x=120,y=340,w=200,h=120"   ← bounding box in description
+  └─ Role::Group (edge for each ErdEdge)
+       label: "from_table.from_col → to_table.to_col"
+       value: "x1=320,y1=380,x2=500,y2=200"  ← line endpoints
 ```
 
-**New MCP tool:** `archive_query__edit_row` (wraps execute in transaction)
+The Leptos renderer translates `Role::Figure` children with coordinate
+`value` fields into SVG `<rect>`, `<text>`, and `<line>` elements. FK edges
+get clickable `<a>` anchors that navigate to the target table.
 
-**Key bindings:**
+This keeps the SVG in the IR pipeline: the AccessKit tree holds the layout
+data; the renderer decides the output format.
 
-- `e` — edit selected cell
-- `i` — insert new row
-- `Delete` — mark row for deletion
-- `Ctrl+S` — commit pending changes
-- `Esc` — rollback / discard
+### 10.3 — egui frontend: Painter rendering
+
+The egui bridge checks for `Role::Figure` children and uses `egui::Painter`
+to draw rectangles and Bézier lines. Pan/zoom via `egui::ScrollArea`. Click
+on a table box navigates the nav tree to that table.
+
+### 10.4 — ratatui frontend: text-art layout
+
+ratatui cannot render SVG. The ratatui bridge for `ErdPanel` renders a
+simple grid of box-drawing characters:
+
+```
+┌──────────────┐     ┌──────────────┐
+│ users        │────▶│ orders       │
+│ id: int4 PK  │     │ user_id: FK  │
+└──────────────┘     └──────────────┘
+```
+
+This is best-effort; the text layout uses the same coordinate data from
+`ErdLayout::positions`, snapped to character cells.
 
 ---
 
-### 3.2  Query History
+## Phase 11 — SSE live monitor polling
 
-**What:** `archive` persists the last N queries in a local SQLite file
-(`~/.config/archive/history.db`). Navigate with `Ctrl+↑` / `Ctrl+↓` in the
-SQL editor.
+The browser monitor panel currently requires a manual HTMX reload. Phase 11
+adds a Server-Sent Events stream so the browser auto-refreshes at a
+configurable interval.
 
-**Persistence:** `elicit_db` + `elicit_sqlx` can manage the history database
-(SQLite). Schema: `(id, timestamp, sql_text, duration_ms, row_count, error)`.
+### Architecture
 
-**New type:**
+```text
+GET /api/monitor-stream
+  │
+  ├─ Axum: returns Response<Body> with Content-Type: text/event-stream
+  ├─ tokio: spawns task that loops every 5 s
+  │     calls DbMonitor + DbRoleManager + DbBackupManager
+  │     emits SSE: "data: <JSON MonitorSnapshot>\n\n"
+  └─ Browser: EventSource('/api/monitor-stream')
+        onmessage: parse snapshot, call HTMX.trigger("#monitor-panel", "refresh")
+```
 
-```rust
-pub struct QueryHistoryEntry {
-    pub id: i64,
-    pub executed_at: DateTime<Utc>,
-    pub sql: String,
-    pub duration_ms: u64,
-    pub row_count: Option<u64>,
-    pub error: Option<String>,
-}
+### Implementation notes
+
+- Use `axum::response::sse::{Event, Sse}` + `tokio_stream::wrappers::IntervalStream`
+- `AppState` must carry the DB URL as `Arc<Mutex<Option<String>>>` (already the case)
+- The HTMX panel subscribes on open; unsubscribes on panel close (browser JS)
+- ratatui / egui: periodic `FetchRequest::FetchMonitor` already triggered from
+  a `tokio::time::interval` in the event loop — no change needed
+
+### New route
+
+```
+GET /api/monitor-stream    → SSE stream (text/event-stream)
 ```
 
 ---
 
-### 3.3  Saved Queries / Snippets
+## Phase 12 — SQL editor syntax highlighting
 
-**What:** Name and persist frequently-used queries. Browse in a sidebar panel.
+All three frontends currently show the SQL editor as plain text.
 
-**Persistence:** Same local SQLite as history. Schema:
-`(id, name, description, sql_text, tags)`.
+### Browser
 
-**Key binding:** `Ctrl+Shift+S` — save current query with name prompt.
+Use [CodeMirror 6](https://codemirror.net/). Loaded from a CDN bundle or
+vendored JS. The `<textarea>` is replaced with a CodeMirror editor; the
+Leptos backend only sees the textarea value on submit, so the IR pipeline is
+unaffected. The JS integration is entirely frontend-local.
+
+### egui
+
+Use `egui_code_editor` (crate) or a hand-rolled `egui::TextEdit` with a custom
+layouter that tokenises SQL keywords and applies Catppuccin Mocha colours.
+The custom layouter approach avoids an additional heavy dependency.
+
+### ratatui
+
+Use `tui-textarea` (already in the ecosystem notes) which supports syntax
+highlighting via `ratatui_syntax_highlight` or manual span markup. Minimal:
+keyword highlighting only (SELECT, FROM, WHERE, JOIN, etc.) in the accent
+colour.
+
+### Design note
+
+Syntax highlighting is **not** part of the IR. The AccessKit tree carries the
+raw SQL text. Highlighting is a pure rendering concern applied by each
+frontend's text display primitive. No changes to `ArchiveDisplay` or
+`build_content_nodes`.
 
 ---
 
-### 3.4  CSV / JSON / TSV Export
+## Phase 13 — Connection config (SSH tunnel + SSL)
 
-**What:** In the data grid, `x` opens an export dialog:
+`ConnectionProfile` today stores `url_env_key: String` only. Production use
+requires SSH tunnels (pgAdmin's most-used feature) and SSL certificate paths.
 
-- Format: CSV, JSON array, NDJSON, TSV
-- Destination: clipboard, file path, stdout
-
-**New MCP tool:** `archive_query__export` (streams rows from query, formats output)
-
----
-
-### 3.5  Multi-Connection Management
-
-**What:** Maintain a named list of connection profiles. Switch connections with
-`Ctrl+Tab`. Each connection has its own `ArchiveDbBackend` + `ArchiveNavModel`.
-
-**New type:**
+### Extended type
 
 ```rust
 pub struct ConnectionProfile {
     pub name: String,
-    pub url_env_key: String,    // env var, never stored raw
+    pub url_env_key: String,
     pub backend: BackendKind,
-    pub color: Option<String>,  // Catppuccin accent for tab badge
+    pub color: Option<String>,
+
+    // SSH tunnel (all optional; if host is set, tunnel is active)
+    pub ssh_host: Option<String>,
+    pub ssh_port: Option<u16>,
+    pub ssh_user: Option<String>,
+    pub ssh_key_env: Option<String>,   // env var naming the private key path
+
+    // SSL
+    pub ssl_mode: SslMode,
+    pub ssl_cert_env: Option<String>,  // env var naming client cert path
+    pub ssl_key_env: Option<String>,
+    pub ssl_ca_env: Option<String>,
+
+    // Display
+    pub color: Option<String>,
+}
+
+pub enum SslMode { Disable, Allow, Prefer, Require, VerifyCa, VerifyFull }
+```
+
+### Architecture notes
+
+- `ConnectionProfile` never stores raw paths or passwords — only env var
+  names. The actual secrets stay in the environment / `.env` file.
+- SSH tunnel is established before `AnyPool` creation using `openssh` crate
+  (or `ssh2`). The tunnel binds a random local port; the pool connects to
+  `localhost:<local_port>`.
+- `ArchiveDbBackend::connect_profile(profile)` replaces the current
+  `connect(url_str)` for profile-based connections.
+- The UI has a connection editor panel (new `PanelMode::ConnectionEditor`)
+  gated on a new `ArchiveAction::EditConnection`.
+
+### `ArchiveDisplay` for `ConnectionProfile`
+
+```rust
+pub enum ConnectionProfileMode { Card, Row, Editor }
+```
+
+`Editor` mode emits a `Role::Form` subtree with labelled `Role::TextInput`
+fields for each editable property — the IR-native form pattern.
+
+---
+
+## Phase 14 — Query plan comparison
+
+DataGrip and DBeaver both show side-by-side EXPLAIN plans for two queries.
+
+### Architecture
+
+```rust
+pub struct ExplainComparison {
+    pub left: ExplainNode,
+    pub right: ExplainNode,
+    pub label_left: String,
+    pub label_right: String,
 }
 ```
 
-**Architecture change:** `ArchiveEguiApp` / `TuiApp` hold
-`Vec<(ConnectionProfile, ArchiveNavModel)>` with an `active: usize` index.
+`PanelMode::ExplainCompare { left: ExplainNode, right: ExplainNode }` is set
+when the user runs the second EXPLAIN (toggled by `Ctrl+Shift+E`).
+
+`ExplainComparison::to_ak_nodes` produces two `Role::Tree` children inside
+a `Role::Group`. Each tree is built by `ExplainNode::to_ak_nodes` — the same
+impl used for the single-plan view.
+
+### UI behaviour
+
+- First `Ctrl+E` → opens `ExplainPlan` panel (existing)
+- Second `Ctrl+E` (with plan already open) → upgrades to `ExplainCompare`,
+  showing the new plan on the right and preserving the old on the left
+- `Ctrl+Shift+E` → clear comparison, return to single plan
+
+### Diff highlighting
+
+Cost-delta annotations: if `left.total_cost` and `right.total_cost` differ
+by > 10%, the changed node label gains a `▲`/`▼` prefix. Implemented in
+`ExplainComparison::to_ak_nodes` as label suffix, not as renderer-specific
+colour — the IR stays clean; renderers can add colour on top.
 
 ---
 
-## Phase 4 — Advanced Object Types (PostgreSQL-Specific)
+## Phase 15 — Theme system
 
-These surface Postgres-specific objects that pgAdmin handles but simpler tools
-don't bother with.
+Currently: egui hardcodes Catppuccin Mocha; ratatui and browser have no
+theme awareness.
 
-### 4.1  Function / Procedure Browser
+### Design
 
-**New type:** `FunctionDescriptor` (name, schema, return type, argument list,
-language, volatility, body preview)
+A `ColorTheme` type (already in `elicit_accesskit`) should drive all three
+frontends. Extend it with named semantic tokens:
 
-**Nav tree extension:** Add `Functions` node under each schema (collapsed by
-default). Expand to list functions. Press Enter to view DDL.
+```rust
+pub struct ArchiveTheme {
+    pub base: catppuccin::Flavour,  // Latte | Frappe | Macchiato | Mocha
+}
+```
 
-**New MCP tools:** `archive_browse__list_functions`,
-`archive_browse__describe_function`
+`ArchiveNavModel` carries `pub theme: ArchiveTheme`. All three frontends read
+`model.theme` at render time.
 
----
+- **egui**: `apply_theme(ctx, &model.theme)` — already partially done (hardcoded Mocha)
+- **ratatui**: `Style::fg(Color::Rgb(r,g,b))` from theme tokens; applied in
+  `TuiAccessKitConverter::convert`
+- **browser**: CSS custom properties injected in the `<head>` from the Leptos
+  renderer, derived from `model.theme`; no hardcoded hex values in HTML
 
-### 4.2  Trigger Browser
+### Key binding
 
-**New type:** `TriggerDescriptor` (name, table, event, timing, function,
-enabled)
-
-**New MCP tools:** `archive_browse__list_triggers`
-
----
-
-### 4.3  Sequence Browser
-
-**New type:** `SequenceDescriptor` (name, schema, current value, start,
-increment, min, max, cycle)
-
-**New MCP tools:** `archive_browse__list_sequences`
+`T` → cycle theme (Latte → Frappe → Macchiato → Mocha → Latte)
+New `ArchiveAction::CycleTheme`.
 
 ---
 
-### 4.4  Type Browser (Enum, Domain, Composite)
-
-**New types:** `EnumDescriptor`, `DomainDescriptor`, `CompositeTypeDescriptor`
-
-**New MCP tools:** `archive_browse__list_types`
-
----
-
-### 4.5  Extension Browser
-
-**Nav tree extension:** Top-level "Extensions" node under the database.
-Uses existing `DbServerAdmin::list_extensions`.
-
----
-
-## Phase 5 — Monitoring & Administration Dashboard
-
-### 5.1  Live Activity Monitor
-
-**What:** A dedicated "Monitor" panel showing active sessions, long-running
-queries, lock waits, cache hit ratio in real time (polling interval: 5s).
-
-**Backend:** All of `DbMonitor`'s methods are already implemented:
-`active_sessions`, `slow_queries`, `table_bloat`, `index_usage`, `lock_waits`,
-`cache_hit_ratio`.
-
-**Frontend:**  
-
-- ratatui: sparkline widgets for cache hit ratio, table for sessions  
-- egui: `egui::plot` (or `egui_plot`) for time-series metrics  
-- browser: SSE-driven live update via Axum
-
----
-
-### 5.2  Role / Privilege Matrix
-
-**What:** Table of roles vs. objects showing GRANT/REVOKE status. Edit cells to
-change privileges.
-
-**Backend:** Uses `DbRoleManager::list_roles`, `grant`, `revoke`.
-
----
-
-### 5.3  Backup / WAL Status
-
-**What:** Show last backup label + time, WAL status. Button to initiate a new
-backup.
-
-**Backend:** Uses `DbBackupManager::initiate_backup`, `list_backups`,
-`wal_status`.
-
----
-
-### 5.4  Server Settings Viewer
-
-**What:** Browse `pg_settings` with search. Mark which settings require restart.
-
-**Backend:** Uses `DbServerAdmin::list_settings`.
-
----
-
-## Phase 6 — ERD Diagram
-
-**What:** A relationship diagram showing tables as boxes with FK arrows between
-them. Pan, zoom, click to open table detail.
-
-**Scope decision:** Start with a static SVG export (simpler) before investing in
-an interactive layout. Use `petgraph` for the graph + a simple force-directed
-layout algorithm.
-
-**Frontend:**
-
-- ratatui: text-art boxes connected by ASCII lines (minimal, opt-in)
-- egui: `egui_graphs` or custom `egui::Painter` rendering
-- browser: SVG embedded in HTML (clickable `<a>` anchors on table boxes)
-
-**New MCP tool:** `archive_browse__generate_erd` — emits SVG string from FK
-graph
-
----
-
-## Implementation Order and Dependencies
+## Implementation order
 
 ```text
-Phase 1.3 (live refresh)           ← no deps, 1 day
-Phase 1.4 (object search)          ← no deps, 1 day
-Phase 2.4 (index details panel)    ← no deps (data already fetched)
-Phase 2.2 (FK descriptors)         ← types change, 2 days
-Phase 2.3 (constraint viewer)      ← 1 day
-Phase 2.1 (DDL viewer)             ← FK types, 2 days
-Phase 1.1 (data grid)              ← 3 days
-Phase 1.2 (SQL editor)             ← data grid, 3 days
-Phase 2.5 (column stats)           ← PG-only, 1 day
-Phase 2.6 (EXPLAIN viewer)         ← SQL editor, 2 days
-Phase 3.4 (CSV export)             ← data grid, 1 day
-Phase 3.2 (query history)          ← SQL editor, 2 days
-Phase 3.3 (saved queries)          ← query history, 1 day
-Phase 3.1 (row edit)               ← data grid + transactions, 3 days
-Phase 3.5 (multi-connection)       ← nav model refactor, 2 days
-Phase 4.1–4.5 (PG object types)    ← nav tree extension, 1 day each
-Phase 5.1–5.4 (monitoring)         ← all backend traits exist, 4 days
-Phase 6   (ERD)                    ← FK types, petgraph, 5 days
+Phase 7  (ArchiveDisplay impls)     ← foundation for everything
+  │
+  ├─ Phase 8  (surface partial features)   ← high value, low risk, uses Phase 7
+  │     8.1 constraint panel
+  │     8.2 index panel
+  │     8.3 trigger browser nav node
+  │     8.4 extension nav node
+  │     8.5 pagination keybindings
+  │     8.6 ERD is_fk enrichment
+  │
+  ├─ Phase 9  (monitor depth)        ← extends existing panel, uses Phase 7
+  │
+  ├─ Phase 10 (visual ERD)           ← petgraph layout, SVG/Painter/text-art
+  │
+  ├─ Phase 11 (SSE live monitor)     ← browser only, no IR changes
+  │
+  ├─ Phase 12 (syntax highlighting)  ← pure rendering, no IR changes
+  │
+  ├─ Phase 13 (connection config)    ← type + ArchiveDisplay + UI panel
+  │
+  ├─ Phase 14 (plan comparison)      ← type + ArchiveDisplay + new PanelMode
+  │
+  └─ Phase 15 (theme system)         ← egui already started, propagate everywhere
 ```
 
 ---
-
-## Data Model Extensions Summary
-
-| New type | Phase | Affects |
-|---|---|---|
-| `DataGridDescriptor` | 1.1 | types.rs + all 3 frontends |
-| `SqlEditorState` | 1.2 | ratatui/egui/browser |
-| `DdlDescriptor` | 2.1 | types.rs |
-| `ForeignKeyDescriptor` | 2.2 | types.rs, ColumnDescriptor |
-| `ConstraintDescriptor`, `ConstraintKind` | 2.3 | types.rs |
-| `ColumnStats` | 2.5 | types.rs |
-| `ExplainNode` | 2.6 | types.rs |
-| `QueryHistoryEntry` | 3.2 | local SQLite |
-| `ConnectionProfile` | 3.5 | nav model |
-| `FunctionDescriptor` | 4.1 | types.rs |
-| `TriggerDescriptor` | 4.2 | types.rs |
-| `SequenceDescriptor` | 4.3 | types.rs |
-| `EnumDescriptor` etc. | 4.4 | types.rs |
-
----
-
-## New MCP Plugins / Tools Summary
-
-| Plugin | New tools |
-|---|---|
-| `archive_browse` | `generate_ddl`, `list_foreign_keys`, `list_constraints`, `column_stats`, `list_functions`, `describe_function`, `list_triggers`, `list_sequences`, `list_types`, `generate_erd` |
-| `archive_query` | `explain`, `edit_row`, `export` |
-| `archive_monitor` | (new plugin) `active_sessions`, `slow_queries_dashboard`, `cache_hit_ratio`, `lock_waits_dashboard`, `table_bloat_report`, `index_usage_report` |
-| `archive_admin` | (new plugin) `backup_status`, `initiate_backup`, `role_matrix`, `server_settings` |
 
 ---
 
