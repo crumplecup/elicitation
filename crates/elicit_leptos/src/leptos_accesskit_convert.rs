@@ -804,6 +804,107 @@ fn render_node(
                 "\n"
             )
         }
+        // ── Figure / ERD diagram ───────────────────────────────────────────────
+        Role::Figure => {
+            let desc = node.description().unwrap_or("");
+            if desc.contains("w=") && desc.contains("h=") && has_children {
+                // Spatial ERD figure: render as inline SVG.
+                stats.containers_rendered += 1;
+                let coords = parse_kv_coords(desc);
+                let cw = coords.get("w").copied().unwrap_or(800.0);
+                let ch = coords.get("h").copied().unwrap_or(600.0);
+                let label = html_escape(node.label().unwrap_or("ERD diagram"));
+                let pad = indent(depth);
+
+                let mut svg_body = String::new();
+                // Arrow marker definition.
+                svg_body.push_str(
+                    "<defs><marker id=\"erd-arrow\" markerWidth=\"8\" markerHeight=\"6\" \
+                     refX=\"8\" refY=\"3\" orient=\"auto\">\
+                     <polygon points=\"0 0, 8 3, 0 6\" fill=\"#6c7086\"/></marker></defs>\n",
+                );
+
+                // Edges first (rendered behind boxes).
+                for &child_id in children.iter() {
+                    let Some(child) = nodes.get(&child_id) else {
+                        continue;
+                    };
+                    let child_desc = child.description().unwrap_or("");
+                    if !child_desc.contains("x1=") {
+                        continue;
+                    }
+                    let c = parse_kv_coords(child_desc);
+                    let x1 = c.get("x1").copied().unwrap_or(0.0);
+                    let y1 = c.get("y1").copied().unwrap_or(0.0);
+                    let x2 = c.get("x2").copied().unwrap_or(0.0);
+                    let y2 = c.get("y2").copied().unwrap_or(0.0);
+                    let edge_label = html_escape(child.label().unwrap_or(""));
+                    svg_body.push_str(&format!(
+                        "<line x1=\"{x1:.1}\" y1=\"{y1:.1}\" x2=\"{x2:.1}\" y2=\"{y2:.1}\" \
+                         class=\"erd-edge\"><title>{edge_label}</title></line>\n"
+                    ));
+                }
+
+                // Table boxes on top.
+                for &child_id in children.iter() {
+                    let Some(child) = nodes.get(&child_id) else {
+                        continue;
+                    };
+                    let child_desc = child.description().unwrap_or("");
+                    if !child_desc.contains("x=") {
+                        continue;
+                    }
+                    let c = parse_kv_coords(child_desc);
+                    let bx = c.get("x").copied().unwrap_or(0.0);
+                    let by = c.get("y").copied().unwrap_or(0.0);
+                    let bw = c.get("w").copied().unwrap_or(200.0);
+                    let bh = c.get("h").copied().unwrap_or(80.0);
+                    let table_name = html_escape(child.label().unwrap_or(""));
+
+                    // Outer box.
+                    svg_body.push_str(&format!(
+                        "<rect x=\"{bx:.1}\" y=\"{by:.1}\" width=\"{bw:.1}\" height=\"{bh:.1}\" \
+                         class=\"erd-box\" rx=\"3\"/>\n"
+                    ));
+                    // Header band.
+                    svg_body.push_str(&format!(
+                        "<rect x=\"{bx:.1}\" y=\"{by:.1}\" width=\"{bw:.1}\" height=\"24\" \
+                         class=\"erd-header\" rx=\"3\"/>\n"
+                    ));
+                    // Table name label.
+                    svg_body.push_str(&format!(
+                        "<text x=\"{:.1}\" y=\"{:.1}\" class=\"erd-title\">{table_name}</text>\n",
+                        bx + bw / 2.0,
+                        by + 14.0,
+                    ));
+
+                    // Column rows.
+                    for (i, &col_id) in child.children().iter().enumerate() {
+                        let Some(col_node) = nodes.get(&col_id) else {
+                            continue;
+                        };
+                        let col_text = html_escape(col_node.label().unwrap_or(""));
+                        let ty = by + 24.0 + (i as f64 + 0.5) * 20.0 + 4.0;
+                        svg_body.push_str(&format!(
+                            "<text x=\"{:.1}\" y=\"{ty:.1}\" class=\"erd-col\">{col_text}</text>\n",
+                            bx + 6.0,
+                        ));
+                    }
+                }
+
+                format!(
+                    "{pad}<svg viewBox=\"0 0 {cw:.1} {ch:.1}\" \
+                     class=\"erd-diagram\" role=\"img\" \
+                     aria-label=\"{label}\">\n{svg_body}{pad}</svg>\n"
+                )
+            } else {
+                // Generic figure fallback.
+                stats.containers_rendered += 1;
+                let inner = render_children(nodes, children, mode, depth + 1, stats);
+                let pad = indent(depth);
+                format!("{pad}<figure>\n{inner}{pad}</figure>\n")
+            }
+        }
 
         // ── Structural primitives ──────────────────────────────────────────────
         Role::Splitter => {
@@ -1405,4 +1506,19 @@ fn orientation_class(node: &Node) -> Option<String> {
         Some(Orientation::Vertical) => Some("ak-vbox".to_string()),
         None => None,
     }
+}
+
+/// Parse a comma-separated `key=value` coordinate string (e.g. `"x=10,y=20,w=200,h=80"`)
+/// into a map of string keys to f64 values.
+///
+/// Used to decode spatial metadata from [`accesskit::Role::Figure`] and its
+/// child [`accesskit::Role::Group`] nodes in the ERD diagram IR.
+fn parse_kv_coords(desc: &str) -> std::collections::HashMap<&str, f64> {
+    desc.split(',')
+        .filter_map(|part| {
+            let (k, v) = part.split_once('=')?;
+            let v = v.trim().parse::<f64>().ok()?;
+            Some((k.trim(), v))
+        })
+        .collect()
 }

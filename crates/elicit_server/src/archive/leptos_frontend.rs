@@ -1415,7 +1415,15 @@ fn wrap_page(body: &str) -> String {
         // export buttons inside the ExportPanel content
         ".export-fmt-btn{background:#313244;color:#cdd6f4;border:1px solid #45475a;",
         "border-radius:3px;padding:.3rem .7rem;font-family:inherit;font-size:.85rem;cursor:pointer}",
-        ".export-fmt-btn:hover{background:#45475a}"
+        ".export-fmt-btn:hover{background:#45475a}",
+        // ERD diagram (SVG-based)
+        "svg.erd-diagram{display:block;max-width:100%;height:auto;overflow:visible}",
+        ".erd-box{fill:#313244;stroke:#45475a;stroke-width:1}",
+        ".erd-header{fill:#1e1e2e;stroke:#45475a;stroke-width:1}",
+        ".erd-title{fill:#89b4fa;font-size:12px;text-anchor:middle;dominant-baseline:middle;",
+        "font-family:'Cascadia Code','Fira Code',monospace;font-weight:bold}",
+        ".erd-col{fill:#cdd6f4;font-size:10px;font-family:'Cascadia Code','Fira Code',monospace}",
+        ".erd-edge{stroke:#6c7086;stroke-width:1.5;fill:none;marker-end:url(#erd-arrow)}",
     );
 
     // JS: only IR-safe helpers — no HTML building, no side panels.

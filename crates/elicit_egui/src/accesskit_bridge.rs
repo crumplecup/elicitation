@@ -1909,6 +1909,143 @@ fn render_node_recursive(
             ui.end_row();
             stats.widgets_rendered += 1;
         }
+        Role::Figure => {
+            let desc = node.description().unwrap_or("");
+            let children = node.children();
+            if desc.contains("w=") && desc.contains("h=") && !children.is_empty() {
+                // Spatial ERD diagram: render with Painter.
+                let coords = parse_kv_coords_egui(desc);
+                let cw = coords.get("w").copied().unwrap_or(800.0);
+                let ch = coords.get("h").copied().unwrap_or(600.0);
+
+                // Collect box and edge data before borrowing `ui`.
+                struct ErdBox {
+                    x: f32,
+                    y: f32,
+                    w: f32,
+                    h: f32,
+                    name: String,
+                    cols: Vec<String>,
+                }
+                struct ErdEdge {
+                    x1: f32,
+                    y1: f32,
+                    x2: f32,
+                    y2: f32,
+                    label: String,
+                }
+
+                let mut boxes: Vec<ErdBox> = Vec::new();
+                let mut edges: Vec<ErdEdge> = Vec::new();
+
+                for child_id in children.iter() {
+                    let Some(child) = nodes.get(child_id) else {
+                        continue;
+                    };
+                    let child_desc = child.description().unwrap_or("");
+                    let c = parse_kv_coords_egui(child_desc);
+                    if child_desc.contains("x1=") {
+                        edges.push(ErdEdge {
+                            x1: c.get("x1").copied().unwrap_or(0.0),
+                            y1: c.get("y1").copied().unwrap_or(0.0),
+                            x2: c.get("x2").copied().unwrap_or(0.0),
+                            y2: c.get("y2").copied().unwrap_or(0.0),
+                            label: child.label().unwrap_or("").to_string(),
+                        });
+                    } else if child_desc.contains("x=") {
+                        let cols: Vec<String> = child
+                            .children()
+                            .iter()
+                            .filter_map(|&col_id| nodes.get(&col_id))
+                            .map(|n| n.label().unwrap_or("").to_string())
+                            .collect();
+                        boxes.push(ErdBox {
+                            x: c.get("x").copied().unwrap_or(0.0),
+                            y: c.get("y").copied().unwrap_or(0.0),
+                            w: c.get("w").copied().unwrap_or(200.0),
+                            h: c.get("h").copied().unwrap_or(80.0),
+                            name: child.label().unwrap_or("").to_string(),
+                            cols,
+                        });
+                    }
+                }
+
+                let desired = egui::Vec2::new(cw.min(2000.0), ch.min(1200.0));
+                let (resp, painter) = ui.allocate_painter(desired, egui::Sense::hover());
+                let origin = resp.rect.min;
+                let scale = (resp.rect.width() / cw).min(1.0);
+
+                let col_fg = egui::Color32::from_rgb(205, 214, 244);
+                let title_fg = egui::Color32::from_rgb(137, 180, 250);
+                let box_bg = egui::Color32::from_rgb(49, 50, 68);
+                let header_bg = egui::Color32::from_rgb(30, 30, 46);
+                let border = egui::Color32::from_rgb(69, 71, 90);
+                let edge_col = egui::Color32::from_rgb(108, 112, 134);
+
+                // Edges.
+                for e in &edges {
+                    let p1 = origin + egui::Vec2::new(e.x1 * scale, e.y1 * scale);
+                    let p2 = origin + egui::Vec2::new(e.x2 * scale, e.y2 * scale);
+                    painter.line_segment([p1, p2], egui::Stroke::new(1.5, edge_col));
+                    let _ = &e.label; // used for accessibility / future tooltips
+                }
+
+                // Boxes.
+                let font_id = egui::FontId::monospace(10.0 * scale);
+                let title_font = egui::FontId::monospace(11.0 * scale);
+                for b in &boxes {
+                    let tl = origin + egui::Vec2::new(b.x * scale, b.y * scale);
+                    let br = tl + egui::Vec2::new(b.w * scale, b.h * scale);
+                    let rect = egui::Rect::from_min_max(tl, br);
+
+                    // Box background.
+                    painter.rect_filled(rect, 3.0, box_bg);
+                    painter.rect_stroke(
+                        rect,
+                        3.0,
+                        egui::Stroke::new(1.0, border),
+                        egui::StrokeKind::Outside,
+                    );
+
+                    // Header band.
+                    let header_br = tl + egui::Vec2::new(b.w * scale, 24.0 * scale);
+                    let header_rect = egui::Rect::from_min_max(tl, header_br);
+                    painter.rect_filled(header_rect, 3.0, header_bg);
+                    painter.rect_stroke(
+                        header_rect,
+                        3.0,
+                        egui::Stroke::new(1.0, border),
+                        egui::StrokeKind::Outside,
+                    );
+
+                    // Table name.
+                    painter.text(
+                        header_rect.center(),
+                        egui::Align2::CENTER_CENTER,
+                        &b.name,
+                        title_font.clone(),
+                        title_fg,
+                    );
+
+                    // Column rows.
+                    for (i, col) in b.cols.iter().enumerate() {
+                        let ty = tl.y + (24.0 + (i as f32 + 0.5) * 20.0 + 4.0) * scale;
+                        let tx = tl.x + 6.0 * scale;
+                        painter.text(
+                            egui::Pos2::new(tx, ty),
+                            egui::Align2::LEFT_CENTER,
+                            col,
+                            font_id.clone(),
+                            col_fg,
+                        );
+                    }
+                }
+
+                stats.containers_rendered += 1;
+            } else {
+                render_container(ui, nodes, node, stats, clicked_nodes);
+            }
+        }
         _ => {
             if node.children().is_empty() {
                 stats.nodes_skipped += 1;
@@ -1949,4 +2086,18 @@ fn render_label(ui: &mut egui::Ui, node: &Node) {
         _ => egui::RichText::new(text),
     };
     ui.add(egui::Label::new(rt));
+}
+
+/// Parse a comma-separated `key=value` coordinate string (e.g. `"x=10,y=20,w=200,h=80"`)
+/// into a map of string keys to `f32` values.
+///
+/// Used to decode spatial metadata from [`accesskit::Role::Figure`] ERD nodes.
+fn parse_kv_coords_egui(desc: &str) -> std::collections::HashMap<&str, f32> {
+    desc.split(',')
+        .filter_map(|part| {
+            let (k, v) = part.split_once('=')?;
+            let v = v.trim().parse::<f32>().ok()?;
+            Some((k.trim(), v))
+        })
+        .collect()
 }

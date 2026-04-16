@@ -23,9 +23,9 @@ use std::collections::HashMap;
 use elicit_accesskit::KeyBinding;
 
 use crate::archive::{
-    AdminSnapshot, ColumnStats, ConnectionProfile, ConstraintDescriptor, ErdDiagram, ExplainNode,
-    ExportFormat, IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult, RowEditState,
-    SavedQuery, StagedEdit, TableInspection,
+    AdminSnapshot, ColumnStats, ConnectionProfile, ConstraintDescriptor, ErdDiagram, ErdLayout,
+    ExplainNode, ExportFormat, IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult,
+    RowEditState, SavedQuery, StagedEdit, TableInspection,
     actions::{ArchiveKeyMap, KeyMapMode},
     nav_tree::{NavTree, SchemaEntry},
 };
@@ -182,6 +182,8 @@ pub enum PanelMode {
         schema: String,
         /// Cached ERD diagram; empty until first fetch completes.
         diagram: ErdDiagram,
+        /// Grid layout computed from the diagram; `None` until first fetch completes.
+        layout: Option<ErdLayout>,
         /// Whether a fetch is currently in progress.
         loading: bool,
     },
@@ -1270,6 +1272,7 @@ impl ArchiveNavModel {
         self.panel = PanelMode::ErdPanel {
             schema: schema.clone(),
             diagram: ErdDiagram::default(),
+            layout: None,
             loading: true,
         };
         Some(FetchRequest::FetchErd { schema })
@@ -1281,11 +1284,14 @@ impl ArchiveNavModel {
     pub fn apply_erd_diagram(&mut self, diagram: ErdDiagram) {
         if let PanelMode::ErdPanel {
             diagram: d,
+            layout,
             loading,
             ..
         } = &mut self.panel
         {
+            let new_layout = ErdLayout::from_diagram(&diagram);
             *d = diagram;
+            *layout = Some(new_layout);
             *loading = false;
         }
     }
@@ -2876,6 +2882,7 @@ impl ArchiveNavModel {
             PanelMode::ErdPanel {
                 schema,
                 diagram,
+                layout,
                 loading,
             } => {
                 use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
@@ -2896,71 +2903,144 @@ impl ArchiveNavModel {
                 nodes.insert(heading_id, h);
                 children.push(heading_id);
 
-                // Table nodes list
-                let tables_list_id = alloc();
-                let mut table_items: Vec<AkNodeId> = Vec::new();
-                for node_entry in &diagram.nodes {
-                    // Table header item
-                    let table_id = alloc();
-                    let mut table_node = AkNode::new(AkRole::TreeItem);
-                    table_node.set_label(format!(
-                        "{}  ({} cols)",
-                        node_entry.table,
-                        node_entry.columns.len()
-                    ));
-                    // Column children
-                    let mut col_ids: Vec<AkNodeId> = Vec::new();
-                    for col in &node_entry.columns {
-                        let col_id = alloc();
-                        let mut col_node = AkNode::new(AkRole::ListItem);
-                        let flags: Vec<&str> =
-                            [col.is_pk.then_some("PK"), col.is_fk.then_some("FK")]
-                                .into_iter()
-                                .flatten()
-                                .collect();
-                        col_node.set_label(if flags.is_empty() {
-                            format!("  {} : {}", col.name, col.sql_type)
-                        } else {
-                            format!("  {} : {} [{}]", col.name, col.sql_type, flags.join(", "))
-                        });
-                        nodes.insert(col_id, col_node);
-                        col_ids.push(col_id);
-                    }
-                    if !col_ids.is_empty() {
-                        table_node.set_children(col_ids);
-                    }
-                    nodes.insert(table_id, table_node);
-                    table_items.push(table_id);
-                }
-                let mut tables_list = AkNode::new(AkRole::Tree);
-                tables_list.set_label("Tables".to_string());
-                tables_list.set_children(table_items);
-                nodes.insert(tables_list_id, tables_list);
-                children.push(tables_list_id);
+                if let Some(layout) = layout {
+                    // ── Spatial figure IR ────────────────────────────────────
+                    // Role::Figure root carries canvas dimensions.
+                    let figure_id = alloc();
+                    let mut figure_children: Vec<AkNodeId> = Vec::new();
 
-                // Relationships list
-                if !diagram.edges.is_empty() {
-                    let edges_list_id = alloc();
-                    let mut edge_items: Vec<AkNodeId> = Vec::new();
-                    for edge in &diagram.edges {
-                        let edge_id = alloc();
-                        let mut edge_node = AkNode::new(AkRole::ListItem);
-                        edge_node.set_label(format!(
-                            "{}.{} → {}.{} ({})",
-                            edge.from_table,
-                            edge.from_column,
-                            edge.to_table,
-                            edge.to_column,
-                            edge.constraint_name,
-                        ));
-                        nodes.insert(edge_id, edge_node);
-                        edge_items.push(edge_id);
+                    // One Group per table box with coordinate metadata.
+                    let mut sorted_nodes: Vec<&crate::archive::types::ErdNode> =
+                        diagram.nodes.iter().collect();
+                    sorted_nodes.sort_by(|a, b| a.table.cmp(&b.table));
+
+                    for node_entry in &sorted_nodes {
+                        let key = format!("{}.{}", node_entry.schema, node_entry.table);
+                        let Some(&(bx, by, bw, bh)) = layout.boxes.get(&key) else {
+                            continue;
+                        };
+                        let box_id = alloc();
+                        let mut box_node = AkNode::new(AkRole::Group);
+                        box_node.set_label(node_entry.table.clone());
+                        box_node.set_description(format!("x={bx},y={by},w={bw},h={bh}"));
+
+                        // Column children (accessible label row).
+                        let mut col_ids: Vec<AkNodeId> = Vec::new();
+                        for col in &node_entry.columns {
+                            let col_id = alloc();
+                            let mut col_node = AkNode::new(AkRole::ListItem);
+                            let flags: Vec<&str> =
+                                [col.is_pk.then_some("PK"), col.is_fk.then_some("FK")]
+                                    .into_iter()
+                                    .flatten()
+                                    .collect();
+                            col_node.set_label(if flags.is_empty() {
+                                format!("{} : {}", col.name, col.sql_type)
+                            } else {
+                                format!("{} : {} [{}]", col.name, col.sql_type, flags.join(", "))
+                            });
+                            nodes.insert(col_id, col_node);
+                            col_ids.push(col_id);
+                        }
+                        if !col_ids.is_empty() {
+                            box_node.set_children(col_ids);
+                        }
+                        nodes.insert(box_id, box_node);
+                        figure_children.push(box_id);
                     }
-                    let mut edges_list = AkNode::new(AkRole::List);
-                    edges_list.set_label("Relationships".to_string());
-                    edges_list.set_children(edge_items);
-                    nodes.insert(edges_list_id, edges_list);
-                    children.push(edges_list_id);
+
+                    // One Group per FK edge with endpoint coordinates.
+                    for edge in &diagram.edges {
+                        let from_key = format!("{}.{}", edge.from_schema, edge.from_table);
+                        let to_key = format!("{}.{}", edge.to_schema, edge.to_table);
+                        let (Some((x1, y1)), Some((x2, y2))) =
+                            (layout.centre_bottom(&from_key), layout.centre_top(&to_key))
+                        else {
+                            continue;
+                        };
+                        let edge_id = alloc();
+                        let mut edge_node = AkNode::new(AkRole::Group);
+                        edge_node.set_label(format!(
+                            "{}.{} → {}.{}",
+                            edge.from_table, edge.from_column, edge.to_table, edge.to_column
+                        ));
+                        edge_node.set_description(format!("x1={x1},y1={y1},x2={x2},y2={y2}"));
+                        nodes.insert(edge_id, edge_node);
+                        figure_children.push(edge_id);
+                    }
+
+                    let mut figure = AkNode::new(AkRole::Figure);
+                    figure.set_label(format!("ERD — {schema}"));
+                    figure.set_description(format!("w={},h={}", layout.canvas_w, layout.canvas_h));
+                    if !figure_children.is_empty() {
+                        figure.set_children(figure_children);
+                    }
+                    nodes.insert(figure_id, figure);
+                    children.push(figure_id);
+                } else {
+                    // ── Fallback list view (loading / empty) ─────────────────
+                    let tables_list_id = alloc();
+                    let mut table_items: Vec<AkNodeId> = Vec::new();
+                    for node_entry in &diagram.nodes {
+                        let table_id = alloc();
+                        let mut table_node = AkNode::new(AkRole::TreeItem);
+                        table_node.set_label(format!(
+                            "{}  ({} cols)",
+                            node_entry.table,
+                            node_entry.columns.len()
+                        ));
+                        let mut col_ids: Vec<AkNodeId> = Vec::new();
+                        for col in &node_entry.columns {
+                            let col_id = alloc();
+                            let mut col_node = AkNode::new(AkRole::ListItem);
+                            let flags: Vec<&str> =
+                                [col.is_pk.then_some("PK"), col.is_fk.then_some("FK")]
+                                    .into_iter()
+                                    .flatten()
+                                    .collect();
+                            col_node.set_label(if flags.is_empty() {
+                                format!("  {} : {}", col.name, col.sql_type)
+                            } else {
+                                format!("  {} : {} [{}]", col.name, col.sql_type, flags.join(", "))
+                            });
+                            nodes.insert(col_id, col_node);
+                            col_ids.push(col_id);
+                        }
+                        if !col_ids.is_empty() {
+                            table_node.set_children(col_ids);
+                        }
+                        nodes.insert(table_id, table_node);
+                        table_items.push(table_id);
+                    }
+                    let mut tables_list = AkNode::new(AkRole::Tree);
+                    tables_list.set_label("Tables".to_string());
+                    tables_list.set_children(table_items);
+                    nodes.insert(tables_list_id, tables_list);
+                    children.push(tables_list_id);
+
+                    if !diagram.edges.is_empty() {
+                        let edges_list_id = alloc();
+                        let mut edge_items: Vec<AkNodeId> = Vec::new();
+                        for edge in &diagram.edges {
+                            let edge_id = alloc();
+                            let mut edge_node = AkNode::new(AkRole::ListItem);
+                            edge_node.set_label(format!(
+                                "{}.{} → {}.{} ({})",
+                                edge.from_table,
+                                edge.from_column,
+                                edge.to_table,
+                                edge.to_column,
+                                edge.constraint_name,
+                            ));
+                            nodes.insert(edge_id, edge_node);
+                            edge_items.push(edge_id);
+                        }
+                        let mut edges_list = AkNode::new(AkRole::List);
+                        edges_list.set_label("Relationships".to_string());
+                        edges_list.set_children(edge_items);
+                        nodes.insert(edges_list_id, edges_list);
+                        children.push(edges_list_id);
+                    }
                 }
             }
             PanelMode::ConstraintPanel {

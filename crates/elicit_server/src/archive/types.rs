@@ -1158,3 +1158,84 @@ pub struct ErdDiagram {
     /// FK edges between nodes.
     pub edges: Vec<ErdEdge>,
 }
+
+/// Spatial layout computed from an [`ErdDiagram`] for visual rendering.
+///
+/// Coordinates are in logical pixels (no DPI scaling).  The origin (0, 0)
+/// is the top-left corner of the canvas.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct ErdLayout {
+    /// Canvas width needed to contain all boxes.
+    pub canvas_w: f32,
+    /// Canvas height needed to contain all boxes.
+    pub canvas_h: f32,
+    /// Per-table bounding box: (x, y, width, height).
+    ///
+    /// Key is `"schema.table"`.
+    pub boxes: std::collections::HashMap<String, (f32, f32, f32, f32)>,
+}
+
+impl ErdLayout {
+    /// Compute a simple grid layout for the given diagram.
+    ///
+    /// Tables are sorted alphabetically, then placed in a square-ish grid.
+    /// Each box is 200 px wide and 80 + 20 × col_count px tall.
+    /// Horizontal gap is 40 px; vertical gap is 40 px.
+    pub fn from_diagram(diagram: &ErdDiagram) -> Self {
+        let n = diagram.nodes.len();
+        if n == 0 {
+            return Self::default();
+        }
+
+        let cols = (n as f32).sqrt().ceil() as usize;
+        let box_w: f32 = 200.0;
+        let gap_x: f32 = 40.0;
+        let gap_y: f32 = 40.0;
+        let header_h: f32 = 32.0;
+        let row_h: f32 = 20.0;
+        let min_h: f32 = 80.0;
+        let pad: f32 = 20.0; // outer canvas padding
+
+        let mut sorted: Vec<&ErdNode> = diagram.nodes.iter().collect();
+        sorted.sort_by(|a, b| a.table.cmp(&b.table));
+
+        let mut boxes = std::collections::HashMap::new();
+        let mut max_x: f32 = 0.0;
+        let mut max_y: f32 = 0.0;
+
+        for (i, node) in sorted.iter().enumerate() {
+            let col = i % cols;
+            let row = i / cols;
+
+            // Height is proportional to the number of columns.
+            let box_h = (header_h + node.columns.len() as f32 * row_h).max(min_h);
+            let x = pad + col as f32 * (box_w + gap_x);
+            let y = pad + row as f32 * (box_h + gap_y);
+
+            let key = format!("{}.{}", node.schema, node.table);
+            boxes.insert(key, (x, y, box_w, box_h));
+            if x + box_w > max_x {
+                max_x = x + box_w;
+            }
+            if y + box_h > max_y {
+                max_y = y + box_h;
+            }
+        }
+
+        Self {
+            canvas_w: max_x + pad,
+            canvas_h: max_y + pad,
+            boxes,
+        }
+    }
+
+    /// Centre-bottom point of a box (connection source/sink for FK lines).
+    pub fn centre_bottom(&self, key: &str) -> Option<(f32, f32)> {
+        self.boxes.get(key).map(|(x, y, w, h)| (x + w / 2.0, y + h))
+    }
+
+    /// Centre-top point of a box.
+    pub fn centre_top(&self, key: &str) -> Option<(f32, f32)> {
+        self.boxes.get(key).map(|(x, y, w, _h)| (x + w / 2.0, *y))
+    }
+}

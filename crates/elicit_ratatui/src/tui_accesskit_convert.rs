@@ -259,6 +259,37 @@ fn convert_accesskit_node(
         return TuiNode::StatusBar { chips, theme };
     }
 
+    // Role::Figure with coordinate metadata → ASCII art ERD.
+    if node.role() == Role::Figure {
+        let desc = node.description().unwrap_or("");
+        if desc.contains("w=") && desc.contains("h=") && !children_ids.is_empty() {
+            let art = erd_ascii_art(node, &children_ids, node_map);
+            let label = node.label().unwrap_or("ERD");
+            let block = if label.is_empty() {
+                None
+            } else {
+                Some(BlockJson {
+                    title: Some(label.to_string()),
+                    borders: BordersJson::None,
+                    border_type: None,
+                    border_style: None,
+                    style: None,
+                    padding: None,
+                })
+            };
+            return TuiNode::Widget {
+                widget: Box::new(WidgetJson::Paragraph {
+                    text: art.into(),
+                    style: None,
+                    wrap: false,
+                    scroll: None,
+                    alignment: None,
+                    block,
+                }),
+            };
+        }
+    }
+
     if children_ids.is_empty() {
         // Leaf → Widget
         let widget = accesskit_to_widget(node);
@@ -446,5 +477,104 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
             alignment: None,
             block: None,
         },
+    }
+}
+
+/// Render an ERD [`Role::Figure`] node as multi-column ASCII art.
+///
+/// Tables are laid out in a 2-column grid with box-drawing borders.
+/// FK edges are listed as text at the bottom.
+fn erd_ascii_art(
+    _figure: &Node,
+    children_ids: &[NodeId],
+    node_map: &std::collections::HashMap<NodeId, &Node>,
+) -> String {
+    const BOX_W: usize = 32;
+    const COLS_PER_ROW: usize = 2;
+
+    let mut tables: Vec<Vec<String>> = Vec::new();
+    let mut edge_lines: Vec<String> = Vec::new();
+
+    for &child_id in children_ids {
+        let Some(child) = node_map.get(&child_id) else {
+            continue;
+        };
+        let child_desc = child.description().unwrap_or("");
+
+        if child_desc.contains("x1=") {
+            // FK edge
+            edge_lines.push(format!(
+                "  {} ({})",
+                child.label().unwrap_or("edge"),
+                child_desc
+            ));
+        } else if child_desc.contains("x=") {
+            // Table box — collect lines for this table
+            let name = child.label().unwrap_or("table");
+            let mut box_lines: Vec<String> = Vec::new();
+            // header
+            let title = truncate_center(name, BOX_W - 2);
+            box_lines.push(format!("┌{}┐", "─".repeat(BOX_W - 2)));
+            box_lines.push(format!("│{:^width$}│", title, width = BOX_W - 2));
+            box_lines.push(format!("├{}┤", "─".repeat(BOX_W - 2)));
+            // columns
+            for col_id in child.children().iter() {
+                let Some(col) = node_map.get(col_id) else {
+                    continue;
+                };
+                let col_text = truncate_pad(col.label().unwrap_or(""), BOX_W - 4);
+                box_lines.push(format!("│ {} │", col_text));
+            }
+            box_lines.push(format!("└{}┘", "─".repeat(BOX_W - 2)));
+            tables.push(box_lines);
+        }
+    }
+
+    let mut out = String::new();
+    // Render tables in a COLS_PER_ROW grid.
+    for chunk in tables.chunks(COLS_PER_ROW) {
+        let max_h = chunk.iter().map(|t| t.len()).max().unwrap_or(0);
+        for row in 0..max_h {
+            for (i, table) in chunk.iter().enumerate() {
+                let line = table.get(row).map(String::as_str).unwrap_or("");
+                let pad = " ".repeat(BOX_W.saturating_sub(line.chars().count()));
+                if i + 1 < chunk.len() {
+                    out.push_str(&format!("{}{}  ", line, pad));
+                } else {
+                    out.push_str(line);
+                }
+            }
+            out.push('\n');
+        }
+        out.push('\n');
+    }
+
+    if !edge_lines.is_empty() {
+        out.push_str("FK Relationships:\n");
+        for e in &edge_lines {
+            out.push_str(e);
+            out.push('\n');
+        }
+    }
+
+    out
+}
+
+fn truncate_pad(s: &str, width: usize) -> String {
+    let chars: Vec<char> = s.chars().collect();
+    if chars.len() >= width {
+        chars[..width].iter().collect()
+    } else {
+        let padding = width - chars.len();
+        format!("{}{}", s, " ".repeat(padding))
+    }
+}
+
+fn truncate_center(s: &str, width: usize) -> String {
+    let chars: Vec<char> = s.chars().collect();
+    if chars.len() >= width {
+        chars[..width].iter().collect()
+    } else {
+        s.to_string()
     }
 }
