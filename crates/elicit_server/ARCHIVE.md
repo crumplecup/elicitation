@@ -152,35 +152,166 @@ archive demo --mode egui
 
 ## Keyboard navigation
 
-### TUI frontends (ratatui + egui)
+All keybindings are declared in `ArchiveKeyMap` (the single source of truth)
+and flow through `ArchiveNavModel` to every frontend. The IR contract
+guarantees that a binding declared once is honoured identically in all three
+renderers — no per-frontend key wiring can silently diverge.
 
-Keybindings are sourced from `StatusBarDescriptor::archive_browse()` in the
-AccessKit IR — the same data that populates the status bar chips:
+### Default navigation mode (all frontends)
 
-| Key          | Action                            |
-|--------------|-----------------------------------|
-| `↑` / `k`   | Move selection up                 |
-| `↓` / `j`   | Move selection down               |
-| `Enter`      | Expand / collapse schema          |
-| `r`          | Refresh nav tree                  |
-| `?`          | Toggle keybinding help overlay    |
-| `q` / `Esc`  | Quit                              |
+| Key              | Action                                        |
+|------------------|-----------------------------------------------|
+| `↑` / `k`       | Move selection up                             |
+| `↓` / `j`       | Move selection down                           |
+| `Enter`          | Expand / collapse / select item               |
+| `r`              | Refresh nav tree from database                |
+| `?`              | Toggle keybinding help overlay                |
+| `q` / `Esc`      | Quit                                          |
+| `/`              | Open nav filter                               |
+| `s`              | Open SQL editor panel                         |
+| `d`              | Open DDL viewer for selected table            |
+| `e`              | Open EXPLAIN plan for selected table          |
+| `F2`             | Open saved-query browser                      |
+| `m`              | Open / close live monitor panel               |
+| `a`              | Open / close admin panel                      |
+| `g`              | Open / close ERD diagram for selected schema  |
+| `[` / `]`        | Cycle admin panel tabs (prev / next)          |
+| `x`              | Open export format picker (DataGrid only)     |
+| `Ctrl+Tab`       | Cycle to next database connection             |
+| `Ctrl+Shift+Tab` | Cycle to previous database connection         |
 
-### Browser frontend
+### Modal key maps
 
-Keyboard shortcuts trigger HTMX panel swaps via JS event listener. All
-resulting HTML is IR-sourced (same `ArchiveNavModel` pipeline):
+| Mode              | Key       | Action                               |
+|-------------------|-----------|--------------------------------------|
+| **Filter**        | `Esc`     | Close filter (restore full list)     |
+|                   | `Backspace` | Delete last filter character       |
+| **Save prompt**   | `Esc`     | Cancel without saving                |
+|                   | `Backspace` | Delete last name character         |
+|                   | `Enter`   | Confirm and persist query            |
+| **Saved browser** | `Esc`/`q` | Close browser                        |
+|                   | `↑`/`k`   | Move selection up                    |
+|                   | `↓`/`j`   | Move selection down                  |
+|                   | `Enter`   | Load selected query into editor      |
+|                   | `d`/`Del` | Delete selected query                |
+| **Export picker** | `Esc`     | Cancel                               |
+|                   | `↑`/`k`   | Move selection up                    |
+|                   | `↓`/`j`   | Move selection down                  |
+|                   | `Enter`   | Export in selected format            |
+| **SQL editor**    | `Ctrl+Enter` | Execute SQL                       |
+|                   | `↑` (history) | Navigate to previous history entry |
+|                   | `↓` (history) | Navigate to next history entry     |
+|                   | `Esc`     | Close SQL editor                     |
+|                   | `Ctrl+s`  | Open save-query name prompt          |
 
-| Key            | Action                            |
-|----------------|-----------------------------------|
-| `/`            | Focus nav filter                  |
-| `Esc`          | Clear nav filter                  |
-| `s`            | Open SQL editor panel             |
-| `d`            | Open DDL panel for selected table |
-| `i`            | Open column detail panel          |
-| `x`            | Open export picker panel          |
-| `?`            | Open help / keybindings panel     |
-| `Ctrl+Enter`   | Run SQL (when editor is open)     |
+---
+
+## Panel modes
+
+`PanelMode` is the central content-area state machine, shared by all three
+frontends. Each variant is wired in the AccessKit IR — no frontend may render
+a panel that isn't modelled here.
+
+| Variant          | Description                                           | Frontends |
+|------------------|-------------------------------------------------------|-----------|
+| `Welcome`        | Welcome message / connection prompt                   | all       |
+| `DataGrid`       | Paginated table data with row editing                 | all       |
+| `SqlEditor`      | SQL editor + query result + error display             | all       |
+| `Ddl`            | DDL source for the selected table / view              | all       |
+| `ExplainPlan`    | Visual EXPLAIN plan tree                              | all       |
+| `ColumnDetail`   | Column type + statistics table                        | all       |
+| `MonitorPanel`   | Live server activity: sessions, cache, roles, backups | all       |
+| `AdminPanel`     | Admin tabs: Roles · Backups · WAL · Extensions · Settings | all   |
+| `ErdPanel`       | Entity-relationship diagram for the selected schema   | all       |
+| `HistoryPanel`   | Query history list with one-click load                | browser   |
+| `SavedPanel`     | Saved queries with load / delete                      | browser   |
+| `ExportPanel`    | Export format picker (CSV, JSON, Parquet…)            | browser   |
+| `HelpPanel`      | Keybinding reference                                  | browser   |
+
+TUI overlays (help, export picker, save prompt, saved browser) are rendered
+as AccessKit `Role::Dialog` nodes appended to the Window root by
+`to_verified_tree()`, driven by the same boolean flags used for event routing.
+
+---
+
+## Monitor panel
+
+Press `m` to open the live monitor panel. It queries the database via the
+`elicit_db` `DbMonitor`, `DbRoleManager`, and `DbBackupManager` traits and
+surfaces:
+
+- **Active sessions** — pid, application, state, duration, query snippet
+- **Cache hit ratio** — shared-buffer hit percentage
+- **Roles** — all database roles
+- **Backups** — recent backup records
+
+In the browser frontend, `GET /api/monitor` fetches a fresh `MonitorSnapshot`
+and re-renders the panel via HTMX.
+
+---
+
+## Admin panel
+
+Press `a` to open the admin panel. Use `[` / `]` to switch tabs:
+
+| Tab          | Contents                                            |
+|--------------|-----------------------------------------------------|
+| **Roles**    | All database roles (name, superuser, login flags)   |
+| **Backups**  | Backup records with status and path                 |
+| **WAL**      | WAL archiving ready / not-ready status              |
+| **Extensions** | Installed extensions with version                 |
+| **Settings** | Top GUC settings (name, value, description)         |
+
+The admin panel is backed by `elicit_db` traits:
+`DbRoleManager`, `DbBackupManager`, `DbServerAdmin`.
+
+In the browser frontend, `GET /api/admin` fetches a fresh `AdminSnapshot` and
+re-renders. Tab navigation uses `GET /api/admin-tab-next` /
+`GET /api/admin-tab-prev`.
+
+### MCP admin plugin
+
+`ArchiveAdminPlugin` exposes the admin operations as MCP tools
+(`archive_admin__*`), each carrying an `Established<P>` proof proposition:
+
+| Tool                 | Proposition          | Description                     |
+|----------------------|----------------------|---------------------------------|
+| `list_roles`         | `RoleListRead`       | List all database roles         |
+| `create_role`        | `RoleCreated`        | Create a new role               |
+| `drop_role`          | `RoleDropped`        | Drop an existing role           |
+| `grant_privilege`    | `PrivilegeGranted`   | Grant privilege to a role       |
+| `revoke_privilege`   | `PrivilegeRevoked`   | Revoke privilege from a role    |
+| `initiate_backup`    | `BackupStarted`      | Trigger a database backup       |
+| `list_backups`       | `BackupListRead`     | List recent backup records      |
+| `verify_backup`      | `BackupVerified`     | Verify a backup by path         |
+| `wal_status`         | `WalStatusRead`      | Report WAL archiving status     |
+| `server_version`     | `VersionRead`        | Return the server version string|
+| `list_extensions`    | `ExtensionListRead`  | List installed extensions       |
+| `install_extension`  | `ExtensionInstalled` | Install a named extension       |
+| `list_settings`      | `AdminSettingsRead`  | Read top GUC settings           |
+| `reload_config`      | `ConfigReloaded`     | Reload server configuration     |
+
+---
+
+## ERD diagram view
+
+Press `g` to open the entity-relationship diagram for the currently selected
+schema. The diagram is built from two queries:
+
+1. `DbTableManager::list_tables()` — one `ErdNode` per table, with
+   `ErdColumn` children carrying name, type, and PK flag.
+2. `information_schema.referential_constraints` — one `ErdEdge` per FK
+   relationship, recording `from_table.from_column → to_table.to_column`.
+
+The `ErdPanel` content area renders:
+
+- A header line: `ERD: <schema> — N tables, M foreign keys`
+- An expandable tree of tables, each with its column list (PK columns marked)
+- A flat list of FK edges: `orders.customer_id → customers.id`
+
+In the browser frontend, `GET /api/erd?schema=<name>` fetches and renders
+the diagram via HTMX. The ERD is PostgreSQL-specific (uses
+`information_schema`); other backends receive an empty edge set.
 
 ---
 
@@ -190,32 +321,42 @@ All content-returning routes respond with IR-sourced HTML fragments.
 HTMX swaps use `hx-target="#content" hx-swap="outerHTML"` so the `<div
 id="content">` wrapper is always present for the next swap.
 
-| Method | Path                    | Description                              |
-|--------|-------------------------|------------------------------------------|
-| GET    | `/`                     | Full page (IR-sourced)                   |
-| GET    | `/api/nav`              | Nav-tree fragment (filter param)         |
-| GET    | `/api/preview`          | Table data grid panel                    |
-| POST   | `/api/sql`              | Execute SQL, return content fragment     |
-| GET    | `/api/inspect`          | Table inspection JSON                    |
-| GET    | `/api/stats`            | Column statistics JSON                   |
-| GET    | `/api/explain`          | EXPLAIN plan panel (with params)         |
-| GET    | `/api/history`          | Query history JSON                       |
-| POST   | `/api/history`          | Append history entry                     |
-| GET    | `/api/saved`            | Saved queries JSON                       |
-| POST   | `/api/saved`            | Save a query                             |
-| DELETE | `/api/saved/:id`        | Delete a saved query                     |
-| GET    | `/api/export`           | Download exported data file              |
-| POST   | `/api/refresh`          | Reload nav tree from DB                  |
-| GET    | `/api/open-sql-editor`  | SQL editor panel fragment                |
-| GET    | `/api/open-help`        | Help / keybindings panel fragment        |
-| GET    | `/api/history-panel`    | History browser panel fragment           |
-| GET    | `/api/saved-panel`      | Saved queries panel fragment             |
-| GET    | `/api/export-panel`     | Export picker panel fragment             |
-| GET    | `/api/ddl-panel`        | DDL viewer panel fragment                |
-| GET    | `/api/explain-panel`    | EXPLAIN plan panel fragment              |
-| GET    | `/api/col-detail-panel` | Column detail + stats panel fragment     |
-| GET    | `/api/load-history`     | Load history entry into SQL editor       |
-| GET    | `/api/load-saved`       | Load saved query into SQL editor         |
+| Method | Path                    | Description                                      |
+|--------|-------------------------|--------------------------------------------------|
+| GET    | `/`                     | Full page (IR-sourced)                           |
+| GET    | `/api/nav`              | Nav-tree fragment (filter param)                 |
+| GET    | `/api/nav-up`           | Move cursor up, return nav fragment              |
+| GET    | `/api/nav-down`         | Move cursor down, return nav fragment            |
+| GET    | `/api/nav-enter`        | Toggle-expand, return nav fragment               |
+| GET    | `/api/preview`          | Table data grid panel                            |
+| POST   | `/api/sql`              | Execute SQL, return content fragment             |
+| GET    | `/api/inspect`          | Table inspection JSON                            |
+| GET    | `/api/stats`            | Column statistics JSON                           |
+| GET    | `/api/explain`          | EXPLAIN plan panel (with params)                 |
+| GET    | `/api/history`          | Query history JSON                               |
+| POST   | `/api/history`          | Append history entry                             |
+| GET    | `/api/saved`            | Saved queries JSON                               |
+| POST   | `/api/saved`            | Save a query                                     |
+| DELETE | `/api/saved/{id}`       | Delete a saved query                             |
+| GET    | `/api/export`           | Download exported data file                      |
+| POST   | `/api/refresh`          | Reload nav tree from DB                          |
+| GET    | `/api/open-sql-editor`  | SQL editor panel fragment                        |
+| GET    | `/api/monitor`          | Fetch live monitor snapshot → MonitorPanel       |
+| GET    | `/api/admin`            | Fetch admin snapshot → AdminPanel                |
+| GET    | `/api/admin-tab-next`   | Cycle admin tab forward → AdminPanel             |
+| GET    | `/api/admin-tab-prev`   | Cycle admin tab backward → AdminPanel            |
+| GET    | `/api/erd`              | ERD diagram for `?schema=` → ErdPanel            |
+| GET    | `/api/open-help`        | Help / keybindings panel fragment                |
+| GET    | `/api/history-panel`    | History browser panel fragment                   |
+| GET    | `/api/saved-panel`      | Saved queries panel fragment                     |
+| GET    | `/api/export-panel`     | Export picker panel fragment                     |
+| GET    | `/api/ddl-panel`        | DDL viewer panel fragment                        |
+| GET    | `/api/explain-panel`    | EXPLAIN plan panel fragment                      |
+| GET    | `/api/col-detail-panel` | Column detail + stats panel fragment             |
+| GET    | `/api/load-history`     | Load history entry into SQL editor               |
+| GET    | `/api/load-saved`       | Load saved query into SQL editor                 |
+| POST   | `/api/switch-connection`| Switch active database connection                |
+| POST   | `/api/action`           | Dispatch any `ArchiveAction` by name             |
 
 ---
 
@@ -239,6 +380,10 @@ ArchiveDbBackend::connect(url)          → ConnectionEstablished proof
   │
   ├─ DbServerAdmin::server_version()
   ├─ DbSchemaManager::list_schemas()
+  ├─ DbTableManager::list_tables()
+  ├─ DbMonitor::active_sessions()
+  ├─ DbRoleManager::list_roles()
+  ├─ DbBackupManager::list_backups()
   │
   ▼
 NavTree / ArchiveNavModel               → shared flat-list nav state
@@ -246,7 +391,7 @@ NavTree / ArchiveNavModel               → shared flat-list nav state
   │
   ▼  ArchiveNavModel::to_verified_tree()
      ├─ Window → [Toolbar, Main[Nav+Content], StatusBar, (overlay?)]
-     │    All structure defined in AccessKit IR (no hardcoded HTML)
+     │    All structure defined in AccessKit IR (no hardcoded HTML/widgets)
      └─ Returns (VerifiedTree, Established<IrSourced>) proof token
           │
           ├─ ratatui path:
@@ -272,23 +417,22 @@ originates from the AccessKit IR. No frontend may produce HTML or widgets
 without going through `ArchiveNavModel`'s tree-building methods. This keeps
 all three frontends contractually equivalent.
 
+### Keybinding IR faithfulness
+
+`ArchiveKeyMap` is the **single source of truth** for all key bindings.  It
+feeds:
+
+1. `ArchiveKeyMap::resolve()` — runtime dispatch in every frontend
+2. `ArchiveKeyMap::to_status_bar()` → `StatusBarDescriptor` chips in the IR
+3. `ArchiveKeyMap::to_js_listener()` → the browser JS keyboard handler
+
+Adding a binding in one place automatically propagates to all three surfaces.
+The compiler enforces exhaustive handling: every `ArchiveAction` variant must
+be matched in every frontend's dispatch function.
+
 ### PanelMode
 
-`PanelMode` is the central content-area state machine, shared by all frontends:
-
-| Variant         | Renders                              | Frontends      |
-|-----------------|--------------------------------------|----------------|
-| `Welcome`       | Welcome / prompt message             | all            |
-| `DataGrid`      | Paginated table data                 | all            |
-| `SqlEditor`     | SQL editor + results (+ error)       | all            |
-| `Ddl`           | DDL source for selected table        | all            |
-| `ExplainPlan`   | Visual EXPLAIN plan tree             | all            |
-| `ColumnDetail`  | Column type + stats table            | all            |
-| `HistoryPanel`  | Query history list with load links   | browser        |
-| `SavedPanel`    | Saved queries with load/delete       | browser        |
-| `ExportPanel`   | Export format picker (download links)| browser        |
-| `HelpPanel`     | Keybinding reference                 | browser        |
-
-TUI overlays (help, export picker, save prompt, saved browser) are rendered
-as AccessKit `Role::Dialog` nodes appended to the Window root in
-`to_verified_tree()`, driven by the same boolean flags used for event routing.
+`PanelMode` is the central content-area state machine. Adding a new variant
+requires implementing it in `build_content_nodes()` (the IR builder) and all
+three frontend event/fetch dispatch functions — the compiler enforces
+completeness at every step.
