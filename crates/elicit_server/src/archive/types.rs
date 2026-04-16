@@ -773,3 +773,25 @@ impl Default for RowEditState {
         Self::new()
     }
 }
+
+// ── Phase 3.5 — Multi-Connection ─────────────────────────────────────────────
+
+/// A named database connection profile.
+///
+/// The raw connection URL is never stored directly; instead, `url_env_key`
+/// names the environment variable that holds it (e.g. `"DATABASE_URL"`).
+/// At runtime, [`ConnectionSet`] resolves the key via `std::env::var`.
+///
+/// [`ConnectionSet`]: crate::archive::nav_model::ConnectionSet
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct ConnectionProfile {
+    /// Human-visible label shown in the tab bar.
+    pub name: String,
+    /// Environment variable whose value is the connection URL.
+    /// Pass the URL string directly here if not using env-var indirection.
+    pub url_env_key: String,
+    /// Database backend type (drives icon, dialect hints, etc.).
+    pub backend: BackendKind,
+    /// Optional Catppuccin accent colour for the tab badge (e.g. `"blue"`).
+    pub color: Option<String>,
+}

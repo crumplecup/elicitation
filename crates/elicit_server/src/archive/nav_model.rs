@@ -23,8 +23,8 @@ use std::collections::HashMap;
 use elicit_accesskit::{KeyBinding, StatusBarDescriptor};
 
 use crate::archive::{
-    ColumnStats, ExplainNode, ExportFormat, QueryHistoryEntry, QueryResult, RowEditState,
-    SavedQuery, StagedEdit, TableInspection,
+    ColumnStats, ConnectionProfile, ExplainNode, ExportFormat, QueryHistoryEntry, QueryResult,
+    RowEditState, SavedQuery, StagedEdit, TableInspection,
     nav_tree::{NavTree, SchemaEntry},
 };
 
@@ -205,6 +205,12 @@ pub enum FetchRequest {
         /// Desired output format.
         format: ExportFormat,
     },
+    /// Switch to a new database URL without restarting the fetch task.
+    ///
+    /// The fetch task replaces its active URL and performs a [`Refresh`].
+    ///
+    /// [`Refresh`]: FetchRequest::Refresh
+    UpdateUrl(String),
 }
 
 /// Response sent from the background fetch task back to the event loop.
@@ -2134,4 +2140,130 @@ pub fn column_widths(result: &QueryResult, max_col_width: usize) -> Vec<usize> {
             header_w.max(data_w).min(max_col_width)
         })
         .collect()
+}
+
+// ── Phase 3.5 — Multi-Connection Management ──────────────────────────────────
+
+/// A set of named database connections with one active at a time.
+///
+/// `ConnectionSet` acts as a transparent proxy to the active [`ArchiveNavModel`]
+/// via `Deref`/`DerefMut` — frontends can keep calling `self.model.foo()` after
+/// renaming the field to `self.connections` with zero further changes.
+///
+/// The active URL is stored in the entry; `conn_active_url()` either resolves
+/// `url_env_key` through `std::env::var` (for named connections) or returns the
+/// stored override (for programmatic initialization via [`ConnectionSet::from_single`]).
+pub struct ConnectionSet {
+    entries: Vec<(ConnectionProfile, ArchiveNavModel, Option<String>)>,
+    active: usize,
+}
+
+impl ConnectionSet {
+    /// Build a `ConnectionSet` from a single nav model and optional URL.
+    pub fn from_single(
+        profile: ConnectionProfile,
+        model: ArchiveNavModel,
+        url: Option<String>,
+    ) -> Self {
+        Self {
+            entries: vec![(profile, model, url)],
+            active: 0,
+        }
+    }
+
+    /// Add a new connection entry.
+    pub fn conn_add(
+        &mut self,
+        profile: ConnectionProfile,
+        model: ArchiveNavModel,
+        url: Option<String>,
+    ) {
+        self.entries.push((profile, model, url));
+    }
+
+    /// Remove the active connection.  Clamps `active` to stay in bounds.
+    pub fn conn_remove_active(&mut self) {
+        if self.entries.len() > 1 {
+            self.entries.remove(self.active);
+            if self.active >= self.entries.len() {
+                self.active = self.entries.len() - 1;
+            }
+        }
+    }
+
+    /// Set the active connection by index.  Returns `true` if `index` is in bounds.
+    pub fn conn_set_active(&mut self, index: usize) -> bool {
+        if index < self.entries.len() {
+            self.active = index;
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Advance to the next connection (wraps around).
+    pub fn conn_next(&mut self) {
+        self.active = (self.active + 1) % self.entries.len();
+    }
+
+    /// Go to the previous connection (wraps around).
+    pub fn conn_prev(&mut self) {
+        self.active = self.active.checked_sub(1).unwrap_or(self.entries.len() - 1);
+    }
+
+    /// Total number of connection entries.
+    pub fn conn_len(&self) -> usize {
+        self.entries.len()
+    }
+
+    /// Index of the currently active entry.
+    pub fn conn_active_index(&self) -> usize {
+        self.active
+    }
+
+    /// Connection profile for the active entry.
+    pub fn conn_active_profile(&self) -> &ConnectionProfile {
+        &self.entries[self.active].0
+    }
+
+    /// Resolve the URL for the active connection.
+    ///
+    /// Resolution order:
+    /// 1. Stored URL override (set during programmatic initialization)
+    /// 2. `std::env::var(&profile.url_env_key)` — for env-var-backed profiles
+    /// 3. `None` — if neither resolves
+    pub fn conn_active_url(&self) -> Option<String> {
+        let (profile, _, url_override) = &self.entries[self.active];
+        url_override
+            .clone()
+            .or_else(|| std::env::var(&profile.url_env_key).ok())
+    }
+
+    /// Tab-bar labels: `"name (active)"` for the current, `"name"` for others.
+    pub fn conn_tab_labels(&self) -> Vec<String> {
+        self.entries
+            .iter()
+            .enumerate()
+            .map(|(i, (p, _, _))| {
+                if i == self.active {
+                    format!("{} ●", p.name)
+                } else {
+                    p.name.clone()
+                }
+            })
+            .collect()
+    }
+}
+
+impl std::ops::Deref for ConnectionSet {
+    type Target = ArchiveNavModel;
+    fn deref(&self) -> &ArchiveNavModel {
+        &self.entries[self.active].1
+    }
+}
+
+impl std::ops::DerefMut for ConnectionSet {
+    fn deref_mut(&mut self) -> &mut ArchiveNavModel {
+        &mut self.entries[self.active].1
+    }
 }

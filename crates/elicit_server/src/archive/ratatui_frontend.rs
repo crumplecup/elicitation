@@ -34,7 +34,8 @@ use tracing::instrument;
 use crate::archive::nav_model::{ArchiveNavModel, FetchRequest, PanelEvent, PanelMode};
 use crate::archive::nav_tree::{NavTree, build_nav_tree};
 use crate::archive::{
-    ArchiveDbBackend, ArchiveResult, HistoryStore, SavedQueryStore,
+    ArchiveDbBackend, ArchiveResult, BackendKind, ConnectionProfile, ConnectionSet, HistoryStore,
+    SavedQueryStore,
     errors::{ArchiveError, ArchiveErrorKind},
     plugins::export::export_query_result,
     plugins::query::{execute_sql_direct, preview_table_direct},
@@ -42,13 +43,17 @@ use crate::archive::{
 
 // ── Thin ratatui wrapper ──────────────────────────────────────────────────────
 
-/// Wraps [`ArchiveNavModel`] with the ratatui bridge backend.
+/// Wraps [`ConnectionSet`] (wrapping [`ArchiveNavModel`]) with the ratatui bridge backend.
 ///
 /// Rendering uses the IR pipeline: `model.to_verified_tree()` →
 /// `backend.render_from_ir()` → `render_node()`.  Event handling remains
 /// in this module; only presentation logic has moved into the IR.
+///
+/// `model` is a [`ConnectionSet`] that derefs transparently to the active
+/// [`ArchiveNavModel`], so all existing `self.model.*` call sites remain
+/// unchanged while gaining multi-connection switching via `conn_*` methods.
 struct TuiApp {
-    model: ArchiveNavModel,
+    model: ConnectionSet,
     backend: RatatuiBackend,
     /// Sender to the background fetch task.
     req_tx: mpsc::Sender<FetchRequest>,
@@ -64,14 +69,13 @@ struct TuiApp {
 
 impl TuiApp {
     fn new(
-        nav: NavTree,
+        connections: ConnectionSet,
         req_tx: mpsc::Sender<FetchRequest>,
         history: Option<HistoryStore>,
         saved: Option<SavedQueryStore>,
     ) -> Self {
-        let model = ArchiveNavModel::new(nav);
         Self {
-            model,
+            model: connections,
             backend: RatatuiBackend::new(),
             req_tx,
             history,
@@ -283,8 +287,31 @@ fn spawn_fetch_task(
     let (event_tx, event_rx) = mpsc::channel::<PanelEvent>(16);
 
     tokio::spawn(async move {
+        let mut current_url = url;
         while let Some(req) = req_rx.recv().await {
-            let Some(ref url) = url else {
+            // Handle URL switch before any DB access.
+            if let FetchRequest::UpdateUrl(new_url) = req {
+                current_url = Some(new_url);
+                // Trigger a refresh on the new connection.
+                if let Some(ref url) = current_url {
+                    match ArchiveDbBackend::connect(url).await {
+                        Ok(backend) => match build_nav_tree(&backend, url).await {
+                            Ok(nav) => {
+                                let _ = event_tx.send(PanelEvent::NavRefreshed(nav)).await;
+                            }
+                            Err(e) => {
+                                let _ = event_tx.send(PanelEvent::FetchError(e.to_string())).await;
+                            }
+                        },
+                        Err(e) => {
+                            let _ = event_tx.send(PanelEvent::FetchError(e.to_string())).await;
+                        }
+                    }
+                }
+                continue;
+            }
+
+            let Some(ref url) = current_url else {
                 // Demo mode — no live DB.
                 let _ = event_tx
                     .send(PanelEvent::FetchError(
@@ -392,6 +419,8 @@ fn spawn_fetch_task(
                     };
                     let _ = event_tx.send(ev).await;
                 }
+                // Already handled above before the URL check.
+                FetchRequest::UpdateUrl(_) => unreachable!("UpdateUrl handled before this match"),
             }
         }
     });
@@ -419,7 +448,7 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
         ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string()))
     })?;
 
-    let (req_tx, mut event_rx) = spawn_fetch_task(url);
+    let (req_tx, mut event_rx) = spawn_fetch_task(url.clone());
 
     let history = HistoryStore::open().await.ok();
     let history_cache = if let Some(ref store) = history {
@@ -436,7 +465,14 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
     } else {
         Vec::new()
     };
-    let mut app = TuiApp::new(nav, req_tx, history, saved);
+    let profile = ConnectionProfile {
+        name: "primary".to_string(),
+        url_env_key: url.clone().unwrap_or_default(),
+        backend: BackendKind::Postgres,
+        color: None,
+    };
+    let connections = ConnectionSet::from_single(profile, ArchiveNavModel::new(nav), url);
+    let mut app = TuiApp::new(connections, req_tx, history, saved);
     app.model.history_cache = history_cache;
     app.model.saved_cache = saved_cache;
     let mut reader = EventStream::new();
@@ -602,6 +638,22 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                 _ => {}
                             }
                         } else {
+                            let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+                            match (key.code, ctrl) {
+                                (KeyCode::Tab, true) => {
+                                    app.model.conn_next();
+                                    if let Some(url) = app.model.conn_active_url() {
+                                        let _ = app.req_tx.try_send(FetchRequest::UpdateUrl(url));
+                                    }
+                                }
+                                (KeyCode::BackTab, true) => {
+                                    app.model.conn_prev();
+                                    if let Some(url) = app.model.conn_active_url() {
+                                        let _ = app.req_tx.try_send(FetchRequest::UpdateUrl(url));
+                                    }
+                                }
+                                _ => {}
+                            }
                             match key.code {
                                 KeyCode::Char('q') | KeyCode::Esc => quit = true,
                                 KeyCode::Up | KeyCode::Char('k') => app.move_up(),

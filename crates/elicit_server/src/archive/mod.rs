@@ -36,6 +36,7 @@ pub use backend::ArchiveDbBackend;
 pub use egui_frontend::run_egui;
 pub use errors::{ArchiveError, ArchiveErrorKind, ArchiveResult};
 pub use frontend_utils::nav_tree_to_verified_tree;
+pub use nav_model::ConnectionSet;
 pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
 pub use plugins::{
     AkNodeEntry, ArchiveBrowsePlugin, ArchiveConstraintPlugin, ArchiveDisplayPlugin,
@@ -45,9 +46,9 @@ pub use plugins::{
     inspect_table_direct,
 };
 pub use types::{
-    BackendKind, ColumnDescriptor, ColumnStats, ConstraintDescriptor, ConstraintKind,
-    DatabaseDescriptor, DdlDescriptor, ExplainNode, ExportFormat, ExportResult, FkAction,
-    ForeignKeyDescriptor, IndexDescriptor, QueryHistoryEntry, QueryResult, RowEditKind,
+    BackendKind, ColumnDescriptor, ColumnStats, ConnectionProfile, ConstraintDescriptor,
+    ConstraintKind, DatabaseDescriptor, DdlDescriptor, ExplainNode, ExportFormat, ExportResult,
+    FkAction, ForeignKeyDescriptor, IndexDescriptor, QueryHistoryEntry, QueryResult, RowEditKind,
     RowEditState, SavedQuery, SchemaDescriptor, StagedEdit, TableDescriptor, TableInspection,
     TableType,
 };

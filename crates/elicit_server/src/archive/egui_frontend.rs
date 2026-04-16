@@ -23,7 +23,8 @@ use winit::{
 };
 
 use crate::archive::{
-    ArchiveDbBackend, ArchiveResult, HistoryStore, SavedQueryStore,
+    ArchiveDbBackend, ArchiveResult, BackendKind, ConnectionProfile, ConnectionSet, HistoryStore,
+    SavedQueryStore,
     errors::{ArchiveError, ArchiveErrorKind},
     nav_model::{ArchiveNavModel, FetchRequest, PanelEvent, PanelMode},
     nav_tree::{NavTree, build_nav_tree},
@@ -44,7 +45,7 @@ const BLUE: Color32 = Color32::from_rgb(137, 180, 250);
 // ── Application state ─────────────────────────────────────────────────────────
 
 struct ArchiveEguiApp {
-    model: ArchiveNavModel,
+    model: ConnectionSet,
     should_quit: bool,
     /// Sender to the background fetch task.
     req_tx: mpsc::Sender<FetchRequest>,
@@ -70,14 +71,14 @@ struct ArchiveEguiApp {
 
 impl ArchiveEguiApp {
     fn new(
-        nav: NavTree,
+        connections: ConnectionSet,
         req_tx: mpsc::Sender<FetchRequest>,
         event_rx: mpsc::Receiver<PanelEvent>,
         history: Option<HistoryStore>,
         saved: Option<SavedQueryStore>,
     ) -> Self {
         Self {
-            model: ArchiveNavModel::new(nav),
+            model: connections,
             should_quit: false,
             req_tx,
             event_rx,
@@ -509,6 +510,19 @@ impl ArchiveEguiApp {
             if ctx.input(|i| i.key_pressed(Key::X)) && self.model.panel.is_data_grid() {
                 self.model.toggle_export_picker();
             }
+            // Ctrl+Tab / Ctrl+Shift+Tab — cycle connections
+            if ctx.input(|i| i.modifiers.ctrl && i.key_pressed(Key::Tab)) {
+                self.model.conn_next();
+                if let Some(url) = self.model.conn_active_url() {
+                    let _ = self.req_tx.try_send(FetchRequest::UpdateUrl(url));
+                }
+            }
+            if ctx.input(|i| i.modifiers.ctrl && i.modifiers.shift && i.key_pressed(Key::Tab)) {
+                self.model.conn_prev();
+                if let Some(url) = self.model.conn_active_url() {
+                    let _ = self.req_tx.try_send(FetchRequest::UpdateUrl(url));
+                }
+            }
             if quit || esc_key {
                 self.should_quit = true;
             }
@@ -814,14 +828,45 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
     let (req_tx, mut req_rx) = mpsc::channel::<FetchRequest>(32);
     let (event_tx, event_rx) = mpsc::channel::<PanelEvent>(32);
 
-    // Spawn the background fetch task if we have a URL.
-    if let Some(url_str) = url.clone() {
+    // Spawn the background fetch task. The URL can be updated dynamically via
+    // FetchRequest::UpdateUrl for multi-connection switching.
+    {
         let tx = event_tx.clone();
+        let url_for_task = url.clone();
         tokio::spawn(async move {
+            let mut current_url = url_for_task;
             while let Some(req) = req_rx.recv().await {
+                // Handle URL switch before any DB access.
+                if let FetchRequest::UpdateUrl(new_url) = req {
+                    current_url = Some(new_url.clone());
+                    // Auto-refresh on the new connection.
+                    match ArchiveDbBackend::connect(&new_url).await {
+                        Ok(b) => match build_nav_tree(&b, &new_url).await {
+                            Ok(t) => {
+                                let _ = tx.send(PanelEvent::NavRefreshed(t)).await;
+                            }
+                            Err(e) => {
+                                let _ = tx.send(PanelEvent::FetchError(e.to_string())).await;
+                            }
+                        },
+                        Err(e) => {
+                            let _ = tx.send(PanelEvent::FetchError(e.to_string())).await;
+                        }
+                    }
+                    continue;
+                }
+                let Some(ref url_str) = current_url else {
+                    let _ = tx
+                        .send(PanelEvent::FetchError(
+                            "No database URL — run 'archive serve' instead of 'archive demo'."
+                                .to_string(),
+                        ))
+                        .await;
+                    continue;
+                };
                 let result = match req {
                     FetchRequest::PreviewTable { schema, table } => {
-                        match preview_table_direct(&url_str, &schema, &table, 200).await {
+                        match preview_table_direct(url_str, &schema, &table, 200).await {
                             Ok(r) => PanelEvent::DataGrid {
                                 schema,
                                 table,
@@ -831,13 +876,13 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                         }
                     }
                     FetchRequest::ExecuteSql { sql } => {
-                        match execute_sql_direct(&url_str, &sql).await {
+                        match execute_sql_direct(url_str, &sql).await {
                             Ok(r) => PanelEvent::SqlResult(r),
                             Err(e) => PanelEvent::FetchError(e),
                         }
                     }
-                    FetchRequest::Refresh => match ArchiveDbBackend::connect(&url_str).await {
-                        Ok(b) => match build_nav_tree(&b, &url_str).await {
+                    FetchRequest::Refresh => match ArchiveDbBackend::connect(url_str).await {
+                        Ok(b) => match build_nav_tree(&b, url_str).await {
                             Ok(t) => PanelEvent::NavRefreshed(t),
                             Err(e) => PanelEvent::FetchError(e.to_string()),
                         },
@@ -845,7 +890,7 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                     },
                     FetchRequest::InspectTable { schema, table } => {
                         use crate::archive::plugins::inspect::inspect_table_direct;
-                        match inspect_table_direct(&url_str, &schema, &table).await {
+                        match inspect_table_direct(url_str, &schema, &table).await {
                             Ok(inspection) => PanelEvent::TableInspected {
                                 schema,
                                 table,
@@ -902,6 +947,10 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                             format,
                         }
                     }
+                    // Already handled above before the URL check.
+                    FetchRequest::UpdateUrl(_) => {
+                        unreachable!("UpdateUrl handled before this match")
+                    }
                 };
                 let _ = tx.send(result).await;
             }
@@ -932,7 +981,14 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
         (history, history_cache, saved, saved_cache)
     });
 
-    let mut app = ArchiveEguiApp::new(nav, req_tx, event_rx, history, saved);
+    let profile = ConnectionProfile {
+        name: "primary".to_string(),
+        url_env_key: url.clone().unwrap_or_default(),
+        backend: BackendKind::Postgres,
+        color: None,
+    };
+    let connections = ConnectionSet::from_single(profile, ArchiveNavModel::new(nav), url);
+    let mut app = ArchiveEguiApp::new(connections, req_tx, event_rx, history, saved);
     app.model.history_cache = history_cache;
     app.model.saved_cache = saved_cache;
     event_loop

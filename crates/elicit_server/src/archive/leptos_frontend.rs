@@ -51,7 +51,7 @@ use tokio::sync::Mutex;
 use tracing::instrument;
 
 use crate::archive::{
-    ArchiveDbBackend, ArchiveResult,
+    ArchiveDbBackend, ArchiveResult, BackendKind, ConnectionProfile, ConnectionSet,
     errors::{ArchiveError, ArchiveErrorKind},
     nav_model::{ArchiveNavModel, FetchRequest, PanelMode},
     nav_tree::{NavTree, build_nav_tree},
@@ -71,11 +71,17 @@ use crate::archive::{
 
 #[derive(Clone)]
 struct AppState {
-    model: Arc<Mutex<ArchiveNavModel>>,
+    model: Arc<Mutex<ConnectionSet>>,
     renderer: Arc<LeptosRenderer>,
-    db_url: Option<Arc<String>>,
     history: Arc<Mutex<Option<HistoryStore>>>,
     saved: Arc<Mutex<Option<SavedQueryStore>>>,
+}
+
+impl AppState {
+    /// Resolve the active connection URL, or `None` in demo mode.
+    async fn active_url(&self) -> Option<Arc<String>> {
+        self.model.lock().await.conn_active_url().map(Arc::new)
+    }
 }
 
 // ── IR gate helpers ───────────────────────────────────────────────────────────
@@ -320,7 +326,7 @@ async fn api_preview(
     State(state): State<AppState>,
     Query(p): Query<SchemaTable>,
 ) -> ApiResult<Html<String>> {
-    let url = state.db_url.clone().ok_or_else(ApiError::no_db)?;
+    let url = state.active_url().await.ok_or_else(ApiError::no_db)?;
     let result = preview_table_direct(&url, &p.schema, &p.table, 200)
         .await
         .map_err(ApiError::internal)?;
@@ -349,7 +355,7 @@ async fn api_sql(
     State(state): State<AppState>,
     axum::Json(body): axum::Json<SqlBody>,
 ) -> Html<String> {
-    let url = match state.db_url.clone() {
+    let url = match state.active_url().await {
         Some(u) => u,
         None => {
             let mut model = state.model.lock().await;
@@ -437,7 +443,7 @@ async fn api_inspect(
     State(state): State<AppState>,
     Query(p): Query<SchemaTable>,
 ) -> ApiResult<axum::Json<serde_json::Value>> {
-    let url = state.db_url.clone().ok_or_else(ApiError::no_db)?;
+    let url = state.active_url().await.ok_or_else(ApiError::no_db)?;
     let inspection = inspect_table_direct(&url, &p.schema, &p.table)
         .await
         .map_err(ApiError::internal)?;
@@ -456,7 +462,7 @@ async fn api_stats(
     State(state): State<AppState>,
     Query(p): Query<SchemaTable>,
 ) -> ApiResult<axum::Json<serde_json::Value>> {
-    let url = state.db_url.clone().ok_or_else(ApiError::no_db)?;
+    let url = state.active_url().await.ok_or_else(ApiError::no_db)?;
     let stats = get_column_stats_direct(&url, &p.schema, &p.table)
         .await
         .map_err(ApiError::internal)?;
@@ -475,7 +481,7 @@ async fn api_explain(
     State(state): State<AppState>,
     Query(p): Query<ExplainParams>,
 ) -> ApiResult<Html<String>> {
-    let url = state.db_url.clone().ok_or_else(ApiError::no_db)?;
+    let url = state.active_url().await.ok_or_else(ApiError::no_db)?;
     let root = explain_sql_direct(&url, &p.sql)
         .await
         .map_err(ApiError::internal)?;
@@ -701,7 +707,7 @@ async fn api_export_panel(State(state): State<AppState>) -> Html<String> {
 // ── GET /api/ddl-panel ────────────────────────────────────────────────────────
 
 async fn api_ddl_panel(State(state): State<AppState>) -> Html<String> {
-    let url = match state.db_url.clone() {
+    let url = match state.active_url().await {
         Some(u) => u,
         None => {
             return Html(
@@ -739,7 +745,7 @@ async fn api_ddl_panel(State(state): State<AppState>) -> Html<String> {
 // ── GET /api/explain-panel ────────────────────────────────────────────────────
 
 async fn api_explain_panel(State(state): State<AppState>) -> Html<String> {
-    let url = match state.db_url.clone() {
+    let url = match state.active_url().await {
         Some(u) => u,
         None => {
             return Html(
@@ -792,7 +798,7 @@ async fn api_explain_panel(State(state): State<AppState>) -> Html<String> {
 // ── GET /api/col-detail-panel ─────────────────────────────────────────────────
 
 async fn api_col_detail_panel(State(state): State<AppState>) -> Html<String> {
-    let url = match state.db_url.clone() {
+    let url = match state.active_url().await {
         Some(u) => u,
         None => {
             return Html(
@@ -911,7 +917,7 @@ async fn api_open_help(State(state): State<AppState>) -> Html<String> {
 // ── POST /api/refresh ─────────────────────────────────────────────────────────
 
 async fn api_refresh(State(state): State<AppState>) -> ApiResult<Html<String>> {
-    let url = state.db_url.clone().ok_or_else(ApiError::no_db)?;
+    let url = state.active_url().await.ok_or_else(ApiError::no_db)?;
     let backend = ArchiveDbBackend::connect(&url)
         .await
         .map_err(ApiError::internal)?;
@@ -919,6 +925,44 @@ async fn api_refresh(State(state): State<AppState>) -> ApiResult<Html<String>> {
         .await
         .map_err(ApiError::internal)?;
     {
+        let mut model = state.model.lock().await;
+        model.apply_refresh(nav);
+    }
+    Ok(Html(content_html(&state).map_err(ApiError::internal)?))
+}
+
+// ── Connection switching ──────────────────────────────────────────────────────
+
+/// Request body for `POST /api/switch-connection`.
+#[derive(serde::Deserialize)]
+struct SwitchConnectionParams {
+    /// Zero-based index of the connection to make active.
+    index: usize,
+}
+
+/// Switch the active connection and refresh the nav tree.
+async fn api_switch_connection(
+    State(state): State<AppState>,
+    axum::Json(params): axum::Json<SwitchConnectionParams>,
+) -> Result<Html<String>, ApiError> {
+    {
+        let mut model = state.model.lock().await;
+        if !model.conn_set_active(params.index) {
+            let len = model.conn_len();
+            return Err(ApiError::bad_request(format!(
+                "Connection index {} out of range (have {})",
+                params.index, len
+            )));
+        }
+    }
+    // Refresh nav tree on the new connection.
+    if let Some(url) = state.active_url().await {
+        let backend = ArchiveDbBackend::connect(&url)
+            .await
+            .map_err(ApiError::internal)?;
+        let nav = build_nav_tree(&backend, &url)
+            .await
+            .map_err(ApiError::internal)?;
         let mut model = state.model.lock().await;
         model.apply_refresh(nav);
     }
@@ -957,6 +1001,7 @@ fn build_router(state: AppState) -> Router {
         .route("/api/col-detail-panel", get(api_col_detail_panel))
         .route("/api/load-history", get(api_load_history))
         .route("/api/load-saved", get(api_load_saved))
+        .route("/api/switch-connection", post(api_switch_connection))
         .with_state(state)
 }
 
@@ -1137,8 +1182,14 @@ fn wrap_page(body: &str) -> String {
 /// but data-fetching endpoints return 503.
 #[instrument(skip(nav))]
 pub async fn run_browser(nav: NavTree, url: Option<String>, port: u16) -> ArchiveResult<()> {
-    let db_url = url.map(|s| Arc::new(s));
-    let model = Arc::new(Mutex::new(ArchiveNavModel::new(nav)));
+    let profile = ConnectionProfile {
+        name: "primary".to_string(),
+        url_env_key: url.clone().unwrap_or_default(),
+        backend: BackendKind::Postgres,
+        color: None,
+    };
+    let connections = ConnectionSet::from_single(profile, ArchiveNavModel::new(nav), url);
+    let model = Arc::new(Mutex::new(connections));
     let renderer = Arc::new(LeptosRenderer::html());
     let history = Arc::new(Mutex::new(HistoryStore::open().await.ok()));
     let saved = Arc::new(Mutex::new(SavedQueryStore::open().await.ok()));
@@ -1146,7 +1197,6 @@ pub async fn run_browser(nav: NavTree, url: Option<String>, port: u16) -> Archiv
     let state = AppState {
         model,
         renderer,
-        db_url,
         history,
         saved,
     };
