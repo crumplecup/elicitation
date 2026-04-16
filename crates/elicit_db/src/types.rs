@@ -352,3 +352,144 @@ pub enum IsolationLevel {
 /// Connection identifier returned by `connect()`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ConnectionId(pub String);
+
+// ── Routine descriptors ───────────────────────────────────────────────────────
+
+/// Kind of a stored routine.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
+pub enum RoutineKind {
+    /// A SQL or language function returning a value.
+    Function,
+    /// A stored procedure (no return value; can manage transactions).
+    Procedure,
+    /// An aggregate function.
+    Aggregate,
+    /// A window function.
+    Window,
+    /// A trigger function (returns trigger).
+    TriggerFunction,
+}
+
+/// Volatility category of a function.
+///
+/// Source: PostgreSQL docs §39.7 — Function Volatility Categories.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
+pub enum VolatilityKind {
+    /// May return different results on successive calls with same args; may have side effects.
+    Volatile,
+    /// Returns the same results within a single transaction for same args; no side effects.
+    Stable,
+    /// Always returns the same results for the same args; no side effects or DB lookups.
+    Immutable,
+}
+
+/// Parallel safety classification of a function.
+///
+/// Source: PostgreSQL docs §39.2 — Parallel Safety.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
+pub enum ParallelSafety {
+    /// Safe to run concurrently across multiple parallel workers.
+    Safe,
+    /// Safe to run in a parallel query but only in the leader process.
+    Restricted,
+    /// Cannot be run in a parallel query.
+    Unsafe,
+}
+
+/// Security mode for a function.
+///
+/// Source: PostgreSQL docs §39.6 — Security.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
+pub enum SecurityMode {
+    /// Executes with the privileges of the function's owner.
+    Definer,
+    /// Executes with the privileges of the caller.
+    Invoker,
+}
+
+/// Descriptor for a stored routine (function or procedure).
+///
+/// Passed to [`crate::DbRoutineFactory`] methods and returned by [`crate::DbRoutineMeta`].
+///
+/// Source: ISO/IEC 9075-4 §10; ISO/IEC 9075-11 §ROUTINES view.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct DbRoutineDescriptor {
+    /// Schema containing the routine.
+    pub schema: String,
+    /// Name of the routine.
+    pub name: String,
+    /// Kind of routine.
+    pub kind: RoutineKind,
+    /// Implementation language (plpgsql, sql, c, etc.).
+    pub language: String,
+    /// Source body (may be omitted for introspection results).
+    pub body: Option<String>,
+    /// Return type (None for procedures).
+    pub return_type: Option<String>,
+    /// Positional argument types.
+    pub arg_types: Vec<String>,
+    /// Volatility category.
+    pub volatility: VolatilityKind,
+    /// Security mode.
+    pub security: SecurityMode,
+    /// Parallel safety classification.
+    pub parallel: ParallelSafety,
+}
+
+// ── Replication descriptors ───────────────────────────────────────────────────
+
+/// Slot type for replication slots.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
+pub enum ReplicationSlotKind {
+    /// WAL shipping — physical byte-identical replication.
+    Physical,
+    /// Logical decoding — row-change stream via an output plugin.
+    Logical,
+}
+
+/// Descriptor for a replication slot.
+///
+/// Source: PostgreSQL docs §27.2.6 — Replication Slots.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct DbReplicationSlotDescriptor {
+    /// Unique slot name.
+    pub name: String,
+    /// Slot type.
+    pub kind: ReplicationSlotKind,
+    /// Output plugin name (logical slots only).
+    pub plugin: Option<String>,
+    /// Whether a WAL sender is currently using this slot.
+    pub active: bool,
+    /// Replication lag in bytes (None if slot is inactive).
+    pub lag_bytes: Option<u64>,
+}
+
+/// Descriptor for a logical replication publication.
+///
+/// Source: PostgreSQL docs §29.6 — `CREATE PUBLICATION`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct DbPublicationDescriptor {
+    /// Publication name.
+    pub name: String,
+    /// Whether the publication covers all present and future tables.
+    pub all_tables: bool,
+    /// Explicit table list (used when `all_tables` is false).
+    pub tables: Vec<String>,
+    /// DML operations included (INSERT, UPDATE, DELETE, TRUNCATE).
+    pub operations: Vec<String>,
+}
+
+/// Descriptor for a logical replication subscription.
+///
+/// Source: PostgreSQL docs §29.7 — `CREATE SUBSCRIPTION`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct DbSubscriptionDescriptor {
+    /// Subscription name.
+    pub name: String,
+    /// Connection string to the publisher.
+    pub connection: String,
+    /// Publications to subscribe to on the publisher.
+    pub publications: Vec<String>,
+    /// Whether the subscription is currently active.
+    pub enabled: bool,
+}

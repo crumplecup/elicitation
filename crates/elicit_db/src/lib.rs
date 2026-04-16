@@ -850,13 +850,18 @@ pub use contracts::proof_composition::{
 pub use elicitation::ElicitComplete;
 pub use error::{DbError, DbErrorKind, DbResult};
 pub use traits::{
-    DbBackend, DbBackupManager, DbDatabaseManager, DbIndexManager, DbMonitor, DbQueryExecutor,
-    DbRoleManager, DbSchemaManager, DbServerAdmin, DbSessionManager, DbTableManager, DbTransactor,
+    DbBackend, DbBackupManager, DbConstraintFactory, DbConstraintMeta, DbDatabaseManager,
+    DbIndexManager, DbIsolationFactory, DbMonitor, DbQueryExecutor, DbReplicationFactory,
+    DbReplicationMeta, DbRoleManager, DbRoutineFactory, DbRoutineMeta, DbSchemaManager,
+    DbSecurityFactory, DbSecurityMeta, DbServerAdmin, DbSessionManager, DbTableManager,
+    DbTransactor,
 };
 pub use types::{
     ConnectionId, DbColumn, DbCommitResult, DbExecuteResult, DbExplain, DbIndexInfo,
-    DbQueryRowsResult, DbRoleInfo, DbRow, DbRows, DbSchema, DbSessionInfo, DbSpatialValue,
-    DbStatActivity, DbTableInfo, DbTransactionalExecuteResult, DbValue, IsolationLevel,
-    TransactionHandle,
+    DbPublicationDescriptor, DbQueryRowsResult, DbReplicationSlotDescriptor, DbRoleInfo,
+    DbRoutineDescriptor, DbRow, DbRows, DbSchema, DbSessionInfo, DbSpatialValue, DbStatActivity,
+    DbSubscriptionDescriptor, DbTableInfo, DbTransactionalExecuteResult, DbValue, IsolationLevel,
+    ParallelSafety, ReplicationSlotKind, RoutineKind, SecurityMode, TransactionHandle,
+    VolatilityKind,
 };
 pub use typestate::{Committed, Executed, Open, Prepared, RolledBack, TxMarker};
