@@ -264,166 +264,20 @@ impl ArchiveEguiApp {
         self.poll_events();
 
         // ── Keyboard navigation ───────────────────────────────────────────────
-        let (up, down, enter, refresh_key, toggle_help, quit, slash, esc_key) = ctx.input(|i| {
-            (
-                i.key_pressed(Key::ArrowUp) || i.key_pressed(Key::K),
-                i.key_pressed(Key::ArrowDown) || i.key_pressed(Key::J),
-                i.key_pressed(Key::Enter),
-                i.key_pressed(Key::R),
-                i.key_pressed(Key::Questionmark),
-                i.key_pressed(Key::Q),
-                i.key_pressed(Key::Slash),
-                i.key_pressed(Key::Escape),
-            )
-        });
-
-        if self.model.filter_active {
-            let typed: String = ctx.input(|i| {
-                i.events
-                    .iter()
-                    .filter_map(|e| {
-                        if let egui::Event::Text(t) = e {
-                            Some(t.clone())
-                        } else {
-                            None
-                        }
-                    })
-                    .collect()
-            });
-            for ch in typed.chars() {
-                self.model.filter_push(ch);
-            }
-            if ctx.input(|i| i.key_pressed(Key::Backspace)) {
-                self.model.filter_backspace();
-            }
-            if esc_key {
-                self.model.close_filter();
-            }
-        } else if self.model.save_prompt_active {
-            let typed: String = ctx.input(|i| {
-                i.events
-                    .iter()
-                    .filter_map(|e| {
-                        if let egui::Event::Text(t) = e {
-                            Some(t.clone())
-                        } else {
-                            None
-                        }
-                    })
-                    .collect()
-            });
-            for ch in typed.chars() {
-                self.model.save_prompt_push(ch);
-            }
-            if ctx.input(|i| i.key_pressed(Key::Backspace)) {
-                self.model.save_prompt_backspace();
-            }
-            if esc_key {
-                self.model.close_save_prompt();
-            }
-            if enter {
-                if let Some(name) = self.model.take_save_prompt() {
-                    if let PanelMode::SqlEditor { text, .. } = &self.model.panel {
-                        let sql = text.trim().to_string();
-                        if let Some(ref store) = self.saved {
-                            store.save_spawn(name.clone(), sql.clone());
-                        }
-                        use crate::archive::SavedQuery;
-                        let existing = self.model.saved_cache.iter().position(|q| q.name == name);
-                        let now = chrono::Utc::now();
-                        if let Some(idx) = existing {
-                            self.model.saved_cache[idx].sql = sql;
-                            self.model.saved_cache[idx].updated_at = now;
-                        } else {
-                            let new_q = SavedQuery {
-                                id: 0,
-                                name: name.clone(),
-                                sql,
-                                created_at: now,
-                                updated_at: now,
-                            };
-                            let ins = self.model.saved_cache.partition_point(|q| q.name < name);
-                            self.model.saved_cache.insert(ins, new_q);
-                        }
-                        self.model.flash = Some(format!("saved \"{name}\""));
+        {
+            use crate::archive::frontend_trait::ArchiveFrontend as _;
+            let keymap = crate::archive::ArchiveKeyMap::default_map();
+            let mode = self.model.current_mode();
+            let combos = egui_events_to_combos(&ctx);
+            for combo in combos {
+                if let Some(action) = keymap.resolve(&combo, mode) {
+                    if self.dispatch_action(action) {
+                        self.should_quit = true;
                     }
+                    break;
                 }
             }
-        } else if self.model.saved_browser_active {
-            let len = self.model.saved_cache.len();
-            if esc_key || quit {
-                self.model.toggle_saved_browser();
-            }
-            if up {
-                self.model.saved_browser_prev();
-            }
-            if down && len > 0 {
-                self.model.saved_browser_next();
-            }
-            if enter {
-                let idx = self.model.saved_browser_idx;
-                if let Some(q) = self.model.saved_cache.get(idx) {
-                    let sql = q.sql.clone();
-                    self.model.panel = PanelMode::SqlEditor {
-                        text: sql,
-                        result: None,
-                        running: false,
-                        error: None,
-                    };
-                }
-            }
-            if ctx.input(|i| i.key_pressed(Key::D)) {
-                let idx = self.model.saved_browser_idx;
-                if let Some(q) = self.model.saved_cache.get(idx) {
-                    let id = q.id;
-                    let name = q.name.clone();
-                    if let Some(ref store) = self.saved {
-                        store.delete_spawn(id);
-                    }
-                    self.model.saved_cache.remove(idx);
-                    if idx > 0 && idx >= self.model.saved_cache.len() {
-                        self.model.saved_browser_prev();
-                    }
-                    self.model.flash = Some(format!("deleted \"{name}\""));
-                }
-            }
-        } else if self.model.export_picker {
-            if esc_key {
-                self.model.toggle_export_picker();
-            }
-            if up {
-                self.model.export_picker_prev();
-            }
-            if down {
-                self.model.export_picker_next();
-            }
-            if enter {
-                let format = self.model.confirm_export_picker();
-                if let Some(req) = self.model.export_request(format) {
-                    let _ = self.req_tx.try_send(req);
-                }
-            }
-        } else if matches!(self.model.panel, PanelMode::SqlEditor { .. }) {
-            let (ctrl_enter, ctrl_up, ctrl_down) = ctx.input(|i| {
-                let ctrl = i.modifiers.ctrl;
-                (
-                    ctrl && i.key_pressed(Key::Enter),
-                    ctrl && i.key_pressed(Key::ArrowUp),
-                    ctrl && i.key_pressed(Key::ArrowDown),
-                )
-            });
-            if ctrl_enter || ctx.input(|i| i.key_pressed(Key::F5)) {
-                self.run_sql();
-            }
-            if ctrl_up {
-                self.model.history_prev();
-            }
-            if ctrl_down {
-                self.model.history_next();
-            }
-            if esc_key {
-                self.model.panel = PanelMode::ColumnDetail;
-            }
+            // Text input for modes that accept printable characters
             let typed: String = ctx.input(|i| {
                 i.events
                     .iter()
@@ -437,94 +291,7 @@ impl ArchiveEguiApp {
                     .collect()
             });
             if !typed.is_empty() {
-                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
-                    text.push_str(&typed);
-                }
-            }
-            if ctx.input(|i| i.key_pressed(Key::Backspace)) {
-                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
-                    text.pop();
-                }
-            }
-            if !ctrl_enter && enter {
-                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
-                    text.push('\n');
-                }
-            }
-            if ctx.input(|i| i.modifiers.ctrl && i.key_pressed(Key::S)) {
-                self.model.open_save_prompt();
-            }
-        } else {
-            if up {
-                self.model.move_up();
-                if let Some(req) = self.model.inspect_request() {
-                    let _ = self.req_tx.try_send(req);
-                }
-                if let Some(req) = self.model.stats_request() {
-                    let _ = self.req_tx.try_send(req);
-                }
-            }
-            if down {
-                self.model.move_down();
-                if let Some(req) = self.model.inspect_request() {
-                    let _ = self.req_tx.try_send(req);
-                }
-                if let Some(req) = self.model.stats_request() {
-                    let _ = self.req_tx.try_send(req);
-                }
-            }
-            if enter {
-                if let Some(req) = self.model.toggle_expand() {
-                    let _ = self.req_tx.try_send(req);
-                }
-            }
-            if refresh_key {
-                let req = self.model.request_refresh();
-                let _ = self.req_tx.try_send(req);
-            }
-            if toggle_help {
-                self.model.toggle_help();
-            }
-            if slash {
-                self.model.open_filter();
-            }
-            if ctx.input(|i| i.key_pressed(Key::D)) {
-                if let Some(req) = self.model.ddl_request() {
-                    let _ = self.req_tx.try_send(req);
-                }
-            }
-            if ctx.input(|i| i.key_pressed(Key::E)) {
-                if let Some(req) = self.model.explain_request() {
-                    let _ = self.req_tx.try_send(req);
-                }
-            }
-            if ctx.input(|i| i.key_pressed(Key::S)) {
-                self.model.panel = PanelMode::SqlEditor {
-                    text: String::new(),
-                    result: None,
-                    running: false,
-                    error: None,
-                };
-                self.model.toggle_saved_browser();
-            }
-            if ctx.input(|i| i.key_pressed(Key::X)) && self.model.panel.is_data_grid() {
-                self.model.toggle_export_picker();
-            }
-            // Ctrl+Tab / Ctrl+Shift+Tab — cycle connections
-            if ctx.input(|i| i.modifiers.ctrl && i.key_pressed(Key::Tab)) {
-                self.model.conn_next();
-                if let Some(url) = self.model.conn_active_url() {
-                    let _ = self.req_tx.try_send(FetchRequest::UpdateUrl(url));
-                }
-            }
-            if ctx.input(|i| i.modifiers.ctrl && i.modifiers.shift && i.key_pressed(Key::Tab)) {
-                self.model.conn_prev();
-                if let Some(url) = self.model.conn_active_url() {
-                    let _ = self.req_tx.try_send(FetchRequest::UpdateUrl(url));
-                }
-            }
-            if quit || esc_key {
-                self.should_quit = true;
+                self.dispatch_text(&typed);
             }
         }
 
@@ -611,6 +378,266 @@ fn render_egui_from_ir(
 ) -> Vec<accesskit::NodeId> {
     let (_stats, clicked) = elicit_egui::render_tree(ui, tree.nodes(), tree.root());
     clicked
+}
+
+// ── Egui key-combo helper ─────────────────────────────────────────────────────
+
+/// Collect all key-press events from the current egui frame into
+/// platform-neutral [`KeyCombo`]s that the [`ArchiveKeyMap`] can resolve.
+fn egui_events_to_combos(ctx: &egui::Context) -> Vec<crate::archive::KeyCombo> {
+    use crate::archive::{ArchiveKey, KeyCombo};
+    ctx.input(|i| {
+        let mut out = Vec::new();
+        for ev in &i.events {
+            if let egui::Event::Key {
+                key,
+                pressed: true,
+                modifiers,
+                ..
+            } = ev
+            {
+                let ak = match key {
+                    Key::ArrowUp | Key::K => ArchiveKey::Up,
+                    Key::ArrowDown | Key::J => ArchiveKey::Down,
+                    Key::Enter => ArchiveKey::Enter,
+                    Key::Escape => ArchiveKey::Esc,
+                    Key::Backspace => ArchiveKey::Backspace,
+                    Key::Delete => ArchiveKey::Delete,
+                    Key::Tab => ArchiveKey::Tab,
+                    Key::F1 => ArchiveKey::F(1),
+                    Key::F2 => ArchiveKey::F(2),
+                    Key::F3 => ArchiveKey::F(3),
+                    Key::F4 => ArchiveKey::F(4),
+                    Key::F5 => ArchiveKey::F(5),
+                    Key::A => ArchiveKey::Char('a'),
+                    Key::B => ArchiveKey::Char('b'),
+                    Key::C => ArchiveKey::Char('c'),
+                    Key::D => ArchiveKey::Char('d'),
+                    Key::E => ArchiveKey::Char('e'),
+                    Key::F => ArchiveKey::Char('f'),
+                    Key::G => ArchiveKey::Char('g'),
+                    Key::H => ArchiveKey::Char('h'),
+                    Key::I => ArchiveKey::Char('i'),
+                    Key::L => ArchiveKey::Char('l'),
+                    Key::M => ArchiveKey::Char('m'),
+                    Key::N => ArchiveKey::Char('n'),
+                    Key::O => ArchiveKey::Char('o'),
+                    Key::P => ArchiveKey::Char('p'),
+                    Key::Q => ArchiveKey::Char('q'),
+                    Key::R => ArchiveKey::Char('r'),
+                    Key::S => ArchiveKey::Char('s'),
+                    Key::T => ArchiveKey::Char('t'),
+                    Key::U => ArchiveKey::Char('u'),
+                    Key::V => ArchiveKey::Char('v'),
+                    Key::W => ArchiveKey::Char('w'),
+                    Key::X => ArchiveKey::Char('x'),
+                    Key::Y => ArchiveKey::Char('y'),
+                    Key::Z => ArchiveKey::Char('z'),
+                    Key::Slash => ArchiveKey::Char('/'),
+                    Key::Questionmark => ArchiveKey::Char('?'),
+                    _ => continue,
+                };
+                out.push(KeyCombo {
+                    key: ak,
+                    ctrl: modifiers.ctrl,
+                    shift: modifiers.shift,
+                    alt: modifiers.alt,
+                });
+            }
+        }
+        out
+    })
+}
+
+// ── ArchiveFrontend implementation ───────────────────────────────────────────
+
+impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
+    fn dispatch_action(&mut self, action: crate::archive::ArchiveAction) -> bool {
+        use crate::archive::ArchiveAction as A;
+        use crate::archive::nav_model::PanelMode;
+        match action {
+            A::MoveUp => {
+                self.model.move_up();
+                if let Some(req) = self.model.inspect_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
+                if let Some(req) = self.model.stats_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            A::MoveDown => {
+                self.model.move_down();
+                if let Some(req) = self.model.inspect_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
+                if let Some(req) = self.model.stats_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            A::Select => {
+                if let Some(req) = self.model.toggle_expand() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            A::Refresh => {
+                let req = self.model.request_refresh();
+                let _ = self.req_tx.try_send(req);
+            }
+            A::ToggleHelp => self.model.toggle_help(),
+            A::OpenFilter => self.model.open_filter(),
+            A::OpenSqlEditor => {
+                self.model.panel = PanelMode::SqlEditor {
+                    text: String::new(),
+                    result: None,
+                    running: false,
+                    error: None,
+                };
+            }
+            A::OpenSavedBrowser => self.model.toggle_saved_browser(),
+            A::ToggleExportPicker => {
+                if self.model.panel.is_data_grid() {
+                    self.model.toggle_export_picker();
+                }
+            }
+            A::RequestDdl => {
+                if let Some(req) = self.model.ddl_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            A::RequestExplain => {
+                if let Some(req) = self.model.explain_request() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            A::ConnNext => {
+                self.model.conn_next();
+                if let Some(url) = self.model.conn_active_url() {
+                    let _ = self.req_tx.try_send(FetchRequest::UpdateUrl(url));
+                }
+            }
+            A::ConnPrev => {
+                self.model.conn_prev();
+                if let Some(url) = self.model.conn_active_url() {
+                    let _ = self.req_tx.try_send(FetchRequest::UpdateUrl(url));
+                }
+            }
+            A::Quit => return true,
+            A::FilterClose => self.model.close_filter(),
+            A::FilterBackspace => self.model.filter_backspace(),
+            A::SavePromptClose => self.model.close_save_prompt(),
+            A::SavePromptBackspace => self.model.save_prompt_backspace(),
+            A::SavePromptConfirm => {
+                if let Some(name) = self.model.take_save_prompt() {
+                    if let PanelMode::SqlEditor { text, .. } = &self.model.panel {
+                        let sql = text.trim().to_string();
+                        if let Some(ref store) = self.saved {
+                            store.save_spawn(name.clone(), sql.clone());
+                        }
+                        use crate::archive::SavedQuery;
+                        let existing = self.model.saved_cache.iter().position(|q| q.name == name);
+                        let now = chrono::Utc::now();
+                        if let Some(idx) = existing {
+                            self.model.saved_cache[idx].sql = sql;
+                            self.model.saved_cache[idx].updated_at = now;
+                        } else {
+                            let ins = self.model.saved_cache.partition_point(|q| q.name < name);
+                            self.model.saved_cache.insert(
+                                ins,
+                                SavedQuery {
+                                    id: 0,
+                                    name: name.clone(),
+                                    sql,
+                                    created_at: now,
+                                    updated_at: now,
+                                },
+                            );
+                        }
+                        self.model.flash = Some(format!("saved \"{name}\""));
+                    }
+                }
+            }
+            A::SavedBrowserClose => self.model.toggle_saved_browser(),
+            A::SavedBrowserUp => self.model.saved_browser_prev(),
+            A::SavedBrowserDown => {
+                if !self.model.saved_cache.is_empty() {
+                    self.model.saved_browser_next();
+                }
+            }
+            A::SavedBrowserSelect => {
+                if let Some(sql) = self.model.load_focused_saved_query_text() {
+                    self.model.panel = PanelMode::SqlEditor {
+                        text: sql,
+                        result: None,
+                        running: false,
+                        error: None,
+                    };
+                    self.model.toggle_saved_browser();
+                }
+            }
+            A::SavedBrowserDelete => {
+                if let Some((id, name)) = self.model.remove_focused_saved_query() {
+                    if let Some(ref store) = self.saved {
+                        store.delete_spawn(id);
+                    }
+                    self.model.flash = Some(format!("deleted \"{name}\""));
+                }
+            }
+            A::ExportPickerClose => self.model.toggle_export_picker(),
+            A::ExportPickerUp => self.model.export_picker_prev(),
+            A::ExportPickerDown => self.model.export_picker_next(),
+            A::ExportPickerConfirm => {
+                let format = self.model.confirm_export_picker();
+                if let Some(req) = self.model.export_request(format) {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            A::SqlRun => self.run_sql(),
+            A::SqlHistoryPrev => {
+                self.model.history_prev();
+            }
+            A::SqlHistoryNext => {
+                self.model.history_next();
+            }
+            A::SqlClose => {
+                self.model.panel = PanelMode::ColumnDetail;
+            }
+            A::SqlSave => self.model.open_save_prompt(),
+            A::SqlBackspace => {
+                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
+                    text.pop();
+                }
+            }
+            A::SqlNewline => {
+                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
+                    text.push('\n');
+                }
+            }
+        }
+        false
+    }
+
+    fn dispatch_text(&mut self, text: &str) {
+        use crate::archive::actions::KeyMapMode;
+        use crate::archive::nav_model::PanelMode;
+        match self.model.current_mode() {
+            KeyMapMode::Filter => {
+                for ch in text.chars() {
+                    self.model.filter_push(ch);
+                }
+            }
+            KeyMapMode::SavePrompt => {
+                for ch in text.chars() {
+                    self.model.save_prompt_push(ch);
+                }
+            }
+            KeyMapMode::SqlEditor => {
+                if let PanelMode::SqlEditor { text: buf, .. } = &mut self.model.panel {
+                    buf.push_str(text);
+                }
+            }
+            _ => {}
+        }
+    }
 }
 
 // ── winit ApplicationHandler ──────────────────────────────────────────────────

@@ -2,8 +2,8 @@
 //!
 //! `ArchiveNavModel` holds the flattened tree used by both the ratatui TUI and
 //! the egui native frontend.  Keybinding semantics are declared once in
-//! [`elicit_accesskit::StatusBarDescriptor::archive_browse`] and every
-//! frontend derives its key-to-action mapping from that IR definition.
+//! [`crate::archive::ArchiveKeyMap::default_map`] and every frontend derives
+//! its key-to-action mapping from that IR definition.
 //!
 //! ## Flat-list model
 //!
@@ -20,11 +20,12 @@
 
 use std::collections::HashMap;
 
-use elicit_accesskit::{KeyBinding, StatusBarDescriptor};
+use elicit_accesskit::KeyBinding;
 
 use crate::archive::{
     ColumnStats, ConnectionProfile, ExplainNode, ExportFormat, QueryHistoryEntry, QueryResult,
     RowEditState, SavedQuery, StagedEdit, TableInspection,
+    actions::{ArchiveKeyMap, KeyMapMode},
     nav_tree::{NavTree, SchemaEntry},
 };
 
@@ -287,8 +288,7 @@ pub enum PanelEvent {
 /// Frontend-agnostic keyboard-navigation state for the archive tree view.
 ///
 /// Frontends call [`move_up`], [`move_down`], [`toggle_expand`] in response
-/// to key events whose identities come from
-/// [`StatusBarDescriptor::archive_browse`].
+/// to key events resolved via [`ArchiveKeyMap::resolve`].
 ///
 /// [`move_up`]: ArchiveNavModel::move_up
 /// [`move_down`]: ArchiveNavModel::move_down
@@ -717,13 +717,65 @@ impl ArchiveNavModel {
             .get(&(schema.to_string(), table.to_string()))
     }
 
-    /// Key bindings as declared in the accesskit IR.
+    /// Key bindings for the default navigation mode, derived from
+    /// [`ArchiveKeyMap::default_map`].
     ///
-    /// Every frontend should drive its status-bar rendering and its key-event
-    /// dispatch from this single source of truth rather than duplicating the
-    /// binding list.
+    /// Every frontend should drive its status-bar rendering from this
+    /// single source of truth.
     pub fn bindings() -> Vec<KeyBinding> {
-        StatusBarDescriptor::archive_browse().bindings
+        ArchiveKeyMap::default_map()
+            .to_status_bar(KeyMapMode::Default)
+            .bindings
+    }
+
+    /// Determine which UI mode is currently active.
+    ///
+    /// Used by frontends to look up the correct key bindings via
+    /// [`ArchiveKeyMap::resolve`].
+    pub fn current_mode(&self) -> KeyMapMode {
+        if self.filter_active {
+            return KeyMapMode::Filter;
+        }
+        if self.save_prompt_active {
+            return KeyMapMode::SavePrompt;
+        }
+        if self.saved_browser_active {
+            return KeyMapMode::SavedBrowser;
+        }
+        if self.export_picker {
+            return KeyMapMode::ExportPicker;
+        }
+        if matches!(self.panel, PanelMode::SqlEditor { .. }) {
+            return KeyMapMode::SqlEditor;
+        }
+        KeyMapMode::Default
+    }
+
+    /// Return the SQL text of the currently-focused saved query, if any.
+    ///
+    /// Used by frontends to implement [`ArchiveAction::SavedBrowserSelect`].
+    pub fn load_focused_saved_query_text(&self) -> Option<String> {
+        self.saved_cache
+            .get(self.saved_browser_idx)
+            .map(|q| q.sql.clone())
+    }
+
+    /// Remove the currently-focused saved query from the local cache.
+    ///
+    /// Returns `(id, name)` of the removed entry so the caller can enqueue a
+    /// deletion on the persistent store.  Returns `None` if the cache is empty.
+    ///
+    /// Used by frontends to implement [`ArchiveAction::SavedBrowserDelete`].
+    pub fn remove_focused_saved_query(&mut self) -> Option<(i64, String)> {
+        let idx = self.saved_browser_idx;
+        if idx >= self.saved_cache.len() {
+            return None;
+        }
+        let q = self.saved_cache.remove(idx);
+        if idx > 0 && idx >= self.saved_cache.len() {
+            self.saved_browser_prev();
+        }
+        Some((q.id, q.name))
     }
 
     /// Step backward through history (toward older entries) in the SQL editor.
@@ -1264,7 +1316,6 @@ impl ArchiveNavModel {
         elicitation::Established<elicit_ui::IrSourced>,
     )> {
         use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
-        use elicit_accesskit::StatusBarDescriptor;
         use elicit_ui::{VerifiedTree, Viewport};
         use std::collections::HashMap;
 
@@ -1322,7 +1373,7 @@ impl ArchiveNavModel {
         nodes.insert(main_id, main_node);
 
         // ── status bar ────────────────────────────────────────────────────────
-        let status = StatusBarDescriptor::archive_browse();
+        let status = ArchiveKeyMap::default_map().to_status_bar(KeyMapMode::Default);
         let (status_root_eid, status_pairs) = status.to_ak_nodes(10_000);
         for (eid, json) in status_pairs {
             nodes.insert(eid.0, accesskit::Node::from(json));

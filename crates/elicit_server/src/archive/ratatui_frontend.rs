@@ -31,6 +31,7 @@ use ratatui::{Terminal, backend::CrosstermBackend};
 use tokio::sync::mpsc;
 use tracing::instrument;
 
+use crate::archive::frontend_trait::ArchiveFrontend;
 use crate::archive::nav_model::{ArchiveNavModel, FetchRequest, PanelEvent, PanelMode};
 use crate::archive::nav_tree::{NavTree, build_nav_tree};
 use crate::archive::{
@@ -276,7 +277,164 @@ impl TuiApp {
     }
 }
 
-// ── Background fetch task ─────────────────────────────────────────────────────
+// ── ArchiveFrontend implementation ───────────────────────────────────────────
+
+impl crate::archive::ArchiveFrontend for TuiApp {
+    /// Dispatch a named action.  Every [`ArchiveAction`] variant must be
+    /// handled here — the compiler enforces exhaustiveness.
+    ///
+    /// Returns `true` when the application should quit.
+    fn dispatch_action(&mut self, action: crate::archive::ArchiveAction) -> bool {
+        use crate::archive::ArchiveAction as A;
+        use crate::archive::nav_model::PanelMode;
+        match action {
+            A::MoveUp => self.move_up(),
+            A::MoveDown => self.move_down(),
+            A::Select => self.toggle_expand(),
+            A::Refresh => self.refresh(),
+            A::ToggleHelp => self.toggle_help(),
+            A::OpenFilter => self.model.open_filter(),
+            A::OpenSqlEditor => {
+                self.model.panel = PanelMode::SqlEditor {
+                    text: String::new(),
+                    result: None,
+                    running: false,
+                    error: None,
+                };
+            }
+            A::OpenSavedBrowser => self.model.toggle_saved_browser(),
+            A::ToggleExportPicker => {
+                if self.model.panel.is_data_grid() {
+                    self.model.toggle_export_picker();
+                }
+            }
+            A::RequestDdl => self.request_ddl(),
+            A::RequestExplain => self.request_explain(),
+            A::ConnNext => {
+                self.model.conn_next();
+                if let Some(url) = self.model.conn_active_url() {
+                    let _ = self.req_tx.try_send(FetchRequest::UpdateUrl(url));
+                }
+            }
+            A::ConnPrev => {
+                self.model.conn_prev();
+                if let Some(url) = self.model.conn_active_url() {
+                    let _ = self.req_tx.try_send(FetchRequest::UpdateUrl(url));
+                }
+            }
+            A::Quit => return true,
+            A::FilterClose => self.model.close_filter(),
+            A::FilterBackspace => self.model.filter_backspace(),
+            A::SavePromptClose => self.model.close_save_prompt(),
+            A::SavePromptBackspace => self.model.save_prompt_backspace(),
+            A::SavePromptConfirm => {
+                if let Some(name) = self.model.take_save_prompt() {
+                    if let PanelMode::SqlEditor { text, .. } = &self.model.panel {
+                        let sql = text.trim().to_string();
+                        if let Some(ref store) = self.saved {
+                            store.save_spawn(name.clone(), sql.clone());
+                        }
+                        use crate::archive::SavedQuery;
+                        let existing = self.model.saved_cache.iter().position(|q| q.name == name);
+                        let now = chrono::Utc::now();
+                        if let Some(idx) = existing {
+                            self.model.saved_cache[idx].sql = sql;
+                            self.model.saved_cache[idx].updated_at = now;
+                        } else {
+                            let ins = self.model.saved_cache.partition_point(|q| q.name < name);
+                            self.model.saved_cache.insert(
+                                ins,
+                                SavedQuery {
+                                    id: 0,
+                                    name: name.clone(),
+                                    sql,
+                                    created_at: now,
+                                    updated_at: now,
+                                },
+                            );
+                        }
+                        self.model.flash = Some(format!("saved \"{name}\""));
+                    }
+                }
+            }
+            A::SavedBrowserClose => self.model.toggle_saved_browser(),
+            A::SavedBrowserUp => self.model.saved_browser_prev(),
+            A::SavedBrowserDown => {
+                if !self.model.saved_cache.is_empty() {
+                    self.model.saved_browser_next();
+                }
+            }
+            A::SavedBrowserSelect => {
+                if let Some(sql) = self.model.load_focused_saved_query_text() {
+                    self.model.panel = PanelMode::SqlEditor {
+                        text: sql,
+                        result: None,
+                        running: false,
+                        error: None,
+                    };
+                    self.model.toggle_saved_browser();
+                }
+            }
+            A::SavedBrowserDelete => {
+                if let Some((id, name)) = self.model.remove_focused_saved_query() {
+                    if let Some(ref store) = self.saved {
+                        store.delete_spawn(id);
+                    }
+                    self.model.flash = Some(format!("deleted \"{name}\""));
+                }
+            }
+            A::ExportPickerClose => self.model.toggle_export_picker(),
+            A::ExportPickerUp => self.model.export_picker_prev(),
+            A::ExportPickerDown => self.model.export_picker_next(),
+            A::ExportPickerConfirm => self.confirm_export(),
+            A::SqlRun => self.run_sql(),
+            A::SqlHistoryPrev => {
+                self.model.history_prev();
+            }
+            A::SqlHistoryNext => {
+                self.model.history_next();
+            }
+            A::SqlClose => {
+                self.model.panel = PanelMode::ColumnDetail;
+            }
+            A::SqlSave => self.model.open_save_prompt(),
+            A::SqlBackspace => {
+                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
+                    text.pop();
+                }
+            }
+            A::SqlNewline => {
+                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
+                    text.push('\n');
+                }
+            }
+        }
+        false
+    }
+
+    fn dispatch_text(&mut self, text: &str) {
+        use crate::archive::actions::KeyMapMode;
+        use crate::archive::nav_model::PanelMode;
+        match self.model.current_mode() {
+            KeyMapMode::Filter => {
+                for ch in text.chars() {
+                    self.model.filter_push(ch);
+                }
+            }
+            KeyMapMode::SavePrompt => {
+                for ch in text.chars() {
+                    self.model.save_prompt_push(ch);
+                }
+            }
+            KeyMapMode::SqlEditor => {
+                if let PanelMode::SqlEditor { text: buf, .. } = &mut self.model.panel {
+                    buf.push_str(text);
+                }
+            }
+            _ => {}
+        }
+    }
+}
 
 /// Spawns a tokio task that handles [`FetchRequest`]s and sends back
 /// [`PanelEvent`]s.  Returns `(req_tx, event_rx)`.
@@ -430,6 +588,34 @@ fn spawn_fetch_task(
 
 // ── Event loop ────────────────────────────────────────────────────────────────
 
+/// Convert a crossterm [`KeyEvent`] to an [`ArchiveKeyCombo`] if it is a
+/// recognisable key press that the key map can resolve.
+fn crossterm_key_to_combo(key: &crossterm::event::KeyEvent) -> Option<crate::archive::KeyCombo> {
+    use crate::archive::{ArchiveKey, KeyCombo};
+    use crossterm::event::{KeyCode, KeyModifiers};
+    let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+    let shift = key.modifiers.contains(KeyModifiers::SHIFT);
+    let ak = match key.code {
+        KeyCode::Up => ArchiveKey::Up,
+        KeyCode::Down => ArchiveKey::Down,
+        KeyCode::Enter => ArchiveKey::Enter,
+        KeyCode::Esc => ArchiveKey::Esc,
+        KeyCode::Backspace => ArchiveKey::Backspace,
+        KeyCode::Delete => ArchiveKey::Delete,
+        KeyCode::Tab => ArchiveKey::Tab,
+        KeyCode::BackTab => ArchiveKey::BackTab,
+        KeyCode::F(n) => ArchiveKey::F(n),
+        KeyCode::Char(c) => ArchiveKey::Char(c),
+        _ => return None,
+    };
+    Some(KeyCombo {
+        key: ak,
+        ctrl,
+        shift,
+        alt: false,
+    })
+}
+
 /// Run the interactive archive browser in a crossterm terminal.
 ///
 /// Accepts an optional `url` for live data fetching; pass `None` for demo mode.
@@ -481,13 +667,14 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
     let result: ArchiveResult<()> = async {
         loop {
             // IR pipeline: mint verified tree → bridge render → draw frame.
-            let (tree, _ir_proof) = app.model.to_verified_tree().map_err(|e| {
-                ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string()))
-            })?;
-            let (tui_node, _stats, _render_proof) =
-                app.backend.render(&tree).map_err(|e| {
-                    ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string()))
-                })?;
+            let (tree, _ir_proof) = app
+                .model
+                .to_verified_tree()
+                .map_err(|e| ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string())))?;
+            let (tui_node, _stats, _render_proof) = app
+                .backend
+                .render(&tree)
+                .map_err(|e| ArchiveError::new(ArchiveErrorKind::Frontend(e.to_string())))?;
             terminal
                 .draw(|frame| {
                     render_node(frame, frame.area(), &tui_node);
@@ -509,176 +696,29 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                         if key.kind != KeyEventKind::Press {
                             continue;
                         }
-                        if app.model.filter_active {
-                            match key.code {
-                                KeyCode::Esc => app.model.close_filter(),
-                                KeyCode::Backspace => app.model.filter_backspace(),
-                                KeyCode::Char(c) => app.model.filter_push(c),
-                                _ => {}
+                        let keymap = crate::archive::ArchiveKeyMap::default_map();
+                        let mode = app.model.current_mode();
+                        if let Some(combo) = crossterm_key_to_combo(&key) {
+                            if let Some(action) = keymap.resolve(&combo, mode) {
+                                if app.dispatch_action(action) {
+                                    quit = true;
+                                }
+                                continue;
                             }
-                        } else if app.model.save_prompt_active {
-                            match key.code {
-                                KeyCode::Esc => app.model.close_save_prompt(),
-                                KeyCode::Backspace => app.model.save_prompt_backspace(),
-                                KeyCode::Enter => {
-                                    if let Some(name) = app.model.take_save_prompt() {
-                                        if let PanelMode::SqlEditor { text, .. } = &app.model.panel {
-                                            let sql = text.trim().to_string();
-                                            if let Some(ref store) = app.saved {
-                                                store.save_spawn(name.clone(), sql.clone());
-                                            }
-                                            use crate::archive::SavedQuery;
-                                            let existing = app.model.saved_cache
-                                                .iter()
-                                                .position(|q| q.name == name);
-                                            let now = chrono::Utc::now();
-                                            if let Some(idx) = existing {
-                                                app.model.saved_cache[idx].sql = sql;
-                                                app.model.saved_cache[idx].updated_at = now;
-                                            } else {
-                                                let new_q = SavedQuery {
-                                                    id: 0,
-                                                    name: name.clone(),
-                                                    sql,
-                                                    created_at: now,
-                                                    updated_at: now,
-                                                };
-                                                let ins = app.model.saved_cache
-                                                    .partition_point(|q| q.name < name);
-                                                app.model.saved_cache.insert(ins, new_q);
-                                            }
-                                            app.model.flash = Some(format!("saved \"{name}\""));
-                                        }
-                                    }
-                                }
-                                KeyCode::Char(c) => app.model.save_prompt_push(c),
-                                _ => {}
+                        }
+                        // Text input for modes that accept printable characters
+                        if let KeyCode::Char(c) = key.code {
+                            if !key.modifiers.contains(KeyModifiers::CONTROL)
+                                && !key.modifiers.contains(KeyModifiers::ALT)
+                            {
+                                let mut buf = [0u8; 4];
+                                app.dispatch_text(c.encode_utf8(&mut buf));
                             }
-                        } else if app.model.saved_browser_active {
-                            let len = app.model.saved_cache.len();
-                            match key.code {
-                                KeyCode::Esc | KeyCode::Char('q') => {
-                                    app.model.toggle_saved_browser();
-                                }
-                                KeyCode::Up | KeyCode::Char('k') => {
-                                    app.model.saved_browser_prev();
-                                }
-                                KeyCode::Down | KeyCode::Char('j') => {
-                                    if len > 0 {
-                                        app.model.saved_browser_next();
-                                    }
-                                }
-                                KeyCode::Enter => {
-                                    let idx = app.model.saved_browser_idx;
-                                    if let Some(q) = app.model.saved_cache.get(idx) {
-                                        let sql = q.sql.clone();
-                                        app.model.panel = PanelMode::SqlEditor {
-                                            text: sql,
-                                            result: None,
-                                            running: false,
-                                            error: None,
-                                        };
-                                        app.model.toggle_saved_browser();
-                                    }
-                                }
-                                KeyCode::Char('d') | KeyCode::Delete => {
-                                    let idx = app.model.saved_browser_idx;
-                                    if let Some(q) = app.model.saved_cache.get(idx) {
-                                        let id = q.id;
-                                        let name = q.name.clone();
-                                        if let Some(ref store) = app.saved {
-                                            store.delete_spawn(id);
-                                        }
-                                        app.model.saved_cache.remove(idx);
-                                        if idx > 0 && idx >= app.model.saved_cache.len() {
-                                            app.model.saved_browser_prev();
-                                        }
-                                        app.model.flash = Some(format!("deleted \"{name}\""));
-                                    }
-                                }
-                                _ => {}
-                            }
-                        } else if app.model.export_picker {
-                            match key.code {
-                                KeyCode::Esc => app.model.toggle_export_picker(),
-                                KeyCode::Up | KeyCode::Char('k') => {
-                                    app.model.export_picker_prev();
-                                }
-                                KeyCode::Down | KeyCode::Char('j') => {
-                                    app.model.export_picker_next();
-                                }
-                                KeyCode::Enter => app.confirm_export(),
-                                _ => {}
-                            }
-                        } else if matches!(app.model.panel, PanelMode::SqlEditor { .. }) {
-                            let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-                            match (key.code, ctrl) {
-                                (KeyCode::Enter, true) | (KeyCode::F(5), _) => app.run_sql(),
-                                (KeyCode::Char('s'), true) => app.model.open_save_prompt(),
-                                (KeyCode::Up, true) => { app.model.history_prev(); }
-                                (KeyCode::Down, true) => { app.model.history_next(); }
-                                (KeyCode::Esc, _) => {
-                                    app.model.panel = PanelMode::ColumnDetail;
-                                }
-                                (KeyCode::Char(c), false) => {
-                                    if let PanelMode::SqlEditor { text, .. } = &mut app.model.panel {
-                                        text.push(c);
-                                    }
-                                }
-                                (KeyCode::Backspace, _) => {
-                                    if let PanelMode::SqlEditor { text, .. } = &mut app.model.panel {
-                                        text.pop();
-                                    }
-                                }
-                                (KeyCode::Enter, false) => {
-                                    if let PanelMode::SqlEditor { text, .. } = &mut app.model.panel {
-                                        text.push('\n');
-                                    }
-                                }
-                                _ => {}
-                            }
-                        } else {
-                            let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
-                            match (key.code, ctrl) {
-                                (KeyCode::Tab, true) => {
-                                    app.model.conn_next();
-                                    if let Some(url) = app.model.conn_active_url() {
-                                        let _ = app.req_tx.try_send(FetchRequest::UpdateUrl(url));
-                                    }
-                                }
-                                (KeyCode::BackTab, true) => {
-                                    app.model.conn_prev();
-                                    if let Some(url) = app.model.conn_active_url() {
-                                        let _ = app.req_tx.try_send(FetchRequest::UpdateUrl(url));
-                                    }
-                                }
-                                _ => {}
-                            }
-                            match key.code {
-                                KeyCode::Char('q') | KeyCode::Esc => quit = true,
-                                KeyCode::Up | KeyCode::Char('k') => app.move_up(),
-                                KeyCode::Down | KeyCode::Char('j') => app.move_down(),
-                                KeyCode::Enter => app.toggle_expand(),
-                                KeyCode::Char('r') => app.refresh(),
-                                KeyCode::Char('?') => app.toggle_help(),
-                                KeyCode::Char('/') => app.model.open_filter(),
-                                KeyCode::Char('d') => app.request_ddl(),
-                                KeyCode::Char('e') => app.request_explain(),
-                                KeyCode::Char('s') => {
-                                    app.model.panel = PanelMode::SqlEditor {
-                                        text: String::new(),
-                                        result: None,
-                                        running: false,
-                                        error: None,
-                                    };
-                                }
-                                KeyCode::F(2) => app.model.toggle_saved_browser(),
-                                KeyCode::Char('x') => {
-                                    if app.model.panel.is_data_grid() {
-                                        app.model.toggle_export_picker();
-                                    }
-                                }
-                                _ => {}
+                        }
+                        if let KeyCode::Enter = key.code {
+                            // Bare Enter in text modes: newline
+                            if !key.modifiers.contains(KeyModifiers::CONTROL) {
+                                app.dispatch_text("\n");
                             }
                         }
                     }

@@ -14,7 +14,7 @@
 use std::collections::HashMap;
 
 use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
-use elicit_accesskit::{NodeJson, StatusBarDescriptor};
+use elicit_accesskit::NodeJson;
 use elicit_ui::{VerifiedTree, Viewport};
 use tracing::instrument;
 
@@ -41,7 +41,8 @@ fn convert_nodes(
 }
 
 /// Wrap a content [`VerifiedTree`] in a `Role::Window` root that also contains
-/// a [`StatusBarDescriptor::archive_browse`] status bar as its last child.
+/// an archive status bar (derived from [`ArchiveKeyMap::default_map`]) as its
+/// last child.
 ///
 /// The composed tree has three node layers:
 /// - `NodeId(0)` — `Role::Window` root (Window containing content + status bar)
@@ -55,8 +56,9 @@ fn with_status_bar(
     mut nodes: HashMap<accesskit::NodeId, accesskit::Node>,
     viewport: Viewport,
 ) -> VerifiedTree {
+    use crate::archive::actions::{ArchiveKeyMap, KeyMapMode};
     // Status bar subtree (id_base=10_000 avoids clashing with content nodes)
-    let status = StatusBarDescriptor::archive_browse();
+    let status = ArchiveKeyMap::default_map().to_status_bar(KeyMapMode::Default);
     let (status_root_eid, status_pairs) = status.to_ak_nodes(10_000);
     for (eid, json) in status_pairs {
         nodes.insert(eid.0, accesskit::Node::from(json));
@@ -162,7 +164,8 @@ pub fn nav_tree_to_verified_tree(nav: &NavTree) -> ArchiveResult<VerifiedTree> {
     nodes.insert(nav_root_id, nav_node);
 
     // Window: Banner + Tree + Status (status added by with_status_bar)
-    let status = elicit_accesskit::StatusBarDescriptor::archive_browse();
+    use crate::archive::actions::{ArchiveKeyMap, KeyMapMode};
+    let status = ArchiveKeyMap::default_map().to_status_bar(KeyMapMode::Default);
     let (status_root_eid, status_pairs) = status.to_ak_nodes(10_000);
     for (eid, json) in status_pairs {
         nodes.insert(eid.0, accesskit::Node::from(json));

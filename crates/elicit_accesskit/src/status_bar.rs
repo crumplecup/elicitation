@@ -121,20 +121,6 @@ impl StatusBarDescriptor {
         Self { bindings, theme }
     }
 
-    /// Standard bindings for the archive browse view.
-    pub fn archive_browse() -> Self {
-        Self::new(
-            vec![
-                KeyBinding::new("q", "Quit"),
-                KeyBinding::new("↑↓", "Navigate"),
-                KeyBinding::new("Enter", "Select"),
-                KeyBinding::new("r", "Refresh"),
-                KeyBinding::new("?", "Help"),
-            ],
-            ColorTheme::Dark,
-        )
-    }
-
     /// Convert to AccessKit IR nodes.
     ///
     /// `id_base` is used as the first [`NodeId`] for the status root; children

@@ -19,10 +19,12 @@
 //! | [`display`] | `ArchiveDisplay` trait + `DisplayMode` enums |
 //! | [`plugins`] | Verified workflow plugins (`browse`, `query`, `spatial`, `render`) |
 
+pub mod actions;
 mod backend;
 pub mod display;
 pub mod egui_frontend;
 mod errors;
+pub mod frontend_trait;
 pub mod frontend_utils;
 pub mod leptos_frontend;
 pub mod nav_model;
@@ -33,8 +35,10 @@ pub mod types;
 
 pub use backend::ArchiveDbBackend;
 
+pub use actions::{ArchiveAction, ArchiveKey, ArchiveKeyMap, KeyCombo, KeyMapEntry, KeyMapMode};
 pub use egui_frontend::run_egui;
 pub use errors::{ArchiveError, ArchiveErrorKind, ArchiveResult};
+pub use frontend_trait::ArchiveFrontend;
 pub use frontend_utils::nav_tree_to_verified_tree;
 pub use nav_model::ConnectionSet;
 pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
