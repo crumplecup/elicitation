@@ -38,7 +38,8 @@ pub use errors::{ArchiveError, ArchiveErrorKind, ArchiveResult};
 pub use frontend_utils::nav_tree_to_verified_tree;
 pub use nav_tree::{NavTree, SchemaEntry, build_nav_tree};
 pub use plugins::{
-    AkNodeEntry, ArchiveBrowsePlugin, ArchiveDisplayPlugin, ArchiveQueryPlugin,
+    AkNodeEntry, ArchiveBrowsePlugin, ArchiveConstraintPlugin, ArchiveDisplayPlugin,
+    ArchiveQueryPlugin, ArchiveReplicationPlugin, ArchiveRoutinePlugin, ArchiveSecurityPlugin,
     ArchiveSpatialPlugin, HistoryStore, QueryExecuted, SavedQueryStore, SchemaExists, TableExists,
     explain_sql_direct, export_query_result, generate_ddl_direct, get_column_stats_direct,
     inspect_table_direct,

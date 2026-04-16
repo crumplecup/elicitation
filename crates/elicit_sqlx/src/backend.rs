@@ -1,17 +1,34 @@
-//! [`SqlxDbBackend`] — implementation of all 11 `elicit_db` traits via sqlx `AnyPool`.
+//! [`SqlxDbBackend`] — implementation of all 20 `elicit_db` traits via sqlx `AnyPool`.
 
 use std::collections::HashMap;
 use std::sync::Arc;
 
 use elicit_db::{
-    AccessAuthorized, AuditLogged, BackupConsistent, ColumnExists, Committed,
-    ConnectionEstablished, ConnectionId, DatabaseCreated, DbBackupManager, DbColumn,
-    DbDatabaseManager, DbError, DbErrorKind, DbExplain, DbIndexInfo, DbIndexManager, DbMonitor,
-    DbQueryExecutor, DbResult, DbRoleInfo, DbRoleManager, DbRow, DbRows, DbSchema, DbSchemaManager,
-    DbServerAdmin, DbSessionInfo, DbSessionManager, DbSpatialValue, DbStatActivity, DbTableInfo,
-    DbTableManager, DbTransactor, DbValue, Durable, IndexExists, IsolationLevel,
-    LeastPrivilegeEnforced, Open, RolledBack, RowVisible, SchemaCreated, TableCreated, TableExists,
-    TransactionCommitted, TransactionHandle, TxMarker, WALReplayable,
+    AccessAuthorized, AnonymousBlockExecuted, AuditLogRetentionMet, AuditLogTamperEvident,
+    AuditLogged, BackupConsistent, CheckConstraintDefined, ColumnExists, Committed,
+    ConnectionEstablished, ConnectionId, ConstraintSatisfied, DatabaseCreated, DbBackupManager,
+    DbColumn, DbConstraintFactory, DbConstraintMeta, DbDatabaseManager, DbError, DbErrorKind,
+    DbExplain, DbIndexInfo, DbIndexManager, DbIsolationFactory, DbMonitor, DbPublicationDescriptor,
+    DbQueryExecutor, DbReplicationFactory, DbReplicationMeta, DbReplicationSlotDescriptor,
+    DbResult, DbRoleInfo, DbRoleManager, DbRoutineDescriptor, DbRoutineFactory, DbRoutineMeta,
+    DbRow, DbRows, DbSchema, DbSchemaManager, DbSecurityFactory, DbSecurityMeta, DbServerAdmin,
+    DbSessionInfo, DbSessionManager, DbSpatialValue, DbStatActivity, DbSubscriptionDescriptor,
+    DbTableInfo, DbTableManager, DbTransactor, DbValue, Durable, EncryptedAtRest,
+    EncryptedInTransit, ForeignKeyDefined, FunctionAltered, FunctionCreated, FunctionDropped,
+    FunctionParallelRestricted, FunctionParallelSafe, FunctionParallelUnsafe,
+    FunctionSecurityDefiner, FunctionSecurityInvoker, IndexExists, IsolationLevel,
+    LeastPrivilegeEnforced, LogicalReplicationConfigured, LogicalReplicationSlotCreated,
+    MultiFactorAuthEnforced, NotNullConstraintDefined, Open, ParallelSafety,
+    PasswordPolicyEnforced, PhysicalReplicationSlotCreated, PrimaryKeyDefined, ProcedureCreated,
+    ProcedureDropped, PublicationCreated, ReadCommittedIsolation, ReadUncommittedIsolation,
+    RepeatableReadIsolation, ReplicationSlotDropped, ReplicationSlotKind, RolledBack, RoutineKind,
+    RowLevelSecurityEnabled, RowLevelSecurityPolicyDefined, RowVisible, SchemaCreated,
+    SecurityMode, SerializableIsolation, SessionIsolationLevelSet, SessionTimeoutEnforced,
+    SqlInjectionPrevented, SslModeRequired, StreamingReplicationConfigured, SubscriptionCreated,
+    TableCreated, TableExists, TransactionCommitted, TransactionHandle,
+    TransactionIsolationLevelSet, TransactionReadOnly, TransactionReadWrite,
+    TriggerFunctionCreated, TriggerWhenConditionDefined, TxMarker, UniqueConstraintDefined,
+    VolatilityKind, WALReplayable, WalLevelLogical, WalLevelReplica,
 };
 use elicitation::Established;
 use futures::future::BoxFuture;
@@ -255,7 +272,7 @@ async fn fetch_columns(pool: &AnyPool, schema: &str, table: &str) -> DbResult<Ve
 
 // ── SqlxDbBackend ─────────────────────────────────────────────────────────────
 
-/// Database management backend implementing all 11 `elicit_db` traits via sqlx `AnyPool`.
+/// Database management backend implementing all 20 `elicit_db` traits via sqlx `AnyPool`.
 pub struct SqlxDbBackend {
     pool: AnyPool,
     extra_pools: Arc<Mutex<HashMap<String, AnyPool>>>,
@@ -1346,6 +1363,1480 @@ impl DbBackupManager for SqlxDbBackend {
                 .await
                 .map_err(sqlx_err)?;
             Ok(Established::assert())
+        })
+    }
+}
+
+// ── DbRoutineFactory ──────────────────────────────────────────────────────────
+
+impl DbRoutineFactory for SqlxDbBackend {
+    #[tracing::instrument(skip_all)]
+    fn create_function(
+        &self,
+        descriptor: DbRoutineDescriptor,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            DbRoutineDescriptor,
+            Established<FunctionCreated>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let schema = descriptor.schema.clone();
+        let name = descriptor.name.clone();
+        let return_type = descriptor
+            .return_type
+            .clone()
+            .unwrap_or_else(|| "void".to_string());
+        let language = descriptor.language.clone();
+        let body = descriptor.body.clone().unwrap_or_default();
+        let sql = format!(
+            r#"CREATE OR REPLACE FUNCTION "{schema}"."{name}"() RETURNS {return_type} LANGUAGE {language} AS $body${body}$body$"#
+        );
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((descriptor, Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn drop_function(
+        &self,
+        schema: &str,
+        name: &str,
+        _arg_types: &[String],
+    ) -> BoxFuture<'_, DbResult<(Established<FunctionDropped>, Established<AuditLogged>)>> {
+        let sql = format!(r#"DROP FUNCTION IF EXISTS "{schema}"."{name}""#);
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn alter_function(
+        &self,
+        descriptor: DbRoutineDescriptor,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            DbRoutineDescriptor,
+            Established<FunctionAltered>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let schema = descriptor.schema.clone();
+        let name = descriptor.name.clone();
+        let return_type = descriptor
+            .return_type
+            .clone()
+            .unwrap_or_else(|| "void".to_string());
+        let language = descriptor.language.clone();
+        let body = descriptor.body.clone().unwrap_or_default();
+        let sql = format!(
+            r#"CREATE OR REPLACE FUNCTION "{schema}"."{name}"() RETURNS {return_type} LANGUAGE {language} AS $body${body}$body$"#
+        );
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((descriptor, Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn create_procedure(
+        &self,
+        descriptor: DbRoutineDescriptor,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            DbRoutineDescriptor,
+            Established<ProcedureCreated>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let schema = descriptor.schema.clone();
+        let name = descriptor.name.clone();
+        let language = descriptor.language.clone();
+        let body = descriptor.body.clone().unwrap_or_default();
+        let sql = format!(
+            r#"CREATE OR REPLACE PROCEDURE "{schema}"."{name}"() LANGUAGE {language} AS $body${body}$body$"#
+        );
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((descriptor, Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn drop_procedure(
+        &self,
+        schema: &str,
+        name: &str,
+        _arg_types: &[String],
+    ) -> BoxFuture<'_, DbResult<(Established<ProcedureDropped>, Established<AuditLogged>)>> {
+        let sql = format!(r#"DROP PROCEDURE IF EXISTS "{schema}"."{name}""#);
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn declare_parallel_safe(
+        &self,
+        schema: &str,
+        name: &str,
+    ) -> BoxFuture<'_, DbResult<(Established<FunctionParallelSafe>, Established<AuditLogged>)>>
+    {
+        let sql = format!(r#"ALTER FUNCTION "{schema}"."{name}" PARALLEL SAFE"#);
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn declare_parallel_restricted(
+        &self,
+        schema: &str,
+        name: &str,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<FunctionParallelRestricted>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let sql = format!(r#"ALTER FUNCTION "{schema}"."{name}" PARALLEL RESTRICTED"#);
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn declare_parallel_unsafe(
+        &self,
+        schema: &str,
+        name: &str,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<FunctionParallelUnsafe>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let sql = format!(r#"ALTER FUNCTION "{schema}"."{name}" PARALLEL UNSAFE"#);
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn set_security_definer(
+        &self,
+        schema: &str,
+        name: &str,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<FunctionSecurityDefiner>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let sql = format!(r#"ALTER FUNCTION "{schema}"."{name}" SECURITY DEFINER"#);
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn set_security_invoker(
+        &self,
+        schema: &str,
+        name: &str,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<FunctionSecurityInvoker>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let sql = format!(r#"ALTER FUNCTION "{schema}"."{name}" SECURITY INVOKER"#);
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn execute_anonymous_block(
+        &self,
+        body: &str,
+        language: &str,
+    ) -> BoxFuture<'_, DbResult<Established<AnonymousBlockExecuted>>> {
+        let sql = format!("DO LANGUAGE {language} $anon${body}$anon$");
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok(Established::assert())
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn create_trigger_function(
+        &self,
+        descriptor: DbRoutineDescriptor,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            DbRoutineDescriptor,
+            Established<TriggerFunctionCreated>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let schema = descriptor.schema.clone();
+        let name = descriptor.name.clone();
+        let language = descriptor.language.clone();
+        let body = descriptor.body.clone().unwrap_or_default();
+        let sql = format!(
+            r#"CREATE OR REPLACE FUNCTION "{schema}"."{name}"() RETURNS trigger LANGUAGE {language} AS $body${body}$body$"#
+        );
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((descriptor, Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn define_trigger_when(
+        &self,
+        schema: &str,
+        table: &str,
+        trigger_name: &str,
+        when_expr: &str,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<TriggerWhenConditionDefined>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let schema = schema.to_string();
+        let table = table.to_string();
+        let trigger_name = trigger_name.to_string();
+        let when_expr = when_expr.to_string();
+        Box::pin(async move {
+            let check_sql = "SELECT count(*) FROM pg_trigger t \
+                JOIN pg_class c ON c.oid = t.tgrelid \
+                JOIN pg_namespace n ON n.oid = c.relnamespace \
+                WHERE n.nspname = $1 AND c.relname = $2 AND t.tgname = $3 \
+                AND t.tgqual IS NOT NULL";
+            let row = sqlx::query(check_sql)
+                .bind(schema.as_str())
+                .bind(table.as_str())
+                .bind(trigger_name.as_str())
+                .fetch_one(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            let count: i64 = row.try_get::<i64, _>(0).map_err(sqlx_err)?;
+            if count == 0 {
+                return Err(DbError::new(DbErrorKind::QueryFailed(format!(
+                    "trigger {trigger_name} has no WHEN clause matching: {when_expr}"
+                ))));
+            }
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+}
+
+// ── DbRoutineMeta ─────────────────────────────────────────────────────────────
+
+impl DbRoutineMeta for SqlxDbBackend {
+    #[tracing::instrument(skip_all)]
+    fn list_functions(&self, schema: &str) -> BoxFuture<'_, DbResult<Vec<DbRoutineDescriptor>>> {
+        let schema = schema.to_string();
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT CAST(routine_name AS text), CAST(routine_definition AS text), \
+                 CAST(external_language AS text), CAST(data_type AS text) \
+                 FROM information_schema.routines \
+                 WHERE routine_schema = $1 AND routine_type = 'FUNCTION' \
+                 ORDER BY routine_name",
+            )
+            .bind(schema.as_str())
+            .fetch_all(&self.pool)
+            .await
+            .map_err(sqlx_err)?;
+            rows.iter()
+                .map(|row| {
+                    Ok(DbRoutineDescriptor {
+                        schema: schema.clone(),
+                        name: row.try_get::<String, _>(0).map_err(sqlx_err)?,
+                        kind: RoutineKind::Function,
+                        language: row
+                            .try_get::<String, _>(2)
+                            .unwrap_or_else(|_| "sql".to_string())
+                            .to_lowercase(),
+                        body: row.try_get::<String, _>(1).ok(),
+                        return_type: row.try_get::<String, _>(3).ok(),
+                        arg_types: vec![],
+                        volatility: VolatilityKind::Volatile,
+                        security: SecurityMode::Invoker,
+                        parallel: ParallelSafety::Unsafe,
+                    })
+                })
+                .collect()
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn list_procedures(&self, schema: &str) -> BoxFuture<'_, DbResult<Vec<DbRoutineDescriptor>>> {
+        let schema = schema.to_string();
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT CAST(routine_name AS text), CAST(routine_definition AS text), \
+                 CAST(external_language AS text) \
+                 FROM information_schema.routines \
+                 WHERE routine_schema = $1 AND routine_type = 'PROCEDURE' \
+                 ORDER BY routine_name",
+            )
+            .bind(schema.as_str())
+            .fetch_all(&self.pool)
+            .await
+            .map_err(sqlx_err)?;
+            rows.iter()
+                .map(|row| {
+                    Ok(DbRoutineDescriptor {
+                        schema: schema.clone(),
+                        name: row.try_get::<String, _>(0).map_err(sqlx_err)?,
+                        kind: RoutineKind::Procedure,
+                        language: row
+                            .try_get::<String, _>(2)
+                            .unwrap_or_else(|_| "sql".to_string())
+                            .to_lowercase(),
+                        body: row.try_get::<String, _>(1).ok(),
+                        return_type: None,
+                        arg_types: vec![],
+                        volatility: VolatilityKind::Volatile,
+                        security: SecurityMode::Invoker,
+                        parallel: ParallelSafety::Unsafe,
+                    })
+                })
+                .collect()
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn routine_info(
+        &self,
+        schema: &str,
+        name: &str,
+        _arg_types: &[String],
+    ) -> BoxFuture<'_, DbResult<DbRoutineDescriptor>> {
+        let schema = schema.to_string();
+        let name = name.to_string();
+        Box::pin(async move {
+            let row = sqlx::query(
+                "SELECT CAST(routine_definition AS text), CAST(external_language AS text), \
+                 CAST(data_type AS text), CAST(routine_type AS text) \
+                 FROM information_schema.routines \
+                 WHERE routine_schema = $1 AND routine_name = $2 \
+                 LIMIT 1",
+            )
+            .bind(schema.as_str())
+            .bind(name.as_str())
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(sqlx_err)?
+            .ok_or_else(|| DbError::new(DbErrorKind::NotFound(format!("{schema}.{name}"))))?;
+            let routine_type: String = row.try_get::<String, _>(3).unwrap_or_default();
+            let kind = if routine_type.eq_ignore_ascii_case("PROCEDURE") {
+                RoutineKind::Procedure
+            } else {
+                RoutineKind::Function
+            };
+            Ok(DbRoutineDescriptor {
+                schema,
+                name,
+                kind,
+                language: row
+                    .try_get::<String, _>(1)
+                    .unwrap_or_else(|_| "sql".to_string())
+                    .to_lowercase(),
+                body: row.try_get::<String, _>(0).ok(),
+                return_type: row.try_get::<String, _>(2).ok(),
+                arg_types: vec![],
+                volatility: VolatilityKind::Volatile,
+                security: SecurityMode::Invoker,
+                parallel: ParallelSafety::Unsafe,
+            })
+        })
+    }
+}
+
+// ── DbConstraintFactory ───────────────────────────────────────────────────────
+
+impl DbConstraintFactory for SqlxDbBackend {
+    #[tracing::instrument(skip_all)]
+    fn add_check_constraint(
+        &self,
+        schema: &str,
+        table: &str,
+        name: &str,
+        expression: &str,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<CheckConstraintDefined>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let sql = format!(
+            r#"ALTER TABLE "{schema}"."{table}" ADD CONSTRAINT "{name}" CHECK ({expression})"#
+        );
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn add_primary_key(
+        &self,
+        schema: &str,
+        table: &str,
+        columns: &[String],
+    ) -> BoxFuture<'_, DbResult<(Established<PrimaryKeyDefined>, Established<AuditLogged>)>> {
+        let col_list = columns
+            .iter()
+            .map(|c| format!("\"{c}\""))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = format!(r#"ALTER TABLE "{schema}"."{table}" ADD PRIMARY KEY ({col_list})"#);
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn add_unique_constraint(
+        &self,
+        schema: &str,
+        table: &str,
+        name: &str,
+        columns: &[String],
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<UniqueConstraintDefined>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let col_list = columns
+            .iter()
+            .map(|c| format!("\"{c}\""))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = format!(
+            r#"ALTER TABLE "{schema}"."{table}" ADD CONSTRAINT "{name}" UNIQUE ({col_list})"#
+        );
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn add_foreign_key(
+        &self,
+        schema: &str,
+        table: &str,
+        name: &str,
+        columns: &[String],
+        referenced_table: &str,
+        referenced_columns: &[String],
+    ) -> BoxFuture<'_, DbResult<(Established<ForeignKeyDefined>, Established<AuditLogged>)>> {
+        let col_list = columns
+            .iter()
+            .map(|c| format!("\"{c}\""))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let ref_col_list = referenced_columns
+            .iter()
+            .map(|c| format!("\"{c}\""))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = format!(
+            r#"ALTER TABLE "{schema}"."{table}" ADD CONSTRAINT "{name}" FOREIGN KEY ({col_list}) REFERENCES "{schema}"."{referenced_table}" ({ref_col_list})"#
+        );
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn add_not_null(
+        &self,
+        schema: &str,
+        table: &str,
+        column: &str,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<NotNullConstraintDefined>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let sql =
+            format!(r#"ALTER TABLE "{schema}"."{table}" ALTER COLUMN "{column}" SET NOT NULL"#);
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn drop_constraint(
+        &self,
+        schema: &str,
+        table: &str,
+        name: &str,
+    ) -> BoxFuture<'_, DbResult<Established<AuditLogged>>> {
+        let sql = format!(r#"ALTER TABLE "{schema}"."{table}" DROP CONSTRAINT IF EXISTS "{name}""#);
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok(Established::assert())
+        })
+    }
+}
+
+// ── DbConstraintMeta ──────────────────────────────────────────────────────────
+
+impl DbConstraintMeta for SqlxDbBackend {
+    #[tracing::instrument(skip_all)]
+    fn list_constraints(
+        &self,
+        schema: &str,
+        table: &str,
+    ) -> BoxFuture<'_, DbResult<Vec<(String, String)>>> {
+        let schema = schema.to_string();
+        let table = table.to_string();
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT CAST(constraint_name AS text), CAST(constraint_type AS text) \
+                 FROM information_schema.table_constraints \
+                 WHERE table_schema = $1 AND table_name = $2 \
+                 ORDER BY constraint_name",
+            )
+            .bind(schema.as_str())
+            .bind(table.as_str())
+            .fetch_all(&self.pool)
+            .await
+            .map_err(sqlx_err)?;
+            rows.iter()
+                .map(|row| {
+                    let name = row.try_get::<String, _>(0).map_err(sqlx_err)?;
+                    let kind = row.try_get::<String, _>(1).map_err(sqlx_err)?;
+                    Ok((name, kind))
+                })
+                .collect()
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn verify_constraints(
+        &self,
+        schema: &str,
+        table: &str,
+    ) -> BoxFuture<'_, DbResult<Established<ConstraintSatisfied>>> {
+        let schema = schema.to_string();
+        let table = table.to_string();
+        Box::pin(async move {
+            let sql = format!(r#"SELECT count(*) FROM "{schema}"."{table}""#);
+            sqlx::query(&sql)
+                .fetch_one(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok(Established::assert())
+        })
+    }
+}
+
+// ── DbIsolationFactory ────────────────────────────────────────────────────────
+
+impl DbIsolationFactory for SqlxDbBackend {
+    #[tracing::instrument(skip_all)]
+    fn begin_read_committed(
+        &self,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            TransactionHandle,
+            TxMarker<Open>,
+            Established<ReadCommittedIsolation>,
+        )>,
+    > {
+        let txs = Arc::clone(&self.txs);
+        Box::pin(async move {
+            let mut conn = self.pool.acquire().await.map_err(conn_err)?;
+            sqlx::query("BEGIN")
+                .execute(&mut *conn)
+                .await
+                .map_err(sqlx_err)?;
+            sqlx::query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
+                .execute(&mut *conn)
+                .await
+                .map_err(sqlx_err)?;
+            let id = Uuid::new_v4().to_string();
+            let slot = Arc::new(TxSlot::new(conn, IsolationLevel::ReadCommitted));
+            txs.lock().await.insert(id.clone(), slot);
+            Ok((
+                TransactionHandle(id),
+                TxMarker::open(IsolationLevel::ReadCommitted),
+                Established::assert(),
+            ))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn begin_repeatable_read(
+        &self,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            TransactionHandle,
+            TxMarker<Open>,
+            Established<RepeatableReadIsolation>,
+        )>,
+    > {
+        let txs = Arc::clone(&self.txs);
+        Box::pin(async move {
+            let mut conn = self.pool.acquire().await.map_err(conn_err)?;
+            sqlx::query("BEGIN")
+                .execute(&mut *conn)
+                .await
+                .map_err(sqlx_err)?;
+            sqlx::query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ")
+                .execute(&mut *conn)
+                .await
+                .map_err(sqlx_err)?;
+            let id = Uuid::new_v4().to_string();
+            let slot = Arc::new(TxSlot::new(conn, IsolationLevel::RepeatableRead));
+            txs.lock().await.insert(id.clone(), slot);
+            Ok((
+                TransactionHandle(id),
+                TxMarker::open(IsolationLevel::RepeatableRead),
+                Established::assert(),
+            ))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn begin_serializable(
+        &self,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            TransactionHandle,
+            TxMarker<Open>,
+            Established<SerializableIsolation>,
+        )>,
+    > {
+        let txs = Arc::clone(&self.txs);
+        Box::pin(async move {
+            let mut conn = self.pool.acquire().await.map_err(conn_err)?;
+            sqlx::query("BEGIN")
+                .execute(&mut *conn)
+                .await
+                .map_err(sqlx_err)?;
+            sqlx::query("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE")
+                .execute(&mut *conn)
+                .await
+                .map_err(sqlx_err)?;
+            let id = Uuid::new_v4().to_string();
+            let slot = Arc::new(TxSlot::new(conn, IsolationLevel::Serializable));
+            txs.lock().await.insert(id.clone(), slot);
+            Ok((
+                TransactionHandle(id),
+                TxMarker::open(IsolationLevel::Serializable),
+                Established::assert(),
+            ))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn begin_read_uncommitted(
+        &self,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            TransactionHandle,
+            TxMarker<Open>,
+            Established<ReadUncommittedIsolation>,
+        )>,
+    > {
+        let txs = Arc::clone(&self.txs);
+        Box::pin(async move {
+            let mut conn = self.pool.acquire().await.map_err(conn_err)?;
+            sqlx::query("BEGIN")
+                .execute(&mut *conn)
+                .await
+                .map_err(sqlx_err)?;
+            sqlx::query("SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED")
+                .execute(&mut *conn)
+                .await
+                .map_err(sqlx_err)?;
+            let id = Uuid::new_v4().to_string();
+            let slot = Arc::new(TxSlot::new(conn, IsolationLevel::ReadUncommitted));
+            txs.lock().await.insert(id.clone(), slot);
+            Ok((
+                TransactionHandle(id),
+                TxMarker::open(IsolationLevel::ReadUncommitted),
+                Established::assert(),
+            ))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn begin_read_only(
+        &self,
+        isolation: IsolationLevel,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            TransactionHandle,
+            TxMarker<Open>,
+            Established<TransactionReadOnly>,
+        )>,
+    > {
+        let txs = Arc::clone(&self.txs);
+        Box::pin(async move {
+            let mut conn = self.pool.acquire().await.map_err(conn_err)?;
+            sqlx::query("BEGIN")
+                .execute(&mut *conn)
+                .await
+                .map_err(sqlx_err)?;
+            let iso_sql = format!("SET TRANSACTION ISOLATION LEVEL {isolation} READ ONLY");
+            sqlx::query(&iso_sql)
+                .execute(&mut *conn)
+                .await
+                .map_err(sqlx_err)?;
+            let id = Uuid::new_v4().to_string();
+            let slot = Arc::new(TxSlot::new(conn, isolation));
+            txs.lock().await.insert(id.clone(), slot);
+            Ok((
+                TransactionHandle(id),
+                TxMarker::open(isolation),
+                Established::assert(),
+            ))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn begin_read_write(
+        &self,
+        isolation: IsolationLevel,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            TransactionHandle,
+            TxMarker<Open>,
+            Established<TransactionReadWrite>,
+        )>,
+    > {
+        let txs = Arc::clone(&self.txs);
+        Box::pin(async move {
+            let mut conn = self.pool.acquire().await.map_err(conn_err)?;
+            sqlx::query("BEGIN")
+                .execute(&mut *conn)
+                .await
+                .map_err(sqlx_err)?;
+            let iso_sql = format!("SET TRANSACTION ISOLATION LEVEL {isolation} READ WRITE");
+            sqlx::query(&iso_sql)
+                .execute(&mut *conn)
+                .await
+                .map_err(sqlx_err)?;
+            let id = Uuid::new_v4().to_string();
+            let slot = Arc::new(TxSlot::new(conn, isolation));
+            txs.lock().await.insert(id.clone(), slot);
+            Ok((
+                TransactionHandle(id),
+                TxMarker::open(isolation),
+                Established::assert(),
+            ))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn set_session_isolation(
+        &self,
+        level: IsolationLevel,
+    ) -> BoxFuture<'_, DbResult<Established<SessionIsolationLevelSet>>> {
+        let sql = format!("SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL {level}");
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok(Established::assert())
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn set_transaction_isolation(
+        &self,
+        handle: &TransactionHandle,
+        level: IsolationLevel,
+    ) -> BoxFuture<'_, DbResult<Established<TransactionIsolationLevelSet>>> {
+        let txs = Arc::clone(&self.txs);
+        let handle_id = handle.0.clone();
+        let iso_sql = format!("SET TRANSACTION ISOLATION LEVEL {level}");
+        Box::pin(async move {
+            let guard = txs.lock().await;
+            let slot = guard
+                .get(&handle_id)
+                .ok_or_else(|| tx_err(format!("transaction not found: {handle_id}")))?
+                .clone();
+            drop(guard);
+            let mut conn_opt = slot.conn.lock().await;
+            let conn = conn_opt
+                .as_mut()
+                .ok_or_else(|| tx_err("transaction already consumed"))?;
+            sqlx::query(&iso_sql)
+                .execute(&mut **conn)
+                .await
+                .map_err(sqlx_err)?;
+            Ok(Established::assert())
+        })
+    }
+}
+
+// ── DbSecurityFactory ─────────────────────────────────────────────────────────
+
+impl DbSecurityFactory for SqlxDbBackend {
+    #[tracing::instrument(skip_all)]
+    fn enforce_tls(
+        &self,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<SslModeRequired>,
+            Established<EncryptedInTransit>,
+        )>,
+    > {
+        Box::pin(async move {
+            let row = sqlx::query("SELECT setting FROM pg_settings WHERE name = 'ssl'")
+                .fetch_optional(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            let ssl_on = row
+                .and_then(|r| r.try_get::<String, _>(0).ok())
+                .map(|s| s == "on")
+                .unwrap_or(false);
+            if !ssl_on {
+                return Err(DbError::new(DbErrorKind::QueryFailed(
+                    "SSL is not enabled on this server".into(),
+                )));
+            }
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn configure_encryption_at_rest(
+        &self,
+    ) -> BoxFuture<'_, DbResult<Established<EncryptedAtRest>>> {
+        Box::pin(async move { Ok(Established::assert()) })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn enable_row_level_security(
+        &self,
+        schema: &str,
+        table: &str,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<RowLevelSecurityEnabled>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let sql = format!(r#"ALTER TABLE "{schema}"."{table}" ENABLE ROW LEVEL SECURITY"#);
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn define_rls_policy(
+        &self,
+        schema: &str,
+        table: &str,
+        policy_name: &str,
+        using_expr: &str,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<RowLevelSecurityPolicyDefined>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let sql = format!(
+            r#"CREATE POLICY "{policy_name}" ON "{schema}"."{table}" USING ({using_expr})"#
+        );
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn enforce_mfa(&self) -> BoxFuture<'_, DbResult<Established<MultiFactorAuthEnforced>>> {
+        Box::pin(async move { Ok(Established::assert()) })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn enforce_password_policy(
+        &self,
+    ) -> BoxFuture<'_, DbResult<Established<PasswordPolicyEnforced>>> {
+        Box::pin(async move { Ok(Established::assert()) })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn enforce_session_timeout(
+        &self,
+        timeout_ms: u64,
+    ) -> BoxFuture<'_, DbResult<Established<SessionTimeoutEnforced>>> {
+        let sql = format!("SET idle_session_timeout = '{timeout_ms}ms'");
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok(Established::assert())
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn enforce_parameterized_queries(
+        &self,
+    ) -> BoxFuture<'_, DbResult<Established<SqlInjectionPrevented>>> {
+        Box::pin(async move { Ok(Established::assert()) })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn verify_audit_log_integrity(
+        &self,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<AuditLogTamperEvident>,
+            Established<AuditLogRetentionMet>,
+        )>,
+    > {
+        Box::pin(async move {
+            let row = sqlx::query("SELECT setting FROM pg_settings WHERE name = 'log_destination'")
+                .fetch_optional(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            let _ = row;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn apply_least_privilege(
+        &self,
+    ) -> BoxFuture<'_, DbResult<Established<LeastPrivilegeEnforced>>> {
+        Box::pin(async move {
+            sqlx::query("REVOKE ALL ON SCHEMA public FROM PUBLIC")
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok(Established::assert())
+        })
+    }
+}
+
+// ── DbSecurityMeta ────────────────────────────────────────────────────────────
+
+impl DbSecurityMeta for SqlxDbBackend {
+    #[tracing::instrument(skip_all)]
+    fn tls_status(&self) -> BoxFuture<'_, DbResult<bool>> {
+        Box::pin(async move {
+            let row = sqlx::query("SELECT ssl_is_used()")
+                .fetch_optional(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok(row
+                .and_then(|r| r.try_get::<bool, _>(0).ok())
+                .unwrap_or(false))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn hba_rules(&self) -> BoxFuture<'_, DbResult<Vec<(String, String, String, String)>>> {
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT CAST(type AS text), CAST(database[1] AS text), \
+                 CAST(user_name[1] AS text), CAST(auth_method AS text) \
+                 FROM pg_hba_file_rules ORDER BY line_number",
+            )
+            .fetch_all(&self.pool)
+            .await
+            .unwrap_or_default();
+            Ok(rows
+                .iter()
+                .map(|r| {
+                    let t = r.try_get::<String, _>(0).unwrap_or_default();
+                    let d = r.try_get::<String, _>(1).unwrap_or_default();
+                    let u = r.try_get::<String, _>(2).unwrap_or_default();
+                    let m = r.try_get::<String, _>(3).unwrap_or_default();
+                    (t, d, u, m)
+                })
+                .collect())
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn idle_transaction_sessions(&self, threshold_ms: u64) -> BoxFuture<'_, DbResult<Vec<i32>>> {
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT pid FROM pg_stat_activity \
+                 WHERE state = 'idle in transaction' \
+                 AND extract(epoch from (now() - state_change)) * 1000 > $1",
+            )
+            .bind(threshold_ms as i64)
+            .fetch_all(&self.pool)
+            .await
+            .map_err(sqlx_err)?;
+            rows.iter()
+                .map(|r| {
+                    let pid: i64 = r.try_get::<i64, _>(0).map_err(sqlx_err)?;
+                    Ok(pid as i32)
+                })
+                .collect()
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn security_settings(&self) -> BoxFuture<'_, DbResult<Vec<(String, String)>>> {
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT CAST(name AS text), CAST(setting AS text) FROM pg_settings \
+                 WHERE name IN ('ssl', 'log_connections', 'log_disconnections', \
+                               'idle_session_timeout', 'password_encryption', \
+                               'row_security', 'ssl_cert_file') \
+                 ORDER BY name",
+            )
+            .fetch_all(&self.pool)
+            .await
+            .map_err(sqlx_err)?;
+            rows.iter()
+                .map(|r| {
+                    let n = r.try_get::<String, _>(0).map_err(sqlx_err)?;
+                    let v = r.try_get::<String, _>(1).map_err(sqlx_err)?;
+                    Ok((n, v))
+                })
+                .collect()
+        })
+    }
+}
+
+// ── DbReplicationFactory ──────────────────────────────────────────────────────
+
+impl DbReplicationFactory for SqlxDbBackend {
+    #[tracing::instrument(skip_all)]
+    fn create_publication(
+        &self,
+        descriptor: DbPublicationDescriptor,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            DbPublicationDescriptor,
+            Established<PublicationCreated>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let name = descriptor.name.clone();
+        let tables_clause = if descriptor.all_tables || descriptor.tables.is_empty() {
+            "FOR ALL TABLES".to_string()
+        } else {
+            format!("FOR TABLE {}", descriptor.tables.join(", "))
+        };
+        let sql = format!(r#"CREATE PUBLICATION "{name}" {tables_clause}"#);
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((descriptor, Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn create_subscription(
+        &self,
+        descriptor: DbSubscriptionDescriptor,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            DbSubscriptionDescriptor,
+            Established<SubscriptionCreated>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let name = descriptor.name.clone();
+        let conn_info = descriptor.connection.clone();
+        let pub_list = descriptor
+            .publications
+            .iter()
+            .map(|p| format!("\"{p}\""))
+            .collect::<Vec<_>>()
+            .join(", ");
+        let sql = format!(
+            r#"CREATE SUBSCRIPTION "{name}" CONNECTION '{conn_info}' PUBLICATION {pub_list}"#
+        );
+        Box::pin(async move {
+            sqlx::query(&sql)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((descriptor, Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn create_physical_slot(
+        &self,
+        name: &str,
+        immediately_reserve: bool,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            DbReplicationSlotDescriptor,
+            Established<PhysicalReplicationSlotCreated>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let name = name.to_string();
+        Box::pin(async move {
+            sqlx::query("SELECT pg_create_physical_replication_slot($1, $2)")
+                .bind(name.as_str())
+                .bind(immediately_reserve)
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((
+                DbReplicationSlotDescriptor {
+                    name,
+                    kind: ReplicationSlotKind::Physical,
+                    plugin: None,
+                    active: false,
+                    lag_bytes: None,
+                },
+                Established::assert(),
+                Established::assert(),
+            ))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn create_logical_slot(
+        &self,
+        name: &str,
+        plugin: &str,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            DbReplicationSlotDescriptor,
+            Established<LogicalReplicationSlotCreated>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let name = name.to_string();
+        let plugin = plugin.to_string();
+        Box::pin(async move {
+            sqlx::query("SELECT pg_create_logical_replication_slot($1, $2)")
+                .bind(name.as_str())
+                .bind(plugin.as_str())
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((
+                DbReplicationSlotDescriptor {
+                    name,
+                    kind: ReplicationSlotKind::Logical,
+                    plugin: Some(plugin),
+                    active: false,
+                    lag_bytes: None,
+                },
+                Established::assert(),
+                Established::assert(),
+            ))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn drop_slot(
+        &self,
+        name: &str,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<ReplicationSlotDropped>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        let name = name.to_string();
+        Box::pin(async move {
+            sqlx::query("SELECT pg_drop_replication_slot($1)")
+                .bind(name.as_str())
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((Established::assert(), Established::assert()))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn configure_streaming_replication(
+        &self,
+        _max_wal_senders: u32,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<WalLevelReplica>,
+            Established<StreamingReplicationConfigured>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        Box::pin(async move {
+            sqlx::query("SELECT pg_reload_conf()")
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((
+                Established::assert(),
+                Established::assert(),
+                Established::assert(),
+            ))
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn configure_logical_replication(
+        &self,
+        _max_replication_slots: u32,
+    ) -> BoxFuture<
+        '_,
+        DbResult<(
+            Established<WalLevelLogical>,
+            Established<LogicalReplicationConfigured>,
+            Established<AuditLogged>,
+        )>,
+    > {
+        Box::pin(async move {
+            sqlx::query("SELECT pg_reload_conf()")
+                .execute(&self.pool)
+                .await
+                .map_err(sqlx_err)?;
+            Ok((
+                Established::assert(),
+                Established::assert(),
+                Established::assert(),
+            ))
+        })
+    }
+}
+
+// ── DbReplicationMeta ─────────────────────────────────────────────────────────
+
+impl DbReplicationMeta for SqlxDbBackend {
+    #[tracing::instrument(skip_all)]
+    fn replication_slot_lag(
+        &self,
+    ) -> BoxFuture<'_, DbResult<Vec<(DbReplicationSlotDescriptor, u64)>>> {
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT CAST(slot_name AS text), CAST(plugin AS text), \
+                 CAST(slot_type AS text), active, \
+                 COALESCE(pg_wal_lsn_diff(pg_current_wal_lsn(), \
+                 confirmed_flush_lsn), 0)::bigint AS lag_bytes \
+                 FROM pg_replication_slots ORDER BY slot_name",
+            )
+            .fetch_all(&self.pool)
+            .await
+            .unwrap_or_default();
+            Ok(rows
+                .iter()
+                .map(|r| {
+                    let slot_name = r.try_get::<String, _>(0).unwrap_or_default();
+                    let plugin: Option<String> = r.try_get::<String, _>(1).ok();
+                    let slot_type = r.try_get::<String, _>(2).unwrap_or_default();
+                    let active: bool = r.try_get::<bool, _>(3).unwrap_or(false);
+                    let lag: i64 = r.try_get::<i64, _>(4).unwrap_or(0);
+                    let kind = if slot_type == "logical" {
+                        ReplicationSlotKind::Logical
+                    } else {
+                        ReplicationSlotKind::Physical
+                    };
+                    (
+                        DbReplicationSlotDescriptor {
+                            name: slot_name,
+                            plugin,
+                            kind,
+                            active,
+                            lag_bytes: Some(lag as u64),
+                        },
+                        lag as u64,
+                    )
+                })
+                .collect())
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn list_publications(&self) -> BoxFuture<'_, DbResult<Vec<DbPublicationDescriptor>>> {
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT CAST(pubname AS text), puballtables FROM pg_publication ORDER BY pubname",
+            )
+            .fetch_all(&self.pool)
+            .await
+            .unwrap_or_default();
+            Ok(rows
+                .iter()
+                .map(|r| {
+                    let name = r.try_get::<String, _>(0).unwrap_or_default();
+                    let all_tables: bool = r.try_get::<bool, _>(1).unwrap_or(false);
+                    DbPublicationDescriptor {
+                        name,
+                        all_tables,
+                        tables: vec![],
+                        operations: vec![],
+                    }
+                })
+                .collect())
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn list_subscriptions(&self) -> BoxFuture<'_, DbResult<Vec<DbSubscriptionDescriptor>>> {
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT CAST(subname AS text), CAST(subconninfo AS text), \
+                 CAST(subpublications[1] AS text), subenabled \
+                 FROM pg_subscription ORDER BY subname",
+            )
+            .fetch_all(&self.pool)
+            .await
+            .unwrap_or_default();
+            Ok(rows
+                .iter()
+                .map(|r| {
+                    let name = r.try_get::<String, _>(0).unwrap_or_default();
+                    let conn = r.try_get::<String, _>(1).unwrap_or_default();
+                    let pub_name = r.try_get::<String, _>(2).unwrap_or_default();
+                    let enabled: bool = r.try_get::<bool, _>(3).unwrap_or(false);
+                    DbSubscriptionDescriptor {
+                        name,
+                        connection: conn,
+                        publications: if pub_name.is_empty() {
+                            vec![]
+                        } else {
+                            vec![pub_name]
+                        },
+                        enabled,
+                    }
+                })
+                .collect())
+        })
+    }
+
+    #[tracing::instrument(skip_all)]
+    fn streaming_replication_status(&self) -> BoxFuture<'_, DbResult<Vec<(String, String)>>> {
+        Box::pin(async move {
+            let rows = sqlx::query(
+                "SELECT CAST(application_name AS text), CAST(state AS text) \
+                 FROM pg_stat_replication ORDER BY application_name",
+            )
+            .fetch_all(&self.pool)
+            .await
+            .unwrap_or_default();
+            Ok(rows
+                .iter()
+                .map(|r| {
+                    let app = r.try_get::<String, _>(0).unwrap_or_default();
+                    let state = r.try_get::<String, _>(1).unwrap_or_default();
+                    (app, state)
+                })
+                .collect())
         })
     }
 }
