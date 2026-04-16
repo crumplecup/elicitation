@@ -34,6 +34,10 @@
 //! | GET | `/api/load-saved` | Load saved query into SQL editor |
 //! | GET | `/api/open-help` | Help / key bindings panel (content fragment) |
 //! | POST | `/api/refresh` | Reload nav tree from DB |
+//! | GET | `/api/monitor` | Live monitor snapshot → MonitorPanel (content fragment) |
+//! | GET | `/api/admin` | Admin snapshot → AdminPanel (content fragment) |
+//! | GET | `/api/admin-tab-next` | Cycle admin tab forward |
+//! | GET | `/api/admin-tab-prev` | Cycle admin tab backward |
 
 use std::sync::Arc;
 
@@ -904,6 +908,105 @@ async fn api_load_saved(
     Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
 }
 
+// ── GET /api/monitor ─────────────────────────────────────────────────────────
+
+/// Fetch live monitor data and transition the panel to `MonitorPanel`.
+///
+/// Queries active sessions, roles, cache hit ratio, and backup labels from the
+/// active connection, then applies the resulting [`MonitorSnapshot`] to the
+/// shared model before returning the updated content fragment.
+async fn api_monitor(State(state): State<AppState>) -> Result<Html<String>, ApiError> {
+    use crate::archive::types::MonitorSnapshot;
+    use elicit_db::{DbBackupManager, DbMonitor, DbRoleManager};
+    let url = state.active_url().await.ok_or_else(ApiError::no_db)?;
+    let backend = ArchiveDbBackend::connect(&url)
+        .await
+        .map_err(ApiError::internal)?;
+    let stat = backend
+        .active_sessions()
+        .await
+        .map_err(ApiError::internal)?;
+    let roles = backend.list_roles().await.map_err(ApiError::internal)?;
+    let cache_hit = backend.cache_hit_ratio().await.ok();
+    let backups = backend.list_backups().await.unwrap_or_default();
+    let snapshot = MonitorSnapshot {
+        sessions: stat.sessions,
+        roles,
+        cache_hit,
+        backups,
+    };
+    {
+        let mut model = state.model.lock().await;
+        model.apply_monitor_snapshot(snapshot);
+    }
+    Ok(Html(content_html(&state).map_err(ApiError::internal)?))
+}
+
+// ── GET /api/admin ────────────────────────────────────────────────────────────
+
+/// Fetch administration data and transition the panel to `AdminPanel`.
+///
+/// Assembles an [`AdminSnapshot`] from roles, backups, WAL status, server
+/// version, extensions, and top-20 GUC settings, then applies it to the shared
+/// model before returning the updated content fragment.
+async fn api_admin(State(state): State<AppState>) -> Result<Html<String>, ApiError> {
+    use crate::archive::types::{AdminSnapshot, AdminTab};
+    use elicit_db::{DbBackupManager, DbRoleManager, DbServerAdmin};
+    let url = state.active_url().await.ok_or_else(ApiError::no_db)?;
+    let backend = ArchiveDbBackend::connect(&url)
+        .await
+        .map_err(ApiError::internal)?;
+    let roles = backend.list_roles().await.map_err(ApiError::internal)?;
+    let backups = backend.list_backups().await.unwrap_or_default();
+    let wal_ready = backend.wal_status().await.map(|_| true).unwrap_or(false);
+    let server_version = backend
+        .server_version()
+        .await
+        .unwrap_or_else(|_| "unknown".to_string());
+    let extensions = backend.list_extensions().await.unwrap_or_default();
+    let settings = backend
+        .list_settings()
+        .await
+        .unwrap_or_default()
+        .into_iter()
+        .take(20)
+        .collect();
+    let snapshot = AdminSnapshot {
+        roles,
+        backups,
+        wal_ready,
+        server_version,
+        extensions,
+        settings,
+        active_tab: AdminTab::default(),
+    };
+    {
+        let mut model = state.model.lock().await;
+        model.apply_admin_snapshot(snapshot);
+    }
+    Ok(Html(content_html(&state).map_err(ApiError::internal)?))
+}
+
+// ── GET /api/admin-tab-next / prev ────────────────────────────────────────────
+
+/// Cycle the admin panel to the next tab and return the updated content.
+async fn api_admin_tab_next(State(state): State<AppState>) -> Html<String> {
+    {
+        let mut model = state.model.lock().await;
+        model.admin_tab_next();
+    }
+    Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
+}
+
+/// Cycle the admin panel to the previous tab and return the updated content.
+async fn api_admin_tab_prev(State(state): State<AppState>) -> Html<String> {
+    {
+        let mut model = state.model.lock().await;
+        model.admin_tab_prev();
+    }
+    Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
+}
+
 // ── GET /api/open-help ────────────────────────────────────────────────────────
 
 async fn api_open_help(State(state): State<AppState>) -> Html<String> {
@@ -1038,11 +1141,11 @@ fn dispatch_action_on_model(
         }
         A::OpenSavedBrowser => model.toggle_saved_browser(),
         A::OpenMonitor => {
-            // Monitor panel toggle — actual fetch is handled server-side via /api/monitor
+            // Transition to loading state; /api/monitor HTMX call supplies the snapshot.
             let _ = model.toggle_monitor_panel();
         }
         A::OpenAdmin => {
-            // Admin panel toggle — actual fetch is handled server-side via /api/admin
+            // Transition to loading state; /api/admin HTMX call supplies the snapshot.
             let _ = model.toggle_admin_panel();
         }
         A::AdminTabNext => model.admin_tab_next(),
@@ -1105,6 +1208,10 @@ fn build_router(state: AppState) -> Router {
         .route("/api/export", get(api_export))
         .route("/api/refresh", post(api_refresh))
         .route("/api/open-sql-editor", get(api_open_sql_editor))
+        .route("/api/monitor", get(api_monitor))
+        .route("/api/admin", get(api_admin))
+        .route("/api/admin-tab-next", get(api_admin_tab_next))
+        .route("/api/admin-tab-prev", get(api_admin_tab_prev))
         .route("/api/open-help", get(api_open_help))
         .route("/api/history-panel", get(api_history_panel))
         .route("/api/saved-panel", get(api_saved_panel))
