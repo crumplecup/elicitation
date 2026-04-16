@@ -23,9 +23,9 @@ use std::collections::HashMap;
 use elicit_accesskit::KeyBinding;
 
 use crate::archive::{
-    AdminSnapshot, ColumnStats, ConnectionProfile, ErdDiagram, ExplainNode, ExportFormat,
-    MonitorSnapshot, QueryHistoryEntry, QueryResult, RowEditState, SavedQuery, StagedEdit,
-    TableInspection,
+    AdminSnapshot, ColumnStats, ConnectionProfile, ConstraintDescriptor, ErdDiagram, ExplainNode,
+    ExportFormat, IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult, RowEditState,
+    SavedQuery, StagedEdit, TableInspection,
     actions::{ArchiveKeyMap, KeyMapMode},
     nav_tree::{NavTree, SchemaEntry},
 };
@@ -53,6 +53,15 @@ pub enum FlatItem {
     /// A type row.  `(schema_idx, kind, idx)` where `kind` is
     /// `0` = enum, `1` = domain, `2` = composite.
     TypeEntry(usize, u8, usize),
+    /// Collapsible group header for triggers within a schema.
+    TriggersGroup(usize),
+    /// A trigger row under its schema's triggers group.  `(schema_idx, trigger_idx)`.
+    Trigger(usize, usize),
+    /// Collapsible group header for database-level extensions.
+    ExtensionsGroup,
+    /// A database extension row.  Payload is index into
+    /// [`ArchiveNavModel::extensions`].
+    Extension(usize),
 }
 
 // ── SchemaWithExpand ──────────────────────────────────────────────────────────
@@ -70,6 +79,8 @@ pub struct SchemaWithExpand {
     pub sequences_expanded: bool,
     /// Whether the types group is expanded.
     pub types_expanded: bool,
+    /// Whether the triggers group is expanded.
+    pub triggers_expanded: bool,
 }
 
 // ── PanelMode ─────────────────────────────────────────────────────────────────
@@ -174,6 +185,28 @@ pub enum PanelMode {
         /// Whether a fetch is currently in progress.
         loading: bool,
     },
+    /// Constraint browser panel for the selected table.
+    ConstraintPanel {
+        /// Schema of the table.
+        schema: String,
+        /// Table name.
+        table: String,
+        /// Constraints for the table; empty until first fetch completes.
+        constraints: Vec<ConstraintDescriptor>,
+        /// Whether a fetch is currently in progress.
+        loading: bool,
+    },
+    /// Index browser panel for the selected table.
+    IndexPanel {
+        /// Schema of the table.
+        schema: String,
+        /// Table name.
+        table: String,
+        /// Indexes for the table; empty until first fetch completes.
+        indexes: Vec<IndexDescriptor>,
+        /// Whether a fetch is currently in progress.
+        loading: bool,
+    },
 }
 
 impl Default for PanelMode {
@@ -264,6 +297,20 @@ pub enum FetchRequest {
         /// Schema to diagram.
         schema: String,
     },
+    /// Fetch constraints for a table (re-uses `inspect_table_direct` output).
+    FetchConstraints {
+        /// Schema containing the table.
+        schema: String,
+        /// Table to inspect.
+        table: String,
+    },
+    /// Fetch indexes for a table (re-uses `inspect_table_direct` output).
+    FetchIndexes {
+        /// Schema containing the table.
+        schema: String,
+        /// Table to inspect.
+        table: String,
+    },
 }
 
 /// Response sent from the background fetch task back to the event loop.
@@ -339,6 +386,24 @@ pub enum PanelEvent {
     AdminReady(AdminSnapshot),
     /// ERD diagram ready.
     ErdReady(ErdDiagram),
+    /// Constraints for a table are ready.
+    ConstraintsReady {
+        /// Schema the table belongs to.
+        schema: String,
+        /// Table name.
+        table: String,
+        /// Constraint list.
+        constraints: Vec<ConstraintDescriptor>,
+    },
+    /// Indexes for a table are ready.
+    IndexesReady {
+        /// Schema the table belongs to.
+        schema: String,
+        /// Table name.
+        table: String,
+        /// Index list.
+        indexes: Vec<IndexDescriptor>,
+    },
 }
 
 // ── ArchiveNavModel ───────────────────────────────────────────────────────────
@@ -402,6 +467,10 @@ pub struct ArchiveNavModel {
     pub saved_browser_active: bool,
     /// Currently highlighted row in the saved-queries browser.
     pub saved_browser_idx: usize,
+    /// Database-level extensions `(name, version)`, loaded at startup.
+    pub extensions: Vec<(String, String)>,
+    /// Whether the extensions group in the nav tree is expanded.
+    pub extensions_expanded: bool,
 }
 
 impl ArchiveNavModel {
@@ -416,6 +485,7 @@ impl ArchiveNavModel {
                 functions_expanded: false,
                 sequences_expanded: false,
                 types_expanded: false,
+                triggers_expanded: false,
             })
             .collect();
 
@@ -443,6 +513,8 @@ impl ArchiveNavModel {
             save_prompt_text: String::new(),
             saved_browser_active: false,
             saved_browser_idx: 0,
+            extensions: Vec::new(),
+            extensions_expanded: false,
         };
         model.rebuild_flat();
         model
@@ -460,6 +532,7 @@ impl ArchiveNavModel {
                 functions_expanded: false,
                 sequences_expanded: false,
                 types_expanded: false,
+                triggers_expanded: false,
             })
             .collect();
         self.db_name = nav.db_name;
@@ -538,6 +611,23 @@ impl ArchiveNavModel {
                         }
                     }
                 }
+                if !s.entry.triggers.is_empty() {
+                    self.flat.push(FlatItem::TriggersGroup(i));
+                    if s.triggers_expanded {
+                        for j in 0..s.entry.triggers.len() {
+                            self.flat.push(FlatItem::Trigger(i, j));
+                        }
+                    }
+                }
+            }
+        }
+        // Extensions are database-level, appended after all schemas.
+        if !self.extensions.is_empty() && !active {
+            self.flat.push(FlatItem::ExtensionsGroup);
+            if self.extensions_expanded {
+                for j in 0..self.extensions.len() {
+                    self.flat.push(FlatItem::Extension(j));
+                }
             }
         }
         self.cursor = self.cursor.min(self.flat.len().saturating_sub(1));
@@ -614,8 +704,22 @@ impl ArchiveNavModel {
                 self.rebuild_flat();
                 None
             }
+            FlatItem::TriggersGroup(si) => {
+                self.schemas[si].triggers_expanded = !self.schemas[si].triggers_expanded;
+                self.rebuild_flat();
+                None
+            }
+            FlatItem::ExtensionsGroup => {
+                self.extensions_expanded = !self.extensions_expanded;
+                self.rebuild_flat();
+                None
+            }
             // Leaf nodes: Enter does nothing for now (detail panel in a future phase).
-            FlatItem::Function(..) | FlatItem::Sequence(..) | FlatItem::TypeEntry(..) => None,
+            FlatItem::Function(..)
+            | FlatItem::Sequence(..)
+            | FlatItem::TypeEntry(..)
+            | FlatItem::Trigger(..)
+            | FlatItem::Extension(..) => None,
         }
     }
 
@@ -1111,7 +1215,7 @@ impl ArchiveNavModel {
     }
 
     /// Return the name of the currently selected schema (works for schema,
-    /// table, function, sequence, and type nodes).
+    /// table, function, sequence, type, and trigger nodes).
     pub fn selected_schema_name(&self) -> Option<String> {
         use crate::archive::nav_model::FlatItem;
         match self.selected()? {
@@ -1120,9 +1224,12 @@ impl ArchiveNavModel {
             | FlatItem::FunctionsGroup(si)
             | FlatItem::SequencesGroup(si)
             | FlatItem::TypesGroup(si)
+            | FlatItem::TriggersGroup(si)
             | FlatItem::Function(si, _)
             | FlatItem::Sequence(si, _)
+            | FlatItem::Trigger(si, _)
             | FlatItem::TypeEntry(si, _, _) => Some(self.schemas[si].entry.name.clone()),
+            FlatItem::ExtensionsGroup | FlatItem::Extension(_) => None,
         }
     }
 
@@ -1157,6 +1264,150 @@ impl ArchiveNavModel {
         {
             *d = diagram;
             *loading = false;
+        }
+    }
+
+    // ── Phase 8 — Constraint / Index panels ──────────────────────────────────
+
+    /// Open the constraint panel for the selected table, or close it.
+    ///
+    /// If the enrichment data is already cached, populates the panel
+    /// immediately (no `FetchRequest` needed).  Otherwise returns
+    /// `Some(FetchRequest::FetchConstraints)` for the caller to dispatch.
+    pub fn toggle_constraint_panel(&mut self) -> Option<FetchRequest> {
+        if matches!(self.panel, PanelMode::ConstraintPanel { .. }) {
+            self.panel = PanelMode::ColumnDetail;
+            return None;
+        }
+        let (schema, table) = self.selected_schema_table()?;
+        if let Some(insp) = self.table_inspections.get(&(schema.clone(), table.clone())) {
+            let constraints = insp.constraints.clone();
+            self.panel = PanelMode::ConstraintPanel {
+                schema,
+                table,
+                constraints,
+                loading: false,
+            };
+            return None;
+        }
+        self.panel = PanelMode::ConstraintPanel {
+            schema: schema.clone(),
+            table: table.clone(),
+            constraints: Vec::new(),
+            loading: true,
+        };
+        Some(FetchRequest::FetchConstraints { schema, table })
+    }
+
+    /// Apply fetched constraints to the constraint panel.
+    ///
+    /// No-ops if the panel is no longer in `ConstraintPanel` mode.
+    pub fn apply_constraints(
+        &mut self,
+        schema: String,
+        table: String,
+        constraints: Vec<ConstraintDescriptor>,
+    ) {
+        if let PanelMode::ConstraintPanel {
+            schema: ps,
+            table: pt,
+            constraints: c,
+            loading,
+        } = &mut self.panel
+        {
+            if ps == &schema && pt == &table {
+                *c = constraints;
+                *loading = false;
+            }
+        }
+    }
+
+    /// Open the index panel for the selected table, or close it.
+    ///
+    /// If the enrichment data is already cached, populates the panel
+    /// immediately.  Otherwise returns `Some(FetchRequest::FetchIndexes)`.
+    pub fn toggle_index_panel(&mut self) -> Option<FetchRequest> {
+        if matches!(self.panel, PanelMode::IndexPanel { .. }) {
+            self.panel = PanelMode::ColumnDetail;
+            return None;
+        }
+        let (schema, table) = self.selected_schema_table()?;
+        if let Some(insp) = self.table_inspections.get(&(schema.clone(), table.clone())) {
+            let indexes = insp.indexes.clone();
+            self.panel = PanelMode::IndexPanel {
+                schema,
+                table,
+                indexes,
+                loading: false,
+            };
+            return None;
+        }
+        self.panel = PanelMode::IndexPanel {
+            schema: schema.clone(),
+            table: table.clone(),
+            indexes: Vec::new(),
+            loading: true,
+        };
+        Some(FetchRequest::FetchIndexes { schema, table })
+    }
+
+    /// Apply fetched indexes to the index panel.
+    ///
+    /// No-ops if the panel is no longer in `IndexPanel` mode.
+    pub fn apply_indexes(&mut self, schema: String, table: String, indexes: Vec<IndexDescriptor>) {
+        if let PanelMode::IndexPanel {
+            schema: ps,
+            table: pt,
+            indexes: ix,
+            loading,
+        } = &mut self.panel
+        {
+            if ps == &schema && pt == &table {
+                *ix = indexes;
+                *loading = false;
+            }
+        }
+    }
+
+    // ── Phase 8 — Data-grid pagination ────────────────────────────────────────
+
+    /// Advance the data-grid to the next page.
+    ///
+    /// No-ops when the panel is not a `DataGrid`.  The caller is responsible
+    /// for re-fetching data if needed; this only updates the page index.
+    pub fn page_next(&mut self) {
+        if let PanelMode::DataGrid { page, .. } = &mut self.panel {
+            *page += 1;
+        }
+    }
+
+    /// Return the data-grid to the previous page (clamped at 0).
+    pub fn page_prev(&mut self) {
+        if let PanelMode::DataGrid { page, .. } = &mut self.panel {
+            *page = page.saturating_sub(1);
+        }
+    }
+
+    /// Jump to the first page (page 0).
+    pub fn page_first(&mut self) {
+        if let PanelMode::DataGrid { page, .. } = &mut self.panel {
+            *page = 0;
+        }
+    }
+
+    /// Jump to the last page.
+    ///
+    /// Computes the last valid page from `result.rows.rows.len()` and the
+    /// page size constant (100 rows/page).
+    pub fn page_last(&mut self) {
+        if let PanelMode::DataGrid { result, page, .. } = &mut self.panel {
+            const PAGE_SIZE: u32 = 100;
+            let total = result.rows.rows.len() as u32;
+            *page = if total == 0 {
+                0
+            } else {
+                (total - 1) / PAGE_SIZE
+            };
         }
     }
 
@@ -1876,6 +2127,27 @@ impl ArchiveNavModel {
                         _ => format!("    {} [composite]", entry.composites[*idx].name),
                     }
                 }
+                FlatItem::TriggersGroup(si) => {
+                    let s = &self.schemas[*si];
+                    let arrow = if s.triggers_expanded { "▾" } else { "▸" };
+                    format!("  {} Triggers ({})", arrow, s.entry.triggers.len())
+                }
+                FlatItem::Trigger(si, ti) => {
+                    let t = &self.schemas[*si].entry.triggers[*ti];
+                    format!("    {} [trigger]", t.name)
+                }
+                FlatItem::ExtensionsGroup => {
+                    let arrow = if self.extensions_expanded {
+                        "▾"
+                    } else {
+                        "▸"
+                    };
+                    format!("{} Extensions ({})", arrow, self.extensions.len())
+                }
+                FlatItem::Extension(idx) => {
+                    let (name, version) = &self.extensions[*idx];
+                    format!("  {} v{}", name, version)
+                }
             };
 
             // Machine-readable metadata in description for browser frontends.
@@ -1916,6 +2188,19 @@ impl ArchiveNavModel {
                         _ => entry.composites[*idx].name.as_str(),
                     };
                     format!("schema:{s},type:{type_name}")
+                }
+                FlatItem::TriggersGroup(si) => {
+                    format!("schema:{},group:triggers", self.schemas[*si].entry.name)
+                }
+                FlatItem::Trigger(si, ti) => {
+                    let s = &self.schemas[*si].entry.name;
+                    let t = &self.schemas[*si].entry.triggers[*ti].name;
+                    format!("schema:{s},trigger:{t}")
+                }
+                FlatItem::ExtensionsGroup => "group:extensions".to_string(),
+                FlatItem::Extension(idx) => {
+                    let (name, _) = &self.extensions[*idx];
+                    format!("extension:{name}")
                 }
             };
 
@@ -2566,6 +2851,88 @@ impl ArchiveNavModel {
                     nodes.insert(edges_list_id, edges_list);
                     children.push(edges_list_id);
                 }
+            }
+            PanelMode::ConstraintPanel {
+                schema,
+                table,
+                constraints,
+                loading,
+            } => {
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label(if *loading {
+                    format!("Constraints — {schema}.{table} — loading…")
+                } else {
+                    format!(
+                        "Constraints — {schema}.{table} — {} constraint(s)",
+                        constraints.len()
+                    )
+                });
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                let list_id = alloc();
+                let mut items: Vec<AkNodeId> = Vec::new();
+                for c in constraints {
+                    let item_id = alloc();
+                    let mut item = AkNode::new(AkRole::ListItem);
+                    item.set_label(format!(
+                        "{} [{:?}]{}",
+                        c.name,
+                        c.kind,
+                        c.definition
+                            .as_deref()
+                            .map(|d| format!(": {d}"))
+                            .unwrap_or_default()
+                    ));
+                    nodes.insert(item_id, item);
+                    items.push(item_id);
+                }
+                let mut list = AkNode::new(AkRole::List);
+                list.set_label("constraints".to_string());
+                list.set_children(items);
+                nodes.insert(list_id, list);
+                children.push(list_id);
+            }
+            PanelMode::IndexPanel {
+                schema,
+                table,
+                indexes,
+                loading,
+            } => {
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label(if *loading {
+                    format!("Indexes — {schema}.{table} — loading…")
+                } else {
+                    format!("Indexes — {schema}.{table} — {} index(es)", indexes.len())
+                });
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                let list_id = alloc();
+                let mut items: Vec<AkNodeId> = Vec::new();
+                for ix in indexes {
+                    let item_id = alloc();
+                    let mut item = AkNode::new(AkRole::ListItem);
+                    item.set_label(format!(
+                        "{} [{}]{}",
+                        ix.index_name,
+                        ix.index_method,
+                        if ix.column_names.is_empty() {
+                            String::new()
+                        } else {
+                            format!(" on ({})", ix.column_names.join(", "))
+                        }
+                    ));
+                    nodes.insert(item_id, item);
+                    items.push(item_id);
+                }
+                let mut list = AkNode::new(AkRole::List);
+                list.set_label("indexes".to_string());
+                list.set_children(items);
+                nodes.insert(list_id, list);
+                children.push(list_id);
             }
         }
 

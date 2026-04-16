@@ -1037,7 +1037,52 @@ async fn api_erd(
     Ok(Html(content_html(&state).map_err(ApiError::internal)?))
 }
 
-// ── GET /api/open-help ────────────────────────────────────────────────────────
+// ── GET /api/constraints ──────────────────────────────────────────────────────
+
+/// Query params for `GET /api/constraints`.
+#[derive(serde::Deserialize)]
+struct SchemaTableQuery {
+    /// Schema of the table.
+    schema: String,
+    /// Table name.
+    table: String,
+}
+
+/// Fetch constraint data for `?schema=&table=` and render `ConstraintPanel`.
+async fn api_constraints(
+    State(state): State<AppState>,
+    Query(params): Query<SchemaTableQuery>,
+) -> Result<Html<String>, ApiError> {
+    use crate::archive::plugins::inspect::inspect_table_direct;
+    let url = state.active_url().await.ok_or_else(ApiError::no_db)?;
+    let insp = inspect_table_direct(&url, &params.schema, &params.table)
+        .await
+        .map_err(ApiError::bad_request)?;
+    {
+        let mut model = state.model.lock().await;
+        model.apply_constraints(params.schema, params.table, insp.constraints);
+    }
+    Ok(Html(content_html(&state).map_err(ApiError::internal)?))
+}
+
+// ── GET /api/indexes ──────────────────────────────────────────────────────────
+
+/// Fetch index data for `?schema=&table=` and render `IndexPanel`.
+async fn api_indexes(
+    State(state): State<AppState>,
+    Query(params): Query<SchemaTableQuery>,
+) -> Result<Html<String>, ApiError> {
+    use crate::archive::plugins::inspect::inspect_table_direct;
+    let url = state.active_url().await.ok_or_else(ApiError::no_db)?;
+    let insp = inspect_table_direct(&url, &params.schema, &params.table)
+        .await
+        .map_err(ApiError::bad_request)?;
+    {
+        let mut model = state.model.lock().await;
+        model.apply_indexes(params.schema, params.table, insp.indexes);
+    }
+    Ok(Html(content_html(&state).map_err(ApiError::internal)?))
+}
 
 async fn api_open_help(State(state): State<AppState>) -> Html<String> {
     {
@@ -1184,6 +1229,14 @@ fn dispatch_action_on_model(
             // Transition to loading state; /api/erd HTMX call supplies the diagram.
             let _ = model.toggle_erd_panel();
         }
+        A::OpenConstraints => {
+            // Transition to loading state; /api/constraints HTMX call supplies data.
+            let _ = model.toggle_constraint_panel();
+        }
+        A::OpenIndexes => {
+            // Transition to loading state; /api/indexes HTMX call supplies data.
+            let _ = model.toggle_index_panel();
+        }
         A::ToggleExportPicker => {
             if model.panel.is_data_grid() {
                 model.toggle_export_picker();
@@ -1191,6 +1244,10 @@ fn dispatch_action_on_model(
         }
         A::RequestDdl => {} // HTMX handles via /api/ddl-panel
         A::RequestExplain => {}
+        A::PageNext => model.page_next(),
+        A::PagePrev => model.page_prev(),
+        A::PageFirst => model.page_first(),
+        A::PageLast => model.page_last(),
         A::ConnNext => model.conn_next(),
         A::ConnPrev => model.conn_prev(),
         // All interactive-modal actions are handled by their own HTMX endpoints
@@ -1247,6 +1304,8 @@ fn build_router(state: AppState) -> Router {
         .route("/api/admin-tab-next", get(api_admin_tab_next))
         .route("/api/admin-tab-prev", get(api_admin_tab_prev))
         .route("/api/erd", get(api_erd))
+        .route("/api/constraints", get(api_constraints))
+        .route("/api/indexes", get(api_indexes))
         .route("/api/open-help", get(api_open_help))
         .route("/api/history-panel", get(api_history_panel))
         .route("/api/saved-panel", get(api_saved_panel))

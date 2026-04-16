@@ -40,6 +40,14 @@ pub enum ArchiveKey {
     Tab,
     /// Shift+Tab (BackTab in crossterm).
     BackTab,
+    /// Page Down.
+    PageDown,
+    /// Page Up.
+    PageUp,
+    /// Home.
+    Home,
+    /// End.
+    End,
     /// Function key Fn.
     F(u8),
     /// Printable character.
@@ -152,6 +160,10 @@ pub enum ArchiveAction {
     OpenAdmin,
     /// Open or close the ERD (entity-relationship diagram) for the selected schema.
     OpenErd,
+    /// Open or close the constraint panel for the selected table.
+    OpenConstraints,
+    /// Open or close the index panel for the selected table.
+    OpenIndexes,
     /// Cycle forward to the next admin panel tab.
     AdminTabNext,
     /// Cycle backward to the previous admin panel tab.
@@ -162,6 +174,14 @@ pub enum ArchiveAction {
     RequestDdl,
     /// Request an EXPLAIN plan for the last query on the selected table.
     RequestExplain,
+    /// Advance the data grid to the next page.
+    PageNext,
+    /// Return the data grid to the previous page.
+    PagePrev,
+    /// Jump to the first page of the data grid.
+    PageFirst,
+    /// Jump to the last page of the data grid.
+    PageLast,
     /// Cycle forward to the next database connection.
     ConnNext,
     /// Cycle backward to the previous database connection.
@@ -317,9 +337,21 @@ impl ArchiveKeyMap {
             KeyMapEntry::nav(p(K::Char('m')), A::OpenMonitor, "m", "Monitor", true),
             KeyMapEntry::nav(p(K::Char('a')), A::OpenAdmin, "a", "Admin", true),
             KeyMapEntry::nav(p(K::Char('g')), A::OpenErd, "g", "Graph/ERD", true),
+            KeyMapEntry::nav(
+                p(K::Char('c')),
+                A::OpenConstraints,
+                "c",
+                "Constraints",
+                true,
+            ),
+            KeyMapEntry::nav(p(K::Char('i')), A::OpenIndexes, "i", "Indexes", true),
             KeyMapEntry::nav(p(K::Char(']')), A::AdminTabNext, "]", "Next tab", true),
             KeyMapEntry::nav(p(K::Char('[')), A::AdminTabPrev, "[", "Prev tab", true),
             KeyMapEntry::nav(p(K::Char('x')), A::ToggleExportPicker, "x", "Export", true),
+            KeyMapEntry::nav(p(K::PageDown), A::PageNext, "PgDn", "Next page", true),
+            KeyMapEntry::nav(p(K::PageUp), A::PagePrev, "PgUp", "Prev page", true),
+            KeyMapEntry::nav(p(K::Home), A::PageFirst, "Home", "First page", true),
+            KeyMapEntry::nav(p(K::End), A::PageLast, "End", "Last page", true),
             KeyMapEntry::nav(c(K::Tab), A::ConnNext, "Ctrl+Tab", "Next conn.", true),
             KeyMapEntry::nav(cs(K::Tab), A::ConnPrev, "Ctrl+⇧Tab", "Prev conn.", true),
             // BackTab is the crossterm encoding of Shift+Tab
@@ -599,6 +631,10 @@ fn js_key_str(key: &ArchiveKey) -> String {
         ArchiveKey::Tab | ArchiveKey::BackTab => "Tab".to_string(),
         ArchiveKey::F(n) => format!("F{n}"),
         ArchiveKey::Char(c) => c.to_string(),
+        ArchiveKey::PageDown => "PageDown".to_string(),
+        ArchiveKey::PageUp => "PageUp".to_string(),
+        ArchiveKey::Home => "Home".to_string(),
+        ArchiveKey::End => "End".to_string(),
     }
 }
 

@@ -13,7 +13,7 @@ use tracing::instrument;
 use crate::archive::{
     ArchiveDbBackend, ArchiveResult, BackendKind, CompositeTypeAttribute, CompositeTypeDescriptor,
     DomainDescriptor, EnumDescriptor, FunctionDescriptor, FunctionVolatility, SequenceDescriptor,
-    TableDescriptor, TableType,
+    TableDescriptor, TableType, TriggerDescriptor, TriggerEvents,
     errors::{ArchiveError, ArchiveErrorKind},
 };
 use elicit_db::{DbSchemaManager, DbServerAdmin, DbTableManager};
@@ -39,6 +39,8 @@ pub struct SchemaEntry {
     pub domains: Vec<DomainDescriptor>,
     /// Composite types (PostgreSQL only; empty on other backends).
     pub composites: Vec<CompositeTypeDescriptor>,
+    /// Triggers defined on tables in this schema (PostgreSQL only; empty on other backends).
+    pub triggers: Vec<TriggerDescriptor>,
 }
 
 /// Pre-loaded navigation tree passed to the ratatui frontend.
@@ -107,6 +109,7 @@ impl NavTree {
                     enums: vec![],
                     domains: vec![],
                     composites: vec![],
+                    triggers: vec![],
                 },
                 SchemaEntry {
                     name: "auth".to_string(),
@@ -123,6 +126,7 @@ impl NavTree {
                     enums: vec![],
                     domains: vec![],
                     composites: vec![],
+                    triggers: vec![],
                 },
                 SchemaEntry {
                     name: "pg_catalog".to_string(),
@@ -133,6 +137,7 @@ impl NavTree {
                     enums: vec![],
                     domains: vec![],
                     composites: vec![],
+                    triggers: vec![],
                 },
             ],
         }
@@ -189,14 +194,16 @@ pub async fn build_nav_tree(backend: &ArchiveDbBackend, url: &str) -> ArchiveRes
             .map(|s| s.owner.clone())
             .unwrap_or_else(|_| "unknown".to_string());
 
-        let (functions, sequences, enums, domains, composites) = if let Some(pool) = &pg_pool {
-            let fns = fetch_pg_functions(pool, sname).await;
-            let seqs = fetch_pg_sequences(pool, sname).await;
-            let (en, dom, comp) = fetch_pg_types(pool, sname).await;
-            (fns, seqs, en, dom, comp)
-        } else {
-            (vec![], vec![], vec![], vec![], vec![])
-        };
+        let (functions, sequences, enums, domains, composites, triggers) =
+            if let Some(pool) = &pg_pool {
+                let fns = fetch_pg_functions(pool, sname).await;
+                let seqs = fetch_pg_sequences(pool, sname).await;
+                let (en, dom, comp) = fetch_pg_types(pool, sname).await;
+                let trigs = fetch_pg_triggers(pool, sname).await;
+                (fns, seqs, en, dom, comp, trigs)
+            } else {
+                (vec![], vec![], vec![], vec![], vec![], vec![])
+            };
 
         schemas.push(SchemaEntry {
             name: sname.clone(),
@@ -207,6 +214,7 @@ pub async fn build_nav_tree(backend: &ArchiveDbBackend, url: &str) -> ArchiveRes
             enums,
             domains,
             composites,
+            triggers,
         });
     }
 
@@ -429,7 +437,48 @@ async fn fetch_pg_types(
     (enums, domains, composites)
 }
 
-// ── ERD fetch ─────────────────────────────────────────────────────────────────
+// ── Trigger fetch ─────────────────────────────────────────────────────────────
+
+async fn fetch_pg_triggers(pool: &sqlx::AnyPool, schema: &str) -> Vec<TriggerDescriptor> {
+    let rows: Vec<AnyRow> = sqlx::query(
+        "SELECT t.trigger_name, t.event_object_table, t.action_timing, \
+                string_agg(t.event_manipulation, ',' ORDER BY t.event_manipulation), \
+                t.action_orientation = 'ROW', \
+                COALESCE(t.action_statement, ''), \
+                COALESCE(t.trigger_name, '') <> '' \
+         FROM information_schema.triggers t \
+         WHERE t.trigger_schema = $1 \
+         GROUP BY t.trigger_name, t.event_object_table, t.action_timing, \
+                  t.action_orientation, t.action_statement \
+         ORDER BY t.event_object_table, t.trigger_name",
+    )
+    .bind(schema)
+    .fetch_all(pool)
+    .await
+    .unwrap_or_default();
+
+    rows.iter()
+        .map(|row| {
+            let events_str: String = row.try_get::<String, _>(3).unwrap_or_default();
+            let events = TriggerEvents {
+                on_insert: events_str.contains("INSERT"),
+                on_update: events_str.contains("UPDATE"),
+                on_delete: events_str.contains("DELETE"),
+                on_truncate: events_str.contains("TRUNCATE"),
+            };
+            TriggerDescriptor {
+                schema: schema.to_string(),
+                table: row.try_get::<String, _>(1).unwrap_or_default(),
+                name: row.try_get::<String, _>(0).unwrap_or_default(),
+                timing: row.try_get::<String, _>(2).unwrap_or_default(),
+                events,
+                row_level: row.try_get::<bool, _>(4).unwrap_or(false),
+                function: row.try_get::<String, _>(5).unwrap_or_default(),
+                enabled: true,
+            }
+        })
+        .collect()
+}
 
 /// Build an [`ErdDiagram`] for `schema` by querying all tables and their FK
 /// relationships.
@@ -530,6 +579,18 @@ pub async fn fetch_erd(
     } else {
         vec![]
     };
+
+    // ── FK enrichment — mark ErdColumn.is_fk = true for FK columns ────────
+    let mut nodes = nodes;
+    for edge in &edges {
+        if edge.from_schema == schema {
+            if let Some(node) = nodes.iter_mut().find(|n| n.table == edge.from_table) {
+                if let Some(col) = node.columns.iter_mut().find(|c| c.name == edge.from_column) {
+                    col.is_fk = true;
+                }
+            }
+        }
+    }
 
     Ok(ErdDiagram {
         schema: schema.to_string(),

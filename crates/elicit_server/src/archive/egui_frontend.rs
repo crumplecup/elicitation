@@ -262,6 +262,20 @@ impl ArchiveEguiApp {
                 PanelEvent::ErdReady(diagram) => {
                     self.model.apply_erd_diagram(diagram);
                 }
+                PanelEvent::ConstraintsReady {
+                    schema,
+                    table,
+                    constraints,
+                } => {
+                    self.model.apply_constraints(schema, table, constraints);
+                }
+                PanelEvent::IndexesReady {
+                    schema,
+                    table,
+                    indexes,
+                } => {
+                    self.model.apply_indexes(schema, table, indexes);
+                }
             }
         }
     }
@@ -413,6 +427,10 @@ fn egui_events_to_combos(ctx: &egui::Context) -> Vec<crate::archive::KeyCombo> {
                     Key::Backspace => ArchiveKey::Backspace,
                     Key::Delete => ArchiveKey::Delete,
                     Key::Tab => ArchiveKey::Tab,
+                    Key::PageDown => ArchiveKey::PageDown,
+                    Key::PageUp => ArchiveKey::PageUp,
+                    Key::Home => ArchiveKey::Home,
+                    Key::End => ArchiveKey::End,
                     Key::F1 => ArchiveKey::F(1),
                     Key::F2 => ArchiveKey::F(2),
                     Key::F3 => ArchiveKey::F(3),
@@ -520,6 +538,16 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
                     let _ = self.req_tx.try_send(req);
                 }
             }
+            A::OpenConstraints => {
+                if let Some(req) = self.model.toggle_constraint_panel() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            A::OpenIndexes => {
+                if let Some(req) = self.model.toggle_index_panel() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
             A::ToggleExportPicker => {
                 if self.model.panel.is_data_grid() {
                     self.model.toggle_export_picker();
@@ -535,6 +563,10 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
                     let _ = self.req_tx.try_send(req);
                 }
             }
+            A::PageNext => self.model.page_next(),
+            A::PagePrev => self.model.page_prev(),
+            A::PageFirst => self.model.page_first(),
+            A::PageLast => self.model.page_last(),
             A::ConnNext => {
                 self.model.conn_next();
                 if let Some(url) = self.model.conn_active_url() {
@@ -1060,6 +1092,28 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                 Err(e) => PanelEvent::FetchError(e.to_string()),
                             },
                             Err(e) => PanelEvent::FetchError(e.to_string()),
+                        }
+                    }
+                    FetchRequest::FetchConstraints { schema, table } => {
+                        use crate::archive::plugins::inspect::inspect_table_direct;
+                        match inspect_table_direct(url_str, &schema, &table).await {
+                            Ok(insp) => PanelEvent::ConstraintsReady {
+                                schema,
+                                table,
+                                constraints: insp.constraints,
+                            },
+                            Err(e) => PanelEvent::FetchError(e),
+                        }
+                    }
+                    FetchRequest::FetchIndexes { schema, table } => {
+                        use crate::archive::plugins::inspect::inspect_table_direct;
+                        match inspect_table_direct(url_str, &schema, &table).await {
+                            Ok(insp) => PanelEvent::IndexesReady {
+                                schema,
+                                table,
+                                indexes: insp.indexes,
+                            },
+                            Err(e) => PanelEvent::FetchError(e),
                         }
                     }
                 };

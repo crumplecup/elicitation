@@ -282,6 +282,20 @@ impl TuiApp {
             PanelEvent::ErdReady(diagram) => {
                 self.model.apply_erd_diagram(diagram);
             }
+            PanelEvent::ConstraintsReady {
+                schema,
+                table,
+                constraints,
+            } => {
+                self.model.apply_constraints(schema, table, constraints);
+            }
+            PanelEvent::IndexesReady {
+                schema,
+                table,
+                indexes,
+            } => {
+                self.model.apply_indexes(schema, table, indexes);
+            }
         }
     }
 }
@@ -327,6 +341,16 @@ impl crate::archive::ArchiveFrontend for TuiApp {
                     let _ = self.req_tx.try_send(req);
                 }
             }
+            A::OpenConstraints => {
+                if let Some(req) = self.model.toggle_constraint_panel() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            A::OpenIndexes => {
+                if let Some(req) = self.model.toggle_index_panel() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
             A::AdminTabNext => self.model.admin_tab_next(),
             A::AdminTabPrev => self.model.admin_tab_prev(),
             A::ToggleExportPicker => {
@@ -336,6 +360,10 @@ impl crate::archive::ArchiveFrontend for TuiApp {
             }
             A::RequestDdl => self.request_ddl(),
             A::RequestExplain => self.request_explain(),
+            A::PageNext => self.model.page_next(),
+            A::PagePrev => self.model.page_prev(),
+            A::PageFirst => self.model.page_first(),
+            A::PageLast => self.model.page_last(),
             A::ConnNext => {
                 self.model.conn_next();
                 if let Some(url) = self.model.conn_active_url() {
@@ -667,6 +695,30 @@ fn spawn_fetch_task(
                     };
                     let _ = event_tx.send(ev).await;
                 }
+                FetchRequest::FetchConstraints { schema, table } => {
+                    use crate::archive::plugins::inspect::inspect_table_direct;
+                    let ev = match inspect_table_direct(url, &schema, &table).await {
+                        Ok(insp) => PanelEvent::ConstraintsReady {
+                            schema,
+                            table,
+                            constraints: insp.constraints,
+                        },
+                        Err(e) => PanelEvent::FetchError(e),
+                    };
+                    let _ = event_tx.send(ev).await;
+                }
+                FetchRequest::FetchIndexes { schema, table } => {
+                    use crate::archive::plugins::inspect::inspect_table_direct;
+                    let ev = match inspect_table_direct(url, &schema, &table).await {
+                        Ok(insp) => PanelEvent::IndexesReady {
+                            schema,
+                            table,
+                            indexes: insp.indexes,
+                        },
+                        Err(e) => PanelEvent::FetchError(e),
+                    };
+                    let _ = event_tx.send(ev).await;
+                }
             }
         }
     });
@@ -692,6 +744,10 @@ fn crossterm_key_to_combo(key: &crossterm::event::KeyEvent) -> Option<crate::arc
         KeyCode::Delete => ArchiveKey::Delete,
         KeyCode::Tab => ArchiveKey::Tab,
         KeyCode::BackTab => ArchiveKey::BackTab,
+        KeyCode::PageDown => ArchiveKey::PageDown,
+        KeyCode::PageUp => ArchiveKey::PageUp,
+        KeyCode::Home => ArchiveKey::Home,
+        KeyCode::End => ArchiveKey::End,
         KeyCode::F(n) => ArchiveKey::F(n),
         KeyCode::Char(c) => ArchiveKey::Char(c),
         _ => return None,
