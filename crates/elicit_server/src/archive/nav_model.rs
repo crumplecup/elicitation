@@ -23,7 +23,7 @@ use std::collections::HashMap;
 use elicit_accesskit::KeyBinding;
 
 use crate::archive::{
-    AdminSnapshot, AdminTab, ColumnStats, ConnectionProfile, ErdDiagram, ExplainNode, ExportFormat,
+    AdminSnapshot, ColumnStats, ConnectionProfile, ErdDiagram, ExplainNode, ExportFormat,
     MonitorSnapshot, QueryHistoryEntry, QueryResult, RowEditState, SavedQuery, StagedEdit,
     TableInspection,
     actions::{ArchiveKeyMap, KeyMapMode},

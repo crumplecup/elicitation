@@ -1251,6 +1251,10 @@ mod verification_impls {
     mod chrono_impls {
         use super::*;
         use crate::verification::types::{DateTimeUtcAfter, DateTimeUtcBefore, NaiveDateTimeAfter};
+        use chrono::{DateTime, FixedOffset, NaiveDateTime, Utc};
+        leaf_impl!(DateTime<Utc>, "DateTime<Utc>");
+        leaf_impl!(DateTime<FixedOffset>, "DateTime<FixedOffset>");
+        leaf_impl!(NaiveDateTime, "NaiveDateTime");
         leaf_impl!(DateTimeUtcAfter, "DateTimeUtcAfter");
         leaf_impl!(DateTimeUtcBefore, "DateTimeUtcBefore");
         leaf_impl!(NaiveDateTimeAfter, "NaiveDateTimeAfter");

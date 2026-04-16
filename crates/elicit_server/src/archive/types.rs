@@ -651,7 +651,7 @@ pub struct ExportResult {
 // ── QueryHistoryEntry ─────────────────────────────────────────────────────────
 
 /// A single entry in the persistent query history log.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct QueryHistoryEntry {
     /// Auto-increment row ID.
     pub id: i64,
@@ -668,7 +668,7 @@ pub struct QueryHistoryEntry {
 }
 
 /// A user-saved SQL snippet stored in the local SQLite database.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct SavedQuery {
     /// Auto-increment row ID.
     pub id: i64,
