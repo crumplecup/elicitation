@@ -954,6 +954,59 @@ pub struct CompositeTypeDescriptor {
     pub attributes: Vec<CompositeTypeAttribute>,
 }
 
+// ── MonitorTab ────────────────────────────────────────────────────────────────
+
+/// Which tab is active inside the monitor panel.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub enum MonitorTab {
+    /// Session activity (default view).
+    #[default]
+    Sessions,
+    /// Slow queries exceeding a threshold.
+    SlowQueries,
+    /// Current lock-wait chains.
+    LockWaits,
+    /// Table bloat ratios.
+    TableBloat,
+    /// Index usage (scan counts).
+    IndexUsage,
+}
+
+impl MonitorTab {
+    /// Cycle forward.
+    pub fn next(&self) -> Self {
+        match self {
+            Self::Sessions => Self::SlowQueries,
+            Self::SlowQueries => Self::LockWaits,
+            Self::LockWaits => Self::TableBloat,
+            Self::TableBloat => Self::IndexUsage,
+            Self::IndexUsage => Self::Sessions,
+        }
+    }
+
+    /// Cycle backward.
+    pub fn prev(&self) -> Self {
+        match self {
+            Self::Sessions => Self::IndexUsage,
+            Self::SlowQueries => Self::Sessions,
+            Self::LockWaits => Self::SlowQueries,
+            Self::TableBloat => Self::LockWaits,
+            Self::IndexUsage => Self::TableBloat,
+        }
+    }
+
+    /// Human-readable label.
+    pub fn label(&self) -> &'static str {
+        match self {
+            Self::Sessions => "Sessions",
+            Self::SlowQueries => "Slow Queries",
+            Self::LockWaits => "Lock Waits",
+            Self::TableBloat => "Table Bloat",
+            Self::IndexUsage => "Index Usage",
+        }
+    }
+}
+
 // ── MonitorSnapshot ───────────────────────────────────────────────────────────
 
 /// A point-in-time snapshot of live database monitoring data.
@@ -970,6 +1023,16 @@ pub struct MonitorSnapshot {
     pub cache_hit: Option<f64>,
     /// Available backup labels.
     pub backups: Vec<String>,
+    /// Sessions whose query duration exceeded the slow-query threshold.
+    pub slow_queries: Vec<DbSessionInfo>,
+    /// `(blocking_pid, blocked_pid)` pairs from current lock waits.
+    pub lock_waits: Vec<(i32, i32)>,
+    /// `(table_name, bloat_ratio)` pairs.
+    pub table_bloat: Vec<(String, f64)>,
+    /// `(index_name, scan_count)` pairs.
+    pub index_usage: Vec<(String, u64)>,
+    /// Currently active monitor tab.
+    pub active_tab: MonitorTab,
 }
 
 // ── AdminPanel types ──────────────────────────────────────────────────────────

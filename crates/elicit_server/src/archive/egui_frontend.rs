@@ -1036,9 +1036,10 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                     FetchRequest::UpdateUrl(_) => {
                         unreachable!("UpdateUrl handled before this match")
                     }
-                    FetchRequest::FetchMonitor => {
+                    FetchRequest::FetchMonitor { schema } => {
                         use crate::archive::MonitorSnapshot;
                         use elicit_db::{DbMonitor, DbRoleManager};
+                        let schema = schema.clone();
                         match ArchiveDbBackend::connect(url_str).await {
                             Ok(backend) => {
                                 let sessions = backend
@@ -1048,11 +1049,23 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                     .unwrap_or_default();
                                 let roles = backend.list_roles().await.unwrap_or_default();
                                 let cache_hit = backend.cache_hit_ratio().await.ok();
+                                let slow_queries =
+                                    backend.slow_queries(1_000).await.unwrap_or_default();
+                                let lock_waits = backend.lock_waits().await.unwrap_or_default();
+                                let table_bloat =
+                                    backend.table_bloat(&schema).await.unwrap_or_default();
+                                let index_usage =
+                                    backend.index_usage(&schema).await.unwrap_or_default();
                                 PanelEvent::MonitorReady(MonitorSnapshot {
                                     sessions,
                                     roles,
                                     cache_hit,
                                     backups: Vec::new(),
+                                    slow_queries,
+                                    lock_waits,
+                                    table_bloat,
+                                    index_usage,
+                                    active_tab: crate::archive::MonitorTab::Sessions,
                                 })
                             }
                             Err(e) => PanelEvent::FetchError(e.to_string()),

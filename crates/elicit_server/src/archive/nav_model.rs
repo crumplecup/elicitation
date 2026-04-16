@@ -289,7 +289,13 @@ pub enum FetchRequest {
     /// [`Refresh`]: FetchRequest::Refresh
     UpdateUrl(String),
     /// Fetch a live monitoring snapshot (sessions, roles, cache hit, backups).
-    FetchMonitor,
+    ///
+    /// `schema` is used for table-bloat and index-usage queries (defaults to
+    /// `"public"` if empty).
+    FetchMonitor {
+        /// Schema for table-bloat and index-usage queries.
+        schema: String,
+    },
     /// Fetch an administration snapshot (roles, backups/WAL, settings, extensions).
     FetchAdmin,
     /// Fetch an ERD diagram for the given schema.
@@ -1146,19 +1152,24 @@ impl ArchiveNavModel {
             snapshot: MonitorSnapshot::default(),
             loading: true,
         };
-        Some(FetchRequest::FetchMonitor)
+        let schema = self
+            .selected_schema_name()
+            .unwrap_or_else(|| "public".to_string());
+        Some(FetchRequest::FetchMonitor { schema })
     }
 
     /// Apply a completed monitoring snapshot to the monitor panel.
     ///
     /// No-ops if the panel is no longer in `MonitorPanel` mode (e.g. the user
     /// navigated away before the fetch completed).
-    pub fn apply_monitor_snapshot(&mut self, snapshot: MonitorSnapshot) {
+    pub fn apply_monitor_snapshot(&mut self, mut snapshot: MonitorSnapshot) {
         if let PanelMode::MonitorPanel {
             snapshot: s,
             loading,
         } = &mut self.panel
         {
+            // Preserve the active tab the user may have selected.
+            snapshot.active_tab = s.active_tab.clone();
             *s = snapshot;
             *loading = false;
         }
@@ -1200,17 +1211,29 @@ impl ArchiveNavModel {
     ///
     /// No-ops when not in `AdminPanel` mode.
     pub fn admin_tab_next(&mut self) {
-        if let PanelMode::AdminPanel { snapshot, .. } = &mut self.panel {
-            snapshot.active_tab = snapshot.active_tab.next();
+        match &mut self.panel {
+            PanelMode::AdminPanel { snapshot, .. } => {
+                snapshot.active_tab = snapshot.active_tab.next();
+            }
+            PanelMode::MonitorPanel { snapshot, .. } => {
+                snapshot.active_tab = snapshot.active_tab.next();
+            }
+            _ => {}
         }
     }
 
     /// Cycle to the previous admin panel tab (`[` key).
     ///
-    /// No-ops when not in `AdminPanel` mode.
+    /// No-ops when not in `AdminPanel` or `MonitorPanel` mode.
     pub fn admin_tab_prev(&mut self) {
-        if let PanelMode::AdminPanel { snapshot, .. } = &mut self.panel {
-            snapshot.active_tab = snapshot.active_tab.prev();
+        match &mut self.panel {
+            PanelMode::AdminPanel { snapshot, .. } => {
+                snapshot.active_tab = snapshot.active_tab.prev();
+            }
+            PanelMode::MonitorPanel { snapshot, .. } => {
+                snapshot.active_tab = snapshot.active_tab.prev();
+            }
+            _ => {}
         }
     }
 
@@ -2580,60 +2603,148 @@ impl ArchiveNavModel {
                 children.push(list_id);
             }
             PanelMode::MonitorPanel { snapshot, loading } => {
+                use crate::archive::MonitorTab;
+
+                let tab_bar = [
+                    MonitorTab::Sessions,
+                    MonitorTab::SlowQueries,
+                    MonitorTab::LockWaits,
+                    MonitorTab::TableBloat,
+                    MonitorTab::IndexUsage,
+                ]
+                .iter()
+                .map(|t| {
+                    if *t == snapshot.active_tab {
+                        format!("[{}]", t.label())
+                    } else {
+                        t.label().to_string()
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(" | ");
+
                 let heading_id = alloc();
                 let mut h = AkNode::new(AkRole::Heading);
                 h.set_label(if *loading {
                     "Monitor — loading…".to_string()
                 } else {
-                    format!(
-                        "Monitor — {} sessions, {} roles, cache hit {}",
-                        snapshot.sessions.len(),
-                        snapshot.roles.len(),
-                        snapshot
-                            .cache_hit
-                            .map(|r| format!("{:.1}%", r * 100.0))
-                            .unwrap_or_else(|| "n/a".to_string()),
-                    )
+                    format!("Monitor — {tab_bar}")
                 });
                 nodes.insert(heading_id, h);
                 children.push(heading_id);
 
-                // Sessions list
-                let list_id = alloc();
-                let mut list_items: Vec<AkNodeId> = Vec::new();
-                for s in &snapshot.sessions {
-                    let item_id = alloc();
-                    let mut item = AkNode::new(AkRole::ListItem);
-                    item.set_label(format!("pid={} {} [{}]", s.pid, s.app_name, s.state,));
-                    nodes.insert(item_id, item);
-                    list_items.push(item_id);
+                match snapshot.active_tab {
+                    MonitorTab::Sessions => {
+                        let list_id = alloc();
+                        let mut items: Vec<AkNodeId> = Vec::new();
+                        for s in &snapshot.sessions {
+                            let item_id = alloc();
+                            let mut item = AkNode::new(AkRole::ListItem);
+                            let dur = s
+                                .duration_ms
+                                .map(|ms| format!(" {}ms", ms))
+                                .unwrap_or_default();
+                            item.set_label(format!(
+                                "pid={} {} [{}]{}",
+                                s.pid, s.app_name, s.state, dur
+                            ));
+                            nodes.insert(item_id, item);
+                            items.push(item_id);
+                        }
+                        let mut list = AkNode::new(AkRole::List);
+                        list.set_label(format!(
+                            "Sessions ({}) — cache hit {}",
+                            snapshot.sessions.len(),
+                            snapshot
+                                .cache_hit
+                                .map(|r| format!("{:.1}%", r * 100.0))
+                                .unwrap_or_else(|| "n/a".to_string()),
+                        ));
+                        list.set_children(items);
+                        nodes.insert(list_id, list);
+                        children.push(list_id);
+                    }
+                    MonitorTab::SlowQueries => {
+                        let list_id = alloc();
+                        let mut items: Vec<AkNodeId> = Vec::new();
+                        for s in &snapshot.slow_queries {
+                            let item_id = alloc();
+                            let mut item = AkNode::new(AkRole::ListItem);
+                            let dur = s
+                                .duration_ms
+                                .map(|ms| format!(" {}ms", ms))
+                                .unwrap_or_default();
+                            let query = s
+                                .query
+                                .as_deref()
+                                .map(|q| {
+                                    let q = q.trim();
+                                    if q.len() > 60 {
+                                        format!(" — {}…", &q[..60])
+                                    } else {
+                                        format!(" — {q}")
+                                    }
+                                })
+                                .unwrap_or_default();
+                            item.set_label(format!("pid={} [{}]{}{query}", s.pid, s.state, dur));
+                            nodes.insert(item_id, item);
+                            items.push(item_id);
+                        }
+                        let mut list = AkNode::new(AkRole::List);
+                        list.set_label(format!("Slow Queries ({})", snapshot.slow_queries.len()));
+                        list.set_children(items);
+                        nodes.insert(list_id, list);
+                        children.push(list_id);
+                    }
+                    MonitorTab::LockWaits => {
+                        let list_id = alloc();
+                        let mut items: Vec<AkNodeId> = Vec::new();
+                        for (blocking, blocked) in &snapshot.lock_waits {
+                            let item_id = alloc();
+                            let mut item = AkNode::new(AkRole::ListItem);
+                            item.set_label(format!("pid {blocking} blocks pid {blocked}"));
+                            nodes.insert(item_id, item);
+                            items.push(item_id);
+                        }
+                        let mut list = AkNode::new(AkRole::List);
+                        list.set_label(format!("Lock Waits ({})", snapshot.lock_waits.len()));
+                        list.set_children(items);
+                        nodes.insert(list_id, list);
+                        children.push(list_id);
+                    }
+                    MonitorTab::TableBloat => {
+                        let list_id = alloc();
+                        let mut items: Vec<AkNodeId> = Vec::new();
+                        for (table, ratio) in &snapshot.table_bloat {
+                            let item_id = alloc();
+                            let mut item = AkNode::new(AkRole::ListItem);
+                            item.set_label(format!("{table} — bloat {:.1}%", ratio * 100.0));
+                            nodes.insert(item_id, item);
+                            items.push(item_id);
+                        }
+                        let mut list = AkNode::new(AkRole::List);
+                        list.set_label(format!("Table Bloat ({})", snapshot.table_bloat.len()));
+                        list.set_children(items);
+                        nodes.insert(list_id, list);
+                        children.push(list_id);
+                    }
+                    MonitorTab::IndexUsage => {
+                        let list_id = alloc();
+                        let mut items: Vec<AkNodeId> = Vec::new();
+                        for (index, scans) in &snapshot.index_usage {
+                            let item_id = alloc();
+                            let mut item = AkNode::new(AkRole::ListItem);
+                            item.set_label(format!("{index} — {scans} scans"));
+                            nodes.insert(item_id, item);
+                            items.push(item_id);
+                        }
+                        let mut list = AkNode::new(AkRole::List);
+                        list.set_label(format!("Index Usage ({})", snapshot.index_usage.len()));
+                        list.set_children(items);
+                        nodes.insert(list_id, list);
+                        children.push(list_id);
+                    }
                 }
-                let mut list = AkNode::new(AkRole::List);
-                list.set_label("sessions".to_string());
-                list.set_children(list_items);
-                nodes.insert(list_id, list);
-                children.push(list_id);
-
-                // Roles list
-                let roles_id = alloc();
-                let mut role_items: Vec<AkNodeId> = Vec::new();
-                for r in &snapshot.roles {
-                    let item_id = alloc();
-                    let mut item = AkNode::new(AkRole::ListItem);
-                    item.set_label(format!(
-                        "{}{}{} ",
-                        r.name,
-                        if r.superuser { " [superuser]" } else { "" },
-                        if r.can_login { " [login]" } else { "" },
-                    ));
-                    nodes.insert(item_id, item);
-                    role_items.push(item_id);
-                }
-                let mut roles_list = AkNode::new(AkRole::List);
-                roles_list.set_label("roles".to_string());
-                roles_list.set_children(role_items);
-                nodes.insert(roles_id, roles_list);
-                children.push(roles_id);
             }
             PanelMode::AdminPanel { snapshot, loading } => {
                 use crate::archive::AdminTab;

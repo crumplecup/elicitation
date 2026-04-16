@@ -911,13 +911,29 @@ async fn api_load_saved(
 
 // ── GET /api/monitor ─────────────────────────────────────────────────────────
 
+/// Optional schema query param for monitor endpoint.
+#[derive(serde::Deserialize)]
+struct MonitorSchemaQuery {
+    /// Schema for table-bloat and index-usage queries; defaults to `"public"`.
+    #[serde(default = "default_public_schema")]
+    schema: String,
+}
+
+fn default_public_schema() -> String {
+    "public".to_string()
+}
+
 /// Fetch live monitor data and transition the panel to `MonitorPanel`.
 ///
-/// Queries active sessions, roles, cache hit ratio, and backup labels from the
-/// active connection, then applies the resulting [`MonitorSnapshot`] to the
+/// Queries active sessions, roles, cache hit ratio, backup labels, slow
+/// queries, lock waits, table bloat, and index usage from the active
+/// connection, then applies the resulting [`MonitorSnapshot`] to the
 /// shared model before returning the updated content fragment.
-async fn api_monitor(State(state): State<AppState>) -> Result<Html<String>, ApiError> {
-    use crate::archive::types::MonitorSnapshot;
+async fn api_monitor(
+    State(state): State<AppState>,
+    Query(params): Query<MonitorSchemaQuery>,
+) -> Result<Html<String>, ApiError> {
+    use crate::archive::types::{MonitorSnapshot, MonitorTab};
     use elicit_db::{DbBackupManager, DbMonitor, DbRoleManager};
     let url = state.active_url().await.ok_or_else(ApiError::no_db)?;
     let backend = ArchiveDbBackend::connect(&url)
@@ -930,11 +946,26 @@ async fn api_monitor(State(state): State<AppState>) -> Result<Html<String>, ApiE
     let roles = backend.list_roles().await.map_err(ApiError::internal)?;
     let cache_hit = backend.cache_hit_ratio().await.ok();
     let backups = backend.list_backups().await.unwrap_or_default();
+    let slow_queries = backend.slow_queries(1_000).await.unwrap_or_default();
+    let lock_waits = backend.lock_waits().await.unwrap_or_default();
+    let table_bloat = backend
+        .table_bloat(&params.schema)
+        .await
+        .unwrap_or_default();
+    let index_usage = backend
+        .index_usage(&params.schema)
+        .await
+        .unwrap_or_default();
     let snapshot = MonitorSnapshot {
         sessions: stat.sessions,
         roles,
         cache_hit,
         backups,
+        slow_queries,
+        lock_waits,
+        table_bloat,
+        index_usage,
+        active_tab: MonitorTab::Sessions,
     };
     {
         let mut model = state.model.lock().await;

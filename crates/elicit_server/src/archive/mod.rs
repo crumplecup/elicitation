@@ -54,7 +54,8 @@ pub use types::{
     CompositeTypeDescriptor, ConnectionProfile, ConstraintDescriptor, ConstraintKind,
     DatabaseDescriptor, DdlDescriptor, DomainDescriptor, EnumDescriptor, ErdColumn, ErdDiagram,
     ErdEdge, ErdNode, ExplainNode, ExportFormat, ExportResult, FkAction, ForeignKeyDescriptor,
-    FunctionDescriptor, FunctionVolatility, IndexDescriptor, MonitorSnapshot, QueryHistoryEntry,
-    QueryResult, RowEditKind, RowEditState, SavedQuery, SchemaDescriptor, SequenceDescriptor,
-    StagedEdit, TableDescriptor, TableInspection, TableType, TriggerDescriptor, TriggerEvents,
+    FunctionDescriptor, FunctionVolatility, IndexDescriptor, MonitorSnapshot, MonitorTab,
+    QueryHistoryEntry, QueryResult, RowEditKind, RowEditState, SavedQuery, SchemaDescriptor,
+    SequenceDescriptor, StagedEdit, TableDescriptor, TableInspection, TableType, TriggerDescriptor,
+    TriggerEvents,
 };
