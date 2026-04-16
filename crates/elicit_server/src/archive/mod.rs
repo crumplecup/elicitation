@@ -52,9 +52,9 @@ pub use plugins::{
 pub use types::{
     AdminSnapshot, AdminTab, BackendKind, ColumnDescriptor, ColumnStats, CompositeTypeAttribute,
     CompositeTypeDescriptor, ConnectionProfile, ConstraintDescriptor, ConstraintKind,
-    DatabaseDescriptor, DdlDescriptor, DomainDescriptor, EnumDescriptor, ExplainNode, ExportFormat,
-    ExportResult, FkAction, ForeignKeyDescriptor, FunctionDescriptor, FunctionVolatility,
-    IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult, RowEditKind, RowEditState,
-    SavedQuery, SchemaDescriptor, SequenceDescriptor, StagedEdit, TableDescriptor, TableInspection,
-    TableType, TriggerDescriptor, TriggerEvents,
+    DatabaseDescriptor, DdlDescriptor, DomainDescriptor, EnumDescriptor, ErdColumn, ErdDiagram,
+    ErdEdge, ErdNode, ExplainNode, ExportFormat, ExportResult, FkAction, ForeignKeyDescriptor,
+    FunctionDescriptor, FunctionVolatility, IndexDescriptor, MonitorSnapshot, QueryHistoryEntry,
+    QueryResult, RowEditKind, RowEditState, SavedQuery, SchemaDescriptor, SequenceDescriptor,
+    StagedEdit, TableDescriptor, TableInspection, TableType, TriggerDescriptor, TriggerEvents,
 };

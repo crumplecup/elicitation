@@ -150,6 +150,8 @@ pub enum ArchiveAction {
     OpenMonitor,
     /// Open or close the admin panel (roles, backups, settings).
     OpenAdmin,
+    /// Open or close the ERD (entity-relationship diagram) for the selected schema.
+    OpenErd,
     /// Cycle forward to the next admin panel tab.
     AdminTabNext,
     /// Cycle backward to the previous admin panel tab.
@@ -314,6 +316,7 @@ impl ArchiveKeyMap {
             KeyMapEntry::nav(p(K::F(2)), A::OpenSavedBrowser, "F2", "Saved", true),
             KeyMapEntry::nav(p(K::Char('m')), A::OpenMonitor, "m", "Monitor", true),
             KeyMapEntry::nav(p(K::Char('a')), A::OpenAdmin, "a", "Admin", true),
+            KeyMapEntry::nav(p(K::Char('g')), A::OpenErd, "g", "Graph/ERD", true),
             KeyMapEntry::nav(p(K::Char(']')), A::AdminTabNext, "]", "Next tab", true),
             KeyMapEntry::nav(p(K::Char('[')), A::AdminTabPrev, "[", "Prev tab", true),
             KeyMapEntry::nav(p(K::Char('x')), A::ToggleExportPicker, "x", "Export", true),

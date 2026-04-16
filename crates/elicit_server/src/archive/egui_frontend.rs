@@ -259,6 +259,9 @@ impl ArchiveEguiApp {
                 PanelEvent::AdminReady(snapshot) => {
                     self.model.apply_admin_snapshot(snapshot);
                 }
+                PanelEvent::ErdReady(diagram) => {
+                    self.model.apply_erd_diagram(diagram);
+                }
             }
         }
     }
@@ -512,6 +515,11 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
             }
             A::AdminTabNext => self.model.admin_tab_next(),
             A::AdminTabPrev => self.model.admin_tab_prev(),
+            A::OpenErd => {
+                if let Some(req) = self.model.toggle_erd_panel() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
             A::ToggleExportPicker => {
                 if self.model.panel.is_data_grid() {
                     self.model.toggle_export_picker();
@@ -1041,6 +1049,16 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                                     active_tab: AdminTab::Roles,
                                 })
                             }
+                            Err(e) => PanelEvent::FetchError(e.to_string()),
+                        }
+                    }
+                    FetchRequest::FetchErd { schema } => {
+                        use crate::archive::nav_tree::fetch_erd;
+                        match ArchiveDbBackend::connect(url_str).await {
+                            Ok(backend) => match fetch_erd(&backend, url_str, &schema).await {
+                                Ok(diagram) => PanelEvent::ErdReady(diagram),
+                                Err(e) => PanelEvent::FetchError(e.to_string()),
+                            },
                             Err(e) => PanelEvent::FetchError(e.to_string()),
                         }
                     }

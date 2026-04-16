@@ -279,6 +279,9 @@ impl TuiApp {
             PanelEvent::AdminReady(snapshot) => {
                 self.model.apply_admin_snapshot(snapshot);
             }
+            PanelEvent::ErdReady(diagram) => {
+                self.model.apply_erd_diagram(diagram);
+            }
         }
     }
 }
@@ -316,6 +319,11 @@ impl crate::archive::ArchiveFrontend for TuiApp {
             }
             A::OpenAdmin => {
                 if let Some(req) = self.model.toggle_admin_panel() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
+            A::OpenErd => {
+                if let Some(req) = self.model.toggle_erd_panel() {
                     let _ = self.req_tx.try_send(req);
                 }
             }
@@ -641,6 +649,20 @@ fn spawn_fetch_task(
                                 active_tab: AdminTab::Roles,
                             })
                         }
+                        Err(e) => PanelEvent::FetchError(e.to_string()),
+                    };
+                    let _ = event_tx.send(ev).await;
+                }
+                FetchRequest::FetchErd { schema } => {
+                    use crate::archive::nav_tree::fetch_erd;
+                    let ev = match fetch_erd(
+                        &ArchiveDbBackend::connect(url).await.unwrap(),
+                        url,
+                        &schema,
+                    )
+                    .await
+                    {
+                        Ok(diagram) => PanelEvent::ErdReady(diagram),
                         Err(e) => PanelEvent::FetchError(e.to_string()),
                     };
                     let _ = event_tx.send(ev).await;

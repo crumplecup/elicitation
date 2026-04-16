@@ -428,3 +428,112 @@ async fn fetch_pg_types(
 
     (enums, domains, composites)
 }
+
+// ── ERD fetch ─────────────────────────────────────────────────────────────────
+
+/// Build an [`ErdDiagram`] for `schema` by querying all tables and their FK
+/// relationships.
+///
+/// Uses [`DbTableManager::list_tables`] for node data and a raw
+/// `information_schema` FK query for edge data.
+#[instrument(skip(backend))]
+pub async fn fetch_erd(
+    backend: &ArchiveDbBackend,
+    url: &str,
+    schema: &str,
+) -> ArchiveResult<crate::archive::ErdDiagram> {
+    use crate::archive::{ErdColumn, ErdDiagram, ErdEdge, ErdNode};
+
+    // ── Nodes ──────────────────────────────────────────────────────────────
+    let tables = backend
+        .list_tables(schema)
+        .await
+        .map_err(|e| ArchiveError::new(ArchiveErrorKind::Query(e.to_string())))?;
+
+    let nodes: Vec<ErdNode> = tables
+        .iter()
+        .map(|t| {
+            let columns = t
+                .columns
+                .iter()
+                .map(|c| ErdColumn {
+                    name: c.name.clone(),
+                    sql_type: c.ty.clone(),
+                    is_pk: c.primary_key,
+                    is_fk: false, // enriched below
+                })
+                .collect();
+            ErdNode {
+                schema: schema.to_string(),
+                table: t.name.clone(),
+                columns,
+            }
+        })
+        .collect();
+
+    // ── Edges (FK) — PostgreSQL only ───────────────────────────────────────
+    let edges = if BackendKind::from_url(url) == BackendKind::Postgres {
+        sqlx::any::install_default_drivers();
+        let pool = sqlx::any::AnyPoolOptions::new()
+            .max_connections(2)
+            .connect(url)
+            .await
+            .ok();
+
+        if let Some(pool) = pool {
+            let sql = r"
+                SELECT
+                    tc.constraint_name,
+                    tc.table_schema         AS from_schema,
+                    tc.table_name           AS from_table,
+                    kcu.column_name         AS from_column,
+                    ccu.table_schema        AS to_schema,
+                    ccu.table_name          AS to_table,
+                    ccu.column_name         AS to_column
+                FROM information_schema.table_constraints tc
+                JOIN information_schema.key_column_usage kcu
+                     ON tc.constraint_name = kcu.constraint_name
+                    AND tc.table_schema    = kcu.table_schema
+                    AND tc.table_name      = kcu.table_name
+                JOIN information_schema.referential_constraints rc
+                     ON tc.constraint_name    = rc.constraint_name
+                    AND tc.constraint_schema  = rc.constraint_schema
+                JOIN information_schema.constraint_column_usage ccu
+                     ON rc.unique_constraint_name   = ccu.constraint_name
+                    AND rc.unique_constraint_schema = ccu.constraint_schema
+                WHERE tc.constraint_type = 'FOREIGN KEY'
+                  AND tc.table_schema = $1
+                ORDER BY tc.constraint_name, kcu.ordinal_position
+            ";
+            let rows = sqlx::query(sql)
+                .bind(schema)
+                .fetch_all(&pool)
+                .await
+                .unwrap_or_default();
+            pool.close().await;
+            rows.iter()
+                .filter_map(|r| {
+                    Some(ErdEdge {
+                        constraint_name: r.try_get::<String, _>("constraint_name").ok()?,
+                        from_schema: r.try_get::<String, _>("from_schema").ok()?,
+                        from_table: r.try_get::<String, _>("from_table").ok()?,
+                        from_column: r.try_get::<String, _>("from_column").ok()?,
+                        to_schema: r.try_get::<String, _>("to_schema").ok()?,
+                        to_table: r.try_get::<String, _>("to_table").ok()?,
+                        to_column: r.try_get::<String, _>("to_column").ok()?,
+                    })
+                })
+                .collect()
+        } else {
+            vec![]
+        }
+    } else {
+        vec![]
+    };
+
+    Ok(ErdDiagram {
+        schema: schema.to_string(),
+        nodes,
+        edges,
+    })
+}

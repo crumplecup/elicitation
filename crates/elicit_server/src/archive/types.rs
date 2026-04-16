@@ -1035,3 +1035,62 @@ pub struct AdminSnapshot {
     /// Currently active admin tab.
     pub active_tab: AdminTab,
 }
+
+// ── ERD types ─────────────────────────────────────────────────────────────────
+
+/// A single column in an ERD node.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct ErdColumn {
+    /// Column name.
+    pub name: String,
+    /// SQL data type.
+    pub sql_type: String,
+    /// Whether the column is part of the primary key.
+    pub is_pk: bool,
+    /// Whether the column participates in a foreign key.
+    pub is_fk: bool,
+}
+
+/// A table node in an ERD diagram.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct ErdNode {
+    /// Owning schema.
+    pub schema: String,
+    /// Table name.
+    pub table: String,
+    /// Ordered list of columns.
+    pub columns: Vec<ErdColumn>,
+}
+
+/// A directed foreign-key edge between two ERD nodes.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct ErdEdge {
+    /// Constraint name.
+    pub constraint_name: String,
+    /// Source schema.
+    pub from_schema: String,
+    /// Source table.
+    pub from_table: String,
+    /// Source column.
+    pub from_column: String,
+    /// Target schema.
+    pub to_schema: String,
+    /// Target table.
+    pub to_table: String,
+    /// Target column.
+    pub to_column: String,
+}
+
+/// A complete entity-relationship diagram for a single schema.
+///
+/// Produced by [`fetch_erd`](crate::archive::nav_tree::fetch_erd) and
+/// cached in [`PanelMode::ErdPanel`].
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct ErdDiagram {
+    /// Schema this diagram covers.
+    pub schema: String,
+    /// Table nodes (one per table in the schema).
+    pub nodes: Vec<ErdNode>,
+    /// FK edges between nodes.
+    pub edges: Vec<ErdEdge>,
+}

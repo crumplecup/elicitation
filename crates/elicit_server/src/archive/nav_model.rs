@@ -23,7 +23,7 @@ use std::collections::HashMap;
 use elicit_accesskit::KeyBinding;
 
 use crate::archive::{
-    AdminSnapshot, AdminTab, ColumnStats, ConnectionProfile, ExplainNode, ExportFormat,
+    AdminSnapshot, AdminTab, ColumnStats, ConnectionProfile, ErdDiagram, ExplainNode, ExportFormat,
     MonitorSnapshot, QueryHistoryEntry, QueryResult, RowEditState, SavedQuery, StagedEdit,
     TableInspection,
     actions::{ArchiveKeyMap, KeyMapMode},
@@ -165,6 +165,15 @@ pub enum PanelMode {
         /// Whether a fetch is currently in progress.
         loading: bool,
     },
+    /// Entity-relationship diagram panel for a single schema.
+    ErdPanel {
+        /// Schema being visualised.
+        schema: String,
+        /// Cached ERD diagram; empty until first fetch completes.
+        diagram: ErdDiagram,
+        /// Whether a fetch is currently in progress.
+        loading: bool,
+    },
 }
 
 impl Default for PanelMode {
@@ -250,6 +259,11 @@ pub enum FetchRequest {
     FetchMonitor,
     /// Fetch an administration snapshot (roles, backups/WAL, settings, extensions).
     FetchAdmin,
+    /// Fetch an ERD diagram for the given schema.
+    FetchErd {
+        /// Schema to diagram.
+        schema: String,
+    },
 }
 
 /// Response sent from the background fetch task back to the event loop.
@@ -323,6 +337,8 @@ pub enum PanelEvent {
     MonitorReady(MonitorSnapshot),
     /// Administration snapshot ready.
     AdminReady(AdminSnapshot),
+    /// ERD diagram ready.
+    ErdReady(ErdDiagram),
 }
 
 // ── ArchiveNavModel ───────────────────────────────────────────────────────────
@@ -1091,6 +1107,56 @@ impl ArchiveNavModel {
     pub fn admin_tab_prev(&mut self) {
         if let PanelMode::AdminPanel { snapshot, .. } = &mut self.panel {
             snapshot.active_tab = snapshot.active_tab.prev();
+        }
+    }
+
+    /// Return the name of the currently selected schema (works for schema,
+    /// table, function, sequence, and type nodes).
+    pub fn selected_schema_name(&self) -> Option<String> {
+        use crate::archive::nav_model::FlatItem;
+        match self.selected()? {
+            FlatItem::Schema(si) => Some(self.schemas[si].entry.name.clone()),
+            FlatItem::Table(si, _)
+            | FlatItem::FunctionsGroup(si)
+            | FlatItem::SequencesGroup(si)
+            | FlatItem::TypesGroup(si)
+            | FlatItem::Function(si, _)
+            | FlatItem::Sequence(si, _)
+            | FlatItem::TypeEntry(si, _, _) => Some(self.schemas[si].entry.name.clone()),
+        }
+    }
+
+    /// Open the ERD panel for the currently selected schema, or close it if
+    /// already open.
+    ///
+    /// Returns `Some(FetchRequest::FetchErd)` when opening so the caller can
+    /// dispatch a background fetch.  Returns `None` on close.
+    pub fn toggle_erd_panel(&mut self) -> Option<FetchRequest> {
+        let schema = self.selected_schema_name()?;
+        if matches!(self.panel, PanelMode::ErdPanel { .. }) {
+            self.panel = PanelMode::ColumnDetail;
+            return None;
+        }
+        self.panel = PanelMode::ErdPanel {
+            schema: schema.clone(),
+            diagram: ErdDiagram::default(),
+            loading: true,
+        };
+        Some(FetchRequest::FetchErd { schema })
+    }
+
+    /// Apply a completed ERD diagram to the panel.
+    ///
+    /// No-ops if the panel is no longer in `ErdPanel` mode.
+    pub fn apply_erd_diagram(&mut self, diagram: ErdDiagram) {
+        if let PanelMode::ErdPanel {
+            diagram: d,
+            loading,
+            ..
+        } = &mut self.panel
+        {
+            *d = diagram;
+            *loading = false;
         }
     }
 
@@ -2409,6 +2475,96 @@ impl ArchiveNavModel {
                         nodes.insert(settings_id, settings_list);
                         children.push(settings_id);
                     }
+                }
+            }
+            PanelMode::ErdPanel {
+                schema,
+                diagram,
+                loading,
+            } => {
+                use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
+
+                // Heading
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label(if *loading {
+                    format!("ERD — {} — loading…", schema)
+                } else {
+                    format!(
+                        "ERD — {} — {} tables, {} relationships",
+                        schema,
+                        diagram.nodes.len(),
+                        diagram.edges.len()
+                    )
+                });
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                // Table nodes list
+                let tables_list_id = alloc();
+                let mut table_items: Vec<AkNodeId> = Vec::new();
+                for node_entry in &diagram.nodes {
+                    // Table header item
+                    let table_id = alloc();
+                    let mut table_node = AkNode::new(AkRole::TreeItem);
+                    table_node.set_label(format!(
+                        "{}  ({} cols)",
+                        node_entry.table,
+                        node_entry.columns.len()
+                    ));
+                    // Column children
+                    let mut col_ids: Vec<AkNodeId> = Vec::new();
+                    for col in &node_entry.columns {
+                        let col_id = alloc();
+                        let mut col_node = AkNode::new(AkRole::ListItem);
+                        let flags: Vec<&str> =
+                            [col.is_pk.then_some("PK"), col.is_fk.then_some("FK")]
+                                .into_iter()
+                                .flatten()
+                                .collect();
+                        col_node.set_label(if flags.is_empty() {
+                            format!("  {} : {}", col.name, col.sql_type)
+                        } else {
+                            format!("  {} : {} [{}]", col.name, col.sql_type, flags.join(", "))
+                        });
+                        nodes.insert(col_id, col_node);
+                        col_ids.push(col_id);
+                    }
+                    if !col_ids.is_empty() {
+                        table_node.set_children(col_ids);
+                    }
+                    nodes.insert(table_id, table_node);
+                    table_items.push(table_id);
+                }
+                let mut tables_list = AkNode::new(AkRole::Tree);
+                tables_list.set_label("Tables".to_string());
+                tables_list.set_children(table_items);
+                nodes.insert(tables_list_id, tables_list);
+                children.push(tables_list_id);
+
+                // Relationships list
+                if !diagram.edges.is_empty() {
+                    let edges_list_id = alloc();
+                    let mut edge_items: Vec<AkNodeId> = Vec::new();
+                    for edge in &diagram.edges {
+                        let edge_id = alloc();
+                        let mut edge_node = AkNode::new(AkRole::ListItem);
+                        edge_node.set_label(format!(
+                            "{}.{} → {}.{} ({})",
+                            edge.from_table,
+                            edge.from_column,
+                            edge.to_table,
+                            edge.to_column,
+                            edge.constraint_name,
+                        ));
+                        nodes.insert(edge_id, edge_node);
+                        edge_items.push(edge_id);
+                    }
+                    let mut edges_list = AkNode::new(AkRole::List);
+                    edges_list.set_label("Relationships".to_string());
+                    edges_list.set_children(edge_items);
+                    nodes.insert(edges_list_id, edges_list);
+                    children.push(edges_list_id);
                 }
             }
         }

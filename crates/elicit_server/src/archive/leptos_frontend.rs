@@ -38,6 +38,7 @@
 //! | GET | `/api/admin` | Admin snapshot → AdminPanel (content fragment) |
 //! | GET | `/api/admin-tab-next` | Cycle admin tab forward |
 //! | GET | `/api/admin-tab-prev` | Cycle admin tab backward |
+//! | GET | `/api/erd` | ERD diagram for `?schema=` → ErdPanel (content fragment) |
 
 use std::sync::Arc;
 
@@ -1007,6 +1008,35 @@ async fn api_admin_tab_prev(State(state): State<AppState>) -> Html<String> {
     Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
 }
 
+// ── GET /api/erd ──────────────────────────────────────────────────────────────
+
+/// Query params for `GET /api/erd`.
+#[derive(serde::Deserialize)]
+struct ErdQuery {
+    /// Schema to diagram.
+    schema: String,
+}
+
+/// Fetch the ERD diagram for the given `?schema=` and render `ErdPanel`.
+async fn api_erd(
+    State(state): State<AppState>,
+    Query(params): Query<ErdQuery>,
+) -> Result<Html<String>, ApiError> {
+    use crate::archive::nav_tree::fetch_erd;
+    let url = state.active_url().await.ok_or_else(ApiError::no_db)?;
+    let backend = ArchiveDbBackend::connect(&url)
+        .await
+        .map_err(ApiError::internal)?;
+    let diagram = fetch_erd(&backend, &url, &params.schema)
+        .await
+        .map_err(ApiError::internal)?;
+    {
+        let mut model = state.model.lock().await;
+        model.apply_erd_diagram(diagram);
+    }
+    Ok(Html(content_html(&state).map_err(ApiError::internal)?))
+}
+
 // ── GET /api/open-help ────────────────────────────────────────────────────────
 
 async fn api_open_help(State(state): State<AppState>) -> Html<String> {
@@ -1150,6 +1180,10 @@ fn dispatch_action_on_model(
         }
         A::AdminTabNext => model.admin_tab_next(),
         A::AdminTabPrev => model.admin_tab_prev(),
+        A::OpenErd => {
+            // Transition to loading state; /api/erd HTMX call supplies the diagram.
+            let _ = model.toggle_erd_panel();
+        }
         A::ToggleExportPicker => {
             if model.panel.is_data_grid() {
                 model.toggle_export_picker();
@@ -1212,6 +1246,7 @@ fn build_router(state: AppState) -> Router {
         .route("/api/admin", get(api_admin))
         .route("/api/admin-tab-next", get(api_admin_tab_next))
         .route("/api/admin-tab-prev", get(api_admin_tab_prev))
+        .route("/api/erd", get(api_erd))
         .route("/api/open-help", get(api_open_help))
         .route("/api/history-panel", get(api_history_panel))
         .route("/api/saved-panel", get(api_saved_panel))
