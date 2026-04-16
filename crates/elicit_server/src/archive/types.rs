@@ -488,7 +488,7 @@ pub struct ColumnStats {
 ///
 /// Populated by parsing the JSON array returned by PostgreSQL.
 /// Nesting mirrors the `Plans` arrays in the EXPLAIN output.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ExplainNode {
     /// Node type, e.g. `"Seq Scan"`, `"Hash Join"`, `"Index Scan"`.
     pub node_type: String,
@@ -512,7 +512,8 @@ pub struct ExplainNode {
     pub actual_rows: Option<i64>,
     /// Number of loops executed.
     pub actual_loops: Option<i64>,
-    /// Child plan nodes.
+    /// Child plan nodes (skipped during elicitation; populated from database JSON).
+    #[skip]
     pub children: Vec<ExplainNode>,
 }
 

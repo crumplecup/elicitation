@@ -825,7 +825,7 @@ fn extract_prompts(
 }
 
 /// Check if field has #[skip] attribute.
-fn has_skip_attr(attrs: &[syn::Attribute]) -> bool {
+pub(crate) fn has_skip_attr(attrs: &[syn::Attribute]) -> bool {
     attrs.iter().any(|attr| attr.path().is_ident("skip"))
 }
 

@@ -5,7 +5,7 @@
 //! `Vec<AkNodeEntry>` that feeds directly into `elicit_ui` frontends.
 
 use elicit_accesskit::{NodeId, NodeJson};
-use elicitation::{ElicitPlugin, elicit_tool};
+use elicitation::{Elicit, ElicitPlugin, elicit_tool};
 use rmcp::ErrorData;
 use rmcp::model::CallToolResult;
 use schemars::JsonSchema;
@@ -236,10 +236,10 @@ pub struct DisplayColumnStatsParams {
 }
 
 /// Parameters for `archive_display__explain_node`.
-#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct DisplayExplainNodeParams {
-    /// ExplainNode serialised as a JSON string (recursive type cannot be inlined).
-    pub node_json: String,
+    /// ExplainNode plan node to render.
+    pub node: ExplainNode,
     /// Display mode: `"TreeNode"` (only mode).
     pub mode: Option<String>,
 }
@@ -515,19 +515,16 @@ async fn display_column_stats(p: DisplayColumnStatsParams) -> Result<CallToolRes
     plugin = "archive_display",
     name = "archive_display__explain_node",
     description = "Render an ExplainNode plan tree as an AccessKit node tree. \
-                   Pass the ExplainNode serialised as a JSON string in `node_json`. \
                    Mode: TreeNode (only mode)."
 )]
 #[instrument]
 async fn display_explain_node(p: DisplayExplainNodeParams) -> Result<CallToolResult, ErrorData> {
-    let node: ExplainNode = serde_json::from_str(&p.node_json)
-        .map_err(|e| ErrorData::invalid_params(e.to_string(), None))?;
     let mode: ExplainNodeMode = p
         .mode
         .as_deref()
         .and_then(|s| serde_json::from_value(serde_json::Value::String(s.to_string())).ok())
         .unwrap_or_default();
-    let (_root, nodes) = node.to_ak_nodes(&mode, 1);
+    let (_root, nodes) = p.node.to_ak_nodes(&mode, 1);
     json_result(&to_entries(nodes))
 }
 

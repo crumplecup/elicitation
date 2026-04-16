@@ -140,6 +140,8 @@ use proc_macro2::{Delimiter, Group, Punct, Spacing, TokenStream as TokenStream2,
 use quote::{format_ident, quote};
 use syn::{Data, DeriveInput, Fields};
 
+use crate::struct_impl::has_skip_attr;
+
 /// Expand `#[derive(ToCodeLiteral)]` for a struct or enum.
 pub fn expand(input: TokenStream) -> TokenStream {
     let input = syn::parse_macro_input!(input as DeriveInput);
@@ -193,9 +195,17 @@ pub fn generate_to_code_literal_impl(
         }
     };
 
-    // Collect field types to add ToCodeLiteral bounds in where clause
+    // Collect field types to add ToCodeLiteral bounds in where clause.
+    // Skip fields marked with `#[skip]` — those use Default::default() and
+    // don't need a ToCodeLiteral bound (and including them can cause overflow
+    // for recursive types like `children: Vec<Self>`).
     let field_types: Vec<syn::Type> = match data {
-        syn::Data::Struct(data) => data.fields.iter().map(|f| f.ty.clone()).collect(),
+        syn::Data::Struct(data) => data
+            .fields
+            .iter()
+            .filter(|f| !has_skip_attr(&f.attrs))
+            .map(|f| f.ty.clone())
+            .collect(),
         syn::Data::Enum(data) => data
             .variants
             .iter()
@@ -286,17 +296,43 @@ fn wrap_in_quote(inner: TokenStream2) -> TokenStream2 {
 }
 
 /// Generate body for a struct (named, tuple, or unit).
+///
+/// Fields marked `#[skip]` emit `Default::default()` in the reconstructed
+/// literal rather than calling `ToCodeLiteral::to_code_literal`, so their
+/// types don't need a `ToCodeLiteral` bound (and recursive types like
+/// `children: Vec<Self>` don't overflow the trait solver).
 fn gen_struct_body(name: &syn::Ident, fields: &Fields) -> TokenStream2 {
     match fields {
         Fields::Named(named) => {
-            let field_names: Vec<_> = named
-                .named
+            // Partition into elicited and skipped fields.
+            let all_fields: Vec<_> = named.named.iter().collect();
+            let field_names: Vec<_> = all_fields
                 .iter()
                 .map(|f| f.ident.as_ref().expect("named field"))
                 .collect();
             let local_vars: Vec<_> = field_names
                 .iter()
                 .map(|f| format_ident!("__tcl_{f}"))
+                .collect();
+
+            // For each field, generate the `let __tcl_X = ...;` binding.
+            let bindings: Vec<TokenStream2> = all_fields
+                .iter()
+                .zip(field_names.iter())
+                .zip(local_vars.iter())
+                .map(|((field, fname), lvar)| {
+                    if has_skip_attr(&field.attrs) {
+                        // Skipped: emit `Default::default()` as a token stream literal.
+                        quote! {
+                            let #lvar = ::elicitation::quote::quote! { Default::default() };
+                        }
+                    } else {
+                        quote! {
+                            let #lvar =
+                                ::elicitation::emit_code::ToCodeLiteral::to_code_literal(&self.#fname);
+                        }
+                    }
+                })
                 .collect();
 
             let fields_pattern = build_named_fields_pattern(&field_names, &local_vars);
@@ -306,10 +342,7 @@ fn gen_struct_body(name: &syn::Ident, fields: &Fields) -> TokenStream2 {
             let quote_call = wrap_in_quote(inner);
 
             quote! {
-                #(
-                    let #local_vars =
-                        ::elicitation::emit_code::ToCodeLiteral::to_code_literal(&self.#field_names);
-                )*
+                #( #bindings )*
                 #quote_call
             }
         }
