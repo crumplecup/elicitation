@@ -23,8 +23,8 @@ use std::collections::HashMap;
 use elicit_accesskit::{KeyBinding, StatusBarDescriptor};
 
 use crate::archive::{
-    ColumnStats, ExplainNode, ExportFormat, QueryHistoryEntry, QueryResult, SavedQuery,
-    TableInspection,
+    ColumnStats, ExplainNode, ExportFormat, QueryHistoryEntry, QueryResult, RowEditState,
+    SavedQuery, StagedEdit, TableInspection,
     nav_tree::{NavTree, SchemaEntry},
 };
 
@@ -68,6 +68,12 @@ pub enum PanelMode {
         result: QueryResult,
         /// Current page index (0-based).
         page: u32,
+        /// Row cursor within the current page (0-based).
+        grid_row: usize,
+        /// Column cursor within the current page (0-based).
+        grid_col: usize,
+        /// Staged row edits awaiting commit, or `None` when not in edit mode.
+        edit_state: Option<RowEditState>,
     },
     /// A data fetch is in progress (spinner state).
     Loading {
@@ -869,6 +875,349 @@ impl ArchiveNavModel {
         self.rebuild_flat();
     }
 
+    // ── Phase 3.1 — Inline Row Edit ──────────────────────────────────────────
+
+    /// Move the data-grid row cursor up one row (wraps at top).
+    ///
+    /// Returns `false` if the active panel is not a `DataGrid`.
+    pub fn grid_row_up(&mut self) -> bool {
+        if let PanelMode::DataGrid {
+            result, grid_row, ..
+        } = &mut self.panel
+        {
+            if *grid_row > 0 {
+                *grid_row -= 1;
+            } else {
+                *grid_row = result.rows.rows.len().saturating_sub(1);
+            }
+            return true;
+        }
+        false
+    }
+
+    /// Move the data-grid row cursor down one row (wraps at bottom).
+    ///
+    /// Returns `false` if the active panel is not a `DataGrid`.
+    pub fn grid_row_down(&mut self) -> bool {
+        if let PanelMode::DataGrid {
+            result, grid_row, ..
+        } = &mut self.panel
+        {
+            let max = result.rows.rows.len().saturating_sub(1);
+            *grid_row = if *grid_row >= max { 0 } else { *grid_row + 1 };
+            return true;
+        }
+        false
+    }
+
+    /// Move the data-grid column cursor left one column (wraps).
+    ///
+    /// Returns `false` if the active panel is not a `DataGrid`.
+    pub fn grid_col_left(&mut self) -> bool {
+        if let PanelMode::DataGrid {
+            result, grid_col, ..
+        } = &mut self.panel
+        {
+            if *grid_col > 0 {
+                *grid_col -= 1;
+            } else {
+                *grid_col = result.columns.len().saturating_sub(1);
+            }
+            return true;
+        }
+        false
+    }
+
+    /// Move the data-grid column cursor right one column (wraps).
+    ///
+    /// Returns `false` if the active panel is not a `DataGrid`.
+    pub fn grid_col_right(&mut self) -> bool {
+        if let PanelMode::DataGrid {
+            result, grid_col, ..
+        } = &mut self.panel
+        {
+            let max = result.columns.len().saturating_sub(1);
+            *grid_col = if *grid_col >= max { 0 } else { *grid_col + 1 };
+            return true;
+        }
+        false
+    }
+
+    /// Enter edit mode: create a [`RowEditState`] on the current `DataGrid`.
+    ///
+    /// Returns `false` if the active panel is not a `DataGrid` or edit mode is
+    /// already active.
+    pub fn begin_edit_mode(&mut self) -> bool {
+        if let PanelMode::DataGrid { edit_state, .. } = &mut self.panel {
+            if edit_state.is_none() {
+                *edit_state = Some(RowEditState::new());
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Start typing into the currently selected cell.
+    ///
+    /// Pre-fills the input buffer with the cell's current displayed value so
+    /// the user can edit it in place.  Returns `false` if no edit session is
+    /// active or the cursor is out of range.
+    pub fn begin_cell_edit(&mut self) -> bool {
+        if let PanelMode::DataGrid {
+            result,
+            grid_row,
+            grid_col,
+            edit_state: Some(es),
+            ..
+        } = &mut self.panel
+        {
+            if es.editing_cell.is_some() {
+                return false; // already editing
+            }
+            let row_idx = *grid_row;
+            let col_idx = *grid_col;
+            if let Some(row) = result.rows.rows.get(row_idx) {
+                if let Some((_, val)) = row.0.get(col_idx) {
+                    es.editing_cell = Some((row_idx, col_idx));
+                    es.input_buffer = format!("{val:?}");
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
+    /// Append a character to the in-progress cell edit buffer.
+    pub fn cell_edit_push(&mut self, ch: char) {
+        if let PanelMode::DataGrid {
+            edit_state: Some(es),
+            ..
+        } = &mut self.panel
+        {
+            if es.editing_cell.is_some() {
+                es.input_buffer.push(ch);
+            } else if es.inserting_row.is_some() {
+                es.input_buffer.push(ch);
+            }
+        }
+    }
+
+    /// Delete the last character from the in-progress cell edit buffer.
+    pub fn cell_edit_pop(&mut self) {
+        if let PanelMode::DataGrid {
+            edit_state: Some(es),
+            ..
+        } = &mut self.panel
+        {
+            if es.editing_cell.is_some() || es.inserting_row.is_some() {
+                es.input_buffer.pop();
+            }
+        }
+    }
+
+    /// Finalise the in-progress cell edit and add it to `pending_edits`.
+    ///
+    /// The primary-key values are derived from all columns whose
+    /// [`ColumnDescriptor::is_primary_key`] flag is `true` in the current result.
+    ///
+    /// Returns `false` if no cell edit was in progress.
+    pub fn stage_cell_edit(&mut self) -> bool {
+        if let PanelMode::DataGrid {
+            schema,
+            table,
+            result,
+            edit_state: Some(es),
+            ..
+        } = &mut self.panel
+        {
+            let Some((row_idx, col_idx)) = es.editing_cell.take() else {
+                return false;
+            };
+            let new_value = std::mem::take(&mut es.input_buffer);
+            let Some(row) = result.rows.rows.get(row_idx) else {
+                return false;
+            };
+            let Some(col_desc) = result.columns.get(col_idx) else {
+                return false;
+            };
+
+            let pk_values: Vec<(String, String)> = result
+                .columns
+                .iter()
+                .zip(row.0.iter())
+                .filter(|(c, _)| c.is_primary_key)
+                .map(|(c, (_, v))| (c.name.clone(), format!("{v:?}")))
+                .collect();
+
+            es.pending_edits.push(StagedEdit {
+                schema: schema.clone(),
+                table: table.clone(),
+                kind: crate::archive::RowEditKind::Update {
+                    pk_values,
+                    column: col_desc.name.clone(),
+                    new_value,
+                },
+            });
+            return true;
+        }
+        false
+    }
+
+    /// Enter new-row insertion mode: prepare an empty form with one slot per column.
+    ///
+    /// Returns `false` if no edit session is active or insertion is already in progress.
+    pub fn begin_insert_row(&mut self) -> bool {
+        if let PanelMode::DataGrid {
+            result,
+            edit_state: Some(es),
+            ..
+        } = &mut self.panel
+        {
+            if es.inserting_row.is_some() {
+                return false;
+            }
+            let form: Vec<(String, String)> = result
+                .columns
+                .iter()
+                .map(|c| (c.name.clone(), String::new()))
+                .collect();
+            es.inserting_row = Some(form);
+            es.insert_col_cursor = 0;
+            es.input_buffer.clear();
+            return true;
+        }
+        false
+    }
+
+    /// Advance to the next column in the new-row insertion form.
+    ///
+    /// Saves the current `input_buffer` into the current column slot.
+    /// Returns `true` when the cursor wrapped around (all columns filled once).
+    pub fn insert_row_next_col(&mut self) -> bool {
+        if let PanelMode::DataGrid {
+            edit_state: Some(es),
+            ..
+        } = &mut self.panel
+        {
+            if let Some(form) = &mut es.inserting_row {
+                let cursor = es.insert_col_cursor;
+                if let Some(slot) = form.get_mut(cursor) {
+                    slot.1 = std::mem::take(&mut es.input_buffer);
+                }
+                es.insert_col_cursor += 1;
+                if es.insert_col_cursor >= form.len() {
+                    es.insert_col_cursor = 0;
+                    return true; // wrapped
+                }
+            }
+        }
+        false
+    }
+
+    /// Finalise the new-row form and add an `Insert` edit to `pending_edits`.
+    ///
+    /// Returns `false` if no insertion was in progress.
+    pub fn stage_insert_row(&mut self) -> bool {
+        if let PanelMode::DataGrid {
+            schema,
+            table,
+            edit_state: Some(es),
+            ..
+        } = &mut self.panel
+        {
+            let Some(mut form) = es.inserting_row.take() else {
+                return false;
+            };
+            // Save whatever is still in the buffer into the current slot
+            let cursor = es.insert_col_cursor;
+            if let Some(slot) = form.get_mut(cursor) {
+                slot.1 = std::mem::take(&mut es.input_buffer);
+            }
+            es.insert_col_cursor = 0;
+            es.pending_edits.push(StagedEdit {
+                schema: schema.clone(),
+                table: table.clone(),
+                kind: crate::archive::RowEditKind::Insert { row: form },
+            });
+            return true;
+        }
+        false
+    }
+
+    /// Mark the currently selected row for deletion.
+    ///
+    /// Returns `false` if no edit session is active or the row is already marked.
+    pub fn stage_delete_row(&mut self) -> bool {
+        if let PanelMode::DataGrid {
+            schema,
+            table,
+            result,
+            grid_row,
+            edit_state: Some(es),
+            ..
+        } = &mut self.panel
+        {
+            let row_idx = *grid_row;
+            if es.rows_marked_deleted.contains(&row_idx) {
+                return false; // already marked
+            }
+            let Some(row) = result.rows.rows.get(row_idx) else {
+                return false;
+            };
+
+            let pk_values: Vec<(String, String)> = result
+                .columns
+                .iter()
+                .zip(row.0.iter())
+                .filter(|(c, _)| c.is_primary_key)
+                .map(|(c, (_, v))| (c.name.clone(), format!("{v:?}")))
+                .collect();
+
+            es.rows_marked_deleted.push(row_idx);
+            es.pending_edits.push(StagedEdit {
+                schema: schema.clone(),
+                table: table.clone(),
+                kind: crate::archive::RowEditKind::Delete { pk_values },
+            });
+            return true;
+        }
+        false
+    }
+
+    /// Cancel all staged edits and exit edit mode.
+    ///
+    /// Returns `false` if no edit session was active.
+    pub fn discard_edit_mode(&mut self) -> bool {
+        if let PanelMode::DataGrid { edit_state, .. } = &mut self.panel {
+            if edit_state.is_some() {
+                *edit_state = None;
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Drain and return the pending edits together with the schema and table name.
+    ///
+    /// Clears the staged edits and exits edit mode.  Returns `None` if there is
+    /// no active edit session or no pending mutations.
+    pub fn take_staged_edits(&mut self) -> Option<(String, String, Vec<StagedEdit>)> {
+        if let PanelMode::DataGrid {
+            schema,
+            table,
+            edit_state,
+            ..
+        } = &mut self.panel
+        {
+            if let Some(es) = edit_state.take() {
+                if !es.pending_edits.is_empty() {
+                    return Some((schema.clone(), table.clone(), es.pending_edits));
+                }
+            }
+        }
+        None
+    }
+
     /// Move the cursor to the first flat item matching the given schema + table.
     ///
     /// Returns `true` if the item was found and the cursor moved.  Used by the
@@ -1295,6 +1644,7 @@ impl ArchiveNavModel {
                 table,
                 result,
                 page,
+                ..
             } => {
                 let heading_id = alloc();
                 let mut h = AkNode::new(AkRole::Heading);

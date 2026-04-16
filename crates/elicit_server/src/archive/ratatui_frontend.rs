@@ -166,6 +166,9 @@ impl TuiApp {
                     table,
                     result,
                     page: 0,
+                    grid_row: 0,
+                    grid_col: 0,
+                    edit_state: None,
                 };
             }
             PanelEvent::NavRefreshed(nav) => {

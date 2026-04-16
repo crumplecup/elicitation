@@ -47,6 +47,7 @@ pub use plugins::{
 pub use types::{
     BackendKind, ColumnDescriptor, ColumnStats, ConstraintDescriptor, ConstraintKind,
     DatabaseDescriptor, DdlDescriptor, ExplainNode, ExportFormat, ExportResult, FkAction,
-    ForeignKeyDescriptor, IndexDescriptor, QueryHistoryEntry, QueryResult, SavedQuery,
-    SchemaDescriptor, TableDescriptor, TableInspection, TableType,
+    ForeignKeyDescriptor, IndexDescriptor, QueryHistoryEntry, QueryResult, RowEditKind,
+    RowEditState, SavedQuery, SchemaDescriptor, StagedEdit, TableDescriptor, TableInspection,
+    TableType,
 };

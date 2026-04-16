@@ -332,6 +332,9 @@ async fn api_preview(
             table: p.table,
             result,
             page: 0,
+            grid_row: 0,
+            grid_col: 0,
+            edit_state: None,
         };
     }
     Ok(Html(content_html(&state).map_err(ApiError::internal)?))

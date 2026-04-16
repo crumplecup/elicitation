@@ -143,6 +143,9 @@ impl ArchiveEguiApp {
                         table,
                         result,
                         page: 0,
+                        grid_row: 0,
+                        grid_col: 0,
+                        edit_state: None,
                     };
                     self.model.flash = None;
                 }
@@ -201,6 +204,9 @@ impl ArchiveEguiApp {
                             table: "(query result)".to_string(),
                             result,
                             page: 0,
+                            grid_row: 0,
+                            grid_col: 0,
+                            edit_state: None,
                         };
                     }
                 }

@@ -681,3 +681,95 @@ pub struct SavedQuery {
     /// UTC timestamp of the most recent update.
     pub updated_at: DateTime<Utc>,
 }
+
+// ── Phase 3.1 — Inline Row Edit ───────────────────────────────────────────────
+
+/// The kind of mutation in a [`StagedEdit`].
+///
+/// Values for `pk_values` and `row` fields are serialised as `String`; callers
+/// must pass `"NULL"` (the four-character literal) to represent SQL `NULL`.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+#[serde(rename_all = "snake_case", tag = "kind")]
+pub enum RowEditKind {
+    /// Update a single cell identified by the row's primary-key values.
+    Update {
+        /// `(column_name, serialised_value)` pairs identifying the row.
+        pk_values: Vec<(String, String)>,
+        /// The column whose value is being changed.
+        column: String,
+        /// New serialised value (use `"NULL"` for SQL NULL).
+        new_value: String,
+    },
+    /// Insert a new row.
+    Insert {
+        /// `(column_name, serialised_value)` pairs for every column.
+        row: Vec<(String, String)>,
+    },
+    /// Delete the row identified by its primary-key values.
+    Delete {
+        /// `(column_name, serialised_value)` pairs identifying the row.
+        pk_values: Vec<(String, String)>,
+    },
+}
+
+/// A single row mutation staged for a future transactional commit.
+///
+/// Serialisable so that the `archive_query__edit_row` MCP tool can accept a
+/// batch of staged edits as JSON.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct StagedEdit {
+    /// Schema that owns the target table.
+    pub schema: String,
+    /// Target table name.
+    pub table: String,
+    /// The mutation to apply.
+    pub kind: RowEditKind,
+}
+
+/// Transient UI state for an active in-grid row-edit session.
+///
+/// Lives inside `PanelMode::DataGrid::edit_state` and is `None` when no edit
+/// session is active.  **Not serialised** — it is purely runtime UI state.
+#[derive(Debug, Clone)]
+pub struct RowEditState {
+    /// Mutations staged but not yet committed (ready to send to the tool).
+    pub pending_edits: Vec<StagedEdit>,
+    /// `(row_index, col_index)` of the cell currently being typed into.
+    pub editing_cell: Option<(usize, usize)>,
+    /// Character buffer accumulating the in-progress cell value.
+    pub input_buffer: String,
+    /// Row indices (within the current page) marked for deletion.
+    pub rows_marked_deleted: Vec<usize>,
+    /// New-row form being filled in: `(column_name, typed_value)` pairs.
+    pub inserting_row: Option<Vec<(String, String)>>,
+    /// Which column the cursor is on within the new-row insertion form.
+    pub insert_col_cursor: usize,
+}
+
+impl RowEditState {
+    /// Create a fresh edit session with no pending mutations.
+    pub fn new() -> Self {
+        Self {
+            pending_edits: Vec::new(),
+            editing_cell: None,
+            input_buffer: String::new(),
+            rows_marked_deleted: Vec::new(),
+            inserting_row: None,
+            insert_col_cursor: 0,
+        }
+    }
+
+    /// Return `true` if there are any un-committed mutations or active input.
+    pub fn is_dirty(&self) -> bool {
+        !self.pending_edits.is_empty()
+            || self.editing_cell.is_some()
+            || !self.rows_marked_deleted.is_empty()
+            || self.inserting_row.is_some()
+    }
+}
+
+impl Default for RowEditState {
+    fn default() -> Self {
+        Self::new()
+    }
+}

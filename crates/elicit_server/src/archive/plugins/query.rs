@@ -14,7 +14,7 @@ use sqlx::any::AnyRow;
 use sqlx::{Column as _, Row as _, TypeInfo as _};
 use tracing::instrument;
 
-use crate::archive::{ColumnDescriptor, QueryResult};
+use crate::archive::{ColumnDescriptor, QueryResult, RowEditKind, StagedEdit};
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -212,6 +212,159 @@ async fn preview_table(p: PreviewTableParams) -> Result<CallToolResult, ErrorDat
     pool.close().await;
 
     json_result(&QueryResult::new(col_descs, db_rows))
+}
+
+// ── Phase 3.1: edit_row tool ──────────────────────────────────────────────────
+
+/// Proposition: a batch of staged row edits was committed atomically.
+#[derive(Prop)]
+pub struct RowEditsCommitted;
+
+impl VerifiedWorkflow for RowEditsCommitted {}
+
+/// Parameters for `archive_query__edit_row`.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct EditRowParams {
+    /// Database connection URL.
+    pub url: String,
+    /// Staged mutations to apply in a single `READ COMMITTED` transaction.
+    pub edits: Vec<StagedEdit>,
+    /// Primary-key column names used to construct `WHERE` clauses for
+    /// `UPDATE` and `DELETE` statements.  If empty, the `pk_values` embedded
+    /// in each [`StagedEdit`] are used directly.
+    pub pk_columns: Vec<String>,
+}
+
+/// Escape a user-supplied identifier by wrapping it in double-quotes and
+/// replacing any embedded `"` with `""`.
+fn quote_ident(s: &str) -> String {
+    format!("\"{}\"", s.replace('"', "\"\""))
+}
+
+/// Render a `(column_name, serialised_value)` pair as a SQL literal fragment.
+///
+/// The string `"NULL"` (case-insensitive) maps to the SQL keyword `NULL`;
+/// booleans (`true`/`false`) are kept as-is; integers and plain floats are
+/// kept as-is; everything else is wrapped in single-quotes with `'` escaped to
+/// `''`.
+fn sql_literal(val: &str) -> String {
+    match val.to_ascii_uppercase().as_str() {
+        "NULL" => "NULL".to_string(),
+        "TRUE" => "TRUE".to_string(),
+        "FALSE" => "FALSE".to_string(),
+        _ => {
+            // Numeric?
+            if val.parse::<i64>().is_ok() || val.parse::<f64>().is_ok() {
+                return val.to_string();
+            }
+            format!("'{}'", val.replace('\'', "''"))
+        }
+    }
+}
+
+/// Build a SQL statement for one [`StagedEdit`].
+fn build_sql(edit: &StagedEdit) -> String {
+    let schema = quote_ident(&edit.schema);
+    let table = quote_ident(&edit.table);
+    let full_table = format!("{schema}.{table}");
+
+    match &edit.kind {
+        RowEditKind::Update {
+            pk_values,
+            column,
+            new_value,
+        } => {
+            let set = format!("{} = {}", quote_ident(column), sql_literal(new_value));
+            let where_clause: String = pk_values
+                .iter()
+                .map(|(col, val)| format!("{} = {}", quote_ident(col), sql_literal(val)))
+                .collect::<Vec<_>>()
+                .join(" AND ");
+            if where_clause.is_empty() {
+                format!("UPDATE {full_table} SET {set}")
+            } else {
+                format!("UPDATE {full_table} SET {set} WHERE {where_clause}")
+            }
+        }
+        RowEditKind::Insert { row } => {
+            let cols: String = row
+                .iter()
+                .map(|(c, _)| quote_ident(c))
+                .collect::<Vec<_>>()
+                .join(", ");
+            let vals: String = row
+                .iter()
+                .map(|(_, v)| sql_literal(v))
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("INSERT INTO {full_table} ({cols}) VALUES ({vals})")
+        }
+        RowEditKind::Delete { pk_values } => {
+            let where_clause: String = pk_values
+                .iter()
+                .map(|(col, val)| format!("{} = {}", quote_ident(col), sql_literal(val)))
+                .collect::<Vec<_>>()
+                .join(" AND ");
+            if where_clause.is_empty() {
+                format!("DELETE FROM {full_table}")
+            } else {
+                format!("DELETE FROM {full_table} WHERE {where_clause}")
+            }
+        }
+    }
+}
+
+/// Result returned by `archive_query__edit_row`.
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
+pub struct EditRowResult {
+    /// Number of statements applied.
+    pub statements_applied: usize,
+    /// Rows affected per statement.
+    pub rows_affected: Vec<u64>,
+}
+
+#[elicit_tool(
+    plugin = "archive_query",
+    name = "archive_query__edit_row",
+    description = "Apply a batch of staged row mutations (UPDATE / INSERT / DELETE) inside a \
+                   single READ COMMITTED transaction.  On success, all mutations are durably \
+                   committed.  On any error the transaction is rolled back and no rows are \
+                   changed.  Establishes: RowEditsCommitted."
+)]
+#[instrument(skip(p))]
+async fn edit_row(p: EditRowParams) -> Result<CallToolResult, ErrorData> {
+    if p.edits.is_empty() {
+        return Err(ErrorData::invalid_params("no edits provided", None));
+    }
+
+    let pool = connect(&p.url).await?;
+
+    let mut tx = pool
+        .begin()
+        .await
+        .map_err(|e| ErrorData::internal_error(format!("begin failed: {e}"), None))?;
+
+    let mut rows_affected: Vec<u64> = Vec::with_capacity(p.edits.len());
+
+    for edit in &p.edits {
+        let sql = build_sql(edit);
+        let result = sqlx::query(&sql).execute(&mut *tx).await.map_err(|e| {
+            ErrorData::internal_error(format!("edit failed: {e}\n  sql: {sql}"), None)
+        })?;
+        rows_affected.push(result.rows_affected());
+    }
+
+    tx.commit()
+        .await
+        .map_err(|e| ErrorData::internal_error(format!("commit failed: {e}"), None))?;
+
+    pool.close().await;
+
+    let _proof = Established::<RowEditsCommitted>::assert();
+    json_result(&EditRowResult {
+        statements_applied: p.edits.len(),
+        rows_affected,
+    })
 }
 
 // ── plugin ────────────────────────────────────────────────────────────────────
