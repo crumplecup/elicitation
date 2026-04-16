@@ -253,6 +253,9 @@ impl ArchiveEguiApp {
                         "exported {row_count} rows from {schema}.{table} as .{ext}"
                     ));
                 }
+                PanelEvent::MonitorReady(snapshot) => {
+                    self.model.apply_monitor_snapshot(snapshot);
+                }
             }
         }
     }
@@ -494,6 +497,11 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
                 };
             }
             A::OpenSavedBrowser => self.model.toggle_saved_browser(),
+            A::OpenMonitor => {
+                if let Some(req) = self.model.toggle_monitor_panel() {
+                    let _ = self.req_tx.try_send(req);
+                }
+            }
             A::ToggleExportPicker => {
                 if self.model.panel.is_data_grid() {
                     self.model.toggle_export_picker();
@@ -977,6 +985,28 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                     // Already handled above before the URL check.
                     FetchRequest::UpdateUrl(_) => {
                         unreachable!("UpdateUrl handled before this match")
+                    }
+                    FetchRequest::FetchMonitor => {
+                        use crate::archive::MonitorSnapshot;
+                        use elicit_db::{DbMonitor, DbRoleManager};
+                        match ArchiveDbBackend::connect(url_str).await {
+                            Ok(backend) => {
+                                let sessions = backend
+                                    .active_sessions()
+                                    .await
+                                    .map(|a| a.sessions)
+                                    .unwrap_or_default();
+                                let roles = backend.list_roles().await.unwrap_or_default();
+                                let cache_hit = backend.cache_hit_ratio().await.ok();
+                                PanelEvent::MonitorReady(MonitorSnapshot {
+                                    sessions,
+                                    roles,
+                                    cache_hit,
+                                    backups: Vec::new(),
+                                })
+                            }
+                            Err(e) => PanelEvent::FetchError(e.to_string()),
+                        }
                     }
                 };
                 let _ = tx.send(result).await;

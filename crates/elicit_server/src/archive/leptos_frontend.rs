@@ -1037,6 +1037,10 @@ fn dispatch_action_on_model(
             };
         }
         A::OpenSavedBrowser => model.toggle_saved_browser(),
+        A::OpenMonitor => {
+            // Monitor panel toggle — actual fetch is handled server-side via /api/monitor
+            let _ = model.toggle_monitor_panel();
+        }
         A::ToggleExportPicker => {
             if model.panel.is_data_grid() {
                 model.toggle_export_picker();
