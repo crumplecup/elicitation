@@ -581,3 +581,34 @@ No DB driver dependency. No MCP tools. Pure contracts vocabulary.
 `DbQueryDescriptor`, `DbSchemaDescriptor`, `DbMigrationDescriptor`
 
 **Deferred:** `elicit_sqlx` (MCP tools), ORM wrappers, migration tooling, connection pooling
+
+---
+
+### elicit_bevy Shadow Crate
+
+**Document:** [ELICIT_BEVY_PLAN.md](ELICIT_BEVY_PLAN.md)
+
+**Status:** 📋 Planning
+
+**Target:** Bevy 0.18.1 — complete API surface coverage
+
+**Description:** Full elicitation coverage for the Bevy game engine. Three layers:
+Phase 2 primitive types (math, color, transform, render enums, window, input, UI, time,
+audio, animation, PBR, sprite, text, camera, picking — ~170 types across 17 modules);
+Phase 3 shadow crate with 8 plugins (~130 MCP tools for ECS code-gen, app/plugin
+descriptor-registry, Query/Handle factory); Phases 4–6 Kani/Creusot/Verus proofs.
+
+**Mechanisms:** Select (56 types) · Survey (123 types) · Fragment (30 tools) · Factory (9 tools) · Descriptor-registry (14 tools)
+
+**Key 0.18 notes:** `RenderTarget` is now a required component (not a Camera field);
+lights/camera/mesh/shader are separate feature crates; `#[reflect(...)]` parentheses-only;
+`SimpleExecutor` removed; `ScatteringMedium` + `Atmosphere` are new 0.18 types.
+
+**Phases:**
+
+- **Phase 1** — Workspace: add bevy dep, create elicit_bevy skeleton
+- **Phase 2** — elicitation primitives: 17 module files under `primitives/bevy_types/`
+- **Phase 3A–3H** — Shadow crate: newtypes, 8 workflow plugins (~130 tools)
+- **Phase 4** — Kani proofs for math/transform/color/window types
+- **Phase 5** — Creusot proofs: post-conditions on Survey types
+- **Phase 6** — Verus proofs: invariants for config structs

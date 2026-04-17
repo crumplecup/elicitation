@@ -23,6 +23,8 @@ mod accesskit_specs;
 mod atomics;
 #[cfg(feature = "axum-types")]
 mod axum_specs;
+#[cfg(feature = "bevy-types")]
+mod bevy_specs;
 mod bool_contracts;
 mod char_contracts;
 mod clap_specs;

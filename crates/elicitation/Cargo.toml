@@ -215,6 +215,8 @@ bevy-types = [
     "bevy/bevy_render",
     "bevy/bevy_sprite",
     "bevy/bevy_text",
+    "bevy/bevy_ui",
+    "bevy/gamepad",
     "bevy/serialize",
 ]
 # Enable egui + winit integration descriptor type elicitation

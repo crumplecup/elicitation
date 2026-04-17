@@ -724,11 +724,18 @@ pub use primitives::{
 pub use primitives::bevy_types::{
     affine::{BevyAffine2, BevyAffine3A, BevyDAffine2, BevyDAffine3},
     animation::BevyRepeatAnimation,
+    atmosphere::{BevyAtmosphere, BevyFalloff, BevyPhaseFunction, BevyScatteringTerm},
     audio::{BevyPlaybackMode, BevyPlaybackSettings, BevyVolume},
     camera::{BevyOrthographicProjection, BevyPerspectiveProjection, BevyScalingMode},
     color::BevyColor,
+    input::{
+        BevyButtonState, BevyGamepadAxis, BevyGamepadButton, BevyKeyCode, BevyMouseButton,
+        BevyTouchPhase,
+    },
     mat::BevyMat3A,
-    pbr::BevyStandardMaterial,
+    pbr::{
+        BevyAmbientLight, BevyDirectionalLight, BevyPointLight, BevySpotLight, BevyStandardMaterial,
+    },
     picking::{BevyPickable, BevyPickingInteraction},
     quat::{BevyDQuat, BevyQuat},
     ray::{BevyDir2, BevyDir3, BevyDir3A, BevyLine2d, BevyLine3d, BevyRay2d, BevyRay3d},
@@ -743,5 +750,15 @@ pub use primitives::bevy_types::{
     text::{BevyFontSmoothing, BevyJustify, BevyLineBreak, BevyTextFont, BevyTextLayout},
     time::BevyTimer,
     transform::{BevyGlobalTransform, BevyTransform},
+    ui::{
+        BevyAlignContent, BevyAlignItems, BevyAlignSelf, BevyBorderRadius, BevyBoxSizing,
+        BevyDisplay, BevyFlexDirection, BevyFlexWrap, BevyJustifyContent, BevyJustifyItems,
+        BevyJustifySelf, BevyOverflowAxis, BevyOverflowClipBox, BevyPositionType, BevyUiRect,
+        BevyVal,
+    },
     vec::BevyVec3A,
+    window::{
+        BevyMonitorSelection, BevyPresentMode, BevyWindowLevel, BevyWindowMode,
+        BevyWindowResolution, BevyWindowTheme,
+    },
 };

@@ -44,6 +44,7 @@ members = [
   "crates/elicit_gis",
   "crates/elicit_winit",
   "crates/elicit_wgpu",
+  "crates/elicit_bevy",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
@@ -106,6 +107,7 @@ elicit_proj = { path = "crates/elicit_proj", version = "0.10.0" }
 elicit_gis = { path = "crates/elicit_gis", version = "0.10.0" }
 elicit_winit = { path = "crates/elicit_winit", version = "0.10.0" }
 elicit_wgpu = { path = "crates/elicit_wgpu", version = "0.10.0" }
+elicit_bevy = { path = "crates/elicit_bevy", version = "0.10.0" }
 
 # ── MCP ───────────────────────────────────────────────────────────────────────
 rmcp = { version = "1.3", features = [
@@ -245,6 +247,7 @@ wgpu = { version = "29", default-features = false, features = [
   "wgsl",
   "serde",
 ] }
+bevy = { version = "0.18", default-features = false }
 tiff = "0.9.1"
 
 # ── Well-Known Text ───────────────────────────────────────────────────────────

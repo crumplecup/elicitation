@@ -11,6 +11,11 @@ Every HTML response and every TUI/egui frame is gated by an
 `Established<IrSourced>` proof token minted by `ArchiveNavModel`, guaranteeing
 that all three frontends are contractually equivalent and IR-sourced.
 
+Every rendered colour pair is gated by an `Established<WcagContrastMinimumNormalText>`
+or `Established<WcagNonTextContrastMinimum>` proof token minted by `PaletteBuilder`,
+guaranteeing WCAG 2.2 Level AA compliance. You cannot hold a `Palette` value
+without having proven every colour pair passes its contrast threshold.
+
 ---
 
 ## URL resolution
@@ -159,26 +164,32 @@ renderers — no per-frontend key wiring can silently diverge.
 
 ### Default navigation mode (all frontends)
 
-| Key              | Action                                        |
-|------------------|-----------------------------------------------|
-| `↑` / `k`       | Move selection up                             |
-| `↓` / `j`       | Move selection down                           |
-| `Enter`          | Expand / collapse / select item               |
-| `r`              | Refresh nav tree from database                |
-| `?`              | Toggle keybinding help overlay                |
-| `q` / `Esc`      | Quit                                          |
-| `/`              | Open nav filter                               |
-| `s`              | Open SQL editor panel                         |
-| `d`              | Open DDL viewer for selected table            |
-| `e`              | Open EXPLAIN plan for selected table          |
-| `F2`             | Open saved-query browser                      |
-| `m`              | Open / close live monitor panel               |
-| `a`              | Open / close admin panel                      |
-| `g`              | Open / close ERD diagram for selected schema  |
-| `[` / `]`        | Cycle admin panel tabs (prev / next)          |
-| `x`              | Open export format picker (DataGrid only)     |
-| `Ctrl+Tab`       | Cycle to next database connection             |
-| `Ctrl+Shift+Tab` | Cycle to previous database connection         |
+| Key                | Action                                                  |
+|--------------------|---------------------------------------------------------|
+| `↑` / `k`         | Move selection up                                       |
+| `↓` / `j`         | Move selection down                                     |
+| `Enter`            | Expand / collapse / select item                         |
+| `r`                | Refresh nav tree from database                          |
+| `?`                | Toggle keybinding help overlay                          |
+| `q` / `Esc`        | Quit                                                    |
+| `/`                | Open nav filter                                         |
+| `s`                | Open SQL editor panel                                   |
+| `d`                | Open DDL viewer for selected table                      |
+| `e`                | Open EXPLAIN plan for selected table                    |
+| `Ctrl+Shift+E`     | Clear explain comparison (return to single plan)        |
+| `F2`               | Open saved-query browser                                |
+| `m`                | Open / close live monitor panel                         |
+| `a`                | Open / close admin panel                                |
+| `g`                | Open / close ERD diagram for selected schema            |
+| `c`                | Open constraint panel for selected table                |
+| `i`                | Open index panel for selected table                     |
+| `o`                | Open connection editor for active connection            |
+| `[` / `]`          | Cycle admin / monitor panel tabs (prev / next)          |
+| `x`                | Open export format picker (DataGrid only)               |
+| `PgDn` / `PgUp`    | Next / previous data page (DataGrid only)               |
+| `Home` / `End`     | First / last data page (DataGrid only)                  |
+| `Ctrl+Tab`         | Cycle to next database connection                       |
+| `Ctrl+Shift+Tab`   | Cycle to previous database connection                   |
 
 ### Modal key maps
 
@@ -212,21 +223,27 @@ renderers — no per-frontend key wiring can silently diverge.
 frontends. Each variant is wired in the AccessKit IR — no frontend may render
 a panel that isn't modelled here.
 
-| Variant          | Description                                           | Frontends |
-|------------------|-------------------------------------------------------|-----------|
-| `Welcome`        | Welcome message / connection prompt                   | all       |
-| `DataGrid`       | Paginated table data with row editing                 | all       |
-| `SqlEditor`      | SQL editor + query result + error display             | all       |
-| `Ddl`            | DDL source for the selected table / view              | all       |
-| `ExplainPlan`    | Visual EXPLAIN plan tree                              | all       |
-| `ColumnDetail`   | Column type + statistics table                        | all       |
-| `MonitorPanel`   | Live server activity: sessions, cache, roles, backups | all       |
-| `AdminPanel`     | Admin tabs: Roles · Backups · WAL · Extensions · Settings | all   |
-| `ErdPanel`       | Entity-relationship diagram for the selected schema   | all       |
-| `HistoryPanel`   | Query history list with one-click load                | browser   |
-| `SavedPanel`     | Saved queries with load / delete                      | browser   |
-| `ExportPanel`    | Export format picker (CSV, JSON, Parquet…)            | browser   |
-| `HelpPanel`      | Keybinding reference                                  | browser   |
+| Variant              | Description                                                | Frontends |
+|----------------------|------------------------------------------------------------|-----------|
+| `Welcome`            | Welcome message / connection prompt                        | all       |
+| `Loading`            | Spinner while async fetch is in flight                     | all       |
+| `DataGrid`           | Paginated table data with row editing                      | all       |
+| `SqlEditor`          | SQL editor + query result + error display                  | all       |
+| `Ddl`                | DDL source for the selected table / view                   | all       |
+| `ExplainPlan`        | Visual EXPLAIN plan tree                                   | all       |
+| `ExplainCompare`     | Side-by-side EXPLAIN plan comparison (left vs right)       | all       |
+| `ColumnDetail`       | Column type + statistics table                             | all       |
+| `MonitorPanel`       | Live server activity: sessions, cache, roles, backups      | all       |
+| `AdminPanel`         | Admin tabs: Roles · Backups · WAL · Extensions · Settings  | all       |
+| `ErdPanel`           | Entity-relationship diagram for the selected schema        | all       |
+| `ConstraintPanel`    | Constraints (PK, FK, unique, check) for selected table     | all       |
+| `IndexPanel`         | Indexes for the selected table                             | all       |
+| `ConnectionEditor`   | Connection profile editor (name, URL, SSH, SSL)            | all       |
+| `Error`              | Error message display                                      | all       |
+| `HistoryPanel`       | Query history list with one-click load                     | browser   |
+| `SavedPanel`         | Saved queries with load / delete                           | browser   |
+| `ExportPanel`        | Export format picker (CSV, JSON, Parquet…)                 | browser   |
+| `HelpPanel`          | Keybinding reference                                       | browser   |
 
 TUI overlays (help, export picker, save prompt, saved browser) are rendered
 as AccessKit `Role::Dialog` nodes appended to the Window root by
@@ -246,7 +263,11 @@ surfaces:
 - **Backups** — recent backup records
 
 In the browser frontend, `GET /api/monitor` fetches a fresh `MonitorSnapshot`
-and re-renders the panel via HTMX.
+and re-renders the panel via HTMX. The browser also subscribes to
+`GET /api/monitor-stream` (a Server-Sent Events stream) that pushes a
+refreshed `MonitorSnapshot` every 5 seconds — no manual reload needed.
+
+Use `[` / `]` to switch between monitor tabs (Sessions, Roles, Backups).
 
 ---
 
@@ -321,46 +342,149 @@ All content-returning routes respond with IR-sourced HTML fragments.
 HTMX swaps use `hx-target="#content" hx-swap="outerHTML"` so the `<div
 id="content">` wrapper is always present for the next swap.
 
-| Method | Path                    | Description                                      |
-|--------|-------------------------|--------------------------------------------------|
-| GET    | `/`                     | Full page (IR-sourced)                           |
-| GET    | `/api/nav`              | Nav-tree fragment (filter param)                 |
-| GET    | `/api/nav-up`           | Move cursor up, return nav fragment              |
-| GET    | `/api/nav-down`         | Move cursor down, return nav fragment            |
-| GET    | `/api/nav-enter`        | Toggle-expand, return nav fragment               |
-| GET    | `/api/preview`          | Table data grid panel                            |
-| POST   | `/api/sql`              | Execute SQL, return content fragment             |
-| GET    | `/api/inspect`          | Table inspection JSON                            |
-| GET    | `/api/stats`            | Column statistics JSON                           |
-| GET    | `/api/explain`          | EXPLAIN plan panel (with params)                 |
-| GET    | `/api/history`          | Query history JSON                               |
-| POST   | `/api/history`          | Append history entry                             |
-| GET    | `/api/saved`            | Saved queries JSON                               |
-| POST   | `/api/saved`            | Save a query                                     |
-| DELETE | `/api/saved/{id}`       | Delete a saved query                             |
-| GET    | `/api/export`           | Download exported data file                      |
-| POST   | `/api/refresh`          | Reload nav tree from DB                          |
-| GET    | `/api/open-sql-editor`  | SQL editor panel fragment                        |
-| GET    | `/api/monitor`          | Fetch live monitor snapshot → MonitorPanel       |
-| GET    | `/api/admin`            | Fetch admin snapshot → AdminPanel                |
-| GET    | `/api/admin-tab-next`   | Cycle admin tab forward → AdminPanel             |
-| GET    | `/api/admin-tab-prev`   | Cycle admin tab backward → AdminPanel            |
-| GET    | `/api/erd`              | ERD diagram for `?schema=` → ErdPanel            |
-| GET    | `/api/open-help`        | Help / keybindings panel fragment                |
-| GET    | `/api/history-panel`    | History browser panel fragment                   |
-| GET    | `/api/saved-panel`      | Saved queries panel fragment                     |
-| GET    | `/api/export-panel`     | Export picker panel fragment                     |
-| GET    | `/api/ddl-panel`        | DDL viewer panel fragment                        |
-| GET    | `/api/explain-panel`    | EXPLAIN plan panel fragment                      |
-| GET    | `/api/col-detail-panel` | Column detail + stats panel fragment             |
-| GET    | `/api/load-history`     | Load history entry into SQL editor               |
-| GET    | `/api/load-saved`       | Load saved query into SQL editor                 |
-| POST   | `/api/switch-connection`| Switch active database connection                |
-| POST   | `/api/action`           | Dispatch any `ArchiveAction` by name             |
+| Method | Path                    | Description                                                  |
+|--------|-------------------------|--------------------------------------------------------------|
+| GET    | `/`                     | Full page (IR-sourced)                                       |
+| GET    | `/api/nav`              | Nav-tree fragment (filter param)                             |
+| GET    | `/api/nav-up`           | Move cursor up, return nav fragment                          |
+| GET    | `/api/nav-down`         | Move cursor down, return nav fragment                        |
+| GET    | `/api/nav-enter`        | Toggle-expand, return nav fragment                           |
+| GET    | `/api/preview`          | Table data grid panel                                        |
+| POST   | `/api/sql`              | Execute SQL, return content fragment                         |
+| GET    | `/api/inspect`          | Table inspection JSON                                        |
+| GET    | `/api/stats`            | Column statistics JSON                                       |
+| GET    | `/api/explain`          | EXPLAIN plan panel (with params)                             |
+| GET    | `/api/history`          | Query history JSON                                           |
+| POST   | `/api/history`          | Append history entry                                         |
+| GET    | `/api/saved`            | Saved queries JSON                                           |
+| POST   | `/api/saved`            | Save a query                                                 |
+| DELETE | `/api/saved/{id}`       | Delete a saved query                                         |
+| GET    | `/api/export`           | Download exported data file                                  |
+| POST   | `/api/refresh`          | Reload nav tree from DB                                      |
+| GET    | `/api/open-sql-editor`  | SQL editor panel fragment                                    |
+| GET    | `/api/monitor`          | Fetch live monitor snapshot → MonitorPanel                   |
+| GET    | `/api/monitor-stream`   | SSE stream — emits `monitor` events every 5 s                |
+| GET    | `/api/admin`            | Fetch admin snapshot → AdminPanel                            |
+| GET    | `/api/admin-tab-next`   | Cycle admin tab forward → AdminPanel                         |
+| GET    | `/api/admin-tab-prev`   | Cycle admin tab backward → AdminPanel                        |
+| GET    | `/api/erd`              | ERD diagram for `?schema=` → ErdPanel                        |
+| GET    | `/api/constraints`      | Constraint panel for `?schema=&table=` → ConstraintPanel     |
+| GET    | `/api/indexes`          | Index panel for `?schema=&table=` → IndexPanel               |
+| GET    | `/api/open-help`        | Help / keybindings panel fragment                            |
+| GET    | `/api/history-panel`    | History browser panel fragment                               |
+| GET    | `/api/saved-panel`      | Saved queries panel fragment                                 |
+| GET    | `/api/export-panel`     | Export picker panel fragment                                 |
+| GET    | `/api/ddl-panel`        | DDL viewer panel fragment                                    |
+| GET    | `/api/explain-panel`    | EXPLAIN plan panel fragment                                  |
+| GET    | `/api/col-detail-panel` | Column detail + stats panel fragment                         |
+| GET    | `/api/load-history`     | Load history entry into SQL editor                           |
+| GET    | `/api/load-saved`       | Load saved query into SQL editor                             |
+| POST   | `/api/switch-connection`| Switch active database connection                            |
+| POST   | `/api/action`           | Dispatch any `ArchiveAction` by name                         |
 
 ---
 
-## Tracing / logging
+## SQL syntax highlighting
+
+All three frontends highlight SQL in the editor and query result panels. The
+tokeniser lives in `elicit_accesskit::sql` and is shared — keyword sets and
+token boundaries are identical across renderers.
+
+Token categories are mapped through the `SemanticRole` palette:
+
+| Token kind       | `SemanticRole` | WCAG threshold |
+|------------------|----------------|----------------|
+| Keywords         | `Keyword`      | 4.5 : 1        |
+| String literals  | `StringLit`    | 4.5 : 1        |
+| Comments         | `Comment`      | 4.5 : 1        |
+| Numbers          | `Number`       | 4.5 : 1        |
+| Plain text       | `Text`         | 4.5 : 1        |
+
+All syntax colours are contrast-proven; no special exemption for "decorative"
+code tokens.
+
+---
+
+## EXPLAIN plan comparison
+
+Press `e` once to open an EXPLAIN plan. Press `e` again while a plan is
+already open to enter side-by-side comparison mode (`ExplainCompare`). The
+previous plan moves to the left pane; the new plan appears on the right.
+
+Press `Ctrl+Shift+E` to clear the comparison and return to a single plan view.
+
+Cost-delta annotations: if `left.total_cost` and `right.total_cost` differ by
+more than 10%, the higher-cost node label gains a `▲` prefix in the IR — all
+three renderers display it without extra work.
+
+---
+
+## WCAG palette system
+
+Every rendered colour pair is a **proof-carrying value**. `Palette` can only
+be constructed by `PaletteBuilder::build()` (returns `Result`) or
+`build_adjusted()` (auto-corrects non-compliant colours, panics only if the
+heuristic cannot converge). Holding a `Palette` *is* the proof of compliance.
+
+### Semantic roles
+
+| Role         | Used for                                    | Threshold  |
+|--------------|---------------------------------------------|------------|
+| `Background` | Page / panel background                     | —          |
+| `Surface`    | Card / sidebar surfaces                     | —          |
+| `Text`       | Body text (vs Background **and** Surface)   | 4.5 : 1    |
+| `DimText`    | Captions, placeholder text                  | 4.5 : 1    |
+| `Accent`     | Focus rings, active indicators (non-text)   | 3.0 : 1    |
+| `Error`      | Error messages, badges (non-text)           | 3.0 : 1    |
+| `Keyword`    | SQL keyword highlighting                    | 4.5 : 1    |
+| `StringLit`  | SQL string literal highlighting             | 4.5 : 1    |
+| `Comment`    | SQL comment highlighting                    | 4.5 : 1    |
+| `Number`     | SQL number highlighting                     | 4.5 : 1    |
+
+Code is text. Every syntax-highlighting colour must pass the 4.5 : 1
+normal-text threshold — no exemptions.
+
+### Pre-built palettes
+
+Four Catppuccin-based palettes are available from `elicit_ui::palettes`:
+
+| Function       | Base theme                       |
+|----------------|----------------------------------|
+| `mocha()`      | Catppuccin Mocha (dark)          |
+| `macchiato()`  | Catppuccin Macchiato (dark)      |
+| `frappe()`     | Catppuccin Frappé (medium)       |
+| `latte()`      | Catppuccin Latte (light)         |
+
+Each is initialised once via `OnceLock` using `build_adjusted()`. Known
+Catppuccin colours that fail contrast (e.g. Latte green ~3.0 : 1, Latte peach
+~2.68 : 1, all four Overlay1 comment colours ~2.3–2.9 : 1) are auto-corrected
+to the nearest compliant value; the upstream palette values are a Catppuccin
+problem, not ours.
+
+### Proof credentials
+
+```rust
+// In elicit_ui::proof_credentials:
+proof_credential!(PaletteNormalTextVerified => WcagContrastMinimumNormalText);
+proof_credential!(PaletteNonTextVerified    => WcagNonTextContrastMinimum);
+```
+
+Both credentials are `pub(crate)` — external code cannot forge a `Palette`.
+
+### Dependency topology
+
+`elicit_ui` depends on `elicit_accesskit`. Therefore `elicit_accesskit` cannot
+depend on `elicit_ui` (cycle). Palette-aware colour resolution lives in the
+crates that depend on both:
+
+- `elicit_egui` — `sql_layout_job(sql, palette)`
+- `elicit_ratatui` — `sql_highlight_rich(sql, palette)`
+- `elicit_server` — `apply_theme(ctx, palette)` / `wrap_page(body, palette)`
+
+`elicit_accesskit::sql` is colour-agnostic; callers map `SqlTokenKind →
+SemanticRole` themselves.
+
+---
 
 Set `RUST_LOG` to control log output:
 
@@ -417,6 +541,14 @@ originates from the AccessKit IR. No frontend may produce HTML or widgets
 without going through `ArchiveNavModel`'s tree-building methods. This keeps
 all three frontends contractually equivalent.
 
+### Palette contract
+
+The `Palette` type, returned only by `PaletteBuilder::build()` or
+`build_adjusted()`, is the compile-time guarantee that every rendered colour
+pair passes WCAG 2.2 Level AA contrast. Frontends receive `&'static Palette`
+from `elicit_ui::palettes` and pass it to every rendering call — they cannot
+construct one without the proofs. Holding the value is the proof.
+
 ### Keybinding IR faithfulness
 
 `ArchiveKeyMap` is the **single source of truth** for all key bindings.  It
@@ -435,4 +567,5 @@ be matched in every frontend's dispatch function.
 `PanelMode` is the central content-area state machine. Adding a new variant
 requires implementing it in `build_content_nodes()` (the IR builder) and all
 three frontend event/fetch dispatch functions — the compiler enforces
-completeness at every step.
+completeness at every step. There are currently 19 variants (see the
+[Panel modes](#panel-modes) table above).

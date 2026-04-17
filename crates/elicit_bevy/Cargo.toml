@@ -1,0 +1,54 @@
+[package]
+name = "elicit_bevy"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+description = "Elicitation-enabled Bevy ECS tools for code generation and game development"
+keywords = ["mcp", "bevy", "ecs", "game", "elicitation"]
+categories = ["game-engines", "development-tools"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }
+
+[dependencies]
+elicitation = { workspace = true, features = ["bevy-types"] }
+elicitation_derive.workspace = true
+elicitation_macros.workspace = true
+bevy = { workspace = true, features = [
+    "bevy_color",
+    "bevy_render",
+    "bevy_camera",
+    "bevy_light",
+    "bevy_mesh",
+    "bevy_shader",
+    "bevy_window",
+    "bevy_image",
+    "bevy_ui",
+    "bevy_audio",
+    "bevy_animation",
+    "bevy_pbr",
+    "bevy_post_process",
+    "bevy_anti_alias",
+    "bevy_sprite",
+    "bevy_text",
+    "bevy_core_pipeline",
+    "bevy_asset",
+    "bevy_scene",
+    "bevy_picking",
+    "bevy_state",
+    "serialize",
+] }
+rmcp.workspace = true
+schemars.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+tracing.workspace = true
+derive_more = { workspace = true, features = ["display", "error"] }
+
+[dev-dependencies]
+tokio.workspace = true
+serde_json.workspace = true
