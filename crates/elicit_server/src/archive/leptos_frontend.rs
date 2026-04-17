@@ -35,6 +35,7 @@
 //! | GET | `/api/open-help` | Help / key bindings panel (content fragment) |
 //! | POST | `/api/refresh` | Reload nav tree from DB |
 //! | GET | `/api/monitor` | Live monitor snapshot → MonitorPanel (content fragment) |
+//! | GET | `/api/monitor-stream` | SSE stream — emits `monitor` events every 5 s |
 //! | GET | `/api/admin` | Admin snapshot → AdminPanel (content fragment) |
 //! | GET | `/api/admin-tab-next` | Cycle admin tab forward |
 //! | GET | `/api/admin-tab-prev` | Cycle admin tab backward |
@@ -46,7 +47,10 @@ use axum::{
     Json, Router,
     extract::{Path, Query, State},
     http::{HeaderMap, HeaderValue, StatusCode, header},
-    response::{Html, IntoResponse, Response},
+    response::{
+        Html, IntoResponse, Response,
+        sse::{Event, KeepAlive, Sse},
+    },
     routing::{delete, get, post},
 };
 use elicit_leptos::LeptosRenderer;
@@ -912,7 +916,7 @@ async fn api_load_saved(
 // ── GET /api/monitor ─────────────────────────────────────────────────────────
 
 /// Optional schema query param for monitor endpoint.
-#[derive(serde::Deserialize)]
+#[derive(Debug, serde::Deserialize)]
 struct MonitorSchemaQuery {
     /// Schema for table-bloat and index-usage queries; defaults to `"public"`.
     #[serde(default = "default_public_schema")]
@@ -972,6 +976,84 @@ async fn api_monitor(
         model.apply_monitor_snapshot(snapshot);
     }
     Ok(Html(content_html(&state).map_err(ApiError::internal)?))
+}
+
+// ── GET /api/monitor-stream ───────────────────────────────────────────────────
+
+/// Collect a fresh [`MonitorSnapshot`] from `url` with the given schema.
+///
+/// Shared by [`api_monitor`] and the SSE stream to avoid duplicating DB logic.
+async fn fetch_monitor_snapshot(
+    url: &str,
+    schema: &str,
+) -> Option<crate::archive::types::MonitorSnapshot> {
+    use crate::archive::types::{MonitorSnapshot, MonitorTab};
+    use elicit_db::{DbBackupManager, DbMonitor, DbRoleManager};
+    let backend = ArchiveDbBackend::connect(url).await.ok()?;
+    let stat = backend.active_sessions().await.ok()?;
+    let roles = backend.list_roles().await.ok()?;
+    let cache_hit = backend.cache_hit_ratio().await.ok();
+    let backups = backend.list_backups().await.unwrap_or_default();
+    let slow_queries = backend.slow_queries(1_000).await.unwrap_or_default();
+    let lock_waits = backend.lock_waits().await.unwrap_or_default();
+    let table_bloat = backend.table_bloat(schema).await.unwrap_or_default();
+    let index_usage = backend.index_usage(schema).await.unwrap_or_default();
+    Some(MonitorSnapshot {
+        sessions: stat.sessions,
+        roles,
+        cache_hit,
+        backups,
+        slow_queries,
+        lock_waits,
+        table_bloat,
+        index_usage,
+        active_tab: MonitorTab::Sessions,
+    })
+}
+
+/// Server-Sent Events stream that emits a refreshed [`MonitorSnapshot`] every
+/// 5 seconds as a named `monitor` event.
+///
+/// The browser subscribes via `EventSource('/api/monitor-stream')` and, on
+/// each event, re-fetches `/api/monitor` to update the content panel if it is
+/// currently showing the monitor view (detected by the `data-panel="monitor"`
+/// sentinel injected by the IR pipeline).
+///
+/// When no DB connection is active the stream still runs but emits no data
+/// events; the axum keep-alive mechanism sends a ping every 15 s to prevent
+/// proxy/browser timeout.
+#[instrument(skip(state))]
+async fn api_monitor_stream(
+    State(state): State<AppState>,
+    Query(params): Query<MonitorSchemaQuery>,
+) -> Sse<impl futures::Stream<Item = Result<Event, std::convert::Infallible>>> {
+    use futures::stream;
+    use std::convert::Infallible;
+    use std::time::Duration;
+
+    let schema = params.schema;
+    let stream = stream::unfold((state, schema), |(state, schema)| async move {
+        tokio::time::sleep(Duration::from_secs(5)).await;
+        let event = if let Some(url) = state.active_url().await {
+            match fetch_monitor_snapshot(&url, &schema).await {
+                Some(snapshot) => {
+                    let data =
+                        serde_json::to_string(&snapshot).unwrap_or_else(|_| "{}".to_string());
+                    Event::default().event("monitor").data(data)
+                }
+                None => Event::default().comment("error"),
+            }
+        } else {
+            Event::default().comment("no-connection")
+        };
+        Some((Ok::<Event, Infallible>(event), (state, schema)))
+    });
+
+    Sse::new(stream).keep_alive(
+        KeepAlive::new()
+            .interval(std::time::Duration::from_secs(15))
+            .text("ping"),
+    )
 }
 
 // ── GET /api/admin ────────────────────────────────────────────────────────────
@@ -1331,6 +1413,7 @@ fn build_router(state: AppState) -> Router {
         .route("/api/refresh", post(api_refresh))
         .route("/api/open-sql-editor", get(api_open_sql_editor))
         .route("/api/monitor", get(api_monitor))
+        .route("/api/monitor-stream", get(api_monitor_stream))
         .route("/api/admin", get(api_admin))
         .route("/api/admin-tab-next", get(api_admin_tab_next))
         .route("/api/admin-tab-prev", get(api_admin_tab_prev))
@@ -1465,6 +1548,22 @@ fn wrap_page(body: &str) -> String {
         "if(action==='run-sql'){e.preventDefault();runSql();}",
         "if(action==='save-sql'){e.preventDefault();saveCurrentSql();}",
         "});",
+        // ── SSE live monitor refresh ──
+        // One persistent EventSource for the lifetime of the page.  On each
+        // "monitor" event: if the content area is currently showing the monitor
+        // panel (sentinel attr data-panel="monitor"), re-fetch /api/monitor and
+        // swap #content so the IR-rendered HTML stays consistent.
+        "(function(){",
+        "var src=new EventSource('/api/monitor-stream');",
+        "src.addEventListener('monitor',function(){",
+        "if(!document.querySelector('[data-panel=\"monitor\"]'))return;",
+        "fetch('/api/monitor').then(function(r){return r.text();}).then(function(html){",
+        "if(!document.querySelector('[data-panel=\"monitor\"]'))return;",
+        "var el=document.getElementById('content');",
+        "if(el){el.outerHTML=html;htmx.process(document.body);}",
+        "});",
+        "});",
+        "})();",
         // ── keyboard shortcuts (derived from ArchiveKeyMap) ──
     );
     // Append the dynamically generated key listener from the IR key map.

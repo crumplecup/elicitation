@@ -1890,7 +1890,12 @@ impl ArchiveNavModel {
         counter += 1;
         let content_children = self.build_content_nodes(&mut nodes, &mut counter);
         let mut content_node = AkNode::new(AkRole::GenericContainer);
-        content_node.set_description("id=content".to_string());
+        let panel_attr = if matches!(self.panel, PanelMode::MonitorPanel { .. }) {
+            ";data-panel=monitor"
+        } else {
+            ""
+        };
+        content_node.set_description(format!("id=content{panel_attr}"));
         content_node.set_children(content_children);
         nodes.insert(content_id, content_node);
 
@@ -1945,7 +1950,12 @@ impl ArchiveNavModel {
 
         let root_id = AkNodeId::from(0u64);
         let mut content_node = AkNode::new(AkRole::GenericContainer);
-        content_node.set_description("id=content".to_string());
+        let panel_attr = if matches!(self.panel, PanelMode::MonitorPanel { .. }) {
+            ";data-panel=monitor"
+        } else {
+            ""
+        };
+        content_node.set_description(format!("id=content{panel_attr}"));
         content_node.set_children(content_children);
         nodes.insert(root_id, content_node);
 

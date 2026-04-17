@@ -1436,6 +1436,7 @@ fn desc_attrs_str(node: &Node) -> String {
         "hx-indicator",
         "hx-confirm",
         "data-action",
+        "data-panel",
     ];
     let Some(desc) = node.description() else {
         return String::new();
