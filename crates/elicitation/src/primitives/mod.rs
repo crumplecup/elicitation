@@ -85,6 +85,9 @@ pub mod winit_types;
 #[cfg(feature = "wgpu-types")]
 pub mod wgpu_types;
 
+#[cfg(feature = "bevy-types")]
+pub mod bevy_types;
+
 #[cfg(feature = "egui-winit-types")]
 mod egui_winit_types;
 #[cfg(feature = "egui-winit-types")]

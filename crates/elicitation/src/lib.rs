@@ -718,3 +718,30 @@ pub use primitives::{
     LeptosMode, LeptosPropDescriptor, LeptosResponseHeaderDescriptor, LeptosRouteDescriptor,
     LeptosViewNode,
 };
+
+// Bevy game-engine types (feature-gated on bevy-types)
+#[cfg(feature = "bevy-types")]
+pub use primitives::bevy_types::{
+    affine::{BevyAffine2, BevyAffine3A, BevyDAffine2, BevyDAffine3},
+    animation::BevyRepeatAnimation,
+    audio::{BevyPlaybackMode, BevyPlaybackSettings, BevyVolume},
+    camera::{BevyOrthographicProjection, BevyPerspectiveProjection, BevyScalingMode},
+    color::BevyColor,
+    mat::BevyMat3A,
+    pbr::BevyStandardMaterial,
+    picking::{BevyPickable, BevyPickingInteraction},
+    quat::{BevyDQuat, BevyQuat},
+    ray::{BevyDir2, BevyDir3, BevyDir3A, BevyLine2d, BevyLine3d, BevyRay2d, BevyRay3d},
+    render_enums::{BevyAlphaMode, BevyTonemapping},
+    shapes::{
+        BevyAnnulus, BevyArc2d, BevyCircularSector, BevyCircularSegment, BevyCone,
+        BevyConicalFrustum, BevyCuboid, BevyCylinder, BevyEllipse, BevyPlane2d, BevyPlane3d,
+        BevyRectangle, BevyRegularPolygon, BevyRhombus, BevySegment2d, BevyTetrahedron, BevyTorus,
+        BevyTriangle2d,
+    },
+    sprite::{BevyAnchor, BevySpriteConfig, BevySpriteScalingMode},
+    text::{BevyFontSmoothing, BevyJustify, BevyLineBreak, BevyTextFont, BevyTextLayout},
+    time::BevyTimer,
+    transform::{BevyGlobalTransform, BevyTransform},
+    vec::BevyVec3A,
+};

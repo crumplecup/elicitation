@@ -132,16 +132,16 @@ mod geojson_impls {
 
     impl_select_spec!(
         type    = geojson::GeometryValue,
-        name    = "geojson::GeometryValue",
-        summary = "The geometry payload of a GeoJSON Geometry value.",
+        name    = "geojson::Value",
+        summary = "A GeoJSON geometry value — the payload inside a Geometry object.",
         variants = [
-            ("Point", "A single coordinate position"),
+            ("Point", "A single coordinate position [longitude, latitude, (altitude)]"),
             ("MultiPoint", "A collection of point positions"),
-            ("LineString", "An ordered sequence of positions"),
-            ("MultiLineString", "A collection of line strings"),
-            ("Polygon", "A polygon with an exterior ring and optional holes"),
-            ("MultiPolygon", "A collection of polygons"),
-            ("GeometryCollection", "A heterogeneous collection of GeoJSON Geometry values"),
+            ("LineString", "An ordered sequence of coordinate positions"),
+            ("MultiLineString", "A collection of LineString coordinate arrays"),
+            ("Polygon", "A surface bounded by a linear ring plus optional holes"),
+            ("MultiPolygon", "A collection of Polygon coordinate arrays"),
+            ("GeometryCollection", "An ordered collection of Geometry objects"),
         ]
     );
 
