@@ -209,6 +209,11 @@ pub enum PanelMode {
         /// Whether a fetch is currently in progress.
         loading: bool,
     },
+    /// Connection profile editor — shows all fields including SSH tunnel and SSL.
+    ConnectionEditor {
+        /// The profile being edited (a clone; changes are not persisted until saved).
+        profile: ConnectionProfile,
+    },
 }
 
 impl Default for PanelMode {
@@ -1395,6 +1400,17 @@ impl ArchiveNavModel {
                 *ix = indexes;
                 *loading = false;
             }
+        }
+    }
+
+    // ── Phase 13 — Connection editor ─────────────────────────────────────────
+
+    /// Open the connection editor panel for `profile`, or close it if already open.
+    pub fn toggle_connection_editor(&mut self, profile: ConnectionProfile) {
+        if matches!(self.panel, PanelMode::ConnectionEditor { .. }) {
+            self.panel = PanelMode::ColumnDetail;
+        } else {
+            self.panel = PanelMode::ConnectionEditor { profile };
         }
     }
 
@@ -3134,6 +3150,61 @@ impl ArchiveNavModel {
                 list.set_children(items);
                 nodes.insert(list_id, list);
                 children.push(list_id);
+            }
+            PanelMode::ConnectionEditor { profile } => {
+                // Form heading
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label(format!("Edit connection: {}", profile.name));
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                // One TextInput per editable field
+                let fields: &[(&str, String)] = &[
+                    ("Name", profile.name.clone()),
+                    ("URL env var", profile.url_env_key.clone()),
+                    ("Color", profile.color.clone().unwrap_or_default()),
+                    ("SSH host", profile.ssh_host.clone().unwrap_or_default()),
+                    (
+                        "SSH port",
+                        profile.ssh_port.map_or(String::new(), |p| p.to_string()),
+                    ),
+                    ("SSH user", profile.ssh_user.clone().unwrap_or_default()),
+                    (
+                        "SSH key env var",
+                        profile.ssh_key_env.clone().unwrap_or_default(),
+                    ),
+                    ("SSL mode", format!("{}", profile.ssl_mode)),
+                    (
+                        "SSL cert env var",
+                        profile.ssl_cert_env.clone().unwrap_or_default(),
+                    ),
+                    (
+                        "SSL key env var",
+                        profile.ssl_key_env.clone().unwrap_or_default(),
+                    ),
+                    (
+                        "SSL CA env var",
+                        profile.ssl_ca_env.clone().unwrap_or_default(),
+                    ),
+                ];
+                let form_id = alloc();
+                let mut field_ids: Vec<AkNodeId> = Vec::new();
+                for (label, value) in fields {
+                    let field_id = alloc();
+                    let mut field = AkNode::new(AkRole::TextInput);
+                    field.set_label(label.to_string());
+                    if !value.is_empty() {
+                        field.set_value(Box::<str>::from(value.as_str()));
+                    }
+                    nodes.insert(field_id, field);
+                    field_ids.push(field_id);
+                }
+                let mut form = AkNode::new(AkRole::Form);
+                form.set_label(format!("Edit connection: {}", profile.name));
+                form.set_children(field_ids);
+                nodes.insert(form_id, form);
+                children.push(form_id);
             }
         }
 

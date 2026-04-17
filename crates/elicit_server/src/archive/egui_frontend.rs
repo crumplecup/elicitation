@@ -24,7 +24,7 @@ use winit::{
 
 use crate::archive::{
     ArchiveDbBackend, ArchiveResult, BackendKind, ConnectionProfile, ConnectionSet, HistoryStore,
-    SavedQueryStore,
+    SavedQueryStore, SslMode,
     errors::{ArchiveError, ArchiveErrorKind},
     nav_model::{ArchiveNavModel, FetchRequest, PanelEvent, PanelMode},
     nav_tree::{NavTree, build_nav_tree},
@@ -547,6 +547,10 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
                 if let Some(req) = self.model.toggle_index_panel() {
                     let _ = self.req_tx.try_send(req);
                 }
+            }
+            A::EditConnection => {
+                let profile = self.model.conn_active_profile().clone();
+                self.model.toggle_connection_editor(profile);
             }
             A::ToggleExportPicker => {
                 if self.model.panel.is_data_grid() {
@@ -1164,6 +1168,14 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
         url_env_key: url.clone().unwrap_or_default(),
         backend: BackendKind::Postgres,
         color: None,
+        ssh_host: None,
+        ssh_port: None,
+        ssh_user: None,
+        ssh_key_env: None,
+        ssl_mode: SslMode::Prefer,
+        ssl_cert_env: None,
+        ssl_key_env: None,
+        ssl_ca_env: None,
     };
     let connections = ConnectionSet::from_single(profile, ArchiveNavModel::new(nav), url);
     let mut app = ArchiveEguiApp::new(connections, req_tx, event_rx, history, saved);

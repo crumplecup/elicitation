@@ -164,6 +164,8 @@ pub enum ArchiveAction {
     OpenConstraints,
     /// Open or close the index panel for the selected table.
     OpenIndexes,
+    /// Open or close the connection profile editor for the active connection.
+    EditConnection,
     /// Cycle forward to the next admin panel tab.
     AdminTabNext,
     /// Cycle backward to the previous admin panel tab.
@@ -345,6 +347,13 @@ impl ArchiveKeyMap {
                 true,
             ),
             KeyMapEntry::nav(p(K::Char('i')), A::OpenIndexes, "i", "Indexes", true),
+            KeyMapEntry::nav(
+                p(K::Char('o')),
+                A::EditConnection,
+                "o",
+                "Edit connection",
+                true,
+            ),
             KeyMapEntry::nav(p(K::Char(']')), A::AdminTabNext, "]", "Next tab", true),
             KeyMapEntry::nav(p(K::Char('[')), A::AdminTabPrev, "[", "Prev tab", true),
             KeyMapEntry::nav(p(K::Char('x')), A::ToggleExportPicker, "x", "Export", true),

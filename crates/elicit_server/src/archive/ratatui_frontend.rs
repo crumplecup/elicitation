@@ -36,7 +36,7 @@ use crate::archive::nav_model::{ArchiveNavModel, FetchRequest, PanelEvent, Panel
 use crate::archive::nav_tree::{NavTree, build_nav_tree};
 use crate::archive::{
     ArchiveDbBackend, ArchiveResult, BackendKind, ConnectionProfile, ConnectionSet, HistoryStore,
-    SavedQueryStore,
+    SavedQueryStore, SslMode,
     errors::{ArchiveError, ArchiveErrorKind},
     plugins::export::export_query_result,
     plugins::query::{execute_sql_direct, preview_table_direct},
@@ -350,6 +350,10 @@ impl crate::archive::ArchiveFrontend for TuiApp {
                 if let Some(req) = self.model.toggle_index_panel() {
                     let _ = self.req_tx.try_send(req);
                 }
+            }
+            A::EditConnection => {
+                let profile = self.model.conn_active_profile().clone();
+                self.model.toggle_connection_editor(profile);
             }
             A::AdminTabNext => self.model.admin_tab_next(),
             A::AdminTabPrev => self.model.admin_tab_prev(),
@@ -813,6 +817,14 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
         url_env_key: url.clone().unwrap_or_default(),
         backend: BackendKind::Postgres,
         color: None,
+        ssh_host: None,
+        ssh_port: None,
+        ssh_user: None,
+        ssh_key_env: None,
+        ssl_mode: SslMode::Prefer,
+        ssl_cert_env: None,
+        ssl_key_env: None,
+        ssl_ca_env: None,
     };
     let connections = ConnectionSet::from_single(profile, ArchiveNavModel::new(nav), url);
     let mut app = TuiApp::new(connections, req_tx, history, saved);

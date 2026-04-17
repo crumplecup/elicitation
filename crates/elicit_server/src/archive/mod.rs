@@ -56,6 +56,6 @@ pub use types::{
     ErdEdge, ErdLayout, ErdNode, ExplainNode, ExportFormat, ExportResult, FkAction,
     ForeignKeyDescriptor, FunctionDescriptor, FunctionVolatility, IndexDescriptor, MonitorSnapshot,
     MonitorTab, QueryHistoryEntry, QueryResult, RowEditKind, RowEditState, SavedQuery,
-    SchemaDescriptor, SequenceDescriptor, StagedEdit, TableDescriptor, TableInspection, TableType,
-    TriggerDescriptor, TriggerEvents,
+    SchemaDescriptor, SequenceDescriptor, SslMode, StagedEdit, TableDescriptor, TableInspection,
+    TableType, TriggerDescriptor, TriggerEvents,
 };

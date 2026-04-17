@@ -782,6 +782,44 @@ impl Default for RowEditState {
 /// The raw connection URL is never stored directly; instead, `url_env_key`
 /// names the environment variable that holds it (e.g. `"DATABASE_URL"`).
 /// At runtime, [`ConnectionSet`] resolves the key via `std::env::var`.
+/// SSL connection mode, matching PostgreSQL `sslmode` parameter semantics.
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    Default,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    Elicit,
+    strum::EnumIter,
+    derive_more::Display,
+)]
+pub enum SslMode {
+    /// Never use SSL.
+    #[display("disable")]
+    Disable,
+    /// Try non-SSL first, fall back to SSL.
+    #[display("allow")]
+    Allow,
+    /// Try SSL first, fall back to non-SSL.
+    #[default]
+    #[display("prefer")]
+    Prefer,
+    /// Always use SSL; do not verify certificate.
+    #[display("require")]
+    Require,
+    /// Always use SSL; verify CA certificate.
+    #[display("verify-ca")]
+    VerifyCa,
+    /// Always use SSL; verify CA certificate and hostname.
+    #[display("verify-full")]
+    VerifyFull,
+}
+
 ///
 /// [`ConnectionSet`]: crate::archive::nav_model::ConnectionSet
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
@@ -795,6 +833,27 @@ pub struct ConnectionProfile {
     pub backend: BackendKind,
     /// Optional Catppuccin accent colour for the tab badge (e.g. `"blue"`).
     pub color: Option<String>,
+
+    // ── SSH tunnel (all optional; tunnel is active when `ssh_host` is set) ──
+    /// Hostname or IP of the SSH bastion / jump host.
+    pub ssh_host: Option<String>,
+    /// SSH port on the bastion (default 22 when `None`).
+    pub ssh_port: Option<u16>,
+    /// SSH username on the bastion.
+    pub ssh_user: Option<String>,
+    /// Environment variable naming the path to the SSH private key file.
+    /// The actual key path stays in the environment; never stored here.
+    pub ssh_key_env: Option<String>,
+
+    // ── SSL ──────────────────────────────────────────────────────────────────
+    /// PostgreSQL `sslmode` setting.
+    pub ssl_mode: SslMode,
+    /// Env var naming the client certificate file path (PEM).
+    pub ssl_cert_env: Option<String>,
+    /// Env var naming the client private key file path (PEM).
+    pub ssl_key_env: Option<String>,
+    /// Env var naming the CA certificate bundle path (PEM).
+    pub ssl_ca_env: Option<String>,
 }
 
 // ── Phase 4 — Advanced Object Types ──────────────────────────────────────────

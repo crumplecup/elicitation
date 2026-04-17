@@ -60,7 +60,7 @@ use tokio::sync::Mutex;
 use tracing::instrument;
 
 use crate::archive::{
-    ArchiveDbBackend, ArchiveResult, BackendKind, ConnectionProfile, ConnectionSet,
+    ArchiveDbBackend, ArchiveResult, BackendKind, ConnectionProfile, ConnectionSet, SslMode,
     errors::{ArchiveError, ArchiveErrorKind},
     nav_model::{ArchiveNavModel, FetchRequest, PanelMode},
     nav_tree::{NavTree, build_nav_tree},
@@ -1350,6 +1350,10 @@ fn dispatch_action_on_model(
             // Transition to loading state; /api/indexes HTMX call supplies data.
             let _ = model.toggle_index_panel();
         }
+        A::EditConnection => {
+            let profile = model.conn_active_profile().clone();
+            model.toggle_connection_editor(profile);
+        }
         A::ToggleExportPicker => {
             if model.panel.is_data_grid() {
                 model.toggle_export_picker();
@@ -1657,6 +1661,14 @@ pub async fn run_browser(nav: NavTree, url: Option<String>, port: u16) -> Archiv
         url_env_key: url.clone().unwrap_or_default(),
         backend: BackendKind::Postgres,
         color: None,
+        ssh_host: None,
+        ssh_port: None,
+        ssh_user: None,
+        ssh_key_env: None,
+        ssl_mode: SslMode::Prefer,
+        ssl_cert_env: None,
+        ssl_key_env: None,
+        ssl_ca_env: None,
     };
     let connections = ConnectionSet::from_single(profile, ArchiveNavModel::new(nav), url);
     let model = Arc::new(Mutex::new(connections));
