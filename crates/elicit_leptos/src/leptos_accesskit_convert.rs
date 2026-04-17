@@ -1290,6 +1290,24 @@ fn textarea_html(node: &Node, depth: usize, mode: LeptosRenderMode) -> String {
         String::new()
     };
     let _ = mode;
+
+    // SQL editor: overlay pattern — transparent textarea over highlighted <pre>.
+    if label.eq_ignore_ascii_case("sql editor") {
+        return format!(
+            "{ind}<div class=\"code-wrap\">\n\
+             {ind1}<pre class=\"code-output\" aria-hidden=\"true\"></pre>\n\
+             {ind1}<textarea class=\"sql-ta\"{ph}{aria}{disabled}{readonly}>{value}</textarea>\n\
+             {ind}</div>\n",
+            ind = indent(depth),
+            ind1 = indent(depth + 1),
+            ph = ph,
+            aria = aria,
+            disabled = disabled,
+            readonly = readonly,
+            value = html_escape(value),
+        );
+    }
+
     format!(
         "{}<textarea{}{}{}{}>\n{}</textarea>\n",
         indent(depth),

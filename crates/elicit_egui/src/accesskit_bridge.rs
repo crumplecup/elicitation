@@ -1722,7 +1722,21 @@ fn render_node_recursive(
             if node.is_read_only() || node.is_disabled() {
                 te = te.interactive(false);
             }
-            ui.add(te);
+            // SQL editor: attach syntax-highlighting layouter.
+            let is_sql = node
+                .label()
+                .map(|n: &str| n.eq_ignore_ascii_case("sql editor"))
+                .unwrap_or(false);
+            if is_sql {
+                let mut layouter = |ui: &egui::Ui, s: &dyn egui::TextBuffer, _wrap: f32| {
+                    let job = sql_layout_job(s.as_str());
+                    ui.painter().layout_job(job)
+                };
+                te = te.layouter(&mut layouter);
+                ui.add(te);
+            } else {
+                ui.add(te);
+            }
             stats.widgets_rendered += 1;
         }
         Role::NumberInput | Role::SpinButton => {
@@ -2100,4 +2114,259 @@ fn parse_kv_coords_egui(desc: &str) -> std::collections::HashMap<&str, f32> {
             Some((k.trim(), v))
         })
         .collect()
+}
+
+// ── SQL syntax highlighting for egui TextEdit ─────────────────────────────────
+
+/// Catppuccin Mocha colour constants for SQL token classes.
+const SQL_COLOR_KW: egui::Color32 = egui::Color32::from_rgb(0xcb, 0xa6, 0xf7); // Mauve
+const SQL_COLOR_STR: egui::Color32 = egui::Color32::from_rgb(0xa6, 0xe3, 0xa1); // Green
+const SQL_COLOR_COMMENT: egui::Color32 = egui::Color32::from_rgb(0x6c, 0x70, 0x86); // Overlay1
+const SQL_COLOR_NUM: egui::Color32 = egui::Color32::from_rgb(0xfa, 0xb3, 0x87); // Peach
+const SQL_COLOR_DEFAULT: egui::Color32 = egui::Color32::from_rgb(0xcd, 0xd6, 0xf4); // Text
+
+/// SQL keyword set (uppercase).
+fn is_sql_keyword(word: &str) -> bool {
+    matches!(
+        word,
+        "SELECT"
+            | "FROM"
+            | "WHERE"
+            | "JOIN"
+            | "LEFT"
+            | "RIGHT"
+            | "INNER"
+            | "OUTER"
+            | "FULL"
+            | "CROSS"
+            | "ON"
+            | "GROUP"
+            | "BY"
+            | "ORDER"
+            | "HAVING"
+            | "LIMIT"
+            | "OFFSET"
+            | "INSERT"
+            | "INTO"
+            | "VALUES"
+            | "UPDATE"
+            | "SET"
+            | "DELETE"
+            | "CREATE"
+            | "TABLE"
+            | "VIEW"
+            | "INDEX"
+            | "DROP"
+            | "ALTER"
+            | "ADD"
+            | "COLUMN"
+            | "CONSTRAINT"
+            | "PRIMARY"
+            | "KEY"
+            | "FOREIGN"
+            | "REFERENCES"
+            | "UNIQUE"
+            | "NOT"
+            | "NULL"
+            | "DEFAULT"
+            | "AND"
+            | "OR"
+            | "IN"
+            | "IS"
+            | "LIKE"
+            | "ILIKE"
+            | "BETWEEN"
+            | "EXISTS"
+            | "CASE"
+            | "WHEN"
+            | "THEN"
+            | "ELSE"
+            | "END"
+            | "AS"
+            | "DISTINCT"
+            | "ALL"
+            | "UNION"
+            | "INTERSECT"
+            | "EXCEPT"
+            | "WITH"
+            | "RETURNING"
+            | "BEGIN"
+            | "COMMIT"
+            | "ROLLBACK"
+            | "TRANSACTION"
+            | "EXPLAIN"
+            | "ANALYZE"
+            | "TRUNCATE"
+            | "GRANT"
+            | "REVOKE"
+            | "SCHEMA"
+            | "DATABASE"
+            | "SEQUENCE"
+            | "FUNCTION"
+            | "PROCEDURE"
+            | "TRIGGER"
+            | "EXTENSION"
+    )
+}
+
+/// A single SQL token with its colour.
+struct SqlSpan<'a> {
+    text: &'a str,
+    color: egui::Color32,
+}
+
+/// Tokenise `sql` into coloured spans for the egui layouter.
+///
+/// Handles (in priority order): block comments, line comments, single-quoted
+/// strings, double-quoted identifiers, numeric literals, and keywords.
+/// Everything else is rendered in the default text colour.
+fn sql_spans(sql: &str) -> Vec<SqlSpan<'_>> {
+    let mut spans = Vec::new();
+    let bytes = sql.as_bytes();
+    let len = bytes.len();
+    let mut i = 0;
+    let mut seg_start = 0;
+
+    macro_rules! flush {
+        ($end:expr) => {
+            if seg_start < $end {
+                spans.push(SqlSpan {
+                    text: &sql[seg_start..$end],
+                    color: SQL_COLOR_DEFAULT,
+                });
+            }
+        };
+    }
+
+    while i < len {
+        // Block comment  /* ... */
+        if i + 1 < len && bytes[i] == b'/' && bytes[i + 1] == b'*' {
+            flush!(i);
+            let start = i;
+            i += 2;
+            while i + 1 < len && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
+                i += 1;
+            }
+            i = (i + 2).min(len);
+            spans.push(SqlSpan {
+                text: &sql[start..i],
+                color: SQL_COLOR_COMMENT,
+            });
+            seg_start = i;
+            continue;
+        }
+        // Line comment  -- ...
+        if i + 1 < len && bytes[i] == b'-' && bytes[i + 1] == b'-' {
+            flush!(i);
+            let start = i;
+            while i < len && bytes[i] != b'\n' {
+                i += 1;
+            }
+            spans.push(SqlSpan {
+                text: &sql[start..i],
+                color: SQL_COLOR_COMMENT,
+            });
+            seg_start = i;
+            continue;
+        }
+        // Single-quoted string  '...'
+        if bytes[i] == b'\'' {
+            flush!(i);
+            let start = i;
+            i += 1;
+            while i < len {
+                if bytes[i] == b'\\' {
+                    i += 2;
+                    continue;
+                }
+                if bytes[i] == b'\'' {
+                    i += 1;
+                    break;
+                }
+                i += 1;
+            }
+            spans.push(SqlSpan {
+                text: &sql[start..i],
+                color: SQL_COLOR_STR,
+            });
+            seg_start = i;
+            continue;
+        }
+        // Double-quoted identifier  "..."
+        if bytes[i] == b'"' {
+            flush!(i);
+            let start = i;
+            i += 1;
+            while i < len {
+                if bytes[i] == b'\\' {
+                    i += 2;
+                    continue;
+                }
+                if bytes[i] == b'"' {
+                    i += 1;
+                    break;
+                }
+                i += 1;
+            }
+            spans.push(SqlSpan {
+                text: &sql[start..i],
+                color: SQL_COLOR_STR,
+            });
+            seg_start = i;
+            continue;
+        }
+        // Numeric literal
+        if bytes[i].is_ascii_digit() {
+            flush!(i);
+            let start = i;
+            while i < len && (bytes[i].is_ascii_digit() || bytes[i] == b'.') {
+                i += 1;
+            }
+            spans.push(SqlSpan {
+                text: &sql[start..i],
+                color: SQL_COLOR_NUM,
+            });
+            seg_start = i;
+            continue;
+        }
+        // Identifier / keyword
+        if bytes[i].is_ascii_alphabetic() || bytes[i] == b'_' {
+            flush!(i);
+            let start = i;
+            while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_') {
+                i += 1;
+            }
+            let word = &sql[start..i];
+            let upper = word.to_ascii_uppercase();
+            let color = if is_sql_keyword(&upper) {
+                SQL_COLOR_KW
+            } else {
+                SQL_COLOR_DEFAULT
+            };
+            spans.push(SqlSpan { text: word, color });
+            seg_start = i;
+            continue;
+        }
+        i += 1;
+    }
+    flush!(len);
+    spans
+}
+
+/// Build an [`egui::text::LayoutJob`] for `sql` with syntax highlighting.
+fn sql_layout_job(sql: &str) -> egui::text::LayoutJob {
+    let font = egui::FontId::monospace(14.0);
+    let mut job = egui::text::LayoutJob::default();
+    for span in sql_spans(sql) {
+        job.append(
+            span.text,
+            0.0,
+            egui::text::TextFormat {
+                font_id: font.clone(),
+                color: span.color,
+                ..Default::default()
+            },
+        );
+    }
+    job
 }

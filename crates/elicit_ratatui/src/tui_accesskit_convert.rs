@@ -5,7 +5,10 @@
 //! descriptions into the shared AccessKit IR for verification and
 //! cross-frontend translation.
 
-use crate::serde_types::{BlockJson, BordersJson, DirectionJson, TuiNode, WidgetJson};
+use crate::serde_types::{
+    BlockJson, BordersJson, ColorJson, DirectionJson, LineJson, ParagraphText, SpanJson, StyleJson,
+    TextJson, TuiNode, WidgetJson,
+};
 use accesskit::{Node, NodeId, Role, Tree, TreeId, TreeUpdate};
 use elicit_ui::ColorTheme;
 
@@ -468,6 +471,23 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
             track_style: None,
             state: None,
         },
+        Role::MultilineTextInput | Role::TextInput => {
+            // SQL editor: syntax-highlighted rich text.
+            let is_sql = label.eq_ignore_ascii_case("sql editor");
+            let para_text = if is_sql {
+                sql_highlight_rich(&text_str)
+            } else {
+                text_str.into()
+            };
+            WidgetJson::Paragraph {
+                text: para_text,
+                style: None,
+                wrap: false,
+                scroll: None,
+                alignment: None,
+                block: block_from_label(&label),
+            }
+        }
         // Fallback: Paragraph with text (label IS the content, so no block title)
         _ => WidgetJson::Paragraph {
             text: text_str.into(),
@@ -577,4 +597,293 @@ fn truncate_center(s: &str, width: usize) -> String {
     } else {
         s.to_string()
     }
+}
+
+// ── SQL syntax highlighting for ratatui Paragraph ─────────────────────────────
+
+/// Catppuccin Mocha colours for SQL token classes.
+const RATATUI_SQL_KW: ColorJson = ColorJson::Rgb {
+    r: 0xcb,
+    g: 0xa6,
+    b: 0xf7,
+}; // Mauve
+const RATATUI_SQL_STR: ColorJson = ColorJson::Rgb {
+    r: 0xa6,
+    g: 0xe3,
+    b: 0xa1,
+}; // Green
+const RATATUI_SQL_COMMENT: ColorJson = ColorJson::Rgb {
+    r: 0x6c,
+    g: 0x70,
+    b: 0x86,
+}; // Overlay1
+const RATATUI_SQL_NUM: ColorJson = ColorJson::Rgb {
+    r: 0xfa,
+    g: 0xb3,
+    b: 0x87,
+}; // Peach
+const RATATUI_SQL_DEFAULT: ColorJson = ColorJson::Rgb {
+    r: 0xcd,
+    g: 0xd6,
+    b: 0xf4,
+}; // Text
+
+fn ratatui_is_sql_keyword(word: &str) -> bool {
+    matches!(
+        word,
+        "SELECT"
+            | "FROM"
+            | "WHERE"
+            | "JOIN"
+            | "LEFT"
+            | "RIGHT"
+            | "INNER"
+            | "OUTER"
+            | "FULL"
+            | "CROSS"
+            | "ON"
+            | "GROUP"
+            | "BY"
+            | "ORDER"
+            | "HAVING"
+            | "LIMIT"
+            | "OFFSET"
+            | "INSERT"
+            | "INTO"
+            | "VALUES"
+            | "UPDATE"
+            | "SET"
+            | "DELETE"
+            | "CREATE"
+            | "TABLE"
+            | "VIEW"
+            | "INDEX"
+            | "DROP"
+            | "ALTER"
+            | "ADD"
+            | "COLUMN"
+            | "CONSTRAINT"
+            | "PRIMARY"
+            | "KEY"
+            | "FOREIGN"
+            | "REFERENCES"
+            | "UNIQUE"
+            | "NOT"
+            | "NULL"
+            | "DEFAULT"
+            | "AND"
+            | "OR"
+            | "IN"
+            | "IS"
+            | "LIKE"
+            | "ILIKE"
+            | "BETWEEN"
+            | "EXISTS"
+            | "CASE"
+            | "WHEN"
+            | "THEN"
+            | "ELSE"
+            | "END"
+            | "AS"
+            | "DISTINCT"
+            | "ALL"
+            | "UNION"
+            | "INTERSECT"
+            | "EXCEPT"
+            | "WITH"
+            | "RETURNING"
+            | "BEGIN"
+            | "COMMIT"
+            | "ROLLBACK"
+            | "TRANSACTION"
+            | "EXPLAIN"
+            | "ANALYZE"
+            | "TRUNCATE"
+            | "GRANT"
+            | "REVOKE"
+            | "SCHEMA"
+            | "DATABASE"
+            | "SEQUENCE"
+            | "FUNCTION"
+            | "PROCEDURE"
+            | "TRIGGER"
+            | "EXTENSION"
+    )
+}
+
+/// Tokenise one SQL line into `SpanJson` slices with Catppuccin Mocha colours.
+fn sql_highlight_line(line: &str) -> Vec<SpanJson> {
+    let bytes = line.as_bytes();
+    let len = bytes.len();
+    let mut spans = Vec::new();
+    let mut i = 0;
+    let mut seg_start = 0;
+
+    macro_rules! flush {
+        ($end:expr, $color:expr) => {
+            if seg_start < $end {
+                spans.push(SpanJson {
+                    content: line[seg_start..$end].to_string(),
+                    style: Some(StyleJson {
+                        fg: Some($color),
+                        ..Default::default()
+                    }),
+                });
+            }
+        };
+    }
+    macro_rules! flush_default {
+        ($end:expr) => {
+            flush!($end, RATATUI_SQL_DEFAULT)
+        };
+    }
+
+    while i < len {
+        // Block comment  /* ... */
+        if i + 1 < len && bytes[i] == b'/' && bytes[i + 1] == b'*' {
+            flush_default!(i);
+            let start = i;
+            i += 2;
+            while i + 1 < len && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
+                i += 1;
+            }
+            i = (i + 2).min(len);
+            spans.push(SpanJson {
+                content: line[start..i].to_string(),
+                style: Some(StyleJson {
+                    fg: Some(RATATUI_SQL_COMMENT),
+                    ..Default::default()
+                }),
+            });
+            seg_start = i;
+            continue;
+        }
+        // Line comment  --
+        if i + 1 < len && bytes[i] == b'-' && bytes[i + 1] == b'-' {
+            flush_default!(i);
+            spans.push(SpanJson {
+                content: line[i..].to_string(),
+                style: Some(StyleJson {
+                    fg: Some(RATATUI_SQL_COMMENT),
+                    ..Default::default()
+                }),
+            });
+            return spans;
+        }
+        // Single-quoted string
+        if bytes[i] == b'\'' {
+            flush_default!(i);
+            let start = i;
+            i += 1;
+            while i < len {
+                if bytes[i] == b'\\' {
+                    i += 2;
+                    continue;
+                }
+                if bytes[i] == b'\'' {
+                    i += 1;
+                    break;
+                }
+                i += 1;
+            }
+            spans.push(SpanJson {
+                content: line[start..i].to_string(),
+                style: Some(StyleJson {
+                    fg: Some(RATATUI_SQL_STR),
+                    ..Default::default()
+                }),
+            });
+            seg_start = i;
+            continue;
+        }
+        // Double-quoted identifier
+        if bytes[i] == b'"' {
+            flush_default!(i);
+            let start = i;
+            i += 1;
+            while i < len {
+                if bytes[i] == b'\\' {
+                    i += 2;
+                    continue;
+                }
+                if bytes[i] == b'"' {
+                    i += 1;
+                    break;
+                }
+                i += 1;
+            }
+            spans.push(SpanJson {
+                content: line[start..i].to_string(),
+                style: Some(StyleJson {
+                    fg: Some(RATATUI_SQL_STR),
+                    ..Default::default()
+                }),
+            });
+            seg_start = i;
+            continue;
+        }
+        // Numeric literal
+        if bytes[i].is_ascii_digit() {
+            flush_default!(i);
+            let start = i;
+            while i < len && (bytes[i].is_ascii_digit() || bytes[i] == b'.') {
+                i += 1;
+            }
+            spans.push(SpanJson {
+                content: line[start..i].to_string(),
+                style: Some(StyleJson {
+                    fg: Some(RATATUI_SQL_NUM),
+                    ..Default::default()
+                }),
+            });
+            seg_start = i;
+            continue;
+        }
+        // Identifier / keyword
+        if bytes[i].is_ascii_alphabetic() || bytes[i] == b'_' {
+            flush_default!(i);
+            let start = i;
+            while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_') {
+                i += 1;
+            }
+            let word = &line[start..i];
+            let upper = word.to_ascii_uppercase();
+            let color = if ratatui_is_sql_keyword(&upper) {
+                RATATUI_SQL_KW
+            } else {
+                RATATUI_SQL_DEFAULT
+            };
+            spans.push(SpanJson {
+                content: word.to_string(),
+                style: Some(StyleJson {
+                    fg: Some(color),
+                    ..Default::default()
+                }),
+            });
+            seg_start = i;
+            continue;
+        }
+        i += 1;
+    }
+    flush_default!(len);
+    spans
+}
+
+/// Build a rich [`ParagraphText`] from a SQL string with Catppuccin Mocha highlighting.
+///
+/// Each line in `sql` becomes a [`LineJson`] containing coloured [`SpanJson`] tokens.
+fn sql_highlight_rich(sql: &str) -> ParagraphText {
+    let lines = sql
+        .lines()
+        .map(|line| LineJson {
+            spans: sql_highlight_line(line),
+            style: None,
+            alignment: None,
+        })
+        .collect();
+    ParagraphText::Rich(TextJson {
+        lines,
+        style: None,
+        alignment: None,
+    })
 }

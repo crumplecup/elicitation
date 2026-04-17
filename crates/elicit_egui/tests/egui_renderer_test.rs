@@ -99,7 +99,7 @@ fn render_single_button() {
     let ctx = egui_ctx();
     let mut stats = RenderStats::default();
     let _output = ctx.run_ui(egui::RawInput::default(), |ui| {
-        stats = render_tree(ui, &nodes, root_id);
+        (stats, _) = render_tree(ui, &nodes, root_id);
     });
 
     assert_eq!(stats.widgets_rendered, 1);
@@ -119,7 +119,7 @@ fn render_single_label() {
     let ctx = egui_ctx();
     let mut stats = RenderStats::default();
     let _output = ctx.run_ui(egui::RawInput::default(), |ui| {
-        stats = render_tree(ui, &nodes, root_id);
+        (stats, _) = render_tree(ui, &nodes, root_id);
     });
 
     assert_eq!(stats.widgets_rendered, 1);

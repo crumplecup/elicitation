@@ -1436,6 +1436,51 @@ fn build_router(state: AppState) -> Router {
 
 // ── HTML shell ────────────────────────────────────────────────────────────────
 
+/// SQL syntax highlighting JavaScript (inline, no CDN dependency).
+///
+/// Defines `_sqlHL(text) → HTML` using a simple token-splitting regex that
+/// recognises strings, `--`/`/* */` comments, numeric literals, and SQL
+/// keywords (case-insensitive).  The result uses inline `style=` colouring
+/// with Catppuccin Mocha palette values.
+///
+/// Wired up via `input` events on `.sql-ta` elements and re-run after every
+/// HTMX settle so freshly-injected fragments also get highlighted.
+const SQL_HL_JS: &str = r#"
+(function(){
+var KW=new Set("SELECT FROM WHERE JOIN LEFT RIGHT INNER OUTER FULL CROSS ON GROUP BY ORDER HAVING LIMIT OFFSET INSERT INTO VALUES UPDATE SET DELETE CREATE TABLE VIEW INDEX DROP ALTER ADD COLUMN CONSTRAINT PRIMARY KEY FOREIGN REFERENCES UNIQUE NOT NULL DEFAULT AND OR IN IS LIKE ILIKE BETWEEN EXISTS CASE WHEN THEN ELSE END AS DISTINCT ALL UNION INTERSECT EXCEPT WITH RETURNING BEGIN COMMIT ROLLBACK TRANSACTION EXPLAIN ANALYZE TRUNCATE GRANT REVOKE SCHEMA DATABASE SEQUENCE FUNCTION PROCEDURE TRIGGER EXTENSION".split(' '));
+var RE=/(\'(?:[^\'\\]|\\.)*\'|"(?:[^"\\]|\\.)*"|--[^\n]*|\/\*[\s\S]*?\*\/|\b\d+(?:\.\d+)?\b|\b[A-Za-z_][A-Za-z0-9_]*\b)/;
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function hl(text){
+  var out='',s=text;
+  while(s.length){
+    var m=RE.exec(s);
+    if(!m){out+=esc(s);break;}
+    if(m.index>0)out+=esc(s.slice(0,m.index));
+    var v=m[0],st='';
+    if(v[0]==="'"||v[0]==='"')st='color:#a6e3a1';
+    else if(v[0]==='-'||v[0]==='/')st='color:#6c7086;font-style:italic';
+    else if(/^\d/.test(v))st='color:#fab387';
+    else if(KW.has(v.toUpperCase()))st='color:#cba6f7;font-weight:bold';
+    out+=st?'<span style="'+st+'">'+esc(v)+'</span>':esc(v);
+    s=s.slice(m.index+v.length);
+  }
+  return out;
+}
+function sync(ta){
+  var pre=ta.parentElement&&ta.parentElement.querySelector('.code-output');
+  if(!pre)return;
+  pre.innerHTML=hl(ta.value);
+  var h=ta.style.height;
+  if(h)pre.style.minHeight=h;
+}
+document.addEventListener('input',function(e){if(e.target.classList.contains('sql-ta'))sync(e.target);});
+document.addEventListener('htmx:afterSettle',function(){
+  document.querySelectorAll('.sql-ta').forEach(sync);
+});
+document.querySelectorAll('.sql-ta').forEach(sync);
+})();
+"#;
+
 fn wrap_page(body: &str) -> String {
     let css = concat!(
         "*{box-sizing:border-box;margin:0;padding:0}",
@@ -1507,6 +1552,17 @@ fn wrap_page(body: &str) -> String {
         "font-family:'Cascadia Code','Fira Code',monospace;font-weight:bold}",
         ".erd-col{fill:#cdd6f4;font-size:10px;font-family:'Cascadia Code','Fira Code',monospace}",
         ".erd-edge{stroke:#6c7086;stroke-width:1.5;fill:none;marker-end:url(#erd-arrow)}",
+        // SQL editor overlay (textarea on top of highlighted <pre>)
+        ".code-wrap{display:grid;min-height:8rem}",
+        ".code-wrap>*{grid-area:1/1;width:100%;min-height:8rem;",
+        "padding:.5rem;font-family:'Cascadia Code','Fira Code',Consolas,monospace;",
+        "font-size:.9rem;line-height:1.5;tab-size:4;white-space:pre-wrap;word-break:break-word;",
+        "box-sizing:border-box;border:1px solid #45475a;border-radius:3px;margin:0}",
+        ".code-output{background:#181825;color:#cdd6f4;pointer-events:none;overflow:hidden;",
+        "z-index:0;resize:none}",
+        ".sql-ta{background:transparent;color:transparent;caret-color:#cdd6f4;",
+        "outline:none;resize:vertical;z-index:1;position:relative}",
+        ".sql-ta:focus~.code-output,.sql-ta:focus+.code-output{border-color:#89b4fa}",
     );
 
     // JS: only IR-safe helpers — no HTML building, no side panels.
@@ -1568,7 +1624,7 @@ fn wrap_page(body: &str) -> String {
     );
     // Append the dynamically generated key listener from the IR key map.
     let js = format!(
-        "{js_static}{}",
+        "{js_static}{}{SQL_HL_JS}",
         crate::archive::ArchiveKeyMap::default_map()
             .to_js_listener(crate::archive::KeyMapMode::Default)
     );
