@@ -1729,7 +1729,7 @@ fn render_node_recursive(
                 .unwrap_or(false);
             if is_sql {
                 let mut layouter = |ui: &egui::Ui, s: &dyn egui::TextBuffer, _wrap: f32| {
-                    let job = sql_layout_job(s.as_str());
+                    let job = sql_layout_job(s.as_str(), elicit_ui::palettes::mocha());
                     ui.painter().layout_job(job)
                 };
                 te = te.layouter(&mut layouter);
@@ -2118,26 +2118,31 @@ fn parse_kv_coords_egui(desc: &str) -> std::collections::HashMap<&str, f32> {
 
 // ── SQL syntax highlighting for egui TextEdit ─────────────────────────────────
 
-/// Build an [`egui::text::LayoutJob`] for `sql` with Catppuccin Mocha syntax highlighting.
-fn sql_layout_job(sql: &str) -> egui::text::LayoutJob {
-    use elicit_accesskit::sql::mocha;
+/// Build an [`egui::text::LayoutJob`] for `sql` with palette-driven syntax highlighting.
+fn sql_layout_job(sql: &str, palette: &elicit_ui::Palette) -> egui::text::LayoutJob {
     use elicit_accesskit::sql::{SqlTokenKind, sql_tokens};
+    use elicit_ui::SemanticRole;
     let font = egui::FontId::monospace(14.0);
     let mut job = egui::text::LayoutJob::default();
     for token in sql_tokens(sql) {
-        let (r, g, b) = match token.kind {
-            SqlTokenKind::Keyword => mocha::KW,
-            SqlTokenKind::StringLiteral => mocha::STR,
-            SqlTokenKind::Comment => mocha::COMMENT,
-            SqlTokenKind::Number => mocha::NUM,
-            SqlTokenKind::Plain => mocha::TEXT,
+        let role = match token.kind {
+            SqlTokenKind::Keyword => SemanticRole::Keyword,
+            SqlTokenKind::StringLiteral => SemanticRole::StringLit,
+            SqlTokenKind::Comment => SemanticRole::Comment,
+            SqlTokenKind::Number => SemanticRole::Number,
+            SqlTokenKind::Plain => SemanticRole::Text,
         };
+        let c = palette.color(role);
         job.append(
             token.text,
             0.0,
             egui::text::TextFormat {
                 font_id: font.clone(),
-                color: egui::Color32::from_rgb(r, g, b),
+                color: egui::Color32::from_rgb(
+                    (c.r * 255.0).round() as u8,
+                    (c.g * 255.0).round() as u8,
+                    (c.b * 255.0).round() as u8,
+                ),
                 ..Default::default()
             },
         );

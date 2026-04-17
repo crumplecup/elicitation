@@ -31,16 +31,18 @@ use crate::archive::{
     plugins::export::export_query_result,
     plugins::query::{execute_sql_direct, preview_table_direct},
 };
-
-// ── Catppuccin Mocha palette (used by apply_theme) ────────────────────────────
+use elicit_ui::{Palette, SemanticRole, palettes};
 
 use egui::Color32;
-const BASE: Color32 = Color32::from_rgb(30, 30, 46);
-const SURFACE0: Color32 = Color32::from_rgb(49, 50, 68);
-const SURFACE1: Color32 = Color32::from_rgb(69, 71, 90);
-const TEXT: Color32 = Color32::from_rgb(205, 214, 244);
-const SUBTEXT0: Color32 = Color32::from_rgb(166, 173, 200);
-const BLUE: Color32 = Color32::from_rgb(137, 180, 250);
+
+/// Convert an `SrgbColor` to an egui `Color32`.
+fn to_color32(c: elicit_ui::SrgbColor) -> Color32 {
+    Color32::from_rgb(
+        (c.r * 255.0).round() as u8,
+        (c.g * 255.0).round() as u8,
+        (c.b * 255.0).round() as u8,
+    )
+}
 
 // ── Application state ─────────────────────────────────────────────────────────
 
@@ -96,23 +98,35 @@ impl ArchiveEguiApp {
         }
     }
 
-    fn apply_theme(ctx: &egui::Context) {
+    fn apply_theme(ctx: &egui::Context, palette: &Palette) {
+        let bg = to_color32(palette.color(SemanticRole::Background));
+        let surface = to_color32(palette.color(SemanticRole::Surface));
+        let text = to_color32(palette.color(SemanticRole::Text));
+        let dim = to_color32(palette.color(SemanticRole::DimText));
+        let accent = to_color32(palette.color(SemanticRole::Accent));
+        let accent_c = palette.color(SemanticRole::Accent);
+        let accent_alpha = Color32::from_rgba_unmultiplied(
+            (accent_c.r * 255.0).round() as u8,
+            (accent_c.g * 255.0).round() as u8,
+            (accent_c.b * 255.0).round() as u8,
+            60,
+        );
         let mut visuals = egui::Visuals::dark();
-        visuals.panel_fill = BASE;
-        visuals.window_fill = SURFACE0;
-        visuals.extreme_bg_color = SURFACE0;
-        visuals.code_bg_color = SURFACE0;
-        visuals.override_text_color = Some(TEXT);
-        visuals.selection.bg_fill = Color32::from_rgba_unmultiplied(137, 180, 250, 60);
-        visuals.selection.stroke = egui::Stroke::new(1.0, BLUE);
-        visuals.widgets.noninteractive.bg_fill = BASE;
-        visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(1.0, SUBTEXT0);
-        visuals.widgets.inactive.bg_fill = SURFACE0;
-        visuals.widgets.inactive.fg_stroke = egui::Stroke::new(1.0, TEXT);
-        visuals.widgets.hovered.bg_fill = SURFACE1;
-        visuals.widgets.hovered.fg_stroke = egui::Stroke::new(1.0, TEXT);
-        visuals.widgets.active.bg_fill = SURFACE1;
-        visuals.widgets.active.fg_stroke = egui::Stroke::new(1.0, BLUE);
+        visuals.panel_fill = bg;
+        visuals.window_fill = surface;
+        visuals.extreme_bg_color = surface;
+        visuals.code_bg_color = surface;
+        visuals.override_text_color = Some(text);
+        visuals.selection.bg_fill = accent_alpha;
+        visuals.selection.stroke = egui::Stroke::new(1.0, accent);
+        visuals.widgets.noninteractive.bg_fill = bg;
+        visuals.widgets.noninteractive.fg_stroke = egui::Stroke::new(1.0, dim);
+        visuals.widgets.inactive.bg_fill = surface;
+        visuals.widgets.inactive.fg_stroke = egui::Stroke::new(1.0, text);
+        visuals.widgets.hovered.bg_fill = surface;
+        visuals.widgets.hovered.fg_stroke = egui::Stroke::new(1.0, text);
+        visuals.widgets.active.bg_fill = surface;
+        visuals.widgets.active.fg_stroke = egui::Stroke::new(1.0, accent);
         ctx.set_visuals(visuals);
     }
 
@@ -797,7 +811,7 @@ impl ApplicationHandler for ArchiveEguiApp {
         surface.configure(&device, &config);
 
         let egui_ctx = egui::Context::default();
-        Self::apply_theme(&egui_ctx);
+        Self::apply_theme(&egui_ctx, palettes::mocha());
         let egui_state = EguiWinitState::new(
             egui_ctx,
             egui::ViewportId::ROOT,

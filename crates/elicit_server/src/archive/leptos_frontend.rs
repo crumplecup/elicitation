@@ -54,7 +54,7 @@ use axum::{
     routing::{delete, get, post},
 };
 use elicit_leptos::LeptosRenderer;
-use elicit_ui::{UiTreeRenderer as _, VerifiedTree};
+use elicit_ui::{Palette, SemanticRole, UiTreeRenderer as _, VerifiedTree, palettes};
 use serde::Deserialize;
 use tokio::sync::Mutex;
 use tracing::instrument;
@@ -84,6 +84,7 @@ struct AppState {
     renderer: Arc<LeptosRenderer>,
     history: Arc<Mutex<Option<HistoryStore>>>,
     saved: Arc<Mutex<Option<SavedQueryStore>>>,
+    palette: &'static Palette,
 }
 
 impl AppState {
@@ -188,7 +189,7 @@ type ApiResult<T> = Result<T, ApiError>;
 
 async fn serve_page(State(state): State<AppState>) -> Html<String> {
     match full_html(&state) {
-        Ok(body) => Html(wrap_page(&body)),
+        Ok(body) => Html(wrap_page(&body, state.palette)),
         Err(e) => Html(format!("<pre>render error: {e}</pre>")),
     }
 }
@@ -1487,138 +1488,151 @@ fn build_router(state: AppState) -> Router {
 
 // ── HTML shell ────────────────────────────────────────────────────────────────
 
+/// Convert an [`elicit_ui::SrgbColor`] to a CSS hex string (`#rrggbb`).
+fn hex(c: elicit_ui::SrgbColor) -> String {
+    format!(
+        "#{:02x}{:02x}{:02x}",
+        (c.r * 255.0).round() as u8,
+        (c.g * 255.0).round() as u8,
+        (c.b * 255.0).round() as u8,
+    )
+}
+
 /// SQL syntax highlighting JavaScript (inline, no CDN dependency).
 ///
-/// Defines `_sqlHL(text) → HTML` using a simple token-splitting regex that
-/// recognises strings, `--`/`/* */` comments, numeric literals, and SQL
-/// keywords (case-insensitive).  The result uses inline `style=` colouring
-/// with Catppuccin Mocha palette values.
-///
-/// Wired up via `input` events on `.sql-ta` elements and re-run after every
-/// HTMX settle so freshly-injected fragments also get highlighted.
-const SQL_HL_JS: &str = r#"
-(function(){
+/// Generates the highlighter with colour values drawn from `palette` so that
+/// every code token meets the 4.5:1 WCAG 2.2 Level AA contrast threshold
+/// against the palette background.
+fn sql_hl_js(palette: &Palette) -> String {
+    let kw = hex(palette.color(SemanticRole::Keyword));
+    let str = hex(palette.color(SemanticRole::StringLit));
+    let comment = hex(palette.color(SemanticRole::Comment));
+    let num = hex(palette.color(SemanticRole::Number));
+    format!(
+        r#"
+(function(){{
 var KW=new Set("SELECT FROM WHERE JOIN LEFT RIGHT INNER OUTER FULL CROSS ON GROUP BY ORDER HAVING LIMIT OFFSET INSERT INTO VALUES UPDATE SET DELETE CREATE TABLE VIEW INDEX DROP ALTER ADD COLUMN CONSTRAINT PRIMARY KEY FOREIGN REFERENCES UNIQUE NOT NULL DEFAULT AND OR IN IS LIKE ILIKE BETWEEN EXISTS CASE WHEN THEN ELSE END AS DISTINCT ALL UNION INTERSECT EXCEPT WITH RETURNING BEGIN COMMIT ROLLBACK TRANSACTION EXPLAIN ANALYZE TRUNCATE GRANT REVOKE SCHEMA DATABASE SEQUENCE FUNCTION PROCEDURE TRIGGER EXTENSION".split(' '));
 var RE=/(\'(?:[^\'\\]|\\.)*\'|"(?:[^"\\]|\\.)*"|--[^\n]*|\/\*[\s\S]*?\*\/|\b\d+(?:\.\d+)?\b|\b[A-Za-z_][A-Za-z0-9_]*\b)/;
-function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function hl(text){
+function esc(t){{return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}}
+function hl(text){{
   var out='',s=text;
-  while(s.length){
+  while(s.length){{
     var m=RE.exec(s);
-    if(!m){out+=esc(s);break;}
+    if(!m){{out+=esc(s);break;}}
     if(m.index>0)out+=esc(s.slice(0,m.index));
     var v=m[0],st='';
-    if(v[0]==="'"||v[0]==='"')st='color:#a6e3a1';
-    else if(v[0]==='-'||v[0]==='/')st='color:#6c7086;font-style:italic';
-    else if(/^\d/.test(v))st='color:#fab387';
-    else if(KW.has(v.toUpperCase()))st='color:#cba6f7;font-weight:bold';
+    if(v[0]==="'"||v[0]==='"')st='color:{str}';
+    else if(v[0]==='-'||v[0]==='/')st='color:{comment};font-style:italic';
+    else if(/^\d/.test(v))st='color:{num}';
+    else if(KW.has(v.toUpperCase()))st='color:{kw};font-weight:bold';
     out+=st?'<span style="'+st+'">'+esc(v)+'</span>':esc(v);
     s=s.slice(m.index+v.length);
-  }
+  }}
   return out;
-}
-function sync(ta){
+}}
+function sync(ta){{
   var pre=ta.parentElement&&ta.parentElement.querySelector('.code-output');
   if(!pre)return;
   pre.innerHTML=hl(ta.value);
   var h=ta.style.height;
   if(h)pre.style.minHeight=h;
-}
-document.addEventListener('input',function(e){if(e.target.classList.contains('sql-ta'))sync(e.target);});
-document.addEventListener('htmx:afterSettle',function(){
+}}
+document.addEventListener('input',function(e){{if(e.target.classList.contains('sql-ta'))sync(e.target);}});
+document.addEventListener('htmx:afterSettle',function(){{
   document.querySelectorAll('.sql-ta').forEach(sync);
-});
+}});
 document.querySelectorAll('.sql-ta').forEach(sync);
-})();
-"#;
+}})();
+"#
+    )
+}
 
-fn wrap_page(body: &str) -> String {
-    let css = concat!(
-        "*{box-sizing:border-box;margin:0;padding:0}",
-        "body{font-family:'Cascadia Code','Fira Code',Consolas,monospace;",
-        "background:#1e1e2e;color:#cdd6f4;height:100vh;display:flex;",
-        "flex-direction:column;overflow:hidden}",
-        // toolbar
-        "header.toolbar{display:flex;gap:.4rem;padding:.3rem .6rem;",
-        "background:#181825;border-bottom:1px solid #45475a;flex-shrink:0;",
-        "align-items:center}",
-        "header.toolbar [data-role='statictext']{color:#cba6f7;font-weight:bold;",
-        "margin-right:.6rem;font-size:.9rem}",
-        "header.toolbar button{background:#313244;color:#cdd6f4;border:1px solid #45475a;",
-        "border-radius:3px;padding:.15rem .55rem;font-family:inherit;font-size:.8rem;",
-        "cursor:pointer}",
-        "header.toolbar button:hover{background:#45475a}",
-        "header.toolbar button.active{border-color:#89b4fa;color:#89b4fa}",
-        "main{flex:1;display:flex;overflow:hidden}",
-        "nav{width:22rem;min-width:12rem;border-right:1px solid #45475a;",
-        "display:flex;flex-direction:column;overflow:hidden}",
-        "#nav-filter{width:100%;background:#313244;color:#cdd6f4;",
-        "border:none;border-bottom:1px solid #313244;padding:.35rem .5rem;",
-        "font-family:inherit;font-size:.85rem;outline:none;flex-shrink:0}",
-        "#nav-filter:focus{border-bottom-color:#89b4fa}",
-        "#nav-tree{flex:1;overflow-y:auto;padding:.25rem 0}",
-        "#content{flex:1;overflow:auto;padding:.5rem 1rem}",
-        // SQL results feedback
-        ".sql-status{font-size:.8rem;color:#a6adc8;margin:.25rem 0}",
-        ".sql-status.ok{color:#a6e3a1}",
-        ".sql-status.err{color:#f38ba8}",
-        // nav tree
-        "ul[role='tree']{list-style:none;padding:.25rem 0}",
-        "ul[role='group']{list-style:none;padding-left:1.5rem}",
-        "details.schema-group>summary{padding:.2rem .75rem;cursor:pointer;",
-        "font-size:.9rem;color:#89b4fa;list-style:none;outline:none}",
-        "li[role='treeitem']{padding:.2rem .75rem;cursor:pointer;",
-        "font-size:.9rem;color:#a6adc8;user-select:none}",
-        "li[role='treeitem']:hover{background:#313244;border-radius:3px}",
-        "li[role='treeitem'].selected{background:#313244;border-radius:4px;",
-        "outline:2px solid #89b4fa;color:#cdd6f4}",
-        // data table
-        "table{border-collapse:collapse;width:100%;font-size:.85rem}",
-        "thead th{background:#181825;border-bottom:2px solid #45475a;",
-        "padding:.3rem .6rem;text-align:left;color:#89b4fa;position:sticky;top:0}",
-        "tbody tr:nth-child(even){background:#181825}",
-        "tbody td{padding:.25rem .6rem;border-bottom:1px solid #313244}",
-        // code/pre (DDL display)
-        "code,pre{white-space:pre;display:block;overflow-x:auto;",
-        "background:#181825;border:1px solid #45475a;border-radius:3px;",
-        "padding:.5rem;font-size:.8rem;color:#a6e3a1;line-height:1.5}",
-        "textarea{width:100%;background:#181825;color:#cdd6f4;",
-        "border:1px solid #45475a;padding:.5rem;font-family:inherit;",
-        "font-size:.9rem;resize:vertical;min-height:8rem}",
-        "textarea:focus{border-color:#89b4fa;outline:none}",
-        "h2,h3{color:#cba6f7;margin:.5rem 0 .25rem}",
-        ".htmx-request .spinner{display:inline-block}",
-        ".spinner{display:none;margin-left:.5rem}",
-        "footer[role='status']{padding:.2rem .5rem;background:#313244;",
-        "border-top:1px solid #45475a;font-size:.75rem;flex-shrink:0}",
-        // export buttons inside the ExportPanel content
-        ".export-fmt-btn{background:#313244;color:#cdd6f4;border:1px solid #45475a;",
-        "border-radius:3px;padding:.3rem .7rem;font-family:inherit;font-size:.85rem;cursor:pointer}",
-        ".export-fmt-btn:hover{background:#45475a}",
-        // ERD diagram (SVG-based)
-        "svg.erd-diagram{display:block;max-width:100%;height:auto;overflow:visible}",
-        ".erd-box{fill:#313244;stroke:#45475a;stroke-width:1}",
-        ".erd-header{fill:#1e1e2e;stroke:#45475a;stroke-width:1}",
-        ".erd-title{fill:#89b4fa;font-size:12px;text-anchor:middle;dominant-baseline:middle;",
-        "font-family:'Cascadia Code','Fira Code',monospace;font-weight:bold}",
-        ".erd-col{fill:#cdd6f4;font-size:10px;font-family:'Cascadia Code','Fira Code',monospace}",
-        ".erd-edge{stroke:#6c7086;stroke-width:1.5;fill:none;marker-end:url(#erd-arrow)}",
-        // SQL editor overlay (textarea on top of highlighted <pre>)
-        ".code-wrap{display:grid;min-height:8rem}",
-        ".code-wrap>*{grid-area:1/1;width:100%;min-height:8rem;",
-        "padding:.5rem;font-family:'Cascadia Code','Fira Code',Consolas,monospace;",
-        "font-size:.9rem;line-height:1.5;tab-size:4;white-space:pre-wrap;word-break:break-word;",
-        "box-sizing:border-box;border:1px solid #45475a;border-radius:3px;margin:0}",
-        ".code-output{background:#181825;color:#cdd6f4;pointer-events:none;overflow:hidden;",
-        "z-index:0;resize:none}",
-        ".sql-ta{background:transparent;color:transparent;caret-color:#cdd6f4;",
-        "outline:none;resize:vertical;z-index:1;position:relative}",
-        ".sql-ta:focus~.code-output,.sql-ta:focus+.code-output{border-color:#89b4fa}",
+fn wrap_page(body: &str, palette: &Palette) -> String {
+    let bg = hex(palette.color(SemanticRole::Background));
+    let surface = hex(palette.color(SemanticRole::Surface));
+    let text = hex(palette.color(SemanticRole::Text));
+    let dim = hex(palette.color(SemanticRole::DimText));
+    let accent = hex(palette.color(SemanticRole::Accent));
+    let error = hex(palette.color(SemanticRole::Error));
+    let kw = hex(palette.color(SemanticRole::Keyword));
+    let str_lit = hex(palette.color(SemanticRole::StringLit));
+
+    let css = format!(
+        "*{{box-sizing:border-box;margin:0;padding:0}}\
+body{{font-family:'Cascadia Code','Fira Code',Consolas,monospace;\
+background:{bg};color:{text};height:100vh;display:flex;\
+flex-direction:column;overflow:hidden}}\
+header.toolbar{{display:flex;gap:.4rem;padding:.3rem .6rem;\
+background:{bg};border-bottom:1px solid {surface};flex-shrink:0;\
+align-items:center}}\
+header.toolbar [data-role='statictext']{{color:{kw};font-weight:bold;\
+margin-right:.6rem;font-size:.9rem}}\
+header.toolbar button{{background:{surface};color:{text};border:1px solid {surface};\
+border-radius:3px;padding:.15rem .55rem;font-family:inherit;font-size:.8rem;\
+cursor:pointer}}\
+header.toolbar button:hover{{background:{surface};opacity:.85}}\
+header.toolbar button.active{{border-color:{accent};color:{accent}}}\
+main{{flex:1;display:flex;overflow:hidden}}\
+nav{{width:22rem;min-width:12rem;border-right:1px solid {surface};\
+display:flex;flex-direction:column;overflow:hidden}}\
+#nav-filter{{width:100%;background:{surface};color:{text};\
+border:none;border-bottom:1px solid {surface};padding:.35rem .5rem;\
+font-family:inherit;font-size:.85rem;outline:none;flex-shrink:0}}\
+#nav-filter:focus{{border-bottom-color:{accent}}}\
+#nav-tree{{flex:1;overflow-y:auto;padding:.25rem 0}}\
+#content{{flex:1;overflow:auto;padding:.5rem 1rem}}\
+.sql-status{{font-size:.8rem;color:{dim};margin:.25rem 0}}\
+.sql-status.ok{{color:{str_lit}}}\
+.sql-status.err{{color:{error}}}\
+ul[role='tree']{{list-style:none;padding:.25rem 0}}\
+ul[role='group']{{list-style:none;padding-left:1.5rem}}\
+details.schema-group>summary{{padding:.2rem .75rem;cursor:pointer;\
+font-size:.9rem;color:{accent};list-style:none;outline:none}}\
+li[role='treeitem']{{padding:.2rem .75rem;cursor:pointer;\
+font-size:.9rem;color:{dim};user-select:none}}\
+li[role='treeitem']:hover{{background:{surface};border-radius:3px}}\
+li[role='treeitem'].selected{{background:{surface};border-radius:4px;\
+outline:2px solid {accent};color:{text}}}\
+table{{border-collapse:collapse;width:100%;font-size:.85rem}}\
+thead th{{background:{bg};border-bottom:2px solid {surface};\
+padding:.3rem .6rem;text-align:left;color:{accent};position:sticky;top:0}}\
+tbody tr:nth-child(even){{background:{bg}}}\
+tbody td{{padding:.25rem .6rem;border-bottom:1px solid {surface}}}\
+code,pre{{white-space:pre;display:block;overflow-x:auto;\
+background:{bg};border:1px solid {surface};border-radius:3px;\
+padding:.5rem;font-size:.8rem;color:{str_lit};line-height:1.5}}\
+textarea{{width:100%;background:{bg};color:{text};\
+border:1px solid {surface};padding:.5rem;font-family:inherit;\
+font-size:.9rem;resize:vertical;min-height:8rem}}\
+textarea:focus{{border-color:{accent};outline:none}}\
+h2,h3{{color:{kw};margin:.5rem 0 .25rem}}\
+.htmx-request .spinner{{display:inline-block}}\
+.spinner{{display:none;margin-left:.5rem}}\
+footer[role='status']{{padding:.2rem .5rem;background:{surface};\
+border-top:1px solid {surface};font-size:.75rem;flex-shrink:0}}\
+.export-fmt-btn{{background:{surface};color:{text};border:1px solid {surface};\
+border-radius:3px;padding:.3rem .7rem;font-family:inherit;font-size:.85rem;cursor:pointer}}\
+.export-fmt-btn:hover{{background:{surface};opacity:.85}}\
+svg.erd-diagram{{display:block;max-width:100%;height:auto;overflow:visible}}\
+.erd-box{{fill:{surface};stroke:{surface};stroke-width:1}}\
+.erd-header{{fill:{bg};stroke:{surface};stroke-width:1}}\
+.erd-title{{fill:{accent};font-size:12px;text-anchor:middle;dominant-baseline:middle;\
+font-family:'Cascadia Code','Fira Code',monospace;font-weight:bold}}\
+.erd-col{{fill:{text};font-size:10px;font-family:'Cascadia Code','Fira Code',monospace}}\
+.erd-edge{{stroke:{dim};stroke-width:1.5;fill:none;marker-end:url(#erd-arrow)}}\
+.code-wrap{{display:grid;min-height:8rem}}\
+.code-wrap>*{{grid-area:1/1;width:100%;min-height:8rem;\
+padding:.5rem;font-family:'Cascadia Code','Fira Code',Consolas,monospace;\
+font-size:.9rem;line-height:1.5;tab-size:4;white-space:pre-wrap;word-break:break-word;\
+box-sizing:border-box;border:1px solid {surface};border-radius:3px;margin:0}}\
+.code-output{{background:{bg};color:{text};pointer-events:none;overflow:hidden;\
+z-index:0;resize:none}}\
+.sql-ta{{background:transparent;color:transparent;caret-color:{text};\
+outline:none;resize:vertical;z-index:1;position:relative}}\
+.sql-ta:focus~.code-output,.sql-ta:focus+.code-output{{border-color:{accent}}}"
     );
 
-    // JS: only IR-safe helpers — no HTML building, no side panels.
     let js_static = concat!(
-        // ── run SQL via fetch (200 always; IR embeds errors as Alert nodes) ──
         "function runSql(){",
         "var ta=document.querySelector('#content textarea');",
         "if(!ta)return;",
@@ -1636,7 +1650,6 @@ fn wrap_page(body: &str) -> String {
         "if(el)el.innerHTML='<p class=\"sql-status err\">Network error: '+err.message+'</p>';",
         "});",
         "}",
-        // ── save current SQL via native prompt ──
         "function saveCurrentSql(){",
         "var ta=document.querySelector('#content textarea');",
         "if(!ta||!ta.value.trim()){alert('No SQL to save.');return;}",
@@ -1647,7 +1660,6 @@ fn wrap_page(body: &str) -> String {
         "body:JSON.stringify({name:name,sql:ta.value})})",
         ".then(function(r){if(r.ok)alert('Saved!');else r.text().then(function(t){alert('Error: '+t);});});",
         "}",
-        // ── data-action button dispatcher ──
         "document.addEventListener('click',function(e){",
         "var btn=e.target.closest('[data-action]');",
         "if(!btn)return;",
@@ -1655,11 +1667,6 @@ fn wrap_page(body: &str) -> String {
         "if(action==='run-sql'){e.preventDefault();runSql();}",
         "if(action==='save-sql'){e.preventDefault();saveCurrentSql();}",
         "});",
-        // ── SSE live monitor refresh ──
-        // One persistent EventSource for the lifetime of the page.  On each
-        // "monitor" event: if the content area is currently showing the monitor
-        // panel (sentinel attr data-panel="monitor"), re-fetch /api/monitor and
-        // swap #content so the IR-rendered HTML stays consistent.
         "(function(){",
         "var src=new EventSource('/api/monitor-stream');",
         "src.addEventListener('monitor',function(){",
@@ -1671,13 +1678,12 @@ fn wrap_page(body: &str) -> String {
         "});",
         "});",
         "})();",
-        // ── keyboard shortcuts (derived from ArchiveKeyMap) ──
     );
-    // Append the dynamically generated key listener from the IR key map.
     let js = format!(
-        "{js_static}{}{SQL_HL_JS}",
+        "{js_static}{}{}",
         crate::archive::ArchiveKeyMap::default_map()
-            .to_js_listener(crate::archive::KeyMapMode::Default)
+            .to_js_listener(crate::archive::KeyMapMode::Default),
+        sql_hl_js(palette)
     );
 
     format!(
@@ -1728,6 +1734,7 @@ pub async fn run_browser(nav: NavTree, url: Option<String>, port: u16) -> Archiv
         renderer,
         history,
         saved,
+        palette: palettes::mocha(),
     };
     let router = build_router(state);
 

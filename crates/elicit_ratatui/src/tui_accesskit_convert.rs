@@ -475,7 +475,7 @@ fn accesskit_to_widget(node: &Node) -> WidgetJson {
             // SQL editor: syntax-highlighted rich text.
             let is_sql = label.eq_ignore_ascii_case("sql editor");
             let para_text = if is_sql {
-                sql_highlight_rich(&text_str)
+                sql_highlight_rich(&text_str, elicit_ui::palettes::mocha())
             } else {
                 text_str.into()
             };
@@ -601,18 +601,18 @@ fn truncate_center(s: &str, width: usize) -> String {
 
 // ── SQL syntax highlighting for ratatui Paragraph ────────────────────────────
 
-/// Build a rich [`ParagraphText`] from a SQL string with Catppuccin Mocha highlighting.
+/// Build a rich [`ParagraphText`] from a SQL string using palette-driven highlighting.
 ///
 /// Each line in `sql` becomes a [`LineJson`] containing coloured [`SpanJson`] tokens.
-fn sql_highlight_rich(sql: &str) -> ParagraphText {
-    use elicit_accesskit::sql::mocha;
+fn sql_highlight_rich(sql: &str, palette: &elicit_ui::Palette) -> ParagraphText {
     use elicit_accesskit::sql::{SqlTokenKind, sql_tokens};
+    use elicit_ui::SemanticRole;
 
-    fn rgb(triple: (u8, u8, u8)) -> ColorJson {
+    fn rgb(c: elicit_ui::SrgbColor) -> ColorJson {
         ColorJson::Rgb {
-            r: triple.0,
-            g: triple.1,
-            b: triple.2,
+            r: (c.r * 255.0).round() as u8,
+            g: (c.g * 255.0).round() as u8,
+            b: (c.b * 255.0).round() as u8,
         }
     }
 
@@ -621,13 +621,14 @@ fn sql_highlight_rich(sql: &str) -> ParagraphText {
         let spans: Vec<SpanJson> = sql_tokens(line)
             .into_iter()
             .map(|token| {
-                let color = match token.kind {
-                    SqlTokenKind::Keyword => rgb(mocha::KW),
-                    SqlTokenKind::StringLiteral => rgb(mocha::STR),
-                    SqlTokenKind::Comment => rgb(mocha::COMMENT),
-                    SqlTokenKind::Number => rgb(mocha::NUM),
-                    SqlTokenKind::Plain => rgb(mocha::TEXT),
+                let role = match token.kind {
+                    SqlTokenKind::Keyword => SemanticRole::Keyword,
+                    SqlTokenKind::StringLiteral => SemanticRole::StringLit,
+                    SqlTokenKind::Comment => SemanticRole::Comment,
+                    SqlTokenKind::Number => SemanticRole::Number,
+                    SqlTokenKind::Plain => SemanticRole::Text,
                 };
+                let color = rgb(palette.color(role));
                 SpanJson {
                     content: token.text.to_string(),
                     style: Some(StyleJson {

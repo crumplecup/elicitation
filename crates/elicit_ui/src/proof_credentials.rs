@@ -59,6 +59,18 @@ proof_credential! {
     ///
     /// Source: WCAG 2.2 SC 1.4.11 — Non-text Contrast Level AA.
     pub(crate) NonTextContrastVerified => WcagNonTextContrastMinimum;
+
+    /// Witness issued by [`PaletteBuilder`] when a text/background pair meets
+    /// the ≥ 4.5:1 normal-text threshold.
+    ///
+    /// [`PaletteBuilder`]: crate::palette::PaletteBuilder
+    pub(crate) PaletteNormalTextVerified => WcagContrastMinimumNormalText;
+
+    /// Witness issued by [`PaletteBuilder`] when a non-text pair meets the
+    /// ≥ 3:1 non-text-component threshold.
+    ///
+    /// [`PaletteBuilder`]: crate::palette::PaletteBuilder
+    pub(crate) PaletteNonTextVerified => WcagNonTextContrastMinimum;
 }
 
 // ── Label ─────────────────────────────────────────────────────────────────────

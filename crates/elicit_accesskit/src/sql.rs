@@ -1,33 +1,8 @@
-//! SQL syntax tokenizer and Catppuccin Mocha colour constants.
+//! SQL syntax tokenizer and palette-driven colour resolution.
 //!
 //! Provides a single canonical [`sql_tokens`] function consumed by all
 //! renderers (egui, ratatui, leptos) so that the keyword set and palette
 //! never drift apart.
-
-/// Catppuccin Mocha RGB palette — raw `(r, g, b)` tuples so every renderer
-/// can convert to its own colour type without coupling to any GUI crate.
-pub mod mocha {
-    /// Keyword colour (Mauve).
-    pub const KW: (u8, u8, u8) = (0xcb, 0xa6, 0xf7);
-    /// String literal / quoted identifier (Green).
-    pub const STR: (u8, u8, u8) = (0xa6, 0xe3, 0xa1);
-    /// Comment (Overlay1).
-    pub const COMMENT: (u8, u8, u8) = (0x6c, 0x70, 0x86);
-    /// Numeric literal (Peach).
-    pub const NUM: (u8, u8, u8) = (0xfa, 0xb3, 0x87);
-    /// Plain identifier / operator text (Text).
-    pub const TEXT: (u8, u8, u8) = (0xcd, 0xd6, 0xf4);
-    /// Base background.
-    pub const BASE: (u8, u8, u8) = (0x1e, 0x1e, 0x2e);
-    /// Surface0 — panels, cards.
-    pub const SURFACE0: (u8, u8, u8) = (0x31, 0x32, 0x44);
-    /// Surface1 — raised elements.
-    pub const SURFACE1: (u8, u8, u8) = (0x45, 0x47, 0x5a);
-    /// Subtext0 — muted / secondary text.
-    pub const SUBTEXT0: (u8, u8, u8) = (0xa6, 0xad, 0xc8);
-    /// Blue accent (Sapphire).
-    pub const BLUE: (u8, u8, u8) = (0x89, 0xb4, 0xfa);
-}
 
 /// Classification of a SQL token.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

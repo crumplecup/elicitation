@@ -49,6 +49,8 @@ mod contracts;
 mod css_units;
 mod errors;
 mod layout_engine;
+pub mod palette;
+pub mod palettes;
 pub(crate) mod proof_credentials;
 /// Per-role proof tokens for the [`UiNodeBridge`] chain of custody.
 ///
@@ -255,6 +257,10 @@ pub use errors::{
 pub use layout_engine::LayoutEngineError;
 #[cfg(feature = "layout-engine")]
 pub use layout_engine::{LayoutMode, TaffyBridge};
+pub use palette::{
+    ContrastReport, ContrastSuggestion, NonTextPair, NormalTextPair, Palette, PaletteBuildError,
+    PaletteBuilder, PaletteColors, SemanticRole, suggest_compliant,
+};
 pub use spatial::{BoundingBox, LayoutContext};
 pub use traits::{
     UiBackend, UiEventBridge, UiEventDispatcher, UiInspector, UiLayoutManager, UiNavigationManager,
