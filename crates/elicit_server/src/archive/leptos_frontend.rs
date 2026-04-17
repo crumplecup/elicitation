@@ -128,6 +128,20 @@ fn content_html(state: &AppState) -> Result<String, String> {
     render_leptos_from_ir(&state.renderer, &tree, proof)
 }
 
+/// Set `PanelMode::Error` on the model and render the content HTML for it.
+///
+/// All API endpoints that need to surface a user-facing error message through
+/// the AccessKit IR should call this instead of returning hardcoded HTML.
+async fn error_content_html(state: &AppState, message: impl Into<String>) -> Html<String> {
+    {
+        let mut model = state.model.lock().await;
+        model.panel = PanelMode::Error {
+            message: message.into(),
+        };
+    }
+    Html(content_html(state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
+}
+
 /// Render only the nav-tree fragment (`<ul role="tree" id="nav-tree">…</ul>`).
 ///
 /// Used by `/api/nav` with `hx-target="#nav-tree" hx-swap="outerHTML"`.
@@ -721,9 +735,7 @@ async fn api_export_panel(State(state): State<AppState>) -> Html<String> {
     let (schema, table) = match pair {
         Some(p) => p,
         None => {
-            return Html(
-                "<div id='content'><p style='padding:1rem;color:#f38ba8'>Select a table first.</p></div>".to_string(),
-            );
+            return error_content_html(&state, "Select a table first.").await;
         }
     };
     {
@@ -739,18 +751,14 @@ async fn api_ddl_panel(State(state): State<AppState>) -> Html<String> {
     let url = match state.active_url().await {
         Some(u) => u,
         None => {
-            return Html(
-                "<div id='content'><p style='padding:1rem;color:#f38ba8'>No database connected.</p></div>".to_string(),
-            );
+            return error_content_html(&state, "No database connected.").await;
         }
     };
     let pair = state.model.lock().await.selected_schema_table();
     let (schema, table) = match pair {
         Some(p) => p,
         None => {
-            return Html(
-                "<div id='content'><p style='padding:1rem;color:#f38ba8'>Select a table first.</p></div>".to_string(),
-            );
+            return error_content_html(&state, "Select a table first.").await;
         }
     };
     match generate_ddl_direct(&url, &schema, &table).await {
@@ -763,9 +771,7 @@ async fn api_ddl_panel(State(state): State<AppState>) -> Html<String> {
             };
         }
         Err(e) => {
-            return Html(format!(
-                "<div id='content'><pre style='color:#f38ba8'>{e}</pre></div>"
-            ));
+            return error_content_html(&state, e.to_string()).await;
         }
     }
     Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
@@ -777,9 +783,7 @@ async fn api_explain_panel(State(state): State<AppState>) -> Html<String> {
     let url = match state.active_url().await {
         Some(u) => u,
         None => {
-            return Html(
-                "<div id='content'><p style='padding:1rem;color:#f38ba8'>No database connected.</p></div>".to_string(),
-            );
+            return error_content_html(&state, "No database connected.").await;
         }
     };
     let (schema, table, sql) = {
@@ -802,9 +806,7 @@ async fn api_explain_panel(State(state): State<AppState>) -> Html<String> {
         (s, t, sql)
     };
     if sql.is_empty() {
-        return Html(
-            "<div id='content'><p style='padding:1rem;color:#f38ba8'>Select a table or open the SQL editor first.</p></div>".to_string(),
-        );
+        return error_content_html(&state, "Select a table or open the SQL editor first.").await;
     }
     match explain_sql_direct(&url, &sql).await {
         Ok(root) => {
@@ -834,9 +836,7 @@ async fn api_explain_panel(State(state): State<AppState>) -> Html<String> {
             };
         }
         Err(e) => {
-            return Html(format!(
-                "<div id='content'><pre style='color:#f38ba8'>{e}</pre></div>"
-            ));
+            return error_content_html(&state, e.to_string()).await;
         }
     }
     Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
@@ -848,18 +848,14 @@ async fn api_col_detail_panel(State(state): State<AppState>) -> Html<String> {
     let url = match state.active_url().await {
         Some(u) => u,
         None => {
-            return Html(
-                "<div id='content'><p style='padding:1rem;color:#f38ba8'>No database connected.</p></div>".to_string(),
-            );
+            return error_content_html(&state, "No database connected.").await;
         }
     };
     let pair = state.model.lock().await.selected_schema_table();
     let (schema, table) = match pair {
         Some(p) => p,
         None => {
-            return Html(
-                "<div id='content'><p style='padding:1rem;color:#f38ba8'>Select a table first.</p></div>".to_string(),
-            );
+            return error_content_html(&state, "Select a table first.").await;
         }
     };
     let (inspect_res, stats_res) = tokio::join!(
@@ -899,9 +895,7 @@ async fn api_load_history(
     let sql = match sql {
         Some(s) => s,
         None => {
-            return Html(
-                "<div id='content'><p style='padding:1rem;color:#f38ba8'>History entry not found.</p></div>".to_string(),
-            );
+            return error_content_html(&state, "History entry not found.").await;
         }
     };
     {
@@ -934,9 +928,7 @@ async fn api_load_saved(
     let sql = match sql {
         Some(s) => s,
         None => {
-            return Html(
-                "<div id='content'><p style='padding:1rem;color:#f38ba8'>Saved query not found.</p></div>".to_string(),
-            );
+            return error_content_html(&state, "Saved query not found.").await;
         }
     };
     {

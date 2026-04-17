@@ -1933,6 +1933,7 @@ dependencies = [
  "accesskit",
  "egui",
  "egui-winit",
+ "elicit_accesskit",
  "elicit_ui",
  "elicitation",
  "elicitation_derive",
@@ -2061,6 +2062,7 @@ version = "0.10.0"
 dependencies = [
  "accesskit",
  "derive_more",
+ "elicit_accesskit",
  "elicit_axum",
  "elicit_ui",
  "elicitation",
@@ -2119,6 +2121,7 @@ version = "0.10.0"
 dependencies = [
  "accesskit",
  "crossterm 0.29.0",
+ "elicit_accesskit",
  "elicit_ui",
  "elicitation",
  "elicitation_derive",

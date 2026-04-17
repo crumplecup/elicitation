@@ -1080,3 +1080,11 @@ impl From<NodeJson> for accesskit::Node {
         n
     }
 }
+
+/// Return the display text of an AccessKit node — label first, then value.
+///
+/// Bridges should call this instead of accessing `.label()` / `.value()` directly
+/// so that the priority rule (label before value) is consistent across renderers.
+pub fn node_label(node: &accesskit::Node) -> &str {
+    node.label().or_else(|| node.value()).unwrap_or("")
+}

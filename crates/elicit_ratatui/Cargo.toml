@@ -17,6 +17,7 @@ elicitation.workspace = true
 elicitation_derive.workspace = true
 elicitation_macros.workspace = true
 elicit_ui.workspace = true
+elicit_accesskit.workspace = true
 ratatui.workspace = true
 accesskit.workspace = true
 crossterm = { workspace = true, optional = true }

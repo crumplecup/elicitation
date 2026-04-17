@@ -1484,7 +1484,7 @@ fn node_text(node: &Node) -> String {
 }
 
 fn node_label_text(node: &Node) -> String {
-    node.label().unwrap_or("").to_string()
+    elicit_accesskit::node_label(node).to_string()
 }
 
 /// In `ViewMacro` mode, text must be a quoted string literal.

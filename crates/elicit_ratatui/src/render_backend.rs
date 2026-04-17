@@ -59,7 +59,7 @@ fn titled_block(title: String) -> crate::serde_types::BlockJson {
 }
 
 fn node_label(node: &Node) -> String {
-    node.label().or(node.value()).unwrap_or("").to_string()
+    elicit_accesskit::node_label(node).to_string()
 }
 
 fn text_widget(node: &Node) -> TuiNode {

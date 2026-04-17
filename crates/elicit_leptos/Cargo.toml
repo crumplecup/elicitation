@@ -16,6 +16,7 @@ categories = ["web-programming", "wasm"]
 elicitation = { workspace = true, features = ["leptos-types", "emit"] }
 elicit_axum.workspace = true
 elicit_ui.workspace = true
+elicit_accesskit.workspace = true
 accesskit.workspace = true
 rmcp = { workspace = true }
 schemars = { workspace = true }

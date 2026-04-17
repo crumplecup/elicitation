@@ -231,6 +231,13 @@ pub enum PanelMode {
         /// The profile being edited (a clone; changes are not persisted until saved).
         profile: ConnectionProfile,
     },
+    /// A user-facing error message to display in the content area.
+    ///
+    /// Replaces any hardcoded HTML error fragments in the web frontend.
+    Error {
+        /// Human-readable error message.
+        message: String,
+    },
 }
 
 impl Default for PanelMode {
@@ -3281,6 +3288,13 @@ impl ArchiveNavModel {
                 form.set_children(field_ids);
                 nodes.insert(form_id, form);
                 children.push(form_id);
+            }
+            PanelMode::Error { message } => {
+                let alert_id = alloc();
+                let mut alert = AkNode::new(AkRole::Alert);
+                alert.set_label(message.clone());
+                nodes.insert(alert_id, alert);
+                children.push(alert_id);
             }
         }
 
