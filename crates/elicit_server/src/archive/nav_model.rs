@@ -143,6 +143,23 @@ pub enum PanelMode {
         /// Root node of the parsed plan tree.
         root: ExplainNode,
     },
+    /// Side-by-side EXPLAIN plan comparison.
+    ///
+    /// Activated when a second EXPLAIN fires while `ExplainPlan` is open.
+    ExplainCompare {
+        /// Schema context (from the newer plan).
+        schema: String,
+        /// Table context (from the newer plan).
+        table: String,
+        /// Left (original) plan root.
+        left: ExplainNode,
+        /// Left plan label.
+        label_left: String,
+        /// Right (new) plan root.
+        right: ExplainNode,
+        /// Right plan label.
+        label_right: String,
+    },
     /// Query history browser panel (web frontend).
     HistoryPanel {
         /// Cached history entries to display.
@@ -2508,6 +2525,65 @@ impl ArchiveNavModel {
                 plan_tree.set_children(vec![plan_id]);
                 nodes.insert(plan_root_id, plan_tree);
                 children.push(plan_root_id);
+            }
+
+            PanelMode::ExplainCompare {
+                schema,
+                table,
+                left,
+                label_left,
+                right,
+                label_right,
+            } => {
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label(format!("EXPLAIN compare: {schema}.{table}"));
+                nodes.insert(heading_id, h);
+                children.push(heading_id);
+
+                // Cost-delta annotation: if total costs differ by > 10 %, prefix labels.
+                let cost_l = left.total_cost;
+                let cost_r = right.total_cost;
+                let delta_pct = if cost_l > 0.0 {
+                    (cost_r - cost_l).abs() / cost_l
+                } else {
+                    0.0
+                };
+                let (ann_l, ann_r) = if delta_pct > 0.10 {
+                    if cost_r < cost_l {
+                        ("", "▼ ")
+                    } else {
+                        ("", "▲ ")
+                    }
+                } else {
+                    ("", "")
+                };
+
+                // Pre-allocate all IDs before calling build_explain_node (which
+                // also needs a &mut counter, so alloc's borrow must end first).
+                let group_id = alloc();
+                let left_tree_id = alloc();
+                let right_tree_id = alloc();
+                // alloc is not called again; its borrow of counter ends here.
+
+                let left_plan_id = self.build_explain_node(left, nodes, counter);
+                let mut left_tree = AkNode::new(AkRole::Tree);
+                left_tree.set_label(format!("{ann_l}{label_left}"));
+                left_tree.set_children(vec![left_plan_id]);
+                nodes.insert(left_tree_id, left_tree);
+
+                let right_plan_id = self.build_explain_node(right, nodes, counter);
+                let mut right_tree = AkNode::new(AkRole::Tree);
+                right_tree.set_label(format!("{ann_r}{label_right}"));
+                right_tree.set_children(vec![right_plan_id]);
+                nodes.insert(right_tree_id, right_tree);
+
+                let mut group = AkNode::new(AkRole::Group);
+                group.set_label("plan comparison".to_string());
+                group.set_description("class=plan-compare".to_string());
+                group.set_children(vec![left_tree_id, right_tree_id]);
+                nodes.insert(group_id, group);
+                children.push(group_id);
             }
 
             PanelMode::HistoryPanel { entries } => {

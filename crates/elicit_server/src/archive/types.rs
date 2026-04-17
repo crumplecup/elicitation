@@ -558,6 +558,23 @@ impl ExplainNode {
     }
 }
 
+/// Side-by-side comparison of two EXPLAIN plans.
+///
+/// Built when the user runs a second EXPLAIN while a plan is already visible.
+/// Cost-delta annotations (`▲`/`▼`) are computed at IR build time when the
+/// root nodes' total costs diverge by more than 10 %.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct ExplainComparison {
+    /// Left (original) plan root.
+    pub left: ExplainNode,
+    /// Right (new) plan root.
+    pub right: ExplainNode,
+    /// Human-readable label for the left plan.
+    pub label_left: String,
+    /// Human-readable label for the right plan.
+    pub label_right: String,
+}
+
 /// The result of executing a SQL query: column metadata + row data.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct QueryResult {

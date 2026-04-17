@@ -176,6 +176,8 @@ pub enum ArchiveAction {
     RequestDdl,
     /// Request an EXPLAIN plan for the last query on the selected table.
     RequestExplain,
+    /// Clear the side-by-side EXPLAIN comparison and return to single-plan view.
+    ClearExplainCompare,
     /// Advance the data grid to the next page.
     PageNext,
     /// Return the data grid to the previous page.
@@ -334,6 +336,13 @@ impl ArchiveKeyMap {
             KeyMapEntry::nav(p(K::Char('/')), A::OpenFilter, "/", "Filter", true),
             KeyMapEntry::nav(p(K::Char('d')), A::RequestDdl, "d", "DDL", true),
             KeyMapEntry::nav(p(K::Char('e')), A::RequestExplain, "e", "Explain", true),
+            KeyMapEntry::nav(
+                cs(K::Char('e')),
+                A::ClearExplainCompare,
+                "⇧e",
+                "Clear compare",
+                true,
+            ),
             KeyMapEntry::nav(p(K::Char('s')), A::OpenSqlEditor, "s", "SQL", true),
             KeyMapEntry::nav(p(K::F(2)), A::OpenSavedBrowser, "F2", "Saved", true),
             KeyMapEntry::nav(p(K::Char('m')), A::OpenMonitor, "m", "Monitor", true),

@@ -233,10 +233,28 @@ impl ArchiveEguiApp {
                     table,
                     root,
                 } => {
-                    self.model.panel = PanelMode::ExplainPlan {
-                        schema,
-                        table,
-                        root,
+                    let new_label = format!("EXPLAIN: {schema}.{table}");
+                    self.model.panel = if let PanelMode::ExplainPlan {
+                        schema: old_schema,
+                        table: old_table,
+                        root: old_root,
+                    } = std::mem::take(&mut self.model.panel)
+                    {
+                        let old_label = format!("EXPLAIN: {old_schema}.{old_table}");
+                        PanelMode::ExplainCompare {
+                            schema: schema.clone(),
+                            table: table.clone(),
+                            left: old_root,
+                            label_left: old_label,
+                            right: root,
+                            label_right: new_label,
+                        }
+                    } else {
+                        PanelMode::ExplainPlan {
+                            schema,
+                            table,
+                            root,
+                        }
                     };
                 }
                 PanelEvent::ExportReady {
@@ -565,6 +583,23 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
             A::RequestExplain => {
                 if let Some(req) = self.model.explain_request() {
                     let _ = self.req_tx.try_send(req);
+                }
+            }
+            A::ClearExplainCompare => {
+                if let PanelMode::ExplainCompare {
+                    schema,
+                    table,
+                    left,
+                    label_left: _,
+                    right: _,
+                    label_right: _,
+                } = std::mem::take(&mut self.model.panel)
+                {
+                    self.model.panel = PanelMode::ExplainPlan {
+                        schema,
+                        table,
+                        root: left,
+                    };
                 }
             }
             A::PageNext => self.model.page_next(),

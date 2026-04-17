@@ -496,10 +496,30 @@ async fn api_explain(
         .map_err(ApiError::internal)?;
     {
         let mut model = state.model.lock().await;
-        model.panel = PanelMode::ExplainPlan {
-            schema: p.schema,
-            table: p.table,
-            root,
+        let new_schema = p.schema.clone();
+        let new_table = p.table.clone();
+        let new_label = format!("EXPLAIN: {}.{}", p.schema, p.table);
+        model.panel = if let PanelMode::ExplainPlan {
+            schema,
+            table,
+            root: old_root,
+        } = std::mem::take(&mut model.panel)
+        {
+            let old_label = format!("EXPLAIN: {schema}.{table}");
+            PanelMode::ExplainCompare {
+                schema: new_schema,
+                table: new_table,
+                left: old_root,
+                label_left: old_label,
+                right: root,
+                label_right: new_label,
+            }
+        } else {
+            PanelMode::ExplainPlan {
+                schema: p.schema,
+                table: p.table,
+                root,
+            }
         };
     }
     Ok(Html(content_html(&state).map_err(ApiError::internal)?))
@@ -789,10 +809,28 @@ async fn api_explain_panel(State(state): State<AppState>) -> Html<String> {
     match explain_sql_direct(&url, &sql).await {
         Ok(root) => {
             let mut model = state.model.lock().await;
-            model.panel = PanelMode::ExplainPlan {
-                schema,
-                table,
-                root,
+            let new_label = format!("EXPLAIN: {schema}.{table}");
+            model.panel = if let PanelMode::ExplainPlan {
+                schema: old_schema,
+                table: old_table,
+                root: old_root,
+            } = std::mem::take(&mut model.panel)
+            {
+                let old_label = format!("EXPLAIN: {old_schema}.{old_table}");
+                PanelMode::ExplainCompare {
+                    schema: schema.clone(),
+                    table: table.clone(),
+                    left: old_root,
+                    label_left: old_label,
+                    right: root,
+                    label_right: new_label,
+                }
+            } else {
+                PanelMode::ExplainPlan {
+                    schema,
+                    table,
+                    root,
+                }
             };
         }
         Err(e) => {
@@ -1361,6 +1399,23 @@ fn dispatch_action_on_model(
         }
         A::RequestDdl => {} // HTMX handles via /api/ddl-panel
         A::RequestExplain => {}
+        A::ClearExplainCompare => {
+            if let PanelMode::ExplainCompare {
+                schema,
+                table,
+                left,
+                label_left: _,
+                right: _,
+                label_right: _,
+            } = std::mem::take(&mut model.panel)
+            {
+                model.panel = PanelMode::ExplainPlan {
+                    schema,
+                    table,
+                    root: left,
+                };
+            }
+        }
         A::PageNext => model.page_next(),
         A::PagePrev => model.page_prev(),
         A::PageFirst => model.page_first(),
