@@ -4,6 +4,7 @@
 //! [`bevy::gizmos::config::GizmoLineJoint`],
 //! [`bevy::gizmos::config::GizmoLineConfig`],
 //! [`bevy::gizmos::config::GizmoConfig`],
+//! [`bevy::gizmos::aabb::AabbGizmoConfigGroup`],
 //! [`bevy::gizmos::aabb::ShowAabbGizmo`],
 //! [`bevy::gizmos::light::LightGizmoColor`],
 //! [`bevy::gizmos::light::ShowLightGizmo`], and
@@ -682,3 +683,64 @@ mod emit_light_gizmo_config_group {
 }
 
 shadow_elicitation!(LightGizmoConfigGroup);
+
+// ── AabbGizmoConfigGroup ──────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::gizmos::aabb::AabbGizmoConfigGroup`].
+///
+/// Resource configuring how AABB debug gizmos appear.  Registered via
+/// `GizmoConfigStore`; can be retrieved with `app.world.resource::<GizmoConfigStore>()`.
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+pub struct AabbGizmoConfigGroup {
+    /// When `true`, draws bounding boxes for all entities in the scene.
+    ///
+    /// To show only a specific entity's box, add [`ShowAabbGizmo`] to it instead.
+    pub draw_all: bool,
+    /// Default color for all bounding-box gizmos.  `None` picks a random color per box.
+    pub default_color: Option<crate::Color>,
+}
+
+impl From<AabbGizmoConfigGroup> for bevy::gizmos::aabb::AabbGizmoConfigGroup {
+    fn from(v: AabbGizmoConfigGroup) -> Self {
+        Self {
+            draw_all: v.draw_all,
+            default_color: v.default_color.map(bevy::color::Color::from),
+        }
+    }
+}
+
+impl From<bevy::gizmos::aabb::AabbGizmoConfigGroup> for AabbGizmoConfigGroup {
+    fn from(v: bevy::gizmos::aabb::AabbGizmoConfigGroup) -> Self {
+        Self {
+            draw_all: v.draw_all,
+            default_color: v.default_color.map(crate::Color::from),
+        }
+    }
+}
+
+mod emit_aabb_gizmo_config_group {
+    use super::AabbGizmoConfigGroup;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for AabbGizmoConfigGroup {
+        fn to_code_literal(&self) -> TokenStream {
+            let draw_all = self.draw_all;
+            let color = match &self.default_color {
+                None => quote::quote! { None },
+                Some(c) => {
+                    let lit = c.to_code_literal();
+                    quote::quote! { Some(#lit) }
+                }
+            };
+            quote::quote! {
+                ::bevy::gizmos::aabb::AabbGizmoConfigGroup {
+                    draw_all: #draw_all,
+                    default_color: #color,
+                }
+            }
+        }
+    }
+}
+
+shadow_elicitation!(AabbGizmoConfigGroup);

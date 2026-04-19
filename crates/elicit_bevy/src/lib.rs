@@ -269,8 +269,8 @@ pub use pbr::{
 
 // ── gizmos re-exports ─────────────────────────────────────────────────────────
 pub use gizmos::{
-    GizmoConfig, GizmoLineConfig, GizmoLineJoint, GizmoLineStyle, LightGizmoColor,
-    LightGizmoConfigGroup, ShowAabbGizmo, ShowLightGizmo,
+    AabbGizmoConfigGroup, GizmoConfig, GizmoLineConfig, GizmoLineJoint, GizmoLineStyle,
+    LightGizmoColor, LightGizmoConfigGroup, ShowAabbGizmo, ShowLightGizmo,
 };
 
 // ── post_process re-exports ───────────────────────────────────────────────────
@@ -299,9 +299,10 @@ pub use time::{Stopwatch, Timer, TimerMode};
 
 // ── window re-exports ─────────────────────────────────────────────────────────
 pub use window::{
-    CompositeAlphaMode, CursorGrabMode, CursorOptions, EnabledButtons, MonitorSelection,
-    PresentMode, PrimaryWindow, ScreenEdge, Window, WindowLevel, WindowMode,
-    WindowResizeConstraints, WindowResolution, WindowTheme,
+    CompositeAlphaMode, CursorGrabMode, CursorIcon, CursorOptions, EnabledButtons,
+    MonitorSelection, PresentMode, PrimaryWindow, ScreenEdge, SystemCursorIcon, Window,
+    WindowLevel, WindowMode, WindowPosition, WindowResizeConstraints, WindowResolution,
+    WindowTheme,
 };
 
 // ── state re-exports ──────────────────────────────────────────────────────────
