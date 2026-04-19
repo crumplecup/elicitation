@@ -218,7 +218,7 @@ pub use app::AppExit;
 pub use asset::{LoadState, RecursiveDependencyLoadState};
 
 // ── animation re-exports ─────────────────────────────────────────────────────
-pub use animation::{AnimationTargetId, RepeatAnimation};
+pub use animation::{AnimationPlayer, AnimationTargetId, AnimationTransitions, RepeatAnimation};
 
 // ── anti_alias re-exports ─────────────────────────────────────────────────────
 pub use anti_alias::{ContrastAdaptiveSharpening, Fxaa, Sensitivity, Smaa, SmaaPreset};
@@ -255,7 +255,10 @@ pub use pbr::{
 };
 
 // ── gizmos re-exports ─────────────────────────────────────────────────────────
-pub use gizmos::{GizmoConfig, GizmoLineConfig, GizmoLineJoint, GizmoLineStyle};
+pub use gizmos::{
+    GizmoConfig, GizmoLineConfig, GizmoLineJoint, GizmoLineStyle, LightGizmoColor,
+    LightGizmoConfigGroup, ShowAabbGizmo, ShowLightGizmo,
+};
 
 // ── post_process re-exports ───────────────────────────────────────────────────
 pub use post_process::{
