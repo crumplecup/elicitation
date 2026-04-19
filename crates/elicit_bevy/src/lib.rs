@@ -19,7 +19,7 @@
 //! | [`pbr`] | StandardMaterial, AlphaMode, Tonemapping, FogFalloff |
 //! | [`light`] | AmbientLight, DirectionalLight, PointLight, SpotLight |
 //! | [`ui`] | Val, UiRect, BorderRadius, layout enums, FocusPolicy, BoxSizing, GridAutoFlow, ZIndex, GlobalZIndex, BackgroundColor, BorderColor, Outline |
-//! | [`sprite`] | Sprite, Anchor, SpriteImageMode, SpriteScalingMode |
+//! | [`sprite`] | Sprite, Anchor, SpriteImageMode, SpriteScalingMode, SpritePickingCamera, SpritePickingMode, SpritePickingSettings |
 //! | [`text`] | TextFont, JustifyText, LineBreak |
 //! | [`audio`] | PlaybackSettings, PlaybackMode, Volume |
 //! | [`animation`] | RepeatAnimation, AnimationTargetId |
@@ -257,7 +257,8 @@ pub use mesh::{Indices, PrimitiveTopology};
 
 // ── pbr re-exports ────────────────────────────────────────────────────────────
 pub use pbr::{
-    AlphaMode, FogFalloff, OpaqueRendererMethod, ParallaxMappingMethod, StandardMaterial,
+    AlphaMode, AtmosphereMode, AtmosphereSettings, FogFalloff, ForwardDecal,
+    ForwardDecalMaterialExt, OpaqueRendererMethod, ParallaxMappingMethod, StandardMaterial,
     Tonemapping, UvChannel,
 };
 
@@ -307,8 +308,9 @@ pub use state::StateTransitionDoc;
 
 // ── sprite re-exports ────────────────────────────────────────────────────────
 pub use sprite::{
-    Anchor, BorderRect, SliceScaleMode, Sprite, SpriteImageMode, SpriteScalingMode, Text2d,
-    Text2dShadow, TextureSlicer,
+    Anchor, BorderRect, SliceScaleMode, Sprite, SpriteImageMode, SpritePickingCamera,
+    SpritePickingMode, SpritePickingSettings, SpriteScalingMode, Text2d, Text2dShadow,
+    TextureSlicer,
 };
 
 // ── text re-exports ───────────────────────────────────────────────────────────

@@ -33,12 +33,14 @@ bevy = { workspace = true, features = [
     "bevy_pbr",
     "bevy_post_process",
     "bevy_anti_alias",
+    "bevy_gizmos",
     "bevy_sprite",
     "bevy_text",
     "bevy_core_pipeline",
     "bevy_asset",
     "bevy_scene",
     "bevy_picking",
+    "sprite_picking",
     "bevy_state",
     "serialize",
 ] }
@@ -48,6 +50,12 @@ serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 tracing.workspace = true
 derive_more = { workspace = true, features = ["display", "error"] }
+proc-macro2.workspace = true
+quote.workspace = true
+futures.workspace = true
+inventory.workspace = true
+syn.workspace = true
+uuid.workspace = true
 
 [dev-dependencies]
 tokio.workspace = true

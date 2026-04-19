@@ -1,7 +1,8 @@
 //! Sprite wrappers.
 //!
 //! Covers [`Anchor`], [`Sprite`], [`SpriteScalingMode`], [`SpriteImageMode`],
-//! [`SliceScaleMode`], [`BorderRect`], [`TextureSlicer`], [`Text2d`], and [`Text2dShadow`].
+//! [`SliceScaleMode`], [`BorderRect`], [`TextureSlicer`], [`Text2d`], [`Text2dShadow`],
+//! [`SpritePickingCamera`], [`SpritePickingMode`], and [`SpritePickingSettings`].
 //!
 //! In Bevy 0.18, [`bevy::sprite::Anchor`] is a newtype wrapping [`bevy::math::Vec2`]
 //! with named constants for common positions.
@@ -1065,3 +1066,280 @@ mod emit_impls_text2d_shadow {
 }
 
 impl elicitation::ElicitComplete for Text2dShadow {}
+
+// ── shadow_elicitation + unit_elicitation macros ──────────────────────────────
+
+macro_rules! shadow_elicitation {
+    ($name:ident) => {
+        impl elicitation::Prompt for $name {
+            fn prompt() -> Option<&'static str> {
+                None
+            }
+        }
+        impl elicitation::Elicitation for $name {
+            type Style = ();
+            async fn elicit<C: elicitation::ElicitCommunicator>(
+                communicator: &C,
+            ) -> elicitation::ElicitResult<Self> {
+                let response = communicator
+                    .send_prompt(concat!("Enter value for ", stringify!($name)))
+                    .await?;
+                serde_json::from_str(&response)
+                    .or_else(|_| serde_json::from_str::<Self>(&format!("\"{}\"", response)))
+                    .map_err(|e| {
+                        elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(
+                            format!("Invalid {}: {}", stringify!($name), e),
+                        ))
+                    })
+            }
+            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::kani_trusted_opaque(stringify!($name))
+            }
+            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::verus_trusted_opaque(stringify!($name))
+            }
+            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::creusot_trusted_opaque(stringify!($name))
+            }
+        }
+        impl elicitation::ElicitIntrospect for $name {
+            fn pattern() -> elicitation::ElicitationPattern {
+                elicitation::ElicitationPattern::Primitive
+            }
+            fn metadata() -> elicitation::TypeMetadata {
+                elicitation::TypeMetadata {
+                    type_name: stringify!($name),
+                    description: None,
+                    details: elicitation::PatternDetails::Primitive,
+                }
+            }
+        }
+        impl elicitation::ElicitPromptTree for $name {
+            fn prompt_tree() -> elicitation::PromptTree {
+                elicitation::PromptTree::Leaf {
+                    prompt: stringify!($name).to_string(),
+                    type_name: stringify!($name).to_string(),
+                }
+            }
+        }
+        impl elicitation::ElicitSpec for $name {
+            fn type_spec() -> elicitation::TypeSpec {
+                elicitation::TypeSpecBuilder::default()
+                    .type_name(stringify!($name).to_string())
+                    .summary(concat!("Shadow type for `", stringify!($name), "`.").to_string())
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
+        impl elicitation::ElicitComplete for $name {}
+    };
+}
+
+macro_rules! unit_elicitation {
+    ($name:ident, $inner_path:path) => {
+        impl elicitation::Prompt for $name {
+            fn prompt() -> Option<&'static str> {
+                None
+            }
+        }
+        impl elicitation::Elicitation for $name {
+            type Style = ();
+            async fn elicit<C: elicitation::ElicitCommunicator>(
+                _communicator: &C,
+            ) -> elicitation::ElicitResult<Self> {
+                Ok(Self)
+            }
+            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::kani_trusted_opaque(stringify!($name))
+            }
+            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::verus_trusted_opaque(stringify!($name))
+            }
+            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::creusot_trusted_opaque(stringify!($name))
+            }
+        }
+        impl elicitation::ElicitIntrospect for $name {
+            fn pattern() -> elicitation::ElicitationPattern {
+                elicitation::ElicitationPattern::Primitive
+            }
+            fn metadata() -> elicitation::TypeMetadata {
+                elicitation::TypeMetadata {
+                    type_name: stringify!($name),
+                    description: None,
+                    details: elicitation::PatternDetails::Primitive,
+                }
+            }
+        }
+        impl elicitation::ElicitPromptTree for $name {
+            fn prompt_tree() -> elicitation::PromptTree {
+                elicitation::PromptTree::Leaf {
+                    prompt: stringify!($name).to_string(),
+                    type_name: stringify!($name).to_string(),
+                }
+            }
+        }
+        impl elicitation::ElicitSpec for $name {
+            fn type_spec() -> elicitation::TypeSpec {
+                elicitation::TypeSpecBuilder::default()
+                    .type_name(stringify!($name).to_string())
+                    .summary(
+                        concat!(
+                            "Marker component shadow for `",
+                            stringify!($inner_path),
+                            "`."
+                        )
+                        .to_string(),
+                    )
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
+        impl elicitation::ElicitComplete for $name {}
+    };
+}
+
+// ── SpritePickingCamera ───────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::sprite::SpritePickingCamera`].
+///
+/// Marker component. When [`SpritePickingSettings::require_markers`] is `true`,
+/// only cameras tagged with this component participate in sprite picking.
+#[derive(
+    Debug, Clone, Copy, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+pub struct SpritePickingCamera;
+
+impl From<SpritePickingCamera> for bevy::sprite::SpritePickingCamera {
+    fn from(_: SpritePickingCamera) -> Self {
+        bevy::sprite::SpritePickingCamera
+    }
+}
+
+mod emit_impls_sprite_picking_camera {
+    use super::SpritePickingCamera;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for SpritePickingCamera {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { ::elicit_bevy::SpritePickingCamera }
+        }
+    }
+}
+
+unit_elicitation!(SpritePickingCamera, bevy::sprite::SpritePickingCamera);
+
+// ── SpritePickingMode ─────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::sprite::SpritePickingMode`].
+///
+/// Controls how transparent pixels are treated during sprite picking.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+pub enum SpritePickingMode {
+    /// Use only the bounding box; transparent pixels still count as hits.
+    BoundingBox,
+    /// Ignore pixels with alpha below the given threshold (inclusive).
+    AlphaThreshold(f32),
+}
+
+impl Default for SpritePickingMode {
+    fn default() -> Self {
+        Self::AlphaThreshold(0.1)
+    }
+}
+
+impl From<SpritePickingMode> for bevy::sprite::SpritePickingMode {
+    fn from(v: SpritePickingMode) -> Self {
+        match v {
+            SpritePickingMode::BoundingBox => bevy::sprite::SpritePickingMode::BoundingBox,
+            SpritePickingMode::AlphaThreshold(t) => {
+                bevy::sprite::SpritePickingMode::AlphaThreshold(t)
+            }
+        }
+    }
+}
+
+impl From<bevy::sprite::SpritePickingMode> for SpritePickingMode {
+    fn from(v: bevy::sprite::SpritePickingMode) -> Self {
+        match v {
+            bevy::sprite::SpritePickingMode::BoundingBox => SpritePickingMode::BoundingBox,
+            bevy::sprite::SpritePickingMode::AlphaThreshold(t) => {
+                SpritePickingMode::AlphaThreshold(t)
+            }
+        }
+    }
+}
+
+mod emit_impls_sprite_picking_mode {
+    use super::SpritePickingMode;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for SpritePickingMode {
+        fn to_code_literal(&self) -> TokenStream {
+            match self {
+                SpritePickingMode::BoundingBox => {
+                    quote::quote! { ::elicit_bevy::SpritePickingMode::BoundingBox }
+                }
+                SpritePickingMode::AlphaThreshold(t) => {
+                    quote::quote! { ::elicit_bevy::SpritePickingMode::AlphaThreshold(#t) }
+                }
+            }
+        }
+    }
+}
+
+shadow_elicitation!(SpritePickingMode);
+
+// ── SpritePickingSettings ─────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::sprite::SpritePickingSettings`].
+///
+/// Runtime resource controlling sprite picking behavior.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+pub struct SpritePickingSettings {
+    /// When `true`, only cameras marked with [`SpritePickingCamera`] participate in picking.
+    pub require_markers: bool,
+    /// How to handle transparent pixels during picking.
+    pub picking_mode: SpritePickingMode,
+}
+
+impl Default for SpritePickingSettings {
+    fn default() -> Self {
+        Self {
+            require_markers: false,
+            picking_mode: SpritePickingMode::AlphaThreshold(0.1),
+        }
+    }
+}
+
+impl From<SpritePickingSettings> for bevy::sprite::SpritePickingSettings {
+    fn from(v: SpritePickingSettings) -> Self {
+        bevy::sprite::SpritePickingSettings {
+            require_markers: v.require_markers,
+            picking_mode: v.picking_mode.into(),
+        }
+    }
+}
+
+mod emit_impls_sprite_picking_settings {
+    use super::SpritePickingSettings;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for SpritePickingSettings {
+        fn to_code_literal(&self) -> TokenStream {
+            let require_markers = self.require_markers;
+            let mode = self.picking_mode.to_code_literal();
+            quote::quote! {
+                ::elicit_bevy::SpritePickingSettings {
+                    require_markers: #require_markers,
+                    picking_mode: #mode,
+                }
+            }
+        }
+    }
+}
+
+shadow_elicitation!(SpritePickingSettings);
