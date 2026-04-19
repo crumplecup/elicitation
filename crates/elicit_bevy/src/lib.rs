@@ -18,7 +18,7 @@
 //! | [`camera`] | Camera, Projection, Visibility |
 //! | [`pbr`] | StandardMaterial, AlphaMode, Tonemapping, FogFalloff |
 //! | [`light`] | AmbientLight, DirectionalLight, PointLight, SpotLight |
-//! | [`ui`] | Val, UiRect, BorderRadius, layout enums, FocusPolicy, BoxSizing, GridAutoFlow, ZIndex, GlobalZIndex, BackgroundColor, BorderColor, Outline |
+//! | [`ui`] | Val, UiRect, BorderRadius, layout enums, FocusPolicy, BoxSizing, GridAutoFlow, ZIndex, GlobalZIndex, BackgroundColor, BorderColor, Outline, AutoDirectionalNavigation |
 //! | [`sprite`] | Sprite, Anchor, SpriteImageMode, SpriteScalingMode, SpritePickingCamera, SpritePickingMode, SpritePickingSettings |
 //! | [`text`] | TextFont, JustifyText, LineBreak |
 //! | [`audio`] | PlaybackSettings, PlaybackMode, Volume |
@@ -31,6 +31,7 @@
 //! | [`ecs`] | Entity |
 //! | [`app`] | AppExit |
 //! | [`asset`] | LoadState, RecursiveDependencyLoadState |
+//! | [`render`] | NoAutomaticBatching, MipBias, OcclusionCulling |
 //! | [`scene`] | Scene / DynamicScene documentation |
 //! | [`state`] | States factory documentation |
 //! | [`derive_plugin`] | `bevy_derive__*` fragment tools for derive codegen |
@@ -69,6 +70,7 @@ pub mod pbr;
 pub mod picking;
 pub mod post_process;
 mod query_plugin;
+pub mod render;
 mod render_atmosphere_workflow_plugin;
 mod render_mesh_workflow_plugin;
 mod render_plugin;
@@ -252,6 +254,9 @@ pub use math::{
     Vec4,
 };
 
+// ── render re-exports ─────────────────────────────────────────────────────────
+pub use render::{MipBias, NoAutomaticBatching, OcclusionCulling};
+
 // ── mesh re-exports ───────────────────────────────────────────────────────────
 pub use mesh::{Indices, PrimitiveTopology};
 
@@ -321,13 +326,13 @@ pub use text::{
 
 // ── ui re-exports ─────────────────────────────────────────────────────────────
 pub use ui::{
-    AlignContent, AlignItems, AlignSelf, AngularColorStop, BackgroundColor, BackgroundGradient,
-    BorderColor, BorderGradient, BorderRadius, BoxShadow, BoxSizing, Checkable, Checked, ColorStop,
-    ConicGradient, Display, FlexDirection, FlexWrap, FocusPolicy, GlobalZIndex, Gradient,
-    GridAutoFlow, GridTrack, GridTrackRepetition, IgnoreScroll, Interaction, InteractionDisabled,
-    InterpolationColorSpace, IsDefaultUiCamera, JustifyContent, JustifyItems, JustifySelf,
-    LinearGradient, MaxTrackSizingFunction, MinTrackSizingFunction, Outline, Overflow,
-    OverflowAxis, OverflowClipBox, OverflowClipMargin, OverrideClip, PositionType, Pressed,
-    RadialGradient, RadialGradientShape, RepeatedGridTrack, ScrollPosition, ShadowStyle,
-    UiPosition, UiRect, UiScale, Val, ZIndex,
+    AlignContent, AlignItems, AlignSelf, AngularColorStop, AutoDirectionalNavigation,
+    BackgroundColor, BackgroundGradient, BorderColor, BorderGradient, BorderRadius, BoxShadow,
+    BoxSizing, Checkable, Checked, ColorStop, ConicGradient, Display, FlexDirection, FlexWrap,
+    FocusPolicy, GlobalZIndex, Gradient, GridAutoFlow, GridTrack, GridTrackRepetition,
+    IgnoreScroll, Interaction, InteractionDisabled, InterpolationColorSpace, IsDefaultUiCamera,
+    JustifyContent, JustifyItems, JustifySelf, LinearGradient, MaxTrackSizingFunction,
+    MinTrackSizingFunction, Outline, Overflow, OverflowAxis, OverflowClipBox, OverflowClipMargin,
+    OverrideClip, PositionType, Pressed, RadialGradient, RadialGradientShape, RepeatedGridTrack,
+    ScrollPosition, ShadowStyle, UiPosition, UiRect, UiScale, Val, ZIndex,
 };
