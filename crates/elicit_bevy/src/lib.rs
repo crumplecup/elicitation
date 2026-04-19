@@ -32,7 +32,7 @@
 //! | [`ecs`] | Entity |
 //! | [`app`] | AppExit |
 //! | [`asset`] | LoadState, RecursiveDependencyLoadState |
-//! | [`render`] | NoAutomaticBatching, MipBias, OcclusionCulling |
+//! | [`render`] | Msaa, Hdr, ColorGrading, ColorGradingGlobal, ColorGradingSection, NoAutomaticBatching, MipBias, OcclusionCulling |
 //! | [`scene`] | Scene / DynamicScene documentation |
 //! | [`state`] | States factory documentation |
 //! | [`derive_plugin`] | `bevy_derive__*` fragment tools for derive codegen |
@@ -257,7 +257,10 @@ pub use math::{
 };
 
 // ── render re-exports ─────────────────────────────────────────────────────────
-pub use render::{MipBias, NoAutomaticBatching, OcclusionCulling};
+pub use render::{
+    ColorGrading, ColorGradingGlobal, ColorGradingSection, Hdr, MipBias, Msaa,
+    NoAutomaticBatching, OcclusionCulling,
+};
 
 // ── mesh re-exports ───────────────────────────────────────────────────────────
 pub use mesh::{Indices, PrimitiveTopology};
