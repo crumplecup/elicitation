@@ -13,6 +13,7 @@
 //! | [`color`] | Color and all color spaces |
 //! | [`transform`] | Transform, GlobalTransform |
 //! | [`input`] | KeyCode, MouseButton, Gamepad* |
+//! | [`input_focus`] | AutoFocus, TabIndex, TabGroup, InputFocusVisible, AutoNavigationConfig |
 //! | [`time`] | Timer, TimerMode, Stopwatch |
 //! | [`window`] | Window, WindowMode, PresentMode, … |
 //! | [`camera`] | Camera, Projection, Visibility |
@@ -63,6 +64,7 @@ mod ecs_plugin;
 pub mod gizmos;
 pub mod image;
 pub mod input;
+pub mod input_focus;
 pub mod light;
 pub mod math;
 pub mod mesh;
@@ -290,6 +292,9 @@ pub use input::{
     ButtonState, GamepadAxis, GamepadButton, GamepadConnection, GamepadInput,
     GamepadRumbleIntensity, KeyCode, MouseButton, MouseScrollUnit, TouchPhase,
 };
+
+// ── input_focus re-exports ────────────────────────────────────────────────────
+pub use input_focus::{AutoFocus, AutoNavigationConfig, InputFocusVisible, TabGroup, TabIndex};
 
 // ── transform re-exports ──────────────────────────────────────────────────────
 pub use transform::{GlobalTransform, Transform};
