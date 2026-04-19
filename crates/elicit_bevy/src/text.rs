@@ -2,7 +2,7 @@
 //!
 //! Covers [`JustifyText`] (wraps `bevy::text::Justify`), [`LineBreak`],
 //! [`TextFont`], [`FontSmoothing`], [`TextColor`], [`TextLayout`],
-//! [`TextSpan`], and [`FontWeight`].
+//! [`TextSpan`], [`FontWeight`], and [`TextBounds`].
 
 use elicitation::{elicit_newtype, elicit_newtype_traits};
 use elicitation_derive::reflect_methods;
@@ -632,3 +632,115 @@ mod emit_impls_font_weight {
 }
 
 impl elicitation::ElicitComplete for FontWeight {}
+
+// ── shadow_elicitation macro ──────────────────────────────────────────────────
+
+macro_rules! shadow_elicitation {
+    ($name:ident) => {
+        impl elicitation::Prompt for $name {
+            fn prompt() -> Option<&'static str> {
+                None
+            }
+        }
+        impl elicitation::Elicitation for $name {
+            type Style = ();
+            async fn elicit<C: elicitation::ElicitCommunicator>(
+                communicator: &C,
+            ) -> elicitation::ElicitResult<Self> {
+                let response = communicator
+                    .send_prompt(concat!("Enter value for ", stringify!($name)))
+                    .await?;
+                serde_json::from_str(&response)
+                    .or_else(|_| serde_json::from_str::<Self>(&format!("\"{}\"", response)))
+                    .map_err(|e| {
+                        elicitation::ElicitError::new(elicitation::ElicitErrorKind::ParseError(
+                            format!("Invalid {}: {}", stringify!($name), e),
+                        ))
+                    })
+            }
+            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::kani_trusted_opaque(stringify!($name))
+            }
+            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::verus_trusted_opaque(stringify!($name))
+            }
+            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::creusot_trusted_opaque(stringify!($name))
+            }
+        }
+        impl elicitation::ElicitIntrospect for $name {
+            fn pattern() -> elicitation::ElicitationPattern {
+                elicitation::ElicitationPattern::Primitive
+            }
+            fn metadata() -> elicitation::TypeMetadata {
+                elicitation::TypeMetadata {
+                    type_name: stringify!($name),
+                    description: None,
+                    details: elicitation::PatternDetails::Primitive,
+                }
+            }
+        }
+        impl elicitation::ElicitPromptTree for $name {
+            fn prompt_tree() -> elicitation::PromptTree {
+                elicitation::PromptTree::Leaf {
+                    prompt: stringify!($name).to_string(),
+                    type_name: stringify!($name).to_string(),
+                }
+            }
+        }
+        impl elicitation::ElicitSpec for $name {
+            fn type_spec() -> elicitation::TypeSpec {
+                elicitation::TypeSpecBuilder::default()
+                    .type_name(stringify!($name).to_string())
+                    .summary(concat!("Shadow type for `", stringify!($name), "`.").to_string())
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
+        impl elicitation::ElicitComplete for $name {}
+    };
+}
+
+// ── TextBounds ────────────────────────────────────────────────────────────────
+
+/// Shadow for [`bevy::text::TextBounds`].
+///
+/// Add to a `Text2d` entity to limit its layout bounding box. Use `None` for
+/// unconstrained (default behavior).
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+pub struct TextBounds {
+    /// Maximum width in logical pixels (`None` = unbounded).
+    pub width: Option<f32>,
+    /// Maximum height in logical pixels (`None` = unbounded).
+    pub height: Option<f32>,
+}
+
+impl From<TextBounds> for bevy::text::TextBounds {
+    fn from(v: TextBounds) -> Self {
+        Self {
+            width: v.width,
+            height: v.height,
+        }
+    }
+}
+
+mod emit_text_bounds {
+    use super::TextBounds;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for TextBounds {
+        fn to_code_literal(&self) -> TokenStream {
+            let width = match self.width {
+                None => quote::quote! { None },
+                Some(w) => quote::quote! { Some(#w) },
+            };
+            let height = match self.height {
+                None => quote::quote! { None },
+                Some(h) => quote::quote! { Some(#h) },
+            };
+            quote::quote! { ::bevy::text::TextBounds { width: #width, height: #height } }
+        }
+    }
+}
+
+shadow_elicitation!(TextBounds);

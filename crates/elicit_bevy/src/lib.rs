@@ -60,6 +60,7 @@ mod derive_plugin;
 pub mod ecs;
 mod ecs_plugin;
 pub mod gizmos;
+pub mod image;
 pub mod input;
 pub mod light;
 pub mod math;
@@ -217,6 +218,12 @@ pub use app::AppExit;
 // ── asset re-exports ─────────────────────────────────────────────────────────
 pub use asset::{LoadState, RecursiveDependencyLoadState};
 
+// ── image re-exports ──────────────────────────────────────────────────────────
+pub use image::{
+    ImageAddressMode, ImageCompareFunction, ImageFilterMode, ImageSampler, ImageSamplerBorderColor,
+    ImageSamplerDescriptor,
+};
+
 // ── animation re-exports ─────────────────────────────────────────────────────
 pub use animation::{AnimationPlayer, AnimationTargetId, AnimationTransitions, RepeatAnimation};
 
@@ -306,7 +313,8 @@ pub use sprite::{
 
 // ── text re-exports ───────────────────────────────────────────────────────────
 pub use text::{
-    FontSmoothing, FontWeight, JustifyText, LineBreak, TextColor, TextFont, TextLayout, TextSpan,
+    FontSmoothing, FontWeight, JustifyText, LineBreak, TextBounds, TextColor, TextFont, TextLayout,
+    TextSpan,
 };
 
 // ── ui re-exports ─────────────────────────────────────────────────────────────
