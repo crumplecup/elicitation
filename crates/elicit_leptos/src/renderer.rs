@@ -162,11 +162,7 @@ impl UiNodeBridge for LeptosRenderer {
         let children: Vec<String> = children.into_iter().map(|(w, _)| w).collect();
         let __w = {
             let m = self.mode;
-            wrap_element(
-                "div",
-                &format!("{}", role_attr(m, "none")),
-                &join_children(children),
-            ) + &hidden_attr(node).to_string()
+            wrap_element("div", &role_attr(m, "none"), &join_children(children)) + hidden_attr(node)
         };
         (__w, Established::<RolePreserved>::prove(&proof))
     }

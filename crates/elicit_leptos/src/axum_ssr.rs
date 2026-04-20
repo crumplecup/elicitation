@@ -365,7 +365,7 @@ fn emit_full_ssr(desc: &LeptosAxumDescriptor) -> String {
         format!("\n{headers}")
     };
     let static_block = if desc.static_file_handler {
-        format!("\n        .fallback(leptos_axum::file_and_error_handler(shell))")
+        "\n        .fallback(leptos_axum::file_and_error_handler(shell))".to_owned()
     } else {
         String::new()
     };

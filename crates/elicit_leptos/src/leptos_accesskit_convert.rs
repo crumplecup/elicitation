@@ -101,18 +101,18 @@ fn render_node(
     let children = node.children();
     let has_children = !children.is_empty();
 
-    let rendered = match node.role() {
+    match node.role() {
         // ── Document-level containers ─────────────────────────────────────────
         Role::Window => {
             // Transparent: render children at the same depth without a wrapper.
-            render_children(nodes, children, mode, depth, stats)
+            render_children(NodeCtx { nodes, children }, mode, depth, stats)
         }
         Role::Pane | Role::GenericContainer => {
             stats.containers_rendered += 1;
             let desc_attrs = desc_attrs_str(node);
             if !desc_attrs.is_empty() {
                 let aria = aria_label_attr(node);
-                let inner = render_children(nodes, children, mode, depth + 1, stats);
+                let inner = render_children(NodeCtx { nodes, children }, mode, depth + 1, stats);
                 let pad = indent(depth);
                 if inner.is_empty() {
                     format!("{pad}<div{desc_attrs}{aria}></div>\n")
@@ -125,8 +125,7 @@ fn render_node(
                     "div",
                     orient.as_deref(),
                     node,
-                    nodes,
-                    children,
+                    NodeCtx { nodes, children },
                     mode,
                     depth,
                     stats,
@@ -135,25 +134,57 @@ fn render_node(
         }
         Role::Document => {
             stats.containers_rendered += 1;
-            wrap_element("article", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "article",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Main => {
             stats.containers_rendered += 1;
-            wrap_element("main", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "main",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Banner => {
             stats.containers_rendered += 1;
-            wrap_element("header", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "header",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::ContentInfo => {
             stats.containers_rendered += 1;
-            wrap_element("footer", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "footer",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Navigation => {
             stats.containers_rendered += 1;
             let desc_attrs = desc_attrs_str(node);
             let aria = aria_label_attr(node);
-            let inner = render_children(nodes, children, mode, depth + 1, stats);
+            let inner = render_children(NodeCtx { nodes, children }, mode, depth + 1, stats);
             let pad = indent(depth);
             if inner.is_empty() {
                 format!("{pad}<nav{desc_attrs}{aria}></nav>\n")
@@ -163,23 +194,63 @@ fn render_node(
         }
         Role::Complementary => {
             stats.containers_rendered += 1;
-            wrap_element("aside", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "aside",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Section | Role::Region => {
             stats.containers_rendered += 1;
-            wrap_element("section", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "section",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Article => {
             stats.containers_rendered += 1;
-            wrap_element("article", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "article",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Form => {
             stats.containers_rendered += 1;
-            wrap_element("form", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "form",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Search => {
             stats.containers_rendered += 1;
-            wrap_with_role("div", "search", node, nodes, children, mode, depth, stats)
+            wrap_with_role(
+                "div",
+                "search",
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Group => {
             stats.containers_rendered += 1;
@@ -187,7 +258,7 @@ fn render_node(
             if !desc_attrs.is_empty() {
                 // desc_attrs encoding takes priority: render as <div> with those attrs.
                 let aria = aria_label_attr(node);
-                let inner = render_children(nodes, children, mode, depth + 1, stats);
+                let inner = render_children(NodeCtx { nodes, children }, mode, depth + 1, stats);
                 let pad = indent(depth);
                 if inner.is_empty() {
                     format!("{pad}<div{desc_attrs}{aria}></div>\n")
@@ -196,19 +267,35 @@ fn render_node(
                 }
             } else if node.label().is_some() {
                 let label = node.label().unwrap_or("").to_string();
-                let inner = render_children(nodes, children, mode, depth + 1, stats);
+                let inner = render_children(NodeCtx { nodes, children }, mode, depth + 1, stats);
                 format!(
                     "{pad}<fieldset>\n{pad}  <legend>{}</legend>\n{inner}{pad}</fieldset>\n",
                     text_content(&label, mode),
                     pad = indent(depth),
                 )
             } else {
-                wrap_with_role("div", "group", node, nodes, children, mode, depth, stats)
+                wrap_with_role(
+                    "div",
+                    "group",
+                    node,
+                    NodeCtx { nodes, children },
+                    mode,
+                    depth,
+                    stats,
+                )
             }
         }
         Role::Dialog => {
             stats.containers_rendered += 1;
-            wrap_element("dialog", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "dialog",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::AlertDialog => {
             stats.containers_rendered += 1;
@@ -216,8 +303,7 @@ fn render_node(
                 "dialog",
                 "alertdialog",
                 node,
-                nodes,
-                children,
+                NodeCtx { nodes, children },
                 mode,
                 depth,
                 stats,
@@ -226,15 +312,39 @@ fn render_node(
         Role::ScrollView => {
             stats.containers_rendered += 1;
             let class = Some("ak-scroll");
-            wrap_element_class("div", class, node, nodes, children, mode, depth, stats)
+            wrap_element_class(
+                "div",
+                class,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::SectionHeader | Role::Header => {
             stats.containers_rendered += 1;
-            wrap_element("header", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "header",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::SectionFooter | Role::Footer => {
             stats.containers_rendered += 1;
-            wrap_element("footer", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "footer",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
 
         // ── Toolbar ───────────────────────────────────────────────────────────
@@ -242,7 +352,7 @@ fn render_node(
             stats.containers_rendered += 1;
             let desc_attrs = desc_attrs_str(node);
             let aria = aria_label_attr(node);
-            let inner = render_children(nodes, children, mode, depth + 1, stats);
+            let inner = render_children(NodeCtx { nodes, children }, mode, depth + 1, stats);
             let pad = indent(depth);
             if inner.is_empty() {
                 format!("{pad}<header class=\"toolbar\"{desc_attrs}{aria}></header>\n")
@@ -262,28 +372,59 @@ fn render_node(
                     "ul",
                     Some("ak-hlist"),
                     node,
-                    nodes,
-                    children,
+                    NodeCtx { nodes, children },
                     mode,
                     depth,
                     stats,
                 )
             } else {
-                wrap_element("ul", None, node, nodes, children, mode, depth, stats)
+                wrap_element(
+                    "ul",
+                    None,
+                    node,
+                    NodeCtx { nodes, children },
+                    mode,
+                    depth,
+                    stats,
+                )
             }
         }
         Role::ListBox => {
             stats.containers_rendered += 1;
-            wrap_with_role("ul", "listbox", node, nodes, children, mode, depth, stats)
+            wrap_with_role(
+                "ul",
+                "listbox",
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::DescriptionList => {
             stats.containers_rendered += 1;
-            wrap_element("dl", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "dl",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::ListItem | Role::ListBoxOption => {
             if has_children {
                 stats.containers_rendered += 1;
-                wrap_element("li", None, node, nodes, children, mode, depth, stats)
+                wrap_element(
+                    "li",
+                    None,
+                    node,
+                    NodeCtx { nodes, children },
+                    mode,
+                    depth,
+                    stats,
+                )
             } else {
                 stats.widgets_rendered += 1;
                 let text = node_text(node);
@@ -304,14 +445,21 @@ fn render_node(
         // ── Tables ────────────────────────────────────────────────────────────
         Role::Table => {
             stats.containers_rendered += 1;
-            render_table(nodes, node, children, "table", None, mode, depth, stats)
+            render_table(
+                NodeCtx { nodes, children },
+                node,
+                "table",
+                None,
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Grid | Role::TreeGrid | Role::ListGrid => {
             stats.containers_rendered += 1;
             render_table(
-                nodes,
+                NodeCtx { nodes, children },
                 node,
-                children,
                 "table",
                 Some("grid"),
                 mode,
@@ -321,16 +469,40 @@ fn render_node(
         }
         Role::RowGroup => {
             stats.containers_rendered += 1;
-            wrap_element("tbody", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "tbody",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Row => {
             stats.containers_rendered += 1;
-            wrap_element("tr", None, node, nodes, children, mode, depth, stats)
+            wrap_element(
+                "tr",
+                None,
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Cell | Role::GridCell => {
             if has_children {
                 stats.containers_rendered += 1;
-                wrap_element("td", None, node, nodes, children, mode, depth, stats)
+                wrap_element(
+                    "td",
+                    None,
+                    node,
+                    NodeCtx { nodes, children },
+                    mode,
+                    depth,
+                    stats,
+                )
             } else {
                 stats.widgets_rendered += 1;
                 let text = node_text(node);
@@ -344,8 +516,7 @@ fn render_node(
                     "th",
                     Some("scope=\"col\""),
                     node,
-                    nodes,
-                    children,
+                    NodeCtx { nodes, children },
                     mode,
                     depth,
                     stats,
@@ -368,8 +539,7 @@ fn render_node(
                     "th",
                     Some("scope=\"row\""),
                     node,
-                    nodes,
-                    children,
+                    NodeCtx { nodes, children },
                     mode,
                     depth,
                     stats,
@@ -389,7 +559,15 @@ fn render_node(
         // ── Tabs ──────────────────────────────────────────────────────────────
         Role::TabList => {
             stats.containers_rendered += 1;
-            wrap_with_role("div", "tablist", node, nodes, children, mode, depth, stats)
+            wrap_with_role(
+                "div",
+                "tablist",
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Tab => {
             stats.widgets_rendered += 1;
@@ -405,22 +583,54 @@ fn render_node(
         }
         Role::TabPanel => {
             stats.containers_rendered += 1;
-            wrap_with_role("div", "tabpanel", node, nodes, children, mode, depth, stats)
+            wrap_with_role(
+                "div",
+                "tabpanel",
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
 
         // ── Menus ─────────────────────────────────────────────────────────────
         Role::MenuBar => {
             stats.containers_rendered += 1;
-            wrap_with_role("nav", "menubar", node, nodes, children, mode, depth, stats)
+            wrap_with_role(
+                "nav",
+                "menubar",
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Menu | Role::MenuListPopup => {
             stats.containers_rendered += 1;
-            wrap_with_role("ul", "menu", node, nodes, children, mode, depth, stats)
+            wrap_with_role(
+                "ul",
+                "menu",
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::MenuItem => {
             if has_children {
                 stats.containers_rendered += 1;
-                wrap_with_role("li", "menuitem", node, nodes, children, mode, depth, stats)
+                wrap_with_role(
+                    "li",
+                    "menuitem",
+                    node,
+                    NodeCtx { nodes, children },
+                    mode,
+                    depth,
+                    stats,
+                )
             } else {
                 stats.widgets_rendered += 1;
                 let text = node_text(node);
@@ -553,7 +763,7 @@ fn render_node(
         Role::ComboBox | Role::EditableComboBox => {
             stats.containers_rendered += 1;
             let label = node_text(node);
-            let inner = render_children(nodes, children, mode, depth + 1, stats);
+            let inner = render_children(NodeCtx { nodes, children }, mode, depth + 1, stats);
             format!(
                 "{pad}<select aria-label=\"{}\">\n{inner}{pad}</select>\n",
                 html_escape(&label),
@@ -610,7 +820,15 @@ fn render_node(
         Role::Paragraph => {
             if has_children {
                 stats.containers_rendered += 1;
-                wrap_element("p", None, node, nodes, children, mode, depth, stats)
+                wrap_element(
+                    "p",
+                    None,
+                    node,
+                    NodeCtx { nodes, children },
+                    mode,
+                    depth,
+                    stats,
+                )
             } else {
                 stats.widgets_rendered += 1;
                 let text = node_text(node);
@@ -654,8 +872,7 @@ fn render_node(
                     "blockquote",
                     None,
                     node,
-                    nodes,
-                    children,
+                    NodeCtx { nodes, children },
                     mode,
                     depth,
                     stats,
@@ -714,7 +931,15 @@ fn render_node(
         Role::Note => {
             if has_children {
                 stats.containers_rendered += 1;
-                wrap_with_role("aside", "note", node, nodes, children, mode, depth, stats)
+                wrap_with_role(
+                    "aside",
+                    "note",
+                    node,
+                    NodeCtx { nodes, children },
+                    mode,
+                    depth,
+                    stats,
+                )
             } else {
                 stats.widgets_rendered += 1;
                 let text = node_text(node);
@@ -738,7 +963,7 @@ fn render_node(
                 let css_class = theme.css_class();
                 let mut inner = String::new();
                 for cid in children {
-                    let Some(chip) = nodes.get(&cid) else {
+                    let Some(chip) = nodes.get(cid) else {
                         continue;
                     };
                     let key = html_escape(chip.label().unwrap_or(""));
@@ -767,7 +992,15 @@ fn render_node(
         Role::Alert => {
             if has_children {
                 stats.containers_rendered += 1;
-                wrap_with_role("div", "alert", node, nodes, children, mode, depth, stats)
+                wrap_with_role(
+                    "div",
+                    "alert",
+                    node,
+                    NodeCtx { nodes, children },
+                    mode,
+                    depth,
+                    stats,
+                )
             } else {
                 stats.widgets_rendered += 1;
                 let text = node_text(node);
@@ -781,7 +1014,15 @@ fn render_node(
         }
         Role::Log => {
             stats.containers_rendered += 1;
-            wrap_with_role("div", "log", node, nodes, children, mode, depth, stats)
+            wrap_with_role(
+                "div",
+                "log",
+                node,
+                NodeCtx { nodes, children },
+                mode,
+                depth,
+                stats,
+            )
         }
         Role::Time | Role::Timer => {
             stats.widgets_rendered += 1;
@@ -900,7 +1141,7 @@ fn render_node(
             } else {
                 // Generic figure fallback.
                 stats.containers_rendered += 1;
-                let inner = render_children(nodes, children, mode, depth + 1, stats);
+                let inner = render_children(NodeCtx { nodes, children }, mode, depth + 1, stats);
                 let pad = indent(depth);
                 format!("{pad}<figure>\n{inner}{pad}</figure>\n")
             }
@@ -921,7 +1162,7 @@ fn render_node(
             stats.containers_rendered += 1;
             let label = html_escape(node.label().unwrap_or("tree"));
             let desc_attrs = desc_attrs_str(node);
-            let inner = render_children(nodes, children, mode, depth + 1, stats);
+            let inner = render_children(NodeCtx { nodes, children }, mode, depth + 1, stats);
             format!(
                 "{}<ul role=\"tree\" class=\"nav-tree\"{desc_attrs} aria-label=\"{label}\">\n{}{}</ul>\n",
                 indent(depth),
@@ -943,7 +1184,7 @@ fn render_node(
                 } else {
                     ""
                 };
-                let inner = render_children(nodes, children, mode, depth + 3, stats);
+                let inner = render_children(NodeCtx { nodes, children }, mode, depth + 3, stats);
                 format!(
                     "{}<li role=\"none\">\n\
                      {}<details class=\"schema-group\"{open}>\n\
@@ -1014,7 +1255,8 @@ fn render_node(
                 let desc_attrs = desc_attrs_str(node);
                 if !desc_attrs.is_empty() {
                     let aria = aria_label_attr(node);
-                    let inner = render_children(nodes, children, mode, depth + 1, stats);
+                    let inner =
+                        render_children(NodeCtx { nodes, children }, mode, depth + 1, stats);
                     let pad = indent(depth);
                     if inner.is_empty() {
                         format!("{pad}<div{desc_attrs}{aria}></div>\n")
@@ -1022,7 +1264,15 @@ fn render_node(
                         format!("{pad}<div{desc_attrs}{aria}>\n{inner}{pad}</div>\n")
                     }
                 } else {
-                    wrap_element("div", None, node, nodes, children, mode, depth, stats)
+                    wrap_element(
+                        "div",
+                        None,
+                        node,
+                        NodeCtx { nodes, children },
+                        mode,
+                        depth,
+                        stats,
+                    )
                 }
             } else {
                 let text = node_text(node);
@@ -1041,26 +1291,30 @@ fn render_node(
                 }
             }
         }
-    };
-
-    rendered
+    }
 }
 
 // ── Element builders ──────────────────────────────────────────────────────────
+
+/// Shared nodes-and-children context passed by value (Copy) through tree helpers.
+#[derive(Clone, Copy)]
+struct NodeCtx<'a> {
+    nodes: &'a HashMap<NodeId, Node>,
+    children: &'a [NodeId],
+}
 
 fn wrap_element(
     tag: &str,
     extra_attr: Option<&str>,
     node: &Node,
-    nodes: &HashMap<NodeId, Node>,
-    children: &[NodeId],
+    ctx: NodeCtx<'_>,
     mode: LeptosRenderMode,
     depth: usize,
     stats: &mut RenderStats,
 ) -> String {
     let aria = aria_label_attr(node);
     let extra = extra_attr.map(|a| format!(" {a}")).unwrap_or_default();
-    let inner = render_children(nodes, children, mode, depth + 1, stats);
+    let inner = render_children(ctx, mode, depth + 1, stats);
     if inner.is_empty() {
         format!("{pad}<{tag}{extra}{aria}></{tag}>\n", pad = indent(depth))
     } else {
@@ -1075,15 +1329,14 @@ fn wrap_element_class(
     tag: &str,
     class: Option<&str>,
     node: &Node,
-    nodes: &HashMap<NodeId, Node>,
-    children: &[NodeId],
+    ctx: NodeCtx<'_>,
     mode: LeptosRenderMode,
     depth: usize,
     stats: &mut RenderStats,
 ) -> String {
     let aria = aria_label_attr(node);
     let cls = class.map(|c| format!(" class=\"{c}\"")).unwrap_or_default();
-    let inner = render_children(nodes, children, mode, depth + 1, stats);
+    let inner = render_children(ctx, mode, depth + 1, stats);
     if inner.is_empty() {
         format!("{pad}<{tag}{cls}{aria}></{tag}>\n", pad = indent(depth))
     } else {
@@ -1098,14 +1351,13 @@ fn wrap_with_role(
     tag: &str,
     role: &str,
     node: &Node,
-    nodes: &HashMap<NodeId, Node>,
-    children: &[NodeId],
+    ctx: NodeCtx<'_>,
     mode: LeptosRenderMode,
     depth: usize,
     stats: &mut RenderStats,
 ) -> String {
     let aria = aria_label_attr(node);
-    let inner = render_children(nodes, children, mode, depth + 1, stats);
+    let inner = render_children(ctx, mode, depth + 1, stats);
     if inner.is_empty() {
         format!(
             r#"{pad}<{tag} role="{role}"{aria}></{tag}>{nl}"#,
@@ -1121,15 +1373,14 @@ fn wrap_with_role(
 }
 
 fn render_children(
-    nodes: &HashMap<NodeId, Node>,
-    children: &[NodeId],
+    ctx: NodeCtx<'_>,
     mode: LeptosRenderMode,
     depth: usize,
     stats: &mut RenderStats,
 ) -> String {
-    children
+    ctx.children
         .iter()
-        .map(|id| render_node(nodes, *id, mode, depth, stats))
+        .map(|id| render_node(ctx.nodes, *id, mode, depth, stats))
         .collect()
 }
 
@@ -1161,15 +1412,15 @@ fn is_header_row(nodes: &HashMap<NodeId, Node>, row_id: NodeId) -> bool {
 /// [`Role::ColumnHeader`] are lifted into `<thead>`; the rest go into
 /// `<tbody>`.
 fn render_table(
-    nodes: &HashMap<NodeId, Node>,
+    ctx: NodeCtx<'_>,
     node: &Node,
-    children: &[NodeId],
     tag: &str,
     role: Option<&str>,
     mode: LeptosRenderMode,
     depth: usize,
     stats: &mut RenderStats,
 ) -> String {
+    let NodeCtx { nodes, children } = ctx;
     let aria = aria_label_attr(node);
     let role_attr = role.map(|r| format!(" role=\"{r}\"")).unwrap_or_default();
 
@@ -1182,7 +1433,7 @@ fn render_table(
             .unwrap_or(false)
     });
     if has_row_groups {
-        let inner = render_children(nodes, children, mode, depth + 1, stats);
+        let inner = render_children(NodeCtx { nodes, children }, mode, depth + 1, stats);
         return if inner.is_empty() {
             format!(
                 "{pad}<{tag}{role_attr}{aria}></{tag}>\n",

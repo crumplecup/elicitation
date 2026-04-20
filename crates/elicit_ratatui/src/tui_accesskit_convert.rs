@@ -266,7 +266,7 @@ fn convert_accesskit_node(
     if node.role() == Role::Figure {
         let desc = node.description().unwrap_or("");
         if desc.contains("w=") && desc.contains("h=") && !children_ids.is_empty() {
-            let art = erd_ascii_art(node, &children_ids, node_map);
+            let art = erd_ascii_art(node, children_ids, node_map);
             let label = node.label().unwrap_or("ERD");
             let block = if label.is_empty() {
                 None

@@ -62,7 +62,7 @@ fn shell_import(display: &LeptosDisplayMode) -> Option<String> {
 
 fn wrap_app(app: &str, display: &LeptosDisplayMode) -> String {
     match display {
-        LeptosDisplayMode::Bare => format!("{app}"),
+        LeptosDisplayMode::Bare => app.to_owned(),
         LeptosDisplayMode::Standard => {
             format!("move || view! {{ <StandardShell><{app}/></StandardShell> }}")
         }
@@ -331,7 +331,7 @@ impl elicitation::ElicitPlugin for LeptosAxumBridgePlugin {
             let name = params.name.as_ref();
             let args: serde_json::Value = params
                 .arguments
-                .map(|m| serde_json::Value::Object(m))
+                .map(serde_json::Value::Object)
                 .unwrap_or(serde_json::Value::Object(Default::default()));
             match name {
                 "leptos_axum_bridge__from_config" => {
