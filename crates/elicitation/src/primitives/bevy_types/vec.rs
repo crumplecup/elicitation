@@ -395,7 +395,7 @@ bevy_vec2!(
     f32,
     "bevy::math::Vec2",
     "2D f32 vector (x, y):",
-    |x, y| bevy::math::Vec2::new(x, y),
+    bevy::math::Vec2::new,
     "bevy::math::Vec2"
 );
 
@@ -405,7 +405,7 @@ bevy_vec3!(
     f32,
     "bevy::math::Vec3",
     "3D f32 vector (x, y, z):",
-    |x, y, z| bevy::math::Vec3::new(x, y, z),
+    bevy::math::Vec3::new,
     "bevy::math::Vec3"
 );
 
@@ -415,7 +415,7 @@ bevy_vec4!(
     f32,
     "bevy::math::Vec4",
     "4D f32 vector (x, y, z, w):",
-    |x, y, z, w| bevy::math::Vec4::new(x, y, z, w),
+    bevy::math::Vec4::new,
     "bevy::math::Vec4"
 );
 
@@ -427,7 +427,7 @@ bevy_vec2!(
     f64,
     "bevy::math::DVec2",
     "2D f64 vector (x, y):",
-    |x, y| bevy::math::DVec2::new(x, y),
+    bevy::math::DVec2::new,
     "bevy::math::DVec2"
 );
 
@@ -437,7 +437,7 @@ bevy_vec3!(
     f64,
     "bevy::math::DVec3",
     "3D f64 vector (x, y, z):",
-    |x, y, z| bevy::math::DVec3::new(x, y, z),
+    bevy::math::DVec3::new,
     "bevy::math::DVec3"
 );
 
@@ -447,7 +447,7 @@ bevy_vec4!(
     f64,
     "bevy::math::DVec4",
     "4D f64 vector (x, y, z, w):",
-    |x, y, z, w| bevy::math::DVec4::new(x, y, z, w),
+    bevy::math::DVec4::new,
     "bevy::math::DVec4"
 );
 
@@ -459,7 +459,7 @@ bevy_vec2!(
     i32,
     "bevy::math::IVec2",
     "2D i32 vector (x, y):",
-    |x, y| bevy::math::IVec2::new(x, y),
+    bevy::math::IVec2::new,
     "bevy::math::IVec2"
 );
 
@@ -469,7 +469,7 @@ bevy_vec3!(
     i32,
     "bevy::math::IVec3",
     "3D i32 vector (x, y, z):",
-    |x, y, z| bevy::math::IVec3::new(x, y, z),
+    bevy::math::IVec3::new,
     "bevy::math::IVec3"
 );
 
@@ -479,7 +479,7 @@ bevy_vec4!(
     i32,
     "bevy::math::IVec4",
     "4D i32 vector (x, y, z, w):",
-    |x, y, z, w| bevy::math::IVec4::new(x, y, z, w),
+    bevy::math::IVec4::new,
     "bevy::math::IVec4"
 );
 
@@ -491,7 +491,7 @@ bevy_vec2!(
     u32,
     "bevy::math::UVec2",
     "2D u32 vector (x, y):",
-    |x, y| bevy::math::UVec2::new(x, y),
+    bevy::math::UVec2::new,
     "bevy::math::UVec2"
 );
 
@@ -501,7 +501,7 @@ bevy_vec3!(
     u32,
     "bevy::math::UVec3",
     "3D u32 vector (x, y, z):",
-    |x, y, z| bevy::math::UVec3::new(x, y, z),
+    bevy::math::UVec3::new,
     "bevy::math::UVec3"
 );
 
@@ -511,7 +511,7 @@ bevy_vec4!(
     u32,
     "bevy::math::UVec4",
     "4D u32 vector (x, y, z, w):",
-    |x, y, z, w| bevy::math::UVec4::new(x, y, z, w),
+    bevy::math::UVec4::new,
     "bevy::math::UVec4"
 );
 
@@ -523,7 +523,7 @@ bevy_vec2!(
     bool,
     "bevy::math::BVec2",
     "2D bool vector (x, y):",
-    |x, y| bevy::math::BVec2::new(x, y),
+    bevy::math::BVec2::new,
     "bevy::math::BVec2"
 );
 
@@ -533,7 +533,7 @@ bevy_vec3!(
     bool,
     "bevy::math::BVec3",
     "3D bool vector (x, y, z):",
-    |x, y, z| bevy::math::BVec3::new(x, y, z),
+    bevy::math::BVec3::new,
     "bevy::math::BVec3"
 );
 
@@ -543,7 +543,7 @@ bevy_vec4!(
     bool,
     "bevy::math::BVec4",
     "4D bool vector (x, y, z, w):",
-    |x, y, z, w| bevy::math::BVec4::new(x, y, z, w),
+    bevy::math::BVec4::new,
     "bevy::math::BVec4"
 );
 

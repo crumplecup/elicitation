@@ -26,9 +26,9 @@ pub struct GeoTriangle {
 impl From<Triangle<f64>> for GeoTriangle {
     fn from(t: Triangle<f64>) -> Self {
         Self {
-            v1: GeoCoord::from(t.0),
-            v2: GeoCoord::from(t.1),
-            v3: GeoCoord::from(t.2),
+            v1: GeoCoord::from(t.v1()),
+            v2: GeoCoord::from(t.v2()),
+            v3: GeoCoord::from(t.v3()),
         }
     }
 }

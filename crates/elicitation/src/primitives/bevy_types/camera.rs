@@ -447,12 +447,13 @@ impl From<&bevy::camera::PerspectiveProjection> for BevyPerspectiveProjection {
 
 impl From<BevyPerspectiveProjection> for bevy::camera::PerspectiveProjection {
     fn from(b: BevyPerspectiveProjection) -> Self {
-        let mut p = bevy::camera::PerspectiveProjection::default();
-        p.fov = b.fov;
-        p.aspect_ratio = b.aspect_ratio;
-        p.near = b.near;
-        p.far = b.far;
-        p
+        bevy::camera::PerspectiveProjection {
+            fov: b.fov,
+            aspect_ratio: b.aspect_ratio,
+            near: b.near,
+            far: b.far,
+            ..Default::default()
+        }
     }
 }
 
@@ -600,7 +601,7 @@ impl From<&bevy::camera::OrthographicProjection> for BevyOrthographicProjection 
             near: p.near,
             far: p.far,
             scale: p.scale,
-            scaling_mode: BevyScalingMode::from(p.scaling_mode.clone()),
+            scaling_mode: BevyScalingMode::from(p.scaling_mode),
         }
     }
 }

@@ -95,29 +95,30 @@ impl From<&bevy::pbr::StandardMaterial> for BevyStandardMaterial {
 
 impl From<BevyStandardMaterial> for bevy::pbr::StandardMaterial {
     fn from(b: BevyStandardMaterial) -> Self {
-        let mut m = bevy::pbr::StandardMaterial::default();
-        m.base_color = bevy::color::Color::LinearRgba(bevy::color::LinearRgba {
-            red: b.base_color_r,
-            green: b.base_color_g,
-            blue: b.base_color_b,
-            alpha: b.base_color_a,
-        });
-        m.emissive = bevy::color::LinearRgba {
-            red: b.emissive_r,
-            green: b.emissive_g,
-            blue: b.emissive_b,
-            alpha: 1.0,
-        };
-        m.emissive_exposure_weight = b.emissive_exposure_weight;
-        m.perceptual_roughness = b.perceptual_roughness;
-        m.metallic = b.metallic;
-        m.reflectance = b.reflectance;
-        m.ior = b.ior;
-        m.double_sided = b.double_sided;
-        m.unlit = b.unlit;
-        m.fog_enabled = b.fog_enabled;
-        m.depth_bias = b.depth_bias;
-        m
+        bevy::pbr::StandardMaterial {
+            base_color: bevy::color::Color::LinearRgba(bevy::color::LinearRgba {
+                red: b.base_color_r,
+                green: b.base_color_g,
+                blue: b.base_color_b,
+                alpha: b.base_color_a,
+            }),
+            emissive: bevy::color::LinearRgba {
+                red: b.emissive_r,
+                green: b.emissive_g,
+                blue: b.emissive_b,
+                alpha: 1.0,
+            },
+            emissive_exposure_weight: b.emissive_exposure_weight,
+            perceptual_roughness: b.perceptual_roughness,
+            metallic: b.metallic,
+            reflectance: b.reflectance,
+            ior: b.ior,
+            double_sided: b.double_sided,
+            unlit: b.unlit,
+            fog_enabled: b.fog_enabled,
+            depth_bias: b.depth_bias,
+            ..Default::default()
+        }
     }
 }
 
@@ -470,16 +471,17 @@ impl From<&bevy::light::DirectionalLight> for BevyDirectionalLight {
 
 impl From<BevyDirectionalLight> for bevy::light::DirectionalLight {
     fn from(b: BevyDirectionalLight) -> Self {
-        let mut l = bevy::light::DirectionalLight::default();
-        l.color = bevy::color::Color::LinearRgba(bevy::color::LinearRgba {
-            red: b.color_r,
-            green: b.color_g,
-            blue: b.color_b,
-            alpha: 1.0,
-        });
-        l.illuminance = b.illuminance;
-        l.shadows_enabled = b.shadows_enabled;
-        l
+        bevy::light::DirectionalLight {
+            color: bevy::color::Color::LinearRgba(bevy::color::LinearRgba {
+                red: b.color_r,
+                green: b.color_g,
+                blue: b.color_b,
+                alpha: 1.0,
+            }),
+            illuminance: b.illuminance,
+            shadows_enabled: b.shadows_enabled,
+            ..Default::default()
+        }
     }
 }
 
@@ -541,18 +543,19 @@ impl From<&bevy::light::PointLight> for BevyPointLight {
 
 impl From<BevyPointLight> for bevy::light::PointLight {
     fn from(b: BevyPointLight) -> Self {
-        let mut l = bevy::light::PointLight::default();
-        l.color = bevy::color::Color::LinearRgba(bevy::color::LinearRgba {
-            red: b.color_r,
-            green: b.color_g,
-            blue: b.color_b,
-            alpha: 1.0,
-        });
-        l.intensity = b.intensity;
-        l.range = b.range;
-        l.radius = b.radius;
-        l.shadows_enabled = b.shadows_enabled;
-        l
+        bevy::light::PointLight {
+            color: bevy::color::Color::LinearRgba(bevy::color::LinearRgba {
+                red: b.color_r,
+                green: b.color_g,
+                blue: b.color_b,
+                alpha: 1.0,
+            }),
+            intensity: b.intensity,
+            range: b.range,
+            radius: b.radius,
+            shadows_enabled: b.shadows_enabled,
+            ..Default::default()
+        }
     }
 }
 
@@ -622,20 +625,21 @@ impl From<&bevy::light::SpotLight> for BevySpotLight {
 
 impl From<BevySpotLight> for bevy::light::SpotLight {
     fn from(b: BevySpotLight) -> Self {
-        let mut l = bevy::light::SpotLight::default();
-        l.color = bevy::color::Color::LinearRgba(bevy::color::LinearRgba {
-            red: b.color_r,
-            green: b.color_g,
-            blue: b.color_b,
-            alpha: 1.0,
-        });
-        l.intensity = b.intensity;
-        l.range = b.range;
-        l.radius = b.radius;
-        l.outer_angle = b.outer_angle;
-        l.inner_angle = b.inner_angle;
-        l.shadows_enabled = b.shadows_enabled;
-        l
+        bevy::light::SpotLight {
+            color: bevy::color::Color::LinearRgba(bevy::color::LinearRgba {
+                red: b.color_r,
+                green: b.color_g,
+                blue: b.color_b,
+                alpha: 1.0,
+            }),
+            intensity: b.intensity,
+            range: b.range,
+            radius: b.radius,
+            outer_angle: b.outer_angle,
+            inner_angle: b.inner_angle,
+            shadows_enabled: b.shadows_enabled,
+            ..Default::default()
+        }
     }
 }
 
