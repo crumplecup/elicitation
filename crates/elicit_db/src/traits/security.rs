@@ -26,6 +26,40 @@ use crate::{
     SqlInjectionPrevented, SslModeRequired,
 };
 
+type EnforceTlsFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        Established<SslModeRequired>,
+        Established<EncryptedInTransit>,
+    )>,
+>;
+
+type EnableRowLevelSecurityFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        Established<RowLevelSecurityEnabled>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type DefineRlsPolicyFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        Established<RowLevelSecurityPolicyDefined>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type VerifyAuditLogIntegrityFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        Established<AuditLogTamperEvident>,
+        Established<AuditLogRetentionMet>,
+    )>,
+>;
+
+type HbaRulesFuture<'a> = BoxFuture<'a, DbResult<Vec<(String, String, String, String)>>>;
+
 // ── Role 1a: security posture factory ────────────────────────────────────────
 
 /// Establishes security controls and returns compile-time-verifiable proof tokens.
@@ -43,15 +77,7 @@ pub trait DbSecurityFactory: Send + Sync {
     /// Returns `SslModeRequired` + `EncryptedInTransit`.
     ///
     /// Source: PostgreSQL docs §19.9 — SSL Support; ISO/IEC 27001:2022 §A.8.24
-    fn enforce_tls(
-        &self,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            Established<SslModeRequired>,
-            Established<EncryptedInTransit>,
-        )>,
-    >;
+    fn enforce_tls(&self) -> EnforceTlsFuture<'_>;
 
     /// Configure transparent data encryption at rest.
     ///
@@ -73,13 +99,7 @@ pub trait DbSecurityFactory: Send + Sync {
         &self,
         schema: &str,
         table: &str,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            Established<RowLevelSecurityEnabled>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    ) -> EnableRowLevelSecurityFuture<'_>;
 
     /// Create a row-level security policy on a table (`CREATE POLICY`).
     ///
@@ -92,13 +112,7 @@ pub trait DbSecurityFactory: Send + Sync {
         table: &str,
         policy_name: &str,
         using_expr: &str,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            Established<RowLevelSecurityPolicyDefined>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    ) -> DefineRlsPolicyFuture<'_>;
 
     // ── Authentication policy ─────────────────────────────────────────────────
 
@@ -145,15 +159,7 @@ pub trait DbSecurityFactory: Send + Sync {
     /// Returns `AuditLogTamperEvident` + `AuditLogRetentionMet`.
     ///
     /// Source: ISO/IEC 27001:2022 §A.8.15 — Logging
-    fn verify_audit_log_integrity(
-        &self,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            Established<AuditLogTamperEvident>,
-            Established<AuditLogRetentionMet>,
-        )>,
-    >;
+    fn verify_audit_log_integrity(&self) -> VerifyAuditLogIntegrityFuture<'_>;
 
     /// Apply the least-privilege principle: revoke PUBLIC grants, restrict defaults.
     ///
@@ -181,7 +187,7 @@ pub trait DbSecurityMeta: Send + Sync {
     /// Return all `pg_hba.conf` entries as `(type, database, user, method)` tuples.
     ///
     /// Source: PostgreSQL docs §54.2 — pg_hba_file_rules
-    fn hba_rules(&self) -> BoxFuture<'_, DbResult<Vec<(String, String, String, String)>>>;
+    fn hba_rules(&self) -> HbaRulesFuture<'_>;
 
     /// Return PIDs of sessions that have been idle-in-transaction beyond `threshold_ms`.
     ///

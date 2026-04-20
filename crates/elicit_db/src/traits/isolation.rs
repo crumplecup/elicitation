@@ -31,6 +31,9 @@ use crate::{
     TransactionIsolationLevelSet, TransactionReadOnly, TransactionReadWrite, TxMarker,
 };
 
+type IsolationTxFuture<'a, P> =
+    BoxFuture<'a, DbResult<(TransactionHandle, TxMarker<Open>, Established<P>)>>;
+
 // ── Role 1a: typed isolation factory ─────────────────────────────────────────
 
 /// Proof-returning `begin_*` variants for each SQL isolation level.
@@ -48,16 +51,7 @@ pub trait DbIsolationFactory: Send + Sync {
     /// and dirty writes (P0).
     ///
     /// Source: ISO/IEC 9075-2 §17.1; ANSI X3.135-1992 §4.28
-    fn begin_read_committed(
-        &self,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            TransactionHandle,
-            TxMarker<Open>,
-            Established<ReadCommittedIsolation>,
-        )>,
-    >;
+    fn begin_read_committed(&self) -> IsolationTxFuture<'_, ReadCommittedIsolation>;
 
     /// Begin a `REPEATABLE READ` transaction and mint the isolation proof.
     ///
@@ -65,16 +59,7 @@ pub trait DbIsolationFactory: Send + Sync {
     /// and lost updates (P4).
     ///
     /// Source: ISO/IEC 9075-2 §17.1; Berenson et al. (1995) §3
-    fn begin_repeatable_read(
-        &self,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            TransactionHandle,
-            TxMarker<Open>,
-            Established<RepeatableReadIsolation>,
-        )>,
-    >;
+    fn begin_repeatable_read(&self) -> IsolationTxFuture<'_, RepeatableReadIsolation>;
 
     /// Begin a `SERIALIZABLE` transaction and mint the isolation proof.
     ///
@@ -82,16 +67,7 @@ pub trait DbIsolationFactory: Send + Sync {
     /// reads, phantom reads, write skew, and serialization anomalies.
     ///
     /// Source: ISO/IEC 9075-2 §17.1; Berenson et al. (1995) §3
-    fn begin_serializable(
-        &self,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            TransactionHandle,
-            TxMarker<Open>,
-            Established<SerializableIsolation>,
-        )>,
-    >;
+    fn begin_serializable(&self) -> IsolationTxFuture<'_, SerializableIsolation>;
 
     /// Begin a `READ UNCOMMITTED` transaction and mint the isolation proof.
     ///
@@ -99,16 +75,7 @@ pub trait DbIsolationFactory: Send + Sync {
     /// `READ UNCOMMITTED` behaves identically to `READ COMMITTED`.
     ///
     /// Source: ISO/IEC 9075-2 §17.1; ANSI X3.135-1992 §4.28
-    fn begin_read_uncommitted(
-        &self,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            TransactionHandle,
-            TxMarker<Open>,
-            Established<ReadUncommittedIsolation>,
-        )>,
-    >;
+    fn begin_read_uncommitted(&self) -> IsolationTxFuture<'_, ReadUncommittedIsolation>;
 
     /// Begin a `READ ONLY` transaction at the given isolation level.
     ///
@@ -116,14 +83,7 @@ pub trait DbIsolationFactory: Send + Sync {
     fn begin_read_only(
         &self,
         isolation: IsolationLevel,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            TransactionHandle,
-            TxMarker<Open>,
-            Established<TransactionReadOnly>,
-        )>,
-    >;
+    ) -> IsolationTxFuture<'_, TransactionReadOnly>;
 
     /// Begin a `READ WRITE` transaction at the given isolation level.
     ///
@@ -131,14 +91,7 @@ pub trait DbIsolationFactory: Send + Sync {
     fn begin_read_write(
         &self,
         isolation: IsolationLevel,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            TransactionHandle,
-            TxMarker<Open>,
-            Established<TransactionReadWrite>,
-        )>,
-    >;
+    ) -> IsolationTxFuture<'_, TransactionReadWrite>;
 
     /// Set the session-level default isolation level.
     ///

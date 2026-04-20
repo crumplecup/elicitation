@@ -21,6 +21,91 @@ use crate::{
     ProcedureDropped, TriggerFunctionCreated, TriggerWhenConditionDefined,
 };
 
+type CreateFunctionFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        DbRoutineDescriptor,
+        Established<FunctionCreated>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type DropFunctionFuture<'a> =
+    BoxFuture<'a, DbResult<(Established<FunctionDropped>, Established<AuditLogged>)>>;
+
+type AlterFunctionFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        DbRoutineDescriptor,
+        Established<FunctionAltered>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type CreateProcedureFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        DbRoutineDescriptor,
+        Established<ProcedureCreated>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type DropProcedureFuture<'a> =
+    BoxFuture<'a, DbResult<(Established<ProcedureDropped>, Established<AuditLogged>)>>;
+
+type DeclareParallelSafeFuture<'a> =
+    BoxFuture<'a, DbResult<(Established<FunctionParallelSafe>, Established<AuditLogged>)>>;
+
+type DeclareParallelRestrictedFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        Established<FunctionParallelRestricted>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type DeclareParallelUnsafeFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        Established<FunctionParallelUnsafe>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type SetSecurityDefinerFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        Established<FunctionSecurityDefiner>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type SetSecurityInvokerFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        Established<FunctionSecurityInvoker>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type CreateTriggerFunctionFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        DbRoutineDescriptor,
+        Established<TriggerFunctionCreated>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type DefineTriggerWhenFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        Established<TriggerWhenConditionDefined>,
+        Established<AuditLogged>,
+    )>,
+>;
+
 // ── Role 1a: stored routine lifecycle factory ─────────────────────────────────
 
 /// Creates, modifies, and drops stored functions and procedures.
@@ -35,17 +120,7 @@ pub trait DbRoutineFactory: Send + Sync {
     /// Create a new stored function.
     ///
     /// Source: ISO/IEC 9075-4 §10 — `<create function statement>`
-    fn create_function(
-        &self,
-        descriptor: DbRoutineDescriptor,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            DbRoutineDescriptor,
-            Established<FunctionCreated>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    fn create_function(&self, descriptor: DbRoutineDescriptor) -> CreateFunctionFuture<'_>;
 
     /// Drop an existing function by name and argument type list.
     ///
@@ -55,37 +130,17 @@ pub trait DbRoutineFactory: Send + Sync {
         schema: &str,
         name: &str,
         arg_types: &[String],
-    ) -> BoxFuture<'_, DbResult<(Established<FunctionDropped>, Established<AuditLogged>)>>;
+    ) -> DropFunctionFuture<'_>;
 
     /// Alter a function's definition or properties.
     ///
     /// Source: PostgreSQL docs §43.12 — `ALTER FUNCTION`
-    fn alter_function(
-        &self,
-        descriptor: DbRoutineDescriptor,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            DbRoutineDescriptor,
-            Established<FunctionAltered>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    fn alter_function(&self, descriptor: DbRoutineDescriptor) -> AlterFunctionFuture<'_>;
 
     /// Create a stored procedure.
     ///
     /// Source: ISO/IEC 9075-4 §10 — `<create procedure statement>`
-    fn create_procedure(
-        &self,
-        descriptor: DbRoutineDescriptor,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            DbRoutineDescriptor,
-            Established<ProcedureCreated>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    fn create_procedure(&self, descriptor: DbRoutineDescriptor) -> CreateProcedureFuture<'_>;
 
     /// Drop a stored procedure.
     ///
@@ -95,16 +150,12 @@ pub trait DbRoutineFactory: Send + Sync {
         schema: &str,
         name: &str,
         arg_types: &[String],
-    ) -> BoxFuture<'_, DbResult<(Established<ProcedureDropped>, Established<AuditLogged>)>>;
+    ) -> DropProcedureFuture<'_>;
 
     /// Declare a function as `PARALLEL SAFE`.
     ///
     /// Source: PostgreSQL docs §39.2 — Parallel Safety
-    fn declare_parallel_safe(
-        &self,
-        schema: &str,
-        name: &str,
-    ) -> BoxFuture<'_, DbResult<(Established<FunctionParallelSafe>, Established<AuditLogged>)>>;
+    fn declare_parallel_safe(&self, schema: &str, name: &str) -> DeclareParallelSafeFuture<'_>;
 
     /// Declare a function as `PARALLEL RESTRICTED`.
     ///
@@ -113,58 +164,22 @@ pub trait DbRoutineFactory: Send + Sync {
         &self,
         schema: &str,
         name: &str,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            Established<FunctionParallelRestricted>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    ) -> DeclareParallelRestrictedFuture<'_>;
 
     /// Declare a function as `PARALLEL UNSAFE` (the default).
     ///
     /// Source: PostgreSQL docs §39.2 — Parallel Safety
-    fn declare_parallel_unsafe(
-        &self,
-        schema: &str,
-        name: &str,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            Established<FunctionParallelUnsafe>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    fn declare_parallel_unsafe(&self, schema: &str, name: &str) -> DeclareParallelUnsafeFuture<'_>;
 
     /// Set `SECURITY DEFINER` on a function.
     ///
     /// Source: PostgreSQL docs §39.6 — Security
-    fn set_security_definer(
-        &self,
-        schema: &str,
-        name: &str,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            Established<FunctionSecurityDefiner>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    fn set_security_definer(&self, schema: &str, name: &str) -> SetSecurityDefinerFuture<'_>;
 
     /// Set `SECURITY INVOKER` on a function.
     ///
     /// Source: PostgreSQL docs §39.6 — Security
-    fn set_security_invoker(
-        &self,
-        schema: &str,
-        name: &str,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            Established<FunctionSecurityInvoker>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    fn set_security_invoker(&self, schema: &str, name: &str) -> SetSecurityInvokerFuture<'_>;
 
     /// Execute a `DO $$ … $$` anonymous block.
     ///
@@ -182,14 +197,7 @@ pub trait DbRoutineFactory: Send + Sync {
     fn create_trigger_function(
         &self,
         descriptor: DbRoutineDescriptor,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            DbRoutineDescriptor,
-            Established<TriggerFunctionCreated>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    ) -> CreateTriggerFunctionFuture<'_>;
 
     /// Add a `WHEN` condition to a trigger definition.
     ///
@@ -201,13 +209,7 @@ pub trait DbRoutineFactory: Send + Sync {
         table: &str,
         trigger_name: &str,
         when_expr: &str,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            Established<TriggerWhenConditionDefined>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    ) -> DefineTriggerWhenFuture<'_>;
 }
 
 // ── Role 2: routine catalog reporter ─────────────────────────────────────────

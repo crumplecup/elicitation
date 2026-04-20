@@ -21,6 +21,68 @@ use crate::{
     StreamingReplicationConfigured, SubscriptionCreated, WalLevelLogical, WalLevelReplica,
 };
 
+type CreatePublicationFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        DbPublicationDescriptor,
+        Established<PublicationCreated>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type CreateSubscriptionFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        DbSubscriptionDescriptor,
+        Established<SubscriptionCreated>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type CreatePhysicalSlotFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        DbReplicationSlotDescriptor,
+        Established<PhysicalReplicationSlotCreated>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type CreateLogicalSlotFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        DbReplicationSlotDescriptor,
+        Established<LogicalReplicationSlotCreated>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type DropSlotFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        Established<ReplicationSlotDropped>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type ConfigureStreamingReplicationFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        Established<WalLevelReplica>,
+        Established<StreamingReplicationConfigured>,
+        Established<AuditLogged>,
+    )>,
+>;
+
+type ConfigureLogicalReplicationFuture<'a> = BoxFuture<
+    'a,
+    DbResult<(
+        Established<WalLevelLogical>,
+        Established<LogicalReplicationConfigured>,
+        Established<AuditLogged>,
+    )>,
+>;
+
 // ── Role 1a: replication topology factory ─────────────────────────────────────
 
 /// Creates and manages replication topology: slots, publications, and subscriptions.
@@ -37,14 +99,7 @@ pub trait DbReplicationFactory: Send + Sync {
     fn create_publication(
         &self,
         descriptor: DbPublicationDescriptor,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            DbPublicationDescriptor,
-            Established<PublicationCreated>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    ) -> CreatePublicationFuture<'_>;
 
     /// Create a logical replication subscription to a remote publisher.
     ///
@@ -52,14 +107,7 @@ pub trait DbReplicationFactory: Send + Sync {
     fn create_subscription(
         &self,
         descriptor: DbSubscriptionDescriptor,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            DbSubscriptionDescriptor,
-            Established<SubscriptionCreated>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    ) -> CreateSubscriptionFuture<'_>;
 
     /// Create a physical replication slot.
     ///
@@ -68,44 +116,17 @@ pub trait DbReplicationFactory: Send + Sync {
         &self,
         name: &str,
         immediately_reserve: bool,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            DbReplicationSlotDescriptor,
-            Established<PhysicalReplicationSlotCreated>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    ) -> CreatePhysicalSlotFuture<'_>;
 
     /// Create a logical replication slot for a given output plugin.
     ///
     /// Source: PostgreSQL docs §27.2.6 — `pg_create_logical_replication_slot()`
-    fn create_logical_slot(
-        &self,
-        name: &str,
-        plugin: &str,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            DbReplicationSlotDescriptor,
-            Established<LogicalReplicationSlotCreated>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    fn create_logical_slot(&self, name: &str, plugin: &str) -> CreateLogicalSlotFuture<'_>;
 
     /// Drop a replication slot.
     ///
     /// Source: PostgreSQL docs §27.2.6 — `pg_drop_replication_slot()`
-    fn drop_slot(
-        &self,
-        name: &str,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            Established<ReplicationSlotDropped>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    fn drop_slot(&self, name: &str) -> DropSlotFuture<'_>;
 
     /// Configure streaming replication parameters (`wal_level = replica`,
     /// `max_wal_senders`).
@@ -116,14 +137,7 @@ pub trait DbReplicationFactory: Send + Sync {
     fn configure_streaming_replication(
         &self,
         max_wal_senders: u32,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            Established<WalLevelReplica>,
-            Established<StreamingReplicationConfigured>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    ) -> ConfigureStreamingReplicationFuture<'_>;
 
     /// Configure logical replication parameters (`wal_level = logical`,
     /// `max_replication_slots`).
@@ -134,14 +148,7 @@ pub trait DbReplicationFactory: Send + Sync {
     fn configure_logical_replication(
         &self,
         max_replication_slots: u32,
-    ) -> BoxFuture<
-        '_,
-        DbResult<(
-            Established<WalLevelLogical>,
-            Established<LogicalReplicationConfigured>,
-            Established<AuditLogged>,
-        )>,
-    >;
+    ) -> ConfigureLogicalReplicationFuture<'_>;
 }
 
 // ── Role 2: replication status reporter ──────────────────────────────────────
