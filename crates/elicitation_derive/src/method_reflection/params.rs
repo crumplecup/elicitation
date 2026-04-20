@@ -42,22 +42,21 @@ pub fn generate_param_struct(
     let struct_name = format!("{}Params", to_pascal_case(method_name));
     let struct_ident = Ident::new(&struct_name, proc_macro2::Span::call_site());
 
-    // Extract parameter names and types
+    // Collect documented fields: add a `#[doc]` for each field.
     let fields: Vec<TokenStream> = params
         .iter()
         .filter_map(|param| {
             if let FnArg::Typed(pat_type) = param {
-                // Extract parameter name
                 let name = if let syn::Pat::Ident(pat_ident) = &*pat_type.pat {
                     &pat_ident.ident
                 } else {
                     return None;
                 };
 
-                // Convert type (e.g., &str → String)
                 let ty = convert_param_type(&pat_type.ty);
-
+                let field_doc = format!("`{}` parameter.", name);
                 Some(quote! {
+                    #[doc = #field_doc]
                     pub #name: #ty
                 })
             } else {
@@ -96,9 +95,12 @@ pub fn generate_param_struct(
     };
 
     // Generate struct with or without generics
+    let struct_doc = format!("Parameters for the `{method_name}` MCP tool method.");
+
     if generic_params.is_empty() {
         // Non-generic struct
         quote! {
+            #[doc = #struct_doc]
             #[derive(
                 ::std::fmt::Debug,
                 ::std::clone::Clone,
@@ -115,6 +117,7 @@ pub fn generate_param_struct(
         // Generic struct: add explicit serde bounds to avoid E0283 ambiguity
         // with the ElicitComplete supertrait bounds.
         quote! {
+            #[doc = #struct_doc]
             #[derive(
                 ::std::fmt::Debug,
                 ::std::clone::Clone,

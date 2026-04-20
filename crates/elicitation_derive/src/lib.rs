@@ -568,7 +568,7 @@ pub fn derive_elicit_proxy(input: TokenStream) -> TokenStream {
 ///
 /// Recursive types work automatically via existing `Vec<T>` / `Option<T>`
 /// blanket impls.
-#[proc_macro_derive(ToCodeLiteral)]
+#[proc_macro_derive(ToCodeLiteral, attributes(to_code_literal, skip))]
 pub fn derive_to_code_literal(input: TokenStream) -> TokenStream {
     derive_to_code_literal::expand(input)
 }
