@@ -110,7 +110,7 @@ elicit_wgpu = { path = "crates/elicit_wgpu", version = "0.10.0" }
 elicit_bevy = { path = "crates/elicit_bevy", version = "0.10.0" }
 
 # ── MCP ───────────────────────────────────────────────────────────────────────
-rmcp = { version = "1.3", features = [
+rmcp = { version = "1.5", features = [
   "client",
   "transport-io",
   "schemars",
@@ -172,9 +172,11 @@ async-trait = "0.1"
 accesskit = { version = "0.24", features = ["serde", "schemars"] }
 egui = { version = "0.34", features = ["serde"] }
 egui-winit = { version = "0.34" }
-egui-wgpu  = { version = "0.34", features = ["winit"] }
+egui-wgpu = { version = "0.34", features = ["winit"] }
 ratatui = { version = "0.30", default-features = false, features = ["serde"] }
-crossterm = { version = "0.29", default-features = false, features = ["event-stream"] }
+crossterm = { version = "0.29", default-features = false, features = [
+  "event-stream",
+] }
 eframe = { version = "0.34", default-features = false, features = [
   "default_fonts",
   "glow",
@@ -219,8 +221,8 @@ rand_chacha = "0.10"
 
 # ── Network / HTTP ────────────────────────────────────────────────────────────
 url = { version = "2.5", features = ["serde"] }
-http = "1.0"
-http-body = "1.0"
+http = "1"
+http-body = "1"
 axum = { version = "0.8", features = ["macros", "ws", "multipart", "form"] }
 axum-core = "0.5"
 tower = { version = "0.5", features = ["full"] }
@@ -236,7 +238,7 @@ console_error_panic_hook = "0.1"
 regex = "1.12"
 
 # ── Spatial ───────────────────────────────────────────────────────────────────
-geo = "0.32"
+geo = "0.33"
 geo-types = "0.7"
 rstar = { version = "0.12", features = ["serde"] }
 georaster = { version = "0.2", default-features = false }
@@ -271,7 +273,7 @@ inventory = "0.3"
 dirs = "6"
 # Spec annotations (runtime-no-check: specs are purely documentation/static-analysis hooks;
 # runtime validation is handled by Result-returning constructors)
-anodized = { version = "0.3", features = ["runtime-no-check"] }
+anodized = { version = "0.4", features = ["runtime-no-check"] }
 
 # ── Dev dependencies ──────────────────────────────────────────────────────────
 tokio-test = "0.4"

@@ -101,6 +101,7 @@ emit = [
   "elicit_tokio/emit",
   "elicit_egui/emit",
 ]
+api = []
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["full"] }
