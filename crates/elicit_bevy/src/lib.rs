@@ -329,12 +329,12 @@ pub use state::StateTransitionDoc;
 pub use sprite::{
     Anchor, BorderRect, SliceScaleMode, Sprite, SpriteImageMode, SpritePickingCamera,
     SpritePickingMode, SpritePickingSettings, SpriteScalingMode, Text2d, Text2dShadow,
-    TextureSlicer,
+    TextureSliceGenerator, TextureSlicer,
 };
 
 // ── text re-exports ───────────────────────────────────────────────────────────
 pub use text::{
-    FontHinting, FontSmoothing, FontWeight, JustifyText, LineBreak, Strikethrough,
+    FontGenerator, FontHinting, FontSmoothing, FontWeight, JustifyText, LineBreak, Strikethrough,
     StrikethroughColor, TextBackgroundColor, TextBounds, TextColor, TextFont, TextLayout, TextSpan,
     Underline, UnderlineColor,
 };

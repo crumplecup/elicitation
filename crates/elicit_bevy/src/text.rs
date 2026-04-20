@@ -1039,3 +1039,54 @@ mod emit_impls_text_background_color {
 }
 
 impl elicitation::ElicitComplete for TextBackgroundColor {}
+
+// ── FontGenerator ─────────────────────────────────────────────────────────────
+
+/// Generator for [`bevy::text::Font`] assets.
+///
+/// Fonts are loaded from disk via `AssetServer` at runtime. This generator
+/// captures the asset path so that generated Bevy code can call
+/// `asset_server.load(path)` at the appropriate time.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicit_bevy::FontGenerator;
+/// use elicitation::Generator;
+///
+/// let gen = FontGenerator::new("fonts/FiraSans-Bold.ttf".to_string());
+/// // In generated code: asset_server.load("fonts/FiraSans-Bold.ttf")
+/// ```
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    elicitation::Elicit,
+)]
+pub struct FontGenerator {
+    /// Asset path relative to the Bevy `assets/` directory.
+    pub path: String,
+}
+
+impl FontGenerator {
+    /// Create a new `FontGenerator` for the given asset path.
+    pub fn new(path: impl Into<String>) -> Self {
+        Self { path: path.into() }
+    }
+}
+
+impl elicitation::Generator for FontGenerator {
+    type Target = bevy::text::Font;
+
+    #[tracing::instrument(skip(self))]
+    fn generate(&self) -> bevy::text::Font {
+        let data = std::fs::read(&self.path)
+            .unwrap_or_else(|e| panic!("FontGenerator: failed to read '{}': {e}", self.path));
+        bevy::text::Font::try_from_bytes(data)
+            .unwrap_or_else(|e| panic!("FontGenerator: invalid font '{}': {e}", self.path))
+    }
+}
+

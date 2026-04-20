@@ -1343,3 +1343,64 @@ mod emit_impls_sprite_picking_settings {
 }
 
 shadow_elicitation!(SpritePickingSettings);
+
+// ── TextureSliceGenerator ─────────────────────────────────────────────────────
+
+/// Generator for [`bevy::sprite::TextureSlice`] values.
+///
+/// `TextureSlice` describes a region of a texture atlas to draw, produced at
+/// runtime by the 9-slicing system. This generator captures the slice geometry
+/// explicitly so that a specific slice can be authored directly.
+///
+/// Coordinates are in texture-space pixels.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// use elicit_bevy::TextureSliceGenerator;
+/// use elicitation::Generator;
+///
+/// let gen = TextureSliceGenerator {
+///     rect_min: [0.0, 0.0],
+///     rect_max: [32.0, 32.0],
+///     draw_size: [64.0, 64.0],
+///     offset: [0.0, 0.0],
+/// };
+/// let slice = gen.generate();
+/// ```
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+    elicitation::Elicit,
+)]
+pub struct TextureSliceGenerator {
+    /// Top-left corner of the texture rectangle `[x, y]`.
+    pub rect_min: [f32; 2],
+    /// Bottom-right corner of the texture rectangle `[x, y]`.
+    pub rect_max: [f32; 2],
+    /// Size at which to draw the slice `[width, height]`.
+    pub draw_size: [f32; 2],
+    /// Draw offset from the entity origin `[x, y]`.
+    pub offset: [f32; 2],
+}
+
+impl elicitation::Generator for TextureSliceGenerator {
+    type Target = bevy::sprite::TextureSlice;
+
+    #[tracing::instrument(skip(self))]
+    fn generate(&self) -> bevy::sprite::TextureSlice {
+        bevy::sprite::TextureSlice {
+            texture_rect: bevy::math::Rect {
+                min: bevy::math::Vec2::new(self.rect_min[0], self.rect_min[1]),
+                max: bevy::math::Vec2::new(self.rect_max[0], self.rect_max[1]),
+            },
+            draw_size: bevy::math::Vec2::new(self.draw_size[0], self.draw_size[1]),
+            offset: bevy::math::Vec2::new(self.offset[0], self.offset[1]),
+        }
+    }
+}
+
