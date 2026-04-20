@@ -47,11 +47,54 @@ SDK is similarly repetitive and error-prone.
 JSON parameters and produce exact, copy-paste-ready SurrealQL strings and Rust SDK snippets. The
 model never writes SurrealQL syntax directly; it calls tools that know the grammar.
 
-A key design decision: `elicit_surrealdb` has **zero dependency on `surrealdb` or
-`surrealdb-types`** at compile time. It is pure code generation. This avoids a transitive
-`geo = "^0.32"` version conflict in `surrealdb-types 3.x` and keeps compile times short. The
-shadow types in `crates/elicitation/src/primitives/surreal_types/` are standalone structs built
-from the public SurrealDB documentation — no upstream `From` impls required.
+A key design decision: the shadow types in `crates/elicitation/src/primitives/surreal_types/`
+also support **live data integration** via the `surreal-types` feature on the `elicitation` crate.
+Enabling that feature adds `surrealdb-types` as a dependency (vendored at `vendor/surrealdb-types-3.0.5/`)
+and exposes bidirectional `From` conversions between every shadow type and its upstream counterpart —
+so values coming back from a live SurrealDB connection can cross the MCP boundary without manual marshalling.
+
+`elicit_surrealdb` itself stays lightweight: it depends only on `elicitation`, `rmcp`, and the usual
+proc-macro / serde / schemars stack. Applications that need live data add `features = ["surreal-types"]`
+to their `elicitation` dependency.
+
+### Live Data Integration (`surreal-types` feature)
+
+Enable in `Cargo.toml`:
+
+```toml
+elicitation = { version = "0.10", features = ["surreal-types"] }
+```
+
+`From` conversions are provided for:
+
+| Shadow type | Upstream type | Notes |
+|---|---|---|
+| `Value` | `surrealdb_types::Value` | All variants; lossy for `Bytes`, `Set`, `File`, `Range`, `Regex` — see below |
+| `RecordId` | `surrealdb_types::RecordId` | JSON-keyed; `Range` keys serialise via `ToSql` |
+| `Number` | `surrealdb_types::Number` | `Decimal` bridge via `rust_decimal::Decimal` |
+| `Geometry` | `surrealdb_types::Geometry` | Full 7-variant round-trip; shares `geo-types 0.7` |
+| `Datetime` | `surrealdb_types::Datetime` | RFC 3339 string bridge |
+| `Duration` | `surrealdb_types::Duration` | SurrealDB notation string bridge |
+| `Kind` | `surrealdb_types::Kind` | All schema variants; `Function` maps to `Any` |
+| `Table` | `surrealdb_types::Table` | String bridge via `into_inner()` / `Table::new()` |
+
+**Intentionally lossy conversions** — shadow → upstream drops information for these `Value` variants:
+
+- `Bytes`: round-trips through `Display` (the SQL hex-literal representation), not raw bytes
+- `Set`: maps to `Array` (sorted deduplication is lost)
+- `File`: maps to `String` formatted as `"{bucket}/{key}"`
+- `Range`: maps to `String` via `ToSql::to_sql()` (the SurrealQL range syntax)
+- `Regex`: maps to `String` via `Display`
+
+These conversions are sufficient for codegen and introspection workflows. If lossless round-trips
+for these variants are needed, convert the raw `surrealdb_types::Value` directly.
+
+### Geo version abstraction
+
+`surrealdb-types 3.x` requires `geo 0.32`, while the workspace uses `geo 0.33`. The vendored copy
+at `vendor/surrealdb-types-3.0.5/` has its `geo` pin relaxed to `"0.33"` so both crates share the
+same `geo-types 0.7` version. This vendoring is defensive: if geo versions drift in future SurrealDB
+releases, the newtype conversion layer absorbs the mismatch rather than breaking user code.
 
 ---
 

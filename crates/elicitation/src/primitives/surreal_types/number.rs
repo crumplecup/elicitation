@@ -20,3 +20,27 @@ pub enum Number {
     /// Use standard decimal notation, e.g. `"3.14159265358979323846"`.
     Decimal(String),
 }
+
+#[cfg(feature = "surreal-types")]
+impl From<surrealdb_types::Number> for Number {
+    fn from(n: surrealdb_types::Number) -> Self {
+        match n {
+            surrealdb_types::Number::Int(i) => Number::Int(i),
+            surrealdb_types::Number::Float(f) => Number::Float(f),
+            surrealdb_types::Number::Decimal(d) => Number::Decimal(d.to_string()),
+        }
+    }
+}
+
+#[cfg(feature = "surreal-types")]
+impl From<Number> for surrealdb_types::Number {
+    fn from(n: Number) -> Self {
+        match n {
+            Number::Int(i) => surrealdb_types::Number::Int(i),
+            Number::Float(f) => surrealdb_types::Number::Float(f),
+            Number::Decimal(s) => surrealdb_types::Number::Decimal(
+                s.parse::<rust_decimal::Decimal>().unwrap_or_default(),
+            ),
+        }
+    }
+}

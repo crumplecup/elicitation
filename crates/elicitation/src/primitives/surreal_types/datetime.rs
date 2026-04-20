@@ -22,3 +22,22 @@ impl Datetime {
         }
     }
 }
+
+#[cfg(feature = "surreal-types")]
+impl From<surrealdb_types::Datetime> for Datetime {
+    fn from(dt: surrealdb_types::Datetime) -> Self {
+        use chrono::SecondsFormat;
+        Self {
+            value: dt.into_inner().to_rfc3339_opts(SecondsFormat::AutoSi, true),
+        }
+    }
+}
+
+#[cfg(feature = "surreal-types")]
+impl From<Datetime> for surrealdb_types::Datetime {
+    fn from(dt: Datetime) -> Self {
+        dt.value
+            .parse::<surrealdb_types::Datetime>()
+            .unwrap_or_else(|_| surrealdb_types::Datetime::now())
+    }
+}

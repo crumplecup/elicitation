@@ -28,3 +28,58 @@ impl RecordId {
         }
     }
 }
+
+#[cfg(feature = "surreal-types")]
+impl From<surrealdb_types::RecordId> for RecordId {
+    fn from(rid: surrealdb_types::RecordId) -> Self {
+        let table = rid.table.into_inner();
+        let key = record_id_key_to_json(rid.key);
+        Self { table, key }
+    }
+}
+
+/// Convert a [`surrealdb_types::RecordIdKey`] to a [`serde_json::Value`].
+#[cfg(feature = "surreal-types")]
+fn record_id_key_to_json(key: surrealdb_types::RecordIdKey) -> JsonValue {
+    match key {
+        surrealdb_types::RecordIdKey::Number(n) => serde_json::json!(n),
+        surrealdb_types::RecordIdKey::String(s) => serde_json::json!(s),
+        surrealdb_types::RecordIdKey::Uuid(u) => serde_json::json!(u.to_string()),
+        surrealdb_types::RecordIdKey::Array(a) => {
+            serde_json::to_value(a).unwrap_or(JsonValue::Null)
+        }
+        surrealdb_types::RecordIdKey::Object(o) => {
+            serde_json::to_value(o).unwrap_or(JsonValue::Null)
+        }
+        surrealdb_types::RecordIdKey::Range(r) => {
+            // Serialize range as its SurrealQL string representation.
+            use surrealdb_types::ToSql;
+            serde_json::json!(r.to_sql())
+        }
+    }
+}
+
+#[cfg(feature = "surreal-types")]
+impl From<RecordId> for surrealdb_types::RecordId {
+    fn from(rid: RecordId) -> Self {
+        let table = surrealdb_types::Table::new(rid.table);
+        let key = json_to_record_id_key(rid.key);
+        surrealdb_types::RecordId::new(table, key)
+    }
+}
+
+/// Convert a [`serde_json::Value`] to a [`surrealdb_types::RecordIdKey`].
+#[cfg(feature = "surreal-types")]
+fn json_to_record_id_key(v: JsonValue) -> surrealdb_types::RecordIdKey {
+    match v {
+        JsonValue::Number(n) if n.is_i64() => {
+            surrealdb_types::RecordIdKey::Number(n.as_i64().unwrap_or(0))
+        }
+        JsonValue::String(s) => surrealdb_types::RecordIdKey::String(s),
+        JsonValue::Array(_) | JsonValue::Object(_) => {
+            serde_json::from_value::<surrealdb_types::RecordIdKey>(v)
+                .unwrap_or_else(|_| surrealdb_types::RecordIdKey::String("unknown".to_string()))
+        }
+        other => surrealdb_types::RecordIdKey::String(other.to_string()),
+    }
+}

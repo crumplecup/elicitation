@@ -80,6 +80,9 @@ geo-types = { workspace = true, optional = true }
 geo = { workspace = true, optional = true }
 proj = { workspace = true, optional = true }
 rstar = { workspace = true, optional = true }
+# SurrealDB types (optional)
+surrealdb-types = { workspace = true, optional = true }
+rust_decimal = { workspace = true, optional = true }
 georaster = { workspace = true, optional = true }
 geojson = { workspace = true, optional = true }
 tiff = { workspace = true, optional = true }
@@ -196,7 +199,7 @@ geojson-types = ["dep:geojson", "geo-types", "serde_json"]
 wkt-types = ["dep:wkt", "geo-types"]
 # Enable wkb spatial format type elicitation
 wkb-types = ["dep:wkb", "dep:hex"]
-surreal-types = []
+surreal-types = ["dep:surrealdb-types", "dep:rust_decimal", "geo-types", "uuid"]
 # Windowing / input (optional)
 winit-types = ["dep:winit"]
 # Enable wgpu GPU descriptor type elicitation

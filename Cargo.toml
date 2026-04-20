@@ -185,6 +185,10 @@ eframe = { version = "0.34", default-features = false, features = [
 ] }
 
 # ── Database ──────────────────────────────────────────────────────────────────
+# surrealdb-types 3.x pins geo = "^0.32" but our workspace uses geo 0.33.
+# We vendor the crate and change that pin to 0.33 to unify the dep graph.
+surrealdb-types = { path = "vendor/surrealdb-types-3.0.5" }
+rust_decimal = "1"
 sqlx = { version = "0.8", features = [
   "runtime-tokio",
   "tls-native-tls",

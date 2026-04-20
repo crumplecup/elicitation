@@ -19,3 +19,19 @@ impl Table {
         Self { name: name.into() }
     }
 }
+
+#[cfg(feature = "surreal-types")]
+impl From<surrealdb_types::Table> for Table {
+    fn from(t: surrealdb_types::Table) -> Self {
+        Self {
+            name: t.into_inner(),
+        }
+    }
+}
+
+#[cfg(feature = "surreal-types")]
+impl From<Table> for surrealdb_types::Table {
+    fn from(t: Table) -> Self {
+        surrealdb_types::Table::new(t.name)
+    }
+}
