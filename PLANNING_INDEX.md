@@ -612,3 +612,34 @@ lights/camera/mesh/shader are separate feature crates; `#[reflect(...)]` parenth
 - **Phase 4** — Kani proofs for math/transform/color/window types
 - **Phase 5** — Creusot proofs: post-conditions on Survey types
 - **Phase 6** — Verus proofs: invariants for config structs
+
+---
+
+### elicit_surrealdb Shadow Crate
+
+**Document:** [ELICIT_SURREALDB_PLAN.md](ELICIT_SURREALDB_PLAN.md)
+
+**Target:** SurrealDB 3.0.5 — complete API surface coverage
+
+**Description:** Full elicitation coverage for SurrealDB, a scalable multi-model
+document-graph database. Unlike Bevy, the primary agent output is **SurrealQL strings**
+(DDL/DML) and Rust SDK setup code. Five plugins (~95 tools) across three categories:
+fragment/descriptor DDL emitters (SurrealSchemaPlugin, SurrealCrudPlugin,
+SurrealConnectionPlugin) and stateful workflow plugins (SurrealSelectPlugin,
+SurrealTransactionPlugin). Phase 2 adds nine trenchcoat newtypes for value types
+(`DbValue`, `SurrealRecordId`, `SurrealNumber`, `SurrealGeometry`, `SurrealDatetime`,
+`SurrealDuration`, `SurrealKind`, `SurrealTable`, `SurrealPatchOp`) under the
+`surreal-types` feature.
+
+**Phases:**
+
+- **Phase 1** — Workspace: add surrealdb/surrealdb-types deps, create elicit_surrealdb skeleton
+- **Phase 2** — elicitation primitives: 9 type files under `primitives/surreal_types/`
+- **Phase 3A** — Shadow types: `types.rs`, `auth.rs`, `config.rs`
+- **Phase 3B** — `SurrealSchemaPlugin`: 32+ DDL tools (DEFINE/REMOVE)
+- **Phase 3C** — `SurrealCrudPlugin`: 28 DML + SDK snippet tools
+- **Phase 3D** — `SurrealConnectionPlugin`: 20 connection/auth tools
+- **Phase 3E** — `SurrealSelectPlugin`: 16 stateful SELECT builder tools
+- **Phase 3F** — `SurrealTransactionPlugin`: 9 stateful transaction block tools
+- **Phase 3G** — `trait_factories.rs`: SurrealValue factory
+- **Phase 4** — Kani proofs: 6 roundtrip harnesses for Phase 2 types
