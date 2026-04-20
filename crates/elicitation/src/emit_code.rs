@@ -265,6 +265,21 @@ impl EmitCode for RawFragment {
     }
 }
 
+/// Parse a Rust expression string into a token stream for literal emission.
+///
+/// This is used by derive-generated `ToCodeLiteral` impls for proxy fields that
+/// store authored Rust expressions as strings but must emit them back as live
+/// syntax rather than string literals.
+pub fn parse_expr_tokens<S>(src: S, context: &str) -> TokenStream
+where
+    S: AsRef<str>,
+{
+    let src = src.as_ref();
+    let expr = syn::parse_str::<syn::Expr>(src)
+        .unwrap_or_else(|error| panic!("invalid {context} expression `{src}`: {error}"));
+    quote::quote! { #expr }
+}
+
 /// A Cargo dependency descriptor with pinned version.
 ///
 /// Each `EmitCode` impl that calls into a workspace crate returns `CrateDep`

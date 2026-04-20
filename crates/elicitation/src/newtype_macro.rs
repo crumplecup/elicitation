@@ -80,7 +80,12 @@
 /// | Syntax | `JsonSchema` | `Serialize`/`Deserialize` |
 /// |--------|-------------|--------------------------|
 /// | `elicit_newtype!(T, as Name)` | Generic object schema | No |
-/// | `elicit_newtype!(T, as Name, serde)` | Delegated to `T` | Yes (`T: Serialize`) |
+/// | `elicit_newtype!(T, as Name, serde)` | Delegated to `T` | Yes (`T: Serialize + JsonSchema`) |
+/// | `elicit_newtype!(T, as Name, forward_serde)` | Generic object schema | Yes (`T: Serialize`) |
+///
+/// Use `forward_serde` when the inner type implements `serde` but not `JsonSchema` — the
+/// common case for third-party types such as Bevy components.  Serde is forwarded
+/// transparently; `JsonSchema` falls back to the same opaque object schema as the base form.
 #[macro_export]
 macro_rules! elicit_newtype {
     // Syntax: elicit_newtype!(path::to::Type, as WrapperName);
@@ -194,6 +199,330 @@ macro_rules! elicit_newtype {
 
             fn creusot_proof() -> $crate::proc_macro2::TokenStream {
                 $crate::verification::proof_helpers::creusot_trusted_opaque(stringify!($wrapper_name))
+            }
+        }
+
+        impl $crate::ElicitIntrospect for $wrapper_name {
+            fn pattern() -> $crate::ElicitationPattern {
+                $crate::ElicitationPattern::Primitive
+            }
+
+            fn metadata() -> $crate::TypeMetadata {
+                $crate::TypeMetadata {
+                    type_name: stringify!($wrapper_name),
+                    description: None,
+                    details: $crate::PatternDetails::Primitive,
+                }
+            }
+        }
+
+        impl $crate::ElicitPromptTree for $wrapper_name {
+            fn prompt_tree() -> $crate::PromptTree {
+                $crate::PromptTree::Leaf {
+                    prompt: stringify!($wrapper_name).to_string(),
+                    type_name: stringify!($wrapper_name).to_string(),
+                }
+            }
+        }
+
+        impl $crate::ElicitSpec for $wrapper_name {
+            fn type_spec() -> $crate::TypeSpec {
+                $crate::TypeSpecBuilder::default()
+                    .type_name(stringify!($wrapper_name).to_string())
+                    .summary(
+                        concat!(
+                            "Elicitation-enabled newtype wrapper around `",
+                            stringify!($inner_path),
+                            "`."
+                        )
+                        .to_string(),
+                    )
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
+    };
+
+    // Syntax: elicit_newtype!(path::to::Type, as WrapperName, nodebug);
+    // Like the base form but for inner types that don't implement `Debug`.
+    // Provides a trivial `Debug` impl that prints the wrapper name.
+    ($inner_path:path, as $wrapper_name:ident, nodebug) => {
+        #[doc = concat!("Elicitation-enabled wrapper around `", stringify!($inner_path), "`.")]
+        #[doc = ""]
+        #[doc = "This newtype uses `Arc` internally to ensure `Clone` is always available,"]
+        #[doc = "providing transparent access via `Deref` and `DerefMut`."]
+        #[derive(::std::clone::Clone)]
+        pub struct $wrapper_name(pub ::std::sync::Arc<$inner_path>);
+
+        impl ::std::fmt::Debug for $wrapper_name {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                f.write_str(stringify!($wrapper_name))
+            }
+        }
+
+        impl ::schemars::JsonSchema for $wrapper_name {
+            fn schema_name() -> ::std::borrow::Cow<'static, str> {
+                stringify!($wrapper_name).into()
+            }
+
+            fn json_schema(_gen: &mut ::schemars::SchemaGenerator) -> ::schemars::Schema {
+                ::schemars::json_schema!({
+                    "type": "object",
+                    "description": concat!(
+                        "Elicitation-enabled wrapper around `",
+                        stringify!($inner_path),
+                        "`"
+                    )
+                })
+            }
+        }
+
+        impl ::std::ops::Deref for $wrapper_name {
+            type Target = $inner_path;
+
+            fn deref(&self) -> &Self::Target {
+                &*self.0
+            }
+        }
+
+        impl ::std::ops::DerefMut for $wrapper_name {
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                ::std::sync::Arc::get_mut(&mut self.0)
+                    .expect("Cannot get mutable reference to Arc with multiple references")
+            }
+        }
+
+        impl ::std::convert::AsRef<$inner_path> for $wrapper_name {
+            fn as_ref(&self) -> &$inner_path {
+                &*self.0
+            }
+        }
+
+        impl ::std::convert::From<$inner_path> for $wrapper_name {
+            fn from(inner: $inner_path) -> Self {
+                Self(::std::sync::Arc::new(inner))
+            }
+        }
+
+        impl ::std::convert::From<::std::sync::Arc<$inner_path>> for $wrapper_name {
+            fn from(arc: ::std::sync::Arc<$inner_path>) -> Self {
+                Self(arc)
+            }
+        }
+
+        impl ::std::convert::From<$wrapper_name> for ::std::sync::Arc<$inner_path> {
+            fn from(wrapper: $wrapper_name) -> Self {
+                wrapper.0
+            }
+        }
+
+        impl $crate::Prompt for $wrapper_name {
+            fn prompt() -> ::std::option::Option<&'static str> {
+                None
+            }
+        }
+
+        impl $crate::Elicitation for $wrapper_name {
+            type Style = ();
+
+            async fn elicit<C: $crate::ElicitCommunicator>(
+                _communicator: &C,
+            ) -> $crate::ElicitResult<Self> {
+                Err($crate::ElicitError::new($crate::ElicitErrorKind::ParseError(
+                    concat!(
+                        "elicit() for `",
+                        stringify!($wrapper_name),
+                        "` is not implemented."
+                    )
+                    .to_string(),
+                )))
+            }
+
+            fn kani_proof() -> $crate::proc_macro2::TokenStream {
+                $crate::verification::proof_helpers::kani_trusted_opaque(stringify!($wrapper_name))
+            }
+
+            fn verus_proof() -> $crate::proc_macro2::TokenStream {
+                $crate::verification::proof_helpers::verus_trusted_opaque(stringify!($wrapper_name))
+            }
+
+            fn creusot_proof() -> $crate::proc_macro2::TokenStream {
+                $crate::verification::proof_helpers::creusot_trusted_opaque(
+                    stringify!($wrapper_name),
+                )
+            }
+        }
+
+        impl $crate::ElicitIntrospect for $wrapper_name {
+            fn pattern() -> $crate::ElicitationPattern {
+                $crate::ElicitationPattern::Primitive
+            }
+
+            fn metadata() -> $crate::TypeMetadata {
+                $crate::TypeMetadata {
+                    type_name: stringify!($wrapper_name),
+                    description: None,
+                    details: $crate::PatternDetails::Primitive,
+                }
+            }
+        }
+
+        impl $crate::ElicitPromptTree for $wrapper_name {
+            fn prompt_tree() -> $crate::PromptTree {
+                $crate::PromptTree::Leaf {
+                    prompt: stringify!($wrapper_name).to_string(),
+                    type_name: stringify!($wrapper_name).to_string(),
+                }
+            }
+        }
+
+        impl $crate::ElicitSpec for $wrapper_name {
+            fn type_spec() -> $crate::TypeSpec {
+                $crate::TypeSpecBuilder::default()
+                    .type_name(stringify!($wrapper_name).to_string())
+                    .summary(
+                        concat!(
+                            "Elicitation-enabled newtype wrapper around `",
+                            stringify!($inner_path),
+                            "`."
+                        )
+                        .to_string(),
+                    )
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
+    };
+
+    // Syntax: elicit_newtype!(path::to::Type, as WrapperName, forward_serde);
+    // Like the base form but manually forwards Serialize + Deserialize to the inner type.
+    // Use when T: Serialize + Deserialize but NOT JsonSchema (e.g. Bevy components).
+    // JsonSchema falls back to the same opaque object schema as the base form.
+    ($inner_path:path, as $wrapper_name:ident, forward_serde) => {
+        #[doc = concat!("Elicitation-enabled wrapper around `", stringify!($inner_path), "`.")]
+        #[doc = ""]
+        #[doc = "This newtype uses `Arc` internally to ensure `Clone` is always available,"]
+        #[doc = "providing transparent access via `Deref` and `DerefMut`."]
+        #[doc = "Serialization is forwarded transparently to the inner type."]
+        #[derive(
+            ::std::fmt::Debug,
+            ::std::clone::Clone,
+        )]
+        pub struct $wrapper_name(pub ::std::sync::Arc<$inner_path>);
+
+        impl ::serde::Serialize for $wrapper_name {
+            fn serialize<S: ::serde::Serializer>(&self, s: S) -> ::std::result::Result<S::Ok, S::Error> {
+                (*self.0).serialize(s)
+            }
+        }
+
+        impl<'de> ::serde::Deserialize<'de> for $wrapper_name {
+            fn deserialize<D: ::serde::Deserializer<'de>>(d: D) -> ::std::result::Result<Self, D::Error> {
+                <$inner_path as ::serde::Deserialize>::deserialize(d)
+                    .map(|v| Self(::std::sync::Arc::new(v)))
+            }
+        }
+
+        impl ::schemars::JsonSchema for $wrapper_name {
+            fn schema_name() -> ::std::borrow::Cow<'static, str> {
+                stringify!($wrapper_name).into()
+            }
+
+            fn json_schema(_gen: &mut ::schemars::SchemaGenerator) -> ::schemars::Schema {
+                ::schemars::json_schema!({
+                    "type": "object",
+                    "description": concat!(
+                        "Elicitation-enabled wrapper around `",
+                        stringify!($inner_path),
+                        "`"
+                    )
+                })
+            }
+        }
+
+        impl ::std::ops::Deref for $wrapper_name {
+            type Target = $inner_path;
+
+            fn deref(&self) -> &Self::Target {
+                &*self.0
+            }
+        }
+
+        impl ::std::ops::DerefMut for $wrapper_name {
+            fn deref_mut(&mut self) -> &mut Self::Target {
+                ::std::sync::Arc::get_mut(&mut self.0)
+                    .expect("Cannot get mutable reference to Arc with multiple references")
+            }
+        }
+
+        impl ::std::convert::AsRef<$inner_path> for $wrapper_name {
+            fn as_ref(&self) -> &$inner_path {
+                &*self.0
+            }
+        }
+
+        impl ::std::convert::From<$inner_path> for $wrapper_name {
+            fn from(inner: $inner_path) -> Self {
+                Self(::std::sync::Arc::new(inner))
+            }
+        }
+
+        impl ::std::convert::From<::std::sync::Arc<$inner_path>> for $wrapper_name {
+            fn from(arc: ::std::sync::Arc<$inner_path>) -> Self {
+                Self(arc)
+            }
+        }
+
+        impl ::std::convert::From<$wrapper_name> for ::std::sync::Arc<$inner_path> {
+            fn from(wrapper: $wrapper_name) -> Self {
+                wrapper.0
+            }
+        }
+
+        impl $crate::Prompt for $wrapper_name {
+            fn prompt() -> ::std::option::Option<&'static str> {
+                None
+            }
+        }
+
+        impl $crate::Elicitation for $wrapper_name {
+            type Style = ();
+
+            async fn elicit<C: $crate::ElicitCommunicator>(
+                communicator: &C,
+            ) -> $crate::ElicitResult<Self> {
+                let response = communicator
+                    .send_prompt(concat!("Enter value for ", stringify!($wrapper_name)))
+                    .await?;
+                let inner: $inner_path =
+                    $crate::serde_json::from_str(&response).or_else(|_| {
+                        $crate::serde_json::from_str::<$inner_path>(&format!(
+                            "\"{}\"",
+                            response
+                        ))
+                    })
+                    .map_err(|e| {
+                        $crate::ElicitError::new($crate::ElicitErrorKind::ParseError(format!(
+                            "Invalid {}: {}",
+                            stringify!($wrapper_name),
+                            e
+                        )))
+                    })?;
+                Ok(Self(::std::sync::Arc::new(inner)))
+            }
+
+            fn kani_proof() -> $crate::proc_macro2::TokenStream {
+                $crate::verification::proof_helpers::kani_trusted_opaque(stringify!($wrapper_name))
+            }
+
+            fn verus_proof() -> $crate::proc_macro2::TokenStream {
+                $crate::verification::proof_helpers::verus_trusted_opaque(stringify!($wrapper_name))
+            }
+
+            fn creusot_proof() -> $crate::proc_macro2::TokenStream {
+                $crate::verification::proof_helpers::creusot_trusted_opaque(
+                    stringify!($wrapper_name),
+                )
             }
         }
 
