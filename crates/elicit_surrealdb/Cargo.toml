@@ -1,0 +1,37 @@
+[package]
+name = "elicit_surrealdb"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation-enabled SurrealDB type wrappers — MCP tools for SurrealQL DDL/DML authoring and Rust SDK code generation"
+keywords = ["mcp", "surrealdb", "surrealql", "elicitation", "codegen"]
+categories = ["database", "development-tools"]
+
+[features]
+# Enable to run live-database integration tests (requires a running SurrealDB instance).
+api = []
+
+[dependencies]
+elicitation = { workspace = true, features = ["surreal-types", "emit"] }
+elicitation_derive.workspace = true
+elicitation_macros.workspace = true
+inventory.workspace = true
+rmcp.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+derive_more = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }
+serde_json = { workspace = true }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)', 'cfg(feature, values("emit"))'] }

@@ -762,3 +762,11 @@ pub use primitives::bevy_types::{
         BevyWindowResolution, BevyWindowTheme,
     },
 };
+
+// SurrealDB types (feature-gated on surreal-types)
+#[cfg(feature = "surreal-types")]
+pub use primitives::surreal_types::{
+    Datetime as SurrealDatetime, Duration as SurrealDuration, Geometry as SurrealGeometry,
+    Kind as SurrealKind, Number as SurrealNumber, PatchOp as SurrealPatchOp,
+    RecordId as SurrealRecordId, Table as SurrealTable, Value as SurrealValue,
+};

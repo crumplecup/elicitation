@@ -123,3 +123,6 @@ pub use leptos_types::{
     LeptosMode, LeptosPropDescriptor, LeptosResponseHeaderDescriptor, LeptosRouteDescriptor,
     LeptosViewNode,
 };
+
+#[cfg(feature = "surreal-types")]
+pub mod surreal_types;

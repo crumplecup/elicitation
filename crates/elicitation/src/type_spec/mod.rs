@@ -58,6 +58,8 @@ mod sqlx_specs;
 mod std_extras;
 mod string_contracts;
 mod strings;
+#[cfg(feature = "surreal-types")]
+mod surreal_specs;
 mod tower_specs;
 pub mod type_spec_plugin;
 mod url_specs;
