@@ -3424,3 +3424,326 @@ mod emit_impls_auto_directional_navigation {
 }
 
 shadow_elicitation!(AutoDirectionalNavigation);
+
+// ── Button ────────────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::ui::widget::Button`].
+///
+/// Marker component for a UI button widget.
+#[derive(
+    Debug, Clone, Copy, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+pub struct Button;
+
+impl From<Button> for bevy::ui::widget::Button {
+    fn from(_: Button) -> Self {
+        bevy::ui::widget::Button
+    }
+}
+
+mod emit_impls_button {
+    use super::Button;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for Button {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { ::bevy::ui::widget::Button }
+        }
+    }
+}
+
+unit_elicitation!(Button, bevy::ui::widget::Button);
+
+// ── Label ─────────────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::ui::widget::Label`].
+///
+/// Marker component for a UI label widget.
+#[derive(
+    Debug, Clone, Copy, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+pub struct Label;
+
+impl From<Label> for bevy::ui::widget::Label {
+    fn from(_: Label) -> Self {
+        bevy::ui::widget::Label
+    }
+}
+
+mod emit_impls_label {
+    use super::Label;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for Label {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { ::bevy::ui::widget::Label }
+        }
+    }
+}
+
+unit_elicitation!(Label, bevy::ui::widget::Label);
+
+// ── Text (UI) ─────────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::ui::widget::Text`].
+///
+/// Top-level UI text component. Holds the string for the first text span.
+/// Children use `TextSpan` for additional styled sections.
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+pub struct UiText(pub String);
+
+impl From<UiText> for bevy::ui::widget::Text {
+    fn from(v: UiText) -> Self {
+        bevy::ui::widget::Text(v.0)
+    }
+}
+
+mod emit_impls_ui_text {
+    use super::UiText;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for UiText {
+        fn to_code_literal(&self) -> TokenStream {
+            let s = &self.0;
+            quote::quote! { ::bevy::ui::widget::Text::new(#s) }
+        }
+    }
+}
+
+shadow_elicitation!(UiText);
+
+// ── TextShadow ────────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::ui::widget::TextShadow`].
+///
+/// Adds a shadow behind UI text. Serialized as `{ "offset_x", "offset_y", "color" }`.
+/// Default: offset `(4, 4)` logical pixels, color black at 75% opacity.
+///
+/// Use [`crate::Text2dShadow`] for `Text2d` (2D world-space) shadows.
+elicit_newtype!(bevy::ui::widget::TextShadow, as TextShadow);
+elicit_newtype_traits!(TextShadow, bevy::ui::widget::TextShadow, [eq]);
+
+impl From<TextShadow> for bevy::ui::widget::TextShadow {
+    fn from(v: TextShadow) -> Self {
+        *v.0
+    }
+}
+
+impl serde::Serialize for TextShadow {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap;
+        let mut map = serializer.serialize_map(Some(3))?;
+        map.serialize_entry("offset_x", &self.0.offset.x)?;
+        map.serialize_entry("offset_y", &self.0.offset.y)?;
+        map.serialize_entry("color", &crate::Color::from(self.0.color))?;
+        map.end()
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for TextShadow {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::{MapAccess, Visitor};
+        struct V;
+        impl<'de> Visitor<'de> for V {
+            type Value = TextShadow;
+            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "TextShadow object with offset_x, offset_y, color")
+            }
+            fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<TextShadow, A::Error> {
+                let mut ox: Option<f32> = None;
+                let mut oy: Option<f32> = None;
+                let mut color: Option<crate::Color> = None;
+                while let Some(key) = map.next_key::<String>()? {
+                    match key.as_str() {
+                        "offset_x" => ox = Some(map.next_value()?),
+                        "offset_y" => oy = Some(map.next_value()?),
+                        "color" => color = Some(map.next_value()?),
+                        _ => {
+                            map.next_value::<serde::de::IgnoredAny>()?;
+                        }
+                    }
+                }
+                Ok(TextShadow(Arc::new(bevy::ui::widget::TextShadow {
+                    offset: bevy::math::Vec2::new(ox.unwrap_or(0.0), oy.unwrap_or(0.0)),
+                    color: color
+                        .map(bevy::color::Color::from)
+                        .unwrap_or(bevy::color::Color::BLACK),
+                })))
+            }
+        }
+        deserializer.deserialize_map(V)
+    }
+}
+
+mod emit_impls_text_shadow {
+    use super::TextShadow;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for TextShadow {
+        fn to_code_literal(&self) -> TokenStream {
+            let ox = self.0.offset.x;
+            let oy = self.0.offset.y;
+            let color = crate::Color::from(self.0.color).to_code_literal();
+            quote::quote! {
+                ::bevy::ui::widget::TextShadow {
+                    offset: ::bevy::math::Vec2::new(#ox, #oy),
+                    color: ::bevy::color::Color::from(#color),
+                }
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for TextShadow {}
+
+// ── NodeImageMode ─────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::ui::widget::NodeImageMode`].
+///
+/// Controls how an [`ImageNode`] is sized and drawn within its layout.
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+pub enum NodeImageMode {
+    /// Size determined by the source image dimensions plus layout constraints.
+    #[default]
+    Auto,
+    /// Stretch to fill the node, ignoring the image's original size/aspect ratio.
+    Stretch,
+    /// Nine-slice the texture using a [`crate::TextureSlicer`] definition.
+    Sliced(crate::TextureSlicer),
+    /// Tile the texture when stretched beyond `stretch_value`.
+    Tiled {
+        /// Repeat horizontally.
+        tile_x: bool,
+        /// Repeat vertically.
+        tile_y: bool,
+        /// Repeat ratio threshold (drawing size / original size).
+        stretch_value: f32,
+    },
+}
+
+impl From<NodeImageMode> for bevy::ui::widget::NodeImageMode {
+    fn from(v: NodeImageMode) -> Self {
+        match v {
+            NodeImageMode::Auto => bevy::ui::widget::NodeImageMode::Auto,
+            NodeImageMode::Stretch => bevy::ui::widget::NodeImageMode::Stretch,
+            NodeImageMode::Sliced(s) => {
+                bevy::ui::widget::NodeImageMode::Sliced(bevy::sprite::TextureSlicer::from(s))
+            }
+            NodeImageMode::Tiled {
+                tile_x,
+                tile_y,
+                stretch_value,
+            } => bevy::ui::widget::NodeImageMode::Tiled {
+                tile_x,
+                tile_y,
+                stretch_value,
+            },
+        }
+    }
+}
+
+mod emit_impls_node_image_mode {
+    use super::NodeImageMode;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for NodeImageMode {
+        fn to_code_literal(&self) -> TokenStream {
+            match self {
+                NodeImageMode::Auto => quote::quote! { ::bevy::ui::widget::NodeImageMode::Auto },
+                NodeImageMode::Stretch => {
+                    quote::quote! { ::bevy::ui::widget::NodeImageMode::Stretch }
+                }
+                NodeImageMode::Sliced(s) => {
+                    let slicer = s.to_code_literal();
+                    quote::quote! {
+                        ::bevy::ui::widget::NodeImageMode::Sliced(::bevy::sprite::TextureSlicer::from(
+                            #slicer
+                        ))
+                    }
+                }
+                NodeImageMode::Tiled {
+                    tile_x,
+                    tile_y,
+                    stretch_value,
+                } => {
+                    quote::quote! {
+                        ::bevy::ui::widget::NodeImageMode::Tiled {
+                            tile_x: #tile_x,
+                            tile_y: #tile_y,
+                            stretch_value: #stretch_value,
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+shadow_elicitation!(NodeImageMode);
+
+// ── ImageNode ─────────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::ui::widget::ImageNode`].
+///
+/// UI node that renders an image. The `image` handle, `texture_atlas`, and `rect`
+/// fields are not serialized (runtime assets). The serialized fields are
+/// `color`, `flip_x`, `flip_y`, and `image_mode`.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+pub struct ImageNode {
+    /// Tint color multiplied with the image pixel colors (default white = pass-through).
+    pub color: crate::Color,
+    /// Flip the image along its x-axis.
+    pub flip_x: bool,
+    /// Flip the image along its y-axis.
+    pub flip_y: bool,
+    /// Controls how the image is resized and laid out.
+    pub image_mode: NodeImageMode,
+}
+
+impl Default for ImageNode {
+    fn default() -> Self {
+        Self {
+            color: crate::Color::from(bevy::color::Color::WHITE),
+            flip_x: false,
+            flip_y: false,
+            image_mode: NodeImageMode::Auto,
+        }
+    }
+}
+
+impl From<ImageNode> for bevy::ui::widget::ImageNode {
+    fn from(v: ImageNode) -> Self {
+        bevy::ui::widget::ImageNode {
+            color: bevy::color::Color::from(v.color),
+            flip_x: v.flip_x,
+            flip_y: v.flip_y,
+            image_mode: v.image_mode.into(),
+            ..Default::default()
+        }
+    }
+}
+
+mod emit_impls_image_node {
+    use super::ImageNode;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for ImageNode {
+        fn to_code_literal(&self) -> TokenStream {
+            let color = self.color.to_code_literal();
+            let flip_x = self.flip_x;
+            let flip_y = self.flip_y;
+            let mode = self.image_mode.to_code_literal();
+            quote::quote! {
+                ::bevy::ui::widget::ImageNode {
+                    color: ::bevy::color::Color::from(#color),
+                    flip_x: #flip_x,
+                    flip_y: #flip_y,
+                    image_mode: #mode,
+                    ..Default::default()
+                }
+            }
+        }
+    }
+}
+
+shadow_elicitation!(ImageNode);

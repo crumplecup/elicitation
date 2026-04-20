@@ -633,6 +633,72 @@ mod emit_impls_font_weight {
 
 impl elicitation::ElicitComplete for FontWeight {}
 
+// ── unit_elicitation macro ────────────────────────────────────────────────────
+
+macro_rules! unit_elicitation {
+    ($name:ident, $inner_path:path) => {
+        impl elicitation::Prompt for $name {
+            fn prompt() -> Option<&'static str> {
+                None
+            }
+        }
+        impl elicitation::Elicitation for $name {
+            type Style = ();
+            async fn elicit<C: elicitation::ElicitCommunicator>(
+                _communicator: &C,
+            ) -> elicitation::ElicitResult<Self> {
+                Ok(Self)
+            }
+            fn kani_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::kani_trusted_opaque(stringify!($name))
+            }
+            fn verus_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::verus_trusted_opaque(stringify!($name))
+            }
+            fn creusot_proof() -> elicitation::proc_macro2::TokenStream {
+                elicitation::verification::proof_helpers::creusot_trusted_opaque(stringify!($name))
+            }
+        }
+        impl elicitation::ElicitIntrospect for $name {
+            fn pattern() -> elicitation::ElicitationPattern {
+                elicitation::ElicitationPattern::Primitive
+            }
+            fn metadata() -> elicitation::TypeMetadata {
+                elicitation::TypeMetadata {
+                    type_name: stringify!($name),
+                    description: None,
+                    details: elicitation::PatternDetails::Primitive,
+                }
+            }
+        }
+        impl elicitation::ElicitPromptTree for $name {
+            fn prompt_tree() -> elicitation::PromptTree {
+                elicitation::PromptTree::Leaf {
+                    prompt: stringify!($name).to_string(),
+                    type_name: stringify!($name).to_string(),
+                }
+            }
+        }
+        impl elicitation::ElicitSpec for $name {
+            fn type_spec() -> elicitation::TypeSpec {
+                elicitation::TypeSpecBuilder::default()
+                    .type_name(stringify!($name).to_string())
+                    .summary(
+                        concat!(
+                            "Marker component shadow for `",
+                            stringify!($inner_path),
+                            "`."
+                        )
+                        .to_string(),
+                    )
+                    .build()
+                    .expect("valid TypeSpec")
+            }
+        }
+        impl elicitation::ElicitComplete for $name {}
+    };
+}
+
 // ── shadow_elicitation macro ──────────────────────────────────────────────────
 
 macro_rules! shadow_elicitation {
@@ -744,3 +810,232 @@ mod emit_text_bounds {
 }
 
 shadow_elicitation!(TextBounds);
+
+// ── FontHinting ───────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::text::FontHinting`].
+///
+/// Font hinting strategy. `Disabled` (default) uses subpixel coordinates;
+/// `Enabled` snaps glyphs to integral X coordinates during layout.
+#[derive(
+    Debug, Clone, Copy, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+pub enum FontHinting {
+    /// Glyphs use subpixel coordinates (default).
+    #[default]
+    Disabled,
+    /// Glyphs are snapped to integral X coordinates during layout.
+    Enabled,
+}
+
+impl From<FontHinting> for bevy::text::FontHinting {
+    fn from(v: FontHinting) -> Self {
+        match v {
+            FontHinting::Disabled => bevy::text::FontHinting::Disabled,
+            FontHinting::Enabled => bevy::text::FontHinting::Enabled,
+        }
+    }
+}
+
+mod emit_impls_font_hinting {
+    use super::FontHinting;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for FontHinting {
+        fn to_code_literal(&self) -> TokenStream {
+            match self {
+                FontHinting::Disabled => quote::quote! { ::bevy::text::FontHinting::Disabled },
+                FontHinting::Enabled => quote::quote! { ::bevy::text::FontHinting::Enabled },
+            }
+        }
+    }
+}
+
+shadow_elicitation!(FontHinting);
+
+// ── Strikethrough ─────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::text::Strikethrough`].
+///
+/// Marker component: text entities with this component are drawn with a strikethrough line.
+#[derive(
+    Debug, Clone, Copy, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+pub struct Strikethrough;
+
+impl From<Strikethrough> for bevy::text::Strikethrough {
+    fn from(_: Strikethrough) -> Self {
+        bevy::text::Strikethrough
+    }
+}
+
+mod emit_impls_strikethrough {
+    use super::Strikethrough;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for Strikethrough {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { ::bevy::text::Strikethrough }
+        }
+    }
+}
+
+unit_elicitation!(Strikethrough, bevy::text::Strikethrough);
+
+// ── StrikethroughColor ────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::text::StrikethroughColor`].
+///
+/// Color for the text's strikethrough line. If absent the entity's `TextColor` is used.
+/// Serialized/deserialized as the inner [`Color`].
+elicit_newtype!(bevy::text::StrikethroughColor, as StrikethroughColor);
+elicit_newtype_traits!(StrikethroughColor, bevy::text::StrikethroughColor, [eq]);
+
+impl From<StrikethroughColor> for bevy::text::StrikethroughColor {
+    fn from(v: StrikethroughColor) -> Self {
+        *v.0
+    }
+}
+
+impl serde::Serialize for StrikethroughColor {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        self.0.0.serialize(s)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for StrikethroughColor {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        bevy::color::Color::deserialize(d)
+            .map(|c| StrikethroughColor(Arc::new(bevy::text::StrikethroughColor(c))))
+    }
+}
+
+mod emit_impls_strikethrough_color {
+    use super::StrikethroughColor;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for StrikethroughColor {
+        fn to_code_literal(&self) -> TokenStream {
+            let color = crate::Color::from(self.0.0);
+            let color_tokens = color.to_code_literal();
+            quote::quote! { ::elicit_bevy::StrikethroughColor::from(#color_tokens) }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for StrikethroughColor {}
+
+// ── Underline ─────────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::text::Underline`].
+///
+/// Marker component: text entities with this component are drawn with an underline.
+#[derive(
+    Debug, Clone, Copy, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
+)]
+pub struct Underline;
+
+impl From<Underline> for bevy::text::Underline {
+    fn from(_: Underline) -> Self {
+        bevy::text::Underline
+    }
+}
+
+mod emit_impls_underline {
+    use super::Underline;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for Underline {
+        fn to_code_literal(&self) -> TokenStream {
+            quote::quote! { ::bevy::text::Underline }
+        }
+    }
+}
+
+unit_elicitation!(Underline, bevy::text::Underline);
+
+// ── UnderlineColor ────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::text::UnderlineColor`].
+///
+/// Color for the text's underline. If absent the entity's `TextColor` is used.
+/// Serialized/deserialized as the inner [`Color`].
+elicit_newtype!(bevy::text::UnderlineColor, as UnderlineColor);
+elicit_newtype_traits!(UnderlineColor, bevy::text::UnderlineColor, [eq]);
+
+impl From<UnderlineColor> for bevy::text::UnderlineColor {
+    fn from(v: UnderlineColor) -> Self {
+        *v.0
+    }
+}
+
+impl serde::Serialize for UnderlineColor {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        self.0.0.serialize(s)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for UnderlineColor {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        bevy::color::Color::deserialize(d)
+            .map(|c| UnderlineColor(Arc::new(bevy::text::UnderlineColor(c))))
+    }
+}
+
+mod emit_impls_underline_color {
+    use super::UnderlineColor;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for UnderlineColor {
+        fn to_code_literal(&self) -> TokenStream {
+            let color = crate::Color::from(self.0.0);
+            let color_tokens = color.to_code_literal();
+            quote::quote! { ::elicit_bevy::UnderlineColor::from(#color_tokens) }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for UnderlineColor {}
+
+// ── TextBackgroundColor ───────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::text::TextBackgroundColor`].
+///
+/// Background color behind a text section. Defaults to black.
+/// Serialized/deserialized as the inner [`Color`].
+elicit_newtype!(bevy::text::TextBackgroundColor, as TextBackgroundColor);
+elicit_newtype_traits!(TextBackgroundColor, bevy::text::TextBackgroundColor, [eq]);
+
+impl From<TextBackgroundColor> for bevy::text::TextBackgroundColor {
+    fn from(v: TextBackgroundColor) -> Self {
+        *v.0
+    }
+}
+
+impl serde::Serialize for TextBackgroundColor {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        self.0.0.serialize(s)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for TextBackgroundColor {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        bevy::color::Color::deserialize(d)
+            .map(|c| TextBackgroundColor(Arc::new(bevy::text::TextBackgroundColor(c))))
+    }
+}
+
+mod emit_impls_text_background_color {
+    use super::TextBackgroundColor;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+    impl ToCodeLiteral for TextBackgroundColor {
+        fn to_code_literal(&self) -> TokenStream {
+            let color = crate::Color::from(self.0.0);
+            let color_tokens = color.to_code_literal();
+            quote::quote! { ::elicit_bevy::TextBackgroundColor::from(#color_tokens) }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for TextBackgroundColor {}

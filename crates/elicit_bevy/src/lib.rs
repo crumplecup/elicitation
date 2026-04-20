@@ -258,8 +258,8 @@ pub use math::{
 
 // ── render re-exports ─────────────────────────────────────────────────────────
 pub use render::{
-    ColorGrading, ColorGradingGlobal, ColorGradingSection, Hdr, MipBias, Msaa,
-    NoAutomaticBatching, OcclusionCulling,
+    ColorGrading, ColorGradingGlobal, ColorGradingSection, Hdr, MipBias, Msaa, NoAutomaticBatching,
+    OcclusionCulling,
 };
 
 // ── mesh re-exports ───────────────────────────────────────────────────────────
@@ -286,8 +286,10 @@ pub use post_process::{
 
 // ── camera re-exports ─────────────────────────────────────────────────────────
 pub use camera::{
-    Camera, InheritedVisibility, OrthographicProjection, PerspectiveProjection, Projection,
-    ScalingMode, ViewVisibility, Visibility,
+    Camera, Camera2d, Camera3d, Camera3dDepthLoadOp, ClearColor, ClearColorConfig,
+    InheritedVisibility, MsaaWriteback, OrthographicProjection, PerspectiveProjection,
+    PhysicalCameraParameters, Projection, ScalingMode, ScreenSpaceTransmissionQuality,
+    ViewVisibility, Visibility,
 };
 
 // ── input re-exports ──────────────────────────────────────────────────────────
@@ -329,19 +331,21 @@ pub use sprite::{
 
 // ── text re-exports ───────────────────────────────────────────────────────────
 pub use text::{
-    FontSmoothing, FontWeight, JustifyText, LineBreak, TextBounds, TextColor, TextFont, TextLayout,
-    TextSpan,
+    FontHinting, FontSmoothing, FontWeight, JustifyText, LineBreak, Strikethrough,
+    StrikethroughColor, TextBackgroundColor, TextBounds, TextColor, TextFont, TextLayout, TextSpan,
+    Underline, UnderlineColor,
 };
 
 // ── ui re-exports ─────────────────────────────────────────────────────────────
 pub use ui::{
     AlignContent, AlignItems, AlignSelf, AngularColorStop, AutoDirectionalNavigation,
     BackgroundColor, BackgroundGradient, BorderColor, BorderGradient, BorderRadius, BoxShadow,
-    BoxSizing, Checkable, Checked, ColorStop, ConicGradient, Display, FlexDirection, FlexWrap,
-    FocusPolicy, GlobalZIndex, Gradient, GridAutoFlow, GridTrack, GridTrackRepetition,
-    IgnoreScroll, Interaction, InteractionDisabled, InterpolationColorSpace, IsDefaultUiCamera,
-    JustifyContent, JustifyItems, JustifySelf, LinearGradient, MaxTrackSizingFunction,
-    MinTrackSizingFunction, Outline, Overflow, OverflowAxis, OverflowClipBox, OverflowClipMargin,
-    OverrideClip, PositionType, Pressed, RadialGradient, RadialGradientShape, RepeatedGridTrack,
-    ScrollPosition, ShadowStyle, UiPosition, UiRect, UiScale, Val, ZIndex,
+    BoxSizing, Button, Checkable, Checked, ColorStop, ConicGradient, Display, FlexDirection,
+    FlexWrap, FocusPolicy, GlobalZIndex, Gradient, GridAutoFlow, GridTrack, GridTrackRepetition,
+    IgnoreScroll, ImageNode, Interaction, InteractionDisabled, InterpolationColorSpace,
+    IsDefaultUiCamera, JustifyContent, JustifyItems, JustifySelf, Label, LinearGradient,
+    MaxTrackSizingFunction, MinTrackSizingFunction, NodeImageMode, Outline, Overflow, OverflowAxis,
+    OverflowClipBox, OverflowClipMargin, OverrideClip, PositionType, Pressed, RadialGradient,
+    RadialGradientShape, RepeatedGridTrack, ScrollPosition, ShadowStyle, TextShadow, UiPosition,
+    UiRect, UiScale, UiText, Val, ZIndex,
 };
