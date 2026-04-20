@@ -1089,7 +1089,7 @@ impl From<Camera3d> for bevy::camera::Camera3d {
 }
 
 mod emit_impls_camera3d {
-    use super::{Camera3d, Camera3dDepthLoadOp, ScreenSpaceTransmissionQuality};
+    use super::Camera3d;
     use elicitation::emit_code::ToCodeLiteral;
     use proc_macro2::TokenStream;
     impl ToCodeLiteral for Camera3d {

@@ -244,7 +244,10 @@ pub use audio::{
 pub use color::{Color, Hsla, Hsva, Hwba, Laba, Lcha, LinearRgba, Oklaba, Oklcha, Srgba, Xyza};
 
 // ── light re-exports ─────────────────────────────────────────────────────────
-pub use light::{AmbientLight, DirectionalLight, PointLight, ShadowFilteringMethod, SpotLight};
+pub use light::{
+    AmbientLight, DirectionalLight, EnvironmentMapLight, GeneratedEnvironmentMapLight,
+    GlobalAmbientLight, LightProbe, PointLight, ShadowFilteringMethod, SpotLight,
+};
 
 // ── math re-exports ──────────────────────────────────────────────────────────
 pub use math::{
@@ -267,7 +270,7 @@ pub use mesh::{Indices, PrimitiveTopology};
 
 // ── pbr re-exports ────────────────────────────────────────────────────────────
 pub use pbr::{
-    AlphaMode, AtmosphereMode, AtmosphereSettings, FogFalloff, ForwardDecal,
+    AlphaMode, AtmosphereMode, AtmosphereSettings, DistanceFog, FogFalloff, ForwardDecal,
     ForwardDecalMaterialExt, OpaqueRendererMethod, ParallaxMappingMethod, StandardMaterial,
     Tonemapping, UvChannel,
 };

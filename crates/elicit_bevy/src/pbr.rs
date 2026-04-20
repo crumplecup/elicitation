@@ -1435,3 +1435,120 @@ mod emit_impls_atmosphere_settings {
 }
 
 shadow_elicitation!(AtmosphereSettings);
+
+// ── DistanceFog ───────────────────────────────────────────────────────────────
+
+elicit_newtype!(bevy::pbr::DistanceFog, as DistanceFog);
+elicit_newtype_traits!(DistanceFog, bevy::pbr::DistanceFog, []);
+
+impl From<DistanceFog> for bevy::pbr::DistanceFog {
+    fn from(v: DistanceFog) -> Self {
+        Arc::try_unwrap(v.0).unwrap_or_else(|arc| (*arc).clone())
+    }
+}
+
+impl serde::Serialize for DistanceFog {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap;
+        let d = &*self.0;
+        let mut map = serializer.serialize_map(Some(4))?;
+        map.serialize_entry("color", &crate::Color::from(d.color))?;
+        map.serialize_entry(
+            "directional_light_color",
+            &crate::Color::from(d.directional_light_color),
+        )?;
+        map.serialize_entry("directional_light_exponent", &d.directional_light_exponent)?;
+        map.serialize_entry("falloff", &crate::FogFalloff(Arc::new(d.falloff.clone())))?;
+        map.end()
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for DistanceFog {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::{MapAccess, Visitor};
+        struct V;
+        impl<'de> Visitor<'de> for V {
+            type Value = DistanceFog;
+            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "a DistanceFog JSON object")
+            }
+            fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<DistanceFog, A::Error> {
+                let mut directional_light_exponent: Option<f32> = None;
+                let mut falloff: Option<crate::FogFalloff> = None;
+                while let Some(key) = map.next_key::<String>()? {
+                    match key.as_str() {
+                        "directional_light_exponent" => {
+                            directional_light_exponent = Some(map.next_value()?)
+                        }
+                        "falloff" => falloff = Some(map.next_value()?),
+                        _ => {
+                            map.next_value::<serde::de::IgnoredAny>()?;
+                        }
+                    }
+                }
+                let mut d = bevy::pbr::DistanceFog::default();
+                if let Some(exp) = directional_light_exponent {
+                    d.directional_light_exponent = exp;
+                }
+                if let Some(f) = falloff {
+                    d.falloff = bevy::pbr::FogFalloff::from(f);
+                }
+                Ok(DistanceFog(Arc::new(d)))
+            }
+        }
+        deserializer.deserialize_map(V)
+    }
+}
+
+#[reflect_methods]
+impl DistanceFog {
+    /// Returns the fog color.
+    #[tracing::instrument(skip(self))]
+    pub fn fog_color(&self) -> crate::Color {
+        crate::Color::from(self.0.color)
+    }
+
+    /// Returns the directional light scatter exponent.
+    #[tracing::instrument(skip(self))]
+    pub fn directional_light_exponent(&self) -> f32 {
+        self.0.directional_light_exponent
+    }
+
+    /// Returns the fog falloff mode.
+    #[tracing::instrument(skip(self))]
+    pub fn falloff(&self) -> crate::FogFalloff {
+        crate::FogFalloff(Arc::new(self.0.falloff.clone()))
+    }
+
+    /// Returns a copy with the given falloff.
+    #[tracing::instrument(skip(self))]
+    pub fn with_falloff(&self, falloff: crate::FogFalloff) -> DistanceFog {
+        let mut d = (*self.0).clone();
+        d.falloff = bevy::pbr::FogFalloff::from(falloff);
+        DistanceFog(Arc::new(d))
+    }
+}
+
+mod emit_impls_distance_fog {
+    use super::DistanceFog;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for DistanceFog {
+        fn to_code_literal(&self) -> TokenStream {
+            let exp = self.0.directional_light_exponent;
+            let falloff = crate::FogFalloff(std::sync::Arc::new(self.0.falloff.clone()))
+                .to_code_literal();
+            quote::quote! {
+                ::elicit_bevy::DistanceFog::from({
+                    let mut d = ::bevy::pbr::DistanceFog::default();
+                    d.directional_light_exponent = #exp;
+                    d.falloff = ::bevy::pbr::FogFalloff::from(#falloff);
+                    d
+                })
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for DistanceFog {}
