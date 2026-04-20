@@ -1537,8 +1537,8 @@ mod emit_impls_distance_fog {
     impl ToCodeLiteral for DistanceFog {
         fn to_code_literal(&self) -> TokenStream {
             let exp = self.0.directional_light_exponent;
-            let falloff = crate::FogFalloff(std::sync::Arc::new(self.0.falloff.clone()))
-                .to_code_literal();
+            let falloff =
+                crate::FogFalloff(std::sync::Arc::new(self.0.falloff.clone())).to_code_literal();
             quote::quote! {
                 ::elicit_bevy::DistanceFog::from({
                     let mut d = ::bevy::pbr::DistanceFog::default();

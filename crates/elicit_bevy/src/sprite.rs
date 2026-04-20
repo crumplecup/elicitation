@@ -1403,4 +1403,3 @@ impl elicitation::Generator for TextureSliceGenerator {
         }
     }
 }
-

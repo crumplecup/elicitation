@@ -959,38 +959,71 @@ pub enum SystemCursorIcon {
     /// Platform-default arrow cursor.
     #[default]
     Default,
+    /// Context menu cursor.
     ContextMenu,
+    /// Help/question cursor.
     Help,
+    /// Pointer (hand) cursor for links.
     Pointer,
+    /// Progress indicator cursor.
     Progress,
+    /// Busy/wait cursor.
     Wait,
+    /// Spreadsheet cell selection cursor.
     Cell,
+    /// Crosshair cursor.
     Crosshair,
+    /// Text insertion cursor (I-beam).
     Text,
+    /// Vertical text insertion cursor.
     VerticalText,
+    /// Alias/shortcut cursor.
     Alias,
+    /// Copy cursor.
     Copy,
+    /// Move cursor.
     Move,
+    /// No-drop cursor.
     NoDrop,
+    /// Not-allowed cursor.
     NotAllowed,
+    /// Grab cursor.
     Grab,
+    /// Grabbing cursor.
     Grabbing,
+    /// East resize cursor.
     EResize,
+    /// North resize cursor.
     NResize,
+    /// North-east resize cursor.
     NeResize,
+    /// North-west resize cursor.
     NwResize,
+    /// South resize cursor.
     SResize,
+    /// South-east resize cursor.
     SeResize,
+    /// South-west resize cursor.
     SwResize,
+    /// West resize cursor.
     WResize,
+    /// East-west resize cursor.
     EwResize,
+    /// North-south resize cursor.
     NsResize,
+    /// North-east/south-west resize cursor.
     NeswResize,
+    /// North-west/south-east resize cursor.
     NwseResize,
+    /// Column resize cursor.
     ColResize,
+    /// Row resize cursor.
     RowResize,
+    /// All-scroll cursor.
     AllScroll,
+    /// Zoom-in cursor.
     ZoomIn,
+    /// Zoom-out cursor.
     ZoomOut,
 }
 
@@ -1226,9 +1259,9 @@ shadow_elicitation!(WindowPosition);
 
 // ── VideoMode ─────────────────────────────────────────────────────────────────
 
-/// Shadow of [`bevy::window::VideoMode`].
-///
-/// Describes a monitor video mode: resolution, bit depth, and refresh rate.
+// Shadow of [`bevy::window::VideoMode`].
+//
+// Describes a monitor video mode: resolution, bit depth, and refresh rate.
 elicit_newtype!(bevy::window::VideoMode, as VideoMode);
 elicit_newtype_traits!(VideoMode, bevy::window::VideoMode, [eq]);
 
@@ -1337,14 +1370,7 @@ impl elicitation::ElicitComplete for VideoMode {}
 /// Shadow of [`bevy::window::VideoModeSelection`].
 ///
 /// Selects the video mode for a fullscreen window.
-#[derive(
-    Debug,
-    Clone,
-    PartialEq,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
-)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub enum VideoModeSelection {
     /// Use the monitor's current video mode.
     Current,
@@ -1374,9 +1400,8 @@ impl From<VideoModeSelection> for bevy::window::VideoModeSelection {
     }
 }
 
-
 mod emit_impls_video_mode_selection {
-    use super::{VideoMode, VideoModeSelection};
+    use super::VideoModeSelection;
     use elicitation::emit_code::ToCodeLiteral;
     use proc_macro2::TokenStream;
 

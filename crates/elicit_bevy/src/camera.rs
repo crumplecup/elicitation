@@ -1116,10 +1116,10 @@ shadow_elicitation!(Camera3d);
 
 // ── ClearColor ────────────────────────────────────────────────────────────────
 
-/// Shadow of [`bevy::camera::ClearColor`].
-///
-/// World resource storing the default clear color for cameras.
-/// Serialized/deserialized as the inner [`Color`].
+// Shadow of [`bevy::camera::ClearColor`].
+//
+// World resource storing the default clear color for cameras.
+// Serialized/deserialized as the inner [`Color`].
 elicit_newtype!(bevy::camera::ClearColor, as ClearColor);
 elicit_newtype_traits!(ClearColor, bevy::camera::ClearColor, []);
 
@@ -1159,9 +1159,9 @@ impl elicitation::ElicitComplete for ClearColor {}
 
 // ── ClearColorConfig ──────────────────────────────────────────────────────────
 
-/// Shadow of [`bevy::camera::ClearColorConfig`].
-///
-/// Per-camera clear color configuration. Has derived `Serialize`/`Deserialize` upstream.
+// Shadow of [`bevy::camera::ClearColorConfig`].
+//
+// Per-camera clear color configuration. Has derived `Serialize`/`Deserialize` upstream.
 elicit_newtype!(bevy::camera::ClearColorConfig, as ClearColorConfig, forward_serde);
 elicit_newtype_traits!(ClearColorConfig, bevy::camera::ClearColorConfig, []);
 
@@ -1189,10 +1189,10 @@ impl elicitation::ElicitComplete for ClearColorConfig {}
 
 // ── MsaaWriteback ─────────────────────────────────────────────────────────────
 
-/// Shadow of [`bevy::camera::MsaaWriteback`].
-///
-/// Controls when MSAA writeback occurs for a camera. Has derived
-/// `Serialize`/`Deserialize` upstream.
+// Shadow of [`bevy::camera::MsaaWriteback`].
+//
+// Controls when MSAA writeback occurs for a camera. Has derived
+// `Serialize`/`Deserialize` upstream.
 elicit_newtype!(bevy::camera::MsaaWriteback, as MsaaWriteback, forward_serde);
 elicit_newtype_traits!(MsaaWriteback, bevy::camera::MsaaWriteback, [eq]);
 

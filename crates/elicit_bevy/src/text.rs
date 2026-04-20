@@ -884,10 +884,10 @@ unit_elicitation!(Strikethrough, bevy::text::Strikethrough);
 
 // ── StrikethroughColor ────────────────────────────────────────────────────────
 
-/// Shadow of [`bevy::text::StrikethroughColor`].
-///
-/// Color for the text's strikethrough line. If absent the entity's `TextColor` is used.
-/// Serialized/deserialized as the inner [`Color`].
+// Shadow of [`bevy::text::StrikethroughColor`].
+//
+// Color for the text's strikethrough line. If absent the entity's `TextColor` is used.
+// Serialized/deserialized as the inner [`Color`].
 elicit_newtype!(bevy::text::StrikethroughColor, as StrikethroughColor);
 elicit_newtype_traits!(StrikethroughColor, bevy::text::StrikethroughColor, [eq]);
 
@@ -956,10 +956,10 @@ unit_elicitation!(Underline, bevy::text::Underline);
 
 // ── UnderlineColor ────────────────────────────────────────────────────────────
 
-/// Shadow of [`bevy::text::UnderlineColor`].
-///
-/// Color for the text's underline. If absent the entity's `TextColor` is used.
-/// Serialized/deserialized as the inner [`Color`].
+// Shadow of [`bevy::text::UnderlineColor`].
+//
+// Color for the text's underline. If absent the entity's `TextColor` is used.
+// Serialized/deserialized as the inner [`Color`].
 elicit_newtype!(bevy::text::UnderlineColor, as UnderlineColor);
 elicit_newtype_traits!(UnderlineColor, bevy::text::UnderlineColor, [eq]);
 
@@ -999,10 +999,10 @@ impl elicitation::ElicitComplete for UnderlineColor {}
 
 // ── TextBackgroundColor ───────────────────────────────────────────────────────
 
-/// Shadow of [`bevy::text::TextBackgroundColor`].
-///
-/// Background color behind a text section. Defaults to black.
-/// Serialized/deserialized as the inner [`Color`].
+// Shadow of [`bevy::text::TextBackgroundColor`].
+//
+// Background color behind a text section. Defaults to black.
+// Serialized/deserialized as the inner [`Color`].
 elicit_newtype!(bevy::text::TextBackgroundColor, as TextBackgroundColor);
 elicit_newtype_traits!(TextBackgroundColor, bevy::text::TextBackgroundColor, [eq]);
 
@@ -1089,4 +1089,3 @@ impl elicitation::Generator for FontGenerator {
             .unwrap_or_else(|e| panic!("FontGenerator: invalid font '{}': {e}", self.path))
     }
 }
-

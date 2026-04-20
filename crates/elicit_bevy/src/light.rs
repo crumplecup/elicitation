@@ -839,7 +839,10 @@ impl serde::Serialize for EnvironmentMapLight {
             "rotation",
             &[e.rotation.x, e.rotation.y, e.rotation.z, e.rotation.w],
         )?;
-        map.serialize_entry("affects_lightmapped_mesh_diffuse", &e.affects_lightmapped_mesh_diffuse)?;
+        map.serialize_entry(
+            "affects_lightmapped_mesh_diffuse",
+            &e.affects_lightmapped_mesh_diffuse,
+        )?;
         map.end()
     }
 }
@@ -962,7 +965,10 @@ impl serde::Serialize for GeneratedEnvironmentMapLight {
             "rotation",
             &[g.rotation.x, g.rotation.y, g.rotation.z, g.rotation.w],
         )?;
-        map.serialize_entry("affects_lightmapped_mesh_diffuse", &g.affects_lightmapped_mesh_diffuse)?;
+        map.serialize_entry(
+            "affects_lightmapped_mesh_diffuse",
+            &g.affects_lightmapped_mesh_diffuse,
+        )?;
         map.end()
     }
 }

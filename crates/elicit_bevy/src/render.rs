@@ -274,13 +274,7 @@ unit_elicitation!(
 /// Multisample anti-aliasing (MSAA) sample count setting, placed as a
 /// component on a camera entity or as a resource for the app.
 #[derive(
-    Debug,
-    Clone,
-    Copy,
-    Default,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
+    Debug, Clone, Copy, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
 )]
 pub enum Msaa {
     /// No MSAA (1 sample).
@@ -343,13 +337,7 @@ shadow_elicitation!(Msaa);
 /// Adds support for high dynamic range lighting values in the intermediate
 /// render texture (does not affect display output format).
 #[derive(
-    Debug,
-    Clone,
-    Copy,
-    Default,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
+    Debug, Clone, Copy, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema,
 )]
 pub struct Hdr;
 
@@ -378,13 +366,7 @@ unit_elicitation!(Hdr, bevy::render::view::Hdr);
 /// Shadow of [`bevy::render::view::ColorGradingSection`].
 ///
 /// Per-tone-range color grading settings (shadows, midtones, highlights).
-#[derive(
-    Debug,
-    Clone,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
-)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct ColorGradingSection {
     /// Saturation multiplier (1.0 = unchanged, 0.0 = grayscale).
     pub saturation: f32,
@@ -468,13 +450,7 @@ shadow_elicitation!(ColorGradingSection);
 ///
 /// Global (whole-image) color grading settings: exposure, white-balance, hue,
 /// saturation, and the midtone luminance range.
-#[derive(
-    Debug,
-    Clone,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
-)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct ColorGradingGlobal {
     /// Exposure value (EV) offset in stops.
     pub exposure: f32,
@@ -570,14 +546,7 @@ shadow_elicitation!(ColorGradingGlobal);
 ///
 /// Camera component enabling filmic color grading with separate controls
 /// for shadows, midtones, and highlights.
-#[derive(
-    Debug,
-    Clone,
-    Default,
-    serde::Serialize,
-    serde::Deserialize,
-    schemars::JsonSchema,
-)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
 pub struct ColorGrading {
     /// Global settings applied to the whole image.
     pub global: ColorGradingGlobal,

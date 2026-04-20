@@ -3514,12 +3514,12 @@ shadow_elicitation!(UiText);
 
 // ── TextShadow ────────────────────────────────────────────────────────────────
 
-/// Shadow of [`bevy::ui::widget::TextShadow`].
-///
-/// Adds a shadow behind UI text. Serialized as `{ "offset_x", "offset_y", "color" }`.
-/// Default: offset `(4, 4)` logical pixels, color black at 75% opacity.
-///
-/// Use [`crate::Text2dShadow`] for `Text2d` (2D world-space) shadows.
+// Shadow of [`bevy::ui::widget::TextShadow`].
+//
+// Adds a shadow behind UI text. Serialized as `{ "offset_x", "offset_y", "color" }`.
+// Default: offset `(4, 4)` logical pixels, color black at 75% opacity.
+//
+// Use [`crate::Text2dShadow`] for `Text2d` (2D world-space) shadows.
 elicit_newtype!(bevy::ui::widget::TextShadow, as TextShadow);
 elicit_newtype_traits!(TextShadow, bevy::ui::widget::TextShadow, [eq]);
 
