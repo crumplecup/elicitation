@@ -313,9 +313,9 @@ pub use time::{Stopwatch, Timer, TimerMode};
 // ── window re-exports ─────────────────────────────────────────────────────────
 pub use window::{
     CompositeAlphaMode, CursorGrabMode, CursorIcon, CursorOptions, EnabledButtons,
-    MonitorSelection, PresentMode, PrimaryWindow, ScreenEdge, SystemCursorIcon, Window,
-    WindowLevel, WindowMode, WindowPosition, WindowResizeConstraints, WindowResolution,
-    WindowTheme,
+    MonitorSelection, PresentMode, PrimaryWindow, ScreenEdge, SystemCursorIcon, VideoMode,
+    VideoModeSelection, Window, WindowLevel, WindowMode, WindowPosition, WindowResizeConstraints,
+    WindowResolution, WindowTheme,
 };
 
 // ── state re-exports ──────────────────────────────────────────────────────────

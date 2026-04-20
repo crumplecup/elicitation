@@ -1223,3 +1223,178 @@ mod emit_window_position {
 }
 
 shadow_elicitation!(WindowPosition);
+
+// ── VideoMode ─────────────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::window::VideoMode`].
+///
+/// Describes a monitor video mode: resolution, bit depth, and refresh rate.
+elicit_newtype!(bevy::window::VideoMode, as VideoMode);
+elicit_newtype_traits!(VideoMode, bevy::window::VideoMode, [eq]);
+
+impl From<VideoMode> for bevy::window::VideoMode {
+    fn from(v: VideoMode) -> Self {
+        Arc::try_unwrap(v.0).unwrap_or_else(|arc| *arc)
+    }
+}
+
+impl serde::Serialize for VideoMode {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeMap;
+        let v = &*self.0;
+        let mut map = serializer.serialize_map(Some(3))?;
+        map.serialize_entry("physical_size", &[v.physical_size.x, v.physical_size.y])?;
+        map.serialize_entry("bit_depth", &v.bit_depth)?;
+        map.serialize_entry("refresh_rate_millihertz", &v.refresh_rate_millihertz)?;
+        map.end()
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for VideoMode {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::{MapAccess, Visitor};
+        struct V;
+        impl<'de> Visitor<'de> for V {
+            type Value = VideoMode;
+            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(f, "a VideoMode JSON object")
+            }
+            fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<VideoMode, A::Error> {
+                let mut physical_size: Option<[u32; 2]> = None;
+                let mut bit_depth: Option<u16> = None;
+                let mut refresh_rate_millihertz: Option<u32> = None;
+                while let Some(key) = map.next_key::<String>()? {
+                    match key.as_str() {
+                        "physical_size" => physical_size = Some(map.next_value()?),
+                        "bit_depth" => bit_depth = Some(map.next_value()?),
+                        "refresh_rate_millihertz" => {
+                            refresh_rate_millihertz = Some(map.next_value()?)
+                        }
+                        _ => {
+                            map.next_value::<serde::de::IgnoredAny>()?;
+                        }
+                    }
+                }
+                let [px, py] = physical_size.unwrap_or([0, 0]);
+                Ok(VideoMode(Arc::new(bevy::window::VideoMode {
+                    physical_size: bevy::math::UVec2::new(px, py),
+                    bit_depth: bit_depth.unwrap_or(32),
+                    refresh_rate_millihertz: refresh_rate_millihertz.unwrap_or(60_000),
+                })))
+            }
+        }
+        deserializer.deserialize_map(V)
+    }
+}
+
+#[reflect_methods]
+impl VideoMode {
+    /// Returns the physical resolution as `[width, height]`.
+    #[tracing::instrument(skip(self))]
+    pub fn physical_size(&self) -> [u32; 2] {
+        [self.0.physical_size.x, self.0.physical_size.y]
+    }
+
+    /// Returns the color bit depth.
+    #[tracing::instrument(skip(self))]
+    pub fn bit_depth(&self) -> u16 {
+        self.0.bit_depth
+    }
+
+    /// Returns the refresh rate in millihertz.
+    #[tracing::instrument(skip(self))]
+    pub fn refresh_rate_millihertz(&self) -> u32 {
+        self.0.refresh_rate_millihertz
+    }
+}
+
+mod emit_impls_video_mode {
+    use super::VideoMode;
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for VideoMode {
+        fn to_code_literal(&self) -> TokenStream {
+            let px = self.0.physical_size.x;
+            let py = self.0.physical_size.y;
+            let bd = self.0.bit_depth;
+            let rr = self.0.refresh_rate_millihertz;
+            quote::quote! {
+                ::bevy::window::VideoMode {
+                    physical_size: ::bevy::math::UVec2::new(#px, #py),
+                    bit_depth: #bd,
+                    refresh_rate_millihertz: #rr,
+                }
+            }
+        }
+    }
+}
+
+impl elicitation::ElicitComplete for VideoMode {}
+
+// ── VideoModeSelection ────────────────────────────────────────────────────────
+
+/// Shadow of [`bevy::window::VideoModeSelection`].
+///
+/// Selects the video mode for a fullscreen window.
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    serde::Serialize,
+    serde::Deserialize,
+    schemars::JsonSchema,
+)]
+pub enum VideoModeSelection {
+    /// Use the monitor's current video mode.
+    Current,
+    /// Use a specific video mode.
+    Specific(VideoMode),
+}
+
+impl From<bevy::window::VideoModeSelection> for VideoModeSelection {
+    fn from(v: bevy::window::VideoModeSelection) -> Self {
+        match v {
+            bevy::window::VideoModeSelection::Current => VideoModeSelection::Current,
+            bevy::window::VideoModeSelection::Specific(m) => {
+                VideoModeSelection::Specific(VideoMode::from(m))
+            }
+        }
+    }
+}
+
+impl From<VideoModeSelection> for bevy::window::VideoModeSelection {
+    fn from(v: VideoModeSelection) -> Self {
+        match v {
+            VideoModeSelection::Current => bevy::window::VideoModeSelection::Current,
+            VideoModeSelection::Specific(m) => {
+                bevy::window::VideoModeSelection::Specific(bevy::window::VideoMode::from(m))
+            }
+        }
+    }
+}
+
+
+mod emit_impls_video_mode_selection {
+    use super::{VideoMode, VideoModeSelection};
+    use elicitation::emit_code::ToCodeLiteral;
+    use proc_macro2::TokenStream;
+
+    impl ToCodeLiteral for VideoModeSelection {
+        fn to_code_literal(&self) -> TokenStream {
+            match self {
+                VideoModeSelection::Current => {
+                    quote::quote! { ::bevy::window::VideoModeSelection::Current }
+                }
+                VideoModeSelection::Specific(m) => {
+                    let m = m.to_code_literal();
+                    quote::quote! {
+                        ::bevy::window::VideoModeSelection::Specific(#m)
+                    }
+                }
+            }
+        }
+    }
+}
+
+shadow_elicitation!(VideoModeSelection);
