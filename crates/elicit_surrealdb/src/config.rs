@@ -1,82 +1,83 @@
-//! Shadow types for `surrealdb::opt` configuration types.
+//! Shadow types for SurrealDB capabilities and connection configuration.
 //!
-//! `surrealdb::opt::Config` has all-private fields, so we shadow it with our own
-//! field-bearing struct and use the builder API in connection tools.
+//! Mirrors `surrealdb::opt::capabilities` and `surrealdb::opt::config`.
+//! The upstream types use all-private fields behind a builder API;
+//! these shadow types model the publicly configurable parameters and
+//! implement [`elicitation::ElicitComplete`] so user code can
+//! `#[derive(Elicit)]` with these as fields.
 
-use elicitation::ToCodeLiteral;
+use elicitation::Elicit;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-/// Query planner strategy.
+/// Strategy for the streaming query planner.
 ///
-/// Maps to `surrealdb::opt::PlannerStrategy`.
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, ToCodeLiteral,
-)]
-#[serde(rename_all = "snake_case")]
+/// Mirrors `surrealdb::opt::capabilities::PlannerStrategy`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum PlannerStrategy {
-    /// Attempt to use an index if available; fall back to full-table scan.
-    Default,
-    /// Force full-table scan regardless of indexes.
-    FullTableScan,
-    /// Force index-based scan; error if no index is available.
-    IndexedScan,
+    /// Try the new planner for read-only statements; fall back to compute on
+    /// unimplemented features.
+    BestEffort,
+    /// Skip the new planner entirely; always use the compute executor.
+    ComputeOnly,
+    /// Require the new planner for all read-only statements; unimplemented
+    /// features become hard errors.
+    AllReadOnly,
 }
 
-/// Experimental features that can be enabled on a SurrealDB connection.
+/// Experimental features that can be enabled in capabilities.
 ///
-/// Maps to `surrealdb::opt::ExperimentalFeature`.
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, ToCodeLiteral,
-)]
-#[serde(rename_all = "snake_case")]
+/// Mirrors `surrealdb::opt::capabilities::ExperimentalFeature`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema, Elicit)]
 pub enum ExperimentalFeature {
-    /// File-storage backend experiment.
+    /// Enable the Files feature.
     Files,
-    /// Surrealism framework experiment.
+    /// Enable the Surrealism feature.
     Surrealism,
 }
 
-/// Connection capabilities configuration.
+/// Capabilities configuration for a SurrealDB database instance.
 ///
-/// Shadow of `surrealdb::opt::Capabilities`. Because the upstream type uses a builder-method
-/// API to configure allow-lists, this shadow captures the concepts as optional boolean fields.
-/// Connection tools use these fields to emit the appropriate Rust builder calls.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
-pub struct Capabilities {
-    /// Allow all scripting functions.  Default: `false`.
-    #[serde(default)]
-    pub allow_scripting: bool,
-    /// Allow guest access (unauthenticated queries).  Default: `false`.
-    #[serde(default)]
-    pub allow_guests: bool,
-    /// Allow all network targets. Default: `false`.
-    #[serde(default)]
-    pub allow_all_net: bool,
-    /// Allow all SurrealQL functions.  Default: `false`.
-    #[serde(default)]
-    pub allow_all_functions: bool,
+/// Models the publicly configurable surface of
+/// `surrealdb::opt::capabilities::Capabilities`.
+///
+/// # Allow/deny lists
+///
+/// `allow_functions` / `allow_net`: `None` means allow all; `Some(vec![])`
+/// means allow none; `Some(patterns)` matches only those patterns.
+/// `deny_functions` / `deny_net` are explicit deny lists.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct SurrealCapabilities {
+    /// Whether users can execute scripts.
+    pub scripting: bool,
+    /// Whether unauthenticated users can execute queries.
+    pub guest_access: bool,
+    /// Allow-list for functions (`None` = all allowed, patterns like `"http::*"`).
+    pub allow_functions: Option<Vec<String>>,
+    /// Deny-list for functions (overrides the allow-list).
+    pub deny_functions: Vec<String>,
+    /// Allow-list for network targets (`None` = all allowed).
+    pub allow_net: Option<Vec<String>>,
+    /// Deny-list for network targets.
+    pub deny_net: Vec<String>,
+    /// Experimental features to enable.
+    pub experimental: Vec<ExperimentalFeature>,
 }
 
-/// Client connection configuration.
+/// Connection configuration for a SurrealDB client.
 ///
-/// Shadow of `surrealdb::opt::Config` (whose fields are all `pub(crate)`).
-/// Connection tools read this struct and emit the corresponding Rust `Config` builder calls.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
-pub struct Config {
-    /// Optional request/query timeout in seconds.
-    #[serde(default)]
+/// Models the publicly configurable surface of `surrealdb::opt::config::Config`.
+/// All timeout durations are expressed as seconds for JSON-schema friendliness.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
+pub struct SurrealConfig {
+    /// Query timeout in seconds (`None` = no timeout).
     pub query_timeout_secs: Option<u64>,
-    /// Optional connection/transaction timeout in seconds.
-    #[serde(default)]
+    /// Transaction timeout in seconds (`None` = no timeout).
     pub transaction_timeout_secs: Option<u64>,
-    /// Capability settings.
-    #[serde(default)]
-    pub capabilities: Option<Capabilities>,
-    /// Experimental features to enable.
-    #[serde(default)]
-    pub experimental: Vec<ExperimentalFeature>,
-    /// Query planner strategy.
-    #[serde(default)]
+    /// Capabilities for the database.
+    pub capabilities: SurrealCapabilities,
+    /// Optional streaming query planner strategy.
     pub planner_strategy: Option<PlannerStrategy>,
+    /// Whether to send queries as AST payload.
+    pub ast_payload: bool,
 }

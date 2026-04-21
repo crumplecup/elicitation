@@ -565,8 +565,8 @@ fn generate_elicit_impl(
 
     // Phase 1: Variant selection
     let selection_code = quote! {
-        let base_prompt = Self::prompt().unwrap();
-        let labels = Self::labels();
+        let base_prompt = <Self as elicitation::Prompt>::prompt().unwrap();
+        let labels = <Self as elicitation::Select>::labels();
 
         tracing::debug!(
             enum_name = stringify!(#name),
@@ -698,7 +698,7 @@ fn generate_elicit_impl(
                         let options_str = vec![#(#variant_labels.to_string()),*].join(", ");
                         tracing::error!(
                             selected = %selected,
-                            valid_options = ?Self::labels(),
+                            valid_options = ?<Self as elicitation::Select>::labels(),
                             "Invalid variant selected"
                         );
                         Err(elicitation::ElicitError::new(
