@@ -3,6 +3,11 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::{
+    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern,
+    PatternDetails, Prompt, TypeMetadata, mcp,
+};
+
 /// A SurrealDB duration value.
 ///
 /// Wraps an upstream `surrealdb_types::Duration` to add [`JsonSchema`] for
@@ -43,5 +48,59 @@ impl From<Duration> for surrealdb_types::Duration {
         d.value
             .parse::<surrealdb_types::Duration>()
             .unwrap_or_default()
+    }
+}
+
+crate::default_style!(Duration => DurationStyle);
+
+impl Prompt for Duration {
+    fn prompt() -> Option<&'static str> {
+        Some("Enter a SurrealDB duration string (e.g. \"1y2w3d\", \"500ms\", \"1h30m\"):")
+    }
+}
+
+impl Elicitation for Duration {
+    type Style = DurationStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting Duration");
+        let params = mcp::text_params(Self::prompt().unwrap());
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                    .with_arguments(params),
+            )
+            .await?;
+        let value = mcp::extract_value(result)?;
+        let s = mcp::parse_string(value)?;
+        tracing::debug!(duration = %s, "Elicited Duration");
+        Ok(Self::new(s.trim().to_string()))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trusted_opaque("duration")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trusted_opaque("duration")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trusted_opaque("duration")
+    }
+}
+
+impl ElicitIntrospect for Duration {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Primitive
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "SurrealDuration",
+            description: Self::prompt(),
+            details: PatternDetails::Primitive,
+        }
     }
 }

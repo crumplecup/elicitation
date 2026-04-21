@@ -83,6 +83,8 @@ rstar = { workspace = true, optional = true }
 # SurrealDB types (optional)
 surrealdb-types = { workspace = true, optional = true }
 rust_decimal = { workspace = true, optional = true }
+# redb types (optional)
+redb = { workspace = true, optional = true }
 georaster = { workspace = true, optional = true }
 geojson = { workspace = true, optional = true }
 tiff = { workspace = true, optional = true }
@@ -132,7 +134,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "proj-types", "rstar-types", "georaster-types", "geojson-types", "tower-types", "axum-types", "polars-types", "uom-types", "leptos-types", "wkt-types", "wkb-types", "winit-types", "wgpu-types", "bevy-types", "egui-winit-types", "surreal-types", "emit"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "proj-types", "rstar-types", "georaster-types", "geojson-types", "tower-types", "axum-types", "polars-types", "uom-types", "leptos-types", "wkt-types", "wkb-types", "winit-types", "wgpu-types", "bevy-types", "egui-winit-types", "surreal-types", "redb-types", "emit"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -200,6 +202,8 @@ wkt-types = ["dep:wkt", "geo-types"]
 # Enable wkb spatial format type elicitation
 wkb-types = ["dep:wkb", "dep:hex"]
 surreal-types = ["dep:surrealdb-types", "dep:rust_decimal", "geo-types", "uuid"]
+# Enable redb embedded key-value store type elicitation
+redb-types = ["dep:redb"]
 # Windowing / input (optional)
 winit-types = ["dep:winit"]
 # Enable wgpu GPU descriptor type elicitation

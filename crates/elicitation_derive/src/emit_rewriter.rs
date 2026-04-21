@@ -145,7 +145,7 @@ impl EmitRewriter {
                         // Emit: { println!(...); return Ok(()); }
                         let inner: TokenStream = rewritten
                             .into_iter()
-                            .chain(quote::quote! { ; return Ok(()) }.into_iter())
+                            .chain(quote::quote! { ; return Ok(()) })
                             .collect();
                         let group = Group::new(Delimiter::Brace, inner);
                         output.push(TokenTree::Group(group));

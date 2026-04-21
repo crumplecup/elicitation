@@ -29,8 +29,10 @@ pub struct MethodInfo {
     /// Return type, stored for future use in result serialization.
     #[allow(dead_code)]
     pub return_type: ReturnType,
-    /// True if the first argument is `&self` or `&mut self`.
+    /// True if the first argument is any kind of `self` receiver (`self`, `&self`, `&mut self`).
     pub has_self: bool,
+    /// True if the receiver is `self` (consuming / by-value), i.e. not `&self` or `&mut self`.
+    pub consuming_self: bool,
 }
 
 /// A single non-self parameter.
@@ -75,12 +77,15 @@ impl MethodInfo {
     fn from_sig(sig: &Signature) -> syn::Result<Self> {
         let name = sig.ident.clone();
         let mut has_self = false;
+        let mut consuming_self = false;
         let mut params = Vec::new();
 
         for arg in &sig.inputs {
             match arg {
-                FnArg::Receiver(_) => {
+                FnArg::Receiver(recv) => {
                     has_self = true;
+                    // A receiver with no `&` is a consuming `self` (by-value).
+                    consuming_self = recv.reference.is_none();
                 }
                 FnArg::Typed(pat_type) => {
                     let param_name = match pat_type.pat.as_ref() {
@@ -105,6 +110,7 @@ impl MethodInfo {
             params,
             return_type: sig.output.clone(),
             has_self,
+            consuming_self,
         })
     }
 

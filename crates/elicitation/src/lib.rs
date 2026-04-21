@@ -766,7 +766,19 @@ pub use primitives::bevy_types::{
 // SurrealDB types (feature-gated on surreal-types)
 #[cfg(feature = "surreal-types")]
 pub use primitives::surreal_types::{
-    Datetime as SurrealDatetime, Duration as SurrealDuration, Geometry as SurrealGeometry,
-    Kind as SurrealKind, Number as SurrealNumber, PatchOp as SurrealPatchOp,
-    RecordId as SurrealRecordId, Table as SurrealTable, Value as SurrealValue,
+    Datetime as SurrealDatetime, DatetimeStyle as SurrealDatetimeStyle,
+    Duration as SurrealDuration, DurationStyle as SurrealDurationStyle,
+    Geometry as SurrealGeometry, GeometryKind, GeometryKindStyle,
+    GeometryStyle as SurrealGeometryStyle, Kind as SurrealKind, KindStyle as SurrealKindStyle,
+    Number as SurrealNumber, NumberStyle as SurrealNumberStyle, PatchOp as SurrealPatchOp,
+    PatchOpStyle as SurrealPatchOpStyle, RecordId as SurrealRecordId,
+    RecordIdStyle as SurrealRecordIdStyle, Table as SurrealTable, TableStyle as SurrealTableStyle,
+    Value as SurrealValue, ValueStyle as SurrealValueStyle,
+};
+
+// redb types (feature-gated on redb-types)
+#[cfg(feature = "redb-types")]
+pub use primitives::redb_types::{
+    CacheStats as RedbCacheStats, DatabaseStats as RedbDatabaseStats, Durability as RedbDurability,
+    TableStats as RedbTableStats, TypeName as RedbTypeName,
 };

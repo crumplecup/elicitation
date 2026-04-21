@@ -97,7 +97,16 @@ pub fn vtable_tokens(
                     // type_map handled this: use proxy_decode for the substituted type
                     let field_access = quote! { p.#name };
                     let conversion = type_map.proxy_decode(field_access, &substituted);
-                    quote! { let #name = #conversion; }
+                    if type_map.is_ref_to_mapped(ty) {
+                        // Original type was `&T`: decode to owned T, then reborrow so the
+                        // bound name `#name` has type `&OriginalT` as the trait expects.
+                        quote! {
+                            let #name = #conversion;
+                            let #name = &#name;
+                        }
+                    } else {
+                        quote! { let #name = #conversion; }
+                    }
                 } else {
                     quote! {
                         let #name = <#ty as ::elicitation::ElicitProxy>::from_proxy(p.#name);
@@ -120,8 +129,15 @@ pub fn vtable_tokens(
                 };
 
                 let call = if m.has_self {
-                    // For &self methods the param struct contains `target: serde_json::Value`.
+                    // For self methods the param struct contains `target: serde_json::Value`.
                     // Deserialize T from that value, then convert other params via from_proxy.
+                    let self_expr = if m.consuming_self {
+                        // Consuming `self` (by-value): pass target directly.
+                        quote! { target }
+                    } else {
+                        // Shared or mutable reference: pass `&target`.
+                        quote! { &target }
+                    };
                     quote! {
                         #method_name: ::std::sync::Arc::new(|params| {
                             ::std::boxed::Box::pin(async move {
@@ -136,7 +152,7 @@ pub fn vtable_tokens(
                                 // Convert proxy params to their original types
                                 #(#param_conversions)*
                                 let result = <T as #trait_path>::#method_name(
-                                    &target,
+                                    #self_expr,
                                     #(#param_names,)*
                                 );
                                 // Convert return value to its serializable proxy

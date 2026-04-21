@@ -126,3 +126,6 @@ pub use leptos_types::{
 
 #[cfg(feature = "surreal-types")]
 pub mod surreal_types;
+
+#[cfg(feature = "redb-types")]
+pub mod redb_types;

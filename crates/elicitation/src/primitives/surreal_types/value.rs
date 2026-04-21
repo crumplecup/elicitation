@@ -136,3 +136,186 @@ impl From<Value> for surrealdb_types::Value {
         }
     }
 }
+
+use crate::{
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
+    ElicitationPattern, PatternDetails, Prompt, TypeMetadata, VariantMetadata, mcp,
+};
+
+crate::default_style!(Value => ValueStyle);
+
+/// All variant labels presented to the user during elicitation.
+fn value_labels() -> Vec<String> {
+    vec![
+        "None".to_string(),
+        "Null".to_string(),
+        "Bool".to_string(),
+        "Number".to_string(),
+        "String".to_string(),
+        "Bytes (base64)".to_string(),
+        "Duration".to_string(),
+        "Datetime".to_string(),
+        "Uuid".to_string(),
+        "Geometry".to_string(),
+        "Table".to_string(),
+        "RecordId".to_string(),
+        "Array (JSON)".to_string(),
+        "Object (JSON)".to_string(),
+    ]
+}
+
+impl Prompt for Value {
+    fn prompt() -> Option<&'static str> {
+        Some("Choose the SurrealDB value type:")
+    }
+}
+
+impl Elicitation for Value {
+    type Style = ValueStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting Value");
+        let params = mcp::select_params(
+            Self::prompt().unwrap_or("Choose the SurrealDB value type:"),
+            &value_labels(),
+        );
+        let result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                    .with_arguments(params),
+            )
+            .await?;
+        let variant = mcp::parse_string(mcp::extract_value(result)?)?;
+        tracing::debug!(variant = %variant, "Selected Value variant");
+
+        match variant.as_str() {
+            "None" => Ok(Value::None),
+            "Null" => Ok(Value::Null),
+            "Bool" => {
+                let bool_labels = vec!["true".to_string(), "false".to_string()];
+                let p = mcp::select_params("Enter the boolean value:", &bool_labels);
+                let r = communicator
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())
+                            .with_arguments(p),
+                    )
+                    .await?;
+                let s = mcp::parse_string(mcp::extract_value(r)?)?;
+                Ok(Value::Bool(s.trim() == "true"))
+            }
+            "Number" => Ok(Value::Number(Number::elicit(communicator).await?)),
+            "String" => {
+                let p = mcp::text_params("Enter the string value:");
+                let r = communicator
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                            .with_arguments(p),
+                    )
+                    .await?;
+                Ok(Value::String(mcp::parse_string(mcp::extract_value(r)?)?))
+            }
+            "Bytes (base64)" => {
+                let p = mcp::text_params("Enter the base-64 encoded byte string:");
+                let r = communicator
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                            .with_arguments(p),
+                    )
+                    .await?;
+                Ok(Value::Bytes(mcp::parse_string(mcp::extract_value(r)?)?))
+            }
+            "Duration" => Ok(Value::Duration(Duration::elicit(communicator).await?)),
+            "Datetime" => Ok(Value::Datetime(Datetime::elicit(communicator).await?)),
+            "Uuid" => {
+                let p = mcp::text_params(
+                    "Enter the UUID string (e.g. 550e8400-e29b-41d4-a716-446655440000):",
+                );
+                let r = communicator
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                            .with_arguments(p),
+                    )
+                    .await?;
+                Ok(Value::Uuid(mcp::parse_string(mcp::extract_value(r)?)?))
+            }
+            "Geometry" => Ok(Value::Geometry(Geometry::elicit(communicator).await?)),
+            "Table" => Ok(Value::Table(Table::elicit(communicator).await?)),
+            "RecordId" => Ok(Value::RecordId(RecordId::elicit(communicator).await?)),
+            "Array (JSON)" => {
+                let p = mcp::text_params(
+                    "Enter a JSON array of SurrealDB values (e.g. [{\"type\":\"None\"}, {\"type\":\"Bool\",\"value\":true}]):",
+                );
+                let r = communicator
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                            .with_arguments(p),
+                    )
+                    .await?;
+                let s = mcp::parse_string(mcp::extract_value(r)?)?;
+                let arr: Vec<Value> = serde_json::from_str(s.trim()).map_err(|e| {
+                    ElicitError::new(ElicitErrorKind::ParseError(format!(
+                        "Invalid JSON array: {}",
+                        e
+                    )))
+                })?;
+                Ok(Value::Array(arr))
+            }
+            _ => {
+                // "Object (JSON)"
+                let p = mcp::text_params(
+                    "Enter a JSON object (e.g. {\"name\": \"alice\", \"age\": 30}):",
+                );
+                let r = communicator
+                    .call_tool(
+                        rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                            .with_arguments(p),
+                    )
+                    .await?;
+                let s = mcp::parse_string(mcp::extract_value(r)?)?;
+                let map: serde_json::Map<String, serde_json::Value> =
+                    serde_json::from_str(s.trim()).map_err(|e| {
+                        ElicitError::new(ElicitErrorKind::ParseError(format!(
+                            "Invalid JSON object: {}",
+                            e
+                        )))
+                    })?;
+                Ok(Value::Object(map))
+            }
+        }
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trusted_opaque("value")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trusted_opaque("value")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trusted_opaque("value")
+    }
+}
+
+impl ElicitIntrospect for Value {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Select
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "SurrealValue",
+            description: Self::prompt(),
+            details: PatternDetails::Select {
+                variants: value_labels()
+                    .into_iter()
+                    .map(|label| VariantMetadata {
+                        label,
+                        fields: vec![],
+                    })
+                    .collect(),
+            },
+        }
+    }
+}

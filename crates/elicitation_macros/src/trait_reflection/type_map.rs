@@ -92,8 +92,27 @@ impl TypeMap {
         })
     }
 
+    /// Returns `true` if `ty` is a `&T` (non-slice) reference where `T` itself
+    /// has a direct entry in the type map.
+    ///
+    /// This is used by the vtable generator to produce two-step bindings
+    /// (`let x = T::from(p.x); let x = &x;`) when the original parameter type
+    /// was a reference to a mapped type.
+    pub fn is_ref_to_mapped(&self, ty: &Type) -> bool {
+        if let Type::Reference(r) = ty
+            && !matches!(r.elem.as_ref(), Type::Slice(_))
+        {
+            return self.find_proxy(r.elem.as_ref()).is_some();
+        }
+        false
+    }
+
     /// Substitute type_map entries inside `ty`, recursively traversing
     /// `Option<T>`, `Vec<T>`, and `Result<T, E>`.
+    ///
+    /// For `&T` references where `T` is mapped, the reference is stripped and
+    /// the proxy type is returned as an owned type.  The vtable generator is
+    /// responsible for re-borrowing via `is_ref_to_mapped`.
     ///
     /// Returns the substituted type.
     pub fn apply_to_type(&self, ty: &Type) -> Type {
@@ -103,6 +122,14 @@ impl TypeMap {
         // Direct hit
         if let Some(proxy) = self.find_proxy(ty) {
             return proxy.clone();
+        }
+        // Strip `&T` reference when the inner type is mapped.
+        // The caller (param struct) will hold the owned proxy; the vtable will
+        // reborrow before passing to the trait method.
+        if self.is_ref_to_mapped(ty)
+            && let Type::Reference(r) = ty
+        {
+            return self.apply_to_type(r.elem.as_ref());
         }
         // Recurse into generic wrappers (Option<T>, Vec<T>, Result<T,E>)
         if let Type::Path(type_path) = ty

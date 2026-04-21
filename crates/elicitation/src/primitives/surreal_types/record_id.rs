@@ -83,3 +83,101 @@ fn json_to_record_id_key(v: JsonValue) -> surrealdb_types::RecordIdKey {
         other => surrealdb_types::RecordIdKey::String(other.to_string()),
     }
 }
+
+use crate::{
+    ElicitCommunicator, ElicitError, ElicitErrorKind, ElicitIntrospect, ElicitResult, Elicitation,
+    ElicitationPattern, FieldInfo, PatternDetails, Prompt, Survey, TypeMetadata, mcp,
+};
+
+crate::default_style!(RecordId => RecordIdStyle);
+
+impl Prompt for RecordId {
+    fn prompt() -> Option<&'static str> {
+        Some("Provide a SurrealDB record identifier (table + key):")
+    }
+}
+
+impl Survey for RecordId {
+    fn fields() -> Vec<FieldInfo> {
+        vec![
+            FieldInfo {
+                name: "table",
+                prompt: Some("Enter the table name:"),
+                type_name: "String",
+            },
+            FieldInfo {
+                name: "key",
+                prompt: Some("Enter the record key as JSON:"),
+                type_name: "JSON",
+            },
+        ]
+    }
+}
+
+impl Elicitation for RecordId {
+    type Style = RecordIdStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting RecordId");
+
+        let table_params = mcp::text_params("Enter the table name (e.g. \"user\"):");
+        let table_result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                    .with_arguments(table_params),
+            )
+            .await?;
+        let table = mcp::parse_string(mcp::extract_value(table_result)?)?;
+        let table = table.trim().to_string();
+        tracing::debug!(table = %table, "Elicited table");
+
+        let key_params =
+            mcp::text_params("Enter the record key as JSON (e.g. 1, \"abc\", {\"x\": 1}):");
+        let key_result = communicator
+            .call_tool(
+                rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_text())
+                    .with_arguments(key_params),
+            )
+            .await?;
+        let key_str = mcp::parse_string(mcp::extract_value(key_result)?)?;
+        let key: JsonValue = serde_json::from_str(key_str.trim()).map_err(|e| {
+            ElicitError::new(ElicitErrorKind::ParseError(format!(
+                "Invalid JSON key \"{}\": {}",
+                key_str.trim(),
+                e
+            )))
+        })?;
+        tracing::debug!("Elicited RecordId key");
+
+        Ok(RecordId::new(table, key))
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::kani_trusted_opaque("record_id")
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::verus_trusted_opaque("record_id")
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        crate::verification::proof_helpers::creusot_trusted_opaque("record_id")
+    }
+}
+
+impl ElicitIntrospect for RecordId {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "SurrealRecordId",
+            description: Self::prompt(),
+            details: PatternDetails::Survey {
+                fields: Self::fields(),
+            },
+        }
+    }
+}
