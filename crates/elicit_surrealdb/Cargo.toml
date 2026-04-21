@@ -8,8 +8,8 @@ authors.workspace = true
 homepage.workspace = true
 documentation.workspace = true
 readme = "README.md"
-description = "Elicitation-enabled SurrealDB type wrappers — MCP tools for SurrealQL DDL/DML authoring and Rust SDK code generation"
-keywords = ["mcp", "surrealdb", "surrealql", "elicitation", "codegen"]
+description = "Elicitation-enabled SurrealDB type wrappers — newtype shadows exposing surrealdb-types API as MCP tools"
+keywords = ["mcp", "surrealdb", "elicitation", "jsonschema", "reflect"]
 categories = ["database", "development-tools"]
 
 [features]
@@ -17,21 +17,25 @@ categories = ["database", "development-tools"]
 api = []
 
 [dependencies]
-elicitation = { workspace = true, features = ["surreal-types", "emit"] }
+elicitation = { workspace = true, features = ["surreal-types"] }
 elicitation_derive.workspace = true
 elicitation_macros.workspace = true
 inventory.workspace = true
-rmcp.workspace = true
-schemars.workspace = true
+surrealdb-types.workspace = true
+rust_decimal.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 tracing.workspace = true
-derive_more = { workspace = true }
+rmcp.workspace = true
+schemars.workspace = true
+futures.workspace = true
 uuid = { workspace = true, features = ["v4"] }
+proc-macro2.workspace = true
+quote.workspace = true
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt"] }
 serde_json = { workspace = true }
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)', 'cfg(feature, values("emit"))'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)'] }

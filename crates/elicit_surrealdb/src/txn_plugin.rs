@@ -1,101 +1,275 @@
-//! `SurrealTransactionPlugin` — stateful transaction block builder.
+//! SurrealTransactionPlugin — stateful MCP tools for composing SurrealDB transactions.
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-use elicitation::{
-    PluginContext, PluginToolRegistration, StatefulPlugin, ToolDescriptor, elicit_tool,
-};
+use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
-    model::{CallToolResult, Content, Tool},
+    model::{CallToolRequestParams, CallToolResult, Content, Tool},
+    service::RequestContext,
 };
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use tracing::instrument;
 use uuid::Uuid;
 
-fn ok_text(text: impl Into<String>) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![Content::text(text.into())]))
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+fn tool_err(msg: impl std::fmt::Display) -> ErrorData {
+    ErrorData::invalid_params(msg.to_string(), None)
 }
 
-fn not_found(id: &str) -> ErrorData {
-    ErrorData::invalid_params(format!("no transaction descriptor for id {id}"), None)
+fn ok_text(s: impl Into<String>) -> Result<CallToolResult, ErrorData> {
+    Ok(CallToolResult::success(vec![Content::text(s.into())]))
 }
 
-// ── descriptor ────────────────────────────────────────────────────────────────
-
-/// State of an in-progress SurrealDB transaction.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct TxnDescriptor {
-    /// Unique ID for this transaction.
-    pub id: String,
-    /// Accumulated SurrealQL statements.
-    pub statements: Vec<String>,
+fn ok_json<T: serde::Serialize>(v: &T) -> Result<CallToolResult, ErrorData> {
+    serde_json::to_string(v)
+        .map(|s| CallToolResult::success(vec![Content::text(s)]))
+        .map_err(|e| tool_err(format!("serialise: {e}")))
 }
 
-impl TxnDescriptor {
-    fn new(id: String) -> Self {
-        Self {
-            id,
-            statements: Vec::new(),
-        }
-    }
-
-    fn build_commit(&self) -> String {
-        let mut s = String::from("BEGIN TRANSACTION;\n");
-        for stmt in &self.statements {
-            s.push_str(&format!("  {stmt}\n"));
-        }
-        s.push_str("COMMIT TRANSACTION;");
-        s
-    }
-
-    fn build_cancel(&self) -> String {
-        let mut s = String::from("BEGIN TRANSACTION;\n");
-        for stmt in &self.statements {
-            s.push_str(&format!("  {stmt}\n"));
-        }
-        s.push_str("CANCEL TRANSACTION;");
-        s
-    }
-
-    fn build_rust(&self) -> String {
-        let mut s = String::from("let transaction = db.begin().await?;\n");
-        for stmt in &self.statements {
-            s.push_str(&format!("transaction.query(\"{stmt}\").await?;\n"));
-        }
-        s.push_str("transaction.commit().await?;\n");
-        s
-    }
+fn parse_params<T: serde::de::DeserializeOwned>(
+    params: &CallToolRequestParams,
+) -> Result<T, ErrorData> {
+    let raw = params
+        .arguments
+        .as_ref()
+        .map(|a| serde_json::Value::Object(a.clone()))
+        .unwrap_or(serde_json::Value::Object(Default::default()));
+    serde_json::from_value(raw)
+        .map_err(|e| ErrorData::invalid_params(format!("param parse: {e}"), None))
 }
 
-// ── context ───────────────────────────────────────────────────────────────────
-
-/// Shared state for `SurrealTransactionPlugin`.
-pub struct SurrealTxnCtx {
-    items: Mutex<HashMap<Uuid, TxnDescriptor>>,
+fn build_tool(
+    name: impl Into<std::borrow::Cow<'static, str>>,
+    description: impl Into<std::borrow::Cow<'static, str>>,
+    schema: serde_json::Value,
+) -> Tool {
+    let schema_obj: Arc<rmcp::model::JsonObject> = match schema {
+        serde_json::Value::Object(m) => Arc::new(m),
+        _ => Arc::new(Default::default()),
+    };
+    Tool::new(name, description, schema_obj)
 }
 
-impl PluginContext for SurrealTxnCtx {}
+fn schema_of<T: schemars::JsonSchema>() -> serde_json::Value {
+    serde_json::to_value(schemars::schema_for!(T)).unwrap_or_default()
+}
 
-impl SurrealTxnCtx {
+fn parse_uuid(s: &str) -> Result<Uuid, ErrorData> {
+    s.parse::<Uuid>()
+        .map_err(|_| tool_err(format!("invalid UUID: {s}")))
+}
+
+// ── Descriptor ────────────────────────────────────────────────────────────────
+
+struct TxnDescriptor {
+    statements: Vec<String>,
+}
+
+// ── Context ───────────────────────────────────────────────────────────────────
+
+struct SurrealTxnContext {
+    descriptors: Mutex<HashMap<Uuid, TxnDescriptor>>,
+}
+
+impl SurrealTxnContext {
     fn new() -> Self {
         Self {
-            items: Mutex::new(HashMap::new()),
+            descriptors: Mutex::new(HashMap::new()),
         }
     }
 }
 
-// ── plugin struct ─────────────────────────────────────────────────────────────
+impl elicitation::PluginContext for SurrealTxnContext {}
 
-/// Stateful MCP plugin for building SurrealDB transaction blocks.
-pub struct SurrealTransactionPlugin(Arc<SurrealTxnCtx>);
+// ── Param structs ─────────────────────────────────────────────────────────────
+
+/// Parameters for tools that address a stored transaction by UUID.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct TxnIdParams {
+    /// UUID of the transaction descriptor.
+    pub id: String,
+}
+
+/// Parameters for `surreal_txn__add_statement`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct AddStatementParams {
+    /// UUID of the transaction descriptor.
+    pub id: String,
+    /// SurrealQL statement to append.
+    pub statement: String,
+}
+
+// ── Tool implementations ──────────────────────────────────────────────────────
+
+#[instrument(skip(ctx))]
+async fn txn_start(ctx: Arc<SurrealTxnContext>) -> Result<CallToolResult, ErrorData> {
+    let id = Uuid::new_v4();
+    ctx.descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?
+        .insert(
+            id,
+            TxnDescriptor {
+                statements: Vec::new(),
+            },
+        );
+    ok_json(&serde_json::json!({ "id": id.to_string() }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn txn_add_statement(
+    ctx: Arc<SurrealTxnContext>,
+    p: AddStatementParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let mut descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get_mut(&id)
+        .ok_or_else(|| tool_err(format!("transaction not found: {id}")))?;
+    desc.statements.push(p.statement);
+    let count = desc.statements.len();
+    ok_json(&serde_json::json!({ "id": p.id, "count": count }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn txn_inspect(
+    ctx: Arc<SurrealTxnContext>,
+    p: TxnIdParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get(&id)
+        .ok_or_else(|| tool_err(format!("transaction not found: {id}")))?;
+    ok_json(&serde_json::json!({
+        "id": p.id,
+        "statements": desc.statements,
+    }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn txn_emit_commit(
+    ctx: Arc<SurrealTxnContext>,
+    p: TxnIdParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get(&id)
+        .ok_or_else(|| tool_err(format!("transaction not found: {id}")))?;
+    let mut lines = vec!["BEGIN TRANSACTION;".to_string()];
+    for stmt in &desc.statements {
+        lines.push(format!("{stmt};"));
+    }
+    lines.push("COMMIT TRANSACTION;".to_string());
+    ok_text(lines.join("\n"))
+}
+
+#[instrument(skip(ctx, p))]
+async fn txn_emit_cancel(
+    ctx: Arc<SurrealTxnContext>,
+    p: TxnIdParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get(&id)
+        .ok_or_else(|| tool_err(format!("transaction not found: {id}")))?;
+    let mut lines = vec!["BEGIN TRANSACTION;".to_string()];
+    for stmt in &desc.statements {
+        lines.push(format!("{stmt};"));
+    }
+    lines.push("CANCEL TRANSACTION;".to_string());
+    ok_text(lines.join("\n"))
+}
+
+#[instrument(skip(ctx, p))]
+async fn txn_emit_rust(
+    ctx: Arc<SurrealTxnContext>,
+    p: TxnIdParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get(&id)
+        .ok_or_else(|| tool_err(format!("transaction not found: {id}")))?;
+    let mut lines = vec!["let result = db".to_string()];
+    lines.push("    .query(\"BEGIN TRANSACTION\")".to_string());
+    for stmt in &desc.statements {
+        let escaped = stmt.replace('"', "\\\"");
+        lines.push(format!("    .query(\"{escaped}\")"));
+    }
+    lines.push("    .query(\"COMMIT TRANSACTION\")".to_string());
+    lines.push("    .await?;".to_string());
+    ok_text(lines.join("\n"))
+}
+
+// ── Dispatch ──────────────────────────────────────────────────────────────────
+
+async fn dispatch_txn(
+    ctx: Arc<SurrealTxnContext>,
+    name: &str,
+    params: &CallToolRequestParams,
+) -> Result<CallToolResult, ErrorData> {
+    match name {
+        "surreal_txn__start" => txn_start(ctx).await,
+        "surreal_txn__add_statement" => txn_add_statement(ctx, parse_params(params)?).await,
+        "surreal_txn__inspect" => txn_inspect(ctx, parse_params(params)?).await,
+        "surreal_txn__emit_commit" => txn_emit_commit(ctx, parse_params(params)?).await,
+        "surreal_txn__emit_cancel" => txn_emit_cancel(ctx, parse_params(params)?).await,
+        "surreal_txn__emit_rust" => txn_emit_rust(ctx, parse_params(params)?).await,
+        _ => Err(ErrorData::invalid_params(
+            format!("unknown tool: {name}"),
+            None,
+        )),
+    }
+}
+
+// ── Plugin ────────────────────────────────────────────────────────────────────
+
+/// MCP plugin for composing SurrealDB transactions step-by-step.
+pub struct SurrealTransactionPlugin(Arc<SurrealTxnContext>);
 
 impl SurrealTransactionPlugin {
-    /// Creates a new transaction plugin.
+    /// Create a new plugin with empty state.
     pub fn new() -> Self {
-        Self(Arc::new(SurrealTxnCtx::new()))
+        Self(Arc::new(SurrealTxnContext::new()))
+    }
+
+    /// Invoke a tool by name with a JSON arguments object.
+    ///
+    /// Convenience method for tests and direct integration.
+    pub async fn invoke_tool(
+        &self,
+        name: &str,
+        args: serde_json::Value,
+    ) -> Result<CallToolResult, ErrorData> {
+        let owned = name.to_string();
+        let params = if let Some(m) = args.as_object().cloned() {
+            CallToolRequestParams::new(owned).with_arguments(m)
+        } else {
+            CallToolRequestParams::new(owned)
+        };
+        dispatch_txn(self.0.clone(), name, &params).await
     }
 }
 
@@ -105,190 +279,53 @@ impl Default for SurrealTransactionPlugin {
     }
 }
 
-impl StatefulPlugin for SurrealTransactionPlugin {
-    type Context = SurrealTxnCtx;
-
+impl elicitation::ElicitPlugin for SurrealTransactionPlugin {
     fn name(&self) -> &'static str {
         "surreal_txn"
     }
 
     fn list_tools(&self) -> Vec<Tool> {
-        elicitation::inventory::iter::<PluginToolRegistration>()
-            .filter(|r| r.plugin == "surreal_txn")
-            .map(|r| (r.constructor)().as_tool())
-            .collect()
+        vec![
+            build_tool(
+                "surreal_txn__start",
+                "Create a new empty transaction descriptor. Returns a UUID handle.",
+                serde_json::json!({"type": "object", "properties": {}}),
+            ),
+            build_tool(
+                "surreal_txn__add_statement",
+                "Append a SurrealQL statement to a transaction. Returns the current statement count.",
+                schema_of::<AddStatementParams>(),
+            ),
+            build_tool(
+                "surreal_txn__inspect",
+                "Inspect the statements stored in a transaction descriptor.",
+                schema_of::<TxnIdParams>(),
+            ),
+            build_tool(
+                "surreal_txn__emit_commit",
+                "Emit the transaction as a SurrealQL block ending with COMMIT TRANSACTION.",
+                schema_of::<TxnIdParams>(),
+            ),
+            build_tool(
+                "surreal_txn__emit_cancel",
+                "Emit the transaction as a SurrealQL block ending with CANCEL TRANSACTION.",
+                schema_of::<TxnIdParams>(),
+            ),
+            build_tool(
+                "surreal_txn__emit_rust",
+                "Emit the transaction as a chained Rust SurrealDB SDK `.query()` snippet.",
+                schema_of::<TxnIdParams>(),
+            ),
+        ]
     }
 
-    fn tool_descriptors(&self) -> Vec<ToolDescriptor> {
-        elicitation::inventory::iter::<PluginToolRegistration>()
-            .filter(|r| r.plugin == "surreal_txn")
-            .map(|r| (r.constructor)())
-            .collect()
+    #[tracing::instrument(skip(self, _ctx), fields(tool = %params.name))]
+    fn call_tool<'a>(
+        &'a self,
+        params: CallToolRequestParams,
+        _ctx: RequestContext<rmcp::RoleServer>,
+    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
+        let ctx = self.0.clone();
+        Box::pin(async move { dispatch_txn(ctx, params.name.as_ref(), &params).await })
     }
-
-    fn context(&self) -> Arc<Self::Context> {
-        self.0.clone()
-    }
-}
-
-// ── parameter structs ─────────────────────────────────────────────────────────
-
-/// Parameters to start a new transaction.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct TxnStartParams {
-    /// Optional label (for documentation only).
-    #[serde(default)]
-    pub label: Option<String>,
-}
-
-/// Parameters to add a statement.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct TxnAddStatementParams {
-    /// Transaction UUID.
-    pub id: String,
-    /// SurrealQL statement to append.
-    pub statement: String,
-}
-
-/// Parameters that only require a transaction ID (for inspect).
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct TxnInspectParams {
-    /// Transaction UUID.
-    pub id: String,
-}
-
-/// Parameters that only require a transaction ID (for emit_commit).
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct TxnEmitCommitParams {
-    /// Transaction UUID.
-    pub id: String,
-}
-
-/// Parameters that only require a transaction ID (for emit_cancel).
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct TxnEmitCancelParams {
-    /// Transaction UUID.
-    pub id: String,
-}
-
-/// Parameters that only require a transaction ID (for emit_rust).
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct TxnEmitRustParams {
-    /// Transaction UUID.
-    pub id: String,
-}
-
-// ── tools ─────────────────────────────────────────────────────────────────────
-
-#[elicit_tool(
-    plugin = "surreal_txn",
-    name = "start",
-    description = "Begin a new transaction descriptor. Returns a UUID to reference in subsequent calls."
-)]
-#[instrument(skip(ctx))]
-async fn txn_start(
-    ctx: Arc<SurrealTxnCtx>,
-    p: TxnStartParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id = Uuid::new_v4();
-    let descriptor = TxnDescriptor::new(id.to_string());
-    ctx.items.lock().unwrap().insert(id, descriptor);
-    let out = match &p.label {
-        Some(lbl) => format!("{id}  # {lbl}"),
-        None => id.to_string(),
-    };
-    ok_text(out)
-}
-
-#[elicit_tool(
-    plugin = "surreal_txn",
-    name = "add_statement",
-    description = "Append a SurrealQL statement to an existing transaction descriptor."
-)]
-#[instrument(skip(ctx))]
-async fn txn_add_statement(
-    ctx: Arc<SurrealTxnCtx>,
-    p: TxnAddStatementParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let mut items = ctx.items.lock().unwrap();
-    let entry = items.get_mut(&id).ok_or_else(|| not_found(&p.id))?;
-    entry.statements.push(p.statement);
-    ok_text(format!("{} statements", entry.statements.len()))
-}
-
-#[elicit_tool(
-    plugin = "surreal_txn",
-    name = "inspect",
-    description = "Return the current transaction descriptor as a JSON summary."
-)]
-#[instrument(skip(ctx))]
-async fn txn_inspect(
-    ctx: Arc<SurrealTxnCtx>,
-    p: TxnInspectParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let items = ctx.items.lock().unwrap();
-    let entry = items.get(&id).ok_or_else(|| not_found(&p.id))?;
-    let json = serde_json::to_string_pretty(entry)
-        .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
-    ok_text(json)
-}
-
-#[elicit_tool(
-    plugin = "surreal_txn",
-    name = "emit_commit",
-    description = "Emit a BEGIN … COMMIT TRANSACTION SurrealQL block for the descriptor."
-)]
-#[instrument(skip(ctx))]
-async fn txn_emit_commit(
-    ctx: Arc<SurrealTxnCtx>,
-    p: TxnEmitCommitParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let items = ctx.items.lock().unwrap();
-    let entry = items.get(&id).ok_or_else(|| not_found(&p.id))?;
-    ok_text(entry.build_commit())
-}
-
-#[elicit_tool(
-    plugin = "surreal_txn",
-    name = "emit_cancel",
-    description = "Emit a BEGIN … CANCEL TRANSACTION SurrealQL block for the descriptor."
-)]
-#[instrument(skip(ctx))]
-async fn txn_emit_cancel(
-    ctx: Arc<SurrealTxnCtx>,
-    p: TxnEmitCancelParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let items = ctx.items.lock().unwrap();
-    let entry = items.get(&id).ok_or_else(|| not_found(&p.id))?;
-    ok_text(entry.build_cancel())
-}
-
-#[elicit_tool(
-    plugin = "surreal_txn",
-    name = "emit_rust",
-    description = "Emit Rust SDK transaction code using db.begin().await? and db.commit().await?."
-)]
-#[instrument(skip(ctx))]
-async fn txn_emit_rust(
-    ctx: Arc<SurrealTxnCtx>,
-    p: TxnEmitRustParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let items = ctx.items.lock().unwrap();
-    let entry = items.get(&id).ok_or_else(|| not_found(&p.id))?;
-    ok_text(entry.build_rust())
 }

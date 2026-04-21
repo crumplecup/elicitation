@@ -1,175 +1,548 @@
-//! `SurrealSelectPlugin` — stateful SELECT query builder.
+//! SurrealSelectPlugin — stateful MCP tools for composing SurrealDB SELECT queries.
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-use elicitation::{
-    PluginContext, PluginToolRegistration, StatefulPlugin, ToCodeLiteral, ToolDescriptor,
-    elicit_tool,
-};
+use futures::future::BoxFuture;
 use rmcp::{
     ErrorData,
-    model::{CallToolResult, Content, Tool},
+    model::{CallToolRequestParams, CallToolResult, Content, Tool},
+    service::RequestContext,
 };
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use tracing::instrument;
 use uuid::Uuid;
 
-fn ok_text(text: impl Into<String>) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![Content::text(text.into())]))
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+fn tool_err(msg: impl std::fmt::Display) -> ErrorData {
+    ErrorData::invalid_params(msg.to_string(), None)
 }
 
-fn not_found(id: &str) -> ErrorData {
-    ErrorData::invalid_params(format!("no SELECT descriptor for id {id}"), None)
+fn ok_text(s: impl Into<String>) -> Result<CallToolResult, ErrorData> {
+    Ok(CallToolResult::success(vec![Content::text(s.into())]))
 }
 
-// ── descriptor ────────────────────────────────────────────────────────────────
-
-/// Order direction for SELECT ORDER BY.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
-pub enum OrderDirection {
-    /// Ascending order (default).
-    Asc,
-    /// Descending order.
-    Desc,
+fn ok_json<T: serde::Serialize>(v: &T) -> Result<CallToolResult, ErrorData> {
+    serde_json::to_string(v)
+        .map(|s| CallToolResult::success(vec![Content::text(s)]))
+        .map_err(|e| tool_err(format!("serialise: {e}")))
 }
 
-/// A single ORDER BY term.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
-pub struct OrderByTerm {
-    /// Field name.
-    pub field: String,
-    /// Direction.
-    #[serde(default)]
-    pub direction: Option<OrderDirection>,
-    /// Apply COLLATE option.
-    #[serde(default)]
-    pub collate: bool,
-    /// Apply NUMERIC option.
-    #[serde(default)]
-    pub numeric: bool,
+fn parse_params<T: serde::de::DeserializeOwned>(
+    params: &CallToolRequestParams,
+) -> Result<T, ErrorData> {
+    let raw = params
+        .arguments
+        .as_ref()
+        .map(|a| serde_json::Value::Object(a.clone()))
+        .unwrap_or(serde_json::Value::Object(Default::default()));
+    serde_json::from_value(raw)
+        .map_err(|e| ErrorData::invalid_params(format!("param parse: {e}"), None))
 }
 
-/// Full descriptor for a SELECT query being built incrementally.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectDescriptor {
-    /// Unique ID for this descriptor.
-    pub id: String,
-    /// Projections (e.g. `"*"` or `"name, age"`).
-    pub projections: String,
-    /// FROM target.
-    pub from: String,
-    /// WHERE conditions (combined with AND).
-    pub where_clauses: Vec<String>,
-    /// FETCH fields.
-    pub fetch_fields: Vec<String>,
-    /// ORDER BY terms.
-    pub order_by: Vec<OrderByTerm>,
-    /// GROUP BY fields.
-    pub group_by: Vec<String>,
-    /// LIMIT count.
-    pub limit: Option<u64>,
-    /// START offset.
-    pub start: Option<u64>,
-    /// SPLIT AT field.
-    pub split: Option<String>,
-    /// VERSION datetime string.
-    pub version: Option<String>,
+fn build_tool(
+    name: impl Into<std::borrow::Cow<'static, str>>,
+    description: impl Into<std::borrow::Cow<'static, str>>,
+    schema: serde_json::Value,
+) -> Tool {
+    let schema_obj: Arc<rmcp::model::JsonObject> = match schema {
+        serde_json::Value::Object(m) => Arc::new(m),
+        _ => Arc::new(Default::default()),
+    };
+    Tool::new(name, description, schema_obj)
 }
 
-impl SelectDescriptor {
-    fn new(id: String, projections: String, from: String) -> Self {
+fn schema_of<T: schemars::JsonSchema>() -> serde_json::Value {
+    serde_json::to_value(schemars::schema_for!(T)).unwrap_or_default()
+}
+
+fn parse_uuid(s: &str) -> Result<Uuid, ErrorData> {
+    s.parse::<Uuid>()
+        .map_err(|_| tool_err(format!("invalid UUID: {s}")))
+}
+
+// ── Descriptor ────────────────────────────────────────────────────────────────
+
+struct SelectDescriptor {
+    projections: String,
+    from: String,
+    where_clauses: Vec<String>,
+    fetch_fields: Vec<String>,
+    order_by: Option<String>,
+    group_by: Option<String>,
+    limit: Option<u32>,
+    start_offset: Option<u32>,
+    split_field: Option<String>,
+    version: Option<String>,
+}
+
+impl Default for SelectDescriptor {
+    fn default() -> Self {
         Self {
-            id,
-            projections,
-            from,
+            projections: "*".to_string(),
+            from: String::new(),
             where_clauses: Vec::new(),
             fetch_fields: Vec::new(),
-            order_by: Vec::new(),
-            group_by: Vec::new(),
+            order_by: None,
+            group_by: None,
             limit: None,
-            start: None,
-            split: None,
+            start_offset: None,
+            split_field: None,
             version: None,
         }
     }
+}
 
-    fn build_surreal(&self) -> String {
-        let mut s = format!("SELECT {} FROM {}", self.projections, self.from);
-        if !self.where_clauses.is_empty() {
-            s.push_str(&format!(" WHERE {}", self.where_clauses.join(" AND ")));
-        }
-        if !self.group_by.is_empty() {
-            s.push_str(&format!(" GROUP BY {}", self.group_by.join(", ")));
-        }
-        if !self.order_by.is_empty() {
-            let terms: Vec<String> = self
-                .order_by
-                .iter()
-                .map(|t| {
-                    let mut term = t.field.clone();
-                    if t.collate {
-                        term.push_str(" COLLATE");
-                    }
-                    if t.numeric {
-                        term.push_str(" NUMERIC");
-                    }
-                    match &t.direction {
-                        Some(OrderDirection::Desc) => term.push_str(" DESC"),
-                        _ => term.push_str(" ASC"),
-                    }
-                    term
-                })
-                .collect();
-            s.push_str(&format!(" ORDER BY {}", terms.join(", ")));
-        }
-        if let Some(l) = self.limit {
-            s.push_str(&format!(" LIMIT {l}"));
-        }
-        if let Some(st) = self.start {
-            s.push_str(&format!(" START {st}"));
-        }
-        if !self.fetch_fields.is_empty() {
-            s.push_str(&format!(" FETCH {}", self.fetch_fields.join(", ")));
-        }
-        if let Some(v) = &self.version {
-            s.push_str(&format!(" VERSION d\"{v}\""));
-        }
-        if let Some(sp) = &self.split {
-            s.push_str(&format!(" SPLIT AT {sp}"));
-        }
-        s.push(';');
-        s
+fn build_select_sql(desc: &SelectDescriptor) -> String {
+    let mut sql = format!("SELECT {} FROM {}", desc.projections, desc.from);
+    if !desc.where_clauses.is_empty() {
+        sql.push_str(&format!(" WHERE {}", desc.where_clauses.join(" AND ")));
     }
+    if let Some(group) = &desc.group_by {
+        sql.push_str(&format!(" GROUP BY {group}"));
+    }
+    if let Some(order) = &desc.order_by {
+        sql.push_str(&format!(" ORDER BY {order}"));
+    }
+    if let Some(limit) = desc.limit {
+        sql.push_str(&format!(" LIMIT {limit}"));
+    }
+    if let Some(start) = desc.start_offset {
+        sql.push_str(&format!(" START {start}"));
+    }
+    if let Some(split) = &desc.split_field {
+        sql.push_str(&format!(" SPLIT AT {split}"));
+    }
+    if let Some(version) = &desc.version {
+        sql.push_str(&format!(" VERSION {version}"));
+    }
+    if !desc.fetch_fields.is_empty() {
+        sql.push_str(&format!(" FETCH {}", desc.fetch_fields.join(", ")));
+    }
+    sql
 }
 
-// ── context ───────────────────────────────────────────────────────────────────
+// ── Context ───────────────────────────────────────────────────────────────────
 
-/// Shared state for `SurrealSelectPlugin`.
-pub struct SurrealSelectCtx {
-    items: Mutex<HashMap<Uuid, SelectDescriptor>>,
+struct SurrealSelectContext {
+    descriptors: Mutex<HashMap<Uuid, SelectDescriptor>>,
 }
 
-impl PluginContext for SurrealSelectCtx {}
-
-impl SurrealSelectCtx {
+impl SurrealSelectContext {
     fn new() -> Self {
         Self {
-            items: Mutex::new(HashMap::new()),
+            descriptors: Mutex::new(HashMap::new()),
         }
     }
 }
 
-// ── plugin struct ─────────────────────────────────────────────────────────────
+impl elicitation::PluginContext for SurrealSelectContext {}
 
-/// Stateful MCP plugin for building SurrealDB SELECT queries incrementally.
-pub struct SurrealSelectPlugin(Arc<SurrealSelectCtx>);
+// ── Param structs ─────────────────────────────────────────────────────────────
+
+/// Parameters for tools that address a stored SELECT descriptor by UUID.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SelectIdParams {
+    /// UUID of the SELECT descriptor.
+    pub id: String,
+}
+
+/// Parameters for `surreal_select__set_projections`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SetProjectionsParams {
+    /// UUID of the SELECT descriptor.
+    pub id: String,
+    /// Projection expression (e.g. `"*"` or `"name, age"`).
+    pub projections: String,
+}
+
+/// Parameters for `surreal_select__set_from`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SetFromParams {
+    /// UUID of the SELECT descriptor.
+    pub id: String,
+    /// FROM target (table name, record ID, or subquery).
+    pub from: String,
+}
+
+/// Parameters for `surreal_select__add_where`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct AddWhereParams {
+    /// UUID of the SELECT descriptor.
+    pub id: String,
+    /// WHERE clause to append (combined with AND).
+    pub clause: String,
+}
+
+/// Parameters for `surreal_select__add_fetch`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct AddFetchParams {
+    /// UUID of the SELECT descriptor.
+    pub id: String,
+    /// Field name to add to the FETCH list.
+    pub field: String,
+}
+
+/// Parameters for `surreal_select__set_order_by`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SetOrderByParams {
+    /// UUID of the SELECT descriptor.
+    pub id: String,
+    /// ORDER BY expression (e.g. `"name ASC"`).
+    pub expr: String,
+}
+
+/// Parameters for `surreal_select__set_group_by`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SetGroupByParams {
+    /// UUID of the SELECT descriptor.
+    pub id: String,
+    /// GROUP BY expression (e.g. `"country"`).
+    pub expr: String,
+}
+
+/// Parameters for `surreal_select__set_limit`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SetLimitParams {
+    /// UUID of the SELECT descriptor.
+    pub id: String,
+    /// Maximum number of results to return.
+    pub n: u32,
+}
+
+/// Parameters for `surreal_select__set_start`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SetStartParams {
+    /// UUID of the SELECT descriptor.
+    pub id: String,
+    /// Number of results to skip (START offset).
+    pub n: u32,
+}
+
+/// Parameters for `surreal_select__set_split`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SetSplitParams {
+    /// UUID of the SELECT descriptor.
+    pub id: String,
+    /// Field to SPLIT AT.
+    pub field: String,
+}
+
+/// Parameters for `surreal_select__set_version`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SetVersionParams {
+    /// UUID of the SELECT descriptor.
+    pub id: String,
+    /// VERSION datetime string (e.g. `"d'2024-01-01'"`).
+    pub version: String,
+}
+
+// ── Tool implementations ──────────────────────────────────────────────────────
+
+#[instrument(skip(ctx))]
+async fn select_start(ctx: Arc<SurrealSelectContext>) -> Result<CallToolResult, ErrorData> {
+    let id = Uuid::new_v4();
+    ctx.descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?
+        .insert(id, SelectDescriptor::default());
+    ok_json(&serde_json::json!({ "id": id.to_string() }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn select_set_projections(
+    ctx: Arc<SurrealSelectContext>,
+    p: SetProjectionsParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let mut descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get_mut(&id)
+        .ok_or_else(|| tool_err(format!("descriptor not found: {id}")))?;
+    desc.projections = p.projections;
+    ok_json(&serde_json::json!({ "id": p.id, "projections": desc.projections }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn select_set_from(
+    ctx: Arc<SurrealSelectContext>,
+    p: SetFromParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let mut descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get_mut(&id)
+        .ok_or_else(|| tool_err(format!("descriptor not found: {id}")))?;
+    desc.from = p.from;
+    ok_json(&serde_json::json!({ "id": p.id, "from": desc.from }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn select_add_where(
+    ctx: Arc<SurrealSelectContext>,
+    p: AddWhereParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let mut descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get_mut(&id)
+        .ok_or_else(|| tool_err(format!("descriptor not found: {id}")))?;
+    desc.where_clauses.push(p.clause);
+    let count = desc.where_clauses.len();
+    ok_json(&serde_json::json!({ "id": p.id, "where_count": count }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn select_add_fetch(
+    ctx: Arc<SurrealSelectContext>,
+    p: AddFetchParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let mut descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get_mut(&id)
+        .ok_or_else(|| tool_err(format!("descriptor not found: {id}")))?;
+    desc.fetch_fields.push(p.field);
+    let count = desc.fetch_fields.len();
+    ok_json(&serde_json::json!({ "id": p.id, "fetch_count": count }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn select_set_order_by(
+    ctx: Arc<SurrealSelectContext>,
+    p: SetOrderByParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let mut descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get_mut(&id)
+        .ok_or_else(|| tool_err(format!("descriptor not found: {id}")))?;
+    desc.order_by = Some(p.expr.clone());
+    ok_json(&serde_json::json!({ "id": p.id, "order_by": p.expr }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn select_set_group_by(
+    ctx: Arc<SurrealSelectContext>,
+    p: SetGroupByParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let mut descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get_mut(&id)
+        .ok_or_else(|| tool_err(format!("descriptor not found: {id}")))?;
+    desc.group_by = Some(p.expr.clone());
+    ok_json(&serde_json::json!({ "id": p.id, "group_by": p.expr }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn select_set_limit(
+    ctx: Arc<SurrealSelectContext>,
+    p: SetLimitParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let mut descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get_mut(&id)
+        .ok_or_else(|| tool_err(format!("descriptor not found: {id}")))?;
+    desc.limit = Some(p.n);
+    ok_json(&serde_json::json!({ "id": p.id, "limit": p.n }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn select_set_start(
+    ctx: Arc<SurrealSelectContext>,
+    p: SetStartParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let mut descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get_mut(&id)
+        .ok_or_else(|| tool_err(format!("descriptor not found: {id}")))?;
+    desc.start_offset = Some(p.n);
+    ok_json(&serde_json::json!({ "id": p.id, "start": p.n }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn select_set_split(
+    ctx: Arc<SurrealSelectContext>,
+    p: SetSplitParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let mut descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get_mut(&id)
+        .ok_or_else(|| tool_err(format!("descriptor not found: {id}")))?;
+    desc.split_field = Some(p.field.clone());
+    ok_json(&serde_json::json!({ "id": p.id, "split_field": p.field }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn select_set_version(
+    ctx: Arc<SurrealSelectContext>,
+    p: SetVersionParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let mut descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get_mut(&id)
+        .ok_or_else(|| tool_err(format!("descriptor not found: {id}")))?;
+    desc.version = Some(p.version.clone());
+    ok_json(&serde_json::json!({ "id": p.id, "version": p.version }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn select_inspect(
+    ctx: Arc<SurrealSelectContext>,
+    p: SelectIdParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get(&id)
+        .ok_or_else(|| tool_err(format!("descriptor not found: {id}")))?;
+    ok_json(&serde_json::json!({
+        "id": p.id,
+        "projections": desc.projections,
+        "from": desc.from,
+        "where_clauses": desc.where_clauses,
+        "fetch_fields": desc.fetch_fields,
+        "order_by": desc.order_by,
+        "group_by": desc.group_by,
+        "limit": desc.limit,
+        "start_offset": desc.start_offset,
+        "split_field": desc.split_field,
+        "version": desc.version,
+    }))
+}
+
+#[instrument(skip(ctx, p))]
+async fn select_emit_surreal(
+    ctx: Arc<SurrealSelectContext>,
+    p: SelectIdParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get(&id)
+        .ok_or_else(|| tool_err(format!("descriptor not found: {id}")))?;
+    ok_text(format!("{};", build_select_sql(desc)))
+}
+
+#[instrument(skip(ctx, p))]
+async fn select_emit_rust(
+    ctx: Arc<SurrealSelectContext>,
+    p: SelectIdParams,
+) -> Result<CallToolResult, ErrorData> {
+    let id = parse_uuid(&p.id)?;
+    let descs = ctx
+        .descriptors
+        .lock()
+        .map_err(|e| tool_err(format!("lock: {e}")))?;
+    let desc = descs
+        .get(&id)
+        .ok_or_else(|| tool_err(format!("descriptor not found: {id}")))?;
+    let sql = build_select_sql(desc);
+    ok_text(format!(
+        "let results: Vec<Record> = db\n    .query(\"{sql}\")\n    .await?\n    .take(0)?;"
+    ))
+}
+
+// ── Dispatch ──────────────────────────────────────────────────────────────────
+
+async fn dispatch_select(
+    ctx: Arc<SurrealSelectContext>,
+    name: &str,
+    params: &CallToolRequestParams,
+) -> Result<CallToolResult, ErrorData> {
+    match name {
+        "surreal_select__start" => select_start(ctx).await,
+        "surreal_select__set_projections" => {
+            select_set_projections(ctx, parse_params(params)?).await
+        }
+        "surreal_select__set_from" => select_set_from(ctx, parse_params(params)?).await,
+        "surreal_select__add_where" => select_add_where(ctx, parse_params(params)?).await,
+        "surreal_select__add_fetch" => select_add_fetch(ctx, parse_params(params)?).await,
+        "surreal_select__set_order_by" => select_set_order_by(ctx, parse_params(params)?).await,
+        "surreal_select__set_group_by" => select_set_group_by(ctx, parse_params(params)?).await,
+        "surreal_select__set_limit" => select_set_limit(ctx, parse_params(params)?).await,
+        "surreal_select__set_start" => select_set_start(ctx, parse_params(params)?).await,
+        "surreal_select__set_split" => select_set_split(ctx, parse_params(params)?).await,
+        "surreal_select__set_version" => select_set_version(ctx, parse_params(params)?).await,
+        "surreal_select__inspect" => select_inspect(ctx, parse_params(params)?).await,
+        "surreal_select__emit_surreal" => select_emit_surreal(ctx, parse_params(params)?).await,
+        "surreal_select__emit_rust" => select_emit_rust(ctx, parse_params(params)?).await,
+        _ => Err(ErrorData::invalid_params(
+            format!("unknown tool: {name}"),
+            None,
+        )),
+    }
+}
+
+// ── Plugin ────────────────────────────────────────────────────────────────────
+
+/// MCP plugin for composing SurrealDB SELECT queries step-by-step.
+pub struct SurrealSelectPlugin(Arc<SurrealSelectContext>);
 
 impl SurrealSelectPlugin {
-    /// Creates a new select plugin.
+    /// Create a new plugin with empty state.
     pub fn new() -> Self {
-        Self(Arc::new(SurrealSelectCtx::new()))
+        Self(Arc::new(SurrealSelectContext::new()))
+    }
+
+    /// Invoke a tool by name with a JSON arguments object.
+    ///
+    /// Convenience method for tests and direct integration.
+    pub async fn invoke_tool(
+        &self,
+        name: &str,
+        args: serde_json::Value,
+    ) -> Result<CallToolResult, ErrorData> {
+        let owned = name.to_string();
+        let params = if let Some(m) = args.as_object().cloned() {
+            CallToolRequestParams::new(owned).with_arguments(m)
+        } else {
+            CallToolRequestParams::new(owned)
+        };
+        dispatch_select(self.0.clone(), name, &params).await
     }
 }
 
@@ -179,417 +552,93 @@ impl Default for SurrealSelectPlugin {
     }
 }
 
-impl StatefulPlugin for SurrealSelectPlugin {
-    type Context = SurrealSelectCtx;
-
+impl elicitation::ElicitPlugin for SurrealSelectPlugin {
     fn name(&self) -> &'static str {
         "surreal_select"
     }
 
     fn list_tools(&self) -> Vec<Tool> {
-        elicitation::inventory::iter::<PluginToolRegistration>()
-            .filter(|r| r.plugin == "surreal_select")
-            .map(|r| (r.constructor)().as_tool())
-            .collect()
+        vec![
+            build_tool(
+                "surreal_select__start",
+                "Create a new empty SELECT descriptor. Returns a UUID handle.",
+                serde_json::json!({"type": "object", "properties": {}}),
+            ),
+            build_tool(
+                "surreal_select__set_projections",
+                "Set the projection fields (e.g. `\"*\"` or `\"name, age\"`).",
+                schema_of::<SetProjectionsParams>(),
+            ),
+            build_tool(
+                "surreal_select__set_from",
+                "Set the FROM target (table, record ID, or subquery).",
+                schema_of::<SetFromParams>(),
+            ),
+            build_tool(
+                "surreal_select__add_where",
+                "Append a WHERE clause (clauses are joined with AND).",
+                schema_of::<AddWhereParams>(),
+            ),
+            build_tool(
+                "surreal_select__add_fetch",
+                "Add a field to the FETCH list for graph traversal.",
+                schema_of::<AddFetchParams>(),
+            ),
+            build_tool(
+                "surreal_select__set_order_by",
+                "Set the ORDER BY expression (e.g. `\"name ASC\"`).",
+                schema_of::<SetOrderByParams>(),
+            ),
+            build_tool(
+                "surreal_select__set_group_by",
+                "Set the GROUP BY expression.",
+                schema_of::<SetGroupByParams>(),
+            ),
+            build_tool(
+                "surreal_select__set_limit",
+                "Set the LIMIT count.",
+                schema_of::<SetLimitParams>(),
+            ),
+            build_tool(
+                "surreal_select__set_start",
+                "Set the START offset for pagination.",
+                schema_of::<SetStartParams>(),
+            ),
+            build_tool(
+                "surreal_select__set_split",
+                "Set the SPLIT AT field for array expansion.",
+                schema_of::<SetSplitParams>(),
+            ),
+            build_tool(
+                "surreal_select__set_version",
+                "Set the VERSION datetime for time-travel queries.",
+                schema_of::<SetVersionParams>(),
+            ),
+            build_tool(
+                "surreal_select__inspect",
+                "Inspect the current state of a SELECT descriptor as JSON.",
+                schema_of::<SelectIdParams>(),
+            ),
+            build_tool(
+                "surreal_select__emit_surreal",
+                "Emit the composed SELECT as a SurrealQL statement.",
+                schema_of::<SelectIdParams>(),
+            ),
+            build_tool(
+                "surreal_select__emit_rust",
+                "Emit the composed SELECT as a Rust SurrealDB SDK snippet.",
+                schema_of::<SelectIdParams>(),
+            ),
+        ]
     }
 
-    fn tool_descriptors(&self) -> Vec<ToolDescriptor> {
-        elicitation::inventory::iter::<PluginToolRegistration>()
-            .filter(|r| r.plugin == "surreal_select")
-            .map(|r| (r.constructor)())
-            .collect()
+    #[tracing::instrument(skip(self, _ctx), fields(tool = %params.name))]
+    fn call_tool<'a>(
+        &'a self,
+        params: CallToolRequestParams,
+        _ctx: RequestContext<rmcp::RoleServer>,
+    ) -> BoxFuture<'a, Result<CallToolResult, ErrorData>> {
+        let ctx = self.0.clone();
+        Box::pin(async move { dispatch_select(ctx, params.name.as_ref(), &params).await })
     }
-
-    fn context(&self) -> Arc<Self::Context> {
-        self.0.clone()
-    }
-}
-
-// ── parameter structs ─────────────────────────────────────────────────────────
-
-/// Parameters to start a new SELECT descriptor.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectStartParams {
-    /// Projection list (e.g. `"*"` or `"name, age"`).
-    pub projections: String,
-    /// FROM target.
-    pub from: String,
-}
-
-/// Parameters to override projections.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectSetProjectionsParams {
-    /// Descriptor UUID.
-    pub id: String,
-    /// New projection list.
-    pub projections: String,
-}
-
-/// Parameters to set the FROM clause.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectSetFromParams {
-    /// Descriptor UUID.
-    pub id: String,
-    /// New FROM target.
-    pub from: String,
-}
-
-/// Parameters to add a WHERE condition.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectAddWhereParams {
-    /// Descriptor UUID.
-    pub id: String,
-    /// Condition expression.
-    pub condition: String,
-}
-
-/// Parameters to add a FETCH field.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectAddFetchParams {
-    /// Descriptor UUID.
-    pub id: String,
-    /// Field to fetch.
-    pub field: String,
-}
-
-/// Parameters to set ORDER BY.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectSetOrderByParams {
-    /// Descriptor UUID.
-    pub id: String,
-    /// Order terms.
-    pub terms: Vec<OrderByTerm>,
-}
-
-/// Parameters to set GROUP BY.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectSetGroupByParams {
-    /// Descriptor UUID.
-    pub id: String,
-    /// Field names.
-    pub fields: Vec<String>,
-}
-
-/// Parameters to set LIMIT.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectSetLimitParams {
-    /// Descriptor UUID.
-    pub id: String,
-    /// Limit count.
-    pub limit: u64,
-}
-
-/// Parameters to set START offset.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectSetStartParams {
-    /// Descriptor UUID.
-    pub id: String,
-    /// Offset value.
-    pub start: u64,
-}
-
-/// Parameters to set SPLIT AT.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectSetSplitParams {
-    /// Descriptor UUID.
-    pub id: String,
-    /// Field to split on.
-    pub field: String,
-}
-
-/// Parameters to set VERSION.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectSetVersionParams {
-    /// Descriptor UUID.
-    pub id: String,
-    /// ISO 8601 datetime string.
-    pub datetime: String,
-}
-
-/// Parameters to inspect a descriptor.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectInspectParams {
-    /// Descriptor UUID.
-    pub id: String,
-}
-
-/// Parameters to emit SurrealQL from a descriptor.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectEmitSurrealParams {
-    /// Descriptor UUID.
-    pub id: String,
-}
-
-/// Parameters to emit Rust SDK code from a descriptor.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct SelectEmitRustParams {
-    /// Descriptor UUID.
-    pub id: String,
-}
-
-// ── tools ─────────────────────────────────────────────────────────────────────
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "start",
-    description = "Begin a new SELECT query descriptor. Returns a UUID to reference in subsequent calls."
-)]
-#[instrument(skip(ctx))]
-async fn select_start(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectStartParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id = Uuid::new_v4();
-    let descriptor = SelectDescriptor::new(id.to_string(), p.projections, p.from);
-    ctx.items.lock().unwrap().insert(id, descriptor);
-    ok_text(id.to_string())
-}
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "set_projections",
-    description = "Override the SELECT projection list on an existing descriptor."
-)]
-#[instrument(skip(ctx))]
-async fn select_set_projections(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectSetProjectionsParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let mut items = ctx.items.lock().unwrap();
-    let entry = items.get_mut(&id).ok_or_else(|| not_found(&p.id))?;
-    entry.projections = p.projections;
-    ok_text("ok")
-}
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "set_from",
-    description = "Override the FROM clause on an existing descriptor."
-)]
-#[instrument(skip(ctx))]
-async fn select_set_from(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectSetFromParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let mut items = ctx.items.lock().unwrap();
-    let entry = items.get_mut(&id).ok_or_else(|| not_found(&p.id))?;
-    entry.from = p.from;
-    ok_text("ok")
-}
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "add_where",
-    description = "Append a WHERE condition to an existing descriptor (combined with AND)."
-)]
-#[instrument(skip(ctx))]
-async fn select_add_where(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectAddWhereParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let mut items = ctx.items.lock().unwrap();
-    let entry = items.get_mut(&id).ok_or_else(|| not_found(&p.id))?;
-    entry.where_clauses.push(p.condition);
-    ok_text("ok")
-}
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "add_fetch",
-    description = "Append a FETCH field to an existing descriptor for graph traversal resolution."
-)]
-#[instrument(skip(ctx))]
-async fn select_add_fetch(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectAddFetchParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let mut items = ctx.items.lock().unwrap();
-    let entry = items.get_mut(&id).ok_or_else(|| not_found(&p.id))?;
-    entry.fetch_fields.push(p.field);
-    ok_text("ok")
-}
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "set_order_by",
-    description = "Set the ORDER BY terms on an existing descriptor."
-)]
-#[instrument(skip(ctx))]
-async fn select_set_order_by(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectSetOrderByParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let mut items = ctx.items.lock().unwrap();
-    let entry = items.get_mut(&id).ok_or_else(|| not_found(&p.id))?;
-    entry.order_by = p.terms;
-    ok_text("ok")
-}
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "set_group_by",
-    description = "Set the GROUP BY fields on an existing descriptor."
-)]
-#[instrument(skip(ctx))]
-async fn select_set_group_by(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectSetGroupByParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let mut items = ctx.items.lock().unwrap();
-    let entry = items.get_mut(&id).ok_or_else(|| not_found(&p.id))?;
-    entry.group_by = p.fields;
-    ok_text("ok")
-}
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "set_limit",
-    description = "Set the LIMIT count on an existing descriptor."
-)]
-#[instrument(skip(ctx))]
-async fn select_set_limit(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectSetLimitParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let mut items = ctx.items.lock().unwrap();
-    let entry = items.get_mut(&id).ok_or_else(|| not_found(&p.id))?;
-    entry.limit = Some(p.limit);
-    ok_text("ok")
-}
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "set_start",
-    description = "Set the START offset on an existing descriptor for pagination."
-)]
-#[instrument(skip(ctx))]
-async fn select_set_start(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectSetStartParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let mut items = ctx.items.lock().unwrap();
-    let entry = items.get_mut(&id).ok_or_else(|| not_found(&p.id))?;
-    entry.start = Some(p.start);
-    ok_text("ok")
-}
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "set_split",
-    description = "Set the SPLIT AT field on an existing descriptor."
-)]
-#[instrument(skip(ctx))]
-async fn select_set_split(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectSetSplitParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let mut items = ctx.items.lock().unwrap();
-    let entry = items.get_mut(&id).ok_or_else(|| not_found(&p.id))?;
-    entry.split = Some(p.field);
-    ok_text("ok")
-}
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "set_version",
-    description = "Set the VERSION datetime on an existing descriptor for temporal queries."
-)]
-#[instrument(skip(ctx))]
-async fn select_set_version(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectSetVersionParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let mut items = ctx.items.lock().unwrap();
-    let entry = items.get_mut(&id).ok_or_else(|| not_found(&p.id))?;
-    entry.version = Some(p.datetime);
-    ok_text("ok")
-}
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "inspect",
-    description = "Return the current SELECT descriptor as a JSON summary."
-)]
-#[instrument(skip(ctx))]
-async fn select_inspect(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectInspectParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let items = ctx.items.lock().unwrap();
-    let entry = items.get(&id).ok_or_else(|| not_found(&p.id))?;
-    let json = serde_json::to_string_pretty(entry)
-        .map_err(|e| ErrorData::internal_error(e.to_string(), None))?;
-    ok_text(json)
-}
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "emit_surreal",
-    description = "Emit the final SurrealQL SELECT statement for the descriptor."
-)]
-#[instrument(skip(ctx))]
-async fn select_emit_surreal(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectEmitSurrealParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let items = ctx.items.lock().unwrap();
-    let entry = items.get(&id).ok_or_else(|| not_found(&p.id))?;
-    ok_text(entry.build_surreal())
-}
-
-#[elicit_tool(
-    plugin = "surreal_select",
-    name = "emit_rust",
-    description = "Emit a db.query(\"SELECT …\").await? Rust snippet for the descriptor."
-)]
-#[instrument(skip(ctx))]
-async fn select_emit_rust(
-    ctx: Arc<SurrealSelectCtx>,
-    p: SelectEmitRustParams,
-) -> Result<CallToolResult, ErrorData> {
-    let id: Uuid =
-        p.id.parse()
-            .map_err(|_| ErrorData::invalid_params(format!("invalid UUID: {}", p.id), None))?;
-    let items = ctx.items.lock().unwrap();
-    let entry = items.get(&id).ok_or_else(|| not_found(&p.id))?;
-    let surreal = entry.build_surreal();
-    ok_text(format!(
-        "let mut response = db\n    .query(\"{surreal}\")\n    .await?;\nlet result: Vec<T> = response.take(0)?;\n"
-    ))
 }

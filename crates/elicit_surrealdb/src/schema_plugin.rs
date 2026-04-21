@@ -1,676 +1,567 @@
-//! `SurrealSchemaPlugin` — SurrealQL DDL authoring tools.
-//!
-//! Every tool is a pure function that accepts parameters and emits a SurrealQL `DEFINE` or
-//! `REMOVE` statement string, or a Rust SDK DDL execution snippet.
+//! SurrealSchemaPlugin — MCP tools for SurrealDB DDL schema definitions.
 
-use elicitation::{ElicitPlugin, ToCodeLiteral, elicit_tool};
-use rmcp::{
-    ErrorData,
-    model::{CallToolResult, Content},
-};
+use elicitation::{ElicitPlugin, elicit_tool};
+use rmcp::ErrorData;
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use tracing::instrument;
 
-fn ok_text(text: impl Into<String>) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![Content::text(text.into())]))
+fn ok_text(s: impl Into<String>) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    Ok(rmcp::model::CallToolResult::success(vec![
+        rmcp::model::Content::text(s.into()),
+    ]))
 }
 
-// ── parameter structs ─────────────────────────────────────────────────────────
+#[derive(Debug, Deserialize, JsonSchema)]
+struct EmptyParams {}
 
-/// Parameters for `DEFINE NAMESPACE`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+// ── Parameters ────────────────────────────────────────────────────────────────
+
+/// Parameters for `surreal_schema__define_namespace`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DefineNamespaceParams {
     /// Namespace name.
     pub name: String,
-    /// Emit with `IF NOT EXISTS`.
+    /// Whether to include IF NOT EXISTS clause.
     #[serde(default)]
     pub if_not_exists: bool,
 }
 
-/// Parameters for `DEFINE DATABASE`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__define_database`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DefineDatabaseParams {
     /// Database name.
     pub name: String,
-    /// Emit with `IF NOT EXISTS`.
+    /// Whether to include IF NOT EXISTS clause.
     #[serde(default)]
     pub if_not_exists: bool,
-    /// Optional `CHANGEFEED` duration string (e.g. `"1h"`).
+    /// Optional CHANGEFEED duration string (e.g. `"1h"`).
     #[serde(default)]
     pub changefeed: Option<String>,
 }
 
-/// Parameters for `DEFINE TABLE`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__define_table`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DefineTableParams {
     /// Table name.
     pub name: String,
-    /// Whether the table is SCHEMAFULL (strict) or SCHEMALESS (default).
+    /// Whether to include IF NOT EXISTS clause.
+    #[serde(default)]
+    pub if_not_exists: bool,
+    /// Whether the table is SCHEMAFULL (true) or SCHEMALESS (false).
     #[serde(default)]
     pub schemafull: bool,
-    /// Add `DROP` clause so writes are silently discarded.
+    /// Whether to include DROP clause.
     #[serde(default)]
     pub drop: bool,
-    /// Emit with `IF NOT EXISTS`.
-    #[serde(default)]
-    pub if_not_exists: bool,
-    /// Optional `CHANGEFEED` duration.
-    #[serde(default)]
-    pub changefeed: Option<String>,
-    /// Optional `AS SELECT` projection for a view table.
+    /// Optional AS SELECT expression.
     #[serde(default)]
     pub as_select: Option<String>,
-    /// Optional `PERMISSIONS` clause (raw SurrealQL string).
+    /// Optional CHANGEFEED duration string.
     #[serde(default)]
-    pub permissions: Option<String>,
+    pub changefeed: Option<String>,
 }
 
-/// Parameters for `DEFINE FIELD`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__define_field`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DefineFieldParams {
-    /// Field name (dot-path supported, e.g. `address.city`).
+    /// Field name (supports dotted paths, e.g. `address.city`).
     pub name: String,
-    /// Table name.
+    /// Parent table name.
     pub table: String,
-    /// SurrealQL type declaration (e.g. `"string"`, `"option<int>"`, `"array<string, 10>"`).
-    #[serde(default)]
-    pub kind: Option<String>,
-    /// `FLEXIBLE` — allow extra schema keys under an `object` type.
+    /// Whether to include FLEXIBLE modifier.
     #[serde(default)]
     pub flexible: bool,
-    /// Optional `ASSERT` expression.
+    /// Optional TYPE clause (e.g. `"string"`, `"option<int>"`).
     #[serde(default)]
-    pub assert: Option<String>,
-    /// Optional `DEFAULT` expression.
+    pub kind: Option<String>,
+    /// Optional ASSERT expression.
+    #[serde(default)]
+    pub assert_expr: Option<String>,
+    /// Optional DEFAULT expression.
     #[serde(default)]
     pub default_expr: Option<String>,
-    /// Optional `VALUE` expression (computed/derived value).
+    /// Optional VALUE expression.
     #[serde(default)]
     pub value_expr: Option<String>,
-    /// Mark the field `READONLY`.
+    /// Whether to mark the field READONLY.
     #[serde(default)]
     pub readonly: bool,
-    /// Emit with `IF NOT EXISTS`.
-    #[serde(default)]
-    pub if_not_exists: bool,
 }
 
-/// Index kind for `DEFINE INDEX`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
-#[serde(rename_all = "snake_case")]
-pub enum IndexKind {
-    /// Standard (non-unique) BTree index — the default.
-    Normal,
-    /// Unique constraint index.
-    Unique,
-    /// Full-text SEARCH index with an analyzer name.
-    Search {
-        /// Analyzer name (must match a `DEFINE ANALYZER`).
-        analyzer: String,
-        /// Optional BM25 settings as `(k1, b)`.
-        bm25: Option<[f64; 2]>,
-        /// Highlight snippets.
-        #[serde(default)]
-        highlights: bool,
-    },
-    /// MTREE vector index.
-    Mtree {
-        /// Number of dimensions.
-        dimension: u32,
-    },
-    /// HNSW vector index.
-    Hnsw {
-        /// Number of dimensions.
-        dimension: u32,
-    },
-}
-
-/// Parameters for `DEFINE INDEX`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__define_index`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DefineIndexParams {
     /// Index name.
     pub name: String,
-    /// Table name.
+    /// Table name the index is on.
     pub table: String,
-    /// Fields to index (comma-separated or single name).
+    /// Fields to index.
     pub fields: Vec<String>,
-    /// Index kind.
-    #[serde(default = "default_index_kind")]
-    pub kind: IndexKind,
-    /// Emit with `IF NOT EXISTS`.
+    /// Whether to add UNIQUE constraint.
     #[serde(default)]
-    pub if_not_exists: bool,
-}
-fn default_index_kind() -> IndexKind {
-    IndexKind::Normal
+    pub unique: bool,
+    /// Optional SEARCH ANALYZER name.
+    #[serde(default)]
+    pub search_analyzer: Option<String>,
+    /// Whether to include BM25 ranking (requires search_analyzer).
+    #[serde(default)]
+    pub bm25: bool,
+    /// Optional MTREE DIMENSION value for vector search.
+    #[serde(default)]
+    pub mtree_dimension: Option<u32>,
+    /// Optional HNSW DIMENSION value for vector search.
+    #[serde(default)]
+    pub hnsw_dimension: Option<u32>,
 }
 
-/// Parameters for `DEFINE EVENT`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__define_event`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DefineEventParams {
     /// Event name.
     pub name: String,
-    /// Table name.
+    /// Table the event is attached to.
     pub table: String,
-    /// `WHEN` condition expression.
+    /// WHEN expression (e.g. `"$event = 'CREATE'"`).
     pub when_expr: String,
-    /// `THEN` action expression (SurrealQL block or statement).
+    /// THEN expression body.
     pub then_expr: String,
-    /// Emit with `IF NOT EXISTS`.
-    #[serde(default)]
-    pub if_not_exists: bool,
 }
 
-/// A single function argument `(name, type_str)` pair.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
-pub struct FnArg {
-    /// Argument name without `$` sigil (e.g. `"value"`).
-    pub name: String,
-    /// SurrealQL type (e.g. `"string"`, `"option<int>"`).
-    pub type_str: String,
-}
-
-/// Parameters for `DEFINE FUNCTION`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__define_function`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DefineFunctionParams {
-    /// Fully-qualified function name (e.g. `"fn::greet"`).
-    pub name: String,
-    /// Function arguments.
+    /// Fully qualified function name (e.g. `fn::greet`).
+    pub fn_name: String,
+    /// Argument declarations, each like `"$name: string"`.
     #[serde(default)]
-    pub args: Vec<FnArg>,
-    /// Return type string.
+    pub args: Vec<String>,
+    /// Optional return type (e.g. `"string"`).
     #[serde(default)]
-    pub returns: Option<String>,
-    /// Function body (raw SurrealQL between `{` … `}`).
+    pub return_type: Option<String>,
+    /// Function body statements.
     pub body: String,
-    /// Emit with `IF NOT EXISTS`.
-    #[serde(default)]
-    pub if_not_exists: bool,
 }
 
-/// Parameters for `DEFINE PARAM`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__define_param`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DefineParamParams {
-    /// Parameter name without `$` sigil.
+    /// Parameter name without leading `$`.
     pub name: String,
-    /// Value expression.
+    /// VALUE expression to assign.
     pub value: String,
-    /// Emit with `IF NOT EXISTS`.
-    #[serde(default)]
-    pub if_not_exists: bool,
 }
 
-/// Parameters for `DEFINE ANALYZER`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__define_analyzer`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DefineAnalyzerParams {
     /// Analyzer name.
     pub name: String,
-    /// Tokenizers (e.g. `["blank", "camel"]`).
+    /// Tokenizer names (e.g. `["blank", "camel"]`).
     #[serde(default)]
     pub tokenizers: Vec<String>,
-    /// Filters (e.g. `["lowercase", "ascii"]`).
+    /// Filter names (e.g. `["lowercase", "snowball(English)"]`).
     #[serde(default)]
     pub filters: Vec<String>,
-    /// Emit with `IF NOT EXISTS`.
-    #[serde(default)]
-    pub if_not_exists: bool,
 }
 
-/// Scope for access rules: `root`, `namespace`, or `database`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
-#[serde(rename_all = "snake_case")]
-pub enum AccessScope {
-    /// Root-level access.
-    Root,
-    /// Namespace-level access.
-    Namespace,
-    /// Database-level access.
-    Database,
-}
-
-/// Parameters for `DEFINE ACCESS … TYPE JWT`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__define_access_jwt`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DefineAccessJwtParams {
-    /// Access name.
+    /// Access method name.
     pub name: String,
-    /// Scope of the access rule.
-    pub scope: AccessScope,
-    /// JWT algorithm (e.g. `"HS512"`, `"RS256"`).
+    /// Scope target, e.g. `"DATABASE"` or `"NAMESPACE"`.
+    pub on_scope: String,
+    /// JWT algorithm, e.g. `"HS256"`.
     pub algorithm: String,
-    /// Secret or public-key material.
+    /// JWT signing key.
     pub key: String,
-    /// Optional session duration.
-    #[serde(default)]
-    pub session: Option<String>,
-    /// Emit with `IF NOT EXISTS`.
-    #[serde(default)]
-    pub if_not_exists: bool,
 }
 
-/// Parameters for `DEFINE ACCESS … TYPE RECORD`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__define_access_record`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DefineAccessRecordParams {
-    /// Access name.
+    /// Access method name.
     pub name: String,
     /// SIGNUP expression.
-    pub signup: String,
+    pub signup_expr: String,
     /// SIGNIN expression.
-    pub signin: String,
-    /// Optional session duration.
+    pub signin_expr: String,
+    /// Optional DURATION FOR SESSION value (e.g. `"7d"`).
     #[serde(default)]
-    pub session: Option<String>,
-    /// Emit with `IF NOT EXISTS`.
-    #[serde(default)]
-    pub if_not_exists: bool,
+    pub session_duration: Option<String>,
 }
 
-/// Parameters for `DEFINE USER`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__define_user`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DefineUserParams {
     /// Username.
     pub name: String,
-    /// Scope.
-    pub scope: AccessScope,
-    /// Roles (e.g. `["owner"]`, `["editor"]`).
-    pub roles: Vec<String>,
-    /// Password (or `PASSHASH` value with `is_hash = true`).
+    /// Scope: `"ROOT"`, `"NAMESPACE"`, or `"DATABASE"`.
+    pub on_scope: String,
+    /// Plaintext password.
     pub password: String,
-    /// Whether `password` is already a bcrypt hash.
+    /// Role names to assign (e.g. `["owner"]`).
     #[serde(default)]
-    pub is_hash: bool,
-    /// Emit with `IF NOT EXISTS`.
-    #[serde(default)]
-    pub if_not_exists: bool,
+    pub roles: Vec<String>,
 }
 
-/// Parameters for `REMOVE TABLE`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__remove_table`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct RemoveTableParams {
     /// Table name.
     pub name: String,
+    /// Whether to include IF EXISTS clause.
+    #[serde(default)]
+    pub if_exists: bool,
 }
 
-/// Parameters for `REMOVE FIELD`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__remove_field`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct RemoveFieldParams {
     /// Field name.
     pub name: String,
-    /// Table name.
+    /// Parent table name.
     pub table: String,
+    /// Whether to include IF EXISTS clause.
+    #[serde(default)]
+    pub if_exists: bool,
 }
 
-/// Parameters for `REMOVE INDEX`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_schema__remove_index`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct RemoveIndexParams {
     /// Index name.
     pub name: String,
-    /// Table name.
+    /// Parent table name.
     pub table: String,
-}
-
-/// Parameters for `INFO FOR DB`.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct InfoForDbParams {
-    /// Optionally restrict to a specific table.
+    /// Whether to include IF EXISTS clause.
     #[serde(default)]
-    pub table: Option<String>,
+    pub if_exists: bool,
 }
 
-// ── helpers ───────────────────────────────────────────────────────────────────
-
-fn ine(flag: bool) -> &'static str {
-    if flag { " IF NOT EXISTS" } else { "" }
+/// Parameters for `surreal_schema__info_for_table`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct InfoForTableParams {
+    /// Table name.
+    pub name: String,
 }
 
-fn scope_str(s: &AccessScope) -> &'static str {
-    match s {
-        AccessScope::Root => "ROOT",
-        AccessScope::Namespace => "NAMESPACE",
-        AccessScope::Database => "DATABASE",
-    }
-}
-
-// ── plugin struct ─────────────────────────────────────────────────────────────
-
-/// MCP plugin providing SurrealQL DDL authoring tools.
-///
-/// Each tool emits a complete SurrealQL `DEFINE` or `REMOVE` statement.
-#[derive(Debug, ElicitPlugin)]
-#[plugin(name = "surreal_schema")]
-pub struct SurrealSchemaPlugin;
-
-impl SurrealSchemaPlugin {
-    /// Creates a new schema plugin.
-    pub fn new() -> Self {
-        Self
-    }
-}
-
-impl Default for SurrealSchemaPlugin {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-// ── tools ─────────────────────────────────────────────────────────────────────
+// ── Tools ─────────────────────────────────────────────────────────────────────
 
 #[elicit_tool(
     plugin = "surreal_schema",
     name = "define_namespace",
-    description = "Emit DEFINE NAMESPACE statement."
+    description = "Generate a DEFINE NAMESPACE statement."
 )]
-#[instrument(skip_all)]
-async fn define_namespace(p: DefineNamespaceParams) -> Result<CallToolResult, ErrorData> {
+#[instrument]
+async fn define_namespace(
+    p: DefineNamespaceParams,
+) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let ine = if p.if_not_exists {
+        " IF NOT EXISTS"
+    } else {
+        ""
+    };
+    ok_text(format!("DEFINE NAMESPACE{ine} {};", p.name))
+}
+
+#[elicit_tool(
+    plugin = "surreal_schema",
+    name = "define_database",
+    description = "Generate a DEFINE DATABASE statement with optional CHANGEFEED."
+)]
+#[instrument]
+async fn define_database(
+    p: DefineDatabaseParams,
+) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let ine = if p.if_not_exists {
+        " IF NOT EXISTS"
+    } else {
+        ""
+    };
+    let cf = p
+        .changefeed
+        .as_deref()
+        .map(|d| format!(" CHANGEFEED {d}"))
+        .unwrap_or_default();
+    ok_text(format!("DEFINE DATABASE{ine} {}{cf};", p.name))
+}
+
+#[elicit_tool(
+    plugin = "surreal_schema",
+    name = "define_table",
+    description = "Generate a DEFINE TABLE statement with schema, DROP, AS SELECT, and CHANGEFEED options."
+)]
+#[instrument]
+async fn define_table(p: DefineTableParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let ine = if p.if_not_exists {
+        " IF NOT EXISTS"
+    } else {
+        ""
+    };
+    let drop = if p.drop { " DROP" } else { "" };
+    let schema = if p.schemafull {
+        " SCHEMAFULL"
+    } else {
+        " SCHEMALESS"
+    };
+    let as_sel = p
+        .as_select
+        .as_deref()
+        .map(|s| format!(" AS {s}"))
+        .unwrap_or_default();
+    let cf = p
+        .changefeed
+        .as_deref()
+        .map(|d| format!(" CHANGEFEED {d}"))
+        .unwrap_or_default();
     ok_text(format!(
-        "DEFINE NAMESPACE{} {};",
-        ine(p.if_not_exists),
+        "DEFINE TABLE{ine} {}{drop}{schema}{as_sel}{cf};",
         p.name
     ))
 }
 
 #[elicit_tool(
     plugin = "surreal_schema",
-    name = "define_database",
-    description = "Emit DEFINE DATABASE statement with optional CHANGEFEED duration."
-)]
-#[instrument(skip_all)]
-async fn define_database(p: DefineDatabaseParams) -> Result<CallToolResult, ErrorData> {
-    let mut s = format!("DEFINE DATABASE{} {}", ine(p.if_not_exists), p.name);
-    if let Some(cf) = &p.changefeed {
-        s.push_str(&format!(" CHANGEFEED {cf}"));
-    }
-    s.push(';');
-    ok_text(s)
-}
-
-#[elicit_tool(
-    plugin = "surreal_schema",
-    name = "define_table",
-    description = "Emit DEFINE TABLE statement. Supports SCHEMAFULL, DROP, CHANGEFEED, AS SELECT, and PERMISSIONS."
-)]
-#[instrument(skip_all)]
-async fn define_table(p: DefineTableParams) -> Result<CallToolResult, ErrorData> {
-    let mut s = format!("DEFINE TABLE{} {}", ine(p.if_not_exists), p.name);
-    if p.drop {
-        s.push_str(" DROP");
-    }
-    if p.schemafull {
-        s.push_str(" SCHEMAFULL");
-    } else {
-        s.push_str(" SCHEMALESS");
-    }
-    if let Some(cf) = &p.changefeed {
-        s.push_str(&format!(" CHANGEFEED {cf}"));
-    }
-    if let Some(sel) = &p.as_select {
-        s.push_str(&format!(" AS (\n  {sel}\n)"));
-    }
-    if let Some(perms) = &p.permissions {
-        s.push_str(&format!("\n  PERMISSIONS {perms}"));
-    }
-    s.push(';');
-    ok_text(s)
-}
-
-#[elicit_tool(
-    plugin = "surreal_schema",
     name = "define_field",
-    description = "Emit DEFINE FIELD statement. Supports TYPE, FLEXIBLE, ASSERT, DEFAULT, VALUE, and READONLY."
+    description = "Generate a DEFINE FIELD statement with optional TYPE, ASSERT, DEFAULT, VALUE, and READONLY."
 )]
-#[instrument(skip_all)]
-async fn define_field(p: DefineFieldParams) -> Result<CallToolResult, ErrorData> {
-    let mut s = format!(
-        "DEFINE FIELD{} {} ON TABLE {}",
-        ine(p.if_not_exists),
-        p.name,
-        p.table
-    );
-    if p.flexible {
-        s.push_str(" FLEXIBLE");
-    }
-    if let Some(k) = &p.kind {
-        s.push_str(&format!(" TYPE {k}"));
-    }
-    if let Some(a) = &p.assert {
-        s.push_str(&format!(" ASSERT {a}"));
-    }
-    if let Some(d) = &p.default_expr {
-        s.push_str(&format!(" DEFAULT {d}"));
-    }
-    if let Some(v) = &p.value_expr {
-        s.push_str(&format!(" VALUE {v}"));
-    }
-    if p.readonly {
-        s.push_str(" READONLY");
-    }
-    s.push(';');
-    ok_text(s)
+#[instrument]
+async fn define_field(p: DefineFieldParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let flex = if p.flexible { " FLEXIBLE" } else { "" };
+    let kind = p
+        .kind
+        .as_deref()
+        .map(|k| format!(" TYPE {k}"))
+        .unwrap_or_default();
+    let assert = p
+        .assert_expr
+        .as_deref()
+        .map(|e| format!(" ASSERT {e}"))
+        .unwrap_or_default();
+    let default = p
+        .default_expr
+        .as_deref()
+        .map(|e| format!(" DEFAULT {e}"))
+        .unwrap_or_default();
+    let value = p
+        .value_expr
+        .as_deref()
+        .map(|e| format!(" VALUE {e}"))
+        .unwrap_or_default();
+    let ro = if p.readonly { " READONLY" } else { "" };
+    ok_text(format!(
+        "DEFINE FIELD{flex} {} ON TABLE {}{kind}{assert}{default}{value}{ro};",
+        p.name, p.table
+    ))
 }
 
 #[elicit_tool(
     plugin = "surreal_schema",
     name = "define_index",
-    description = "Emit DEFINE INDEX statement. Supports UNIQUE, SEARCH ANALYZER (BM25 + HIGHLIGHTS), MTREE, and HNSW vector kinds."
+    description = "Generate a DEFINE INDEX statement with optional UNIQUE, SEARCH ANALYZER, MTREE, and HNSW."
 )]
-#[instrument(skip_all)]
-async fn define_index(p: DefineIndexParams) -> Result<CallToolResult, ErrorData> {
-    let fields = p.fields.join(", ");
-    let mut s = format!(
-        "DEFINE INDEX{} {} ON TABLE {} FIELDS {}",
-        ine(p.if_not_exists),
-        p.name,
-        p.table,
-        fields
-    );
-    match &p.kind {
-        IndexKind::Normal => {}
-        IndexKind::Unique => s.push_str(" UNIQUE"),
-        IndexKind::Search {
-            analyzer,
-            bm25,
-            highlights,
-        } => {
-            s.push_str(&format!(" SEARCH ANALYZER {analyzer}"));
-            if let Some([k1, b]) = bm25 {
-                s.push_str(&format!(" BM25({k1},{b})"));
-            }
-            if *highlights {
-                s.push_str(" HIGHLIGHTS");
-            }
-        }
-        IndexKind::Mtree { dimension } => {
-            s.push_str(&format!(" MTREE DIMENSION {dimension}"));
-        }
-        IndexKind::Hnsw { dimension } => {
-            s.push_str(&format!(" HNSW DIMENSION {dimension}"));
-        }
-    }
-    s.push(';');
-    ok_text(s)
+#[instrument]
+async fn define_index(p: DefineIndexParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let fields_str = p.fields.join(", ");
+    let unique = if p.unique { " UNIQUE" } else { "" };
+    let search = if let Some(a) = &p.search_analyzer {
+        let bm = if p.bm25 { " BM25" } else { "" };
+        format!(" SEARCH ANALYZER {a}{bm}")
+    } else {
+        String::new()
+    };
+    let mtree = p
+        .mtree_dimension
+        .map(|d| format!(" MTREE DIMENSION {d}"))
+        .unwrap_or_default();
+    let hnsw = p
+        .hnsw_dimension
+        .map(|d| format!(" HNSW DIMENSION {d}"))
+        .unwrap_or_default();
+    ok_text(format!(
+        "DEFINE INDEX {} ON TABLE {} FIELDS {fields_str}{unique}{search}{mtree}{hnsw};",
+        p.name, p.table
+    ))
 }
 
 #[elicit_tool(
     plugin = "surreal_schema",
     name = "define_event",
-    description = "Emit DEFINE EVENT statement with WHEN condition and THEN action body."
+    description = "Generate a DEFINE EVENT statement with WHEN and THEN clauses."
 )]
-#[instrument(skip_all)]
-async fn define_event(p: DefineEventParams) -> Result<CallToolResult, ErrorData> {
+#[instrument]
+async fn define_event(p: DefineEventParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
     ok_text(format!(
-        "DEFINE EVENT{} {} ON TABLE {} WHEN {} THEN {};",
-        ine(p.if_not_exists),
-        p.name,
-        p.table,
-        p.when_expr,
-        p.then_expr,
+        "DEFINE EVENT {} ON TABLE {} WHEN {} THEN ({});",
+        p.name, p.table, p.when_expr, p.then_expr
     ))
 }
 
 #[elicit_tool(
     plugin = "surreal_schema",
     name = "define_function",
-    description = "Emit DEFINE FUNCTION statement with typed arguments and optional return type."
+    description = "Generate a DEFINE FUNCTION statement with optional typed arguments and return type."
 )]
-#[instrument(skip_all)]
-async fn define_function(p: DefineFunctionParams) -> Result<CallToolResult, ErrorData> {
-    let args: String = p
-        .args
-        .iter()
-        .map(|a| format!("${}: {}", a.name, a.type_str))
-        .collect::<Vec<_>>()
-        .join(", ");
+#[instrument]
+async fn define_function(
+    p: DefineFunctionParams,
+) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let args_str = p.args.join(", ");
     let ret = p
-        .returns
+        .return_type
         .as_deref()
         .map(|r| format!(" -> {r}"))
         .unwrap_or_default();
     ok_text(format!(
-        "DEFINE FUNCTION{} {}({args}){ret} {{\n{}\n}};",
-        ine(p.if_not_exists),
-        p.name,
-        p.body,
+        "DEFINE FUNCTION {fn_name}({args_str}){ret} {{\n    {body}\n}};",
+        fn_name = p.fn_name,
+        body = p.body
     ))
 }
 
 #[elicit_tool(
     plugin = "surreal_schema",
     name = "define_param",
-    description = "Emit DEFINE PARAM statement setting a global SurrealDB parameter."
+    description = "Generate a DEFINE PARAM statement assigning a global parameter value."
 )]
-#[instrument(skip_all)]
-async fn define_param(p: DefineParamParams) -> Result<CallToolResult, ErrorData> {
-    ok_text(format!(
-        "DEFINE PARAM{} ${} VALUE {};",
-        ine(p.if_not_exists),
-        p.name,
-        p.value,
-    ))
+#[instrument]
+async fn define_param(p: DefineParamParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    ok_text(format!("DEFINE PARAM ${} VALUE {};", p.name, p.value))
 }
 
 #[elicit_tool(
     plugin = "surreal_schema",
     name = "define_analyzer",
-    description = "Emit DEFINE ANALYZER statement with tokenizer and filter pipeline."
+    description = "Generate a DEFINE ANALYZER statement with optional tokenizers and filters."
 )]
-#[instrument(skip_all)]
-async fn define_analyzer(p: DefineAnalyzerParams) -> Result<CallToolResult, ErrorData> {
-    let mut s = format!("DEFINE ANALYZER{} {}", ine(p.if_not_exists), p.name);
-    if !p.tokenizers.is_empty() {
-        s.push_str(&format!(" TOKENIZERS {}", p.tokenizers.join(", ")));
-    }
-    if !p.filters.is_empty() {
-        s.push_str(&format!(" FILTERS {}", p.filters.join(", ")));
-    }
-    s.push(';');
-    ok_text(s)
+#[instrument]
+async fn define_analyzer(
+    p: DefineAnalyzerParams,
+) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let tok = if p.tokenizers.is_empty() {
+        String::new()
+    } else {
+        format!(" TOKENIZERS {}", p.tokenizers.join(", "))
+    };
+    let fil = if p.filters.is_empty() {
+        String::new()
+    } else {
+        format!(" FILTERS {}", p.filters.join(", "))
+    };
+    ok_text(format!("DEFINE ANALYZER {}{tok}{fil};", p.name))
 }
 
 #[elicit_tool(
     plugin = "surreal_schema",
     name = "define_access_jwt",
-    description = "Emit DEFINE ACCESS … TYPE JWT statement for JWT-based authentication."
+    description = "Generate a DEFINE ACCESS … TYPE JWT statement."
 )]
-#[instrument(skip_all)]
-async fn define_access_jwt(p: DefineAccessJwtParams) -> Result<CallToolResult, ErrorData> {
-    let mut s = format!(
-        "DEFINE ACCESS{} {} ON {} TYPE JWT ALGORITHM {} KEY \"{}\"",
-        ine(p.if_not_exists),
-        p.name,
-        scope_str(&p.scope),
-        p.algorithm,
-        p.key,
-    );
-    if let Some(sess) = &p.session {
-        s.push_str(&format!(" SESSION {sess}"));
-    }
-    s.push(';');
-    ok_text(s)
+#[instrument]
+async fn define_access_jwt(
+    p: DefineAccessJwtParams,
+) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    ok_text(format!(
+        "DEFINE ACCESS {} ON {} TYPE JWT ALGORITHM {} KEY '{}';",
+        p.name, p.on_scope, p.algorithm, p.key
+    ))
 }
 
 #[elicit_tool(
     plugin = "surreal_schema",
     name = "define_access_record",
-    description = "Emit DEFINE ACCESS … TYPE RECORD statement for record-based auth with SIGNUP and SIGNIN expressions."
+    description = "Generate a DEFINE ACCESS … TYPE RECORD statement with SIGNUP, SIGNIN, and optional session duration."
 )]
-#[instrument(skip_all)]
-async fn define_access_record(p: DefineAccessRecordParams) -> Result<CallToolResult, ErrorData> {
-    let mut s = format!(
-        "DEFINE ACCESS{} {} ON DATABASE TYPE RECORD\n  SIGNUP ({})\n  SIGNIN ({})",
-        ine(p.if_not_exists),
-        p.name,
-        p.signup,
-        p.signin,
-    );
-    if let Some(sess) = &p.session {
-        s.push_str(&format!(" SESSION {sess}"));
-    }
-    s.push(';');
-    ok_text(s)
+#[instrument]
+async fn define_access_record(
+    p: DefineAccessRecordParams,
+) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let dur = p
+        .session_duration
+        .as_deref()
+        .map(|d| format!("\n    DURATION FOR SESSION {d}"))
+        .unwrap_or_default();
+    ok_text(format!(
+        "DEFINE ACCESS {} ON DATABASE TYPE RECORD\n    SIGNUP ({})\n    SIGNIN ({}){dur};",
+        p.name, p.signup_expr, p.signin_expr
+    ))
 }
 
 #[elicit_tool(
     plugin = "surreal_schema",
     name = "define_user",
-    description = "Emit DEFINE USER statement with password or passhash and role list."
+    description = "Generate a DEFINE USER statement with password and optional roles."
 )]
-#[instrument(skip_all)]
-async fn define_user(p: DefineUserParams) -> Result<CallToolResult, ErrorData> {
-    let pw_clause = if p.is_hash {
-        format!("PASSHASH \"{}\"", p.password)
+#[instrument]
+async fn define_user(p: DefineUserParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let roles_str = if p.roles.is_empty() {
+        String::new()
     } else {
-        format!("PASSWORD \"{}\"", p.password)
+        format!(" ROLES {}", p.roles.join(", "))
     };
-    let roles = p.roles.join(", ");
     ok_text(format!(
-        "DEFINE USER{} {} ON {} {} ROLES {};",
-        ine(p.if_not_exists),
-        p.name,
-        scope_str(&p.scope),
-        pw_clause,
-        roles,
+        "DEFINE USER {} ON {} PASSWORD '{}'{roles_str};",
+        p.name, p.on_scope, p.password
     ))
 }
 
 #[elicit_tool(
     plugin = "surreal_schema",
     name = "remove_table",
-    description = "Emit REMOVE TABLE statement."
+    description = "Generate a REMOVE TABLE statement with optional IF EXISTS."
 )]
-#[instrument(skip_all)]
-async fn remove_table(p: RemoveTableParams) -> Result<CallToolResult, ErrorData> {
-    ok_text(format!("REMOVE TABLE {};", p.name))
+#[instrument]
+async fn remove_table(p: RemoveTableParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let ie = if p.if_exists { " IF EXISTS" } else { "" };
+    ok_text(format!("REMOVE TABLE{ie} {};", p.name))
 }
 
 #[elicit_tool(
     plugin = "surreal_schema",
     name = "remove_field",
-    description = "Emit REMOVE FIELD … ON TABLE statement."
+    description = "Generate a REMOVE FIELD … ON TABLE statement with optional IF EXISTS."
 )]
-#[instrument(skip_all)]
-async fn remove_field(p: RemoveFieldParams) -> Result<CallToolResult, ErrorData> {
-    ok_text(format!("REMOVE FIELD {} ON TABLE {};", p.name, p.table))
+#[instrument]
+async fn remove_field(p: RemoveFieldParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let ie = if p.if_exists { " IF EXISTS" } else { "" };
+    ok_text(format!("REMOVE FIELD{ie} {} ON TABLE {};", p.name, p.table))
 }
 
 #[elicit_tool(
     plugin = "surreal_schema",
     name = "remove_index",
-    description = "Emit REMOVE INDEX … ON TABLE statement."
+    description = "Generate a REMOVE INDEX … ON TABLE statement with optional IF EXISTS."
 )]
-#[instrument(skip_all)]
-async fn remove_index(p: RemoveIndexParams) -> Result<CallToolResult, ErrorData> {
-    ok_text(format!("REMOVE INDEX {} ON TABLE {};", p.name, p.table))
+#[instrument]
+async fn remove_index(p: RemoveIndexParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let ie = if p.if_exists { " IF EXISTS" } else { "" };
+    ok_text(format!("REMOVE INDEX{ie} {} ON TABLE {};", p.name, p.table))
 }
 
 #[elicit_tool(
     plugin = "surreal_schema",
     name = "info_for_db",
-    description = "Emit INFO FOR DB schema introspection query, or INFO FOR TABLE for a specific table."
+    description = "Generate an INFO FOR DB statement to inspect the current database schema."
 )]
-#[instrument(skip_all)]
-async fn info_for_db(p: InfoForDbParams) -> Result<CallToolResult, ErrorData> {
-    ok_text(match p.table {
-        Some(t) => format!("INFO FOR TABLE {t};"),
-        None => "INFO FOR DB;".to_owned(),
-    })
+#[instrument]
+async fn info_for_db(_p: EmptyParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    ok_text("INFO FOR DB;")
 }
+
+#[elicit_tool(
+    plugin = "surreal_schema",
+    name = "info_for_table",
+    description = "Generate an INFO FOR TABLE <name> statement to inspect a table's schema."
+)]
+#[instrument]
+async fn info_for_table(p: InfoForTableParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    ok_text(format!("INFO FOR TABLE {};", p.name))
+}
+
+// ── Plugin ────────────────────────────────────────────────────────────────────
+
+/// MCP plugin exposing SurrealDB DDL schema definition tools.
+#[derive(Debug, ElicitPlugin)]
+#[plugin(name = "surreal_schema")]
+pub struct SurrealSchemaPlugin;

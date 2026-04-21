@@ -1,289 +1,246 @@
-//! `SurrealCrudPlugin` — SurrealQL DML and Rust SDK snippet tools.
+//! SurrealCrudPlugin — MCP tools for SurrealDB CRUD operations and Rust SDK snippets.
 
-use elicitation::{ElicitPlugin, ToCodeLiteral, elicit_tool};
-use rmcp::{
-    ErrorData,
-    model::{CallToolResult, Content},
-};
+use elicitation::{ElicitPlugin, elicit_tool};
+use rmcp::ErrorData;
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use tracing::instrument;
 
-fn ok_text(text: impl Into<String>) -> Result<CallToolResult, ErrorData> {
-    Ok(CallToolResult::success(vec![Content::text(text.into())]))
+fn ok_text(s: impl Into<String>) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    Ok(rmcp::model::CallToolResult::success(vec![
+        rmcp::model::Content::text(s.into()),
+    ]))
 }
 
-// ── parameter structs ─────────────────────────────────────────────────────────
+// ── Parameters ────────────────────────────────────────────────────────────────
 
-/// Key–value binding pair for parameterized queries.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, ToCodeLiteral)]
-pub struct BindPair {
-    /// Binding key (without `$` sigil).
-    pub key: String,
-    /// Binding value expression.
-    pub value: String,
-}
-
-/// Parameters for raw `SELECT` SurrealQL emission.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__select_raw`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct SelectRawParams {
-    /// Projections (e.g. `"*"`, `"name, age"`).
-    pub projections: String,
-    /// `FROM` target (table name or record ID).
+    /// Fields to select (e.g. `"*"` or `"name, age"`).
+    pub fields: String,
+    /// Target table or record (e.g. `"person"` or `"person:john"`).
     pub from: String,
-    /// Optional `WHERE` clause.
+    /// Optional WHERE clause expression.
     #[serde(default)]
     pub where_clause: Option<String>,
-    /// Optional `FETCH` fields (graph traversal).
+    /// Optional LIMIT count.
     #[serde(default)]
-    pub fetch: Vec<String>,
-    /// Optional `ORDER BY` clause.
+    pub limit: Option<u32>,
+    /// Optional START offset.
     #[serde(default)]
-    pub order_by: Option<String>,
-    /// Optional `LIMIT`.
-    #[serde(default)]
-    pub limit: Option<u64>,
-    /// Optional `START` offset.
-    #[serde(default)]
-    pub start: Option<u64>,
+    pub start: Option<u32>,
 }
 
-/// Parameters for raw `CREATE` emission.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__create_raw`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct CreateRawParams {
-    /// Table name or `table:id`.
-    pub target: String,
-    /// `SET field = val, …` or `CONTENT {…}` clause (provide raw SurrealQL after the keyword).
-    pub content: String,
-    /// Use `CONTENT` keyword instead of `SET`.
+    /// Target table or record ID (e.g. `"person"` or `"person:john"`).
+    pub table_id: String,
+    /// Optional CONTENT JSON string.
     #[serde(default)]
-    pub use_content: bool,
+    pub content_json: Option<String>,
+    /// Optional SET field assignments, each like `"name = 'Alice'"`.
+    #[serde(default)]
+    pub set_fields: Vec<String>,
 }
 
-/// Parameters for raw `INSERT` emission.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__insert_raw`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct InsertRawParams {
-    /// Table name.
+    /// Target table name.
     pub table: String,
-    /// Field names.
+    /// Optional column names for positional VALUES syntax.
+    #[serde(default)]
     pub fields: Vec<String>,
-    /// Row values as SurrealQL expressions (parallel to `fields`).
+    /// Value rows, each a JSON-array string (e.g. `"['Alice', 30]"`).
+    #[serde(default)]
     pub values: Vec<String>,
 }
 
-/// Parameters for raw `UPDATE` emission.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__update_raw`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct UpdateRawParams {
-    /// Table or `table:id` target.
+    /// Target table or record ID.
     pub target: String,
-    /// `SET field = val, …` SurrealQL.
-    pub set_clause: String,
-    /// Optional `WHERE` filter.
+    /// SET field assignments, each like `"age = 31"`.
     #[serde(default)]
-    pub where_clause: Option<String>,
+    pub set_fields: Vec<String>,
 }
 
-/// Parameters for raw `UPSERT … CONTENT` emission.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__upsert_raw`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct UpsertRawParams {
-    /// `table:id` target.
+    /// Target table or record ID.
     pub target: String,
-    /// JSON-like content object (raw SurrealQL).
-    pub content: String,
+    /// CONTENT JSON string.
+    pub content_json: String,
 }
 
-/// Parameters for raw `DELETE` emission.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__delete_raw`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DeleteRawParams {
-    /// Target (`table`, `table:id`, or record range).
+    /// Target table or record ID.
     pub target: String,
-    /// Optional `WHERE` filter.
+    /// Optional WHERE clause expression.
     #[serde(default)]
     pub where_clause: Option<String>,
 }
 
-/// Parameters for raw `UPDATE … MERGE` emission.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__merge_raw`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct MergeRawParams {
-    /// `table:id` target.
+    /// Target table or record ID.
     pub target: String,
-    /// Merge object (raw SurrealQL / JSON).
-    pub merge_object: String,
+    /// JSON object to merge in.
+    pub merge_json: String,
 }
 
-/// Parameters for raw `UPDATE … PATCH` emission.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__patch_raw`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct PatchRawParams {
-    /// `table:id` target.
+    /// Target table or record ID.
     pub target: String,
-    /// JSON Patch operations array (raw JSON).
-    pub patch_ops: String,
-}
-
-/// Parameters for raw `RELATE` emission.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
-pub struct RelateRawParams {
-    /// Source record ID.
-    pub from_record: String,
-    /// Relation table:id.
-    pub relation: String,
-    /// Target record ID.
-    pub to_record: String,
-    /// Optional `SET` clause.
+    /// JSON Patch operation strings (RFC 6902 objects).
     #[serde(default)]
-    pub set_clause: Option<String>,
+    pub patches: Vec<String>,
 }
 
-/// Parameters for Rust SDK `db.select` snippet.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__relate_raw`.
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct RelateRawParams {
+    /// Source record ID (e.g. `"person:alice"`).
+    pub from_record: String,
+    /// Edge table name.
+    pub edge_table: String,
+    /// Target record ID (e.g. `"product:42"`).
+    pub to_record: String,
+    /// Optional SET field assignments on the edge record.
+    #[serde(default)]
+    pub set_fields: Vec<String>,
+}
+
+/// Parameters for `surreal_crud__select_rust`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct SelectRustParams {
-    /// Table name (or `("table", "id")` tuple string for single record).
-    pub target: String,
-    /// Rust type name for the result (e.g. `"Person"`).
-    pub result_type: String,
+    /// Table name.
+    pub table: String,
+    /// Optional specific record ID.
+    #[serde(default)]
+    pub record_id: Option<String>,
 }
 
-/// Parameters for Rust SDK `db.create` snippet.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__create_rust`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct CreateRustParams {
     /// Table name.
     pub table: String,
-    /// Optional record ID.
+    /// Optional specific record ID.
     #[serde(default)]
     pub id: Option<String>,
-    /// Content variable name or literal struct.
-    pub content: String,
-    /// Rust result type (e.g. `"Person"`).
-    pub result_type: String,
+    /// Rust type name for the content struct.
+    pub content_type: String,
 }
 
-/// Parameters for Rust SDK `db.insert` snippet.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__insert_rust`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct InsertRustParams {
     /// Table name.
     pub table: String,
-    /// Content variable (a `Vec<T>` expression).
-    pub content: String,
-    /// Rust element type (e.g. `"Person"`).
-    pub result_type: String,
+    /// Rust type name for the inserted records.
+    pub content_type: String,
 }
 
-/// Parameters for Rust SDK `db.update` snippet.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__update_rust`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct UpdateRustParams {
     /// Table name.
     pub table: String,
-    /// Optional ID (if targeting a single record).
+    /// Optional specific record ID.
     #[serde(default)]
     pub id: Option<String>,
-    /// Merge/content variable.
-    pub merge: String,
-    /// Rust result type.
-    pub result_type: String,
+    /// Update method: `"merge"`, `"content"`, or `"patch"`.
+    pub method: String,
 }
 
-/// Parameters for Rust SDK `db.delete` snippet.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__delete_rust`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct DeleteRustParams {
     /// Table name.
     pub table: String,
-    /// Optional ID (single record delete).
+    /// Optional specific record ID.
     #[serde(default)]
     pub id: Option<String>,
 }
 
-/// Parameters for Rust SDK `db.query` snippet.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__query_rust`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct QueryRustParams {
     /// SurrealQL query string.
-    pub query: String,
-    /// Variable bindings.
+    pub surreal_ql: String,
+    /// Variable names to bind (each used as `bind(("name", name))`).
     #[serde(default)]
-    pub binds: Vec<BindPair>,
-    /// Rust result type.
-    pub result_type: String,
+    pub bindings: Vec<String>,
 }
 
-/// Parameters for `db.query("LIVE SELECT …")` snippet.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+/// Parameters for `surreal_crud__live_rust`.
+#[derive(Debug, Deserialize, JsonSchema)]
 pub struct LiveRustParams {
-    /// Table to watch.
+    /// Table to subscribe to for live notifications.
     pub table: String,
-    /// Rust event type (e.g. `"Notification<Person>"`).
-    pub event_type: String,
 }
 
-// ── plugin struct ─────────────────────────────────────────────────────────────
-
-/// MCP plugin providing SurrealQL DML and Rust SDK code generation tools.
-#[derive(Debug, ElicitPlugin)]
-#[plugin(name = "surreal_crud")]
-pub struct SurrealCrudPlugin;
-
-impl SurrealCrudPlugin {
-    /// Creates a new CRUD plugin.
-    pub fn new() -> Self {
-        Self
-    }
-}
-
-impl Default for SurrealCrudPlugin {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-// ── tools ─────────────────────────────────────────────────────────────────────
+// ── Tools ─────────────────────────────────────────────────────────────────────
 
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "select_raw",
-    description = "Emit a SurrealQL SELECT statement with optional WHERE, FETCH, ORDER BY, LIMIT, and START."
+    description = "Generate a SELECT SurrealQL statement with optional WHERE, LIMIT, and START."
 )]
-#[instrument(skip_all)]
-async fn select_raw(p: SelectRawParams) -> Result<CallToolResult, ErrorData> {
-    let mut s = format!("SELECT {} FROM {}", p.projections, p.from);
-    if let Some(w) = &p.where_clause {
-        s.push_str(&format!(" WHERE {w}"));
-    }
-    if !p.fetch.is_empty() {
-        s.push_str(&format!(" FETCH {}", p.fetch.join(", ")));
-    }
-    if let Some(o) = &p.order_by {
-        s.push_str(&format!(" ORDER BY {o}"));
-    }
-    if let Some(l) = p.limit {
-        s.push_str(&format!(" LIMIT {l}"));
-    }
-    if let Some(st) = p.start {
-        s.push_str(&format!(" START {st}"));
-    }
-    s.push(';');
-    ok_text(s)
+#[instrument]
+async fn select_raw(p: SelectRawParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let wh = p
+        .where_clause
+        .as_deref()
+        .map(|w| format!(" WHERE {w}"))
+        .unwrap_or_default();
+    let lim = p.limit.map(|n| format!(" LIMIT {n}")).unwrap_or_default();
+    let st = p.start.map(|n| format!(" START {n}")).unwrap_or_default();
+    ok_text(format!("SELECT {} FROM {}{wh}{lim}{st};", p.fields, p.from))
 }
 
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "create_raw",
-    description = "Emit a SurrealQL CREATE statement using SET or CONTENT clause."
+    description = "Generate a CREATE SurrealQL statement using CONTENT or SET syntax."
 )]
-#[instrument(skip_all)]
-async fn create_raw(p: CreateRawParams) -> Result<CallToolResult, ErrorData> {
-    let kw = if p.use_content { "CONTENT" } else { "SET" };
-    ok_text(format!("CREATE {} {} {};", p.target, kw, p.content))
+#[instrument]
+async fn create_raw(p: CreateRawParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let body = if let Some(json) = &p.content_json {
+        format!(" CONTENT {json}")
+    } else if !p.set_fields.is_empty() {
+        format!(" SET {}", p.set_fields.join(", "))
+    } else {
+        String::new()
+    };
+    ok_text(format!("CREATE {}{body};", p.table_id))
 }
 
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "insert_raw",
-    description = "Emit a SurrealQL INSERT INTO statement with field list and values."
+    description = "Generate an INSERT INTO SurrealQL statement with optional column list."
 )]
-#[instrument(skip_all)]
-async fn insert_raw(p: InsertRawParams) -> Result<CallToolResult, ErrorData> {
-    let fields = p.fields.join(", ");
-    let values = p.values.join(", ");
+#[instrument]
+async fn insert_raw(p: InsertRawParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let fields_part = if p.fields.is_empty() {
+        String::new()
+    } else {
+        format!(" ({})", p.fields.join(", "))
+    };
+    let vals = p.values.join(", ");
     ok_text(format!(
-        "INSERT INTO {} ({fields}) VALUES ({values});",
+        "INSERT INTO {}{fields_part} VALUES {vals};",
         p.table
     ))
 }
@@ -291,193 +248,206 @@ async fn insert_raw(p: InsertRawParams) -> Result<CallToolResult, ErrorData> {
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "update_raw",
-    description = "Emit a SurrealQL UPDATE … SET statement with optional WHERE filter."
+    description = "Generate an UPDATE … SET SurrealQL statement."
 )]
-#[instrument(skip_all)]
-async fn update_raw(p: UpdateRawParams) -> Result<CallToolResult, ErrorData> {
-    let mut s = format!("UPDATE {} SET {}", p.target, p.set_clause);
-    if let Some(w) = &p.where_clause {
-        s.push_str(&format!(" WHERE {w}"));
-    }
-    s.push(';');
-    ok_text(s)
+#[instrument]
+async fn update_raw(p: UpdateRawParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let set = p.set_fields.join(", ");
+    ok_text(format!("UPDATE {} SET {set};", p.target))
 }
 
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "upsert_raw",
-    description = "Emit a SurrealQL UPSERT … CONTENT statement."
+    description = "Generate an UPSERT … CONTENT SurrealQL statement."
 )]
-#[instrument(skip_all)]
-async fn upsert_raw(p: UpsertRawParams) -> Result<CallToolResult, ErrorData> {
-    ok_text(format!("UPSERT {} CONTENT {};", p.target, p.content))
+#[instrument]
+async fn upsert_raw(p: UpsertRawParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    ok_text(format!("UPSERT {} CONTENT {};", p.target, p.content_json))
 }
 
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "delete_raw",
-    description = "Emit a SurrealQL DELETE statement with optional WHERE filter."
+    description = "Generate a DELETE SurrealQL statement with optional WHERE clause."
 )]
-#[instrument(skip_all)]
-async fn delete_raw(p: DeleteRawParams) -> Result<CallToolResult, ErrorData> {
-    let mut s = format!("DELETE {}", p.target);
-    if let Some(w) = &p.where_clause {
-        s.push_str(&format!(" WHERE {w}"));
-    }
-    s.push(';');
-    ok_text(s)
+#[instrument]
+async fn delete_raw(p: DeleteRawParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let wh = p
+        .where_clause
+        .as_deref()
+        .map(|w| format!(" WHERE {w}"))
+        .unwrap_or_default();
+    ok_text(format!("DELETE {}{wh};", p.target))
 }
 
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "merge_raw",
-    description = "Emit a SurrealQL UPDATE … MERGE statement."
+    description = "Generate an UPDATE … MERGE SurrealQL statement."
 )]
-#[instrument(skip_all)]
-async fn merge_raw(p: MergeRawParams) -> Result<CallToolResult, ErrorData> {
-    ok_text(format!("UPDATE {} MERGE {};", p.target, p.merge_object))
+#[instrument]
+async fn merge_raw(p: MergeRawParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    ok_text(format!("UPDATE {} MERGE {};", p.target, p.merge_json))
 }
 
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "patch_raw",
-    description = "Emit a SurrealQL UPDATE … PATCH statement using JSON Patch operations."
+    description = "Generate an UPDATE … PATCH SurrealQL statement from a JSON Patch array."
 )]
-#[instrument(skip_all)]
-async fn patch_raw(p: PatchRawParams) -> Result<CallToolResult, ErrorData> {
-    ok_text(format!("UPDATE {} PATCH {};", p.target, p.patch_ops))
+#[instrument]
+async fn patch_raw(p: PatchRawParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let patch_arr = format!("[{}]", p.patches.join(", "));
+    ok_text(format!("UPDATE {} PATCH {patch_arr};", p.target))
 }
 
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "relate_raw",
-    description = "Emit a SurrealQL RELATE statement creating a graph edge between two records."
+    description = "Generate a RELATE graph edge SurrealQL statement with optional SET fields."
 )]
-#[instrument(skip_all)]
-async fn relate_raw(p: RelateRawParams) -> Result<CallToolResult, ErrorData> {
-    let mut s = format!("RELATE {}->{}->{}", p.from_record, p.relation, p.to_record);
-    if let Some(set) = &p.set_clause {
-        s.push_str(&format!(" SET {set}"));
-    }
-    s.push(';');
-    ok_text(s)
-}
-
-#[elicit_tool(
-    plugin = "surreal_crud",
-    name = "select_rust",
-    description = "Emit a Rust SDK db.select(…).await? code snippet."
-)]
-#[instrument(skip_all)]
-async fn select_rust(p: SelectRustParams) -> Result<CallToolResult, ErrorData> {
+#[instrument]
+async fn relate_raw(p: RelateRawParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let set = if p.set_fields.is_empty() {
+        String::new()
+    } else {
+        format!(" SET {}", p.set_fields.join(", "))
+    };
     ok_text(format!(
-        "let result: Vec<{ty}> = db\n    .select(\"{target}\")\n    .await?;\n",
-        ty = p.result_type,
-        target = p.target,
+        "RELATE {}->{}->{}{set};",
+        p.from_record, p.edge_table, p.to_record
     ))
 }
 
 #[elicit_tool(
     plugin = "surreal_crud",
-    name = "create_rust",
-    description = "Emit a Rust SDK db.create(…).content(…).await? code snippet."
+    name = "select_rust",
+    description = "Generate a Rust SurrealDB SDK snippet for selecting records."
 )]
-#[instrument(skip_all)]
-async fn create_rust(p: CreateRustParams) -> Result<CallToolResult, ErrorData> {
-    let target = match &p.id {
-        Some(id) => format!("(\"{}\", \"{}\")", p.table, id),
-        None => format!("\"{}\"", p.table),
+#[instrument]
+async fn select_rust(p: SelectRustParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let snippet = if let Some(id) = &p.record_id {
+        format!(
+            "let result: Option<MyRecord> = db\n    .select((\"{table}\", \"{id}\"))\n    .await?;",
+            table = p.table,
+            id = id
+        )
+    } else {
+        format!(
+            "let results: Vec<MyRecord> = db\n    .select(\"{table}\")\n    .await?;",
+            table = p.table
+        )
+    };
+    ok_text(snippet)
+}
+
+#[elicit_tool(
+    plugin = "surreal_crud",
+    name = "create_rust",
+    description = "Generate a Rust SurrealDB SDK snippet for creating a record."
+)]
+#[instrument]
+async fn create_rust(p: CreateRustParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let target = if let Some(id) = &p.id {
+        format!(r#"("{}", "{}")"#, p.table, id)
+    } else {
+        format!(r#""{}""#, p.table)
     };
     ok_text(format!(
-        "let result: Option<{ty}> = db\n    .create({target})\n    .content({content})\n    .await?;\n",
-        ty = p.result_type,
-        content = p.content,
+        "let result: Option<{ct}> = db\n    .create({target})\n    .content(value)\n    .await?;",
+        ct = p.content_type
     ))
 }
 
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "insert_rust",
-    description = "Emit a Rust SDK db.insert(…).content(…).await? code snippet."
+    description = "Generate a Rust SurrealDB SDK snippet for inserting records into a table."
 )]
-#[instrument(skip_all)]
-async fn insert_rust(p: InsertRustParams) -> Result<CallToolResult, ErrorData> {
+#[instrument]
+async fn insert_rust(p: InsertRustParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
     ok_text(format!(
-        "let result: Vec<{ty}> = db\n    .insert(\"{table}\")\n    .content({content})\n    .await?;\n",
-        ty = p.result_type,
-        table = p.table,
-        content = p.content,
+        "let results: Vec<{ct}> = db\n    .insert(\"{table}\")\n    .content(values)\n    .await?;",
+        ct = p.content_type,
+        table = p.table
     ))
 }
 
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "update_rust",
-    description = "Emit a Rust SDK db.update(…).merge(…).await? code snippet."
+    description = "Generate a Rust SurrealDB SDK snippet for updating a record using merge, content, or patch."
 )]
-#[instrument(skip_all)]
-async fn update_rust(p: UpdateRustParams) -> Result<CallToolResult, ErrorData> {
-    let target = match &p.id {
-        Some(id) => format!("(\"{}\", \"{}\")", p.table, id),
-        None => format!("\"{}\"", p.table),
+#[instrument]
+async fn update_rust(p: UpdateRustParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let method_call = match p.method.as_str() {
+        "content" => ".content(data)",
+        "patch" => ".patch(PatchOp::add(\"/field\", value))",
+        _ => ".merge(data)",
+    };
+    let target = if let Some(id) = &p.id {
+        format!(r#"("{}", "{}")"#, p.table, id)
+    } else {
+        format!(r#""{}""#, p.table)
     };
     ok_text(format!(
-        "let result: Option<{ty}> = db\n    .update({target})\n    .merge({merge})\n    .await?;\n",
-        ty = p.result_type,
-        merge = p.merge,
+        "let result: Option<T> = db\n    .update({target})\n    {method_call}\n    .await?;"
     ))
 }
 
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "delete_rust",
-    description = "Emit a Rust SDK db.delete(…).await? code snippet."
+    description = "Generate a Rust SurrealDB SDK snippet for deleting a record or table."
 )]
-#[instrument(skip_all)]
-async fn delete_rust(p: DeleteRustParams) -> Result<CallToolResult, ErrorData> {
-    let target = match &p.id {
-        Some(id) => format!("(\"{}\", \"{}\")", p.table, id),
-        None => format!("\"{}\"", p.table),
+#[instrument]
+async fn delete_rust(p: DeleteRustParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let target = if let Some(id) = &p.id {
+        format!(r#"("{}", "{}")"#, p.table, id)
+    } else {
+        format!(r#""{}""#, p.table)
     };
-    ok_text(format!("db.delete({target}).await?;\n"))
+    ok_text(format!(
+        "let result: Option<T> = db\n    .delete({target})\n    .await?;"
+    ))
 }
 
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "query_rust",
-    description = "Emit a Rust SDK db.query(…).bind(…).await? code snippet with optional variable bindings."
+    description = "Generate a Rust SurrealDB SDK snippet for a parameterised query with bindings."
 )]
-#[instrument(skip_all)]
-async fn query_rust(p: QueryRustParams) -> Result<CallToolResult, ErrorData> {
-    let binds_str: String = p
-        .binds
+#[instrument]
+async fn query_rust(p: QueryRustParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
+    let bind_lines = p
+        .bindings
         .iter()
-        .map(|b| format!("    .bind((\"{}\", {}))\n", b.key, b.value))
-        .collect();
+        .map(|b| format!("\n    .bind((\"{b}\", {b}))"))
+        .collect::<Vec<_>>()
+        .join("");
     ok_text(format!(
-        "let mut response = db\n    .query(\"{query}\")\n{binds_str}    .await?;\nlet result: Vec<{ty}> = response.take(0)?;\n",
-        query = p.query,
-        ty = p.result_type,
+        "let mut response = db\n    .query(\"{sql}\"){bind_lines}\n    .await?;\nlet results: Vec<T> = response.take(0)?;",
+        sql = p.surreal_ql
     ))
 }
 
 #[elicit_tool(
     plugin = "surreal_crud",
     name = "live_rust",
-    description = "Emit a Rust SDK live query snippet using LIVE SELECT and a notification stream."
+    description = "Generate a Rust SurrealDB SDK snippet for a live query subscription."
 )]
-#[instrument(skip_all)]
-async fn live_rust(p: LiveRustParams) -> Result<CallToolResult, ErrorData> {
+#[instrument]
+async fn live_rust(p: LiveRustParams) -> Result<rmcp::model::CallToolResult, ErrorData> {
     ok_text(format!(
-        r#"let mut response = db
-    .query("LIVE SELECT * FROM {table}")
-    .await?;
-let mut stream = response.stream::<Notification<{ty}>>(0)?;
-while let Some(notification) = stream.next().await {{
-    println!("{{notification:?}}");
-}}
-"#,
-        table = p.table,
-        ty = p.event_type,
+        "let mut stream = db\n    .select(\"{table}\")\n    .live()\n    .await?;\nwhile let Some(notification) = stream.next().await {{\n    // handle notification\n}}",
+        table = p.table
     ))
 }
+
+// ── Plugin ────────────────────────────────────────────────────────────────────
+
+/// MCP plugin exposing SurrealDB CRUD operation and Rust SDK snippet tools.
+#[derive(Debug, ElicitPlugin)]
+#[plugin(name = "surreal_crud")]
+pub struct SurrealCrudPlugin;

@@ -1,33 +1,39 @@
-//! Trait factory for `surrealdb::types::SurrealValue`.
+//! Factory tooling for [`surrealdb_types::SurrealValue`].
 //!
-//! Provides [`prime_surreal_value`] which registers a user type that implements
-//! `surrealdb::types::SurrealValue` (the serialization trait) into the elicitation
-//! type registry, making it available as a parameter type in MCP tools.
+//! Exposes the three core `SurrealValue` methods as dynamic MCP tools via
+//! `#[reflect_trait]`.  The `type_map` bridges the upstream value types
+//! to their serializable proxy counterparts:
+//!
+//! - `surrealdb_types::Kind`  → [`crate::Kind`]
+//! - `surrealdb_types::Value` → [`crate::Value`]
+//!
+//! `from_value` is intentionally excluded because `surrealdb_types::Error`
+//! does not implement `Serialize`, so it cannot be forwarded over the MCP
+//! boundary.  Users who need error-path handling should use the SurrealQL
+//! expression tools instead.
 
-use elicitation::ElicitComplete;
+use elicitation_macros::reflect_trait;
 
-/// Register a user type `T` that satisfies [`ElicitComplete`] into the
-/// elicitation type registry so it can be used as an MCP parameter type.
+/// Expose [`surrealdb_types::SurrealValue`] as dynamic MCP tools.
 ///
-/// The bound is intentionally kept to `ElicitComplete` so that the codegen
-/// crate does not need to link against the SurrealDB SDK. To verify that `T`
-/// also implements `surrealdb::types::SurrealValue`, add that bound in your
-/// own crate that already depends on `surrealdb`.
-///
-/// # Example
-///
-/// ```rust,ignore
-/// use elicit_surrealdb::prime_surreal_value;
-///
-/// #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
-/// #[derive(elicitation::ElicitComplete)]
-/// struct MyRecord { id: String }
-///
-/// prime_surreal_value::<MyRecord>();
-/// ```
-pub fn prime_surreal_value<T: ElicitComplete>() {
-    // Registration is handled by `#[derive(ElicitComplete)]` inventory submission.
-    // This function acts as a compile-time proof that `T` satisfies the bound
-    // and as a visible call site for documentation purposes.
-    let _ = std::marker::PhantomData::<T>;
+/// Three methods are reflected:
+/// - `kind_of() -> Kind` — the SurrealDB `Kind` that describes this type
+/// - `is_value(value: &Value) -> bool` — test whether a `Value` matches this type
+/// - `into_value(self) -> Value` — convert an instance into a `Value`
+#[reflect_trait(
+    surrealdb_types::SurrealValue,
+    type_map(
+        surrealdb_types::Value => crate::Value,
+        surrealdb_types::Kind  => crate::Kind
+    )
+)]
+pub trait SurrealValueTools {
+    /// Returns the [`Kind`] that represents this type's schema.
+    fn kind_of() -> surrealdb_types::Kind;
+
+    /// Returns `true` if `value` can be converted to this type.
+    fn is_value(value: &surrealdb_types::Value) -> bool;
+
+    /// Converts `self` into a [`surrealdb_types::Value`].
+    fn into_value(self) -> surrealdb_types::Value;
 }
