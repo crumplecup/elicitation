@@ -12,12 +12,13 @@ API surface within reach of an AI model operating over the Model Context Protoco
 
 | Plugin | Tool prefix | Tools | Coverage category |
 |--------|-------------|------:|-------------------|
+| `SurrealConstructorsPlugin` | `surreal_constructors__*` | 18 | Type constructors (Duration, Datetime, Table, RecordId, Number, Kind) |
 | `SurrealSchemaPlugin` | `surreal_schema__*` | 16 | DDL (DEFINE / REMOVE) |
 | `SurrealCrudPlugin` | `surreal_crud__*` | 16 | DML — SurrealQL + Rust SDK |
 | `SurrealConnectionPlugin` | `surreal_connection__*` | 10 | Connection + auth boilerplate |
 | `SurrealSelectPlugin` | `surreal_select__*` | 14 | Stateful SELECT query builder |
 | `SurrealTransactionPlugin` | `surreal_txn__*` | 6 | Stateful transaction builder |
-| **Total** | | **62** | |
+| **Total** | | **80** | |
 
 Shadow / value types covered:
 
@@ -43,7 +44,7 @@ ACCESS`, or vector index declarations — requires exact syntax knowledge that A
 frequently mis-recall or hallucinate. The connection and authentication boilerplate for the Rust
 SDK is similarly repetitive and error-prone.
 
-`elicit_surrealdb` solves this by providing **62 MCP tools** that accept well-typed, schema-validated
+`elicit_surrealdb` solves this by providing **80 MCP tools** that accept well-typed, schema-validated
 JSON parameters and produce exact, copy-paste-ready SurrealQL strings and Rust SDK snippets. The
 model never writes SurrealQL syntax directly; it calls tools that know the grammar.
 
