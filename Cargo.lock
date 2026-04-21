@@ -3804,6 +3804,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_redb"
+version = "0.10.0"
+dependencies = [
+ "derive_more",
+ "elicitation",
+ "elicitation_derive",
+ "elicitation_macros",
+ "futures",
+ "inventory",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "elicit_regex"
 version = "0.10.0"
 dependencies = [
@@ -3997,15 +4016,19 @@ dependencies = [
 name = "elicit_surrealdb"
 version = "0.10.0"
 dependencies = [
- "derive_more",
  "elicitation",
  "elicitation_derive",
  "elicitation_macros",
+ "futures",
  "inventory",
+ "proc-macro2",
+ "quote",
  "rmcp",
+ "rust_decimal",
  "schemars",
  "serde",
  "serde_json",
+ "surrealdb-types",
  "tokio",
  "tracing",
  "uuid",
@@ -4268,6 +4291,7 @@ dependencies = [
  "rand 0.10.1",
  "rand_chacha 0.10.0",
  "ratatui",
+ "redb",
  "regex",
  "reqwest 0.13.2",
  "rmcp",
@@ -9003,6 +9027,15 @@ checksum = "76009fbe0614077fc1a2ce255e3a1881a2e3a3527097d5dc6d8212c585e7e38b"
 dependencies = [
  "quote",
  "syn 2.0.117",
+]
+
+[[package]]
+name = "redb"
+version = "4.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e925444704b5f17d32bf42f5b6e2df050bceebc3dcd6e71cc73dafe8092e839"
+dependencies = [
+ "libc",
 ]
 
 [[package]]

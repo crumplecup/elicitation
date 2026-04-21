@@ -46,6 +46,7 @@ members = [
   "crates/elicit_wgpu",
   "crates/elicit_bevy",
   "crates/elicit_surrealdb",
+  "crates/elicit_redb",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
@@ -110,6 +111,7 @@ elicit_winit = { path = "crates/elicit_winit", version = "0.10.0" }
 elicit_wgpu = { path = "crates/elicit_wgpu", version = "0.10.0" }
 elicit_bevy = { path = "crates/elicit_bevy", version = "0.10.0" }
 elicit_surrealdb = { path = "crates/elicit_surrealdb", version = "0.10.0" }
+elicit_redb = { path = "crates/elicit_redb", version = "0.10.0" }
 
 # ── MCP ───────────────────────────────────────────────────────────────────────
 rmcp = { version = "1.5", features = [
@@ -185,6 +187,7 @@ eframe = { version = "0.34", default-features = false, features = [
 ] }
 
 # ── Database ──────────────────────────────────────────────────────────────────
+redb = "4"
 # surrealdb-types 3.x pins geo = "^0.32" but our workspace uses geo 0.33.
 # We vendor the crate and change that pin to 0.33 to unify the dep graph.
 surrealdb-types = { path = "vendor/surrealdb-types-3.0.5" }
