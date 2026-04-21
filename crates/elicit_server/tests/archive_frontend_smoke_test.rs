@@ -16,7 +16,7 @@ use elicit_server::archive::{
     BackendKind, DatabaseDescriptor,
     frontend_utils::{demo_verified_tree, verified_tree_from_descriptor},
 };
-use elicit_ui::UiRenderer;
+use elicit_ui::UiTreeRenderer;
 use serde_json::json;
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -89,17 +89,17 @@ fn demo_descriptor_backend_is_postgres() {
 fn ratatui_backend_renders_demo_tree() {
     let tree = demo_verified_tree().expect("demo tree");
     let backend = RatatuiBackend::new();
-    let (_stats, _proof) = backend.render(&tree).expect("render must succeed");
+    let (_widget, _stats, _proof) = backend.render(&tree).expect("render must succeed");
 }
 
 #[test]
 fn ratatui_render_produces_tui_tree() {
     let tree = demo_verified_tree().expect("demo tree");
     let backend = RatatuiBackend::new();
-    backend.render(&tree).expect("render");
+    let (root, _stats, _proof) = backend.render(&tree).expect("render");
     assert!(
-        backend.last_tui_tree().is_some(),
-        "last_tui_tree must be Some after render"
+        matches!(root, TuiNode::Layout { .. } | TuiNode::Widget { .. }),
+        "render must produce a TuiNode root"
     );
 }
 
@@ -110,8 +110,7 @@ fn ratatui_tui_tree_root_is_valid_node() {
     // `Layout` (container) depending on the display mode — both are valid.
     let tree = demo_verified_tree().expect("demo tree");
     let backend = RatatuiBackend::new();
-    backend.render(&tree).expect("render");
-    let root = backend.last_tui_tree().expect("tui tree present");
+    let (root, _stats, _proof) = backend.render(&tree).expect("render");
     assert!(
         matches!(root, TuiNode::Layout { .. } | TuiNode::Widget { .. }),
         "root TuiNode must be Layout or Widget, got: {root:?}"
@@ -122,7 +121,7 @@ fn ratatui_tui_tree_root_is_valid_node() {
 fn ratatui_render_stats_have_at_least_one_container() {
     let tree = demo_verified_tree().expect("demo tree");
     let backend = RatatuiBackend::new();
-    let (stats, _proof) = backend.render(&tree).expect("render");
+    let (_widget, stats, _proof) = backend.render(&tree).expect("render");
     assert!(
         stats.containers_rendered >= 1,
         "must render at least one container (the root window)"
@@ -139,8 +138,11 @@ fn ratatui_custom_descriptor_also_renders() {
     };
     let tree = verified_tree_from_descriptor(&desc).expect("tree");
     let backend = RatatuiBackend::new();
-    backend.render(&tree).expect("render custom descriptor");
-    assert!(backend.last_tui_tree().is_some());
+    let (root, _stats, _proof) = backend.render(&tree).expect("render custom descriptor");
+    assert!(matches!(
+        root,
+        TuiNode::Layout { .. } | TuiNode::Widget { .. }
+    ));
 }
 
 // ── Section 3: leptos headless ────────────────────────────────────────────────
@@ -149,8 +151,7 @@ fn ratatui_custom_descriptor_also_renders() {
 fn leptos_renderer_renders_demo_tree_to_nonempty_html() {
     let tree = demo_verified_tree().expect("demo tree");
     let renderer = LeptosRenderer::html();
-    renderer.render(&tree).expect("leptos render must succeed");
-    let html = renderer.last_html();
+    let (html, _stats, _proof) = renderer.render(&tree).expect("leptos render must succeed");
     assert!(!html.is_empty(), "rendered HTML must not be empty");
 }
 
@@ -164,8 +165,7 @@ fn leptos_html_contains_db_name() {
     };
     let tree = verified_tree_from_descriptor(&desc).expect("tree");
     let renderer = LeptosRenderer::html();
-    renderer.render(&tree).expect("render");
-    let html = renderer.last_html();
+    let (html, _stats, _proof) = renderer.render(&tree).expect("render");
     assert!(
         html.contains("my_smoke_db"),
         "HTML must contain the db name:\n{html}"
