@@ -11,7 +11,7 @@
 
 use elicit_serde::{prime_deserialize_json, prime_serialize_json};
 use elicitation::{
-    DynamicToolRegistry, Elicit, ElicitPlugin, Prompt, Select, ToolFactoryRegistration,
+    DynamicToolRegistry, Elicit, ElicitPlugin, ToolFactoryRegistration,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
