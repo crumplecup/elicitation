@@ -934,6 +934,173 @@ impl<E: 'static, V: 'static> Prop for InVariant<E, V> {
     }
 }
 
+// ── Formal Methods ────────────────────────────────────────────────────────────
+
+/// A function that consumes a proof and produces a proof.
+///
+/// Any `Fn(In, Established<PIn>) -> (Out, Established<POut>)` automatically
+/// implements this trait via the blanket impl below. The signature IS the
+/// contract declaration — no attribute or registry required.
+///
+/// # Type-driven call-graph closure
+///
+/// A function calling an informal helper cannot derive `Established<POut>` from
+/// that helper's result without using [`Established::assert`], the explicit,
+/// auditable escape hatch. The type system therefore closes the call graph
+/// automatically: proof tokens only flow from formal call sites.
+///
+/// # Evidence bundles
+///
+/// When multiple propositions must be satisfied, use an evidence bundle struct
+/// (a plain struct whose fields are `Established<P>` tokens that implements
+/// `ProvableFrom<Bundle>`). Pass the bundle as `In` or as `PIn` evidence.
+///
+/// # Examples
+///
+/// ```rust
+/// use elicitation::contracts::{Established, FormalMethod, Prop};
+///
+/// #[derive(elicitation::Prop)]
+/// struct Validated;
+/// #[derive(elicitation::Prop)]
+/// struct Processed;
+///
+/// // Any function with the matching signature is automatically a FormalMethod.
+/// fn process(input: String, _proof: Established<Validated>)
+///     -> (String, Established<Processed>)
+/// {
+///     (input.to_uppercase(), Established::assert())
+/// }
+///
+/// // Use via the trait or call directly — both work.
+/// let proof_in = Established::assert();
+/// let (_result, _proof_out) = process("hello".to_string(), proof_in);
+/// ```
+pub trait FormalMethod<In, PIn: Prop, Out, POut: Prop> {
+    /// Call this method, consuming the input proof and producing an output proof.
+    fn call_formal(&self, input: In, proof: Established<PIn>) -> (Out, Established<POut>);
+
+    /// Generate a Kani proof harness for this method's precondition/postcondition.
+    ///
+    /// The default returns an empty token stream (no harness). Override to emit
+    /// a `#[kani::proof]` harness asserting that the method honours its contract.
+    fn kani_harness() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    /// Generate a Verus proof harness for this method's contract.
+    fn verus_harness() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+
+    /// Generate a Creusot contract for this method.
+    fn creusot_harness() -> proc_macro2::TokenStream {
+        proc_macro2::TokenStream::new()
+    }
+}
+
+/// Blanket impl: any `Fn(In, Established<PIn>) -> (Out, Established<POut>)`
+/// is automatically a `FormalMethod`.
+impl<F, In, PIn: Prop, Out, POut: Prop> FormalMethod<In, PIn, Out, POut> for F
+where
+    F: Fn(In, Established<PIn>) -> (Out, Established<POut>),
+{
+    #[inline(always)]
+    fn call_formal(&self, input: In, proof: Established<PIn>) -> (Out, Established<POut>) {
+        self(input, proof)
+    }
+}
+
+// ── Verified State Machines ───────────────────────────────────────────────────
+
+/// A state machine whose states are fully described and whose transitions
+/// preserve a declared invariant.
+///
+/// # Contract
+///
+/// A `VerifiedStateMachine` declares two associated types:
+///
+/// - `State` — must be [`ElicitComplete`][crate::ElicitComplete]: fully
+///   introspectable, serialisable, and reasoned about by elicitation tooling.
+/// - `Invariant` — a [`Prop`] that every valid transition must preserve.
+///
+/// Transitions are [`FormalMethod`]s with signature
+/// `(State, Established<Invariant>) -> (State, Established<Invariant>)`.
+/// The type system guarantees that a transition cannot produce a new state
+/// without presenting proof that the invariant still holds.
+///
+/// # "Gated community" for formal verification
+///
+/// Declaring a `VerifiedStateMachine` is the top-level compiler-enforced
+/// claim that a system preserves its invariants. Outside a VSM any piece of
+/// the contracts stack can be used freely; inside, every transition must be
+/// a `FormalMethod`.
+///
+/// # Examples
+///
+/// ```rust
+/// use elicitation::contracts::{
+///     Established, FormalMethod, Prop, VerifiedStateMachine, VerifiedTransition,
+/// };
+/// use elicitation::ElicitComplete;
+///
+/// // --- State ---
+/// #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize,
+///          schemars::JsonSchema, elicitation::Elicitation, elicitation::ElicitIntrospect)]
+/// enum OrderState { Draft, Submitted, Shipped }
+///
+/// // --- Invariant proposition ---
+/// #[derive(elicitation::Prop)]
+/// struct OrderIntact;
+///
+/// // --- The VSM declaration ---
+/// struct OrderMachine;
+/// impl VerifiedStateMachine for OrderMachine {
+///     type State     = OrderState;
+///     type Invariant = OrderIntact;
+/// }
+///
+/// // --- A verified transition ---
+/// fn submit(state: OrderState, proof: Established<OrderIntact>)
+///     -> (OrderState, Established<OrderIntact>)
+/// {
+///     (OrderState::Submitted, proof) // invariant preserved
+/// }
+///
+/// // `submit` satisfies VerifiedTransition<OrderMachine> automatically.
+/// fn run<T: VerifiedTransition<OrderMachine>>(t: &T) {
+///     let proof = Established::assert();
+///     let (_new_state, _new_proof) = t.call_formal(OrderState::Draft, proof);
+/// }
+/// run(&submit);
+/// ```
+pub trait VerifiedStateMachine {
+    /// The state type.  Must be [`ElicitComplete`][crate::ElicitComplete].
+    type State: crate::ElicitComplete;
+
+    /// The invariant that every transition must preserve.
+    type Invariant: Prop;
+}
+
+/// Convenience alias: a verified transition for state machine `VSM`.
+///
+/// Any function (or closure) whose signature is
+/// `(VSM::State, Established<VSM::Invariant>) -> (VSM::State, Established<VSM::Invariant>)`
+/// satisfies this bound automatically via the [`FormalMethod`] blanket impl.
+pub trait VerifiedTransition<VSM: VerifiedStateMachine>:
+    FormalMethod<VSM::State, VSM::Invariant, VSM::State, VSM::Invariant>
+{
+}
+
+/// Blanket impl: any `FormalMethod` over the right state/invariant types is a
+/// `VerifiedTransition` for the corresponding `VerifiedStateMachine`.
+impl<VSM, T> VerifiedTransition<VSM> for T
+where
+    VSM: VerifiedStateMachine,
+    T: FormalMethod<VSM::State, VSM::Invariant, VSM::State, VSM::Invariant>,
+{
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
