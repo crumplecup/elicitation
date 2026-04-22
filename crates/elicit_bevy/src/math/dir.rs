@@ -101,12 +101,12 @@ impl serde::Serialize for Dir3 {
 impl<'de> serde::Deserialize<'de> for Dir3 {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         #[derive(serde::Deserialize)]
-        struct XYZ {
+        struct Xyz {
             x: f32,
             y: f32,
             z: f32,
         }
-        let xyz = XYZ::deserialize(d)?;
+        let xyz = Xyz::deserialize(d)?;
         let inner = bevy::math::Dir3::new(bevy::math::Vec3::new(xyz.x, xyz.y, xyz.z))
             .map_err(serde::de::Error::custom)?;
         Ok(Dir3(std::sync::Arc::new(inner)))
@@ -194,12 +194,12 @@ impl serde::Serialize for Dir3A {
 impl<'de> serde::Deserialize<'de> for Dir3A {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         #[derive(serde::Deserialize)]
-        struct XYZ {
+        struct Xyz {
             x: f32,
             y: f32,
             z: f32,
         }
-        let xyz = XYZ::deserialize(d)?;
+        let xyz = Xyz::deserialize(d)?;
         let inner = bevy::math::Dir3A::new(bevy::math::Vec3A::new(xyz.x, xyz.y, xyz.z))
             .map_err(serde::de::Error::custom)?;
         Ok(Dir3A(std::sync::Arc::new(inner)))

@@ -349,9 +349,10 @@ impl<'de> serde::Deserialize<'de> for Projection {
                     o.scale = scale;
                     bevy::camera::Projection::Orthographic(o)
                 } else {
-                    let mut p = bevy::camera::PerspectiveProjection::default();
-                    p.fov = fov;
-                    bevy::camera::Projection::Perspective(p)
+                    bevy::camera::Projection::Perspective(bevy::camera::PerspectiveProjection {
+                        fov,
+                        ..Default::default()
+                    })
                 };
                 Ok(Projection(Arc::new(inner)))
             }

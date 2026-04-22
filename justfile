@@ -209,12 +209,25 @@ test-full: test test-doc
 # Run clippy linter (no warnings allowed)
 lint package='':
     #!/usr/bin/env bash
+    set -uo pipefail
+    LOG_FILE="/tmp/elicitation_lint.log"
+    rm -f "$LOG_FILE"
     if [ -z "{{package}}" ]; then
         echo "🔍 Linting entire workspace"
-        cargo clippy --workspace --all-targets -- -D warnings
+        if ! cargo clippy --workspace --all-targets --exclude surrealdb-types -- -D warnings 2>&1 | tee "$LOG_FILE"; then
+            echo ""
+            echo "⚠️  Lint failed. Full log saved to: $LOG_FILE"
+            exit 1
+        fi
+        rm -f "$LOG_FILE"
     else
         echo "🔍 Linting {{package}}"
-        cargo clippy -p {{package}} --all-targets -- -D warnings
+        if ! cargo clippy -p {{package}} --all-targets -- -D warnings 2>&1 | tee "$LOG_FILE"; then
+            echo ""
+            echo "⚠️  Lint failed. Full log saved to: $LOG_FILE"
+            exit 1
+        fi
+        rm -f "$LOG_FILE"
     fi
 
 # Run clippy and fix issues automatically

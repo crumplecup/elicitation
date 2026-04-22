@@ -479,8 +479,8 @@ fn camera_view_helpers_emit_current_bevy_paths() {
 
 #[test]
 fn visibility_helpers_emit_current_bevy_paths() {
-    let no_cpu_culling = BevyNoCpuCullingParams::default();
-    let no_frustum_culling = BevyNoFrustumCullingParams::default();
+    let no_cpu_culling = BevyNoCpuCullingParams;
+    let no_frustum_culling = BevyNoFrustumCullingParams;
     let visibility_range = from_json::<BevyVisibilityRangeParams>(serde_json::json!({
         "start_margin_start": 5.0,
         "start_margin_end": 10.0,
@@ -578,12 +578,12 @@ fn skybox_and_prepass_helpers_emit_current_bevy_paths() {
         brightness: Some(1200.0),
         rotation_expr: Some("Quat::from_rotation_y(1.2)".into()),
     };
-    let depth = BevyDepthPrepassParams::default();
-    let normal = BevyNormalPrepassParams::default();
-    let motion = BevyMotionVectorPrepassParams::default();
-    let deferred = BevyDeferredPrepassParams::default();
-    let depth_double = BevyDepthPrepassDoubleBufferParams::default();
-    let deferred_double = BevyDeferredPrepassDoubleBufferParams::default();
+    let depth = BevyDepthPrepassParams;
+    let normal = BevyNormalPrepassParams;
+    let motion = BevyMotionVectorPrepassParams;
+    let deferred = BevyDeferredPrepassParams;
+    let depth_double = BevyDepthPrepassDoubleBufferParams;
+    let deferred_double = BevyDeferredPrepassDoubleBufferParams;
 
     let skybox_source = normalize(&skybox.emit_code().to_string());
     assert!(skybox_source.contains("::bevy::core_pipeline::Skybox{"));
@@ -737,11 +737,11 @@ fn dispatch_emit_color_material_uses_registered_emit_entry() {
 
 #[test]
 fn wireframe_helpers_emit_current_2d_and_3d_components() {
-    let wireframe = BevyWireframeParams::default();
+    let wireframe = BevyWireframeParams;
     let wireframe_color = BevyWireframeColorParams {
         color_expr: "Color::srgb(0.8, 0.2, 0.1)".into(),
     };
-    let no_wireframe = BevyNoWireframeParams::default();
+    let no_wireframe = BevyNoWireframeParams;
     let wireframe_config = BevyWireframeConfigParams {
         global: Some(true),
         default_color_expr: Some("Color::WHITE".into()),
@@ -749,11 +749,11 @@ fn wireframe_helpers_emit_current_2d_and_3d_components() {
     let mesh_3d_wireframe = BevyMesh3dWireframeParams {
         material_expr: "wireframe_materials.add(WireframeMaterial::default())".into(),
     };
-    let wireframe_2d = BevyWireframe2dParams::default();
+    let wireframe_2d = BevyWireframe2dParams;
     let wireframe_2d_color = BevyWireframe2dColorParams {
         color_expr: "Color::srgba(0.2, 0.7, 1.0, 0.9)".into(),
     };
-    let no_wireframe_2d = BevyNoWireframe2dParams::default();
+    let no_wireframe_2d = BevyNoWireframe2dParams;
     let wireframe_2d_config = BevyWireframe2dConfigParams {
         global: Some(false),
         default_color_expr: Some("Color::BLACK".into()),
@@ -1174,7 +1174,7 @@ fn generated_probe_and_volumetric_helpers_emit_current_bevy_light_components() {
         affects_lightmapped_mesh_diffuse: Some(false),
         size: Some([1024, 1024]),
     };
-    let volumetric_light = BevyVolumetricLightParams::default();
+    let volumetric_light = BevyVolumetricLightParams;
     let volumetric_fog = BevyVolumetricFogParams {
         ambient_color_expr: Some("Color::srgb(0.7, 0.8, 1.0)".into()),
         ambient_intensity: Some(0.2),
@@ -1234,7 +1234,7 @@ fn generated_probe_and_volumetric_helpers_emit_current_bevy_light_components() {
 
 #[test]
 fn light_probe_and_irradiance_volume_emit_current_probe_components() {
-    let light_probe = BevyLightProbeParams::default();
+    let light_probe = BevyLightProbeParams;
     let irradiance_volume = BevyIrradianceVolumeParams {
         voxels_expr: "asset_server.load(\"irradiance/room.ktx2\")".into(),
         intensity: Some(180.0),
@@ -1267,9 +1267,9 @@ fn light_marker_and_small_light_helpers_emit_current_bevy_components() {
         angular_size: Some(0.02),
         intensity: Some(1.5),
     };
-    let not_shadow_caster = BevyNotShadowCasterParams::default();
-    let not_shadow_receiver = BevyNotShadowReceiverParams::default();
-    let transmitted_shadow_receiver = BevyTransmittedShadowReceiverParams::default();
+    let not_shadow_caster = BevyNotShadowCasterParams;
+    let not_shadow_receiver = BevyNotShadowReceiverParams;
+    let transmitted_shadow_receiver = BevyTransmittedShadowReceiverParams;
 
     let ambient_source = normalize(&ambient.emit_code().to_string());
     let global_source = normalize(&global_ambient.emit_code().to_string());
@@ -1307,7 +1307,7 @@ fn render_config_helpers_emit_current_cluster_and_ssr_components() {
     let cluster_far_z_mode = BevyClusterFarZModeParams::Constant(250.0);
     let cluster_z_config = BevyClusterZConfigParams {
         first_slice_depth: Some(8.0),
-        far_z_mode: Some(cluster_far_z_mode.clone()),
+        far_z_mode: Some(cluster_far_z_mode),
     };
     let cluster_config = BevyClusterConfigParams::FixedZ {
         total: 2048,

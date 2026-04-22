@@ -391,7 +391,7 @@ impl WindowResolution {
     /// Override scale factor, if one has been set.
     #[tracing::instrument(skip(self))]
     pub fn scale_factor_override(&self) -> Option<f32> {
-        self.0.scale_factor_override().map(|f| f as f32)
+        self.0.scale_factor_override()
     }
 
     /// Aspect ratio (width / height).
@@ -728,13 +728,13 @@ impl EnabledButtons {
     /// Returns `true` if the minimize button is enabled.
     #[tracing::instrument(skip(self))]
     pub fn minimize(&self) -> bool {
-        (*self.0).minimize
+        self.0.minimize
     }
 
     /// Returns `true` if the maximize button is enabled.
     #[tracing::instrument(skip(self))]
     pub fn maximize(&self) -> bool {
-        (*self.0).maximize
+        self.0.maximize
     }
 }
 
@@ -745,8 +745,8 @@ mod emit_impls_enabled_buttons {
 
     impl ToCodeLiteral for EnabledButtons {
         fn to_code_literal(&self) -> TokenStream {
-            let min = (*self.0).minimize;
-            let max = (*self.0).maximize;
+            let min = self.0.minimize;
+            let max = self.0.maximize;
             quote::quote! {
                 ::bevy::window::EnabledButtons {
                     minimize: #min,
@@ -831,13 +831,13 @@ impl CursorOptions {
     /// Returns whether the cursor is visible.
     #[tracing::instrument(skip(self))]
     pub fn visible(&self) -> bool {
-        (*self.0).visible
+        self.0.visible
     }
 
     /// Returns whether hit-testing is enabled.
     #[tracing::instrument(skip(self))]
     pub fn hit_test(&self) -> bool {
-        (*self.0).hit_test
+        self.0.hit_test
     }
 }
 

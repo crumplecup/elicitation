@@ -2069,17 +2069,13 @@ pub struct BevyCascadeShadowConfigBuilderParams {
 /// Render-graph family used by `bevy_render__fullscreen_material`.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
+#[derive(Default)]
 pub enum BevyFullscreenGraphKind {
     /// Generate `Node2d` post-processing edges.
     Core2d,
     /// Generate `Node3d` post-processing edges.
+    #[default]
     Core3d,
-}
-
-impl Default for BevyFullscreenGraphKind {
-    fn default() -> Self {
-        Self::Core3d
-    }
 }
 
 fn default_parallax_relief_max_steps() -> u32 {
@@ -2195,12 +2191,12 @@ fn uvec3_array_tokens(value: &[u32; 3]) -> TokenStream {
     quote! { ::bevy::math::UVec3::new(#x, #y, #z) }
 }
 
-fn some_expr_tokens(value: &String) -> TokenStream {
+fn some_expr_tokens(value: &str) -> TokenStream {
     let expr = expr_tokens(value, "optional expression field");
     quote! { Some(#expr) }
 }
 
-fn into_expr_tokens(value: &String) -> TokenStream {
+fn into_expr_tokens(value: &str) -> TokenStream {
     let expr = expr_tokens(value, "into expression field");
     quote! { (#expr).into() }
 }
@@ -2215,7 +2211,7 @@ fn text_color_tokens(value: &Option<String>) -> TokenStream {
     }
 }
 
-fn cascade_bounds_tokens(value: &Vec<f32>) -> TokenStream {
+fn cascade_bounds_tokens(value: &[f32]) -> TokenStream {
     let bounds = value.iter().map(|bound| quote! { #bound });
     quote! { vec![#(#bounds),*] }
 }
@@ -3437,13 +3433,10 @@ fn validate_default_opaque_renderer_method(
 }
 
 fn validate_alpha_mode_2d(params: &BevyAlphaMode2dParams) -> Result<(), ErrorData> {
-    match params {
-        BevyAlphaMode2dParams::Mask(threshold) => {
-            if !threshold.is_finite() {
-                return Err(tool_err("alpha_mode_2d threshold must be finite"));
-            }
-        }
-        _ => {}
+    if let BevyAlphaMode2dParams::Mask(threshold) = params
+        && !threshold.is_finite()
+    {
+        return Err(tool_err("alpha_mode_2d threshold must be finite"));
     }
     Ok(())
 }
@@ -3696,12 +3689,12 @@ fn validate_cluster_config(params: &BevyClusterConfigParams) -> Result<(), Error
 fn validate_screen_space_reflections(
     params: &BevyScreenSpaceReflectionsParams,
 ) -> Result<(), ErrorData> {
-    if let Some(value) = params.perceptual_roughness_threshold {
-        if !value.is_finite() || !(0.0..=1.0).contains(&value) {
-            return Err(tool_err(
-                "screen-space reflections perceptual_roughness_threshold must be in [0.0, 1.0]",
-            ));
-        }
+    if let Some(value) = params.perceptual_roughness_threshold
+        && (!value.is_finite() || !(0.0..=1.0).contains(&value))
+    {
+        return Err(tool_err(
+            "screen-space reflections perceptual_roughness_threshold must be in [0.0, 1.0]",
+        ));
     }
     validate_optional_non_negative_f32(params.thickness, "screen-space reflections thickness")?;
     if let Some(linear_steps) = params.linear_steps
@@ -3875,12 +3868,12 @@ fn validate_camera_2d(params: &BevyCamera2dParams) -> Result<(), ErrorData> {
 }
 
 fn validate_viewport(params: &BevyViewportParams) -> Result<(), ErrorData> {
-    if let Some([min, max]) = params.depth {
-        if min > max {
-            return Err(tool_err(
-                "viewport depth min must be less than or equal to max",
-            ));
-        }
+    if let Some([min, max]) = params.depth
+        && min > max
+    {
+        return Err(tool_err(
+            "viewport depth min must be less than or equal to max",
+        ));
     }
     Ok(())
 }
@@ -3896,12 +3889,12 @@ fn validate_fog_settings(params: &BevyFogSettingsParams) -> Result<(), ErrorData
 }
 
 fn validate_bloom_settings(params: &BevyBloomSettingsParams) -> Result<(), ErrorData> {
-    if let Some(softness) = params.prefilter_threshold_softness {
-        if !softness.is_finite() {
-            return Err(tool_err(
-                "bloom prefilter threshold softness must be finite",
-            ));
-        }
+    if let Some(softness) = params.prefilter_threshold_softness
+        && !softness.is_finite()
+    {
+        return Err(tool_err(
+            "bloom prefilter threshold softness must be finite",
+        ));
     }
     validate_optional_expr(&params.scale_expr, "bloom scale")
 }
@@ -3945,12 +3938,12 @@ fn validate_ssao(params: &BevySsaoParams) -> Result<(), ErrorData> {
     if let Some(quality) = &params.quality_level {
         validate_ssao_quality(quality)?;
     }
-    if let Some(value) = params.constant_object_thickness {
-        if !value.is_finite() || value < 0.0 {
-            return Err(tool_err(
-                "ssao constant_object_thickness must be a finite non-negative number",
-            ));
-        }
+    if let Some(value) = params.constant_object_thickness
+        && (!value.is_finite() || value < 0.0)
+    {
+        return Err(tool_err(
+            "ssao constant_object_thickness must be a finite non-negative number",
+        ));
     }
     Ok(())
 }
@@ -3962,19 +3955,19 @@ fn validate_temporal_anti_aliasing(
 }
 
 fn validate_cascade_shadow_config(params: &BevyCascadeShadowConfigParams) -> Result<(), ErrorData> {
-    if let Some(value) = params.minimum_distance {
-        if !value.is_finite() || value < 0.0 {
-            return Err(tool_err(
-                "cascade minimum_distance must be a finite non-negative number",
-            ));
-        }
+    if let Some(value) = params.minimum_distance
+        && (!value.is_finite() || value < 0.0)
+    {
+        return Err(tool_err(
+            "cascade minimum_distance must be a finite non-negative number",
+        ));
     }
-    if let Some(value) = params.overlap_proportion {
-        if !value.is_finite() || !(0.0..1.0).contains(&value) {
-            return Err(tool_err(
-                "cascade overlap_proportion must be in the range [0.0, 1.0)",
-            ));
-        }
+    if let Some(value) = params.overlap_proportion
+        && (!value.is_finite() || !(0.0..1.0).contains(&value))
+    {
+        return Err(tool_err(
+            "cascade overlap_proportion must be in the range [0.0, 1.0)",
+        ));
     }
     if let Some(bounds) = &params.bounds {
         let mut previous = None;
@@ -4018,12 +4011,12 @@ fn validate_cascade_shadow_config_builder(
         ));
     }
 
-    if let Some(maximum_distance) = params.maximum_distance {
-        if !maximum_distance.is_finite() || maximum_distance <= minimum_distance {
-            return Err(tool_err(
-                "cascade builder maximum_distance must be finite and greater than minimum_distance",
-            ));
-        }
+    if let Some(maximum_distance) = params.maximum_distance
+        && (!maximum_distance.is_finite() || maximum_distance <= minimum_distance)
+    {
+        return Err(tool_err(
+            "cascade builder maximum_distance must be finite and greater than minimum_distance",
+        ));
     }
 
     if let Some(first_cascade_far_bound) = params.first_cascade_far_bound
@@ -4065,10 +4058,10 @@ pub(crate) fn validate_atmosphere(params: &BevyAtmosphereParams) -> Result<(), E
     if params.phase_resolution == 0 {
         return Err(tool_err("phase_resolution must be greater than zero"));
     }
-    if let Some(multiplier) = params.density_multiplier {
-        if !multiplier.is_finite() {
-            return Err(tool_err("density_multiplier must be finite"));
-        }
+    if let Some(multiplier) = params.density_multiplier
+        && !multiplier.is_finite()
+    {
+        return Err(tool_err("density_multiplier must be finite"));
     }
     Ok(())
 }

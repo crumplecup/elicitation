@@ -197,18 +197,11 @@ impl Isometry3d {
     pub fn isometry3d_identity(&self) -> Isometry3d {
         Isometry3d::from(bevy::math::Isometry3d::IDENTITY)
     }
-    /// Constructs from translation and quaternion rotation (ignores self).
+    /// Constructs from translation `[tx, ty, tz]` and rotation `[rx, ry, rz, rw]` (ignores self).
     #[tracing::instrument(skip(self))]
-    pub fn isometry3d_new(
-        &self,
-        tx: f32,
-        ty: f32,
-        tz: f32,
-        rx: f32,
-        ry: f32,
-        rz: f32,
-        rw: f32,
-    ) -> Isometry3d {
+    pub fn isometry3d_new(&self, translation: [f32; 3], rotation: [f32; 4]) -> Isometry3d {
+        let [tx, ty, tz] = translation;
+        let [rx, ry, rz, rw] = rotation;
         Isometry3d::from(bevy::math::Isometry3d::new(
             bevy::math::Vec3::new(tx, ty, tz),
             bevy::math::Quat::from_xyzw(rx, ry, rz, rw),

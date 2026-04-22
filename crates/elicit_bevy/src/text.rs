@@ -331,9 +331,10 @@ impl TextFont {
     /// Creates a new [`TextFont`] with the given font size (ignores self).
     #[tracing::instrument(skip(self))]
     pub fn new_text_font(&self, font_size: f32) -> TextFont {
-        let mut t = bevy::text::TextFont::default();
-        t.font_size = font_size;
-        TextFont::from(t)
+        TextFont::from(bevy::text::TextFont {
+            font_size,
+            ..Default::default()
+        })
     }
 }
 
