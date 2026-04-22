@@ -5,7 +5,7 @@
 //! `ElicitComplete` contract.  They are wire-safe for MCP tool responses and
 //! can be dropped into tool call chains as first-class values.
 
-use elicitation::{Elicit, Prompt, Select};
+use elicitation::Elicit;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

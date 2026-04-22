@@ -583,12 +583,11 @@ pub async fn fetch_erd(
     // ── FK enrichment — mark ErdColumn.is_fk = true for FK columns ────────
     let mut nodes = nodes;
     for edge in &edges {
-        if edge.from_schema == schema {
-            if let Some(node) = nodes.iter_mut().find(|n| n.table == edge.from_table) {
-                if let Some(col) = node.columns.iter_mut().find(|c| c.name == edge.from_column) {
-                    col.is_fk = true;
-                }
-            }
+        if edge.from_schema == schema
+            && let Some(node) = nodes.iter_mut().find(|n| n.table == edge.from_table)
+            && let Some(col) = node.columns.iter_mut().find(|c| c.name == edge.from_column)
+        {
+            col.is_fk = true;
         }
     }
 

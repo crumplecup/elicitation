@@ -86,9 +86,10 @@ pub struct SchemaWithExpand {
 // ── PanelMode ─────────────────────────────────────────────────────────────────
 
 /// What the central content panel should display.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum PanelMode {
     /// Column detail for the currently selected schema or table (default).
+    #[default]
     ColumnDetail,
     /// A data grid for a previewed table.
     DataGrid {
@@ -238,12 +239,6 @@ pub enum PanelMode {
         /// Human-readable error message.
         message: String,
     },
-}
-
-impl Default for PanelMode {
-    fn default() -> Self {
-        Self::ColumnDetail
-    }
 }
 
 impl PanelMode {
@@ -577,10 +572,10 @@ impl ArchiveNavModel {
         self.backend_label = nav.backend.to_string();
         self.rebuild_flat();
         // Try to preserve the old cursor position.
-        if let Some(item) = old_cursor_item {
-            if let Some(pos) = self.flat.iter().position(|f| *f == item) {
-                self.cursor = pos;
-            }
+        if let Some(item) = old_cursor_item
+            && let Some(pos) = self.flat.iter().position(|f| *f == item)
+        {
+            self.cursor = pos;
         }
         self.flash = Some("↺ Refreshed".to_string());
     }
@@ -699,9 +694,7 @@ impl ArchiveNavModel {
     /// Returns a [`FetchRequest`] when the caller should initiate an async
     /// data fetch (table row was selected).
     pub fn toggle_expand(&mut self) -> Option<FetchRequest> {
-        let Some(&item) = self.flat.get(self.cursor) else {
-            return None;
-        };
+        let &item = self.flat.get(self.cursor)?;
         match item {
             FlatItem::Schema(i) => {
                 self.schemas[i].expanded = !self.schemas[i].expanded;
@@ -1372,11 +1365,11 @@ impl ArchiveNavModel {
             constraints: c,
             loading,
         } = &mut self.panel
+            && ps == &schema
+            && pt == &table
         {
-            if ps == &schema && pt == &table {
-                *c = constraints;
-                *loading = false;
-            }
+            *c = constraints;
+            *loading = false;
         }
     }
 
@@ -1419,11 +1412,11 @@ impl ArchiveNavModel {
             indexes: ix,
             loading,
         } = &mut self.panel
+            && ps == &schema
+            && pt == &table
         {
-            if ps == &schema && pt == &table {
-                *ix = indexes;
-                *loading = false;
-            }
+            *ix = indexes;
+            *loading = false;
         }
     }
 
@@ -1576,11 +1569,11 @@ impl ArchiveNavModel {
     /// Returns `false` if the active panel is not a `DataGrid` or edit mode is
     /// already active.
     pub fn begin_edit_mode(&mut self) -> bool {
-        if let PanelMode::DataGrid { edit_state, .. } = &mut self.panel {
-            if edit_state.is_none() {
-                *edit_state = Some(RowEditState::new());
-                return true;
-            }
+        if let PanelMode::DataGrid { edit_state, .. } = &mut self.panel
+            && edit_state.is_none()
+        {
+            *edit_state = Some(RowEditState::new());
+            return true;
         }
         false
     }
@@ -1604,12 +1597,12 @@ impl ArchiveNavModel {
             }
             let row_idx = *grid_row;
             let col_idx = *grid_col;
-            if let Some(row) = result.rows.rows.get(row_idx) {
-                if let Some((_, val)) = row.0.get(col_idx) {
-                    es.editing_cell = Some((row_idx, col_idx));
-                    es.input_buffer = format!("{val:?}");
-                    return true;
-                }
+            if let Some(row) = result.rows.rows.get(row_idx)
+                && let Some((_, val)) = row.0.get(col_idx)
+            {
+                es.editing_cell = Some((row_idx, col_idx));
+                es.input_buffer = format!("{val:?}");
+                return true;
             }
         }
         false
@@ -1621,12 +1614,9 @@ impl ArchiveNavModel {
             edit_state: Some(es),
             ..
         } = &mut self.panel
+            && (es.editing_cell.is_some() || es.inserting_row.is_some())
         {
-            if es.editing_cell.is_some() {
-                es.input_buffer.push(ch);
-            } else if es.inserting_row.is_some() {
-                es.input_buffer.push(ch);
-            }
+            es.input_buffer.push(ch);
         }
     }
 
@@ -1636,10 +1626,9 @@ impl ArchiveNavModel {
             edit_state: Some(es),
             ..
         } = &mut self.panel
+            && (es.editing_cell.is_some() || es.inserting_row.is_some())
         {
-            if es.editing_cell.is_some() || es.inserting_row.is_some() {
-                es.input_buffer.pop();
-            }
+            es.input_buffer.pop();
         }
     }
 
@@ -1726,17 +1715,16 @@ impl ArchiveNavModel {
             edit_state: Some(es),
             ..
         } = &mut self.panel
+            && let Some(form) = &mut es.inserting_row
         {
-            if let Some(form) = &mut es.inserting_row {
-                let cursor = es.insert_col_cursor;
-                if let Some(slot) = form.get_mut(cursor) {
-                    slot.1 = std::mem::take(&mut es.input_buffer);
-                }
-                es.insert_col_cursor += 1;
-                if es.insert_col_cursor >= form.len() {
-                    es.insert_col_cursor = 0;
-                    return true; // wrapped
-                }
+            let cursor = es.insert_col_cursor;
+            if let Some(slot) = form.get_mut(cursor) {
+                slot.1 = std::mem::take(&mut es.input_buffer);
+            }
+            es.insert_col_cursor += 1;
+            if es.insert_col_cursor >= form.len() {
+                es.insert_col_cursor = 0;
+                return true; // wrapped
             }
         }
         false
@@ -1816,11 +1804,11 @@ impl ArchiveNavModel {
     ///
     /// Returns `false` if no edit session was active.
     pub fn discard_edit_mode(&mut self) -> bool {
-        if let PanelMode::DataGrid { edit_state, .. } = &mut self.panel {
-            if edit_state.is_some() {
-                *edit_state = None;
-                return true;
-            }
+        if let PanelMode::DataGrid { edit_state, .. } = &mut self.panel
+            && edit_state.is_some()
+        {
+            *edit_state = None;
+            return true;
         }
         false
     }
@@ -1836,12 +1824,10 @@ impl ArchiveNavModel {
             edit_state,
             ..
         } = &mut self.panel
+            && let Some(es) = edit_state.take()
+            && !es.pending_edits.is_empty()
         {
-            if let Some(es) = edit_state.take() {
-                if !es.pending_edits.is_empty() {
-                    return Some((schema.clone(), table.clone(), es.pending_edits));
-                }
-            }
+            return Some((schema.clone(), table.clone(), es.pending_edits));
         }
         None
     }

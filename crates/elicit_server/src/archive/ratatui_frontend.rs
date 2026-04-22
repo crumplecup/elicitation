@@ -284,8 +284,7 @@ impl TuiApp {
                 format,
                 row_count,
             } => {
-                self.model.last_export =
-                    Some((schema.clone(), table.clone(), content, format.clone()));
+                self.model.last_export = Some((schema.clone(), table.clone(), content, format));
                 let ext = format.extension();
                 self.model.flash = Some(format!(
                     "exported {row_count} rows from {schema}.{table} as .{ext}"
@@ -421,33 +420,33 @@ impl crate::archive::ArchiveFrontend for TuiApp {
             A::SavePromptClose => self.model.close_save_prompt(),
             A::SavePromptBackspace => self.model.save_prompt_backspace(),
             A::SavePromptConfirm => {
-                if let Some(name) = self.model.take_save_prompt() {
-                    if let PanelMode::SqlEditor { text, .. } = &self.model.panel {
-                        let sql = text.trim().to_string();
-                        if let Some(ref store) = self.saved {
-                            store.save_spawn(name.clone(), sql.clone());
-                        }
-                        use crate::archive::SavedQuery;
-                        let existing = self.model.saved_cache.iter().position(|q| q.name == name);
-                        let now = chrono::Utc::now();
-                        if let Some(idx) = existing {
-                            self.model.saved_cache[idx].sql = sql;
-                            self.model.saved_cache[idx].updated_at = now;
-                        } else {
-                            let ins = self.model.saved_cache.partition_point(|q| q.name < name);
-                            self.model.saved_cache.insert(
-                                ins,
-                                SavedQuery {
-                                    id: 0,
-                                    name: name.clone(),
-                                    sql,
-                                    created_at: now,
-                                    updated_at: now,
-                                },
-                            );
-                        }
-                        self.model.flash = Some(format!("saved \"{name}\""));
+                if let Some(name) = self.model.take_save_prompt()
+                    && let PanelMode::SqlEditor { text, .. } = &self.model.panel
+                {
+                    let sql = text.trim().to_string();
+                    if let Some(ref store) = self.saved {
+                        store.save_spawn(name.clone(), sql.clone());
                     }
+                    use crate::archive::SavedQuery;
+                    let existing = self.model.saved_cache.iter().position(|q| q.name == name);
+                    let now = chrono::Utc::now();
+                    if let Some(idx) = existing {
+                        self.model.saved_cache[idx].sql = sql;
+                        self.model.saved_cache[idx].updated_at = now;
+                    } else {
+                        let ins = self.model.saved_cache.partition_point(|q| q.name < name);
+                        self.model.saved_cache.insert(
+                            ins,
+                            SavedQuery {
+                                id: 0,
+                                name: name.clone(),
+                                sql,
+                                created_at: now,
+                                updated_at: now,
+                            },
+                        );
+                    }
+                    self.model.flash = Some(format!("saved \"{name}\""));
                 }
             }
             A::SavedBrowserClose => self.model.toggle_saved_browser(),
@@ -660,7 +659,7 @@ fn spawn_fetch_task(
                     result,
                     format,
                 } => {
-                    let export = export_query_result(&result, format.clone());
+                    let export = export_query_result(&result, format);
                     let ev = PanelEvent::ExportReady {
                         schema,
                         table,
@@ -902,22 +901,21 @@ pub async fn run_tui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                         }
                         let keymap = crate::archive::ArchiveKeyMap::default_map();
                         let mode = app.model.current_mode();
-                        if let Some(combo) = crossterm_key_to_combo(&key) {
-                            if let Some(action) = keymap.resolve(&combo, mode) {
-                                if app.dispatch_action(action) {
-                                    quit = true;
-                                }
-                                continue;
+                        if let Some(combo) = crossterm_key_to_combo(&key)
+                            && let Some(action) = keymap.resolve(&combo, mode)
+                        {
+                            if app.dispatch_action(action) {
+                                quit = true;
                             }
+                            continue;
                         }
                         // Text input for modes that accept printable characters
-                        if let KeyCode::Char(c) = key.code {
-                            if !key.modifiers.contains(KeyModifiers::CONTROL)
-                                && !key.modifiers.contains(KeyModifiers::ALT)
-                            {
-                                let mut buf = [0u8; 4];
-                                app.dispatch_text(c.encode_utf8(&mut buf));
-                            }
+                        if let KeyCode::Char(c) = key.code
+                            && !key.modifiers.contains(KeyModifiers::CONTROL)
+                            && !key.modifiers.contains(KeyModifiers::ALT)
+                        {
+                            let mut buf = [0u8; 4];
+                            app.dispatch_text(c.encode_utf8(&mut buf));
                         }
                         if let KeyCode::Enter = key.code {
                             // Bare Enter in text modes: newline

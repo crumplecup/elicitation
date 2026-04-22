@@ -152,10 +152,10 @@ async fn query_constraints(
             }
         });
 
-        if let Some(c) = col {
-            if !entry.columns.contains(&c) {
-                entry.columns.push(c);
-            }
+        if let Some(c) = col
+            && !entry.columns.contains(&c)
+        {
+            entry.columns.push(c);
         }
     }
 

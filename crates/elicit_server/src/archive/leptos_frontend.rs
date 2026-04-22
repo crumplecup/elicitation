@@ -890,7 +890,7 @@ async fn api_load_history(
             entries.into_iter().nth(p.idx).map(|e| e.sql)
         } else {
             let model = state.model.lock().await;
-            model.history_cache.iter().nth(p.idx).map(|e| e.sql.clone())
+            model.history_cache.get(p.idx).map(|e| e.sql.clone())
         }
     };
     let sql = match sql {
@@ -1317,7 +1317,7 @@ async fn api_action(
         .entries()
         .iter()
         .find(|e| format!("{:?}", e.action) == name && (e.mode == Some(mode) || e.mode.is_none()))
-        .map(|e| e.action.clone())
+        .map(|e| e.action)
         .ok_or_else(|| ApiError::bad_request(format!("unknown action: {name}")))?;
     {
         let mut model = state.model.lock().await;

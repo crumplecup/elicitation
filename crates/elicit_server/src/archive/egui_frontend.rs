@@ -278,8 +278,7 @@ impl ArchiveEguiApp {
                     format,
                     row_count,
                 } => {
-                    self.model.last_export =
-                        Some((schema.clone(), table.clone(), content, format.clone()));
+                    self.model.last_export = Some((schema.clone(), table.clone(), content, format));
                     let ext = format.extension();
                     self.model.flash = Some(format!(
                         "exported {row_count} rows from {schema}.{table} as .{ext}"
@@ -638,33 +637,33 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
             A::SavePromptClose => self.model.close_save_prompt(),
             A::SavePromptBackspace => self.model.save_prompt_backspace(),
             A::SavePromptConfirm => {
-                if let Some(name) = self.model.take_save_prompt() {
-                    if let PanelMode::SqlEditor { text, .. } = &self.model.panel {
-                        let sql = text.trim().to_string();
-                        if let Some(ref store) = self.saved {
-                            store.save_spawn(name.clone(), sql.clone());
-                        }
-                        use crate::archive::SavedQuery;
-                        let existing = self.model.saved_cache.iter().position(|q| q.name == name);
-                        let now = chrono::Utc::now();
-                        if let Some(idx) = existing {
-                            self.model.saved_cache[idx].sql = sql;
-                            self.model.saved_cache[idx].updated_at = now;
-                        } else {
-                            let ins = self.model.saved_cache.partition_point(|q| q.name < name);
-                            self.model.saved_cache.insert(
-                                ins,
-                                SavedQuery {
-                                    id: 0,
-                                    name: name.clone(),
-                                    sql,
-                                    created_at: now,
-                                    updated_at: now,
-                                },
-                            );
-                        }
-                        self.model.flash = Some(format!("saved \"{name}\""));
+                if let Some(name) = self.model.take_save_prompt()
+                    && let PanelMode::SqlEditor { text, .. } = &self.model.panel
+                {
+                    let sql = text.trim().to_string();
+                    if let Some(ref store) = self.saved {
+                        store.save_spawn(name.clone(), sql.clone());
                     }
+                    use crate::archive::SavedQuery;
+                    let existing = self.model.saved_cache.iter().position(|q| q.name == name);
+                    let now = chrono::Utc::now();
+                    if let Some(idx) = existing {
+                        self.model.saved_cache[idx].sql = sql;
+                        self.model.saved_cache[idx].updated_at = now;
+                    } else {
+                        let ins = self.model.saved_cache.partition_point(|q| q.name < name);
+                        self.model.saved_cache.insert(
+                            ins,
+                            SavedQuery {
+                                id: 0,
+                                name: name.clone(),
+                                sql,
+                                created_at: now,
+                                updated_at: now,
+                            },
+                        );
+                    }
+                    self.model.flash = Some(format!("saved \"{name}\""));
                 }
             }
             A::SavedBrowserClose => self.model.toggle_saved_browser(),
@@ -948,10 +947,10 @@ impl ApplicationHandler for ArchiveEguiApp {
 
     fn about_to_wait(&mut self, _event_loop: &ActiveEventLoop) {
         // Non-blocking channel drain — if data arrived, request a repaint.
-        if !self.event_rx.is_empty() {
-            if let Some(window) = self.window.as_ref() {
-                window.request_redraw();
-            }
+        if !self.event_rx.is_empty()
+            && let Some(window) = self.window.as_ref()
+        {
+            window.request_redraw();
         }
     }
 }
@@ -1039,7 +1038,7 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                     }
                     FetchRequest::GetDdl { schema, table } => {
                         use crate::archive::plugins::inspect::generate_ddl_direct;
-                        match generate_ddl_direct(&url_str, &schema, &table).await {
+                        match generate_ddl_direct(url_str, &schema, &table).await {
                             Ok(ddl) => PanelEvent::DdlReady {
                                 schema,
                                 table,
@@ -1050,7 +1049,7 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                     }
                     FetchRequest::GetColumnStats { schema, table } => {
                         use crate::archive::plugins::inspect::get_column_stats_direct;
-                        match get_column_stats_direct(&url_str, &schema, &table).await {
+                        match get_column_stats_direct(url_str, &schema, &table).await {
                             Ok(stats) => PanelEvent::ColumnStatsReady {
                                 schema,
                                 table,
@@ -1061,7 +1060,7 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                     }
                     FetchRequest::ExplainSql { schema, table, sql } => {
                         use crate::archive::plugins::inspect::explain_sql_direct;
-                        match explain_sql_direct(&url_str, &sql).await {
+                        match explain_sql_direct(url_str, &sql).await {
                             Ok(root) => PanelEvent::ExplainReady {
                                 schema,
                                 table,
@@ -1076,7 +1075,7 @@ pub fn run_egui(nav: NavTree, url: Option<String>) -> ArchiveResult<()> {
                         result,
                         format,
                     } => {
-                        let export = export_query_result(&result, format.clone());
+                        let export = export_query_result(&result, format);
                         PanelEvent::ExportReady {
                             schema,
                             table,
