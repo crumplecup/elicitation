@@ -3,9 +3,9 @@
 #![cfg(feature = "toml-types")]
 
 use elicitation::{
-    ElicitIntrospect, ElicitPromptTree, Elicitation, ElicitationPattern,
-    PatternDetails, PromptTree, TomlDate, TomlDatetime, TomlDeError, TomlOffset, TomlSerError,
-    TomlTime, TomlValue, lookup_type_spec,
+    ElicitIntrospect, ElicitPromptTree, Elicitation, ElicitationPattern, PatternDetails,
+    PromptTree, TomlDate, TomlDatetime, TomlDeError, TomlOffset, TomlSerError, TomlTime, TomlValue,
+    lookup_type_spec,
 };
 
 fn assert_prompts_complete(tree: &PromptTree, path: &str) {
@@ -98,8 +98,8 @@ mod introspect {
     }
 
     #[test]
-    fn toml_datetime_is_survey() {
-        assert_eq!(TomlDatetime::pattern(), ElicitationPattern::Survey);
+    fn toml_datetime_is_select() {
+        assert_eq!(TomlDatetime::pattern(), ElicitationPattern::Select);
         let meta = TomlDatetime::metadata();
         assert_eq!(meta.type_name, "toml_datetime::Datetime");
     }

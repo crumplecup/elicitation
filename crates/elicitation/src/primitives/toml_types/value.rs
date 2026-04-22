@@ -292,12 +292,16 @@ impl crate::ElicitPromptTree for TomlValue {
                 Some(Box::new(
                     TomlDatetime::prompt_tree().with_prompt(Some("Datetime value:".to_string())),
                 )),
-                Some(Box::new(
-                    <Vec<TomlValue> as crate::ElicitPromptTree>::prompt_tree(),
-                )),
-                Some(Box::new(
-                    <Vec<(String, TomlValue)> as crate::ElicitPromptTree>::prompt_tree(),
-                )),
+                // Array and Table are recursive types; use Leaf nodes to break
+                // the infinite-recursion cycle in prompt_tree construction.
+                Some(Box::new(crate::PromptTree::Leaf {
+                    prompt: "JSON array of TOML values (e.g. [1, \"a\", true]):".to_string(),
+                    type_name: "Vec<TomlValue>".to_string(),
+                })),
+                Some(Box::new(crate::PromptTree::Leaf {
+                    prompt: "JSON array of [key, value] pairs (e.g. [[\"k\", 1]]):".to_string(),
+                    type_name: "Vec<(String, TomlValue)>".to_string(),
+                })),
             ],
         }
     }
