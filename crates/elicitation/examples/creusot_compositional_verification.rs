@@ -71,7 +71,7 @@
 //! # All 171 proofs are marked #[trusted] following cloud of assumptions
 //! ```
 
-use elicitation::{Elicit};
+use elicitation::Elicit;
 
 #[cfg(creusot)]
 use elicitation::Elicitation;

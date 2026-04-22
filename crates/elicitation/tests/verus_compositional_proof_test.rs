@@ -4,7 +4,7 @@
 //! verus_proof() methods that call field proofs, enabling compositional
 //! verification.
 
-use elicitation::{Elicit};
+use elicitation::Elicit;
 
 #[cfg(verus)]
 use elicitation::Elicitation;

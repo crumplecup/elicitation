@@ -10,9 +10,7 @@
 //! 3. Handler invocation via `DynamicToolRegistry::invoke_dynamic`
 
 use elicit_serde::{prime_deserialize_json, prime_serialize_json};
-use elicitation::{
-    DynamicToolRegistry, Elicit, ElicitPlugin, ToolFactoryRegistration,
-};
+use elicitation::{DynamicToolRegistry, Elicit, ElicitPlugin, ToolFactoryRegistration};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

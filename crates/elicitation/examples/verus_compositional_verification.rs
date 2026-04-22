@@ -56,7 +56,7 @@
 //! ~/repos/verus/source/target-verus/release/verus --crate-type=lib src/lib.rs
 //! ```
 
-use elicitation::{Elicit};
+use elicitation::Elicit;
 
 #[cfg(verus)]
 use elicitation::Elicitation;

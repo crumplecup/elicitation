@@ -439,7 +439,7 @@ fn unit_proofs_non_empty() {
 // Derived unit-variant enums (regression: previously produced empty proofs)
 // ============================================================================
 
-use elicitation::{Elicit};
+use elicitation::Elicit;
 
 /// Unit-variant enum with two states — the TicTacToe `Player` case.
 #[derive(

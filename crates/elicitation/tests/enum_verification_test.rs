@@ -1,7 +1,7 @@
 //! Test enum verification contract generation.
 
+use elicitation::Elicit;
 use elicitation::verification::types::{I8Positive, StringNonEmpty};
-use elicitation::{Elicit};
 
 /// Test enum with all variant types.
 #[derive(Elicit, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]

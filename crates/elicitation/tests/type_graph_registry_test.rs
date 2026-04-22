@@ -1,8 +1,7 @@
 //! Tests for the TypeGraphKey structural registry.
 
 use elicitation::{
-    Elicit, ElicitIntrospect, PatternDetails, TypeGraphKey, all_graphable_types,
-    lookup_type_graph,
+    Elicit, ElicitIntrospect, PatternDetails, TypeGraphKey, all_graphable_types, lookup_type_graph,
 };
 
 // --- Test types ---

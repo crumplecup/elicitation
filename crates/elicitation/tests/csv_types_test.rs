@@ -4,8 +4,8 @@
 
 use elicitation::{
     CsvByteRecord, CsvErrorKind, CsvPosition, CsvQuoteStyle, CsvStringRecord, CsvTerminator,
-    CsvTrim, ElicitIntrospect, ElicitPromptTree, Elicitation, ElicitationPattern,
-    PatternDetails, PromptTree, lookup_type_spec,
+    CsvTrim, ElicitIntrospect, ElicitPromptTree, Elicitation, ElicitationPattern, PatternDetails,
+    PromptTree, lookup_type_spec,
 };
 
 fn assert_prompts_complete(tree: &PromptTree, path: &str) {

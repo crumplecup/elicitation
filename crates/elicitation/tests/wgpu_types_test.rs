@@ -3,14 +3,13 @@
 #![cfg(feature = "wgpu-types")]
 
 use elicitation::{
-    ElicitComplete, ElicitIntrospect, Elicitation, ElicitationPattern, Select,
-    WgpuAddressMode, WgpuBackend, WgpuBlendFactor, WgpuBlendOperation, WgpuBufferUsages, WgpuColor,
-    WgpuColorWrites, WgpuCompareFunctionSelect, WgpuCompositeAlphaMode, WgpuExtent3d, WgpuFace,
-    WgpuFilterMode, WgpuFrontFace, WgpuIndexFormat, WgpuOrigin3d, WgpuPolygonMode,
-    WgpuPowerPreference, WgpuPresentMode, WgpuPrimitiveTopology, WgpuSamplerBorderColor,
-    WgpuShaderStages, WgpuStencilOperation, WgpuTextureDimension, WgpuTextureFormat,
-    WgpuTextureUsages, WgpuTextureViewDimension, WgpuVertexFormat, WgpuVertexStepMode,
-    lookup_type_spec,
+    ElicitComplete, ElicitIntrospect, Elicitation, ElicitationPattern, Select, WgpuAddressMode,
+    WgpuBackend, WgpuBlendFactor, WgpuBlendOperation, WgpuBufferUsages, WgpuColor, WgpuColorWrites,
+    WgpuCompareFunctionSelect, WgpuCompositeAlphaMode, WgpuExtent3d, WgpuFace, WgpuFilterMode,
+    WgpuFrontFace, WgpuIndexFormat, WgpuOrigin3d, WgpuPolygonMode, WgpuPowerPreference,
+    WgpuPresentMode, WgpuPrimitiveTopology, WgpuSamplerBorderColor, WgpuShaderStages,
+    WgpuStencilOperation, WgpuTextureDimension, WgpuTextureFormat, WgpuTextureUsages,
+    WgpuTextureViewDimension, WgpuVertexFormat, WgpuVertexStepMode, lookup_type_spec,
 };
 
 #[track_caller]

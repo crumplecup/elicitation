@@ -7,8 +7,7 @@
 //! - A function missing `Established<Invariant>` does NOT satisfy the bound.
 
 use elicitation::{
-    Elicit, Established, Prop, VerifiedStateMachine, VerifiedTransition,
-    contracts::ProvableFrom,
+    Elicit, Established, Prop, VerifiedStateMachine, VerifiedTransition, contracts::ProvableFrom,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
