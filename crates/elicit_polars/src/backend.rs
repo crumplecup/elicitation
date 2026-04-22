@@ -31,6 +31,7 @@ use uuid::Uuid;
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 type FrameSnapshot = HashMap<String, DataFrame>;
+type SnapshotMap = HashMap<String, (TxMarker<Open>, FrameSnapshot)>;
 
 // ── Struct ─────────────────────────────────────────────────────────────────────
 
@@ -47,7 +48,7 @@ type FrameSnapshot = HashMap<String, DataFrame>;
 /// not implemented.
 pub struct PolarsDbBackend {
     ctx: Arc<Mutex<SQLContext>>,
-    snapshots: Arc<Mutex<HashMap<String, (TxMarker<Open>, FrameSnapshot)>>>,
+    snapshots: Arc<Mutex<SnapshotMap>>,
 }
 
 impl PolarsDbBackend {
@@ -495,10 +496,8 @@ impl DbTransactor for PolarsDbBackend {
                     let mut ctx = self.ctx.lock().await;
                     ctx.execute(&format!("SELECT * FROM \"{name}\"")).ok()
                 };
-                if let Some(lf) = lf {
-                    if let Ok(df) = lf.collect() {
-                        snapshot.insert(name.clone(), df);
-                    }
+                if let Some(Ok(df)) = lf.map(|l| l.collect()) {
+                    snapshot.insert(name.clone(), df);
                 }
             }
             let marker = TxMarker::open(isolation);
