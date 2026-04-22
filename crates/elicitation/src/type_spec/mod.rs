@@ -47,6 +47,8 @@ mod palette_specs;
 #[cfg(feature = "polars-types")]
 mod polars_specs;
 #[cfg(feature = "proj-types")]
+#[cfg(feature = "csv-types")]
+mod csv_specs;
 mod proj_specs;
 mod ratatui_specs;
 mod regex_specs;
