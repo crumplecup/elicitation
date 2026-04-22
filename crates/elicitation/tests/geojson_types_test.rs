@@ -6,7 +6,7 @@ use elicitation::{
     ElicitIntrospect, ElicitPromptTree, ElicitSpec, Elicitation, ElicitationPattern,
     PatternDetails, PromptTree, lookup_type_spec,
 };
-use geojson::{Feature, FeatureCollection, GeoJson, Geometry, Value};
+use geojson::{Feature, FeatureCollection, GeoJson, Geometry, GeometryValue};
 
 fn assert_prompts_complete(tree: &PromptTree, path: &str) {
     match tree {
@@ -63,9 +63,9 @@ mod introspect {
 
     #[test]
     fn geojson_value_uses_actual_upstream_name() {
-        assert_eq!(Value::pattern(), ElicitationPattern::Select);
-        let meta = Value::metadata();
-        assert_eq!(meta.type_name, "geojson::Value");
+        assert_eq!(GeometryValue::pattern(), ElicitationPattern::Select);
+        let meta = GeometryValue::metadata();
+        assert_eq!(meta.type_name, "geojson::GeometryValue");
         match &meta.details {
             PatternDetails::Select { variants } => {
                 let labels: Vec<_> = variants
@@ -103,7 +103,7 @@ mod specs {
     fn geojson_specs_are_registered() {
         for name in [
             "geojson::GeoJson",
-            "geojson::Value",
+            "geojson::GeometryValue",
             "geojson::Geometry",
             "geojson::Feature",
             "geojson::FeatureCollection",
@@ -155,7 +155,7 @@ mod proofs {
     #[test]
     fn proofs_are_non_empty() {
         assert_proofs_non_empty::<GeoJson>("geojson::GeoJson");
-        assert_proofs_non_empty::<Value>("geojson::Value");
+        assert_proofs_non_empty::<GeometryValue>("geojson::GeometryValue");
         assert_proofs_non_empty::<Geometry>("geojson::Geometry");
         assert_proofs_non_empty::<Feature>("geojson::Feature");
         assert_proofs_non_empty::<FeatureCollection>("geojson::FeatureCollection");

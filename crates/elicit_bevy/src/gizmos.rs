@@ -71,7 +71,7 @@ impl<'de> serde::Deserialize<'de> for GizmoLineStyle {
 }
 impl From<GizmoLineStyle> for bevy::gizmos::config::GizmoLineStyle {
     fn from(v: GizmoLineStyle) -> Self {
-        (*v.0).clone()
+        *v.0
     }
 }
 
@@ -231,7 +231,7 @@ impl serde::Serialize for GizmoLineConfig {
     fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeStruct as _;
         let inner = &*self.0;
-        let style = GizmoLineStyle(std::sync::Arc::new(inner.style.clone()));
+        let style = GizmoLineStyle(std::sync::Arc::new(inner.style));
         let joints = GizmoLineJoint(std::sync::Arc::new(inner.joints));
         let mut st = s.serialize_struct("GizmoLineConfig", 4)?;
         st.serialize_field("width", &inner.width)?;
@@ -295,7 +295,7 @@ mod emit_impls_line_config {
     use proc_macro2::TokenStream;
     impl ToCodeLiteral for GizmoLineConfig {
         fn to_code_literal(&self) -> TokenStream {
-            let style = GizmoLineStyle(std::sync::Arc::new(self.0.style.clone())).to_code_literal();
+            let style = GizmoLineStyle(std::sync::Arc::new(self.0.style)).to_code_literal();
             let joints = GizmoLineJoint(std::sync::Arc::new(self.0.joints)).to_code_literal();
             let width = self.0.width;
             let perspective = self.0.perspective;

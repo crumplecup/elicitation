@@ -3,7 +3,7 @@
 #![cfg(feature = "wgpu-types")]
 
 use elicitation::{
-    ElicitComplete, ElicitIntrospect, ElicitSpec, Elicitation, ElicitationPattern, Select,
+    ElicitComplete, ElicitIntrospect, Elicitation, ElicitationPattern, Select,
     WgpuAddressMode, WgpuBackend, WgpuBlendFactor, WgpuBlendOperation, WgpuBufferUsages, WgpuColor,
     WgpuColorWrites, WgpuCompareFunctionSelect, WgpuCompositeAlphaMode, WgpuExtent3d, WgpuFace,
     WgpuFilterMode, WgpuFrontFace, WgpuIndexFormat, WgpuOrigin3d, WgpuPolygonMode,

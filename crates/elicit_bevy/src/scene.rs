@@ -50,7 +50,7 @@ impl<'de> serde::Deserialize<'de> for SceneInstanceReady {
 
 impl From<SceneInstanceReady> for bevy::scene::SceneInstanceReady {
     fn from(v: SceneInstanceReady) -> Self {
-        Arc::try_unwrap(v.0).unwrap_or_else(|arc| (*arc).clone())
+        Arc::try_unwrap(v.0).unwrap_or_else(|arc| *arc)
     }
 }
 

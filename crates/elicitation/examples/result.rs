@@ -7,7 +7,7 @@
 //! - Result<T, E> - Success or failure outcomes with values
 use std::sync::Arc;
 
-use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation, Prompt, Select};
+use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
 
 /// Simple error type for demonstration

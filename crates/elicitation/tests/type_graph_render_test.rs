@@ -1,7 +1,7 @@
 //! Snapshot-style tests for Mermaid and DOT renderers.
 
 use elicitation::{
-    DotRenderer, Elicit, GraphRenderer, MermaidDirection, MermaidRenderer, Prompt, Select,
+    DotRenderer, Elicit, GraphRenderer, MermaidDirection, MermaidRenderer,
     TypeGraph,
 };
 

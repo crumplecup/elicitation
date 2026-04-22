@@ -4,7 +4,7 @@
 
 use elicitation::{
     CsvByteRecord, CsvErrorKind, CsvPosition, CsvQuoteStyle, CsvStringRecord, CsvTerminator,
-    CsvTrim, ElicitIntrospect, ElicitPromptTree, ElicitSpec, Elicitation, ElicitationPattern,
+    CsvTrim, ElicitIntrospect, ElicitPromptTree, Elicitation, ElicitationPattern,
     PatternDetails, PromptTree, lookup_type_spec,
 };
 

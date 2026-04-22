@@ -7,7 +7,7 @@
 //! allowing users to choose from a finite set of options.
 use std::sync::Arc;
 
-use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation, Prompt, Select};
+use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
 
 /// Simple enum with default prompt

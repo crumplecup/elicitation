@@ -296,7 +296,7 @@ impl<'de> serde::Deserialize<'de> for GlobalTransform {
 }
 impl From<GlobalTransform> for bevy::transform::components::GlobalTransform {
     fn from(v: GlobalTransform) -> Self {
-        Arc::try_unwrap(v.0).unwrap_or_else(|arc| (*arc).clone())
+        Arc::try_unwrap(v.0).unwrap_or_else(|arc| *arc)
     }
 }
 

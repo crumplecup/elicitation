@@ -340,7 +340,7 @@ mod geojson_tests {
     fn geojson_proofs_non_empty() {
         assert_proofs_non_empty::<geojson::GeoJson>("geojson::GeoJson");
         assert_proofs_non_empty::<geojson::Geometry>("geojson::Geometry");
-        assert_proofs_non_empty::<geojson::Value>("geojson::Value");
+        assert_proofs_non_empty::<geojson::GeometryValue>("geojson::GeometryValue");
         assert_proofs_non_empty::<geojson::Feature>("geojson::Feature");
         assert_proofs_non_empty::<geojson::FeatureCollection>("geojson::FeatureCollection");
         assert_proofs_non_empty::<geojson::feature::Id>("geojson::feature::Id");
@@ -439,7 +439,7 @@ fn unit_proofs_non_empty() {
 // Derived unit-variant enums (regression: previously produced empty proofs)
 // ============================================================================
 
-use elicitation::{Elicit, Prompt, Select};
+use elicitation::{Elicit};
 
 /// Unit-variant enum with two states — the TicTacToe `Player` case.
 #[derive(

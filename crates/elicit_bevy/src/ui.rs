@@ -1677,7 +1677,7 @@ impl BackgroundColor {
     /// Returns the color as a [`crate::Color`] wrapper.
     #[tracing::instrument(skip(self))]
     pub fn get_color(&self) -> crate::Color {
-        crate::Color::from((*self.0).0)
+        crate::Color::from(self.0.0)
     }
 }
 
@@ -1716,25 +1716,25 @@ impl BorderColor {
     /// Returns the top border color.
     #[tracing::instrument(skip(self))]
     pub fn top(&self) -> crate::Color {
-        crate::Color::from((*self.0).top)
+        crate::Color::from(self.0.top)
     }
 
     /// Returns the right border color.
     #[tracing::instrument(skip(self))]
     pub fn right(&self) -> crate::Color {
-        crate::Color::from((*self.0).right)
+        crate::Color::from(self.0.right)
     }
 
     /// Returns the bottom border color.
     #[tracing::instrument(skip(self))]
     pub fn bottom(&self) -> crate::Color {
-        crate::Color::from((*self.0).bottom)
+        crate::Color::from(self.0.bottom)
     }
 
     /// Returns the left border color.
     #[tracing::instrument(skip(self))]
     pub fn left(&self) -> crate::Color {
-        crate::Color::from((*self.0).left)
+        crate::Color::from(self.0.left)
     }
 }
 
@@ -1764,7 +1764,7 @@ elicit_newtype_traits!(Outline, bevy::ui::Outline, [eq]);
 
 impl From<Outline> for bevy::ui::Outline {
     fn from(v: Outline) -> Self {
-        (*v.0).clone()
+        *v.0
     }
 }
 
@@ -1773,19 +1773,19 @@ impl Outline {
     /// Returns the outline width.
     #[tracing::instrument(skip(self))]
     pub fn get_width(&self) -> Val {
-        Val::from((*self.0).width)
+        Val::from(self.0.width)
     }
 
     /// Returns the outline offset.
     #[tracing::instrument(skip(self))]
     pub fn get_offset(&self) -> Val {
-        Val::from((*self.0).offset)
+        Val::from(self.0.offset)
     }
 
     /// Returns the outline color.
     #[tracing::instrument(skip(self))]
     pub fn get_color(&self) -> crate::Color {
-        crate::Color::from((*self.0).color)
+        crate::Color::from(self.0.color)
     }
 }
 
@@ -1926,13 +1926,13 @@ impl OverflowClipMargin {
     /// Returns the visual box setting.
     #[tracing::instrument(skip(self))]
     pub fn get_visual_box(&self) -> OverflowClipBox {
-        OverflowClipBox::from((*self.0).visual_box)
+        OverflowClipBox::from(self.0.visual_box)
     }
 
     /// Returns the margin in logical pixels.
     #[tracing::instrument(skip(self))]
     pub fn get_margin(&self) -> f32 {
-        (*self.0).margin
+        self.0.margin
     }
 }
 
@@ -2154,7 +2154,7 @@ mod emit_impls_grid_track {
     impl ToCodeLiteral for GridTrack {
         fn to_code_literal(&self) -> TokenStream {
             // Deserialize min/max via serde since the fields are pub(crate) in bevy_ui.
-            let val = serde_json::to_value(&*self.0).unwrap_or_default();
+            let val = serde_json::to_value(*self.0).unwrap_or_default();
             let min: bevy::ui::MinTrackSizingFunction =
                 serde_json::from_value(val["min_sizing_function"].clone()).unwrap_or_default();
             let max: bevy::ui::MaxTrackSizingFunction =
@@ -2220,13 +2220,13 @@ elicit_newtype_traits!(UiScale, bevy::ui::UiScale, []);
 
 impl From<UiScale> for bevy::ui::UiScale {
     fn from(v: UiScale) -> Self {
-        bevy::ui::UiScale((*v.0).0)
+        bevy::ui::UiScale(v.0.0)
     }
 }
 
 impl serde::Serialize for UiScale {
     fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-        (*self.0).0.serialize(s)
+        self.0.0.serialize(s)
     }
 }
 
@@ -2241,7 +2241,7 @@ impl UiScale {
     /// Returns the scale factor.
     #[tracing::instrument(skip(self))]
     pub fn get(&self) -> f32 {
-        (*self.0).0
+        self.0.0
     }
 }
 
@@ -2252,7 +2252,7 @@ mod emit_impls_ui_scale {
 
     impl ToCodeLiteral for UiScale {
         fn to_code_literal(&self) -> TokenStream {
-            let v = (*self.0).0;
+            let v = self.0.0;
             quote::quote! {
                 ::elicit_bevy::UiScale::from(::bevy::ui::UiScale(#v))
             }
@@ -2277,8 +2277,8 @@ impl serde::Serialize for ScrollPosition {
     fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeStruct;
         let mut st = s.serialize_struct("ScrollPosition", 2)?;
-        st.serialize_field("x", &(*self.0).0.x)?;
-        st.serialize_field("y", &(*self.0).0.y)?;
+        st.serialize_field("x", &self.0.0.x)?;
+        st.serialize_field("y", &self.0.0.y)?;
         st.end()
     }
 }
@@ -2320,13 +2320,13 @@ impl ScrollPosition {
     /// Returns the horizontal scroll position.
     #[tracing::instrument(skip(self))]
     pub fn get_x(&self) -> f32 {
-        (*self.0).0.x
+        self.0.0.x
     }
 
     /// Returns the vertical scroll position.
     #[tracing::instrument(skip(self))]
     pub fn get_y(&self) -> f32 {
-        (*self.0).0.y
+        self.0.0.y
     }
 }
 
@@ -2337,8 +2337,8 @@ mod emit_impls_scroll_position {
 
     impl ToCodeLiteral for ScrollPosition {
         fn to_code_literal(&self) -> TokenStream {
-            let x = (*self.0).0.x;
-            let y = (*self.0).0.y;
+            let x = self.0.0.x;
+            let y = self.0.0.y;
             quote::quote! {
                 ::elicit_bevy::ScrollPosition::from(
                     ::bevy::ui::ScrollPosition(::bevy::math::Vec2::new(#x, #y))
@@ -2365,8 +2365,8 @@ impl serde::Serialize for IgnoreScroll {
     fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
         use serde::ser::SerializeStruct;
         let mut st = s.serialize_struct("IgnoreScroll", 2)?;
-        st.serialize_field("x", &(*self.0).0.x)?;
-        st.serialize_field("y", &(*self.0).0.y)?;
+        st.serialize_field("x", &self.0.0.x)?;
+        st.serialize_field("y", &self.0.0.y)?;
         st.end()
     }
 }
@@ -2406,13 +2406,13 @@ impl IgnoreScroll {
     /// Returns whether horizontal scrolling is ignored.
     #[tracing::instrument(skip(self))]
     pub fn get_x(&self) -> bool {
-        (*self.0).0.x
+        self.0.0.x
     }
 
     /// Returns whether vertical scrolling is ignored.
     #[tracing::instrument(skip(self))]
     pub fn get_y(&self) -> bool {
-        (*self.0).0.y
+        self.0.0.y
     }
 }
 
@@ -2423,8 +2423,8 @@ mod emit_impls_ignore_scroll {
 
     impl ToCodeLiteral for IgnoreScroll {
         fn to_code_literal(&self) -> TokenStream {
-            let x = (*self.0).0.x;
-            let y = (*self.0).0.y;
+            let x = self.0.0.x;
+            let y = self.0.0.y;
             quote::quote! {
                 ::elicit_bevy::IgnoreScroll::from(
                     ::bevy::ui::IgnoreScroll(::bevy::math::BVec2::new(#x, #y))
@@ -2452,13 +2452,13 @@ impl UiPosition {
     /// Returns the horizontal offset relative to the anchor.
     #[tracing::instrument(skip(self))]
     pub fn get_x(&self) -> Val {
-        Val::from((*self.0).x)
+        Val::from(self.0.x)
     }
 
     /// Returns the vertical offset relative to the anchor.
     #[tracing::instrument(skip(self))]
     pub fn get_y(&self) -> Val {
-        Val::from((*self.0).y)
+        Val::from(self.0.y)
     }
 }
 
@@ -2531,19 +2531,19 @@ impl ColorStop {
     /// Returns the stop color.
     #[tracing::instrument(skip(self))]
     pub fn get_color(&self) -> crate::Color {
-        crate::Color::from((*self.0).color)
+        crate::Color::from(self.0.color)
     }
 
     /// Returns the stop position along the gradient line.
     #[tracing::instrument(skip(self))]
     pub fn get_point(&self) -> Val {
-        Val::from((*self.0).point)
+        Val::from(self.0.point)
     }
 
     /// Returns the interpolation midpoint hint (0–1).
     #[tracing::instrument(skip(self))]
     pub fn get_hint(&self) -> f32 {
-        (*self.0).hint
+        self.0.hint
     }
 }
 
@@ -2582,19 +2582,19 @@ impl AngularColorStop {
     /// Returns the stop color.
     #[tracing::instrument(skip(self))]
     pub fn get_color(&self) -> crate::Color {
-        crate::Color::from((*self.0).color)
+        crate::Color::from(self.0.color)
     }
 
     /// Returns the explicit angle in radians, if set.
     #[tracing::instrument(skip(self))]
     pub fn get_angle(&self) -> Option<f32> {
-        (*self.0).angle
+        self.0.angle
     }
 
     /// Returns the interpolation midpoint hint (0–1).
     #[tracing::instrument(skip(self))]
     pub fn get_hint(&self) -> f32 {
-        (*self.0).hint
+        self.0.hint
     }
 }
 
@@ -2663,19 +2663,19 @@ impl LinearGradient {
     /// Returns the gradient angle in radians.
     #[tracing::instrument(skip(self))]
     pub fn get_angle(&self) -> f32 {
-        (*self.0).angle
+        self.0.angle
     }
 
     /// Returns the number of color stops.
     #[tracing::instrument(skip(self))]
     pub fn stop_count(&self) -> usize {
-        (*self.0).stops.len()
+        self.0.stops.len()
     }
 
     /// Returns the interpolation color space.
     #[tracing::instrument(skip(self))]
     pub fn get_color_space(&self) -> InterpolationColorSpace {
-        InterpolationColorSpace::from((*self.0).color_space)
+        InterpolationColorSpace::from(self.0.color_space)
     }
 }
 
@@ -2714,19 +2714,19 @@ impl RadialGradient {
     /// Returns the number of color stops.
     #[tracing::instrument(skip(self))]
     pub fn stop_count(&self) -> usize {
-        (*self.0).stops.len()
+        self.0.stops.len()
     }
 
     /// Returns the gradient center position.
     #[tracing::instrument(skip(self))]
     pub fn get_position(&self) -> UiPosition {
-        UiPosition::from((*self.0).position)
+        UiPosition::from(self.0.position)
     }
 
     /// Returns the interpolation color space.
     #[tracing::instrument(skip(self))]
     pub fn get_color_space(&self) -> InterpolationColorSpace {
-        InterpolationColorSpace::from((*self.0).color_space)
+        InterpolationColorSpace::from(self.0.color_space)
     }
 }
 
@@ -2765,19 +2765,19 @@ impl ConicGradient {
     /// Returns the starting angle in radians.
     #[tracing::instrument(skip(self))]
     pub fn get_start(&self) -> f32 {
-        (*self.0).start
+        self.0.start
     }
 
     /// Returns the number of angular color stops.
     #[tracing::instrument(skip(self))]
     pub fn stop_count(&self) -> usize {
-        (*self.0).stops.len()
+        self.0.stops.len()
     }
 
     /// Returns the gradient center position.
     #[tracing::instrument(skip(self))]
     pub fn get_position(&self) -> UiPosition {
-        UiPosition::from((*self.0).position)
+        UiPosition::from(self.0.position)
     }
 }
 
@@ -2873,7 +2873,7 @@ impl BackgroundGradient {
     /// Returns the number of gradients.
     #[tracing::instrument(skip(self))]
     pub fn get_len(&self) -> usize {
-        (*self.0).0.len()
+        self.0.0.len()
     }
 }
 
@@ -2912,7 +2912,7 @@ impl BorderGradient {
     /// Returns the number of gradients.
     #[tracing::instrument(skip(self))]
     pub fn get_len(&self) -> usize {
-        (*self.0).0.len()
+        self.0.0.len()
     }
 }
 
@@ -2951,31 +2951,31 @@ impl ShadowStyle {
     /// Returns the shadow color.
     #[tracing::instrument(skip(self))]
     pub fn get_color(&self) -> crate::Color {
-        crate::Color::from((*self.0).color)
+        crate::Color::from(self.0.color)
     }
 
     /// Returns the horizontal offset.
     #[tracing::instrument(skip(self))]
     pub fn get_x_offset(&self) -> Val {
-        Val::from((*self.0).x_offset)
+        Val::from(self.0.x_offset)
     }
 
     /// Returns the vertical offset.
     #[tracing::instrument(skip(self))]
     pub fn get_y_offset(&self) -> Val {
-        Val::from((*self.0).y_offset)
+        Val::from(self.0.y_offset)
     }
 
     /// Returns the spread radius.
     #[tracing::instrument(skip(self))]
     pub fn get_spread_radius(&self) -> Val {
-        Val::from((*self.0).spread_radius)
+        Val::from(self.0.spread_radius)
     }
 
     /// Returns the blur radius.
     #[tracing::instrument(skip(self))]
     pub fn get_blur_radius(&self) -> Val {
-        Val::from((*self.0).blur_radius)
+        Val::from(self.0.blur_radius)
     }
 }
 
@@ -3014,7 +3014,7 @@ impl BoxShadow {
     /// Returns the number of shadow layers.
     #[tracing::instrument(skip(self))]
     pub fn get_len(&self) -> usize {
-        (*self.0).0.len()
+        self.0.0.len()
     }
 }
 

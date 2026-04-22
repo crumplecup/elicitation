@@ -4,7 +4,7 @@
 //! enum schemas without type fields. The macro now wraps all types in
 //! a struct to ensure proper schema generation.
 
-use elicitation::{Elicit, ElicitToolOutput, Prompt, Select};
+use elicitation::{Elicit, ElicitToolOutput};
 use elicitation_macros::elicit_tools;
 use rmcp::model::{ServerCapabilities, ServerInfo};
 use rmcp::service::RoleServer;

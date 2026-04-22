@@ -1,6 +1,6 @@
 //! Tests for struct derive macro.
 
-use elicitation::{Elicit, FieldInfo, Prompt, Select, Survey};
+use elicitation::{Elicit, FieldInfo, Prompt, Survey};
 
 #[derive(
     serde::Serialize,

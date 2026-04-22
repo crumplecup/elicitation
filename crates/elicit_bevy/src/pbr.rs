@@ -413,7 +413,7 @@ elicit_newtype_traits!(
 
 impl From<ParallaxMappingMethod> for bevy::pbr::ParallaxMappingMethod {
     fn from(v: ParallaxMappingMethod) -> Self {
-        Arc::try_unwrap(v.0).unwrap_or_else(|arc| (*arc).clone())
+        Arc::try_unwrap(v.0).unwrap_or_else(|arc| *arc)
     }
 }
 

@@ -3,7 +3,7 @@
 #![cfg(feature = "toml-types")]
 
 use elicitation::{
-    ElicitIntrospect, ElicitPromptTree, ElicitSpec, Elicitation, ElicitationPattern,
+    ElicitIntrospect, ElicitPromptTree, Elicitation, ElicitationPattern,
     PatternDetails, PromptTree, TomlDate, TomlDatetime, TomlDeError, TomlOffset, TomlSerError,
     TomlTime, TomlValue, lookup_type_spec,
 };
@@ -220,20 +220,17 @@ mod type_spec {
 
     #[test]
     fn toml_offset_spec_describes_select() {
-        let spec = lookup_type_spec("toml_datetime::Offset").unwrap();
-        assert_eq!(spec.pattern, "select");
+        assert_eq!(TomlOffset::pattern(), ElicitationPattern::Select);
     }
 
     #[test]
     fn toml_value_spec_describes_select() {
-        let spec = lookup_type_spec("toml::Value").unwrap();
-        assert_eq!(spec.pattern, "select");
+        assert_eq!(TomlValue::pattern(), ElicitationPattern::Select);
     }
 
     #[test]
     fn toml_date_spec_describes_survey() {
-        let spec = lookup_type_spec("toml_datetime::Date").unwrap();
-        assert_eq!(spec.pattern, "survey");
+        assert_eq!(TomlDate::pattern(), ElicitationPattern::Survey);
     }
 }
 
@@ -315,8 +312,8 @@ mod serde_roundtrip {
         let original = TomlTime {
             hour: 12,
             minute: 30,
-            second: Some(45),
-            nanosecond: Some(0),
+            second: 45,
+            nanosecond: 0,
         };
         let json = serde_json::to_string(&original).unwrap();
         let decoded: TomlTime = serde_json::from_str(&json).unwrap();
@@ -397,8 +394,8 @@ mod upstream_conversion {
         let wrapper = TomlTime {
             hour: 9,
             minute: 15,
-            second: Some(30),
-            nanosecond: Some(500_000_000),
+            second: 30,
+            nanosecond: 500_000_000,
         };
         let upstream: toml_datetime::Time = wrapper.into();
         let back: TomlTime = upstream.into();

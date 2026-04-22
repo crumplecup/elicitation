@@ -677,7 +677,7 @@ impl RegularPolygon {
     /// Number of sides.
     #[tracing::instrument(skip(self))]
     pub fn sides(&self) -> u32 {
-        self.0.sides as u32
+        self.0.sides
     }
     /// Circumradius (radius of circumscribed circle).
     #[tracing::instrument(skip(self))]

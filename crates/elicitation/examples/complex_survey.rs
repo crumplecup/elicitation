@@ -11,7 +11,7 @@
 //! - Composition of all paradigms
 use std::sync::Arc;
 
-use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation, Prompt, Select};
+use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
 
 /// Priority level for tasks

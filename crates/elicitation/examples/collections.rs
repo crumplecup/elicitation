@@ -10,7 +10,7 @@
 //! - BTreeSet<T> - Ordered unique items
 use std::sync::Arc;
 
-use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation, Prompt, Select};
+use elicitation::{Elicit, ElicitClient, ElicitResult, Elicitation};
 use rmcp::ServiceExt;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet, LinkedList, VecDeque};
 

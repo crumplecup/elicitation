@@ -116,7 +116,7 @@ mod emit_impls_mat3 {
     impl ToCodeLiteral for Mat3 {
         fn to_code_literal(&self) -> TokenStream {
             let cols = self.0.to_cols_array();
-            let c: Vec<_> = cols.iter().copied().collect();
+            let c: Vec<_> = cols.to_vec();
             quote::quote! {
                 ::bevy::math::Mat3::from_cols_array(&[#(#c),*])
             }
@@ -177,7 +177,7 @@ mod emit_impls_mat3a {
     impl ToCodeLiteral for Mat3A {
         fn to_code_literal(&self) -> TokenStream {
             let cols = self.0.to_cols_array();
-            let c: Vec<_> = cols.iter().copied().collect();
+            let c: Vec<_> = cols.to_vec();
             quote::quote! {
                 ::bevy::math::Mat3A::from_cols_array(&[#(#c),*])
             }
@@ -269,7 +269,7 @@ mod emit_impls_mat4 {
     impl ToCodeLiteral for Mat4 {
         fn to_code_literal(&self) -> TokenStream {
             let cols = self.0.to_cols_array();
-            let c: Vec<_> = cols.iter().copied().collect();
+            let c: Vec<_> = cols.to_vec();
             quote::quote! {
                 ::bevy::math::Mat4::from_cols_array(&[#(#c),*])
             }
@@ -381,7 +381,7 @@ mod emit_impls_dmat3 {
     impl ToCodeLiteral for DMat3 {
         fn to_code_literal(&self) -> TokenStream {
             let cols = self.0.to_cols_array();
-            let c: Vec<_> = cols.iter().copied().collect();
+            let c: Vec<_> = cols.to_vec();
             quote::quote! { ::bevy::math::DMat3::from_cols_array(&[#(#c),*]) }
         }
     }
@@ -440,7 +440,7 @@ mod emit_impls_dmat4 {
     impl ToCodeLiteral for DMat4 {
         fn to_code_literal(&self) -> TokenStream {
             let cols = self.0.to_cols_array();
-            let c: Vec<_> = cols.iter().copied().collect();
+            let c: Vec<_> = cols.to_vec();
             quote::quote! { ::bevy::math::DMat4::from_cols_array(&[#(#c),*]) }
         }
     }
