@@ -189,6 +189,21 @@ defer aspirational raster processing abstractions.
 
 ---
 
+### Support Patterns Reference
+
+**Document:** [SUPPORT_PATTERNS.md](SUPPORT_PATTERNS.md)
+
+**Status:** ✅ Active Reference
+
+**Description:** Distilled implementation patterns for shadow crates: Trenchcoat
+(orphan-rule workaround via newtypes), Factory (generic type support via
+DynamicToolRegistry), StatefulPlugin (implicit state via UUID-keyed Arc<Mutex<>>
+maps), and a macro cheat-sheet for `#[elicit_tool]`, `elicit_newtype!`,
+`elicit_newtype_methods!`, and `#[reflect_methods]`.  Includes a decision tree,
+pattern interactions table, and common pitfalls.
+
+---
+
 ### Third-Party Crate Support Guide
 
 **Document:** [THIRD_PARTY_SUPPORT_GUIDE.md](THIRD_PARTY_SUPPORT_GUIDE.md)
