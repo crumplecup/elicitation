@@ -4,7 +4,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::{AuditLogged, Committed, DbResult, Durable, TransactionCommitted, TxMarker};
-use elicitation::{Elicit, Established, Prompt, Select};
+use elicitation::{Elicit, Established};
 
 #[cfg(feature = "geo-types")]
 use elicit_geo_types::Geometry as GeoTypesGeometry;
