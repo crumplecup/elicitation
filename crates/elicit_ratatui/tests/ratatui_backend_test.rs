@@ -181,6 +181,6 @@ fn render_empty_tree() {
 
 #[test]
 fn default_backend_works() {
-    let backend = RatatuiBackend::default();
+    let backend = RatatuiBackend;
     assert_eq!(backend.backend_name(), "ratatui");
 }
