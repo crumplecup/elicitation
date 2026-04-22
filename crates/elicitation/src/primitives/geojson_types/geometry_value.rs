@@ -169,7 +169,7 @@ impl ElicitIntrospect for GeometryValue {
 
     fn metadata() -> TypeMetadata {
         TypeMetadata {
-            type_name: "geojson::Value",
+            type_name: "geojson::GeometryValue",
             description: Self::prompt(),
             details: PatternDetails::Select {
                 variants: GeoJsonGeometryValueKind::labels()
@@ -190,7 +190,7 @@ impl crate::ElicitPromptTree for GeometryValue {
             prompt: Self::prompt()
                 .unwrap_or("Choose a GeoJSON geometry value:")
                 .to_string(),
-            type_name: "geojson::Value".to_string(),
+            type_name: "geojson::GeometryValue".to_string(),
             options: GeoJsonGeometryValueKind::labels(),
             branches: vec![
                 Some(Box::new(GeoPoint::prompt_tree())),
