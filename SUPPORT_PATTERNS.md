@@ -12,9 +12,12 @@ shadow crates exist; read this document for *how* to implement them correctly.
 |---|---|
 | Upstream type lacks `Serialize`/`JsonSchema` (orphan rule) | **Trenchcoat** → `elicit_newtype!` |
 | Reflecting a wrapped type's own methods into MCP tools | **`#[reflect_methods]`** (full-featured) or **`elicit_newtype_methods!`** (simple cases) |
-| Free function, constructor, or StatefulPlugin instance method | **`#[elicit_tool]`** |
+| Free function, constructor, or plugin instance method | **`#[elicit_tool]`** |
 | Generic type `Foo<T>` where T is chosen by the caller | **Factory pattern** |
-| Tool needs live objects that survive across calls | **StatefulPlugin** |
+| Tool needs live objects that survive across calls | **Stateful plugin** — `(Arc<Ctx>)` newtype + `#[derive(ElicitPlugin)]` |
+| Plugin with no inter-call state | **Stateless plugin** — unit struct + `#[derive(ElicitPlugin)]` |
+| Adding `ElicitComplete` to a new upstream type | **Compiler-guided** — stub `impl ElicitComplete for X {}`, fix errors |
+| Enforcing tool call ordering (parse before inspect, etc.) | **`Prop`/`Established` contracts** |
 
 ---
 
@@ -380,6 +383,234 @@ These patterns compose naturally:
 
 ---
 
+## 5. Compiler-Guided `ElicitComplete`
+
+**Pattern:** Start by writing empty `impl ElicitComplete for MyType {}` for
+every type you want to support.  The compiler then enumerates every missing
+supertrait obligation — `ElicitIntrospect`, `ElicitPromptTree`, `ElicitSpec`,
+`ToCodeLiteral`, `Elicitation` — in a single error batch.  Work through them
+one by one.
+
+### Steps
+
+```rust
+// Step 1: stub impls in type_spec/csv_specs.rs (or wherever)
+#[cfg(feature = "csv-types")]
+mod csv_impls {
+    use crate::{CsvPosition, CsvQuoteStyle, ElicitComplete};
+
+    impl ElicitComplete for CsvPosition {}   // ← compiler will list what's missing
+    impl ElicitComplete for CsvQuoteStyle {}
+}
+```
+
+```
+cargo check -p elicitation --features csv-types
+```
+
+The compiler responds with one error per unsatisfied supertrait per type.
+Implement them in the order it lists them — typically:
+
+1. `Prompt` (required by `Elicitation`)
+2. `crate::default_style!(MyType => MyTypeStyle)` (required by `Elicitation`)
+3. `Elicitation` — `type Style`, `async fn elicit`, three proof methods
+4. `ElicitIntrospect` — `pattern()` + `metadata()`
+5. `ElicitPromptTree` — `prompt_tree()`
+6. `ToCodeLiteral` — `to_code_literal()`
+7. `ElicitSpec` + `inventory::submit!` in `type_spec/`
+
+### Pattern selection
+
+| Type shape | `ElicitationPattern` | `prompt_tree` variant |
+|---|---|---|
+| Struct with named fields | `Survey` | `PromptTree::Survey { fields: … }` |
+| Enum with unit variants only | `Select` | `PromptTree::Select { options: … }` |
+| Enum with data variants | `Select` | `PromptTree::Select { branches: … }` — sub-trees for data variants |
+
+### Feature gate wiring
+
+Add the feature-gated module to `type_spec/mod.rs`:
+
+```rust
+#[cfg(feature = "csv-types")]
+mod csv_specs;
+```
+
+And confirm the feature is declared in `Cargo.toml`:
+
+```toml
+[features]
+csv-types = ["dep:csv"]
+```
+
+---
+
+## 6. `#[derive(ElicitPlugin)]` — Stateless vs Stateful
+
+There are two forms depending on whether the plugin needs to hold live objects
+between tool calls.
+
+### Stateless — unit struct
+
+When all tools are pure functions (no handles, builders, or readers to track
+between calls), the plugin is a unit struct:
+
+```rust
+// elicit_wkb: parsing WKB is stateless — each tool receives its full input
+#[derive(Debug, ElicitPlugin)]
+#[plugin(name = "wkb_reader")]
+pub struct WkbReaderPlugin;
+
+impl WkbReaderPlugin {
+    pub fn new() -> Self { Self }
+}
+impl Default for WkbReaderPlugin {
+    fn default() -> Self { Self::new() }
+}
+```
+
+Tools for a stateless plugin take only a params struct — no `ctx` argument:
+
+```rust
+#[elicit_tool(plugin = "wkb_reader", name = "read_wkb", description = "…")]
+async fn read_wkb_tool(p: ReadWkbParams) -> Result<CallToolResult, ErrorData> { … }
+```
+
+### Stateful — `(Arc<Ctx>)` newtype
+
+When tools produce objects that must survive across calls (readers, writers,
+transactions, connections…), wrap an `Arc<Ctx>` in the plugin newtype:
+
+```rust
+pub struct CsvCtx {
+    pub mem_readers: Mutex<HashMap<Uuid, csv::Reader<Cursor<Vec<u8>>>>>,
+    pub mem_writers: Mutex<HashMap<Uuid, csv::Writer<Vec<u8>>>>,
+    // …
+}
+impl PluginContext for CsvCtx {}
+
+#[derive(ElicitPlugin)]
+#[plugin(name = "csv")]
+pub struct CsvPlugin(pub Arc<CsvCtx>);
+
+impl CsvPlugin {
+    pub fn new() -> Self { CsvPlugin(Arc::new(CsvCtx::default())) }
+}
+```
+
+Tools for a stateful plugin take `Arc<Ctx>` as first param named `ctx`:
+
+```rust
+#[elicit_tool(plugin = "csv", name = "csv__reader__next_record", description = "…")]
+async fn reader_next_record(ctx: Arc<CsvCtx>, p: ReaderNextRecordParams)
+    -> Result<CallToolResult, ErrorData> { … }
+```
+
+The `#[derive(ElicitPlugin)]` macro detects the `ctx` param by name and routes
+context injection automatically.
+
+### The old manual `impl StatefulPlugin` — do not use
+
+Earlier code used `impl StatefulPlugin for … { fn context() … }`.  This is
+superseded by `#[derive(ElicitPlugin)]` on the newtype.  Do not write new code
+using the old style.
+
+---
+
+## 7. Tool Function Naming
+
+**Rule:** Rust function names must be valid `snake_case`.  The MCP tool name
+(which may contain double-underscores) belongs only in the `name = "…"` attribute.
+
+```rust
+// ✅ Correct — Rust name is plain snake_case
+#[elicit_tool(plugin = "csv", name = "csv__reader__next_record", description = "…")]
+async fn reader_next_record(ctx: Arc<CsvCtx>, p: Params)
+    -> Result<CallToolResult, ErrorData> { … }
+
+// ❌ Wrong — Rust name has double-underscores → 60+ snake_case warnings
+#[elicit_tool(plugin = "csv", name = "csv__reader__next_record", description = "…")]
+async fn csv__reader__next_record(ctx: Arc<CsvCtx>, p: Params)
+    -> Result<CallToolResult, ErrorData> { … }
+```
+
+Convention for naming Rust functions when shadowing a crate:
+
+| MCP tool name | Rust function name |
+|---|---|
+| `csv__reader_builder__from_path` | `reader_builder_from_path` |
+| `redb__database__begin_write` | `database_begin_write` |
+| `wkb_reader__read_wkb` | `read_wkb_tool` (suffix `_tool` when clashing with imports) |
+
+---
+
+## 8. `Prop` / `Established` Workflow Contracts
+
+**Problem:** Tool A must be called before tool B (e.g., parse bytes before
+inspecting the result), but nothing in the type system enforces this sequence.
+Description strings are the only documentation, and LLMs can ignore them.
+
+**Solution:** Use `#[derive(Prop)]` to declare typed propositions, and
+`Established<P>::assert()` to witness that a precondition was met.  The type
+system prevents constructing `Established<P>` without going through the code
+that verifies the proposition.
+
+### Declaring a proposition
+
+```rust
+use elicitation::{Prop, VerifiedWorkflow};
+
+/// Proposition: WKB bytes were successfully parsed.
+#[derive(Prop)]
+pub struct WkbParsed;
+
+impl VerifiedWorkflow for WkbParsed {}
+```
+
+### Establishing a proposition in a tool
+
+```rust
+use elicitation::contracts::Established;
+
+#[elicit_tool(plugin = "wkb_reader", name = "read_wkb",
+              description = "Parse WKB bytes. Establishes: WkbParsed.")]
+async fn read_wkb_tool(p: ReadWkbParams) -> Result<CallToolResult, ErrorData> {
+    let wkb = read_wkb(&p.bytes.bytes)
+        .map_err(|e| ErrorData::invalid_params(e.to_string(), None))?;
+    let _proof = Established::<WkbParsed>::assert();  // ← witness: parse succeeded
+    json_result(&wkb)
+}
+```
+
+### Using `proof_credential!` for stronger guarantees
+
+When the proposition requires a runtime check (not just "this code ran"),
+use `proof_credential!` to restrict who can mint the proof:
+
+```rust
+use elicitation::{proof_credential, contracts::{Established, ProvableFrom}};
+
+#[derive(Prop)]
+pub struct ContrastChecked;
+
+proof_credential! {
+    pub(crate) NormalContrastVerified => ContrastChecked;
+}
+
+// Only code inside this crate can call Established::prove(&NormalContrastVerified)
+let proof = Established::prove(&NormalContrastVerified);
+```
+
+`Established<P>` is a zero-sized type — no runtime cost.
+
+### When to use contracts
+
+- Multi-step workflows where ordering matters (parse → inspect → transform)
+- Tools that produce a resource ID that must be passed to subsequent tools
+- Documenting postconditions in a machine-readable way (proofs frameworks)
+
+---
+
 ## Common pitfalls
 
 | Pitfall | Fix |
@@ -390,3 +621,4 @@ These patterns compose naturally:
 | Double-lock deadlock (savepoints then write_txns, or vice versa) | Establish and document a global lock acquisition order; always follow it |
 | Storing `&'static str` or `&'static [u8]` in tool params | Borrow from `p.field` at call time; the params outlive the table operation |
 | `persistent_savepoint()` returns `u64`, not `Savepoint` | Call `txn.get_persistent_savepoint(id)` immediately to get the `Savepoint` struct |
+| Two `#[elicit_tool]` functions share the same params struct | Each tool must have a **unique** params struct; sharing one triggers conflicting generated `EmitCode` impls |
