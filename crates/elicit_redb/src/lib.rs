@@ -1,33 +1,22 @@
-//! Elicitation-enabled redb type wrappers.
+//! Elicitation shadow crate for [redb](https://docs.rs/redb) 4.x.
 //!
-//! Provides MCP tools for [redb](https://docs.rs/redb) 4.x — a pure-Rust,
-//! ACID, embedded key-value store using copy-on-write B-trees.
+//! Provides a complete MCP tool surface for the redb embedded key-value store.
+//! Live objects (`Database`, `WriteTransaction`, `ReadTransaction`, `Savepoint`)
+//! are held in [`RedbPlugin`]'s shared context and identified by UUID across
+//! tool calls.  Generic `Table<K, V>` operations are surfaced through a
+//! compile-time factory: each supported `(K, V)` pair produces a dedicated set
+//! of typed insert / get / remove / len / iter tools.
 //!
-//! - [`RedbDatabasePlugin`] — Database/Builder creation and management snippets
-//! - [`RedbTablePlugin`] — TableDefinition, typed CRUD, iteration patterns
-//! - [`RedbTransactionPlugin`] — stateful write-transaction builder
-//! - [`RedbSavepointPlugin`] — savepoint create/restore/delete patterns
-//! - [`RedbMultimapPlugin`] — MultimapTableDefinition and multimap CRUD
-//! - [`RedbTypesPlugin`] — Key/Value/MutInPlaceValue trait implementation skeletons
-//! - [`RedbBackendPlugin`] — StorageBackend implementation skeleton
+//! # Plugins
+//!
+//! - [`RedbPlugin`] — single stateful plugin covering the entire redb API surface
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
-mod plugins {
-    pub mod backend_plugin;
-    pub mod database_plugin;
-    pub mod multimap_plugin;
-    pub mod savepoint_plugin;
-    pub mod table_plugin;
-    pub mod txn_plugin;
-    pub mod types_plugin;
-}
+mod db_tools;
+mod plugin;
+mod table_tools;
+mod txn_tools;
 
-pub use plugins::backend_plugin::RedbBackendPlugin;
-pub use plugins::database_plugin::RedbDatabasePlugin;
-pub use plugins::multimap_plugin::RedbMultimapPlugin;
-pub use plugins::savepoint_plugin::RedbSavepointPlugin;
-pub use plugins::table_plugin::RedbTablePlugin;
-pub use plugins::txn_plugin::RedbTransactionPlugin;
-pub use plugins::types_plugin::RedbTypesPlugin;
+pub use plugin::{RedbCtx, RedbPlugin};
