@@ -92,8 +92,10 @@ impl Elicitation for CsvQuoteStyle {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting CsvQuoteStyle");
-        let params =
-            mcp::select_params(Self::prompt().unwrap_or("Choose quote style:"), &Self::labels());
+        let params = mcp::select_params(
+            Self::prompt().unwrap_or("Choose quote style:"),
+            &Self::labels(),
+        );
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())

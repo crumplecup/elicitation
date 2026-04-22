@@ -1,0 +1,40 @@
+[package]
+name = "elicit_toml"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+description = "Elicitation shadow crate for toml, toml_edit, and toml_datetime — MCP tools for TOML parsing and document editing"
+keywords = ["mcp", "toml", "parsing", "elicitation"]
+categories = ["parser-implementations", "development-tools"]
+
+[features]
+api = []
+
+[dependencies]
+elicitation = { workspace = true, features = ["toml-types", "emit"] }
+elicitation_derive.workspace = true
+elicitation_macros.workspace = true
+inventory.workspace = true
+toml.workspace = true
+toml_edit.workspace = true
+toml_datetime.workspace = true
+rmcp.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+derive_more = { workspace = true }
+uuid = { workspace = true, features = ["v4"] }
+futures.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }
+serde_json = { workspace = true }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)', 'cfg(creusot)', 'cfg(prusti)', 'cfg(verus)', 'cfg(feature, values("emit"))'] }

@@ -117,8 +117,7 @@ impl crate::ElicitPromptTree for CsvStringRecord {
 
 impl crate::emit_code::ToCodeLiteral for CsvStringRecord {
     fn to_code_literal(&self) -> proc_macro2::TokenStream {
-        let inner =
-            <Vec<String> as crate::emit_code::ToCodeLiteral>::to_code_literal(&self.0);
+        let inner = <Vec<String> as crate::emit_code::ToCodeLiteral>::to_code_literal(&self.0);
         quote::quote! { ::elicitation::CsvStringRecord(#inner) }
     }
 }

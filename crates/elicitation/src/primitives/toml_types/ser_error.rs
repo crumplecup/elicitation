@@ -1,0 +1,102 @@
+//! Trenchcoat wrapper for [`toml::ser::Error`].
+
+use crate::{
+    ElicitCommunicator, ElicitIntrospect, ElicitResult, Elicitation, ElicitationPattern, FieldInfo,
+    PatternDetails, Prompt, TypeMetadata,
+};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+
+/// A TOML serialization error captured as a message string.
+///
+/// Wraps `toml::ser::Error` to add [`JsonSchema`] for MCP boundary crossing.
+/// Since `toml::ser::Error` does not expose its internals directly, the
+/// message is extracted via [`Display`](std::fmt::Display).
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize, JsonSchema)]
+pub struct TomlSerError {
+    /// Human-readable error message from `toml::ser::Error`.
+    pub message: String,
+}
+
+#[cfg(feature = "toml-types")]
+impl From<toml::ser::Error> for TomlSerError {
+    fn from(e: toml::ser::Error) -> Self {
+        TomlSerError {
+            message: e.to_string(),
+        }
+    }
+}
+
+impl Prompt for TomlSerError {
+    fn prompt() -> Option<&'static str> {
+        Some("Describe the TOML serialization error:")
+    }
+}
+
+crate::default_style!(TomlSerError => TomlSerErrorStyle);
+
+impl Elicitation for TomlSerError {
+    type Style = TomlSerErrorStyle;
+
+    #[tracing::instrument(skip(communicator))]
+    async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
+        tracing::debug!("Eliciting TomlSerError");
+        Ok(Self {
+            message: String::elicit(communicator).await?,
+        })
+    }
+
+    fn kani_proof() -> proc_macro2::TokenStream {
+        <String as Elicitation>::kani_proof()
+    }
+
+    fn verus_proof() -> proc_macro2::TokenStream {
+        <String as Elicitation>::verus_proof()
+    }
+
+    fn creusot_proof() -> proc_macro2::TokenStream {
+        <String as Elicitation>::creusot_proof()
+    }
+}
+
+impl ElicitIntrospect for TomlSerError {
+    fn pattern() -> ElicitationPattern {
+        ElicitationPattern::Survey
+    }
+
+    fn metadata() -> TypeMetadata {
+        TypeMetadata {
+            type_name: "toml::ser::Error",
+            description: Self::prompt(),
+            details: PatternDetails::Survey {
+                fields: vec![FieldInfo {
+                    name: "message",
+                    type_name: "String",
+                    prompt: Some("Error message:"),
+                }],
+            },
+        }
+    }
+}
+
+impl crate::ElicitPromptTree for TomlSerError {
+    fn prompt_tree() -> crate::PromptTree {
+        crate::PromptTree::Survey {
+            prompt: Self::prompt().map(str::to_string),
+            type_name: "TomlSerError".to_string(),
+            fields: vec![(
+                "message".to_string(),
+                Box::new(String::prompt_tree().with_prompt(Some("Error message:".to_string()))),
+            )],
+        }
+    }
+}
+
+impl crate::emit_code::ToCodeLiteral for TomlSerError {
+    fn to_code_literal(&self) -> proc_macro2::TokenStream {
+        let message = <String as crate::emit_code::ToCodeLiteral>::to_code_literal(&self.message);
+        quote::quote! {
+            ::elicitation::TomlSerError { message: #message }
+        }
+    }
+}

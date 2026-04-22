@@ -30,6 +30,9 @@ mod char_contracts;
 mod clap_specs;
 mod collection_contracts;
 mod collections;
+#[cfg(feature = "proj-types")]
+#[cfg(feature = "csv-types")]
+mod csv_specs;
 mod datetime_specs;
 mod egui_specs;
 mod elicit_spec;
@@ -46,9 +49,6 @@ mod network_specs;
 mod palette_specs;
 #[cfg(feature = "polars-types")]
 mod polars_specs;
-#[cfg(feature = "proj-types")]
-#[cfg(feature = "csv-types")]
-mod csv_specs;
 mod proj_specs;
 mod ratatui_specs;
 mod regex_specs;
@@ -62,6 +62,8 @@ mod string_contracts;
 mod strings;
 #[cfg(feature = "surreal-types")]
 mod surreal_specs;
+#[cfg(feature = "toml-types")]
+mod toml_specs;
 mod tower_specs;
 pub mod type_spec_plugin;
 mod url_specs;

@@ -312,12 +312,11 @@ check-all package='':
     else
         echo "🔍 Running all checks on {{package}}..."
         just fmt
-        just lint "{{package}}"
-        just test-package "{{package}}"
-        # Run doc tests for the package
-        cargo test -p "{{package}}" --doc
+        just lint "{{package}}" || exit 1
+        just test-package "{{package}}" || exit 1
+        cargo test -p "{{package}}" --doc || exit 1
+        echo "✅ All checks passed!"
     fi
-    echo "✅ All checks passed!"
 
 # Fix all auto-fixable issues
 fix-all: fmt lint-fix

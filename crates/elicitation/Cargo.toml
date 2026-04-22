@@ -40,6 +40,8 @@ hex = { workspace = true, optional = true }
 anyhow = { workspace = true }
 clap = { workspace = true, optional = true }
 csv = { workspace = true, optional = true }
+toml = { workspace = true, optional = true }
+toml_datetime = { workspace = true, optional = true }
 shellexpand = { workspace = true, optional = true }
 dirs = { workspace = true, optional = true }
 
@@ -134,7 +136,7 @@ elicit_jiff = { path = "../elicit_jiff" }
 default = ["full"]
 
 # Full feature bundle - all third-party support + rand
-full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "proj-types", "rstar-types", "georaster-types", "geojson-types", "tower-types", "axum-types", "polars-types", "uom-types", "leptos-types", "wkt-types", "wkb-types", "winit-types", "wgpu-types", "bevy-types", "egui-winit-types", "surreal-types", "redb-types", "emit"]
+full = ["chrono", "time", "jiff", "uuid", "url", "regex", "rand", "reqwest", "graph", "clap-types", "sqlx-types", "ratatui", "geo-types", "geo", "proj-types", "rstar-types", "georaster-types", "geojson-types", "tower-types", "axum-types", "polars-types", "uom-types", "leptos-types", "wkt-types", "wkb-types", "winit-types", "wgpu-types", "bevy-types", "egui-winit-types", "surreal-types", "redb-types", "csv-types", "toml-types", "emit"]
 
 # Feature for tests that call real API (rate-limited)
 api = []
@@ -184,7 +186,7 @@ clap-types = ["dep:clap"]
 sqlx-types = ["dep:sqlx"]
 
 # CLI and verification runner
-cli = ["dep:clap", "clap-types", "csv", "chrono", "shellexpand", "dirs"]
+cli = ["dep:clap", "clap-types", "csv-types", "chrono", "shellexpand", "dirs"]
 
 # Development (all optional features + CLI)
 dev = ["full", "cli", "graph"]
@@ -204,6 +206,10 @@ wkb-types = ["dep:wkb", "dep:hex"]
 surreal-types = ["dep:surrealdb-types", "dep:rust_decimal", "geo-types", "uuid"]
 # Enable redb embedded key-value store type elicitation
 redb-types = ["dep:redb"]
+# Enable csv reader/writer type elicitation
+csv-types = ["dep:csv"]
+# Enable toml/toml_datetime type elicitation
+toml-types = ["dep:toml", "dep:toml_datetime"]
 # Windowing / input (optional)
 winit-types = ["dep:winit"]
 # Enable wgpu GPU descriptor type elicitation

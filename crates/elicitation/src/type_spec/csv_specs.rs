@@ -283,7 +283,9 @@ mod csv_impls {
                         .expect("valid SpecEntry"),
                     SpecEntryBuilder::default()
                         .label("pattern".to_string())
-                        .description("Select — choose one variant, then provide its fields".to_string())
+                        .description(
+                            "Select — choose one variant, then provide its fields".to_string(),
+                        )
                         .build()
                         .expect("valid SpecEntry"),
                 ])

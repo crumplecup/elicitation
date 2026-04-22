@@ -260,16 +260,19 @@ impl crate::ElicitPromptTree for CsvErrorKind {
                     fields: vec![
                         (
                             "expected_len".to_string(),
-                            Box::new(u64::prompt_tree().with_prompt(Some(
-                                "Expected number of fields:".to_string(),
-                            ))),
+                            Box::new(
+                                u64::prompt_tree()
+                                    .with_prompt(Some("Expected number of fields:".to_string())),
+                            ),
                         ),
                         (
                             "pos".to_string(),
-                            Box::new(<Option<u64> as crate::ElicitPromptTree>::prompt_tree()
-                                .with_prompt(Some(
-                                    "Byte position of the first record (optional):".to_string(),
-                                ))),
+                            Box::new(
+                                <Option<u64> as crate::ElicitPromptTree>::prompt_tree()
+                                    .with_prompt(Some(
+                                        "Byte position of the first record (optional):".to_string(),
+                                    )),
+                            ),
                         ),
                         (
                             "len".to_string(),
@@ -296,8 +299,7 @@ impl crate::ElicitPromptTree for CsvErrorKind {
                     fields: vec![(
                         "message".to_string(),
                         Box::new(
-                            String::prompt_tree()
-                                .with_prompt(Some("Error message:".to_string())),
+                            String::prompt_tree().with_prompt(Some("Error message:".to_string())),
                         ),
                     )],
                 })),
@@ -329,13 +331,11 @@ impl crate::emit_code::ToCodeLiteral for CsvErrorKind {
                 }
             }
             CsvErrorKind::Utf8 { field } => {
-                let field =
-                    <usize as crate::emit_code::ToCodeLiteral>::to_code_literal(field);
+                let field = <usize as crate::emit_code::ToCodeLiteral>::to_code_literal(field);
                 quote::quote! { ::elicitation::CsvErrorKind::Utf8 { field: #field } }
             }
             CsvErrorKind::Deserialize { message } => {
-                let message =
-                    <String as crate::emit_code::ToCodeLiteral>::to_code_literal(message);
+                let message = <String as crate::emit_code::ToCodeLiteral>::to_code_literal(message);
                 quote::quote! { ::elicitation::CsvErrorKind::Deserialize { message: #message } }
             }
             CsvErrorKind::Other => quote::quote! { ::elicitation::CsvErrorKind::Other },

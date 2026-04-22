@@ -782,3 +782,16 @@ pub use primitives::redb_types::{
     CacheStats as RedbCacheStats, DatabaseStats as RedbDatabaseStats, Durability as RedbDurability,
     TableStats as RedbTableStats, TypeName as RedbTypeName,
 };
+
+// csv types (feature-gated on csv-types)
+#[cfg(feature = "csv-types")]
+pub use primitives::csv_types::{
+    CsvByteRecord, CsvErrorKind, CsvPosition, CsvQuoteStyle, CsvStringRecord, CsvTerminator,
+    CsvTrim,
+};
+
+// toml types (feature-gated on toml-types)
+#[cfg(feature = "toml-types")]
+pub use primitives::toml_types::{
+    TomlDate, TomlDatetime, TomlDeError, TomlOffset, TomlSerError, TomlTime, TomlValue,
+};

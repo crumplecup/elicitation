@@ -129,3 +129,9 @@ pub mod surreal_types;
 
 #[cfg(feature = "redb-types")]
 pub mod redb_types;
+
+#[cfg(feature = "csv-types")]
+pub mod csv_types;
+
+#[cfg(feature = "toml-types")]
+pub mod toml_types;

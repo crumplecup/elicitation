@@ -56,7 +56,12 @@ impl Prompt for CsvTrim {
 
 impl Select for CsvTrim {
     fn options() -> Vec<Self> {
-        vec![CsvTrim::All, CsvTrim::Fields, CsvTrim::Headers, CsvTrim::None]
+        vec![
+            CsvTrim::All,
+            CsvTrim::Fields,
+            CsvTrim::Headers,
+            CsvTrim::None,
+        ]
     }
 
     fn labels() -> Vec<String> {
@@ -87,8 +92,10 @@ impl Elicitation for CsvTrim {
     #[tracing::instrument(skip(communicator))]
     async fn elicit<C: ElicitCommunicator>(communicator: &C) -> ElicitResult<Self> {
         tracing::debug!("Eliciting CsvTrim");
-        let params =
-            mcp::select_params(Self::prompt().unwrap_or("Choose trim mode:"), &Self::labels());
+        let params = mcp::select_params(
+            Self::prompt().unwrap_or("Choose trim mode:"),
+            &Self::labels(),
+        );
         let result = communicator
             .call_tool(
                 rmcp::model::CallToolRequestParams::new(mcp::tool_names::elicit_select())

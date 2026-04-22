@@ -52,7 +52,11 @@ impl Prompt for CsvTerminator {
 
 impl Select for CsvTerminator {
     fn options() -> Vec<Self> {
-        vec![CsvTerminator::Crlf, CsvTerminator::Any, CsvTerminator::AnyByte(0)]
+        vec![
+            CsvTerminator::Crlf,
+            CsvTerminator::Any,
+            CsvTerminator::AnyByte(0),
+        ]
     }
 
     fn labels() -> Vec<String> {
@@ -158,10 +162,9 @@ impl crate::ElicitPromptTree for CsvTerminator {
             branches: vec![
                 None,
                 None,
-                Some(Box::new(
-                    u8::prompt_tree()
-                        .with_prompt(Some("Byte value for the terminator:".to_string())),
-                )),
+                Some(Box::new(u8::prompt_tree().with_prompt(Some(
+                    "Byte value for the terminator:".to_string(),
+                )))),
             ],
         }
     }

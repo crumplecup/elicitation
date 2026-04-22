@@ -3568,6 +3568,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_csv"
+version = "0.10.0"
+dependencies = [
+ "csv",
+ "derive_more",
+ "elicitation",
+ "elicitation_derive",
+ "elicitation_macros",
+ "futures",
+ "inventory",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "elicit_db"
 version = "0.10.0"
 dependencies = [
@@ -3812,7 +3832,10 @@ dependencies = [
  "elicitation_derive",
  "elicitation_macros",
  "futures",
+ "hex",
  "inventory",
+ "paste",
+ "redb",
  "rmcp",
  "schemars",
  "serde",
@@ -4070,6 +4093,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_toml"
+version = "0.10.0"
+dependencies = [
+ "derive_more",
+ "elicitation",
+ "elicitation_derive",
+ "elicitation_macros",
+ "futures",
+ "inventory",
+ "rmcp",
+ "schemars",
+ "serde",
+ "serde_json",
+ "tokio",
+ "toml",
+ "toml_datetime 1.1.1+spec-1.1.0",
+ "toml_edit 0.25.11+spec-1.1.0",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "elicit_tower"
 version = "0.10.0"
 dependencies = [
@@ -4309,6 +4354,8 @@ dependencies = [
  "time",
  "tokio",
  "tokio-test",
+ "toml",
+ "toml_datetime 1.1.1+spec-1.1.0",
  "tower",
  "tower-http",
  "tracing",
@@ -11174,6 +11221,7 @@ dependencies = [
  "indexmap",
  "toml_datetime 1.1.1+spec-1.1.0",
  "toml_parser",
+ "toml_writer",
  "winnow 1.0.1",
 ]
 
