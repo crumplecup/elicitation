@@ -90,6 +90,7 @@ mod derive_to_code_literal;
 mod elicit_tool;
 mod emit_rewriter;
 mod enum_impl;
+mod formal_method;
 mod method_reflection;
 mod rand_contract_parser;
 mod rand_generator_impl;
@@ -462,6 +463,34 @@ pub fn derive_elicit_plugin(input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn elicit_tool(args: TokenStream, item: TokenStream) -> TokenStream {
     elicit_tool::expand(args.into(), item.into()).into()
+}
+
+/// Mark a function as a contract-honoring formal method and generate
+/// backend verification harnesses.
+///
+/// # Syntax
+///
+/// ```rust,ignore
+/// use elicitation::formal_method;
+///
+/// #[formal_method(contracts = [InvariantHolds])]
+/// fn advance(state: MyState, proof: Established<InvariantHolds>)
+///     -> (MyState, Established<InvariantHolds>)
+/// {
+///     (state.next(), proof)
+/// }
+/// ```
+///
+/// The `contracts = [...]` argument is optional. The macro adds a doc
+/// annotation and emits a `#[cfg(kani)] #[kani::proof]` harness.
+/// Type enforcement is already provided by the [`FormalMethod`] blanket impl.
+///
+/// [`FormalMethod`]: elicitation::contracts::FormalMethod
+#[proc_macro_attribute]
+pub fn formal_method(args: TokenStream, item: TokenStream) -> TokenStream {
+    formal_method::expand(args.into(), item.into())
+        .unwrap_or_else(|e| e.to_compile_error().into())
+        .into()
 }
 
 /// Derive the [`Prop`](elicitation::contracts::Prop) trait for a zero-cost typestate marker.

@@ -262,7 +262,7 @@ pub use proc_macro2;
 pub use quote;
 
 // Re-export derive macros with user-friendly names
-pub use elicitation_derive::{Elicit, ElicitPlugin, elicit_tool};
+pub use elicitation_derive::{Elicit, ElicitPlugin, elicit_tool, formal_method};
 // Prop derive macro (trait lives at elicitation::contracts::Prop; both can coexist)
 pub use elicitation_derive::Prop;
 // ToCodeLiteral derive (trait lives at elicitation::emit_code::ToCodeLiteral)
