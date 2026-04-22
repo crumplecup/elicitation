@@ -489,7 +489,7 @@ pub fn elicit_tool(args: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn formal_method(args: TokenStream, item: TokenStream) -> TokenStream {
     formal_method::expand(args.into(), item.into())
-        .unwrap_or_else(|e| e.to_compile_error().into())
+        .unwrap_or_else(|e| e.to_compile_error())
         .into()
 }
 

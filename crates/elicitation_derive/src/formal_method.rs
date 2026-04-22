@@ -12,6 +12,10 @@
 //!    its contracts.
 //! 2. A `#[kani::proof]` harness under `#[cfg(kani)]`, using `kani::any()`
 //!    for non-proof inputs and `Established::assert()` for proof tokens.
+//! 3. A `#[requires(true)] #[ensures(true)] #[trusted]` Creusot companion
+//!    under `#[cfg(creusot)]`.
+//! 4. A `requires true, ensures true,` Verus companion inside `verus! { }`
+//!    under `#[cfg(verus)]`.
 //!
 //! # Syntax
 //!
@@ -28,7 +32,7 @@
 //! ```
 //!
 //! The `contracts = [...]` argument is optional. Without it the macro still
-//! adds the doc annotation and harness.
+//! adds the doc annotation and harnesses.
 //!
 //! # Generated harness (Kani)
 //!
@@ -39,6 +43,35 @@
 //!     let state: MyState = kani::any();
 //!     let proof: Established<InvariantHolds> = ::elicitation::Established::assert();
 //!     let _result = advance(state, proof);
+//! }
+//! ```
+//!
+//! # Generated companion (Creusot)
+//!
+//! ```rust,ignore
+//! #[cfg(creusot)]
+//! #[requires(true)]
+//! #[ensures(true)]
+//! #[trusted]
+//! fn advance__creusot(state: MyState, proof: Established<InvariantHolds>)
+//!     -> (MyState, Established<InvariantHolds>)
+//! {
+//!     advance(state, proof)
+//! }
+//! ```
+//!
+//! # Generated companion (Verus)
+//!
+//! ```rust,ignore
+//! #[cfg(verus)]
+//! verus! {
+//! fn advance__verus(state: MyState, proof: Established<InvariantHolds>)
+//!     -> (MyState, Established<InvariantHolds>)
+//!     requires true,
+//!     ensures true,
+//! {
+//!     advance(state, proof)
+//! }
 //! }
 //! ```
 //!
@@ -76,8 +109,7 @@ impl Parse for FormalMethodArgs {
         let _: Token![=] = input.parse()?;
         let content;
         syn::bracketed!(content in input);
-        let contracts =
-            Punctuated::<syn::Path, Token![,]>::parse_terminated(&content)?;
+        let contracts = Punctuated::<syn::Path, Token![,]>::parse_terminated(&content)?;
         Ok(FormalMethodArgs {
             contracts: contracts.into_iter().collect(),
         })
@@ -135,7 +167,7 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
     let doc_attr: syn::Attribute = syn::parse_quote!(#[doc = #contracts_doc]);
     func.attrs.push(doc_attr);
 
-    // ── Kani harness ─────────────────────────────────────────────────────────
+    // ── Backend harnesses ─────────────────────────────────────────────────────
     // Only generated for free functions (no `self`) and non-async functions.
     // Kani doesn't support async proofs, and `self` requires a concrete receiver.
     let has_receiver = func
@@ -145,8 +177,22 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
         .any(|a| matches!(a, FnArg::Receiver(_)));
     let is_async = func.sig.asyncness.is_some();
 
-    let kani_harness = if !is_async && !has_receiver {
+    let contracts_str = if parsed_args.contracts.is_empty() {
+        String::new()
+    } else {
+        parsed_args
+            .contracts
+            .iter()
+            .map(|p| quote!(#p).to_string().replace(' ', ""))
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
+
+    let (kani_harness, creusot_companion, verus_companion) = if !is_async && !has_receiver {
         let kani_fn = format_ident!("{fn_name}__kani");
+        let creusot_fn = format_ident!("{fn_name}__creusot");
+        let verus_fn = format_ident!("{fn_name}__verus");
+
         let mut lets: Vec<TokenStream> = Vec::new();
         let mut call_args: Vec<TokenStream> = Vec::new();
 
@@ -167,20 +213,66 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             }
         }
 
-        quote! {
+        let inputs = &func.sig.inputs;
+        let output = &func.sig.output;
+
+        let kani = quote! {
             #[cfg(kani)]
             #[::kani::proof]
             fn #kani_fn() {
                 #(#lets)*
                 let _result = #fn_name(#(#call_args),*);
             }
-        }
+        };
+
+        // Creusot companion: #[requires(true)] / #[ensures(true)] / #[trusted]
+        // Under #[cfg(creusot)], the Creusot toolchain provides these attributes.
+        // Under normal rustc the block is excluded; no unknown-attribute errors.
+        let creusot_doc = if contracts_str.is_empty() {
+            "Creusot companion.".to_string()
+        } else {
+            format!("Creusot companion. Contracts: `{contracts_str}`.")
+        };
+        let creusot = quote! {
+            #[cfg(creusot)]
+            #[doc = #creusot_doc]
+            #[requires(true)]
+            #[ensures(true)]
+            #[trusted]
+            fn #creusot_fn(#inputs) #output {
+                #fn_name(#(#call_args),*)
+            }
+        };
+
+        // Verus companion: requires/ensures inside verus! { }.
+        // Under #[cfg(verus)], the Verus toolchain provides verus!.
+        let verus_doc = if contracts_str.is_empty() {
+            "Verus companion.".to_string()
+        } else {
+            format!("Verus companion. Contracts: `{contracts_str}`.")
+        };
+        let verus = quote! {
+            #[cfg(verus)]
+            verus! {
+                #[doc = #verus_doc]
+                fn #verus_fn(#inputs) #output
+                    requires true,
+                    ensures true,
+                {
+                    #fn_name(#(#call_args),*)
+                }
+            }
+        };
+
+        (kani, creusot, verus)
     } else {
-        quote! {}
+        (quote! {}, quote! {}, quote! {})
     };
 
     Ok(quote! {
         #func
         #kani_harness
+        #creusot_companion
+        #verus_companion
     })
 }
