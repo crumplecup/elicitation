@@ -22,11 +22,12 @@ use winit::{
     window::{Window, WindowAttributes, WindowId},
 };
 
+use crate::archive::vsm::ArchivePanelState;
 use crate::archive::{
     ArchiveDbBackend, ArchiveResult, BackendKind, ConnectionProfile, ConnectionSet, HistoryStore,
     SavedQueryStore, SslMode,
     errors::{ArchiveError, ArchiveErrorKind},
-    nav_model::{ArchiveNavModel, FetchRequest, PanelEvent, PanelMode},
+    nav_model::{ArchiveNavModel, FetchRequest, PanelEvent},
     nav_tree::{NavTree, build_nav_tree},
     plugins::export::export_query_result,
     plugins::query::{execute_sql_direct, preview_table_direct},
@@ -131,7 +132,7 @@ impl ArchiveEguiApp {
     }
 
     fn run_sql(&mut self) {
-        if let PanelMode::SqlEditor { text, running, .. } = &mut self.model.panel {
+        if let ArchivePanelState::SqlEditor { text, running, .. } = &mut self.model.panel_state {
             if *running || text.trim().is_empty() {
                 return;
             }
@@ -153,15 +154,7 @@ impl ArchiveEguiApp {
                     table,
                     result,
                 } => {
-                    self.model.panel = PanelMode::DataGrid {
-                        schema,
-                        table,
-                        result,
-                        page: 0,
-                        grid_row: 0,
-                        grid_col: 0,
-                        edit_state: None,
-                    };
+                    self.model.panel_set_data_grid(schema, table, result);
                     self.model.flash = None;
                 }
                 PanelEvent::NavRefreshed(nav) => {
@@ -170,13 +163,15 @@ impl ArchiveEguiApp {
                 PanelEvent::FetchError(e) => {
                     if self.pending_sql.is_some() {
                         // SQL execution failed — keep editor open
-                        if let PanelMode::SqlEditor { running, .. } = &mut self.model.panel {
+                        if let ArchivePanelState::SqlEditor { running, .. } =
+                            &mut self.model.panel_state
+                        {
                             *running = false;
                         }
                         self.pending_sql = None;
                         self.exec_start = None;
                     } else {
-                        self.model.panel = PanelMode::ColumnDetail;
+                        self.model.panel_go_column_detail();
                     }
                     self.model.flash = Some(format!("⚠ {e}"));
                 }
@@ -205,24 +200,20 @@ impl ArchiveEguiApp {
                         self.exec_start = None;
                     }
                     // Keep editor open, embed result
-                    if let PanelMode::SqlEditor {
+                    if let ArchivePanelState::SqlEditor {
                         running,
                         result: res,
                         ..
-                    } = &mut self.model.panel
+                    } = &mut self.model.panel_state
                     {
                         *running = false;
                         *res = Some(result);
                     } else {
-                        self.model.panel = PanelMode::DataGrid {
-                            schema: String::new(),
-                            table: "(query result)".to_string(),
+                        self.model.panel_set_data_grid(
+                            String::new(),
+                            "(query result)".to_string(),
                             result,
-                            page: 0,
-                            grid_row: 0,
-                            grid_col: 0,
-                            edit_state: None,
-                        };
+                        );
                     }
                 }
                 PanelEvent::TableInspected {
@@ -233,7 +224,7 @@ impl ArchiveEguiApp {
                     self.model.store_inspection(schema, table, inspection);
                 }
                 PanelEvent::DdlReady { schema, table, ddl } => {
-                    self.model.panel = PanelMode::Ddl { schema, table, ddl };
+                    self.model.panel_set_ddl(schema, table, ddl);
                 }
                 PanelEvent::ColumnStatsReady {
                     schema,
@@ -247,29 +238,7 @@ impl ArchiveEguiApp {
                     table,
                     root,
                 } => {
-                    let new_label = format!("EXPLAIN: {schema}.{table}");
-                    self.model.panel = if let PanelMode::ExplainPlan {
-                        schema: old_schema,
-                        table: old_table,
-                        root: old_root,
-                    } = std::mem::take(&mut self.model.panel)
-                    {
-                        let old_label = format!("EXPLAIN: {old_schema}.{old_table}");
-                        PanelMode::ExplainCompare {
-                            schema: schema.clone(),
-                            table: table.clone(),
-                            left: old_root,
-                            label_left: old_label,
-                            right: root,
-                            label_right: new_label,
-                        }
-                    } else {
-                        PanelMode::ExplainPlan {
-                            schema,
-                            table,
-                            root,
-                        }
-                    };
+                    self.model.panel_set_explain(schema, table, root);
                 }
                 PanelEvent::ExportReady {
                     schema,
@@ -367,21 +336,16 @@ impl ArchiveEguiApp {
 
     /// Dispatch a toolbar button click to the appropriate model action.
     fn dispatch_toolbar_click(&mut self, node: &accesskit::Node) {
-        use crate::archive::nav_model::PanelMode;
         let label = node.label().unwrap_or("").to_string();
         match label.as_str() {
             "SQL Editor" => {
-                let text = if let PanelMode::SqlEditor { text, .. } = &self.model.panel {
-                    text.clone()
-                } else {
-                    String::new()
-                };
-                self.model.panel = PanelMode::SqlEditor {
-                    text,
-                    result: None,
-                    running: false,
-                    error: None,
-                };
+                let text =
+                    if let ArchivePanelState::SqlEditor { text, .. } = &self.model.panel_state {
+                        text.clone()
+                    } else {
+                        String::new()
+                    };
+                self.model.panel_open_sql_editor(text);
             }
             "DDL" => {
                 if let Some(req) = self.model.ddl_request() {
@@ -394,11 +358,12 @@ impl ArchiveEguiApp {
                 }
             }
             "Col Detail" => {
-                self.model.panel = PanelMode::ColumnDetail;
+                self.model.panel_go_column_detail();
             }
             "History" => {
-                self.model.panel = PanelMode::HistoryPanel {
+                self.model.panel_state = ArchivePanelState::HistoryView {
                     entries: self.model.history_cache.clone(),
+                    display_mode: Default::default(),
                 };
             }
             "Saved" => {
@@ -512,7 +477,6 @@ fn egui_events_to_combos(ctx: &egui::Context) -> Vec<crate::archive::KeyCombo> {
 impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
     fn dispatch_action(&mut self, action: crate::archive::ArchiveAction) -> bool {
         use crate::archive::ArchiveAction as A;
-        use crate::archive::nav_model::PanelMode;
         match action {
             A::MoveUp => {
                 self.model.move_up();
@@ -544,12 +508,7 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
             A::ToggleHelp => self.model.toggle_help(),
             A::OpenFilter => self.model.open_filter(),
             A::OpenSqlEditor => {
-                self.model.panel = PanelMode::SqlEditor {
-                    text: String::new(),
-                    result: None,
-                    running: false,
-                    error: None,
-                };
+                self.model.panel_open_sql_editor(String::new());
             }
             A::OpenSavedBrowser => self.model.toggle_saved_browser(),
             A::OpenMonitor => {
@@ -584,7 +543,7 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
                 self.model.toggle_connection_editor(profile);
             }
             A::ToggleExportPicker => {
-                if self.model.panel.is_data_grid() {
+                if self.model.is_data_grid() {
                     self.model.toggle_export_picker();
                 }
             }
@@ -599,19 +558,17 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
                 }
             }
             A::ClearExplainCompare => {
-                if let PanelMode::ExplainCompare {
+                if let ArchivePanelState::ExplainCompare {
                     schema,
                     table,
-                    left,
-                    label_left: _,
-                    right: _,
-                    label_right: _,
-                } = std::mem::take(&mut self.model.panel)
+                    comparison,
+                } = std::mem::take(&mut self.model.panel_state)
                 {
-                    self.model.panel = PanelMode::ExplainPlan {
+                    self.model.panel_state = ArchivePanelState::ExplainView {
                         schema,
                         table,
-                        root: left,
+                        root: comparison.left,
+                        display_mode: Default::default(),
                     };
                 }
             }
@@ -638,7 +595,7 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
             A::SavePromptBackspace => self.model.save_prompt_backspace(),
             A::SavePromptConfirm => {
                 if let Some(name) = self.model.take_save_prompt()
-                    && let PanelMode::SqlEditor { text, .. } = &self.model.panel
+                    && let ArchivePanelState::SqlEditor { text, .. } = &self.model.panel_state
                 {
                     let sql = text.trim().to_string();
                     if let Some(ref store) = self.saved {
@@ -675,12 +632,7 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
             }
             A::SavedBrowserSelect => {
                 if let Some(sql) = self.model.load_focused_saved_query_text() {
-                    self.model.panel = PanelMode::SqlEditor {
-                        text: sql,
-                        result: None,
-                        running: false,
-                        error: None,
-                    };
+                    self.model.panel_open_sql_editor(sql);
                     self.model.toggle_saved_browser();
                 }
             }
@@ -709,16 +661,16 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
                 self.model.history_next();
             }
             A::SqlClose => {
-                self.model.panel = PanelMode::ColumnDetail;
+                self.model.panel_go_column_detail();
             }
             A::SqlSave => self.model.open_save_prompt(),
             A::SqlBackspace => {
-                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
+                if let ArchivePanelState::SqlEditor { text, .. } = &mut self.model.panel_state {
                     text.pop();
                 }
             }
             A::SqlNewline => {
-                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
+                if let ArchivePanelState::SqlEditor { text, .. } = &mut self.model.panel_state {
                     text.push('\n');
                 }
             }
@@ -728,7 +680,6 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
 
     fn dispatch_text(&mut self, text: &str) {
         use crate::archive::actions::KeyMapMode;
-        use crate::archive::nav_model::PanelMode;
         match self.model.current_mode() {
             KeyMapMode::Filter => {
                 for ch in text.chars() {
@@ -741,7 +692,8 @@ impl crate::archive::frontend_trait::ArchiveFrontend for ArchiveEguiApp {
                 }
             }
             KeyMapMode::SqlEditor => {
-                if let PanelMode::SqlEditor { text: buf, .. } = &mut self.model.panel {
+                if let ArchivePanelState::SqlEditor { text: buf, .. } = &mut self.model.panel_state
+                {
                     buf.push_str(text);
                 }
             }

@@ -62,7 +62,7 @@ use tracing::instrument;
 use crate::archive::{
     ArchiveDbBackend, ArchiveResult, BackendKind, ConnectionProfile, ConnectionSet, SslMode,
     errors::{ArchiveError, ArchiveErrorKind},
-    nav_model::{ArchiveNavModel, FetchRequest, PanelMode},
+    nav_model::{ArchiveNavModel, FetchRequest},
     nav_tree::{NavTree, build_nav_tree},
     plugins::{
         export::export_query_result,
@@ -129,16 +129,14 @@ fn content_html(state: &AppState) -> Result<String, String> {
     render_leptos_from_ir(&state.renderer, &tree, proof)
 }
 
-/// Set `PanelMode::Error` on the model and render the content HTML for it.
+/// Set `ArchivePanelState::ErrorView` on the model and render the content HTML for it.
 ///
 /// All API endpoints that need to surface a user-facing error message through
 /// the AccessKit IR should call this instead of returning hardcoded HTML.
 async fn error_content_html(state: &AppState, message: impl Into<String>) -> Html<String> {
     {
         let mut model = state.model.lock().await;
-        model.panel = PanelMode::Error {
-            message: message.into(),
-        };
+        model.panel_set_error(message.into());
     }
     Html(content_html(state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
 }
@@ -357,15 +355,7 @@ async fn api_preview(
     {
         let mut model = state.model.lock().await;
         model.select_table(&p.schema, &p.table);
-        model.panel = PanelMode::DataGrid {
-            schema: p.schema,
-            table: p.table,
-            result,
-            page: 0,
-            grid_row: 0,
-            grid_col: 0,
-            edit_state: None,
-        };
+        model.panel_set_data_grid(p.schema, p.table, result);
     }
     Ok(Html(content_html(&state).map_err(ApiError::internal)?))
 }
@@ -383,7 +373,7 @@ async fn api_sql(
         Some(u) => u,
         None => {
             let mut model = state.model.lock().await;
-            model.panel = PanelMode::SqlEditor {
+            model.panel_state = crate::archive::vsm::ArchivePanelState::SqlEditor {
                 text: body.sql.clone(),
                 result: None,
                 running: false,
@@ -415,7 +405,7 @@ async fn api_sql(
                     error: None,
                 };
                 model.history_cache.insert(0, entry);
-                model.panel = PanelMode::SqlEditor {
+                model.panel_state = crate::archive::vsm::ArchivePanelState::SqlEditor {
                     text: body.sql.clone(),
                     result: Some(result),
                     running: false,
@@ -443,7 +433,7 @@ async fn api_sql(
                     error: Some(err_msg.clone()),
                 };
                 model.history_cache.insert(0, entry);
-                model.panel = PanelMode::SqlEditor {
+                model.panel_state = crate::archive::vsm::ArchivePanelState::SqlEditor {
                     text: body.sql.clone(),
                     result: None,
                     running: false,
@@ -511,31 +501,7 @@ async fn api_explain(
         .map_err(ApiError::internal)?;
     {
         let mut model = state.model.lock().await;
-        let new_schema = p.schema.clone();
-        let new_table = p.table.clone();
-        let new_label = format!("EXPLAIN: {}.{}", p.schema, p.table);
-        model.panel = if let PanelMode::ExplainPlan {
-            schema,
-            table,
-            root: old_root,
-        } = std::mem::take(&mut model.panel)
-        {
-            let old_label = format!("EXPLAIN: {schema}.{table}");
-            PanelMode::ExplainCompare {
-                schema: new_schema,
-                table: new_table,
-                left: old_root,
-                label_left: old_label,
-                right: root,
-                label_right: new_label,
-            }
-        } else {
-            PanelMode::ExplainPlan {
-                schema: p.schema,
-                table: p.table,
-                root,
-            }
-        };
+        model.panel_set_explain(p.schema, p.table, root);
     }
     Ok(Html(content_html(&state).map_err(ApiError::internal)?))
 }
@@ -639,9 +605,9 @@ async fn api_export(
 ) -> ApiResult<Response> {
     let result = {
         let model = state.model.lock().await;
-        match &model.panel {
-            PanelMode::DataGrid { result, .. } => result.clone(),
-            PanelMode::SqlEditor {
+        match &model.panel_state {
+            crate::archive::vsm::ArchivePanelState::DataGrid { result, .. } => result.clone(),
+            crate::archive::vsm::ArchivePanelState::SqlEditor {
                 result: Some(r), ..
             } => r.clone(),
             _ => {
@@ -673,13 +639,11 @@ async fn api_open_sql_editor(State(state): State<AppState>) -> Html<String> {
     {
         let mut model = state.model.lock().await;
         // Preserve text if already in SQL editor mode, else start fresh.
-        if !matches!(model.panel, PanelMode::SqlEditor { .. }) {
-            model.panel = PanelMode::SqlEditor {
-                text: String::new(),
-                result: None,
-                running: false,
-                error: None,
-            };
+        if !matches!(
+            model.panel_state,
+            crate::archive::vsm::ArchivePanelState::SqlEditor { .. }
+        ) {
+            model.panel_open_sql_editor(String::new());
         }
     }
     Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
@@ -706,7 +670,10 @@ async fn api_history_panel(State(state): State<AppState>) -> Html<String> {
     };
     {
         let mut model = state.model.lock().await;
-        model.panel = PanelMode::HistoryPanel { entries };
+        model.panel_state = crate::archive::vsm::ArchivePanelState::HistoryView {
+            entries,
+            display_mode: Default::default(),
+        };
     }
     Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
 }
@@ -724,7 +691,10 @@ async fn api_saved_panel(State(state): State<AppState>) -> Html<String> {
     };
     {
         let mut model = state.model.lock().await;
-        model.panel = PanelMode::SavedPanel { entries };
+        model.panel_state = crate::archive::vsm::ArchivePanelState::SavedView {
+            entries,
+            display_mode: Default::default(),
+        };
     }
     Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
 }
@@ -741,7 +711,11 @@ async fn api_export_panel(State(state): State<AppState>) -> Html<String> {
     };
     {
         let mut model = state.model.lock().await;
-        model.panel = PanelMode::ExportPanel { schema, table };
+        model.panel_state = crate::archive::vsm::ArchivePanelState::ExportView {
+            schema,
+            table,
+            result: None,
+        };
     }
     Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
 }
@@ -765,11 +739,7 @@ async fn api_ddl_panel(State(state): State<AppState>) -> Html<String> {
     match generate_ddl_direct(&url, &schema, &table).await {
         Ok(ddl_result) => {
             let mut model = state.model.lock().await;
-            model.panel = PanelMode::Ddl {
-                schema,
-                table,
-                ddl: ddl_result.ddl,
-            };
+            model.panel_set_ddl(schema, table, ddl_result.ddl);
         }
         Err(e) => {
             return error_content_html(&state, e.to_string()).await;
@@ -790,7 +760,9 @@ async fn api_explain_panel(State(state): State<AppState>) -> Html<String> {
     let (schema, table, sql) = {
         let model = state.model.lock().await;
         let pair = model.selected_schema_table();
-        let sql = if let PanelMode::SqlEditor { text, .. } = &model.panel {
+        let sql = if let crate::archive::vsm::ArchivePanelState::SqlEditor { text, .. } =
+            &model.panel_state
+        {
             if !text.trim().is_empty() {
                 text.clone()
             } else {
@@ -812,29 +784,7 @@ async fn api_explain_panel(State(state): State<AppState>) -> Html<String> {
     match explain_sql_direct(&url, &sql).await {
         Ok(root) => {
             let mut model = state.model.lock().await;
-            let new_label = format!("EXPLAIN: {schema}.{table}");
-            model.panel = if let PanelMode::ExplainPlan {
-                schema: old_schema,
-                table: old_table,
-                root: old_root,
-            } = std::mem::take(&mut model.panel)
-            {
-                let old_label = format!("EXPLAIN: {old_schema}.{old_table}");
-                PanelMode::ExplainCompare {
-                    schema: schema.clone(),
-                    table: table.clone(),
-                    left: old_root,
-                    label_left: old_label,
-                    right: root,
-                    label_right: new_label,
-                }
-            } else {
-                PanelMode::ExplainPlan {
-                    schema,
-                    table,
-                    root,
-                }
-            };
+            model.panel_set_explain(schema, table, root);
         }
         Err(e) => {
             return error_content_html(&state, e.to_string()).await;
@@ -872,7 +822,7 @@ async fn api_col_detail_panel(State(state): State<AppState>) -> Html<String> {
             model.store_column_stats(schema.clone(), table.clone(), stats);
         }
         model.select_table(&schema, &table);
-        model.panel = PanelMode::ColumnDetail;
+        model.panel_go_column_detail();
     }
     Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
 }
@@ -901,12 +851,7 @@ async fn api_load_history(
     };
     {
         let mut model = state.model.lock().await;
-        model.panel = PanelMode::SqlEditor {
-            text: sql,
-            result: None,
-            running: false,
-            error: None,
-        };
+        model.panel_open_sql_editor(sql);
     }
     Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
 }
@@ -934,12 +879,7 @@ async fn api_load_saved(
     };
     {
         let mut model = state.model.lock().await;
-        model.panel = PanelMode::SqlEditor {
-            text: sql,
-            result: None,
-            running: false,
-            error: None,
-        };
+        model.panel_open_sql_editor(sql);
     }
     Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
 }
@@ -1231,7 +1171,7 @@ async fn api_indexes(
 async fn api_open_help(State(state): State<AppState>) -> Html<String> {
     {
         let mut model = state.model.lock().await;
-        model.panel = PanelMode::HelpPanel;
+        model.panel_state = crate::archive::vsm::ArchivePanelState::HelpView;
     }
     Html(content_html(&state).unwrap_or_else(|e| format!("<div id='content'><pre>{e}</pre></div>")))
 }
@@ -1336,7 +1276,6 @@ fn dispatch_action_on_model(
     action: crate::archive::ArchiveAction,
 ) {
     use crate::archive::ArchiveAction as A;
-    use crate::archive::nav_model::PanelMode;
     match action {
         A::MoveUp => {
             model.move_up();
@@ -1351,12 +1290,7 @@ fn dispatch_action_on_model(
         A::ToggleHelp => model.toggle_help(),
         A::OpenFilter => model.open_filter(),
         A::OpenSqlEditor => {
-            model.panel = PanelMode::SqlEditor {
-                text: String::new(),
-                result: None,
-                running: false,
-                error: None,
-            };
+            model.panel_open_sql_editor(String::new());
         }
         A::OpenSavedBrowser => model.toggle_saved_browser(),
         A::OpenMonitor => {
@@ -1386,26 +1320,24 @@ fn dispatch_action_on_model(
             model.toggle_connection_editor(profile);
         }
         A::ToggleExportPicker => {
-            if model.panel.is_data_grid() {
+            if model.is_data_grid() {
                 model.toggle_export_picker();
             }
         }
         A::RequestDdl => {} // HTMX handles via /api/ddl-panel
         A::RequestExplain => {}
         A::ClearExplainCompare => {
-            if let PanelMode::ExplainCompare {
+            if let crate::archive::vsm::ArchivePanelState::ExplainCompare {
                 schema,
                 table,
-                left,
-                label_left: _,
-                right: _,
-                label_right: _,
-            } = std::mem::take(&mut model.panel)
+                comparison,
+            } = std::mem::take(&mut model.panel_state)
             {
-                model.panel = PanelMode::ExplainPlan {
+                model.panel_state = crate::archive::vsm::ArchivePanelState::ExplainView {
                     schema,
                     table,
-                    root: left,
+                    root: comparison.left,
+                    display_mode: Default::default(),
                 };
             }
         }

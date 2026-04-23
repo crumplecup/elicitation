@@ -22,9 +22,21 @@ use std::collections::HashMap;
 
 use elicit_accesskit::KeyBinding;
 use elicitation::Elicit;
+use elicitation::Established;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use strum::IntoEnumIterator as _;
 
+use crate::archive::types::DdlDescriptor;
+use crate::archive::vsm::{
+    ArchiveConnectionConsistent, ArchiveConnectionState, ArchiveNavConsistent,
+    ArchiveOverlayConsistent, ArchiveOverlayState, ArchivePanelConsistent, ArchivePanelState,
+    close_overlay, column_detail, data_grid_ready, ddl_ready, explain_ready,
+    open_connection_editor, open_export_picker, open_help,
+    open_save_prompt as vsm_open_save_prompt, open_saved_browser, open_sql_editor, panel_error,
+    panel_loading, picker_move_down, picker_move_up, prompt_backspace, prompt_push,
+    saved_browser_down, saved_browser_up,
+};
 use crate::archive::{
     AdminSnapshot, ColumnStats, ConnectionProfile, ConstraintDescriptor, ErdDiagram, ErdLayout,
     ExplainNode, ExportFormat, IndexDescriptor, MonitorSnapshot, QueryHistoryEntry, QueryResult,
@@ -84,171 +96,6 @@ pub struct SchemaWithExpand {
     pub types_expanded: bool,
     /// Whether the triggers group is expanded.
     pub triggers_expanded: bool,
-}
-
-// ── PanelMode ─────────────────────────────────────────────────────────────────
-
-/// What the central content panel should display.
-#[derive(Debug, Clone, Default)]
-pub enum PanelMode {
-    /// Column detail for the currently selected schema or table (default).
-    #[default]
-    ColumnDetail,
-    /// A data grid for a previewed table.
-    DataGrid {
-        /// Schema the table belongs to.
-        schema: String,
-        /// Table name.
-        table: String,
-        /// Query result holding columns + rows.
-        result: QueryResult,
-        /// Current page index (0-based).
-        page: u32,
-        /// Row cursor within the current page (0-based).
-        grid_row: usize,
-        /// Column cursor within the current page (0-based).
-        grid_col: usize,
-        /// Staged row edits awaiting commit, or `None` when not in edit mode.
-        edit_state: Option<RowEditState>,
-    },
-    /// A data fetch is in progress (spinner state).
-    Loading {
-        /// Schema being loaded.
-        schema: String,
-        /// Table being loaded.
-        table: String,
-    },
-    /// SQL editor pane (Phase 1.2).
-    SqlEditor {
-        /// Current editor text.
-        text: String,
-        /// Most recent query result, if any.
-        result: Option<QueryResult>,
-        /// Whether a query is running.
-        running: bool,
-        /// Last execution error, if any (web frontend only).
-        error: Option<String>,
-    },
-    /// DDL viewer pane.
-    Ddl {
-        /// Schema containing the object.
-        schema: String,
-        /// Object name.
-        table: String,
-        /// Reconstructed DDL text.
-        ddl: String,
-    },
-    /// EXPLAIN plan viewer.
-    ExplainPlan {
-        /// Schema containing the table.
-        schema: String,
-        /// Table name (or `"(custom)"` for SQL editor plans).
-        table: String,
-        /// Root node of the parsed plan tree.
-        root: ExplainNode,
-    },
-    /// Side-by-side EXPLAIN plan comparison.
-    ///
-    /// Activated when a second EXPLAIN fires while `ExplainPlan` is open.
-    ExplainCompare {
-        /// Schema context (from the newer plan).
-        schema: String,
-        /// Table context (from the newer plan).
-        table: String,
-        /// Left (original) plan root.
-        left: ExplainNode,
-        /// Left plan label.
-        label_left: String,
-        /// Right (new) plan root.
-        right: ExplainNode,
-        /// Right plan label.
-        label_right: String,
-    },
-    /// Query history browser panel (web frontend).
-    HistoryPanel {
-        /// Cached history entries to display.
-        entries: Vec<QueryHistoryEntry>,
-    },
-    /// Saved queries browser panel (web frontend).
-    SavedPanel {
-        /// Cached saved queries to display.
-        entries: Vec<SavedQuery>,
-    },
-    /// Export format picker panel (web frontend).
-    ExportPanel {
-        /// Schema of the table to export.
-        schema: String,
-        /// Table name to export.
-        table: String,
-    },
-    /// Key bindings / help panel (web frontend).
-    HelpPanel,
-    /// Live database monitoring panel — sessions, roles, cache hit, backups.
-    MonitorPanel {
-        /// Cached monitoring snapshot; empty until first fetch completes.
-        snapshot: MonitorSnapshot,
-        /// Whether a fetch is currently in progress.
-        loading: bool,
-    },
-    /// Database administration panel — roles, backups/WAL, server settings.
-    AdminPanel {
-        /// Cached administration snapshot; empty until first fetch completes.
-        snapshot: AdminSnapshot,
-        /// Whether a fetch is currently in progress.
-        loading: bool,
-    },
-    /// Entity-relationship diagram panel for a single schema.
-    ErdPanel {
-        /// Schema being visualised.
-        schema: String,
-        /// Cached ERD diagram; empty until first fetch completes.
-        diagram: ErdDiagram,
-        /// Grid layout computed from the diagram; `None` until first fetch completes.
-        layout: Option<ErdLayout>,
-        /// Whether a fetch is currently in progress.
-        loading: bool,
-    },
-    /// Constraint browser panel for the selected table.
-    ConstraintPanel {
-        /// Schema of the table.
-        schema: String,
-        /// Table name.
-        table: String,
-        /// Constraints for the table; empty until first fetch completes.
-        constraints: Vec<ConstraintDescriptor>,
-        /// Whether a fetch is currently in progress.
-        loading: bool,
-    },
-    /// Index browser panel for the selected table.
-    IndexPanel {
-        /// Schema of the table.
-        schema: String,
-        /// Table name.
-        table: String,
-        /// Indexes for the table; empty until first fetch completes.
-        indexes: Vec<IndexDescriptor>,
-        /// Whether a fetch is currently in progress.
-        loading: bool,
-    },
-    /// Connection profile editor — shows all fields including SSH tunnel and SSL.
-    ConnectionEditor {
-        /// The profile being edited (a clone; changes are not persisted until saved).
-        profile: ConnectionProfile,
-    },
-    /// A user-facing error message to display in the content area.
-    ///
-    /// Replaces any hardcoded HTML error fragments in the web frontend.
-    Error {
-        /// Human-readable error message.
-        message: String,
-    },
-}
-
-impl PanelMode {
-    /// Returns `true` when the panel is showing a data grid.
-    pub fn is_data_grid(&self) -> bool {
-        matches!(self, Self::DataGrid { .. })
-    }
 }
 
 // ── Fetch messaging ───────────────────────────────────────────────────────────
@@ -467,16 +314,12 @@ pub struct ArchiveNavModel {
     ///
     /// [`flat`]: ArchiveNavModel::flat
     pub cursor: usize,
-    /// Whether the keybinding help overlay is shown.
-    pub show_help: bool,
     /// Ephemeral status flash (e.g. refresh confirmation).
     pub flash: Option<String>,
     /// Current filter string (empty means no filter).
     pub filter: String,
     /// Whether the filter bar is active (accepting keystrokes).
     pub filter_active: bool,
-    /// Current content panel mode.
-    pub panel: PanelMode,
     /// Cached FK/constraint/index enrichment, keyed by `(schema, table)`.
     pub table_inspections: HashMap<(String, String), TableInspection>,
     /// Cached per-column planner statistics, keyed by `(schema, table)`.
@@ -490,22 +333,24 @@ pub struct ArchiveNavModel {
     pub history_idx: Option<usize>,
     /// In-memory saved-query cache (alphabetical), loaded at startup.
     pub saved_cache: Vec<SavedQuery>,
-    /// Whether the export format picker overlay is shown.
-    pub export_picker: bool,
-    /// Currently highlighted option in the export picker (0–3).
-    pub export_picker_idx: usize,
-    /// Whether the save-name prompt modal is shown.
-    pub save_prompt_active: bool,
-    /// Text being typed into the save-name prompt.
-    pub save_prompt_text: String,
-    /// Whether the saved-queries browser overlay is shown.
-    pub saved_browser_active: bool,
-    /// Currently highlighted row in the saved-queries browser.
-    pub saved_browser_idx: usize,
     /// Database-level extensions `(name, version)`, loaded at startup.
     pub extensions: Vec<(String, String)>,
     /// Whether the extensions group in the nav tree is expanded.
     pub extensions_expanded: bool,
+    /// Current panel VSM state.
+    pub panel_state: ArchivePanelState,
+    /// Proof that the panel state is WCAG-consistent.
+    pub panel_proof: Established<ArchivePanelConsistent>,
+    /// Current overlay VSM state.
+    pub overlay_state: ArchiveOverlayState,
+    /// Proof that the overlay state is consistent.
+    pub overlay_proof: Established<ArchiveOverlayConsistent>,
+    /// Current connection VSM state.
+    pub conn_state: ArchiveConnectionState,
+    /// Proof that the connection state is consistent.
+    pub conn_proof: Established<ArchiveConnectionConsistent>,
+    /// Proof that the nav tree state is consistent.
+    pub nav_proof: Established<ArchiveNavConsistent>,
 }
 
 impl ArchiveNavModel {
@@ -531,25 +376,24 @@ impl ArchiveNavModel {
             schemas,
             flat: Vec::new(),
             cursor: 0,
-            show_help: false,
             flash: None,
             filter: String::new(),
             filter_active: false,
-            panel: PanelMode::ColumnDetail,
             table_inspections: HashMap::new(),
             column_stats: HashMap::new(),
             last_export: None,
             history_cache: Vec::new(),
             history_idx: None,
             saved_cache: Vec::new(),
-            export_picker: false,
-            export_picker_idx: 0,
-            save_prompt_active: false,
-            save_prompt_text: String::new(),
-            saved_browser_active: false,
-            saved_browser_idx: 0,
             extensions: Vec::new(),
             extensions_expanded: false,
+            panel_state: ArchivePanelState::default(),
+            panel_proof: Established::assert(),
+            overlay_state: ArchiveOverlayState::default(),
+            overlay_proof: Established::assert(),
+            conn_state: ArchiveConnectionState::default(),
+            conn_proof: Established::assert(),
+            nav_proof: Established::assert(),
         };
         model.rebuild_flat();
         model
@@ -715,10 +559,7 @@ impl ArchiveNavModel {
                 let t = &self.schemas[si].entry.tables[ti];
                 let schema = t.schema.clone();
                 let table = t.table_name.clone();
-                self.panel = PanelMode::Loading {
-                    schema: schema.clone(),
-                    table: table.clone(),
-                };
+                self.apply_panel(|s, p| panel_loading(s, p, schema.clone(), table.clone()));
                 self.flash = None;
                 Some(FetchRequest::PreviewTable { schema, table })
             }
@@ -792,7 +633,11 @@ impl ArchiveNavModel {
 
     /// Toggle the help overlay.
     pub fn toggle_help(&mut self) {
-        self.show_help = !self.show_help;
+        if matches!(self.overlay_state, ArchiveOverlayState::HelpOpen) {
+            self.apply_overlay(close_overlay);
+        } else {
+            self.apply_overlay(open_help);
+        }
         self.flash = None;
     }
 
@@ -901,8 +746,8 @@ impl ArchiveNavModel {
     ///
     /// [`ExportData`]: FetchRequest::ExportData
     pub fn export_request(&self, format: ExportFormat) -> Option<FetchRequest> {
-        match &self.panel {
-            PanelMode::DataGrid {
+        match &self.panel_state {
+            ArchivePanelState::DataGrid {
                 schema,
                 table,
                 result,
@@ -913,7 +758,7 @@ impl ArchiveNavModel {
                 result: result.clone(),
                 format,
             }),
-            PanelMode::SqlEditor {
+            ArchivePanelState::SqlEditor {
                 result: Some(r), ..
             } => Some(FetchRequest::ExportData {
                 schema: String::new(),
@@ -990,16 +835,25 @@ impl ArchiveNavModel {
         if self.filter_active {
             return KeyMapMode::Filter;
         }
-        if self.save_prompt_active {
+        if matches!(
+            self.overlay_state,
+            ArchiveOverlayState::SavePromptOpen { .. }
+        ) {
             return KeyMapMode::SavePrompt;
         }
-        if self.saved_browser_active {
+        if matches!(
+            self.overlay_state,
+            ArchiveOverlayState::SavedBrowserOpen { .. }
+        ) {
             return KeyMapMode::SavedBrowser;
         }
-        if self.export_picker {
+        if matches!(
+            self.overlay_state,
+            ArchiveOverlayState::ExportPickerOpen { .. }
+        ) {
             return KeyMapMode::ExportPicker;
         }
-        if matches!(self.panel, PanelMode::SqlEditor { .. }) {
+        if matches!(self.panel_state, ArchivePanelState::SqlEditor { .. }) {
             return KeyMapMode::SqlEditor;
         }
         KeyMapMode::Default
@@ -1009,9 +863,11 @@ impl ArchiveNavModel {
     ///
     /// Used by frontends to implement [`ArchiveAction::SavedBrowserSelect`].
     pub fn load_focused_saved_query_text(&self) -> Option<String> {
-        self.saved_cache
-            .get(self.saved_browser_idx)
-            .map(|q| q.sql.clone())
+        if let ArchiveOverlayState::SavedBrowserOpen { entries, idx } = &self.overlay_state {
+            entries.get(*idx).map(|q| q.sql.clone())
+        } else {
+            None
+        }
     }
 
     /// Remove the currently-focused saved query from the local cache.
@@ -1021,13 +877,25 @@ impl ArchiveNavModel {
     ///
     /// Used by frontends to implement [`ArchiveAction::SavedBrowserDelete`].
     pub fn remove_focused_saved_query(&mut self) -> Option<(i64, String)> {
-        let idx = self.saved_browser_idx;
+        let idx = match &self.overlay_state {
+            ArchiveOverlayState::SavedBrowserOpen { idx, .. } => *idx,
+            _ => return None,
+        };
         if idx >= self.saved_cache.len() {
             return None;
         }
         let q = self.saved_cache.remove(idx);
-        if idx > 0 && idx >= self.saved_cache.len() {
-            self.saved_browser_prev();
+        if let ArchiveOverlayState::SavedBrowserOpen {
+            entries,
+            idx: curr_idx,
+        } = &mut self.overlay_state
+        {
+            if idx < entries.len() {
+                entries.remove(idx);
+            }
+            if *curr_idx > 0 && *curr_idx >= entries.len() {
+                *curr_idx -= 1;
+            }
         }
         Some((q.id, q.name))
     }
@@ -1069,98 +937,93 @@ impl ArchiveNavModel {
             Some(e) => e.sql.clone(),
             None => return false,
         };
-        match &mut self.panel {
-            PanelMode::SqlEditor { text, .. } => {
-                *text = sql;
-                true
-            }
-            _ => {
-                // Activate sql editor mode with the chosen history entry.
-                self.panel = PanelMode::SqlEditor {
-                    text: sql,
-                    result: None,
-                    running: false,
-                    error: None,
-                };
-                true
-            }
+        if let ArchivePanelState::SqlEditor { text, .. } = &mut self.panel_state {
+            *text = sql;
+        } else {
+            self.apply_panel(|s, p| open_sql_editor(s, p, sql));
         }
+        true
     }
 
     // ── Overlay state helpers ─────────────────────────────────────────────────
 
     /// Toggle the export format picker overlay.
     pub fn toggle_export_picker(&mut self) {
-        self.export_picker = !self.export_picker;
-        if self.export_picker {
-            self.export_picker_idx = 0;
+        if matches!(
+            self.overlay_state,
+            ArchiveOverlayState::ExportPickerOpen { .. }
+        ) {
+            self.apply_overlay(close_overlay);
+        } else {
+            let formats: Vec<ExportFormat> = ExportFormat::iter().collect();
+            self.apply_overlay(|s, p| open_export_picker(s, p, formats));
         }
     }
 
     /// Move the export picker selection up.
     pub fn export_picker_prev(&mut self) {
-        if self.export_picker_idx > 0 {
-            self.export_picker_idx -= 1;
-        }
+        self.apply_overlay(picker_move_up);
     }
 
-    /// Move the export picker selection down (max 3).
+    /// Move the export picker selection down.
     pub fn export_picker_next(&mut self) {
-        if self.export_picker_idx < 3 {
-            self.export_picker_idx += 1;
-        }
+        self.apply_overlay(picker_move_down);
     }
 
     /// Confirm the export picker — returns the chosen [`ExportFormat`].
     pub fn confirm_export_picker(&mut self) -> ExportFormat {
-        self.export_picker = false;
-        match self.export_picker_idx {
-            0 => ExportFormat::Csv,
-            1 => ExportFormat::Json,
-            2 => ExportFormat::Tsv,
-            _ => ExportFormat::Ndjson,
+        if let ArchiveOverlayState::ExportPickerOpen { idx, ref formats } = self.overlay_state {
+            let format = formats.get(idx).copied().unwrap_or(ExportFormat::Csv);
+            self.apply_overlay(close_overlay);
+            format
+        } else {
+            ExportFormat::Csv
         }
     }
 
     /// Open the save-name prompt (SQL editor context).
     pub fn open_save_prompt(&mut self) {
-        self.save_prompt_active = true;
-        self.save_prompt_text.clear();
+        self.apply_overlay(vsm_open_save_prompt);
     }
 
     /// Append a character to the save-name prompt text.
     pub fn save_prompt_push(&mut self, ch: char) {
-        self.save_prompt_text.push(ch);
+        self.apply_overlay(|s, p| prompt_push(s, p, ch));
     }
 
     /// Delete the last character from the save-name prompt text.
     pub fn save_prompt_backspace(&mut self) {
-        self.save_prompt_text.pop();
+        self.apply_overlay(prompt_backspace);
     }
 
     /// Close the save-name prompt, discarding any typed text.
     pub fn close_save_prompt(&mut self) {
-        self.save_prompt_active = false;
-        self.save_prompt_text.clear();
+        self.apply_overlay(close_overlay);
     }
 
     /// Consume the save-name prompt text, closing the prompt.
     ///
     /// Returns `None` if the prompt is not active or the text is blank.
     pub fn take_save_prompt(&mut self) -> Option<String> {
-        if !self.save_prompt_active {
-            return None;
+        if let ArchiveOverlayState::SavePromptOpen { text } = &self.overlay_state {
+            let name = text.trim().to_string();
+            self.apply_overlay(close_overlay);
+            if name.is_empty() { None } else { Some(name) }
+        } else {
+            None
         }
-        let name = self.save_prompt_text.trim().to_string();
-        self.close_save_prompt();
-        if name.is_empty() { None } else { Some(name) }
     }
 
     /// Toggle the saved-queries browser overlay.
     pub fn toggle_saved_browser(&mut self) {
-        self.saved_browser_active = !self.saved_browser_active;
-        if self.saved_browser_active {
-            self.saved_browser_idx = 0;
+        if matches!(
+            self.overlay_state,
+            ArchiveOverlayState::SavedBrowserOpen { .. }
+        ) {
+            self.apply_overlay(close_overlay);
+        } else {
+            let entries = self.saved_cache.clone();
+            self.apply_overlay(|s, p| open_saved_browser(s, p, entries));
         }
     }
 
@@ -1171,13 +1034,14 @@ impl ArchiveNavModel {
     /// Returns `Some(FetchRequest::FetchMonitor)` when opening so the caller
     /// can dispatch a data fetch; returns `None` when closing.
     pub fn toggle_monitor_panel(&mut self) -> Option<FetchRequest> {
-        if matches!(self.panel, PanelMode::MonitorPanel { .. }) {
-            self.panel = PanelMode::ColumnDetail;
+        if matches!(self.panel_state, ArchivePanelState::MonitorView { .. }) {
+            self.apply_panel(column_detail);
             return None;
         }
-        self.panel = PanelMode::MonitorPanel {
+        self.panel_state = ArchivePanelState::MonitorView {
             snapshot: MonitorSnapshot::default(),
             loading: true,
+            display_mode: Default::default(),
         };
         let schema = self
             .selected_schema_name()
@@ -1190,10 +1054,11 @@ impl ArchiveNavModel {
     /// No-ops if the panel is no longer in `MonitorPanel` mode (e.g. the user
     /// navigated away before the fetch completed).
     pub fn apply_monitor_snapshot(&mut self, mut snapshot: MonitorSnapshot) {
-        if let PanelMode::MonitorPanel {
+        if let ArchivePanelState::MonitorView {
             snapshot: s,
             loading,
-        } = &mut self.panel
+            ..
+        } = &mut self.panel_state
         {
             // Preserve the active tab the user may have selected.
             snapshot.active_tab = s.active_tab.clone();
@@ -1209,55 +1074,51 @@ impl ArchiveNavModel {
     /// Returns `Some(FetchRequest::FetchAdmin)` when opening so the caller can
     /// dispatch a data fetch; returns `None` when closing.
     pub fn toggle_admin_panel(&mut self) -> Option<FetchRequest> {
-        if matches!(self.panel, PanelMode::AdminPanel { .. }) {
-            self.panel = PanelMode::ColumnDetail;
+        if matches!(self.panel_state, ArchivePanelState::AdminView { .. }) {
+            self.apply_panel(column_detail);
             return None;
         }
-        self.panel = PanelMode::AdminPanel {
+        self.panel_state = ArchivePanelState::AdminView {
             snapshot: AdminSnapshot::default(),
             loading: true,
+            display_mode: Default::default(),
         };
         Some(FetchRequest::FetchAdmin)
     }
 
-    /// Apply a completed administration snapshot to the admin panel.
-    ///
-    /// No-ops if the panel is no longer in `AdminPanel` mode.
+    /// Apply a completed admin snapshot to the admin panel.
     pub fn apply_admin_snapshot(&mut self, snapshot: AdminSnapshot) {
-        if let PanelMode::AdminPanel {
+        if let ArchivePanelState::AdminView {
             snapshot: s,
             loading,
-        } = &mut self.panel
+            ..
+        } = &mut self.panel_state
         {
             *s = snapshot;
             *loading = false;
         }
     }
 
-    /// Cycle to the next admin panel tab (`]` key).
-    ///
-    /// No-ops when not in `AdminPanel` mode.
+    /// Advance the active tab in the admin or monitor panel.
     pub fn admin_tab_next(&mut self) {
-        match &mut self.panel {
-            PanelMode::AdminPanel { snapshot, .. } => {
+        match &mut self.panel_state {
+            ArchivePanelState::AdminView { snapshot, .. } => {
                 snapshot.active_tab = snapshot.active_tab.next();
             }
-            PanelMode::MonitorPanel { snapshot, .. } => {
+            ArchivePanelState::MonitorView { snapshot, .. } => {
                 snapshot.active_tab = snapshot.active_tab.next();
             }
             _ => {}
         }
     }
 
-    /// Cycle to the previous admin panel tab (`[` key).
-    ///
-    /// No-ops when not in `AdminPanel` or `MonitorPanel` mode.
+    /// Step back to the previous tab in the admin or monitor panel.
     pub fn admin_tab_prev(&mut self) {
-        match &mut self.panel {
-            PanelMode::AdminPanel { snapshot, .. } => {
+        match &mut self.panel_state {
+            ArchivePanelState::AdminView { snapshot, .. } => {
                 snapshot.active_tab = snapshot.active_tab.prev();
             }
-            PanelMode::MonitorPanel { snapshot, .. } => {
+            ArchivePanelState::MonitorView { snapshot, .. } => {
                 snapshot.active_tab = snapshot.active_tab.prev();
             }
             _ => {}
@@ -1290,29 +1151,28 @@ impl ArchiveNavModel {
     /// dispatch a background fetch.  Returns `None` on close.
     pub fn toggle_erd_panel(&mut self) -> Option<FetchRequest> {
         let schema = self.selected_schema_name()?;
-        if matches!(self.panel, PanelMode::ErdPanel { .. }) {
-            self.panel = PanelMode::ColumnDetail;
+        if matches!(self.panel_state, ArchivePanelState::ErdView { .. }) {
+            self.apply_panel(column_detail);
             return None;
         }
-        self.panel = PanelMode::ErdPanel {
+        self.panel_state = ArchivePanelState::ErdView {
             schema: schema.clone(),
             diagram: ErdDiagram::default(),
             layout: None,
             loading: true,
+            display_mode: Default::default(),
         };
         Some(FetchRequest::FetchErd { schema })
     }
 
-    /// Apply a completed ERD diagram to the panel.
-    ///
-    /// No-ops if the panel is no longer in `ErdPanel` mode.
+    /// Apply a completed ERD diagram to the ERD panel.
     pub fn apply_erd_diagram(&mut self, diagram: ErdDiagram) {
-        if let PanelMode::ErdPanel {
+        if let ArchivePanelState::ErdView {
             diagram: d,
             layout,
             loading,
             ..
-        } = &mut self.panel
+        } = &mut self.panel_state
         {
             let new_layout = ErdLayout::from_diagram(&diagram);
             *d = diagram;
@@ -1329,45 +1189,46 @@ impl ArchiveNavModel {
     /// immediately (no `FetchRequest` needed).  Otherwise returns
     /// `Some(FetchRequest::FetchConstraints)` for the caller to dispatch.
     pub fn toggle_constraint_panel(&mut self) -> Option<FetchRequest> {
-        if matches!(self.panel, PanelMode::ConstraintPanel { .. }) {
-            self.panel = PanelMode::ColumnDetail;
+        if matches!(self.panel_state, ArchivePanelState::ConstraintView { .. }) {
+            self.apply_panel(column_detail);
             return None;
         }
         let (schema, table) = self.selected_schema_table()?;
         if let Some(insp) = self.table_inspections.get(&(schema.clone(), table.clone())) {
             let constraints = insp.constraints.clone();
-            self.panel = PanelMode::ConstraintPanel {
+            self.panel_state = ArchivePanelState::ConstraintView {
                 schema,
                 table,
                 constraints,
                 loading: false,
+                display_mode: Default::default(),
             };
             return None;
         }
-        self.panel = PanelMode::ConstraintPanel {
+        self.panel_state = ArchivePanelState::ConstraintView {
             schema: schema.clone(),
             table: table.clone(),
             constraints: Vec::new(),
             loading: true,
+            display_mode: Default::default(),
         };
         Some(FetchRequest::FetchConstraints { schema, table })
     }
 
-    /// Apply fetched constraints to the constraint panel.
-    ///
-    /// No-ops if the panel is no longer in `ConstraintPanel` mode.
+    /// Apply a completed constraints list to the constraint panel.
     pub fn apply_constraints(
         &mut self,
         schema: String,
         table: String,
         constraints: Vec<ConstraintDescriptor>,
     ) {
-        if let PanelMode::ConstraintPanel {
+        if let ArchivePanelState::ConstraintView {
             schema: ps,
             table: pt,
             constraints: c,
             loading,
-        } = &mut self.panel
+            ..
+        } = &mut self.panel_state
             && ps == &schema
             && pt == &table
         {
@@ -1376,45 +1237,43 @@ impl ArchiveNavModel {
         }
     }
 
-    /// Open the index panel for the selected table, or close it.
-    ///
-    /// If the enrichment data is already cached, populates the panel
-    /// immediately.  Otherwise returns `Some(FetchRequest::FetchIndexes)`.
+    /// Open the index panel for the selected table, or close it if already open.
     pub fn toggle_index_panel(&mut self) -> Option<FetchRequest> {
-        if matches!(self.panel, PanelMode::IndexPanel { .. }) {
-            self.panel = PanelMode::ColumnDetail;
+        if matches!(self.panel_state, ArchivePanelState::IndexView { .. }) {
+            self.apply_panel(column_detail);
             return None;
         }
         let (schema, table) = self.selected_schema_table()?;
         if let Some(insp) = self.table_inspections.get(&(schema.clone(), table.clone())) {
             let indexes = insp.indexes.clone();
-            self.panel = PanelMode::IndexPanel {
+            self.panel_state = ArchivePanelState::IndexView {
                 schema,
                 table,
                 indexes,
                 loading: false,
+                display_mode: Default::default(),
             };
             return None;
         }
-        self.panel = PanelMode::IndexPanel {
+        self.panel_state = ArchivePanelState::IndexView {
             schema: schema.clone(),
             table: table.clone(),
             indexes: Vec::new(),
             loading: true,
+            display_mode: Default::default(),
         };
         Some(FetchRequest::FetchIndexes { schema, table })
     }
 
-    /// Apply fetched indexes to the index panel.
-    ///
-    /// No-ops if the panel is no longer in `IndexPanel` mode.
+    /// Apply a completed index list to the index panel.
     pub fn apply_indexes(&mut self, schema: String, table: String, indexes: Vec<IndexDescriptor>) {
-        if let PanelMode::IndexPanel {
+        if let ArchivePanelState::IndexView {
             schema: ps,
             table: pt,
             indexes: ix,
             loading,
-        } = &mut self.panel
+            ..
+        } = &mut self.panel_state
             && ps == &schema
             && pt == &table
         {
@@ -1427,45 +1286,39 @@ impl ArchiveNavModel {
 
     /// Open the connection editor panel for `profile`, or close it if already open.
     pub fn toggle_connection_editor(&mut self, profile: ConnectionProfile) {
-        if matches!(self.panel, PanelMode::ConnectionEditor { .. }) {
-            self.panel = PanelMode::ColumnDetail;
+        if matches!(self.panel_state, ArchivePanelState::ConnectionEdit { .. }) {
+            self.apply_panel(column_detail);
         } else {
-            self.panel = PanelMode::ConnectionEditor { profile };
+            self.apply_panel(|s, p| open_connection_editor(s, p, profile, Default::default()));
         }
     }
 
     // ── Phase 8 — Data-grid pagination ────────────────────────────────────────
 
-    /// Advance the data-grid to the next page.
-    ///
-    /// No-ops when the panel is not a `DataGrid`.  The caller is responsible
-    /// for re-fetching data if needed; this only updates the page index.
+    /// Advance to the next page of the data grid.
     pub fn page_next(&mut self) {
-        if let PanelMode::DataGrid { page, .. } = &mut self.panel {
+        if let ArchivePanelState::DataGrid { page, .. } = &mut self.panel_state {
             *page += 1;
         }
     }
 
-    /// Return the data-grid to the previous page (clamped at 0).
+    /// Go back to the previous page of the data grid.
     pub fn page_prev(&mut self) {
-        if let PanelMode::DataGrid { page, .. } = &mut self.panel {
+        if let ArchivePanelState::DataGrid { page, .. } = &mut self.panel_state {
             *page = page.saturating_sub(1);
         }
     }
 
-    /// Jump to the first page (page 0).
+    /// Jump to the first page of the data grid.
     pub fn page_first(&mut self) {
-        if let PanelMode::DataGrid { page, .. } = &mut self.panel {
+        if let ArchivePanelState::DataGrid { page, .. } = &mut self.panel_state {
             *page = 0;
         }
     }
 
-    /// Jump to the last page.
-    ///
-    /// Computes the last valid page from `result.rows.rows.len()` and the
-    /// page size constant (100 rows/page).
+    /// Jump to the last page of the data grid.
     pub fn page_last(&mut self) {
-        if let PanelMode::DataGrid { result, page, .. } = &mut self.panel {
+        if let ArchivePanelState::DataGrid { result, page, .. } = &mut self.panel_state {
             const PAGE_SIZE: u32 = 100;
             let total = result.rows.rows.len() as u32;
             *page = if total == 0 {
@@ -1478,16 +1331,12 @@ impl ArchiveNavModel {
 
     /// Move the saved-browser selection up.
     pub fn saved_browser_prev(&mut self) {
-        if self.saved_browser_idx > 0 {
-            self.saved_browser_idx -= 1;
-        }
+        self.apply_overlay(saved_browser_up);
     }
 
     /// Move the saved-browser selection down.
     pub fn saved_browser_next(&mut self) {
-        if !self.saved_cache.is_empty() {
-            self.saved_browser_idx = (self.saved_browser_idx + 1).min(self.saved_cache.len() - 1);
-        }
+        self.apply_overlay(saved_browser_down);
     }
 
     /// Set the nav filter string and rebuild the flat list.
@@ -1501,13 +1350,11 @@ impl ArchiveNavModel {
 
     // ── Phase 3.1 — Inline Row Edit ──────────────────────────────────────────
 
-    /// Move the data-grid row cursor up one row (wraps at top).
-    ///
-    /// Returns `false` if the active panel is not a `DataGrid`.
+    /// Move the grid cursor up one row. Returns `true` if in a data grid.
     pub fn grid_row_up(&mut self) -> bool {
-        if let PanelMode::DataGrid {
+        if let ArchivePanelState::DataGrid {
             result, grid_row, ..
-        } = &mut self.panel
+        } = &mut self.panel_state
         {
             if *grid_row > 0 {
                 *grid_row -= 1;
@@ -1519,13 +1366,11 @@ impl ArchiveNavModel {
         false
     }
 
-    /// Move the data-grid row cursor down one row (wraps at bottom).
-    ///
-    /// Returns `false` if the active panel is not a `DataGrid`.
+    /// Move the grid cursor down one row. Returns `true` if in a data grid.
     pub fn grid_row_down(&mut self) -> bool {
-        if let PanelMode::DataGrid {
+        if let ArchivePanelState::DataGrid {
             result, grid_row, ..
-        } = &mut self.panel
+        } = &mut self.panel_state
         {
             let max = result.rows.rows.len().saturating_sub(1);
             *grid_row = if *grid_row >= max { 0 } else { *grid_row + 1 };
@@ -1534,13 +1379,11 @@ impl ArchiveNavModel {
         false
     }
 
-    /// Move the data-grid column cursor left one column (wraps).
-    ///
-    /// Returns `false` if the active panel is not a `DataGrid`.
+    /// Move the grid cursor left one column. Returns `true` if in a data grid.
     pub fn grid_col_left(&mut self) -> bool {
-        if let PanelMode::DataGrid {
+        if let ArchivePanelState::DataGrid {
             result, grid_col, ..
-        } = &mut self.panel
+        } = &mut self.panel_state
         {
             if *grid_col > 0 {
                 *grid_col -= 1;
@@ -1552,13 +1395,11 @@ impl ArchiveNavModel {
         false
     }
 
-    /// Move the data-grid column cursor right one column (wraps).
-    ///
-    /// Returns `false` if the active panel is not a `DataGrid`.
+    /// Move the grid cursor right one column. Returns `true` if in a data grid.
     pub fn grid_col_right(&mut self) -> bool {
-        if let PanelMode::DataGrid {
+        if let ArchivePanelState::DataGrid {
             result, grid_col, ..
-        } = &mut self.panel
+        } = &mut self.panel_state
         {
             let max = result.columns.len().saturating_sub(1);
             *grid_col = if *grid_col >= max { 0 } else { *grid_col + 1 };
@@ -1567,12 +1408,9 @@ impl ArchiveNavModel {
         false
     }
 
-    /// Enter edit mode: create a [`RowEditState`] on the current `DataGrid`.
-    ///
-    /// Returns `false` if the active panel is not a `DataGrid` or edit mode is
-    /// already active.
+    /// Enter row-edit mode on the data grid. Returns `true` if successful.
     pub fn begin_edit_mode(&mut self) -> bool {
-        if let PanelMode::DataGrid { edit_state, .. } = &mut self.panel
+        if let ArchivePanelState::DataGrid { edit_state, .. } = &mut self.panel_state
             && edit_state.is_none()
         {
             *edit_state = Some(RowEditState::new());
@@ -1581,22 +1419,18 @@ impl ArchiveNavModel {
         false
     }
 
-    /// Start typing into the currently selected cell.
-    ///
-    /// Pre-fills the input buffer with the cell's current displayed value so
-    /// the user can edit it in place.  Returns `false` if no edit session is
-    /// active or the cursor is out of range.
+    /// Start editing the currently focused cell. Returns `true` if successful.
     pub fn begin_cell_edit(&mut self) -> bool {
-        if let PanelMode::DataGrid {
+        if let ArchivePanelState::DataGrid {
             result,
             grid_row,
             grid_col,
             edit_state: Some(es),
             ..
-        } = &mut self.panel
+        } = &mut self.panel_state
         {
             if es.editing_cell.is_some() {
-                return false; // already editing
+                return false;
             }
             let row_idx = *grid_row;
             let col_idx = *grid_col;
@@ -1611,44 +1445,39 @@ impl ArchiveNavModel {
         false
     }
 
-    /// Append a character to the in-progress cell edit buffer.
+    /// Push a character into the cell-edit or insert-row buffer.
     pub fn cell_edit_push(&mut self, ch: char) {
-        if let PanelMode::DataGrid {
+        if let ArchivePanelState::DataGrid {
             edit_state: Some(es),
             ..
-        } = &mut self.panel
+        } = &mut self.panel_state
             && (es.editing_cell.is_some() || es.inserting_row.is_some())
         {
             es.input_buffer.push(ch);
         }
     }
 
-    /// Delete the last character from the in-progress cell edit buffer.
+    /// Remove the last character from the cell-edit or insert-row buffer.
     pub fn cell_edit_pop(&mut self) {
-        if let PanelMode::DataGrid {
+        if let ArchivePanelState::DataGrid {
             edit_state: Some(es),
             ..
-        } = &mut self.panel
+        } = &mut self.panel_state
             && (es.editing_cell.is_some() || es.inserting_row.is_some())
         {
             es.input_buffer.pop();
         }
     }
 
-    /// Finalise the in-progress cell edit and add it to `pending_edits`.
-    ///
-    /// The primary-key values are derived from all columns whose
-    /// [`ColumnDescriptor::is_primary_key`] flag is `true` in the current result.
-    ///
-    /// Returns `false` if no cell edit was in progress.
+    /// Stage the current cell edit as a pending update. Returns `true` if an edit was staged.
     pub fn stage_cell_edit(&mut self) -> bool {
-        if let PanelMode::DataGrid {
+        if let ArchivePanelState::DataGrid {
             schema,
             table,
             result,
             edit_state: Some(es),
             ..
-        } = &mut self.panel
+        } = &mut self.panel_state
         {
             let Some((row_idx, col_idx)) = es.editing_cell.take() else {
                 return false;
@@ -1683,15 +1512,13 @@ impl ArchiveNavModel {
         false
     }
 
-    /// Enter new-row insertion mode: prepare an empty form with one slot per column.
-    ///
-    /// Returns `false` if no edit session is active or insertion is already in progress.
+    /// Begin inserting a new row. Returns `true` if successful.
     pub fn begin_insert_row(&mut self) -> bool {
-        if let PanelMode::DataGrid {
+        if let ArchivePanelState::DataGrid {
             result,
             edit_state: Some(es),
             ..
-        } = &mut self.panel
+        } = &mut self.panel_state
         {
             if es.inserting_row.is_some() {
                 return false;
@@ -1709,15 +1536,12 @@ impl ArchiveNavModel {
         false
     }
 
-    /// Advance to the next column in the new-row insertion form.
-    ///
-    /// Saves the current `input_buffer` into the current column slot.
-    /// Returns `true` when the cursor wrapped around (all columns filled once).
+    /// Advance to the next column when filling in a new row's insert form. Returns `true` when the form is complete.
     pub fn insert_row_next_col(&mut self) -> bool {
-        if let PanelMode::DataGrid {
+        if let ArchivePanelState::DataGrid {
             edit_state: Some(es),
             ..
-        } = &mut self.panel
+        } = &mut self.panel_state
             && let Some(form) = &mut es.inserting_row
         {
             let cursor = es.insert_col_cursor;
@@ -1727,27 +1551,24 @@ impl ArchiveNavModel {
             es.insert_col_cursor += 1;
             if es.insert_col_cursor >= form.len() {
                 es.insert_col_cursor = 0;
-                return true; // wrapped
+                return true;
             }
         }
         false
     }
 
-    /// Finalise the new-row form and add an `Insert` edit to `pending_edits`.
-    ///
-    /// Returns `false` if no insertion was in progress.
+    /// Stage the current insert-row form as a pending insert. Returns `true` if successful.
     pub fn stage_insert_row(&mut self) -> bool {
-        if let PanelMode::DataGrid {
+        if let ArchivePanelState::DataGrid {
             schema,
             table,
             edit_state: Some(es),
             ..
-        } = &mut self.panel
+        } = &mut self.panel_state
         {
             let Some(mut form) = es.inserting_row.take() else {
                 return false;
             };
-            // Save whatever is still in the buffer into the current slot
             let cursor = es.insert_col_cursor;
             if let Some(slot) = form.get_mut(cursor) {
                 slot.1 = std::mem::take(&mut es.input_buffer);
@@ -1763,18 +1584,16 @@ impl ArchiveNavModel {
         false
     }
 
-    /// Mark the currently selected row for deletion.
-    ///
-    /// Returns `false` if no edit session is active or the row is already marked.
+    /// Mark the focused row for deletion. Returns `true` if the row was marked.
     pub fn stage_delete_row(&mut self) -> bool {
-        if let PanelMode::DataGrid {
+        if let ArchivePanelState::DataGrid {
             schema,
             table,
             result,
             grid_row,
             edit_state: Some(es),
             ..
-        } = &mut self.panel
+        } = &mut self.panel_state
         {
             let row_idx = *grid_row;
             if es.rows_marked_deleted.contains(&row_idx) {
@@ -1805,9 +1624,8 @@ impl ArchiveNavModel {
 
     /// Cancel all staged edits and exit edit mode.
     ///
-    /// Returns `false` if no edit session was active.
     pub fn discard_edit_mode(&mut self) -> bool {
-        if let PanelMode::DataGrid { edit_state, .. } = &mut self.panel
+        if let ArchivePanelState::DataGrid { edit_state, .. } = &mut self.panel_state
             && edit_state.is_some()
         {
             *edit_state = None;
@@ -1816,17 +1634,14 @@ impl ArchiveNavModel {
         false
     }
 
-    /// Drain and return the pending edits together with the schema and table name.
-    ///
-    /// Clears the staged edits and exits edit mode.  Returns `None` if there is
-    /// no active edit session or no pending mutations.
+    /// Drain the pending edits from edit mode, returning `(schema, table, edits)` if any exist.
     pub fn take_staged_edits(&mut self) -> Option<(String, String, Vec<StagedEdit>)> {
-        if let PanelMode::DataGrid {
+        if let ArchivePanelState::DataGrid {
             schema,
             table,
             edit_state,
             ..
-        } = &mut self.panel
+        } = &mut self.panel_state
             && let Some(es) = edit_state.take()
             && !es.pending_edits.is_empty()
         {
@@ -1851,6 +1666,91 @@ impl ArchiveNavModel {
             }
         }
         false
+    }
+
+    // ── VSM helper methods ────────────────────────────────────────────────────
+
+    fn apply_panel<F>(&mut self, f: F)
+    where
+        F: FnOnce(
+            ArchivePanelState,
+            Established<ArchivePanelConsistent>,
+        ) -> (ArchivePanelState, Established<ArchivePanelConsistent>),
+    {
+        let proof = std::mem::replace(&mut self.panel_proof, Established::assert());
+        let state = std::mem::take(&mut self.panel_state);
+        let (new_state, new_proof) = f(state, proof);
+        self.panel_state = new_state;
+        self.panel_proof = new_proof;
+    }
+
+    fn apply_overlay<F>(&mut self, f: F)
+    where
+        F: FnOnce(
+            ArchiveOverlayState,
+            Established<ArchiveOverlayConsistent>,
+        ) -> (ArchiveOverlayState, Established<ArchiveOverlayConsistent>),
+    {
+        let proof = std::mem::replace(&mut self.overlay_proof, Established::assert());
+        let state = std::mem::take(&mut self.overlay_state);
+        let (new_state, new_proof) = f(state, proof);
+        self.overlay_state = new_state;
+        self.overlay_proof = new_proof;
+    }
+
+    // ── Public panel convenience methods ─────────────────────────────────────
+
+    /// Returns `true` when the panel is showing a data grid.
+    #[tracing::instrument(skip(self))]
+    pub fn is_data_grid(&self) -> bool {
+        matches!(self.panel_state, ArchivePanelState::DataGrid { .. })
+    }
+
+    /// Set the panel to ColumnDetail.
+    #[tracing::instrument(skip(self))]
+    pub fn panel_go_column_detail(&mut self) {
+        self.apply_panel(column_detail);
+    }
+
+    /// Apply a completed data grid result.
+    #[tracing::instrument(skip(self))]
+    pub fn panel_set_data_grid(&mut self, schema: String, table: String, result: QueryResult) {
+        self.apply_panel(|s, p| data_grid_ready(s, p, schema, table, result, Default::default()));
+    }
+
+    /// Set an explain view (promoting to comparison if already showing one).
+    #[tracing::instrument(skip(self))]
+    pub fn panel_set_explain(&mut self, schema: String, table: String, root: ExplainNode) {
+        self.apply_panel(|s, p| explain_ready(s, p, schema, table, root, Default::default()));
+    }
+
+    /// Set a DDL view.
+    #[tracing::instrument(skip(self))]
+    pub fn panel_set_ddl(&mut self, schema: String, table: String, ddl_text: String) {
+        let descriptor = DdlDescriptor {
+            schema: schema.clone(),
+            object_name: table.clone(),
+            ddl: ddl_text,
+        };
+        self.apply_panel(|s, p| ddl_ready(s, p, schema, table, descriptor, Default::default()));
+    }
+
+    /// Set to loading state.
+    #[tracing::instrument(skip(self))]
+    pub fn panel_set_loading(&mut self, schema: String, label: String) {
+        self.apply_panel(|s, p| panel_loading(s, p, schema, label));
+    }
+
+    /// Set an error view.
+    #[tracing::instrument(skip(self))]
+    pub fn panel_set_error(&mut self, message: String) {
+        self.apply_panel(|s, p| panel_error(s, p, message));
+    }
+
+    /// Open the SQL editor.
+    #[tracing::instrument(skip(self))]
+    pub fn panel_open_sql_editor(&mut self, text: String) {
+        self.apply_panel(|s, p| open_sql_editor(s, p, text));
     }
 
     // ── IR pipeline ───────────────────────────────────────────────────────────
@@ -1919,7 +1819,7 @@ impl ArchiveNavModel {
         counter += 1;
         let content_children = self.build_content_nodes(&mut nodes, &mut counter);
         let mut content_node = AkNode::new(AkRole::GenericContainer);
-        let panel_attr = if matches!(self.panel, PanelMode::MonitorPanel { .. }) {
+        let panel_attr = if matches!(self.panel_state, ArchivePanelState::MonitorView { .. }) {
             ";data-panel=monitor"
         } else {
             ""
@@ -1979,7 +1879,7 @@ impl ArchiveNavModel {
 
         let root_id = AkNodeId::from(0u64);
         let mut content_node = AkNode::new(AkRole::GenericContainer);
-        let panel_attr = if matches!(self.panel, PanelMode::MonitorPanel { .. }) {
+        let panel_attr = if matches!(self.panel_state, ArchivePanelState::MonitorView { .. }) {
             ";data-panel=monitor"
         } else {
             ""
@@ -2300,8 +2200,8 @@ impl ArchiveNavModel {
             id
         };
 
-        match &self.panel {
-            PanelMode::ColumnDetail => {
+        match &self.panel_state {
+            ArchivePanelState::ColumnDetail => {
                 let heading_id = alloc();
                 let label = self
                     .selected()
@@ -2354,7 +2254,10 @@ impl ArchiveNavModel {
                 }
             }
 
-            PanelMode::Loading { schema, table } => {
+            ArchivePanelState::Loading {
+                schema,
+                label: table,
+            } => {
                 let prog_id = alloc();
                 let mut prog = AkNode::new(AkRole::ProgressIndicator);
                 prog.set_label(format!("Loading {schema}.{table}…"));
@@ -2362,7 +2265,7 @@ impl ArchiveNavModel {
                 children.push(prog_id);
             }
 
-            PanelMode::DataGrid {
+            ArchivePanelState::DataGrid {
                 schema,
                 table,
                 result,
@@ -2417,7 +2320,7 @@ impl ArchiveNavModel {
                 children.push(grid_id);
             }
 
-            PanelMode::SqlEditor {
+            ArchivePanelState::SqlEditor {
                 text,
                 result,
                 running,
@@ -2489,7 +2392,9 @@ impl ArchiveNavModel {
                 }
             }
 
-            PanelMode::Ddl { schema, table, ddl } => {
+            ArchivePanelState::DdlView {
+                schema, table, ddl, ..
+            } => {
                 let heading_id = alloc();
                 let mut h = AkNode::new(AkRole::Heading);
                 h.set_label(format!("DDL: {schema}.{table}"));
@@ -2498,15 +2403,16 @@ impl ArchiveNavModel {
 
                 let code_id = alloc();
                 let mut code = AkNode::new(AkRole::Code);
-                code.set_label(ddl.clone());
+                code.set_label(ddl.ddl.clone());
                 nodes.insert(code_id, code);
                 children.push(code_id);
             }
 
-            PanelMode::ExplainPlan {
+            ArchivePanelState::ExplainView {
                 schema,
                 table,
                 root,
+                ..
             } => {
                 let heading_id = alloc();
                 let mut h = AkNode::new(AkRole::Heading);
@@ -2523,14 +2429,15 @@ impl ArchiveNavModel {
                 children.push(plan_root_id);
             }
 
-            PanelMode::ExplainCompare {
+            ArchivePanelState::ExplainCompare {
                 schema,
                 table,
-                left,
-                label_left,
-                right,
-                label_right,
+                comparison,
             } => {
+                let left = &comparison.left;
+                let right = &comparison.right;
+                let label_left = &comparison.label_left;
+                let label_right = &comparison.label_right;
                 let heading_id = alloc();
                 let mut h = AkNode::new(AkRole::Heading);
                 h.set_label(format!("EXPLAIN compare: {schema}.{table}"));
@@ -2582,7 +2489,7 @@ impl ArchiveNavModel {
                 children.push(group_id);
             }
 
-            PanelMode::HistoryPanel { entries } => {
+            ArchivePanelState::HistoryView { entries, .. } => {
                 let heading_id = alloc();
                 let mut h = AkNode::new(AkRole::Heading);
                 h.set_label("Query History".to_string());
@@ -2609,7 +2516,7 @@ impl ArchiveNavModel {
                 children.push(list_id);
             }
 
-            PanelMode::SavedPanel { entries } => {
+            ArchivePanelState::SavedView { entries, .. } => {
                 let heading_id = alloc();
                 let mut h = AkNode::new(AkRole::Heading);
                 h.set_label("Saved Queries".to_string());
@@ -2652,7 +2559,7 @@ impl ArchiveNavModel {
                 children.push(list_id);
             }
 
-            PanelMode::ExportPanel { schema, table } => {
+            ArchivePanelState::ExportView { schema, table, .. } => {
                 let heading_id = alloc();
                 let mut h = AkNode::new(AkRole::Heading);
                 h.set_label(format!("Export: {schema}.{table}"));
@@ -2684,7 +2591,7 @@ impl ArchiveNavModel {
                 children.push(list_id);
             }
 
-            PanelMode::HelpPanel => {
+            ArchivePanelState::HelpView => {
                 let heading_id = alloc();
                 let mut h = AkNode::new(AkRole::Heading);
                 h.set_label("Key Bindings".to_string());
@@ -2706,7 +2613,9 @@ impl ArchiveNavModel {
                 nodes.insert(list_id, list);
                 children.push(list_id);
             }
-            PanelMode::MonitorPanel { snapshot, loading } => {
+            ArchivePanelState::MonitorView {
+                snapshot, loading, ..
+            } => {
                 use crate::archive::MonitorTab;
 
                 let tab_bar = [
@@ -2850,7 +2759,9 @@ impl ArchiveNavModel {
                     }
                 }
             }
-            PanelMode::AdminPanel { snapshot, loading } => {
+            ArchivePanelState::AdminView {
+                snapshot, loading, ..
+            } => {
                 use crate::archive::AdminTab;
 
                 // Heading: tab bar
@@ -2977,11 +2888,12 @@ impl ArchiveNavModel {
                     }
                 }
             }
-            PanelMode::ErdPanel {
+            ArchivePanelState::ErdView {
                 schema,
                 diagram,
                 layout,
                 loading,
+                ..
             } => {
                 use accesskit::{Node as AkNode, NodeId as AkNodeId, Role as AkRole};
 
@@ -3141,11 +3053,12 @@ impl ArchiveNavModel {
                     }
                 }
             }
-            PanelMode::ConstraintPanel {
+            ArchivePanelState::ConstraintView {
                 schema,
                 table,
                 constraints,
                 loading,
+                ..
             } => {
                 let heading_id = alloc();
                 let mut h = AkNode::new(AkRole::Heading);
@@ -3183,11 +3096,12 @@ impl ArchiveNavModel {
                 nodes.insert(list_id, list);
                 children.push(list_id);
             }
-            PanelMode::IndexPanel {
+            ArchivePanelState::IndexView {
                 schema,
                 table,
                 indexes,
                 loading,
+                ..
             } => {
                 let heading_id = alloc();
                 let mut h = AkNode::new(AkRole::Heading);
@@ -3223,7 +3137,7 @@ impl ArchiveNavModel {
                 nodes.insert(list_id, list);
                 children.push(list_id);
             }
-            PanelMode::ConnectionEditor { profile } => {
+            ArchivePanelState::ConnectionEdit { profile, .. } => {
                 // Form heading
                 let heading_id = alloc();
                 let mut h = AkNode::new(AkRole::Heading);
@@ -3278,7 +3192,7 @@ impl ArchiveNavModel {
                 nodes.insert(form_id, form);
                 children.push(form_id);
             }
-            PanelMode::Error { message } => {
+            ArchivePanelState::ErrorView { message } => {
                 let alert_id = alloc();
                 let mut alert = AkNode::new(AkRole::Alert);
                 alert.set_label(message.clone());
@@ -3335,138 +3249,139 @@ impl ArchiveNavModel {
             id
         };
 
-        if self.show_help {
-            let dialog_id = alloc();
-            let mut dialog_children: Vec<AkNodeId> = Vec::new();
+        match &self.overlay_state {
+            ArchiveOverlayState::HelpOpen => {
+                let dialog_id = alloc();
+                let mut dialog_children: Vec<AkNodeId> = Vec::new();
 
-            let heading_id = alloc();
-            let mut h = AkNode::new(AkRole::Heading);
-            h.set_label("Key Bindings".to_string());
-            nodes.insert(heading_id, h);
-            dialog_children.push(heading_id);
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label("Key Bindings".to_string());
+                nodes.insert(heading_id, h);
+                dialog_children.push(heading_id);
 
-            let list_id = alloc();
-            let mut list_items: Vec<AkNodeId> = Vec::new();
-            for kb in Self::bindings() {
-                let item_id = alloc();
-                let mut item = AkNode::new(AkRole::ListItem);
-                item.set_label(format!("{} — {}", kb.key, kb.action));
-                nodes.insert(item_id, item);
-                list_items.push(item_id);
+                let list_id = alloc();
+                let mut list_items: Vec<AkNodeId> = Vec::new();
+                for kb in Self::bindings() {
+                    let item_id = alloc();
+                    let mut item = AkNode::new(AkRole::ListItem);
+                    item.set_label(format!("{} — {}", kb.key, kb.action));
+                    nodes.insert(item_id, item);
+                    list_items.push(item_id);
+                }
+                let mut list = AkNode::new(AkRole::List);
+                list.set_label("bindings".to_string());
+                list.set_children(list_items);
+                nodes.insert(list_id, list);
+                dialog_children.push(list_id);
+
+                let mut dialog = AkNode::new(AkRole::Dialog);
+                dialog.set_label("Key Bindings".to_string());
+                dialog.set_children(dialog_children);
+                nodes.insert(dialog_id, dialog);
+                Some(dialog_id)
             }
-            let mut list = AkNode::new(AkRole::List);
-            list.set_label("bindings".to_string());
-            list.set_children(list_items);
-            nodes.insert(list_id, list);
-            dialog_children.push(list_id);
 
-            let mut dialog = AkNode::new(AkRole::Dialog);
-            dialog.set_label("Key Bindings".to_string());
-            dialog.set_children(dialog_children);
-            nodes.insert(dialog_id, dialog);
-            return Some(dialog_id);
-        }
+            ArchiveOverlayState::ExportPickerOpen { idx, formats } => {
+                let dialog_id = alloc();
+                let mut dialog_children: Vec<AkNodeId> = Vec::new();
 
-        if self.export_picker {
-            let dialog_id = alloc();
-            let mut dialog_children: Vec<AkNodeId> = Vec::new();
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label("Export Format".to_string());
+                nodes.insert(heading_id, h);
+                dialog_children.push(heading_id);
 
-            let heading_id = alloc();
-            let mut h = AkNode::new(AkRole::Heading);
-            h.set_label("Export Format".to_string());
-            nodes.insert(heading_id, h);
-            dialog_children.push(heading_id);
+                let list_id = alloc();
+                let mut list_items: Vec<AkNodeId> = Vec::new();
+                for (i, fmt) in formats.iter().enumerate() {
+                    let item_id = alloc();
+                    let mut item = AkNode::new(AkRole::ListItem);
+                    let label = if i == *idx {
+                        format!("▶ {fmt}")
+                    } else {
+                        fmt.to_string()
+                    };
+                    item.set_label(label);
+                    nodes.insert(item_id, item);
+                    list_items.push(item_id);
+                }
+                let mut list = AkNode::new(AkRole::List);
+                list.set_label("export formats".to_string());
+                list.set_children(list_items);
+                nodes.insert(list_id, list);
+                dialog_children.push(list_id);
 
-            let list_id = alloc();
-            let formats = ["CSV", "JSON", "TSV", "SQL"];
-            let mut list_items: Vec<AkNodeId> = Vec::new();
-            for (i, fmt) in formats.iter().enumerate() {
-                let item_id = alloc();
-                let mut item = AkNode::new(AkRole::ListItem);
-                let label = if i == self.export_picker_idx {
-                    format!("▶ {fmt}")
-                } else {
-                    fmt.to_string()
-                };
-                item.set_label(label);
-                nodes.insert(item_id, item);
-                list_items.push(item_id);
+                let mut dialog = AkNode::new(AkRole::Dialog);
+                dialog.set_label("Export Format".to_string());
+                dialog.set_children(dialog_children);
+                nodes.insert(dialog_id, dialog);
+                Some(dialog_id)
             }
-            let mut list = AkNode::new(AkRole::List);
-            list.set_label("export formats".to_string());
-            list.set_children(list_items);
-            nodes.insert(list_id, list);
-            dialog_children.push(list_id);
 
-            let mut dialog = AkNode::new(AkRole::Dialog);
-            dialog.set_label("Export Format".to_string());
-            dialog.set_children(dialog_children);
-            nodes.insert(dialog_id, dialog);
-            return Some(dialog_id);
-        }
+            ArchiveOverlayState::SavePromptOpen { text } => {
+                let dialog_id = alloc();
+                let mut dialog_children: Vec<AkNodeId> = Vec::new();
 
-        if self.save_prompt_active {
-            let dialog_id = alloc();
-            let mut dialog_children: Vec<AkNodeId> = Vec::new();
+                let label_id = alloc();
+                let mut label = AkNode::new(AkRole::Label);
+                label.set_label("Save query as:".to_string());
+                nodes.insert(label_id, label);
+                dialog_children.push(label_id);
 
-            let label_id = alloc();
-            let mut label = AkNode::new(AkRole::Label);
-            label.set_label("Save query as:".to_string());
-            nodes.insert(label_id, label);
-            dialog_children.push(label_id);
+                let input_id = alloc();
+                let mut input = AkNode::new(AkRole::TextInput);
+                input.set_label("Query name".to_string());
+                input.set_value(text.clone());
+                nodes.insert(input_id, input);
+                dialog_children.push(input_id);
 
-            let input_id = alloc();
-            let mut input = AkNode::new(AkRole::TextInput);
-            input.set_label("Query name".to_string());
-            input.set_value(self.save_prompt_text.clone());
-            nodes.insert(input_id, input);
-            dialog_children.push(input_id);
-
-            let mut dialog = AkNode::new(AkRole::Dialog);
-            dialog.set_label("Save Query".to_string());
-            dialog.set_children(dialog_children);
-            nodes.insert(dialog_id, dialog);
-            return Some(dialog_id);
-        }
-
-        if self.saved_browser_active {
-            let dialog_id = alloc();
-            let mut dialog_children: Vec<AkNodeId> = Vec::new();
-
-            let heading_id = alloc();
-            let mut h = AkNode::new(AkRole::Heading);
-            h.set_label("Saved Queries".to_string());
-            nodes.insert(heading_id, h);
-            dialog_children.push(heading_id);
-
-            let list_id = alloc();
-            let mut list_items: Vec<AkNodeId> = Vec::new();
-            for (i, sq) in self.saved_cache.iter().enumerate() {
-                let item_id = alloc();
-                let mut item = AkNode::new(AkRole::ListItem);
-                let label = if i == self.saved_browser_idx {
-                    format!("▶ {}", sq.name)
-                } else {
-                    sq.name.clone()
-                };
-                item.set_label(label);
-                nodes.insert(item_id, item);
-                list_items.push(item_id);
+                let mut dialog = AkNode::new(AkRole::Dialog);
+                dialog.set_label("Save Query".to_string());
+                dialog.set_children(dialog_children);
+                nodes.insert(dialog_id, dialog);
+                Some(dialog_id)
             }
-            let mut list = AkNode::new(AkRole::List);
-            list.set_label("saved queries".to_string());
-            list.set_children(list_items);
-            nodes.insert(list_id, list);
-            dialog_children.push(list_id);
 
-            let mut dialog = AkNode::new(AkRole::Dialog);
-            dialog.set_label("Saved Queries".to_string());
-            dialog.set_children(dialog_children);
-            nodes.insert(dialog_id, dialog);
-            return Some(dialog_id);
+            ArchiveOverlayState::SavedBrowserOpen { entries, idx } => {
+                let dialog_id = alloc();
+                let mut dialog_children: Vec<AkNodeId> = Vec::new();
+
+                let heading_id = alloc();
+                let mut h = AkNode::new(AkRole::Heading);
+                h.set_label("Saved Queries".to_string());
+                nodes.insert(heading_id, h);
+                dialog_children.push(heading_id);
+
+                let list_id = alloc();
+                let mut list_items: Vec<AkNodeId> = Vec::new();
+                for (i, sq) in entries.iter().enumerate() {
+                    let item_id = alloc();
+                    let mut item = AkNode::new(AkRole::ListItem);
+                    let label = if i == *idx {
+                        format!("▶ {}", sq.name)
+                    } else {
+                        sq.name.clone()
+                    };
+                    item.set_label(label);
+                    nodes.insert(item_id, item);
+                    list_items.push(item_id);
+                }
+                let mut list = AkNode::new(AkRole::List);
+                list.set_label("saved queries".to_string());
+                list.set_children(list_items);
+                nodes.insert(list_id, list);
+                dialog_children.push(list_id);
+
+                let mut dialog = AkNode::new(AkRole::Dialog);
+                dialog.set_label("Saved Queries".to_string());
+                dialog.set_children(dialog_children);
+                nodes.insert(dialog_id, dialog);
+                Some(dialog_id)
+            }
+
+            ArchiveOverlayState::OverlayNone => None,
         }
-
-        None
     }
 }
 

@@ -32,8 +32,9 @@ use tokio::sync::mpsc;
 use tracing::instrument;
 
 use crate::archive::frontend_trait::ArchiveFrontend;
-use crate::archive::nav_model::{ArchiveNavModel, FetchRequest, PanelEvent, PanelMode};
+use crate::archive::nav_model::{ArchiveNavModel, FetchRequest, PanelEvent};
 use crate::archive::nav_tree::{NavTree, build_nav_tree};
+use crate::archive::vsm::ArchivePanelState;
 use crate::archive::{
     ArchiveDbBackend, ArchiveResult, BackendKind, ConnectionProfile, ConnectionSet, HistoryStore,
     SavedQueryStore, SslMode,
@@ -145,7 +146,7 @@ impl TuiApp {
 
     /// Execute the current SQL editor content.
     fn run_sql(&mut self) {
-        if let PanelMode::SqlEditor { text, running, .. } = &mut self.model.panel {
+        if let ArchivePanelState::SqlEditor { text, running, .. } = &mut self.model.panel_state {
             if *running || text.trim().is_empty() {
                 return;
             }
@@ -166,15 +167,7 @@ impl TuiApp {
                 table,
                 result,
             } => {
-                self.model.panel = PanelMode::DataGrid {
-                    schema,
-                    table,
-                    result,
-                    page: 0,
-                    grid_row: 0,
-                    grid_col: 0,
-                    edit_state: None,
-                };
+                self.model.panel_set_data_grid(schema, table, result);
             }
             PanelEvent::NavRefreshed(nav) => {
                 self.model.apply_refresh(nav);
@@ -191,11 +184,13 @@ impl TuiApp {
                         store.append_spawn(sql, duration_ms, None, Some(e.to_string()));
                     }
                     // Reset running flag in SqlEditor panel
-                    if let PanelMode::SqlEditor { running, .. } = &mut self.model.panel {
+                    if let ArchivePanelState::SqlEditor { running, .. } =
+                        &mut self.model.panel_state
+                    {
                         *running = false;
                     }
                 } else {
-                    self.model.panel = PanelMode::ColumnDetail;
+                    self.model.panel_go_column_detail();
                 }
                 self.model.flash = Some(format!("error: {e}"));
             }
@@ -206,8 +201,8 @@ impl TuiApp {
                     .map(|s| s.elapsed().as_millis() as u64)
                     .unwrap_or(0);
                 let row_count = result.row_count;
-                let current_text = match &self.model.panel {
-                    PanelMode::SqlEditor { text, .. } => text.clone(),
+                let current_text = match &self.model.panel_state {
+                    ArchivePanelState::SqlEditor { text, .. } => text.clone(),
                     _ => String::new(),
                 };
                 if let Some(sql) = self.pending_sql.take() {
@@ -224,7 +219,7 @@ impl TuiApp {
                         store.append_spawn(sql, duration_ms, Some(row_count), None);
                     }
                 }
-                self.model.panel = PanelMode::SqlEditor {
+                self.model.panel_state = ArchivePanelState::SqlEditor {
                     text: current_text,
                     result: Some(result),
                     running: false,
@@ -239,7 +234,7 @@ impl TuiApp {
                 self.model.store_inspection(schema, table, inspection);
             }
             PanelEvent::DdlReady { schema, table, ddl } => {
-                self.model.panel = PanelMode::Ddl { schema, table, ddl };
+                self.model.panel_set_ddl(schema, table, ddl);
             }
             PanelEvent::ColumnStatsReady {
                 schema,
@@ -253,29 +248,7 @@ impl TuiApp {
                 table,
                 root,
             } => {
-                let new_label = format!("EXPLAIN: {schema}.{table}");
-                self.model.panel = if let PanelMode::ExplainPlan {
-                    schema: old_schema,
-                    table: old_table,
-                    root: old_root,
-                } = std::mem::take(&mut self.model.panel)
-                {
-                    let old_label = format!("EXPLAIN: {old_schema}.{old_table}");
-                    PanelMode::ExplainCompare {
-                        schema: schema.clone(),
-                        table: table.clone(),
-                        left: old_root,
-                        label_left: old_label,
-                        right: root,
-                        label_right: new_label,
-                    }
-                } else {
-                    PanelMode::ExplainPlan {
-                        schema,
-                        table,
-                        root,
-                    }
-                };
+                self.model.panel_set_explain(schema, table, root);
             }
             PanelEvent::ExportReady {
                 schema,
@@ -326,7 +299,6 @@ impl crate::archive::ArchiveFrontend for TuiApp {
     /// Returns `true` when the application should quit.
     fn dispatch_action(&mut self, action: crate::archive::ArchiveAction) -> bool {
         use crate::archive::ArchiveAction as A;
-        use crate::archive::nav_model::PanelMode;
         match action {
             A::MoveUp => self.move_up(),
             A::MoveDown => self.move_down(),
@@ -335,12 +307,7 @@ impl crate::archive::ArchiveFrontend for TuiApp {
             A::ToggleHelp => self.toggle_help(),
             A::OpenFilter => self.model.open_filter(),
             A::OpenSqlEditor => {
-                self.model.panel = PanelMode::SqlEditor {
-                    text: String::new(),
-                    result: None,
-                    running: false,
-                    error: None,
-                };
+                self.model.panel_open_sql_editor(String::new());
             }
             A::OpenSavedBrowser => self.model.toggle_saved_browser(),
             A::OpenMonitor => {
@@ -375,26 +342,24 @@ impl crate::archive::ArchiveFrontend for TuiApp {
             A::AdminTabNext => self.model.admin_tab_next(),
             A::AdminTabPrev => self.model.admin_tab_prev(),
             A::ToggleExportPicker => {
-                if self.model.panel.is_data_grid() {
+                if self.model.is_data_grid() {
                     self.model.toggle_export_picker();
                 }
             }
             A::RequestDdl => self.request_ddl(),
             A::RequestExplain => self.request_explain(),
             A::ClearExplainCompare => {
-                if let PanelMode::ExplainCompare {
+                if let ArchivePanelState::ExplainCompare {
                     schema,
                     table,
-                    left,
-                    label_left: _,
-                    right: _,
-                    label_right: _,
-                } = std::mem::take(&mut self.model.panel)
+                    comparison,
+                } = std::mem::take(&mut self.model.panel_state)
                 {
-                    self.model.panel = PanelMode::ExplainPlan {
+                    self.model.panel_state = ArchivePanelState::ExplainView {
                         schema,
                         table,
-                        root: left,
+                        root: comparison.left,
+                        display_mode: Default::default(),
                     };
                 }
             }
@@ -421,7 +386,7 @@ impl crate::archive::ArchiveFrontend for TuiApp {
             A::SavePromptBackspace => self.model.save_prompt_backspace(),
             A::SavePromptConfirm => {
                 if let Some(name) = self.model.take_save_prompt()
-                    && let PanelMode::SqlEditor { text, .. } = &self.model.panel
+                    && let ArchivePanelState::SqlEditor { text, .. } = &self.model.panel_state
                 {
                     let sql = text.trim().to_string();
                     if let Some(ref store) = self.saved {
@@ -458,12 +423,7 @@ impl crate::archive::ArchiveFrontend for TuiApp {
             }
             A::SavedBrowserSelect => {
                 if let Some(sql) = self.model.load_focused_saved_query_text() {
-                    self.model.panel = PanelMode::SqlEditor {
-                        text: sql,
-                        result: None,
-                        running: false,
-                        error: None,
-                    };
+                    self.model.panel_open_sql_editor(sql);
                     self.model.toggle_saved_browser();
                 }
             }
@@ -487,16 +447,16 @@ impl crate::archive::ArchiveFrontend for TuiApp {
                 self.model.history_next();
             }
             A::SqlClose => {
-                self.model.panel = PanelMode::ColumnDetail;
+                self.model.panel_go_column_detail();
             }
             A::SqlSave => self.model.open_save_prompt(),
             A::SqlBackspace => {
-                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
+                if let ArchivePanelState::SqlEditor { text, .. } = &mut self.model.panel_state {
                     text.pop();
                 }
             }
             A::SqlNewline => {
-                if let PanelMode::SqlEditor { text, .. } = &mut self.model.panel {
+                if let ArchivePanelState::SqlEditor { text, .. } = &mut self.model.panel_state {
                     text.push('\n');
                 }
             }
@@ -506,7 +466,6 @@ impl crate::archive::ArchiveFrontend for TuiApp {
 
     fn dispatch_text(&mut self, text: &str) {
         use crate::archive::actions::KeyMapMode;
-        use crate::archive::nav_model::PanelMode;
         match self.model.current_mode() {
             KeyMapMode::Filter => {
                 for ch in text.chars() {
@@ -519,7 +478,8 @@ impl crate::archive::ArchiveFrontend for TuiApp {
                 }
             }
             KeyMapMode::SqlEditor => {
-                if let PanelMode::SqlEditor { text: buf, .. } = &mut self.model.panel {
+                if let ArchivePanelState::SqlEditor { text: buf, .. } = &mut self.model.panel_state
+                {
                     buf.push_str(text);
                 }
             }
