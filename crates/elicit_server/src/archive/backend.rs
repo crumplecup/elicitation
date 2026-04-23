@@ -36,6 +36,7 @@ use elicit_db::{
     TransactionReadOnly, TransactionReadWrite, TriggerFunctionCreated, TriggerWhenConditionDefined,
     TxMarker, UniqueConstraintDefined, WALReplayable, WalLevelLogical, WalLevelReplica,
 };
+use elicit_redb::RedbBackend;
 use elicit_sqlx::SqlxDbBackend;
 use elicitation::Established;
 use futures::future::BoxFuture;
@@ -1045,5 +1046,36 @@ impl DbReplicationMeta for ArchiveDbBackend {
 
     fn streaming_replication_status(&self) -> BoxFuture<'_, DbResult<Vec<(String, String)>>> {
         self.0.streaming_replication_status()
+    }
+}
+
+// ── ArchiveKvBackend ──────────────────────────────────────────────────────────
+
+/// An embedded key-value backend for the archive module.
+///
+/// Wraps [`RedbBackend`] and exposes the `DbEmbeddedBackend` constituent traits.
+/// Obtain via [`ArchiveKvBackend::open`] (file-backed) or
+/// [`ArchiveKvBackend::in_memory`] (transient, useful for tests).
+pub struct ArchiveKvBackend(RedbBackend);
+
+impl ArchiveKvBackend {
+    /// Open or create a redb file at `path`.
+    #[instrument(skip_all, fields(%path))]
+    pub fn open(path: &str) -> ArchiveResult<Self> {
+        RedbBackend::open(path)
+            .map(Self)
+            .map_err(|e| ArchiveError::new(ArchiveErrorKind::Backend(e.to_string())))
+    }
+
+    /// Create a transient in-memory redb instance (for tests / ephemeral sessions).
+    pub fn in_memory() -> ArchiveResult<Self> {
+        RedbBackend::in_memory()
+            .map(Self)
+            .map_err(|e| ArchiveError::new(ArchiveErrorKind::Backend(e.to_string())))
+    }
+
+    /// Access the underlying [`RedbBackend`] for direct KV operations.
+    pub fn backend(&self) -> &RedbBackend {
+        &self.0
     }
 }

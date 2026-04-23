@@ -32,8 +32,9 @@ pub mod nav_tree;
 mod plugins;
 pub mod ratatui_frontend;
 pub mod types;
+pub mod vsm;
 
-pub use backend::ArchiveDbBackend;
+pub use backend::{ArchiveDbBackend, ArchiveKvBackend};
 
 pub use actions::{ArchiveAction, ArchiveKey, ArchiveKeyMap, KeyCombo, KeyMapEntry, KeyMapMode};
 pub use egui_frontend::run_egui;
@@ -58,4 +59,9 @@ pub use types::{
     MonitorSnapshot, MonitorTab, QueryHistoryEntry, QueryResult, RowEditKind, RowEditState,
     SavedQuery, SchemaDescriptor, SequenceDescriptor, SslMode, StagedEdit, TableDescriptor,
     TableInspection, TableType, TriggerDescriptor, TriggerEvents,
+};
+pub use vsm::{
+    ArchiveConnectionCredential, ArchiveConsistent, ArchiveMachine, ArchiveState, begin_browse,
+    begin_connect_sql, begin_edit, begin_export, commit_edits, disconnect, execute_query,
+    finish_connect_kv, finish_connect_sql, finish_export, query_complete,
 };

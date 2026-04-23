@@ -26,7 +26,6 @@ elicit_jiff = { workspace = true }
 elicit_time = { workspace = true }
 elicit_db = { workspace = true }
 elicit_sqlx = { workspace = true }
-elicit_polars = { workspace = true }
 elicit_regex = { workspace = true }
 elicit_accesskit = { workspace = true }
 accesskit = { workspace = true }
@@ -36,6 +35,7 @@ elicit_ratatui = { workspace = true, features = ["runtime"] }
 elicit_leptos = { workspace = true }
 elicit_axum = { workspace = true }
 elicit_ui = { workspace = true }
+elicit_redb = { workspace = true }
 
 # Third-party types (needed in cross-crate workflows)
 reqwest = { workspace = true }

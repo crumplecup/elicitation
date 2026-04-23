@@ -37,6 +37,10 @@ pub enum ArchiveErrorKind {
     #[display("connection failed: {}", _0)]
     Connection(String),
 
+    /// A backend operation failed (e.g. KV store error).
+    #[display("backend error: {}", _0)]
+    Backend(String),
+
     /// A live database query or metadata fetch failed.
     #[display("query error: {}", _0)]
     Query(String),

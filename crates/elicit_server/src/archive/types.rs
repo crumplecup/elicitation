@@ -40,6 +40,9 @@ pub enum BackendKind {
     /// MySQL / MariaDB / compatible.
     #[display("MySQL")]
     Mysql,
+    /// Embedded key-value store (redb file path or `redb://…`).
+    #[display("redb")]
+    Redb,
     /// Backend could not be identified from the connection URL.
     #[display("Unknown")]
     Unknown,
@@ -55,6 +58,8 @@ impl BackendKind {
             Self::Sqlite
         } else if lower.starts_with("mysql") || lower.starts_with("mariadb") {
             Self::Mysql
+        } else if lower.starts_with("redb") {
+            Self::Redb
         } else {
             Self::Unknown
         }
