@@ -1,4 +1,5 @@
 //! AccessKit display for [`SavedQuery`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::SavedQuery;
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`SavedQuery`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum SavedQueryMode {
     /// A compact row showing name and a SQL snippet.
     #[default]

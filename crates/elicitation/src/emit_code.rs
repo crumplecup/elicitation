@@ -960,6 +960,42 @@ impl<A: ToCodeLiteral, B: ToCodeLiteral> ToCodeLiteral for (A, B) {
     }
 }
 
+impl<A: ToCodeLiteral, B: ToCodeLiteral, C: ToCodeLiteral> ToCodeLiteral for (A, B, C) {
+    fn type_tokens() -> TokenStream {
+        let a = <A as ToCodeLiteral>::type_tokens();
+        let b = <B as ToCodeLiteral>::type_tokens();
+        let c = <C as ToCodeLiteral>::type_tokens();
+        quote::quote! { (#a, #b, #c) }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let a = self.0.to_code_literal();
+        let b = self.1.to_code_literal();
+        let c = self.2.to_code_literal();
+        quote::quote! { (#a, #b, #c) }
+    }
+}
+
+impl<A: ToCodeLiteral, B: ToCodeLiteral, C: ToCodeLiteral, D: ToCodeLiteral> ToCodeLiteral
+    for (A, B, C, D)
+{
+    fn type_tokens() -> TokenStream {
+        let a = <A as ToCodeLiteral>::type_tokens();
+        let b = <B as ToCodeLiteral>::type_tokens();
+        let c = <C as ToCodeLiteral>::type_tokens();
+        let d = <D as ToCodeLiteral>::type_tokens();
+        quote::quote! { (#a, #b, #c, #d) }
+    }
+
+    fn to_code_literal(&self) -> TokenStream {
+        let a = self.0.to_code_literal();
+        let b = self.1.to_code_literal();
+        let c = self.2.to_code_literal();
+        let d = self.3.to_code_literal();
+        quote::quote! { (#a, #b, #c, #d) }
+    }
+}
+
 // ToCodeLiteral for std types that already have EmitCode: delegate directly.
 
 impl ToCodeLiteral for std::net::IpAddr {

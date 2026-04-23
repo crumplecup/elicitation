@@ -24,8 +24,10 @@
 mod backup;
 mod constraint;
 mod database;
+mod embedded_store;
 mod index;
 mod isolation;
+mod kv_store;
 mod monitor;
 mod query;
 mod replication;
@@ -35,14 +37,17 @@ mod schema;
 mod security;
 mod server;
 mod session;
+mod snapshot;
 mod table;
 mod transaction;
 
 pub use backup::DbBackupManager;
 pub use constraint::{DbConstraintFactory, DbConstraintMeta};
 pub use database::DbDatabaseManager;
+pub use embedded_store::DbEmbeddedStore;
 pub use index::DbIndexManager;
 pub use isolation::DbIsolationFactory;
+pub use kv_store::DbKvStore;
 pub use monitor::DbMonitor;
 pub use query::DbQueryExecutor;
 pub use replication::{DbReplicationFactory, DbReplicationMeta};
@@ -52,6 +57,7 @@ pub use schema::DbSchemaManager;
 pub use security::{DbSecurityFactory, DbSecurityMeta};
 pub use server::DbServerAdmin;
 pub use session::DbSessionManager;
+pub use snapshot::DbSnapshotManager;
 pub use table::DbTableManager;
 pub use transaction::DbTransactor;
 
@@ -118,6 +124,45 @@ impl<T> DbBackend for T where
         + DbConstraintFactory
         + DbConstraintMeta
         + DbIsolationFactory
+        + Send
+        + Sync
+{
+}
+
+/// Embedded key-value backend — blanket supertrait.
+///
+/// Any type that implements the 9 KV-appropriate sub-traits automatically
+/// implements `DbEmbeddedBackend`.  This is the correct bound for backends like
+/// `redb` that provide ACID KV semantics but not SQL, schemas, roles, or
+/// replication.
+///
+/// Use the individual sub-traits for dynamic dispatch at architectural
+/// boundaries (`dyn DbKvStore`, `dyn DbTransactor`, etc.).
+pub trait DbEmbeddedBackend:
+    DbTransactor
+    + DbIsolationFactory
+    + DbTableManager
+    + DbDatabaseManager
+    + DbMonitor
+    + DbBackupManager
+    + DbKvStore
+    + DbEmbeddedStore
+    + DbSnapshotManager
+    + Send
+    + Sync
+{
+}
+
+impl<T> DbEmbeddedBackend for T where
+    T: DbTransactor
+        + DbIsolationFactory
+        + DbTableManager
+        + DbDatabaseManager
+        + DbMonitor
+        + DbBackupManager
+        + DbKvStore
+        + DbEmbeddedStore
+        + DbSnapshotManager
         + Send
         + Sync
 {

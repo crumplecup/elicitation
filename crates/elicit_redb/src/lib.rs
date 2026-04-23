@@ -14,9 +14,12 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod backend;
 mod db_tools;
+mod multimap_tools;
 mod plugin;
 mod table_tools;
 mod txn_tools;
 
+pub use backend::RedbBackend;
 pub use plugin::{RedbCtx, RedbPlugin};

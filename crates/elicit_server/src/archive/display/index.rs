@@ -1,4 +1,5 @@
 //! AccessKit display for [`IndexDescriptor`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::IndexDescriptor;
 use super::ArchiveDisplay;
 
 /// Display strategies for an [`IndexDescriptor`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum IndexDescriptorMode {
     /// A single row suitable for embedding in a parent list.
     #[default]

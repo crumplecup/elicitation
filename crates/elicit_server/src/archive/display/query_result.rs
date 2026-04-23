@@ -1,4 +1,5 @@
 //! AccessKit display for [`QueryResult`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::QueryResult;
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`QueryResult`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum QueryResultMode {
     /// Full data grid: column headers + one row per result row.
     #[default]

@@ -1237,6 +1237,23 @@ mod verification_impls {
         }
     }
 
+    impl<A: ElicitPromptTree, B: ElicitPromptTree, C: ElicitPromptTree, D: ElicitPromptTree>
+        ElicitPromptTree for (A, B, C, D)
+    {
+        fn prompt_tree() -> PromptTree {
+            PromptTree::Survey {
+                prompt: Some("Eliciting 4-tuple:".to_string()),
+                type_name: "(_, _, _, _)".to_string(),
+                fields: vec![
+                    ("_0".to_string(), Box::new(A::prompt_tree())),
+                    ("_1".to_string(), Box::new(B::prompt_tree())),
+                    ("_2".to_string(), Box::new(C::prompt_tree())),
+                    ("_3".to_string(), Box::new(D::prompt_tree())),
+                ],
+            }
+        }
+    }
+
     // ---- Feature-gated types ----
 
     #[cfg(feature = "uuid")]

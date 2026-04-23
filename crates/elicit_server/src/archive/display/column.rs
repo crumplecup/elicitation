@@ -1,4 +1,5 @@
 //! AccessKit display for [`ColumnDescriptor`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::ColumnDescriptor;
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`ColumnDescriptor`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum ColumnDescriptorMode {
     /// A single row node suitable for embedding in a parent grid or list.
     #[default]

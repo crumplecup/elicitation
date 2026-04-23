@@ -2,6 +2,7 @@
 
 pub mod access_control;
 pub mod constraints;
+pub mod embedded;
 pub mod information_schema;
 pub mod iso_sql;
 pub mod isolation;

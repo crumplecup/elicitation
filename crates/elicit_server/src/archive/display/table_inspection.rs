@@ -1,4 +1,5 @@
 //! AccessKit display for [`TableInspection`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -12,7 +13,9 @@ use super::{
 };
 
 /// Display strategies for a [`TableInspection`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum TableInspectionMode {
     /// List of foreign key rows.
     #[default]

@@ -1,4 +1,5 @@
 //! AccessKit display for [`TriggerDescriptor`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::TriggerDescriptor;
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`TriggerDescriptor`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum TriggerDescriptorMode {
     /// A compact row for the trigger browser list.
     #[default]

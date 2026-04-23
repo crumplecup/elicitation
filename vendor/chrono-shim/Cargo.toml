@@ -1,0 +1,32 @@
+[package]
+name = "chrono"
+version = "0.4.41"
+edition = "2021"
+description = "Shim: routes polars-arrow's chrono <=0.4.41 requirement to the workspace chrono 0.4.43 crate."
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+chrono-real = { package = "chrono", version = "0.4.43" }
+arbitrary = { version = "1.0.0", features = ["derive"], optional = true }
+
+[features]
+default = ["clock", "std", "oldtime"]
+__internal_bench = []
+alloc = ["chrono-real/alloc"]
+arbitrary = ["dep:arbitrary", "chrono-real/arbitrary"]
+clock = ["chrono-real/clock", "std"]
+core-error = ["chrono-real/core-error"]
+defmt = ["chrono-real/defmt"]
+libc = ["chrono-real/libc"]
+now = ["chrono-real/now", "std"]
+oldtime = ["chrono-real/oldtime"]
+rkyv = ["chrono-real/rkyv"]
+rkyv-16 = ["chrono-real/rkyv-16"]
+rkyv-32 = ["chrono-real/rkyv-32"]
+rkyv-64 = ["chrono-real/rkyv-64"]
+rkyv-validation = ["chrono-real/rkyv-validation"]
+serde = ["chrono-real/serde"]
+std = ["chrono-real/std"]
+unstable-locales = ["chrono-real/unstable-locales"]
+wasmbind = ["chrono-real/wasmbind"]
+winapi = ["chrono-real/winapi"]

@@ -4,6 +4,9 @@
 //! the pre-loaded schema/table list and is rebuilt by [`build_nav_tree`]
 //! before the event loop starts.
 
+use elicitation::Elicit;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
 use sqlx::Row;
@@ -21,7 +24,7 @@ use elicit_db::{DbSchemaManager, DbServerAdmin, DbTableManager};
 // ── Data model ────────────────────────────────────────────────────────────────
 
 /// A schema together with its pre-loaded table list and Phase 4 object types.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct SchemaEntry {
     /// Schema name.
     pub name: String,
@@ -44,7 +47,7 @@ pub struct SchemaEntry {
 }
 
 /// Pre-loaded navigation tree passed to the ratatui frontend.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct NavTree {
     /// Database / catalog name (first schema name or the supplied db name).
     pub db_name: String,

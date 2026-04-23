@@ -1,4 +1,5 @@
 //! AccessKit display for [`QueryHistoryEntry`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::QueryHistoryEntry;
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`QueryHistoryEntry`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum QueryHistoryEntryMode {
     /// A compact row showing timestamp, duration, and a SQL snippet.
     #[default]

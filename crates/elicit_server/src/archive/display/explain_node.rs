@@ -2,6 +2,7 @@
 //!
 //! The tree is recursive; ID allocation uses a `&mut u64` counter so that each
 //! node in an arbitrarily deep subtree gets a unique `NodeId`.
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -13,7 +14,9 @@ use crate::archive::ExplainNode;
 use super::ArchiveDisplay;
 
 /// Display strategies for an [`ExplainNode`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum ExplainNodeMode {
     /// A recursive tree item — the only meaningful display for plan nodes.
     #[default]

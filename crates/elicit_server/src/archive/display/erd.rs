@@ -1,4 +1,5 @@
 //! AccessKit display for [`ErdDiagram`], [`ErdNode`], [`ErdEdge`], and [`ErdColumn`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -12,7 +13,9 @@ use super::ArchiveDisplay;
 // ── ErdColumn ─────────────────────────────────────────────────────────────────
 
 /// Display mode for an [`ErdColumn`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum ErdColumnMode {
     /// A compact row.
     #[default]
@@ -51,7 +54,9 @@ impl ArchiveDisplay for ErdColumn {
 // ── ErdNode ───────────────────────────────────────────────────────────────────
 
 /// Display mode for an [`ErdNode`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum ErdNodeMode {
     /// A table box listing columns as children.
     #[default]
@@ -90,7 +95,9 @@ impl ArchiveDisplay for ErdNode {
 // ── ErdEdge ───────────────────────────────────────────────────────────────────
 
 /// Display mode for an [`ErdEdge`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum ErdEdgeMode {
     /// A compact row describing the FK relationship.
     #[default]
@@ -126,7 +133,9 @@ impl ArchiveDisplay for ErdEdge {
 // ── ErdDiagram ────────────────────────────────────────────────────────────────
 
 /// Display strategies for an [`ErdDiagram`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum ErdDiagramMode {
     /// List of table nodes.
     #[default]

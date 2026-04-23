@@ -31,7 +31,6 @@ members = [
   "crates/elicit_geo",
   "crates/elicit_url",
   "crates/elicit_uuid",
-  "crates/elicit_polars",
   "crates/elicit_uom",
   "crates/elicit_leptos",
   "crates/elicit_db",
@@ -45,14 +44,21 @@ members = [
   "crates/elicit_winit",
   "crates/elicit_wgpu",
   "crates/elicit_bevy",
-  "crates/elicit_surrealdb",
   "crates/elicit_redb",
   "crates/elicit_csv",
   "crates/elicit_toml",
 ]
 # Verus verification crate - verification only, not buildable with cargo
 # Prusti crate lives on prusti-verification branch (frozen until tooling updates)
-exclude = ["crates/elicitation_verus"]
+exclude = [
+  "crates/elicitation_verus",
+  # polars-arrow pins chrono <=0.4.41 which conflicts with the workspace chrono 0.4.43.
+  # elicit_polars can be checked independently: cargo check --manifest-path crates/elicit_polars/Cargo.toml
+  "crates/elicit_polars",
+  # surrealdb-core pins i_overlay ^4.0 which conflicts with geo 0.33 (needs i_overlay ^4.5).
+  # elicit_surrealdb can be checked independently: cargo check --manifest-path crates/elicit_surrealdb/Cargo.toml
+  "crates/elicit_surrealdb",
+]
 resolver = "2"
 
 [workspace.package]
@@ -98,7 +104,6 @@ elicit_geo_types = { path = "crates/elicit_geo_types", version = "0.10.0" }
 elicit_geo = { path = "crates/elicit_geo", version = "0.10.0" }
 elicit_url = { path = "crates/elicit_url", version = "0.10.0" }
 elicit_uuid = { path = "crates/elicit_uuid", version = "0.10.0" }
-elicit_polars = { path = "crates/elicit_polars", version = "0.10.0" }
 elicit_uom = { path = "crates/elicit_uom", version = "0.10.0" }
 elicit_leptos = { path = "crates/elicit_leptos", version = "0.10.0" }
 elicit_db = { path = "crates/elicit_db", version = "0.10.0" }
@@ -112,7 +117,6 @@ elicit_gis = { path = "crates/elicit_gis", version = "0.10.0" }
 elicit_winit = { path = "crates/elicit_winit", version = "0.10.0" }
 elicit_wgpu = { path = "crates/elicit_wgpu", version = "0.10.0" }
 elicit_bevy = { path = "crates/elicit_bevy", version = "0.10.0" }
-elicit_surrealdb = { path = "crates/elicit_surrealdb", version = "0.10.0" }
 elicit_redb = { path = "crates/elicit_redb", version = "0.10.0" }
 elicit_csv = { path = "crates/elicit_csv", version = "0.10.0" }
 elicit_toml = { path = "crates/elicit_toml", version = "0.10.0" }
@@ -196,7 +200,20 @@ eframe = { version = "0.34", default-features = false, features = [
 redb = "4"
 # surrealdb-types 3.x pins geo = "^0.32" but our workspace uses geo 0.33.
 # We vendor the crate and change that pin to 0.33 to unify the dep graph.
+# The [patch.crates-io] table below ensures surrealdb-core also resolves to
+# this vendored copy (and therefore geo 0.33) rather than the upstream one.
 surrealdb-types = { path = "vendor/surrealdb-types-3.0.5" }
+surrealdb = { version = "3.0.5", features = [
+  "protocol-ws",
+  "protocol-http",
+  "rustls",
+  "kv-mem",
+  "kv-rocksdb",
+  "kv-surrealkv",
+  "jwks",
+  "http",
+  "scripting",
+] }
 rust_decimal = "1"
 sqlx = { version = "0.8", features = [
   "runtime-tokio",
@@ -291,6 +308,7 @@ dirs = "6"
 anodized = { version = "0.4", features = ["runtime-no-check"] }
 
 # ── Dev dependencies ──────────────────────────────────────────────────────────
+tempfile = "3"
 tokio-test = "0.4"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 criterion = { version = "0.8", features = ["html_reports"] }
@@ -299,5 +317,4 @@ criterion = { version = "0.8", features = ["html_reports"] }
 lto = true
 codegen-units = 1
 strip = true
-
 

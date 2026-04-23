@@ -1,36 +1,99 @@
-//! Tests for the archive [`VerifiedStateMachine`].
+//! Tests for the archive Verified State Machines.
 //!
-//! Verifies that:
-//! - [`ArchiveState`] satisfies `ElicitComplete`.
-//! - The pure 2-param transitions satisfy [`VerifiedTransition<ArchiveMachine>`].
-//! - Parameterised transitions wrapped in closures also satisfy the bound.
-//! - Proof tokens carry the [`ArchiveConsistent`] invariant through a multi-step
-//!   lifecycle: `Disconnected → Connecting → SqlConnected → Browsing → RunningQuery
-//!   → ViewingResults → EditingRows → ViewingResults → Exporting → Browsing → Disconnected`.
-//! - `BackendKind::from_url` recognises `redb://` paths.
+//! Covers all four machines:
+//! - [`ArchiveConnectionMachine`] — connection lifecycle
+//! - [`ArchivePanelMachine`] — content panel + WCAG display modes
+//! - [`ArchiveNavMachine`] — nav tree
+//! - [`ArchiveOverlayMachine`] — modal overlays
 
 use elicitation::{Established, VerifiedTransition};
 
+use elicit_db::DbRows;
 use elicit_server::archive::{
-    ArchiveConnectionCredential, ArchiveConsistent, ArchiveMachine, ArchiveState, BackendKind,
-    DatabaseDescriptor, ExportFormat,
+    BackendKind, DatabaseDescriptor, DdlDescriptor, QueryResult,
+    display::{DdlDescriptorMode, QueryResultMode},
+    nav_tree::NavTree,
     vsm::{
-        begin_browse, begin_connect_sql, begin_edit, begin_export, commit_edits, disconnect,
-        execute_query, finish_connect_kv, finish_connect_sql, finish_export, query_complete,
+        // connection
+        ArchiveConnectionConsistent,
+        ArchiveConnectionMachine,
+        ArchiveConnectionState,
+        // nav
+        ArchiveNavConsistent,
+        ArchiveNavMachine,
+        ArchiveNavState,
+        // overlay
+        ArchiveOverlayConsistent,
+        ArchiveOverlayMachine,
+        ArchiveOverlayState,
+        // panel
+        ArchivePanelConsistent,
+        ArchivePanelMachine,
+        ArchivePanelState,
+        abort_edits,
+        begin_connect_kv,
+        begin_connect_sql,
+        begin_edit,
+        close_overlay,
+        collapse_schema,
+        commit_edits,
+        data_grid_ready,
+        ddl_ready,
+        disconnect,
+        expand_schema,
+        finish_connect_kv,
+        finish_connect_sql,
+        load_nav,
+        move_cursor_down,
+        move_cursor_up,
+        nav_loaded,
+        open_export_picker,
+        open_help,
+        open_sql_editor,
+        panel_error,
+        panel_loading,
+        query_complete,
+        reconnect,
     },
 };
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
-fn assert_vt<T: VerifiedTransition<ArchiveMachine>>(_: &T) {}
+fn assert_conn_vt<T: VerifiedTransition<ArchiveConnectionMachine>>(_: &T) {}
+fn assert_panel_vt<T: VerifiedTransition<ArchivePanelMachine>>(_: &T) {}
+fn assert_nav_vt<T: VerifiedTransition<ArchiveNavMachine>>(_: &T) {}
+fn assert_overlay_vt<T: VerifiedTransition<ArchiveOverlayMachine>>(_: &T) {}
 
-fn bootstrap() -> Established<ArchiveConsistent> {
-    // SAFETY (audit trail): initial state is Disconnected — trivially consistent.
+fn conn_proof() -> Established<ArchiveConnectionConsistent> {
+    Established::assert()
+}
+
+fn panel_proof() -> Established<ArchivePanelConsistent> {
+    Established::assert()
+}
+
+fn nav_proof() -> Established<ArchiveNavConsistent> {
+    Established::assert()
+}
+
+fn overlay_proof() -> Established<ArchiveOverlayConsistent> {
     Established::assert()
 }
 
 fn sample_db() -> DatabaseDescriptor {
     DatabaseDescriptor::new("postgres://localhost/testdb", "testdb", None)
+}
+
+fn empty_result() -> QueryResult {
+    QueryResult {
+        columns: vec![],
+        rows: DbRows {
+            rows: vec![],
+            affected: 0,
+        },
+        row_count: 0,
+        spatial_column_names: vec![],
+    }
 }
 
 // ── BackendKind URL detection ─────────────────────────────────────────────────
@@ -64,126 +127,222 @@ fn backend_kind_detects_existing_variants() {
     );
 }
 
-// ── Pure transitions satisfy VerifiedTransition ───────────────────────────────
+// ── ArchiveConnectionMachine ──────────────────────────────────────────────────
 
 #[test]
-fn pure_transitions_satisfy_verified_transition_bound() {
-    assert_vt(&disconnect);
-    assert_vt(&query_complete);
-    assert_vt(&begin_edit);
-    assert_vt(&commit_edits);
-    assert_vt(&finish_export);
+fn connection_pure_transitions_satisfy_bound() {
+    assert_conn_vt(&disconnect);
+    assert_conn_vt(&reconnect);
 }
 
-// ── Closures over parameterised transitions satisfy the bound ──────────────────
-
 #[test]
-fn closure_transitions_satisfy_verified_transition_bound() {
-    let db = sample_db();
-    let t_begin = |s, p| begin_connect_sql(s, p, "my-profile".to_string(), BackendKind::Postgres);
-    let t_finish_sql = |s, p| finish_connect_sql(s, p, db.clone());
-    let t_finish_kv = |s, p| finish_connect_kv(s, p, "redb://data/archive.redb".to_string());
-    let t_browse = |s, p| begin_browse(s, p, Some("public".to_string()));
-    let t_query = |s, p| execute_query(s, p, "SELECT 1".to_string());
-    let t_export = |s, p| begin_export(s, p, ExportFormat::Csv);
-
-    assert_vt(&t_begin);
-    assert_vt(&t_finish_sql);
-    assert_vt(&t_finish_kv);
-    assert_vt(&t_browse);
-    assert_vt(&t_query);
-    assert_vt(&t_export);
-}
-
-// ── Full lifecycle round-trip ─────────────────────────────────────────────────
-
-#[test]
-fn sql_lifecycle_round_trip_carries_invariant() {
-    let proof = bootstrap();
+fn connection_sql_lifecycle() {
+    let proof = conn_proof();
     let db = sample_db();
 
-    // Disconnected → Connecting
     let (state, proof) = begin_connect_sql(
-        ArchiveState::Disconnected,
+        ArchiveConnectionState::Disconnected,
         proof,
         "prod".to_string(),
         BackendKind::Postgres,
     );
-    assert!(matches!(state, ArchiveState::Connecting { .. }));
+    assert!(matches!(state, ArchiveConnectionState::Connecting { .. }));
 
-    // Connecting → SqlConnected
-    let (state, proof) = finish_connect_sql(state, proof, db.clone());
-    assert!(matches!(state, ArchiveState::SqlConnected { .. }));
+    let (state, proof) = finish_connect_sql(state, proof, db);
+    assert!(matches!(state, ArchiveConnectionState::SqlConnected { .. }));
 
-    // SqlConnected → Browsing
-    let (state, proof) = begin_browse(state, proof, Some("public".to_string()));
-    assert!(matches!(state, ArchiveState::Browsing { .. }));
-
-    // Browsing → RunningQuery
-    let (state, proof) = execute_query(state, proof, "SELECT * FROM users".to_string());
-    assert!(matches!(state, ArchiveState::RunningQuery { .. }));
-
-    // RunningQuery → ViewingResults
-    let (state, proof) = query_complete(state, proof);
-    assert!(matches!(state, ArchiveState::ViewingResults { .. }));
-
-    // ViewingResults → EditingRows
-    let (state, proof) = begin_edit(state, proof);
-    assert!(matches!(state, ArchiveState::EditingRows { .. }));
-
-    // EditingRows → ViewingResults
-    let (state, proof) = commit_edits(state, proof);
-    assert!(matches!(state, ArchiveState::ViewingResults { .. }));
-
-    // ViewingResults → Exporting
-    let (state, proof) = begin_export(state, proof, ExportFormat::Csv);
-    assert!(matches!(state, ArchiveState::Exporting { .. }));
-
-    // Exporting → Browsing
-    let (state, proof) = finish_export(state, proof);
-    assert!(matches!(state, ArchiveState::Browsing { .. }));
-
-    // Browsing → Disconnected
     let (state, _proof) = disconnect(state, proof);
-    assert_eq!(state, ArchiveState::Disconnected);
+    assert_eq!(state, ArchiveConnectionState::Disconnected);
 }
 
 #[test]
-fn kv_lifecycle_carries_invariant() {
-    let cred = ArchiveConnectionCredential;
-    let proof = Established::prove(&cred);
+fn connection_kv_lifecycle() {
+    let proof = conn_proof();
 
-    // Disconnected → KvConnected
-    let (state, proof) = finish_connect_kv(
-        ArchiveState::Disconnected,
+    let (state, proof) = begin_connect_kv(
+        ArchiveConnectionState::Disconnected,
         proof,
         "redb://data/archive.redb".to_string(),
     );
-    assert!(matches!(state, ArchiveState::KvConnected { .. }));
+    assert!(matches!(state, ArchiveConnectionState::Connecting { .. }));
 
-    // KvConnected → Disconnected
+    let (state, proof) = finish_connect_kv(state, proof, "redb://data/archive.redb".to_string());
+    assert!(matches!(state, ArchiveConnectionState::KvConnected { .. }));
+
     let (state, _proof) = disconnect(state, proof);
-    assert_eq!(state, ArchiveState::Disconnected);
+    assert_eq!(state, ArchiveConnectionState::Disconnected);
 }
 
-// ── Invalid transitions are no-ops ────────────────────────────────────────────
+// ── ArchivePanelMachine ───────────────────────────────────────────────────────
 
 #[test]
-fn begin_edit_on_non_results_is_noop() {
-    let proof = bootstrap();
-    let browsing = ArchiveState::Browsing {
-        db: sample_db(),
-        selected_schema: None,
+fn panel_pure_transitions_satisfy_bound() {
+    assert_panel_vt(&begin_edit);
+    assert_panel_vt(&commit_edits);
+    assert_panel_vt(&abort_edits);
+}
+
+#[test]
+fn panel_sql_editor_lifecycle() {
+    let proof = panel_proof();
+
+    let (state, proof) = open_sql_editor(
+        ArchivePanelState::ColumnDetail,
+        proof,
+        "SELECT 1".to_string(),
+    );
+    assert!(matches!(state, ArchivePanelState::SqlEditor { .. }));
+
+    let (state, proof) = query_complete(state, proof, empty_result());
+    assert!(
+        matches!(
+            state,
+            ArchivePanelState::SqlEditor {
+                result: Some(_),
+                ..
+            }
+        ),
+        "expected query result to be stored"
+    );
+
+    let (state, _proof) = panel_error(state, proof, "oops".to_string());
+    assert!(matches!(state, ArchivePanelState::ErrorView { .. }));
+}
+
+#[test]
+fn panel_data_grid_edit_lifecycle() {
+    let proof = panel_proof();
+
+    let (state, proof) = data_grid_ready(
+        ArchivePanelState::ColumnDetail,
+        proof,
+        "public".to_string(),
+        "users".to_string(),
+        empty_result(),
+        QueryResultMode::default(),
+    );
+    assert!(matches!(
+        state,
+        ArchivePanelState::DataGrid {
+            edit_state: None,
+            ..
+        }
+    ));
+
+    let (state, proof) = begin_edit(state, proof);
+    assert!(matches!(
+        state,
+        ArchivePanelState::DataGrid {
+            edit_state: Some(_),
+            ..
+        }
+    ));
+
+    let (state, _proof) = commit_edits(state, proof);
+    assert!(matches!(
+        state,
+        ArchivePanelState::DataGrid {
+            edit_state: None,
+            ..
+        }
+    ));
+}
+
+#[test]
+fn panel_loading_then_ddl() {
+    let proof = panel_proof();
+
+    let (state, proof) = panel_loading(
+        ArchivePanelState::ColumnDetail,
+        proof,
+        "public".to_string(),
+        "users".to_string(),
+    );
+    assert!(matches!(state, ArchivePanelState::Loading { .. }));
+
+    let ddl = DdlDescriptor {
+        schema: "public".to_string(),
+        object_name: "users".to_string(),
+        ddl: "CREATE TABLE users (id SERIAL)".to_string(),
     };
-    // begin_edit only moves ViewingResults → EditingRows; all others are no-ops
-    let (state, _) = begin_edit(browsing.clone(), proof);
-    assert_eq!(state, browsing);
+    let (state, _proof) = ddl_ready(
+        state,
+        proof,
+        "public".to_string(),
+        "users".to_string(),
+        ddl,
+        DdlDescriptorMode::default(),
+    );
+    assert!(matches!(state, ArchivePanelState::DdlView { .. }));
+}
+
+// ── ArchiveNavMachine ─────────────────────────────────────────────────────────
+
+#[test]
+fn nav_pure_transitions_satisfy_bound() {
+    assert_nav_vt(&move_cursor_up);
+    // move_cursor_down takes max: usize, so test via closure
+    assert_nav_vt(&(|s, p| move_cursor_down(s, p, 100)));
 }
 
 #[test]
-fn query_complete_on_non_running_is_noop() {
-    let proof = bootstrap();
-    let disconnected = ArchiveState::Disconnected;
-    let (state, _) = query_complete(disconnected, proof);
-    assert_eq!(state, ArchiveState::Disconnected);
+fn nav_load_lifecycle() {
+    let proof = nav_proof();
+
+    let (state, proof) = load_nav(ArchiveNavState::NavUnloaded, proof);
+    assert!(matches!(state, ArchiveNavState::NavLoading));
+
+    let (state, proof) = nav_loaded(
+        state,
+        proof,
+        NavTree {
+            db_name: "testdb".to_string(),
+            version: None,
+            backend: BackendKind::Postgres,
+            schemas: vec![],
+        },
+    );
+    assert!(matches!(state, ArchiveNavState::NavReady { .. }));
+
+    let (state, proof) = expand_schema(state, proof, 0, true);
+    // still NavReady — index 0 with empty schemas is a no-op
+    assert!(matches!(state, ArchiveNavState::NavReady { .. }));
+
+    let (state, _proof) = collapse_schema(state, proof, 0);
+    assert!(matches!(state, ArchiveNavState::NavReady { .. }));
+}
+
+// ── ArchiveOverlayMachine ─────────────────────────────────────────────────────
+
+#[test]
+fn overlay_pure_transitions_satisfy_bound() {
+    assert_overlay_vt(&close_overlay);
+    assert_overlay_vt(&open_help);
+    // open_export_picker takes formats param — test via closure
+    assert_overlay_vt(&(|s, p| open_export_picker(s, p, vec![])));
+}
+
+#[test]
+fn overlay_help_lifecycle() {
+    let proof = overlay_proof();
+
+    let (state, proof) = open_help(ArchiveOverlayState::OverlayNone, proof);
+    assert!(matches!(state, ArchiveOverlayState::HelpOpen));
+
+    let (state, _proof) = close_overlay(state, proof);
+    assert_eq!(state, ArchiveOverlayState::OverlayNone);
+}
+
+#[test]
+fn overlay_export_picker_lifecycle() {
+    let proof = overlay_proof();
+
+    let (state, proof) = open_export_picker(ArchiveOverlayState::OverlayNone, proof, vec![]);
+    assert!(matches!(
+        state,
+        ArchiveOverlayState::ExportPickerOpen { .. }
+    ));
+
+    let (state, _proof) = close_overlay(state, proof);
+    assert_eq!(state, ArchiveOverlayState::OverlayNone);
 }

@@ -49,6 +49,7 @@
 
 mod contracts;
 mod error;
+mod kv_types;
 mod traits;
 mod types;
 mod typestate;
@@ -847,14 +848,20 @@ pub use contracts::proof_composition::{
     TwoPhaseCommitFinalityEvidence,
 };
 
+pub use contracts::embedded::{
+    KvIntegrityVerified, KvKeyDeleted, KvKeyInserted, KvSnapshotCreated, KvSnapshotRestored,
+    KvTableCompacted,
+};
+
 pub use elicitation::ElicitComplete;
 pub use error::{DbError, DbErrorKind, DbResult};
+pub use kv_types::{DbStorageStats, KvEntry, KvTableInfo, SnapshotHandle};
 pub use traits::{
     DbBackend, DbBackupManager, DbConstraintFactory, DbConstraintMeta, DbDatabaseManager,
-    DbIndexManager, DbIsolationFactory, DbMonitor, DbQueryExecutor, DbReplicationFactory,
-    DbReplicationMeta, DbRoleManager, DbRoutineFactory, DbRoutineMeta, DbSchemaManager,
-    DbSecurityFactory, DbSecurityMeta, DbServerAdmin, DbSessionManager, DbTableManager,
-    DbTransactor,
+    DbEmbeddedBackend, DbEmbeddedStore, DbIndexManager, DbIsolationFactory, DbKvStore, DbMonitor,
+    DbQueryExecutor, DbReplicationFactory, DbReplicationMeta, DbRoleManager, DbRoutineFactory,
+    DbRoutineMeta, DbSchemaManager, DbSecurityFactory, DbSecurityMeta, DbServerAdmin,
+    DbSessionManager, DbSnapshotManager, DbTableManager, DbTransactor,
 };
 pub use types::{
     ConnectionId, DbColumn, DbCommitResult, DbExecuteResult, DbExplain, DbIndexInfo,

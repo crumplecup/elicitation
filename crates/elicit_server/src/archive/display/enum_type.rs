@@ -1,4 +1,5 @@
 //! AccessKit display for [`EnumDescriptor`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::EnumDescriptor;
 use super::ArchiveDisplay;
 
 /// Display strategies for an [`EnumDescriptor`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum EnumDescriptorMode {
     /// A compact row showing name and label count.
     #[default]

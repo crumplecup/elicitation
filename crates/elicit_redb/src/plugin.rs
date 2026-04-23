@@ -36,7 +36,8 @@ impl RedbCtx {
         }
     }
 
-    pub(crate) fn lock_databases(
+    /// Acquires the databases map, returning an error if the mutex is poisoned.
+    pub fn lock_databases(
         &self,
     ) -> Result<MutexGuard<'_, HashMap<Uuid, redb::Database>>, ErrorData> {
         self.databases
@@ -44,7 +45,8 @@ impl RedbCtx {
             .map_err(|_| ErrorData::internal_error("redb databases lock poisoned", None))
     }
 
-    pub(crate) fn lock_write_txns(
+    /// Acquires the write transactions map, returning an error if the mutex is poisoned.
+    pub fn lock_write_txns(
         &self,
     ) -> Result<MutexGuard<'_, HashMap<Uuid, redb::WriteTransaction>>, ErrorData> {
         self.write_txns
@@ -52,7 +54,8 @@ impl RedbCtx {
             .map_err(|_| ErrorData::internal_error("redb write_txns lock poisoned", None))
     }
 
-    pub(crate) fn lock_read_txns(
+    /// Acquires the read transactions map, returning an error if the mutex is poisoned.
+    pub fn lock_read_txns(
         &self,
     ) -> Result<MutexGuard<'_, HashMap<Uuid, redb::ReadTransaction>>, ErrorData> {
         self.read_txns
@@ -60,7 +63,8 @@ impl RedbCtx {
             .map_err(|_| ErrorData::internal_error("redb read_txns lock poisoned", None))
     }
 
-    pub(crate) fn lock_savepoints(
+    /// Acquires the savepoints map, returning an error if the mutex is poisoned.
+    pub fn lock_savepoints(
         &self,
     ) -> Result<MutexGuard<'_, HashMap<Uuid, redb::Savepoint>>, ErrorData> {
         self.savepoints

@@ -1,4 +1,5 @@
 //! AccessKit display for [`ConnectionProfile`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::{ConnectionProfile, SslMode};
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`ConnectionProfile`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum ConnectionProfileMode {
     /// A summary card showing name, backend, and colour badge.
     #[default]

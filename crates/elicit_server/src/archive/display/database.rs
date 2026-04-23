@@ -1,4 +1,5 @@
 //! AccessKit display for [`DatabaseDescriptor`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::DatabaseDescriptor;
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`DatabaseDescriptor`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum DatabaseDescriptorMode {
     /// Overview panel: name, version, backend badge, schema count.
     #[default]

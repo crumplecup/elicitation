@@ -1,4 +1,5 @@
 //! AccessKit display for [`MonitorSnapshot`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::MonitorSnapshot;
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`MonitorSnapshot`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum MonitorSnapshotMode {
     /// Summary dashboard: one group per data category.
     #[default]

@@ -661,7 +661,7 @@ impl ExportFormat {
 }
 
 /// Result of a data export operation.
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, Elicit)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ExportResult {
     /// Format used.
     pub format: ExportFormat,
@@ -751,9 +751,9 @@ pub struct StagedEdit {
 
 /// Transient UI state for an active in-grid row-edit session.
 ///
-/// Lives inside `PanelMode::DataGrid::edit_state` and is `None` when no edit
-/// session is active.  **Not serialised** — it is purely runtime UI state.
-#[derive(Debug, Clone)]
+/// Lives inside `ArchivePanelState::DataGrid::edit_state` and is `None` when
+/// no edit session is active.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct RowEditState {
     /// Mutations staged but not yet committed (ready to send to the tool).
     pub pending_edits: Vec<StagedEdit>,
@@ -1244,7 +1244,7 @@ pub struct ErdDiagram {
 ///
 /// Coordinates are in logical pixels (no DPI scaling).  The origin (0, 0)
 /// is the top-left corner of the canvas.
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct ErdLayout {
     /// Canvas width needed to contain all boxes.
     pub canvas_w: f32,

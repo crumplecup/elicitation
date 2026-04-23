@@ -1,4 +1,5 @@
 //! AccessKit display for [`SchemaDescriptor`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::SchemaDescriptor;
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`SchemaDescriptor`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum SchemaDescriptorMode {
     /// Tree node with child items for each table name.
     #[default]

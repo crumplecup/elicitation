@@ -1,4 +1,5 @@
 //! AccessKit display for [`ForeignKeyDescriptor`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::ForeignKeyDescriptor;
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`ForeignKeyDescriptor`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum ForeignKeyDescriptorMode {
     /// A single row suitable for embedding in a parent list or grid.
     #[default]

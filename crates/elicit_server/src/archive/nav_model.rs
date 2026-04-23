@@ -21,6 +21,9 @@
 use std::collections::HashMap;
 
 use elicit_accesskit::KeyBinding;
+use elicitation::Elicit;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 use crate::archive::{
     AdminSnapshot, ColumnStats, ConnectionProfile, ConstraintDescriptor, ErdDiagram, ErdLayout,
@@ -67,7 +70,7 @@ pub enum FlatItem {
 // ── SchemaWithExpand ──────────────────────────────────────────────────────────
 
 /// A schema entry combined with its current expand/collapse state.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema, Elicit)]
 pub struct SchemaWithExpand {
     /// The underlying schema descriptor.
     pub entry: SchemaEntry,

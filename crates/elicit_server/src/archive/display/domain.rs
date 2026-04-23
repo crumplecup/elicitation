@@ -1,4 +1,5 @@
 //! AccessKit display for [`DomainDescriptor`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::DomainDescriptor;
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`DomainDescriptor`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum DomainDescriptorMode {
     /// A compact row showing name and base type.
     #[default]

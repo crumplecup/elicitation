@@ -1,4 +1,5 @@
 //! AccessKit display for [`TableDescriptor`].
+use elicitation::Elicit;
 
 use accesskit::Role as AkRole;
 use elicit_accesskit::{NodeId, NodeJson, Role};
@@ -10,7 +11,9 @@ use crate::archive::TableDescriptor;
 use super::ArchiveDisplay;
 
 /// Display strategies for a [`TableDescriptor`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize, JsonSchema, Elicit,
+)]
 pub enum TableDescriptorMode {
     /// Column headers in a grid — the standard tabular view.
     #[default]
