@@ -87,6 +87,7 @@ mod derive_elicit;
 mod derive_elicit_plugin;
 mod derive_prop;
 mod derive_to_code_literal;
+mod derive_vsm;
 mod elicit_tool;
 mod emit_rewriter;
 mod enum_impl;
@@ -528,6 +529,30 @@ pub fn formal_method(args: TokenStream, item: TokenStream) -> TokenStream {
 #[proc_macro_derive(Prop)]
 pub fn derive_prop(input: TokenStream) -> TokenStream {
     derive_prop::expand(input)
+}
+
+/// Derive `VerifiedStateMachine` for a unit struct, inferring `State` and
+/// `Invariant` from naming conventions and wiring `transition_harnesses()` from
+/// a `#[vsm(transitions = [...])]` attribute.
+///
+/// # Naming conventions
+///
+/// Given `struct FooBarMachine`, the macro infers:
+/// - `type State = FooBarState`
+/// - `type Invariant = FooBarConsistent`
+///
+/// Override either with `#[vsm(state = MyState)]` or `#[vsm(invariant = MyInvariant)]`.
+///
+/// # Example
+///
+/// ```rust,ignore
+/// #[derive(VerifiedStateMachine)]
+/// #[vsm(transitions = [begin_connect_sql, disconnect, reconnect])]
+/// pub struct ArchiveConnectionMachine;
+/// ```
+#[proc_macro_derive(VerifiedStateMachine, attributes(vsm))]
+pub fn derive_verified_state_machine(input: TokenStream) -> TokenStream {
+    derive_vsm::expand(input)
 }
 
 ///
