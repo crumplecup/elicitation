@@ -265,6 +265,8 @@ pub use quote;
 pub use elicitation_derive::{Elicit, ElicitPlugin, elicit_tool, formal_method};
 // Prop derive macro (trait lives at elicitation::contracts::Prop; both can coexist)
 pub use elicitation_derive::Prop;
+// VerifiedStateMachine derive macro (coexists with the trait of the same name)
+pub use elicitation_derive::VerifiedStateMachine;
 // ToCodeLiteral derive (trait lives at elicitation::emit_code::ToCodeLiteral)
 pub use elicitation_derive::ToCodeLiteral;
 
