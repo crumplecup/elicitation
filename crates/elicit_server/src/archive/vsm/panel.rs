@@ -26,7 +26,7 @@
 //! directly.  Parameterised constructors are ordinary functions; callers wrap
 //! them in a closure.
 
-use elicitation::{Elicit, Established, Prop, VerifiedStateMachine};
+use elicitation::{Elicit, Established, Prop, VerifiedStateMachine, formal_method};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -248,18 +248,25 @@ pub struct ArchivePanelConsistent;
 // ── ArchivePanelMachine ───────────────────────────────────────────────────────
 
 /// Verified state machine for the archive main content panel.
+#[derive(VerifiedStateMachine)]
+#[vsm(transitions = [
+    column_detail, panel_loading, panel_error,
+    data_grid_ready, query_complete,
+    begin_edit, commit_edits, abort_edits,
+    open_sql_editor, open_export_panel, open_help_panel,
+    open_saved_panel, open_connection_editor,
+    ddl_ready, explain_ready, export_ready,
+    history_ready, saved_ready, monitor_ready,
+    admin_ready, erd_ready, constraints_ready, indexes_ready,
+])]
 pub struct ArchivePanelMachine;
-
-impl VerifiedStateMachine for ArchivePanelMachine {
-    type State = ArchivePanelState;
-    type Invariant = ArchivePanelConsistent;
-}
 
 // ── Transitions ───────────────────────────────────────────────────────────────
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
 
 /// Return to the default column-detail view.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn column_detail(
     _state: ArchivePanelState,
@@ -269,6 +276,7 @@ pub fn column_detail(
 }
 
 /// Begin loading data for a table or object (spinner state).
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn panel_loading(
     _state: ArchivePanelState,
@@ -280,6 +288,7 @@ pub fn panel_loading(
 }
 
 /// Show a user-facing error in the panel.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn panel_error(
     _state: ArchivePanelState,
@@ -292,6 +301,7 @@ pub fn panel_error(
 // ─── Data Grid ────────────────────────────────────────────────────────────────
 
 /// Async data fetch complete — show the data grid.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn data_grid_ready(
     _state: ArchivePanelState,
@@ -317,6 +327,7 @@ pub fn data_grid_ready(
 }
 
 /// SQL query complete — update the SQL editor result.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn query_complete(
     state: ArchivePanelState,
@@ -336,6 +347,7 @@ pub fn query_complete(
 }
 
 /// Begin a row-edit session in the data grid.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn begin_edit(
     state: ArchivePanelState,
@@ -367,6 +379,7 @@ pub fn begin_edit(
 }
 
 /// Commit staged edits and clear edit state.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn commit_edits(
     state: ArchivePanelState,
@@ -398,6 +411,7 @@ pub fn commit_edits(
 }
 
 /// Abort a row-edit session without committing.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn abort_edits(
     state: ArchivePanelState,
@@ -409,6 +423,7 @@ pub fn abort_edits(
 // ─── Panel openers ────────────────────────────────────────────────────────────
 
 /// Open the SQL editor pane.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn open_sql_editor(
     _state: ArchivePanelState,
@@ -427,6 +442,7 @@ pub fn open_sql_editor(
 }
 
 /// Open the export format picker for a table.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn open_export_panel(
     _state: ArchivePanelState,
@@ -445,6 +461,7 @@ pub fn open_export_panel(
 }
 
 /// Open the help / key-bindings panel.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn open_help_panel(
     _state: ArchivePanelState,
@@ -454,6 +471,7 @@ pub fn open_help_panel(
 }
 
 /// Open the query history browser.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn open_saved_panel(
     _state: ArchivePanelState,
@@ -471,6 +489,7 @@ pub fn open_saved_panel(
 }
 
 /// Open the connection profile editor.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn open_connection_editor(
     _state: ArchivePanelState,
@@ -490,6 +509,7 @@ pub fn open_connection_editor(
 // ─── Async result arrivals (PanelEvent equivalents) ───────────────────────────
 
 /// DDL generation complete.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn ddl_ready(
     _state: ArchivePanelState,
@@ -511,6 +531,7 @@ pub fn ddl_ready(
 }
 
 /// EXPLAIN plan ready.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn explain_ready(
     state: ArchivePanelState,
@@ -548,6 +569,7 @@ pub fn explain_ready(
 }
 
 /// Export completed.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn export_ready(
     state: ArchivePanelState,
@@ -566,6 +588,7 @@ pub fn export_ready(
 }
 
 /// History entries loaded.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn history_ready(
     _state: ArchivePanelState,
@@ -583,6 +606,7 @@ pub fn history_ready(
 }
 
 /// Saved queries loaded.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn saved_ready(
     _state: ArchivePanelState,
@@ -600,6 +624,7 @@ pub fn saved_ready(
 }
 
 /// Monitor snapshot ready.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn monitor_ready(
     _state: ArchivePanelState,
@@ -618,6 +643,7 @@ pub fn monitor_ready(
 }
 
 /// Admin snapshot ready.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn admin_ready(
     _state: ArchivePanelState,
@@ -636,6 +662,7 @@ pub fn admin_ready(
 }
 
 /// ERD diagram ready.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn erd_ready(
     _state: ArchivePanelState,
@@ -658,6 +685,7 @@ pub fn erd_ready(
 }
 
 /// Constraints loaded.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn constraints_ready(
     _state: ArchivePanelState,
@@ -680,6 +708,7 @@ pub fn constraints_ready(
 }
 
 /// Indexes loaded.
+#[formal_method(contracts = [ArchivePanelConsistent])]
 #[instrument(skip(proof))]
 pub fn indexes_ready(
     _state: ArchivePanelState,

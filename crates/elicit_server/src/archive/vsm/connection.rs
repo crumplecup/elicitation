@@ -20,7 +20,9 @@
 //!      └───disconnect───┘   ConnectionError
 //! ```
 
-use elicitation::{Elicit, Established, Prop, VerifiedStateMachine, contracts::ProvableFrom};
+use elicitation::{
+    Elicit, Established, Prop, VerifiedStateMachine, contracts::ProvableFrom, formal_method,
+};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -78,16 +80,18 @@ impl ProvableFrom<ArchiveConnectionCredential> for ArchiveConnectionConsistent {
 // ── ArchiveConnectionMachine ──────────────────────────────────────────────────
 
 /// Verified state machine for the archive connection lifecycle.
+#[derive(VerifiedStateMachine)]
+#[vsm(transitions = [
+    begin_connect_sql, begin_connect_kv,
+    finish_connect_sql, finish_connect_kv,
+    disconnect, reconnect, connection_error,
+])]
 pub struct ArchiveConnectionMachine;
-
-impl VerifiedStateMachine for ArchiveConnectionMachine {
-    type State = ArchiveConnectionState;
-    type Invariant = ArchiveConnectionConsistent;
-}
 
 // ── Transitions ───────────────────────────────────────────────────────────────
 
 /// Begin establishing a SQL connection for `profile_name`.
+#[formal_method(contracts = [ArchiveConnectionConsistent])]
 #[instrument(skip(proof))]
 pub fn begin_connect_sql(
     _state: ArchiveConnectionState,
@@ -108,6 +112,7 @@ pub fn begin_connect_sql(
 }
 
 /// Begin establishing a KV connection.
+#[formal_method(contracts = [ArchiveConnectionConsistent])]
 #[instrument(skip(proof))]
 pub fn begin_connect_kv(
     _state: ArchiveConnectionState,
@@ -127,6 +132,7 @@ pub fn begin_connect_kv(
 }
 
 /// Finish establishing a SQL connection.
+#[formal_method(contracts = [ArchiveConnectionConsistent])]
 #[instrument(skip(proof))]
 pub fn finish_connect_sql(
     _state: ArchiveConnectionState,
@@ -140,6 +146,7 @@ pub fn finish_connect_sql(
 }
 
 /// Finish establishing a KV connection.
+#[formal_method(contracts = [ArchiveConnectionConsistent])]
 #[instrument(skip(proof))]
 pub fn finish_connect_kv(
     _state: ArchiveConnectionState,
@@ -153,6 +160,7 @@ pub fn finish_connect_kv(
 }
 
 /// Disconnect from any active backend.
+#[formal_method(contracts = [ArchiveConnectionConsistent])]
 #[instrument(skip(proof))]
 pub fn disconnect(
     _state: ArchiveConnectionState,
@@ -165,6 +173,7 @@ pub fn disconnect(
 }
 
 /// Begin a reconnect attempt after a dropped SQL connection.
+#[formal_method(contracts = [ArchiveConnectionConsistent])]
 #[instrument(skip(proof))]
 pub fn reconnect(
     state: ArchiveConnectionState,
@@ -182,6 +191,7 @@ pub fn reconnect(
 }
 
 /// Record a connection error.
+#[formal_method(contracts = [ArchiveConnectionConsistent])]
 #[instrument(skip(proof))]
 pub fn connection_error(
     _state: ArchiveConnectionState,

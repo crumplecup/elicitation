@@ -5,7 +5,7 @@
 //! (`show_help`, `export_picker`, `save_prompt_active`, `save_prompt_text`,
 //! `saved_browser_active`, `saved_browser_idx`) into a single typed state.
 
-use elicitation::{Elicit, Established, Prop, VerifiedStateMachine};
+use elicitation::{Elicit, Established, Prop, VerifiedStateMachine, formal_method};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -56,16 +56,19 @@ pub struct ArchiveOverlayConsistent;
 // ── ArchiveOverlayMachine ─────────────────────────────────────────────────────
 
 /// Verified state machine for archive modal overlays.
+#[derive(VerifiedStateMachine)]
+#[vsm(transitions = [
+    close_overlay, open_help, open_export_picker,
+    picker_move_up, picker_move_down,
+    open_save_prompt, prompt_push, prompt_backspace,
+    open_saved_browser, saved_browser_up, saved_browser_down,
+])]
 pub struct ArchiveOverlayMachine;
-
-impl VerifiedStateMachine for ArchiveOverlayMachine {
-    type State = ArchiveOverlayState;
-    type Invariant = ArchiveOverlayConsistent;
-}
 
 // ── Transitions ───────────────────────────────────────────────────────────────
 
 /// Close the active overlay (return to none).
+#[formal_method(contracts = [ArchiveOverlayConsistent])]
 #[instrument(skip(proof))]
 pub fn close_overlay(
     _state: ArchiveOverlayState,
@@ -75,6 +78,7 @@ pub fn close_overlay(
 }
 
 /// Open the help overlay.
+#[formal_method(contracts = [ArchiveOverlayConsistent])]
 #[instrument(skip(proof))]
 pub fn open_help(
     _state: ArchiveOverlayState,
@@ -84,6 +88,7 @@ pub fn open_help(
 }
 
 /// Open the export format picker.
+#[formal_method(contracts = [ArchiveOverlayConsistent])]
 #[instrument(skip(proof))]
 pub fn open_export_picker(
     _state: ArchiveOverlayState,
@@ -97,6 +102,7 @@ pub fn open_export_picker(
 }
 
 /// Move the export picker selection up.
+#[formal_method(contracts = [ArchiveOverlayConsistent])]
 #[instrument(skip(proof))]
 pub fn picker_move_up(
     state: ArchiveOverlayState,
@@ -115,6 +121,7 @@ pub fn picker_move_up(
 }
 
 /// Move the export picker selection down.
+#[formal_method(contracts = [ArchiveOverlayConsistent])]
 #[instrument(skip(proof))]
 pub fn picker_move_down(
     state: ArchiveOverlayState,
@@ -134,6 +141,7 @@ pub fn picker_move_down(
 }
 
 /// Open the save-query name prompt.
+#[formal_method(contracts = [ArchiveOverlayConsistent])]
 #[instrument(skip(proof))]
 pub fn open_save_prompt(
     _state: ArchiveOverlayState,
@@ -148,6 +156,7 @@ pub fn open_save_prompt(
 }
 
 /// Append a character to the save-prompt text.
+#[formal_method(contracts = [ArchiveOverlayConsistent])]
 #[instrument(skip(proof))]
 pub fn prompt_push(
     state: ArchiveOverlayState,
@@ -165,6 +174,7 @@ pub fn prompt_push(
 }
 
 /// Delete the last character from the save-prompt text.
+#[formal_method(contracts = [ArchiveOverlayConsistent])]
 #[instrument(skip(proof))]
 pub fn prompt_backspace(
     state: ArchiveOverlayState,
@@ -181,6 +191,7 @@ pub fn prompt_backspace(
 }
 
 /// Open the saved queries browser.
+#[formal_method(contracts = [ArchiveOverlayConsistent])]
 #[instrument(skip(proof))]
 pub fn open_saved_browser(
     _state: ArchiveOverlayState,
@@ -194,6 +205,7 @@ pub fn open_saved_browser(
 }
 
 /// Move the saved browser selection up.
+#[formal_method(contracts = [ArchiveOverlayConsistent])]
 #[instrument(skip(proof))]
 pub fn saved_browser_up(
     state: ArchiveOverlayState,
@@ -212,6 +224,7 @@ pub fn saved_browser_up(
 }
 
 /// Move the saved browser selection down.
+#[formal_method(contracts = [ArchiveOverlayConsistent])]
 #[instrument(skip(proof))]
 pub fn saved_browser_down(
     state: ArchiveOverlayState,

@@ -1,6 +1,6 @@
 //! Verified State Machine for the archive navigation tree.
 
-use elicitation::{Elicit, Established, Prop, VerifiedStateMachine};
+use elicitation::{Elicit, Established, Prop, VerifiedStateMachine, formal_method};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -54,16 +54,19 @@ pub struct ArchiveNavConsistent;
 // ── ArchiveNavMachine ─────────────────────────────────────────────────────────
 
 /// Verified state machine for the archive navigation tree.
+#[derive(VerifiedStateMachine)]
+#[vsm(transitions = [
+    load_nav, nav_loaded, nav_refresh,
+    expand_schema, collapse_schema,
+    move_cursor_up, move_cursor_down,
+    apply_filter, clear_filter,
+])]
 pub struct ArchiveNavMachine;
-
-impl VerifiedStateMachine for ArchiveNavMachine {
-    type State = ArchiveNavState;
-    type Invariant = ArchiveNavConsistent;
-}
 
 // ── Transitions ───────────────────────────────────────────────────────────────
 
 /// Start loading the nav tree (e.g. after connect).
+#[formal_method(contracts = [ArchiveNavConsistent])]
 #[instrument(skip(proof))]
 pub fn load_nav(
     _state: ArchiveNavState,
@@ -73,6 +76,7 @@ pub fn load_nav(
 }
 
 /// Nav tree fetch complete — populate from a `NavTree`.
+#[formal_method(contracts = [ArchiveNavConsistent])]
 #[instrument(skip(proof, nav))]
 pub fn nav_loaded(
     _state: ArchiveNavState,
@@ -104,6 +108,7 @@ pub fn nav_loaded(
 }
 
 /// Trigger a nav tree refresh (returns to loading state).
+#[formal_method(contracts = [ArchiveNavConsistent])]
 #[instrument(skip(proof))]
 pub fn nav_refresh(
     _state: ArchiveNavState,
@@ -113,6 +118,7 @@ pub fn nav_refresh(
 }
 
 /// Expand or collapse a schema in the nav tree.
+#[formal_method(contracts = [ArchiveNavConsistent])]
 #[instrument(skip(proof))]
 pub fn expand_schema(
     state: ArchiveNavState,
@@ -145,6 +151,7 @@ pub fn expand_schema(
 }
 
 /// Collapse a previously-expanded schema.
+#[formal_method(contracts = [ArchiveNavConsistent])]
 #[instrument(skip(proof))]
 pub fn collapse_schema(
     state: ArchiveNavState,
@@ -155,6 +162,7 @@ pub fn collapse_schema(
 }
 
 /// Move the nav tree cursor up one row.
+#[formal_method(contracts = [ArchiveNavConsistent])]
 #[instrument(skip(proof))]
 pub fn move_cursor_up(
     state: ArchiveNavState,
@@ -180,6 +188,7 @@ pub fn move_cursor_up(
 }
 
 /// Move the nav tree cursor down one row.
+#[formal_method(contracts = [ArchiveNavConsistent])]
 #[instrument(skip(proof))]
 pub fn move_cursor_down(
     state: ArchiveNavState,
@@ -206,6 +215,7 @@ pub fn move_cursor_down(
 }
 
 /// Start filtering the nav tree.
+#[formal_method(contracts = [ArchiveNavConsistent])]
 #[instrument(skip(proof))]
 pub fn apply_filter(
     state: ArchiveNavState,
@@ -237,6 +247,7 @@ pub fn apply_filter(
 }
 
 /// Clear the active filter and return to unfiltered nav.
+#[formal_method(contracts = [ArchiveNavConsistent])]
 #[instrument(skip(proof))]
 pub fn clear_filter(
     state: ArchiveNavState,
