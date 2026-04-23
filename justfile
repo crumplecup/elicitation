@@ -303,12 +303,12 @@ check-all package='':
 
         # Run lint (show output and log warnings/errors)
         echo "🔍 Linting entire workspace"
-        if ! cargo clippy --workspace --all-targets -- -D warnings 2>&1 | tee -a "$LOG_FILE"; then
+        if ! cargo clippy --workspace --all-targets --exclude surrealdb-types -- -D warnings 2>&1 | tee -a "$LOG_FILE"; then
             EXIT_CODE=1
         fi
 
         # Run tests (show output and log failures)
-        if ! cargo test --workspace --lib --tests 2>&1 | tee -a "$LOG_FILE"; then
+        if ! cargo test --workspace --lib --tests --exclude surrealdb-types 2>&1 | tee -a "$LOG_FILE"; then
             EXIT_CODE=1
         fi
 

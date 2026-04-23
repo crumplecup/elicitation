@@ -110,11 +110,11 @@ fn dedup_kani_proofs(streams: &[proc_macro2::TokenStream]) -> String {
     for ts in streams {
         let s = ts.to_string();
         for chunk in extract_proof_chunks(&s) {
-            if let Some(name) = extract_fn_name(&chunk) {
-                if seen.insert(name) {
-                    result.push_str(&chunk);
-                    result.push('\n');
-                }
+            if let Some(name) = extract_fn_name(&chunk)
+                && seen.insert(name)
+            {
+                result.push_str(&chunk);
+                result.push('\n');
             }
         }
     }
