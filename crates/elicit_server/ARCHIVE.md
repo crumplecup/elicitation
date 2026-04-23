@@ -569,3 +569,136 @@ requires implementing it in `build_content_nodes()` (the IR builder) and all
 three frontend event/fetch dispatch functions — the compiler enforces
 completeness at every step. There are currently 19 variants (see the
 [Panel modes](#panel-modes) table above).
+
+---
+
+## Verified State Machines
+
+`archive` is structured top-to-bottom as **four interconnected Verified State
+Machines (VSMs)**. Every observable application state — connection lifecycle,
+navigation tree, modal overlays, and content panel — is modelled as a VSM.
+
+Contracts flow through the entire display pipeline: the `Established<Invariant>`
+proof token that guards each transition is the same token required by
+`ArchiveNavModel::to_verified_tree()`, which is the same token required by all
+three frontends. You cannot display a state you cannot prove is consistent.
+
+### The four machines
+
+| Machine | State type | Invariant | Transitions |
+|---|---|---|---|
+| `ArchiveConnectionMachine` | `ArchiveConnectionState` | `ArchiveConnectionConsistent` | 7 |
+| `ArchiveNavMachine` | `ArchiveNavState` | `ArchiveNavConsistent` | 9 |
+| `ArchiveOverlayMachine` | `ArchiveOverlayState` | `ArchiveOverlayConsistent` | 11 |
+| `ArchivePanelMachine` | `ArchivePanelState` | `ArchivePanelConsistent` | 23 |
+
+### Connection machine state diagram
+
+```text
+Disconnected ──begin_connect_{sql,kv}──► Connecting
+     ▲                                        │
+     │              ┌─────────────────────────┤ finish_connect_sql
+     │              │                         │ finish_connect_kv
+     │              ▼                         ▼
+     │         SqlConnected             KvConnected
+     │              │                         │
+     │              └──────── reconnect ──────► Reconnecting
+     │                                        │
+     │               ┌────────────────────────┤ finish_connect_{sql,kv}
+     │               │                        │ connection_error
+     └───disconnect───┘              ConnectionError
+```
+
+### Declaring a machine
+
+```rust
+#[derive(VerifiedStateMachine)]
+#[vsm(transitions = [
+    begin_connect_sql, begin_connect_kv,
+    finish_connect_sql, finish_connect_kv,
+    disconnect, reconnect, connection_error,
+])]
+pub struct ArchiveConnectionMachine;
+```
+
+`#[derive(VerifiedStateMachine)]` generates the `impl VerifiedStateMachine`
+block, inferring `type State = ArchiveConnectionState` and
+`type Invariant = ArchiveConnectionConsistent` from the naming convention
+(strip `Machine` suffix → `{Prefix}State`, `{Prefix}Consistent`).
+
+Both `state` and `invariant` can be overridden via `#[vsm(state = ...,
+invariant = ...)]` when the naming convention doesn't apply.
+
+### Declaring a transition
+
+```rust
+#[formal_method(contracts = [ArchiveConnectionConsistent])]
+#[instrument(skip(proof))]
+pub fn begin_connect_sql(
+    _state: ArchiveConnectionState,
+    proof: Established<ArchiveConnectionConsistent>,
+    profile_name: String,
+    backend: BackendKind,
+) -> (ArchiveConnectionState, Established<ArchiveConnectionConsistent>) {
+    (
+        ArchiveConnectionState::Connecting { profile_name, backend },
+        proof,
+    )
+}
+```
+
+`#[formal_method(contracts = [...])]` generates three things:
+
+1. A `BeginConnectSqlTransition` companion struct with a
+   `kani_harness() -> proc_macro2::TokenStream` method, enabling
+   `build.rs` proof composition.
+2. A `#[cfg(kani)] #[kani::proof] fn begin_connect_sql__kani()` harness
+   directly in the module — ready to run with `cargo kani`.
+3. Stub companions under `#[cfg(creusot)]` and `#[cfg(verus)]` for future
+   Creusot / Verus verification.
+
+Every transition must accept and return an `Established<Invariant>` token.
+This is the compile-time proof that the invariant is preserved across the
+state change.
+
+### Formal method pattern summary
+
+| Element | What it does |
+|---|---|
+| `#[derive(Elicit)]` on the state enum | Derives `JsonSchema`, `Serialize`, `Deserialize` + MCP elicitation support |
+| `#[derive(Prop)]` on the invariant struct | Makes it a verifiable proposition |
+| `#[formal_method(contracts = [I])]` | Emits Kani/Creusot/Verus harnesses; enforces invariant at every call site |
+| `#[derive(VerifiedStateMachine)]` | Wires state + invariant + transitions into one verifiable unit |
+| `Established<I>` token | The runtime proof witness — cannot be forged without `Established::assert()` |
+
+### Kani proof composition (`elicit_proofs`)
+
+`crates/elicit_proofs` is the unified formal verification crate that composes
+the four archive VSM proofs. Its `build.rs` calls `vsm_kani_proof()` on each
+machine, deduplicates shared harnesses, and writes the results to
+`src/kani/generated/{archive_connection,archive_nav,archive_overlay,archive_panel}.rs`.
+
+```text
+ArchiveConnectionMachine::vsm_kani_proof()
+  = ArchiveConnectionConsistent::kani_proof()      ← invariant is a valid Prop
+  + BeginConnectSqlTransition::kani_harness()       ← each transition preserves it
+  + BeginConnectKvTransition::kani_harness()
+  + … (7 transitions total)
+```
+
+The composed proof says: **"the invariant is a valid proposition AND every
+registered transition preserves it without panicking for any reachable input."**
+
+Run the proofs:
+
+```bash
+cargo kani -p elicit_proofs --features kani
+```
+
+Each archive VSM harness is also registered in `ProofHarness::all()` and can
+be run individually via the `kani-verify-tracked` workflow in the
+`elicitation_kani` test harness:
+
+```bash
+cargo test -p elicitation_kani -- kani_harness_run
+```
