@@ -12,9 +12,13 @@
 //!    its contracts.
 //! 2. A `#[kani::proof]` harness under `#[cfg(kani)]`, using `kani::any()`
 //!    for non-proof inputs and `Established::assert()` for proof tokens.
-//! 3. A `#[requires(true)] #[ensures(true)] #[trusted]` Creusot companion
+//! 3. A companion **unit struct** `{PascalCase}Transition` whose
+//!    `kani_harness()` method returns the proof harness as a
+//!    `proc_macro2::TokenStream`, enabling `build.rs` composition via
+//!    [`VerifiedStateMachine::transition_harnesses`].
+//! 4. A `#[requires(true)] #[ensures(true)] #[trusted]` Creusot companion
 //!    under `#[cfg(creusot)]`.
-//! 4. A `requires true, ensures true,` Verus companion inside `verus! { }`
+//! 5. A `requires true, ensures true,` Verus companion inside `verus! { }`
 //!    under `#[cfg(verus)]`.
 //!
 //! # Syntax
@@ -84,6 +88,21 @@ use syn::{
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
 };
+
+// ── String helpers ─────────────────────────────────────────────────────────────
+
+/// Convert a `snake_case` identifier string to `PascalCase`.
+fn to_pascal_case(s: &str) -> String {
+    s.split('_')
+        .map(|word| {
+            let mut chars = word.chars();
+            match chars.next() {
+                None => String::new(),
+                Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+            }
+        })
+        .collect()
+}
 
 // ── Attribute argument parsing ─────────────────────────────────────────────────
 
@@ -188,91 +207,125 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
             .join(", ")
     };
 
-    let (kani_harness, creusot_companion, verus_companion) = if !is_async && !has_receiver {
-        let kani_fn = format_ident!("{fn_name}__kani");
-        let creusot_fn = format_ident!("{fn_name}__creusot");
-        let verus_fn = format_ident!("{fn_name}__verus");
+    let (kani_harness, creusot_companion, verus_companion, companion_struct) =
+        if !is_async && !has_receiver {
+            let kani_fn = format_ident!("{fn_name}__kani");
+            let creusot_fn = format_ident!("{fn_name}__creusot");
+            let verus_fn = format_ident!("{fn_name}__verus");
 
-        let mut lets: Vec<TokenStream> = Vec::new();
-        let mut call_args: Vec<TokenStream> = Vec::new();
+            let mut lets: Vec<TokenStream> = Vec::new();
+            let mut call_args: Vec<TokenStream> = Vec::new();
 
-        for arg in &func.sig.inputs {
-            if let FnArg::Typed(pat_type) = arg {
-                let pat = &pat_type.pat;
-                let ty = &pat_type.ty;
-                if is_established_type(ty) {
-                    lets.push(quote! {
-                        let #pat: #ty = ::elicitation::Established::assert();
-                    });
-                } else {
-                    lets.push(quote! {
-                        let #pat: #ty = ::kani::any();
-                    });
+            for arg in &func.sig.inputs {
+                if let FnArg::Typed(pat_type) = arg {
+                    let pat = &pat_type.pat;
+                    let ty = &pat_type.ty;
+                    if is_established_type(ty) {
+                        lets.push(quote! {
+                            let #pat: #ty = ::elicitation::Established::assert();
+                        });
+                    } else {
+                        lets.push(quote! {
+                            let #pat: #ty = ::kani::any();
+                        });
+                    }
+                    call_args.push(quote!(#pat));
                 }
-                call_args.push(quote!(#pat));
             }
-        }
 
-        let inputs = &func.sig.inputs;
-        let output = &func.sig.output;
+            let inputs = &func.sig.inputs;
+            let output = &func.sig.output;
 
-        let kani = quote! {
-            #[cfg(kani)]
-            #[::kani::proof]
-            fn #kani_fn() {
-                #(#lets)*
-                let _result = #fn_name(#(#call_args),*);
-            }
-        };
+            // ── Kani inline harness ──────────────────────────────────────────
+            let kani = quote! {
+                #[cfg(kani)]
+                #[::kani::proof]
+                fn #kani_fn() {
+                    #(#lets)*
+                    let _result = #fn_name(#(#call_args),*);
+                }
+            };
 
-        // Creusot companion: #[requires(true)] / #[ensures(true)] / #[trusted]
-        // Under #[cfg(creusot)], the Creusot toolchain provides these attributes.
-        // Under normal rustc the block is excluded; no unknown-attribute errors.
-        let creusot_doc = if contracts_str.is_empty() {
-            "Creusot companion.".to_string()
-        } else {
-            format!("Creusot companion. Contracts: `{contracts_str}`.")
-        };
-        let creusot = quote! {
-            #[cfg(creusot)]
-            #[doc = #creusot_doc]
-            #[requires(true)]
-            #[ensures(true)]
-            #[trusted]
-            fn #creusot_fn(#inputs) #output {
-                #fn_name(#(#call_args),*)
-            }
-        };
+            // ── Companion struct: returns the harness as a runtime TokenStream ──
+            //
+            // The harness source is captured here (at proc-macro expansion time)
+            // as a string literal, then parsed back into a TokenStream when
+            // `kani_harness()` is called (e.g. from a `build.rs` or
+            // `VerifiedStateMachine::vsm_kani_proof()`).
+            let harness_src = kani.to_string();
+            let struct_name = format_ident!("{}Transition", to_pascal_case(&fn_name.to_string()));
+            let vis = &func.vis;
+            let struct_doc = format!(
+                "Kani harness companion for [`{fn_name}`].\n\
+                 \n\
+                 Call [`{struct_name}::kani_harness`] from a `build.rs` or \
+                 [`VerifiedStateMachine::transition_harnesses`] to obtain the \
+                 `#[kani::proof]` harness as a `proc_macro2::TokenStream`."
+            );
+            let companion = quote! {
+                #[doc = #struct_doc]
+                #[allow(non_camel_case_types)]
+                #vis struct #struct_name;
+                impl #struct_name {
+                    /// Return the Kani harness `TokenStream` for this transition.
+                    ///
+                    /// The string was captured at macro-expansion time; parsing it
+                    /// at runtime guarantees the harness stays in sync with the
+                    /// function signature.
+                    pub fn kani_harness() -> ::proc_macro2::TokenStream {
+                        #harness_src
+                            .parse()
+                            .expect("formal_method companion: invalid kani harness source")
+                    }
+                }
+            };
 
-        // Verus companion: requires/ensures inside verus! { }.
-        // Under #[cfg(verus)], the Verus toolchain provides verus!.
-        let verus_doc = if contracts_str.is_empty() {
-            "Verus companion.".to_string()
-        } else {
-            format!("Verus companion. Contracts: `{contracts_str}`.")
-        };
-        let verus = quote! {
-            #[cfg(verus)]
-            verus! {
-                #[doc = #verus_doc]
-                fn #verus_fn(#inputs) #output
-                    requires true,
-                    ensures true,
-                {
+            // ── Creusot companion ────────────────────────────────────────────
+            let creusot_doc = if contracts_str.is_empty() {
+                "Creusot companion.".to_string()
+            } else {
+                format!("Creusot companion. Contracts: `{contracts_str}`.")
+            };
+            let creusot = quote! {
+                #[cfg(creusot)]
+                #[doc = #creusot_doc]
+                #[requires(true)]
+                #[ensures(true)]
+                #[trusted]
+                fn #creusot_fn(#inputs) #output {
                     #fn_name(#(#call_args),*)
                 }
-            }
-        };
+            };
 
-        (kani, creusot, verus)
-    } else {
-        (quote! {}, quote! {}, quote! {})
-    };
+            // ── Verus companion ──────────────────────────────────────────────
+            let verus_doc = if contracts_str.is_empty() {
+                "Verus companion.".to_string()
+            } else {
+                format!("Verus companion. Contracts: `{contracts_str}`.")
+            };
+            let verus = quote! {
+                #[cfg(verus)]
+                verus! {
+                    #[doc = #verus_doc]
+                    fn #verus_fn(#inputs) #output
+                        requires true,
+                        ensures true,
+                    {
+                        #fn_name(#(#call_args),*)
+                    }
+                }
+            };
+
+            (kani, creusot, verus, companion)
+        } else {
+            (quote! {}, quote! {}, quote! {}, quote! {})
+        };
 
     Ok(quote! {
         #func
         #kani_harness
         #creusot_companion
         #verus_companion
+        #companion_struct
     })
 }
