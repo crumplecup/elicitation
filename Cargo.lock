@@ -3677,6 +3677,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "elicit_proofs"
+version = "0.10.0"
+dependencies = [
+ "elicit_server",
+ "elicitation",
+ "proc-macro2",
+]
+
+[[package]]
 name = "elicit_ratatui"
 version = "0.10.0"
 dependencies = [

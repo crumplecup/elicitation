@@ -1,0 +1,35 @@
+[package]
+name = "elicit_proofs"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+
+readme = "README.md"
+description = "Formal verification proof harnesses for the elicitation ecosystem (Kani, Creusot, Verus)"
+keywords = ["verification", "kani", "formal-methods", "state-machine", "contracts"]
+categories = ["development-tools", "mathematics"]
+
+[dependencies]
+elicitation = { workspace = true }
+elicit_server = { workspace = true, optional = true }
+
+[build-dependencies]
+elicitation = { workspace = true }
+elicit_server = { workspace = true }
+proc-macro2 = { workspace = true }
+
+[features]
+default = []
+## Enable Kani proof harnesses for archive VSMs.
+kani = ["dep:elicit_server"]
+## Enable Creusot companions for archive VSMs.
+creusot = ["dep:elicit_server"]
+## Enable Verus companions for archive VSMs.
+verus = ["dep:elicit_server"]
+
+[lints]
+workspace = true

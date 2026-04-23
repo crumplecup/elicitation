@@ -113,6 +113,9 @@ reqwest = { workspace = true }
 name = "archive"
 path = "src/bin/archive.rs"
 
+[lints]
+workspace = true
+
 [[test]]
 name = "ledger_smoke_test"
 required-features = ["emit"]

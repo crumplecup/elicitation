@@ -7,6 +7,7 @@ members = [
   # Verification
   "crates/elicitation_creusot",
   "crates/elicitation_kani",
+  "crates/elicit_proofs",
   "crates/elicitation_rand",
   # Third-party integrations
   "crates/elicit_accesskit",
@@ -74,6 +75,10 @@ readme = "README.md"
 [workspace.lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = [
   'cfg(feature, values("verify-kani", "verify-creusot", "verify-verus", "verify-all"))',
+  'cfg(kani)',
+  'cfg(creusot)',
+  'cfg(verus)',
+  'cfg(prusti)',
 ] }
 
 [workspace.dependencies]
@@ -82,6 +87,7 @@ elicitation = { path = "crates/elicitation", version = "0.10.0" }
 elicitation_derive = { path = "crates/elicitation_derive", version = "0.10.0" }
 elicitation_macros = { path = "crates/elicitation_macros", version = "0.10.0" }
 elicitation_kani = { path = "crates/elicitation_kani", version = "0.10.0" }
+elicit_proofs = { path = "crates/elicit_proofs", version = "0.10.0" }
 elicitation_rand = { path = "crates/elicitation_rand", version = "0.10.0" }
 elicit_accesskit = { path = "crates/elicit_accesskit", version = "0.10.0" }
 elicit_chrono = { path = "crates/elicit_chrono", version = "0.10.0" }
@@ -120,6 +126,7 @@ elicit_bevy = { path = "crates/elicit_bevy", version = "0.10.0" }
 elicit_redb = { path = "crates/elicit_redb", version = "0.10.0" }
 elicit_csv = { path = "crates/elicit_csv", version = "0.10.0" }
 elicit_toml = { path = "crates/elicit_toml", version = "0.10.0" }
+elicit_server = { path = "crates/elicit_server", version = "0.10.0" }
 
 # ── MCP ───────────────────────────────────────────────────────────────────────
 rmcp = { version = "1.5", features = [
