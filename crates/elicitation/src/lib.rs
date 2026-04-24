@@ -766,6 +766,10 @@ pub use primitives::bevy_types::{
     },
 };
 
+// Bevy render types only present when wgpu-types feature is absent (avoids duplicate impls)
+#[cfg(all(feature = "bevy-types", not(feature = "wgpu-types")))]
+pub use primitives::bevy_types::render_enums::{BevyFace, BevyFrontFace, BevyPrimitiveTopology};
+
 // SurrealDB types (feature-gated on surreal-types)
 #[cfg(feature = "surreal-types")]
 pub use primitives::surreal_types::{

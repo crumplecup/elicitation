@@ -203,7 +203,7 @@ geojson-types = ["dep:geojson", "geo-types", "serde_json"]
 wkt-types = ["dep:wkt", "geo-types"]
 # Enable wkb spatial format type elicitation
 wkb-types = ["dep:wkb", "dep:hex"]
-surreal-types = ["dep:surrealdb-types", "dep:rust_decimal", "geo-types", "uuid"]
+surreal-types = ["dep:surrealdb-types", "dep:rust_decimal", "geo-types", "uuid", "chrono"]
 # Enable redb embedded key-value store type elicitation
 redb-types = ["dep:redb"]
 # Enable csv reader/writer type elicitation
