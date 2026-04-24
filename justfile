@@ -265,27 +265,33 @@ check-features:
 
     # Excluded packages: require special toolchains (kani, creusot) or are workspace-excluded (verus)
     if ! cargo hack check \
+        --color never \
         --workspace \
         --feature-powerset \
         --depth 2 \
         --exclude-features "$EXCLUDE_FEATURES" \
         --exclude elicitation_kani \
         --exclude elicitation_creusot \
+        --exclude surrealdb-types \
         2>&1 | tee "$LOG_FILE"; then
         echo ""
         echo "❌ Feature powerset check failed. See: $LOG_FILE"
         exit 1
     fi
 
-    if grep -E "^warning:" "$LOG_FILE" | grep -qv "pearlite-syn"; then
+    # Check for warnings across all feature combinations
+    if grep -qE "^warning(\[|:)" "$LOG_FILE"; then
         echo ""
-        echo "⚠️  Feature powerset completed with warnings. See: $LOG_FILE"
+        echo "⚠️  Warnings found in feature powerset check:"
+        grep -E "^warning(\[|:)" "$LOG_FILE" | sort -u
+        echo ""
+        echo "❌ Feature powerset check failed due to warnings. See: $LOG_FILE"
         exit 1
-    else
-        echo ""
-        echo "✅ All feature combinations pass!"
-        rm -f "$LOG_FILE"
     fi
+
+    echo ""
+    echo "✅ All feature combinations pass!"
+    rm -f "$LOG_FILE"
 
 # Run all checks (lint, format check, tests)
 check-all package='':
