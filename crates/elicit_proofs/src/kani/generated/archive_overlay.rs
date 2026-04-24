@@ -5,7 +5,6 @@
 // Source: elicit_server::archive::vsm
 
 use elicit_server::archive::vsm::*;
-
 #[kani::proof]
 fn verify_archive_overlay_consistent_prop_marker() {
     let established: bool = true;

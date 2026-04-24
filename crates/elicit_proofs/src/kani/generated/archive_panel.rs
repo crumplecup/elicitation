@@ -5,7 +5,6 @@
 // Source: elicit_server::archive::vsm
 
 use elicit_server::archive::vsm::*;
-
 #[kani::proof]
 fn verify_archive_panel_consistent_prop_marker() {
     let established: bool = true;
@@ -203,7 +202,14 @@ fn constraints_ready__kani() {
     let table: String = ::kani::any();
     let constraints: Vec<ConstraintDescriptor> = ::kani::any();
     let display_mode: ConstraintDescriptorMode = ::kani::any();
-    let _result = constraints_ready(_state, proof, schema, table, constraints, display_mode);
+    let _result = constraints_ready(
+        _state,
+        proof,
+        schema,
+        table,
+        constraints,
+        display_mode,
+    );
 }
 #[cfg(kani)]
 #[::kani::proof]

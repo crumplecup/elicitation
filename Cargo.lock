@@ -3682,7 +3682,9 @@ version = "0.10.0"
 dependencies = [
  "elicit_server",
  "elicitation",
+ "prettyplease",
  "proc-macro2",
+ "syn 2.0.117",
 ]
 
 [[package]]
