@@ -27,6 +27,12 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
+// Bring creusot attribute macros (requires, ensures, trusted) into scope when
+// compiling under cargo creusot. The formal_method macro emits these as outer
+// attributes on companion functions, so they must be resolvable here.
+#[cfg(creusot)]
+use creusot_std::prelude::*;
+
 use crate::archive::types::{BackendKind, DatabaseDescriptor};
 
 // ── ArchiveConnectionState ────────────────────────────────────────────────────

@@ -16,6 +16,10 @@ categories = ["development-tools", "asynchronous"]
 [dependencies]
 # Elicitation core
 elicitation = { workspace = true, features = ["url", "chrono"] }
+# Creusot formal verification support — needed when cargo compiles this crate
+# under cfg(creusot) so that #[formal_method] expansions can resolve
+# #[requires]/#[ensures]/#[trusted] attribute macros from the prelude.
+creusot-std = { workspace = true }
 
 # Workflow crates (cross-crate composition)
 elicit_reqwest = { workspace = true }
