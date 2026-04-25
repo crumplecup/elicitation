@@ -154,27 +154,27 @@ fn verify_viewport_construction() {
 #[kani::proof]
 fn verify_propositions_zero_sized() {
     assert!(
-        std::mem::size_of::<elicit_ui::HasLabel<()>>() == 0,
+        std::mem::size_of::<elicit_ui::HasLabel>() == 0,
         "HasLabel must be zero-sized"
     );
     assert!(
-        std::mem::size_of::<elicit_ui::ValidRole<()>>() == 0,
+        std::mem::size_of::<elicit_ui::ValidRole>() == 0,
         "ValidRole must be zero-sized"
     );
     assert!(
-        std::mem::size_of::<elicit_ui::KeyboardAccessible<()>>() == 0,
+        std::mem::size_of::<elicit_ui::KeyboardAccessible>() == 0,
         "KeyboardAccessible must be zero-sized"
     );
     assert!(
-        std::mem::size_of::<elicit_ui::NoOverflow<()>>() == 0,
+        std::mem::size_of::<elicit_ui::NoOverflow>() == 0,
         "NoOverflow must be zero-sized"
     );
     assert!(
-        std::mem::size_of::<elicit_ui::MinTargetSize<()>>() == 0,
+        std::mem::size_of::<elicit_ui::MinTargetSize>() == 0,
         "MinTargetSize must be zero-sized"
     );
     assert!(
-        std::mem::size_of::<elicit_ui::AccessibleAA<()>>() == 0,
+        std::mem::size_of::<elicit_ui::AccessibleAA>() == 0,
         "AccessibleAA must be zero-sized"
     );
 }

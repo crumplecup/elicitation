@@ -71,11 +71,12 @@ fn verify_wkb_write_options_roundtrip() {
         },
     };
 
+    let expected_endianness = original.endianness;
     let wrapper = elicitation::WkbWriteOptions::from(original);
     let restored: wkb::writer::WriteOptions = wrapper.into();
 
     assert!(
-        restored.endianness == original.endianness,
+        restored.endianness == expected_endianness,
         "WriteOptions endianness preserved"
     );
 }

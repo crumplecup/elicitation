@@ -61,9 +61,10 @@ fn verify_wkt_coord_wrapper_fields() {
 fn verify_wkt_point_empty_roundtrip() {
     let original = wkt::types::Point::<f64>::new(None, wkt::types::Dimension::XY);
     let wrapper = elicitation::WktPoint::from(original);
+    let coord_is_none = wrapper.coord.is_none();
     let restored: wkt::types::Point<f64> = wrapper.into();
 
-    assert!(wrapper.coord.is_none(), "wrapper preserves emptiness");
+    assert!(coord_is_none, "wrapper preserves emptiness");
     assert!(restored.coord().is_none(), "roundtrip preserves emptiness");
 }
 
