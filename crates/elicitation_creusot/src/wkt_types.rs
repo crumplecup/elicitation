@@ -53,11 +53,13 @@ pub fn verify_wkt_coord_concrete() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 pub fn verify_wkt_point_empty() -> bool {
-    let point = wkt::types::Point::<f64>(None);
+    // Point::new(coord, dim) — use the public constructor instead of tuple syntax.
+    // `coord` and `dim` fields are pub(crate) since wkt 0.14.
+    let point = wkt::types::Point::<f64>::empty(wkt::types::Dimension::XY);
     let wrapper = elicitation::WktPoint::from(point);
     let is_empty = wrapper.coord.is_none();
     let restored: wkt::types::Point<f64> = wrapper.into();
-    is_empty && restored.0.is_none()
+    is_empty && restored.coord().is_none()
 }
 
 /// Trusted axiom: WktGeom preserves the Point variant.
@@ -65,12 +67,12 @@ pub fn verify_wkt_point_empty() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 pub fn verify_wkt_geom_point_variant() -> bool {
-    let geom = wkt::Wkt::Point(wkt::types::Point(Some(wkt::types::Coord {
+    let geom = wkt::Wkt::Point(wkt::types::Point::from_coord(wkt::types::Coord {
         x: 1.0_f64,
         y: 2.0_f64,
         z: None,
         m: None,
-    })));
+    }));
     let wrapper = elicitation::WktGeom::from(geom);
     matches!(wrapper, elicitation::WktGeom::Point(_))
 }

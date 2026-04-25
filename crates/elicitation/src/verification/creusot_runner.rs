@@ -664,9 +664,12 @@ pub fn run_creusot_module_prove(
         ));
     }
 
-    // `cargo creusot prove` — same scoping fix as the check command above.
+    // `cargo creusot prove` — put -p before the subcommand so clap routes it
+    // through args.package (limits compilation to elicitation_creusot + deps only).
+    // Putting -p after 'prove' causes "unexpected argument" because the prove
+    // subcommand's parser does not accept -p.
     let mut cmd = Command::new("cargo");
-    cmd.arg("creusot").arg("prove").arg("-p").arg("elicitation_creusot");
+    cmd.arg("creusot").arg("-p").arg("elicitation_creusot").arg("prove");
 
     if let Some(feature) = module.feature() {
         cmd.arg("--").arg("--features").arg(feature);

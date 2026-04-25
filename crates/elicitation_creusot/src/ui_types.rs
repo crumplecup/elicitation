@@ -142,12 +142,12 @@ pub fn verify_viewport_construction() -> bool {
 #[trusted]
 pub fn verify_propositions_zero_sized() -> bool {
     use std::mem::size_of;
-    size_of::<elicit_ui::HasLabel<()>>() == 0
-        && size_of::<elicit_ui::ValidRole<()>>() == 0
-        && size_of::<elicit_ui::KeyboardAccessible<()>>() == 0
-        && size_of::<elicit_ui::NoOverflow<()>>() == 0
-        && size_of::<elicit_ui::MinTargetSize<()>>() == 0
-        && size_of::<elicit_ui::AccessibleAA<()>>() == 0
+    size_of::<elicit_ui::HasLabel>() == 0
+        && size_of::<elicit_ui::ValidRole>() == 0
+        && size_of::<elicit_ui::KeyboardAccessible>() == 0
+        && size_of::<elicit_ui::NoOverflow>() == 0
+        && size_of::<elicit_ui::MinTargetSize>() == 0
+        && size_of::<elicit_ui::AccessibleAA>() == 0
 }
 
 // ============================================================================

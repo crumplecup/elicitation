@@ -11,7 +11,9 @@ use creusot_std::prelude::*;
 #[requires(true)]
 #[ensures(result == true)]
 pub fn verify_geojson_value_point_type_name() -> bool {
-    let value = geojson::Value::Point(::std::vec![1.0_f64, 2.0_f64]);
+    let value = geojson::Value::Point {
+        coordinates: geojson::Position::from([1.0_f64, 2.0_f64]),
+    };
     value.type_name() == "Point"
 }
 
@@ -20,8 +22,10 @@ pub fn verify_geojson_value_point_type_name() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 pub fn verify_geojson_geometry_new_point() -> bool {
-    let geometry = geojson::Geometry::new(geojson::Value::Point(::std::vec![3.0_f64, 4.0_f64]));
-    matches!(geometry.value, geojson::Value::Point(_))
+    let geometry = geojson::Geometry::new(geojson::Value::Point {
+        coordinates: geojson::Position::from([3.0_f64, 4.0_f64]),
+    });
+    matches!(geometry.value, geojson::Value::Point { .. })
 }
 
 /// Trusted axiom: feature property helpers remain internally consistent.
@@ -29,7 +33,9 @@ pub fn verify_geojson_geometry_new_point() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 pub fn verify_geojson_feature_property_access() -> bool {
-    let mut feature = geojson::Feature::from(geojson::Value::Point(::std::vec![5.0_f64, 6.0_f64]));
+    let mut feature = geojson::Feature::from(geojson::Value::Point {
+        coordinates: geojson::Position::from([5.0_f64, 6.0_f64]),
+    });
     feature.set_property("name", serde_json::json!("sample"));
 
     feature.contains_property("name")
@@ -42,8 +48,12 @@ pub fn verify_geojson_feature_property_access() -> bool {
 #[requires(true)]
 #[ensures(result == true)]
 pub fn verify_geojson_feature_collection_len() -> bool {
-    let first = geojson::Feature::from(geojson::Value::Point(::std::vec![0.0_f64, 0.0_f64]));
-    let second = geojson::Feature::from(geojson::Value::Point(::std::vec![1.0_f64, 1.0_f64]));
+    let first = geojson::Feature::from(geojson::Value::Point {
+        coordinates: geojson::Position::from([0.0_f64, 0.0_f64]),
+    });
+    let second = geojson::Feature::from(geojson::Value::Point {
+        coordinates: geojson::Position::from([1.0_f64, 1.0_f64]),
+    });
     let collection: geojson::FeatureCollection = ::std::vec![first, second].into_iter().collect();
 
     collection.features.len() == 2
