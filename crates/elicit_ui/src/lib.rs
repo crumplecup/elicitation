@@ -271,7 +271,7 @@ pub use traits::{
     WcagUnderstandableFactory,
 };
 pub use types::{ElementId, Label, RenderStats, Size, Viewport};
-pub use typestate::{ConstraintProfile, Layout, Pending, Verified};
+pub use typestate::{ConstraintProfile, Layout, Pending, Rendered, Verified};
 pub use ui_types::{
     ContainerId, ContrastViolation, VerifiedTree, WidgetA11y, WidgetId, WidgetInfo,
 };

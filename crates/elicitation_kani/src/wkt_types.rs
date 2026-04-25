@@ -59,12 +59,12 @@ fn verify_wkt_coord_wrapper_fields() {
 #[cfg(feature = "wkt-types")]
 #[kani::proof]
 fn verify_wkt_point_empty_roundtrip() {
-    let original = wkt::types::Point::<f64>(None);
+    let original = wkt::types::Point::<f64>::new(None, wkt::types::Dimension::XY);
     let wrapper = elicitation::WktPoint::from(original);
     let restored: wkt::types::Point<f64> = wrapper.into();
 
     assert!(wrapper.coord.is_none(), "wrapper preserves emptiness");
-    assert!(restored.0.is_none(), "roundtrip preserves emptiness");
+    assert!(restored.coord().is_none(), "roundtrip preserves emptiness");
 }
 
 /// WktGeom preserves the Point variant through conversion.
@@ -76,12 +76,12 @@ fn verify_wkt_geom_point_variant() {
 
     kani::assume(x.is_finite() && y.is_finite());
 
-    let original = wkt::Wkt::Point(wkt::types::Point(Some(wkt::types::Coord {
+    let original = wkt::Wkt::Point(wkt::types::Point::from_coord(wkt::types::Coord {
         x,
         y,
         z: None,
         m: None,
-    })));
+    }));
     let wrapper = elicitation::WktGeom::from(original);
 
     assert!(

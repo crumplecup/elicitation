@@ -18,6 +18,10 @@ pub struct Pending;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Verified;
 
+/// Typestate marker: Layout has been rendered to output.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Rendered;
+
 /// UI layout with typestate tracking.
 ///
 /// State transitions:
