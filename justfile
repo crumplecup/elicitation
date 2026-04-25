@@ -638,23 +638,23 @@ verify-kani-rand harness="" csv="rand_kani_results.csv":
 
 # Run Kani verification with CSV tracking (recommended)
 verify-kani-tracked csv="kani_verification_results.csv" timeout="300":
-    cargo run --quiet --features cli --release -- verify run --output {{csv}} --timeout {{timeout}}
+    cargo run --bin elicitation --quiet --features cli --release -- verify run --output {{csv}} --timeout {{timeout}}
 
 # Resume Kani verification (skips already-passed tests)
 verify-kani-resume csv="kani_verification_results.csv":
-    cargo run --quiet --features cli --release -- verify run --output {{csv}} --resume
+    cargo run --bin elicitation --quiet --features cli --release -- verify run --output {{csv}} --resume
 
 # Show verification summary statistics
 verify-kani-summary csv="kani_verification_results.csv":
-    cargo run --quiet --features cli --release -- verify summary --output {{csv}}
+    cargo run --bin elicitation --quiet --features cli --release -- verify summary --output {{csv}}
 
 # Show failed verification tests
 verify-kani-failed csv="kani_verification_results.csv":
-    cargo run --quiet --features cli --release -- verify failed --output {{csv}}
+    cargo run --bin elicitation --quiet --features cli --release -- verify failed --output {{csv}}
 
 # List all Kani proof harnesses
 verify-kani-list:
-    @cargo run --quiet --features cli --release -- verify list
+    @cargo run --bin elicitation --quiet --features cli --release -- verify list
 
 # Run Prusti verification (simple)
 # Run Prusti verification with CSV tracking (recommended)
@@ -703,23 +703,23 @@ verify-verus-tracked csv="verus_verification_results.csv" timeout="600":
     @echo "   CSV: {{csv}}"
     @echo "   Timeout: {{timeout}}s per proof"
     @echo ""
-    cargo run --quiet --features cli --release -- verus run --output {{csv}} --timeout {{timeout}}
+    cargo run --bin elicitation --quiet --features cli --release -- verus run --output {{csv}} --timeout {{timeout}}
 
 # Resume Verus verification (skips already-passed proofs)
 verify-verus-resume csv="verus_verification_results.csv":
-    cargo run --quiet --features cli --release -- verus run --output {{csv}} --resume
+    cargo run --bin elicitation --quiet --features cli --release -- verus run --output {{csv}} --resume
 
 # Show Verus verification summary statistics
 verify-verus-summary csv="verus_verification_results.csv":
-    cargo run --quiet --features cli --release -- verus summary --file {{csv}}
+    cargo run --bin elicitation --quiet --features cli --release -- verus summary --file {{csv}}
 
 # Show failed Verus proofs
 verify-verus-failed csv="verus_verification_results.csv":
-    cargo run --quiet --features cli --release -- verus failed --file {{csv}}
+    cargo run --bin elicitation --quiet --features cli --release -- verus failed --file {{csv}}
 
 # List all Verus proof modules
 verify-verus-list:
-    @cargo run --quiet --features cli --release -- verus list
+    @cargo run --bin elicitation --quiet --features cli --release -- verus list
 
 # Run Creusot verification with CSV tracking
 verify-creusot-tracked csv="creusot_verification_results.csv":
