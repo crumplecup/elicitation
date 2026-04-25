@@ -1314,6 +1314,15 @@ mod verification_impls {
         leaf_impl!(serde_json::Value, "serde_json::Value");
     }
 
+    // Under kani, ValueObject/Array/NonNull use PhantomData stubs that don't
+    // expose Prompt, so we skip them. serde_json::Value::prompt() is
+    // unconditional and safe to use under kani.
+    #[cfg(all(feature = "serde_json", kani))]
+    mod serde_json_kani_impls {
+        use super::*;
+        leaf_impl!(serde_json::Value, "serde_json::Value");
+    }
+
     #[cfg(feature = "regex")]
     mod regex_impls {
         use super::*;

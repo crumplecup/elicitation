@@ -22,8 +22,14 @@ fn column_detail__kani() {
 fn panel_loading__kani() {
     let _state: ArchivePanelState = ::kani::any();
     let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
-    let schema: String = ::kani::any();
-    let label: String = ::kani::any();
+    let schema: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
+    let label: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
     let _result = panel_loading(_state, proof, schema, label);
 }
 #[cfg(kani)]
@@ -31,7 +37,10 @@ fn panel_loading__kani() {
 fn panel_error__kani() {
     let _state: ArchivePanelState = ::kani::any();
     let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
-    let message: String = ::kani::any();
+    let message: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
     let _result = panel_error(_state, proof, message);
 }
 #[cfg(kani)]
@@ -39,8 +48,14 @@ fn panel_error__kani() {
 fn data_grid_ready__kani() {
     let _state: ArchivePanelState = ::kani::any();
     let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
-    let schema: String = ::kani::any();
-    let table: String = ::kani::any();
+    let schema: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
+    let table: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
     let result: QueryResult = ::kani::any();
     let display_mode: QueryResultMode = ::kani::any();
     let _result = data_grid_ready(_state, proof, schema, table, result, display_mode);
@@ -79,7 +94,10 @@ fn abort_edits__kani() {
 fn open_sql_editor__kani() {
     let _state: ArchivePanelState = ::kani::any();
     let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
-    let initial_text: String = ::kani::any();
+    let initial_text: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
     let _result = open_sql_editor(_state, proof, initial_text);
 }
 #[cfg(kani)]
@@ -87,8 +105,14 @@ fn open_sql_editor__kani() {
 fn open_export_panel__kani() {
     let _state: ArchivePanelState = ::kani::any();
     let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
-    let schema: String = ::kani::any();
-    let table: String = ::kani::any();
+    let schema: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
+    let table: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
     let _result = open_export_panel(_state, proof, schema, table);
 }
 #[cfg(kani)]
@@ -121,8 +145,14 @@ fn open_connection_editor__kani() {
 fn ddl_ready__kani() {
     let _state: ArchivePanelState = ::kani::any();
     let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
-    let schema: String = ::kani::any();
-    let table: String = ::kani::any();
+    let schema: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
+    let table: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
     let ddl: DdlDescriptor = ::kani::any();
     let display_mode: DdlDescriptorMode = ::kani::any();
     let _result = ddl_ready(_state, proof, schema, table, ddl, display_mode);
@@ -132,8 +162,14 @@ fn ddl_ready__kani() {
 fn explain_ready__kani() {
     let state: ArchivePanelState = ::kani::any();
     let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
-    let schema: String = ::kani::any();
-    let table: String = ::kani::any();
+    let schema: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
+    let table: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
     let root: ExplainNode = ::kani::any();
     let display_mode: ExplainNodeMode = ::kani::any();
     let _result = explain_ready(state, proof, schema, table, root, display_mode);
@@ -187,7 +223,10 @@ fn admin_ready__kani() {
 fn erd_ready__kani() {
     let _state: ArchivePanelState = ::kani::any();
     let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
-    let schema: String = ::kani::any();
+    let schema: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
     let diagram: ErdDiagram = ::kani::any();
     let layout: Option<ErdLayout> = ::kani::any();
     let display_mode: ErdDiagramMode = ::kani::any();
@@ -198,8 +237,14 @@ fn erd_ready__kani() {
 fn constraints_ready__kani() {
     let _state: ArchivePanelState = ::kani::any();
     let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
-    let schema: String = ::kani::any();
-    let table: String = ::kani::any();
+    let schema: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
+    let table: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
     let constraints: Vec<ConstraintDescriptor> = ::kani::any();
     let display_mode: ConstraintDescriptorMode = ::kani::any();
     let _result = constraints_ready(
@@ -216,8 +261,14 @@ fn constraints_ready__kani() {
 fn indexes_ready__kani() {
     let _state: ArchivePanelState = ::kani::any();
     let proof: Established<ArchivePanelConsistent> = ::elicitation::Established::assert();
-    let schema: String = ::kani::any();
-    let table: String = ::kani::any();
+    let schema: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
+    let table: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
     let indexes: Vec<IndexDescriptor> = ::kani::any();
     let display_mode: IndexDescriptorMode = ::kani::any();
     let _result = indexes_ready(_state, proof, schema, table, indexes, display_mode);

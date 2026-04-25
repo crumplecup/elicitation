@@ -137,6 +137,25 @@ impl Parse for FormalMethodArgs {
 
 // ── Type helpers ───────────────────────────────────────────────────────────────
 
+/// Returns `true` if `ty` resolves to `String` / `std::string::String`.
+///
+/// `kani::any::<String>()` creates an unbounded symbolic string, causing
+/// CBMC to explore infinite paths.  Callers should emit a bounded byte-array
+/// construction instead.
+fn is_string_type(ty: &Type) -> bool {
+    let Type::Path(tp) = ty else { return false };
+    let segs = &tp.path.segments;
+    match segs.len() {
+        1 => segs[0].ident == "String",
+        3 => {
+            segs[0].ident == "std"
+                && segs[1].ident == "string"
+                && segs[2].ident == "String"
+        }
+        _ => false,
+    }
+}
+
 /// Returns `true` if `ty` is `Established<_>` (any path ending in `Established`
 /// with exactly one generic argument).
 fn is_established_type(ty: &Type) -> bool {
@@ -223,6 +242,15 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                     if is_established_type(ty) {
                         lets.push(quote! {
                             let #pat: #ty = ::elicitation::Established::assert();
+                        });
+                    } else if is_string_type(ty) {
+                        // kani::any::<String>() creates an unbounded symbolic string;
+                        // derive a bounded one from a fixed-size byte array instead.
+                        lets.push(quote! {
+                            let #pat: #ty = {
+                                let bytes: [u8; 16] = ::kani::any();
+                                ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+                            };
                         });
                     } else {
                         lets.push(quote! {

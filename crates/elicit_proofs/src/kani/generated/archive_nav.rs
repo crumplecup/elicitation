@@ -69,7 +69,10 @@ fn move_cursor_down__kani() {
 fn apply_filter__kani() {
     let state: ArchiveNavState = ::kani::any();
     let proof: Established<ArchiveNavConsistent> = ::elicitation::Established::assert();
-    let filter: String = ::kani::any();
+    let filter: String = {
+        let bytes: [u8; 16] = ::kani::any();
+        ::std::string::String::from_utf8_lossy(&bytes).into_owned()
+    };
     let _result = apply_filter(state, proof, filter);
 }
 #[cfg(kani)]
