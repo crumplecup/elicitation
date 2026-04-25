@@ -119,7 +119,7 @@ mod wkb_impls {
         };
     }
 
-    use crate::{WkbBytes, WkbDimension, WkbEndianness, WkbGeometryType, WkbWriteOptions};
+    use crate::{ElicitComplete, WkbBytes, WkbDimension, WkbEndianness, WkbGeometryType, WkbWriteOptions};
 
     impl_select_spec!(
         type    = WkbEndianness,
@@ -175,4 +175,8 @@ mod wkb_impls {
             ("endianness", "Byte order to use when writing WKB bytes"),
         ]
     );
+
+    impl ElicitComplete for WkbEndianness {}
+    impl ElicitComplete for WkbBytes {}
+    impl ElicitComplete for WkbWriteOptions {}
 }

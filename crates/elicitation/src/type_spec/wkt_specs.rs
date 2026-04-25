@@ -122,7 +122,10 @@ mod wkt_impls {
         };
     }
 
-    use crate::{WktGeom, WktString};
+    use crate::{
+        ElicitComplete, WktCoord, WktGeom, WktGeometryCollection, WktLineString,
+        WktMultiLineString, WktMultiPoint, WktMultiPolygon, WktPoint, WktPolygon, WktString,
+    };
 
     impl_select_spec!(
         type    = WktGeom,
@@ -147,4 +150,91 @@ mod wkt_impls {
             ("wkt", "The raw WKT geometry string, validated by wkt::Wkt::<f64>::from_str"),
         ]
     );
+
+    impl_builder_spec!(
+        type    = WktCoord,
+        name    = "WktCoord",
+        summary = "A WKT coordinate with X, Y and optional Z/M values.",
+        fields  = [
+            ("x", "X (easting / longitude) as f64"),
+            ("y", "Y (northing / latitude) as f64"),
+            ("z", "Optional Z (altitude/elevation) as f64"),
+            ("m", "Optional M (measure) as f64"),
+        ]
+    );
+
+    impl_builder_spec!(
+        type    = WktPoint,
+        name    = "WktPoint",
+        summary = "A WKT POINT geometry, optionally empty.",
+        fields  = [
+            ("coord", "Coordinate of the point, or None for an empty point"),
+        ]
+    );
+
+    impl_builder_spec!(
+        type    = WktLineString,
+        name    = "WktLineString",
+        summary = "A WKT LINESTRING geometry — an ordered sequence of coordinates.",
+        fields  = [
+            ("coords", "Ordered list of WktCoord values forming the line"),
+        ]
+    );
+
+    impl_builder_spec!(
+        type    = WktPolygon,
+        name    = "WktPolygon",
+        summary = "A WKT POLYGON geometry with an exterior ring and optional interior holes.",
+        fields  = [
+            ("exterior", "Outer boundary ring (WktLineString)"),
+            ("interiors", "Interior hole rings (Vec<WktLineString>)"),
+        ]
+    );
+
+    impl_builder_spec!(
+        type    = WktMultiPoint,
+        name    = "WktMultiPoint",
+        summary = "A WKT MULTIPOINT geometry — a collection of points.",
+        fields  = [
+            ("points", "Collection of WktPoint values"),
+        ]
+    );
+
+    impl_builder_spec!(
+        type    = WktMultiLineString,
+        name    = "WktMultiLineString",
+        summary = "A WKT MULTILINESTRING geometry — a collection of line strings.",
+        fields  = [
+            ("lines", "Collection of WktLineString values"),
+        ]
+    );
+
+    impl_builder_spec!(
+        type    = WktMultiPolygon,
+        name    = "WktMultiPolygon",
+        summary = "A WKT MULTIPOLYGON geometry — a collection of polygons.",
+        fields  = [
+            ("polygons", "Collection of WktPolygon values"),
+        ]
+    );
+
+    impl_builder_spec!(
+        type    = WktGeometryCollection,
+        name    = "WktGeometryCollection",
+        summary = "A WKT GEOMETRYCOLLECTION — a heterogeneous collection of WKT geometries.",
+        fields  = [
+            ("geometries", "Collection of WktGeom values"),
+        ]
+    );
+
+    impl ElicitComplete for WktGeom {}
+    impl ElicitComplete for WktString {}
+    impl ElicitComplete for WktCoord {}
+    impl ElicitComplete for WktPoint {}
+    impl ElicitComplete for WktLineString {}
+    impl ElicitComplete for WktPolygon {}
+    impl ElicitComplete for WktMultiPoint {}
+    impl ElicitComplete for WktMultiLineString {}
+    impl ElicitComplete for WktMultiPolygon {}
+    impl ElicitComplete for WktGeometryCollection {}
 }

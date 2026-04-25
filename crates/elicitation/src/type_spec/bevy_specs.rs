@@ -5,20 +5,27 @@
 #[cfg(feature = "bevy-types")]
 mod bevy_impls {
     use crate::{
-        BevyAlignContent, BevyAlignItems, BevyAlignSelf, BevyAlphaMode, BevyAmbientLight,
-        BevyAnchor, BevyAtmosphere, BevyBorderRadius, BevyBoxSizing, BevyButtonState, BevyColor,
-        BevyDirectionalLight, BevyDisplay, BevyFalloff, BevyFlexDirection, BevyFlexWrap,
-        BevyFontSmoothing, BevyGamepadAxis, BevyGamepadButton, BevyGlobalTransform, BevyJustify,
-        BevyJustifyContent, BevyJustifyItems, BevyJustifySelf, BevyKeyCode, BevyLineBreak,
-        BevyMonitorSelection, BevyMouseButton, BevyOrthographicProjection, BevyOverflowAxis,
-        BevyOverflowClipBox, BevyPerspectiveProjection, BevyPhaseFunction, BevyPickable,
-        BevyPickingInteraction, BevyPlaybackMode, BevyPlaybackSettings, BevyPointLight,
-        BevyPositionType, BevyPresentMode, BevyRepeatAnimation, BevyScalingMode,
-        BevyScatteringTerm, BevySpotLight, BevySpriteConfig, BevySpriteScalingMode,
-        BevyStandardMaterial, BevyTextFont, BevyTimer, BevyTonemapping, BevyTouchPhase,
-        BevyTransform, BevyUiRect, BevyVal, BevyVolume, BevyWindowLevel, BevyWindowMode,
-        BevyWindowResolution, BevyWindowTheme, ElicitSpec, Select, SpecCategoryBuilder,
-        SpecEntryBuilder, TypeSpec, TypeSpecBuilder, TypeSpecInventoryKey,
+        BevyAffine2, BevyAffine3A, BevyAlignContent, BevyAlignItems, BevyAlignSelf, BevyAlphaMode,
+        BevyAmbientLight, BevyAnnulus, BevyAnchor, BevyArc2d, BevyAtmosphere, BevyBorderRadius,
+        BevyBoxSizing, BevyButtonState, BevyCircularSector, BevyCircularSegment, BevyColor,
+        BevyCone, BevyConicalFrustum, BevyCuboid, BevyCylinder, BevyDAffine2, BevyDAffine3,
+        BevyDQuat, BevyDir2, BevyDir3, BevyDir3A, BevyDirectionalLight, BevyDisplay,
+        BevyEllipse, BevyFalloff, BevyFlexDirection, BevyFlexWrap, BevyFontSmoothing,
+        BevyGamepadAxis, BevyGamepadButton, BevyGlobalTransform, BevyJustify,
+        BevyJustifyContent, BevyJustifyItems, BevyJustifySelf, BevyKeyCode, BevyLine2d,
+        BevyLine3d, BevyLineBreak, BevyMat3A, BevyMonitorSelection, BevyMouseButton,
+        BevyOrthographicProjection, BevyOverflowAxis, BevyOverflowClipBox,
+        BevyPerspectiveProjection, BevyPhaseFunction, BevyPickable, BevyPickingInteraction,
+        BevyPlane2d, BevyPlane3d, BevyPlaybackMode, BevyPlaybackSettings, BevyPointLight,
+        BevyPositionType, BevyPresentMode, BevyQuat, BevyRay2d, BevyRay3d, BevyRectangle,
+        BevyRegularPolygon, BevyRepeatAnimation, BevyRhombus, BevyScalingMode,
+        BevyScatteringTerm, BevySegment2d, BevySpotLight, BevySpriteConfig,
+        BevySpriteScalingMode, BevyStandardMaterial, BevyTetrahedron, BevyTextFont,
+        BevyTextLayout, BevyTimer, BevyTonemapping, BevyTorus, BevyTouchPhase, BevyTransform,
+        BevyTriangle2d, BevyUiRect, BevyVal, BevyVec3A, BevyVolume, BevyWindowLevel,
+        BevyWindowMode, BevyWindowResolution, BevyWindowTheme, ElicitComplete, ElicitSpec,
+        Select, SpecCategoryBuilder, SpecEntryBuilder, TypeSpec, TypeSpecBuilder,
+        TypeSpecInventoryKey,
     };
 
     // -------------------------------------------------------------------------
@@ -737,4 +744,428 @@ mod bevy_impls {
             ("brightness",  "Lux value of ambient illuminance (f32)"),
         ]
     );
+
+    // ── Group 2: ElicitSpec for math / geometry types ─────────────────────────
+
+    impl_bevy_survey_spec!(
+        type    = BevyAffine2,
+        name    = "BevyAffine2",
+        summary = "2D affine transform: column-major 2×2 linear part plus 2D translation.",
+        fields  = [
+            ("matrix2",     "Linear (rotation/scale) part (BevyMat2)"),
+            ("translation", "Translation component (BevyVec2)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyAffine3A,
+        name    = "BevyAffine3A",
+        summary = "3D affine transform (SIMD-aligned): column-major 3×3 linear part plus 3D translation.",
+        fields  = [
+            ("matrix3",     "Linear (rotation/scale) part (BevyMat3)"),
+            ("translation", "Translation component (BevyVec3)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyDAffine2,
+        name    = "BevyDAffine2",
+        summary = "2D f64 affine transform: column-major 2×2 linear part plus 2D translation.",
+        fields  = [
+            ("matrix2",     "Linear (rotation/scale) part (BevyDMat2)"),
+            ("translation", "Translation component (BevyDVec2)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyDAffine3,
+        name    = "BevyDAffine3",
+        summary = "3D f64 affine transform: column-major 3×3 linear part plus 3D translation.",
+        fields  = [
+            ("matrix3",     "Linear (rotation/scale) part (BevyDMat3)"),
+            ("translation", "Translation component (BevyDVec3)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyMat3A,
+        name    = "BevyMat3A",
+        summary = "SIMD-aligned 3×3 column-major matrix (column axes as BevyVec3).",
+        fields  = [
+            ("x_axis", "First (X) column (BevyVec3)"),
+            ("y_axis", "Second (Y) column (BevyVec3)"),
+            ("z_axis", "Third (Z) column (BevyVec3)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyQuat,
+        name    = "BevyQuat",
+        summary = "f32 unit quaternion (x, y, z, w components).",
+        fields  = [
+            ("x", "X (imaginary i) component (f32)"),
+            ("y", "Y (imaginary j) component (f32)"),
+            ("z", "Z (imaginary k) component (f32)"),
+            ("w", "W (real) component (f32)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyDQuat,
+        name    = "BevyDQuat",
+        summary = "f64 unit quaternion (x, y, z, w components).",
+        fields  = [
+            ("x", "X (imaginary i) component (f64)"),
+            ("y", "Y (imaginary j) component (f64)"),
+            ("z", "Z (imaginary k) component (f64)"),
+            ("w", "W (real) component (f64)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyDir2,
+        name    = "BevyDir2",
+        summary = "2D unit direction vector (x, y — will be normalized).",
+        fields  = [
+            ("x", "X component (f32, will be normalized)"),
+            ("y", "Y component (f32, will be normalized)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyDir3,
+        name    = "BevyDir3",
+        summary = "3D unit direction vector (x, y, z — will be normalized).",
+        fields  = [
+            ("x", "X component (f32, will be normalized)"),
+            ("y", "Y component (f32, will be normalized)"),
+            ("z", "Z component (f32, will be normalized)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyDir3A,
+        name    = "BevyDir3A",
+        summary = "SIMD-aligned 3D unit direction vector (x, y, z — will be normalized).",
+        fields  = [
+            ("x", "X component (f32, will be normalized)"),
+            ("y", "Y component (f32, will be normalized)"),
+            ("z", "Z component (f32, will be normalized)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyLine2d,
+        name    = "BevyLine2d",
+        summary = "An infinite 2D line defined by a unit direction vector.",
+        fields  = [
+            ("direction", "Line direction (BevyDir2, unit vector)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyLine3d,
+        name    = "BevyLine3d",
+        summary = "An infinite 3D line defined by a unit direction vector.",
+        fields  = [
+            ("direction", "Line direction (BevyDir3, unit vector)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyRay2d,
+        name    = "BevyRay2d",
+        summary = "A 2D ray with an origin point and unit direction.",
+        fields  = [
+            ("origin",    "Ray origin (BevyVec2)"),
+            ("direction", "Ray direction (BevyDir2, unit vector)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyRay3d,
+        name    = "BevyRay3d",
+        summary = "A 3D ray with an origin point and unit direction.",
+        fields  = [
+            ("origin",    "Ray origin (BevyVec3)"),
+            ("direction", "Ray direction (BevyDir3, unit vector)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyAnnulus,
+        name    = "BevyAnnulus",
+        summary = "A 2D annulus (ring) defined by inner and outer radii.",
+        fields  = [
+            ("inner_radius", "Inner (hole) radius (f32)"),
+            ("outer_radius", "Outer radius (f32)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyArc2d,
+        name    = "BevyArc2d",
+        summary = "A 2D circular arc defined by radius and half-angle.",
+        fields  = [
+            ("radius",     "Arc radius (f32)"),
+            ("half_angle", "Half the arc angle in radians (f32)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyCircularSector,
+        name    = "BevyCircularSector",
+        summary = "A 2D circular sector (pie slice) defined by an arc.",
+        fields  = [
+            ("arc", "Underlying arc definition (BevyArc2d)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyCircularSegment,
+        name    = "BevyCircularSegment",
+        summary = "A 2D circular segment (chord region) defined by an arc.",
+        fields  = [
+            ("arc", "Underlying arc definition (BevyArc2d)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyCone,
+        name    = "BevyCone",
+        summary = "A 3D cone defined by base radius and height.",
+        fields  = [
+            ("radius", "Base radius (f32)"),
+            ("height", "Cone height (f32)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyConicalFrustum,
+        name    = "BevyConicalFrustum",
+        summary = "A 3D conical frustum (truncated cone) with top/bottom radii and height.",
+        fields  = [
+            ("radius_top",    "Top cap radius (f32)"),
+            ("radius_bottom", "Bottom cap radius (f32)"),
+            ("height",        "Frustum height (f32)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyCuboid,
+        name    = "BevyCuboid",
+        summary = "A 3D axis-aligned box defined by half-extents.",
+        fields  = [
+            ("half_size", "Half-extents along each axis (BevyVec3)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyCylinder,
+        name    = "BevyCylinder",
+        summary = "A 3D cylinder defined by radius and half-height.",
+        fields  = [
+            ("radius",      "Cylinder radius (f32)"),
+            ("half_height", "Half the cylinder height (f32)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyEllipse,
+        name    = "BevyEllipse",
+        summary = "A 2D ellipse defined by half-extents along each axis.",
+        fields  = [
+            ("half_size", "Half-extents along each axis (BevyVec2)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyPlane2d,
+        name    = "BevyPlane2d",
+        summary = "An infinite 2D plane defined by its outward unit normal.",
+        fields  = [
+            ("normal", "Plane outward normal (BevyDir2, unit vector)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyPlane3d,
+        name    = "BevyPlane3d",
+        summary = "A 3D plane defined by its outward unit normal and half-extents.",
+        fields  = [
+            ("normal",    "Plane outward normal (BevyDir3, unit vector)"),
+            ("half_size", "Half-extents of the finite plane representation (BevyVec2)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyRectangle,
+        name    = "BevyRectangle",
+        summary = "A 2D axis-aligned rectangle defined by half-extents.",
+        fields  = [
+            ("half_size", "Half-extents along each axis (BevyVec2)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyRegularPolygon,
+        name    = "BevyRegularPolygon",
+        summary = "A regular n-gon defined by circumradius and number of sides.",
+        fields  = [
+            ("circumradius", "Circumscribed circle radius (f32)"),
+            ("sides",        "Number of polygon sides (usize, ≥ 3)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyRhombus,
+        name    = "BevyRhombus",
+        summary = "A 2D rhombus defined by the half-lengths of its two diagonals.",
+        fields  = [
+            ("half_diagonals", "Half-lengths of the two diagonals (BevyVec2)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevySegment2d,
+        name    = "BevySegment2d",
+        summary = "A 2D line segment defined by its two endpoints.",
+        fields  = [
+            ("vertices", "The two endpoint vertices ([BevyVec2; 2])"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyTetrahedron,
+        name    = "BevyTetrahedron",
+        summary = "A 3D tetrahedron defined by its four vertices.",
+        fields  = [
+            ("vertices", "The four vertices ([BevyVec3; 4])"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyTorus,
+        name    = "BevyTorus",
+        summary = "A 3D torus defined by minor (tube) and major (center-to-tube) radii.",
+        fields  = [
+            ("minor_radius", "Tube cross-section radius (f32)"),
+            ("major_radius", "Distance from torus center to tube center (f32)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyTriangle2d,
+        name    = "BevyTriangle2d",
+        summary = "A 2D triangle defined by three vertices (CCW winding).",
+        fields  = [
+            ("vertices", "Triangle vertices in CCW winding order ([BevyVec2; 3])"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyTextLayout,
+        name    = "BevyTextLayout",
+        summary = "Text layout configuration: justification and line-break mode.",
+        fields  = [
+            ("justify",   "Horizontal justification (BevyJustify)"),
+            ("linebreak", "Line-break policy (BevyLineBreak)"),
+        ]
+    );
+
+    impl_bevy_survey_spec!(
+        type    = BevyVec3A,
+        name    = "BevyVec3A",
+        summary = "SIMD-aligned 3D f32 vector (x, y, z components).",
+        fields  = [
+            ("x", "X component (f32)"),
+            ("y", "Y component (f32)"),
+            ("z", "Z component (f32)"),
+        ]
+    );
+
+    // ── ElicitComplete: Group 1 (45 bevy types, ElicitSpec already present) ───
+
+    impl ElicitComplete for BevyRepeatAnimation {}
+    impl ElicitComplete for BevyPlaybackMode {}
+    impl ElicitComplete for BevyPlaybackSettings {}
+    impl ElicitComplete for BevyVolume {}
+    impl ElicitComplete for BevyOrthographicProjection {}
+    impl ElicitComplete for BevyPerspectiveProjection {}
+    impl ElicitComplete for BevyScalingMode {}
+    impl ElicitComplete for BevyColor {}
+    impl ElicitComplete for BevyButtonState {}
+    impl ElicitComplete for BevyTouchPhase {}
+    impl ElicitComplete for BevyAmbientLight {}
+    impl ElicitComplete for BevyDirectionalLight {}
+    impl ElicitComplete for BevyPointLight {}
+    impl ElicitComplete for BevySpotLight {}
+    impl ElicitComplete for BevyStandardMaterial {}
+    impl ElicitComplete for BevyPickable {}
+    impl ElicitComplete for BevyPickingInteraction {}
+    impl ElicitComplete for BevyAlphaMode {}
+    impl ElicitComplete for BevyTonemapping {}
+    impl ElicitComplete for BevyAnchor {}
+    impl ElicitComplete for BevySpriteConfig {}
+    impl ElicitComplete for BevySpriteScalingMode {}
+    impl ElicitComplete for BevyFontSmoothing {}
+    impl ElicitComplete for BevyJustify {}
+    impl ElicitComplete for BevyLineBreak {}
+    impl ElicitComplete for BevyTextFont {}
+    impl ElicitComplete for BevyTimer {}
+    impl ElicitComplete for BevyGlobalTransform {}
+    impl ElicitComplete for BevyTransform {}
+    impl ElicitComplete for BevyAlignContent {}
+    impl ElicitComplete for BevyAlignItems {}
+    impl ElicitComplete for BevyAlignSelf {}
+    impl ElicitComplete for BevyBoxSizing {}
+    impl ElicitComplete for BevyDisplay {}
+    impl ElicitComplete for BevyFlexDirection {}
+    impl ElicitComplete for BevyFlexWrap {}
+    impl ElicitComplete for BevyJustifyContent {}
+    impl ElicitComplete for BevyJustifyItems {}
+    impl ElicitComplete for BevyJustifySelf {}
+    impl ElicitComplete for BevyOverflowAxis {}
+    impl ElicitComplete for BevyOverflowClipBox {}
+    impl ElicitComplete for BevyPositionType {}
+    impl ElicitComplete for BevyPresentMode {}
+    impl ElicitComplete for BevyWindowLevel {}
+    impl ElicitComplete for BevyWindowTheme {}
+
+    // ── ElicitComplete: Group 2 (34 bevy types, ElicitSpec added above) ───────
+
+    impl ElicitComplete for BevyAffine2 {}
+    impl ElicitComplete for BevyAffine3A {}
+    impl ElicitComplete for BevyDAffine2 {}
+    impl ElicitComplete for BevyDAffine3 {}
+    impl ElicitComplete for BevyMat3A {}
+    impl ElicitComplete for BevyDQuat {}
+    impl ElicitComplete for BevyQuat {}
+    impl ElicitComplete for BevyDir2 {}
+    impl ElicitComplete for BevyDir3 {}
+    impl ElicitComplete for BevyDir3A {}
+    impl ElicitComplete for BevyLine2d {}
+    impl ElicitComplete for BevyLine3d {}
+    impl ElicitComplete for BevyRay2d {}
+    impl ElicitComplete for BevyRay3d {}
+    impl ElicitComplete for BevyAnnulus {}
+    impl ElicitComplete for BevyArc2d {}
+    impl ElicitComplete for BevyCircularSector {}
+    impl ElicitComplete for BevyCircularSegment {}
+    impl ElicitComplete for BevyCone {}
+    impl ElicitComplete for BevyConicalFrustum {}
+    impl ElicitComplete for BevyCuboid {}
+    impl ElicitComplete for BevyCylinder {}
+    impl ElicitComplete for BevyEllipse {}
+    impl ElicitComplete for BevyPlane2d {}
+    impl ElicitComplete for BevyPlane3d {}
+    impl ElicitComplete for BevyRectangle {}
+    impl ElicitComplete for BevyRegularPolygon {}
+    impl ElicitComplete for BevyRhombus {}
+    impl ElicitComplete for BevySegment2d {}
+    impl ElicitComplete for BevyTetrahedron {}
+    impl ElicitComplete for BevyTorus {}
+    impl ElicitComplete for BevyTriangle2d {}
+    impl ElicitComplete for BevyTextLayout {}
+    impl ElicitComplete for BevyVec3A {}
 }
