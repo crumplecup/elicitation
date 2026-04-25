@@ -5,9 +5,6 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
-#[cfg(creusot)]
-use creusot_std::prelude::*;
-
 use crate::archive::nav_model::SchemaWithExpand;
 use crate::archive::nav_tree::NavTree;
 

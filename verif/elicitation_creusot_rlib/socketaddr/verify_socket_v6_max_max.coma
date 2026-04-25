@@ -2,7 +2,7 @@
 
 let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 497 23 497 25
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 496 18 496 41
-let%span sarray = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/array.rs" 9 20 9 51
+let%span sarray = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/array.rs" 9 20 9 51
 let%span ssocketaddr = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 264 35 264 45
 let%span ssocketaddr'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 264 36 264 40
 let%span ssocketaddr'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 264 47 264 52
@@ -14,6 +14,7 @@ let%span ssocketaddr'5 = "/home/erik/repos/elicitation/crates/elicitation/src/ve
 use creusot.int.UInt8
 use creusot.int.UInt64
 use creusot.slice.Slice64
+use creusot.slice.Slice64Ops
 use creusot.int.UInt16
 use seq.Seq
 use creusot.prelude.Any
@@ -51,8 +52,8 @@ let rec verify_socket_v6_max_max
   [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/socketaddr.rs" 263 0 263 54]
   (return (x: t_SocketAddrV6Bytes)) = (! bb0
   [ bb0 = s0
-    [ s0 = Slice64.create <UInt8.t> {[%#ssocketaddr] (16: UInt64.t)} {fun (_: int) -> [%#ssocketaddr'0] (255: UInt8.t)}
-        (fun (_res: Slice64.array UInt8.t) -> [ &_2 <- _res ] s1)
+    [ s0 = Slice64Ops.create [%#ssocketaddr] <UInt8.t> {[%#ssocketaddr] (16: UInt64.t)}
+        {fun (_: int) -> [%#ssocketaddr'0] (255: UInt8.t)} (fun (_res: Slice64.array UInt8.t) -> [ &_2 <- _res ] s1)
     | s1 = from_octets [%#ssocketaddr'2] {_2} {[%#ssocketaddr'1] (65535: UInt16.t)}
         (fun (_x: t_SocketAddrV6Bytes) -> [ &_ret <- _x ] s2)
     | s2 = return {_ret} ] ]

@@ -4,7 +4,7 @@ let%span sextern_specs = "/home/erik/repos/elicitation/crates/elicitation_creuso
 let%span sextern_specs'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 472 18 472 85
 let%span sextern_specs'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 473 18 473 103
 let%span sextern_specs'2 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/extern_specs.rs" 474 18 474 99
-let%span sarray = "/home/erik/repos/elicitation/vendor/creusot-std/src/std/array.rs" 9 20 9 51
+let%span sarray = "/home/erik/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/creusot-std-0.11.0/src/std/array.rs" 9 20 9 51
 let%span sutf8 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 16 82 25
 let%span sutf8'0 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 82 17 82 20
 let%span sutf8'1 = "/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 83 26 83 27
@@ -16,6 +16,7 @@ let%span sutf8'5 = "/home/erik/repos/elicitation/crates/elicitation/src/verifica
 use creusot.int.UInt8
 use creusot.int.UInt64
 use creusot.slice.Slice64
+use creusot.slice.Slice64Ops
 use creusot.int.Int128
 use creusot.float.Float64
 use creusot.prelude.Char
@@ -214,7 +215,7 @@ meta "select_lsinst" "all"
 let rec verify_empty_utf8 [#"/home/erik/repos/elicitation/crates/elicitation_creusot/src/utf8.rs" 81 0 81 68]
   (return (x: t_Result_Utf8Bytes_ValidationError)) = (! bb0
   [ bb0 = s0
-    [ s0 = Slice64.create <UInt8.t> {[%#sutf8] (10: UInt64.t)} {fun (_: int) -> [%#sutf8'0] (0: UInt8.t)}
+    [ s0 = Slice64Ops.create [%#sutf8] <UInt8.t> {[%#sutf8] (10: UInt64.t)} {fun (_: int) -> [%#sutf8'0] (0: UInt8.t)}
         (fun (_res: Slice64.array UInt8.t) -> [ &bytes <- _res ] s1)
     | s1 = new [%#sutf8'2] {bytes} {[%#sutf8'1] (0: UInt64.t)}
         (fun (_x: t_Result_Utf8Bytes_ValidationError) -> [ &_ret <- _x ] s2)

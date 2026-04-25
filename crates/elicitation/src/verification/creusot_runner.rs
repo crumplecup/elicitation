@@ -252,14 +252,16 @@ pub fn run_creusot_module(module: &CreusotModule) -> Result<CreusotModuleResult>
     // `cargo creusot` invokes the Creusot toolchain rather than plain rustc,
     // which is required to actually check the #[logic] and #[requires] contracts.
     let mut cmd = Command::new("cargo");
-    cmd.arg("creusot")
-        .arg("--")
-        .arg("-p")
-        .arg("elicitation_creusot");
+    // Pass -p before `--` so cargo-creusot routes it through args.package,
+    // limiting compilation to elicitation_creusot and its deps only.
+    // Using `--` here would put -p into cargo_flags, causing cargo-creusot
+    // to fall back to compiling ALL workspace members (including async crates
+    // that trigger ICEs in the creusot compiler).
+    cmd.arg("creusot").arg("-p").arg("elicitation_creusot");
 
-    // Add feature flag if needed
+    // Feature flags must go after `--` (they are forwarded to cargo check).
     if let Some(feature) = module.feature() {
-        cmd.arg("--features").arg(feature);
+        cmd.arg("--").arg("--features").arg(feature);
     }
 
     // cargo creusot sets RUSTC=creusot-rustc but does not set LD_LIBRARY_PATH,
@@ -662,16 +664,12 @@ pub fn run_creusot_module_prove(
         ));
     }
 
-    // `cargo creusot prove` inserts `prove` before `--`
+    // `cargo creusot prove` — same scoping fix as the check command above.
     let mut cmd = Command::new("cargo");
-    cmd.arg("creusot")
-        .arg("prove")
-        .arg("--")
-        .arg("-p")
-        .arg("elicitation_creusot");
+    cmd.arg("creusot").arg("prove").arg("-p").arg("elicitation_creusot");
 
     if let Some(feature) = module.feature() {
-        cmd.arg("--features").arg(feature);
+        cmd.arg("--").arg("--features").arg(feature);
     }
 
     // Inject nightly toolchain lib dir so creusot-rustc can load its shared libraries.
