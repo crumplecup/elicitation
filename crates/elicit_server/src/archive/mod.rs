@@ -63,7 +63,6 @@ pub use types::{
 pub use vsm::{
     ArchiveConnectionConsistent,
     // Connection machine
-    ArchiveConnectionCredential,
     ArchiveConnectionMachine,
     ArchiveConnectionState,
     // Nav machine

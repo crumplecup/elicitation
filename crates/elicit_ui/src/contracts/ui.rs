@@ -6,7 +6,7 @@ mod emit_impls {
     use elicitation::quote::quote;
 
     macro_rules! structural_prop {
-        ($t:ty, $name:literal) => {
+        ($t:path, $name:literal) => {
             impl Prop for $t {
                 fn kani_proof() -> TokenStream {
                     quote! { /* structural: #name — verified by UI pipeline contract */ }
@@ -16,6 +16,12 @@ mod emit_impls {
                 }
                 fn creusot_proof() -> TokenStream {
                     quote! { /* structural: #name — verified by UI pipeline contract */ }
+                }
+            }
+            #[cfg(kani)]
+            impl kani::Arbitrary for $t {
+                fn any() -> Self {
+                    $t
                 }
             }
         };

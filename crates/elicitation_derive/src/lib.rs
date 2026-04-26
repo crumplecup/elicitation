@@ -527,7 +527,7 @@ pub fn formal_method(args: TokenStream, item: TokenStream) -> TokenStream {
 ///     assert!(established);
 /// }
 /// ```
-#[proc_macro_derive(Prop)]
+#[proc_macro_derive(Prop, attributes(prop))]
 pub fn derive_prop(input: TokenStream) -> TokenStream {
     derive_prop::expand(input)
 }

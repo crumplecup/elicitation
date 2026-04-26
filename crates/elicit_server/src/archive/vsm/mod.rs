@@ -29,9 +29,9 @@ mod overlay;
 mod panel;
 
 pub use connection::{
-    ArchiveConnectionConsistent, ArchiveConnectionCredential, ArchiveConnectionMachine,
-    ArchiveConnectionState, begin_connect_kv, begin_connect_sql, connection_error, disconnect,
-    finish_connect_kv, finish_connect_sql, reconnect,
+    ArchiveConnectionConsistent, ArchiveConnectionMachine, ArchiveConnectionState,
+    begin_connect_kv, begin_connect_sql, connection_error, disconnect, finish_connect_kv,
+    finish_connect_sql, reconnect,
 };
 pub use nav::{
     ArchiveNavConsistent, ArchiveNavMachine, ArchiveNavState, apply_filter, clear_filter,

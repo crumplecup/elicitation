@@ -5,7 +5,10 @@
 //! (`show_help`, `export_picker`, `save_prompt_active`, `save_prompt_text`,
 //! `saved_browser_active`, `saved_browser_idx`) into a single typed state.
 
-use elicitation::{Elicit, Established, Prop, VerifiedStateMachine, formal_method};
+use elicit_ui::WcagVerified;
+use elicitation::{
+    Elicit, Established, Prop, VerifiedStateMachine, contracts::ProvableFrom, formal_method,
+};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -71,8 +74,14 @@ impl kani::Arbitrary for ArchiveOverlayState {
 // ── ArchiveOverlayConsistent (invariant) ─────────────────────────────────────
 
 /// Proposition: at most one overlay is open and its state is valid.
+///
+/// Wired to [`WcagVerified`] from `elicit_ui`: overlays render AccessKit nodes
+/// so WCAG compliance is the credential that bounds the proof state space.
 #[derive(Prop)]
+#[prop(credential = WcagVerified)]
 pub struct ArchiveOverlayConsistent;
+
+impl ProvableFrom<WcagVerified> for ArchiveOverlayConsistent {}
 
 // ── ArchiveOverlayMachine ─────────────────────────────────────────────────────
 

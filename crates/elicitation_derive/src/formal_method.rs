@@ -188,7 +188,24 @@ fn is_established_type(ty: &Type) -> bool {
     }
 }
 
-// ── Expansion ─────────────────────────────────────────────────────────────────
+/// Extract the inner proposition type `P` from `Established<P>`.
+///
+/// Returns `Some(inner_type)` when `ty` is `Established<P>`, `None` otherwise.
+fn extract_established_inner(ty: &Type) -> Option<&Type> {
+    if let Type::Path(type_path) = ty {
+        let seg = type_path.path.segments.last()?;
+        if seg.ident != "Established" {
+            return None;
+        }
+        if let syn::PathArguments::AngleBracketed(ab) = &seg.arguments
+            && ab.args.len() == 1
+            && let syn::GenericArgument::Type(inner) = &ab.args[0]
+        {
+            return Some(inner);
+        }
+    }
+    None
+}
 
 pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> {
     let parsed_args: FormalMethodArgs = syn::parse2(args)?;
@@ -251,8 +268,17 @@ pub fn expand(args: TokenStream, item: TokenStream) -> syn::Result<TokenStream> 
                     let pat = &pat_type.pat;
                     let ty = &pat_type.ty;
                     if is_established_type(ty) {
+                        // Use the prop type's kani_proof_credential() to build
+                        // Established::prove(&cred) instead of the axiom assert().
+                        // This ensures CBMC only explores the bounded credential type,
+                        // not the full state space of the underlying state enum.
+                        let inner = extract_established_inner(ty)
+                            .expect("is_established_type guarantees an inner type");
                         lets.push(quote! {
-                            let #pat: #ty = ::elicitation::Established::assert();
+                            let #pat: #ty = {
+                                let __cred = #inner::kani_proof_credential();
+                                ::elicitation::Established::prove(&__cred)
+                            };
                         });
                     } else if is_string_type(ty) {
                         // String content is irrelevant to structural invariant proofs.

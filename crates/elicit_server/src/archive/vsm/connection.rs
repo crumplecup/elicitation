@@ -20,6 +20,7 @@
 //!      └───disconnect───┘   ConnectionError
 //! ```
 
+use elicit_db::ConnectionEstablished;
 use elicitation::{
     Elicit, Established, Prop, VerifiedStateMachine, contracts::ProvableFrom, formal_method,
 };
@@ -87,13 +88,15 @@ impl kani::Arbitrary for ArchiveConnectionState {
 // ── ArchiveConnectionConsistent (invariant) ───────────────────────────────────
 
 /// Proposition: the archive connection state is self-consistent.
+///
+/// Wired to [`ConnectionEstablished`] from `elicit_db`: the formal-method
+/// harnesses will call `Established::prove(&kani::any::<ConnectionEstablished>())`
+/// instead of the axiom `Established::assert()`, keeping CBMC's state space bounded.
 #[derive(Prop)]
+#[prop(credential = ConnectionEstablished)]
 pub struct ArchiveConnectionConsistent;
 
-/// Credential produced by a successful connection operation.
-pub struct ArchiveConnectionCredential;
-
-impl ProvableFrom<ArchiveConnectionCredential> for ArchiveConnectionConsistent {}
+impl ProvableFrom<ConnectionEstablished> for ArchiveConnectionConsistent {}
 
 // ── ArchiveConnectionMachine ──────────────────────────────────────────────────
 

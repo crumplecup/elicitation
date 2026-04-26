@@ -1,6 +1,9 @@
 //! Verified State Machine for the archive navigation tree.
 
-use elicitation::{Elicit, Established, Prop, VerifiedStateMachine, formal_method};
+use elicit_ui::WcagVerified;
+use elicitation::{
+    Elicit, Established, Prop, VerifiedStateMachine, contracts::ProvableFrom, formal_method,
+};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -71,8 +74,14 @@ impl kani::Arbitrary for ArchiveNavState {
 // ── ArchiveNavConsistent (invariant) ─────────────────────────────────────────
 
 /// Proposition: the nav tree is in a self-consistent state.
+///
+/// Wired to [`WcagVerified`] from `elicit_ui`: nav state produces AccessKit
+/// nodes via `to_ak_nodes`, so WCAG compliance is the appropriate credential.
 #[derive(Prop)]
+#[prop(credential = WcagVerified)]
 pub struct ArchiveNavConsistent;
+
+impl ProvableFrom<WcagVerified> for ArchiveNavConsistent {}
 
 // ── ArchiveNavMachine ─────────────────────────────────────────────────────────
 

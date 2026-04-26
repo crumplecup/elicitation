@@ -26,7 +26,10 @@
 //! directly.  Parameterised constructors are ordinary functions; callers wrap
 //! them in a closure.
 
-use elicitation::{Elicit, Established, Prop, VerifiedStateMachine, formal_method};
+use elicit_ui::WcagVerified;
+use elicitation::{
+    Elicit, Established, Prop, VerifiedStateMachine, contracts::ProvableFrom, formal_method,
+};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
@@ -336,11 +339,14 @@ impl kani::Arbitrary for ArchivePanelState {
 
 /// Proposition: the panel is rendering WCAG-compliant AccessKit nodes.
 ///
-/// Proved when the active state's `*Mode` field is a valid mode for the
-/// data it accompanies — i.e. `data.to_ak_nodes(&mode, 0)` is callable.
-/// Bootstrap via `Established::assert()` for the default `ColumnDetail` state.
+/// Wired to [`WcagVerified`] from `elicit_ui`: each panel state's `to_ak_nodes`
+/// implementation is the source of WCAG compliance. The credential bounds CBMC
+/// to exploring only `WcagVerified` (a ZST), not all 18 `ArchivePanelState` variants.
 #[derive(Prop)]
+#[prop(credential = WcagVerified)]
 pub struct ArchivePanelConsistent;
+
+impl ProvableFrom<WcagVerified> for ArchivePanelConsistent {}
 
 // ── ArchivePanelMachine ───────────────────────────────────────────────────────
 

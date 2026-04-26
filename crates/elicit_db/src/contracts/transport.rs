@@ -286,7 +286,7 @@ mod emit_impls {
     // -------------------------------------------------------------------------
 
     macro_rules! transport_prop {
-        ($t:ty, $name:literal) => {
+        ($t:path, $name:literal) => {
             impl Prop for $t {
                 fn kani_proof() -> TokenStream {
                     quote! { /* structural: #name — verified by protocol message framing */ }
@@ -296,6 +296,12 @@ mod emit_impls {
                 }
                 fn creusot_proof() -> TokenStream {
                     quote! { /* structural: #name — verified by protocol message framing */ }
+                }
+            }
+            #[cfg(kani)]
+            impl kani::Arbitrary for $t {
+                fn any() -> Self {
+                    $t
                 }
             }
         };
